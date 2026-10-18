@@ -515,8 +515,8 @@ body.lampa_view.pt-tv .selectbox-item__subtitle {font-size:.85em;line-height:1.4
 body.lampa_view.pt-tv .settings-folder,body.lampa_view.pt-tv .settings-param {will-change:auto}
 
 /* Slightly smaller card badges on TV; other layouts keep their sizes. */
-body.lampa_view.pt-tv .pt-quality,body.lampa_view.pt-tv .card__quality,body.lampa_view.pt-tv .card__vote {font-size:.5em}
-body.lampa_view.pt-tv .pt-kind {font-size:.46em}
+body.lampa_view.pt-tv .pt-quality,body.lampa_view.pt-tv .card__quality,body.lampa_view.pt-tv .card__vote {font-size:.44em}
+body.lampa_view.pt-tv .pt-kind {font-size:.4em}
 
 /* A native cast rail stays inside its grid cell at every scroll position. */
 body.lampa_view .minimal-detail-columns>.minimal-detail-cast {grid-column:1;grid-row:1;position:relative;display:flex;flex-direction:column;flex:1;min-width:0;max-width:100%;width:100%;box-sizing:border-box;overflow:hidden}
@@ -528,3 +528,13 @@ body.lampa_view.pt-mobile .minimal-detail-columns>.minimal-detail-cast,body.lamp
  body.lampa_view .minimal-detail-header>.minimal-detail-columns {grid-template-columns:minmax(0,1fr)}
  body.lampa_view .minimal-detail-columns>.minimal-detail-cast,body.lampa_view .minimal-detail-columns>.minimal-detail-facts {grid-column:1;grid-row:auto}
 }
+
+/* One compact watch-status style for desktop, phones and TVs. */
+body.lampa_view .card .card-watched {top:auto;left:12%;right:12%;bottom:28%;font-size:.68em;line-height:1.35;border-radius:.6em;background:rgba(0,0,0,.78)!important;border:1px solid #ffffff14;box-sizing:border-box}
+body.lampa_view .card .card-watched__inner {padding:.55em .65em}
+body.lampa_view .card .card-watched__body {font-size:1em;padding:0}
+body.lampa_view .card .card-watched__item {margin-top:.55em}
+body.lampa_view .card .card-watched__item:first-child {margin-top:0}
+body.lampa_view .card .card-watched__item .time-line {margin-top:.35em}
+body.lampa_view .card .card-watched .time-line>div {height:3px}
+body.lampa_view .card--wide .card-watched {top:.7em;left:.7em;right:auto;bottom:auto;width:38%;max-width:13em}
