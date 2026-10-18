@@ -76,6 +76,14 @@ function orderComments(link){
   if(anchor && anchor.parentNode && !anchor.contains(node))anchor.parentNode.insertBefore(node,anchor.nextSibling);
  }
 }
+function mountCast(columns,node){
+ if(!columns || !node)return;
+ // Native rows can receive viewport widths. Keep that sizing inside a
+ // separate grid cell so the facts column always has its own space.
+ let cell=Array.from(columns.children).find(child=>child.classList.contains('minimal-detail-cast'));
+ if(!cell){cell=document.createElement('div');cell.className='minimal-detail-cast';columns.insertBefore(cell,columns.firstChild);}
+ if(node.parentNode!==cell)cell.appendChild(node);
+}
 export default function detail(L,event,loadLogo){
  if(event && event.type==='options' && event.link && event.options){
   const render=event.link.render(true),root=render && (render.nodeType?render:render[0]);
@@ -89,7 +97,7 @@ export default function detail(L,event,loadLogo){
  if(event && event.type==='build' && event.name==='discuss' && event.item){const render=event.item.render(true),node=render && (render.nodeType?render:render[0]);comments(event.item,node);}
  if(event && event.type==='build' && event.name==='persons' && event.item && event.data && (event.data.title===L.Lang.translate('title_actors') || (event.data.results || []).some(p=>Object.prototype.hasOwnProperty.call(p,'character')))){
   const render=event.item.render(true),node=render && (render.nodeType?render:render[0]);
-  if(node){node.classList.add('minimal-cast-native');const count=(event.data.results || []).filter(p=>p.minimal_director).length,heading=node.querySelector('.items-line__title');if(count && heading)heading.textContent=count>1?'Актёры и режиссёры':'Актёры и режиссёр';const container=event.body && event.body[0] && event.body[0].querySelector('.minimal-detail-columns');if(container)container.prepend(node);}
+  if(node){node.classList.add('minimal-cast-native');const count=(event.data.results || []).filter(p=>p.minimal_director).length,heading=node.querySelector('.items-line__title');if(count && heading)heading.textContent=count>1?'Актёры и режиссёры':'Актёры и режиссёр';const container=event.body && event.body[0] && event.body[0].querySelector('.minimal-detail-columns');mountCast(container,node);}
   return;
  }
 
@@ -114,7 +122,7 @@ export default function detail(L,event,loadLogo){
  if(start){
   start.classList.add('minimal-detail-header');
   const columns=document.createElement('section');columns.className='minimal-detail-columns';start.appendChild(columns);
-  const cast=body.querySelector('.minimal-cast-native');if(cast)columns.appendChild(cast);
+  const cast=body.querySelector('.minimal-cast-native');mountCast(columns,cast);
   const facts=document.createElement('aside');facts.className='minimal-detail-facts';const heading=document.createElement('h3');heading.textContent='О произведении';facts.appendChild(heading);
   const series=card.media_type==='tv' || card.name || card.first_air_date;
   const rows=[['Оригинальное название',card.original_title || card.original_name],['Тип',isAnime(card)?(series?'Аниме-сериал':'Аниме-фильм'):(series?'Сериал':'Фильм')],['Дата релиза',releaseDate(card)],[series?'Длительность серии':'Длительность',technical.duration],['Тип релиза',technical.quality],['Рейтинг TMDB',card.vote_average?Number(card.vote_average).toFixed(1):''],['Жанры',(card.genres || []).map(g=>g.name).join(', ')]];
@@ -129,7 +137,7 @@ export default function detail(L,event,loadLogo){
    if(index>=0){
     const previous=link.view;link.view=Math.max(previous || 3,index+1);
     link.emit('scroll',0);
-    const node=body.querySelector('.minimal-cast-native');if(node)columns.insertBefore(node,facts);
+    const node=body.querySelector('.minimal-cast-native');mountCast(columns,node);
     const castItem=node && link.items.find(item=>{const r=item.render(true);return (r.nodeType?r:r[0])===node;});
     if(castItem){const active=link.items[link.active];link.rows.splice(1,0,link.rows.splice(index,1)[0]);link.items.splice(1,0,link.items.splice(link.items.indexOf(castItem),1)[0]);link.active=Math.max(0,link.items.indexOf(active));}
    }

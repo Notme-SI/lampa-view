@@ -324,7 +324,7 @@ body.lampa_view .minimal-detail-header .full-start-new__right {max-width:60em}
 body.lampa_view .minimal-detail-header .full-start-new__rate-line {margin-top:.6em;font-size:.8em}
 body.lampa_view .minimal-detail-header .full-start-new__details {margin:.7em 0}
 body.lampa_view .minimal-detail-columns {max-width:90%;margin:1em auto 2em;display:flex;gap:1.25em;align-items:stretch}
-body.lampa_view .minimal-detail-columns>.minimal-cast-native {order:0;grid-column:1;grid-row:1;min-width:0;width:auto!important;max-width:100%;box-sizing:border-box;overflow:hidden;flex:1;background:#0b0b0b;border:1px solid var(--pt-line);border-radius:.8em;padding:1em;margin:0}
+body.lampa_view .minimal-detail-cast>.minimal-cast-native {order:0;grid-column:1;grid-row:1;min-width:0;width:100%!important;max-width:100%;box-sizing:border-box;overflow:hidden;flex:1;background:#0b0b0b;border:1px solid var(--pt-line);border-radius:.8em;padding:1em;margin:0}
 body.lampa_view .minimal-detail-facts {order:1;width:22%;min-width:15em;flex-shrink:0;padding:1.2em;background:#0b0b0b;border:1px solid var(--pt-line);border-radius:.8em;margin:0}
 body.lampa_view .minimal-detail-facts h3 {font-size:1em;margin:0 0 1em}
 body.lampa_view .minimal-detail-facts>div {display:flex;justify-content:space-between;gap:1em;font-size:.78em;margin:.8em 0;line-height:1.5}
@@ -515,5 +515,16 @@ body.lampa_view.pt-tv .selectbox-item__subtitle {font-size:.85em;line-height:1.4
 body.lampa_view.pt-tv .settings-folder,body.lampa_view.pt-tv .settings-param {will-change:auto}
 
 /* Slightly smaller card badges on TV; other layouts keep their sizes. */
-body.lampa_view.pt-tv .pt-quality,body.lampa_view.pt-tv .card__quality,body.lampa_view.pt-tv .card__vote {font-size:.57em}
-body.lampa_view.pt-tv .pt-kind {font-size:.53em}
+body.lampa_view.pt-tv .pt-quality,body.lampa_view.pt-tv .card__quality,body.lampa_view.pt-tv .card__vote {font-size:.5em}
+body.lampa_view.pt-tv .pt-kind {font-size:.46em}
+
+/* A native cast rail stays inside its grid cell at every scroll position. */
+body.lampa_view .minimal-detail-columns>.minimal-detail-cast {grid-column:1;grid-row:1;position:relative;display:flex;flex-direction:column;flex:1;min-width:0;max-width:100%;width:100%;box-sizing:border-box;overflow:hidden}
+body.lampa_view .minimal-detail-cast .items-line__body,body.lampa_view .minimal-detail-cast .scroll--horizontal {min-width:0;max-width:100%;box-sizing:border-box}
+body.lampa_view .minimal-detail-facts>div>span {min-width:0;overflow-wrap:anywhere}
+body.lampa_view.pt-mobile .minimal-detail-header>.minimal-detail-columns {grid-template-columns:minmax(0,1fr)}
+body.lampa_view.pt-mobile .minimal-detail-columns>.minimal-detail-cast,body.lampa_view.pt-mobile .minimal-detail-columns>.minimal-detail-facts {grid-column:1;grid-row:auto}
+@media(max-width:900px){
+ body.lampa_view .minimal-detail-header>.minimal-detail-columns {grid-template-columns:minmax(0,1fr)}
+ body.lampa_view .minimal-detail-columns>.minimal-detail-cast,body.lampa_view .minimal-detail-columns>.minimal-detail-facts {grid-column:1;grid-row:auto}
+}
