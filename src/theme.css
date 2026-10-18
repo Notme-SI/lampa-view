@@ -455,3 +455,40 @@ body.lampa_view .minimal-anime-status {margin:1.2em auto;text-align:center;color
 body.lampa_view .minimal-anime-retry {display:inline-block;font:inherit;color:var(--pt-text);background:#111;border:1px solid var(--pt-line);border-radius:.6em;padding:.65em 1.2em;margin:.8em auto 0;cursor:pointer}
 body.lampa_view .minimal-anime-retry.focus,body.lampa_view .minimal-anime-retry:hover {background:var(--pt-accent);color:#11171b;outline:none}
 body.lampa_view .minimal-anime-status[hidden],body.lampa_view .minimal-anime-retry[hidden] {display:none!important}
+
+/* Small touch controls keep native actions, including the iPhone safe area. */
+body.lampa_view.pt-mobile .navigation-bar {font-size:14px!important;padding:0 .8em .65em;padding-bottom:calc(.65em + env(safe-area-inset-bottom,0px))}
+body.lampa_view.pt-mobile .navigation-bar__body {max-width:400px;margin:0 auto;padding:.5em .6em;border:1px solid var(--pt-line);background:#181a1cf2;box-shadow:0 4px 20px #0006}
+body.lampa_view.pt-mobile .navigation-bar__item {display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:44px;min-width:56px}
+body.lampa_view.pt-mobile .navigation-bar__icon {width:1.5em;height:1.5em}
+body.lampa_view.pt-mobile .navigation-bar__label {font-size:.78em;line-height:1.2;margin-top:.3em}
+body.lampa_view.pt-mobile .settings__content {font-size:14px!important;box-sizing:border-box;max-height:78vh!important;border-radius:1em}
+body.lampa_view.pt-mobile .settings__body {font-size:1em!important;min-height:0;overflow:hidden}
+body.lampa_view.pt-mobile .settings__head {padding:1em 1.1em .8em}
+body.lampa_view.pt-mobile .settings__title {font-size:1.4em;line-height:1.3}
+body.lampa_view.pt-mobile .settings .minimal-back--overlay {font-size:14px}
+body.lampa_view.pt-mobile .settings-folder {padding:.9em 1.1em;min-height:3.6em;align-items:center;box-sizing:border-box;border-radius:.5em}
+body.lampa_view.pt-mobile .settings-folder__icon {width:1.4em;height:1.4em;min-width:1.4em;margin-right:.9em}
+body.lampa_view.pt-mobile .settings-folder__icon>* {width:100%;height:100%}
+body.lampa_view.pt-mobile .settings-folder__name {font-size:1em;line-height:1.35}
+body.lampa_view.pt-mobile .settings-param {padding:1em 1.1em;font-size:1em}
+body.lampa_view.pt-mobile .settings-param__name {font-size:1em}
+body.lampa_view.pt-mobile .settings-param__value {font-size:.95em}
+body.lampa_view.pt-mobile .wrap__content {padding-bottom:calc(5.1em + env(safe-area-inset-bottom,0px))!important}
+body.lampa_view.pt-mobile.orientation--landscape .navigation-bar {padding:.6em .6em .6em 0}
+body.lampa_view.pt-mobile.orientation--landscape .navigation-bar__body {gap:.45em;padding:.55em}
+
+/* TV geometry is separate from desktop sizes and the rest of the interface. */
+body.lampa_view.pt-tv .pt-hero {height:44vh;min-height:18em;max-height:29em;max-width:90vw;margin:0 auto 1.1em}
+body.lampa_view.pt-tv .pt-hero__body {left:2em;bottom:3.8em;max-width:40%;padding-right:0}
+body.lampa_view.pt-tv .pt-hero__title {font-size:2.1em;max-width:100%;margin-bottom:.5em}
+body.lampa_view.pt-tv .pt-hero__title--translation {font-size:1.05em;line-height:1.35}
+body.lampa_view.pt-tv .pt-hero__logo {max-height:4.2em;max-width:100%;margin-bottom:.8em}
+body.lampa_view.pt-tv .pt-hero__overview {-webkit-line-clamp:2;line-height:1.5}
+body.lampa_view.pt-tv .pt-hero__actions {margin-top:1em}
+body.lampa_view.pt-tv .pt-hero__dots {bottom:1.3em}
+body.lampa_view.pt-tv .items-line {max-width:90vw;margin-left:auto;margin-right:auto}
+body.lampa_view.pt-tv .items-line .card:not(.card--wide):not(.card--collection) {width:clamp(6.4em,calc((90vw - 9em)/10),8.5em)!important}
+body.lampa_view.pt-tv .mapping--grid>.card:not(.card--wide):not(.card--collection) {width:12.5%!important}
+body.lampa_view.pt-tv .card--wide,body.lampa_view.pt-tv .card--collection {width:clamp(15em,27vw,23em)!important}
+body.lampa_view.pt-tv .card,body.lampa_view.pt-mobile .settings-folder {will-change:auto}

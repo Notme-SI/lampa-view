@@ -9,7 +9,7 @@ test('theme defaults, native player events and playlist transport work together'
     Storage:{get:(key,def)=>def || '',set(){}},SettingsApi:{addComponent(){},addParam(){}},
     Listener:{follow:(key,fn)=>{events[key]=fn;}},
     Activity:{active:()=>({component:'lampac',movie:{id:1396,name:'Во все тяжкие',original_name:'Breaking Bad',source:'tmdb',first_air_date:'2008-01-20'}}),push(){},replace(){}},
-    Player:{listener:{follow:(key,fn)=>{playerEvents[key]=fn;}},playlist(){},getUrlQuality:q=>q['1080p']},
+    Player:{listener:{follow:(key,fn)=>{const previous=playerEvents[key];playerEvents[key]=data=>{if(previous)previous(data);fn(data);};}},playlist(){},getUrlQuality:q=>q['1080p']},
     Torserver:{toPlayUrl:url=>url.replace('&preload','&play')},TMDB:{},
   };
   const bundle=esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/plugin.js')],bundle:true,write:false,loader:{'.css':'text'}}).outputFiles[0].text;
@@ -27,15 +27,15 @@ test('theme defaults, native player events and playlist transport work together'
 for(const mode of ['tv','mobile','desktop']) test('standalone '+mode+' leaves native playback intact and respects layout changes',()=>{
   const dom=new JSDOM('<html><head></head><body><div class="head__logo-icon"></div><div class="head__title"></div><div class="menu__case"><ul class="menu__list"><li data-action="main"></li></ul></div></body></html>',{runScripts:'outside-only'});
   const w=dom.window;w.eval(fs.readFileSync(path.join(__dirname,'fixtures/jquery.js'),'utf8'));
-  let createHooks=0,override='auto';const params={};const original=()=>{};
+  let override='auto';const params={};const original=()=>{};
   w.appready=true;
   w.Lampa={Storage:{get:(key,def)=>key==='lampa_view_layout'?override:def,set(){}},Platform:{screen:value=>value===mode},
     SettingsApi:{addComponent(){},addParam:p=>params[p.param.name]=p},Listener:{follow(){}},Activity:{active:()=>({component:'main'}),push(){}},
-    Player:{listener:{follow:()=>createHooks++},playlist:original}};
+    Player:{listener:{follow(){}},playlist:original}};
   const bundle=esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/plugin.js')],bundle:true,write:false,loader:{'.css':'text'}}).outputFiles[0].text;
   w.eval(bundle);
   assert.equal(w.LampaView.layout,mode);assert.equal(w.LampaView.bridge,false);
-  assert.equal(w.Lampa.Player.playlist,original);assert.equal(createHooks,0);
+  assert.equal(w.Lampa.Player.playlist,original);
   assert.ok(w.document.body.classList.contains('pt-'+mode));
   assert.equal(params.lampa_view_metadata,undefined,'desktop-only option leaked to standalone host');
   override='mobile';params.lampa_view_layout.onChange();assert.equal(w.LampaView.layout,'mobile');
