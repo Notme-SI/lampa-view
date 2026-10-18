@@ -29,7 +29,7 @@ if (!ROOT.LampaView) {
     const boot=document.createElement('style');boot.id='lampa-minimal-boot';boot.textContent=BOOT;
     (document.head || document.documentElement).appendChild(boot);
   }
-  const P = ROOT.LampaView = {version: '0.4.36', identity: C.identity, ready: false, bridge: false};
+  const P = ROOT.LampaView = {version: '0.4.37', identity: C.identity, ready: false, bridge: false};
   let L, $, lastCard, initialized = false, playlist = [], activeVideo,loadLogo,artwork,back;
   const metadata = new Map();
   const heroes = new WeakSet();
@@ -58,9 +58,10 @@ if (!ROOT.LampaView) {
     const selected=L.Storage.get('lampa_view_layout','auto') || 'auto';
     const screen=L.Platform && L.Platform.screen;
     const mobile=screen ? screen.call(L.Platform,'mobile') : ROOT.innerWidth<=600;
-    const tv=screen ? screen.call(L.Platform,'tv') : false;
-    const nativeTV=L.Platform && L.Platform.tv && L.Platform.tv();
-    P.layout=selected==='auto' ? (nativeTV ? 'tv' : mobile || ROOT.innerWidth<=650 ? 'mobile' : tv ? 'tv' : 'desktop') : selected;
+    // Lampa's screen('tv') also describes desktop browsers. Use its physical
+    // TV detector when available, including an explicit false result.
+    const tv=L.Platform && typeof L.Platform.tv==='function' ? !!L.Platform.tv() : screen ? screen.call(L.Platform,'tv') : false;
+    P.layout=selected==='auto' ? (tv ? 'tv' : mobile || ROOT.innerWidth<=650 ? 'mobile' : 'desktop') : selected;
     ['mobile','tv','desktop'].forEach(mode=>document.body.classList.toggle('pt-'+mode,P.layout===mode));
   }
   function setTheme() {

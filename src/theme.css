@@ -530,11 +530,11 @@ body.lampa_view.pt-mobile .minimal-detail-columns>.minimal-detail-cast,body.lamp
 }
 
 /* One compact watch-status style for desktop, phones and TVs. */
-body.lampa_view .card .card-watched {top:auto;left:12%;right:12%;bottom:28%;font-size:.68em;line-height:1.35;border-radius:.6em;background:rgba(0,0,0,.78)!important;border:1px solid #ffffff14;box-sizing:border-box}
+body.lampa_view .card .card-watched {top:auto;left:12%;right:12%;bottom:28%;font-size:.68em;line-height:1.35;-webkit-transform:scale(.7);transform:scale(.7);-webkit-transform-origin:center bottom;transform-origin:center bottom;border-radius:.6em;background:rgba(0,0,0,.78)!important;border:1px solid #ffffff14;box-sizing:border-box}
 body.lampa_view .card .card-watched__inner {padding:.55em .65em}
 body.lampa_view .card .card-watched__body {font-size:1em;padding:0}
 body.lampa_view .card .card-watched__item {margin-top:.55em}
 body.lampa_view .card .card-watched__item:first-child {margin-top:0}
 body.lampa_view .card .card-watched__item .time-line {margin-top:.35em}
 body.lampa_view .card .card-watched .time-line>div {height:3px}
-body.lampa_view .card--wide .card-watched {top:.7em;left:.7em;right:auto;bottom:auto;width:38%;max-width:13em}
+body.lampa_view .card--wide .card-watched {top:.7em;left:.7em;right:auto;bottom:auto;width:38%;max-width:13em;-webkit-transform-origin:left top;transform-origin:left top}
