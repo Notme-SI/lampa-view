@@ -513,3 +513,7 @@ body.lampa_view.pt-tv .selectbox-item {padding:.85em 1.1em;font-size:1em;min-hei
 body.lampa_view.pt-tv .selectbox-item__title {font-size:1em;line-height:1.35}
 body.lampa_view.pt-tv .selectbox-item__subtitle {font-size:.85em;line-height:1.4}
 body.lampa_view.pt-tv .settings-folder,body.lampa_view.pt-tv .settings-param {will-change:auto}
+
+/* Slightly smaller card badges on TV; other layouts keep their sizes. */
+body.lampa_view.pt-tv .pt-quality,body.lampa_view.pt-tv .card__quality,body.lampa_view.pt-tv .card__vote {font-size:.57em}
+body.lampa_view.pt-tv .pt-kind {font-size:.53em}
