@@ -463,17 +463,27 @@ body.lampa_view.pt-mobile .navigation-bar__item {display:flex;flex-direction:col
 body.lampa_view.pt-mobile .navigation-bar__icon {width:1.5em;height:1.5em}
 body.lampa_view.pt-mobile .navigation-bar__label {font-size:.78em;line-height:1.2;margin-top:.3em}
 body.lampa_view.pt-mobile .settings__content {font-size:14px!important;box-sizing:border-box;max-height:78vh!important;border-radius:1em}
-body.lampa_view.pt-mobile .settings__body {font-size:1em!important;min-height:0;overflow:hidden}
-body.lampa_view.pt-mobile .settings__head {padding:1em 1.1em .8em}
-body.lampa_view.pt-mobile .settings__title {font-size:1.4em;line-height:1.3}
+body.lampa_view.pt-mobile .settings__body,
+body.lampa_view.pt-tv .settings__body {font-size:1em!important;min-height:0;overflow:hidden}
+body.lampa_view.pt-mobile .settings__head,
+body.lampa_view.pt-tv .settings__head {padding:1em 1.1em .8em}
+body.lampa_view.pt-mobile .settings__title,
+body.lampa_view.pt-tv .settings__title {font-size:1.4em;line-height:1.3}
 body.lampa_view.pt-mobile .settings .minimal-back--overlay {font-size:14px}
-body.lampa_view.pt-mobile .settings-folder {padding:.9em 1.1em;min-height:3.6em;align-items:center;box-sizing:border-box;border-radius:.5em}
-body.lampa_view.pt-mobile .settings-folder__icon {width:1.4em;height:1.4em;min-width:1.4em;margin-right:.9em}
-body.lampa_view.pt-mobile .settings-folder__icon>* {width:100%;height:100%}
-body.lampa_view.pt-mobile .settings-folder__name {font-size:1em;line-height:1.35}
-body.lampa_view.pt-mobile .settings-param {padding:1em 1.1em;font-size:1em}
-body.lampa_view.pt-mobile .settings-param__name {font-size:1em}
-body.lampa_view.pt-mobile .settings-param__value {font-size:.95em}
+body.lampa_view.pt-mobile .settings-folder,
+body.lampa_view.pt-tv .settings-folder {padding:.9em 1.1em;min-height:3.6em;align-items:center;box-sizing:border-box;border-radius:.5em}
+body.lampa_view.pt-mobile .settings-folder__icon,
+body.lampa_view.pt-tv .settings-folder__icon {width:1.4em;height:1.4em;min-width:1.4em;margin-right:.9em}
+body.lampa_view.pt-mobile .settings-folder__icon>*,
+body.lampa_view.pt-tv .settings-folder__icon>* {width:100%;height:100%}
+body.lampa_view.pt-mobile .settings-folder__name,
+body.lampa_view.pt-tv .settings-folder__name {font-size:1em;line-height:1.35}
+body.lampa_view.pt-mobile .settings-param,
+body.lampa_view.pt-tv .settings-param {padding:1em 1.1em;font-size:1em}
+body.lampa_view.pt-mobile .settings-param__name,
+body.lampa_view.pt-tv .settings-param__name {font-size:1em}
+body.lampa_view.pt-mobile .settings-param__value,
+body.lampa_view.pt-tv .settings-param__value {font-size:.95em}
 body.lampa_view.pt-mobile .wrap__content {padding-bottom:calc(5.1em + env(safe-area-inset-bottom,0px))!important}
 body.lampa_view.pt-mobile.orientation--landscape .navigation-bar {padding:.6em .6em .6em 0}
 body.lampa_view.pt-mobile.orientation--landscape .navigation-bar__body {gap:.45em;padding:.55em}
@@ -492,3 +502,14 @@ body.lampa_view.pt-tv .items-line .card:not(.card--wide):not(.card--collection) 
 body.lampa_view.pt-tv .mapping--grid>.card:not(.card--wide):not(.card--collection) {width:12.5%!important}
 body.lampa_view.pt-tv .card--wide,body.lampa_view.pt-tv .card--collection {width:clamp(15em,27vw,23em)!important}
 body.lampa_view.pt-tv .card,body.lampa_view.pt-mobile .settings-folder {will-change:auto}
+
+/* TV drawers use the same compact rows as phones, with readable TV text. */
+body.lampa_view.pt-tv .settings__content {font-size:clamp(14px,.84vw,16px)!important;width:30em;max-width:38vw;box-sizing:border-box}
+body.lampa_view.pt-tv .settings .minimal-back--overlay {font-size:1em}
+body.lampa_view.pt-tv .selectbox__content {font-size:clamp(14px,.84vw,16px)!important;box-sizing:border-box}
+body.lampa_view.pt-tv .selectbox__head {padding:1em 1.1em .8em}
+body.lampa_view.pt-tv .selectbox__title {font-size:1.4em;line-height:1.3}
+body.lampa_view.pt-tv .selectbox-item {padding:.85em 1.1em;font-size:1em;min-height:3.2em;box-sizing:border-box}
+body.lampa_view.pt-tv .selectbox-item__title {font-size:1em;line-height:1.35}
+body.lampa_view.pt-tv .selectbox-item__subtitle {font-size:.85em;line-height:1.4}
+body.lampa_view.pt-tv .settings-folder,body.lampa_view.pt-tv .settings-param {will-change:auto}
