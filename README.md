@@ -25,6 +25,6 @@ curl -fsSL https://notme-si.github.io/lampa-view/install.sh | sudo sh
 
 ## Плеер
 
-Для Windows доступен [mpv+](https://github.com/Notme-SI/mpv-plus/releases/latest). Мост для обычного просмотра не нужен.
+Для Windows доступен [mpv+](https://github.com/Notme-SI/mpv-plus/releases/latest). В Lampa Desktop выберите внешний плеер `mpv.exe` из папки mpv+. Данные карточки передаются автоматически; отдельный мост устанавливать не нужно.
 
 [Изменения](CHANGELOG.md) · [Разработка](CONTRIBUTING.md) · [Лицензии](THIRD-PARTY.md)

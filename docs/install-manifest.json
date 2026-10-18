@@ -1,7 +1,7 @@
 {
-  "version": "0.4.30",
+  "version": "0.4.31",
   "files": {
-    "dist/lampa.js": "68d6f80dce75eee7f00b4989e9feb20f785267189d6c3145ca8d3f124b6240fb",
+    "dist/lampa.js": "9771614e6baa91347fecda4efa5682277a3b26000c2aab2d49b27105ff17efa9",
     "dist/lampa-minimal.boot.js": "4954e086d8673b61deb6453e8f79fc8d3743d0931a0a42647cb8e71efcea5677",
     "dist/lampa-minimal.svg": "4ee868fea677562c30456b374792174be6523b5977dc982935d9ff5d47d9f657",
     "dist/lampa.ico": "d11faa7d80764ad5fb38f5b8cef53e59b88ee5965eda53ba230d8e006cce3bbb",

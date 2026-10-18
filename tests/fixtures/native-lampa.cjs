@@ -16,6 +16,7 @@ module.exports=async function native(options={}){
  await new Promise(r=>setTimeout(r,900));L.Storage.set('language','ru');L.Storage.set('tmdb_lang','ru');L.Storage.set('source','cub');L.TMDB.api=p=>'http://lampa.example.invalid/tmdb/api/3/'+p;
  for(const name of ['Settings','Select','Head','Menu','Activity']){const render=L[name].render(true),el=render && (render.nodeType?render:render[0]);if(el && !el.isConnected)w.document.body.appendChild(el);}
  w.appready=true;w.SimpleKeyboard={default:function(){this.setInput=()=>{};this.getInput=()=>'';this.destroy=()=>{};this.setOptions=()=>{};}};
+ if(options.prepare)options.prepare(w,L);
  const code=options.built?fs.readFileSync(path.join(__dirname,'../../dist/lampa.js'),'utf8'):esbuild.buildSync({entryPoints:[path.join(__dirname,'../../src/plugin.js')],bundle:true,write:false,loader:{'.css':'text'}}).outputFiles[0].text;w.eval(code);
  if(!options.built)for(const file of ['torrent-catalogue','pars','torrent-button','alc-auto','suggest'])w.eval(fs.readFileSync(path.join(__dirname,'../../vendor',file+'.js'),'utf8'));
  L.Controller.add('content',{toggle(){}});L.Controller.toggle('content');

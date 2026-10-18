@@ -19,6 +19,7 @@ import shikimoriPosters from './shikimori-posters.js';
 import torrentEpisodes from './torrent-episodes.js';
 import installArtwork,{artworkSize} from './artwork.js';
 import installBack from './back.js';
+import mpvLaunch from './mpv-launch.cjs';
 
 const ROOT = window;
 if (!ROOT.LampaView) {
@@ -27,7 +28,7 @@ if (!ROOT.LampaView) {
     const boot=document.createElement('style');boot.id='lampa-minimal-boot';boot.textContent=BOOT;
     (document.head || document.documentElement).appendChild(boot);
   }
-  const P = ROOT.LampaView = {version: '0.4.30', identity: C.identity, ready: false, bridge: false};
+  const P = ROOT.LampaView = {version: '0.4.31', identity: C.identity, ready: false, bridge: false};
   let L, $, lastCard, initialized = false, playlist = [], activeVideo,loadLogo,artwork,back;
   const metadata = new Map();
   const heroes = new WeakSet();
@@ -293,6 +294,7 @@ if (!ROOT.LampaView) {
     } catch(error) {console.warn('Lampa View: metadata transport failed');}
   }
   function bridge() {
+    mpvLaunch.install(L,ROOT,currentCard,()=>yes('lampa_view_metadata'));
     P.bridge = !!(ROOT.electronAPI && ROOT.electronAPI.lampa_view);
     if (!P.bridge) return;
     L.Player.listener.follow('create', event => {activeVideo = event.data; playlist=[]; sendContext(event.data);});
@@ -310,7 +312,7 @@ if (!ROOT.LampaView) {
       ['lampa_view_enabled','Минималистичный интерфейс','Единый стиль каталога, карточек, источников и настроек.',true],
       ['lampa_view_hero','Обложка на главной','Подборка обложек с ручным переключением и жестами.',true]
     ];
-    if(ROOT.electronAPI && ROOT.electronAPI.lampa_view) options.push(['lampa_view_metadata','Передавать карточку в mpv+','Название, оригинальное название, ID, сезон и серия.',true]);
+    if(L.Platform && L.Platform.desktop && L.Platform.desktop() || ROOT.electronAPI && ROOT.electronAPI.lampa_view) options.push(['lampa_view_metadata','Уточнять данные mpv+','Передавать сведения карточки для проверки названия, сезона и серии.',true]);
     options.forEach(([name,label,description,value]) => L.SettingsApi.addParam({component:'lampa_view',param:{name,type:'trigger',default:value},field:{name:label,description},onChange:setTheme}));
     L.SettingsApi.addParam({component:'lampa_view',param:{name:'lampa_view_layout',type:'select',values:{auto:'Автоматически',tv:'Телевизор',mobile:'Телефон',desktop:'Компьютер'},default:'auto'},field:{name:'Тип устройства',description:'Авто использует режим экрана Lampa. Можно выбрать вручную.'},onChange:setTheme});
     L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_banner_quality',type:'select',values:{medium:'Среднее',high:'Высокое',maximum:'Максимальное'},default:'maximum'},field:{name:'Качество баннеров и обложек',description:'Баннеры, фоны и обложки карточек. Максимальное использует исходный размер изображения.'},onChange:()=>artwork && artwork.refresh()});
