@@ -1,0 +1,9 @@
+* text=auto eol=lf
+*.js text eol=lf
+*.cjs text eol=lf
+*.sh text eol=lf
+*.svg text eol=lf
+*.ico binary
+*.png binary
+tests/fixtures/** -whitespace
+vendor/** -whitespace

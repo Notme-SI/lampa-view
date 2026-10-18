@@ -1,0 +1,7 @@
+[Unit]
+Description=Restore Lampa Minimal early bootstrap
+StartLimitIntervalSec=0
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /usr/local/lib/lampa-minimal/install-bootstrap.py

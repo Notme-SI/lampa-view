@@ -1,0 +1,5 @@
+Visual reference and adapted layout: Potok Web, https://github.com/potok-media/web
+Copyright (c) 2026 Potok. MIT; see Reference-UI-MIT.txt.
+
+Lampa runtime fixture and adapted lens icon: https://github.com/yumata/lampa
+GNU GPL v2; see Lampa-GPL-2.0.txt.

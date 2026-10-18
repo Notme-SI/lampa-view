@@ -1,0 +1,11 @@
+[Unit]
+Description=Preserve Lampa Minimal bootstrap after Lampac client updates
+
+[Path]
+PathChanged=/opt/lampac/wwwroot/lampa-main/index.html
+PathChanged=/opt/lampac/wwwroot/lampa-main
+PathChanged=/opt/lampac/wwwroot
+Unit=lampa-minimal-bootstrap.service
+
+[Install]
+WantedBy=multi-user.target
