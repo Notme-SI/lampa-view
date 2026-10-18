@@ -21,6 +21,7 @@ import installArtwork,{artworkSize} from './artwork.js';
 import installBack from './back.js';
 import mpvLaunch from './mpv-launch.cjs';
 import carousel from './carousel.js';
+import tvPerformance from './tv-performance.js';
 
 const ROOT = window;
 if (!ROOT.LampaView) {
@@ -29,7 +30,7 @@ if (!ROOT.LampaView) {
     const boot=document.createElement('style');boot.id='lampa-minimal-boot';boot.textContent=BOOT;
     (document.head || document.documentElement).appendChild(boot);
   }
-  const P = ROOT.LampaView = {version: '0.4.37', identity: C.identity, ready: false, bridge: false};
+  const P = ROOT.LampaView = {version: '0.4.38', identity: C.identity, ready: false, bridge: false};
   let L, $, lastCard, initialized = false, playlist = [], activeVideo,loadLogo,artwork,back;
   const metadata = new Map();
   const heroes = new WeakSet();
@@ -339,6 +340,7 @@ if (!ROOT.LampaView) {
     installTmdb(L);installFullGuard(L);torrentEpisodes(L,ROOT);inputs(L);
     artwork=installArtwork(L,()=>yes('lampa_view_enabled'));
     settings(); bridge(); shell();back=installBack(L,$,()=>yes('lampa_view_enabled'));artwork.refresh();
+    tvPerformance(()=>yes('lampa_view_enabled'));
     trimSections();
     const menu=document.querySelector('.menu');
     if(menu && ROOT.MutationObserver)new ROOT.MutationObserver(trimSections).observe(menu,{childList:true,subtree:true});

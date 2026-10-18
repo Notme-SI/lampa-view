@@ -502,6 +502,10 @@ body.lampa_view.pt-tv .items-line .card:not(.card--wide):not(.card--collection) 
 body.lampa_view.pt-tv .mapping--grid>.card:not(.card--wide):not(.card--collection) {width:12.5%!important}
 body.lampa_view.pt-tv .card--wide,body.lampa_view.pt-tv .card--collection {width:clamp(15em,27vw,23em)!important}
 body.lampa_view.pt-tv .card,body.lampa_view.pt-mobile .settings-folder {will-change:auto}
+/* Clip TV rails without an extra full-width gradient compositing layer. */
+body.lampa_view.pt-tv .items-line__body {-webkit-mask-image:none;mask-image:none}
+body.lampa_view.pt-tv .card__view {transition:none!important;-webkit-transition:none!important}
+body.lampa_view.pt-tv .card.focus .card__view,body.lampa_view.pt-tv .card.hover .card__view {-webkit-transform:none;transform:none;box-shadow:0 0 .55em rgba(173,217,229,.4)}
 
 /* TV drawers use the same compact rows as phones, with readable TV text. */
 body.lampa_view.pt-tv .settings__content {font-size:clamp(14px,.84vw,16px)!important;width:30em;max-width:38vw;box-sizing:border-box}

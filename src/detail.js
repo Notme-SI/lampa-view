@@ -57,13 +57,20 @@ export function prepareDetail(data){
 }
 function orderComments(link){
  if(!link || !link.rows || !link.items)return;
- const index=link.rows.findIndex(row=>Array.isArray(row) && row[0]==='discuss');if(index<0)return;
+ let index=link.rows.findIndex(row=>Array.isArray(row) && row[0]==='discuss');if(index<0)return;
  const cast=link.rows.findIndex(row=>Array.isArray(row) && row[0]==='persons');
  const target=Math.min(cast===1?2:1,link.rows.length-1);let built=index<link.items.length;
  // An unbuilt comments row can move ahead of other unbuilt rows without
  // constructing every recommendations row just to reach an empty discussion.
  if(!built && target>=link.items.length){link.rows.splice(target,0,link.rows.splice(index,1)[0]);}
  else{
+  if(!built && document.body.classList.contains('pt-tv')){
+   // Empty discussions are last in native Lampa. Build only that row, rather
+   // than every collection and recommendation between it and the header.
+   const next=link.items.length,previous=link.view;
+   link.rows.splice(next,0,link.rows.splice(index,1)[0]);index=next;
+   link.view=next+1;link.emit('scroll',0);link.view=previous;built=index<link.items.length;
+  }
   if(!built){link.view=Math.max(link.view || 3,index+1);link.emit('scroll',0);built=index<link.items.length;}
   if(built){const active=link.items[link.active];link.rows.splice(target,0,link.rows.splice(index,1)[0]);link.items.splice(target,0,link.items.splice(index,1)[0]);link.active=Math.max(0,link.items.indexOf(active));}
  }
@@ -137,6 +144,7 @@ export default function detail(L,event,loadLogo){
    if(index>=0){
     const previous=link.view;link.view=Math.max(previous || 3,index+1);
     link.emit('scroll',0);
+    if(document.body.classList.contains('pt-tv'))link.view=previous;
     const node=body.querySelector('.minimal-cast-native');mountCast(columns,node);
     const castItem=node && link.items.find(item=>{const r=item.render(true);return (r.nodeType?r:r[0])===node;});
     if(castItem){const active=link.items[link.active];link.rows.splice(1,0,link.rows.splice(index,1)[0]);link.items.splice(1,0,link.items.splice(link.items.indexOf(castItem),1)[0]);link.active=Math.max(0,link.items.indexOf(active));}
@@ -146,7 +154,20 @@ export default function detail(L,event,loadLogo){
  orderComments(event.link);
  // Vertical pointer scrolling does not advance Lampa's remote active-row index.
  // Build these few page rows now; their horizontal cards and images stay lazy.
- if(event.link && event.link.rows && event.link.items){event.link.view=Math.max(event.link.view || 3,event.link.rows.length);event.link.emit('scroll',0);}
+ if(event.link && event.link.rows && event.link.items){
+  const link=event.link;
+  if(!document.body.classList.contains('pt-tv')){link.view=Math.max(link.view || 3,link.rows.length);link.emit('scroll',0);}
+  else{
+   // Remote navigation retains native lazy rows. A TV mouse/touch user can
+   // still reach the whole page without advancing the remote active index.
+   const expand=()=>{link.view=Math.max(link.view || 3,link.rows.length);link.emit('scroll',0);cleanup();};
+   const pointer=event=>{if(body.contains(event.detail))expand();};
+   const cleanup=()=>{document.removeEventListener('minimal:tv-pointer-scroll',pointer);body.removeEventListener('touchstart',expand,true);};
+   document.addEventListener('minimal:tv-pointer-scroll',pointer);
+   body.addEventListener('touchstart',expand,{capture:true,passive:true});
+   if(link.use)link.use({onDestroy:cleanup});
+  }
+ }
 
  readableOverview(L,card,right,event.link);
  const movie={...card,media_type:card.media_type || (card.name?'tv':'movie')};

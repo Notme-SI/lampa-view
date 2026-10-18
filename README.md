@@ -27,4 +27,19 @@ curl -fsSL https://notme-si.github.io/lampa-view/install.sh | sudo sh
 
 Для Windows доступен [mpv+](https://github.com/Notme-SI/mpv-plus/releases/latest). В Lampa Desktop выберите внешний плеер `mpv.exe` из папки mpv+. Данные карточки передаются автоматически; отдельный мост устанавливать не нужно.
 
+## Скриншоты
+
+<a href="docs/screenshots/01-home.png"><img src="docs/screenshots/01-home.png" alt="Главная страница Lampa View" width="1200"></a>
+
+<table>
+  <tr>
+    <td><a href="docs/screenshots/02-anime.png"><img src="docs/screenshots/02-anime.png" alt="Раздел аниме" width="600"></a><br>Аниме</td>
+    <td><a href="docs/screenshots/03-catalogue.png"><img src="docs/screenshots/03-catalogue.png" alt="Каталог и меню навигации" width="600"></a><br>Каталог и навигация</td>
+  </tr>
+  <tr>
+    <td><a href="docs/screenshots/04-movie.png"><img src="docs/screenshots/04-movie.png" alt="Карточка фильма, актёры и комментарии" width="600"></a><br>Карточка фильма</td>
+    <td><a href="docs/screenshots/05-anime-detail.png"><img src="docs/screenshots/05-anime-detail.png" alt="Карточка аниме и список серий" width="600"></a><br>Карточка аниме</td>
+  </tr>
+</table>
+
 [Изменения](CHANGELOG.md) · [Разработка](CONTRIBUTING.md) · [Лицензии](THIRD-PARTY.md)

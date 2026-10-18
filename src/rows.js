@@ -16,7 +16,7 @@ export default function fillRows(L,enabled){
     if(state.timer!==null)return;
     state.timer=setTimeout(()=>{
       state.timer=null;
-      if(!enabled() || document.body.classList.contains('pt-wheel-active'))return;
+      if(!enabled() || document.body.matches('.pt-wheel-active,.pt-tv-busy'))return;
       const render=line.render(true),root=render && (render.nodeType?render:render[0]);
       if(!root || !root.isConnected)return;
       if(!state.root){state.root=root;roots.set(root,line);if(observer)observer.observe(root);if(sizes)sizes.observe(root);}
@@ -51,6 +51,7 @@ export default function fillRows(L,enabled){
   let resize;
   window.addEventListener('resize',()=>{clearTimeout(resize);resize=setTimeout(()=>lines.forEach((state,line)=>schedule(line,state.data)),150);});
   document.addEventListener('minimal:wheel-idle',()=>lines.forEach((state,line)=>schedule(line,state.data)));
+  document.addEventListener('minimal:tv-idle',()=>lines.forEach((state,line)=>schedule(line,state.data)));
   let scrolling;
   document.addEventListener('scroll',()=>{clearTimeout(scrolling);scrolling=setTimeout(()=>lines.forEach((state,line)=>schedule(line,state.data)),100);},true);
   return event;

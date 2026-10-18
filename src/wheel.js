@@ -75,6 +75,7 @@ export default function installWheel(L,enabled){
     // Chromium can deliver both names for one physical wheel movement.
     if(!standard && Date.now()-lastStandard<80)return;
     if(standard)lastStandard=Date.now();
+    if(!horizontal && document.body.classList.contains('pt-tv'))document.dispatchEvent(new CustomEvent('minimal:tv-pointer-scroll',{detail:node}));
     let delta=horizontal?(event.shiftKey && !x?y:x):y;
     delta=Math.max(-360,Math.min(360,delta));
     move(node,delta);

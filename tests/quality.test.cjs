@@ -23,15 +23,15 @@ test('visible movie quality is bounded, cached, and rejects unrelated releases a
  listener({type:'visible',items:[a,b,c]});assert.equal(requests.length,3,'empty results must be cached');
  dom.window.close();
 });
-test('quality requests and layout reads wait until the scroll animation finishes',()=>{
- const dom=new JSDOM('<body class="pt-wheel-active"><div class="card"><div class="card__view"></div></div></body>',{runScripts:'outside-only'}),w=dom.window;
+for(const mode of ['wheel','tv'])test('quality requests and layout reads wait until '+mode+' navigation finishes',()=>{
+ const dom=new JSDOM('<body class="pt-'+(mode==='tv'?'tv-busy':'wheel-active')+'"><div class="card"><div class="card__view"></div></div></body>',{runScripts:'outside-only'}),w=dom.window;
  const bundle=esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/quality.js')],bundle:true,write:false,format:'iife',globalName:'Quality'}).outputFiles[0].text;w.eval(bundle);
  let listener,reads=0,requests=0;const node=w.document.querySelector('.card');node.getBoundingClientRect=()=>{reads++;return {width:100,top:0,bottom:150,left:0};};
  const L={Listener:{follow:(key,fn)=>listener=fn},Storage:{get:(key,def)=>key==='jackett_url'?'http://parser.test':def},Reguest:function(){this.timeout=()=>{};this.silent=()=>requests++;}};w.Quality.default(L,null);
  const item={data:{title:'Movie',release_date:'2020-01-01'},render:()=>node};
  for(let i=0;i<25;i++)listener({type:'visible',items:[item]});
  assert.equal(reads,0);assert.equal(requests,0);
- w.document.body.classList.remove('pt-wheel-active');w.document.dispatchEvent(new w.Event('minimal:wheel-idle'));
+ w.document.body.classList.remove(mode==='tv'?'pt-tv-busy':'pt-wheel-active');w.document.dispatchEvent(new w.Event('minimal:'+mode+'-idle'));
  assert.equal(reads,1,'deferred items were not deduplicated');assert.equal(requests,1);dom.window.close();
 });
 test('series get their own type marker and quality from later-season releases',()=>{

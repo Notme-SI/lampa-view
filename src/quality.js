@@ -15,7 +15,7 @@ export default function quality(L,$){
   }
   function revisit(){
     for(const [node,item] of tracked)if(node.isConnected)deferred.add(item);
-    if(!timer && deferred.size)timer=setTimeout(flush,100);
+    if(!timer && deferred.size && !document.body.classList.contains('pt-tv-busy'))timer=setTimeout(flush,100);
   }
   const norm=s=>String(s || '').toLowerCase().replace(/ё/g,'е').replace(/[^a-zа-я0-9]/g,'');
   function label(value){
@@ -41,7 +41,7 @@ export default function quality(L,$){
     badge.textContent=q;badge.title='Качество доступного релиза';
   }
   function drain(){
-    while(!document.body.classList.contains('pt-wheel-active') && running<2 && queue.length){
+    while(!document.body.matches('.pt-wheel-active,.pt-tv-busy') && running<2 && queue.length){
       const job=queue.shift();if(!job.nodes.some(n=>n.isConnected)){pending.delete(job.key);continue;}
       running++;const request=new L.Reguest();request.timeout(4500);
       const finish=q=>{cache.set(job.key,{q,time:Date.now()});if(cache.size>400)cache.delete(cache.keys().next().value);pending.delete(job.key);job.nodes.forEach(n=>paint(n,q));running--;drain();revisit();};
@@ -86,7 +86,7 @@ export default function quality(L,$){
   // Postpone layout reads and new parser requests until pointer scrolling settles.
   function schedule(item){
     deferred.add(item);
-    if(!timer)timer=setTimeout(flush,0);
+    if(!timer && !document.body.classList.contains('pt-tv-busy'))timer=setTimeout(flush,0);
   }
   // Grids do not emit line events. Use the native card lifecycle so pagination,
   // remote navigation and touch all receive the same badges as home rows.
@@ -103,19 +103,21 @@ export default function quality(L,$){
   }
   function flush(){
     clearTimeout(timer);timer=null;
+    if(document.body.classList.contains('pt-tv-busy'))return;
     if(document.body.classList.contains('pt-wheel-active')){timer=setTimeout(flush,180);return;}
     const items=Array.from(deferred);deferred.clear();items.forEach(inspect);drain();
   }
   L.Listener.follow('line',event=>{
     if(!event || !['append','visible','toggle'].includes(event.type))return;
-    if(document.body.classList.contains('pt-wheel-active')){
+    if(document.body.matches('.pt-wheel-active,.pt-tv-busy')){
       (event.items || []).forEach(item=>deferred.add(item));
-      if(!timer)timer=setTimeout(flush,180);return;
+      if(!timer && !document.body.classList.contains('pt-tv-busy'))timer=setTimeout(flush,180);return;
     }
     (event.items || []).forEach(inspect);
     drain();
   });
   document.addEventListener('minimal:wheel-idle',()=>{revisit();flush();});
+  document.addEventListener('minimal:tv-idle',()=>{revisit();flush();});
   // Native visibility fires once, sometimes before a grid is attached. Keep
   // observing cards as pointer scrolling and pagination bring them into view.
   document.addEventListener('scroll',revisit,true);
