@@ -1,11 +1,11 @@
 const test=require('node:test'),assert=require('node:assert/strict'),path=require('path'),esbuild=require('esbuild'),{JSDOM}=require('jsdom'),native=require('./fixtures/native-lampa.cjs');
-function mod(name){const code=esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/'+name+'.js')],bundle:true,write:false,format:'cjs',platform:'node'}).outputFiles[0].text,module={exports:{}};new Function('module','exports',code)(module,module.exports);return module.exports;}
+function mod(name){const code=esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/'+name+'.js')],bundle:true,write:false,format:'cjs',platform:'node'}).outputFiles[0].text,module={exports:{}};new Function('module','exports','window',code)(module,module.exports,{});return module.exports;}
 test('catalogue sorter never attaches to the shared Main class used by full and person screens',()=>{
  function Main(){}const registered=[];
  const L={Storage:{get:(k,d)=>d,set(){}},SettingsApi:{addParam(){}},Api:{main(){}},Maker:{get:()=>Main},Utils:{createInstance:(Base,object)=>({use:()=>registered.push(object.component)})}};
  mod('collections').default(L,{});for(const component of ['full','actor','main','category'])L.Utils.createInstance(Main,{component,url:'tv'});assert.deepEqual(registered,['main','category']);
 });
-test('series aggregate credits preserve guest roles, directors, fallback and response timing on both catalogues',()=>{
+test('series aggregate credits add directors without replacing the main cast with guests on both catalogues',()=>{
  const {installTmdb}=mod('tmdb');
  for(const name of ['tmdb','cub'])for(const outcome of ['ok','empty','error']){
   const calls=[],pending={},sources={tmdb:{get:(route,p,ok,fail)=>{calls.push(route);pending.aggregate={ok,fail};}}};
@@ -14,8 +14,16 @@ test('series aggregate credits preserve guest roles, directors, fallback and res
   const original={movie:{id:9},persons:{cast:[{id:1,character:'Original'}],crew:[]}};pending.full(original);assert.equal(count,0);
   if(outcome==='ok')pending.aggregate.ok({cast:[{id:1,roles:[{character:'A'},{character:'B'}]},{id:2,roles:[{character:'Guest'}]}],crew:[{id:3,jobs:[{job:'Director'},{job:'Producer'}]}]});
   else if(outcome==='empty')pending.aggregate.ok({cast:[]});else pending.aggregate.fail();
-  assert.equal(count,1);if(outcome==='ok'){assert.equal(answer.persons.cast[0].character,'A / B');assert.equal(answer.persons.cast.length,2);assert.equal(answer.persons.crew.find(p=>p.job==='Director').id,3);}else assert.equal(answer.persons.cast[0].character,'Original');
+  assert.equal(count,1);if(outcome==='ok'){assert.equal(answer.persons.cast[0].character,'Original');assert.equal(answer.persons.cast.length,1);assert.equal(answer.persons.crew.find(p=>p.job==='Director').id,3);}else assert.equal(answer.persons.cast[0].character,'Original');
  }
+});
+
+test('cast roster is finite and deduplicated; a different title cannot replace its credits',()=>{
+ const {prepareDetail}=mod('detail'),{normalizeCredits}=mod('tmdb');
+ const actors=Array.from({length:300},(_,id)=>({id:id+1,name:'Actor '+id,character:'Role'})),crew=Array.from({length:200},(_,id)=>({id:id+400,name:'Director '+id,job:'Director',episode_count:id}));
+ const data={persons:{cast:[...actors,...actors],crew:[...crew,...crew]}};prepareDetail(data);
+ assert.equal(data.persons.cast.length,30);assert.equal(new Set(data.persons.cast.map(p=>p.id)).size,30);assert.equal(data.persons.cast[0].id,599);assert.equal(data.persons.cast[6].id,1);
+ assert.equal(normalizeCredits({id:12,cast:actors},{cast:actors.slice(0,1)},13),null);
 });
 test('wide cast rows fill past seven people and keep the remainder lazy',async()=>{
  const dom=new JSDOM('<body><div class="items-line"><div class="full-person"></div></div></body>',{runScripts:'outside-only'}),w=dom.window;

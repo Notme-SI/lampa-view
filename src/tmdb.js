@@ -16,24 +16,26 @@ export function installTmdb(L){
  source._minimalNormalized=true;
  if(source.get){const get=source.get;source.get=function(path,params,ok,fail,options){const clean=normalizeTmdb(path,params);return get.call(this,clean.path,clean.params,ok,fail,options);};}
  if(source.list){const list=source.list;source.list=function(params,ok,fail){const clean=normalizeTmdb(params.url,params);return list.call(this,{...clean.params,url:clean.path},ok,fail);};}
- // Series credits omit episode directors and guest cast. Fetch aggregate credits
- // alongside the native full request, preserving its response on API failure.
+ // Aggregate credits supplement missing directors, never replace the main cast
+ // with every guest performer across all seasons.
  ['tmdb','cub'].forEach(name=>{
   const catalogue=L.Api.sources[name];if(!catalogue || !catalogue.full)return;
   const full=catalogue.full;
   catalogue.full=function(params,ok,fail){
    if(params.method!=='tv' || (L.Storage && [false,'false',0,'0'].includes(L.Storage.get('lampa_view_enabled',true))))return full.apply(this,arguments);
    let credits,answer,ready=false,failed=false;
-   const finish=()=>{if(ready && answer && !failed){const data=answer;answer=null;if(credits && data.persons)data.persons=credits;ok(data);}};
+   const finish=()=>{if(ready && answer && !failed){const data=answer;answer=null;if(credits && data.persons)data.persons=normalizeCredits(credits,data.persons,params.id) || data.persons;ok(data);}};
    const request=full.call(this,params,data=>{answer=data;finish();},error=>{failed=true;if(fail)fail(error);});
-   source.get('tv/'+params.id+'/aggregate_credits',{},json=>{credits=normalizeCredits(json);ready=true;finish();},()=>{ready=true;finish();},{life:86400000*7});
+   source.get('tv/'+params.id+'/aggregate_credits',{},json=>{credits=json;ready=true;finish();},()=>{ready=true;finish();},{life:86400000*7});
    return request;
   };
  });
 }
-export function normalizeCredits(json){
- if(!json || !Array.isArray(json.cast) || !json.cast.length)return null;
- return {...json,cast:json.cast.map(person=>({...person,character:person.character || Array.from(new Set((person.roles || []).map(role=>role.character).filter(Boolean))).join(' / ')})),crew:(json.crew || []).reduce((all,person)=>all.concat(person.jobs && person.jobs.length?person.jobs.map(job=>({...person,job:job.job})):person),[])};
+export function normalizeCredits(json,original={},id){
+ if(!json || json.id!=null && id!=null && String(json.id)!==String(id))return null;
+ const cast=Array.isArray(original.cast) && original.cast.length?original.cast:(json.cast || []).slice().sort((a,b)=>(b.total_episode_count || 0)-(a.total_episode_count || 0)).map(person=>({...person,character:person.character || Array.from(new Set((person.roles || []).map(role=>role.character).filter(Boolean))).join(' / ')}));
+ const directors=(json.crew || []).reduce((all,person)=>all.concat((person.jobs || [person]).filter(job=>job.job==='Director').map(job=>({...person,job:'Director',episode_count:job.episode_count || person.total_episode_count || 0}))),[]);
+ return {...original,cast,crew:[...(original.crew || []),...directors]};
 }
 export function installFullGuard(L){
  if(!L.Api || !L.Api.full || L.Api._minimalFullGuard)return;

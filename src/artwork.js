@@ -1,4 +1,4 @@
-import posterPreview from './poster-preview.js';
+import posterPreview from './poster-cache.js';
 const LEVELS={medium:{poster:'w300',backdrop:'w780'},high:{poster:'w500',backdrop:'w1280'},maximum:{poster:'original',backdrop:'original'}};
 export function artworkQuality(L){
  const value=L.Storage && L.Storage.get?L.Storage.get('minimal_banner_quality','maximum'):'maximum';

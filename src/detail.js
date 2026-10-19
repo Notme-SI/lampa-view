@@ -49,8 +49,10 @@ function moveTechnicalDetails(L,card,right){
 }
 export function prepareDetail(data){
  delete data.metadata;
- const persons=data.persons || {},cast=persons.cast || [],directors=(persons.crew || []).filter(p=>p.job==='Director'),ids=new Set(directors.map(p=>String(p.id)));
- if(directors.length)data.persons={...persons,crew:(persons.crew || []).filter(p=>p.job!=='Director'),cast:[...directors.map(p=>{const actor=cast.find(a=>String(a.id)===String(p.id));return {...p,...actor,job:'Director',minimal_director:true,character:['Режиссёр',actor && actor.character].filter(Boolean).join(' · ')};}),...cast.filter(p=>!ids.has(String(p.id)))]};
+ const persons=data.persons || {};
+ const unique=list=>{const seen=new Set();return list.filter(person=>{if(!person || !(person.name || person.original_name))return false;const key=String(person.id || person.name || person.original_name);if(seen.has(key))return false;seen.add(key);return true;});};
+ const cast=unique(persons.cast || []).slice(0,24),directors=unique((persons.crew || []).filter(p=>p.job==='Director').sort((a,b)=>(b.episode_count || 0)-(a.episode_count || 0))).slice(0,6),ids=new Set(directors.map(p=>String(p.id || p.name)));
+ data.persons={...persons,crew:(persons.crew || []).filter(p=>p.job!=='Director'),cast:[...directors.map(p=>{const actor=cast.find(a=>String(a.id || a.name)===String(p.id || p.name));return {...p,...actor,job:'Director',minimal_director:true,character:['Режиссёр',actor && actor.character].filter(Boolean).join(' · ')};}),...cast.filter(p=>!ids.has(String(p.id || p.name)))]};
  const disabled=window.lampa_settings && window.lampa_settings.disable_features || {};
  if(!disabled.discuss)data.discuss={...(data.discuss || {}),result:((data.discuss || {}).result || []).slice()};
  if(!data.reactions || !Array.isArray(data.reactions.result))data.reactions={result:[]};

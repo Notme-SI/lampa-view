@@ -11,10 +11,10 @@ test('native cast returns all the way left despite failed spatial navigation, an
   Object.defineProperty(viewport,'offsetWidth',{value:900,configurable:true});Object.defineProperty(body,'offsetWidth',{get:()=>body.children.length*100,configurable:true});Object.defineProperty(body,'scrollWidth',{get:()=>body.children.length*100,configurable:true});viewport.getBoundingClientRect=()=>({left:0,right:900,top:0,bottom:200,width:900,height:200});body.getBoundingClientRect=()=>({left:row.scroll.position(),right:body.children.length*100+row.scroll.position(),top:0,bottom:200,width:body.children.length*100,height:200});
   const geometry=()=>row.items.forEach((item,index)=>{const el=item.render(true);el.getBoundingClientRect=()=>({left:index*100+row.scroll.position(),right:index*100+90+row.scroll.position(),top:0,bottom:180,width:90,height:180});});row.use({onAppend:geometry});geometry();
   row.toggle();w.Navigator.canmove=()=>false;w.Navigator.move=()=>false;
-  for(let i=1;i<64;i++){L.Controller.enabled().controller.right();assert.equal(row.active,i);}
-  assert.equal(row.items.length,64);for(let i=62;i>=0;i--){L.Controller.enabled().controller.left();assert.equal(row.active,i);}
+  for(let i=1;i<24;i++){L.Controller.enabled().controller.right();assert.equal(row.active,i);}
+  assert.equal(row.items.length,24);assert.equal(row.data.results.length,24,'Only the main cast belongs in the finite row');for(let i=22;i>=0;i--){L.Controller.enabled().controller.left();assert.equal(row.active,i);}
   assert.equal(row.last,row.items[0].render(true));assert.equal(root.querySelectorAll('.minimal-row-nav').length,1);
-  const [left,right]=root.querySelectorAll('.minimal-row-arrow');assert.equal(left.disabled,true);right.click();assert.equal(row.active,1);left.click();assert.equal(row.active,0);row.scroll.shift(3000);assert.equal(row.scroll.position(),-3000);right.click();assert.equal(row.active,31,'mouse arrow must continue from the scrolled viewport');assert.deepEqual(n.errors,[]);
+  const [left,right]=root.querySelectorAll('.minimal-row-arrow');assert.equal(left.disabled,true);right.click();assert.equal(row.active,1);left.click();assert.equal(row.active,0);row.scroll.shift(1000);assert.equal(row.scroll.position(),-1000);right.click();assert.equal(row.active,11,'mouse arrow must continue from the scrolled viewport');assert.deepEqual(n.errors,[]);
  }finally{n.close();}
 });
 test('movie release names merge as unknown voices without dropping stream variants, known studios infer language and filters apply',async()=>{
