@@ -15,13 +15,38 @@ test('cartoon rows and native More pages exclude anime while other catalogues an
   {id:5,title:'Known anime',minimal_anime:true},
   {id:6,title:'French cartoon',genre_ids:[16],original_language:'fr'},
  ]};
- const source={get(path,params,ok){ok(json);},list(params,ok){ok(json);}},L={Api:{sources:{tmdb:source}}};installTmdb(L);
+ const source={get(path,params,ok){ok(json);},list(params,ok){ok(json);}},cub={list(params,ok){ok(json);}},L={Api:{sources:{tmdb:source,cub}}};installTmdb(L);
  for(const row of cataloguePlan('cartoon')){
   const check=result=>{assert.deepEqual(result.results.map(c=>c.id),[1,6]);assert.equal(result.page,2);assert.equal(result.total_pages,5);assert.equal(result.total_results,90);};
-  source.get(row.tmdb,{page:2},check);source.list({url:row.tmdb,page:2},check);
+  if(row.cub)cub.list({url:row.cub,page:2},check);
+  else {source.get(row.tmdb,{page:2},check);source.list({url:row.tmdb,page:2},check);}
  }
  source.list({url:'discover/tv?with_genres=16&with_original_language=ja',page:2},result=>assert.equal(result,json));
  assert.equal(json.results.length,6,'Do not mutate shared TMDB cache entries');
+});
+
+test('movies and series exclude animation on every CUB and TMDB row and subsequent More pages, without filtering anime or other lists',()=>{
+ const {cataloguePlan,default:catalogue}=mod('catalogue'),{installTmdb}=mod('tmdb');
+ const json={page:3,total_pages:7,total_results:140,results:[{id:1,name:'Series',genre_ids:[18]},{id:2,name:'Cartoon',genre_ids:[16,35]},{id:3,name:'Anime',minimal_anime:true},{id:4,name:'Cartoon genre objects',genres:[{id:16}]},{id:5,name:'Unknown genres'}]};
+ const tmdb={get(path,p,ok){ok(json);},list(p,ok){ok(json);}},cub={list(p,ok){ok(json);}},L={Storage:{get:(k,d)=>d},Api:{sources:{tmdb,cub}}};installTmdb(L);installTmdb(L);
+ const check=result=>{assert.deepEqual(result.results.map(c=>c.id),[1,5]);assert.equal(result.page,3);assert.equal(result.total_pages,7);assert.equal(result.total_results,140);};
+ for(const row of [...cataloguePlan('tv'),...cataloguePlan('movie')]){
+  assert.equal(new URLSearchParams(row.cub.slice(1)).get('without_genres'),'16');assert.equal(new URLSearchParams(row.tmdb.split('?')[1]).get('without_genres'),'16');
+  cub.list({url:row.cub,page:3},check);tmdb.get(row.tmdb,{page:3},check);tmdb.list({url:row.tmdb,page:3},check);
+ }
+ for(const kind of ['tv','movie'])for(const source of ['cub','tmdb']){let answer;catalogue(L,{}, {url:kind,source},[],rows=>answer=rows);assert.equal(answer.length,10);assert.ok(answer.every(row=>row.results.map(c=>c.id).join(',')==='1,5'));}
+ for(const row of cataloguePlan('anime'))cub.list({url:row.cub,page:3},result=>assert.equal(result,json));
+ cub.list({url:'?cat=tv&sort=top',page:3},result=>assert.equal(result,json));assert.equal(json.results.length,5);
+});
+
+test('cartoon watching row uses live CUB rankings for both formats, supports hidden rows and survives missing CUB',()=>{
+ const {cataloguePlan,default:catalogue}=mod('catalogue'),watch=cataloguePlan('cartoon')[0];assert.equal(watch.title,'Сейчас смотрят');
+ const calls=[],film={id:1,title:'Movie',media_type:'movie',genre_ids:[16],original_language:'en'},series={id:2,name:'Series',media_type:'tv',genre_ids:[16],original_language:'fr'},anime={id:3,name:'Anime',genre_ids:[16],original_language:'ja'};
+ const L={Storage:{get:(k,d)=>d},Api:{sources:{cub:{list(p,ok){calls.push(p);ok({page:1,total_pages:4,results:[film,series,anime]});}},tmdb:{get(path,p,ok){ok({results:[film]});}}}}};
+ for(const source of ['cub','tmdb']){let answer;catalogue(L,{}, {url:'cartoon',source},[],rows=>answer=rows);assert.equal(answer.length,7);assert.equal(answer[0].url,watch.cub);assert.equal(answer[0].source,'cub');assert.equal(answer[0].total_pages,4);assert.deepEqual(answer[0].results,[film,series]);}
+ assert.equal(calls.length,2);assert.equal(new URLSearchParams(calls[0].url.slice(1)).get('sort'),'now_playing');assert.equal(new URLSearchParams(calls[0].url.slice(1)).get('genre'),'16');assert.equal(new URLSearchParams(calls[0].url.slice(1)).has('cat'),false);
+ let hidden;catalogue(L,{}, {url:'cartoon'},[watch.cub],rows=>hidden=rows);assert.equal(calls.length,2);assert.equal(hidden[0].minimal_hidden,true);
+ delete L.Api.sources.cub;let fallback;catalogue(L,{}, {url:'cartoon'},[],rows=>fallback=rows);assert.equal(fallback.length,6);assert.ok(fallback.every(row=>row.title!=='Сейчас смотрят'));
 });
 test('collection menu keeps all five sections before their first visit, without fetching or inventing rows',()=>{
  const names={'main:':[{id:'A',title:'A'}],'search:':[{id:'B'}],'category_full:':[{id:'C'}],'category:tv':[{id:'D',title:'D'}],'category:anime':[{id:'E',title:'E'}]};let definition,select,writes=0;
