@@ -44,6 +44,7 @@
         var m, numberSpec = '(\\d{1,3}(?:\\s*-\\s*\\d{1,3})?)';
         var patterns = [
             /(?:^|[^a-z0-9])s(\d{1,2})(?:\s*-\s*s?(\d{1,2}))?(?=e\d|[^a-z0-9]|$)/,
+            /(?:^|[^a-zа-я0-9])(\d{1,2})\s*[xх×]\s*\d{2,3}(?=$|[^0-9])/,
             new RegExp(numberSpec + '\\s*(?:-?[йяе]\\s*)?сезон(?:ы|ов|а)?'),
             new RegExp('(?:сезон(?:ы|ов|а)?|seasons?)\\s*[:#-]?\\s*' + numberSpec),
             /(?:^|[^a-zа-я])(?:тв|tv)\s*-\s*(\d{1,2})(?:\s*-\s*(\d{1,2}))?/
@@ -64,6 +65,8 @@
         // Episode identifiers are parsed independently from season identifiers.
         m = s.match(/s\d{1,2}e(\d{1,4})(?:\s*-\s*(?:s\d{1,2})?e?(\d{1,4}))?/);
         if (m) result.episodes = parseNumbers(m[1] + (m[2] ? '-' + m[2] : ''), 9999);
+        var xRange = s.match(/(?:^|[^a-zа-я0-9])(\d{1,2})\s*[xх×]\s*(\d{2,3})(?:\s*-\s*(?:(\d{1,2})\s*[xх×]\s*)?(\d{1,3}))?(?=$|[^a-zа-я0-9])/);
+        if (!result.episodes.length && xRange) result.episodes = parseNumbers(xRange[2] + (xRange[4] ? '-' + xRange[4] : ''), 9999);
         // A count "8 из 24" is not a file list. An explicit "1-8" is a declared range.
         var spec = '(\\d{1,4}(?:(?:\\s*-\\s*|\\s*[,;+]\\s*)\\d{1,4})*)';
         var outOf = s.match(new RegExp(spec + '\\s*(?:сери(?:я|и|й)|эпизод(?:ы|ов)?|эп\\.?|episodes?|eps?\\.?)?\\s*(?:из|of)\\s*(\\d{1,4})(?=$|[^0-9])'));
@@ -91,6 +94,7 @@
         // Never reuse the first season's range as a per-season range for a bundle.
         m = s.match(/s(\d{1,2})e\d{1,4}\s*-\s*s(\d{1,2})e\d{1,4}/);
         if (m && m[1] !== m[2]) { result.seasons = parseNumbers(m[1] + '-' + m[2], 99); result.episodes = []; }
+        if (xRange && xRange[3] && +xRange[1] !== +xRange[3]) { result.seasons = parseNumbers(xRange[1] + '-' + xRange[3], 99); result.episodes = []; }
         result.bundle = result.seasons.length > 1;
         return result;
     }
@@ -229,14 +233,20 @@
     function technical(row) {
         var info = row.info || {}, probe = Array.isArray(row.ffprobe) ? row.ffprobe : row.ffprobe && row.ffprobe.streams || info.ffprobe || [];
         if (!Array.isArray(probe)) probe = probe.streams || [];
-        var raw = [row.Title,info.quality,info.resolution,info.videotype].concat(info.types || []).join(' '), video=[],audio=[],languages=[],subtitles=[],channels=[],hdr=[],dimensions='';
+        var general=row.general || {};
+        var raw = [row.Title,info.quality,info.resolution,info.videotype,general.resolution,row.resolution,row.Resolution].concat(info.types || []).join(' '), video=[],audio=[],languages=[],subtitles=[],channels=[],hdr=[],dimensions='';
         function language(v) { var s=text(v).trim().toUpperCase(), codes={RUS:'RU',RUSSIAN:'RU',РУССКИЙ:'RU',ENG:'EN',ENGLISH:'EN',UKR:'UK',UKRAINIAN:'UK',JPN:'JA',JAPANESE:'JA',JAP:'JA',CHI:'ZH',ZHO:'ZH',KOR:'KO',GER:'DE',DEU:'DE',FRE:'FR',FRA:'FR',SPA:'ES'};return codes[s] || (/^[A-Z]{2,3}$/.test(s) && s!=='UND'?s:''); }
         function codec(v,type) { var s=text(v).toUpperCase().replace(/[ ._-]/g,'');var aliases=type==='video'?{H264:'H.264',X264:'H.264',AVC:'H.264',AVC1:'H.264',H265:'H.265',X265:'H.265',HEVC:'H.265',AV1:'AV1',MPEG4:'MPEG-4',XVID:'MPEG-4',DIVX:'MPEG-4',MPEG2VIDEO:'MPEG-2',MPEG2:'MPEG-2',VP9:'VP9'}:{AC3:'AC-3',DD:'AC-3',EAC3:'E-AC-3',DDP:'E-AC-3',DTS:'DTS',DTSHDMA:'DTS-HD MA',TRUEHD:'TrueHD',AAC:'AAC',FLAC:'FLAC',MP3:'MP3',OPUS:'Opus'};return aliases[s] || ''; }
         function resolution(v) {var s=text(v).trim().toUpperCase(),r={SD:'SD',HD:'720p',FHD:'1080p','FULL HD':'1080p','4K':'2160p',UHD:'2160p','8K':'4320p'};if(r[s])return r[s];var m=s.match(/^(480|576|720|1080|1440|2160|4320)[PI]?$/);return m?m[1]+'p':'';}
         function fromDimensions(w,h) {return w>=7600 || h>=4200?'4320p':w>=3800 || h>=2100?'2160p':w>=2500 || h>=1400?'1440p':w>=1900 || h>=1000?'1080p':w>=1200 || h>=700?'720p':'SD';}
-        var quality='',source='',firstVideo=probe.filter(function(t){return t.codec_type==='video' && t.width && t.height;})[0];
+        var quality='',source='',firstVideo=probe.filter(function(t){return t.codec_type==='video' && t.width>0 && t.height>0 && !(t.disposition && t.disposition.attached_pic);})[0];
+        if(!firstVideo){
+            [info.video,info,general,row].some(function(v){
+                if(v && +v.width>0 && +v.height>0){firstVideo={width:+v.width,height:+v.height};return true;}return false;
+            });
+        }
         if(firstVideo){dimensions=firstVideo.width+'×'+firstVideo.height;quality=fromDimensions(+firstVideo.width,+firstVideo.height);}
-        if(!quality)quality=resolution(info.quality) || resolution((row.general || {}).resolution) || resolution(info.resolution);
+        if(!quality)quality=resolution(info.quality) || resolution(general.resolution) || resolution(info.resolution) || resolution(row.resolution) || resolution(row.Resolution);
         if(!quality){var dim=raw.match(/\b(\d{3,4})\s*[x×]\s*(\d{3,4})\b/i),q=raw.match(/\b(4320|2160|1440|1080|720|576|480)[pi]\b|\b(8K|4K|UHD|FHD|HD|SD)\b/i);if(dim){dimensions=dim[1]+'×'+dim[2];quality=fromDimensions(+dim[1],+dim[2]);}else if(q)quality=resolution(q[1] || q[2]);}
         var sm=raw.match(/\b(BD[- .]?Remux|Blu[- .]?Ray|BDRip|WEB[- .]?DLRip|WEB[- .]?DL|WEBRip|HDTVRip|HDTV|DVDRip|DVD)\b/i);if(sm){var sk=sm[1].toUpperCase().replace(/[ .-]/g,'');source={BDREMUX:'BDRemux',BLURAY:'Blu-ray',BDRIP:'BDRip',WEBDLRIP:'WEB-DLRip',WEBDL:'WEB-DL',WEBRIP:'WEBRip',HDTVRIP:'HDTVRip',HDTV:'HDTV',DVDRIP:'DVDRip',DVD:'DVD'}[sk];}
         probe.forEach(function(track){var lang=language((track.tags || {}).language);if(track.codec_type==='video'){if(codec(track.codec_name,'video'))video.push(codec(track.codec_name,'video'));}else if(track.codec_type==='audio'){if(codec(track.codec_name,'audio'))audio.push(codec(track.codec_name,'audio'));if(lang)languages.push(lang);if(+track.channels===8)channels.push('7.1');else if(+track.channels===6)channels.push('5.1');else if(+track.channels===2)channels.push('2.0');else if(+track.channels===1)channels.push('1.0');}else if(track.codec_type==='subtitle' && lang)subtitles.push(lang);});
@@ -496,7 +506,7 @@
             try {
                 var content = $('<div class="tc-row"></div>'), head = $('<div class="tc-head"></div>').appendTo(content);
                 var summary = $('<div class="tc-summary"></div>').appendTo(head);
-                $('<strong class="tc-season"></strong>').text(m.seasonLabel ? (m.parsed.bundle ? 'Сезоны '+C.ranges(m.parsed.seasons) : m.season.number!==null ? 'Сезон '+m.season.number : m.parsed.seasons.length ? 'Сезон '+C.ranges(m.parsed.seasons) : 'Сезон не указан') : m.technical.quality || 'Качество не указано').appendTo(summary);
+                $('<strong class="tc-season"></strong>').text(m.seasonLabel ? (m.parsed.bundle ? 'Сезоны '+C.ranges(m.parsed.seasons) : m.season.number!==null ? 'Сезон '+m.season.number : m.parsed.seasons.length ? 'Сезон '+C.ranges(m.parsed.seasons) : 'Сезон не указан') : m.technical.quality || 'Разрешение не указано').appendTo(summary);
                 if (m.episodeLabel) $('<span class="tc-episodes"></span>').text(m.episodeLabel.replace(/ · заявлено/g, '')).appendTo(summary);
                 if (m.seasonLabel && m.technical.quality) pill(summary,m.technical.quality,'quality');
                 var right = $('<div class="tc-right"></div>').appendTo(head);

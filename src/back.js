@@ -22,8 +22,8 @@ export default function installBack(L,$,enabled){
   }
   const stack=L.Activity && L.Activity.all && L.Activity.all();
   const active=L.Activity && L.Activity.active && L.Activity.active();
-  const visible=enabled() && (stack?stack.length>1:active && active.component!=='main');
-  button.toggleClass('pt-back-visible',!!visible).attr('aria-hidden',String(!visible));
+  const visible=enabled() && active && active.component!=='main' && (stack?stack.length>1:true);
+  button.toggleClass('pt-back-visible',!!visible).toggleClass('selector',!!visible).attr({'aria-hidden':String(!visible),tabindex:visible?'0':'-1'});
   overlays();
  }
  if(L.Listener && L.Listener.follow)L.Listener.follow('activity',event=>{if(['start','destroy'].includes(event.type))update();});

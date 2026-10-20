@@ -10,7 +10,7 @@ export function localizedTitle(card,language='ru'){
 }
 export function isAnime(card){
  if(card.minimal_anime || card.source==='minimal_shiki' || card.shikimori_id || card.mal_id)return true;
- const animation=(card.genre_ids || card.genres || []).some(g=>Number(g.id || g)===16);
+ const animation=[...(card.genre_ids || []),...(card.genres || [])].some(g=>Number(g.id || g)===16);
  const keywords=card.keywords && (card.keywords.results || card.keywords.keywords) || [];
  return animation && (['ja','zh'].includes(card.original_language) || (card.origin_country || []).includes('JP') || keywords.some(k=>k.id===210024 || k.name==='anime'));
 }

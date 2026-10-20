@@ -22,7 +22,7 @@ test('cast roster is finite and deduplicated; a different title cannot replace i
  const {prepareDetail}=mod('detail'),{normalizeCredits}=mod('tmdb');
  const actors=Array.from({length:300},(_,id)=>({id:id+1,name:'Actor '+id,character:'Role'})),crew=Array.from({length:200},(_,id)=>({id:id+400,name:'Director '+id,job:'Director',episode_count:id}));
  const data={persons:{cast:[...actors,...actors],crew:[...crew,...crew]}};prepareDetail(data);
- assert.equal(data.persons.cast.length,30);assert.equal(new Set(data.persons.cast.map(p=>p.id)).size,30);assert.equal(data.persons.cast[0].id,599);assert.equal(data.persons.cast[6].id,1);
+ assert.equal(data.persons.cast.length,25);assert.equal(new Set(data.persons.cast.map(p=>p.id)).size,25);assert.equal(data.persons.cast[0].id,599);assert.equal(data.persons.cast[5].id,1);
  assert.equal(normalizeCredits({id:12,cast:actors},{cast:actors.slice(0,1)},13),null);
 });
 test('wide cast rows fill past seven people and keep the remainder lazy',async()=>{

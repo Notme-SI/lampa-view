@@ -8,7 +8,7 @@ export default function shikimoriPosters(L,shiki){
   timer=null;const jobs=[];
   while(queue.length && jobs.length<12){const job=queue.shift();job.listeners=job.listeners.filter(listener=>listener.alive());if(job.listeners.length)jobs.push(job);else pending.delete(job.id);}
   if(!jobs.length)return;running=true;lastStart=Date.now();
-  function finish(rows){const byId=new Map((rows || []).map(row=>{const p=row.poster || {};return [String(row.id),{urls:Array.from(new Set([p.originalUrl,p.mainUrl,p.previewUrl].filter(Boolean))),variants:{maximum:p.originalUrl || p.mainUrl || p.previewUrl,high:p.mainUrl || p.originalUrl || p.previewUrl,medium:p.previewUrl || p.mainUrl || p.originalUrl}}];}));
+  function finish(rows){const byId=new Map((rows || []).map(row=>{const p=row.poster || {};return [String(row.id),{urls:Array.from(new Set([p.originalUrl,p.mainUrl,p.previewUrl].filter(Boolean))),variants:{high:p.originalUrl || p.mainUrl || p.previewUrl,medium:p.mainUrl || p.originalUrl || p.previewUrl}}];}));
    jobs.forEach(job=>{const entry=byId.get(job.id) || {urls:[]};cache.set(job.id,{...entry,time:Date.now()});if(cache.size>200)cache.delete(cache.keys().next().value);pending.delete(job.id);job.listeners.forEach(listener=>{if(listener.alive())listener.paint(entry.urls,entry.variants);});});running=false;schedule();}
   shiki.posters(jobs.map(job=>job.id),finish,()=>finish([]));
  }
@@ -25,7 +25,7 @@ export default function shikimoriPosters(L,shiki){
   function clear(){clearTimeout(item.img_timer);clearTimeout(item.img_timer_next);}
   function choose(paint=true){
    if(!variants || !variants[artworkQuality(L)])return false;
-   if(paint)clear();data.img=variants[artworkQuality(L)];alternatives=knownUrls.filter(url=>url!==data.img);if(paint)image.src=data.img;return true;
+   if(paint)clear();data.img=variants.maximum?(artworkQuality(L)==='high'?variants.maximum:variants.high || variants.medium):variants[artworkQuality(L)];alternatives=knownUrls.filter(url=>url!==data.img);if(paint)image.src=data.img;return true;
   }
   function paint(urls,sources){if(!alive())return;loading=false;clear();variants=sources;knownUrls=urls.slice();if(choose())return;alternatives=urls.slice();data.img=alternatives.shift() || EMPTY;if(data.img===EMPTY)image.onerror=()=>{};image.src=data.img;}
   function repair(){clear();if(attempted || !alive())return;attempted=true;loading=true;request(id,{alive,paint});}

@@ -12,14 +12,14 @@ test('posters appear at final quality, share cached originals and cancel stale q
    c.visible();assert.match(c.img.src,/^data:image\/gif/,'No blurry intermediate poster');
   }
   await wait(50);assert.equal(loaders.filter(l=>l.url).length,3,'Original downloads stay bounded');
-  assert.equal(loaders[0].fetchPriority,'low');assert.match(loaders[0].url,/\/original\//);
-  loaders[0].onload();assert.match(cards[0].img.src,/\/original\//);
+  assert.equal(loaders[0].fetchPriority,'low');assert.match(loaders[0].url,/\/w780\//);
+  loaders[0].onload();assert.match(cards[0].img.src,/\/w780\//);
   loaders[1].onerror();assert.match(cards[1].img.src,/img_broken/,'Failed original has a stable fallback');
   await wait(50);assert.equal(loaders.filter(l=>l.url).length,4);
   const repeated=L.Utils.createInstance(Card,{id:8,title:'Repeat',poster_path:'/poster0.jpg',source:'tmdb'});repeated.create();w.document.body.appendChild(repeated.render(true));repeated.visible();cards.push(repeated);
-  await wait(30);assert.equal(loaders.length,4,'Repeated posters reuse the decoded cache');assert.match(repeated.img.src,/\/original\//);
+  await wait(30);assert.equal(loaders.length,4,'Repeated posters reuse the decoded cache');assert.match(repeated.img.src,/\/w780\//);
   const pending=loaders[2].onload;
-  L.Storage.set('minimal_banner_quality','high');
+  L.Storage.set('minimal_banner_quality','medium');
   L.SettingsApi.getParam('minimal_settings_appearance').find(p=>p.param.name==='minimal_banner_quality').onChange();
   pending();assert.match(cards[2].img.src,/\/w500\//,'An old request must not overwrite a new quality setting');
   cards.forEach(c=>c.destroy());assert.deepEqual(n.errors,[]);

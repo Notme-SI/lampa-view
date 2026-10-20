@@ -10,14 +10,14 @@ test('comment arrows page real Lampa Scroll, respect bounds, accept touch and cl
   viewport.getBoundingClientRect=()=>({left:0,right:width,width,height:200});body.getBoundingClientRect=()=>({left:scroll.position(),right:1600+scroll.position(),width:1600,height:180});
   const cards=Array.from({length:5},(_,i)=>{const card=w.document.createElement('div');card.className='full-review selector';card.textContent='Комментарий '+i;card.getBoundingClientRect=()=>({left:i*320+scroll.position(),right:i*320+300+scroll.position(),width:300,height:180});body.appendChild(card);return card;});
   const modules=[],item={active:0,items:cards.map(card=>({render:()=>card})),data:{results:cards},use:m=>modules.push(m),emit:event=>modules.forEach(m=>{const callback=m['on'+event[0].toUpperCase()+event.slice(1)];if(callback)callback();})};scroll.onScroll=()=>item.emit('scroll');
-  w.Comments.default(item,row);w.Comments.default(item,row);const [previous,next]=row.querySelectorAll('button');assert.equal(row.querySelectorAll('.minimal-comments-nav').length,1);assert.equal(previous.disabled,true);assert.equal(next.disabled,false);
+  w.Comments.default(item,row);w.Comments.default(item,row);const [previous,next]=row.querySelectorAll('button');assert.equal(row.querySelectorAll('.minimal-comments-nav').length,1);assert.equal(previous.disabled,false);assert.equal(next.disabled,false);
   next.click();assert.equal(scroll.position(),-320);assert.equal(item.active,1);next.click();assert.equal(scroll.position(),-640,'rapid clicks must advance again');previous.click();assert.equal(scroll.position(),-320);
-  for(let n=0;n<10;n++)next.dispatchEvent(new w.MouseEvent('click',{bubbles:true}));assert.equal(scroll.position(),-1000);assert.equal(next.disabled,true);assert.equal(previous.disabled,false);
-  while(scroll.position()<0)previous.click();assert.equal(scroll.position(),0);assert.equal(previous.disabled,true);
+  for(let n=0;n<10;n++)next.dispatchEvent(new w.MouseEvent('click',{bubbles:true}));assert.equal(scroll.position(),-1000);assert.equal(next.disabled,false);assert.equal(previous.disabled,false);
+  while(scroll.position()<0)previous.click();assert.equal(scroll.position(),0);assert.equal(previous.disabled,false);
   function touch(type,x){const event=new w.Event(type,{bubbles:true});Object.defineProperty(event,'touches',{value:[{clientX:x,clientY:10}]});Object.defineProperty(event,'changedTouches',{value:[{clientX:x,clientY:10}]});viewport.dispatchEvent(event);}
   touch('touchstart',500);touch('touchmove',180);touch('touchend',180);assert.equal(scroll.position(),-320);
   cards[1].dispatchEvent(new w.WheelEvent('wheel',{bubbles:true,cancelable:true,shiftKey:true,deltaY:100}));assert.equal(scroll.position(),-420);assert.equal(scroll.params().scroll_by_item,true);
-  width=2000;w.dispatchEvent(new w.Event('resize'));await new Promise(resolve=>setTimeout(resolve,30));scroll.reset();item.emit('visible');await new Promise(resolve=>setTimeout(resolve,30));assert.equal(row.querySelector('.minimal-comments-nav').hidden,true,'no arrows when every card fits');
+  width=2000;w.dispatchEvent(new w.Event('resize'));await new Promise(resolve=>setTimeout(resolve,30));scroll.reset();item.emit('visible');await new Promise(resolve=>setTimeout(resolve,30));assert.equal(row.querySelector('.minimal-comments-nav').hidden,false,'Arrows remain available even when every card fits');
   item.emit('destroy');const position=scroll.position();next.dispatchEvent(new w.MouseEvent('click',{bubbles:true}));assert.equal(scroll.position(),position);assert.deepEqual(r.errors,[]);
  }finally{r.close();}
 });

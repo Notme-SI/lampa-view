@@ -50,9 +50,16 @@ function moveTechnicalDetails(L,card,right){
 export function prepareDetail(data){
  delete data.metadata;
  const persons=data.persons || {};
- const unique=list=>{const seen=new Set();return list.filter(person=>{if(!person || !(person.name || person.original_name))return false;const key=String(person.id || person.name || person.original_name);if(seen.has(key))return false;seen.add(key);return true;});};
- const cast=unique(persons.cast || []).slice(0,24),directors=unique((persons.crew || []).filter(p=>p.job==='Director').sort((a,b)=>(b.episode_count || 0)-(a.episode_count || 0))).slice(0,6),ids=new Set(directors.map(p=>String(p.id || p.name)));
- data.persons={...persons,crew:(persons.crew || []).filter(p=>p.job!=='Director'),cast:[...directors.map(p=>{const actor=cast.find(a=>String(a.id || a.name)===String(p.id || p.name));return {...p,...actor,job:'Director',minimal_director:true,character:['Режиссёр',actor && actor.character].filter(Boolean).join(' · ')};}),...cast.filter(p=>!ids.has(String(p.id || p.name)))]};
+ const unique=list=>{const seen=new Map();list.forEach(person=>{if(!person || !(person.name || person.original_name))return;const key=String(person.id || person.name || person.original_name),old=seen.get(key);if(old){for(const field of ['popularity','episode_count','total_episode_count'])old[field]=Math.max(Number(old[field]) || 0,Number(person[field]) || 0);if(!old.profile_path && person.profile_path)old.profile_path=person.profile_path;}else seen.set(key,{...person});});return Array.from(seen.values());};
+ const number=value=>Number.isFinite(Number(value))?Number(value):0;
+ const cast=unique(persons.cast || []).map((person,index)=>({person,billing:person.order!=null && number(person.order)>=0?number(person.order):index,index})).sort((a,b)=>{
+  // Preserve the principal billing before considering popularity. A famous
+  // cameo must not displace the leads; use native credit order when absent.
+  const tier=p=>p.billing<6?0:p.billing<20?1:2;
+  return tier(a)-tier(b) || (tier(a)===0?a.billing-b.billing:0) || number(b.person.popularity)-number(a.person.popularity) || number(b.person.total_episode_count || b.person.episode_count)-number(a.person.total_episode_count || a.person.episode_count) || a.billing-b.billing || a.index-b.index;
+ }).map(entry=>entry.person);
+ const directors=unique((persons.crew || []).filter(p=>p.job==='Director')).sort((a,b)=>number(b.popularity)-number(a.popularity) || number(b.episode_count || b.total_episode_count)-number(a.episode_count || a.total_episode_count)).slice(0,5),ids=new Set(directors.map(p=>String(p.id || p.name)));
+ data.persons={...persons,crew:(persons.crew || []).filter(p=>p.job!=='Director'),cast:[...directors.map(p=>{const actor=cast.find(a=>String(a.id || a.name)===String(p.id || p.name));return {...p,...actor,job:'Director',minimal_director:true,character:['Режиссёр',actor && actor.character].filter(Boolean).join(' · ')};}),...cast.filter(p=>!ids.has(String(p.id || p.name))).slice(0,20)]};
  const disabled=window.lampa_settings && window.lampa_settings.disable_features || {};
  if(!disabled.discuss)data.discuss={...(data.discuss || {}),result:((data.discuss || {}).result || []).slice()};
  if(!data.reactions || !Array.isArray(data.reactions.result))data.reactions={result:[]};

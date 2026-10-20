@@ -1,16 +1,16 @@
 const test=require('node:test'),assert=require('node:assert/strict'),native=require('./fixtures/native-lampa.cjs');
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 
-test('built plugin migrates image quality and applies all three levels to posters and backdrops without changing native preferences',async()=>{
+test('built plugin migrates image quality and applies both quality levels to posters and backdrops without changing native preferences',async()=>{
  const n=await native({built:true,initialStorage:{minimal_banner_quality:'auto',poster_size:'w300'}}),{w,L}=n;
  try{
   const setting=L.SettingsApi.getParam('minimal_settings_appearance').find(p=>p.param.name==='minimal_banner_quality');
-  assert.equal(setting.param.default,'maximum');assert.deepEqual(Object.values(setting.param.values),['Среднее','Высокое','Максимальное']);
-  assert.equal(L.Storage.get('minimal_banner_quality'),'maximum');
-  assert.match(L.Api.sources.tmdb.img('/poster.jpg'),/\/original\//);assert.match(L.Api.img('/poster.jpg','w300'),/\/original\//);
-  assert.match(L.Api.sources.tmdb.img('/backdrop.jpg','w1280'),/\/original\//);assert.match(L.Api.img('/avatar.jpg','w92'),/\/w92\//);
+  assert.equal(setting.param.default,'high');assert.deepEqual(Object.values(setting.param.values),['Среднее','Высокое']);
+  assert.equal(L.Storage.get('minimal_banner_quality'),'high');
+  assert.match(L.Api.sources.tmdb.img('/poster.jpg'),/\/w780\//);assert.match(L.Api.img('/poster.jpg','w300'),/\/w780\//);
+  assert.match(L.Api.sources.tmdb.img('/backdrop.jpg','w1280'),/\/w1280\//);assert.match(L.Api.img('/avatar.jpg','w92'),/\/w92\//);
   const root=w.document.createElement('div');root.innerHTML='<img class="card__img" src="https://image.tmdb.org/t/p/original/poster.jpg"><img class="full-start__background" src="https://image.tmdb.org/t/p/original/backdrop.jpg"><img class="card__img" src="https://shikimori.io/poster.jpg">';w.document.body.appendChild(root);
-  for(const [quality,poster,backdrop] of [['medium','w300','w780'],['high','w500','w1280'],['maximum','original','original']]){
+  for(const [quality,poster,backdrop] of [['medium','w500','w1280'],['high','w780','w1280']]){
    L.Storage.set('minimal_banner_quality',quality);setting.onChange();
    assert.ok(L.Api.img('/poster.jpg').includes('/'+poster+'/'));assert.ok(L.Api.sources.tmdb.img('/backdrop.jpg','w780').includes('/'+backdrop+'/'));
    assert.ok(root.children[0].src.includes('/'+poster+'/'));assert.ok(root.children[1].src.includes('/'+backdrop+'/'));assert.equal(root.children[2].src,'https://shikimori.io/poster.jpg');
@@ -29,9 +29,8 @@ test('Shikimori poster variants follow the same quality setting while offscreen 
   const card=L.Utils.createInstance(Card,data);card.create();w.document.body.appendChild(card.render(true));
   assert.ok(!card.img.src.includes('images.test'),'offscreen card fetched its cover on creation');
   L.Storage.set('minimal_banner_quality','medium');setting.onChange();assert.ok(!card.img.src.includes('images.test'));
-  card.visible();assert.equal(card.img.src,sources.medium);
-  L.Storage.set('minimal_banner_quality','high');setting.onChange();assert.equal(card.img.src,sources.high);
-  L.Storage.set('minimal_banner_quality','maximum');setting.onChange();assert.equal(card.img.src,sources.maximum);
+  card.visible();assert.equal(card.img.src,sources.high);
+  L.Storage.set('minimal_banner_quality','high');setting.onChange();assert.equal(card.img.src,sources.maximum);
   card.destroy();assert.equal(card.img._minimalArtwork,undefined);assert.deepEqual(n.errors,[]);
  }finally{n.close();}
 });

@@ -66,3 +66,26 @@ test('custom quality owns one visible slot before and after native rendering',()
  }
  dom.window.close();
 });
+
+test('anime films and series receive one anime badge without labelling ordinary animated films',()=>{
+ const dom=new JSDOM('<body></body>',{runScripts:'outside-only'}),w=dom.window;
+ w.eval(esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/quality.js')],bundle:true,write:false,format:'iife',globalName:'Quality'}).outputFiles[0].text);
+ let listener,requests=0;
+ w.Quality.default({Listener:{follow:(key,fn)=>listener=fn},Storage:{get:(key,def)=>def},Reguest:function(){requests++;}},null);
+ const cases=[
+  [{title:'Anime movie',media_type:'movie',genre_ids:[16],original_language:'ja'},'Аниме'],
+  [{name:'Anime series',media_type:'tv',genre_ids:[16],original_language:'ja'},'Аниме'],
+  [{title:'Shikimori movie',media_type:'movie',source:'minimal_shiki'},'Аниме'],
+  [{title:'Animated movie',media_type:'movie',genre_ids:[16],original_language:'en'},null],
+  [{title:'Live action movie',media_type:'movie',original_language:'ja'},null],
+  [{name:'Live action series',media_type:'tv'},'Сериал']
+ ];
+ try{
+  for(const [data,expected] of cases){
+   const node=w.document.createElement('div');node.className='card';node.innerHTML='<div class="card__view"></div>';node.getBoundingClientRect=()=>({width:100,top:0,bottom:150,left:0});w.document.body.appendChild(node);
+   const item={data,render:()=>node};listener({type:'append',items:[item]});listener({type:'visible',items:[item]});
+   const badges=node.querySelectorAll('.pt-kind');assert.equal(badges.length,expected?1:0,data.title || data.name);if(expected)assert.equal(badges[0].textContent,expected);
+  }
+  assert.equal(requests,0,'Type badges need no extra metadata requests');
+ }finally{w.close();}
+});

@@ -1,3 +1,12 @@
+import {isAnime} from './metadata.js';
+
+// The same scoped exclusion must survive More and subsequent native pages.
+export function cartoonResults(path,json){
+ const query=String(path || '').split('?')[1] || '';
+ if(!/^discover\/(movie|tv)\?/.test(path) || !/(^|&)with_genres=16(&|$)/.test(query)
+  || !/(^|&)without_keywords=210024(&|$)/.test(query) || !json || !Array.isArray(json.results))return json;
+ return {...json,results:json.results.filter(card=>!isAnime({...card,genre_ids:card.genre_ids || [16]}))};
+}
 // Native Lampa appends these fields itself. Duplicated language values are
 // rejected by TMDB even though the otherwise identical direct URL succeeds.
 export function normalizeTmdb(path,params={}){
@@ -14,8 +23,8 @@ export function normalizeTmdb(path,params={}){
 export function installTmdb(L){
  const source=L.Api && L.Api.sources && L.Api.sources.tmdb;if(!source || source._minimalNormalized)return;
  source._minimalNormalized=true;
- if(source.get){const get=source.get;source.get=function(path,params,ok,fail,options){const clean=normalizeTmdb(path,params);return get.call(this,clean.path,clean.params,ok,fail,options);};}
- if(source.list){const list=source.list;source.list=function(params,ok,fail){const clean=normalizeTmdb(params.url,params);return list.call(this,{...clean.params,url:clean.path},ok,fail);};}
+ if(source.get){const get=source.get;source.get=function(path,params,ok,fail,options){const clean=normalizeTmdb(path,params);return get.call(this,clean.path,clean.params,json=>ok(cartoonResults(clean.path,json)),fail,options);};}
+ if(source.list){const list=source.list;source.list=function(params,ok,fail){const clean=normalizeTmdb(params.url,params);return list.call(this,{...clean.params,url:clean.path},json=>ok(cartoonResults(clean.path,json)),fail);};}
  // Aggregate credits supplement missing directors, never replace the main cast
  // with every guest performer across all seasons.
  ['tmdb','cub'].forEach(name=>{
@@ -46,6 +55,7 @@ export function installFullGuard(L){
  };
 }
 export default function tmdbGet(L,path,params,ok,fail=()=>{},options){
+ const callback=ok;ok=json=>callback(cartoonResults(path,json));
  const source=L.Api && L.Api.sources && L.Api.sources.tmdb;
  if(source && typeof source.get==='function'){const clean=normalizeTmdb(path,params);return source.get(clean.path,clean.params,ok,fail,options);}
  if(L.TMDB && typeof L.TMDB.get==='function')return L.TMDB.get(path,params || {},ok,fail,options);

@@ -18,6 +18,18 @@ test('remote opens torrent details with Right and OK and moves between releases 
 test('resolution, codec aliases and HDR keep distinct meanings and absent metadata stays absent',()=>{
  const m=C.technical({Title:'Movie WEB-DL 2160p HEVC HDR10+ Dolby Vision E-AC-3 5.1',info:{types:['4K','H265','HDr','RUS','noise']}});assert.equal(m.quality,'2160p');assert.deepEqual(m.video,['H.265']);assert.deepEqual(m.hdr,['HDR10+','Dolby Vision']);assert.deepEqual(m.audio,['E-AC-3']);assert.deepEqual(m.languages,[]);assert.ok(!m.tags.includes('noise'));assert.equal(C.technical({Title:'Movie',ffprobe:[{codec_type:'video',width:2560,height:1440,codec_name:'av1'}]}).quality,'1440p');assert.equal(C.technical({Title:'Movie',info:{quality:'720x304'}}).quality,'SD');assert.deepEqual(C.technical({Title:'Unknown'}).tags,[]);assert.deepEqual(C.describe({Title:'Кубик (2025) WEB-DL 1080p',info:{voices:['Кубик']}},C.catalogue({title:'Кубик',release_date:'2025-01-01'})).voices.names,[]);
 });
+test('rip names never invent a resolution; real frame sizes and parser resolution fields determine it',()=>{
+ for(const source of ['TSRip','WEB-DLRip']){
+  assert.equal(C.technical({Title:'Надежда (2026) '+source}).quality,'');
+  for(const [width,height,expected] of [[720,304,'SD'],[1280,544,'720p'],[1920,800,'1080p']]){
+   assert.equal(C.technical({Title:'Надежда (2026) '+source,info:{width,height}}).quality,expected);
+  }
+ }
+ assert.equal(C.technical({Title:'Film WEB-DLRip',general:{resolution:'1920x800'}}).quality,'1080p');
+ assert.equal(C.technical({Title:'Film TSRip',Resolution:'720p'}).quality,'720p');
+ assert.equal(C.technical({Title:'Film WEB-DLRip',ffprobe:{streams:[{codec_type:'video',width:3000,height:4000,disposition:{attached_pic:1}},{codec_type:'video',width:1280,height:720}]}}).quality,'720p');
+});
+
 test('film translation credits expose MovieDalen and dubbing without treating the rip author as an audio studio',()=>{
  const film={title:'Человек-паук: Новый день',original_title:'Spider-Man: Brand New Day',release_date:'2026-07-29'},cat=C.catalogue(film);
  for(const author of ['селезень','ELEKTRI4KA']){const row={Title:'Человек-паук: Новый день / Spider-Man: Brand New Day (2026) WEB-DLRip от '+author+' | D | MovieDalen',info:{voices:[author]}};const m=C.describe(row,cat);assert.deepEqual(m.voices.names,['MovieDalen']);assert.deepEqual(m.voices.types,['Дубляж']);assert.equal(m.voices.author,author);assert.equal(m.technical.quality,'');assert.equal(m.technical.source,'WEB-DLRip');}
@@ -26,7 +38,7 @@ test('film translation credits expose MovieDalen and dubbing without treating th
 test('native film rows show explicit audio credits, estimated bitrate and the source title after the date',async()=>{
  const n=await native({built:true}),{w,L}=n;try{
   const film={id:969681,title:'Человек-паук: Новый день',original_title:'Spider-Man: Brand New Day',release_date:'2026-07-29',source:'tmdb',runtime:145,genres:[],img:'/poster.jpg'},row={Title:'Человек-паук: Новый день / Spider-Man: Brand New Day (2026) WEB-DLRip от ELEKTRI4KA | D | MovieDalen',Tracker:'rutor',PublishDate:'2026-10-05T12:00:00Z',Size:2340757176,Seeders:699,Peers:86,info:{voices:['ELEKTRI4KA']}};
-  L.Parser.get=(p,ok)=>w.setTimeout(()=>ok({Results:[row]}),0);L.Activity.push({component:'torrents',movie:film,search:film.original_title,url:''});await new Promise(r=>setTimeout(r,180));const preview=L.Activity.active().activity.render(true).querySelector('.tc-row');assert.ok(preview);assert.equal(preview.querySelector('.tc-voice-names').textContent,'MovieDalen');assert.equal(preview.querySelector('.tc-tag--translation').textContent,'Дубляж');assert.ok(preview.querySelector('.tc-tags').textContent.includes('Мбит/с'));assert.equal(preview.querySelector('.tc-season').textContent,'Качество не указано');assert.ok(preview.querySelector('.tc-source').textContent.includes('2026-10-05 · '+row.Title));preview.querySelector('.tc-info').click();assert.ok(w.document.querySelector('.tc-full-details').textContent.includes('Релиз от'));assert.ok(w.document.querySelector('.tc-full-details').textContent.includes('ELEKTRI4KA'));L.Controller.back();assert.deepEqual(n.errors,[]);
+  L.Parser.get=(p,ok)=>w.setTimeout(()=>ok({Results:[row]}),0);L.Activity.push({component:'torrents',movie:film,search:film.original_title,url:''});await new Promise(r=>setTimeout(r,180));const preview=L.Activity.active().activity.render(true).querySelector('.tc-row');assert.ok(preview);assert.equal(preview.querySelector('.tc-voice-names').textContent,'MovieDalen');assert.equal(preview.querySelector('.tc-tag--translation').textContent,'Дубляж');assert.ok(preview.querySelector('.tc-tags').textContent.includes('Мбит/с'));assert.equal(preview.querySelector('.tc-season').textContent,'Разрешение не указано');assert.ok(preview.querySelector('.tc-source').textContent.includes('2026-10-05 · '+row.Title));preview.querySelector('.tc-info').click();assert.ok(w.document.querySelector('.tc-full-details').textContent.includes('Релиз от'));assert.ok(w.document.querySelector('.tc-full-details').textContent.includes('ELEKTRI4KA'));L.Controller.back();assert.deepEqual(n.errors,[]);
  }finally{n.close();}
 });
 test('native torrent rows omit the repeated title, details work by mouse and remote menu, and playback keeps its torrent',async()=>{

@@ -1,33 +1,54 @@
 import posterPreview from './poster-cache.js';
-const LEVELS={medium:{poster:'w300',backdrop:'w780'},high:{poster:'w500',backdrop:'w1280'},maximum:{poster:'original',backdrop:'original'}};
+// Medium retains the previous High. High avoids oversized original posters;
+// Only a small (at most 12.5%) backdrop upscale is allowed on compact screens.
 export function artworkQuality(L){
- const value=L.Storage && L.Storage.get?L.Storage.get('minimal_banner_quality','maximum'):'maximum';
- return LEVELS[value]?value:value==='w1280'?'high':'maximum';
+ const get=(key,def)=>L.Storage && L.Storage.get?L.Storage.get(key,def):def;
+ const value=get('minimal_banner_quality','maximum');
+ if(get('minimal_artwork_quality_revision',0)!==2)return ['high','medium','w1280'].includes(value)?'medium':'high';
+ return value==='medium'?'medium':'high';
 }
-export function artworkSize(L,kind){return LEVELS[artworkQuality(L)][kind || 'poster'];}
+export function artworkSize(L,kind){
+ if(artworkQuality(L)==='medium')return kind==='backdrop'?'w1280':'w500';
+ if(kind!=='backdrop')return 'w780';
+ const width=(window.innerWidth || 1920)*Math.min(2,window.devicePixelRatio || 1);
+ return width>1440?'original':'w1280';
+}
 export default function installArtwork(L,enabled){
- const stored=L.Storage.get('minimal_banner_quality','maximum'),quality=artworkQuality(L);
- if(stored!==quality && L.Storage.set)L.Storage.set('minimal_banner_quality',quality);
- const wrappers=new Map();
+ const quality=artworkQuality(L);
+ if(L.Storage.set){L.Storage.set('minimal_banner_quality',quality);L.Storage.set('minimal_artwork_quality_revision',2);}
+ const wrappers=new Map(),wrapped=new WeakSet(),imageWrappers=new WeakSet();let depth=0;
+ const canonical=url=>typeof url==='string'?url.replace(/\/+t\/p\/(w\d+|original)\/+/,'/t/p/$1/'):url;
+ function wrapImage(api){
+  if(!api || typeof api.image!=='function' || imageWrappers.has(api.image))return;
+  const image=api.image;
+  api.image=function(){const value=image.apply(this,arguments);return enabled()?canonical(value):value;};
+  imageWrappers.add(api.image);
+ }
  function wrap(api){
-  if(!api || typeof api.img!=='function')return;
+  if(!api || typeof api.img!=='function' || wrapped.has(api.img))return;
   const original=api.img;
-  if(!wrappers.has(original))wrappers.set(original,function(src,size){
-   if(!enabled() || (size && !/^(?:w200|w300|w500|w780|w1280|original)$/.test(size)))return original.apply(this,arguments);
-   return original.call(this,src,artworkSize(L,size==='w780' || size==='w1280'?'backdrop':'poster'));
-  });
+  if(!wrappers.has(original)){
+   const wrapper=function(src,size){
+    if(depth || !enabled() || (size && !/^(?:w200|w300|w500|w780|w1280|original)$/.test(size)))return original.apply(this,arguments);
+    // Native MediaLoading asks for original: it is a fullscreen backdrop,
+    // never a small portrait. Delegating APIs must not classify the size twice.
+    const kind=['w780','w1280','original'].includes(size)?'backdrop':'poster';
+    depth++;try{return canonical(original.call(this,src,artworkSize(L,kind)));}finally{depth--;}
+   };
+   wrappers.set(original,wrapper);wrapped.add(wrapper);
+  }
   api.img=wrappers.get(original);
  }
- wrap(L.TMDB);wrap(L.Api);
+ wrapImage(L.TMDB);wrap(L.TMDB);wrap(L.Api);
  if(L.Api && L.Api.sources){wrap(L.Api.sources.tmdb);wrap(L.Api.sources.cub);}
- posterPreview(L,enabled);
+ posterPreview(L,enabled,()=>artworkQuality(L)==='high');
  function refresh(){
   if(!enabled())return;
-  document.querySelectorAll('.card__img,.full-start-new__img,.full-start__img,.full-start__background,.pt-hero__image').forEach(image=>{
+  document.querySelectorAll('.card__img,.full-start-new__img,.full-start__img,.full-start__background,.pt-hero__image,.media-loading__backdrop').forEach(image=>{
    const url=image.getAttribute('src') || '';
    if(image._minimalArtwork && image._minimalArtwork(/^https?:/.test(url)))return;
    if(!/\/t\/p\/(?:w\d+|original)\//.test(url))return;
-   const backdrop=image.matches('.full-start__background,.pt-hero__image') || image.closest('.card--wide,.card--collection');
+   const backdrop=image.matches('.full-start__background,.pt-hero__image,.media-loading__backdrop') || image.closest('.card--wide,.card--collection');
    const next=url.replace(/(\/t\/p\/)(?:w\d+|original)(\/)/,'$1'+artworkSize(L,backdrop?'backdrop':'poster')+'$2');
    if(next!==url)image.src=next;
   });

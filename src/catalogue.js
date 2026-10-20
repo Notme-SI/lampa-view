@@ -6,6 +6,14 @@ export function animeMode(L,object={}){
 }
 export function cataloguePlan(kind,mode='standard',date=new Date()){
  const year=date.getFullYear(),type=kind==='movie'?'movie':'tv',base=kind==='anime'?'with_genres=16&with_original_language=ja&':'',defs=[];
+ if(kind==='cartoon')return [
+  ['Популярные мультфильмы','movie','sort_by=popularity.desc'],
+  ['Новые мультфильмы','movie','sort_by=popularity.desc&primary_release_date.gte='+year+'-01-01'],
+  ['Мультфильмы с высоким рейтингом','movie','sort_by=vote_average.desc&vote_count.gte=200'],
+  ['Популярные мультсериалы','tv','sort_by=popularity.desc'],
+  ['Мультсериалы с высоким рейтингом','tv','sort_by=vote_average.desc&vote_count.gte=100'],
+  ['Мультсериалы этого года','tv','sort_by=popularity.desc&first_air_date.gte='+year+'-01-01']
+ ].map(([title,media_type,query])=>({title,media_type,tmdb:'discover/'+media_type+'?include_adult=false&with_genres=16&without_keywords=210024&'+query}));
  if(kind==='anime' && mode==='shikimori')return [
   ['Популярное','order=popularity'],['С высоким рейтингом','order=ranked'],['Сейчас выходит','order=popularity&status=ongoing'],['Ожидаемые','order=popularity&status=anons'],
   ['Новинки этого года','order=popularity&season='+year],['Прошлый год','order=ranked&season='+(year-1)],['Полнометражные','order=ranked&kind=movie'],['Боевики','order=popularity&genre=1'],['Приключения','order=popularity&genre=2'],['Детективы','order=popularity&genre=7'],['Все',SHIKI_ALL]
@@ -30,7 +38,7 @@ export function cataloguePlan(kind,mode='standard',date=new Date()){
 }
 export default function catalogue(L,shiki,object,hidden,ok){
  const kind=object.url || object.cat;
- const source=object.source || L.Storage.get('source','cub'),cub=source==='cub' && L.Api.sources && L.Api.sources.cub && L.Api.sources.cub.list,plan=cataloguePlan(kind,animeMode(L,object)),rows=new Array(plan.length);let cursor=0,running=0,done=0,ended=false,failures=0;
+ const source=object.source || L.Storage.get('source','cub'),cub=kind!=='cartoon' && source==='cub' && L.Api.sources && L.Api.sources.cub && L.Api.sources.cub.list,plan=cataloguePlan(kind,animeMode(L,object)),rows=new Array(plan.length);let cursor=0,running=0,done=0,ended=false,failures=0;
  const status=object.minimal_catalogue_status={state:'loading'};
  const rowFor=job=>({title:job.title,url:job.shiki || (cub?job.cub:job.tmdb),source:job.shiki?'minimal_shiki':cub?'cub':'tmdb',results:[]});
  function complete(){if(done===plan.length && !ended){ended=true;const result=rows.filter(Boolean);status.state=result.some(row=>row.results.length)?'ready':failures?'error':result.length===plan.length?'hidden':'empty';ok(result);}}
@@ -38,7 +46,7 @@ export default function catalogue(L,shiki,object,hidden,ok){
   if(ended)return;if(object.activity && object.activity.component && object.activity.component.destroyed){ended=true;return;}if(done===plan.length){complete();return;}
   while(!ended && running<3 && cursor<plan.length){const index=cursor++,job=plan[index],row=rowFor(job);if(hidden.includes(row.url)){row.minimal_hidden=true;rows[index]=row;done++;continue;}
    running++;let settled=false;
-   function finish(json){if(settled)return;settled=true;running--;done++;if(!json)failures++;if(json && Array.isArray(json.results) && json.results.length)rows[index]={...row,page:Number(json.page)||1,total_pages:Math.max(Number(json.total_pages)||1,json.results.length>20?2:1),results:json.results.slice(0,20).map(card=>kind==='anime'?{...card,minimal_anime:true}:card)};pump();}
+   function finish(json){if(settled)return;settled=true;running--;done++;if(!json)failures++;if(json && Array.isArray(json.results) && json.results.length)rows[index]={...row,page:Number(json.page)||1,total_pages:Math.max(Number(json.total_pages)||1,json.results.length>20?2:1),results:json.results.slice(0,20).map(card=>kind==='anime'?{...card,minimal_anime:true}:job.media_type?{...card,source:'tmdb',media_type:job.media_type}:card)};pump();}
    if(job.shiki)shiki.list({url:job.shiki,page:1},finish,()=>finish(null));
    else if(cub)cub.call(L.Api.sources.cub,{...object,url:job.cub,page:1},finish,()=>finish(null));
    else tmdbGet(L,job.tmdb,{page:1},finish,()=>finish(null));

@@ -30,7 +30,7 @@ if (!ROOT.LampaView) {
     const boot=document.createElement('style');boot.id='lampa-minimal-boot';boot.textContent=BOOT;
     (document.head || document.documentElement).appendChild(boot);
   }
-  const P = ROOT.LampaView = {version: '0.4.39', identity: C.identity, ready: false, bridge: false};
+  const P = ROOT.LampaView = {version: '0.4.45', identity: C.identity, ready: false, bridge: false};
   let L, $, lastCard, initialized = false, playlist = [], activeVideo,loadLogo,artwork,back;
   const metadata = new Map();
   const heroes = new WeakSet();
@@ -102,7 +102,7 @@ if (!ROOT.LampaView) {
       else L.Noty.show('Расписание доступно в медиатеке Lampa');
       return;
     }
-    const titles = {movie:'Фильмы',tv:'Сериалы',anime:'Аниме'};
+    const titles = {movie:'Фильмы',tv:'Сериалы',cartoon:'Мультфильмы',anime:'Аниме'};
     L.Activity.push({url:section, title:titles[section], component:'category', source:section === 'anime' ? 'cub' : 'tmdb', page:1});
   }
   function shell() {
@@ -130,6 +130,13 @@ if (!ROOT.LampaView) {
     updateRoute();
   }
   function trimSections(){
+    const series=document.querySelector('.menu__item[data-action="tv"]');
+    let cartoons=document.querySelector('.menu__item[data-action="cartoon"]');
+    if(!cartoons && series){
+      cartoons=document.createElement('li');cartoons.className='menu__item selector';cartoons.dataset.action='cartoon';cartoons.innerHTML='<div class="menu__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z"/></svg></div><div class="menu__text">Мультфильмы</div>';
+    }
+    if(series && cartoons && series.nextElementSibling!==cartoons)series.after(cartoons);
+    if(cartoons && !cartoons.dataset.minimalCartoons){cartoons.dataset.minimalCartoons='1';pointer($(cartoons).off('hover:enter').on('hover:enter.minimalCartoons',event=>{event.stopImmediatePropagation();navigate('cartoon');}));}
     $('.menu__item,.settings-folder').each(function(){
       const label=$(this).find('.menu__text,.settings-folder__name').text().trim() || $(this).text().trim();
       if(/^(shots|спорт|расписание)$/i.test(label))$(this).addClass('pt-removed-section');
@@ -185,6 +192,7 @@ if (!ROOT.LampaView) {
       if(activity.component && activity.component.use)activity.component.use({onDestroy:()=>{clearTimeout(upgradeTimer);assets.dispose();}});
       function show(next){
         index=(next+cards.length)%cards.length;
+        assets.select(index);
         const card=cards[index],kind=card.media_type || (card.name?'tv':'movie');
         item={...card,media_type:kind,source:card.source || 'tmdb'};
         title.text(card.title || card.name);
@@ -210,11 +218,12 @@ if (!ROOT.LampaView) {
         const size=artworkSize(L,'backdrop');
         const useOriginal=size==='original',ready=assets.ready(index,size);let originalShown=!!ready;
         if(ready)image.attr('src',ready);
-        assets.cover(index,useOriginal?'w780':size,url=>{
-          if(token!==logoToken)return;
-          if(url && !originalShown)image.attr('src',url);
-          if(useOriginal && !ready)upgradeTimer=setTimeout(()=>assets.cover(index,'original',url=>{if(token===logoToken && url){originalShown=true;image.attr('src',url);}}),300);
-        });
+        else{
+          assets.cover(index,useOriginal?'w780':size,url=>{
+            if(token===logoToken && url && !originalShown)image.attr('src',url);
+          });
+          if(useOriginal)upgradeTimer=setTimeout(()=>assets.cover(index,'original',url=>{if(token===logoToken && url){originalShown=true;image.attr('src',url);}}),300);
+        }
         assets.warm(index);
         dots.children().each(function(i){$(this).toggleClass('active',i===index).attr('aria-pressed',String(i===index));});
         if(rotation)rotation.refresh();
@@ -332,7 +341,7 @@ if (!ROOT.LampaView) {
     if(L.Platform && L.Platform.desktop && L.Platform.desktop() || ROOT.electronAPI && ROOT.electronAPI.lampa_view) options.push(['lampa_view_metadata','Уточнять данные mpv+','Передавать сведения карточки для проверки названия, сезона и серии.',true]);
     options.forEach(([name,label,description,value]) => L.SettingsApi.addParam({component:'lampa_view',param:{name,type:'trigger',default:value},field:{name:label,description},onChange:setTheme}));
     L.SettingsApi.addParam({component:'lampa_view',param:{name:'lampa_view_layout',type:'select',values:{auto:'Автоматически',tv:'Телевизор',mobile:'Телефон',desktop:'Компьютер'},default:'auto'},field:{name:'Тип устройства',description:'Авто использует режим экрана Lampa. Можно выбрать вручную.'},onChange:setTheme});
-    L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_banner_quality',type:'select',values:{medium:'Среднее',high:'Высокое',maximum:'Максимальное'},default:'maximum'},field:{name:'Качество баннеров и обложек',description:'Баннеры, фоны и обложки карточек. Максимальное использует исходный размер изображения.'},onChange:()=>artwork && artwork.refresh()});
+    L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_banner_quality',type:'select',values:{medium:'Среднее',high:'Высокое'},default:'high'},field:{name:'Качество баннеров и обложек',description:'Общее качество баннеров, фонов загрузки и карточек. Высокое подбирает чёткий размер под экран и использует общий кеш обложек.'},onChange:()=>artwork && artwork.refresh()});
   }
   function start() {
     if (initialized || !ROOT.Lampa || !ROOT.jQuery) return;
@@ -341,6 +350,7 @@ if (!ROOT.LampaView) {
     artwork=installArtwork(L,()=>yes('lampa_view_enabled'));
     settings(); bridge(); shell();back=installBack(L,$,()=>yes('lampa_view_enabled'));artwork.refresh();
     tvPerformance(()=>yes('lampa_view_enabled'));
+    on('menu',event=>{if(yes('lampa_view_enabled') && event.type==='action' && event.action==='cartoon'){if(event.abort)event.abort();navigate('cartoon');}});
     trimSections();
     const menu=document.querySelector('.menu');
     if(menu && ROOT.MutationObserver)new ROOT.MutationObserver(trimSections).observe(menu,{childList:true,subtree:true});

@@ -46,7 +46,7 @@ test('TV originals wait for remote idle, skip offscreen cards, use one request a
   assert.equal(loaders.length,0,'No originals while the remote is moving');await wait(760);
   assert.equal(loaders.length,1);assert.equal(loaders[0].decoding,'async');
   move();loaders[0].onload();assert.match(cards[0].img.src,/^data:image\/gif/,'A completed original must not paint during movement');
-  await wait(1010);assert.match(cards[0].img.src,/\/original\//);assert.equal(loaders.length,2);assert.match(loaders[1].url,/poster2/,'Offscreen original must be skipped');
+  await wait(1010);assert.match(cards[0].img.src,/\/w500\//);assert.equal(loaders.length,2);assert.match(loaders[1].url,/poster2/,'Offscreen original must be skipped');
   loaders[1].onload();cards[1].onscreen=true;
   for(const observer of observers)if(observer.nodes.has(cards[1].render(true)))observer.callback([{target:cards[1].render(true),isIntersecting:true}]);
   await wait(650);assert.equal(loaders.length,3,'A skipped card must upgrade when it becomes visible');

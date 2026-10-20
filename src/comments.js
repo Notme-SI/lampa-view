@@ -8,19 +8,15 @@ export default function comments(item,node){
  const scroll=viewport.Scroll,body=scroll.body(true),nav=document.createElement('div');nav.className='minimal-comments-nav';nav.setAttribute('role','group');nav.setAttribute('aria-label','Листать комментарии');
  let disposed=false,frame=0;
  function cards(){return Array.from(body.children);}
- function metrics(){const style=window.getComputedStyle(viewport.querySelector('.scroll__content')),padding=parseFloat(style.paddingLeft)||0,width=viewport.offsetWidth || viewport.getBoundingClientRect().width,position=Math.abs(scroll.position?scroll.position():viewport.scrollLeft);return {padding,width,position,max:Math.max(0,body.scrollWidth+padding*2-width)};}
  function update(){
   if(disposed)return;
-  const m=metrics(),unbuilt=item.data && item.data.results && item.items && item.data.results.length>item.items.length;
-  previous.disabled=m.position<=1;next.disabled=!unbuilt && m.position>=m.max-1;
   // An empty list has only the native "write" card.
-  nav.hidden=cards().length<2 || (m.width>0 && previous.disabled && next.disabled);
+  nav.hidden=cards().length<2;
  }
  function schedule(){if(!disposed && !frame)frame=window.requestAnimationFrame(()=>{frame=0;update();});}
  function move(direction){
   if(disposed)return;
-  const control=direction<0?previous:next;if(control.disabled)return;
-  const available=cards(),position=metrics().position,origin=body.getBoundingClientRect().left;
+  const available=cards(),position=Math.abs(scroll.position?scroll.position():viewport.scrollLeft),origin=body.getBoundingClientRect().left;
   let first=available.findIndex(card=>card.getBoundingClientRect().left-origin>=position-2);if(first<0)first=available.length-1;
   const index=Math.max(0,Math.min(available.length-1,first+direction)),card=available[index];if(!card)return;
   const nativeIndex=item.items && item.items.findIndex(entry=>{const r=entry.render(true);return (r.nodeType?r:r[0])===card;});

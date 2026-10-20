@@ -4,7 +4,7 @@ export const SHIKI_ALL='minimal:shikimori:all';
 export function shikiCard(a,base=BASE){
  const tv=a.kind!=='movie',date=a.aired_on || '',img=a.image && a.image.original || '';
  const url=value=>value?(value.startsWith('http')?value:base+value):'';
- const posterSources={maximum:url(img),high:url(img),medium:url(a.image && a.image.preview || img)};
+ const posterSources={high:url(img),medium:url(img || a.image && a.image.preview)};
  return {id:a.id,shikimori_id:a.id,title:a.russian || a.name,original_title:a.name,...(tv?{name:a.russian || a.name,original_name:a.name,first_air_date:date}:{release_date:date}),media_type:tv?'tv':'movie',source:'minimal_shiki',img:url(img),minimalPosterSources:posterSources,vote_average:Number(a.score) || 0};
 }
 export default function shikimori(L){
@@ -44,6 +44,7 @@ export default function shikimori(L){
   const query='{ animes(ids: "'+clean.join(',')+'", limit: 12) { id poster { originalUrl mainUrl previewUrl } } }';
   api('/api/graphql',json=>ok(json.data.animes),fail,{query},json=>!!(json && json.data && Array.isArray(json.data.animes)));
  }
- L.Api.sources.minimal_shiki={list,full,genres,posters,retry,clear(){}};
+ const metadata=(id,ok,fail)=>/^\d+$/.test(String(id))?api('/api/animes/'+id,ok,fail,null,json=>!!(json && Number(json.id)===Number(id))):fail();
+ L.Api.sources.minimal_shiki={list,full,genres,posters,metadata,retry,clear(){}};
  return {list,genres,posters,retry};
 }
