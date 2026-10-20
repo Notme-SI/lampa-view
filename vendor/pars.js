@@ -4,7 +4,7 @@
     if (window.mpv_plus_companion) return;
     window.mpv_plus_companion = {name: 'Парс', version: '1.4.0'};
 
-    function enabled(name) { return Lampa.Storage.get('mpv_plus_' + name, true) !== false; }
+    function enabled(name) { var key = 'mpv_plus_' + name, value = Lampa.Storage.value ? Lampa.Storage.value(key, '') : Lampa.Storage.get(key, true); return value !== false && value !== 'false' && value !== 0 && value !== '0'; }
     function anime(card) {
         return card && ['ja', 'zh'].indexOf(card.original_language) !== -1 &&
             (card.genres || card.genre_ids || []).some(function (genre) { return Number(genre.id || genre) === 16; });

@@ -26,6 +26,8 @@
 https://notme-si.github.io/lampa-view/lampa.js
 ```
 
+Резерв качества Alloha работает через настроенный сервер онлайн-источников с включённым Alloha. Собственные ключи сторонних сервисов плагин не содержит.
+
 ## Установить загрузочный экран
 
 Для своего сервера Lampac на Linux выполните одну команду:
@@ -45,6 +47,6 @@ curl -fsSL https://notme-si.github.io/lampa-view/install.sh | sudo sh
 - **Закусь TV / Автопилот** — [страница плагина](https://hub.alcopa.cc/hub/u/YXblJI9HT).
 - **AGNative**, основа Закусь TV — [Llowmikee](https://github.com/Llowmikee), [appletv_agnative.js](https://llowmikee.github.io/AppleTVAGNativeNG/appletv_agnative.js).
 - **Дизайн Potok** — [potok.rip](https://potok.rip/), [potok-media](https://github.com/potok-media).
-- **Nova Plus** — [amikdn](https://github.com/amikdn/amikdn.github.io), [nova_plus.js](https://amikdn.github.io/nova_plus.js).
+- **Nova Plus** — [amikdn](https://github.com/amikdn/amikdn.github.io), [nova_plus.js](https://amikdn.github.io/nova_plus.js), [card_overlay.js](https://amikdn.github.io/card_overlay.js).
 
 [Изменения](CHANGELOG.md) · [Разработка](CONTRIBUTING.md) · [Источники и лицензии](THIRD-PARTY.md)

@@ -5,6 +5,7 @@ https://llowmikee.github.io/AppleTVAGNativeNG/appletv_agnative.js
 Дизайн Potok: https://potok.rip/ ; https://github.com/potok-media
 Nova Plus: https://github.com/amikdn/amikdn.github.io
 https://amikdn.github.io/nova_plus.js
+https://amikdn.github.io/card_overlay.js
 
 Visual reference and adapted layout: Potok Web, https://github.com/potok-media/web
 Copyright (c) 2026 Potok. MIT; see Reference-UI-MIT.txt.

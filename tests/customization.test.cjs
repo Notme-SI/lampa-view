@@ -4,7 +4,7 @@ test('settings retain late adapter options and callbacks inside one visible fold
  const params={lampa_view:[{param:{name:'theme'}}]},components={lampa_view:{name:'Lampa Minimal'}};
  const api={getParam:k=>params[k],allComponents:()=>components};mod('settings').default(api);
  let called=0;params.mpv_plus=[{param:{name:'parser'},onChange:()=>called++}];params.snack=[{param:{name:'auto'}}];components.mpv_plus={};components.snack={};
- assert.deepEqual(Object.keys(api.allComponents()),['lampa_view']);const list=api.getParam('lampa_view');assert.equal(list.length,6);api.getParam('minimal_settings_playback').find(p=>p.param.name==='parser').onChange();assert.equal(called,1);assert.equal(api.getParam('snack'),params.snack);
+ assert.deepEqual(Object.keys(api.allComponents()),['lampa_view']);const list=api.getParam('lampa_view');assert.equal(list.length,1);api.getParam('minimal_settings_playback').find(p=>p.param.name==='parser').onChange();assert.equal(called,1);assert.equal(api.getParam('snack'),params.snack);
 });
 test('grid cards get quality and type through native visibility lifecycle',async()=>{
  const dom=new JSDOM('<body></body>',{runScripts:'outside-only'}),w=dom.window;
@@ -56,8 +56,8 @@ test('settings groups hide promotion and preserve option keys, callbacks and cle
  const params={lampa_view:[{param:{name:'lampa_view_enabled',type:'trigger'},field:{name:'Тема'}}],mpv_plus:[{param:{name:'mpv_plus_search',type:'trigger'},field:{name:'Названия раздач'}}],snack:[{param:{name:'alc_auto_community',type:'static'},field:{name:'Telegram',description:'https://t.me/example'}},{param:{name:'snack_open_watch',type:'button'}},{param:{name:'alc_auto_langs',type:'input'},snack_g:'langs',field:{name:'Языки',description:'Настройки Закуси'}},{param:{name:'alc_auto_server',type:'input'},snack_g:'server',field:{name:'Сервер'}}]};
  const components={lampa_view:{name:'L A M P A'},snack:{},mpv_plus:{}},opened=[];const api={getParam:k=>params[k],allComponents:()=>components,addComponent:d=>components[d.component]=d};
  mod('settings').default(api,{Settings:{create:name=>opened.push(name)}});
- assert.deepEqual(Object.keys(api.allComponents()),['lampa_view']);assert.equal(api.getParam('lampa_view').length,6);assert.equal(api.getParam('minimal_settings_languages')[0].param.name,'alc_auto_langs');
- for(const group of api.getParam('lampa_view'))group.onChange();assert.equal(opened.length,6);
+ assert.deepEqual(Object.keys(api.allComponents()),['lampa_view']);assert.equal(api.getParam('lampa_view').length,4);assert.equal(api.getParam('minimal_settings_languages')[0].param.name,'alc_auto_langs');
+ for(const group of api.getParam('lampa_view'))group.onChange();assert.equal(opened.length,4);
  const visible=opened.flatMap(name=>api.getParam(name));assert.equal(visible.length,4);assert.ok(!JSON.stringify(visible).match(/t\.me|Telegram|Закус/i));
 });
 

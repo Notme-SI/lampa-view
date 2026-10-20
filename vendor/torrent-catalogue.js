@@ -479,7 +479,7 @@
         var controller = owner || L.Controller.enabled().name, body = $('<div class="about tc-full-details"></div>'), list = $('<dl></dl>').appendTo(body);
         function field(name,value) {if(!value)return;$('<dt></dt>').text(name).appendTo(list);$('<dd></dd>').text(value).appendTo(list);}
         field('Исходное название', (row._tcTitles || [row.Title]).join('\n'));
-        field('Состав', [m.seasonLabel,m.episodeLabel,m.status].filter(Boolean).join(' · '));
+        field('Состав', [m.seasonLabel,m.episodeLabel].filter(Boolean).join(' · '));
         field('Характеристики',m.technical.tags.join(' · '));field('Разрешение',m.technical.dimensions);
         if(Number(row.bitrate)>0 && !m.seasonLabel)field('Битрейт (оценка)',row.bitrate+' Мбит/с');
         field('Аудио',m.voices.names.join(', '));field('Аудиодорожки',m.voices.tracks.join('\n'));
@@ -488,7 +488,7 @@
         var types=row.info && row.info.types || [];field('Метки источника',Array.isArray(types)?types.join(', '):String(types));
         field('Трекеры',(row._tcSources || [row.Tracker]).filter(Boolean).join(', '));
         field('Размер',row.size || (L.Utils && L.Utils.bytesToSize(row.Size)) || '');
-        field('Раздают / скачивают',(+row.Seeders || 0)+' / '+(+row.Peers || 0));field('Проверка состава',m.issues.join('\n'));
+        field('Раздают / скачивают',(+row.Seeders || 0)+' / '+(+row.Peers || 0));
         L.Modal.open({title:'Сведения о раздаче',size:'large',html:body,onBack:function(){L.Modal.close();L.Controller.toggle(controller);if(target && target.isConnected)L.Controller.collectionFocus(target,$(target).closest('.torrent-list')[0] || document.body);}});
     }
     function render(e) {
@@ -522,7 +522,7 @@
                 if(voiceTags.length) $('<span class="tc-voice-names"></span>').text(voiceTags.join(' · ')).appendTo(voices);
                 if(m.technical.languages.length) $('<span class="tc-languages"></span>').text(m.technical.languages.join(' / ')).appendTo(voices);
                 if(!voices.children().length) voices.remove();
-                if (m.identity.state!=='matched' || m.issues.length) $('<div class="tc-warning"></div>').text(m.identity.state==='mismatch'?'Другое произведение. Проверьте сведения.':m.issues.length?'Состав требует проверки':'Название не подтверждено. Проверьте сведения.').appendTo(content);
+                if (m.identity.state==='mismatch') $('<div class="tc-warning"></div>').text('Другое произведение').appendTo(content);
                 var foot = $('<div class="tc-foot"></div>').appendTo(content);
                 var source=$('<span class="tc-source"></span>').text((row._tcSources || [row.Tracker]).filter(Boolean).join(', ') + (row.PublishDate ? ' · ' + String(row.PublishDate).slice(0, 10) : '')).appendTo(foot);
                 $('<span class="tc-release-name"></span>').text(' · '+row.Title).appendTo(source);

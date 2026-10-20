@@ -7,7 +7,7 @@
 | Закусь TV / Автопилот | [Плагин](https://hub.alcopa.cc/hub/u/YXblJI9HT) |
 | AGNative — основа Автопилота | [Llowmikee](https://github.com/Llowmikee), [appletv_agnative.js](https://llowmikee.github.io/AppleTVAGNativeNG/appletv_agnative.js) |
 | Дизайн Potok | [potok.rip](https://potok.rip/), [potok-media](https://github.com/potok-media) |
-| Nova Plus | [amikdn](https://github.com/amikdn/amikdn.github.io), [nova_plus.js](https://amikdn.github.io/nova_plus.js) |
+| Nova Plus | [amikdn](https://github.com/amikdn/amikdn.github.io), [nova_plus.js](https://amikdn.github.io/nova_plus.js), [card_overlay.js](https://amikdn.github.io/card_overlay.js) |
 
 ## Состав и лицензии
 
@@ -24,6 +24,8 @@
 | Torrent Button 1.0.0 | https://hub.alcopa.cc/dl/torrent_button/v1.0.0/plugin.js | Штатный переход Lampa к торрентовым источникам. |
 | Suggest 1.3.2 | https://nikitagk22.github.io/suggest.js | Подсказки названий через kinoapi.lampac.dev. Настройки перенесены в общий каталог; удалены опрос расширений и подмена manifest; добавлены отмена запросов, безопасный вывод текста и общая палитра. |
 | Autopilot 2.1.34 | https://hub.alcopa.cc/dl/alc_auto/v2.1.34/plugin.js | Группировка онлайн-источников, озвучки и серии. Исправлено преобразование em/rem в пиксели при раскладке озвучек. |
+| Nova Plus (снимок 20.10.2026) | https://amikdn.github.io/nova_plus.js | Интерфейс окна онлайн-источников: шапка, озвучки, серии и файлы, выбор качества и продолжение просмотра. Настройки включены в общие разделы. Завершающий обфусцированный блок случайной подмены постеров исключён. |
+| Card Overlay (адаптация отдельных механизмов) | https://amikdn.github.io/card_overlay.js | Резерв определения качества, очистка кеша и размещение меток без перекрытий. Реализованы в `src/online-quality.js`, `src/cache-control.js` и `src/badge-layout.js` в общем оформлении. Alloha запрашивается через настроенный Lampac; чужие API-токены и завершающий блок подмены постеров не включены. |
 
 Из Torrent Button и Autopilot убраны отдельные информационные заставки после маркера `/*~*/`.
 Код серверного доступа, конфигурация источников и их ограничения не изменялись.

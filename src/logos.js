@@ -8,9 +8,9 @@ export function chooseLogo(images,language){
 export function pickLogo(images,language){const logo=chooseLogo(images,language);return logo && logo.file_path || '';}
 const normal=s=>String(s || '').toLowerCase().replace(/ё/g,'е').replace(/[^a-zа-я0-9]/g,'');
 export function pickStudio(data,kind){
- const candidates=kind==='tv'?[...(data.networks || []),...(data.production_companies || [])]:(data.production_companies || []);
+ const candidates=[...(kind==='tv'?(data.networks || []).map(company=>({...company,kind:'network'})):[]),...(data.production_companies || []).map(company=>({...company,kind:'company'}))];
  const studio=candidates.find(company=>company && /^\/[^\s]+\.(png|webp|svg)$/i.test(company.logo_path || ''));
- return studio?{path:studio.logo_path,name:studio.name || ''}:null;
+ return studio?{path:studio.logo_path,name:studio.name || '',id:studio.id,kind:studio.kind}:null;
 }
 export function matchCatalogue(card,results){
  const date=String(card.first_air_date || card.release_date || ''),year=date.slice(0,4),names=[card.title,card.original_title,card.name,card.original_name].map(normal).filter(Boolean),all=results || [];

@@ -18,7 +18,7 @@ module.exports=async function native(options={}){
  w.appready=true;w.SimpleKeyboard={default:function(){this.setInput=()=>{};this.getInput=()=>'';this.destroy=()=>{};this.setOptions=()=>{};}};
  if(options.prepare)options.prepare(w,L);
  if(!options.deferPlugin){const code=options.built?fs.readFileSync(path.join(__dirname,'../../dist/lampa.js'),'utf8'):esbuild.buildSync({entryPoints:[path.join(__dirname,'../../src/plugin.js')],bundle:true,write:false,loader:{'.css':'text'}}).outputFiles[0].text;w.eval(code);
- if(!options.built)for(const file of ['torrent-catalogue','pars','torrent-button','alc-auto','suggest'])w.eval(fs.readFileSync(path.join(__dirname,'../../vendor',file+'.js'),'utf8'));}
+ if(!options.built)for(const file of ['torrent-catalogue','pars','torrent-button','alc-auto','nova-plus','suggest'])w.eval(fs.readFileSync(path.join(__dirname,'../../vendor',file+'.js'),'utf8'));}
  L.Controller.add('content',{toggle(){}});L.Controller.toggle('content');
  return {w,L,errors,requests,dom,close:()=>dom.window.close()};
 };

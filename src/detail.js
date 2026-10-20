@@ -2,6 +2,7 @@ import {localizedTitle,isAnime} from './metadata.js';
 import {chooseLogo,pickStudio} from './logos.js';
 import comments from './comments.js';
 import {artworkSize} from './artwork.js';
+import {onlineButton,watchActions} from './watch-actions.js';
 export function releaseDate(card){
  const raw=String(card.release_date || card.first_air_date || ''),match=/^(\d{4})-(\d{2})-(\d{2})$/.exec(raw);
  if(!match)return /^\d{4}$/.test(raw) && Number(raw)>0?raw:'';
@@ -52,13 +53,14 @@ export function prepareDetail(data){
  const persons=data.persons || {};
  const unique=list=>{const seen=new Map();list.forEach(person=>{if(!person || !(person.name || person.original_name))return;const key=String(person.id || person.name || person.original_name),old=seen.get(key);if(old){for(const field of ['popularity','episode_count','total_episode_count'])old[field]=Math.max(Number(old[field]) || 0,Number(person[field]) || 0);if(!old.profile_path && person.profile_path)old.profile_path=person.profile_path;}else seen.set(key,{...person});});return Array.from(seen.values());};
  const number=value=>Number.isFinite(Number(value))?Number(value):0;
- const cast=unique(persons.cast || []).map((person,index)=>({person,billing:person.order!=null && number(person.order)>=0?number(person.order):index,index})).sort((a,b)=>{
+ const allCast=unique(persons.cast || []),anime=isAnime(data.movie || {}),hasPhoto=person=>anime || !!String(person.profile_path || '').trim();
+ const cast=allCast.map((person,index)=>({person,billing:person.order!=null && number(person.order)>=0?number(person.order):index,index})).filter(entry=>hasPhoto(entry.person)).sort((a,b)=>{
   // Preserve the principal billing before considering popularity. A famous
   // cameo must not displace the leads; use native credit order when absent.
   const tier=p=>p.billing<6?0:p.billing<20?1:2;
   return tier(a)-tier(b) || (tier(a)===0?a.billing-b.billing:0) || number(b.person.popularity)-number(a.person.popularity) || number(b.person.total_episode_count || b.person.episode_count)-number(a.person.total_episode_count || a.person.episode_count) || a.billing-b.billing || a.index-b.index;
  }).map(entry=>entry.person);
- const directors=unique((persons.crew || []).filter(p=>p.job==='Director')).sort((a,b)=>number(b.popularity)-number(a.popularity) || number(b.episode_count || b.total_episode_count)-number(a.episode_count || a.total_episode_count)).slice(0,5),ids=new Set(directors.map(p=>String(p.id || p.name)));
+ const directors=unique((persons.crew || []).filter(p=>p.job==='Director').map(person=>({...person,profile_path:person.profile_path || (allCast.find(actor=>String(actor.id || actor.name)===String(person.id || person.name)) || {}).profile_path}))).filter(hasPhoto).sort((a,b)=>number(b.popularity)-number(a.popularity) || number(b.episode_count || b.total_episode_count)-number(a.episode_count || a.total_episode_count)).slice(0,5),ids=new Set(directors.map(p=>String(p.id || p.name)));
  data.persons={...persons,crew:(persons.crew || []).filter(p=>p.job!=='Director'),cast:[...directors.map(p=>{const actor=cast.find(a=>String(a.id || a.name)===String(p.id || p.name));return {...p,...actor,job:'Director',minimal_director:true,character:['Режиссёр',actor && actor.character].filter(Boolean).join(' · ')};}),...cast.filter(p=>!ids.has(String(p.id || p.name))).slice(0,20)]};
  const disabled=window.lampa_settings && window.lampa_settings.disable_features || {};
  if(!disabled.discuss)data.discuss={...(data.discuss || {}),result:((data.discuss || {}).result || []).slice()};
@@ -110,7 +112,7 @@ function removeDescription(link){
 export default function detail(L,event,loadLogo){
  if(event && event.type==='options' && event.link && event.options){
   const render=event.link.render(true),root=render && (render.nodeType?render:render[0]);
-  if(root)Array.from(root.querySelectorAll('.buttons--container>.full-start__button:not(.hide)')).filter(button=>!button.classList.contains('view--torrent')).forEach(button=>{
+  if(root)Array.from(root.querySelectorAll('.buttons--container>.full-start__button:not(.hide)')).filter(button=>!button.classList.contains('view--torrent') && button!==onlineButton(root)).forEach(button=>{
    const label=button.querySelector('span'),subtitle=button.querySelector('.full-start__button-subtitle'),icon=button.querySelector('svg');
    event.options.push({title:(label && (label.innerText || label.textContent) || button.getAttribute('title') || '').trim(),subtitle:button.getAttribute('data-subtitle') || subtitle && (subtitle.innerText || subtitle.textContent),template:icon?'selectbox_icon':'selectbox_item',icon:icon && icon.outerHTML,onSelect:()=>{if(L.Select.close)L.Select.close();L.Controller.toggle('full_start');button.dispatchEvent(new Event('hover:enter',{bubbles:true}));}});
   });
@@ -140,10 +142,11 @@ export default function detail(L,event,loadLogo){
   left.classList.add('minimal-detail-identity');left.appendChild(title);if(buttons)left.appendChild(buttons);
   const heading=document.createElement('h2');heading.className='minimal-detail-heading';heading.textContent=localizedTitle(card,L.Storage.get('language','ru'));title.textContent=heading.textContent;right.prepend(heading);
   if(buttons){
-   const update=()=>{const auto=!!buttons.querySelector('.button--alc-auto'),subscribed=Array.from(buttons.querySelectorAll('.button--subscribe')).some(bell=>!bell.classList.contains('hide') && !bell.classList.contains('pt-hidden') && !bell.hidden && bell.style.display!=='none');buttons.classList.toggle('minimal-actions--auto',auto);buttons.classList.toggle('minimal-actions--no-bell',!subscribed);const play=buttons.querySelector('.button--play');if(play){play.title=auto?'Выбрать источник':'Смотреть';play.setAttribute('aria-label',play.title);play.classList.toggle('minimal-source-hidden',auto);play.classList.toggle('selector',!auto);if(auto)play.setAttribute('aria-hidden','true');else play.removeAttribute('aria-hidden');}};
+   const update=()=>{const subscribed=Array.from(buttons.querySelectorAll('.button--subscribe')).some(bell=>!bell.classList.contains('hide') && !bell.classList.contains('pt-hidden') && !bell.hidden && bell.style.display!=='none');buttons.classList.remove('minimal-actions--auto');buttons.classList.toggle('minimal-actions--no-bell',!subscribed);};
    update();
    if(window.MutationObserver){const observer=new MutationObserver(records=>{if(records.some(record=>record.type==='childList' || record.target.classList.contains('button--subscribe')))update();});observer.observe(buttons,{childList:true,subtree:true,attributes:true,attributeFilter:['class','hidden','style']});if(event.link && event.link.use)event.link.use({onDestroy:()=>observer.disconnect()});}
   }
+  watchActions(L,body,card,event.link);
  }
  if(start){
   start.classList.add('minimal-detail-header');
@@ -191,9 +194,19 @@ export default function detail(L,event,loadLogo){
  const movie={...card,media_type:card.media_type || (card.name?'tv':'movie')};
  const metaHead=right.querySelector('.full-start-new__head');
  function showStudio(studio){
-  if(!studio || !metaHead || !metaHead.isConnected || metaHead.querySelector('.minimal-detail-studio'))return;
+  if(!studio || !metaHead)return;
+  function linkStudio(icon){
+   if(!/^\d+$/.test(String(studio.id)) || Number(studio.id)<=0 || icon.dataset.studioId)return;
+   icon.dataset.studioId=String(studio.id);icon.classList.add('selector');icon.setAttribute('role','button');icon.tabIndex=0;icon.setAttribute('aria-label','Проекты '+studio.name);icon.title='Проекты '+studio.name;
+   const open=()=>{if(!icon.isConnected)return;L.Activity.push(studio.kind==='network'?{component:'category_full',source:'tmdb',url:'discover/tv',networks:studio.id,sort_by:'popularity.desc',title:studio.name,page:1}:{component:'company',source:'tmdb',url:movie.media_type,id:studio.id,title:studio.name});};
+   window.jQuery(icon).on('hover:enter',open).on('hover:focus',()=>{if(event.link && event.link.items && event.link.items[0])event.link.items[0].last=icon;});
+   icon.addEventListener('click',event=>{event.preventDefault();event.stopImmediatePropagation();open();});
+   icon.addEventListener('keydown',event=>{if(event.key==='Enter' || event.key===' '){event.preventDefault();event.stopImmediatePropagation();open();}});
+  }
+  const existing=metaHead.querySelector('.minimal-detail-studio');if(existing){linkStudio(existing);return;}
   const icon=document.createElement('img');icon.className='minimal-detail-studio';icon.alt=studio.name || '';icon.title=studio.name || '';icon.decoding='async';icon.hidden=true;
-  icon.onload=()=>{if(icon.isConnected){icon.hidden=false;metaHead.classList.remove('hide');}};
+  linkStudio(icon);
+  icon.onload=()=>{if(icon.isConnected){icon.hidden=false;metaHead.classList.remove('hide');if(icon.dataset.studioId && L.Controller && L.Controller.enabled().name==='full_start')L.Controller.collectionAppend(window.jQuery(icon));}};
   icon.onerror=()=>icon.remove();metaHead.prepend(icon);icon.src=L.TMDB.image('/t/p/w300'+studio.path);
  }
  const directStudio=pickStudio(card,movie.media_type);showStudio(directStudio);

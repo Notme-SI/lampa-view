@@ -1,7 +1,9 @@
+import cardInfo from './card-info.js';
 export const CONTINUE='minimal:continue';
 export const isContinue=row=>row.url===CONTINUE || row.name==='continue_watch' || /^Продолжить просмотр$/i.test(String(row.title || '').trim());
 export const isWatching=row=>/now_playing/.test(row.url || row.id || '') || /^Сейчас смотрят$/i.test(String(row.title || '').trim());
 export default function continueWatching(L){
+ const info=cardInfo(L);
  function cards(){
   if(!L.Favorite || !L.Favorite.get)return [];
   const get=type=>L.Favorite.get({type}) || [],excluded=new Set(get('viewed').concat(get('thrown')).map(card=>String(card.id))),seen=new Set();
@@ -11,7 +13,7 @@ export default function continueWatching(L){
    seen.add(key);
    if(!tv && L.Timeline && L.Utils.hash){const progress=L.Timeline.view(L.Utils.hash(card.original_title || card.title || ''));if(progress && Number(progress.percent)>=90)return false;}
    return true;
-  }).map(card=>({...card,source:card.source || L.Storage.get('source','cub')}));
+  }).map(card=>info.read({...card,source:card.source || L.Storage.get('source','cub')}));
  }
  if(L.Api.sources)L.Api.sources.minimal_continue={
   list(params,ok){const all=cards(),page=Math.max(1,Number(params.page)||1);ok({results:all.slice((page-1)*20,page*20),page,total_pages:Math.max(1,Math.ceil(all.length/20))});},

@@ -22,6 +22,7 @@ import installBack from './back.js';
 import mpvLaunch from './mpv-launch.cjs';
 import carousel from './carousel.js';
 import tvPerformance from './tv-performance.js';
+import {cacheSettings} from './cache-control.js';
 
 const ROOT = window;
 if (!ROOT.LampaView) {
@@ -30,7 +31,7 @@ if (!ROOT.LampaView) {
     const boot=document.createElement('style');boot.id='lampa-minimal-boot';boot.textContent=BOOT;
     (document.head || document.documentElement).appendChild(boot);
   }
-  const P = ROOT.LampaView = {version: '0.4.51', identity: C.identity, ready: false, bridge: false};
+  const P = ROOT.LampaView = {version: '0.4.52', identity: C.identity, ready: false, bridge: false};
   let L, $, lastCard, initialized = false, playlist = [], activeVideo,loadLogo,artwork,back;
   const metadata = new Map();
   const heroes = new WeakSet();
@@ -356,7 +357,7 @@ if (!ROOT.LampaView) {
     trimSections();
     const menu=document.querySelector('.menu');
     if(menu && ROOT.MutationObserver)new ROOT.MutationObserver(trimSections).observe(menu,{childList:true,subtree:true});
-    quality(L,$);
+    quality(L,$);cacheSettings(L);
     if(L.Api && L.Api.sources && L.Utils && L.Utils.createInstance && L.Maker){
       const anime=shikimori(L);shikimoriPosters(L,anime);collections(L,anime);filters(L,anime);
     }

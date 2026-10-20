@@ -211,7 +211,7 @@
   // ---------- interface language: ru / uk / en (Lampa setting; anything else -> en) ----------
   var STR = {
     watch:        ['Смотреть', 'Дивитися', 'Watch'],
-    plugin_name:  ['Автопилот', 'Автопілот', 'Autopilot'],
+    plugin_name:  ['Воспроизведение', 'Перегляд', 'Playback'],
     season:       ['Сезон', 'Сезон', 'Season'],
     voice:        ['Озвучка', 'Озвучення', 'Voice-over'],
     season_n:     ['Сезон %s', 'Сезон %s', 'Season %s'],
@@ -297,15 +297,15 @@
     stub_lower:   ['Вместо фильма короткий фрагмент (%s) - пробую %s', 'Замість фільму короткий фрагмент (%s) - пробую %s', 'A short clip instead of the full video (%s) - trying %s'],
     no_stream:    ['Не удалось получить поток ни из одного источника', 'Не вдалося отримати потік з жодного джерела', 'Could not get a stream from any source'],
     set_server:   ['Адрес вашего сервера (Lampac, Alpac…)', 'Адреса вашого сервера (Lampac, Alpac…)', 'Your server address (Lampac, Alpac…)'],
-    set_server_d: ['Сервер с онлайн-источниками. Нет своего - оставьте пустым: Автопилот найдёт сервер по установленным плагинам', 'Сервер з онлайн-джерелами. Немає свого - залиште порожнім: Автопілот знайде сервер за встановленими плагінами', 'The server with online sources. None of your own: leave it empty, Autopilot finds one by the installed plugins'],
+    set_server_d: ['Сервер с онлайн-источниками. Оставьте пустым для автоматического определения', 'Сервер з онлайн-джерелами. Залиште порожнім для автоматичного визначення', 'Server with online sources. Leave empty to detect automatically'],
     srv_auto:     ['авто', 'авто', 'auto'],
     srv_none:     ['Сервер Lampac не найден', 'Сервер Lampac не знайдено', 'No Lampac server found'],
-    srv_none_d:   ['Укажите адрес: Настройки → Закусь → Сервер → «Адрес вашего сервера»', 'Вкажіть адресу: Налаштування → Закусь → Сервер → «Адреса вашого сервера»', 'Set it in Settings → Закусь → Server → “Your server address”'],
+    srv_none_d:   ['Укажите адрес: Настройки → L A M P A → Подключение → «Адрес вашего сервера»', 'Вкажіть адресу: Налаштування → L A M P A → Підключення → «Адреса вашого сервера»', 'Set it in Settings → L A M P A → Connection → Your server address'],
     srv_auth:     ['Сервер просит войти', 'Сервер просить увійти', 'The server asks you to sign in'],
     srv_auth_d:   ['Войдите в аккаунт Lampa (Настройки → Аккаунт) или добавьте на сервере ID этого устройства: %s', 'Увійдіть в акаунт Lampa (Налаштування → Акаунт) або додайте на сервері ID цього пристрою: %s', 'Sign in to your Lampa account (Settings → Account) or add this device ID on the server: %s'],
     srv_auth_via: ['Этот сервер найден по плагину %s - войдите через него (он покажет код входа), затем откройте снова', 'Цей сервер знайдено за плагіном %s - увійдіть через нього (він покаже код входу), потім відкрийте знову', 'This server was found by the plugin %s: sign in through it (it shows the sign-in code), then open again'],
     srv_rch:      ['Сервер работает только через rch', 'Сервер працює лише через rch', 'The server works in rch mode only'],
-    srv_rch_d:    ['Его источники отвечают только через устройство (rch) - Автопилот так не умеет', 'Його джерела відповідають лише через пристрій (rch) - Автопілот так не вміє', 'Its sources answer only through the device (rch), which Autopilot does not support'],
+    srv_rch_d:    ['Источники этого сервера доступны только через устройство (rch). Подключите другой сервер', 'Джерела цього сервера доступні лише через пристрій (rch). Підключіть інший сервер', 'This server requires device-side access (rch). Connect another server'],
     srv_down:     ['Сервер Lampac недоступен', 'Сервер Lampac недоступний', 'The Lampac server cannot be reached'],
     srv_down_net: ['Нет связи или браузер не пустил запрос (CORS) - проверьте адрес и что сервер запущен', 'Немає зв\'язку або браузер не пропустив запит (CORS) - перевірте адресу і що сервер запущено', 'No connection, or the browser blocked the request (CORS): check the address and that the server runs'],
     srv_down_time:['Сервер не ответил за %s с - он запущен?', 'Сервер не відповів за %s с - він запущений?', 'The server did not answer within %s s: is it running?'],
@@ -6101,6 +6101,22 @@
   function curCtl() { try { return Lampa.Controller.enabled().name || 'content'; } catch (e) { return 'content'; } }
   window.alc_auto_api = {
     version: 3,
+    // Metadata only, through the viewer's configured server; never open a stream.
+    metadataQuality: function (movie, cb) {
+      var done = false, timer = setTimeout(function () { finish(null); }, 6500);
+      function finish(data) { if (done) return; done = true; clearTimeout(timer); cb(data); }
+      withServer(function (base) {
+        if (done) return;
+        if (!base) { finish(null); return; }
+        getJSON(base + '/lite/events?' + rootQuery(movie), function (list) {
+          if (done) return;
+          var entry = eventSources(base, list).filter(function (e) { return /alloha/i.test(e.name) && !srcOff(e.name); })[0];
+          if (!entry) { finish(null); return; }
+          getJSON(rootUrl(entry.name, movie, ownBase(entry.url)), finish, function () { finish(null); }, { bg: true });
+        }, function () { finish(null); }, { bg: true });
+      });
+      return function () { done = true; clearTimeout(timer); };
+    },
     label: buttonLabel,
     prefLangs: function () { return prefLangs().slice(); },
     // ctl: the controller a cancel returns to (default: whatever has the focus now)
@@ -6308,11 +6324,11 @@
     var TXT = {
       about: ['О паке', 'Про пак', 'About the pack'], versions: ['Версии', 'Версії', 'Versions'],
       reset: ['Сбросить настройки', 'Скинути налаштування', 'Reset settings'],
-      reset_d: ['Все пункты «Закуси», кроме ваших данных (озвучки, подписки) и адреса сервера', 'Усі пункти «Закусі», крім ваших даних (озвучення, підписки) й адреси сервера', 'Every «Закусь» option, not your data (voices, subscriptions) nor the server address'],
-      reset_q: ['Сбросить настройки «Закуси»?', 'Скинути налаштування «Закусі»?', 'Reset the «Закусь» settings?'],
+      reset_d: ['Все настройки, кроме ваших данных (озвучки, подписки) и адреса сервера', 'Усі налаштування, крім ваших даних (озвучення, підписки) й адреси сервера', 'Every option except personal data (voices, subscriptions) and server address'],
+      reset_q: ['Сбросить настройки?', 'Скинути налаштування?', 'Reset settings?'],
       yes: ['Сбросить', 'Скинути', 'Reset'], no: ['Отмена', 'Скасувати', 'Cancel'],
       watch: ['Просмотр', 'Перегляд', 'Watching'],
-      watch_d: ['Автопилот: запуск, озвучки, источники', 'Автопілот: запуск, озвучення, джерела', 'Autopilot: playback, voices, sources'],
+      watch_d: ['Запуск, озвучки, источники', 'Запуск, озвучення, джерела', 'Playback, voices, sources'],
       langs: ['Языки и субтитры', 'Мови й субтитри', 'Languages and subtitles'],
       langs_d: ['Порядок языков озвучки и субтитров', 'Порядок мов озвучення й субтитрів', 'The order of voice and subtitle languages'],
       cards: ['Главная и карточки', 'Головна й картки', 'Home and cards'],
@@ -6466,7 +6482,7 @@
       window.snack_settings = true;   // older copies: the folder is there
       var made = !!S.pages.snack;
       S.pages.snack = { v2: true, groups: [{ id: 'menu' }, { id: 'about', title: S.txt('about') }], legacy: 0.5 };
-      if (!made) api.addComponent({ component: 'snack', name: 'Закусь', icon: ICON });
+      if (!made) api.addComponent({ component: 'snack', name: 'Воспроизведение', icon: ICON });
       SUBS.forEach(function (s) {
         api.addComponent({ component: s.id, name: S.txt(s.group), icon: ICON });
         // the button: in «Закусь» (group menu) or, for a sub-folder of a sub-folder, in its parent's group
@@ -6600,6 +6616,8 @@
     now = false;
   });
   function addButton(e, now) {
+    // Lampa View has one Watch action, routed to the installed Online provider.
+    if (window.LampaView && document.body.classList.contains('lampa_view')) return;
     try {
       var render = e.object.activity.render();
       if (render.find('.button--alc-auto').length) return;
