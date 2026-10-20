@@ -43,7 +43,7 @@ curl -fsSL https://notme-si.github.io/lampa-view/install.sh | sudo sh
 ## Источники
 
 - **Закусь TV / Автопилот** — [страница плагина](https://hub.alcopa.cc/hub/u/YXblJI9HT).
-- **AGNative**, основа Автопилота — [Llowmikee](https://github.com/Llowmikee), [appletv_agnative.js](https://llowmikee.github.io/AppleTVAGNativeNG/appletv_agnative.js).
+- **AGNative**, основа Закусь TV — [Llowmikee](https://github.com/Llowmikee), [appletv_agnative.js](https://llowmikee.github.io/AppleTVAGNativeNG/appletv_agnative.js).
 - **Дизайн Potok** — [potok.rip](https://potok.rip/), [potok-media](https://github.com/potok-media).
 - **Nova Plus** — [amikdn](https://github.com/amikdn/amikdn.github.io), [nova_plus.js](https://amikdn.github.io/nova_plus.js).
 
