@@ -25,3 +25,16 @@ test('posters appear at final quality, share cached originals and cancel stale q
   cards.forEach(c=>c.destroy());assert.deepEqual(n.errors,[]);
  }finally{n.close();}
 });
+
+test('a rejected high-quality placeholder never enters native mirror retries or paints a data URI diagnostic',async()=>{
+ const n=await native({built:true}),{w,L}=n,loaders=[];let card;
+ try{
+  w.Image=class{constructor(){loaders.push(this);}set src(v){this.url=v;}get src(){return this.url;}};
+  card=L.Utils.createInstance(L.Maker.get('Card',{}),{id:81,title:'Film',poster_path:'/safari.jpg',source:'tmdb'});card.create();w.document.body.appendChild(card.render(true));card.visible();
+  assert.match(card.img.src,/^data:image\/gif/);
+  for(let i=0;i<4;i++)card.img.onerror(new w.Event('error'));
+  assert.equal(card.img_errors,0);assert.equal(card.render(true).querySelector('.card__img-broken'),null);
+  await wait(40);assert.equal(loaders.length,1);loaders[0].onload();assert.match(card.img.src,/\/w780\/safari.jpg$/);assert.equal(card.render(true).querySelector('.card__img-broken'),null);
+  card.img.src='https://images.example.invalid/t/p/w780/failure.jpg';card.img.onerror(new w.Event('error'));assert.equal(card.img_errors,1,'Real image failures still reach the native handler');assert.deepEqual(n.errors,[]);
+ }finally{if(card)card.destroy();n.close();}
+});

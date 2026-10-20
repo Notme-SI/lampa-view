@@ -6,6 +6,7 @@ export default function rowNavigation(L,line,enabled){
  const head=root.querySelector('.items-line__head');if(!head)return;
  const people=root.matches('.minimal-cast-native,.items-line--type-persons,.items-line--type-person') || !!root.querySelector('.full-person');root.classList.toggle('minimal-person-row',people);root.classList.add('minimal-paged-row');
  const tv=()=>document.body.classList.contains('pt-tv');
+ if(people && tv() && line.params && line.params.items)line.params.items.align_left=true;
  const node=item=>{const r=item && item.render(true);return r && (r.nodeType?r:r[0]);};
  const total=()=>(line.data.results || []).length || line.items.length;
  let more,frame=0,pageStart=null,disposed=false;

@@ -3,7 +3,9 @@
 export default function posterCache(L,enabled,highQuality){
  if(!L.Maker || !L.Utils)return;
  const Card=L.Maker.get('Card',{}),create=L.Utils.createInstance,queue=[],cache=new Map(),callbacks=new WeakMap();
- const blank='data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
+ // Complete GIF89a, including its palette and pixel data. Apple's image
+ // decoder can reject the old truncated placeholder as a broken cover.
+ const blank='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
  let running=0,timer;
  const maximum=()=>enabled() && highQuality();
  const tv=()=>document.body.classList.contains('pt-tv');
@@ -95,6 +97,13 @@ export default function posterCache(L,enabled,highQuality){
   item.use({onCreate(){
    image=item.img;getPoster=item.getPosterPath;if(!image || !getPoster)return;
    image.decoding='async';
+   const nativeError=image.onerror;
+   image.onerror=function(event){
+    // A placeholder is not a TMDB mirror failure. Do not let the native
+    // retry path put a data URI diagnostic over a successfully loaded poster.
+    if(!disposed && maximum() && source && image.getAttribute('src')===blank){enqueue();return;}
+    if(nativeError)return nativeError.call(this,event);
+   };
    if(observer){observed=image.closest('.card');if(observed){callbacks.set(observed,enqueue);observer.observe(observed);}}
    item.getPosterPath=function(){
     const url=getPoster.apply(this,arguments);

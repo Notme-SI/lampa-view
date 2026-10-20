@@ -1,5 +1,17 @@
 const test=require('node:test'),assert=require('node:assert/strict'),native=require('./fixtures/native-lampa.cjs');
 
+test('desktop Chrome restores cover space while Safari and TV keep compact detail spacing',async()=>{
+ for(const [agent,safari]of [['Mozilla/5.0 AppleWebKit/537.36 Chrome/130.0.0.0 Safari/537.36',false],['Mozilla/5.0 (Macintosh) AppleWebKit/605.1.15 Version/18.6 Safari/605.1.15',true]]){
+  const n=await native({built:true,initialStorage:{lampa_view_layout:'desktop'},prepare(w){Object.defineProperty(w.navigator,'userAgent',{value:agent,configurable:true});}}),{w}=n;
+  try{
+   assert.equal(w.document.body.classList.contains('pt-safari'),safari);
+   const root=w.document.createElement('div');root.className='minimal-detail-header';root.innerHTML='<div class="full-start-new__body"></div><section class="minimal-detail-columns"></section>';w.document.body.appendChild(root);
+   const body=root.firstElementChild,columns=root.lastElementChild,font=parseFloat(w.getComputedStyle(body).fontSize);assert.equal(parseFloat(w.getComputedStyle(body).minHeight),safari?0:24*font);assert.ok(Math.abs(parseFloat(w.getComputedStyle(columns).marginTop)-(safari?.7:1.5)*font)<.01);
+   w.document.body.classList.replace('pt-desktop','pt-tv');assert.equal(parseFloat(w.getComputedStyle(body).minHeight),0);assert.ok(Math.abs(parseFloat(w.getComputedStyle(columns).marginTop)-.7*font)<.01);assert.deepEqual(n.errors,[]);
+  }finally{n.close();}
+ }
+});
+
 test('native desktop TV screen mode keeps original badges; actual TVs and manual choice retain compact sizes',async()=>{
  const r=await native({built:true}),{w,L}=r;
  const refresh=async()=>{w.dispatchEvent(new w.Event('resize'));await new Promise(resolve=>setTimeout(resolve,210));};

@@ -30,7 +30,7 @@ if (!ROOT.LampaView) {
     const boot=document.createElement('style');boot.id='lampa-minimal-boot';boot.textContent=BOOT;
     (document.head || document.documentElement).appendChild(boot);
   }
-  const P = ROOT.LampaView = {version: '0.4.50', identity: C.identity, ready: false, bridge: false};
+  const P = ROOT.LampaView = {version: '0.4.51', identity: C.identity, ready: false, bridge: false};
   let L, $, lastCard, initialized = false, playlist = [], activeVideo,loadLogo,artwork,back;
   const metadata = new Map();
   const heroes = new WeakSet();
@@ -64,6 +64,8 @@ if (!ROOT.LampaView) {
     const tv=L.Platform && typeof L.Platform.tv==='function' ? !!L.Platform.tv() : screen ? screen.call(L.Platform,'tv') : false;
     P.layout=selected==='auto' ? (tv ? 'tv' : mobile || ROOT.innerWidth<=650 ? 'mobile' : 'desktop') : selected;
     ['mobile','tv','desktop'].forEach(mode=>document.body.classList.toggle('pt-'+mode,P.layout===mode));
+    const agent=ROOT.navigator && ROOT.navigator.userAgent || '';
+    document.body.classList.toggle('pt-safari',/Safari\//.test(agent) && !/(?:Chrome|Chromium|Edg|OPR|Android)\//.test(agent));
   }
   function setTheme() {
     layout();

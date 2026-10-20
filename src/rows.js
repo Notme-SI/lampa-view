@@ -23,6 +23,15 @@ export default function fillRows(L,enabled){
       const box=root.getBoundingClientRect();
       if(!box.width || box.bottom<0 || box.top>window.innerHeight+200)return;
       const card=root.querySelector('.card,.full-person');if(!card)return;
+      if(document.body.classList.contains('pt-tv') && root.classList.contains('minimal-cast-native')){
+        const viewport=line.scroll && line.scroll.render(true),content=viewport && viewport.querySelector('.scroll__content');
+        if(content){
+          const padding=window.getComputedStyle(content),style=window.getComputedStyle(card),second=root.querySelectorAll('.full-person')[1];
+          const gap=second?(parseFloat(window.getComputedStyle(second).marginLeft)||0):0;
+          const available=viewport.getBoundingClientRect().width-(parseFloat(padding.paddingLeft)||0)-(parseFloat(padding.paddingRight)||0),base=(parseFloat(style.fontSize)||14)*7;
+          if(available>0){const count=Math.max(1,Math.floor((available+gap)/(base+gap))),width=(available-(count-1)*gap)/count;root.style.setProperty('--minimal-person-width',width.toFixed(3)+'px');}
+        }
+      }
       const size=card.getBoundingClientRect().width;if(!size)return;
       const style=window.getComputedStyle(card),gap=(parseFloat(style.marginLeft)||0)+(parseFloat(style.marginRight)||0);
       const desired=Math.min(state.data.results.length,24,Math.ceil(box.width/(size+gap))+1);
