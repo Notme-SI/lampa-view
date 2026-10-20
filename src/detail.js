@@ -100,6 +100,13 @@ function mountCast(columns,node){
  if(!cell){cell=document.createElement('div');cell.className='minimal-detail-cast';columns.insertBefore(cell,columns.firstChild);}
  if(node.parentNode!==cell)cell.appendChild(node);
 }
+function removeDescription(link){
+ if(!link || !link.rows || !link.items)return;
+ const index=link.rows.findIndex(row=>(Array.isArray(row)?row[0]:row)==='description');if(index<0)return;
+ const active=link.items[link.active];link.rows.splice(index,1);
+ if(index<link.items.length){const item=link.items.splice(index,1)[0];if(item && item.destroy)item.destroy();}
+ link.active=Math.max(0,link.items.indexOf(active));
+}
 export default function detail(L,event,loadLogo){
  if(event && event.type==='options' && event.link && event.options){
   const render=event.link.render(true),root=render && (render.nodeType?render:render[0]);
@@ -109,7 +116,7 @@ export default function detail(L,event,loadLogo){
   });
   return;
  }
- if(event && event.type==='start' && event.data){prepareDetail(event.data);if(event.link && event.link.rows)event.link.rows=event.link.rows.filter(row=>(Array.isArray(row)?row[0]:row)!=='description');return;}
+ if(event && event.type==='start' && event.data){prepareDetail(event.data);return;}
  if(event && event.type==='build' && event.name==='discuss' && event.item){const render=event.item.render(true),node=render && (render.nodeType?render:render[0]);comments(event.item,node);}
  if(event && event.type==='build' && event.name==='persons' && event.item && event.data && (event.data.title===L.Lang.translate('title_actors') || (event.data.results || []).some(p=>Object.prototype.hasOwnProperty.call(p,'character')))){
   const render=event.item.render(true),node=render && (render.nodeType?render:render[0]);
@@ -122,6 +129,9 @@ export default function detail(L,event,loadLogo){
  const title=body.querySelector('.full-start-new__title'),right=body.querySelector('.full-start-new__right');
  if(!title || !right || right.dataset.minimalDetail)return;
  right.dataset.minimalDetail='1';
+ // Keep native description/genres as a fallback until the replacement header
+ // exists; other Lampa templates must never lose their only description row.
+ readableOverview(L,card,right,event.link);removeDescription(event.link);
  const technical=moveTechnicalDetails(L,card,right);
  const episodes=right.querySelector('.full-start-new__details'),ratings=right.querySelector('.full-start-new__rate-line');if(episodes && ratings)right.insertBefore(episodes,ratings);
  const start=right.closest('.full-start-new'),left=start && start.querySelector('.full-start-new__left'),buttons=right.querySelector('.full-start-new__buttons');
@@ -178,7 +188,6 @@ export default function detail(L,event,loadLogo){
   }
  }
 
- readableOverview(L,card,right,event.link);
  const movie={...card,media_type:card.media_type || (card.name?'tv':'movie')};
  const metaHead=right.querySelector('.full-start-new__head');
  function showStudio(studio){

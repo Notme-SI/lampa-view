@@ -50,7 +50,7 @@ body.lampa_view .menu__ico svg {width:100%;height:100%}
 body.lampa_view .menu__item.focus,body.lampa_view .menu__item.hover,body.lampa_view .menu__item.traverse {background:var(--pt-high);color:#fff;box-shadow:none}
 body.lampa_view .menu__split {display:none!important}
 body.lampa_view .menu__item[data-action="console"],body.lampa_view .menu__item[data-action="edit"],body.lampa_view .menu__item[data-action="feed"],body.lampa_view .menu__item[data-action="relise"],body.lampa_view .menu__item[data-action="myperson"],body.lampa_view .menu__item[data-action="subscribes"],body.lampa_view .menu__item[data-action="catalog"],body.lampa_view .menu__item[data-action="filter"],body.lampa_view .menu__item[data-action="about"] {display:none}
-body.lampa_view .items-line {margin-bottom:2.8em}
+body.lampa_view .items-line {margin-bottom:.8em;padding-bottom:.7em}
 body.lampa_view .items-line__head {margin-bottom:1em}
 body.lampa_view .items-line__title {font-size:1.12em;font-weight:600;letter-spacing:-.02em}
 body.lampa_view .items-line__more {font-size:.8em;background:transparent;color:var(--pt-muted)}
@@ -260,7 +260,7 @@ body.lampa_view.pt-wheel-active .card {transition:none!important}
  body.lampa_view .pt-hero__body {left:3em;bottom:7em;max-width:31em}
  body.lampa_view .pt-hero__title {font-size:2.55em;max-width:15em}
  body.lampa_view .pt-hero__dots {left:45%;bottom:1.5em}
- body.lampa_view .items-line {max-width:100em;margin-left:auto;margin-right:auto;margin-bottom:1.8em;padding-bottom:1.2em}
+ body.lampa_view .items-line {max-width:100em;margin-left:auto;margin-right:auto;margin-bottom:.8em;padding-bottom:.7em}
  body.lampa_view .items-line .card:not(.card--wide):not(.card--collection) {width:9.2em!important}
  body.lampa_view .card__title {font-size:.79em}
  body.lampa_view .head__body {max-width:100em;padding-left:1.5em;padding-right:1.5em}
@@ -343,8 +343,8 @@ body.lampa_view .person-start__img {border-radius:50%;width:10em;height:10em;obj
 body.lampa_view .person-start {background:#000}
 /* The complete card is one vertical native row, including its lower columns. */
 body.lampa_view .minimal-detail-header {display:block;box-sizing:border-box;width:90%;max-width:90%;min-height:0;padding:0 0 1.5em}
-body.lampa_view .minimal-detail-header>.full-start-new__body {box-sizing:border-box;min-height:24em;padding:3em 0 1em;display:flex;-webkit-box-align:start;-webkit-align-items:flex-start;align-items:flex-start}
-body.lampa_view .minimal-detail-header>.minimal-detail-columns {position:relative;inset:auto;clear:both;float:none;width:100%;max-width:none;margin:1.5em 0 0;min-height:0;box-sizing:border-box;display:grid;grid-template-columns:minmax(0,1fr) minmax(15em,22%);gap:1.25em;align-items:stretch}
+body.lampa_view .minimal-detail-header>.full-start-new__body {box-sizing:border-box;min-height:0;padding:1.5em 0 .4em;display:flex;-webkit-box-align:start;-webkit-align-items:flex-start;align-items:flex-start}
+body.lampa_view .minimal-detail-header>.minimal-detail-columns {position:relative;inset:auto;clear:both;float:none;width:100%;max-width:none;margin:.7em 0 0;min-height:0;box-sizing:border-box;display:grid;grid-template-columns:minmax(0,1fr) minmax(15em,22%);gap:1.25em;align-items:stretch}
 body.lampa_view .minimal-detail-columns>.minimal-detail-facts {grid-column:2;grid-row:1;position:relative;inset:auto;float:none;width:auto;min-width:0;box-sizing:border-box;align-self:stretch;overflow-wrap:anywhere}
 body.lampa_view .minimal-overview-action {cursor:pointer;border-radius:.3em;outline:none}
 body.lampa_view .minimal-overview-action:hover,body.lampa_view .minimal-overview-action.focus,body.lampa_view .minimal-overview-action:focus-visible {color:#e1e5e8;box-shadow:0 0 0 1px var(--pt-accent)}
@@ -360,7 +360,7 @@ body.lampa_view .minimal-detail-identity .button--alc-torrent {grid-column:span 
 body.lampa_view .minimal-detail-identity .minimal-actions--no-bell>.button--alc-torrent {grid-column:1/-1}
 body.lampa_view .minimal-detail-identity .full-start-new__buttons:not(.minimal-actions--auto)>.button--play {grid-column:1/-1}
 body.lampa_view .minimal-detail-identity .full-start-new__buttons:not(.minimal-actions--auto)>.button--play>span {display:inline!important}
-body.lampa_view.pt-mobile .minimal-detail-header>.full-start-new__body {min-height:18em;padding-top:2em}
+body.lampa_view.pt-mobile .minimal-detail-header>.full-start-new__body {min-height:0;padding-top:1em}
 body.lampa_view.pt-mobile .minimal-detail-header>.minimal-detail-columns {display:block}
 body.lampa_view.pt-mobile .minimal-detail-identity .full-start-new__buttons {max-width:24em}
 /* Compact filter form: labels and values are distinct, with a clear primary action. */
@@ -433,6 +433,7 @@ body.lampa_view .card__view {transition:transform .24s cubic-bezier(.2,.75,.25,1
 body.lampa_view .card.focus .card__view,body.lampa_view .card.hover .card__view {animation:none!important;-webkit-animation:none!important;-webkit-transform:translateY(-.2em) scale(1.045);transform:translateY(-.2em) scale(1.045);box-shadow:0 0 .85em rgba(173,217,229,.4),0 0 1.8em rgba(173,217,229,.22)}
 body.lampa_view .minimal-cast-native .full-person.focus {background:#161b1e;color:var(--pt-text);box-shadow:inset 0 0 0 1px var(--pt-accent)}
 body.lampa_view .items-line__more {display:none!important}
+body.lampa_view .minimal-paged-row .card-more:not(.card-more--first) {display:none!important}
 body.lampa_view .items-line__head {display:flex;align-items:center;gap:.6em}
 body.lampa_view .items-line__title {margin-right:auto}
 .minimal-row-nav {display:none}
@@ -517,6 +518,7 @@ body.lampa_view.pt-tv .card--wide,body.lampa_view.pt-tv .card--collection {width
 body.lampa_view.pt-tv .card,body.lampa_view.pt-mobile .settings-folder {will-change:auto}
 /* Clip TV rails without an extra full-width gradient compositing layer. */
 body.lampa_view.pt-tv .items-line__body {-webkit-mask-image:none;mask-image:none}
+body.lampa_view.pt-tv .minimal-paged-row .scroll--horizontal>.scroll__content>.scroll__body {transition:transform .12s linear;-webkit-transition:-webkit-transform .12s linear}
 body.lampa_view.pt-tv .card__view {transition:none!important;-webkit-transition:none!important}
 body.lampa_view.pt-tv .card.focus .card__view,body.lampa_view.pt-tv .card.hover .card__view {-webkit-transform:none;transform:none;box-shadow:0 0 .55em rgba(173,217,229,.4)}
 

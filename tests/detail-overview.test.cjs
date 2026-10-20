@@ -1,4 +1,26 @@
 const test=require('node:test'),assert=require('node:assert/strict'),path=require('path'),esbuild=require('esbuild'),native=require('./fixtures/native-lampa.cjs');
+test('an unrecognized host header retains its native description instead of deleting it before conversion',()=>{
+ const {JSDOM}=require('jsdom'),dom=new JSDOM('<body><div class="host-header"></div><div class="full-descr">Описание хоста</div></body>',{runScripts:'outside-only'}),w=dom.window;
+ try{
+  w.eval(esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/detail.js')],bundle:true,write:false,format:'iife',globalName:'Detail'}).outputFiles[0].text);
+  const link={rows:['start','description'],items:[]},data={movie:{id:1,title:'Фильм',overview:'Описание хоста'},persons:{cast:[],crew:[]}};
+  w.Detail.default({}, {type:'start',data,link});assert.equal(link.rows.includes('description'),true);
+  w.Detail.default({}, {type:'complite',data,link,body:w.document.body},()=>{});assert.equal(link.rows.includes('description'),true);assert.equal(w.document.querySelector('.full-descr').textContent,'Описание хоста');
+ }finally{w.close();}
+});
+test('a plugin loaded after the full page decorates its existing description, actions, cast and facts without fetching the page again',async()=>{
+ const r=await native({deferPlugin:true}),{w,L}=r;
+ try{
+  let calls=0;L.Api.full=(p,ok)=>{calls++;ok({movie:{id:912,title:'Поздняя загрузка',original_title:'Late load',overview:'Описание из уже открытой карточки',release_date:'2026-01-01',vote_average:8,production_countries:[],production_companies:[],spoken_languages:[],genres:[],source:'tmdb'},persons:{cast:[{id:99,name:'Актёр',character:'Роль'}],crew:[]},discuss:{result:[]},images:{logos:[]},videos:{results:[]},simular:{results:[]},recomend:{results:[]}});};
+  L.Activity.push({component:'full',id:912,method:'movie',source:'tmdb',card:{id:912,title:'Поздняя загрузка',source:'tmdb'}});await new Promise(resolve=>setTimeout(resolve,150));
+  const root=L.Activity.active().activity.render(true);assert.equal(root.querySelector('.minimal-detail-header'),null);assert.ok(root.querySelector('.full-descr'));
+  // Isolate decoration from the independently tested startup redirect home.
+  const replace=L.Activity.replace;L.Activity.replace=()=>{};
+  const code=require('fs').readFileSync(path.join(__dirname,'../dist/lampa.js'),'utf8');w.eval(code);L.Activity.replace=replace;await new Promise(resolve=>setTimeout(resolve,150));
+  assert.equal(root.querySelector('.minimal-detail-overview').textContent,'Описание из уже открытой карточки');assert.ok(root.querySelector('.minimal-detail-facts'));assert.ok(root.querySelector('.minimal-detail-cast .minimal-cast-native'));assert.equal(root.querySelector('.full-descr'),null);assert.equal(calls,1);
+  L.Listener.send('activity',{type:'start'});assert.equal(root.querySelectorAll('.minimal-detail-columns').length,1);assert.equal(root.querySelectorAll('.minimal-detail-overview').length,1);assert.deepEqual(r.errors,[]);
+ }finally{r.close();}
+});
 test('native movie and TV move the release date, omit Description rows and open the complete overview with return focus',async()=>{
  const r=await native(),{w,L}=r,tick=()=>new Promise(resolve=>setTimeout(resolve,130));
  try{

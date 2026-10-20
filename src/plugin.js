@@ -30,7 +30,7 @@ if (!ROOT.LampaView) {
     const boot=document.createElement('style');boot.id='lampa-minimal-boot';boot.textContent=BOOT;
     (document.head || document.documentElement).appendChild(boot);
   }
-  const P = ROOT.LampaView = {version: '0.4.49', identity: C.identity, ready: false, bridge: false};
+  const P = ROOT.LampaView = {version: '0.4.50', identity: C.identity, ready: false, bridge: false};
   let L, $, lastCard, initialized = false, playlist = [], activeVideo,loadLogo,artwork,back;
   const metadata = new Map();
   const heroes = new WeakSet();
@@ -380,13 +380,23 @@ if (!ROOT.LampaView) {
     ROOT.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(layout,180);});
     const fill=fillRows(L,()=>yes('lampa_view_enabled'));
     on('full',event=>{full(event);if(yes('lampa_view_enabled')){detail(L,event,loadLogo);if(event.type==='build' && event.name==='persons' && event.item)fill.track(event.item,event.data);}}); on('line',event=>{hero(event);fill(event);});
+    function visibleDetail(){
+      const active=L.Activity.active() || {},activity=active.activity,link=activity && activity.component;
+      if(active.component!=='full' || !link || !link.props || typeof link.props.all!=='function')return;
+      const data=link.props.all();if(!data || !data.movie)return;
+      const body=activity.render(true);full({type:'complite',object:active,data});
+      if(!yes('lampa_view_enabled'))return;
+      const node=body && (body.nodeType?body:body[0]);if(!node || node.querySelector('.minimal-detail-header'))return;
+      // Extensions can arrive after the cached full-page response, including
+      // on Safari. Replay decoration from native props without refetching it.
+      (link.items || []).forEach((item,index)=>{const row=(link.rows || [])[index],name=Array.isArray(row)?row[0]:row;if(name==='persons' || name==='discuss'){const value=Array.isArray(row)?row[1]:data;detail(L,{type:'build',name,item,data:value,body},loadLogo);if(name==='persons')fill.track(item,value);}});
+      detail(L,{type:'complite',object:active,data,body,link},loadLogo);
+    }
     on('activity',event => {
-      if (event.type === 'start') {updateRoute();trimSections();}
+      if (event.type === 'start') {updateRoute();trimSections();visibleDetail();}
       refreshCarousels();
     });
-    // If the desktop injected after the initial card's full event, bind the visible card now.
-    const active=L.Activity.active() || {};
-    if(active.component==='full' && active.activity) full({type:'complite',object:active,data:{movie:active.card}});
+    visibleDetail();
     P.ready=true;startup(L,ROOT);
   }
   function ready() {

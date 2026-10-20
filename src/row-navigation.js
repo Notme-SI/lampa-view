@@ -28,15 +28,17 @@ export default function rowNavigation(L,line,enabled){
  }
  function move(direction,fallback){
   stop();if(!enabled()){if(fallback)fallback();return;}
-  if(tv() && more && !people){
+  if(more && !people){
    if(line.last===more && direction<0){focus(node(line.items[Math.min(line.active,total()-1)]));return;}
    if(direction>0 && line.active>=total()-1){line.last=more;L.Controller.collectionAppend(more);L.Controller.collectionFocus(more,root);return;}
   }
   const old=line.active || 0,index=old+direction;
-  if(index<0){if(fallback)fallback();return;}
-  line.active=index;line.emit('scroll');const target=node(line.items[index]);
+  if(index<0 || index>=total()){if(fallback)fallback();return;}
+  line.active=index;if(!line.items[index])line.emit('scroll');const target=node(line.items[index]);
   if(!target){line.active=old;if(fallback)fallback();return;}
-  line.last=target;line.scroll.update(target,false);focus(target);
+  // Native hover:focus scrolls once and updates the row index. Preserve the
+  // previous index until that event, including the step back to card zero.
+  line.active=old;line.last=target;focus(target);line.active=index;
  }
  function page(direction){
   if(!enabled() || tv())return;

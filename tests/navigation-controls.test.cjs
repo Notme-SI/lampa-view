@@ -52,3 +52,21 @@ test('cast has only paging arrows on desktop and no header controls on TV',async
   w.document.body.classList.add('pt-tv');assert.equal(w.getComputedStyle(root.querySelector('.minimal-row-nav')).display,'none');w.document.body.classList.remove('pt-tv');root.querySelector('.full-person').dispatchEvent(new w.Event('hover:enter'));await wait(50);assert.equal(L.Activity.active().component,'actor');assert.equal(L.Activity.active().id,900);assert.deepEqual(r.errors,[]);
  }finally{r.close();}
 });
+
+test('held TV navigation scrolls once per card, builds the next lazy batch and hides the native tail More',async()=>{
+ const r=await native({built:true,initialStorage:{lampa_view_layout:'tv'}}),{w,L}=r;
+ try{
+  Object.defineProperty(w.HTMLElement.prototype,'offsetParent',{get(){return this.isConnected && !this.classList.contains('card-more')?w.document.body:null;},configurable:true});
+  w.Navigator.follow('focus',event=>L.Controller.focus(event.elem));
+  L.Api.sources.tmdb.get=(url,p,ok)=>w.setTimeout(()=>ok({results:Array.from({length:20},(_,i)=>({id:600+i,title:'Film '+i,source:'tmdb'})),page:1,total_pages:3}),0);
+  L.Activity.push({component:'category',url:'movie',source:'tmdb',title:'Фильмы'});await wait(180);
+  const row=L.Activity.active().activity.component.items[0],root=row.render(true);row.toggle();
+  const update=row.scroll.update;let updates=0;row.scroll.update=function(){updates++;return update.apply(this,arguments);};
+  for(let i=1;i<20;i++){updates=0;L.Controller.enabled().controller.right();assert.equal(row.active,i);assert.equal(updates,1,'Only native focus should position the rail');}
+  const tail=root.querySelector('.card-more');assert.ok(tail);assert.equal(w.getComputedStyle(tail).display,'none');
+  const more=root.querySelector('.minimal-row-more');L.Controller.enabled().controller.right();assert.equal(row.last,more);assert.ok(more.classList.contains('focus'));
+  L.Controller.enabled().controller.left();assert.equal(row.active,19);
+  for(let i=18;i>=0;i--){updates=0;L.Controller.enabled().controller.left();assert.equal(row.active,i);assert.equal(updates,1,'Returning to the first card must also scroll exactly once');}
+  assert.deepEqual(r.errors,[]);
+ }finally{r.close();}
+});
