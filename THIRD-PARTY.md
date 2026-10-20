@@ -1,5 +1,16 @@
 # Источники
 
+## Источники lampa.js
+
+| Материал | Ссылки |
+| --- | --- |
+| Закусь TV / Автопилот | [Плагин](https://hub.alcopa.cc/hub/u/YXblJI9HT) |
+| AGNative — основа Автопилота | [Llowmikee](https://github.com/Llowmikee), [appletv_agnative.js](https://llowmikee.github.io/AppleTVAGNativeNG/appletv_agnative.js) |
+| Дизайн Potok | [potok.rip](https://potok.rip/), [potok-media](https://github.com/potok-media) |
+| Nova Plus | [amikdn](https://github.com/amikdn/amikdn.github.io), [nova_plus.js](https://amikdn.github.io/nova_plus.js) |
+
+## Состав и лицензии
+
 Оригинальный интерфейс и новые модули передачи метаданных находятся в `src/` и `desktop/`.
 Сведения об источниках визуальных решений находятся в `licenses/NOTICE.txt`.
 Сервером остаётся настроенный пользователем Lampac.

@@ -21,7 +21,7 @@ const deferred='(function(){if(window.lampa_viewAdaptersScheduled)return;window.
 const source=result.outputFiles[0].text+'\n'+deferred;
 const legacy=babel.transformSync(source,{presets:[[require('@babel/preset-env').default,{targets:{ie:'11'},modules:false}]],babelrc:false,configFile:false,comments:false,compact:true}).code;
 acorn.parse(legacy,{ecmaVersion:5});
-const banner='/*! Lampa View '+require('../package.json').version+' | MIT (original code); third-party adapters: THIRD-PARTY.md */\n';
+const banner='/*! Lampa View '+require('../package.json').version+' | MIT (original code); third-party adapters: THIRD-PARTY.md\n'+fs.readFileSync(path.join(root,'licenses/NOTICE.txt'),'utf8').replace(/\r\n/g,'\n').replace(/\*\//g,'* /')+'\n*/\n';
 fs.writeFileSync(path.join(out,'lampa.js'),banner+legacy);
 console.log('dist/lampa.js: '+fs.statSync(path.join(out,'lampa.js')).size+' bytes');
 const boot=esbuild.buildSync({entryPoints:[path.join(root,'src/boot.js')],bundle:true,minify:true,target:['es2017'],loader:{'.css':'text'},write:false}).outputFiles[0].text;

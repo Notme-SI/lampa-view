@@ -40,4 +40,11 @@ curl -fsSL https://notme-si.github.io/lampa-view/install.sh | sudo sh
 
 Для Windows доступен [mpv+](https://github.com/Notme-SI/mpv-plus/releases/latest). В Lampa Desktop выберите внешний плеер `mpv.exe` из папки mpv+. Данные карточки передаются автоматически; отдельный мост устанавливать не нужно.
 
-[Изменения](CHANGELOG.md) · [Разработка](CONTRIBUTING.md) · [Лицензии](THIRD-PARTY.md)
+## Источники
+
+- **Закусь TV / Автопилот** — [страница плагина](https://hub.alcopa.cc/hub/u/YXblJI9HT).
+- **AGNative**, основа Автопилота — [Llowmikee](https://github.com/Llowmikee), [appletv_agnative.js](https://llowmikee.github.io/AppleTVAGNativeNG/appletv_agnative.js).
+- **Дизайн Potok** — [potok.rip](https://potok.rip/), [potok-media](https://github.com/potok-media).
+- **Nova Plus** — [amikdn](https://github.com/amikdn/amikdn.github.io), [nova_plus.js](https://amikdn.github.io/nova_plus.js).
+
+[Изменения](CHANGELOG.md) · [Разработка](CONTRIBUTING.md) · [Источники и лицензии](THIRD-PARTY.md)
