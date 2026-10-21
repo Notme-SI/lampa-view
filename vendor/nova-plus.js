@@ -32,6 +32,10 @@
     try { var raw = Lampa.Storage.value ? Lampa.Storage.value(key, '') : null; if (raw === 'false') return false; if (raw === 'true') return true; return Lampa.Storage.get(key, def); } catch (e) { return def; }
   }
 
+  function onlineState() { return window.LampaView && window.LampaView.online; }
+  function sourceAvailability(body) { var state = onlineState(); return state ? state.availability(body) : {state:'unknown',count:0}; }
+  function progressReader() { var state = onlineState(); return state && movie ? state.reader(movie) : function () { return {found:false}; }; }
+
   function cached(key, size, def) {
     var out;
     try { out = Lampa.Storage.cache(key, size, def); } catch (e) { out = null; }
@@ -117,6 +121,7 @@
     nova_plus_season_progress: { ru: 'Просмотрено {seen} из {total}', uk: 'Переглянуто {seen} з {total}', en: 'Watched {seen} of {total}' },
     nova_plus_season_left: { ru: 'осталось {left}', uk: 'залишилось {left}', en: '{left} left' },
     nova_plus_season_planned: { ru: 'всего в сезоне {planned}', uk: 'усього в сезоні {planned}', en: '{planned} in the season' },
+    nova_plus_season_available: { ru: 'у источника {available} из {total}', uk: 'у джерела {available} з {total}', en: 'source has {available} of {total}' },
     nova_plus_left: { ru: 'осталось', uk: 'залишилось', en: 'left' },
     nova_plus_loading_title: { ru: 'Ищем, где посмотреть', uk: 'Шукаємо, де подивитися', en: 'Looking for a source' },
     nova_plus_loading_start: { ru: 'Опрашиваем источники', uk: 'Опитуємо джерела', en: 'Checking sources' },
@@ -286,7 +291,7 @@
   }
 
   function qualityScope() {
-    return movie && movie.id ? String(movie.id) : '';
+    return movie && movie.id ? [movie.source || 'tmdb', tmdbKind(), movie.id].join(':') : '';
   }
 
   function knownQuality(name) {
@@ -493,7 +498,7 @@
     Lampa.Component.create = function (object) {
       var comp = real.apply(Lampa.Component, arguments);
       try {
-        if (comp && typeof comp.changeBalanser === 'function') patchHost(comp);
+        if (comp && typeof comp.changeBalanser === 'function') patchHost(comp,object);
       } catch (e) {}
       return comp;
     };
@@ -620,13 +625,14 @@
         inst[name] = function (url) {
           if (inst.nova_probe) return origin.apply(inst, arguments);
           try { learnUrl(url); } catch (e) {}
+          var generation=probe_generation,owner=componentNow();
           var args = arguments;
           try {
             if (typeof args[1] === 'function') {
               args = Array.prototype.slice.call(arguments);
               var real_ok = args[1];
               args[1] = function (answer) {
-                try { learnBody(answer); } catch (e) {}
+                try { if(generation===probe_generation && owner===componentNow())learnBody(answer); } catch (e) {}
                 return real_ok.apply(this, arguments);
               };
             }
@@ -659,12 +665,13 @@
         if (typeof send === 'function') {
           XMLHttpRequest.prototype.send = function () {
             var xhr = this;
+            var generation=probe_generation,owner=componentNow();
             try {
               xhr.addEventListener('load', function () {
                 try {
                   var body = xhr.response;
                   if (typeof body !== 'string') body = xhr.responseText;
-                  if (typeof body === 'string') learnBody(body);
+                  if (typeof body === 'string' && generation===probe_generation && owner===componentNow()) learnBody(body);
                 } catch (e) {}
               });
             } catch (e) {}
@@ -1472,6 +1479,7 @@
     'rjson', 'nojson', 'life', 'box', 'rchtype', 'nws_id', 'nws', 'rch', 'token'];
 
   var probe_queue = {};
+  var probe_generation = 0;
   var PROBE_TIMEOUT = 7000;
   var PROBE_PARALLEL = 2;
   var PROBE_LIMIT = 12;
@@ -1517,7 +1525,7 @@
 
   function sourceState(key) {
     if (!movie) return '';
-    var list = probeCache(movie.id).list || {};
+    var list = probeCache(qualityScope()).list || {};
     return list[key] ? list[key].s : '';
   }
 
@@ -1527,7 +1535,6 @@
     if (state === 'ok') return 0;
     if (state === 'empty') return 3;
     if (item.ghost) return 3;
-    if (lifeKnown()) return 0;
     if (knownQuality(key)) return 1;
     return 2;
   }
@@ -1588,7 +1595,7 @@
     var list = groups.sort || [];
     if (list.length < 2) return false;
 
-    var known = probeCache(movie.id).list || {};
+    var known = probeCache(qualityScope()).list || {};
     var here = currentSourceKey();
     var total = 0;
     var seen = 0;
@@ -1603,7 +1610,6 @@
   }
 
   function probeAuto() {
-    if (lifeKnown()) return 'external';
     if (probeCovered()) return 'external';
     return '';
   }
@@ -1653,10 +1659,13 @@
 
   function probeUrlFor(key) {
     if (!probe_url || !key) return '';
-    return probe_url.replace(/(\/lite\/)[^\/?&]+/, '$1' + encodeURIComponent(key));
+    var url = probe_url.replace(/(\/lite\/)[^\/?&]+/, '$1' + encodeURIComponent(key));
+    ['s','e','t','voice','translation','season','episode','rjson','checksearch','balancer','origid'].forEach(function(name){url=voiceDropParam(url,name);});
+    return url;
   }
 
   function probeStop() {
+    probe_generation++;
     probe_busy = false;
     probe_queue = {};
     clearTimeout(probe_timer);
@@ -1703,8 +1712,9 @@
       return probeMark(key, 'skip');
     }
 
-    var found = (body.match(/videos__item/g) || []).length ||
-      (body.match(/"method"\s*:\s*"(play|call|link)"/g) || []).length;
+    var result = sourceAvailability(body);
+    if (result.state === 'unknown') return probeMark(key, 'skip');
+    var found = result.count;
 
     if (found) {
       var best = '';
@@ -1715,26 +1725,25 @@
       });
       if (/4k|uhd/i.test(body)) best = '4K';
       if (best) rememberQuality(key, best);
-      if (movie) probeSave(movie.id, key, 'ok', found);
+      if (movie) probeSave(qualityScope(), key, 'ok', found);
       return probeMark(key, 'ok');
     }
 
-    if (!/videos__|"method"|online-prestige|"data"/i.test(body)) return probeMark(key, 'skip');
-    if (movie) probeSave(movie.id, key, 'empty', 0);
+    if (movie) probeSave(qualityScope(), key, 'empty', 0);
     probeMark(key, 'empty');
   }
 
   function probeRun() {
     if (!probeAllowed() || !probe_url || !movie) return;
-    if (lifeKnown()) return;
     var list = groups.sort || [];
     if (list.length < 2) return;
 
     probeStop();
+    var generation = probe_generation, owner = componentNow(), scopeId = qualityScope();
     probe_busy = true;
     probe_queue = {};
 
-    var known = probeCache(movie.id).list || {};
+    var known = probeCache(scopeId).list || {};
     var here = currentSourceKey();
     var queue = [];
 
@@ -1765,7 +1774,7 @@
     var index = 0;
 
     var step = function () {
-      if (!probe_busy || index >= queue.length) return;
+      if (!probe_busy || generation !== probe_generation || owner !== componentNow() || scopeId !== qualityScope() || index >= queue.length) return;
       if (Date.now() > deadline) return probeStop();
 
       var entry = queue[index++];
@@ -1773,22 +1782,24 @@
       try { net = new Lampa.Reguest(); } catch (e) { net = null; }
       if (!net) return probeStop();
 
+      net.nova_probe = true;
       probe_nets.push(net);
       try { net.timeout(PROBE_TIMEOUT); } catch (e) {}
 
+      var answered = false;
       var done = function (answer) {
+        if (answered || !probe_busy || generation !== probe_generation || owner !== componentNow() || scopeId !== qualityScope()) return;
+        answered = true;
         probeAnswer(entry.key, answer);
         step();
       };
 
       try {
         net['native'](probeUrlFor(entry.key), done, function () {
-          probeAnswer(entry.key, '');
-          step();
+          done('');
         }, false, { dataType: 'text' });
       } catch (e) {
-        probeAnswer(entry.key, '');
-        step();
+        done('');
       }
     };
 
@@ -1797,12 +1808,12 @@
 
   function probeSchedule() {
     if (!probeAllowed() || !movie) return;
-    if (probe_done_for === movie.id) return;
+    if (probe_done_for === qualityScope()) return;
     clearTimeout(probe_timer);
     probe_timer = setTimeout(function () {
       probe_timer = null;
       if (!inSkin() || !movie) return;
-      probe_done_for = movie.id;
+      probe_done_for = qualityScope();
       probeRun();
     }, PROBE_DELAY);
   }
@@ -2349,15 +2360,29 @@
     Lampa.Activity.nova_plus_wrapped = true;
   }
 
-  function patchHost(comp) {
+  function patchHost(comp,object) {
     if (!comp || comp.nova_host_hooked) return;
     if (typeof comp.changeBalanser !== 'function') return;
 
     comp.nova_host_hooked = true;
+    probeStop(); probe_done_for = 0; probe_url = '';
+    var availabilityGeneration=0,requestSource='';
+    function resetAvailability(source) {
+      availabilityGeneration++;requestSource=source || '';
+      comp.lampaViewAvailability='unknown';comp.lampaViewAvailabilitySource='';
+    }
+    resetAvailability();
+
+    if (typeof comp.reset === 'function') {
+      var reset=comp.reset;
+      comp.reset=function(){resetAvailability();return reset.apply(comp,arguments);};
+    }
 
     if (typeof comp.request === 'function') {
       var request = comp.request;
       comp.request = function (url) {
+        var source=String(url || '').match(/\/lite\/([^\/?#]+)/i);
+        resetAvailability(source ? source[1] : currentSourceKey());
         try { learnUrl(url); } catch (e) {}
         return request.apply(comp, arguments);
       };
@@ -2367,8 +2392,23 @@
       var parse = comp.parse;
       comp.nova_parse_hooked = true;
       comp.parse = function (str) {
+        var responseGeneration=availabilityGeneration,responseSource=requestSource || currentSourceKey();
+        var active=Lampa.Activity.active(),card=object && (object.movie || object.card) || active && active.activity && active.activity.component===comp && (active.movie || active.card) || (componentNow()===comp ? movie : null);
+        if (card && !comp.destroyed && tmdbKind(card) === 'tv' && typeof comp.getChoice === 'function' && typeof comp.saveChoice === 'function') {
+          try { var state=onlineState(),saved=comp.lampaViewManualSeason ? {season:comp.lampaViewManualSeason} : state && state.resume(card),index=saved && state ? state.seasonIndex(str,saved.season) : -1;
+            if(index>=0){var choice=comp.getChoice();choice.season=index;comp.saveChoice(choice);}
+          } catch (error) {}
+        }
+        var availability = sourceAvailability(str);
         try { learnBody(str); } catch (e) {}
-        return parse.apply(comp, arguments);
+        var result=parse.apply(comp, arguments);
+        // Parsing a season page can immediately start another request. Its
+        // pending state must not inherit the preceding page's availability.
+        if(responseGeneration===availabilityGeneration){
+          comp.lampaViewAvailability=availability.state;comp.lampaViewAvailabilitySource=responseSource;
+          if (movie && componentNow() === comp && responseSource && availability.state !== 'unknown') probeSave(qualityScope(), responseSource, availability.state, availability.count);
+        }
+        return result;
       };
     }
 
@@ -2385,6 +2425,11 @@
     var real = comp.changeBalanser;
 
     comp.changeBalanser = function () {
+      resetAvailability(typeof arguments[0]==='string' ? arguments[0] : '');
+      probeStop(); probe_done_for = 0;
+      if (typeof comp.getChoice === 'function' && typeof comp.saveChoice === 'function' && typeof arguments[0] === 'string') {
+        try { var previous = comp.getChoice(), next = comp.getChoice(arguments[0]); if (previous.voice_name && !next.voice_name) { next.voice_name = previous.voice_name; comp.saveChoice(next, arguments[0]); } } catch (error) {}
+      }
       if (!inplace || !reloadable(comp)) return real.apply(comp, arguments);
 
       inplaceStop();
@@ -2568,6 +2613,10 @@
     }
 
     var soon = soonCard(origin);
+    var episodeNum = digits(origin.find('.' + px + 'online-prestige__episode-number').text()) || index + 1;
+    var isSeries = !!(movie && (movie.name || movie.original_name || movie.number_of_seasons || movie.media_type === 'tv'));
+    var progress = progressReader()(isSeries ? (seasonNumber() || 1) : 0, isSeries ? episodeNum : 0, hash);
+    if (progress.found) percent = progress.percent;
 
     return {
       origin: origin,
@@ -2576,10 +2625,13 @@
       folder: origin.hasClass(px + 'online-prestige--folder'),
       soon: soon,
       percent: percent,
+      position: progress.time || 0,
+      updated: progress.updated || 0,
+      recorded: !!progress.found,
       hash: hash,
       line: line,
       viewed: origin.find('.' + px + 'online-prestige__viewed').length > 0,
-      num: digits(origin.find('.' + px + 'online-prestige__episode-number').text()) || index + 1,
+      num: episodeNum,
       numbered: origin.find('.' + px + 'online-prestige__episode-number').length > 0,
       title: origin.find('.' + px + 'online-prestige__title').text().trim(),
       meta: meta,
@@ -2610,40 +2662,37 @@
 
   function isSeen(item) {
     if (!item) return false;
-    if (item.viewed) return true;
+    if (item.viewed && !item.recorded) return true;
     return percentOf(item) >= SEEN_PERCENT;
   }
 
   function isStarted(item) {
     var value = percentOf(item);
-    return value > 0 && value < SEEN_PERCENT;
+    return (value > 0 || item && item.position > 0) && value < SEEN_PERCENT;
   }
 
   function seasonText(season) {
+    var total=Math.max(season.total,season.planned,season.seen);
     var line = text('nova_season_progress', 'nova_plus_season_progress')
-      .replace('{seen}', season.seen).replace('{total}', season.total);
-    if (season.seen < season.total) {
+      .replace('{seen}', season.seen).replace('{total}', total);
+    if (season.seen < total) {
       line += ' \u00b7 ' + text('nova_season_left', 'nova_plus_season_left')
-        .replace('{left}', season.total - season.seen);
+        .replace('{left}', total - season.seen);
     }
-    if (season.planned > season.total) {
-      line += ' \u00b7 ' + text('nova_season_planned', 'nova_plus_season_planned')
-        .replace('{planned}', season.planned);
+    if (total > season.total) {
+      line += ' \u00b7 ' + label('nova_plus_season_available')
+        .replace('{available}', season.total).replace('{total}',total);
     }
     return line;
   }
 
-  function seasonSeen(list) {
-    var seen = 0;
-    var total = 0;
-    var planned = 0;
-    list.forEach(function (item) {
-      planned++;
-      if (item.soon) return;
-      total++;
-      if (isSeen(item)) seen++;
-    });
-    return { seen: seen, total: total, planned: planned };
+  function seasonSeen(list, planned) {
+    var seen=0,total=0,max=0,unique={},read=progressReader(),season=seasonNumber() || 1;
+    list.forEach(function(item){max=Math.max(max,item.num || 0);if(item.soon || unique[item.num])return;unique[item.num]=item;total++;});
+    var details=movie && Array.isArray(movie.seasons) ? movie.seasons : [],detail=details.filter(function(row){return Number(row.season_number)===season;})[0];
+    planned=Math.max(planned || 0,detail && Number(detail.episode_count) || 0,max,total);
+    for(var e=1;e<=Math.min(500,planned);e++){var record=read(season,e);if(record.found ? record.percent>=SEEN_PERCENT : unique[e] && isSeen(unique[e]))seen++;}
+    return {seen:seen,total:total,planned:planned};
   }
 
   function pickResume(full) {
@@ -2663,9 +2712,11 @@
       return list[0];
     }
 
-    for (i = 0; i < list.length; i++) {
-      if (isStarted(list[i])) return list[i];
-    }
+    list.sort(function(a,b){return a.num-b.num;});
+    var state=onlineState(),saved=state && movie ? state.resume(movie) : null;
+    if(saved && saved.season===(seasonNumber() || 1)){var exact=list.filter(function(item){return item.num===saved.episode;})[0];if(exact)return exact;}
+    var partial=list.filter(isStarted).sort(function(a,b){return (b.updated || 0)-(a.updated || 0);});
+    if(partial.length)return partial[0];
     for (i = 0; i < list.length; i++) {
       if (!isSeen(list[i])) return list[i];
     }
@@ -2673,15 +2724,16 @@
   }
 
   function freshItem() {
-    for (var i = 0; i < items.length; i++) {
-      if (!items[i].soon && !isSeen(items[i])) return items[i];
+    var list=serial ? items.slice().sort(function(a,b){return a.num-b.num;}) : items;
+    for (var i = 0; i < list.length; i++) {
+      if (!list[i].soon && !isSeen(list[i])) return list[i];
     }
     return null;
   }
 
   function nextItem(target) {
     if (!target) return null;
-    var next = items[target.index + 1] || null;
+    var next = serial ? items.filter(function(item){return item.num>target.num && !item.soon;}).sort(function(a,b){return a.num-b.num;})[0] : items[target.index + 1] || null;
     if (next && next.soon) return null;
     return next;
   }
@@ -2818,6 +2870,12 @@
     return out;
   }
 
+  function progressLine(item) {
+    var line=item.line && item.line.length ? item.line.clone() : $('<div class="time-line"><div></div></div>');
+    if(item.recorded)line.toggleClass('hide',!item.percent).children('div').first().css('width',item.percent+'%');
+    return line;
+  }
+
   function buildCard(item, compact, grid) {
     var card = $('<div class="nova-card selector">' +
       '<div class="nova-card__thumb"><img alt=""><div class="nova-card__num"><span></span></div><div class="nova-card__line"></div></div>' +
@@ -2855,8 +2913,8 @@
     card.find('.nova-card__time').text(item.time || '');
 
     var line = card.find('.nova-card__line');
-    if (item.line.length) {
-      line.append(item.line.clone());
+    if (item.line.length || item.recorded) {
+      line.append(progressLine(item));
       if (!grid) line.addClass('nova-card__line--body').appendTo(body);
     } else line.remove();
 
@@ -3188,77 +3246,24 @@
     return logoFetch(movie, done);
   }
 
-  function logoUrls(card) {
-    var id = tmdbId(card);
-    if (!id) return [];
-
-    var kind = tmdbKind(card);
-    var lang = logoLang();
-    var langs = lang === 'en' ? 'en,null' : lang + ',en,null';
-    var kinds = kind === 'tv' ? ['tv', 'movie'] : ['movie', 'tv'];
-    var out = [];
-
-    kinds.forEach(function (which) {
-      [langs, ''].forEach(function (filter) {
-        var url = '';
-        try {
-          url = Lampa.TMDB.api(which + '/' + id + '/images?api_key=' + Lampa.TMDB.key() +
-            (filter ? '&include_image_language=' + filter : ''));
-        } catch (e) {
-          url = '';
-        }
-        if (url && out.indexOf(url) === -1) out.push(url);
-      });
-    });
-
-    return out;
-  }
-
+  var logoPending = {};
   function logoFetch(target, done) {
-    var card = target || movie;
-    if (!logoOn() || !card || !card.id) return done('');
-
-    var cache_key = logoKey(card);
-    if (typeof LOGO_MEM[cache_key] === 'string') return done(LOGO_MEM[cache_key]);
-
-    var entry = logoEntry(cache_key);
-    if (logoFresh(entry)) {
-      LOGO_MEM[cache_key] = entry.p;
-      if (entry.p) logoWarm(entry.p);
-      return done(entry.p);
+    var card=target || movie,id=tmdbId(card);
+    if(!logoOn() || !card || !id)return done('');
+    var key=logoKey(card),entry=logoEntry(key);
+    if(typeof LOGO_MEM[key]==='string')return done(LOGO_MEM[key]);
+    if(logoFresh(entry)){LOGO_MEM[key]=entry.p;if(entry.p)logoWarm(entry.p);return done(entry.p || '');}
+    if(logoPending[key]){logoPending[key].push(done);return;}
+    var api;try{api=Lampa.Api.sources.tmdb;}catch(error){}
+    if(!api || typeof api.get!=='function')return done('');
+    var callbacks=logoPending[key]=[done],settled=false,timer=setTimeout(function(){finish(null);},8000);
+    function finish(answer){
+      if(settled)return;settled=true;clearTimeout(timer);delete logoPending[key];
+      var valid=answer && Array.isArray(answer.logos),path=valid ? logoPick(answer.logos) : '';
+      logoRemember(key,path,!!valid);if(path)logoWarm(path);
+      callbacks.forEach(function(callback){try{callback(path || '');}catch(error){}});
     }
-
-    var urls = logoUrls(card);
-    if (!urls.length) return done('');
-
-    var at = 0;
-    var answered = false;
-
-    var finish = function (path) {
-      logoRemember(cache_key, path, answered);
-      if (path) logoWarm(path);
-      done(path || '');
-    };
-
-    var step = function () {
-      if (at >= urls.length) return finish('');
-      var url = urls[at++];
-      var net = null;
-      try { net = new Lampa.Reguest(); } catch (e) { net = null; }
-      if (!net) return finish('');
-      try { net.timeout(8000); } catch (e) {}
-      net.silent(url, function (answer) {
-        var list = answer && typeof answer === 'object' ? answer.logos : null;
-        if (list && typeof list.length === 'number') answered = true;
-        var path = logoPick(list);
-        if (path) return finish(path);
-        step();
-      }, function () {
-        step();
-      });
-    };
-
-    step();
+    try{api.get(tmdbKind(card)+'/'+id+'/images',{include_image_language:logoLang()+',en,null'},finish,function(){finish(null);});}catch(error){finish(null);}
   }
 
   function numId(value) {
@@ -3490,6 +3495,7 @@
     if (serial && target.numbered) {
       label += ' \u00b7 S' + (seasonNumber() || 1) + ' E' + target.num;
     }
+    if(started && target.position>0){var seconds=Math.floor(target.position),minutes=Math.floor(seconds/60),hours=Math.floor(minutes/60);label+=' · '+(hours?hours+':'+('0'+minutes%60).slice(-2):minutes)+':'+('0'+seconds%60).slice(-2);}
     button.find('.nova-btn__label').text(label);
 
     var hint = [];
@@ -3502,7 +3508,7 @@
 
     wideHeroTune();
 
-    var season = serial && !nav && items.length > 1 ? seasonSeen(items) : null;
+    var season = serial && !nav && items.length ? seasonSeen(items) : null;
 
     var season_line = ui.hero.find('.nova-hero__season');
     if (season) {
@@ -3516,7 +3522,7 @@
           if (!ui.hero || tmdbId() !== want_id || (seasonNumber() || 1) !== want_season) return;
           var box = ui.hero.find('.nova-hero__season');
           if (!box.length) return;
-          season.planned = planned;
+          season = seasonSeen(items,planned);
           box.html(heroSeasonHtml(season)).show();
         });
       }
@@ -3524,7 +3530,7 @@
 
     var progress = ui.hero.find('.nova-hero__progress').empty();
     var percent = season
-      ? Math.round(season.seen / season.total * 100)
+      ? Math.min(100,Math.round(season.seen / Math.max(1,season.total,season.planned) * 100))
       : Math.min(100, target.percent);
     if (percent > 0) {
       progress.show().append('<div class="time-line"><div style="width:' + percent + '%"></div></div>');
@@ -3622,7 +3628,7 @@
     switchStart('source');
     inplaceStart();
     hopReset();
-    probeStop();
+    probeStop();probe_done_for=0;
     voiceStop();
     hop.tried[item.source || item.title] = true;
     keepAlive(function () {
@@ -3632,6 +3638,7 @@
 
   function chooseOption(group, index) {
     if (!filter || typeof filter.onSelect !== 'function') return;
+    var owner=componentNow();if(group.stype==='season' && owner && group.items[index])owner.lampaViewManualSeason=digits(group.items[index].title);
     var host_filter = filter;
     ui_open = '';
     buildRows();
@@ -3730,7 +3737,7 @@
 
   function sourceRow() {
     var sort = groups.sort || [];
-    var probe = probeCache(movie.id).list || {};
+    var probe = probeCache(qualityScope()).list || {};
     var life = lifeKnown();
 
     var graded = false;
@@ -3742,7 +3749,7 @@
     var hidden = [];
     sort.forEach(function (item) {
       var key = item.source || item.title;
-      var state = probe[key] ? probe[key].s : (life && !item.ghost ? 'ok' : '');
+      var state = probe[key] ? probe[key].s : (item.ghost ? 'empty' : '');
       if (sourceActive(item, key, state, graded)) visible.push(item);
       else hidden.push(item);
     });
@@ -3753,7 +3760,7 @@
     visible.forEach(function (item, order) {
       var key = item.source || item.title;
       var parts = splitSourceName(item.title);
-      var state = probe[key] ? probe[key].s : (life ? (item.ghost ? 'empty' : 'ok') : '');
+      var state = probe[key] ? probe[key].s : (item.ghost ? 'empty' : '');
       var box = chip(focusKey(item), parts.name, {
         badge: knownQuality(key) || parts.badge,
         active: !!item.selected,
@@ -4483,7 +4490,9 @@
       '<div class="nova-note__actions"></div></div></div>');
 
     var dead = currentSourceKey();
-    if (dead && movie) probeSave(movie.id, dead, 'empty', 0);
+    // A timeout or authorization screen is not proof that the title is absent.
+    var statusOwner=componentNow();
+    if (dead && movie && statusOwner && statusOwner.lampaViewAvailabilitySource === dead && statusOwner.lampaViewAvailability === 'empty') probeSave(qualityScope(), dead, 'empty', 0);
 
     note.find('.nova-note__title').text(native.node.find('.online-empty__title,.onl-online-empty__title').text().trim());
     note.find('.nova-note__text').text(native.node.find('.online-empty__time,.onl-online-empty__time').text().trim());
@@ -4687,7 +4696,7 @@
       });
       var key = current ? (current.source || current.title) : '';
       if (key) {
-        probeSave(movie.id, key, 'ok', files.length);
+        probeSave(qualityScope(), key, 'ok', files.length);
         var best = '';
         files.forEach(function (item) {
           var label = shortQuality(item.quality);
@@ -4799,15 +4808,14 @@
   }
 
   function schedule() {
-    if (busy) return;
-    clearTimeout(timer);
-    timer = setTimeout(draw, 60);
+    if (busy || timer) return;
+    timer = setTimeout(function(){timer=null;draw();},16);
   }
 
   function scheduleNow() {
     if (busy) return;
     if (scoped()) return schedule();
-    clearTimeout(timer);
+    clearTimeout(timer);timer=null;
     draw();
     if (!scoped()) schedule();
   }
@@ -4837,12 +4845,12 @@
     observed = null;
     afterPlayerStop();
     hopStop();
-    probeStop();
+    probeStop();probe_done_for=0;
     voiceStop();
     voice_done = '';
     voice_seed_done = '';
     voice_seen = { id: 0, season: 0, origin: '', list: [] };
-    clearTimeout(timer);
+    clearTimeout(timer);timer=null;
     lockStopWatch();
     loadingStop();
     forget();
@@ -4851,6 +4859,7 @@
   function refreshMarks() {
     if (!inSkin() || !items.length) return;
     var grid = !!(ui.list && ui.list.hasClass('nova__list--grid'));
+    var read=progressReader();
 
     items.forEach(function (item) {
       if (!item || item.soon || item.folder) return;
@@ -4866,15 +4875,18 @@
         var raw = (item.line.children('div').first().attr('style') || '').match(/([\d.]+)%/);
         if (raw) percent = parseFloat(raw[1]) || 0;
       }
-      item.percent = percent;
+      var record=read(serial ? (seasonNumber() || 1) : 0,serial ? item.num : 0,item.hash);
+      if(record.found){percent=record.percent;item.position=record.time;item.updated=record.updated;}
+      item.recorded=!!record.found;item.percent = percent;
       if (item.origin && item.origin.find('.' + (item.px || '') + 'online-prestige__viewed').length) item.viewed = true;
 
       var card = item.card;
       if (!card || !card.length) return;
 
       var box = card.find('.nova-card__line');
-      if (box.length && item.line && item.line.length) {
-        box.empty().append(item.line.clone());
+      if (!box.length && item.recorded && !isSeen(item))box=$('<div class="nova-card__line"></div>').appendTo(grid ? card.find('.nova-card__thumb') : card.find('.nova-card__body')).toggleClass('nova-card__line--body',!grid);
+      if (box.length && (item.line && item.line.length || item.recorded)) {
+        box.empty().append(progressLine(item));
       }
 
       if (isSeen(item)) {
@@ -4890,7 +4902,8 @@
             side.append('<div class="nova-card__eye">' + ICON.eye + '</div>');
           }
         }
-      } else if (!item.nova_seen) {
+      } else {
+        item.nova_seen = false;
         card.find('.nova-card__viewed,.nova-card__eye').remove();
       }
     });
@@ -5293,7 +5306,7 @@
     Lampa.Listener.follow('activity', function (e) {
       try {
         var eo = e && e.object && e.object.activity && e.object.activity.component;
-        if (eo && typeof eo.changeBalanser === 'function') patchHost(eo);
+        if (eo && typeof eo.changeBalanser === 'function') patchHost(eo,e.object);
       } catch (err) {}
       if (e.type === 'start' || e.type === 'archive') {
         detach();
@@ -5317,7 +5330,7 @@
           if (observer) observer.disconnect();
           observer = null;
           observed = null;
-          clearTimeout(timer);
+          clearTimeout(timer);timer=null;
           lockStopWatch();
           leaveGuard();
           return;

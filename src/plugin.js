@@ -23,6 +23,7 @@ import mpvLaunch from './mpv-launch.cjs';
 import carousel from './carousel.js';
 import tvPerformance from './tv-performance.js';
 import {cacheSettings} from './cache-control.js';
+import onlineState from './online-state.js';
 
 const ROOT = window;
 if (!ROOT.LampaView) {
@@ -31,7 +32,7 @@ if (!ROOT.LampaView) {
     const boot=document.createElement('style');boot.id='lampa-minimal-boot';boot.textContent=BOOT;
     (document.head || document.documentElement).appendChild(boot);
   }
-  const P = ROOT.LampaView = {version: '0.4.52', identity: C.identity, ready: false, bridge: false};
+  const P = ROOT.LampaView = {version: '0.4.53', identity: C.identity, ready: false, bridge: false};
   let L, $, lastCard, initialized = false, playlist = [], activeVideo,loadLogo,artwork,back;
   const metadata = new Map();
   const heroes = new WeakSet();
@@ -349,6 +350,7 @@ if (!ROOT.LampaView) {
   function start() {
     if (initialized || !ROOT.Lampa || !ROOT.jQuery) return;
     initialized=true; L=ROOT.Lampa; $=ROOT.jQuery;loadLogo=logoLoader(L);
+    P.online=onlineState(L);
     installTmdb(L);installFullGuard(L);torrentEpisodes(L,ROOT);inputs(L);
     artwork=installArtwork(L,()=>yes('lampa_view_enabled'));
     settings(); bridge(); shell();back=installBack(L,$,()=>yes('lampa_view_enabled'));artwork.refresh();

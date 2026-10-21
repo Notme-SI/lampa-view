@@ -12,3 +12,6 @@ Copyright (c) 2026 Potok. MIT; see Reference-UI-MIT.txt.
 
 Lampa runtime fixture and adapted lens icon: https://github.com/yumata/lampa
 GNU GPL v2; see Lampa-GPL-2.0.txt.
+
+Selected online progress and compatibility fixes adapted from Nova Plus Community 1.0.0,
+nova-plus-community.js supplied by the user on 2026-10-21; see THIRD-PARTY.md.

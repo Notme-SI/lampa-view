@@ -31,7 +31,7 @@ export default function unifiedSettings(api,L){
    if(n.startsWith('nova_plus_') && n!=='nova_plus_enabled' && !online)return false;
    if(wide && ['nova_plus_hero','nova_plus_hero_art','nova_plus_fullscreen'].includes(n))return false;
    if(!wide && ['nova_plus_layout','nova_plus_order','nova_plus_meta','nova_plus_source_pos'].includes(n))return false;
-   if(n==='nova_plus_probe' || n==='nova_plus_art_size')return false;
+   if(n==='nova_plus_art_size')return false;
    return d.param && !['title','static'].includes(d.param.type) && !/^snack_open_/.test(n) && !/community|versions|snack_reset|telegram|donat|support|_bot/i.test(n) && !/telegram|тг.бот|телеграм|поддержать|сообщество/i.test(text);
   }).map(d=>({...d,field:{...d.field,name:d.param.name==='alc_auto_server'?'Сервер онлайн-источников':d.param.name==='nova_plus_mode'?'Вид окна онлайн':cleanText(d.field && d.field.name),description:cleanText(d.field && d.field.description)}}));
  }
