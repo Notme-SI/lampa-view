@@ -601,6 +601,7 @@ body.lampa_view .minimal-torrent-view>.explorer__left>.scroll {display:none!impo
 body.lampa_view .minimal-torrent-view>.explorer__files {width:71.3%;min-width:0}
 body.lampa_view .minimal-torrent-view .explorer__files-head {padding:.3em .6em .6em 0}
 body.lampa_view .minimal-torrent-view .explorer__files-body .scroll__body {padding-left:0}
+body.lampa_view .minimal-torrent-view .filter--back {display:none!important}
 .minimal-torrent-banner {display:none}
 body.lampa_view .minimal-torrent-banner {display:block;position:relative;overflow:hidden;border-radius:1em;background:#0b1016;aspect-ratio:1.65;min-height:12.6em;color:var(--pt-text)}
 body.lampa_view .minimal-torrent-banner__image,body.lampa_view .minimal-torrent-banner__shade {position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -617,11 +618,36 @@ body.lampa_view .minimal-torrent-view--classic .minimal-torrent-banner__logo {ma
  body.lampa_view .minimal-torrent-view {flex-direction:column;flex-wrap:nowrap;min-height:0}
  body.lampa_view .minimal-torrent-view>.explorer__left {width:100%;flex:0 0 auto;padding-right:.3em;margin-bottom:.5em}
  body.lampa_view .minimal-torrent-view>.explorer__files {width:100%;flex:1 1 0;min-height:0;display:flex;flex-direction:column}
- body.lampa_view .minimal-torrent-banner {min-height:0;max-height:28vh}
+ body.lampa_view .minimal-torrent-banner {width:100%;min-height:0;max-height:22vh}
+ body.lampa_view .minimal-torrent-banner__title {font-size:1.4em;bottom:.8em}
+ body.lampa_view .minimal-torrent-banner__meta {font-size:.8em;top:.8em;right:1em;left:1em}
  body.lampa_view .minimal-torrent-view .explorer__files-head {padding-left:.3em;flex:0 0 auto}
+ body.lampa_view .minimal-torrent-view .explorer__files-head>.scroll {width:100%;min-width:0;overflow:visible!important}
+ body.lampa_view .minimal-torrent-view .explorer__files-head .scroll__content {padding:0!important}
+ body.lampa_view .minimal-torrent-view .explorer__files-head .scroll__body {transform:none!important;-webkit-transform:none!important;width:100%!important}
+ body.lampa_view .minimal-torrent-view .torrent-filter {display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:.5em;margin:0!important;white-space:normal;align-items:stretch}
+ body.lampa_view .minimal-torrent-view .torrent-filter .simple-button {font-size:.88em;min-height:44px;min-width:0;margin:0;padding:.5em .65em;box-sizing:border-box;justify-content:center}
+ body.lampa_view .minimal-torrent-view .filter--search>div {display:none!important}
+ body.lampa_view .minimal-torrent-view .filter--search>svg {width:1.3em;height:1.3em;margin:0}
+ body.lampa_view .minimal-torrent-view .filter--sort {flex-wrap:wrap;gap:.15em .4em}
+ body.lampa_view .minimal-torrent-view .filter--sort>div {margin:0;padding:0;background:transparent;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.8em;color:var(--pt-muted)}
+ body.lampa_view .minimal-torrent-view .filter--filter>div:not(.hide) {margin-left:.4em;padding:.15em .3em}
  body.lampa_view .minimal-torrent-view .explorer__files-body {flex:1 1 0;min-height:0}
  /* Lampa sizes this scroll for the whole screen; it now shares it with the banner. */
  body.lampa_view .minimal-torrent-view .explorer__files-body>.scroll {height:100%!important}
+ body.lampa_view .minimal-torrent-view .explorer__files-body .scroll__content {padding-top:.5em}
+ body.lampa_view .minimal-torrent-view .watched-history {font-size:.8em;padding:.6em;margin-bottom:.5em}
+ body.lampa_view .minimal-torrent-view .torrent-item.tc-item {padding:.75em!important}
+ body.lampa_view .minimal-torrent-view .tc-head {display:flex;flex-wrap:wrap;gap:.4em .7em}
+ body.lampa_view .minimal-torrent-view .tc-summary {flex:1 1 50%;gap:.3em .55em}
+ body.lampa_view .minimal-torrent-view .tc-right {font-size:.8em;gap:.2em;max-width:100%}
+ body.lampa_view .minimal-torrent-view .tc-size {margin-top:0;font-size:1em}
+ body.lampa_view .minimal-torrent-view .tc-seeds {font-size:.85em}
+ body.lampa_view .minimal-torrent-view .tc-tags {margin:.5em 0}
+ body.lampa_view .minimal-torrent-view .tc-tags .tc-tag {font-size:.72em}
+ body.lampa_view .minimal-torrent-view .tc-voices {font-size:.8em}
+ body.lampa_view .minimal-torrent-view .tc-foot {font-size:.72em;gap:.6em;margin-top:.5em}
+ body.lampa_view .minimal-torrent-view .tc-source {display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
 }
 /* Let the activity scroll whole catalogues; selector groups never become inner carousels. */
 body.lampa_view .nova-plus-root .nova-toolbar {flex-wrap:wrap!important;white-space:normal}
