@@ -100,7 +100,7 @@
     }
     function catalogue(card, english) {
         card = card || {}; english = english || {};
-        var tv = !!(card.original_name || card.number_of_seasons || card.seasons);
+        var tv = card.media_type==='movie' || card.type==='movie'?false:!!(card.media_type==='tv' || card.type==='tv' || card.original_name || card.number_of_seasons || card.seasons);
         var aliases = [], seasonAliases = [], seasons = [];
         function add(v, priority, language) { if (text(v).trim()) aliases.push({ title: text(v).trim(), priority: priority, language: language }); }
         add(card.name || card.title, 0, 'ru'); add(english.name || english.title, 1, 'en');
@@ -230,11 +230,15 @@
         });
         return { tracks: uniq(tracks), claimed: uniq(claimed), ignored: uniq(ignored), names: uniq(names), types:uniq(types), author:author };
     }
+    function probeStreams(value) {
+        if(typeof value==='string'){try{value=JSON.parse(value);}catch(error){return [];}}
+        return Array.isArray(value)?value:value && Array.isArray(value.streams)?value.streams:[];
+    }
     function technical(row) {
-        var info = row.info || {}, probe = Array.isArray(row.ffprobe) ? row.ffprobe : row.ffprobe && row.ffprobe.streams || info.ffprobe || [];
-        if (!Array.isArray(probe)) probe = probe.streams || [];
+        var info = row.info || {}, probe = probeStreams(row.ffprobe);
+        if(!probe.length)probe=probeStreams(info.ffprobe || row.probe);
         var general=row.general || {};
-        var raw = [row.Title,info.quality,info.resolution,info.videotype,general.resolution,row.resolution,row.Resolution].concat(info.types || []).join(' '), video=[],audio=[],languages=[],subtitles=[],channels=[],hdr=[],dimensions='';
+        var raw = [row.Title,info.quality,info.resolution,info.videotype,general.resolution,row.resolution,row.Resolution,row.Quality].concat(row._tcTitles || [],info.types || []).join(' '), video=[],audio=[],languages=[],subtitles=[],channels=[],hdr=[],dimensions='';
         function language(v) { var s=text(v).trim().toUpperCase(), codes={RUS:'RU',RUSSIAN:'RU',РУССКИЙ:'RU',ENG:'EN',ENGLISH:'EN',UKR:'UK',UKRAINIAN:'UK',JPN:'JA',JAPANESE:'JA',JAP:'JA',CHI:'ZH',ZHO:'ZH',KOR:'KO',GER:'DE',DEU:'DE',FRE:'FR',FRA:'FR',SPA:'ES'};return codes[s] || (/^[A-Z]{2,3}$/.test(s) && s!=='UND'?s:''); }
         function codec(v,type) { var s=text(v).toUpperCase().replace(/[ ._-]/g,'');var aliases=type==='video'?{H264:'H.264',X264:'H.264',AVC:'H.264',AVC1:'H.264',H265:'H.265',X265:'H.265',HEVC:'H.265',AV1:'AV1',MPEG4:'MPEG-4',XVID:'MPEG-4',DIVX:'MPEG-4',MPEG2VIDEO:'MPEG-2',MPEG2:'MPEG-2',VP9:'VP9'}:{AC3:'AC-3',DD:'AC-3',EAC3:'E-AC-3',DDP:'E-AC-3',DTS:'DTS',DTSHDMA:'DTS-HD MA',TRUEHD:'TrueHD',AAC:'AAC',FLAC:'FLAC',MP3:'MP3',OPUS:'Opus'};return aliases[s] || ''; }
         function resolution(v) {var s=text(v).trim().toUpperCase(),r={SD:'SD',HD:'720p',FHD:'1080p','FULL HD':'1080p','4K':'2160p',UHD:'2160p','8K':'4320p'};if(r[s])return r[s];var m=s.match(/^(480|576|720|1080|1440|2160|4320)[PI]?$/);return m?m[1]+'p':'';}
@@ -245,10 +249,21 @@
                 if(v && +v.width>0 && +v.height>0){firstVideo={width:+v.width,height:+v.height};return true;}return false;
             });
         }
+        if(!firstVideo){
+            var media=row.mediainfo || row.mediaInfo || row.MediaInfo || info.mediainfo;
+            if(typeof media==='string'){try{media=JSON.parse(media);}catch(error){media=null;}}
+            var tracks=media && media.media && media.media.track || media && media.track || [];
+            if(Array.isArray(tracks))tracks.some(function(track){
+                if(String(track['@type'] || track.StreamKind || '').toLowerCase()!=='video')return false;
+                var w=parseInt(text(track.Width || track.width).replace(/\s/g,''),10),h=parseInt(text(track.Height || track.height).replace(/\s/g,''),10),cover=track.Cover==='Yes' || track.ImageType==='Cover';
+                if(w>0 && h>0 && !cover){firstVideo={width:w,height:h};return true;}return false;
+            });
+        }
         if(firstVideo){dimensions=firstVideo.width+'×'+firstVideo.height;quality=fromDimensions(+firstVideo.width,+firstVideo.height);}
         if(!quality)quality=resolution(info.quality) || resolution(general.resolution) || resolution(info.resolution) || resolution(row.resolution) || resolution(row.Resolution);
         if(!quality){var dim=raw.match(/\b(\d{3,4})\s*[x×]\s*(\d{3,4})\b/i),q=raw.match(/\b(4320|2160|1440|1080|720|576|480)[pi]\b|\b(8K|4K|UHD|FHD|HD|SD)\b/i);if(dim){dimensions=dim[1]+'×'+dim[2];quality=fromDimensions(+dim[1],+dim[2]);}else if(q)quality=resolution(q[1] || q[2]);}
-        var sm=raw.match(/\b(BD[- .]?Remux|Blu[- .]?Ray|BDRip|WEB[- .]?DLRip|WEB[- .]?DL|WEBRip|HDTVRip|HDTV|DVDRip|DVD)\b/i);if(sm){var sk=sm[1].toUpperCase().replace(/[ .-]/g,'');source={BDREMUX:'BDRemux',BLURAY:'Blu-ray',BDRIP:'BDRip',WEBDLRIP:'WEB-DLRip',WEBDL:'WEB-DL',WEBRIP:'WEBRip',HDTVRIP:'HDTVRip',HDTV:'HDTV',DVDRIP:'DVDRip',DVD:'DVD'}[sk];}
+        if(!quality && row._tcResolution){quality=row._tcResolution.quality;dimensions=row._tcResolution.dimensions || '';}
+        var sm=raw.match(/\b(BD[- .]?Remux|Blu[- .]?Ray|BDRip|WEB[- .]?DL[- .]?Rip|WEB[- .]?DL|WEBRip|HDTVRip|HDTV|DVD[- .]?Rip|DVD[- .]?Scr|DVD|TS[- .]?Rip|HD[- .]?TS|TeleSync|TS|CAM[- .]?Rip|HD[- .]?CAM|CAM|TC[- .]?Rip|TeleCine|TC)\b/i);if(sm){var sk=sm[1].toUpperCase().replace(/[ .-]/g,'');source={BDREMUX:'BDRemux',BLURAY:'Blu-ray',BDRIP:'BDRip',WEBDLRIP:'WEB-DLRip',WEBDL:'WEB-DL',WEBRIP:'WEBRip',HDTVRIP:'HDTVRip',HDTV:'HDTV',DVDRIP:'DVDRip',DVDSCR:'DVDScr',DVD:'DVD',TSRIP:'TSRip',HDTS:'HDTS',TELESYNC:'TS',TS:'TS',CAMRIP:'CAMRip',HDCAM:'HDCAM',CAM:'CAM',TCRIP:'TCRip',TELECINE:'TC',TC:'TC'}[sk];}
         probe.forEach(function(track){var lang=language((track.tags || {}).language);if(track.codec_type==='video'){if(codec(track.codec_name,'video'))video.push(codec(track.codec_name,'video'));}else if(track.codec_type==='audio'){if(codec(track.codec_name,'audio'))audio.push(codec(track.codec_name,'audio'));if(lang)languages.push(lang);if(+track.channels===8)channels.push('7.1');else if(+track.channels===6)channels.push('5.1');else if(+track.channels===2)channels.push('2.0');else if(+track.channels===1)channels.push('1.0');}else if(track.codec_type==='subtitle' && lang)subtitles.push(lang);});
         if(!video.length){var vm=raw.match(/\b(?:[hx][ .-]?26[45]|HEVC|AVC1?|AV1|MPEG[- ]?[24]|XviD|DivX|VP9)\b/gi) || [];vm.forEach(function(v){if(codec(v,'video'))video.push(codec(v,'video'));});}
         if(!audio.length){var am=raw.match(/\b(?:E-?AC-?3|AC-?3|DDP|DTS[- ]HD[- ]MA|DTS|TrueHD|AAC|FLAC|MP3|Opus)\b/gi) || [];am.forEach(function(v){if(codec(v,'audio'))audio.push(codec(v,'audio'));});}
@@ -310,7 +325,8 @@
                 existing._tcSources = uniq(existing._tcSources.concat(text(row.Tracker)));
                 existing._tcTitles = uniq(existing._tcTitles.concat(row.Title));
                 // Retain the richest single probe, never pretend tracks from different samples form one file.
-                if ((row.ffprobe || []).length > (existing.ffprobe || []).length) existing.ffprobe = row.ffprobe;
+                if (probeStreams(row.ffprobe).length > probeStreams(existing.ffprobe).length) existing.ffprobe = row.ffprobe;
+                if(!technical(existing).quality){var extra=technical(row);if(extra.quality)existing._tcResolution={quality:extra.quality,dimensions:extra.dimensions};}
                 existing.Seeders = Math.max(+existing.Seeders || 0, +row.Seeders || 0);
                 if (row.viewed) existing.viewed = true;
             }
@@ -501,19 +517,20 @@
         if (e.type !== 'render' || !e.element) return;
         // Wait until theme listeners (including snack_tv) have built their row, regardless of load order.
         setTimeout(function () {
-            var row = e.element, item = e.item, m = meta;
+                var row = e.element, item = e.item, m = meta;
+                if(m)m.technical=C.technical(row);
             if (!item || !item.length || (row._tcPage && row._tcPage.destroyed) || item.find('.tc-row').length) return;
             try {
                 var content = $('<div class="tc-row"></div>'), head = $('<div class="tc-head"></div>').appendTo(content);
                 var summary = $('<div class="tc-summary"></div>').appendTo(head);
-                $('<strong class="tc-season"></strong>').text(m.seasonLabel ? (m.parsed.bundle ? 'Сезоны '+C.ranges(m.parsed.seasons) : m.season.number!==null ? 'Сезон '+m.season.number : m.parsed.seasons.length ? 'Сезон '+C.ranges(m.parsed.seasons) : 'Сезон не указан') : m.technical.quality || 'Разрешение не указано').appendTo(summary);
+                $('<strong class="tc-season"></strong>').text(m.seasonLabel ? (m.parsed.bundle ? 'Сезоны '+C.ranges(m.parsed.seasons) : m.season.number!==null ? 'Сезон '+m.season.number : m.parsed.seasons.length ? 'Сезон '+C.ranges(m.parsed.seasons) : 'Сезон не указан') : m.technical.quality || m.technical.source || 'Разрешение не указано').appendTo(summary);
                 if (m.episodeLabel) $('<span class="tc-episodes"></span>').text(m.episodeLabel.replace(/ · заявлено/g, '')).appendTo(summary);
                 if (m.seasonLabel && m.technical.quality) pill(summary,m.technical.quality,'quality');
                 var right = $('<div class="tc-right"></div>').appendTo(head);
                 $('<span class="tc-size"></span>').text(row.size || (L.Utils && L.Utils.bytesToSize(row.Size)) || '').appendTo(right);
                 $('<span class="tc-seeds"></span>').text('Раздают ' + (+row.Seeders || 0) + (row.Peers !== undefined ? ' · Качают ' + (+row.Peers || 0) : '')).appendTo(right);
                 var tags = $('<div class="tc-tags"></div>').appendTo(content);
-                m.technical.tags.filter(function(v){return v!==m.technical.quality;}).slice(0,8).forEach(function(v){pill(tags,v);});
+                m.technical.tags.filter(function(v){return v!==m.technical.quality && (m.seasonLabel || m.technical.quality || v!==m.technical.source);}).slice(0,8).forEach(function(v){pill(tags,v);});
                 m.voices.types.forEach(function(v){pill(tags,v,'translation');});
                 if(Number(row.bitrate)>0 && !m.seasonLabel)pill(tags,'≈ '+row.bitrate+' Мбит/с');
                 if (m.technical.subtitles.length) pill(tags,'Субтитры '+m.technical.subtitles.join('/'));

@@ -35,8 +35,8 @@ test('bundled Nova transforms online files and series, preserves original playba
    let played=0;for(let i=1;i<=3;i++)$('<div class="online-prestige online-prestige--full selector"><div class="online-prestige__img"><img src="/poster.jpg"></div><div class="online-prestige__title">'+(serial?'Серия '+i:'Файл '+i)+'</div>'+(serial?'<div class="online-prestige__episode-number">'+i+'</div>':'')+'<div class="online-prestige__quality">1080p</div><div class="online-prestige__info"><span>TVShows</span></div><div class="time-line"><div style="width:0%"></div></div></div>').on('hover:enter',()=>played++).appendTo(body);
    const movie={id:500+Number(serial),title:'Фильм',...(serial?{name:'Сериал',number_of_seasons:1}:{}),source:'tmdb'};L.Activity.active=()=>({component:'online_test',movie,activity:{render:()=>root,component:{}}});
    L.Listener.send('activity',{type:'start'});await wait(250);
-   assert.equal(root.find('.nova-plus-root').length,1);assert.equal(root.find('.nova-card').length,3);assert.equal(root.find('.online-prestige--full.selector').length,0);assert.equal(root.find('.online-prestige__img img').first().attr('src'),'/poster.jpg');
-   root.find('.nova-card').first().trigger('hover:enter');assert.equal(played,1);L.Listener.send('activity',{type:'destroy'});root.remove();
+   assert.equal(root.find('.nova-plus-root').length,1);assert.equal(root.find('.nova-card').length,serial?3:0);if(!serial)assert.equal(root.find('[data-nova-group=movievoice] .nova-chip').length,3);assert.equal(root.find('.online-prestige--full.selector').length,0);assert.equal(root.find('.online-prestige__img img').first().attr('src'),'/poster.jpg');
+   root.find(serial?'.nova-card':'[data-nova-focus=hero]').first().trigger('hover:enter');assert.equal(played,1);L.Listener.send('activity',{type:'destroy'});root.remove();
   }
   L.Activity.active=current;assert.deepEqual(n.errors,[]);
  }finally{n.close();}

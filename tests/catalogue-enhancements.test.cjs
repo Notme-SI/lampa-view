@@ -39,8 +39,9 @@ test('legacy history cards restore missing years from metadata without changing 
 });
 test('settings hide locked and duplicate switches, retain active choices and have working action callbacks',async()=>{
  const n=await native({built:true}),{L,w}=n;try{
-  const params=()=>['appearance','catalogue','playback','languages','parser','server'].flatMap(g=>L.SettingsApi.getParam('minimal_settings_'+g));let list=params();const keys=list.map(p=>p.param.name);assert.equal(new Set(keys).size,keys.length);assert.ok(list.every(p=>p.param.type!=='button'||typeof p.onChange==='function'));for(const name of ['nova_plus_hero','nova_plus_fullscreen','nova_plus_art_size','alc_auto_quick_movie'])assert.ok(!keys.includes(name),name);for(const name of ['minimal_clear_ratings','minimal_clear_quality','minimal_quality_fallback','nova_plus_probe'])assert.ok(keys.includes(name),name);
-  L.Storage.set('nova_plus_mode','skin');list=params();assert.ok(list.some(p=>p.param.name==='nova_plus_hero'));assert.ok(!list.some(p=>p.param.name==='nova_plus_layout'));L.Storage.set('nova_plus_enabled',false);assert.ok(params().every(p=>!p.param.name.startsWith('nova_plus_')||p.param.name==='nova_plus_enabled'));
+  const params=()=>['appearance','catalogue','playback','languages','parser','server','cache'].flatMap(g=>L.SettingsApi.getParam('minimal_settings_'+g));let list=params();const keys=list.map(p=>p.param.name);assert.equal(new Set(keys).size,keys.length);assert.ok(list.every(p=>p.param.type!=='button'||typeof p.onChange==='function'));for(const name of ['nova_plus_hero','nova_plus_fullscreen','nova_plus_art_size','alc_auto_quick_movie'])assert.ok(!keys.includes(name),name);for(const name of ['minimal_clear_ratings','minimal_clear_quality','minimal_quality_fallback','nova_plus_probe'])assert.ok(keys.includes(name),name);
+  for(const mode of ['wide','skin']){L.Storage.set('nova_plus_mode',mode);for(const key of ['nova_plus_mode','nova_plus_movie_view','nova_plus_hero','nova_plus_hero_art','nova_plus_logo','nova_plus_fullscreen','nova_plus_fade','nova_plus_focus_style','nova_plus_art_size'])assert.ok(!params().some(p=>p.param.name===key),key);}
+  list=params();assert.ok(!list.some(p=>p.param.name==='nova_plus_layout'));L.Storage.set('nova_plus_view','grid');assert.ok(params().some(p=>p.param.name==='nova_plus_layout'));L.Storage.set('nova_plus_enabled',false);assert.ok(params().every(p=>!p.param.name.startsWith('nova_plus_')||p.param.name==='nova_plus_enabled'));
   for(const name of ['minimal_clear_quality','minimal_clear_ratings'])params().find(p=>p.param.name===name).onChange();w.lampac_plugin=true;assert.ok(params().every(p=>!/^alc_auto_(fav_btn|src_btn|studios_btn|langs|visible_languages|autosubs)$/.test(p.param.name)));assert.deepEqual(n.errors,[]);
  }finally{n.close();}
 });
@@ -54,5 +55,16 @@ test('Alloha reserve reads only catalogue metadata on the configured server and 
   assert.equal(result.data[0].quality,'2160p');assert.ok(urls.some(u=>u.includes('/lite/events')));assert.ok(urls.some(u=>u.includes('/lite/alloha')));
   assert.ok(urls.every(u=>new URL(u).origin==='https://online.example.test'));assert.ok(urls.filter(u=>/\/lite\/(events|alloha)/.test(u)).every(u=>new URL(u).searchParams.get('rjson')==='true'));assert.ok(urls.every(u=>!/(\/video|\.m3u8|token=)/.test(u)));
   L.Storage.set('alc_auto_src_off',['alloha']);urls.length=0;const disabled=await new Promise(resolve=>w.alc_auto_api.metadataQuality(movie,resolve));assert.equal(disabled,null);assert.ok(!urls.some(u=>u.includes('/lite/alloha')));assert.deepEqual(n.errors,[]);
+ }finally{n.close();}
+});
+
+test('cache actions have one settings folder and inapplicable online controls are omitted',async()=>{
+ const n=await native({built:true}),{L,w}=n;try{
+  const cache=L.SettingsApi.getParam('minimal_settings_cache');assert.deepEqual(Array.from(cache,p=>p.param.name).sort(),['minimal_clear_quality','minimal_clear_ratings']);assert.ok(cache.every(p=>typeof p.onChange==='function'));
+  for(const group of ['appearance','catalogue','playback','languages','parser','server'])assert.ok(!L.SettingsApi.getParam('minimal_settings_'+group).some(p=>p.param.name.startsWith('minimal_clear_')),group);
+  assert.ok(L.SettingsApi.getParam('lampa_view').some(p=>p.field.name==='Кеш'));L.Settings.create('minimal_settings_cache');const body=w.document.querySelector('.settings__body');assert.ok(body.textContent.includes('Очистить кеш рейтингов'));assert.ok(body.textContent.includes('Очистить кеш качества'));
+  const playback=()=>L.SettingsApi.getParam('minimal_settings_playback');assert.equal(playback().find(p=>p.param.name==='nova_plus_meta').field.name,'Данные серий');assert.doesNotMatch(playback().find(p=>p.param.name==='nova_plus_meta').field.description,/описан/);assert.match(playback().find(p=>p.param.name==='nova_plus_quality').field.name,/встроенном/);
+  for(const mode of ['external','disabled']){w.nova_skin_probe_mode=()=>mode;assert.ok(!playback().some(p=>p.param.name==='nova_plus_probe'));}delete w.nova_skin_probe_mode;assert.ok(playback().some(p=>p.param.name==='nova_plus_probe'));
+  L.Storage.set('nova_plus_view','list');assert.ok(!playback().some(p=>p.param.name==='nova_plus_layout'));L.Storage.set('nova_plus_view','grid');assert.ok(playback().some(p=>p.param.name==='nova_plus_layout'));assert.deepEqual(n.errors,[]);
  }finally{n.close();}
 });

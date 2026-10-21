@@ -118,7 +118,7 @@ body.lampa_view .tc-original,body.lampa_view .tc-foot {font-size:.68em;color:var
 body.lampa_view .tc-size {font-size:1em;font-weight:600}
 body.lampa_view .tc-seeds {font-size:.8em;font-weight:500;color:#7ed0a7}
 body.lampa_view .tc-summary {display:flex;align-items:center;flex-wrap:wrap;gap:.5em .8em;min-width:0}
-body.lampa_view .tc-season {font-size:1.06em;font-weight:650;line-height:1.35}
+body.lampa_view .tc-season {font-size:1.06em;font-weight:650;line-height:1.35;color:var(--pt-accent)}
 body.lampa_view .tc-episodes {font-size:.88em;color:#c4c8cf;line-height:1.4}
 body.lampa_view .tc-summary .tc-tag--quality {font-size:.86em;color:var(--pt-accent);background:#add9e50c;border-color:#add9e52e}
 body.lampa_view .tc-head {gap:1em;align-items:flex-start}
@@ -348,8 +348,10 @@ body.lampa_view .minimal-detail-header>.minimal-detail-columns {position:relativ
 body.lampa_view.pt-desktop:not(.pt-safari) .minimal-detail-header>.full-start-new__body {min-height:24em;padding:3em 0 1em}
 body.lampa_view.pt-desktop:not(.pt-safari) .minimal-detail-header>.minimal-detail-columns {margin-top:1.5em}
 body.lampa_view .minimal-detail-columns>.minimal-detail-facts {grid-column:2;grid-row:1;position:relative;inset:auto;float:none;width:auto;min-width:0;box-sizing:border-box;align-self:stretch;overflow-wrap:anywhere}
-body.lampa_view .minimal-overview-action {cursor:pointer;border-radius:.3em;outline:none!important;border:0!important;box-shadow:none;position:relative;isolation:isolate}
-body.lampa_view .minimal-overview-action:hover,body.lampa_view .minimal-overview-action.focus,body.lampa_view .minimal-overview-action:focus-visible {color:#e1e5e8;box-shadow:inset 0 0 0 1px var(--pt-accent)}
+body.lampa_view .minimal-overview-action {cursor:pointer;border-radius:.3em;outline:none!important;border:0!important;box-shadow:none!important;position:relative;isolation:isolate;max-width:52em;margin:1em 0}
+body.lampa_view .minimal-overview-action>.full-start-new__description,body.lampa_view .minimal-overview-action>.minimal-detail-overview {width:100%;max-width:none;margin:0;outline:none!important;border:0!important;box-shadow:none!important}
+body.lampa_view .minimal-overview-focus {display:none;position:absolute;inset:0;border:2px solid var(--pt-accent);border-radius:.3em;pointer-events:none}
+body.lampa_view .minimal-overview-action:hover>.minimal-overview-focus,body.lampa_view .minimal-overview-action.focus>.minimal-overview-focus,body.lampa_view .minimal-overview-action:focus-visible>.minimal-overview-focus {display:block}
 body.lampa_view .minimal-overview-action::before,body.lampa_view .minimal-overview-action::after {display:none!important}
 body.lampa_view .minimal-detail-studio.selector {cursor:pointer;border-radius:.2em;outline:none}
 body.lampa_view .minimal-detail-studio.selector.focus,body.lampa_view .minimal-detail-studio.selector:focus-visible {box-shadow:0 0 0 2px var(--pt-accent)}
@@ -578,3 +580,65 @@ body.lampa_view .settings .minimal-settings .settings-param {padding:.7em 1em;fo
 body.lampa_view .settings .minimal-settings .settings-param__name {font-size:1em;line-height:1.35;margin-bottom:.3em}
 body.lampa_view .settings .minimal-settings .settings-param__descr {font-size:.78em;line-height:1.4;margin-top:.45em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 body.lampa_view .settings .minimal-settings .settings-param__value {font-size:.9em;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+/* Shared controls for both online layouts. */
+body.lampa_view .nova-plus-root .nova-btn,body.lampa_view .nova-plus-root .nova-chip,body.lampa_view .nova-plus-root .nova-group {background:#171717!important;color:var(--pt-text)!important;border:1px solid var(--pt-line)!important;border-radius:.625em!important;box-shadow:none!important;outline:none!important}
+body.lampa_view .nova-plus-root .nova-btn {padding:.75em 1.15em;font-weight:600}
+body.lampa_view .nova-plus-root .nova-chip--active,body.lampa_view .nova-plus-root .nova-group--open {background:var(--pt-high)!important;border-color:#add9e560!important}
+body.lampa_view .nova-plus-root .nova-btn.focus,body.lampa_view .nova-plus-root .nova-btn.hover,body.lampa_view .nova-plus-root .nova-btn:hover,body.lampa_view .nova-plus-root .nova-chip.focus,body.lampa_view .nova-plus-root .nova-chip.hover,body.lampa_view .nova-plus-root .nova-chip:hover,body.lampa_view .nova-plus-root .nova-group.focus,body.lampa_view .nova-plus-root .nova-group:hover {background:var(--pt-high)!important;color:var(--pt-text)!important;border-color:var(--pt-accent)!important;box-shadow:0 0 0 1px var(--pt-accent)!important}
+body.lampa_view .nova-plus-root .nova-chip__badge,body.lampa_view .nova-plus-root .nova-chip.focus .nova-chip__badge {background:#ffffff1a!important;color:var(--pt-text)!important;border-radius:.25em}
+body.lampa_view .nova-plus-root .nova-card.focus {background:var(--pt-high)!important;color:var(--pt-text)!important;box-shadow:inset 0 0 0 2px var(--pt-accent)!important}
+body.lampa_view .nova-plus-root .nova__list--grid .nova-card.focus {background:none!important;box-shadow:none!important}
+body.lampa_view .nova-plus-root .nova__list--grid .nova-card.focus .nova-card__thumb {box-shadow:0 0 0 2px var(--pt-accent)!important}
+body.lampa_view .nova-plus-root .nova-card__line .time-line>div,body.lampa_view .nova-plus-root .nova-hero__progress .time-line>div {background:var(--pt-accent)!important}
+/* Native torrent focus has an outer white pseudo-element; use one accent border. */
+body.lampa_view .torrent-item.focus::after {display:none!important;content:none!important}
+body.lampa_view .torrent-filter .filter__item.focus,body.lampa_view .torrent-filter .filter__item.hover,body.lampa_view .torrent-filter .selector--filter.focus {border-color:var(--pt-accent)!important;box-shadow:0 0 0 1px var(--pt-accent)!important;outline:none!important}
+body.lampa_view .torrent-filter .simple-button.focus,body.lampa_view .torrent-filter .simple-button.hover {border-color:var(--pt-accent)!important;box-shadow:0 0 0 1px var(--pt-accent)!important;outline:none!important}
+body.lampa_view .minimal-torrent-view>.explorer__left {display:block!important;width:28.7%;padding:.3em 1.6em 0 .3em;box-sizing:border-box}
+body.lampa_view .minimal-torrent-view>.explorer__left .explorer__card {display:none!important}
+body.lampa_view .minimal-torrent-view>.explorer__files {width:71.3%;min-width:0}
+body.lampa_view .minimal-torrent-view .explorer__files-head {padding:.3em .6em .6em 0}
+body.lampa_view .minimal-torrent-view .explorer__files-body .scroll__body {padding-left:0}
+.minimal-torrent-banner {display:none}
+body.lampa_view .minimal-torrent-banner {display:block;position:relative;overflow:hidden;border-radius:1em;background:#0b1016;aspect-ratio:1.65;min-height:12.6em;color:var(--pt-text)}
+body.lampa_view .minimal-torrent-banner__image,body.lampa_view .minimal-torrent-banner__shade {position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+body.lampa_view .minimal-torrent-banner__shade {background:linear-gradient(180deg,#080d1633 30%,#080d16e6 100%)}
+body.lampa_view .minimal-torrent-banner__meta {position:absolute;top:1em;right:1.2em;left:1.2em;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:.7em;font-size:.9em;text-shadow:0 1px 5px #000}
+body.lampa_view .minimal-torrent-banner__title {position:absolute;left:1.3em;right:1.3em;bottom:1.2em;font-size:1.7em;font-weight:650;line-height:1.2;text-shadow:0 2px 8px #000}
+body.lampa_view .minimal-torrent-banner__logo {display:block;width:auto;height:auto;max-width:100%;max-height:4em;object-fit:contain;filter:drop-shadow(0 2px 5px #0009)}
+body.lampa_view .minimal-torrent-view--classic {flex-wrap:wrap}
+body.lampa_view .minimal-torrent-view--classic>.explorer__left,body.lampa_view .minimal-torrent-view--classic>.explorer__files {width:100%}
+body.lampa_view .minimal-torrent-view--classic>.explorer__left {padding-right:.3em;margin-bottom:1em}
+body.lampa_view .minimal-torrent-view--classic .minimal-torrent-banner {aspect-ratio:auto;height:14.7em;min-height:0}
+body.lampa_view .minimal-torrent-view--classic .minimal-torrent-banner__logo {max-width:55%}
+@media(max-width:767px){body.lampa_view .minimal-torrent-view{flex-wrap:wrap}body.lampa_view .minimal-torrent-view>.explorer__left,body.lampa_view .minimal-torrent-view>.explorer__files{width:100%}body.lampa_view .minimal-torrent-view>.explorer__left{padding-right:.3em;margin-bottom:1em}body.lampa_view .minimal-torrent-banner{min-height:12em;max-height:20em}body.lampa_view .minimal-torrent-view .explorer__files-head{padding-left:.3em}}
+/* Let the activity scroll whole catalogues; selector groups never become inner carousels. */
+body.lampa_view .nova-plus-root .nova-toolbar {flex-wrap:wrap!important;white-space:normal}
+body.lampa_view .nova-plus-root .nova-toolbar__label {margin-left:.8em!important;margin-right:.55em!important}
+body.lampa_view .nova-plus-root .nova-toolbar__label:first-child {margin-left:0!important}
+body.lampa_view .nova-plus-root .nova-plus__row,body.lampa_view .nova-plus-root .nova-plus__pane {display:flex!important;flex-wrap:wrap!important;transform:none!important;-webkit-transform:none!important;width:100%!important;height:auto!important;max-height:none!important;overflow:visible!important}
+body.lampa_view .nova-plus-root .nova-plus__group,body.lampa_view .nova-plus-root .nova-drop {height:auto!important;max-height:none!important;overflow:visible!important}
+body.lampa_view .nova-plus-root .nova__rows,body.lampa_view .nova-plus-root .nova-plus__panel {height:auto!important;max-height:none!important;overflow:visible!important}
+body.lampa_view .nova-plus-root .nova-plus__row .nova-chip,body.lampa_view .nova-plus-root .nova-plus__pane .nova-chip {flex-shrink:0;max-width:100%;white-space:normal}
+body.lampa_view .nova-plus-root .nova-btn--movie {max-width:100%;white-space:normal;text-align:left}
+body.lampa_view .nova-plus-root .nova-btn--movie .nova-btn__label {max-width:none;white-space:normal;overflow:visible;text-overflow:clip}
+/* Composite the artwork and its shade inside one rounded clip. */
+body.lampa_view .minimal-torrent-banner,body.lampa_view .nova-plus-root .nova-hero {border-radius:1em;overflow:hidden;isolation:isolate;-webkit-clip-path:inset(0 round 1em);clip-path:inset(0 round 1em);-webkit-transform:translateZ(0);transform:translateZ(0)}
+body.lampa_view .minimal-torrent-banner__image,body.lampa_view .minimal-torrent-banner__shade {inset:-1px;width:calc(100% + 2px);height:calc(100% + 2px)}
+body.lampa_view .nova-plus-root .nova-hero__bg,body.lampa_view .nova-plus-root .nova-hero__shade {top:-1px;right:-1px;bottom:-1px;left:-1px}
+/* An independent focus layer avoids repainting a border over the banner image. */
+body.lampa_view .nova-plus-root .nova-hero .nova-btn {background:rgba(18,21,25,.68)!important;border:0!important;box-shadow:none!important;outline:none!important}
+body.lampa_view .nova-plus-root .nova-hero .nova-btn.focus,body.lampa_view .nova-plus-root .nova-hero .nova-btn.hover,body.lampa_view .nova-plus-root .nova-hero .nova-btn:hover {background:rgba(37,44,52,.78)!important;border:0!important;box-shadow:none!important}
+body.lampa_view .nova-plus-root .nova-btn__focus {display:none;position:absolute;inset:0;border:2px solid var(--pt-accent);border-radius:inherit;pointer-events:none}
+body.lampa_view .nova-plus-root .nova-hero .nova-btn.focus>.nova-btn__focus,body.lampa_view .nova-plus-root .nova-hero .nova-btn.hover>.nova-btn__focus,body.lampa_view .nova-plus-root .nova-hero .nova-btn:hover>.nova-btn__focus,body.lampa_view .nova-plus-root .nova-hero .nova-btn:focus-visible>.nova-btn__focus {display:block}
+body.lampa_view .nova-plus-root .nova-hero__progress {position:absolute;left:0;right:0;bottom:0;width:100%;height:.3em;border-radius:0;background:rgba(255,255,255,.15);overflow:hidden}
+/* Banner facts share a baseline; duration belongs to the year, season to the banner. */
+body.lampa_view .nova-plus-root .nova-hero__meta {display:flex;align-items:flex-start;gap:.65em;line-height:1.5;max-width:calc(100% - 2.4em)}
+body.lampa_view .nova-plus-root .nova-hero__meta>* {margin:0;white-space:normal}
+body.lampa_view .nova-plus-root .nova-hero__date {display:flex;flex-direction:column;align-items:flex-end;min-width:0;text-align:right}
+body.lampa_view .nova-plus-root .nova-hero__runtime {color:inherit;font-size:.9em;line-height:1.5}
+body.lampa_view .nova-plus-root .nova-hero__season-label {font-size:.9em;line-height:1.5}
+body.lampa_view .nova-plus-root .nova-badge,body.lampa_view .nova-plus-root .nova-chip__badge {display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;flex:0 0 auto;min-width:2.3em;height:1.5em;padding:0 .35em;font-size:.78em;line-height:1;font-weight:600;vertical-align:middle}
+body.lampa_view .nova-plus-root .nova-hero__meta>.nova-badge {font-size:.85em;margin-top:.12em;background:#ffffff1a!important;text-shadow:none}
+body.lampa_view .nova-plus-root .nova-card__head .nova-card__quality {display:inline-flex;align-items:center;justify-content:center;min-width:2.3em;height:1.5em;padding:0 .35em;font-size:.85em;line-height:1}
+body.lampa_view .nova-plus-root .nova-card__head {align-items:center}

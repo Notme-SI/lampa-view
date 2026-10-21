@@ -28,7 +28,7 @@ function screen(n,{id=900,season=1,episodes=[1,2,3],serial=true,component={}}={}
 test('online UI resumes the latest native timecode, keeps external images and handles reverse episode order',async()=>{
  const n=await native({built:true}),{w,L}=n;let s;try{
  const hash=(season,episode,title='Original')=>L.Utils.hash([season,season>10?':':'',episode,title].join(''));L.Timeline.update({hash:hash(1,2),percent:40,time:720,duration:1800});
- s=screen(n,{episodes:[3,2,1]});await wait(250);const label=s.root.find('.nova-btn__label').first().text();assert.match(label,/Продолжить/);assert.match(label,/E2/);assert.match(label,/12:00/);assert.equal(s.root.find('.nova-card').length,3);s.root.find('[data-nova-focus=hero]').trigger('hover:enter');assert.equal(s.played(),2);const next=s.root.find('[data-nova-focus=hero-next]');assert.equal(next.length,1);next.trigger('hover:enter');assert.equal(s.played(),3);assert.equal(s.root.find('.online-prestige__img img').first().attr('src'),'https://image.example.test/frame.jpg');assert.deepEqual(n.errors,[]);
+ s=screen(n,{episodes:[3,2,1]});await wait(250);const label=s.root.find('.nova-btn__label').first().text();assert.match(label,/Продолжить/);assert.match(label,/Серия 2/);assert.match(label,/12:00/);assert.equal(s.root.find('.nova-card').length,3);s.root.find('[data-nova-focus=hero]').trigger('hover:enter');assert.equal(s.played(),2);const next=s.root.find('[data-nova-focus=hero-next]');assert.equal(next.length,0);assert.equal(s.played(),2);assert.equal(s.root.find('.online-prestige__img img').first().attr('src'),'https://image.example.test/frame.jpg');assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}
 });
 test('the patched online host restores the watched season and preserves the manually selected season and voice',async()=>{
@@ -37,8 +37,34 @@ test('the patched online host restores the watched season and preserves the manu
  const body=tag({method:'link',url:'/lite/test?s=1',name:'Сезон 1'})+tag({method:'link',url:'/lite/test?s=2',name:'Сезон 2'});component.parse(body);assert.equal(choices.test.season,1);component.lampaViewManualSeason=1;component.parse(body);assert.equal(choices.test.season,0);component.changeBalanser('other');assert.equal(choices.other.voice_name,'TVShows');assert.equal(parsed,2);assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}
 });
+
+test('all available episodes and folder entries survive without page pickers, and long source catalogues are not gated',async()=>{
+ const n=await native({built:true}),{L}=n;let s;try{
+  s=screen(n,{episodes:Array.from({length:54},(_,i)=>i+1)});s.filter.set('sort',Array.from({length:36},(_,i)=>({title:'Источник '+i,source:'source'+i,selected:!i,ghost:i>20})));await wait(220);
+  assert.equal(s.root.find('.nova-card').length,54);assert.equal(s.root.find('[data-nova-focus=jump]').length,0);assert.equal(s.root.find('.nova-card__title').first().text(),'Серия 1');assert.doesNotMatch(s.root.find('.nova-card__tag').text(),/S\d|E\d/);
+  s.root.find('[data-nova-focus=source]').trigger('hover:enter');await wait(90);assert.equal(s.root.find('.nova-drop .nova-chip').length,36);assert.equal(s.root.find('[data-nova-focus="src:more"]').length,0);
+  s.close();s=screen(n,{episodes:[]});for(let i=0;i<27;i++)n.w.jQuery('<div class="online-prestige online-prestige--folder selector"><div class="online-prestige__title">Папка '+i+'</div></div>').on('hover:enter',()=>{}).appendTo(s.body);await wait(180);assert.equal(s.root.find('.nova-card--nav').length,27);assert.equal(s.root.find('[data-nova-focus=jump]').length,0);assert.deepEqual(n.errors,[]);
+ }finally{if(s)s.close();n.close();}
+});
+
+test('movies always use the wide banner, expose all voice choices and play selected versions from the compact main button',async()=>{
+ const n=await native({built:true}),{L}=n;let s;try{
+  s=screen(n,{serial:false});s.movie.overview='Описание уже есть на странице фильма';await wait(200);
+  assert.ok(s.root.find('.nova-plus-root').hasClass('nova-plus'));assert.equal(s.root.find('.nova-card').length,0);assert.equal(s.root.find('[data-nova-group=movievoice] .nova-chip').length,3);assert.equal(s.root.find('.nova-hero__descr').css('display'),'none');
+  s.root.find('[data-nova-focus="movievoice:1"]').trigger('hover:enter');await wait(100);assert.equal(s.played(),0,'choosing a voice must not start playback');const button=s.root.find('[data-nova-focus=hero]');assert.equal(button.text(),'Смотреть');assert.equal(button.attr('aria-label'),'Смотреть');assert.equal(button.find('.nova-btn__details').length,0);button.trigger('hover:enter');assert.equal(s.played(),2);assert.equal(s.root.find('.nova-card').length,0);assert.equal(s.root.find('[data-nova-focus=view]').length,0);
+  L.Storage.set('nova_plus_mode','skin');L.Listener.send('activity',{type:'start'});await wait(180);assert.ok(s.root.find('.nova-plus-root').hasClass('nova-plus'));assert.equal(s.root.find('.nova-card').length,0);s.root.find('[data-nova-focus="movievoice:2"]').trigger('hover:enter');await wait(90);s.root.find('[data-nova-focus=hero]').trigger('hover:enter');assert.equal(s.played(),3);assert.deepEqual(n.errors,[]);
+ }finally{if(s)s.close();n.close();}
+});
 test('logo metadata requests share the native API and deduplicate concurrent full-card notifications',async()=>{
  const n=await native({built:true}),{L}=n;try{let calls=0,answer;L.Api.sources.tmdb.get=(url,p,ok)=>{if(url==='tv/975/images'){calls++;answer=ok;}};const card={id:975,name:'Сериал',source:'tmdb'},event={type:'complite',data:{movie:card},object:{card,activity:{render:()=>n.w.jQuery('<div></div>')}}};L.Listener.send('full',event);L.Listener.send('full',event);assert.equal(calls,1);answer({logos:[]});L.Listener.send('full',event);assert.equal(calls,1);assert.deepEqual(n.errors,[]);}finally{n.close();}
+});
+
+test('the film banner keeps native watch progress when changing voices and updates after a new timecode',async()=>{
+ const n=await native({built:true}),{L}=n;let s;try{
+  const hash=L.Utils.hash('Original');L.Timeline.update({hash,percent:55,time:3300,duration:6000});s=screen(n,{serial:false});await wait(190);
+  const fill=()=>s.root.find('.nova-hero__progress .time-line>div');assert.equal(fill().css('width'),'55%');assert.ok(s.root.find('.nova-btn__focus').length);assert.equal(s.root.find('.nova-card').length,0);
+  s.root.find('[data-nova-focus="movievoice:2"]').trigger('hover:enter');await wait(90);assert.equal(fill().css('width'),'55%');L.Timeline.update({hash,percent:70,time:4200,duration:6000});await wait(140);assert.equal(fill().css('width'),'70%');s.root.find('[data-nova-focus=hero]').trigger('hover:enter');assert.equal(s.played(),3);assert.deepEqual(n.errors,[]);
+ }finally{if(s)s.close();n.close();}
 });
 
 test('late background source replies are ignored after switching and root checks discard season/voice parameters',async()=>{
@@ -54,7 +80,7 @@ test('season progress uses the full season when watched episodes are absent from
  const n=await native({built:true}),{L}=n;let s;try{
  for(let episode=1;episode<=4;episode++)L.Timeline.update({hash:L.Utils.hash('1'+episode+'Original'),percent:100,time:1800,duration:1800});
  s=screen(n,{id:991,episodes:[5,6]});s.movie.number_of_seasons=1;s.movie.seasons=[{season_number:1,episode_count:6}];await wait(250);
- const text=s.root.find('.nova-hero__season').text();assert.match(text,/Просмотрено 4 из 6/);assert.match(text,/осталось 2/);assert.match(text,/у источника 2 из 6/);assert.doesNotMatch(text,/4 из 2/);assert.deepEqual(n.errors,[]);
+ assert.equal(s.root.find('.nova-hero__season').length,0);assert.equal(s.root.find('.nova-hero__season-label').text(),'Сезон 1');assert.equal(s.root.find('.nova-hero__progress .time-line>div').css('width'),'67%');assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}
 });
 
@@ -66,5 +92,38 @@ test('availability is cleared on source switch, retry and reset and nested reque
  comp.request('https://online.example.test/lite/other?id=992');comp.parse(JSON.stringify({accsdb:true}));assert.equal(comp.lampaViewAvailability,'unknown');const cached=L.Storage.get('nova_probe',{});assert.ok(!cached['tmdb:tv:992'].list.other);
  comp.parse('<div class="videos__line"></div>');assert.equal(comp.lampaViewAvailabilitySource,'other');assert.equal(comp.lampaViewAvailability,'empty');comp.request('https://online.example.test/lite/other?id=992');assert.equal(comp.lampaViewAvailability,'unknown');
  comp.parse('<div class="videos__line"></div>');comp.reset();assert.equal(comp.lampaViewAvailability,'unknown');nested=true;comp.parse('<div class="videos__line"></div>');assert.equal(comp.lampaViewAvailability,'unknown');assert.equal(comp.lampaViewAvailabilitySource,'');assert.deepEqual(n.errors,[]);
+ }finally{if(s)s.close();n.close();}
+});
+
+test('compact episode cards keep titles, file quality and season facts without repeated descriptions or voices',async()=>{
+ const n=await native({built:true,initialStorage:{nova_plus_view:'grid'}}),{L,w}=n;let s;try{
+  L.Api.sources.tmdb.get=(url,p,ok)=>w.setTimeout(()=>ok(url.includes('/season/')?{episodes:[{episode_number:1,name:'Пан или пропал',overview:'Описание не нужно повторять',vote_average:8.4,air_date:'2025-03-30'}]}:{logos:[]}),0);
+  s=screen(n,{id:995,episodes:[1,2,3]});Object.assign(s.movie,{first_air_date:'2025-03-30',origin_country:['US'],vote_average:8.5});
+  s.filter.set('sort',[{title:'Test - 4K',source:'test',selected:true}]);
+  const nativeRows=s.body.find('.online-prestige--full');nativeRows.eq(0).find('.online-prestige__quality').text('720p');nativeRows.eq(1).find('.online-prestige__quality').text('SD');nativeRows.eq(2).find('.online-prestige__quality').empty();
+  await wait(260);
+  const root=s.root;assert.equal(root.find('.nova-card__title').first().text(),'Пан или пропал');assert.equal(root.find('.nova-card__tag').first().text(),'Серия 1');assert.equal(root.find('.nova-card__quality').eq(0).text(),'HD');assert.equal(root.find('.nova-card__quality').eq(1).text(),'SD');assert.equal(root.find('.nova-card').eq(2).find('.nova-card__quality').length,0);
+  assert.equal(root.find('.nova-card__descr,.nova-card__voice,.nova-card__tags,[data-nova-focus=hero-next],.nova-hero__season').length,0);assert.doesNotMatch(root.find('.nova-card').text(),/TVShows|Описание не нужно повторять/);
+  assert.equal(root.find('.nova-hero__year').text(),'2025, США');assert.equal(root.find('.nova-hero__season-label').text(),'Сезон 1');assert.equal(root.find('.nova-hero__runtime').length,0);assert.equal(root.find('.nova-hero__meta .nova-badge').text(),'HD');
+  // Native metadata can arrive after the interface has already rendered.
+  nativeRows.eq(0).find('.online-prestige__quality')[0].firstChild.nodeValue='1920x800';await wait(180);assert.equal(root.find('.nova-card__quality').first().text(),'FHD');assert.equal(root.find('.nova-hero__meta .nova-badge').text(),'FHD');
+  L.Storage.set('nova_plus_view','list');L.Listener.send('activity',{type:'start'});await wait(180);assert.equal(root.find('.nova-card__title').first().text(),'Пан или пропал');assert.doesNotMatch(root.find('.nova-card__meta').text(),/TVShows|Описание/);assert.equal(root.find('.nova-card__descr,.nova-card__voice').length,0);assert.deepEqual(n.errors,[]);
+ }finally{if(s)s.close();n.close();}
+});
+
+test('film facts show native countries and runtime below the year while the main button retains selected playback',async()=>{
+ const n=await native({built:true}),{L}=n;let s;try{
+  s=screen(n,{id:996,serial:false});Object.assign(s.movie,{release_date:'2026-07-29',runtime:145,production_countries:[{iso_3166_1:'US',name:'United States of America'}],vote_average:8.5});await wait(220);
+  const root=s.root,button=root.find('[data-nova-focus=hero]');assert.equal(root.find('.nova-hero__year').text(),'2026, США');assert.equal(root.find('.nova-hero__runtime').text(),'02:25');assert.equal(root.find('.nova-hero__date').children().last().attr('class'),'nova-hero__runtime');assert.equal(root.find('.nova-hero__season-label').length,0);assert.equal(button.text(),'Смотреть');
+  root.find('[data-nova-focus="movievoice:2"]').trigger('hover:enter');await wait(90);root.find('[data-nova-focus=hero]').trigger('hover:enter');assert.equal(s.played(),3);assert.equal(root.find('[data-nova-focus=hero]').text(),'Смотреть');assert.deepEqual(n.errors,[]);
+ }finally{if(s)s.close();n.close();}
+});
+
+test('online layout settings change source position, episode order and strip direction, and quality applies to native playback',async()=>{
+ const n=await native({built:true,initialStorage:{nova_plus_view:'grid'}}),{L}=n;let s;try{
+  s=screen(n,{id:997});await wait(190);const setting=name=>L.SettingsApi.getParam('minimal_settings_playback').find(p=>p.param.name===name),change=async(name,value)=>{L.Storage.set(name,value);const param=setting(name);if(param.onChange)param.onChange(value);await wait(110);};
+  const panel=()=>s.root.find('.nova-plus__panel');await change('nova_plus_source_pos','bottom');assert.ok(panel().children().last().hasClass('nova-plus__bar'));await change('nova_plus_source_pos','top');assert.ok(panel().children().first().hasClass('nova-plus__bar'));
+  await change('nova_plus_order','reverse');assert.equal(s.root.find('.nova-card__tag').first().text(),'Серия 3');await change('nova_plus_order','straight');assert.equal(s.root.find('.nova-card__tag').first().text(),'Серия 1');await change('nova_plus_layout','row');assert.ok(s.root.find('.nova__list').hasClass('nova__list--row'));await change('nova_plus_layout','grid');assert.ok(!s.root.find('.nova__list').hasClass('nova__list--row'));
+  L.Storage.set('nova_plus_quality','720');const data={url:'/default',quality:{'2160p':'/4k','1080p':'/fullhd','720p':'/hd'}};L.Player.listener.send('start',data);assert.equal(data.url,'/hd');assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}
 });

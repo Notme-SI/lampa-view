@@ -10,8 +10,6 @@
   window.nova_plus = true;
 
   var ENABLED_KEY = 'nova_plus_enabled';
-  var MODE_KEY = 'nova_plus_mode';
-  var JUMP_FROM = 20;
   var SEEN_PERCENT = 90;
   var LOGO_DARK = 0.4;
   var LOGO_DARK_SHARE = 0.45;
@@ -51,21 +49,18 @@
   }
 
   function enabled() { return get(ENABLED_KEY, true) !== false && get('lampa_view_enabled', true) !== false; }
-  function novaMode() { return get(MODE_KEY, 'wide') === 'skin' ? 'skin' : 'wide'; }
-  function modeWide() { return novaMode() === 'wide'; }
-  function lockedOn(line) { return modeWide() ? line + ' · ' + label('nova_plus_locked_on') : line; }
-  function lockedOff(line) { return modeWide() ? line + ' · ' + label('nova_plus_locked_off') : line; }
-  function heroEnabled() { return modeWide() ? true : get('nova_plus_hero', true) !== false; }
-  function artEnabled() { return modeWide() ? true : get('nova_plus_hero_art', true) !== false; }
+  function modeWide() { return true; }
+  function heroEnabled() { return true; }
+  function artEnabled() { return true; }
   function viewSerial() { return get('nova_plus_view', 'list'); }
   function viewMovie() { return get('nova_plus_movie_view', 'grid'); }
   function viewMode() { return serial ? viewSerial() : viewMovie(); }
   function viewKey() { return serial ? 'nova_plus_view' : 'nova_plus_movie_view'; }
   function preferredQuality() { return get('nova_plus_quality', 'auto'); }
 
-  function focusRing() { return get('nova_plus_focus_style', 'ring') !== 'fill'; }
+  function focusRing() { return true; }
 
-  function fullScreen() { return modeWide() ? true : get('nova_plus_fullscreen', true) === true; }
+  function fullScreen() { return true; }
 
   function applyFullScreen() {
     try {
@@ -75,7 +70,7 @@
     } catch (e) {}
   }
 
-  function edgeFade() { return get('nova_plus_fade', false) === true; }
+  function edgeFade() { return false; }
 
   function applyEdgeFade() {
     try {
@@ -142,7 +137,7 @@
     nova_plus_auto_next: { ru: 'Через {sec} сек переключимся на «{name}»', uk: 'Через {sec} с перейдемо на «{name}»', en: 'Switching to "{name}" in {sec}s' },
     nova_plus_dead_all: { ru: 'Ни один источник ничего не нашёл', uk: 'Жодне джерело нічого не знайшло', en: 'No source found anything' },
     nova_plus_set_enable: { ru: 'Улучшенный онлайн-интерфейс', uk: 'Покращений онлайн-інтерфейс', en: 'Enhanced online interface' },
-    nova_plus_set_enable_descr: { ru: 'Единый интерфейс для всех онлайн-плагинов', uk: 'Єдиний інтерфейс для всіх онлайн-плагінів', en: 'One interface for every online plugin' },
+    nova_plus_set_enable_descr: { ru: 'Баннер, выбор источника и озвучки, карточки серий в совместимых онлайн-плагинах.', uk: 'Банер, вибір джерела й озвучення, картки серій у сумісних онлайн-плагінах.', en: 'Banner, source and audio selection, and episode cards for compatible online plugins.' },
     nova_plus_set_hero: { ru: 'Шапка с кнопкой', uk: 'Шапка з кнопкою', en: 'Header with button' },
     nova_plus_set_hero_descr: { ru: 'Кадр, прогресс и кнопка продолжения сверху', uk: 'Кадр, прогрес і кнопка продовження вгорі', en: 'Backdrop, progress and continue button on top' },
     nova_plus_set_hero_art: { ru: 'Кадр в шапке', uk: 'Кадр у шапці', en: 'Backdrop in header' },
@@ -160,16 +155,16 @@
     nova_plus_set_fade: { ru: 'Размытые края постера', uk: 'Розмиті краї постера', en: 'Faded poster edges' },
     nova_plus_set_fade_descr: { ru: 'Растворять постер вверху по краям со всех сторон', uk: 'Розчиняти постер угорі по краях з усіх боків', en: 'Fade the header artwork out on every side' },
     nova_plus_set_probe: { ru: 'Проверять источники в фоне', uk: 'Перевіряти джерела у фоні', en: 'Check sources in background' },
-    nova_plus_set_probe_descr: { ru: 'Отмечать рабочие точкой и показывать их качество', uk: 'Позначати робочі точкою та показувати їхню якість', en: 'Mark working ones with a dot and show their quality' },
+    nova_plus_set_probe_descr: { ru: 'Проверять наличие видео у других источников. Отмечать доступные и показывать найденное качество.', uk: 'Перевіряти наявність відео в інших джерел. Позначати доступні та показувати знайдену якість.', en: 'Check other sources for available videos and show availability and reported quality.' },
     nova_plus_set_probe_ext: { ru: 'Источники проверяет сам онлайн-плагин, повторный обход не нужен', uk: 'Джерела перевіряє сам онлайн-плагін, повторний обхід не потрібен', en: 'The online plugin checks sources itself, no second pass needed' },
     nova_plus_set_switch: { ru: 'Автопереход по источникам', uk: 'Автоперехід по джерелах', en: 'Auto switch source' },
-    nova_plus_set_switch_descr: { ru: 'Если ничего не найдено, пробовать следующий рабочий источник', uk: 'Якщо нічого не знайдено, пробувати наступне робоче джерело', en: 'Try the next working source when nothing is found' },
+    nova_plus_set_switch_descr: { ru: 'Если источник не нашёл видео, автоматически попробовать следующий доступный.', uk: 'Якщо джерело не знайшло відео, автоматично спробувати наступне доступне.', en: 'Automatically try the next available source when no videos are found.' },
     nova_plus_set_view: { ru: 'Вид серий', uk: 'Вигляд серій', en: 'Episodes layout' },
-    nova_plus_set_view_descr: { ru: 'Для серий: список или плитка — работает в любом виде карточки и переключается кнопкой', uk: 'Для серій: список або плитка — працює в будь-якому вигляді карток і перемикається кнопкою', en: 'For episodes: list or grid — works in any card layout and switches by button' },
+    nova_plus_set_view_descr: { ru: 'Показывать серии списком или плиткой. Также переключается кнопкой над сериями.', uk: 'Показувати серії списком або плиткою. Також перемикається кнопкою над серіями.', en: 'Show episodes as a list or grid. Also available from the button above the episodes.' },
     nova_plus_set_movie_view: { ru: 'Вид файлов', uk: 'Вигляд файлів', en: 'Files layout' },
     nova_plus_set_movie_view_descr: { ru: 'Для фильмов: список или плитка — настраивается отдельно от серий', uk: 'Для фільмів: список або плитка — налаштовується окремо від серій', en: 'For movies: list or grid — independent from episodes' },
-    nova_plus_set_quality: { ru: 'Качество по умолчанию', uk: 'Якість за замовчуванням', en: 'Default quality' },
-    nova_plus_set_quality_descr: { ru: 'Предпочтительное качество воспроизведения', uk: 'Бажана якість відтворення', en: 'Preferred playback quality' },
+    nova_plus_set_quality: { ru: 'Качество во встроенном плеере', uk: 'Якість у вбудованому плеєрі', en: 'Built-in player quality' },
+    nova_plus_set_quality_descr: { ru: 'Предпочтительное качество при наличии нескольких вариантов видео. Внешний плеер выбирает качество сам.', uk: 'Бажана якість за наявності кількох варіантів відео. Зовнішній плеєр вибирає якість сам.', en: 'Preferred quality when several video variants are available. External players select their own quality.' },
     nova_plus_set_quality_auto: { ru: 'Авто', uk: 'Авто', en: 'Auto' },
     nova_plus_set_focus: { ru: 'Выделение', uk: 'Виділення', en: 'Highlight style' },
     nova_plus_set_focus_descr: { ru: 'Чем подсвечивать выбранную кнопку, серию или озвучку', uk: 'Чим підсвічувати вибрану кнопку, серію або озвучення', en: 'How the focused button, episode or voice is highlighted' },
@@ -198,7 +193,7 @@
   }
 
   var ICON = {
-    play: '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>',
+    play: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><path d="M10 8v8l6-4z" fill="currentColor" stroke="none"></path></svg>',
     chevron: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"></path></svg>',
     search: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4" stroke-linecap="round"></path></svg>',
     refresh: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 11a8 8 0 10-2.3 5.7" stroke-linecap="round"></path><path d="M20 4v7h-7" stroke-linecap="round" stroke-linejoin="round"></path></svg>',
@@ -243,27 +238,45 @@
   function episodeNumber(value) {
     var num = parseInt(value, 10);
     if (!num && num !== 0) return String(value === undefined || value === null ? '' : value);
-    return num < 10 ? '0' + num : String(num);
+    return String(num);
+  }
+
+  function episodeTitle(item, name) {
+    var prefix = text('torrent_serial_episode', 'nova_plus_episode') + ' ' + item.num;
+    var title = String(name || '').replace(/^(?:серия|эпизод|episode|ep\.?)\s*\d+\s*[:.\-–—]?\s*/i, '').replace(/^S\d+\s*[:· ]*E\d+\s*[:.\-–—]?\s*/i, '').trim();
+    return title || prefix;
   }
 
   function shortQuality(value) {
     if (!value) return '';
     value = String(value);
-    var match = value.match(/(2160|1440|1080|720|576|480|360)\s*p?/i);
+    var dimensions = value.match(/\b(\d{3,4})\s*[xх×]\s*(\d{3,4})\b/i);
+    if (dimensions) {
+      var width = parseInt(dimensions[1], 10), height = parseInt(dimensions[2], 10);
+      if (width >= 3840 || height >= 2160) return '4K';
+      if (width >= 2560 || height >= 1440) return '2K';
+      if (width >= 1920 || height >= 1080) return 'FHD';
+      if (width >= 1280 || height >= 720) return 'HD';
+      return 'SD';
+    }
+    var match = value.match(/\b(2160|1440|1080|720|576|480|360)\s*p?\b/i);
     if (match) {
       var num = parseInt(match[1], 10);
       if (num >= 2160) return '4K';
+      if (num >= 1440) return '2K';
       if (num >= 1080) return 'FHD';
       if (num >= 720) return 'HD';
       return 'SD';
     }
-    if (/4k|uhd/i.test(value)) return '4K';
-    if (/fhd/i.test(value)) return 'FHD';
+    if (/\b(4k|uhd)\b/i.test(value)) return '4K';
+    if (/\b(2k|qhd)\b/i.test(value)) return '2K';
+    if (/\bfhd\b/i.test(value)) return 'FHD';
     if (/\bhd\b/i.test(value)) return 'HD';
+    if (/\bsd\b/i.test(value)) return 'SD';
     return '';
   }
 
-  var QUALITY_RANK = { '4K': 4, FHD: 3, HD: 2, SD: 1 };
+  var QUALITY_RANK = { '4K': 4, '2K': 3.5, FHD: 3, HD: 2, SD: 1 };
   var PROBE_TTL_OK = 21600000;
   var PROBE_TTL_EMPTY = 1800000;
 
@@ -945,6 +958,7 @@
   var chip_actions = {};
   var filter = null;
   var movie = null;
+  var movie_choice = { scope: '', index: -1 };
   var serial = false;
   var nav = false;
   var last = null;
@@ -1278,7 +1292,7 @@
   }
 
   function heroKey(key) {
-    return key === 'hero' || key === 'hero-next';
+    return key === 'hero';
   }
 
   function lockActive() {
@@ -1384,12 +1398,6 @@
     if (play.length) {
       ui.play = play;
       bindPlay(play.off('hover:enter hover:focus hover:long'));
-    }
-
-    var next = ui.root.find('[data-nova-focus="hero-next"]').first();
-    if (next.length) {
-      ui.next = next;
-      bindNext(next.off('hover:enter hover:focus hover:long'));
     }
 
     ui.rows.find('.nova-toolbar [data-nova-focus]').each(function () {
@@ -2570,13 +2578,12 @@
     var found = '';
     var px = origin.hasClass('onl-online-prestige--folder') || origin.hasClass('onl-online-prestige--full') ? 'onl-' : '';
     try {
-      found = shortQuality(origin.find('.' + px + 'online-prestige__info').text() + ' ' +
-        origin.find('.' + px + 'online-prestige__title').text());
+      found = shortQuality(origin.find('.' + px + 'online-prestige__info').text());
     } catch (e) {
       found = '';
     }
-    if (found) return found;
-    return knownQuality(currentSourceKey()) || splitSourceName(sourceTitle()).badge || '';
+    // A source badge is the provider's maximum, not the quality of this file.
+    return found;
   }
 
   function soonCard(origin) {
@@ -2639,7 +2646,7 @@
         ? origin.find('.' + px + 'online-prestige__quality').text().trim()
         : (origin.find('.' + px + 'online-prestige__time').text().trim() ||
           (origin.hasClass(px + 'online-prestige--folder') ? '' : fallbackTime())),
-      quality: soon ? '' : (origin.find('.' + px + 'online-prestige__quality').text().trim() ||
+      quality: soon ? '' : (shortQuality(origin.find('.' + px + 'online-prestige__quality').text()) ||
         (origin.hasClass(px + 'online-prestige--folder') ? '' : fallbackQuality(origin))),
       picture: origin.find('.' + px + 'online-prestige__img img, .' + px + 'online-prestige__folder img').first()
     };
@@ -2700,11 +2707,14 @@
     if (!full || !full.length) return null;
 
     var list = full.filter(function (item) {
-      return !item.soon;
+      return !item.soon && (serial || nav || !item.folder);
     });
     if (!list.length) return null;
 
     if (!serial) {
+      if (!nav && movie_choice.scope === movieChoiceScope()) {
+        for (i = 0; i < list.length; i++) if (list[i].index === movie_choice.index) return list[i];
+      }
       for (i = 0; i < list.length; i++) {
         if (isSeen(list[i])) continue;
         if (list[i].percent > 0 && list[i].percent < SEEN_PERCENT) return list[i];
@@ -2829,9 +2839,11 @@
         clearInterval(timer);
         timer = null;
       }
+      var changed = item.num !== value || !item.numbered;
       item.num = value;
       item.numbered = true;
       slot.text(episodeNumber(value));
+      if (changed) { signature = ''; schedule(); }
       return true;
     }
 
@@ -2890,7 +2902,7 @@
     var body = card.find('.nova-card__body');
 
     var head = item.title || movie.title || movie.name || '';
-    card.find('.nova-card__title').text(head);
+    card.find('.nova-card__title').text(serial && !item.folder ? episodeTitle(item, head) : head);
 
     var meta = metaTrim(item.meta, head);
     if (item.percent > 0 && item.percent < SEEN_PERCENT && item.time) {
@@ -2958,7 +2970,32 @@
 
     item.card = card;
     wideDress(card, item);
+    if (!serial && !nav && !item.folder) {
+      card.addClass('nova-card--movie');
+      card.find('.nova-card__title').text(movie.title || movie.name || item.title);
+      card.find('.nova-card__meta').text(item.title || '');
+    }
     return card;
+  }
+
+  function movieChoiceScope() { return qualityScope() + ':' + currentSourceKey(); }
+
+  function chooseMovie(item) {
+    movie_choice = { scope: movieChoiceScope(), index: item.index };
+    ui_open = '';
+    lockFocus(modeWide() ? 'movievoice:' + item.index : 'movievoice');
+    redraw();
+  }
+
+  function movieVoiceRow() {
+    var row = $('<div class="nova-drop"></div>'), selected = pickResume(items);
+    items.forEach(function (item) {
+      if (item.folder) return;
+      var box = chip('movievoice:' + item.index, item.title || movie.title || '', { active: item === selected, plain: true, badge: shortQuality(item.quality) });
+      bind(box, function () { chooseMovie(item); });
+      row.append(box);
+    });
+    ui.rows.append(row);
   }
 
   function digitsTime(value) {
@@ -2980,28 +3017,13 @@
     });
   }
 
-  function bindNext(node) {
-    return bind(node, function () {
-      play(nextItem(pickResume(items)));
-    });
-  }
-
   function playButton() {
     if (!ui.play || !ui.play.length) {
       ui.play = $('<div class="nova-btn nova-btn--main selector" data-nova-focus="hero">' +
-        ICON.play + '<span class="nova-btn__label"></span></div>');
+        ICON.play + '<span class="nova-btn__label"></span><span class="nova-btn__focus" aria-hidden="true"></span></div>');
       bindPlay(ui.play);
     }
     return ui.play;
-  }
-
-  function nextButton() {
-    if (!ui.next || !ui.next.length) {
-      ui.next = $('<div class="nova-btn nova-btn--ghost selector" data-nova-focus="hero-next">' +
-        '<span class="nova-btn__label"></span></div>');
-      bindNext(ui.next);
-    }
-    return ui.next;
   }
 
   function episodeSuffix(item) {
@@ -3045,14 +3067,7 @@
       });
     }
 
-    if (items.length > JUMP_FROM) {
-      menu.push({
-        title: serial
-          ? text('nova_jump_pick', 'nova_plus_jump_pick')
-          : text('nova_files_pick', 'nova_plus_files_pick'),
-        jump: true
-      });
-    }
+
 
     try {
       Lampa.Select.show({
@@ -3071,7 +3086,7 @@
   }
 
   function logoOn() {
-    return get('nova_plus_logo', true) !== false;
+    return true;
   }
 
   function logoLang() {
@@ -3372,44 +3387,54 @@
     if (!ui.hero) return;
     var box = ui.hero.find('.nova-hero__voice');
     if (!box.length) return;
-    var voice = wideOn() && !ui.hero.hasClass('nova-hero--compact') && groups.voice ? groups.voice.subtitle : '';
+    var voice = tmdbKind(movie) !== 'tv' && wideOn() && !ui.hero.hasClass('nova-hero--compact') && groups.voice ? groups.voice.subtitle : '';
     if (voice) box.text(voice).show();
     else box.text('').hide();
   }
 
-  function heroSeasonHtml(season) {
-    var text = seasonText(season);
-    var source = wideOn() ? (splitSourceName(sourceTitle()).name || '') : '';
-    if (!source) return esc(text);
-    return '<span class="nova-hero__season-text">' + esc(text) + '</span><span class="nova-hero__season-source">' + esc(source) + '</span>';
+  function heroMetadata(target) {
+    var meta = ui.hero.find('.nova-hero__meta').empty();
+    var badge = target ? shortQuality(target.quality) : '';
+    if (badge) meta.append($('<div class="nova-badge"></div>').text(badge));
+    if (movie.vote_average) meta.append($('<div class="nova-hero__rating"></div>').text('\u2605 ' + parseFloat(movie.vote_average + '').toFixed(1)));
+    var year = String(movie.release_date || movie.first_air_date || '').slice(0, 4);
+    var countries = '';
+    try { if (window.LampaView.bannerCountries) countries = window.LampaView.bannerCountries(movie); } catch (e) {}
+    var date = $('<div class="nova-hero__date"></div>');
+    var countryYear = [year, countries].filter(Boolean).join(', ');
+    if (countryYear) date.append($('<span class="nova-hero__year"></span>').text(countryYear));
+    if (tmdbKind(movie) === 'movie') {
+      var duration = fallbackTime() || (target && target.time) || '';
+      if (duration) date.append($('<span class="nova-hero__runtime"></span>').text(duration));
+    } else date.append($('<span class="nova-hero__season-label"></span>').text(text('torrent_serial_season', 'nova_plus_season') + ' ' + (seasonNumber() || 1)));
+    if (date.children().length) meta.append(date);
+  }
+
+  function heroProgress(target, season) {
+    if (!ui.hero || !target) return;
+    var progress = ui.hero.find('.nova-hero__progress').empty();
+    var percent = season
+      ? Math.min(100, Math.round(season.seen / Math.max(1, season.total, season.planned) * 100))
+      : Math.min(100, target.percent);
+    if (percent > 0 || !serial) progress.show().append('<div class="time-line"><div style="width:' + percent + '%"></div></div>');
+    else progress.hide();
   }
 
   function heroStatic(withArt) {
     if (!ui.hero) return;
 
-    if (withArt) {
-      var meta = ui.hero.find('.nova-hero__meta').empty();
-      var badge = knownQuality(currentSourceKey()) || splitSourceName(sourceTitle()).badge;
-      if (badge) meta.append('<div class="nova-badge">' + esc(badge) + '</div>');
-      if (movie.vote_average) {
-        meta.append('<div>\u2605 ' + parseFloat(movie.vote_average + '').toFixed(1) + '</div>');
-      }
-      var year = ((movie.release_date || movie.first_air_date || '') + '').slice(0, 4);
-      if (year) meta.append('<div>' + esc(year) + '</div>');
-      var mins = episodeRuntime();
-      if (mins) meta.append('<div>' + esc(runtimeText(mins * 60)) + '</div>');
-    }
+    if (withArt) heroMetadata(null);
 
     var hint = [];
     var source = splitSourceName(sourceTitle()).name;
-    if (source) hint.push(source);
+    if (source && tmdbKind(movie) !== 'tv') hint.push(source);
     var voice = groups.voice ? groups.voice.subtitle : '';
     if (voice && !wideOn()) hint.push(voice);
     ui.hero.find('.nova-hero__hint').text(hint.join(' \u00b7 '));
     heroVoice();
 
     ui.hero.find('.nova-hero__progress').empty().hide();
-    ui.hero.find('.nova-hero__season').hide();
+    wideHeroTune();
   }
 
   function buildHero() {
@@ -3427,7 +3452,6 @@
 
     if (ui.hero && ui.hero_kind !== kind) {
       button.detach();
-      nextButton().detach();
       ui.hero_box.empty();
       ui.hero = null;
     }
@@ -3442,7 +3466,6 @@
         '<div class="nova-hero__actions">' +
         (withArt ? '' : '<div class="nova-hero__mark"></div>') +
         '<div class="nova-hero__hint"></div></div>' +
-        '<div class="nova-hero__season" style="display:none"></div>' +
         '</div>' +
         '<div class="nova-hero__progress" style="display:none"></div>' +
         '</div>');
@@ -3461,9 +3484,10 @@
       ui.hero_box.empty().append(ui.hero);
     }
 
+    ui.hero.find('.nova-hero__descr').hide();
+
     if (!target) {
       button.detach();
-      nextButton().detach();
       heroStatic(withArt);
       return null;
     }
@@ -3471,32 +3495,16 @@
     ui.hero.find('.nova-hero__actions').prepend(button);
 
     var started = target.percent > 0 && target.percent < SEEN_PERCENT;
-    var next = serial ? nextItem(target) : null;
-    var next_button = nextButton();
-    if (next && started) {
-      next_button.find('.nova-btn__label')
-        .text(text('nova_next_episode', 'nova_plus_next_episode') + episodeSuffix(next));
-      button.after(next_button);
-    } else next_button.detach();
-
-    if (withArt) {
-      var meta = ui.hero.find('.nova-hero__meta').empty();
-      var badge = shortQuality(target.quality) || splitSourceName(sourceTitle()).badge;
-      if (badge) meta.append('<div class="nova-badge">' + esc(badge) + '</div>');
-      if (movie.vote_average) {
-        meta.append('<div>\u2605 ' + parseFloat(movie.vote_average + '').toFixed(1) + '</div>');
-      }
-      var year = ((movie.release_date || movie.first_air_date || '') + '').slice(0, 4);
-      if (year) meta.append('<div>' + esc(year) + '</div>');
-      if (target.time) meta.append('<div>' + esc(target.time) + '</div>');
-    }
+    if (withArt) heroMetadata(target);
 
     var label = started ? text('nova_continue', 'nova_plus_continue') : text('nova_watch', 'nova_plus_watch');
     if (serial && target.numbered) {
-      label += ' \u00b7 S' + (seasonNumber() || 1) + ' E' + target.num;
+      label += ' \u00b7 ' + text('torrent_serial_episode', 'nova_plus_episode') + ' ' + target.num;
     }
     if(started && target.position>0){var seconds=Math.floor(target.position),minutes=Math.floor(seconds/60),hours=Math.floor(minutes/60);label+=' · '+(hours?hours+':'+('0'+minutes%60).slice(-2):minutes)+':'+('0'+seconds%60).slice(-2);}
+    button.toggleClass('nova-btn--movie', !serial);
     button.find('.nova-btn__label').text(label);
+    button.attr('aria-label', label);
 
     var hint = [];
     var source = splitSourceName(sourceTitle()).name;
@@ -3510,31 +3518,19 @@
 
     var season = serial && !nav && items.length ? seasonSeen(items) : null;
 
-    var season_line = ui.hero.find('.nova-hero__season');
     if (season) {
-      season_line.html(heroSeasonHtml(season)).show();
-
       if (season.planned <= season.total) {
         var want_season = seasonNumber() || 1;
         var want_id = tmdbId();
         seasonPlanned(want_season, function (planned) {
           if (!planned || planned <= season.total) return;
           if (!ui.hero || tmdbId() !== want_id || (seasonNumber() || 1) !== want_season) return;
-          var box = ui.hero.find('.nova-hero__season');
-          if (!box.length) return;
           season = seasonSeen(items,planned);
-          box.html(heroSeasonHtml(season)).show();
+          heroProgress(pickResume(items), season);
         });
       }
-    } else season_line.hide();
-
-    var progress = ui.hero.find('.nova-hero__progress').empty();
-    var percent = season
-      ? Math.min(100,Math.round(season.seen / Math.max(1,season.total,season.planned) * 100))
-      : Math.min(100, target.percent);
-    if (percent > 0) {
-      progress.show().append('<div class="time-line"><div style="width:' + percent + '%"></div></div>');
-    } else progress.hide();
+    }
+    heroProgress(target, season);
 
     return button;
   }
@@ -3753,7 +3749,7 @@
       if (sourceActive(item, key, state, graded)) visible.push(item);
       else hidden.push(item);
     });
-    if (ui_all_sources) visible = visible.concat(hidden);
+    visible = visible.concat(hidden);
 
     var row = $('<div class="nova-drop"></div>');
 
@@ -3776,28 +3772,6 @@
       });
       row.append(box);
     });
-
-    if (!ui_all_sources && hidden.length) {
-      var more = chip('src:more', text('nova_more_sources', 'nova_plus_more_sources')
-        .replace('{count}', hidden.length), { plain: true });
-      more.addClass('nova-chip--more');
-      bind(more, function () {
-        ui_all_sources = true;
-        var want = hidden.length ? focusKey(hidden[0]) : '';
-        buildRows();
-        if (want && !seek(want)) want = '';
-        if (!want) {
-          var seat = dropEntry();
-          if (seat) want = $(seat).attr('data-nova-focus') || '';
-        }
-        if (want) lockFocus(want);
-        restoreFocus(false);
-        contentEnable();
-        dropShowSoon();
-        probeRun();
-      });
-      row.append(more);
-    }
 
     ui.rows.append(row);
   }
@@ -3921,6 +3895,20 @@
       });
     });
 
+    var addView = function () {
+      if (nav || !items.length) return;
+      addChip('view', '', label(viewMode() === 'list' ? 'nova_plus_view_list' : 'nova_plus_view_grid'), {
+        plain: true,
+        action: function () {
+          save(viewKey(), viewMode() === 'list' ? 'grid' : 'list');
+          lockFocus('view');
+          redraw();
+        }
+      });
+    };
+
+    addView();
+
     var sort = groups.sort || [];
     if (sort.length) {
       var parts = splitSourceName(sourceTitle());
@@ -3929,19 +3917,8 @@
         if (item.selected) current = item;
       });
       var key = current ? (current.source || current.title) : '';
-      addChip('source', modeWide() ? '' : text('nova_source', 'nova_plus_source'), parts.name, {
+      addChip('source', text('nova_source', 'nova_plus_source'), parts.name, {
         badge: knownQuality(key) || parts.badge
-      });
-    }
-
-    if (!nav && items.length > 0) {
-      addChip('view', '', label(viewMode() === 'list' ? 'nova_plus_view_list' : 'nova_plus_view_grid'), {
-        plain: true,
-        action: function () {
-          save(viewKey(), viewMode() === 'list' ? 'grid' : 'list');
-          lockFocus('view');
-          redraw();
-        }
       });
     }
 
@@ -3960,11 +3937,9 @@
         groups.voice.subtitle || '', {});
     }
 
-    if (!nav && items.length > JUMP_FROM) {
-      var now = pageAt(pages(items.length), ui_page > 0 ? ui_page : 0);
-      addChip('jump', serial
-        ? text('nova_jump', 'nova_plus_jump')
-        : text('nova_files', 'nova_plus_files'), pageTitle(now), {});
+    if (!serial && !nav && items.length > 1) {
+      var selectedMovie = pickResume(items);
+      addChip('movievoice', label('nova_plus_voices'), selectedMovie ? selectedMovie.title : '', {});
     }
 
     rows.append(toolbar);
@@ -3973,6 +3948,7 @@
     if (ui_open === 'source') sourceRow();
     else if (ui_open === 'season' && groups.season) optionRow(groups.season);
     else if (ui_open === 'voice' && groups.voice) optionRow(groups.voice);
+    else if (ui_open === 'movievoice') movieVoiceRow();
     else if (ui_open === 'jump') jumpRow();
     else if (extra_menu && ui_open === extra_menu.key) extraRow();
   }
@@ -4026,22 +4002,7 @@
     return index;
   }
 
-  function preselectPage(key) {
-    var index = keyIndex(key);
-    if (index < 0) return false;
-    var item = items[index];
-    if (!item || (item.card && item.card.length)) return false;
-    if (items.length <= JUMP_FROM) return false;
-    var page = pageAt(pages(items.length), index);
-    if (page.start === ui_page) return false;
-    lockRelease();
-    ui_open = '';
-    ui_focus = '';
-    ui_page = page.start;
-    ui_page_focus = index;
-    setTimeout(redraw, 0);
-    return true;
-  }
+  function preselectPage(key) { return false; }
 
   function alive(node) {
     var elem = node instanceof jQuery ? node[0] : node;
@@ -4619,6 +4580,7 @@
       ui_page,
       ui_all_sources ? 1 : 0,
       items.length ? items[0].title : '',
+      items.map(function (item) { return item.num + ':' + item.quality; }).join(','),
       items.filter(function (i) { return isSeen(i); }).length
     ].join('|');
   }
@@ -4717,28 +4679,13 @@
     else ui.list.removeClass('nova__list--grid');
     wideStrip(list);
 
-    var paged = !nav && list.length > JUMP_FROM && !(wideOn() && wideRowOn());
-    var start = 0;
-    var end = list.length - 1;
-
-    if (paged) {
-      var all = pages(list.length);
-      var page;
-      if (ui_page < 0 || ui_page >= list.length) {
-        var resume = pickResume(list);
-        page = pageAt(all, resume ? resume.index : 0);
-      } else page = pageAt(all, ui_page);
-      ui_page = page.start;
-      start = page.start;
-      end = page.end;
-    } else ui_page = 0;
+    ui_page = 0;
 
     ui.list.empty();
-    wideOrderList(list).forEach(function (item) {
-      if (paged && (item.index < start || item.index > end)) {
-        item.card = null;
-        return;
-      }
+    var displayList = !serial && !nav ? list.filter(function (item) { return item.folder; }) : wideOrderList(list);
+    if (ui.strip) ui.strip.toggle(displayList.length > 0);
+    list.forEach(function (item) { item.card = null; });
+    displayList.forEach(function (item) {
       ui.list.append(buildCard(item, compact && !grid, grid));
     });
     listFree();
@@ -4831,12 +4778,13 @@
     observer = new MutationObserver(function (records) {
       for (var i = 0; i < records.length; i++) {
         var node = records[i].target;
+        if (node && node.nodeType === 3) node = node.parentNode;
         if (node && node.nodeType === 1 && $(node).closest('.nova-plus-root').length) continue;
         if (pendingLive()) reattach();
         return scheduleNow();
       }
     });
-    observer.observe(target, { childList: true, subtree: true });
+    observer.observe(target, { childList: true, characterData: true, subtree: true });
   }
 
   function detach() {
@@ -5037,95 +4985,7 @@
         onChange: function () { try { Lampa.Activity.replace(); } catch (e) {} }
       });
 
-      Lampa.SettingsApi.addParam({
-        component: 'nova_plus',
-        param: {
-          name: MODE_KEY,
-          type: 'select',
-          values: {
-            wide: label('nova_plus_mode_wide'),
-            skin: label('nova_plus_mode_skin')
-          },
-          default: 'wide'
-        },
-        field: {
-          name: label('nova_plus_set_mode'),
-          description: label('nova_plus_set_mode_descr')
-        },
-        onChange: function () { try { Lampa.Activity.replace(); } catch (e) {} }
-      });
 
-      Lampa.SettingsApi.addParam({
-        component: 'nova_plus',
-        param: { name: 'nova_plus_hero', type: 'trigger', default: true },
-        field: {
-          name: label('nova_plus_set_hero'),
-          description: lockedOn(label('nova_plus_set_hero_descr'))
-        },
-        onChange: function () { try { Lampa.Activity.replace(); } catch (e) {} }
-      });
-
-      Lampa.SettingsApi.addParam({
-        component: 'nova_plus',
-        param: { name: 'nova_plus_hero_art', type: 'trigger', default: true },
-        field: {
-          name: label('nova_plus_set_hero_art'),
-          description: lockedOn(label('nova_plus_set_hero_art_descr'))
-        },
-        onChange: function () { try { Lampa.Activity.replace(); } catch (e) {} }
-      });
-
-      Lampa.SettingsApi.addParam({
-        component: 'nova_plus',
-        param: {
-          name: 'nova_plus_art_size',
-          type: 'select',
-          values: {
-            auto: label('nova_plus_art_auto'),
-            w780: label('nova_plus_art_780'),
-            w1280: label('nova_plus_art_1280'),
-            original: label('nova_plus_art_orig')
-          },
-          default: 'auto'
-        },
-        field: {
-          name: label('nova_plus_set_art_size'),
-          description: label('nova_plus_set_art_size_descr')
-        },
-        onChange: function () { try { Lampa.Activity.replace(); } catch (e) {} }
-      });
-
-      Lampa.SettingsApi.addParam({
-        component: 'nova_plus',
-        param: { name: 'nova_plus_logo', type: 'trigger', default: true },
-        field: {
-          name: label('nova_plus_set_logo'),
-          description: label('nova_plus_set_logo_descr')
-        },
-        onChange: function () {
-          if (movie && ui.hero) heroLogo();
-        }
-      });
-
-      Lampa.SettingsApi.addParam({
-        component: 'nova_plus',
-        param: { name: 'nova_plus_fullscreen', type: 'trigger', default: true },
-        field: {
-          name: label('nova_plus_set_full'),
-          description: lockedOn(label('nova_plus_set_full_descr'))
-        },
-        onChange: function () { applyFullScreen(); }
-      });
-
-      Lampa.SettingsApi.addParam({
-        component: 'nova_plus',
-        param: { name: 'nova_plus_fade', type: 'trigger', default: false },
-        field: {
-          name: label('nova_plus_set_fade'),
-          description: label('nova_plus_set_fade_descr')
-        },
-        onChange: function () { applyEdgeFade(); }
-      });
 
       Lampa.SettingsApi.addParam({
         component: 'nova_plus',
@@ -5136,34 +4996,6 @@
         },
         onChange: function () { redraw(); }
       });
-
-      try {
-        Lampa.Settings.listener.follow('open', function (e) {
-          if (!e || e.name !== 'nova_plus' || !e.body) return;
-
-          var mode = probeHook();
-          var item = e.body.find('[data-name="nova_plus_probe"]');
-          if (!item.length) return;
-
-          if (mode === 'disabled') {
-            item.addClass('hide');
-            return;
-          }
-
-          item.removeClass('hide');
-
-          var descr = item.find('.settings-param__descr');
-          if (!descr.length) return;
-
-          if (mode === 'external') {
-            descr.text(label('nova_plus_set_probe_ext'));
-            item.css('opacity', '.6');
-          } else {
-            descr.text(label('nova_plus_set_probe_descr'));
-            item.css('opacity', '');
-          }
-        });
-      } catch (e) {}
 
       Lampa.SettingsApi.addParam({
         component: 'nova_plus',
@@ -5192,23 +5024,7 @@
         onChange: function () { redraw(); }
       });
 
-      Lampa.SettingsApi.addParam({
-        component: 'nova_plus',
-        param: {
-          name: MOVIE_VIEW_KEY,
-          type: 'select',
-          values: {
-            list: label('nova_plus_view_list'),
-            grid: label('nova_plus_view_grid')
-          },
-          default: 'grid'
-        },
-        field: {
-          name: label('nova_plus_set_movie_view'),
-          description: label('nova_plus_set_movie_view_descr')
-        },
-        onChange: function () { redraw(); }
-      });
+
 
       Lampa.SettingsApi.addParam({
         component: 'nova_plus',
@@ -5230,23 +5046,6 @@
         }
       });
 
-      Lampa.SettingsApi.addParam({
-        component: 'nova_plus',
-        param: {
-          name: 'nova_plus_focus_style',
-          type: 'select',
-          values: {
-            ring: label('nova_plus_set_focus_ring'),
-            fill: label('nova_plus_set_focus_fill')
-          },
-          default: 'ring'
-        },
-        field: {
-          name: label('nova_plus_set_focus'),
-          description: label('nova_plus_set_focus_descr')
-        },
-        onChange: function () { applyFocusStyle(); }
-      });
       wideSettings();
     } catch (e) {}
   }
@@ -5381,29 +5180,25 @@
     nova_plus_look_row: { ru: 'Горизонтальный', uk: 'Горизонтальний', en: 'Horizontal' },
     nova_plus_look_grid: { ru: 'Вертикальный', uk: 'Вертикальний', en: 'Vertical' },
     nova_plus_reset: { ru: 'Сбросить фильтр', uk: 'Скинути фільтр', en: 'Reset filter' },
-    nova_plus_set_pos: { ru: 'Положение источника', uk: 'Розташування джерела', en: 'Source row position' },
-    nova_plus_set_pos_descr: { ru: 'Где стоит строка с источником: над сезонами или под ними', uk: 'Де стоїть рядок із джерелом: над сезонами або під ними', en: 'Where the source row sits: above or below the seasons' },
+    nova_plus_set_pos: { ru: 'Положение панели источника', uk: 'Розташування панелі джерела', en: 'Source toolbar position' },
+    nova_plus_set_pos_descr: { ru: 'Разместить панель выбора источника над сезонами и озвучками или под ними.', uk: 'Розмістити панель вибору джерела над сезонами й озвученнями або під ними.', en: 'Place the source toolbar above or below the seasons and audio choices.' },
     nova_plus_pos_top: { ru: 'Вверху', uk: 'Вгорі', en: 'Top' },
     nova_plus_pos_bottom: { ru: 'Внизу', uk: 'Внизу', en: 'Bottom' },
     nova_plus_set_look: { ru: 'Лента серий', uk: 'Лента серій', en: 'Episode strip' },
-    nova_plus_set_look_descr: { ru: 'Вертикальная сетка по умолчанию, горизонтальная по переключателю', uk: 'Вертикальна сітка за замовчуванням, горизонтальна за перемикачем', en: 'Vertical grid by default, horizontal by toggle' },
+    nova_plus_set_look_descr: { ru: 'Для плитки: вертикальная сетка или горизонтальный ряд с прокруткой.', uk: 'Для плитки: вертикальна сітка або горизонтальний ряд із прокручуванням.', en: 'For episode cards: a vertical grid or a horizontally scrolling row.' },
     nova_plus_set_order: { ru: 'Порядок серий', uk: 'Порядок серій', en: 'Episode order' },
-    nova_plus_set_order_descr: { ru: 'Обратный удобен для сериалов, которые ещё выходят', uk: 'Зворотний зручний для серіалів, що ще виходять', en: 'Reversed suits shows that are still airing' },
-    nova_plus_set_meta: { ru: 'Описания серий', uk: 'Описи серій', en: 'Episode details' },
-    nova_plus_set_meta_descr: { ru: 'Добирать дату, рейтинг и описание серии из TMDB', uk: 'Добирати дату, рейтинг та опис серії з TMDB', en: 'Pull episode date, rating and overview from TMDB' }
+    nova_plus_set_order_descr: { ru: 'Показывать серии от первой к последней или в обратном порядке.', uk: 'Показувати серії від першої до останньої або у зворотному порядку.', en: 'Show episodes from first to last or in reverse order.' },
+    nova_plus_set_meta: { ru: 'Данные серий', uk: 'Дані серій', en: 'Episode metadata' },
+    nova_plus_set_meta_descr: { ru: 'Загружать названия, кадры, даты выхода и рейтинги серий из TMDB.', uk: 'Завантажувати назви, кадри, дати виходу й рейтинги серій із TMDB.', en: 'Load episode titles, stills, air dates and ratings from TMDB.' }
   };
 
   for (var wide_key in WIDE_OWN) OWN[wide_key] = WIDE_OWN[wide_key];
 
   try { Lampa.Lang.add(WIDE_OWN); } catch (e) {}
 
-  function wideSerial() {
-    try { return !!(movie && movie.number_of_seasons); } catch (e) { return false; }
-  }
-
-  function wideOn() { return modeWide() && wideSerial(); }
+  function wideOn() { return modeWide(); }
   function wideRow() { return get(WIDE_LAYOUT_KEY, 'grid') === 'row'; }
-  function wideRowOn() { return wideRow() && viewSerial() === 'grid'; }
+  function wideRowOn() { return serial && wideRow() && viewSerial() === 'grid'; }
   function wideReverse() { return get(WIDE_ORDER_KEY, 'straight') === 'reverse'; }
   function wideMeta() { return get(WIDE_META_KEY, true) !== false; }
   function widePos() { return get(WIDE_POS_KEY, 'top') === 'bottom' ? 'bottom' : 'top'; }
@@ -5672,6 +5467,8 @@
       return card;
     }
 
+    if (!serial) return card;
+
     if (viewMode() === 'list') return wideDressList(card, item);
 
     card.addClass('nova-card--wide');
@@ -5685,7 +5482,7 @@
       var plain = parseInt(digits(number), 10) || 0;
       if (number) {
         thumb.find('.nova-card__num').remove();
-        thumb.prepend($('<div class="nova-card__tag"></div>').text('S' + (seasonNumber() || 1) + ':E' + (plain || number)));
+        thumb.prepend($('<div class="nova-card__tag"></div>').text(text('torrent_serial_episode', 'nova_plus_episode') + ' ' + (plain || number)));
       }
     }
 
@@ -5711,19 +5508,7 @@
     card.find('.nova-card__side').remove();
     card.find('.nova-card__meta').remove();
 
-    var tags = wideTags(item);
-    if (tags.length || picked.voice) {
-      var row = $('<div class="nova-card__tags"></div>');
-      tags.forEach(function (value) { row.append($('<span></span>').text(value)); });
-      if (picked.voice) row.append($('<span class="nova-card__voice"></span>').text(picked.voice));
-      body.append(row);
-    }
-
-    var descr = $('<div class="nova-card__descr"></div>');
-    if (picked.rest.length) descr.text(picked.rest.join(' · '));
-    body.append(descr);
-
-    wideFill(item, card, descr, thumb);
+    wideFill(item, card, thumb);
     return card;
   }
 
@@ -5737,7 +5522,7 @@
     if (number) {
       var plain = parseInt(digits(number), 10) || 0;
       var slot = card.find('.nova-card__num > span');
-      if (slot.length) slot.text(plain ? ('0' + plain).slice(-2) : number);
+      if (slot.length) slot.text(plain || number);
     } else card.find('.nova-card__num').remove();
 
     var line = card.find('.nova-card__line');
@@ -5746,7 +5531,6 @@
 
     var bits = [];
     if (picked.date) bits.push('<span class="nova-card__date">' + esc(picked.date) + '</span>');
-    if (picked.voice) bits.push('<span>' + esc(picked.voice) + '</span>');
     if (!serial && picked.rest.length) bits.push('<span>' + esc(picked.rest[0]) + '</span>');
     card.find('.nova-card__meta').html(bits.join('<span class="nova-dot">\u25cf</span>'));
 
@@ -5765,7 +5549,7 @@
       var episode = book[number];
       if (!episode) return;
       var title = card.find('.nova-card__title');
-      if (episode.name && !title.text()) title.text(episode.name);
+      if (episode.name) title.text(episodeTitle(item, episode.name));
       var meta = card.find('.nova-card__meta');
       if (episode.air_date && !meta.find('.nova-card__date').length) {
         var when = wideDate(episode.air_date);
@@ -5775,7 +5559,7 @@
     });
   }
 
-  function wideFill(item, card, descr, thumb) {
+  function wideFill(item, card, thumb) {
     if (!serial || item.folder || !wideMeta()) return;
     var number = parseInt(episodeNumber(item.num), 10) || 0;
     if (!number) return;
@@ -5785,7 +5569,6 @@
       if (!book || !movie || movie.id !== want) return;
       var episode = book[number];
       if (!episode) return;
-      if (!descr.text() && episode.overview) descr.text(episode.overview);
       var head = card.find('.nova-card__head');
       if (!card.find('.nova-card__rate').length && episode.vote_average) {
         head.prepend($('<span class="nova-card__rate"></span>').text('\u2605 ' + parseFloat(episode.vote_average + '').toFixed(1)));
@@ -5795,13 +5578,13 @@
         if (when) head.append($('<span class="nova-card__date"></span>').text(when));
       }
       var title = card.find('.nova-card__title');
-      if (episode.name && !title.text()) title.text(episode.name);
+      if (episode.name) title.text(episodeTitle(item, episode.name));
       if (episode.still_path && !thumb.hasClass('nova-card__thumb--loaded')) paintThumb(thumb, image(episode.still_path, 'w500'), false);
     });
   }
 
   function wideOrderList(list) {
-    if (!wideOn() || !wideReverse()) return list;
+    if (!wideOn() || !serial || nav || !wideReverse()) return list;
     return list.slice().reverse();
   }
 
@@ -5850,10 +5633,6 @@
 
     var meta = ui.hero.find('.nova-hero__meta');
     if (meta.length) {
-      meta.children().each(function () {
-        var node = $(this);
-        if (/^\d+:\d+/.test(node.text().trim())) node.remove();
-      });
       if (!meta.parent().is(ui.hero)) meta.appendTo(ui.hero);
     }
 
@@ -5872,6 +5651,7 @@
       }).join(','));
     });
     parts.push('sort:' + (groups.sort || []).length);
+    if (!serial && !nav) parts.push('movie:' + movie_choice.scope + ':' + movie_choice.index + ':' + items.map(function (item) { return item.title; }).join('|'));
     parts.push('extras:' + extras.map(function (entry) { return entry.label + '=' + entry.value; }).join(','));
     parts.push('flags:' + serial + ',' + nav + ',' + wideReverse() + ',' + wideRowOn() + ',' + viewMode() + ',' + widePos() + ',' + items.length);
     return parts.join(';');
@@ -6308,70 +6088,16 @@
   }
 
   function wideFit() {
-    if (!ui.rows || !ui.hero_box || !wideOn()) return;
-    if (ui_open === 'source') return;
-    var panel = ui.rows.children('.nova-plus__panel').first();
-    if (!panel.length) return;
-
-    wideSeasonTotal();
-
-    var drop = panel.children('.nova-drop').first();
+    if (!ui.rows || !wideOn()) return;
+    ui.rows.css({ height: '', minHeight: '' });
+    ui.rows.find('.nova-plus__row').each(function () {
+      var row = $(this);
+      row.removeClass('nova-plus__row--scroll nova-plus__row--pair').css('height', '');
+      wideRowShift(row, 0);
+    });
+    ui.rows.find('.nova-plus__group').removeClass('nova-plus__group--scroll');
+    var drop = ui.rows.find('.nova-drop');
     if (drop.length) wideDropFit(drop);
-
-    var rows = panel.find('.nova-plus__group > .nova-plus__row');
-    if (!rows.length || rows.filter('[data-nova-dragging="1"]').length) return;
-
-    var hero = 0;
-    var saved = [];
-    try {
-      var poster = ui.hero_box[0].getBoundingClientRect();
-      var edge = poster.bottom;
-      var top = panel[0].getBoundingClientRect().top;
-      hero = top < edge ? edge - top : poster.height;
-      if (!hero) return;
-      rows.each(function () {
-        var row = $(this);
-        saved.push({ row: row, shift: parseFloat(row.attr('data-nova-x')) || 0 });
-        wideDragEase(row, 'x', false);
-        row.removeClass('nova-plus__row--scroll nova-plus__row--pair').css('height', '');
-        wideRowShift(row, 0);
-      });
-      panel.find('.nova-plus__group').removeClass('nova-plus__group--scroll');
-    } catch (e) { return; }
-
-    var ranked = wideRowsTall(rows);
-    ranked.forEach(function (entry) {
-      var isVoice = entry.row.parent().attr('data-nova-group') === 'voice';
-      if (!isVoice) {
-        wideSqueeze(entry.row);
-        return;
-      }
-      var count = wideRoomLines(entry.row, edge);
-      if (count > 1) wideBand(entry.row, count);
-      else wideSqueeze(entry.row);
-    });
-
-    while (widePanelTall(panel, hero)) {
-      var candidate = null;
-      ranked.forEach(function (entry) {
-        if (entry.row.parent().attr('data-nova-group') !== 'voice' ||
-            !entry.row.hasClass('nova-plus__row--pair')) return;
-        var current = Math.max(1, Math.round((parseFloat(entry.row.css('height')) || 0) /
-          Math.max(1, (wideMetric(entry.row) || {}).high || 1)));
-        if (!candidate || current > candidate.current) candidate = { entry: entry, current: current };
-      });
-      if (!candidate || candidate.current <= 1) break;
-      wideBand(candidate.entry.row, candidate.current - 1);
-    }
-
-    saved.forEach(function (entry) {
-      var shift = entry.row.hasClass('nova-plus__row--scroll') ? wideDragClamp(entry.row, 'x', entry.shift) : 0;
-      wideRowShift(entry.row, shift);
-      entry.row[0].getBoundingClientRect();
-      wideDragEase(entry.row, 'x', true);
-    });
-    try { wide_book_h = ui.rows[0].getBoundingClientRect().height || 0; } catch (e) {}
-    wideHold();
   }
 
   var wide_hold_spacer = null;
@@ -6430,34 +6156,9 @@
   }
 
   function wideDropFit(drop) {
-    if (!drop || !drop.length || !ui.hero_box) return;
-    if (drop.attr('data-nova-dragging') === '1') return;
-    var pane = wideDropPane(drop);
-    var shift = parseFloat(pane.attr('data-nova-y')) || 0;
-    wideDragEase(drop, 'y', false);
-    drop.removeClass('nova-plus__drop--scroll').css('max-height', '');
-    try {
-      var hero = ui.hero_box[0].getBoundingClientRect();
-      var tall = pane[0].scrollHeight || pane[0].getBoundingClientRect().height || 0;
-      var box = drop[0].getBoundingClientRect();
-      if (hero.height && tall) {
-        var view = window.innerHeight || 0;
-        var panelTop = drop.parent()[0].getBoundingClientRect().top;
-        var edge = panelTop < hero.bottom - 1 ? hero.bottom - 12 : (view ? view - 24 : box.top + tall);
-        if (view) edge = Math.min(edge, view - 24);
-        var room = Math.max(1, Math.floor(edge - box.top));
-        var css = window.getComputedStyle ? window.getComputedStyle(drop[0]) : drop[0].currentStyle;
-        var padding = css ? (parseFloat(css.paddingTop) || 0) + (parseFloat(css.paddingBottom) || 0) : 0;
-        if (tall + padding > room) {
-          drop.addClass('nova-plus__drop--scroll').css('max-height', room + 'px');
-          wideDragBind(drop, 'y');
-          shift = wideDragClamp(drop, 'y', shift);
-        } else shift = 0;
-      }
-      widePaneShift(pane, shift);
-      pane[0].getBoundingClientRect();
-    } catch (e) {}
-    wideDragEase(drop, 'y', true);
+    if (!drop || !drop.length) return;
+    drop.removeClass('nova-plus__drop--scroll').css({ maxHeight: '', height: '' });
+    widePaneShift(wideDropPane(drop), 0);
   }
 
   function widePaneFollow(node) {
@@ -6499,7 +6200,6 @@
     if (opening && !wide_book_h) {
       try { wide_book_h = ui.rows[0].getBoundingClientRect().height || 0; } catch (e) { wide_book_h = 0; }
     }
-    var wide_closed_h = wideSwapOn() ? wide_book_h : 0;
 
     ui.rows.find('.nova-drop').remove();
     if (ui_open === 'source') sourceRow();
@@ -6537,21 +6237,6 @@
     drop.css({ position: '', top: '', left: '', right: '' });
     wideDropFit(drop);
 
-    if (wideSwapOn() && !noteState && wide_closed_h > 0 && ui.rows) {
-      ui.rows.css('min-height', wide_closed_h + 'px');
-      var barH = bar.length ? (bar.outerHeight(true) || 0) : 0;
-      var cap = Math.max(90, wide_closed_h - barH - 6);
-      var pane = wideDropPane(drop);
-      var tall = pane[0].scrollHeight || pane[0].getBoundingClientRect().height || 0;
-      var fitted = drop.hasClass('nova-plus__drop--scroll');
-      var fittedH = fitted ? (parseFloat(drop.css('max-height')) || 0) : 0;
-      if (tall > cap && (!fitted || fittedH > cap + 2)) {
-        drop.addClass('nova-plus__drop--scroll').css('max-height', cap + 'px');
-        wideDragBind(drop, 'y');
-        var sh = parseFloat(pane.attr('data-nova-y')) || 0;
-        widePaneShift(pane, wideDragClamp(drop, 'y', sh));
-      }
-    }
   }
 
   function wideRows() {
@@ -6623,6 +6308,15 @@
       });
     }
 
+    if (!serial && !nav && items.length > 1) {
+      var selectedMovie = pickResume(items);
+      var movieVoices = group(label('nova_plus_voices'), 'movievoice');
+      items.forEach(function (item) {
+        if (item.folder) return;
+        put(movieVoices, 'movievoice:' + item.index, item.title || movie.title || '', '', { active: item === selectedMovie, plain: true, badge: shortQuality(item.quality) }, function () { chooseMovie(item); });
+      });
+    }
+
     extras.forEach(function (entry, index) {
       var origin = entry.node;
       tool('extra:' + index, entry.label, entry.value, {}, function () { openExtra(index); }, function () {
@@ -6630,8 +6324,16 @@
       });
     });
 
+    if (serial && !nav) {
+      tool('view', '', label(viewMode() === 'list' ? 'nova_plus_view_list' : 'nova_plus_view_grid'), { plain: true }, function () {
+        save(viewKey(), viewMode() === 'list' ? 'grid' : 'list');
+        lockFocus('view');
+        redraw();
+      });
+    }
+
     if (groups.sort && groups.sort.length) {
-      tool('source', '', '', {}, function () { uiToggle('source'); });
+      tool('source', text('nova_source', 'nova_plus_source'), '', {}, function () { uiToggle('source'); });
     }
 
     if (serial && !nav) {
@@ -6642,23 +6344,13 @@
       });
     }
 
-    if (!nav) {
+    if (serial && !nav) {
       tool('look', label('nova_plus_look'), label(wideRowOn() ? 'nova_plus_look_row' : 'nova_plus_look_grid'), { plain: true }, function () {
         if (viewSerial() !== 'grid') save(VIEW_KEY, 'grid');
         save(WIDE_LAYOUT_KEY, wideRow() ? 'grid' : 'row');
         lockFocus('look');
         redraw();
       });
-      tool('view', '', label(viewSerial() === 'list' ? 'nova_plus_view_list' : 'nova_plus_view_grid'), { plain: true }, function () {
-        save(VIEW_KEY, viewSerial() === 'list' ? 'grid' : 'list');
-        lockFocus('view');
-        redraw();
-      });
-    }
-
-    if (!nav && items.length > JUMP_FROM && !wideRowOn()) {
-      var now = pageAt(pages(items.length), ui_page > 0 ? ui_page : 0);
-      tool('jump', serial ? text('nova_jump', 'nova_plus_jump') : text('nova_files', 'nova_plus_files'), pageTitle(now), {}, function () { uiToggle('jump'); });
     }
 
     if (widePosBottom()) panel.append(bar);

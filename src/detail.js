@@ -14,16 +14,20 @@ function readableOverview(L,card,right,link){
  if(!card.overview || !String(card.overview).trim())return;
  let text=right.querySelector('.full-start-new__description,.minimal-detail-overview');
  if(!text){text=document.createElement('p');text.className='minimal-detail-overview';text.textContent=card.overview;right.appendChild(text);}
- text.classList.add('minimal-overview-action','selector');text.setAttribute('role','button');text.setAttribute('tabindex','0');text.setAttribute('aria-haspopup','dialog');text.setAttribute('aria-label','Прочитать описание полностью');text.title='Прочитать описание полностью';
- function remember(){if(link && link.items && link.items[0])link.items[0].last=text;}
+ if(text.parentElement.classList.contains('minimal-overview-action'))return;
+ const control=document.createElement('div');control.className='minimal-overview-action selector';text.before(control);control.appendChild(text);
+ text.classList.remove('minimal-overview-action','selector','focus');
+ const ring=document.createElement('span');ring.className='minimal-overview-focus';ring.setAttribute('aria-hidden','true');control.appendChild(ring);
+ control.setAttribute('role','button');control.setAttribute('tabindex','0');control.setAttribute('aria-haspopup','dialog');control.setAttribute('aria-label','Прочитать описание полностью');control.title='Прочитать описание полностью';
+ function remember(){if(link && link.items && link.items[0])link.items[0].last=control;}
  function open(){
   if(!text.isConnected || L.Modal.opened())return;
   remember();const content=document.createElement('div');content.className='about minimal-overview-full';content.textContent=card.overview;
   L.Modal.open({title:'Описание',size:'large',html:window.jQuery(content),onBack:()=>{L.Modal.close();if(text.isConnected){remember();L.Controller.toggle('full_start');}}});
  }
- text.addEventListener('hover:focus',remember);text.addEventListener('hover:enter',open);
- text.addEventListener('click',event=>{event.preventDefault();event.stopImmediatePropagation();open();});
- text.addEventListener('keydown',event=>{if(event.key==='Enter' || event.key===' '){event.preventDefault();event.stopImmediatePropagation();open();}});
+ control.addEventListener('hover:focus',remember);control.addEventListener('hover:enter',open);
+ control.addEventListener('click',event=>{event.preventDefault();event.stopImmediatePropagation();open();});
+ control.addEventListener('keydown',event=>{if(event.key==='Enter' || event.key===' '){event.preventDefault();event.stopImmediatePropagation();open();}});
 }
 function moveTechnicalDetails(L,card,right){
  const line=right.querySelector('.full-start-new__details'),genres=(card.genres || []).slice(0,5).map(g=>g.name).join(' | ').trim().toLowerCase(),prefix=L.Lang && L.Lang.translate?L.Lang.translate('player_quality')+':':'Качество:';
