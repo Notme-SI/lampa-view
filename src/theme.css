@@ -596,6 +596,8 @@ body.lampa_view .torrent-filter .filter__item.focus,body.lampa_view .torrent-fil
 body.lampa_view .torrent-filter .simple-button.focus,body.lampa_view .torrent-filter .simple-button.hover {border-color:var(--pt-accent)!important;box-shadow:0 0 0 1px var(--pt-accent)!important;outline:none!important}
 body.lampa_view .minimal-torrent-view>.explorer__left {display:block!important;width:28.7%;padding:.3em 1.6em 0 .3em;box-sizing:border-box}
 body.lampa_view .minimal-torrent-view>.explorer__left .explorer__card {display:none!important}
+/* The hidden native sidebar scroll still reserves a full viewport of height. */
+body.lampa_view .minimal-torrent-view>.explorer__left>.scroll {display:none!important}
 body.lampa_view .minimal-torrent-view>.explorer__files {width:71.3%;min-width:0}
 body.lampa_view .minimal-torrent-view .explorer__files-head {padding:.3em .6em .6em 0}
 body.lampa_view .minimal-torrent-view .explorer__files-body .scroll__body {padding-left:0}
@@ -611,7 +613,16 @@ body.lampa_view .minimal-torrent-view--classic>.explorer__left,body.lampa_view .
 body.lampa_view .minimal-torrent-view--classic>.explorer__left {padding-right:.3em;margin-bottom:1em}
 body.lampa_view .minimal-torrent-view--classic .minimal-torrent-banner {aspect-ratio:auto;height:14.7em;min-height:0}
 body.lampa_view .minimal-torrent-view--classic .minimal-torrent-banner__logo {max-width:55%}
-@media(max-width:767px){body.lampa_view .minimal-torrent-view{flex-wrap:wrap}body.lampa_view .minimal-torrent-view>.explorer__left,body.lampa_view .minimal-torrent-view>.explorer__files{width:100%}body.lampa_view .minimal-torrent-view>.explorer__left{padding-right:.3em;margin-bottom:1em}body.lampa_view .minimal-torrent-banner{min-height:12em;max-height:20em}body.lampa_view .minimal-torrent-view .explorer__files-head{padding-left:.3em}}
+@media(max-width:767px){
+ body.lampa_view .minimal-torrent-view {flex-direction:column;flex-wrap:nowrap;min-height:0}
+ body.lampa_view .minimal-torrent-view>.explorer__left {width:100%;flex:0 0 auto;padding-right:.3em;margin-bottom:.5em}
+ body.lampa_view .minimal-torrent-view>.explorer__files {width:100%;flex:1 1 0;min-height:0;display:flex;flex-direction:column}
+ body.lampa_view .minimal-torrent-banner {min-height:0;max-height:28vh}
+ body.lampa_view .minimal-torrent-view .explorer__files-head {padding-left:.3em;flex:0 0 auto}
+ body.lampa_view .minimal-torrent-view .explorer__files-body {flex:1 1 0;min-height:0}
+ /* Lampa sizes this scroll for the whole screen; it now shares it with the banner. */
+ body.lampa_view .minimal-torrent-view .explorer__files-body>.scroll {height:100%!important}
+}
 /* Let the activity scroll whole catalogues; selector groups never become inner carousels. */
 body.lampa_view .nova-plus-root .nova-toolbar {flex-wrap:wrap!important;white-space:normal}
 body.lampa_view .nova-plus-root .nova-toolbar__label {margin-left:.8em!important;margin-right:.55em!important}

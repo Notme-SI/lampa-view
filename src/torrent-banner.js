@@ -20,6 +20,7 @@ export function bannerCountries(card,language='ru',L){
 // Keep the native filters, release rows and playback handlers intact.
 export default function torrentBanner(L,loadLogo){
  const installed=new WeakMap();
+ const sized=new WeakSet();
  function refresh(){
   const active=L.Activity && L.Activity.active();
   if(!active || active.component!=='torrents' || !active.activity)return;
@@ -27,9 +28,12 @@ export default function torrentBanner(L,loadLogo){
   const root=body && (body.matches('.explorer')?body:body.querySelector('.explorer'));
   const card=active.movie,left=root && root.querySelector('.explorer__left');
   if(!card || !left)return;
-  if(!flag(L,'lampa_view_enabled')){root.classList.remove('minimal-torrent-view','minimal-torrent-view--classic');left.querySelectorAll('.minimal-torrent-banner').forEach(node=>node.remove());installed.delete(root);return;}
+  if(!flag(L,'lampa_view_enabled')){root.classList.remove('minimal-torrent-view','minimal-torrent-view--classic');if(sized.has(root)){root.classList.remove('layer--wheight');root.style.removeProperty('height');sized.delete(root);}left.querySelectorAll('.minimal-torrent-banner').forEach(node=>node.remove());installed.delete(root);return;}
   root.classList.add('minimal-torrent-view');
   root.classList.remove('minimal-torrent-view--classic');
+  // Use Lampa's viewport calculation, including its header and mobile navigation.
+  if(!root.classList.contains('layer--wheight')){root.classList.add('layer--wheight');sized.add(root);}
+  if(L.Layer && L.Layer.update)L.Layer.update(root);
   const key=[card.source,card.id,card.backdrop_path,artworkSize(L,'backdrop')].join(':');
   if(installed.get(root)===key)return;
   installed.set(root,key);

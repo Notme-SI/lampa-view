@@ -16,6 +16,14 @@ jobs:
       - run: pnpm install --frozen-lockfile --ignore-scripts
       - run: pnpm run build
       - run: pnpm test
+      - name: Install browser layout checks
+        run: |
+          npm install --prefix "$RUNNER_TEMP/lampa-browser-check" --ignore-scripts playwright@1.62.1
+          "$RUNNER_TEMP/lampa-browser-check/node_modules/.bin/playwright" install --with-deps chromium webkit
+      - name: Check phone and desktop torrent layout
+        env:
+          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
+        run: node tests/browser/torrent-layout.cjs
       - run: python3 server/test-bootstrap.py
       - run: python3 server/test-online.py
       - name: Check published files match source
