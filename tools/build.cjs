@@ -35,6 +35,7 @@ const header=Buffer.alloc(6+16*sizes.length);header.writeUInt16LE(1,2);header.wr
 pngs.forEach((png,i)=>{const at=6+i*16;header[at]=header[at+1]=sizes[i]===256?0:sizes[i];header.writeUInt16LE(1,at+4);header.writeUInt16LE(32,at+6);header.writeUInt32LE(png.length,at+8);header.writeUInt32LE(offset,at+12);offset+=png.length;});
 fs.writeFileSync(path.join(out,'lampa.ico'),Buffer.concat([header,...pngs]));
 const pages=path.join(root,'docs');fs.mkdirSync(pages,{recursive:true});
+fs.copyFileSync(path.join(root,'plugins/mpvplus-ios.js'),path.join(pages,'mpvplus-ios.js'));
 for(const name of ['lampa-minimal.boot.js','lampa-minimal.svg','lampa.ico'])fs.copyFileSync(path.join(out,name),path.join(pages,name));
 fs.copyFileSync(path.join(out,'lampa.js'),path.join(root,'lampa.js'));fs.copyFileSync(path.join(out,'lampa.js'),path.join(pages,'lampa.js'));
 fs.copyFileSync(path.join(root,'THIRD-PARTY.md'),path.join(pages,'THIRD-PARTY.md'));fs.copyFileSync(path.join(root,'LICENSE'),path.join(pages,'LICENSE.txt'));
