@@ -22,6 +22,10 @@ async function verify(page,mobile){
  assert.ok(data.head.bottom<=data.height,'controls are visible');
  assert.ok(data.first.top<data.scroll.bottom,'first release is on screen');
  if(mobile){
+  const leftGap=data.first.left-data.root.left,rightGap=data.root.right-data.first.right;
+  assert.ok(Math.abs(leftGap-rightGap)<=1,'release list has equal horizontal gutters: '+JSON.stringify({leftGap,rightGap}));
+  assert.ok(Math.abs(data.first.left-data.banner.left)<=1 && Math.abs(data.first.right-data.banner.right)<=1,'release cards align with the banner');
+  assert.ok(Math.abs(data.buttons[0].left-data.banner.left)<=1 && Math.abs(data.buttons[2].right-data.banner.right)<=1,'toolbar aligns with the banner and release cards');
   assert.equal(data.buttons.length,3);
   assert.ok(data.banner.width>=data.width-12,'banner stays full width when its height is capped');
   for(const button of data.buttons){assert.ok(button.left>=-1 && button.right<=data.width+1,'every toolbar button fits');assert.ok(button.height>=43,'buttons remain large enough to tap');}
@@ -63,8 +67,9 @@ async function verify(page,mobile){
     await page.setViewportSize({width:740,height:393});
     await page.evaluate(()=>{document.body.classList.remove('orientation--portrait');document.body.classList.add('orientation--landscape');Lampa.Layer.update();});await page.waitForTimeout(150);
     // The left-hand navigation in landscape reduces width, rather than height.
-    const landscape=await page.evaluate(()=>{const s=document.querySelector('.activity--active .explorer__files-body>.scroll').getBoundingClientRect();return {bottom:s.bottom,height:innerHeight,size:s.height};});
+    const landscape=await page.evaluate(()=>{const root=document.querySelector('.activity--active .minimal-torrent-view'),r=root.getBoundingClientRect(),s=root.querySelector('.explorer__files-body>.scroll').getBoundingClientRect(),item=root.querySelector('.torrent-item').getBoundingClientRect();return {bottom:s.bottom,height:innerHeight,size:s.height,leftGap:item.left-r.left,rightGap:r.right-item.right};});
     assert.ok(landscape.size>70 && landscape.bottom<=landscape.height+1,'landscape list fits');
+    assert.ok(Math.abs(landscape.leftGap-landscape.rightGap)<=1,'landscape release cards remain centered inside the available area');
     await page.setViewportSize({width:393,height:852});await page.evaluate(()=>{document.body.classList.remove('orientation--landscape');document.body.classList.add('orientation--portrait');Lampa.Layer.update();});await page.waitForTimeout(150);
     // Return to the top before checking the first release again.
     await page.evaluate(()=>{document.querySelector('.activity--active .explorer__files-body>.scroll').scrollTop=0;});

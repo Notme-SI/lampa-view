@@ -621,7 +621,7 @@ body.lampa_view .minimal-torrent-view--classic .minimal-torrent-banner__logo {ma
  body.lampa_view .minimal-torrent-banner {width:100%;min-height:0;max-height:22vh}
  body.lampa_view .minimal-torrent-banner__title {font-size:1.4em;bottom:.8em}
  body.lampa_view .minimal-torrent-banner__meta {font-size:.8em;top:.8em;right:1em;left:1em}
- body.lampa_view .minimal-torrent-view .explorer__files-head {padding-left:.3em;flex:0 0 auto}
+ body.lampa_view .minimal-torrent-view .explorer__files-head {padding-left:.3em;padding-right:.3em;flex:0 0 auto}
  body.lampa_view .minimal-torrent-view .explorer__files-head>.scroll {width:100%;min-width:0;overflow:visible!important}
  body.lampa_view .minimal-torrent-view .explorer__files-head .scroll__content {padding:0!important}
  body.lampa_view .minimal-torrent-view .explorer__files-head .scroll__body {transform:none!important;-webkit-transform:none!important;width:100%!important}
@@ -636,6 +636,7 @@ body.lampa_view .minimal-torrent-view--classic .minimal-torrent-banner__logo {ma
  /* Lampa sizes this scroll for the whole screen; it now shares it with the banner. */
  body.lampa_view .minimal-torrent-view .explorer__files-body>.scroll {height:100%!important}
  body.lampa_view .minimal-torrent-view .explorer__files-body .scroll__content {padding-top:.5em}
+ body.lampa_view .minimal-torrent-view .explorer__files-body .scroll__body {padding-left:.3em;padding-right:.3em;box-sizing:border-box}
  body.lampa_view .minimal-torrent-view .watched-history {font-size:.8em;padding:.6em;margin-bottom:.5em}
  body.lampa_view .minimal-torrent-view .torrent-item.tc-item {padding:.75em!important}
  body.lampa_view .minimal-torrent-view .tc-head {display:flex;flex-wrap:wrap;gap:.4em .7em}
