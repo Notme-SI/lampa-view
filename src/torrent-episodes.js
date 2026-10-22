@@ -40,7 +40,15 @@ export default function torrentEpisodes(L,root=window){
   if(event.type==='render'){
    const item=event.item && (event.item.nodeType?event.item:event.item[0]);
    // File render events precede Modal.update(), so mark the mounted dialog later.
-   if(item)setTimeout(()=>{const modal=item.closest('.modal');if(modal)modal.classList.add('minimal-torrent-files');},0);
+   if(item)setTimeout(()=>{
+    const modal=item.closest('.modal');
+    if(modal){
+     modal.classList.add('minimal-torrent-files');
+     // Native Scroll in TV mode moves its body by transform and resets scrollTop.
+     // Let that handler receive the entire gesture instead of browser panning.
+     modal.classList.toggle('minimal-torrent-files--virtual',Boolean(L.Platform && L.Platform.screen('tv')));
+    }
+   },0);
   }
  });
 }

@@ -26,6 +26,7 @@ jobs:
         run: |
           node tests/browser/torrent-layout.cjs
           node tests/browser/torrent-files-layout.cjs
+          node tests/browser/mpvplus-preload.cjs
           node tests/browser/button-focus.cjs
       - run: python3 server/test-bootstrap.py
       - run: python3 server/test-online.py

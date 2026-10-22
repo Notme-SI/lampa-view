@@ -1,4 +1,4 @@
-/*! mpv+ iOS Lampa bridge 0.2.2 | MIT | mpv+ contributors */
+/*! mpv+ iOS Lampa bridge 0.2.3 | MIT | mpv+ contributors */
 (function (root) {
     'use strict';
     function text(value) { return String(value == null ? '' : value).replace(/<[^>]*>/g, '').replace(/[\r\n\t]+/g, ' ').trim().slice(0, 2048); }
@@ -136,8 +136,21 @@
         } catch (error) { L.Noty.show(error.message); }
     }
     api.transfer = transfer;
+    function queue(video, items, card) {
+        if (!enabled(video)) return;
+        pending = card ? Object.assign({}, video, { card: card }) : video;
+        list = Array.isArray(items) ? items.slice() : [];
+        if (!scheduled) { scheduled = true; root.setTimeout(show, 0); }
+    }
     // Same public torrent menu event used by ITS. Preserve the original source list and selected file.
     if (L.Listener) L.Listener.follow('torrent_file', function (event) {
+        // This event is emitted AFTER TorrServer preloading and the host's
+        // player call. It also works when another adapter replaced Player.play.
+        // Defer the chooser until the host has closed its loading/file dialog.
+        if (event && event.type === 'onenter' && event.element) {
+            queue(event.element, event.items || event.element.playlist, event.params && event.params.movie);
+            return;
+        }
         if (!event || event.type !== 'onlong' || !event.element || !Array.isArray(event.menu) || event.menu.some(function (item) { return item.mpvplus_action; })) return;
         var card = event.params && event.params.movie || activeCard || {};
         event.menu.push({ title: 'Открыть в mpv+', mpvplus_action: true, onSelect: function () { transfer(event.element, [event.element], card); } });
@@ -179,9 +192,8 @@
     }
     L.Player.play = function (video) {
         if (!enabled(video)) return originalPlay.apply(this, arguments);
-        pending = video; list = video && Array.isArray(video.playlist) ? video.playlist.slice() :
-            Date.now() - recentAt < 300 && recentList.some(function (item) { return item && video && item.url === video.url; }) ? recentList.slice() : [];
-        if (!scheduled) { scheduled = true; root.setTimeout(show, 0); }
+        queue(video, video && Array.isArray(video.playlist) ? video.playlist :
+            Date.now() - recentAt < 300 && recentList.some(function (item) { return item && video && item.url === video.url; }) ? recentList : []);
     };
     L.Player.playlist = function (items) {
         recentList = Array.isArray(items) ? items.slice() : []; recentAt = Date.now();

@@ -21,11 +21,11 @@ async function check(page,mobile){
 (async()=>{
  for(const [name,engine]of [['chromium',chromium],['webkit',webkit]].filter(v=>!process.env.QA_ENGINE||v[0]===process.env.QA_ENGINE)){
   const browser=await engine.launch({headless:true});
-  try{for(const mobile of (process.env.QA_MOBILE?[true]:[true,false])){
+  try{for(const [mobile,virtual] of (process.env.QA_MOBILE?[[true,Boolean(process.env.QA_VIRTUAL)]]:[[true,false],[true,true],[false,false]])){
    const r=await setup(browser,mobile?{viewport:{width:393,height:852},isMobile:true,hasTouch:true,userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Mobile/15E148 Safari/604.1',mode:'mobile'}:{viewport:{width:1440,height:900},mode:'desktop'}),{page}=r;
-   await page.evaluate(mobile=>{
+   await page.evaluate(({mobile,virtual})=>{
     const L=Lampa;L.DeviceInput.init();L.Controller.observe();
-    if(mobile){const screen=L.Platform.screen;L.Platform.screen=type=>type==='mobile' || type!=='tv'&&screen(type);document.body.classList.add('true--mobile','touch-device','orientation--portrait');L.NavigationBar.init();}
+    if(mobile){const screen=L.Platform.screen;L.Platform.screen=type=>type==='tv'?virtual:type==='mobile' || screen(type);document.body.classList.add('true--mobile','touch-device','orientation--portrait');L.NavigationBar.init();}
     const movie={id:99,name:'Гангстерленд',original_name:'MobLand',original_title:'MobLand',source:'tmdb',first_air_date:'2025-03-30',number_of_seasons:1,seasons:[{season_number:1,episode_count:12}],genres:[]};
     const row={Title:'Гангстерленд / MobLand (2025) S01 WEB-DL 1080p TVShows',Tracker:'test',Size:4520453079,Seeders:50,Peers:10,MagnetUri:'magnet:?xt=urn:btih:0123456789012345678901234567890123456789'};
     L.Parser.get=(p,ok)=>setTimeout(()=>ok({Results:[row]}),0);L.Activity.push({component:'torrents',movie,search:'MobLand',url:'',page:1});
@@ -36,25 +36,40 @@ async function check(page,mobile){
     L.Api.seasons=(card,seasons,ok)=>ok({1:{episodes:Array.from({length:12},(_,i)=>({season_number:1,episode_number:i+1,name:i===0?'Пан или пропал: длинное название серии для проверки мобильного экрана':'Серия '+(i+1),air_date:'2025-03-30',runtime:60,img:image}))}});
     window.qaPlayed=[];window.qaPlaylist=[];L.Player.play=data=>qaPlayed.push({season:data.season,episode:data.episode,url:data.url});L.Player.playlist=data=>window.qaPlaylist=data;L.Player.callback=()=>{};
     window.qaStartFiles=()=>L.Torrent.start(row,movie);
-   },mobile);
+   },{mobile,virtual});
    await page.waitForSelector('.torrent-item.tc-item');await page.evaluate(()=>qaStartFiles());
    await page.waitForSelector('.torrent-files .torrent-serial',{timeout:7000});await page.waitForTimeout(150);
    await page.evaluate(()=>document.querySelectorAll('.torrent-serial').forEach(row=>jQuery(row).trigger('visible')));
    await check(page,mobile);
-   if(output)await page.screenshot({path:path.join(output,name+(mobile?'-phone':'-desktop')+'-files.png')});
+   if(output)await page.screenshot({path:path.join(output,name+(mobile?'-phone'+(virtual?'-virtual':''):'-desktop')+'-files.png')});
    if(mobile){
     await page.setViewportSize({width:320,height:640});await page.waitForTimeout(150);await check(page,true);
     await page.setViewportSize({width:740,height:393});await page.waitForTimeout(150);await check(page,true);
-    await page.setViewportSize({width:393,height:852});await page.waitForTimeout(150);
+    await page.setViewportSize({width:393,height:852});await page.waitForTimeout(400);
    }
    const last=page.locator('.torrent-files .torrent-serial').last();
-   if(mobile)await last.scrollIntoViewIfNeeded();else await last.evaluate(row=>{const scroll=Lampa.Modal.scroll();scroll.immediate(row);Lampa.Layer.visible(scroll.render(true));});
-   const point=await last.evaluate(row=>{const r=row.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2};});
+   if(mobile && name==='chromium'){
+    const client=await r.context.newCDPSession(page);
+    const area=await page.locator('.modal__body .scroll').evaluate(el=>{const r=el.getBoundingClientRect();return {x:r.left+r.width/2,y:r.bottom-35,top:r.top+35,height:el.clientHeight,total:el.scrollHeight};});
+    assert.ok(area.y<await page.evaluate(()=>innerHeight),'swipe starts inside the visible list');
+    for(let gesture=0;gesture<7;gesture++){
+     await client.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:area.x,y:area.y}]});
+     for(let step=1;step<=10;step++){
+      await client.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:area.x,y:area.y-(area.y-area.top)*step/10}]});
+      await page.waitForTimeout(20);
+     }
+     await client.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await page.waitForTimeout(150);
+    }
+    assert.ok(await last.evaluate(el=>{const r=el.getBoundingClientRect(),s=el.closest('.scroll').getBoundingClientRect();return r.top<s.bottom && r.bottom>s.top;}),'swiping reaches the last episode');
+    await client.detach();await page.waitForTimeout(700);
+   }
+   if(mobile && !virtual)await last.scrollIntoViewIfNeeded();else if(name!=='chromium' || !mobile)await last.evaluate(row=>{const scroll=Lampa.Modal.scroll();scroll.immediate(row);Lampa.Layer.visible(scroll.render(true));});
+   const point=await last.evaluate(row=>{const r=row.getBoundingClientRect(),s=row.closest('.scroll').getBoundingClientRect();return {x:r.left+r.width/2,y:(Math.max(r.top,s.top)+Math.min(r.bottom,s.bottom))/2};});
    // Windows WebKit reports a fractional native DPR and its touch protocol uses device pixels.
    const scale=mobile && name==='webkit' && process.platform==='win32'?await page.evaluate(()=>devicePixelRatio):1;
-   if(mobile)await page.touchscreen.tap(point.x*scale,point.y*scale);else {await page.mouse.move(point.x*scale,point.y*scale);await page.mouse.click(point.x*scale,point.y*scale);}await page.waitForTimeout(100);
+   if(mobile && name==='webkit')await page.touchscreen.tap(point.x*scale,point.y*scale);else {await page.mouse.move(point.x,point.y);await page.mouse.click(point.x,point.y);}await page.waitForTimeout(500);
    const played=await page.evaluate(()=>({played:qaPlayed,playlist:qaPlaylist.map(v=>v.episode)}));assert.equal(played.played.length,1);assert.equal(played.played[0].episode,12);assert.equal(played.played[0].season,1);assert.match(played.played[0].url,/index=12/);assert.equal(played.playlist.length,12);
-   assert.deepEqual(r.errors,[]);await r.context.close();console.log(name+' '+(mobile?'phone':'desktop')+': native file layout, scrolling, playback and playlist passed');
+   assert.deepEqual(r.errors,[]);await r.context.close();console.log(name+' '+(mobile?'phone'+(virtual?' with virtual scroll':''):'desktop')+': native file layout, scrolling, playback and playlist passed');
   }}finally{await browser.close();}
  }
 })().catch(error=>{console.error(error);process.exitCode=1;});
