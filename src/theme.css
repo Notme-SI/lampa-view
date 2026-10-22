@@ -304,10 +304,10 @@ body.lampa_view.pt-mobile .full-start-new__title {font-size:1.4em}
 body.lampa_view.pt-mobile .minimal-detail-logo {max-width:100%;max-height:4em}
 body.lampa_view.pt-mobile .full-start-new__buttons {gap:.4em}
 .minimal-detail-logo {display:none}
-/* Native windows must remain above the settings drawer and header. */
+/* Keep native modal/player order; file actions must stay above their dialog. */
 body.lampa_view .settings {z-index:40!important}
 body.lampa_view .selectbox {z-index:70!important}
-body.lampa_view .modal {z-index:80!important}
+body.lampa_view .modal {z-index:50!important}
 body.lampa_view .settings-input {z-index:90!important}
 body.lampa_view .settings-input__content {background:#101010}
 body.lampa_view .minimal-detail-header {max-width:90%;margin:0 auto;padding:3em 0 1.5em;min-height:23em;display:flex;align-items:flex-end}
