@@ -1,4 +1,4 @@
-/*! mpv+ iOS Lampa bridge 0.2.4 | MIT | mpv+ contributors */
+/*! mpv+ iOS Lampa bridge 0.2.5 | MIT | mpv+ contributors */
 (function (root) {
     'use strict';
     function text(value) { return String(value == null ? '' : value).replace(/<[^>]*>/g, '').replace(/[\r\n\t]+/g, ' ').trim().slice(0, 2048); }
@@ -181,6 +181,9 @@
                 torrent: L.Torserver && L.Torserver.toPlayUrl ? function (url) { return L.Torserver.toPlayUrl(url); } : null
             });
             var url = appURL(document), oversized = url.length > 64000;
+            // Player.play normally dismisses the torrent's file modal. Our
+            // wrapper skips that cleanup; the modal otherwise covers Select.
+            if (L.Modal && L.Modal.opened && L.Modal.opened()) L.Modal.close();
             L.Select.show({
                 title: 'mpv+ · ' + document.title,
                 items: [
