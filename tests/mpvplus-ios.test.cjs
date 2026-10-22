@@ -3,6 +3,12 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
 const bridge = require('../plugins/mpvplus-ios.js');
+
+function runBridge(code,context) {
+    context.navigator=Object.assign({userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 27_0 like Mac OS X)'},context.navigator);
+    return vm.runInNewContext(code,context);
+}
+
 const url = index => `http://192.168.1.20:8090/stream?link=${'a'.repeat(40)}&index=${index}&play`;
 
 test('Lampa selected episode and all exact TorrServer indexes survive roundtrip', () => {
@@ -56,7 +62,7 @@ test('default torrent player migration is silent and runs only once across page 
     const storage={player:'mpvplus',player_torrent:'inner'},source=fs.readFileSync(require.resolve('../plugins/mpvplus-ios.js'),'utf8');
     function reload(){
         const Lampa={Params:{values:{player:{inner:'Inner'},player_torrent:{inner:'Inner'}},defaults:{},select(k,v){this.values[k]=v}},Player:{play(){},playlist(){}},Storage:{get:(k,d)=>storage[k]??d,field:k=>storage[k],set:(k,v)=>storage[k]=v},Select:{show(){},hide(){}},Listener:{follow(){}},Noty:{show:assert.fail}};
-        const context={Lampa,URL,Blob,alert:assert.fail};context.window=context;vm.runInNewContext(source,context);
+        const context={Lampa,URL,Blob,alert:assert.fail};context.window=context;runBridge(source,context);
     }
     reload();assert.equal(storage.player_torrent,'mpvplus');storage.player_torrent='inner';reload();assert.equal(storage.player_torrent,'inner');
 });
@@ -73,7 +79,7 @@ test('browser bridge captures playlist before a user-gesture launch and preserve
     const context={Lampa, URL, Blob, btoa:s=>Buffer.from(s,'binary').toString('base64'), setTimeout:fn=>timer=fn,
         location:{assign:u=>launched=u}, alert:assert.fail};
     context.window=context;
-    vm.runInNewContext(fs.readFileSync(require.resolve('../plugins/mpvplus-ios.js'),'utf8'),context);
+    runBridge(fs.readFileSync(require.resolve('../plugins/mpvplus-ios.js'),'utf8'),context);
     context.MPVPlusLampa.enable();
     const items=[{url:url(1),title:'Серия 1'},{url:url(2),title:'Серия 2'}];
     Lampa.Player.play(items[1]);Lampa.Player.playlist(items);
@@ -92,7 +98,7 @@ test('mpv+ is registered in the native Lampa player lists without removing exist
     const params={values:{player:{inner:'Встроенный',infuse:'Infuse'},player_torrent:{inner:'Встроенный',vlc:'VLC'}},defaults:{player:'inner',player_torrent:'inner'},select(key,values){this.values[key]=values}};
     const Lampa={Params:params,Player:{play(){nativeCalls++},playlist(){}},Storage:{get:(k,d)=>k in storage?storage[k]:d,field:k=>storage[k],set:(k,v)=>storage[k]=v},Select:{show(){},hide(){}},Noty:{show(){}},Listener:{follow(){}}};
     const context={Lampa,URL,Blob,setTimeout:fn=>timer=fn,alert:assert.fail};context.window=context;
-    vm.runInNewContext(fs.readFileSync(require.resolve('../plugins/mpvplus-ios.js'),'utf8'),context);
+    runBridge(fs.readFileSync(require.resolve('../plugins/mpvplus-ios.js'),'utf8'),context);
     assert.equal(params.values.player.infuse,'Infuse');assert.equal(params.values.player.mpvplus,'mpv+');
     assert.equal(params.values.player_torrent.vlc,'VLC');assert.equal(storage.player_torrent,'infuse');
     context.MPVPlusLampa.enable();assert.equal(storage.player_torrent,'mpvplus');
@@ -112,11 +118,11 @@ test('PWA plugin waits for ready, preserves player selection and registers only 
     };
     const context={Lampa,appready:false,navigator:{standalone:true},URL,Blob,alert:assert.fail};context.window=context;
     const source=fs.readFileSync(require.resolve('../plugins/mpvplus-ios.js'),'utf8');
-    vm.runInNewContext(source,context);vm.runInNewContext(source,context);
+    runBridge(source,context);runBridge(source,context);
     assert.equal(registrations,0);assert.equal(handlers.app.length,1);
     handlers.app[0]({type:'ready'});assert.equal(registrations,2);
     assert.equal(storage.player,'infuse');assert.equal(storage.player_torrent,'vlc');
-    handlers.app[0]({type:'ready'});vm.runInNewContext(source,context);
+    handlers.app[0]({type:'ready'});runBridge(source,context);
     assert.equal(registrations,2);assert.equal(handlers.torrent_file.length,1);
 });
 
@@ -126,7 +132,7 @@ test('torrent menu transfers one file or the complete playlist from a standalone
         Listener:{follow(k,fn){handlers[k]=fn}},Noty:{show(){}},SettingsApi:{addParam(){}}
     };
     const context={Lampa,appready:true,navigator:{standalone:true},URL,Blob,btoa:s=>Buffer.from(s,'binary').toString('base64'),location:{assign:u=>launched=u},alert:assert.fail};context.window=context;
-    vm.runInNewContext(fs.readFileSync(require.resolve('../plugins/mpvplus-ios.js'),'utf8'),context);
+    runBridge(fs.readFileSync(require.resolve('../plugins/mpvplus-ios.js'),'utf8'),context);
     const items=[1,2,3].map(i=>({url:url(i),title:`Серия ${i}`,season:1,episode:i}));
     const event={type:'onlong',element:items[1],items,params:{movie:{name:'Название',id:123}},menu:[{title:'Сведения'}]};
     handlers.torrent_file(event);
@@ -144,7 +150,7 @@ test('only mpv+ receives play URLs before native preloading; tokens, indexes and
     const storage={player:'mpvplus',player_torrent:'mpvplus',torrserver_preload:true};
     const url='https://server.test/ts/stream/show.mkv?link='+ 'a'.repeat(40)+'&index=7&preload&token=x%2By';let originalCalls=0;
     const Lampa={Params:{values:{player:{inner:'Inner'},player_torrent:{inner:'Inner'}},defaults:{},select(k,v){this.values[k]=v}},Player:{play(){},playlist(){}},Storage:{get:(k,d)=>storage[k]??d,field:k=>storage[k],set:(k,v)=>storage[k]=v},Torserver:{stream(path,hash,index){assert.equal(index,7);originalCalls++;return url;}},Select:{show(){},hide(){}},Listener:{follow(){}},Noty:{show:assert.fail}};
-    const context={Lampa,URL,Blob,alert:assert.fail};context.window=context;vm.runInNewContext(fs.readFileSync(require.resolve('../plugins/mpvplus-ios.js'),'utf8'),context);
+    const context={Lampa,URL,Blob,alert:assert.fail};context.window=context;runBridge(fs.readFileSync(require.resolve('../plugins/mpvplus-ios.js'),'utf8'),context);
     assert.equal(Lampa.Torserver.stream('show.mkv','a'.repeat(40),7),url.replace('&preload','&play'));
     assert.equal(storage.torrserver_preload,true,'global preload setting is preserved');
     storage.player_torrent='vlc';assert.equal(Lampa.Torserver.stream('show.mkv','a'.repeat(40),7),url);

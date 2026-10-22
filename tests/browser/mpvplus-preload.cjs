@@ -6,7 +6,7 @@ const bridge=fs.readFileSync(require.resolve('../../plugins/mpvplus-ios.js'),'ut
  for(const [name,engine]of [['chromium',chromium],['webkit',webkit]]){
   const browser=await engine.launch({headless:true});
   try{for(const direct of [false,true]){
-   const r=await setup(browser,{viewport:{width:393,height:852},isMobile:true,hasTouch:true,mode:'mobile'}),{page}=r;
+   const r=await setup(browser,{viewport:{width:393,height:852},isMobile:true,hasTouch:true,mode:'mobile',userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 27_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0 Mobile/15E148 Safari/604.1'}),{page}=r;
    await page.evaluate(({source,direct})=>{
     const L=Lampa;L.DeviceInput.init();L.Controller.observe();
     const screen=L.Platform.screen;L.Platform.screen=type=>type==='mobile' || type!=='tv'&&screen(type);document.body.classList.add('true--mobile','touch-device');

@@ -1,4 +1,4 @@
-/*! mpv+ iOS Lampa bridge 0.2.5 | MIT | mpv+ contributors */
+/*! mpv+ iOS Lampa bridge 0.2.6 | MIT | mpv+ contributors */
 (function (root) {
     'use strict';
     function text(value) { return String(value == null ? '' : value).replace(/<[^>]*>/g, '').replace(/[\r\n\t]+/g, ' ').trim().slice(0, 2048); }
@@ -79,6 +79,9 @@
     if (typeof module === 'object' && module.exports) { module.exports = api; return; }
     function install() {
     if (root.MPVPlusLampa) return;
+    var navigator = root.navigator || {}, ua = navigator.userAgent || '';
+    var ios = /iPhone|iPad|iPod/i.test(ua) || (/Macintosh|MacIntel/i.test(ua + ' ' + (navigator.platform || '')) && navigator.maxTouchPoints > 1);
+    if (!ios) return;
     var L = root.Lampa;
     if (!L || !L.Player || !L.Select) { root.alert('Открой страницу Lampa и нажми закладку mpv+ ещё раз.'); return; }
     var activeCard = null, pending = null, list = [], scheduled = false, recentList = [], recentAt = 0;

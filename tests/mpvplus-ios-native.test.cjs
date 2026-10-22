@@ -10,7 +10,7 @@ for(const [replacePlayer,direct] of [[false,false],[true,false],[false,true]])te
   L.Player.play=()=>calls++;L.Player.playlist=()=>calls++;L.Player.callback=()=>{};L.Noty.show=value=>notices.push(value);
   const stream=(file,hash,id)=>'/ts/stream/'+file.split('/').pop()+'?link='+hash+'&index='+id+'&preload';
   if(direct)L.Torserver.stream=stream;
-  const context={Lampa:L,appready:true,URL,Blob,document:w.document,navigator:{standalone:true},setTimeout:w.setTimeout.bind(w),btoa:value=>Buffer.from(value,'binary').toString('base64'),location:{href:'https://lampac.test/',assign:url=>launched=url},alert:assert.fail};context.window=context;vm.runInNewContext(source,context);
+  const context={Lampa:L,appready:true,URL,Blob,document:w.document,navigator:{standalone:true,userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 27_0 like Mac OS X)'},setTimeout:w.setTimeout.bind(w),btoa:value=>Buffer.from(value,'binary').toString('base64'),location:{href:'https://lampac.test/',assign:url=>launched=url},alert:assert.fail};context.window=context;vm.runInNewContext(source,context);
   if(replacePlayer)L.Player.play=()=>calls++;
   assert.equal(L.Storage.field('player_torrent'),'mpvplus');assert.equal(L.Params.values.player.mpvplus,'mpv+');assert.equal(L.Params.values.player_torrent.mpvplus,'mpv+');assert.deepEqual(notices,[]);
   L.Storage.set('player_torrent','vlc');L.Storage.set('player','inner');L.Storage.set('player','mpvplus');assert.equal(L.Storage.field('player_torrent'),'mpvplus','choosing mpv+ also activates its torrent player');
