@@ -24,7 +24,8 @@ export function watchActions(L,root,card,link){
   $(play).off('hover:enter').on('hover:enter.lampaViewWatch',open);
  }
  update();play.addEventListener('click',click,true);
+ // Only action changes can affect this button; cast, images and badges cannot.
  const observer=window.MutationObserver?new MutationObserver(update):null;
- if(observer)observer.observe(root,{childList:true,subtree:true});
+ if(observer)observer.observe(buttons,{childList:true,subtree:true});
  if(link && link.use)link.use({onDestroy:()=>{if(observer)observer.disconnect();play.removeEventListener('click',click,true);$(play).off('.lampaViewWatch');}});
 }

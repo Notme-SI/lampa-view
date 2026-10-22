@@ -73,7 +73,17 @@
         refreshDetails();
         if(!detailsObserver && typeof MutationObserver!=='undefined'){
             var pending=false;
-            detailsObserver=new MutationObserver(function(){if(pending)return;pending=true;requestAnimationFrame(function(){pending=false;refreshDetails();});});
+            detailsObserver=new MutationObserver(function(records){
+                var active=Lampa.Activity && Lampa.Activity.active();
+                if(pending || !active || active.component!=='torrents')return;
+                var changed=records.some(function(record){
+                    var target=record.target.nodeType===1?record.target:record.target.parentElement;
+                    if(target && target.closest('.torrent-item'))return true;
+                    return Array.prototype.some.call(record.addedNodes,function(node){return node.nodeType===1 && (node.matches('.torrent-item') || node.querySelector('.torrent-item'));});
+                });
+                if(!changed)return;
+                pending=true;requestAnimationFrame(function(){pending=false;refreshDetails();});
+            });
             detailsObserver.observe(document.body,{childList:true,subtree:true});
         }
     }

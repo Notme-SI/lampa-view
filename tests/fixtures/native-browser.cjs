@@ -1,6 +1,6 @@
 const fs=require('node:fs'),path=require('node:path');
 const root=path.resolve(__dirname,'../..'),fixture=path.join(__dirname,'lampa-runtime');
-async function setup(browser,device){
+async function setup(browser,device,options={}){
  const context=await browser.newContext({...device,userAgent:device.userAgent || 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Safari/605.1.15'}),page=await context.newPage(),errors=[];
  page.on('pageerror',e=>errors.push(e.message));await page.route('**/*',route=>route.request().isNavigationRequest()?route.fulfill({contentType:'text/html',body:'<html><head><meta name="viewport" content="width=device-width, initial-scale=1"></head><body><div class="wrap"><div class="wrap__left"></div><div class="wrap__content"></div></div></body></html>'}):route.abort());await page.goto('http://lampa.example.invalid/');
  await page.addStyleTag({content:fs.readFileSync(path.join(fixture,'app.css'),'utf8')});
@@ -10,7 +10,8 @@ async function setup(browser,device){
  await page.addScriptTag({content:app});
  await page.evaluate(({mode})=>{for(const name of ['Storage','Head','Settings','Select','Menu','Favorite','Timeline','Screensaver','Background','TimeTable','ContentRows','Activity']){Lampa[name].init();if(name==='Storage')Lampa.Storage.set('lampa_view_layout',mode);}},{mode:device.mode || 'auto'});await page.waitForTimeout(900);
  await page.evaluate(()=>{const L=Lampa;L.Storage.set('language','ru');L.Storage.set('tmdb_lang','ru');L.Storage.set('source','tmdb');for(const name of ['Settings','Select','Head','Menu','Activity']){const r=L[name].render(true),el=r&&(r.nodeType?r:r[0]);if(el&&!el.isConnected)document.body.appendChild(el);}window.appready=true;window.SimpleKeyboard={default:function(){this.setInput=()=>{};this.getInput=()=>'';this.destroy=()=>{};this.setOptions=()=>{};}};L.TMDB.image=p=>'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="600" height="900"><rect width="600" height="900" fill="#183440"/><text x="20" y="100" fill="white" font-size="28">Проверка карточки</text></svg>');});
- await page.addScriptTag({content:fs.readFileSync(path.join(root,'dist/lampa.js'),'utf8')});
+ if(options.beforePlugin)await options.beforePlugin(page);
+ await page.addScriptTag({content:fs.readFileSync(options.plugin || path.join(root,'dist/lampa.js'),'utf8')});
  await page.evaluate(()=>{const L=Lampa;for(const [api,selector]of [['Menu','.wrap__left'],['Activity','.wrap__content']]){const r=L[api].render(true);document.querySelector(selector).appendChild(r.nodeType?r:r[0]);}L.Controller.add('content',{toggle(){}});L.Controller.toggle('content');});return {page,context,errors};
 }
 module.exports={setup};

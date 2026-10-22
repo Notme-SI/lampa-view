@@ -33,7 +33,7 @@ if (!ROOT.LampaView) {
     const boot=document.createElement('style');boot.id='lampa-minimal-boot';boot.textContent=BOOT;
     (document.head || document.documentElement).appendChild(boot);
   }
-  const P = ROOT.LampaView = {version: '0.4.56', identity: C.identity, ready: false, bridge: false};
+  const P = ROOT.LampaView = {version: '0.4.57', identity: C.identity, ready: false, bridge: false};
   let L, $, lastCard, initialized = false, playlist = [], activeVideo,loadLogo,artwork,back;
   const metadata = new Map();
   const heroes = new WeakSet();
@@ -142,9 +142,9 @@ if (!ROOT.LampaView) {
     }
     if(series && cartoons && series.nextElementSibling!==cartoons)series.after(cartoons);
     if(cartoons && !cartoons.dataset.minimalCartoons){cartoons.dataset.minimalCartoons='1';pointer($(cartoons).off('hover:enter').on('hover:enter.minimalCartoons',event=>{event.stopImmediatePropagation();navigate('cartoon');}));}
-    $('.menu__item,.settings-folder').each(function(){
-      const label=$(this).find('.menu__text,.settings-folder__name').text().trim() || $(this).text().trim();
-      if(/^(shots|спорт|расписание)$/i.test(label))$(this).addClass('pt-removed-section');
+    document.querySelectorAll('.menu__item,.settings-folder').forEach(node=>{
+      const label=(node.querySelector('.menu__text,.settings-folder__name') || node).textContent.trim();
+      node.classList.toggle('pt-removed-section',/^(shots|спорт|расписание)$/i.test(label));
     });
     if(L.SettingsApi.allComponents && L.SettingsApi.removeComponent){
       const components=L.SettingsApi.allComponents();

@@ -47,6 +47,20 @@ test('non-TMDB cards never leak an unrelated source ID as TMDB', () => {
     assert.equal(doc.items[0].tmdbID,undefined); assert.equal(doc.items[0].malID,undefined);
 });
 
+test('torrent quality labels are metadata, and serial cards with a display title remain series',()=>{
+    const document=bridge.build({url:url(1),quality:'1080p'},[],{title:'Гангстерленд',name:'Гангстерленд',first_air_date:'2025-03-30'},{quality(){assert.fail('a resolution label is not a quality URL map');}});
+    assert.equal(document.items[0].url,url(1));assert.equal(document.items[0].mediaType,'tv');
+});
+
+test('default torrent player migration is silent and runs only once across page reloads',()=>{
+    const storage={player:'mpvplus',player_torrent:'inner'},source=fs.readFileSync(require.resolve('../plugins/mpvplus-ios.js'),'utf8');
+    function reload(){
+        const Lampa={Params:{values:{player:{inner:'Inner'},player_torrent:{inner:'Inner'}},defaults:{},select(k,v){this.values[k]=v}},Player:{play(){},playlist(){}},Storage:{get:(k,d)=>storage[k]??d,field:k=>storage[k],set:(k,v)=>storage[k]=v},Select:{show(){},hide(){}},Listener:{follow(){}},Noty:{show:assert.fail}};
+        const context={Lampa,URL,Blob,alert:assert.fail};context.window=context;vm.runInNewContext(source,context);
+    }
+    reload();assert.equal(storage.player_torrent,'mpvplus');storage.player_torrent='inner';reload();assert.equal(storage.player_torrent,'inner');
+});
+
 test('browser bridge captures playlist before a user-gesture launch and preserves native fallback', () => {
     let timer, dialog, launched, originalCalls=0;
     const values = {};
@@ -79,7 +93,7 @@ test('mpv+ is registered in the native Lampa player lists without removing exist
     const Lampa={Params:params,Player:{play(){nativeCalls++},playlist(){}},Storage:{get:(k,d)=>k in storage?storage[k]:d,field:k=>storage[k],set:(k,v)=>storage[k]=v},Select:{show(){},hide(){}},Noty:{show(){}},Listener:{follow(){}}};
     const context={Lampa,URL,Blob,setTimeout:fn=>timer=fn,alert:assert.fail};context.window=context;
     vm.runInNewContext(fs.readFileSync(require.resolve('../plugins/mpvplus-ios.js'),'utf8'),context);
-    assert.equal(params.values.player.infuse,'Infuse');assert.equal(params.values.player.mpvplus,'mpv+ (iPhone)');
+    assert.equal(params.values.player.infuse,'Infuse');assert.equal(params.values.player.mpvplus,'mpv+');
     assert.equal(params.values.player_torrent.vlc,'VLC');assert.equal(storage.player_torrent,'infuse');
     context.MPVPlusLampa.enable();assert.equal(storage.player_torrent,'mpvplus');
     Lampa.Player.play({url:url(1)});assert.equal(nativeCalls,0);assert.equal(typeof timer,'function');

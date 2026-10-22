@@ -38,7 +38,7 @@ export default function quality(L,$){
     node.classList.add('pt-has-quality');
     let badge=view.querySelector('.pt-quality');
     if(!badge){badge=document.createElement('span');badge.className='pt-quality';view.appendChild(badge);}
-    badge.textContent=q;badge.title='Качество доступного релиза';
+    if(badge.textContent!==q)badge.textContent=q;badge.title='Качество доступного релиза';
     badges.schedule(node);
   }
   function drain(){
@@ -142,7 +142,7 @@ export default function quality(L,$){
   }
   if(window.MutationObserver){
     new window.MutationObserver(records=>{
-      records.forEach(record=>{record.addedNodes.forEach(legacy);const card=record.target.nodeType===1 && record.target.closest('.card');if(card && tracked.has(card))badges.schedule(card);});
+      records.forEach(record=>{if(record.target.nodeType===1 && record.target.closest('.nova-plus-root'))return;record.addedNodes.forEach(legacy);const card=record.target.nodeType===1 && record.target.closest('.card');if(card && tracked.has(card))badges.schedule(card);});
       if(records.some(record=>Array.from(record.removedNodes).some(node=>node.nodeType===1 && (node.matches('.card') || node.querySelector('.card')))))for(const [node,item] of tracked)if(!node.isConnected)forget(item);
     }).observe(document.body,{childList:true,subtree:true});
     legacy(document.body);

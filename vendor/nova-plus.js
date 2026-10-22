@@ -2819,6 +2819,7 @@
       observer = null;
     }
 
+    if (observer) { timer = setTimeout(stop, 6100); return; }
     timer = setInterval(function () {
       tries++;
       if (take()) return;
@@ -2830,15 +2831,19 @@
     if (!item || !item.origin || !slot || !slot.length) return;
     var timer = null;
     var tries = 0;
+    var observer = null;
+    function stop() {
+      if (observer) observer.disconnect();
+      observer = null;
+      if (timer) clearInterval(timer);
+      timer = null;
+    }
 
     function take() {
       var value = 0;
       try { value = digits(item.origin.find('.' + (item.px || '') + 'online-prestige__episode-number').text()); } catch (e) { value = 0; }
       if (!value) return false;
-      if (timer) {
-        clearInterval(timer);
-        timer = null;
-      }
+      stop();
       var changed = item.num !== value || !item.numbered;
       item.num = value;
       item.numbered = true;
@@ -2849,12 +2854,20 @@
 
     if (take()) return;
 
+    if (window.MutationObserver) {
+      try {
+        observer = new MutationObserver(take);
+        observer.observe(item.origin[0], { childList: true, characterData: true, subtree: true });
+        timer = setTimeout(stop, 6100);
+        return;
+      } catch (e) { if (observer) observer.disconnect(); observer = null; }
+    }
+
     timer = setInterval(function () {
       tries++;
       if (take()) return;
       if (tries > 100) {
-        clearInterval(timer);
-        timer = null;
+        stop();
       }
     }, 60);
   }
@@ -2890,7 +2903,7 @@
 
   function buildCard(item, compact, grid) {
     var card = $('<div class="nova-card selector">' +
-      '<div class="nova-card__thumb"><img alt=""><div class="nova-card__num"><span></span></div><div class="nova-card__line"></div></div>' +
+      '<div class="nova-card__thumb"><img alt="" loading="lazy" decoding="async"><div class="nova-card__num"><span></span></div><div class="nova-card__line"></div></div>' +
       '<div class="nova-card__body"><div class="nova-card__title"></div><div class="nova-card__meta"></div></div>' +
       '<div class="nova-card__side"><div class="nova-card__quality"></div><div class="nova-card__time"></div></div>' +
       '</div>');
@@ -6011,6 +6024,13 @@
 
   var wide_refit_timers = [];
   var wide_refit_bound = false;
+  var wide_refit_frame = null;
+
+  function wideRefitSoon() {
+    if (wide_refit_frame !== null) return;
+    var frame = window.requestAnimationFrame || function (callback) { return setTimeout(callback, 16); };
+    wide_refit_frame = frame(function () { wide_refit_frame = null; wideRefitRun(); });
+  }
 
   function wideNoteFit() {
     if (!ui.root || !ui.root.hasClass('nova-plus') || !ui.list || !ui.hero_box) return;
@@ -6054,7 +6074,7 @@
       ui.hero_box.find('img').each(function () {
         if (this.getAttribute('data-nova-refit')) return;
         this.setAttribute('data-nova-refit', '1');
-        $(this).on('load', wideRefitRun);
+        $(this).on('load', wideRefitSoon);
       });
     } catch (e) {}
   }
@@ -6063,11 +6083,9 @@
     while (wide_refit_timers.length) {
       try { clearTimeout(wide_refit_timers.pop()); } catch (e) {}
     }
-    var steps = [60, 240, 600, 1200];
-    for (var i = 0; i < steps.length; i++) {
-      try { wide_refit_timers.push(setTimeout(wideRefitRun, steps[i])); } catch (e) {}
-    }
-    try { if (window.requestAnimationFrame) window.requestAnimationFrame(wideRefitRun); } catch (e) {}
+    // Content wraps in CSS. Refit once per frame; images and viewport changes
+    // request another pass only when something actually changes.
+    wideRefitSoon();
     wideRefitWatch();
     if (wide_refit_bound) return;
     wide_refit_bound = true;
@@ -6081,7 +6099,7 @@
         try { wide_refit_timers.push(setTimeout(wideRefitRun, delay)); } catch (e) {}
       });
     };
-    try { $(window).on('resize', wideRefitRun).on('orientationchange', orientationRefit); } catch (e) {}
+    try { $(window).on('resize', wideRefitSoon).on('orientationchange', orientationRefit); } catch (e) {}
     try {
       if (window.visualViewport) $(window.visualViewport).on('resize', orientationRefit);
     } catch (e) {}

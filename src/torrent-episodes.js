@@ -35,5 +35,12 @@ export default function torrentEpisodes(L,root=window){
   corrected.hash=L.Utils.hash(corrected.hash_string);
   return corrected;
  };
- if(L.Listener)L.Listener.follow('torrent_file',event=>{if(event.type==='list_close')selected=null;});
+ if(L.Listener)L.Listener.follow('torrent_file',event=>{
+  if(event.type==='list_close')selected=null;
+  if(event.type==='render'){
+   const item=event.item && (event.item.nodeType?event.item:event.item[0]);
+   // File render events precede Modal.update(), so mark the mounted dialog later.
+   if(item)setTimeout(()=>{const modal=item.closest('.modal');if(modal)modal.classList.add('minimal-torrent-files');},0);
+  }
+ });
 }

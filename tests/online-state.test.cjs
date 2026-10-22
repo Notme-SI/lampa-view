@@ -25,6 +25,16 @@ function screen(n,{id=900,season=1,episodes=[1,2,3],serial=true,component={}}={}
  for(const num of episodes)$('<div class="online-prestige online-prestige--full selector"><div class="online-prestige__img"><img src="https://image.example.test/frame.jpg"></div><div class="online-prestige__title">Серия '+num+'</div>'+(serial?'<div class="online-prestige__episode-number">'+num+'</div>':'')+'<div class="online-prestige__quality">1080p</div><div class="online-prestige__info"><span>TVShows</span></div><div class="time-line"><div style="width:0%"></div></div></div>').on('hover:enter',()=>played=num).appendTo(body);
  Object.assign(component,{render:()=>root});L.Activity.active=()=>({component:'online_test',movie,activity:{render:()=>root,component}});L.Listener.send('activity',{type:'start'});return {root,body,movie,filter,component,played:()=>played,close(){L.Listener.send('activity',{type:'destroy'});root.remove();}};
 }
+
+test('late episode number and thumbnail arrive without per-card 60ms polling',async()=>{
+ const n=await native({built:true}),{w}=n;try{
+  const interval=w.setInterval.bind(w),polls=[];w.setInterval=(fn,delay,...args)=>{if(delay===60)polls.push(fn);return interval(fn,delay,...args);};
+  const s=screen(n,{id:1608,episodes:[1]}),origin=s.body.find('.online-prestige').first();origin.find('img').removeAttr('src');origin.find('.online-prestige__episode-number').empty();
+  await wait(200);assert.equal(polls.length,0,'modern hosts watch metadata changes instead of polling every card');
+  origin.find('img').attr('src','https://image.example.test/late.jpg');origin.find('.online-prestige__episode-number').text('7');await wait(180);
+  const card=s.root.find('.nova-card').first();assert.match(card.find('.nova-card__num').text(),/7/);assert.equal(card.find('.nova-card__thumb img').attr('src'),'https://image.example.test/late.jpg');assert.equal(card.find('.nova-card__thumb img').attr('loading'),'lazy');assert.deepEqual(n.errors,[]);s.close();
+ }finally{n.close();}
+});
 test('online UI resumes the latest native timecode, keeps external images and handles reverse episode order',async()=>{
  const n=await native({built:true}),{w,L}=n;let s;try{
  const hash=(season,episode,title='Original')=>L.Utils.hash([season,season>10?':':'',episode,title].join(''));L.Timeline.update({hash:hash(1,2),percent:40,time:720,duration:1800});

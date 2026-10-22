@@ -1,0 +1,24 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),native=require('./fixtures/native-lampa.cjs');
+const source=fs.readFileSync(require.resolve('../plugins/mpvplus-ios.js'),'utf8');
+const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+test('native torrent file selection and long-press menu transfer exact indexes and relative server links without startup notices',async()=>{
+ const n=await native({built:true}),{L,w}=n;try{
+  const movie={id:99,name:'Гангстерленд',original_name:'MobLand',original_title:'MobLand',first_air_date:'2025-01-01',number_of_seasons:1,seasons:[{season_number:1,episode_count:3}],source:'tmdb',genres:[]};
+  const release={Title:'Гангстерленд / MobLand (2025) S01 WEB-DL 1080p',Tracker:'test',Size:1e9,Seeders:3,MagnetUri:'magnet:?xt=urn:btih:'+ 'a'.repeat(40)};
+  L.Parser.get=(p,ok)=>w.setTimeout(()=>ok({Results:[release]}),0);L.Activity.push({component:'torrents',movie,search:'MobLand',url:'',page:1});await wait(200);
+  L.Storage.set('player','mpvplus');L.Storage.set('player_torrent','inner');let launched='',calls=0,notices=[];
+  L.Player.play=()=>calls++;L.Player.playlist=()=>calls++;L.Player.callback=()=>{};L.Noty.show=value=>notices.push(value);
+  const context={Lampa:L,appready:true,URL,Blob,document:w.document,navigator:{standalone:true},setTimeout:w.setTimeout.bind(w),btoa:value=>Buffer.from(value,'binary').toString('base64'),location:{href:'https://lampac.test/',assign:url=>launched=url},alert:assert.fail};context.window=context;vm.runInNewContext(source,context);
+  assert.equal(L.Storage.field('player_torrent'),'mpvplus');assert.equal(L.Params.values.player.mpvplus,'mpv+');assert.equal(L.Params.values.player_torrent.mpvplus,'mpv+');assert.deepEqual(notices,[]);
+  L.Storage.set('player_torrent','vlc');L.Storage.set('player','inner');L.Storage.set('player','mpvplus');assert.equal(L.Storage.field('player_torrent'),'mpvplus','choosing mpv+ also activates its torrent player');
+  L.Torserver.url=()=>true;L.Torserver.connected=ok=>ok();L.Torserver.hash=(p,ok)=>ok({hash:'a'.repeat(40)});L.Torserver.files=(hash,ok)=>ok({file_stats:[1,2,3].map(id=>({id,path:'MobLand/MobLand.S01E0'+id+'.mkv',length:1e9}))});L.Torserver.viewed=(hash,ok)=>ok([]);
+  L.Torserver.stream=(file,hash,id)=>'/ts/stream/'+file.split('/').pop()+'?link='+hash+'&index='+id+'&preload';
+  L.Torserver.toPlayUrl=value=>value.replace('&preload','&play');L.Api.seasons=(card,seasons,ok)=>ok({1:{episodes:[1,2,3].map(episode_number=>({episode_number,name:'Серия '+episode_number,season_number:1}))}});
+  L.Torrent.start(release,movie);await wait(2200);
+  const files=[...w.document.querySelectorAll('.torrent-files .torrent-serial')];assert.equal(files.length,3);
+  w.jQuery(files[1]).trigger('hover:enter');await wait(30);
+  let choice=[...w.document.querySelectorAll('.selectbox-item')].find(node=>node.textContent.includes('Открыть в mpv+'));assert.ok(choice,'torrent reaches the bridge chooser');w.jQuery(choice).trigger('hover:enter');
+  const decode=()=>JSON.parse(Buffer.from(new URL(launched).searchParams.get('data'),'base64url').toString('utf8'));let doc=decode();assert.equal(doc.items.length,3);assert.equal(doc.selected,1);assert.equal(doc.items[1].episode,2);assert.match(doc.items[1].url,/^https:\/\/lampac\.test\/ts\/stream\/.*index=2&play$/);assert.equal(calls,0);
+  launched='';w.jQuery(files[2]).trigger('hover:long');choice=[...w.document.querySelectorAll('.selectbox-item')].find(node=>node.textContent.includes('Передать весь список в mpv+'));assert.ok(choice);w.jQuery(choice).trigger('hover:enter');doc=decode();assert.equal(doc.items.length,3);assert.equal(doc.selected,2);assert.equal(doc.items[2].episode,3);assert.deepEqual(notices,[]);assert.deepEqual(n.errors,[]);
+ }finally{n.close();}
+});

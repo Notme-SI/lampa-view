@@ -23,7 +23,10 @@ jobs:
       - name: Check phone and desktop torrent layout
         env:
           PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
-        run: node tests/browser/torrent-layout.cjs
+        run: |
+          node tests/browser/torrent-layout.cjs
+          node tests/browser/torrent-files-layout.cjs
+          node tests/browser/button-focus.cjs
       - run: python3 server/test-bootstrap.py
       - run: python3 server/test-online.py
       - name: Check published files match source

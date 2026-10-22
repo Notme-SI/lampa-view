@@ -1,11 +1,11 @@
-/*! mpv+ iOS Lampa bridge 0.2.1 | MIT | mpv+ contributors */
+/*! mpv+ iOS Lampa bridge 0.2.2 | MIT | mpv+ contributors */
 (function (root) {
     'use strict';
     function text(value) { return String(value == null ? '' : value).replace(/<[^>]*>/g, '').replace(/[\r\n\t]+/g, ' ').trim().slice(0, 2048); }
     function integer(value) { var n = Number(value); return Number.isInteger(n) && n > 0 && n < 10000000 ? n : null; }
     function network(value) {
         if (typeof value !== 'string' || /[\r\n\0]/.test(value)) return '';
-        try { var url = new URL(value); return /^(https?:)$/.test(url.protocol) && url.hostname ? url.href : ''; } catch (_) { return ''; }
+        try { var url = new URL(value, /^(?:\/|\.\.?\/)/.test(value) && root.location ? root.location.href : undefined); return /^(https?:)$/.test(url.protocol) && url.hostname ? url.href : ''; } catch (_) { return ''; }
     }
     function coordinates(item) {
         var season = integer(item.season != null ? item.season : item.season_number);
@@ -24,7 +24,7 @@
     }
     function stream(item, adapter) {
         var url = item && item.url;
-        if (item && item.quality && adapter && adapter.quality) url = adapter.quality(item.quality) || url;
+        if (item && item.quality && typeof item.quality === 'object' && adapter && adapter.quality) url = adapter.quality(item.quality) || url;
         if (adapter && adapter.torrent && typeof url === 'string') url = adapter.torrent(url);
         return network(typeof url === 'string' ? url.replace(/([?&])preload(?=&|$)/g, '$1play') : '');
     }
@@ -45,7 +45,7 @@
             if (url === current) { selected = items.length; var active = coordinates(video); meta.season = meta.season || active.season; meta.episode = meta.episode || active.episode; }
             if (meta.season) entry.season = meta.season;
             if (meta.episode) entry.episode = meta.episode;
-            entry.mediaType = card.media_type || (card.name && !card.title ? 'tv' : 'movie');
+            entry.mediaType = card.media_type || (card.name || card.first_air_date || card.number_of_seasons ? 'tv' : 'movie');
             if ((!card.source || card.source === 'tmdb') && integer(card.id)) entry.tmdbID = integer(card.id);
             var imdb = card.imdb_id || (card.external_ids && card.external_ids.imdb_id);
             if (/^tt\d+$/.test(imdb || '')) entry.imdbID = imdb;
@@ -87,9 +87,21 @@
         ['player', 'player_torrent'].forEach(function (key) {
             var values = L.Params.values[key];
             if (values && typeof values === 'object' && !Array.isArray(values)) {
-                L.Params.select(key, Object.assign({}, values, { mpvplus: 'mpv+ (iPhone)' }), L.Params.defaults && L.Params.defaults[key]);
+                L.Params.select(key, Object.assign({}, values, { mpvplus: 'mpv+' }), L.Params.defaults && L.Params.defaults[key]);
                 registered = true;
             }
+        });
+    }
+    if (registered) {
+        var selectedPlayer = function (key) { return L.Storage.field ? L.Storage.field(key) : L.Storage.get(key, 'inner'); };
+        // A default torrent player used to bypass the bridge even when mpv+
+        // was chosen for online video. Upgrade that default once, quietly.
+        if (L.Storage.get('mpvplus_ios_torrent_revision', 0) !== 1) {
+            if (selectedPlayer('player') === 'mpvplus' && ['inner', 'ios', '', undefined].indexOf(selectedPlayer('player_torrent')) >= 0) L.Storage.set('player_torrent', 'mpvplus');
+            L.Storage.set('mpvplus_ios_torrent_revision', 1);
+        }
+        if (L.Storage.listener && L.Storage.listener.follow) L.Storage.listener.follow('change', function (event) {
+            if (event && event.name === 'player' && event.value === 'mpvplus' && selectedPlayer('player_torrent') !== 'mpvplus') L.Storage.set('player_torrent', 'mpvplus');
         });
     }
     function enabled(video) {
@@ -103,7 +115,6 @@
     function enable() {
         if (registered) { L.Storage.set('player', 'mpvplus'); L.Storage.set('player_torrent', 'mpvplus'); }
         else L.Storage.set('mpvplus_ios', true);
-        L.Noty.show('mpv+ подключён. Запусти фильм или серию.');
     }
     api.enable = enable; root.MPVPlusLampa = api;
     if (L.Listener) L.Listener.follow('full', function (event) {
@@ -177,9 +188,8 @@
         if (pending && enabled(pending)) { list = Array.isArray(items) ? items.slice() : []; return; }
         return originalPlaylist.apply(this, arguments);
     };
-    if (!registered && L.SettingsApi) L.SettingsApi.addParam({ component: 'player', param: { name: 'mpvplus_ios', type: 'trigger', default: false }, field: { name: 'mpv+ для iPhone', description: 'Передавать выбранное видео и плейлист в mpv+. Для Lampa в Safari.' } });
+    if (!registered && L.SettingsApi) L.SettingsApi.addParam({ component: 'player', param: { name: 'mpvplus_ios', type: 'trigger', default: false }, field: { name: 'mpv+', description: 'Передавать выбранное видео и плейлист в mpv+.' } });
     // Installing a permanent plugin must not change the user's selected player on every PWA launch.
-    L.Noty.show('mpv+ добавлен в список плееров и меню торрент-файлов.');
     }
     if (root.Lampa && root.appready === false && root.Lampa.Listener) {
         if (!root.__mpvPlusWaiting) {

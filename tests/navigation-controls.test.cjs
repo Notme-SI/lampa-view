@@ -12,7 +12,7 @@ test('home always hides Back with a deep activity stack and menu/back have ident
    const a=w.getComputedStyle(back),b=w.getComputedStyle(menu);for(const prop of ['width','height','border','borderRadius','color','backgroundColor','outline','outlineOffset'])assert.equal(a[prop],b[prop],prop);
    const nav=w.document.createElement('div');nav.innerHTML='<button class="minimal-row-arrow"></button><button class="minimal-row-more selector"></button><button class="minimal-comments-arrow"></button>';w.document.body.appendChild(nav);
    for(const button of nav.children){button.classList.toggle('focus',focused);const actual=w.getComputedStyle(button);for(const prop of ['border','borderRadius','color','backgroundColor','outline','outlineOffset'])assert.equal(actual[prop],b[prop],button.className+' '+prop);}
-   if(focused)assert.match(b.outline,/2px solid/);nav.remove();
+   if(focused){assert.equal(b.outline,'none');assert.match(b.boxShadow,/inset/);};nav.remove();
   }
   component='main';L.Listener.send('activity',{type:'start'});assert.equal(w.getComputedStyle(back).display,'none');assert.equal(back.tabIndex,-1);assert.deepEqual(r.errors,[]);
  }finally{r.close();}
