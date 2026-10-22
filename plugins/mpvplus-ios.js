@@ -1,4 +1,4 @@
-/*! mpv+ iOS Lampa bridge 0.2.3 | MIT | mpv+ contributors */
+/*! mpv+ iOS Lampa bridge 0.2.4 | MIT | mpv+ contributors */
 (function (root) {
     'use strict';
     function text(value) { return String(value == null ? '' : value).replace(/<[^>]*>/g, '').replace(/[\r\n\t]+/g, ' ').trim().slice(0, 2048); }
@@ -26,8 +26,9 @@
         var url = item && item.url;
         if (item && item.quality && typeof item.quality === 'object' && adapter && adapter.quality) url = adapter.quality(item.quality) || url;
         if (adapter && adapter.torrent && typeof url === 'string') url = adapter.torrent(url);
-        return network(typeof url === 'string' ? url.replace(/([?&])preload(?=&|$)/g, '$1play') : '');
+        return network(playURL(url));
     }
+    function playURL(url) { return typeof url === 'string' ? url.replace(/([?&])preload(?=&|$)/g, '$1play') : ''; }
     function build(video, rawItems, card, adapter) {
         video = video || {}; card = card || {};
         var current = stream(video, adapter);
@@ -111,6 +112,16 @@
             return (L.Storage.field ? L.Storage.field(key) : L.Storage.get(key, 'inner')) === 'mpvplus';
         }
         var value = L.Storage.get('mpvplus_ios', false); return value === true || value === 'true';
+    }
+    // Hand the ready stream to the external player without waiting for Lampa's
+    // preload/stat loop. That loop can fail before Player.play is ever reached.
+    // Keep the server, access token, file index and the user's setting intact.
+    if (L.Torserver && typeof L.Torserver.stream === 'function') {
+        var originalStream = L.Torserver.stream;
+        L.Torserver.stream = function () {
+            var url = originalStream.apply(this, arguments);
+            return enabled({ torrent_hash: true, url: url }) ? playURL(url) : url;
+        };
     }
     function enable() {
         if (registered) { L.Storage.set('player', 'mpvplus'); L.Storage.set('player_torrent', 'mpvplus'); }

@@ -139,3 +139,15 @@ test('torrent menu transfers one file or the complete playlist from a standalone
     assert.equal(doc.items.length,3);assert.equal(doc.selected,1);assert.equal(doc.title,'Название');
     handlers.torrent_file(event);assert.equal(event.menu.length,3);
 });
+
+test('only mpv+ receives play URLs before native preloading; tokens, indexes and other players survive',()=>{
+    const storage={player:'mpvplus',player_torrent:'mpvplus',torrserver_preload:true};
+    const url='https://server.test/ts/stream/show.mkv?link='+ 'a'.repeat(40)+'&index=7&preload&token=x%2By';let originalCalls=0;
+    const Lampa={Params:{values:{player:{inner:'Inner'},player_torrent:{inner:'Inner'}},defaults:{},select(k,v){this.values[k]=v}},Player:{play(){},playlist(){}},Storage:{get:(k,d)=>storage[k]??d,field:k=>storage[k],set:(k,v)=>storage[k]=v},Torserver:{stream(path,hash,index){assert.equal(index,7);originalCalls++;return url;}},Select:{show(){},hide(){}},Listener:{follow(){}},Noty:{show:assert.fail}};
+    const context={Lampa,URL,Blob,alert:assert.fail};context.window=context;vm.runInNewContext(fs.readFileSync(require.resolve('../plugins/mpvplus-ios.js'),'utf8'),context);
+    assert.equal(Lampa.Torserver.stream('show.mkv','a'.repeat(40),7),url.replace('&preload','&play'));
+    assert.equal(storage.torrserver_preload,true,'global preload setting is preserved');
+    storage.player_torrent='vlc';assert.equal(Lampa.Torserver.stream('show.mkv','a'.repeat(40),7),url);
+    storage.player_torrent='inner';assert.equal(Lampa.Torserver.stream('show.mkv','a'.repeat(40),7),url);
+    assert.equal(originalCalls,3);
+});
