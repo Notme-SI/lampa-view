@@ -8,7 +8,7 @@ test('native legacy history/filter cards restore anime metadata, saved favorites
   602:{id:602,vote_average:9.3,genres:[{id:16}],original_language:'ja'},
   603:{id:603,genres:[{id:18}],original_language:'ja'}
  };
- L.Api.sources.tmdb.get=(path,params,ok,fail)=>{requests.push(path);w.setTimeout(()=>{const id=path.match(/^(?:tv|movie)\/(\d+)/);if(id && details[id[1]])ok(details[id[1]]);else fail();},10);};
+  L.Api.sources.tmdb.get=(path,params,ok,fail)=>{const id=path.match(/^(?:tv|movie)\/(\d+)/);if(id && Number(id[1])>=601 && Number(id[1])<=605)requests.push(path);w.setTimeout(()=>{if(id && details[id[1]])ok(details[id[1]]);else fail();},10);};
  function legacy(data,omitRating=false){
   const c=new L.Card(data,{});c.create();const node=c.render(true);if(omitRating)node.querySelectorAll('.card__vote').forEach(b=>b.remove());node.getBoundingClientRect=()=>({width:150,left:0,right:150,top:0,bottom:225});w.document.body.appendChild(node);cards.push(c);return node;
  }
@@ -16,7 +16,9 @@ test('native legacy history/filter cards restore anime metadata, saved favorites
   const series=legacy({id:601,name:'Anime series',original_name:'Anime Series',first_air_date:'2019-01-01',source:'tmdb',release_quality:'1080p'});
   const film=legacy({id:602,title:'Anime film',original_title:'Anime Film',release_date:'2025-01-01',genre_ids:[],source:'cub',release_quality:'WEB-DL'});
   const live=legacy({id:603,title:'Live action',release_date:'2025-01-01',source:'tmdb'});
-  await wait(140);
+  // Metadata is asynchronous; a loaded test worker may process its timers late.
+  const deadline=Date.now()+3000;
+  while(Date.now()<deadline && [series,film].some(node=>node.querySelector('.pt-kind')?.textContent!=='Аниме'))await wait(20);
   assert.equal(series.querySelector('.pt-kind').textContent,'Аниме');assert.equal(film.querySelector('.pt-kind').textContent,'Аниме');assert.equal(live.querySelector('.pt-kind'),null);
   assert.equal(series.querySelector('.pt-quality').textContent,'1080p');assert.equal(film.querySelector('.pt-quality').textContent,'WEB-DL');
   assert.equal(series.querySelector('.card__vote').textContent,'8.9');assert.equal(film.querySelector('.card__vote').textContent,'9.3');assert.equal(live.querySelector('.card__vote'),null);

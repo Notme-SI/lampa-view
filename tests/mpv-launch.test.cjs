@@ -5,8 +5,10 @@ function fixture(options={}){
  const calls=[],timers=[],listeners={},fallback=[],external=[];
  const root={setTimeout:fn=>timers.push(fn),encodeURIComponent,unescape,require:name=>{
    if(options.denied)throw Error('not available');
+   if(name==='fs' && options.noSyncFs)throw Error('synchronous filesystem IPC must not delay launch');
    return name==='fs'?{existsSync:()=>!options.missing}:{spawn:(...args)=>{if(options.spawnError)throw Error('not started');calls.push(args);return {on:(name,fn)=>{calls.at(-1).error=fn;}};}};
  }};
+ if(options.microtasks)root.queueMicrotask=queueMicrotask;
  const values={player:'other',player_torrent:'other',player_nw_path:'C:\\Players\\mpv.exe',...options.values};
  const L={Platform:{desktop:()=>!options.tv,is:name=>name==='android'&&!!options.tv},Storage:{field:name=>values[name]},
    Torserver:{toPlayUrl:url=>url.replace('&preload','&play')},Player:{getUrlQuality:()=>options.quality,
@@ -31,11 +33,22 @@ test('the chosen quality, rather than the old video URL, is scoped to its card',
  const f=fixture({quality:'https://host/high.mkv'});f.play({url:'https://host/low.mkv',quality:{low:'low',high:'high'},season:2,episode:4});f.tick();
  assert.equal(context(f.calls[0][1]).entries[0].url,'https://host/high.mkv');assert.equal(f.calls[0][1][1],'https://host/high.mkv');
 });
-test('TV, other players, inner mode, disabled transport and missing executables keep the native route',()=>{
- for(const options of [{tv:true},{disabled:true},{denied:true},{missing:true},{values:{player:'inner'}},{values:{player_nw_path:'C:\\vlc.exe'}}]){
+test('TV, other players, inner mode, disabled transport and unavailable spawn keep the native route',()=>{
+ for(const options of [{tv:true},{disabled:true},{denied:true},{values:{player:'inner'}},{values:{player_nw_path:'C:\\vlc.exe'}}]){
    const f=fixture(options);assert.equal(f.play({url:'https://host/video.mkv'}),false);f.tick();assert.equal(f.calls.length,0);
  }
  const f=fixture();assert.equal(f.play({url:'https://host/video.mkv',launch_player:'inner'}),false);
+});
+
+test('launch does not wait for filesystem IPC or timer tasks and retains the synchronously supplied playlist',async()=>{
+ const f=fixture({noSyncFs:true,microtasks:true});
+ const video={url:'https://host/episode-2.mkv',season:3,episode:2};
+ assert.equal(f.play(video),true);assert.equal(f.calls.length,0);
+ f.L.Player.playlist([video,{url:'https://host/episode-3.mkv',season:3,episode:3}]);
+ await Promise.resolve();
+ assert.equal(f.calls.length,1,'spawn must be reached before advancing any timer tasks');
+ const data=context(f.calls[0][1]);assert.equal(data.entries.length,2);assert.equal(data.entries[1].identity.episode,3);
+ f.tick();assert.equal(f.calls.length,1,'the old timer route must not duplicate the launch');
 });
 test('spawn failure returns to native playback once; a superseded pending launch never starts',()=>{
  const failed=fixture({spawnError:true});failed.play({url:'https://host/a.mkv'});failed.tick();assert.equal(failed.fallback.length,1);
