@@ -8,12 +8,12 @@ import flag from './storage-flag.js';
 // Visible cards only, two requests at a time, bounded cache; use the user's parser.
 export default function quality(L,$){
   const info=cardInfo(L),hydrating=new WeakSet(),badges=badgeLayout();
-  const cache=new Map(),pending=new Map(),queue=[],tracked=new Map(),deferred=new Set(),retries=new Set();let running=0,timer,saveTimer,generation=0;
+  const cache=new Map(),pending=new Map(),queue=[],tracked=new Map(),visible=new Set(),deferred=new Set(),retries=new Set();let running=0,timer,saveTimer,generation=0;
   const storage='minimal_quality_v2',valid=entry=>entry && Date.now()-entry.time<(entry.q?21600000:120000);
   const saved=L.Storage && L.Storage.get(storage,[]);if(Array.isArray(saved))saved.slice(-400).forEach(pair=>{if(Array.isArray(pair) && typeof pair[0]==='string' && valid(pair[1]))cache.set(pair[0],pair[1]);});
   const save=()=>{clearTimeout(saveTimer);saveTimer=setTimeout(()=>{if(L.Storage && L.Storage.set)L.Storage.set(storage,Array.from(cache.entries()));},250);};
   const observer=typeof window.IntersectionObserver==='function'?new window.IntersectionObserver(entries=>{
-    entries.forEach(entry=>{if(entry.isIntersecting){const item=tracked.get(entry.target);if(item)schedule(item);}});
+    entries.forEach(entry=>{if(entry.isIntersecting){visible.add(entry.target);const item=tracked.get(entry.target);if(item)schedule(item);}else visible.delete(entry.target);});
   },{rootMargin:'200px'}):null;
   function track(item,node){
     if(tracked.has(node))return;
@@ -21,10 +21,11 @@ export default function quality(L,$){
   }
   function forget(item){
     deferred.delete(item);
-    for(const [node,value] of tracked)if(value===item){if(observer)observer.unobserve(node);badges.forget(node);tracked.delete(node);}
+    for(const [node,value] of tracked)if(value===item){if(observer)observer.unobserve(node);visible.delete(node);badges.forget(node);tracked.delete(node);}
   }
   function revisit(){
-    for(const [node,item] of tracked)if(node.isConnected)deferred.add(item);
+    if(observer){for(const node of visible){if(node.isConnected)deferred.add(tracked.get(node));}}
+    else for(const [node,item] of tracked)if(node.isConnected)deferred.add(item);
     if(!timer && deferred.size && !document.body.classList.contains('pt-tv-busy'))timer=setTimeout(flush,100);
   }
   const norm=s=>String(s || '').toLowerCase().replace(/ё/g,'е').replace(/[^a-zа-я0-9\u3040-\u30ff\u3400-\u9fff]/g,'');
@@ -42,7 +43,7 @@ export default function quality(L,$){
     badges.schedule(node);
   }
   function drain(){
-    while(!document.body.matches('.pt-wheel-active,.pt-tv-busy') && running<2 && queue.length){
+    while(!document.body.matches('.pt-wheel-active,.pt-tv-busy') && running<(document.body.classList.contains('pt-tv')?1:2) && queue.length){
       const job=queue.shift();if(!job.nodes.some(n=>n.isConnected)){pending.delete(job.key);continue;}
       running++;let attempts=0,expanded=false;const tried=new Set();
       let finished=false,fallbackStarted=false;
@@ -152,7 +153,11 @@ export default function quality(L,$){
     if(document.body.classList.contains('pt-tv-busy'))return;
     if(document.body.classList.contains('pt-wheel-active')){timer=setTimeout(flush,180);return;}
     const waiting=Array.from(retries);retries.clear();waiting.forEach(next=>next());
-    const items=Array.from(deferred);deferred.clear();items.forEach(inspect);drain();
+    // Bound each TV task instead of annotating a whole catalogue in one turn.
+    const limit=document.body.classList.contains('pt-tv')?6:Infinity;
+    let count=0;for(const item of deferred){deferred.delete(item);inspect(item);if(++count>=limit)break;}
+    if(deferred.size)timer=setTimeout(flush,16);
+    drain();
   }
   L.Listener.follow('line',event=>{
     if(!event || !['append','visible','toggle'].includes(event.type))return;
@@ -161,16 +166,18 @@ export default function quality(L,$){
       (event.items || []).forEach(item=>deferred.add(item));
       if(!timer && !document.body.classList.contains('pt-tv-busy'))timer=setTimeout(flush,180);return;
     }
-    (event.items || []).forEach(inspect);
+    if(document.body.classList.contains('pt-tv'))(event.items || []).forEach(schedule);
+    else (event.items || []).forEach(inspect);
     drain();
   });
   document.addEventListener('minimal:wheel-idle',()=>{revisit();flush();});
   document.addEventListener('minimal:tv-idle',()=>{revisit();flush();});
   // Native visibility fires once, sometimes before a grid is attached. Keep
   // observing cards as pointer scrolling and pagination bring them into view.
-  document.addEventListener('scroll',revisit,true);
-  document.addEventListener('transitionend',revisit,true);
-  document.addEventListener('hover:focus',revisit,true);
+  // IntersectionObserver already follows viewport changes, including transforms.
+  // Button transitions and remote focus must not rescan every cached row.
+  if(!observer){document.addEventListener('scroll',revisit,true);document.addEventListener('transitionend',event=>{if(event.target.matches && event.target.matches('.scroll__body'))revisit();},true);}
+  document.addEventListener('hover:focus',event=>{const node=event.target.closest && event.target.closest('.card'),item=node && tracked.get(node);if(item)schedule(item);},true);
   window.addEventListener('resize',revisit);
   cacheControl(L).register('quality',()=>{generation++;clearTimeout(saveTimer);pending.forEach(job=>{if(job.cancel)job.cancel();if(job.request && job.request.clear)job.request.clear();});cache.clear();pending.clear();queue.length=0;retries.clear();running=0;if(L.Storage && L.Storage.set)L.Storage.set(storage,[]);for(const [node] of tracked){node.querySelectorAll('.pt-quality').forEach(b=>b.remove());node.classList.remove('pt-has-quality');}revisit();});
 }

@@ -33,7 +33,7 @@ if (!ROOT.LampaView) {
     const boot=document.createElement('style');boot.id='lampa-minimal-boot';boot.textContent=BOOT;
     (document.head || document.documentElement).appendChild(boot);
   }
-  const P = ROOT.LampaView = {version: '0.4.61', identity: C.identity, ready: false, bridge: false};
+  const P = ROOT.LampaView = {version: '0.4.62', identity: C.identity, ready: false, bridge: false};
   let L, $, lastCard, initialized = false, playlist = [], activeVideo,loadLogo,artwork,back;
   const metadata = new Map();
   const heroes = new WeakSet();
@@ -198,34 +198,42 @@ if (!ROOT.LampaView) {
       function show(next){
         index=(next+cards.length)%cards.length;
         assets.select(index);
-        const card=cards[index],kind=card.media_type || (card.name?'tv':'movie');
+        const selected=index,card=cards[index],kind=card.media_type || (card.name?'tv':'movie');
         item={...card,media_type:kind,source:card.source || 'tmdb'};
         title.text(card.title || card.name);
         const token=++logoToken;
         studio.off('load error').addClass('pt-hidden').removeAttr('src alt title');
         logo.off('load error').addClass('pt-hidden').removeClass('pt-hero__logo--translated').removeAttr('src');title.removeClass('pt-hidden pt-hero__title--translation');
-        assets.logo(index,(url,language)=>{
+        let brandingStarted=false;
+        function branding(){
+         if(brandingStarted || token!==logoToken)return;
+         brandingStarted=true;
+         assets.logo(selected,(url,language)=>{
           if(token!==logoToken || !url)return;
           logo.attr('alt',card.title || card.name).on('load',()=>{
             if(token===logoToken){const translated=language!==String(L.Storage.get('language','ru') || 'ru').slice(0,2);logo.removeClass('pt-hidden').toggleClass('pt-hero__logo--translated',translated);title.toggleClass('pt-hidden',!translated).toggleClass('pt-hero__title--translation',translated);}
           }).on('error',()=>{if(token===logoToken){logo.addClass('pt-hidden');title.removeClass('pt-hidden pt-hero__title--translation');}})
             .attr('src',url);
         });
-        const year=(card.release_date || card.first_air_date || '').slice(0,4);
-        metaText.text([year,kind==='tv'?'Сериал':'Фильм',card.vote_average?Number(card.vote_average).toFixed(1):''].filter(Boolean).join('  ·  '));
-        assets.studio(index,value=>{
+         assets.studio(selected,value=>{
           if(token!==logoToken || !value)return;
           studio.attr({alt:value.name,title:value.name}).on('load',()=>{if(token===logoToken)studio.removeClass('pt-hidden');})
             .on('error',()=>{if(token===logoToken)studio.addClass('pt-hidden');}).attr('src',value.url);
         });
+        }
+        const year=(card.release_date || card.first_air_date || '').slice(0,4);
+        metaText.text([year,kind==='tv'?'Сериал':'Фильм',card.vote_average?Number(card.vote_average).toFixed(1):''].filter(Boolean).join('  ·  '));
+        const tv=document.body.classList.contains('pt-tv');
+        if(!tv)branding();
         overview.text(card.overview);
         clearTimeout(upgradeTimer);
         const size=artworkSize(L,'backdrop');
         const useOriginal=size==='original',ready=assets.ready(index,size);let originalShown=!!ready;
-        if(ready)image.attr('src',ready);
+        if(ready){image.attr('src',ready);branding();}
         else{
           assets.cover(index,useOriginal?'w780':size,url=>{
             if(token===logoToken && url && !originalShown)image.attr('src',url);
+            if(tv)branding();
           });
           if(useOriginal)upgradeTimer=setTimeout(()=>assets.cover(index,'original',url=>{if(token===logoToken && url){originalShown=true;image.attr('src',url);}}),300);
         }

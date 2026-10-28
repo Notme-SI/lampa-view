@@ -39,7 +39,7 @@ export default function posterCache(L,enabled,highQuality){
    if(entry.done){cache.delete(url);bytes-=entry.bytes || 0;}
   }
  }
- function schedule(delay){if(!timer && queue.length && !paused())timer=setTimeout(drain,typeof delay==='number'?delay:tv()?360:0);}
+ function schedule(delay){if(!timer && queue.length && !paused())timer=setTimeout(drain,typeof delay==='number'?delay:0);}
  function paint(job){
   job.finished=true;if(!job.alive() || !visible(job.image))return;
   if(paused()){job.finished=false;queue.unshift(job);return;}
@@ -58,15 +58,15 @@ export default function posterCache(L,enabled,highQuality){
     if(entry.done){paint(job);continue;}
     entry.jobs.add(job);job.entry=entry;continue;
    }
-   if(running>=(tv()?1:3)){queue.push(job);continue;}
-   const loader=new Image();loader.fetchPriority='low';loader.decoding='async';
+   if(running>=(tv()?2:3)){queue.push(job);continue;}
+   const loader=new Image();loader.fetchPriority=tv()?'auto':'low';loader.decoding='async';
    entry={loader,jobs:new Set([job]),done:false};job.entry=entry;cache.set(job.url,entry);running++;
    let finished=false;
    const finish=ok=>{
     if(finished)return;finished=true;clearTimeout(entry.timeout);loader.onload=loader.onerror=null;running--;entry.abort=null;
     if(ok){entry.done=true;entry.bytes=(loader.naturalWidth || 1)*(loader.naturalHeight || 1)*4;trim();}else cache.delete(job.url);
     entry.jobs.forEach(waiting=>{waiting.entry=null;if(ok)paint(waiting);else{waiting.finished=true;if(waiting.alive())waiting.image.src='./img/img_broken.svg';}});entry.jobs.clear();
-    schedule(tv()?80:0);
+    schedule(0);
    };
    entry.abort=()=>{finish(false);loader.src='';};
    loader.onload=()=>{if(loader.decode)loader.decode().then(()=>finish(true),()=>finish(true));else finish(true);};

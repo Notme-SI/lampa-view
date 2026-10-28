@@ -1,7 +1,7 @@
 import {localizedTitle,isAnime} from './metadata.js';
 import {chooseLogo,pickStudio} from './logos.js';
 import comments from './comments.js';
-import {artworkSize} from './artwork.js';
+import {artworkSize,logoSize} from './artwork.js';
 import {onlineButton,watchActions} from './watch-actions.js';
 export function releaseDate(card){
  const raw=String(card.release_date || card.first_air_date || ''),match=/^(\d{4})-(\d{2})-(\d{2})$/.exec(raw);
@@ -220,7 +220,7 @@ export default function detail(L,event,loadLogo){
   const image=document.createElement('img');image.className='minimal-detail-logo';image.alt=card.title || card.name || '';image.decoding='async';
   image.onload=()=>{if(title.isConnected){const translated=language!==String(L.Storage.get('language','ru') || 'ru').slice(0,2);title.classList.toggle('pt-hidden',!!(left || !translated) && document.body.classList.contains('lampa_view'));title.classList.toggle('minimal-detail-translation',translated && !left);image.classList.toggle('minimal-detail-logo--translated',translated && !left);image.classList.add('loaded');}};
   image.onerror=()=>{image.remove();title.classList.remove('pt-hidden','minimal-detail-translation');};
-  title.before(image);image.src=L.TMDB.image('/t/p/original'+path);
+  title.before(image);image.src=L.TMDB.image('/t/p/'+logoSize()+path);
  }
  const supplied=chooseLogo((event.data.images || card.images || {}).logos,L.Storage.get('language','ru'));
  if(supplied){showLogo(supplied.file_path,null,supplied.iso_639_1);if(metaHead && !directStudio)loadLogo(movie,(path,studio)=>showStudio(studio));}else loadLogo(movie,showLogo);

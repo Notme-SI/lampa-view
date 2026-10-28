@@ -22,8 +22,9 @@ export default function badgeLayout(){
  const paused=()=>document.body.matches('.pt-wheel-active,.pt-tv-busy') || document.hidden;
  function flush(){
   frame=0;if(paused())return;
-  const reads=[];
+  const reads=[];let count=0;
   for(const node of pending){
+   if(document.body.classList.contains('pt-tv') && count++>=6)break;
    pending.delete(node);if(!node.isConnected)continue;
    const view=node.querySelector('.card__view');if(!view)continue;const rect=view.getBoundingClientRect();
    if(!rect.width || !rect.height || rect.bottom<0 || rect.top>window.innerHeight || rect.right<0 || rect.left>window.innerWidth)continue;
@@ -36,6 +37,7 @@ export default function badgeLayout(){
   }
   // Read every card before writing styles; held remote navigation never enters here.
   for(const {view,entries,places} of reads){view.classList.add('minimal-badge-layout');for(const entry of entries){const p=places.find(p=>p.el===entry.el);entry.el.style.visibility=p?'':'hidden';if(!p)continue;Object.assign(entry.el.style,{top:Math.round(p.y)+'px',left:Math.round(p.x)+'px',right:'auto',bottom:'auto'});}}
+  if(pending.size)frame=requestAnimationFrame(flush);
  }
  function schedule(node){if(!node)return;pending.add(node);if(!frame && !paused())frame=requestAnimationFrame(flush);}
  for(const event of ['minimal:tv-idle','minimal:wheel-idle','visibilitychange'])document.addEventListener(event,()=>{if(pending.size && !frame)frame=requestAnimationFrame(flush);});

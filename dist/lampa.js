@@ -1,4 +1,4 @@
-/*! Lampa View 0.4.61 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.4.62 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -946,7 +946,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }
     }
     function schedule(delay) {
-      if (!timer && queue.length && !paused()) timer = setTimeout(drain, typeof delay === "number" ? delay : tv() ? 360 : 0);
+      if (!timer && queue.length && !paused()) timer = setTimeout(drain, typeof delay === "number" ? delay : 0);
     }
     function paint(job) {
       job.finished = true;
@@ -981,12 +981,12 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             job.entry = entry;
             return 0; // continue
           }
-          if (running >= (tv() ? 1 : 3)) {
+          if (running >= (tv() ? 2 : 3)) {
             queue.push(job);
             return 0; // continue
           }
           var loader = new Image();
-          loader.fetchPriority = "low";
+          loader.fetchPriority = tv() ? "auto" : "low";
           loader.decoding = "async";
           entry = {
             loader: loader,
@@ -1017,7 +1017,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               }
             });
             entry.jobs.clear();
-            schedule(tv() ? 80 : 0);
+            schedule(0);
           };
           entry.abort = function () {
             finish(false);
@@ -1169,8 +1169,12 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   function artworkSize(L, kind) {
     if (artworkQuality(L) === "medium") return kind === "backdrop" ? "w1280" : "w500";
     if (kind !== "backdrop") return "w780";
+    if (document.body.classList.contains("pt-tv")) return "w1280";
     var width = (window.innerWidth || 1920) * Math.min(2, window.devicePixelRatio || 1);
     return width > 1440 ? "original" : "w1280";
+  }
+  function logoSize() {
+    return document.body.classList.contains("pt-tv") ? "w500" : "original";
   }
   function installArtwork(L, enabled) {
     var quality2 = artworkQuality(L);
@@ -1883,7 +1887,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         title.classList.remove("pt-hidden", "minimal-detail-translation");
       };
       title.before(image);
-      image.src = L.TMDB.image("/t/p/original" + path);
+      image.src = L.TMDB.image("/t/p/" + logoSize() + path);
     }
     var supplied = chooseLogo((event.data.images || card.images || {}).logos, L.Storage.get("language", "ru"));
     if (supplied) {
@@ -1978,6 +1982,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       if (existing) {
         images.delete(url);
         images.set(url, existing);
+        if (priority !== "low" && existing.cover) {
+          existing.background = false;
+          existing.image.fetchPriority = priority || "auto";
+        }
         if (existing.done) callback(existing.url);else existing.callbacks.push(callback);
         return;
       }
@@ -1986,7 +1994,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         callbacks: [callback],
         url: url,
         done: false,
-        original: type === "original"
+        original: type === "original",
+        cover: type === "cover" || type === "original",
+        background: priority === "low"
       };
       images.set(url, entry);
       entry.image.decoding = "async";
@@ -2004,6 +2014,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           return fn(value);
         });
         trim();
+        if (entry.cover && !entry.background) scheduleWarm(1200);
       }
       entry.image.onload = function () {
         if (entry.image.decode) entry.image.decode().catch(function () {}).then(function () {
@@ -2022,7 +2033,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     }
     function select(i) {
       current = wrap(i);
-      var selected = coverUrl(current, "original");
+      var path = cards[current].backdrop_path;
       var _iterator7 = _createForOfIteratorHelper(images),
         _step7;
       try {
@@ -2030,7 +2041,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           var _step7$value = _slicedToArray(_step7.value, 2),
             url = _step7$value[0],
             entry = _step7$value[1];
-          if (entry.original && !entry.done && url !== selected) remove(url, entry);
+          if (entry.cover && !entry.background && !entry.done && !url.endsWith(path)) remove(url, entry);
         }
       } catch (err) {
         _iterator7.e(err);
@@ -2087,7 +2098,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
         }
         if (!path) return finish("");
-        fetchImage(L.TMDB.image("/t/p/original" + path), finish, "logo");
+        fetchImage(L.TMDB.image("/t/p/" + logoSize() + path), finish, "logo");
       });
     }
     function studio(i, callback) {
@@ -2106,15 +2117,23 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       clearTimeout(warmTimer);
       warmTimer = null;
       if (!warmWanted || disposed || paused()) return;
+      if (_toConsumableArray(images.values()).some(function (entry) {
+        return entry.cover && !entry.background && !entry.done;
+      })) return;
       warmTimer = setTimeout(function () {
         warmTimer = null;
         if (paused()) return;
         warmWanted = false;
-        _toConsumableArray(/* @__PURE__ */new Set([wrap(current + 1), wrap(current - 1)])).filter(function (n) {
+        var tv = document.body.classList.contains("pt-tv");
+        _toConsumableArray(new Set(tv ? [wrap(current + 1)] : [wrap(current + 1), wrap(current - 1)])).filter(function (n) {
           return n !== current;
         }).forEach(function (n) {
-          cover(n, "w780", function () {}, true);
-          logo(n, function () {});
+          if (tv) cover(n, "w1280", function (url) {
+            if (url && !paused()) logo(n, function () {});
+          }, true);else {
+            cover(n, "w780", function () {}, true);
+            logo(n, function () {});
+          }
         });
       }, delay);
     }
@@ -2326,6 +2345,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         entry.complete = true;
         delete entry.failed;
       }
+      var unchanged = fresh(old) && entry.time - old.time < 864e5 && Object.keys(entry).length === Object.keys(old).length && Object.keys(entry).every(function (field) {
+        if (field === "time") return true;
+        var value = entry[field],
+          previous = old[field];
+        return Array.isArray(value) ? Array.isArray(previous) && value.length === previous.length && value.every(function (part, i) {
+          return part === previous[i];
+        }) : value === previous;
+      });
+      if (unchanged) return;
       cache.delete(id);
       cache.set(id, entry);
       if (cache.size > 400) cache.delete(cache.keys().next().value);
@@ -2397,7 +2425,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           life: 7 * 864e5
         });
       };
-      while (!paused() && running < 2 && queue.length) {
+      while (!paused() && running < (document.body.classList.contains("pt-tv") ? 1 : 2) && queue.length) {
         if (_loop4()) continue;
       }
     }
@@ -2784,11 +2812,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       frame = 0;
       if (paused()) return;
       var reads = [];
+      var count = 0;
       var _iterator0 = _createForOfIteratorHelper(pending),
         _step0;
       try {
         for (_iterator0.s(); !(_step0 = _iterator0.n()).done;) {
           var node = _step0.value;
+          if (document.body.classList.contains("pt-tv") && count++ >= 6) break;
           pending.delete(node);
           if (!node.isConnected) continue;
           var _view = node.querySelector(".card__view");
@@ -2866,6 +2896,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           _iterator1.f();
         }
       }
+      if (pending.size) frame = requestAnimationFrame(flush);
     }
     function schedule(node) {
       if (!node) return;
@@ -2913,6 +2944,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       pending = /* @__PURE__ */new Map(),
       queue = [],
       tracked = /* @__PURE__ */new Map(),
+      visible = /* @__PURE__ */new Set(),
       deferred = /* @__PURE__ */new Set(),
       retries = /* @__PURE__ */new Set();
     var running = 0,
@@ -2936,9 +2968,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var observer = typeof window.IntersectionObserver === "function" ? new window.IntersectionObserver(function (entries2) {
       entries2.forEach(function (entry) {
         if (entry.isIntersecting) {
+          visible.add(entry.target);
           var item = tracked.get(entry.target);
           if (item) schedule(item);
-        }
+        } else visible.delete(entry.target);
       });
     }, {
       rootMargin: "200px"
@@ -2960,6 +2993,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             value = _step11$value[1];
           if (value === item) {
             if (observer) observer.unobserve(node);
+            visible.delete(node);
             badges.forget(node);
             tracked.delete(node);
           }
@@ -2971,19 +3005,34 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }
     }
     function revisit() {
-      var _iterator12 = _createForOfIteratorHelper(tracked),
-        _step12;
-      try {
-        for (_iterator12.s(); !(_step12 = _iterator12.n()).done;) {
-          var _step12$value = _slicedToArray(_step12.value, 2),
-            node = _step12$value[0],
-            item = _step12$value[1];
-          if (node.isConnected) deferred.add(item);
+      if (observer) {
+        var _iterator12 = _createForOfIteratorHelper(visible),
+          _step12;
+        try {
+          for (_iterator12.s(); !(_step12 = _iterator12.n()).done;) {
+            var node = _step12.value;
+            if (node.isConnected) deferred.add(tracked.get(node));
+          }
+        } catch (err) {
+          _iterator12.e(err);
+        } finally {
+          _iterator12.f();
         }
-      } catch (err) {
-        _iterator12.e(err);
-      } finally {
-        _iterator12.f();
+      } else {
+        var _iterator13 = _createForOfIteratorHelper(tracked),
+          _step13;
+        try {
+          for (_iterator13.s(); !(_step13 = _iterator13.n()).done;) {
+            var _step13$value = _slicedToArray(_step13.value, 2),
+              _node3 = _step13$value[0],
+              item = _step13$value[1];
+            if (_node3.isConnected) deferred.add(item);
+          }
+        } catch (err) {
+          _iterator13.e(err);
+        } finally {
+          _iterator13.f();
+        }
       }
       if (!timer && deferred.size && !document.body.classList.contains("pt-tv-busy")) timer = setTimeout(flush, 100);
     }
@@ -3129,7 +3178,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         };
         _next();
       };
-      while (!document.body.matches(".pt-wheel-active,.pt-tv-busy") && running < 2 && queue.length) {
+      while (!document.body.matches(".pt-wheel-active,.pt-tv-busy") && running < (document.body.classList.contains("pt-tv") ? 1 : 2) && queue.length) {
         if (_loop7()) continue;
       }
     }
@@ -3279,19 +3328,19 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             return node.nodeType === 1 && (node.matches(".card") || node.querySelector(".card"));
           });
         })) {
-          var _iterator13 = _createForOfIteratorHelper(tracked),
-            _step13;
+          var _iterator14 = _createForOfIteratorHelper(tracked),
+            _step14;
           try {
-            for (_iterator13.s(); !(_step13 = _iterator13.n()).done;) {
-              var _step13$value = _slicedToArray(_step13.value, 2),
-                node = _step13$value[0],
-                item = _step13$value[1];
+            for (_iterator14.s(); !(_step14 = _iterator14.n()).done;) {
+              var _step14$value = _slicedToArray(_step14.value, 2),
+                node = _step14$value[0],
+                item = _step14$value[1];
               if (!node.isConnected) forget(item);
             }
           } catch (err) {
-            _iterator13.e(err);
+            _iterator14.e(err);
           } finally {
-            _iterator13.f();
+            _iterator14.f();
           }
         }
       }).observe(document.body, {
@@ -3313,9 +3362,23 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       waiting.forEach(function (next) {
         return next();
       });
-      var items = Array.from(deferred);
-      deferred.clear();
-      items.forEach(inspect);
+      var limit = document.body.classList.contains("pt-tv") ? 6 : Infinity;
+      var count = 0;
+      var _iterator15 = _createForOfIteratorHelper(deferred),
+        _step15;
+      try {
+        for (_iterator15.s(); !(_step15 = _iterator15.n()).done;) {
+          var item = _step15.value;
+          deferred.delete(item);
+          inspect(item);
+          if (++count >= limit) break;
+        }
+      } catch (err) {
+        _iterator15.e(err);
+      } finally {
+        _iterator15.f();
+      }
+      if (deferred.size) timer = setTimeout(flush, 16);
       drain();
     }
     L.Listener.follow("line", function (event) {
@@ -3330,7 +3393,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (!timer && !document.body.classList.contains("pt-tv-busy")) timer = setTimeout(flush, 180);
         return;
       }
-      (event.items || []).forEach(inspect);
+      if (document.body.classList.contains("pt-tv")) (event.items || []).forEach(schedule);else (event.items || []).forEach(inspect);
       drain();
     });
     document.addEventListener("minimal:wheel-idle", function () {
@@ -3341,9 +3404,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       revisit();
       flush();
     });
-    document.addEventListener("scroll", revisit, true);
-    document.addEventListener("transitionend", revisit, true);
-    document.addEventListener("hover:focus", revisit, true);
+    if (!observer) {
+      document.addEventListener("scroll", revisit, true);
+      document.addEventListener("transitionend", function (event) {
+        if (event.target.matches && event.target.matches(".scroll__body")) revisit();
+      }, true);
+    }
+    document.addEventListener("hover:focus", function (event) {
+      var node = event.target.closest && event.target.closest(".card"),
+        item = node && tracked.get(node);
+      if (item) schedule(item);
+    }, true);
     window.addEventListener("resize", revisit);
     cacheControl(L).register("quality", function () {
       generation++;
@@ -3358,21 +3429,21 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       retries.clear();
       running = 0;
       if (L.Storage && L.Storage.set) L.Storage.set(storage, []);
-      var _iterator14 = _createForOfIteratorHelper(tracked),
-        _step14;
+      var _iterator16 = _createForOfIteratorHelper(tracked),
+        _step16;
       try {
-        for (_iterator14.s(); !(_step14 = _iterator14.n()).done;) {
-          var _step14$value = _slicedToArray(_step14.value, 1),
-            node = _step14$value[0];
+        for (_iterator16.s(); !(_step16 = _iterator16.n()).done;) {
+          var _step16$value = _slicedToArray(_step16.value, 1),
+            node = _step16$value[0];
           node.querySelectorAll(".pt-quality").forEach(function (b) {
             return b.remove();
           });
           node.classList.remove("pt-has-quality");
         }
       } catch (err) {
-        _iterator14.e(err);
+        _iterator16.e(err);
       } finally {
-        _iterator14.f();
+        _iterator16.f();
       }
       revisit();
     });
@@ -5798,11 +5869,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       tags = clean.match(/<(?:div|span|a)\b[^>]*>/gi) || [],
       decoder = document.createElement("textarea"),
       rows = [];
-    var _iterator15 = _createForOfIteratorHelper(tags),
-      _step15;
+    var _iterator17 = _createForOfIteratorHelper(tags),
+      _step17;
     try {
-      for (_iterator15.s(); !(_step15 = _iterator15.n()).done;) {
-        var tag = _step15.value;
+      for (_iterator17.s(); !(_step17 = _iterator17.n()).done;) {
+        var tag = _step17.value;
         var cls = tag.match(/\bclass\s*=\s*(["'])([\s\S]*?)\1/i),
           data = tag.match(/\bdata-json\s*=\s*(["'])([\s\S]*?)\1/i);
         if (!cls || !/(^|\s)videos__item(\s|$)/.test(cls[2]) || !data) continue;
@@ -5813,9 +5884,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         } catch (error) {}
       }
     } catch (err) {
-      _iterator15.e(err);
+      _iterator17.e(err);
     } finally {
-      _iterator15.f();
+      _iterator17.f();
     }
     return rows;
   }
@@ -5886,11 +5957,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
         if (explicit) keys.push(explicit);
         var best = null;
-        var _iterator16 = _createForOfIteratorHelper(new Set(keys)),
-          _step16;
+        var _iterator18 = _createForOfIteratorHelper(new Set(keys)),
+          _step18;
         try {
-          for (_iterator16.s(); !(_step16 = _iterator16.n()).done;) {
-            var key = _step16.value;
+          for (_iterator18.s(); !(_step18 = _iterator18.n()).done;) {
+            var key = _step18.value;
             var value = records[key],
               raw = typeof value === "number" ? {
                 percent: value
@@ -5907,9 +5978,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             if (!best || row.updated > best.updated || row.updated === best.updated && row.percent > best.percent) best = row;
           }
         } catch (err) {
-          _iterator16.e(err);
+          _iterator18.e(err);
         } finally {
-          _iterator16.f();
+          _iterator18.f();
         }
         return best || {
           found: false,
@@ -6394,7 +6465,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           function show(next) {
             index = (next + cards.length) % cards.length;
             assets.select(index);
-            var card = cards[index],
+            var selected = index,
+              card = cards[index],
               kind = card.media_type || (card.name ? "tv" : "movie");
             item = __spreadProps(__spreadValues({}, card), {
               media_type: kind,
@@ -6405,43 +6477,54 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             studio.off("load error").addClass("pt-hidden").removeAttr("src alt title");
             logo.off("load error").addClass("pt-hidden").removeClass("pt-hero__logo--translated").removeAttr("src");
             title.removeClass("pt-hidden pt-hero__title--translation");
-            assets.logo(index, function (url, language) {
-              if (token !== logoToken || !url) return;
-              logo.attr("alt", card.title || card.name).on("load", function () {
-                if (token === logoToken) {
-                  var translated = language !== String(L.Storage.get("language", "ru") || "ru").slice(0, 2);
-                  logo.removeClass("pt-hidden").toggleClass("pt-hero__logo--translated", translated);
-                  title.toggleClass("pt-hidden", !translated).toggleClass("pt-hero__title--translation", translated);
-                }
-              }).on("error", function () {
-                if (token === logoToken) {
-                  logo.addClass("pt-hidden");
-                  title.removeClass("pt-hidden pt-hero__title--translation");
-                }
-              }).attr("src", url);
-            });
+            var brandingStarted = false;
+            function branding2() {
+              if (brandingStarted || token !== logoToken) return;
+              brandingStarted = true;
+              assets.logo(selected, function (url, language) {
+                if (token !== logoToken || !url) return;
+                logo.attr("alt", card.title || card.name).on("load", function () {
+                  if (token === logoToken) {
+                    var translated = language !== String(L.Storage.get("language", "ru") || "ru").slice(0, 2);
+                    logo.removeClass("pt-hidden").toggleClass("pt-hero__logo--translated", translated);
+                    title.toggleClass("pt-hidden", !translated).toggleClass("pt-hero__title--translation", translated);
+                  }
+                }).on("error", function () {
+                  if (token === logoToken) {
+                    logo.addClass("pt-hidden");
+                    title.removeClass("pt-hidden pt-hero__title--translation");
+                  }
+                }).attr("src", url);
+              });
+              assets.studio(selected, function (value) {
+                if (token !== logoToken || !value) return;
+                studio.attr({
+                  alt: value.name,
+                  title: value.name
+                }).on("load", function () {
+                  if (token === logoToken) studio.removeClass("pt-hidden");
+                }).on("error", function () {
+                  if (token === logoToken) studio.addClass("pt-hidden");
+                }).attr("src", value.url);
+              });
+            }
             var year = (card.release_date || card.first_air_date || "").slice(0, 4);
             metaText.text([year, kind === "tv" ? "Сериал" : "Фильм", card.vote_average ? Number(card.vote_average).toFixed(1) : ""].filter(Boolean).join("  \xB7  "));
-            assets.studio(index, function (value) {
-              if (token !== logoToken || !value) return;
-              studio.attr({
-                alt: value.name,
-                title: value.name
-              }).on("load", function () {
-                if (token === logoToken) studio.removeClass("pt-hidden");
-              }).on("error", function () {
-                if (token === logoToken) studio.addClass("pt-hidden");
-              }).attr("src", value.url);
-            });
+            var tv = document.body.classList.contains("pt-tv");
+            if (!tv) branding2();
             overview.text(card.overview);
             clearTimeout(upgradeTimer);
             var size = artworkSize(L, "backdrop");
             var useOriginal = size === "original",
               ready2 = assets.ready(index, size);
             var originalShown = !!ready2;
-            if (ready2) image.attr("src", ready2);else {
+            if (ready2) {
+              image.attr("src", ready2);
+              branding2();
+            } else {
               assets.cover(index, useOriginal ? "w780" : size, function (url) {
                 if (token === logoToken && url && !originalShown) image.attr("src", url);
+                if (tv) branding2();
               });
               if (useOriginal) upgradeTimer = setTimeout(function () {
                 return assets.cover(index, "original", function (url) {
@@ -6880,7 +6963,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       (document.head || document.documentElement).appendChild(boot);
     }
     var P = ROOT.LampaView = {
-      version: "0.4.61",
+      version: "0.4.62",
       identity: import_identity.default.identity,
       ready: false,
       bridge: false
@@ -24897,7 +24980,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
         var deadline = Date.now() + PROBE_BUDGET;
         var index = 0;
-        var _step17 = function step() {
+        var _step19 = function step() {
           if (!probe_busy || generation !== probe_generation || owner !== componentNow() || scopeId !== qualityScope() || index >= queue.length) return;
           if (Date.now() > deadline) return probeStop();
           var entry = queue[index++];
@@ -24918,7 +25001,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             if (answered || !probe_busy || generation !== probe_generation || owner !== componentNow() || scopeId !== qualityScope()) return;
             answered = true;
             probeAnswer(entry.key, answer);
-            _step17();
+            _step19();
           };
           try {
             net["native"](probeUrlFor(entry.key), done, function () {
@@ -24930,7 +25013,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             done("");
           }
         };
-        for (var worker = 0; worker < PROBE_PARALLEL; worker++) _step17();
+        for (var worker = 0; worker < PROBE_PARALLEL; worker++) _step19();
       }
       function probeSchedule() {
         if (!probeAllowed() || !movie) return;
@@ -25112,7 +25195,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           voice_seed_net = null;
           if (typeof after === "function") after();
         };
-        var _step18 = function step() {
+        var _step20 = function step() {
           if (!voice_seed_busy) return;
           if (seat >= jobs.length || Date.now() > deadline || !inSkin() || !movie) return finish();
           var job = jobs[seat++];
@@ -25141,7 +25224,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               } catch (e) {}
             }
             if (voiceListFresh()) return finish();
-            _step18();
+            _step20();
           };
           var guard = setTimeout(function () {
             if (settled) return;
@@ -25162,7 +25245,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             done("");
           }
         };
-        _step18();
+        _step20();
       }
       function voiceLink(url) {
         var value = String(url || "").replace("rjson=", "nojson=");
@@ -25322,7 +25405,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         voice_busy = true;
         var deadline = Date.now() + VOICE_BUDGET;
         var index = 0;
-        var _step19 = function step() {
+        var _step21 = function step() {
           if (!voice_busy || index >= queue.length) return;
           if (Date.now() > deadline || !inSkin()) return voiceStop();
           var entry = queue[index++];
@@ -25361,7 +25444,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             clearTimeout(guard);
             var got = voiceAnswer(entry.name, answer);
             if (!got) retryAlt();
-            _step19();
+            _step21();
           };
           var guard = setTimeout(function () {
             if (settled) return;
@@ -25382,7 +25465,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             done("");
           }
         };
-        for (var worker = 0; worker < VOICE_PARALLEL; worker++) _step19();
+        for (var worker = 0; worker < VOICE_PARALLEL; worker++) _step21();
       }
       function voiceSchedule() {
         if (!voiceWanted()) return;
@@ -26322,7 +26405,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var direct = logoDirect(path);
         if (direct && urls.indexOf(direct) === -1) urls.push(direct);
         var at = 0;
-        var _step20 = function step() {
+        var _step22 = function step() {
           if (at >= urls.length) {
             LOGO_BLIND[src] = true;
             return done("blind");
@@ -26342,7 +26425,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             } catch (e) {
               tone = "";
             }
-            if (tone !== "invert" && tone !== "glow" && tone !== "ok") return _step20();
+            if (tone !== "invert" && tone !== "glow" && tone !== "ok") return _step22();
             var now = cached(LOGO_TONE_KEY, 500, {});
             if (now && _typeof(now) === "object") {
               now[src] = tone;
@@ -26350,10 +26433,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             }
             done(tone);
           };
-          probe.onerror = _step20;
+          probe.onerror = _step22;
           probe.src = url;
         };
-        _step20();
+        _step22();
       }
       function logoKey(target) {
         var card = target || movie;

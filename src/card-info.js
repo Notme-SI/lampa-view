@@ -31,6 +31,18 @@ export default function cardInfo(L){
   if(isAnime(c))entry.minimal_anime=true;
   entry.names=Array.from(new Set([...(entry.names || []),...names(c)])).slice(0,16);
   if(complete){entry.complete=true;delete entry.failed;}
+  // Focus and visibility can report the same card many times. Do not serialize
+  // the entire persistent cache again unless its contents (or daily age) changed.
+  const unchanged=fresh(old) && entry.time-old.time<86400000
+   && Object.keys(entry).length===Object.keys(old).length
+   && Object.keys(entry).every(field=>{
+    if(field==='time')return true;
+    const value=entry[field],previous=old[field];
+    return Array.isArray(value)
+     ? Array.isArray(previous) && value.length===previous.length && value.every((part,i)=>part===previous[i])
+     : value===previous;
+   });
+  if(unchanged)return;
   cache.delete(id);cache.set(id,entry);if(cache.size>400)cache.delete(cache.keys().next().value);save();
  }
  function read(c){
@@ -39,7 +51,7 @@ export default function cardInfo(L){
  }
  const paused=()=>document.body.matches('.pt-wheel-active,.pt-tv-busy') || document.hidden;
  function pump(){
-  while(!paused() && running<2 && queue.length){
+  while(!paused() && running<(document.body.classList.contains('pt-tv')?1:2) && queue.length){
    const job=queue.shift();if(!job.listeners.some(l=>!l.alive || l.alive())){pending.delete(job.id);continue;}
    running++;let settled=false;
    const done=result=>{

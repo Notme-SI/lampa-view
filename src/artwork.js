@@ -10,9 +10,13 @@ export function artworkQuality(L){
 export function artworkSize(L,kind){
  if(artworkQuality(L)==='medium')return kind==='backdrop'?'w1280':'w500';
  if(kind!=='backdrop')return 'w780';
+ // TV banners occupy part of the screen. An original can decode to tens of
+ // megabytes on a 1080p TV, competing with every visible poster and video.
+ if(document.body.classList.contains('pt-tv'))return 'w1280';
  const width=(window.innerWidth || 1920)*Math.min(2,window.devicePixelRatio || 1);
  return width>1440?'original':'w1280';
 }
+export function logoSize(){return document.body.classList.contains('pt-tv')?'w500':'original';}
 export default function installArtwork(L,enabled){
  const quality=artworkQuality(L);
  if(L.Storage.set){L.Storage.set('minimal_banner_quality',quality);L.Storage.set('minimal_artwork_quality_revision',2);}

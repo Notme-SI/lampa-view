@@ -1,3 +1,4 @@
+import {logoSize} from './artwork.js';
 // Share artwork by URL, retain a small decoded working set, and cancel obsolete
 // full-size requests as soon as selection changes.
 export default function heroAssets(L,cards,loadLogo){
@@ -24,22 +25,28 @@ export default function heroAssets(L,cards,loadLogo){
  function fetchImage(url,callback,type,priority){
   if(disposed)return;
   const existing=images.get(url);
-  if(existing){images.delete(url);images.set(url,existing);if(existing.done)callback(existing.url);else existing.callbacks.push(callback);return;}
-  const entry={image:new Image(),callbacks:[callback],url,done:false,original:type==='original'};images.set(url,entry);
+  if(existing){
+   images.delete(url);images.set(url,existing);
+   if(priority!=='low' && existing.cover){existing.background=false;existing.image.fetchPriority=priority || 'auto';}
+   if(existing.done)callback(existing.url);else existing.callbacks.push(callback);
+   return;
+  }
+  const entry={image:new Image(),callbacks:[callback],url,done:false,original:type==='original',cover:type==='cover' || type==='original',background:priority==='low'};images.set(url,entry);
   entry.image.decoding='async';entry.image.fetchPriority=priority || 'auto';
   function finish(value){
    if(disposed || images.get(url)!==entry || entry.done)return;
    clearTimeout(entry.timeout);entry.image.onload=entry.image.onerror=null;entry.done=true;entry.url=value;
    entry.bytes=(entry.image.naturalWidth || 1)*(entry.image.naturalHeight || 1)*4;
    const callbacks=entry.callbacks;entry.callbacks=[];callbacks.forEach(fn=>fn(value));trim();
+   if(entry.cover && !entry.background)scheduleWarm(1200);
   }
   entry.image.onload=()=>{if(entry.image.decode)entry.image.decode().catch(()=>{}).then(()=>finish(url));else finish(url);};
   entry.image.onerror=()=>finish('');entry.timeout=setTimeout(()=>{finish('');entry.image.src='';},12000);entry.image.src=url;trim();
  }
  function select(i){
   current=wrap(i);
-  const selected=coverUrl(current,'original');
-  for(const [url,entry] of images)if(entry.original && !entry.done && url!==selected)remove(url,entry);
+  const path=cards[current].backdrop_path;
+  for(const [url,entry] of images)if(entry.cover && !entry.background && !entry.done && !url.endsWith(path))remove(url,entry);
  }
  function cover(i,size,callback,background){
   i=wrap(i);const url=coverUrl(i,size);
@@ -56,7 +63,7 @@ export default function heroAssets(L,cards,loadLogo){
    if(studio && studio.path)fetchImage(L.TMDB.image('/t/p/w300'+studio.path),finishStudio,'studio');else finishStudio('');
    function finish(url){logos.set(i,{url,language});pending.callbacks.forEach(fn=>fn(url,language));}
    if(!path)return finish('');
-   fetchImage(L.TMDB.image('/t/p/original'+path),finish,'logo');
+   fetchImage(L.TMDB.image('/t/p/'+logoSize()+path),finish,'logo');
   });
  }
  function studio(i,callback){
@@ -67,10 +74,17 @@ export default function heroAssets(L,cards,loadLogo){
  function scheduleWarm(delay){
   clearTimeout(warmTimer);warmTimer=null;
   if(!warmWanted || disposed || paused())return;
+  // Neighbours must not compete with an unfinished selected banner.
+  if([...images.values()].some(entry=>entry.cover && !entry.background && !entry.done))return;
   warmTimer=setTimeout(()=>{
    warmTimer=null;if(paused())return;
    warmWanted=false;
-   [...new Set([wrap(current+1),wrap(current-1)])].filter(n=>n!==current).forEach(n=>{cover(n,'w780',()=>{},true);logo(n,()=>{});});
+   const tv=document.body.classList.contains('pt-tv');
+   [...new Set(tv?[wrap(current+1)]:[wrap(current+1),wrap(current-1)])].filter(n=>n!==current).forEach(n=>{
+    // Warm the size TV will actually display, keeping only one neighbour.
+    if(tv)cover(n,'w1280',url=>{if(url && !paused())logo(n,()=>{});},true);
+    else{cover(n,'w780',()=>{},true);logo(n,()=>{});}
+   });
   },delay);
  }
  function warm(i){select(i);warmWanted=true;scheduleWarm(1200);}
