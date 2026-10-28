@@ -25,6 +25,7 @@ import tvPerformance from './tv-performance.js';
 import {cacheSettings} from './cache-control.js';
 import onlineState from './online-state.js';
 import torrentBanner,{bannerCountries} from './torrent-banner.js';
+import torrentSearch from './torrent-search.js';
 
 const ROOT = window;
 if (!ROOT.LampaView) {
@@ -33,7 +34,7 @@ if (!ROOT.LampaView) {
     const boot=document.createElement('style');boot.id='lampa-minimal-boot';boot.textContent=BOOT;
     (document.head || document.documentElement).appendChild(boot);
   }
-  const P = ROOT.LampaView = {version: '0.4.62', identity: C.identity, ready: false, bridge: false};
+  const P = ROOT.LampaView = {version: '0.4.63', identity: C.identity, ready: false, bridge: false};
   let L, $, lastCard, initialized = false, playlist = [], activeVideo,loadLogo,artwork,back;
   const metadata = new Map();
   const heroes = new WeakSet();
@@ -364,6 +365,7 @@ if (!ROOT.LampaView) {
     installTmdb(L);installFullGuard(L);torrentEpisodes(L,ROOT);inputs(L);
     artwork=installArtwork(L,()=>yes('lampa_view_enabled'));
     torrentBanner(L,loadLogo);
+    torrentSearch(L);
     settings(); bridge(); shell();back=installBack(L,$,()=>yes('lampa_view_enabled'));artwork.refresh();
     tvPerformance(()=>yes('lampa_view_enabled'));
     on('menu',event=>{if(yes('lampa_view_enabled') && event.type==='action' && event.action==='cartoon'){if(event.abort)event.abort();navigate('cartoon');}});

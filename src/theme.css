@@ -594,16 +594,16 @@ body.lampa_view .nova-plus-root .nova-card__line .time-line>div,body.lampa_view 
 body.lampa_view .torrent-item.focus::after {display:none!important;content:none!important}
 body.lampa_view .torrent-filter .filter__item.focus,body.lampa_view .torrent-filter .filter__item.hover,body.lampa_view .torrent-filter .selector--filter.focus {border-color:var(--pt-accent)!important;box-shadow:0 0 0 1px var(--pt-accent)!important;outline:none!important}
 body.lampa_view .torrent-filter .simple-button.focus,body.lampa_view .torrent-filter .simple-button.hover {border-color:var(--pt-accent)!important;box-shadow:0 0 0 1px var(--pt-accent)!important;outline:none!important}
-body.lampa_view .minimal-torrent-view>.explorer__left {display:block!important;width:28.7%;padding:.3em 1.6em 0 .3em;box-sizing:border-box}
+body.lampa_view .minimal-torrent-view>.explorer__left {display:block!important;width:28.7%;flex:0 0 28.7%;min-width:0;padding:.3em 1.6em 0 .3em;box-sizing:border-box}
 body.lampa_view .minimal-torrent-view>.explorer__left .explorer__card {display:none!important}
 /* The hidden native sidebar scroll still reserves a full viewport of height. */
 body.lampa_view .minimal-torrent-view>.explorer__left>.scroll {display:none!important}
-body.lampa_view .minimal-torrent-view>.explorer__files {width:71.3%;min-width:0}
+body.lampa_view .minimal-torrent-view>.explorer__files {width:71.3%;min-width:0;box-sizing:border-box}
 body.lampa_view .minimal-torrent-view .explorer__files-head {padding:.3em .6em .6em 0}
 body.lampa_view .minimal-torrent-view .explorer__files-body .scroll__body {padding-left:0}
 body.lampa_view .minimal-torrent-view .filter--back {display:none!important}
 .minimal-torrent-banner {display:none}
-body.lampa_view .minimal-torrent-banner {display:block;position:relative;overflow:hidden;border-radius:1em;background:#0b1016;aspect-ratio:1.65;min-height:12.6em;color:var(--pt-text)}
+body.lampa_view .minimal-torrent-banner {display:block;position:relative;width:100%;min-width:0;overflow:hidden;border-radius:1em;background:#0b1016;aspect-ratio:1.65;min-height:0;color:var(--pt-text)}
 body.lampa_view .minimal-torrent-banner__image,body.lampa_view .minimal-torrent-banner__shade {position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 body.lampa_view .minimal-torrent-banner__shade {background:linear-gradient(180deg,#080d1633 30%,#080d16e6 100%)}
 body.lampa_view .minimal-torrent-banner__meta {position:absolute;top:1em;right:1.2em;left:1.2em;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:.7em;font-size:.9em;text-shadow:0 1px 5px #000}
@@ -717,3 +717,20 @@ body.lampa_view .nova-plus-root .nova-badge,body.lampa_view .nova-plus-root .nov
 body.lampa_view .nova-plus-root .nova-hero__meta>.nova-badge {font-size:.85em;margin-top:.12em;background:#ffffff1a!important;text-shadow:none}
 body.lampa_view .nova-plus-root .nova-card__head .nova-card__quality {display:inline-flex;align-items:center;justify-content:center;min-width:2.3em;height:1.5em;padding:0 .35em;font-size:.85em;line-height:1}
 body.lampa_view .nova-plus-root .nova-card__head {align-items:center}
+/* A compact, consistent toolbar; native values and callbacks remain in menus. */
+.minimal-toolbar-label {display:none}
+body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar {display:flex;flex-wrap:nowrap;align-items:stretch;gap:.55em;white-space:normal;margin:0!important}
+body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button {display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-width:0;min-height:2.65em;margin:0;padding:.6em 1em;font-size:.9em;line-height:1.2;border:1px solid var(--pt-line);border-radius:.6em;background:var(--pt-panel);color:var(--pt-text);flex:0 1 auto}
+body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button>:not(.minimal-toolbar-label) {display:none!important}
+body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .minimal-toolbar-label {display:inline;margin:0;padding:0;background:none;font-size:1em;white-space:nowrap}
+body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button:after {display:none!important}
+body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button.focus,body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button.hover {border-color:var(--pt-accent);box-shadow:inset 0 0 0 1px var(--pt-accent)!important}
+body.lampa_view .minimal-torrent-view .watched-history {box-sizing:border-box;min-width:0;border:1px solid var(--pt-line);border-radius:.6em;background:var(--pt-panel);margin-top:.5em}
+body.lampa_view .minimal-torrent-view .watched-history.focus {border-color:var(--pt-accent);box-shadow:inset 0 0 0 1px var(--pt-accent)}
+body.lampa_view .minimal-torrent-view .watched-history:after {display:none!important}
+/* The native search overlay was transparent, showing controls over releases. */
+body.lampa_view .search-box {z-index:90!important;background:#080b10!important;box-sizing:border-box;isolation:isolate}
+@media(max-width:767px){
+ body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.45em}
+ body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button {min-height:44px;padding:.55em .3em;font-size:.88em}
+}

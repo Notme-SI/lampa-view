@@ -25,7 +25,7 @@ test('TV starts visible posters immediately and a stalled first cover does not h
 
 test('TV banner loads one bounded backdrop before optional branding and warms only one reusable neighbour',async()=>{
  const images=[],requests=[];
- const n=await native({built:true,prepare(w,L){L.Platform.tv=()=>true;}}),{w,L}=n,$=w.jQuery;
+ const n=await native({built:true,prepare(w,L){L.Platform.tv=()=>true;L.TMDB.image=path=>'http://images.test/tmdb/img'+path+'?uid=test';}}),{w,L}=n,$=w.jQuery;
  try{
   w.innerWidth=3840;w.devicePixelRatio=2;
   w.Image=class{

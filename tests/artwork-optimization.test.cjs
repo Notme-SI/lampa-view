@@ -1,13 +1,37 @@
 const test=require('node:test'),assert=require('node:assert/strict'),path=require('node:path'),esbuild=require('esbuild'),{JSDOM}=require('jsdom'),native=require('./fixtures/native-lampa.cjs');
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-function assets(){
+function assets(imageUrl){
  const dom=new JSDOM('<body></body>',{runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,images=[];
  w.Image=class{constructor(){images.push(this);this.naturalWidth=1920;this.naturalHeight=1080;}set src(v){this.url=v;}get src(){return this.url;}decode(){return Promise.resolve();}};
  w.eval(esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/hero-assets.js')],bundle:true,write:false,format:'iife',globalName:'Assets'}).outputFiles[0].text);
  const cards=[{backdrop_path:'/a.jpg'},{backdrop_path:'/b.jpg'},{backdrop_path:'/a.jpg'},{backdrop_path:'/c.jpg'}];
- const api=w.Assets.default({TMDB:{image:p=>'https://images.test'+p}},cards,(_,ok)=>ok(''));
+ const api=w.Assets.default({TMDB:{image:imageUrl || (p=>'https://images.test'+p)}},cards,(_,ok)=>ok(''));
  return {w,images,api,close(){api.dispose();w.close();}};
 }
+
+for(const proxy of [path=>'https://images.test'+path+'?uid=test',path=>'https://images.test/proxy?url='+encodeURIComponent(path)+'&uid=test'])test('selected banner survives warming with proxied query URL: '+proxy('/a.jpg'),async()=>{
+ const n=assets(proxy),{api,images}=n;
+ try{
+  let shown='';api.cover(0,'w1280',url=>shown=url);
+  const selected=images[0],url=selected.src;
+  api.warm(0);
+  assert.equal(selected.src,url,'Warming must not cancel its own selected request because the URL has query parameters');
+  selected.onload();await wait(0);assert.equal(shown,url);
+  api.cover(1,'w1280',()=>{});const stale=images[1].onload;
+  api.select(3);assert.equal(images[1].src,'');stale();await wait(0);
+  assert.equal(api.ready(1,'w1280'),'','A genuinely obsolete response must still be ignored');
+ }finally{n.close();}
+});
+
+test('a failed selected cover can retry and replace the blank instead of caching the proxy failure',async()=>{
+ const n=assets(),{api,images}=n;
+ try{
+  let shown;api.cover(0,'w1280',url=>shown=url);images[0].onerror();assert.equal(shown,'');
+  api.cover(0,'w1280',url=>shown=url);
+  assert.equal(images.length,2,'A failed download must not act as a successful cache entry');
+  images[1].onload();await wait(0);assert.match(shown,/\/w1280\/a.jpg$/);
+ }finally{n.close();}
+});
 test('banner requests share actual URLs, cancel obsolete originals and retain two decoded full-size selections',async()=>{
  const n=assets(),{api,images}=n;
  try{

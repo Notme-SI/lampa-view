@@ -22,7 +22,7 @@ export default function heroAssets(L,cards,loadLogo){
    if(url!==activeCover && entry.done){bytes-=entry.bytes || 0;if(entry.original)originals--;remove(url,entry);}
   }
  }
- function fetchImage(url,callback,type,priority){
+ function fetchImage(url,callback,type,priority,coverPath){
   if(disposed)return;
   const existing=images.get(url);
   if(existing){
@@ -31,12 +31,15 @@ export default function heroAssets(L,cards,loadLogo){
    if(existing.done)callback(existing.url);else existing.callbacks.push(callback);
    return;
   }
-  const entry={image:new Image(),callbacks:[callback],url,done:false,original:type==='original',cover:type==='cover' || type==='original',background:priority==='low'};images.set(url,entry);
+  const entry={image:new Image(),callbacks:[callback],url,done:false,original:type==='original',cover:type==='cover' || type==='original',coverPath,background:priority==='low'};images.set(url,entry);
   entry.image.decoding='async';entry.image.fetchPriority=priority || 'auto';
   function finish(value){
    if(disposed || images.get(url)!==entry || entry.done)return;
    clearTimeout(entry.timeout);entry.image.onload=entry.image.onerror=null;entry.done=true;entry.url=value;
    entry.bytes=(entry.image.naturalWidth || 1)*(entry.image.naturalHeight || 1)*4;
+   // A transient proxy error is not a reusable cached image. Selecting the
+   // slide again must be able to retry rather than retain a permanent blank.
+   if(!value)images.delete(url);
    const callbacks=entry.callbacks;entry.callbacks=[];callbacks.forEach(fn=>fn(value));trim();
    if(entry.cover && !entry.background)scheduleWarm(1200);
   }
@@ -46,12 +49,14 @@ export default function heroAssets(L,cards,loadLogo){
  function select(i){
   current=wrap(i);
   const path=cards[current].backdrop_path;
-  for(const [url,entry] of images)if(entry.cover && !entry.background && !entry.done && !url.endsWith(path))remove(url,entry);
+  // Proxy URLs may encode the path or append account/uid parameters. Keep
+  // selection identity separately; URL suffixes cannot identify a backdrop.
+  for(const [url,entry] of images)if(entry.cover && !entry.background && !entry.done && entry.coverPath!==path)remove(url,entry);
  }
  function cover(i,size,callback,background){
   i=wrap(i);const url=coverUrl(i,size);
   if(!background){select(i);activeCover=url;}
-  fetchImage(url,callback,size==='original'?'original':'cover',background?'low':'high');
+  fetchImage(url,callback,size==='original'?'original':'cover',background?'low':'high',cards[i].backdrop_path);
  }
  function logo(i,callback){
   i=wrap(i);const saved=logos.get(i);if(saved){if(saved.callbacks)saved.callbacks.push(callback);else callback(saved.url,saved.language);return;}

@@ -15,14 +15,11 @@
         if (!params || !params.url || !enabled('anime_search')) return;
         try {
             var url = new URL(params.url, location.href);
-            // Lampa already identified anime (5070), but sends the general TV type (2).
-            // JacRed prioritizes this explicit type over its category filter.
             if (/\/api\/v2\.0\/indexers\/[^/]+\/results\/?$/.test(url.pathname)) {
                 var categories = url.searchParams.getAll('Category[]').join(',').split(',');
-                if (categories.indexOf('5070') !== -1 && url.searchParams.get('is_serial') === '2') {
-                    url.searchParams.set('is_serial', '5');
-                    params.url = url.href;
-                }
+                // Preserve Lampa's native series type. JacRed type 2 includes
+                // anime, animation and series, while type 5 drops releases
+                // filed as series by some trackers (including dubbed episodes).
                 var card=(Lampa.Activity.active() || {}).movie || (Lampa.Activity.active() || {}).card;
                 var alias=card && animeAliases[String(card.id)];
                 if (categories.indexOf('5070') !== -1 && alias) params.lampaExtrasAlias=alias;
@@ -131,7 +128,8 @@
         if (Lampa.SettingsApi) {
             Lampa.SettingsApi.addComponent({component: 'mpv_plus', name: 'Парс', icon: '<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="9" width="38" height="30" rx="6" fill="none" stroke="currentColor" stroke-width="3"/><path d="m20 17 11 7-11 7z" fill="currentColor"/><path d="M8 5h22M12 43h22" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>'});
             [
-                ['anime_search', 'Уточнять тип аниме', 'Уточнять тип аниме. Если результатов нет, повторять поиск по альтернативному названию из каталога.'],                ['recent_rows', 'Новинки и популярное за год', 'Три подборки в начале главной страницы. Изменение применяется при её следующем открытии.']
+                ['anime_search', 'Названия аниме для поиска', 'Использовать альтернативное название из каталога, если поиск не дал результатов. Категории раздач остаются штатными.'],
+                ['recent_rows', 'Новинки и популярное за год', 'Три подборки в начале главной страницы. Изменение применяется при её следующем открытии.']
             ].forEach(function (option) {
                 Lampa.SettingsApi.addParam({component: 'mpv_plus', param: {name: 'mpv_plus_' + option[0], type: 'trigger', default: true},
                     field: {name: option[1], description: option[2]}, onChange: function () {}});

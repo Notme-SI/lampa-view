@@ -29,6 +29,8 @@ jobs:
           node tests/browser/mpvplus-preload.cjs
           node tests/browser/torrent-native-playback.cjs
           node tests/browser/button-focus.cjs
+          node tests/browser/hero-proxy.cjs
+          node tests/browser/torrent-tv-controls.cjs
       - run: python3 server/test-bootstrap.py
       - run: python3 server/test-online.py
       - name: Check published files match source

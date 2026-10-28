@@ -104,7 +104,13 @@
         var aliases = [], seasonAliases = [], seasons = [];
         function add(v, priority, language) { if (text(v).trim()) aliases.push({ title: text(v).trim(), priority: priority, language: language }); }
         add(card.name || card.title, 0, 'ru'); add(english.name || english.title, 1, 'en');
+        if (card.name && card.title) add(card.title, 2, 'local');
         add(card.original_name || card.original_title, 4, card.original_language || 'original');
+        if (card.original_name && card.original_title) add(card.original_title, 4, 'original');
+        ['names', 'english', 'japanese', 'synonyms'].forEach(function (field) {
+            var values = card[field];
+            (Array.isArray(values) ? values : [values]).forEach(function (value) { if (typeof value === 'string') add(value, field === 'english' ? 1 : 4, field); });
+        });
         var alternatives = card.alternative_titles || {};
         (alternatives.results || alternatives.titles || []).forEach(function (a) {
             var season = text(a.type).match(/(?:season\s*|^s)(\d{1,2})(?:\D|$)/i);
@@ -572,7 +578,10 @@
         if (!C || !L || !$ || !L.Parser || !L.Component || !L.Listener) return false;
         if (!installSearch()) return false;
         styles(); settings(); L.Listener.follow('torrent', render); started = true;
-        window.TorrentCatalogue = { version: C.version, installedAt: installedAt, clearMetadataCache: function () { metadataCache = {}; } };
+        window.TorrentCatalogue = { version: C.version, installedAt: installedAt, clearMetadataCache: function () { metadataCache = {}; }, searchAliases: function (object) {
+            var page = object && object[marker];
+            return (page && page.catalogue || C.catalogue(object && object.movie || {})).aliases.filter(function (alias) { return alias.priority <= 4; }).map(function (alias) { return alias.title; });
+        } };
         return true;
     }
     if (!start()) {
