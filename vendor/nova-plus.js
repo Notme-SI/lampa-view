@@ -339,7 +339,7 @@
     for (var key in list) {
       var entry = list[key] || {};
       var stamp = entry.t || mine.time || 0;
-      var ttl = entry.s === 'ok' ? PROBE_TTL_OK : PROBE_TTL_EMPTY;
+      var ttl = entry.s === 'ok' ? PROBE_TTL_OK : entry.s === 'error' ? 120000 : PROBE_TTL_EMPTY;
       if (now - stamp > ttl) delete list[key];
     }
     mine.list = list;
@@ -1541,7 +1541,7 @@
     var key = item.source || item.title;
     var state = sourceState(key);
     if (state === 'ok') return 0;
-    if (state === 'empty') return 3;
+    if (state === 'empty' || state === 'error') return 3;
     if (item.ghost) return 3;
     if (knownQuality(key)) return 1;
     return 2;
@@ -1706,7 +1706,10 @@
       else chip.prepend($('<span class="nova-chip__badge"></span>').text(value));
     }
 
-    if (state === 'empty') chip.addClass('nova-chip--empty');
+    if (state === 'empty' || state === 'error') {
+      var focused=chip.hasClass('focus');chip.remove();refreshCollection();
+      if(focused)focusChip('source');
+    }
     else if (state === 'ok') chip.append('<span class="nova-chip__dot"></span>');
   }
 
@@ -2374,7 +2377,7 @@
 
     comp.nova_host_hooked = true;
     probeStop(); probe_done_for = 0; probe_url = '';
-    var availabilityGeneration=0,requestSource='';
+    var availabilityGeneration=0,requestSource='',folderChain=[],parsing=false;
     function resetAvailability(source) {
       availabilityGeneration++;requestSource=source || '';
       comp.lampaViewAvailability='unknown';comp.lampaViewAvailabilitySource='';
@@ -2389,6 +2392,8 @@
     if (typeof comp.request === 'function') {
       var request = comp.request;
       comp.request = function (url) {
+        if(!parsing)folderChain=[];
+        folderChain.push(String(url || ''));
         var source=String(url || '').match(/\/lite\/([^\/?#]+)/i);
         resetAvailability(source ? source[1] : currentSourceKey());
         try { learnUrl(url); } catch (e) {}
@@ -2402,6 +2407,20 @@
       comp.parse = function (str) {
         var responseGeneration=availabilityGeneration,responseSource=requestSource || currentSourceKey();
         var active=Lampa.Activity.active(),card=object && (object.movie || object.card) || active && active.activity && active.activity.component===comp && (active.movie || active.card) || (componentNow()===comp ? movie : null);
+        // Lampac uses "similar" folders for provider search hits. Follow only
+        // a unique title/season match; never start the video or pick a sequel.
+        try {
+          // Ordinary episode responses need no extra HTML parsing. Only search
+          // hits marked "similar" can require our title disambiguation.
+          var folderPage=typeof str==='string' && /\bsimilar(?:&quot;|["'])?\s*:\s*(?:true|1)/i.test(str);
+          var folderState=folderPage && onlineState(),resume=folderState && folderState.resume(card || {});
+          var folder=card && folderState && typeof comp.parseJsonDate==='function' && folderState.folderTarget(comp.parseJsonDate(str,'.videos__item'),card,comp.lampaViewManualSeason || resume && resume.season || 1);
+          if(folder && folderChain.length<6 && folderChain.indexOf(folder)<0){
+            parsing=true;
+            try { if(typeof comp.reset==='function')comp.reset();return comp.request(folder); }
+            finally { parsing=false; }
+          }
+        } catch(folderError) {}
         if (card && !comp.destroyed && tmdbKind(card) === 'tv' && typeof comp.getChoice === 'function' && typeof comp.saveChoice === 'function') {
           try { var state=onlineState(),saved=comp.lampaViewManualSeason ? {season:comp.lampaViewManualSeason} : state && state.resume(card),index=saved && state ? state.seasonIndex(str,saved.season) : -1;
             if(index>=0){var choice=comp.getChoice();choice.season=index;comp.saveChoice(choice);}
@@ -2409,7 +2428,9 @@
         }
         var availability = sourceAvailability(str);
         try { learnBody(str); } catch (e) {}
-        var result=parse.apply(comp, arguments);
+        var result;
+        parsing=true;
+        try { result=parse.apply(comp, arguments); } finally { parsing=false; }
         // Parsing a season page can immediately start another request. Its
         // pending state must not inherit the preceding page's availability.
         if(responseGeneration===availabilityGeneration){
@@ -2427,6 +2448,17 @@
         var out = reqparams.apply(comp, arguments);
         try { learnUrl(out); } catch (e) {}
         return out;
+      };
+    }
+
+    if(typeof comp.doesNotAnswer==='function'){
+      var noAnswer=comp.doesNotAnswer;
+      comp.doesNotAnswer=function(){
+        var failedSource=requestSource || currentSourceKey();
+        var result=noAnswer.apply(comp,arguments);
+        comp.lampaViewAvailability='error';comp.lampaViewAvailabilitySource=failedSource;
+        if(movie && componentNow()===comp && failedSource)probeSave(qualityScope(),failedSource,'error',0);
+        return result;
       };
     }
 
@@ -3735,34 +3767,23 @@
     return false;
   }
 
-  function sourceActive(item, key, state, graded) {
-    if (state === 'empty') return false;
-    if (item.selected || state === 'ok') return true;
-    if (knownQuality(key)) return true;
-    if (item.ghost) return false;
-    if (!graded) return true;
-    return !!splitSourceName(item.title).badge;
+  function sourceActive(item, state) {
+    if (state === 'ok') return true;
+    if (state === 'empty' || state === 'error' || item.ghost) return false;
+    // An untested provider is not a failed provider. Quality badges alone
+    // cannot determine whether a source has this film.
+    return true;
   }
 
   function sourceRow() {
     var sort = groups.sort || [];
     var probe = probeCache(qualityScope()).list || {};
-    var life = lifeKnown();
-
-    var graded = false;
-    sort.forEach(function (item) {
-      if (splitSourceName(item.title).badge) graded = true;
-    });
-
     var visible = [];
-    var hidden = [];
     sort.forEach(function (item) {
       var key = item.source || item.title;
       var state = probe[key] ? probe[key].s : (item.ghost ? 'empty' : '');
-      if (sourceActive(item, key, state, graded)) visible.push(item);
-      else hidden.push(item);
+      if (sourceActive(item, state)) visible.push(item);
     });
-    visible = visible.concat(hidden);
 
     var row = $('<div class="nova-drop"></div>');
 
@@ -5682,6 +5703,9 @@
     ['season', 'voice'].forEach(function (name) {
       var group = groups[name];
       if (!group || !group.items) return;
+      var selected=group.items.filter(function(item){return item.selected;})[0] || group.items[0];
+      var compact=ui.rows.find('.nova-plus__bar [data-nova-focus="'+name+'"]').first();
+      if(compact.length && selected)compact.find('.nova-chip__label').text(selected.title);
       group.items.forEach(function (item, seat) {
         var index = typeof item.index === 'number' ? item.index : seat;
         var box = ui.rows.find('[data-nova-focus="' + name + ':' + index + '"]').first();
@@ -6301,7 +6325,19 @@
       return box;
     };
 
-    if (groups.season && groups.season.items.length > 0) {
+    // Long voice/season lists occupy one control, using the native accessible
+    // selection menu. Small groups remain directly available beside episodes.
+    var compactGroup=function(name,title){
+      var options=groups[name],selected=options.items.filter(function(item){return item.selected;})[0] || options.items[0];
+      tool(name,title,selected.title,{plain:true},function(){
+        Lampa.Select.show({title:title,items:options.items.map(function(item,seat){return {title:item.title,selected:!!item.selected,index:typeof item.index==='number'?item.index:seat};}),
+          onSelect:function(item){Lampa.Select.hide();contentEnable();wideChooseOption(name,item.index,name);},
+          onBack:function(){Lampa.Select.hide();ui_focus=name;contentEnable();restoreFocus(false);}});
+      });
+    };
+
+    if (groups.season && groups.season.items.length > 3) compactGroup('season',groups.season.title || label('nova_plus_seasons'));
+    else if (groups.season && groups.season.items.length > 0) {
       var seasons = group(serial ? (groups.season.title || label('nova_plus_seasons')) : label('nova_plus_parts'), 'season');
       groups.season.items.forEach(function (item, seat) {
         var index = typeof item.index === 'number' ? item.index : seat;
@@ -6312,7 +6348,8 @@
       });
     }
 
-    if (groups.voice && groups.voice.items.length > 0) {
+    if (groups.voice && groups.voice.items.length > 6) compactGroup('voice',groups.voice.title || label('nova_plus_voices'));
+    else if (groups.voice && groups.voice.items.length > 0) {
       var voices = group(groups.voice.title || label('nova_plus_voices'), 'voice');
       var order = groups.voice.items.map(function (item, seat) {
         return { item: item, index: typeof item.index === 'number' ? item.index : seat, seat: seat };

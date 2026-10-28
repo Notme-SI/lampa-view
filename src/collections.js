@@ -53,6 +53,10 @@ export default function collections(L,shiki){
  if(category)L.Api.category=function(object,ok,fail){
   const kind=object.url || object.cat,ctx=context({...object,component:'category'});
   if(!['movie','tv','cartoon','anime'].includes(kind))return category.apply(this,arguments);
+  if((object.source || L.Storage.get('source','cub'))==='trakt' && !(kind==='anime' && animeMode(L,object)==='shikimori')){
+   const status=object.minimal_catalogue_status={state:'loading'};
+   return category.call(this,{...object,source:'trakt'},rows=>{status.state=rows.some(row=>row.results && row.results.length)?'ready':'empty';remember(ctx,rows);ok(arrange(rows,prefs(ctx)));},error=>{status.state='error';if(fail)fail(error);});
+  }
   catalogue(L,shiki,object,prefs(ctx).hidden || [],rows=>{remember(ctx,rows);ok(arrange(rows.filter(row=>!row.minimal_hidden),prefs(ctx)));});
   // Only the selected catalogue runs, with a fixed plan and no next row loader.
  };

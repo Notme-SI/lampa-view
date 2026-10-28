@@ -58,7 +58,7 @@ body.lampa_view .card__view,body.lampa_view .card__img {border-radius:.5em;backg
 body.lampa_view .card__title {font-size:.83em;font-weight:500;line-height:1.4;margin-top:.65em;max-height:2.8em;-webkit-line-clamp:2;line-clamp:2;text-overflow:ellipsis}
 body.lampa_view .card__age {font-size:.73em;color:var(--pt-muted);margin-top:.2em}
 body.lampa_view .card__vote {background:#000000dc;color:#eee;border:0;font-size:.65em;border-radius:.3em;padding:.2em .4em}
-body.lampa_view .card.focus .card__view:after,body.lampa_view .card.hover .card__view:after {border:2px solid var(--pt-accent);border-radius:.5em;inset:0;box-shadow:none}
+body.lampa_view .card.focus .card__view:after,body.lampa_view .card.hover .card__view:after {border:2px solid var(--pt-accent);border-radius:.5em;inset:0;box-shadow:none;z-index:5;box-sizing:border-box}
 body.lampa_view .card.focus .card__title {color:var(--pt-accent)}
 body.lampa_view .card__quality {border-radius:.3em;background:#000000dc;font-size:.65em}
 body.lampa_view .scroll--mask:before,body.lampa_view .scroll--mask:after {display:none}
@@ -544,6 +544,15 @@ body.lampa_view.pt-tv .settings-folder,body.lampa_view.pt-tv .settings-param {wi
 body.lampa_view.pt-tv .pt-quality,body.lampa_view.pt-tv .card__quality,body.lampa_view.pt-tv .card__vote {font-size:.35em}
 body.lampa_view.pt-tv .pt-kind {font-size:.32em}
 body.lampa_view.pt-tv .card__title {font-size:.76em}
+/* Stable, high-contrast TV selection: no scaling, blur or fading borders. */
+body.lampa_view.pt-tv .card__title {padding:.25em .45em .25em .6em;max-height:3.3em;background:transparent;border-radius:.25em}
+body.lampa_view.pt-tv .card.focus .card__view {box-shadow:none!important}
+body.lampa_view.pt-tv .card.focus .card__view:after {display:block!important;inset:0!important;border:4px solid var(--pt-accent)!important;box-shadow:inset 0 0 0 2px #080b10!important;transition:none!important;pointer-events:none}
+body.lampa_view.pt-tv .card.focus .card__title {background:var(--pt-accent);color:#080b10;font-weight:700}
+body.lampa_view.pt-tv .card.hover:not(.focus) .card__view {box-shadow:none!important;transform:none!important}
+body.lampa_view.pt-tv .card.hover:not(.focus) .card__view:after {border-color:transparent!important;box-shadow:none!important}
+body.lampa_view .pt-hero__studio.selector {cursor:pointer;border-radius:.2em}
+body.lampa_view .pt-hero__studio.selector.focus,body.lampa_view .pt-hero__studio.selector:focus-visible {outline:none;box-shadow:0 0 0 2px var(--pt-accent);filter:none}
 body.lampa_view.pt-tv .card--wide .card__title {font-size:.92em}
 body.lampa_view.pt-tv .card__age {font-size:.66em}
 body.lampa_view.pt-tv .card__icons,body.lampa_view.pt-tv .card__marker {font-size:.72em}

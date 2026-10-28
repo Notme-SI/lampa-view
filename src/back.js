@@ -13,6 +13,16 @@ export default function installBack(L,$,enabled){
    const arrow=$('<div class="minimal-back--overlay">').prependTo(head);bind(arrow);head.addClass('minimal-back-heading');
   });
  }
+ // Settings builds its collection from the body only. Its heading button
+ // must join that same native collection after every controller rebuild.
+ function remoteHeading(event){
+  if(!enabled() || !event || !/^(settings|settings_component|select|modal)$/.test(event.name))return;
+  overlays();
+  const scope=event.name==='select'?'.selectbox':event.name==='modal'?'.modal':'.settings';
+  const arrows=$(scope+' .minimal-back--overlay').filter(function(){return this.isConnected && this.offsetParent!==null;});
+  if(arrows.length && L.Controller.collectionAppend)L.Controller.collectionAppend(arrows);
+  if(arrows.length && event.name==='modal' && !$(scope+' .selector').not('.minimal-back--overlay').filter(function(){return this.offsetParent!==null;}).length)L.Controller.collectionFocus(arrows.first(),$(scope));
+ }
  function update(){
   if(!button || !button[0] || !button[0].isConnected){
    button=$('.head__backward').first();
@@ -27,6 +37,7 @@ export default function installBack(L,$,enabled){
   overlays();
  }
  if(L.Listener && L.Listener.follow)L.Listener.follow('activity',event=>{if(['start','destroy'].includes(event.type))update();});
+ if(L.Controller && L.Controller.listener)L.Controller.listener.follow('toggle',remoteHeading);
  [[L.Settings,'open'],[L.Select,'open'],[L.Modal,'fullshow'],[L.Modal,'update']].forEach(([api,event])=>{if(api && api.listener)api.listener.follow(event,overlays);});
  update();
  return {update};

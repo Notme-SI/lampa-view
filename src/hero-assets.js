@@ -64,7 +64,7 @@ export default function heroAssets(L,cards,loadLogo){
   loadLogo(cards[i],(path,studio,language)=>{
    if(disposed)return;
    const waiting=studios.get(i) || {callbacks:[]};studios.set(i,waiting);
-   function finishStudio(url){const value=url?{url,name:studio.name}:null;studios.set(i,{value});if(waiting)waiting.callbacks.forEach(fn=>fn(value));}
+   function finishStudio(url){const value=url?{url,name:studio.name,id:studio.id,kind:studio.kind}:null;studios.set(i,{value});if(waiting)waiting.callbacks.forEach(fn=>fn(value));}
    if(studio && studio.path)fetchImage(L.TMDB.image('/t/p/w300'+studio.path),finishStudio,'studio');else finishStudio('');
    function finish(url){logos.set(i,{url,language});pending.callbacks.forEach(fn=>fn(url,language));}
    if(!path)return finish('');

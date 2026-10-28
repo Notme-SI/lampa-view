@@ -2,6 +2,8 @@
 
 Оформление Lampa с крупными баннерами, удобными карточками.
 
+Каталог **Trakt** доступен рядом с CUB и TMDB после настройки собственного Client ID. Инструкция: [подключение Trakt](docs/TRAKT.md). Постоянная ссылка на расширение не меняется: [lampa.js](https://notme-si.github.io/lampa-view/lampa.js).
+
 ## Скриншоты
 
 <a href="docs/screenshots/01-home.png"><img src="docs/screenshots/01-home.png" alt="Главная страница Lampa View" width="1200"></a>

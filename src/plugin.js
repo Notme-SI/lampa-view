@@ -26,6 +26,7 @@ import {cacheSettings} from './cache-control.js';
 import onlineState from './online-state.js';
 import torrentBanner,{bannerCountries} from './torrent-banner.js';
 import torrentSearch from './torrent-search.js';
+import installTrakt from './trakt.js';
 
 const ROOT = window;
 if (!ROOT.LampaView) {
@@ -34,7 +35,7 @@ if (!ROOT.LampaView) {
     const boot=document.createElement('style');boot.id='lampa-minimal-boot';boot.textContent=BOOT;
     (document.head || document.documentElement).appendChild(boot);
   }
-  const P = ROOT.LampaView = {version: '0.4.63', identity: C.identity, ready: false, bridge: false};
+  const P = ROOT.LampaView = {version: '0.4.64', identity: C.identity, ready: false, bridge: false};
   let L, $, lastCard, initialized = false, playlist = [], activeVideo,loadLogo,artwork,back;
   const metadata = new Map();
   const heroes = new WeakSet();
@@ -180,7 +181,7 @@ if (!ROOT.LampaView) {
       if(!root || root.find('.pt-hero').length)return;
       const line=root.find('.items-line').first();
       if(!line.length){heroes.delete(activity);return;}
-      let index=0,item,focus=0;
+      let index=0,item,focus=0,studioTarget=null;
       const element=$('<section class="pt-hero" aria-label="Подборка фильмов и сериалов">');
       const image=$('<img class="pt-hero__image" alt="" decoding="async">').appendTo(element);
       const body=$('<div class="pt-hero__body">').appendTo(element);
@@ -203,7 +204,7 @@ if (!ROOT.LampaView) {
         item={...card,media_type:kind,source:card.source || 'tmdb'};
         title.text(card.title || card.name);
         const token=++logoToken;
-        studio.off('load error').addClass('pt-hidden').removeAttr('src alt title');
+        studioTarget=null;studio.off('load error').addClass('pt-hidden').removeClass('selector').removeAttr('src alt title role tabindex');
         logo.off('load error').addClass('pt-hidden').removeClass('pt-hero__logo--translated').removeAttr('src');title.removeClass('pt-hidden pt-hero__title--translation');
         let brandingStarted=false;
         function branding(){
@@ -218,7 +219,7 @@ if (!ROOT.LampaView) {
         });
          assets.studio(selected,value=>{
           if(token!==logoToken || !value)return;
-          studio.attr({alt:value.name,title:value.name}).on('load',()=>{if(token===logoToken)studio.removeClass('pt-hidden');})
+          studio.attr({alt:value.name,title:value.name}).on('load',()=>{if(token===logoToken){studio.removeClass('pt-hidden');if(Number(value.id)>0){studioTarget=value;studio.addClass('selector').attr({role:'button',tabindex:'0','aria-label':'Проекты '+value.name,title:'Проекты '+value.name});if(L.Controller.enabled().name==='lampa_view_hero')L.Controller.collectionAppend(studio);}}})
             .on('error',()=>{if(token===logoToken)studio.addClass('pt-hidden');}).attr('src',value.url);
         });
         }
@@ -249,6 +250,10 @@ if (!ROOT.LampaView) {
       details.on('hover:enter',()=>openCard(item));
       const controls=element.find('.selector');
       pointer(controls);
+      controls.on('hover:focus',event=>{focus=controls.index(event.currentTarget);});
+      studio.on('hover:focus',()=>{focus=-1;});
+      studio.on('hover:enter',()=>{if(!studioTarget || studio.hasClass('pt-hidden'))return;const s=studioTarget;L.Activity.push(s.kind==='network'?{component:'category_full',source:'tmdb',url:'discover/tv',networks:s.id,sort_by:'popularity.desc',title:s.name,page:1}:{component:'company',source:'tmdb',url:item.media_type,id:s.id,title:s.name});});
+      pointer(studio);
       // A swipe changes only the cover; vertical page scrolling remains native.
       let touch;
       element.on('touchstart',e=>{const t=e.originalEvent.touches[0];touch={x:t.clientX,y:t.clientY};});
@@ -268,17 +273,17 @@ if (!ROOT.LampaView) {
       if(L.Controller && nativeLine && nativeLine.use && nativeLine.toggle){
         const enterHero=()=>{
           if(!yes('lampa_view_enabled') || !yes('lampa_view_hero'))return L.Controller.toggle('head');
-          const focusControl=()=>L.Controller.collectionFocus(controls.eq(focus),element);
+          const focusControl=()=>L.Controller.collectionFocus(focus===-1?studio:controls.eq(focus),element);
           L.Controller.add('lampa_view_hero',{
             toggle:()=>{
               const component=activity.component;
               if(component && component.scroll && component.scroll.update)component.scroll.update(element[0]);
               L.Controller.collectionSet(element);focusControl();
             },
-            left:()=>{focus=Math.max(0,focus-1);focusControl();},
+            left:()=>{focus=Math.max(focus<0?-1:0,focus-1);focusControl();},
             right:()=>{focus=Math.min(controls.length-1,focus+1);focusControl();},
-            up:()=>{if(focus>0){focus=0;focusControl();}else L.Controller.toggle('head');},
-            down:()=>{if(focus<1 && cards.length>1){focus=index+1;focusControl();}else nativeLine.toggle();},
+            up:()=>{if(focus>0){focus=0;focusControl();}else if(focus===0 && studioTarget && !studio.hasClass('pt-hidden')){focus=-1;focusControl();}else L.Controller.toggle('head');},
+            down:()=>{if(focus===-1){focus=0;focusControl();}else if(focus<1 && cards.length>1){focus=index+1;focusControl();}else nativeLine.toggle();},
             back:()=>L.Controller.toggle('head')
           });L.Controller.toggle('lampa_view_hero');
         };
@@ -374,6 +379,7 @@ if (!ROOT.LampaView) {
     if(menu && ROOT.MutationObserver)new ROOT.MutationObserver(trimSections).observe(menu,{childList:true,subtree:true});
     quality(L,$);cacheSettings(L);
     if(L.Api && L.Api.sources && L.Utils && L.Utils.createInstance && L.Maker){
+      installTrakt(L);
       const anime=shikimori(L);shikimoriPosters(L,anime);collections(L,anime);filters(L,anime);
     }
     installWheel(L,()=>yes('lampa_view_enabled'));

@@ -2,6 +2,24 @@
 // Read the host's timeline; opening the online screen never rewrites watch history.
 const number=value=>Number.isFinite(Number(value))?Math.max(0,Number(value)):0;
 const stamp=value=>typeof value==='string' && !/^\d+$/.test(value)?Date.parse(value) || 0:number(value);
+// Resolve a provider's search folder only when it identifies this title.
+// Ambiguous results and a different season remain a manual choice.
+export function folderTarget(rows,card,season=1){
+ if(!card || !Array.isArray(rows) || rows.some(row=>/^(play|call)$/.test(row.method)))return '';
+ const normalize=value=>String(value || '').toLowerCase().replace(/ё/g,'е').replace(/(?:сезон|season)\s*\d+|\d+\s*(?:сезон|season)|\bs\d+\b/gi,' ').replace(/\b(?:19|20)\d{2}\b/g,' ').replace(/[^a-zа-я0-9\u3040-\u30ff\u3400-\u9fff]+/g,' ').trim();
+ const names=new Set([card.title,card.name,card.original_title,card.original_name].filter(Boolean).map(normalize).filter(Boolean));
+ const year=Number(String(card.release_date || card.first_air_date || '').slice(0,4));
+ const candidates=rows.filter(row=>{
+  if(row.method!=='link' || typeof row.url!=='string' || !/^(?:https?:\/\/|\/)/i.test(row.url))return false;
+  const title=String(row.text || row.title || row.name || '');if(!names.has(normalize(title)))return false;
+  const found=title.match(/(?:сезон|season)\s*(\d+)|(\d+)\s*(?:сезон|season)|\bs(\d+)\b/i),param=row.url.match(/[?&](?:s|season)=(\d+)/);
+  const ownSeason=Number(row.season || (found && (found[1] || found[2] || found[3])) || (param && param[1]));
+  if(ownSeason && ownSeason!==Number(season))return false;
+  const ownYear=Number(String(row.year || row.start_date || '').slice(0,4)) || Number((title.match(/\b(?:19|20)\d{2}\b/) || [])[0]);
+  return !year || !ownYear || Math.abs(year-ownYear)<=1;
+ });
+ return candidates.length===1?candidates[0].url:'';
+}
 export function catalogueRows(body){
  if(typeof body!=='string')return [];
  const clean=body.replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,''),tags=clean.match(/<(?:div|span|a)\b[^>]*>/gi) || [],decoder=document.createElement('textarea'),rows=[];
@@ -69,5 +87,5 @@ export default function onlineState(L){
   const links=rows.filter(row=>row.method==='link');if(links.length<2)return -1;
   return links.findIndex(row=>{const param=row.url.match(/[?&](?:s|season)=(\d+)/),name=String(row.name || row.title || '').match(/(?:сезон|season)\s*(\d+)|(\d+)\s*(?:сезон|season)/i);return Number(row.season || (param?param[1]:name?name[1] || name[2]:0))===Number(season);});
  }
- return {availability,reader,resume,seasonIndex};
+ return {availability,reader,resume,seasonIndex,folderTarget};
 }

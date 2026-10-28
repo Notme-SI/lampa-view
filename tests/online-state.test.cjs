@@ -2,6 +2,14 @@ const test=require('node:test'),assert=require('node:assert/strict'),path=requir
 const code=esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/online-state.js')],bundle:true,write:false,format:'iife',globalName:'OnlineState'}).outputFiles[0].text;
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const tag=row=>'<div class="videos__item" data-json="'+JSON.stringify(row).replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'"></div>';
+
+test('provider folders resolve only a unique matching title and requested season, never another film or sequel',()=>{
+ const dom=new JSDOM('',{runScripts:'outside-only'}),w=dom.window;try{w.eval(code);const pick=w.OnlineState.folderTarget,card={name:'Гангстерленд',original_name:'MobLand',first_air_date:'2025-01-01'};
+ const row=(text,url='/lite/source/season')=>({text,url,method:'link',similar:true});
+ assert.equal(pick([row('Гангстерленд 2 сезон')],card,1),'');assert.equal(pick([row('Гангстерленд 2 сезон')],card,2),'/lite/source/season');assert.equal(pick([row('Other film')],card,1),'');assert.equal(pick([row('MobLand'),row('Гангстерленд')],card,1),'');assert.equal(pick([row('MobLand', 'javascript:alert(1)')],card,1),'');assert.equal(pick([row('MobLand'),{method:'play',url:'/film'}],card,1),'');
+ assert.equal(pick([row('Обсессия 2025')],{title:'Обсессия',release_date:'2026-01-01'}),'/lite/source/season');assert.equal(pick([row('Обсессия 1990')],{title:'Обсессия',release_date:'2026-01-01'}),'');
+ }finally{w.close();}
+});
 test('source availability checks real entries, excludes similar titles and distinguishes access failures from empty catalogues',()=>{
  const dom=new JSDOM('',{runScripts:'outside-only'}),w=dom.window;try{w.eval(code);const state=w.OnlineState.availability;
  assert.equal(state(tag({method:'play',url:'/file'})).state,'ok');assert.equal(state(tag({method:'call',url:'/call',similar:true})).state,'empty');assert.equal(state('<div class="videos__line"></div>').state,'empty');assert.equal(state('<html><h1>Access denied</h1></html>').state,'unknown');assert.equal(state('').state,'unknown');assert.equal(state(JSON.stringify({accsdb:true})).state,'unknown');assert.equal(state({data:[{method:'call',url:'/film'}]}).state,'ok');assert.equal(state({data:[]}).state,'empty');assert.equal(state('<script>'+tag({method:'play',url:'/fake'})+'</script>').state,'unknown');assert.equal(state('<div class="videos__item">No valid data</div>').state,'empty');
@@ -48,12 +56,32 @@ test('the patched online host restores the watched season and preserves the manu
  }finally{if(s)s.close();n.close();}
 });
 
-test('all available episodes and folder entries survive without page pickers, and long source catalogues are not gated',async()=>{
+test('all episodes and ambiguous folders remain available while failed sources stay out of the selector',async()=>{
  const n=await native({built:true}),{L}=n;let s;try{
   s=screen(n,{episodes:Array.from({length:54},(_,i)=>i+1)});s.filter.set('sort',Array.from({length:36},(_,i)=>({title:'Источник '+i,source:'source'+i,selected:!i,ghost:i>20})));await wait(220);
   assert.equal(s.root.find('.nova-card').length,54);assert.equal(s.root.find('[data-nova-focus=jump]').length,0);assert.equal(s.root.find('.nova-card__title').first().text(),'Серия 1');assert.doesNotMatch(s.root.find('.nova-card__tag').text(),/S\d|E\d/);
-  s.root.find('[data-nova-focus=source]').trigger('hover:enter');await wait(90);assert.equal(s.root.find('.nova-drop .nova-chip').length,36);assert.equal(s.root.find('[data-nova-focus="src:more"]').length,0);
+  s.root.find('[data-nova-focus=source]').trigger('hover:enter');await wait(90);assert.equal(s.root.find('.nova-drop .nova-chip').length,21);assert.equal(s.root.find('[data-nova-src="source21"]').length,0,'Unavailable ghost sources stay hidden');assert.equal(s.root.find('[data-nova-focus="src:more"]').length,0);
   s.close();s=screen(n,{episodes:[]});for(let i=0;i<27;i++)n.w.jQuery('<div class="online-prestige online-prestige--folder selector"><div class="online-prestige__title">Папка '+i+'</div></div>').on('hover:enter',()=>{}).appendTo(s.body);await wait(180);assert.equal(s.root.find('.nova-card--nav').length,27);assert.equal(s.root.find('[data-nova-focus=jump]').length,0);assert.deepEqual(n.errors,[]);
+ }finally{if(s)s.close();n.close();}
+});
+
+test('the online host follows a matching folder through its native request, bounds cycles and preserves manual season choices',async()=>{
+ const n=await native({built:true}),requests=[],parsed=[];let s;try{
+  let rows=[],choice={};const comp={changeBalanser(){},reset(){},request:url=>requests.push(url),parse:body=>parsed.push(body),parseJsonDate:()=>rows,getChoice:()=>choice,saveChoice:v=>choice=v};
+  s=screen(n,{component:comp});await wait(160);
+  rows=[{method:'link',similar:true,text:'Сериал 1 сезон',url:'/lite/test/season1'}];const body=tag(rows[0]);comp.request('/lite/test/search');comp.parse(body);assert.equal(requests.at(-1),'/lite/test/season1');assert.equal(parsed.length,0);
+  comp.parse(body);assert.equal(parsed.at(-1),body);assert.equal(requests.length,2,'A repeated folder URL must not loop');
+  comp.request('/lite/test/search');comp.lampaViewManualSeason=2;comp.parse(body);assert.equal(requests.at(-1),'/lite/test/search');assert.equal(parsed.at(-1),body);
+  rows=[{method:'link',similar:true,text:'Сериал 2 сезон',url:'/lite/test/season2'}];comp.parse(tag(rows[0]));assert.equal(requests.at(-1),'/lite/test/season2');assert.equal(comp.lampaViewManualSeason,2);assert.deepEqual(n.errors,[]);
+ }finally{if(s)s.close();n.close();}
+});
+
+test('a long voice list uses one native selection menu and keeps the provider original selection handler',async()=>{
+ const n=await native({built:true}),{L}=n;let s;try{
+  s=screen(n);let selected=-1;s.filter.onSelect=(type,group,item)=>{assert.equal(type,'filter');assert.equal(group.stype,'voice');selected=item.index;};
+  s.filter.set('filter',[{stype:'voice',title:'Озвучка',items:Array.from({length:18},(_,i)=>({title:'Студия '+i,selected:i===0}))}]);await wait(200);
+  assert.equal(s.root.find('[data-nova-group=voice]').length,0);assert.equal(s.root.find('[data-nova-focus=voice]').length,1);
+  s.root.find('[data-nova-focus=voice]').trigger('hover:enter');assert.equal(L.Select.render().find('.selectbox-item').length,18);L.Select.render().find('.selectbox-item').eq(17).trigger('hover:enter');await wait(90);assert.equal(selected,17);assert.equal(L.Select.opened(),false);assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}
 });
 
