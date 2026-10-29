@@ -2,10 +2,13 @@ import catalogue,{animeMode} from './catalogue.js';
 import animeTabs from './anime-tabs.js';
 import continueWatching,{CONTINUE,isWatching} from './continue-watching.js';
 export function rowKey(row){return String(row.url || row.title || 'Без названия');}
+function matchesRow(row,id){return rowKey(row)===id || (row.minimal_row_aliases || []).includes(id) || isWatching(row) && ['mixed/trending','movies/trending','shows/trending','?sort=now_playing','movie/now_playing'].includes(id);}
 export function arrange(rows,prefs){
  const order=prefs.order || [],hidden=prefs.hidden || [];
- return rows.filter(row=>!hidden.includes(rowKey(row))).map((row,i)=>({row,i})).sort((a,b)=>{
-  const ai=order.indexOf(rowKey(a.row)),bi=order.indexOf(rowKey(b.row));
+ const matches=matchesRow;
+ const position=row=>order.findIndex(id=>matches(row,id));
+ return rows.filter(row=>!hidden.some(id=>matches(row,id))).map((row,i)=>({row,i})).sort((a,b)=>{
+  const ai=position(a.row),bi=position(b.row);
   return (ai<0?10000+a.i:ai)-(bi<0?10000+b.i:bi);
  }).map(x=>x.row);
 }
@@ -18,10 +21,10 @@ export default function collections(L,shiki){
  const context=o=>{o=o || {};const component=o.component || 'main';if(component==='main')return 'main:';const kind=o.url || o.cat;return component==='category' && ['movie','tv','cartoon','anime'].includes(kind)?kind==='anime'?animeContext(o):'category:'+kind:null;};
  function remember(ctx,rows,append=false){
   if(!ctx)return;const names=known(),previous=append?(names[ctx] || []):[],next=previous.slice();
-  rows.filter(row=>row && row.title && !/^(shots|спорт|расписание)$/i.test(String(row.title).trim()) && ((row.results || []).length || row.minimal_hidden || row.minimal_configurable)).forEach(row=>{const id=rowKey(row),entry={id,title:row.title,...(row.minimal_empty?{subtitle:'Появится после начала просмотра'}:{})};const index=next.findIndex(old=>old.id===id);if(index<0)next.push(entry);else next[index]=entry;});
+  rows.filter(row=>row && row.title && !/^(shots|спорт|расписание)$/i.test(String(row.title).trim()) && ((row.results || []).length || row.minimal_hidden || row.minimal_configurable)).forEach(row=>{const id=rowKey(row),entry={id,title:row.title,...(row.minimal_row_aliases?{aliases:row.minimal_row_aliases}:{}),...(row.minimal_empty?{subtitle:'Появится после начала просмотра'}:{})};const index=next.findIndex(old=>old.id===id);if(index<0)next.push(entry);else next[index]=entry;});
   captured.add(ctx);if(JSON.stringify(names[ctx] || [])!==JSON.stringify(next)){names[ctx]=next;L.Storage.set(knownKey,names);}
  }
- function prefs(ctx){const all=read(),p=all[ctx] || (ctx==='category:anime:standard'?all['category:anime']:null) || {};if(ctx!=='main:' || !(p.order || []).length || p.order.includes(CONTINUE))return p;const rows=known()[ctx] || [],watch=rows.find(isWatching),order=p.order.slice(),index=watch?order.indexOf(watch.id):-1;order.splice(index+1,0,CONTINUE);return {...p,order};}
+ function prefs(ctx){const all=read(),p=all[ctx] || (ctx==='category:anime:standard'?all['category:anime']:null) || {};if(ctx!=='main:' || !(p.order || []).length || p.order.includes(CONTINUE))return p;const rows=known()[ctx] || [],watch=rows.find(isWatching),order=p.order.slice(),index=watch?order.findIndex(id=>matchesRow({url:watch.id,title:watch.title,minimal_row_aliases:watch.aliases},id)):-1;order.splice(index+1,0,CONTINUE);return {...p,order};}
  function save(ctx,p){const all=read();all[ctx]=p;L.Storage.set(key,all);}
  function select(title,items,onSelect,onBack){L.Select.show({title,items,onSelect,onBack:onBack || (()=>L.Controller.toggle('settings'))});}
  function contextName(ctx){return labels[ctx] || (ctx==='category:anime:shikimori'?'Аниме · Shikimori':'Аниме · Стандартные');}

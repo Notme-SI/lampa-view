@@ -123,7 +123,7 @@ body.lampa_view .tc-episodes {font-size:.88em;color:#c4c8cf;line-height:1.4}
 body.lampa_view .tc-summary .tc-tag--quality {font-size:.86em;color:var(--pt-accent);background:#add9e50c;border-color:#add9e52e}
 body.lampa_view .tc-head {gap:1em;align-items:flex-start}
 body.lampa_view .tc-right {flex:none;gap:.4em}
-body.lampa_view .tc-tags {gap:.4em;margin:.65em 0}
+body.lampa_view .tc-tags {gap:.5em 1.2em;margin:.65em 0}
 body.lampa_view .tc-tags .tc-tag {font-size:.8em;line-height:1.3;color:#c4c8cf;background:transparent}
 body.lampa_view .tc-voices {display:flex;align-items:baseline;flex-wrap:wrap;gap:.4em .8em;font-size:.86em;line-height:1.5}
 body.lampa_view .tc-voice-names {min-width:0;max-width:100%;color:#e2e5eb;white-space:normal;overflow:visible;overflow-wrap:anywhere}
@@ -592,6 +592,8 @@ body.lampa_view .settings .minimal-settings .settings-param__value {font-size:.9
 /* Shared controls for both online layouts. */
 body.lampa_view .nova-plus-root .nova-btn,body.lampa_view .nova-plus-root .nova-chip,body.lampa_view .nova-plus-root .nova-group {background:#171717!important;color:var(--pt-text)!important;border:1px solid var(--pt-line)!important;border-radius:.625em!important;box-shadow:none!important;outline:none!important}
 body.lampa_view .nova-plus-root .nova-btn {padding:.75em 1.15em;font-weight:600}
+body.lampa_view .nova-plus-root .nova-chip--view-icon {justify-content:center;min-width:2.5em;padding:.6em}
+body.lampa_view .nova-plus-root .nova-chip--view-icon>.nova-chip__label {display:none}
 body.lampa_view .nova-plus-root .nova-chip--active,body.lampa_view .nova-plus-root .nova-group--open {background:var(--pt-high)!important;border-color:#add9e560!important}
 body.lampa_view .nova-plus-root .nova-btn.focus,body.lampa_view .nova-plus-root .nova-btn.hover,body.lampa_view .nova-plus-root .nova-btn:hover,body.lampa_view .nova-plus-root .nova-chip.focus,body.lampa_view .nova-plus-root .nova-chip.hover,body.lampa_view .nova-plus-root .nova-chip:hover,body.lampa_view .nova-plus-root .nova-group.focus,body.lampa_view .nova-plus-root .nova-group:hover {background:var(--pt-high)!important;color:var(--pt-text)!important;border-color:var(--pt-accent)!important;box-shadow:0 0 0 1px var(--pt-accent)!important}
 body.lampa_view .nova-plus-root .nova-chip__badge,body.lampa_view .nova-plus-root .nova-chip.focus .nova-chip__badge {background:#ffffff1a!important;color:var(--pt-text)!important;border-radius:.25em}

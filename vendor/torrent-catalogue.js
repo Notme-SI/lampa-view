@@ -116,7 +116,7 @@
             var season = text(a.type).match(/(?:season\s*|^s)(\d{1,2})(?:\D|$)/i);
             if (season) seasonAliases.push({ title: a.title, season: +season[1] });
             else {
-                var priority = a.iso_3166_1 === 'RU' ? 2 : /romaji/i.test(a.type) ? 3 : /^(US|GB)$/.test(a.iso_3166_1) && /shortened|^$/i.test(a.type) ? 2 : 6;
+                var priority = a.iso_3166_1 === 'RU' || a.iso_3166_1 === 'JP' && /[\u3040-\u30ff\u3400-\u9fff]/.test(a.title || '') ? 2 : /romaji/i.test(a.type) ? 3 : /^(US|GB)$/.test(a.iso_3166_1) && /shortened|^$/i.test(a.type) ? 2 : 6;
                 if (!/\b(?:ONA|OVA|special|movie|film)\b/i.test(a.type)) add(a.title, priority, a.iso_3166_1);
             }
         });
@@ -277,6 +277,11 @@
         if(/\bHDR10\+/i.test(raw))hdr.push('HDR10+');else if(/\bHDR10\b/i.test(raw))hdr.push('HDR10');else if(/\bHDR\b/i.test(text(row.Title)))hdr.push('HDR');
         if(/\b(?:DoVi|Dolby[ .-]?Vision|DV)\b/i.test(raw))hdr.push('Dolby Vision');if(!hdr.length && /\bSDR\b/i.test(raw))hdr.push('SDR');
         var supplied=row.languages || info.languages || [];if(!Array.isArray(supplied))supplied=text(supplied).split(/[,/; ]+/);supplied.forEach(function(v){if(language(v))languages.push(language(v));});
+        // Explicit release labels are evidence even when ffprobe is absent.
+        // Remove subtitle clauses first: "Sub ENG" is not English audio.
+        var audioTitle=[row.Title,info.originalname].concat(row._tcTitles || []).filter(Boolean).join(' ').replace(/\b(?:sub(?:titles?)?|субтитры)\s*[:\[(]?\s*(?:(?:rus|eng|jpn|jap|ukr|ru|en|ja|uk)(?:\s*[/+,]\s*|\b))+/gi,' ').replace(/\b\d+\s*[xх]\s*(?=rus|eng|jpn|jap|ukr)/gi,' ');
+        (audioTitle.match(/\b(?:RUS|ENG|UKR|JPN|JAP|RUSSIAN|ENGLISH|JAPANESE)\b/gi) || []).forEach(function(v){languages.push(language(v));});
+        (audioTitle.match(/(?:\[|\(|\b)(?:RU|EN|JA|UK)(?:\s*[/+]\s*(?:RU|EN|JA|UK))+(?:\]|\)|\b)/gi) || []).forEach(function(v){(v.match(/\b(?:RU|EN|JA|UK)\b/gi) || []).forEach(function(code){languages.push(language(code));});});
         return {quality:quality,source:source,dimensions:dimensions,video:uniq(video),audio:uniq(audio),channels:uniq(channels),hdr:uniq(hdr),subtitles:uniq(subtitles),languages:uniq(languages),tags:uniq([quality,source].concat(video,hdr,audio,channels).filter(Boolean))};
     }
     function describe(row, cat) {
@@ -365,6 +370,16 @@
     function escape(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/\$/g, '&#36;'); }
     function metadata(movie, callback) {
         var source = movie.source || 'tmdb';
+        if(source==='cub' && L.Api.sources.tmdb && L.Api.sources.tmdb.get && window.LampaView && window.LampaView.matchCatalogue){
+            var kind=movie.original_name || movie.name || movie.number_of_seasons?'tv':'movie',mappingKey='cub:'+kind+':'+movie.id,cachedMapping=metadataCache[mappingKey];
+            if(cachedMapping && Date.now()-cachedMapping.at<3600000)return callback(cachedMapping.ru,cachedMapping.en);
+            var mappingTimer,resolved=once(function(id){clearTimeout(mappingTimer);if(!id)return callback(movie,{});var card=copy(movie);card.id=id;card.source='tmdb';metadata(card,function(ru,en){ru=copy(ru);ru.id=movie.id;ru.source='cub';metadataCache[mappingKey]={at:Date.now(),ru:ru,en:en};callback(ru,en);});});
+            if(/^\d+$/.test(String(movie.tmdb_id || '')))return resolved(movie.tmdb_id);
+            mappingTimer=setTimeout(function(){resolved(null);},2000);
+            var query=movie.original_name || movie.original_title || movie.name || movie.title;
+            try{L.Api.sources.tmdb.get('search/'+kind+'?query='+encodeURIComponent(query),{langs:'ru'},function(json){resolved(window.LampaView.matchCatalogue(movie,json && json.results));},function(){resolved(null);});}catch(error){resolved(null);}
+            return;
+        }
         // An unrelated provider's numeric identifier must never be sent as a TMDB identifier.
         if (source !== 'tmdb' || !/^\d+$/.test(String(movie.id || '')) || !L.Reguest || !L.TMDB) { callback(movie, {}); return; }
         var type = movie.original_name || movie.name || movie.number_of_seasons ? 'tv' : 'movie', cacheKey = type + ':' + movie.id;
@@ -402,7 +417,9 @@
             row.general = row.general || {};
             // This is also used by Lampa's season filter; do not leave its fallback "season 1".
             var seasons = row._tc.season.number !== null ? [row._tc.season.number] : row._tc.parsed.seasons.slice();
-            if (row._tc.identity.state === 'mismatch' || row._tc.season.issue) seasons = [];
+            // Failure to map a release season to incomplete catalogue metadata
+            // must not remove its explicit season from the native filter.
+            if (row._tc.identity.state === 'mismatch') seasons = [];
             row.general.seasons = seasons;
             row.general.season = seasons.length ? seasons.join('-') : '';
             row.general.episodes = row._tc.parsed.bundle ? '' : C.ranges(row._tc.parsed.episodes).replace(/–/g, '-');
@@ -536,14 +553,20 @@
                 $('<span class="tc-size"></span>').text(row.size || (L.Utils && L.Utils.bytesToSize(row.Size)) || '').appendTo(right);
                 $('<span class="tc-seeds"></span>').text('Раздают ' + (+row.Seeders || 0) + (row.Peers !== undefined ? ' · Качают ' + (+row.Peers || 0) : '')).appendTo(right);
                 var tags = $('<div class="tc-tags"></div>').appendTo(content);
-                m.technical.tags.filter(function(v){return v!==m.technical.quality && (m.seasonLabel || m.technical.quality || v!==m.technical.source);}).slice(0,8).forEach(function(v){pill(tags,v);});
-                m.voices.types.forEach(function(v){pill(tags,v,'translation');});
-                if(Number(row.bitrate)>0 && !m.seasonLabel)pill(tags,'≈ '+row.bitrate+' Мбит/с');
-                if (m.technical.subtitles.length) pill(tags,'Субтитры '+m.technical.subtitles.join('/'));
+                function group(kind, label, values) {
+                    values = values.filter(function(value,index,all){return value && all.indexOf(value) === index;});
+                    if (!values.length) return;
+                    var part = $('<div class="tc-tag-group"></div>').addClass('tc-tag-group--' + kind).attr('aria-label', label).appendTo(tags);
+                    $('<span class="tc-group-label"></span>').text(label).appendTo(part);
+                    values.forEach(function(value){pill(part,value,kind === 'audio' && value === m.technical.languages.join(' / ') ? 'language' : '');});
+                }
+                group('video','Видео',[m.technical.source && (m.seasonLabel || m.technical.quality) ? m.technical.source : ''].concat(m.technical.video,m.technical.hdr,Number(row.bitrate)>0 && !m.seasonLabel ? ['≈ '+row.bitrate+' Мбит/с'] : []));
+                group('audio','Аудио',[m.technical.languages.join(' / ')].concat(m.technical.audio,m.technical.channels));
+                group('subtitles','Субтитры',[m.technical.subtitles.join(' / ')]);
                 if (!tags.children().length) tags.remove();
                 var voices = $('<div class="tc-voices"></div>').appendTo(content), voiceTags=m.voices.names;
+                m.voices.types.forEach(function(v){pill(voices,v,'translation');});
                 if(voiceTags.length) $('<span class="tc-voice-names"></span>').text(voiceTags.join(' · ')).appendTo(voices);
-                if(m.technical.languages.length) $('<span class="tc-languages"></span>').text(m.technical.languages.join(' / ')).appendTo(voices);
                 if(!voices.children().length) voices.remove();
                 if (m.identity.state==='mismatch') $('<div class="tc-warning"></div>').text('Другое произведение').appendTo(content);
                 var foot = $('<div class="tc-foot"></div>').appendTo(content);
@@ -562,7 +585,7 @@
             '.torrent-list .torrent-item.tc-item.focus,.torrent-list .torrent-item.tc-item:hover{background:#26333f!important;color:#fff!important;border-color:#b7d8ef;box-shadow:0 0 0 2px #b7d8ef}' +
             '.tc-item>.torrent-item__title,.tc-item>.torrent-item__ffprobe,.tc-item>.torrent-item__details,.tc-item>.stv-tor{display:none!important}' +
             '.tc-head{display:flex;align-items:center;gap:1em;justify-content:space-between}.tc-title{font-size:1.15em;font-weight:600;overflow-wrap:anywhere;min-width:0}.tc-right{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:.25em;white-space:nowrap}.tc-size{font-size:1.15em;font-weight:700;color:#fff}.tc-seeds{font-size:1em;font-weight:700;color:#72dc87}.tc-item .tc-head .torrent-item__viewed{position:static;width:1em;height:1em;flex-shrink:0}' +
-            '.tc-tags{display:flex;flex-wrap:wrap;gap:.4em;margin:.65em 0}.tc-tag{border:1px solid rgba(255,255,255,.15);border-radius:.5em;padding:.25em .5em;font-size:.8em;line-height:1.4}.tc-tag--voice{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.12);color:#e8edf2}' +
+            '.tc-tags{display:flex;flex-wrap:wrap;gap:.5em 1.2em;margin:.65em 0}.tc-tag-group{display:flex;align-items:center;flex-wrap:wrap;gap:.35em}.tc-group-label{font-size:.72em;color:#929ba6;margin-right:.1em}.tc-voices{display:flex;align-items:baseline;flex-wrap:wrap;gap:.4em .7em}.tc-voices .tc-tag--translation{border:0;padding:0;font-size:inherit}.tc-tag{border:1px solid rgba(255,255,255,.15);border-radius:.5em;padding:.25em .5em;font-size:.8em;line-height:1.4}.tc-tag--voice{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.12);color:#e8edf2}' +
             '.tc-tag--complete{color:#a8ebc8;border-color:#3a6b56}.tc-tag--partial{color:#ffe0a3;border-color:#80683c}.tc-tag--conflict,.tc-tag--mismatch{color:#ffb7af;border-color:#86554f}.tc-tag--unknown{color:#d0d6de}' +
             '.tc-muted{color:#aeb5bf}.tc-foot{margin-top:.75em;color:#aeb5bf;font-size:.8em}.tc-original{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#b7bdc6;font-size:.8em;line-height:1.5}' +
             '@media(max-width:600px){.tc-head{display:block}.tc-size{display:block;font-size:.85em;margin-top:.35em}}';

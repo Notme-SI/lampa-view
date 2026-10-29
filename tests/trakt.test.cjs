@@ -42,7 +42,7 @@ test('Trakt limits parallel list loads, does not cache failures or send its key 
   r.storage.minimal_trakt_enabled=true;r.storage.minimal_trakt_client_id='own-id';let output,error;
   r.api.main({},rows=>output=rows,e=>error=e);assert.equal(r.sent.length,2);
   r.sent[0].reply([movie(1,'A')]);assert.equal(r.sent.length,3);r.sent[1].reply([movie(2,'B')]);assert.equal(r.sent.length,4);r.sent[2].reply([{show:movie(3,'C')}]);r.sent[3].reply([{show:movie(4,'D')}]);
-  assert.equal(output.length,4);assert.equal(error,undefined);assert.equal(output[2].results[0].media_type,'tv');assert.ok(output.every(row=>row.source==='trakt'));
+  assert.equal(output.length,2);assert.equal(error,undefined);assert.equal(output[0].results[1].media_type,'tv');assert.ok(output.every(row=>row.source==='trakt'));
   let failed;r.api.list({url:'https://evil.invalid/'},assert.fail,e=>failed=e);assert.match(failed.status_message,/Неизвестная/);assert.equal(r.sent.length,4);
   r.api.list({url:'movies/popular',page:2},assert.fail,e=>failed=e);r.sent[4].reply({},401);assert.match(failed.status_message,/Client ID/);
   r.api.list({url:'movies/popular',page:2},()=>{},()=>{});assert.equal(r.sent.length,6);r.sent[5].reply([],200);

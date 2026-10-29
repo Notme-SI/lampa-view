@@ -48,7 +48,9 @@ export function installTmdb(L){
 }
 export function normalizeCredits(json,original={},id){
  if(!json || json.id!=null && id!=null && String(json.id)!==String(id))return null;
- const cast=Array.isArray(original.cast) && original.cast.length?original.cast:(json.cast || []).slice().sort((a,b)=>(b.total_episode_count || 0)-(a.total_episode_count || 0)).map(person=>({...person,character:person.character || Array.from(new Set((person.roles || []).map(role=>role.character).filter(Boolean))).join(' / ')}));
+ const aggregate=new Map((json.cast || []).map(person=>[String(person.id),person]));
+ const primary=Array.isArray(original.cast) && original.cast.length?original.cast:(json.cast || []).slice().sort((a,b)=>(b.total_episode_count || 0)-(a.total_episode_count || 0));
+ const cast=primary.map(person=>{const detail=aggregate.get(String(person.id)) || {};return {...person,total_episode_count:Math.max(Number(person.total_episode_count)||0,Number(detail.total_episode_count)||0),character:person.character || Array.from(new Set((detail.roles || person.roles || []).map(role=>role.character).filter(Boolean))).join(' / ')};});
  const directors=(json.crew || []).reduce((all,person)=>all.concat((person.jobs || [person]).filter(job=>job.job==='Director').map(job=>({...person,job:'Director',episode_count:job.episode_count || person.total_episode_count || 0}))),[]);
  return {...original,cast,crew:[...(original.crew || []),...directors]};
 }

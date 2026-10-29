@@ -1,5 +1,10 @@
 const test=require('node:test'),assert=require('node:assert/strict'),path=require('path'),esbuild=require('esbuild'),native=require('./fixtures/native-lampa.cjs');
 function mod(name){const code=esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/'+name+'.js')],bundle:true,write:false,format:'cjs',platform:'node'}).outputFiles[0].text,module={exports:{}};new Function('module','exports',code)(module,module.exports);return module.exports;}
+
+test('Trakt rows respect saved native collection order and visibility by their semantic aliases',()=>{
+ const {arrange}=mod('collections'),rows=[{url:'mixed/trending',title:'Сейчас смотрят',minimal_row_aliases:['?sort=now_playing']},{url:'minimal:continue',title:'Продолжить просмотр'},{url:'mixed/popular',title:'Популярное',minimal_row_aliases:['movie/popular']}];
+ const prefs={order:['movie/popular','?sort=now_playing','minimal:continue']};assert.deepEqual(arrange(rows,prefs).map(row=>row.url),['mixed/popular','mixed/trending','minimal:continue']);assert.deepEqual(arrange(rows,{...prefs,hidden:['?sort=now_playing']}).map(row=>row.url),['mixed/popular','minimal:continue']);
+});
 test('personal row uses local mixed history, excludes finished and discarded titles, deduplicates, and paginates locally',()=>{
  const movie={id:1,title:'Фильм',original_title:'Film',source:'cub'},series={id:2,name:'Сериал',first_air_date:'2025',source:'tmdb'},anime={id:3,name:'Аниме',original_language:'ja',first_air_date:'2025',source:'cub'},history=[movie,series,anime,{...movie,source:'tmdb'},{id:4,title:'Готово'},{id:5,title:'Брошен'},{id:6,title:'Досмотрен',original_title:'Finished'}];
  const store={},L={Storage:{get:(k,d)=>store[k] || d},Favorite:{get:({type})=>type==='history'?history:type==='viewed'?[{id:4}]:[{id:5}]},Timeline:{view:hash=>({percent:hash==='Finished'?95:25})},Utils:{hash:s=>s},Api:{sources:{}}};

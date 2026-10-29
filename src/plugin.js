@@ -7,7 +7,7 @@ import BOOT from './boot.css';
 import C from './identity.cjs';
 import quality from './quality.js';
 import installWheel from './wheel.js';
-import logoLoader from './logos.js';
+import logoLoader,{matchCatalogue} from './logos.js';
 import fillRows from './rows.js';
 import unifiedSettings from './settings.js';
 import shikimori from './shikimori.js';
@@ -35,7 +35,8 @@ if (!ROOT.LampaView) {
     const boot=document.createElement('style');boot.id='lampa-minimal-boot';boot.textContent=BOOT;
     (document.head || document.documentElement).appendChild(boot);
   }
-  const P = ROOT.LampaView = {version: '0.4.64', identity: C.identity, ready: false, bridge: false};
+  const P = ROOT.LampaView = {version: '0.4.65', identity: C.identity, ready: false, bridge: false};
+  P.matchCatalogue=matchCatalogue;
   let L, $, lastCard, initialized = false, playlist = [], activeVideo,loadLogo,artwork,back;
   const metadata = new Map();
   const heroes = new WeakSet();

@@ -22,8 +22,16 @@ test('cast roster is finite and deduplicated; a different title cannot replace i
  const {prepareDetail}=mod('detail'),{normalizeCredits}=mod('tmdb');
  const actors=Array.from({length:300},(_,id)=>({id:id+1,name:'Actor '+id,profile_path:'/person.jpg',character:'Role'})),crew=Array.from({length:200},(_,id)=>({id:id+400,name:'Director '+id,profile_path:'/person.jpg',job:'Director',episode_count:id}));
  const data={persons:{cast:[...actors,...actors],crew:[...crew,...crew]}};prepareDetail(data);
- assert.equal(data.persons.cast.length,25);assert.equal(new Set(data.persons.cast.map(p=>p.id)).size,25);assert.equal(data.persons.cast[0].id,599);assert.equal(data.persons.cast[5].id,1);
+ assert.equal(data.persons.cast.length,15);assert.equal(new Set(data.persons.cast.map(p=>p.id)).size,15);assert.equal(data.persons.cast[0].id,599);assert.equal(data.persons.cast[3].id,1);
  assert.equal(normalizeCredits({id:12,cast:actors},{cast:actors.slice(0,1)},13),null);
+});
+
+test('credits retain leads, recurring and recognizable supporting roles while excluding extras and guest directors',()=>{
+ const {prepareDetail}=mod('detail'),cast=Array.from({length:12},(_,i)=>({id:i+1,name:'Actor '+i,order:i,profile_path:'/person.jpg',character:'Role '+i,popularity:1}));
+ cast.push({id:40,name:'Supporting',order:22,profile_path:'/person.jpg',character:'Professor',popularity:20},{id:41,name:'Recurring',order:25,profile_path:'/person.jpg',character:'Neighbour',total_episode_count:8},{id:42,name:'Extra',order:23,profile_path:'/person.jpg',character:'Crowd (uncredited)',popularity:100},{id:43,name:'Unspecified',order:24,profile_path:'/person.jpg'});
+ cast[0].popularity=0;cast[0].total_episode_count=10;
+ const data={movie:{name:'Show'},persons:{cast,crew:[{id:100,name:'Main director',job:'Director',episode_count:10,popularity:1,profile_path:'/person.jpg'},{id:101,name:'Guest director',job:'Director',episode_count:1,popularity:100,profile_path:'/person.jpg'},{id:102,name:'Co-director',job:'Director',episode_count:5,popularity:0,profile_path:'/person.jpg'}]}};
+ prepareDetail(data);const ids=data.persons.cast.map(p=>p.id);for(const id of [1,40,41,100,102])assert.ok(ids.includes(id),String(id));for(const id of [42,43,101])assert.ok(!ids.includes(id),String(id));assert.deepEqual(ids.slice(0,2),[100,102]);
 });
 test('wide cast rows fill past seven people and keep the remainder lazy',async()=>{
  const dom=new JSDOM('<body><div class="items-line"><div class="full-person"></div></div></body>',{runScripts:'outside-only'}),w=dom.window;

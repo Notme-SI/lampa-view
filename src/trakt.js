@@ -1,14 +1,16 @@
 // Trakt determines list membership and order. TMDB IDs keep native Lampa
 // details, online providers and torrent search interoperable with these cards.
 import flag from './storage-flag.js';
+import traktMetadata from './trakt-metadata.js';
 const BASE='https://api.trakt.tv/';
 const TYPES={movie:'movies',tv:'shows'};
 export function traktPlan(kind){
+ if(!kind)return [{title:'Сейчас смотрят',url:'mixed/trending',minimal_row_aliases:['?sort=now_playing','movie/now_playing','movies/trending','shows/trending']},{title:'Популярное',url:'mixed/popular',minimal_row_aliases:['movie/popular','tv/popular','movies/popular','shows/popular']}];
  const types=TYPES[kind]?[TYPES[kind]]:kind==='anime'?['shows']:['movies','shows'];
  const filter=kind==='anime'?'?genres=animation&languages=ja':kind==='cartoon'?'?genres=animation':'';
  return types.flatMap(type=>[
-  {title:(type==='movies'?'Фильмы':'Сериалы')+' · Сейчас смотрят',url:type+'/trending'+filter},
-  {title:(type==='movies'?'Фильмы':'Сериалы')+' · Популярное',url:type+'/popular'+filter}
+  {title:kind==='cartoon'?(type==='movies'?'Мультфильмы · Сейчас смотрят':'Мультсериалы · Сейчас смотрят'):'Сейчас смотрят',url:type+'/trending'+filter},
+  {title:kind==='cartoon'?(type==='movies'?'Популярные мультфильмы':'Популярные мультсериалы'):'Популярное',url:type+'/popular'+filter}
  ]);
 }
 function image(value){
@@ -32,7 +34,7 @@ export function traktCards(json,type){
 }
 export default function installTrakt(L){
  if(!L.Api || !L.Api.sources || L.Api.sources.trakt)return;
- const cache=new Map(),pending=new Map(),queue=[],live=new Set();let running=0,generation=0,lastKey='';
+ const cache=new Map(),pending=new Map(),queue=[],live=new Set(),metadata=traktMetadata(L);let running=0,generation=0,lastKey='';
  const client=()=>String(L.Storage.get('minimal_trakt_client_id','') || '').trim();
  const enabled=()=>flag(L,'minimal_trakt_enabled',false);
  const error=(fail,message)=>{if(fail)fail({status_message:message});};
@@ -59,17 +61,28 @@ export default function installTrakt(L){
    try{xhr.send();}catch(e){finish(null,'Не удалось подключиться к Trakt');}
   }
  }
- function clear(){generation++;queue.length=0;pending.clear();for(const xhr of Array.from(live))xhr.abort();}
+ function clear(){generation++;queue.length=0;pending.clear();metadata.clear();for(const xhr of Array.from(live))xhr.abort();}
  function list(params,ok,fail){
   if(!enabled())return error(fail,'Включите Trakt в настройках каталога L A M P A');
   const id=client();if(!id)return error(fail,'Добавьте Client ID в Настройки → L A M P A → Каталог и поиск → Trakt');
   if(id!==lastKey){clear();cache.clear();lastKey=id;}
+  const mixed=String(params.url || '').match(/^mixed\/(trending|popular)$/);
+  if(mixed){
+   const parts=new Array(2);let left=2,reason;
+   ['movies','shows'].forEach((type,index)=>list({...params,url:type+'/'+mixed[1],minimal_limit:10},json=>{parts[index]=json;finish();},e=>{reason=e;finish();}));
+   function finish(){if(--left)return;const good=parts.filter(Boolean);if(!good.length)return error(fail,reason && reason.status_message || 'Trakt недоступен');
+    const results=[],seen=new Set();for(let i=0;i<10;i++)for(const part of good){const card=part.results[i];if(card && !seen.has(card.media_type+':'+card.id)){seen.add(card.media_type+':'+card.id);results.push(card);}}
+    ok({results,page:good[0].page,total_pages:Math.max(...good.map(part=>part.total_pages))});
+   }
+   return;
+  }
   // Only our fixed public list routes can receive the API key.
   const path=String(params.url || 'movies/trending'),match=path.match(/^(movies|shows)\/(trending|popular)(\?(?:genres=animation(?:&languages=ja)?))?$/);
   if(!match)return error(fail,'Неизвестная подборка Trakt');
   const page=Math.max(1,Math.min(1000,Number(params.page) || 1));
-  const route=path+(path.includes('?')?'&':'?')+'extended=full&limit=20&page='+page,key=route;
-  const done=json=>ok({results:traktCards(json.rows,match[1]==='movies'?'movie':'tv'),page,total_pages:json.pages});
+  const limit=params.minimal_limit===10?10:20;
+  const route=path+(path.includes('?')?'&':'?')+'extended=full&limit='+limit+'&page='+page,key=route;
+  const own=generation,done=json=>metadata.enrich(traktCards(json.rows,match[1]==='movies'?'movie':'tv'),results=>{if(own===generation)ok({results,page,total_pages:json.pages});});
   const saved=cache.get(key);if(saved && Date.now()-saved.at<600000)return done(saved.value);
   if(pending.has(key)){pending.get(key).callbacks.push([done,fail]);return;}
   const job={key,path:route,client:id,generation,callbacks:[[done,fail]]};pending.set(key,job);queue.push(job);pump();

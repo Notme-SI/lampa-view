@@ -60,7 +60,7 @@ test('all episodes and ambiguous folders remain available while failed sources s
  const n=await native({built:true}),{L}=n;let s;try{
   s=screen(n,{episodes:Array.from({length:54},(_,i)=>i+1)});s.filter.set('sort',Array.from({length:36},(_,i)=>({title:'Источник '+i,source:'source'+i,selected:!i,ghost:i>20})));await wait(220);
   assert.equal(s.root.find('.nova-card').length,54);assert.equal(s.root.find('[data-nova-focus=jump]').length,0);assert.equal(s.root.find('.nova-card__title').first().text(),'Серия 1');assert.doesNotMatch(s.root.find('.nova-card__tag').text(),/S\d|E\d/);
-  s.root.find('[data-nova-focus=source]').trigger('hover:enter');await wait(90);assert.equal(s.root.find('.nova-drop .nova-chip').length,21);assert.equal(s.root.find('[data-nova-src="source21"]').length,0,'Unavailable ghost sources stay hidden');assert.equal(s.root.find('[data-nova-focus="src:more"]').length,0);
+  s.root.find('[data-nova-focus=source]').trigger('hover:enter');await wait(90);assert.equal(L.Select.render().find('.selectbox-item').length,21);assert.ok(!L.Select.render().text().includes('Источник 21'),'Unavailable ghost sources stay hidden');L.Controller.back();assert.equal(s.root.find('[data-nova-focus="src:more"]').length,0);
   s.close();s=screen(n,{episodes:[]});for(let i=0;i<27;i++)n.w.jQuery('<div class="online-prestige online-prestige--folder selector"><div class="online-prestige__title">Папка '+i+'</div></div>').on('hover:enter',()=>{}).appendTo(s.body);await wait(180);assert.equal(s.root.find('.nova-card--nav').length,27);assert.equal(s.root.find('[data-nova-focus=jump]').length,0);assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}
 });
@@ -82,6 +82,14 @@ test('a long voice list uses one native selection menu and keeps the provider or
   s.filter.set('filter',[{stype:'voice',title:'Озвучка',items:Array.from({length:18},(_,i)=>({title:'Студия '+i,selected:i===0}))}]);await wait(200);
   assert.equal(s.root.find('[data-nova-group=voice]').length,0);assert.equal(s.root.find('[data-nova-focus=voice]').length,1);
   s.root.find('[data-nova-focus=voice]').trigger('hover:enter');assert.equal(L.Select.render().find('.selectbox-item').length,18);L.Select.render().find('.selectbox-item').eq(17).trigger('hover:enter');await wait(90);assert.equal(selected,17);assert.equal(L.Select.opened(),false);assert.deepEqual(n.errors,[]);
+ }finally{if(s)s.close();n.close();}
+});
+
+test('online controls start with a layout icon and source popup; long movie voices select a file without autoplay',async()=>{
+ const n=await native({built:true}),{L}=n;let s;try{
+  s=screen(n,{serial:false,episodes:Array.from({length:10},(_,i)=>i+1)});await wait(180);
+  const keys=Array.from(s.root.find('.nova-plus__bar .nova-chip'),node=>node.getAttribute('data-nova-focus'));assert.deepEqual(keys,['source','movievoice']);assert.equal(s.root.find('[data-nova-group=movievoice]').length,0);assert.equal(s.root.find('[data-nova-focus=order],[data-nova-focus=look]').length,0);
+  s.root.find('[data-nova-focus=movievoice]').trigger('hover:enter');assert.equal(L.Select.render().find('.selectbox-item').length,10);L.Select.render().find('.selectbox-item').last().trigger('hover:enter');await wait(100);assert.equal(s.played(),0);s.root.find('[data-nova-focus=hero]').trigger('hover:enter');assert.equal(s.played(),10);
  }finally{if(s)s.close();n.close();}
 });
 

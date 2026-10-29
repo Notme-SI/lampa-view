@@ -3028,7 +3028,7 @@
   function chooseMovie(item) {
     movie_choice = { scope: movieChoiceScope(), index: item.index };
     ui_open = '';
-    lockFocus(modeWide() ? 'movievoice:' + item.index : 'movievoice');
+    lockFocus(modeWide() && items.length<=6 ? 'movievoice:' + item.index : 'movievoice');
     redraw();
   }
 
@@ -3581,6 +3581,7 @@
   }
 
   function uiToggle(key) {
+    if(key==='source' && wideOn())return sourceMenu();
     var opening = ui_open !== key;
     lockRelease();
     ui_open = opening ? key : '';
@@ -3773,6 +3774,17 @@
     // An untested provider is not a failed provider. Quality badges alone
     // cannot determine whether a source has this film.
     return true;
+  }
+
+  function sourceMenu(){
+    ui_open='';
+    var entries=(groups.sort || []).filter(function(item){var key=item.source || item.title;return sourceActive(item,sourceState(key));}).map(function(item){
+      var parts=splitSourceName(item.title),quality=knownQuality(item.source || item.title) || parts.badge;
+      return {title:parts.name,subtitle:quality || '',selected:!!item.selected,provider:item};
+    });
+    Lampa.Select.show({title:text('nova_source','nova_plus_source'),items:entries.length?entries:[{title:'Нет доступных источников',noenter:true}],
+      onSelect:function(entry){if(!entry.provider)return;Lampa.Select.hide();contentEnable();if(entry.provider.selected){ui_focus='source';restoreFocus(false);}else chooseSource(entry.provider);},
+      onBack:function(){Lampa.Select.hide();ui_focus='source';contentEnable();restoreFocus(false);}});
   }
 
   function sourceRow() {
@@ -6336,6 +6348,18 @@
       });
     };
 
+    if(serial && !nav){
+      var viewLabel=viewMode()==='list'?'Показать плиткой':'Показать списком';
+      tool('view','','',{plain:true,icon:ICON[viewMode()==='list'?'list':'grid']},function(){
+        save(viewKey(),viewMode()==='list'?'grid':'list');lockFocus('view');redraw();
+      }).addClass('nova-chip--view-icon').attr({'aria-label':viewLabel,title:viewLabel,'data-current-view':viewMode()}).find('svg').attr('aria-hidden','true');
+    }
+    if(groups.sort && groups.sort.length){
+      tool('source',text('nova_source','nova_plus_source'),'',{},function(){
+        sourceMenu();
+      });
+    }
+
     if (groups.season && groups.season.items.length > 3) compactGroup('season',groups.season.title || label('nova_plus_seasons'));
     else if (groups.season && groups.season.items.length > 0) {
       var seasons = group(serial ? (groups.season.title || label('nova_plus_seasons')) : label('nova_plus_parts'), 'season');
@@ -6365,11 +6389,19 @@
 
     if (!serial && !nav && items.length > 1) {
       var selectedMovie = pickResume(items);
+      if(items.length>6){
+        tool('movievoice',label('nova_plus_voices'),selectedMovie && selectedMovie.title || '',{},function(){
+          Lampa.Select.show({title:label('nova_plus_voices'),items:items.filter(function(item){return !item.folder;}).map(function(item){return {title:item.title,subtitle:shortQuality(item.quality),selected:item===selectedMovie,file:item};}),
+            onSelect:function(entry){Lampa.Select.hide();contentEnable();chooseMovie(entry.file);},
+            onBack:function(){Lampa.Select.hide();ui_focus='movievoice';contentEnable();restoreFocus(false);}});
+        });
+      }else{
       var movieVoices = group(label('nova_plus_voices'), 'movievoice');
       items.forEach(function (item) {
         if (item.folder) return;
         put(movieVoices, 'movievoice:' + item.index, item.title || movie.title || '', '', { active: item === selectedMovie, plain: true, badge: shortQuality(item.quality) }, function () { chooseMovie(item); });
       });
+      }
     }
 
     extras.forEach(function (entry, index) {
@@ -6378,35 +6410,6 @@
         try { origin.trigger('hover:long'); } catch (e) {}
       });
     });
-
-    if (serial && !nav) {
-      tool('view', '', label(viewMode() === 'list' ? 'nova_plus_view_list' : 'nova_plus_view_grid'), { plain: true }, function () {
-        save(viewKey(), viewMode() === 'list' ? 'grid' : 'list');
-        lockFocus('view');
-        redraw();
-      });
-    }
-
-    if (groups.sort && groups.sort.length) {
-      tool('source', text('nova_source', 'nova_plus_source'), '', {}, function () { uiToggle('source'); });
-    }
-
-    if (serial && !nav) {
-      tool('order', label('nova_plus_order'), label(wideReverse() ? 'nova_plus_order_reverse' : 'nova_plus_order_straight'), { plain: true }, function () {
-        save(WIDE_ORDER_KEY, wideReverse() ? 'straight' : 'reverse');
-        lockFocus('order');
-        redraw();
-      });
-    }
-
-    if (serial && !nav) {
-      tool('look', label('nova_plus_look'), label(wideRowOn() ? 'nova_plus_look_row' : 'nova_plus_look_grid'), { plain: true }, function () {
-        if (viewSerial() !== 'grid') save(VIEW_KEY, 'grid');
-        save(WIDE_LAYOUT_KEY, wideRow() ? 'grid' : 'row');
-        lockFocus('look');
-        redraw();
-      });
-    }
 
     if (widePosBottom()) panel.append(bar);
 

@@ -19,7 +19,7 @@ const {setup}=require('../tests/fixtures/native-browser.cjs');
     const anime=await new Promise((resolve,reject)=>L.Api.category({source:'trakt',url:'anime'},resolve,e=>reject(new Error(e.status_message))));
     return {origin:location.origin,rows:rows.map(row=>({path:row.url,count:row.results.length})),nextPage:next.page,nextCount:next.results.length,animeRows:anime.length,identities:rows.every(row=>row.results.every(card=>card.source==='tmdb' && card.id>0 && card.trakt_id>0)),images:rows.every(row=>row.results.some(card=>/^https:\/\/media.trakt.tv\//.test(card.img)))};
    },process.env.TRAKT_CLIENT_ID);
-   assert.equal(result.rows.length,4);assert.ok(result.rows.every(row=>row.count>0));assert.equal(result.nextPage,2);assert.ok(result.nextCount>0);assert.equal(result.animeRows,2);assert.ok(result.identities);assert.ok(result.images);assert.deepEqual(r.errors,[]);
+   assert.equal(result.rows.length,2);assert.ok(result.rows.every(row=>row.count>0));assert.equal(result.nextPage,2);assert.ok(result.nextCount>0);assert.equal(result.animeRows,2);assert.ok(result.identities);assert.ok(result.images);assert.deepEqual(r.errors,[]);
    console.log(name+': live Trakt catalogue, CORS, page 2, anime filters and verified identities passed '+JSON.stringify(result));await r.context.close();
   }finally{await browser.close();}
  }
