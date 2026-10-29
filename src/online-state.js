@@ -7,11 +7,12 @@ const stamp=value=>typeof value==='string' && !/^\d+$/.test(value)?Date.parse(va
 export function folderTarget(rows,card,season=1){
  if(!card || !Array.isArray(rows) || rows.some(row=>/^(play|call)$/.test(row.method)))return '';
  const normalize=value=>String(value || '').toLowerCase().replace(/ё/g,'е').replace(/(?:сезон|season)\s*\d+|\d+\s*(?:сезон|season)|\bs\d+\b/gi,' ').replace(/\b(?:19|20)\d{2}\b/g,' ').replace(/[^a-zа-я0-9\u3040-\u30ff\u3400-\u9fff]+/g,' ').trim();
- const names=new Set([card.title,card.name,card.original_title,card.original_name].filter(Boolean).map(normalize).filter(Boolean));
+ const aliases=value=>Array.from(new Set([String(value || ''),...String(value || '').split(/\s+[\/|]\s+/)].map(normalize).filter(Boolean)));
+ const names=new Set([card.title,card.name,card.original_title,card.original_name].flatMap(aliases));
  const year=Number(String(card.release_date || card.first_air_date || '').slice(0,4));
  const candidates=rows.filter(row=>{
   if(row.method!=='link' || typeof row.url!=='string' || !/^(?:https?:\/\/|\/)/i.test(row.url))return false;
-  const title=String(row.text || row.title || row.name || '');if(!names.has(normalize(title)))return false;
+  const title=String(row.text || row.title || row.name || '');if(!aliases(title).some(name=>names.has(name)))return false;
   const found=title.match(/(?:сезон|season)\s*(\d+)|(\d+)\s*(?:сезон|season)|\bs(\d+)\b/i),param=row.url.match(/[?&](?:s|season)=(\d+)/);
   const ownSeason=Number(row.season || (found && (found[1] || found[2] || found[3])) || (param && param[1]));
   if(ownSeason && ownSeason!==Number(season))return false;

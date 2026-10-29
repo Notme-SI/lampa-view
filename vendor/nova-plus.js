@@ -2419,9 +2419,9 @@
         // Lampac uses "similar" folders for provider search hits. Follow only
         // a unique title/season match; never start the video or pick a sequel.
         try {
-          // Ordinary episode responses need no extra HTML parsing. Only search
-          // hits marked "similar" can require our title disambiguation.
-          var folderPage=typeof str==='string' && /\bsimilar(?:&quot;|["'])?\s*:\s*(?:true|1)/i.test(str);
+          // Ordinary episode responses need no extra HTML parsing. Only provider
+          // search/season folders need title disambiguation, not episode files.
+          var folderPage=typeof str==='string' && /(?:\bsimilar(?:&quot;|["'])?\s*:\s*(?:true|1)|\bvideos__season\b)/i.test(str);
           var folderState=folderPage && onlineState(),resume=folderState && folderState.resume(card || {});
           var folder=card && folderState && typeof comp.parseJsonDate==='function' && folderState.folderTarget(comp.parseJsonDate(str,'.videos__item'),card,comp.lampaViewManualSeason || resume && resume.season || 1);
           if(folder && folderChain.length<6 && folderChain.indexOf(folder)<0){

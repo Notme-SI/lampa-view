@@ -74,12 +74,13 @@ body.lampa_view .pt-hero__actions {display:flex;gap:.8em;margin-top:1.6em}
 body.lampa_view .pt-hero__action {display:flex;align-items:center;gap:.6em;border-radius:.6em;font-size:.82em;font-weight:600;padding:.85em 1.15em;background:var(--pt-accent);color:#13232c;cursor:pointer;border:1px solid transparent}
 body.lampa_view .pt-hero__action svg {width:1.15em;height:1.15em}
 body.lampa_view .pt-hero__action--secondary {background:#212a35dd;color:#d4dce3;border-color:#ffffff12}
-body.lampa_view .pt-hero__action.focus,body.lampa_view .pt-hero__action.hover,body.lampa_view .pt-hero__action:hover,body.lampa_view .pt-hero__action:focus-visible {outline:2px solid white;outline-offset:4px}
+body.lampa_view .pt-hero__action.focus,body.lampa_view .pt-hero__action.hover,body.lampa_view .pt-hero__action:hover,body.lampa_view .pt-hero__action:focus-visible {outline:none!important;box-shadow:inset 0 0 0 2px #fff!important}
 body.lampa_view .pt-hero__dots {position:absolute;bottom:2.8em;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:.5em}
 body.lampa_view .pt-hero__dot {width:.5em;height:.5em;background:#ffffff50;border-radius:1em;cursor:pointer;position:relative}
 body.lampa_view .pt-hero__dot:after {content:'';position:absolute;inset:-.6em}
 body.lampa_view .pt-hero__dot.active {width:1.5em;background:var(--pt-accent)}
-body.lampa_view .pt-hero__dot.focus,body.lampa_view .pt-hero__dot:focus {outline:2px solid #fff;outline-offset:4px}
+body.lampa_view .pt-hero__dot {box-sizing:border-box;border:1.5px solid transparent;outline:none!important;box-shadow:none!important;transition:none!important}
+body.lampa_view .pt-hero__dot.focus,body.lampa_view .pt-hero__dot:focus-visible {border-color:#fff}
 body.lampa_view .pt-mobile-nav {display:none!important}
 body.lampa_view.pt-reduce-motion *,body.lampa_view.pt-reduce-motion *:before,body.lampa_view.pt-reduce-motion *:after {animation-duration:0s!important;transition-duration:0s!important;scroll-behavior:auto!important}
 body.lampa_view .full-start-new {padding-top:1.5em}
@@ -354,7 +355,9 @@ body.lampa_view .minimal-detail-columns>.minimal-detail-facts {grid-column:2;gri
 body.lampa_view .minimal-overview-action {cursor:pointer;border-radius:.3em;outline:none!important;border:0!important;box-shadow:none!important;position:relative;isolation:isolate;max-width:52em;margin:1em 0}
 body.lampa_view .minimal-overview-action>.full-start-new__description,body.lampa_view .minimal-overview-action>.minimal-detail-overview {width:100%;max-width:none;margin:0;outline:none!important;border:0!important;box-shadow:none!important}
 body.lampa_view .minimal-overview-focus {display:none;position:absolute;inset:0;border:2px solid var(--pt-accent);border-radius:.3em;pointer-events:none}
-body.lampa_view .minimal-overview-action:hover>.minimal-overview-focus,body.lampa_view .minimal-overview-action.focus>.minimal-overview-focus,body.lampa_view .minimal-overview-action:focus-visible>.minimal-overview-focus {display:block}
+body.lampa_view .minimal-overview-action:hover,body.lampa_view .minimal-overview-action.focus,body.lampa_view .minimal-overview-action:focus-visible {box-shadow:inset 0 0 0 2px var(--pt-accent)!important}
+body.lampa_view .minimal-overview-action {contain:paint;transition:none!important;transform:none!important}
+body.lampa_view .minimal-overview-action>.minimal-overview-focus {display:none!important}
 body.lampa_view .minimal-overview-action::before,body.lampa_view .minimal-overview-action::after {display:none!important}
 body.lampa_view .minimal-detail-studio.selector {cursor:pointer;border-radius:.2em;outline:none}
 body.lampa_view .minimal-detail-studio.selector.focus,body.lampa_view .minimal-detail-studio.selector:focus-visible {box-shadow:0 0 0 2px var(--pt-accent)}
@@ -802,3 +805,8 @@ body.lampa_view .search-box {z-index:90!important;background:#080b10!important;b
  body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.45em}
  body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button {min-height:44px;padding:.55em .3em;font-size:.88em}
 }
+
+/* Keep hero focus inside its paint bounds, including keyboard and remote input. */
+body.lampa_view .pt-hero__action {outline:none!important;transition-property:background-color,color!important}
+body.lampa_view .pt-hero__studio.selector {outline:none!important;transition:none!important}
+body.lampa_view .pt-hero__studio.selector.focus,body.lampa_view .pt-hero__studio.selector:focus-visible {outline:none!important;box-shadow:inset 0 0 0 2px var(--pt-accent)!important}

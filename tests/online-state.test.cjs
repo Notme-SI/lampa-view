@@ -234,3 +234,30 @@ test('online layout settings change source position, episode order and strip dir
   L.Storage.set('nova_plus_quality','720');const data={url:'/default',quality:{'2160p':'/4k','1080p':'/fullhd','720p':'/hd'}};L.Player.listener.send('start',data);assert.equal(data.url,'/hd');assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}
 });
+
+
+test('bilingual provider folders resolve the exact original title, preserving year, sequel and ambiguity guards',()=>{
+ const dom=new JSDOM('',{runScripts:'outside-only'}),w=dom.window;try{
+  w.eval(code);const pick=w.OnlineState.folderTarget,card={name:'Киберпанк: Бегущие по краю',original_name:'Cyberpunk: Edgerunners',first_air_date:'2022-09-13'};
+  const rows=[{method:'link',url:'/lite/aniliberty?releases=9307',title:'Киберпанк: Бегущие по краю / Cyberpunk: Edgerunners',year:2022,similar:true},{method:'link',url:'/lite/aniliberty?releases=10364',title:'Киберпанк: Бегущие по краю 2 / Cyberpunk: Edgerunners 2',year:2026,similar:true}];
+  assert.equal(pick(rows,card),rows[0].url);assert.equal(pick(rows,{name:'Cyberpunk: Edgerunners',first_air_date:'2022-09-13'}),rows[0].url);
+  assert.equal(pick([rows[1]],card),'');assert.equal(pick([{...rows[0],year:1990}],card),'');assert.equal(pick([...rows,{...rows[0],url:'/duplicate'}],card),'');
+  assert.equal(pick([{...rows[0],title:'Другой тайтл | Cyberpunk: Edgerunners',season:2}],card,1),'');
+  assert.equal(pick([{...rows[0],title:'Другой тайтл | Cyberpunk: Edgerunners',season:2}],card,2),rows[0].url);
+  assert.equal(pick([{...rows[0],url:'javascript:alert(1)'}],card),'');
+  assert.equal(pick([{...rows[0],title:'Другое произведение Cyberpunk: Edgerunners'}],card),'','No loose substring matching');
+ }finally{w.close();}
+});
+
+test('online host follows native bilingual search HTML to the title without an intermediate manual folder click',async()=>{
+ const n=await native({built:true}),{w}=n;let s;try{
+  const requests=[],parsed=[],comp={changeBalanser(){},reset(){},request:url=>requests.push(url),parse:body=>parsed.push(body),parseJsonDate:body=>Array.from(w.jQuery('<div>').html(body).find('.videos__item'),node=>JSON.parse(w.jQuery(node).attr('data-json')))};
+  s=screen(n,{component:comp});Object.assign(s.movie,{name:'Киберпанк: Бегущие по краю',original_name:'Cyberpunk: Edgerunners',first_air_date:'2022-09-13'});await wait(180);
+  const rows=[{method:'link',url:'/lite/aniliberty?releases=9307',title:'Киберпанк: Бегущие по краю / Cyberpunk: Edgerunners',year:2022,similar:true},{method:'link',url:'/lite/aniliberty?releases=10364',title:'Киберпанк: Бегущие по краю 2 / Cyberpunk: Edgerunners 2',year:2026,similar:true}],body=rows.map(tag).join('');
+  comp.request('/lite/aniliberty?title=Cyberpunk');comp.parse(body);assert.equal(requests.at(-1),rows[0].url);assert.equal(parsed.length,0);assert.equal(s.played(),0);
+  comp.parse(body);assert.equal(parsed.length,1,'Repeated target must not recurse');
+  const seasonBody=tag({method:'link',url:'/lite/provider?season=1',title:'Киберпанк: Бегущие по краю / Cyberpunk: Edgerunners',season:1}).replace('videos__item','videos__item videos__season');
+  comp.request('/lite/provider/search');comp.parse(seasonBody);assert.equal(requests.at(-1),'/lite/provider?season=1','Native season folders do not require the similar flag');
+  const episode=tag({method:'play',url:'/test.mp4',title:'Серия 1'});comp.parse(episode);assert.equal(parsed.at(-1),episode);assert.equal(s.played(),0);assert.deepEqual(n.errors,[]);
+ }finally{if(s)s.close();n.close();}
+});
