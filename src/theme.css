@@ -4,7 +4,7 @@ body.lampa_view {
  --pt-bg:#000000;--pt-side:#14161b;--pt-panel:#191d24;--pt-high:#252c34;
  --pt-line:#ffffff12;--pt-text:#eeeff2;--pt-muted:#9299a3;--pt-accent:#add9e5;--pt-dim:#add9e514;
  background:var(--pt-bg)!important;color:var(--pt-text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
- font-size:clamp(14px,.94vw,18px)!important;
+ font-size:calc(clamp(14px,.94vw,18px) * var(--pt-interface-scale,1))!important;
 }
 body.lampa_view .background {opacity:.08!important}
 body.lampa_view .background__fade {background:linear-gradient(0deg,var(--pt-bg),transparent)!important}
@@ -21,7 +21,7 @@ body.lampa_view.pt-home .head__backward {display:none!important}
 body.lampa_view .minimal-back svg {width:1.1em;height:1.1em}
 .minimal-back--overlay {display:none}
 body.lampa_view .minimal-back-heading {display:flex;align-items:center;gap:.7em}
-body.lampa_view .minimal-back--overlay {display:flex;align-items:center;justify-content:center;flex:0 0 2em;width:2em;height:2em;border:1px solid var(--pt-line);border-radius:.6em;background:#ffffff04;color:var(--pt-muted);cursor:pointer;font-size:1rem}
+body.lampa_view .minimal-back--overlay {display:flex;align-items:center;justify-content:center;flex:0 0 2em;width:2em;height:2em;border:1px solid var(--pt-line);border-radius:.6em;background:#ffffff04;color:var(--pt-muted);cursor:pointer;font-size:1em}
 body.lampa_view .minimal-back-heading>.selectbox__title,body.lampa_view .minimal-back-heading>.settings__title {flex:1;min-width:0}
 body.lampa_view .head .open--broadcast,body.lampa_view .head .notice--icon,body.lampa_view .head .full--screen,body.lampa_view .head .open--settings,body.lampa_view .head .open--notice,body.lampa_view .head .open--split {display:none!important}
 body.lampa_view .head__actions {margin-left:auto;display:flex;align-items:center;gap:.5em}
@@ -195,7 +195,7 @@ body.lampa_view .simple-button,body.lampa_view .selectbox-item,body.lampa_view .
  body.lampa_view .pt-hero__title {font-size:2.5em}
  body.lampa_view .wrap__left {left:1.2em!important}
 }
-body.lampa_view.pt-mobile {font-size:16px!important}
+body.lampa_view.pt-mobile {font-size:calc(16px * var(--pt-interface-scale,1))!important}
 body.lampa_view.pt-mobile .head {height:6.5em}
 body.lampa_view.pt-mobile .head__body {height:3.5em;padding:.5em 1em;position:relative}
 body.lampa_view.pt-mobile .head__logo-icon {margin-right:auto!important}
@@ -273,7 +273,7 @@ body.lampa_view.pt-wheel-active .card {transition:none!important}
 @media(min-width:1100px) {
  body.lampa_view .pt-hero,body.lampa_view .items-line {max-width:90vw}
  body.lampa_view .head__body {max-width:90vw;padding-left:0;padding-right:0}
- body.lampa_view .items-line .card:not(.card--wide):not(.card--collection) {width:clamp(8.4em,calc((90vw - 10em)/10),11.1em)!important}
+ body.lampa_view .items-line .card:not(.card--wide):not(.card--collection) {width:clamp(8.4em,calc((90vw - 10em / var(--pt-interface-scale,1)) / 10 * var(--pt-interface-scale,1)),11.1em)!important}
 }
 
 /* OLED: true black canvas; poster artwork retains its own colors. */
@@ -390,9 +390,9 @@ body.lampa_view .minimal-filter-panel .selectbox-item:nth-last-child(2).focus {b
 /* Legacy history/filter grids share the catalogue's content boundaries. */
 body.lampa_view .category-full,body.lampa_view .mapping--grid {width:100%;max-width:90vw;margin-left:auto;margin-right:auto;padding-left:0;padding-right:0;box-sizing:border-box}
 body.lampa_view .category-full>.card {box-sizing:border-box;margin-left:0;padding-left:.5em;padding-right:.5em}
-@media(min-width:1100px){body.lampa_view:not(.pt-tv) .category-full>.card:not(.card--wide):not(.card--collection) {width:clamp(8.4em,calc((90vw - 10em)/10),11.1em)!important}}
-@media(min-width:1200px){body.lampa_view:not(.pt-tv) .mapping--grid>.card,body.lampa_view:not(.pt-tv) .category-full>.card:not(.card--wide):not(.card--collection) {width:12.5%!important}}
-@media(min-width:1800px){body.lampa_view:not(.pt-tv) .mapping--grid>.card,body.lampa_view:not(.pt-tv) .category-full>.card:not(.card--wide):not(.card--collection) {width:10%!important}}
+@media(min-width:1100px){body.lampa_view:not(.pt-tv) .category-full>.card:not(.card--wide):not(.card--collection) {width:clamp(8.4em,calc((90vw - 10em / var(--pt-interface-scale,1)) / 10 * var(--pt-interface-scale,1)),11.1em)!important}}
+@media(min-width:1200px){body.lampa_view:not(.pt-tv) .mapping--grid>.card,body.lampa_view:not(.pt-tv) .category-full>.card:not(.card--wide):not(.card--collection) {width:calc(12.5% * var(--pt-interface-scale,1))!important}}
+@media(min-width:1800px){body.lampa_view:not(.pt-tv) .mapping--grid>.card,body.lampa_view:not(.pt-tv) .category-full>.card:not(.card--wide):not(.card--collection) {width:calc(10% * var(--pt-interface-scale,1))!important}}
 @media(max-width:650px){body.lampa_view .minimal-filter-panel .selectbox__content {width:100%;max-height:90vh}body.lampa_view .minimal-filter-panel .selectbox-item {min-height:3em;padding:.7em 1em}}
 body.lampa_view .minimal-crew-native {max-width:90%;margin:1.2em auto}
 body.lampa_view .minimal-crew-native .full-person {font-size:.8em;padding-right:1em}
@@ -484,19 +484,19 @@ body.lampa_view .minimal-anime-retry.focus,body.lampa_view .minimal-anime-retry:
 body.lampa_view .minimal-anime-status[hidden],body.lampa_view .minimal-anime-retry[hidden] {display:none!important}
 
 /* Small touch controls keep native actions, including the iPhone safe area. */
-body.lampa_view.pt-mobile .navigation-bar {font-size:14px!important;padding:0 .8em .65em;padding-bottom:calc(.65em + env(safe-area-inset-bottom,0px))}
+body.lampa_view.pt-mobile .navigation-bar {font-size:calc(14px * var(--pt-interface-scale,1))!important;padding:0 .8em .65em;padding-bottom:calc(.65em + env(safe-area-inset-bottom,0px))}
 body.lampa_view.pt-mobile .navigation-bar__body {max-width:400px;margin:0 auto;padding:.5em .6em;border:1px solid var(--pt-line);background:#181a1cf2;box-shadow:0 4px 20px #0006}
 body.lampa_view.pt-mobile .navigation-bar__item {display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:44px;min-width:56px}
 body.lampa_view.pt-mobile .navigation-bar__icon {width:1.5em;height:1.5em}
 body.lampa_view.pt-mobile .navigation-bar__label {font-size:.78em;line-height:1.2;margin-top:.3em}
-body.lampa_view.pt-mobile .settings__content {font-size:14px!important;box-sizing:border-box;max-height:78vh!important;border-radius:1em}
+body.lampa_view.pt-mobile .settings__content {font-size:calc(14px * var(--pt-interface-scale,1))!important;box-sizing:border-box;max-height:78vh!important;border-radius:1em}
 body.lampa_view.pt-mobile .settings__body,
 body.lampa_view.pt-tv .settings__body {font-size:1em!important;min-height:0;overflow:hidden}
 body.lampa_view.pt-mobile .settings__head,
 body.lampa_view.pt-tv .settings__head {padding:1em 1.1em .8em}
 body.lampa_view.pt-mobile .settings__title,
 body.lampa_view.pt-tv .settings__title {font-size:1.4em;line-height:1.3}
-body.lampa_view.pt-mobile .settings .minimal-back--overlay {font-size:14px}
+body.lampa_view.pt-mobile .settings .minimal-back--overlay {font-size:1em}
 body.lampa_view.pt-mobile .settings-folder,
 body.lampa_view.pt-tv .settings-folder {padding:.9em 1.1em;min-height:3.6em;align-items:center;box-sizing:border-box;border-radius:.5em}
 body.lampa_view.pt-mobile .settings-folder__icon,
@@ -525,9 +525,9 @@ body.lampa_view.pt-tv .pt-hero__overview {-webkit-line-clamp:2;line-height:1.5}
 body.lampa_view.pt-tv .pt-hero__actions {margin-top:1em}
 body.lampa_view.pt-tv .pt-hero__dots {bottom:1.3em}
 body.lampa_view.pt-tv .items-line {max-width:90vw;margin-left:auto;margin-right:auto}
-body.lampa_view.pt-tv .items-line .card:not(.card--wide):not(.card--collection) {width:clamp(6.4em,calc((90vw - 9em)/10),8.5em)!important}
-body.lampa_view.pt-tv .mapping--grid>.card:not(.card--wide):not(.card--collection),body.lampa_view.pt-tv .category-full>.card:not(.card--wide):not(.card--collection) {width:12.5%!important}
-body.lampa_view.pt-tv .card--wide,body.lampa_view.pt-tv .card--collection {width:clamp(15em,27vw,23em)!important}
+body.lampa_view.pt-tv .items-line .card:not(.card--wide):not(.card--collection) {width:clamp(6.4em,calc((90vw - 9em / var(--pt-interface-scale,1)) / 10 * var(--pt-interface-scale,1)),8.5em)!important}
+body.lampa_view.pt-tv .mapping--grid>.card:not(.card--wide):not(.card--collection),body.lampa_view.pt-tv .category-full>.card:not(.card--wide):not(.card--collection) {width:calc(12.5% * var(--pt-interface-scale,1))!important}
+body.lampa_view.pt-tv .card--wide,body.lampa_view.pt-tv .card--collection {width:clamp(15em,calc(27vw * var(--pt-interface-scale,1)),23em)!important}
 body.lampa_view.pt-tv .card,body.lampa_view.pt-mobile .settings-folder {will-change:auto}
 /* Clip TV rails without an extra full-width gradient compositing layer. */
 body.lampa_view.pt-tv .items-line__body {-webkit-mask-image:none;mask-image:none}
@@ -536,9 +536,9 @@ body.lampa_view.pt-tv .card__view {transition:none!important;-webkit-transition:
 body.lampa_view.pt-tv .card.focus .card__view,body.lampa_view.pt-tv .card.hover .card__view {-webkit-transform:none;transform:none;box-shadow:0 0 .55em rgba(173,217,229,.4)}
 
 /* TV drawers use the same compact rows as phones, with readable TV text. */
-body.lampa_view.pt-tv .settings__content {font-size:clamp(14px,.84vw,16px)!important;width:30em;max-width:38vw;box-sizing:border-box}
+body.lampa_view.pt-tv .settings__content {font-size:calc(clamp(14px,.84vw,16px) * var(--pt-interface-scale,1))!important;width:30em;max-width:38vw;box-sizing:border-box}
 body.lampa_view.pt-tv .settings .minimal-back--overlay {font-size:1em}
-body.lampa_view.pt-tv .selectbox__content {font-size:clamp(14px,.84vw,16px)!important;box-sizing:border-box}
+body.lampa_view.pt-tv .selectbox__content {font-size:calc(clamp(14px,.84vw,16px) * var(--pt-interface-scale,1))!important;box-sizing:border-box}
 body.lampa_view.pt-tv .selectbox__head {padding:1em 1.1em .8em}
 body.lampa_view.pt-tv .selectbox__title {font-size:1.4em;line-height:1.3}
 body.lampa_view.pt-tv .selectbox-item {padding:.85em 1.1em;font-size:1em;min-height:3.2em;box-sizing:border-box}
@@ -750,7 +750,7 @@ body.lampa_view .nova-plus-root .nova-card--rowlist .nova-card__thumb--loaded im
  body.lampa_view .nova-plus-root .nova-plus__bar .nova-chip__label {min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
  body.lampa_view .nova-plus-root .nova-plus__bar .nova-chip>svg {flex-shrink:0}
  body.lampa_view .nova-plus-root .nova-hero__meta {top:.65em;right:.65em;font-size:.78em;max-width:calc(100% - 1.3em);gap:.4em}
- body.lampa_view .nova-plus-root .nova__list .nova-card.nova-card--rowlist {display:grid;grid-template-columns:clamp(88px,28vw,120px) minmax(0,1fr);gap:.25em .7em;padding:.6em;margin-bottom:.6em;box-sizing:border-box}
+ body.lampa_view .nova-plus-root .nova__list .nova-card.nova-card--rowlist {display:grid;grid-template-columns:clamp(calc(88px * var(--pt-interface-scale,1)),calc(28vw * var(--pt-interface-scale,1)),calc(120px * var(--pt-interface-scale,1))) minmax(0,1fr);gap:.25em .7em;padding:.6em;margin-bottom:.6em;box-sizing:border-box}
  body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__thumb {grid-column:1;grid-row:1 / span 2;align-self:center;width:100%;height:auto;aspect-ratio:16/9;margin:0;padding:0}
  body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__body {grid-column:2;grid-row:1;min-width:0;padding:0}
  body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__title {font-size:1em;line-height:1.3;margin-bottom:.3em;-webkit-line-clamp:2}
@@ -810,3 +810,17 @@ body.lampa_view .search-box {z-index:90!important;background:#080b10!important;b
 body.lampa_view .pt-hero__action {outline:none!important;transition-property:background-color,color!important}
 body.lampa_view .pt-hero__studio.selector {outline:none!important;transition:none!important}
 body.lampa_view .pt-hero__studio.selector.focus,body.lampa_view .pt-hero__studio.selector:focus-visible {outline:none!important;box-shadow:inset 0 0 0 2px var(--pt-accent)!important}
+
+/* Use the loaded native holiday buttons themselves: no copied or redrawn SVG. */
+body.lampa_view .pt-holiday-icons {display:flex;align-items:center;gap:.35em;flex-shrink:0}
+body.lampa_view .pt-holiday-icons>.head__action {display:flex!important;align-items:center;justify-content:center;flex:0 0 2.2em;box-sizing:border-box;width:2.2em;height:2.2em;margin:0;padding:.3em;border:1px solid transparent;border-radius:.5em;background:transparent!important;color:#fff!important;animation:none!important}
+body.lampa_view .pt-holiday-icons>.head__action svg {display:block;width:1.6em!important;height:1.6em!important;object-fit:contain}
+body.lampa_view .pt-holiday-icons>.head__action.focus,body.lampa_view .pt-holiday-icons>.head__action.hover,body.lampa_view .pt-holiday-icons>.head__action:hover {border-color:var(--pt-accent);background:var(--pt-high)!important}
+body.lampa_view .head__logo-halloween .pt-holiday-art {display:none}
+/* Episode grids wrap by the scaled minimum rather than a fixed poster count. */
+body.lampa_view .nova-plus-root .nova__list--grid:not(.nova__list--row) {display:grid!important;grid-template-columns:repeat(auto-fill,minmax(min(100%,18em),1fr));gap:.8em;margin:0}
+body.lampa_view .nova-plus-root .nova__list--grid:not(.nova__list--row)>.nova-card--wide {width:100%!important;max-width:100%!important;min-width:0;padding:0;margin:0}
+@media(max-width:767px){body.lampa_view .nova-plus-root .nova__list--grid:not(.nova__list--row) {grid-template-columns:repeat(auto-fill,minmax(min(100%,9em),1fr))}}
+
+body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar>.nova-chip {min-height:44px;min-width:44px}
+body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar>.nova-chip--view-icon {width:44px;height:44px;flex-basis:44px}

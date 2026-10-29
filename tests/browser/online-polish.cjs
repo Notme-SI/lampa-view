@@ -5,7 +5,13 @@ const output=process.env.LAMPA_QA_OUTPUT;
 if(output)fs.mkdirSync(output,{recursive:true});
 async function holiday(page,name){
  await page.evaluate(()=>{document.querySelectorAll('.head .halloween__button,.head .black-friday__button,.head .new-year__button,.head .womens_day__button,.head>.garland').forEach(n=>n.remove());jQuery('.head__logo-icon').replaceWith('<div class="head__logo-icon"><span class="pt-brand">LAMPA</span></div>');});
+ await page.evaluate(()=>{if(!document.querySelector('.head .open--search'))jQuery('<div class="head__action open--search selector"></div>').appendTo('.head__actions');});
  if(process.env.LAMPA_HOLIDAY_SCRIPT_DIR){
+  if(name==='new-year'){
+   // Each preview is independent; allow the original winter script to recreate its removed DOM.
+   await page.evaluate(()=>{delete window.plugin_snow_ready;});
+   await page.addScriptTag({content:fs.readFileSync(path.join(process.env.LAMPA_HOLIDAY_SCRIPT_DIR,'lampa-snow.js'),'utf8')});
+  }
   await page.addScriptTag({content:fs.readFileSync(path.join(process.env.LAMPA_HOLIDAY_SCRIPT_DIR,'lampa-'+name+'.js'),'utf8')});
  }else await page.evaluate(name=>{
   const head=jQuery('.head');
@@ -28,17 +34,28 @@ async function holiday(page,name){
  if(box.cap){assert.ok(box.cap.top>=-1 && box.cap.bottom<=box.head.bottom+1);assert.ok(box.cap.left>box.menu.right,'hat does not cover the menu');assert.equal(box.garland,'none');}
  if(box.button){assert.equal(box.buttonDisplay,'flex');assert.ok(Math.abs(box.button.height-box.menu.height)<1);assert.ok(box.button.right<=box.width && box.button.top>=0 && box.button.bottom<=box.head.bottom+1);}
  assert.ok(box.logo.bottom<=box.head.bottom+1);
- if(name==='halloween'){assert.equal(box.word,'LAMPA');assert.ok(box.art.right<box.brand.left,'pumpkin is beside, not over the wordmark');assert.ok(box.brand.right<=box.width);}
+ if(name==='halloween'){assert.equal(box.word,'LAMPA');assert.equal(box.art.width,0,'colored logo artwork is hidden');assert.ok(box.button.right<box.brand.left,'native holiday button is beside the wordmark');assert.ok(box.brand.right<=box.width);}
 }
 (async()=>{
  for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]){
   const browser=await engine.launch({headless:true});try{
    for(const mode of ['desktop','tv','mobile']){
     const r=await setup(browser,mode==='mobile'?{viewport:{width:393,height:852},isMobile:true,hasTouch:true,mode}:{viewport:{width:1440,height:900},mode}),{page}=r;
+    await page.evaluate(()=>{if(!document.getElementById('sprite-menu'))jQuery('body').append(Lampa.Template.get('icons_sprite'));});
     for(const event of ['snow','halloween','black-friday','new-year','womens-day']){
      await holiday(page,event);
+     const widths=[];
+     for(const size of ['small','normal','bigger']){
+      await page.evaluate(size=>Lampa.Storage.set('interface_size',size),size);await page.waitForTimeout(30);
+      widths.push(await page.locator('.head__logo-icon').evaluate(node=>{const head=node.closest('.head').getBoundingClientRect();for(const item of node.parentElement.querySelectorAll('.pt-holiday-icons>.head__action,.head__logo-icon,.head__logo-cap svg')){const r=item.getBoundingClientRect();if(r.left<0 || r.right>innerWidth+1 || r.top< -1 || r.bottom>head.bottom+1)throw new Error('Seasonal artwork exceeds the header');}return node.getBoundingClientRect().width;}));
+     }
+     assert.ok(widths[0]<widths[1] && widths[1]<widths[2],'holiday wordmark scales with native sizes');
+     await page.evaluate(()=>Lampa.Storage.set('interface_size','normal'));
      if(output)await page.screenshot({path:path.join(output,name+'-'+mode+'-'+event+'.png'),clip:{x:0,y:0,width:mode==='mobile'?393:1440,height:100}});
     }
+    // Native Activity refreshes 1 s + 400 ms after interface_size changes.
+    // Let it settle before mounting the isolated online screen.
+    await page.waitForTimeout(1600);
     await page.evaluate(()=>{Lampa.Api.sources.tmdb.get=(url,p,ok)=>setTimeout(()=>ok(url.includes('/season/')?{episodes:[{episode_number:1,name:'Название серии',vote_average:8.4,air_date:'2025-01-01'}]}:{logos:[]}),5);});
     await stage(page,true,2);
     if(mode==='mobile'){

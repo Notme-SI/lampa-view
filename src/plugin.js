@@ -28,6 +28,7 @@ import torrentBanner,{bannerCountries} from './torrent-banner.js';
 import torrentSearch from './torrent-search.js';
 import installTrakt from './trakt.js';
 import holidayLayout from './holidays.js';
+import interfaceSize from './interface-size.js';
 
 const ROOT = window;
 if (!ROOT.LampaView) {
@@ -36,7 +37,7 @@ if (!ROOT.LampaView) {
     const boot=document.createElement('style');boot.id='lampa-minimal-boot';boot.textContent=BOOT;
     (document.head || document.documentElement).appendChild(boot);
   }
-  const P = ROOT.LampaView = {version: '0.4.68', identity: C.identity, ready: false, bridge: false};
+  const P = ROOT.LampaView = {version: '0.4.69', identity: C.identity, ready: false, bridge: false};
   P.matchCatalogue=matchCatalogue;
   let L, $, lastCard, initialized = false, playlist = [], activeVideo,loadLogo,artwork,back,holidays;
   const metadata = new Map();
@@ -376,7 +377,7 @@ if (!ROOT.LampaView) {
     initialized=true; L=ROOT.Lampa; $=ROOT.jQuery;loadLogo=logoLoader(L);
     P.bannerCountries=card=>bannerCountries(card,L.Storage.get('language','ru'),L);
     P.online=onlineState(L);
-    installTmdb(L);installFullGuard(L);torrentEpisodes(L,ROOT);inputs(L);
+    interfaceSize(L);installTmdb(L);installFullGuard(L);torrentEpisodes(L,ROOT);inputs(L);
     artwork=installArtwork(L,()=>yes('lampa_view_enabled'));
     torrentBanner(L,loadLogo);
     torrentSearch(L);

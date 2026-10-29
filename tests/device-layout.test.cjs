@@ -4,6 +4,8 @@ test('desktop Chrome restores cover space while Safari and TV keep compact detai
  for(const [agent,safari]of [['Mozilla/5.0 AppleWebKit/537.36 Chrome/130.0.0.0 Safari/537.36',false],['Mozilla/5.0 (Macintosh) AppleWebKit/605.1.15 Version/18.6 Safari/605.1.15',true]]){
   const n=await native({built:true,initialStorage:{lampa_view_layout:'desktop'},prepare(w){Object.defineProperty(w.navigator,'userAgent',{value:agent,configurable:true});}}),{w}=n;
   try{
+   // JSDOM cannot resolve the viewport/custom-property root calc. Real sizes are checked in browser/interface-size.cjs.
+   w.document.body.style.setProperty('font-size','16px','important');
    assert.equal(w.document.body.classList.contains('pt-safari'),safari);
    const root=w.document.createElement('div');root.className='minimal-detail-header';root.innerHTML='<div class="full-start-new__body"></div><section class="minimal-detail-columns"></section>';w.document.body.appendChild(root);
    const body=root.firstElementChild,columns=root.lastElementChild,font=parseFloat(w.getComputedStyle(body).fontSize);assert.equal(parseFloat(w.getComputedStyle(body).minHeight),safari?0:24*font);assert.ok(Math.abs(parseFloat(w.getComputedStyle(columns).marginTop)-(safari?.7:1.5)*font)<.01);
@@ -14,6 +16,7 @@ test('desktop Chrome restores cover space while Safari and TV keep compact detai
 
 test('native desktop TV screen mode keeps original badges; actual TVs and manual choice retain compact sizes',async()=>{
  const r=await native({built:true}),{w,L}=r;
+ w.document.body.style.setProperty('font-size','16px','important');
  const refresh=async()=>{w.dispatchEvent(new w.Event('resize'));await new Promise(resolve=>setTimeout(resolve,210));};
  try{
   assert.equal(L.Platform.screen('tv'),true,'Reproduce the broad native TV screen classification');

@@ -9,6 +9,8 @@
 | Дизайн Potok | [potok.rip](https://potok.rip/), [potok-media](https://github.com/potok-media) |
 | Nova Plus | [amikdn](https://github.com/amikdn/amikdn.github.io), [nova_plus.js](https://amikdn.github.io/nova_plus.js), [card_overlay.js](https://amikdn.github.io/card_overlay.js) |
 
+Праздничное оформление использует существующие значки и элементы загруженных штатных дополнений [Lampa](https://github.com/yumata/lampa-source/tree/main/plugins): Хэллоуина, Чёрной пятницы, Нового года, 8 Марта и зимнего оформления. Плагин перемещает исходные DOM-элементы и задаёт размеры; SVG не копируются и не перерисовываются.
+
 ## Состав и лицензии
 
 Оригинальный интерфейс и новые модули передачи метаданных находятся в `src/` и `desktop/`.

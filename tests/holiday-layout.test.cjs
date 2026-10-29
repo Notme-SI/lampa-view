@@ -18,8 +18,8 @@ test('late seasonal decorations survive theme refresh and use scoped rules witho
   L.Storage.set('lampa_view_enabled',false);apply();assert.equal(head.find('.head__logo-cap').length,1);L.Storage.set('lampa_view_enabled',true);apply();assert.equal(head.find('.head__logo-cap').length,1);
   for(const name of ['halloween','black-friday','new-year','womens_day']){
    const button=$('<div class="head__action head__settings selector '+name+'__button"><svg viewBox="0 0 24 24"></svg></div>').appendTo(head.find('.head__actions'));
-   button.on('hover:enter',()=>opens++);assert.equal(w.getComputedStyle(button[0]).display,'flex');button.trigger('hover:enter');
+   button.on('hover:enter',()=>opens++);await new Promise(resolve=>w.setTimeout(resolve,0));assert.equal(button.parent()[0].className,'pt-holiday-icons');assert.equal(w.getComputedStyle(button[0]).display,'flex');const original=button.find('svg')[0];apply();assert.equal(button.find('svg')[0],original);button.trigger('hover:enter');
   }
-  assert.equal(opens,5);assert.deepEqual(n.errors,[]);
+  assert.equal(opens,5);L.Storage.set('lampa_view_enabled',false);apply();assert.equal(head.find('.pt-holiday-icons').length,0);assert.equal(head.find('.head__actions>.halloween__button').length,1);L.Storage.set('lampa_view_enabled',true);apply();assert.equal(head.find('.pt-holiday-icons>.head__action').length,4);assert.deepEqual(n.errors,[]);
  }finally{n.close();}
 });
