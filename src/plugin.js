@@ -36,7 +36,7 @@ if (!ROOT.LampaView) {
     const boot=document.createElement('style');boot.id='lampa-minimal-boot';boot.textContent=BOOT;
     (document.head || document.documentElement).appendChild(boot);
   }
-  const P = ROOT.LampaView = {version: '0.4.66', identity: C.identity, ready: false, bridge: false};
+  const P = ROOT.LampaView = {version: '0.4.67', identity: C.identity, ready: false, bridge: false};
   P.matchCatalogue=matchCatalogue;
   let L, $, lastCard, initialized = false, playlist = [], activeVideo,loadLogo,artwork,back,holidays;
   const metadata = new Map();
@@ -89,14 +89,14 @@ if (!ROOT.LampaView) {
     $('.pt-hero').toggleClass('pt-hidden',!enabled || !yes('lampa_view_hero'));
     refreshCarousels();
     const logo = document.querySelector('.head__logo-icon');
-    if (logo) {
+    if (logo && !logo.classList.contains('head__logo-halloween')) {
       if (!logo.dataset.lampa_viewOriginal) {
         const original=logo.cloneNode(true);
         original.querySelectorAll('.head__logo-cap,.garland').forEach(node=>node.remove());
         logo.dataset.lampa_viewOriginal = original.innerHTML;
       }
       const ornaments=Array.from(logo.children).filter(node=>node.classList.contains('head__logo-cap') || node.classList.contains('garland'));
-      if (enabled && !logo.classList.contains('head__logo-halloween')) logo.innerHTML = '<span class="pt-brand">LAMPA</span>';
+      if (enabled) logo.innerHTML = '<span class="pt-brand">LAMPA</span>';
       else logo.innerHTML = logo.dataset.lampa_viewOriginal;
       ornaments.forEach(node=>{if(!logo.contains(node))logo.appendChild(node);});
     }

@@ -34,7 +34,7 @@ test('movies and series exclude animation on every CUB and TMDB row and subseque
   assert.equal(new URLSearchParams(row.cub.slice(1)).get('without_genres'),'16');assert.equal(new URLSearchParams(row.tmdb.split('?')[1]).get('without_genres'),'16');
   cub.list({url:row.cub,page:3},check);tmdb.get(row.tmdb,{page:3},check);tmdb.list({url:row.tmdb,page:3},check);
  }
- for(const kind of ['tv','movie'])for(const source of ['cub','tmdb']){let answer;catalogue(L,{}, {url:kind,source},[],rows=>answer=rows);assert.equal(answer.length,10);assert.ok(answer.every(row=>row.results.map(c=>c.id).join(',')==='1,5'));}
+ for(const kind of ['tv','movie'])for(const source of ['cub','tmdb']){let answer;catalogue(L,{}, {url:kind,source},[],rows=>answer=rows);assert.equal(answer.length,source==='cub'?10:1);assert.ok(answer.every(row=>row.results.map(c=>c.id).join(',')==='1,5'));}
  for(const row of cataloguePlan('anime'))cub.list({url:row.cub,page:3},result=>assert.equal(result,json));
  cub.list({url:'?cat=tv&sort=top',page:3},result=>assert.equal(result,json));assert.equal(json.results.length,5);
 });
@@ -43,10 +43,10 @@ test('cartoon watching row uses live CUB rankings for both formats, supports hid
  const {cataloguePlan,default:catalogue}=mod('catalogue'),watch=cataloguePlan('cartoon')[0];assert.equal(watch.title,'Сейчас смотрят');
  const calls=[],film={id:1,title:'Movie',media_type:'movie',genre_ids:[16],original_language:'en'},series={id:2,name:'Series',media_type:'tv',genre_ids:[16],original_language:'fr'},anime={id:3,name:'Anime',genre_ids:[16],original_language:'ja'};
  const L={Storage:{get:(k,d)=>d},Api:{sources:{cub:{list(p,ok){calls.push(p);ok({page:1,total_pages:4,results:[film,series,anime]});}},tmdb:{get(path,p,ok){ok({results:[film]});}}}}};
- for(const source of ['cub','tmdb']){let answer;catalogue(L,{}, {url:'cartoon',source},[],rows=>answer=rows);assert.equal(answer.length,7);assert.equal(answer[0].url,watch.cub);assert.equal(answer[0].source,'cub');assert.equal(answer[0].total_pages,4);assert.deepEqual(answer[0].results,[film,series]);}
+ for(const source of ['cub','tmdb']){let answer;catalogue(L,{}, {url:'cartoon',source},[],rows=>answer=rows);assert.equal(answer.length,2);assert.equal(answer[0].url,watch.cub);assert.equal(answer[0].source,'cub');assert.equal(answer[0].total_pages,4);assert.deepEqual(answer[0].results,[film,series]);}
  assert.equal(calls.length,2);assert.equal(new URLSearchParams(calls[0].url.slice(1)).get('sort'),'now_playing');assert.equal(new URLSearchParams(calls[0].url.slice(1)).get('genre'),'16');assert.equal(new URLSearchParams(calls[0].url.slice(1)).has('cat'),false);
  let hidden;catalogue(L,{}, {url:'cartoon'},[watch.cub],rows=>hidden=rows);assert.equal(calls.length,2);assert.equal(hidden[0].minimal_hidden,true);
- delete L.Api.sources.cub;let fallback;catalogue(L,{}, {url:'cartoon'},[],rows=>fallback=rows);assert.equal(fallback.length,6);assert.ok(fallback.every(row=>row.title!=='Сейчас смотрят'));
+ delete L.Api.sources.cub;let fallback;catalogue(L,{}, {url:'cartoon'},[],rows=>fallback=rows);assert.equal(fallback.length,2);assert.ok(fallback.every(row=>row.title!=='Сейчас смотрят'));
 });
 test('collection menu keeps all five sections before their first visit, without fetching or inventing rows',()=>{
  const names={'main:':[{id:'A',title:'A'}],'search:':[{id:'B'}],'category_full:':[{id:'C'}],'category:tv':[{id:'D',title:'D'}],'category:anime':[{id:'E',title:'E'}]};let definition,select,writes=0;

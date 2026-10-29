@@ -23,6 +23,9 @@ const {stage}=require('../fixtures/online-browser.cjs');
     return {titles:rows.map(row=>row.title),urls:rows.map(row=>row.url),hero:root.querySelector('.pt-hero__title').textContent,poster:rows[0].results[0].poster_path,localized:rows.filter(row=>row.source==='trakt').every(row=>row.results.every(card=>/[А-Яа-я]/.test(card.title || card.name))),requests:qaMetadata.filter(url=>!url.includes('append_to_response')).length};
    });
    assert.deepEqual(actual.titles.slice(0,3),['Сейчас смотрят','Продолжить просмотр','Популярное']);assert.ok(actual.localized);assert.match(actual.hero,/Фильм|Сериал/);assert.match(actual.poster,/^\/ru/);assert.equal(actual.requests,3,'Common titles are localized by three shared list requests, without one request per poster');
+   assert.equal(actual.titles.length,6);assert.ok(actual.urls.includes('mixed/watched/weekly'));assert.ok(actual.urls.includes('mixed/collected/monthly'));assert.ok(actual.urls.includes('mixed/anticipated'));
+   const category=await page.evaluate(()=>new Promise((resolve,reject)=>Lampa.Api.category({source:'trakt',url:'movie'},rows=>resolve(rows.map(row=>({url:row.url,count:row.results.length,source:row.source}))),reject)));
+   assert.equal(category.length,5);assert.ok(category.every(row=>row.count>0 && row.source==='trakt'));assert.ok(category.some(row=>row.url==='movies/anticipated'));
    // This isolated fixture does not initialize native layer visibility for its seed activity.
    await page.evaluate(()=>document.querySelectorAll('.activity:not(.activity--active)').forEach(node=>{node.style.display='none';}));
    await page.waitForFunction(()=>getComputedStyle(Lampa.Activity.active().activity.render(true)).opacity==='1');

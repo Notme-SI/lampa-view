@@ -42,10 +42,11 @@ test('Trakt limits parallel list loads, does not cache failures or send its key 
   r.storage.minimal_trakt_enabled=true;r.storage.minimal_trakt_client_id='own-id';let output,error;
   r.api.main({},rows=>output=rows,e=>error=e);assert.equal(r.sent.length,2);
   r.sent[0].reply([movie(1,'A')]);assert.equal(r.sent.length,3);r.sent[1].reply([movie(2,'B')]);assert.equal(r.sent.length,4);r.sent[2].reply([{show:movie(3,'C')}]);r.sent[3].reply([{show:movie(4,'D')}]);
-  assert.equal(output.length,2);assert.equal(error,undefined);assert.equal(output[0].results[1].media_type,'tv');assert.ok(output.every(row=>row.source==='trakt'));
-  let failed;r.api.list({url:'https://evil.invalid/'},assert.fail,e=>failed=e);assert.match(failed.status_message,/Неизвестная/);assert.equal(r.sent.length,4);
-  r.api.list({url:'movies/popular',page:2},assert.fail,e=>failed=e);r.sent[4].reply({},401);assert.match(failed.status_message,/Client ID/);
-  r.api.list({url:'movies/popular',page:2},()=>{},()=>{});assert.equal(r.sent.length,6);r.sent[5].reply([],200);
+  for(let i=4;i<r.sent.length;i++){const type=r.sent[i].url.includes('/shows/')?'show':'movie';r.sent[i].reply([{[type]:movie(10+i,'Extra '+i)}]);}
+  assert.equal(output.length,5);assert.equal(r.sent.length,10);assert.equal(error,undefined);assert.equal(output[0].results[1].media_type,'tv');assert.ok(output.every(row=>row.source==='trakt'));
+  let failed;r.api.list({url:'https://evil.invalid/'},assert.fail,e=>failed=e);assert.match(failed.status_message,/Неизвестная/);assert.equal(r.sent.length,10);
+  r.api.list({url:'movies/popular',page:2},assert.fail,e=>failed=e);r.sent[10].reply({},401);assert.match(failed.status_message,/Client ID/);
+  r.api.list({url:'movies/popular',page:2},()=>{},()=>{});assert.equal(r.sent.length,12);r.sent[11].reply([],200);
   assert.ok(r.w.Trakt.traktPlan('anime')[0].url.endsWith('genres=animation&languages=ja'));
  }finally{r.close();}
 });
@@ -53,5 +54,25 @@ test('changing Trakt client invalidates pending requests and old cached results'
  const r=setup();try{
   r.storage.minimal_trakt_enabled=true;r.storage.minimal_trakt_client_id='first';let stale=0,fresh=0;r.api.list({url:'movies/trending'},()=>stale++,()=>stale++);
   r.storage.minimal_trakt_enabled=true;r.storage.minimal_trakt_client_id='second';r.api.list({url:'movies/trending'},()=>fresh++,assert.fail);assert.equal(r.sent.length,2);r.sent[1].reply([movie(2,'B')]);r.sent[0].reply([movie(1,'A')]);assert.equal(stale,0);assert.equal(fresh,1);assert.equal(r.sent[1].headers['trakt-api-key'],'second');
+ }finally{r.close();}
+});
+
+test('Trakt categories expose five genuine public feeds, retain animation filters and support More on the added routes',()=>{
+ const r=setup();try{
+  r.storage.minimal_trakt_enabled=true;r.storage.minimal_trakt_client_id='own-id';
+  for(const kind of ['movie','tv','anime','cartoon']){
+   const plan=r.w.Trakt.traktPlan(kind);assert.equal(plan.length,kind==='cartoon'?10:5);
+   assert.ok(plan.some(row=>row.url.includes('/watched/weekly')));assert.ok(plan.some(row=>row.url.includes('/collected/monthly')));assert.ok(plan.some(row=>row.url.includes('/anticipated')));
+   if(kind==='anime')assert.ok(plan.every(row=>row.url.endsWith('?genres=animation&languages=ja')));
+   if(kind==='cartoon')assert.ok(plan.every(row=>row.url.endsWith('?genres=animation')));
+  }
+  let answer;r.api.category({url:'movie'},rows=>answer=rows,assert.fail);
+  for(let i=0;i<r.sent.length;i++)r.sent[i].reply([{movie:movie(i+1,'Ranked '+i)}]);
+  assert.equal(answer.length,5);assert.deepEqual(Array.from(answer,row=>row.results[0].id),[1,2,3,4,5]);
+  for(const url of ['movies/watched/weekly','shows/collected/monthly?genres=animation&languages=ja','movies/anticipated']){
+   let result;r.api.list({url,page:2},v=>result=v,assert.fail);const request=r.sent.at(-1);assert.equal(new URL(request.url).searchParams.get('page'),'2');
+   request.reply([{[url.startsWith('shows')?'show':'movie']:movie(99,'Next')}]);assert.equal(result.page,2);assert.equal(result.total_pages,9);assert.equal(result.results[0].id,99);
+  }
+  const count=r.sent.length;for(const url of ['movies/watched/weekly?api_key=bad','movies/anticipated?redirect=https://evil.invalid','movies/watched/../users/me'])r.api.list({url},assert.fail,()=>{});assert.equal(r.sent.length,count);
  }finally{r.close();}
 });

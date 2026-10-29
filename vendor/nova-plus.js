@@ -3483,7 +3483,7 @@
     if (tmdbKind(movie) === 'movie') {
       var duration = fallbackTime() || (target && target.time) || '';
       if (duration) date.append($('<span class="nova-hero__runtime"></span>').text(duration));
-    } else date.append($('<span class="nova-hero__season-label"></span>').text(text('torrent_serial_season', 'nova_plus_season') + ' ' + (seasonNumber() || 1)));
+    } else meta.append($('<span class="nova-hero__season-label"></span>').text(text('torrent_serial_season', 'nova_plus_season') + ' ' + (seasonNumber() || 1)));
     if (date.children().length) meta.append(date);
   }
 
@@ -3812,9 +3812,13 @@
     ui_open='';
     var entries=(groups.sort || []).filter(function(item){var key=item.source || item.title;return sourceActive(item,sourceState(key));}).map(function(item){
       var parts=splitSourceName(item.title),quality=knownQuality(item.source || item.title) || parts.badge;
-      return {title:parts.name,subtitle:quality || '',selected:!!item.selected,provider:item};
+      return {title:parts.name,quality:quality || '',selected:!!item.selected,provider:item};
     });
     Lampa.Select.show({title:text('nova_source','nova_plus_source'),items:entries.length?entries:[{title:'Нет доступных источников',noenter:true}],
+      onDraw:function(node,entry){
+        node.addClass('nova-source-option');
+        if(entry.quality)node.find('.selectbox-item__title').prepend($('<span class="nova-source-option__quality"></span>').text(entry.quality));
+      },
       onSelect:function(entry){if(!entry.provider)return;Lampa.Select.hide();contentEnable();if(entry.provider.selected){ui_focus='source';restoreFocus(false);}else chooseSource(entry.provider);},
       onBack:function(){Lampa.Select.hide();ui_focus='source';contentEnable();restoreFocus(false);}});
   }
@@ -6347,6 +6351,7 @@
     var tool = function (key, title, value, extra, enter, long) {
       if (title) bar.append($('<div class="nova-toolbar__label"></div>').text(title));
       var box = chip(key, value, extra);
+      if (title) box.attr({'aria-label':title,title:title});
       chip_actions[key] = { enter: enter, long: long || null };
       bind(box, enter, long || null);
       bar.append(box);
@@ -6371,11 +6376,11 @@
       return box;
     };
 
-    // Long voice/season lists occupy one control, using the native accessible
-    // selection menu. Small groups remain directly available beside episodes.
+    // Dubbing always uses the same native selection menu, independent of
+    // provider and option count. Small season groups stay beside episodes.
     var compactGroup=function(name,title){
       var options=groups[name],selected=options.items.filter(function(item){return item.selected;})[0] || options.items[0];
-      tool(name,title,selected.title,{plain:true},function(){
+      tool(name,title,selected.title,{},function(){
         Lampa.Select.show({title:title,items:options.items.map(function(item,seat){return {title:item.title,selected:!!item.selected,index:typeof item.index==='number'?item.index:seat};}),
           onSelect:function(item){Lampa.Select.hide();ui_focus=name;contentEnable();wideChooseOption(name,item.index,name);restoreFocus(false);},
           onBack:function(){Lampa.Select.hide();ui_focus=name;contentEnable();restoreFocus(false);}});
@@ -6406,36 +6411,15 @@
       });
     }
 
-    if (groups.voice && groups.voice.items.length > 6) compactGroup('voice',groups.voice.title || label('nova_plus_voices'));
-    else if (groups.voice && groups.voice.items.length > 0) {
-      var voices = group(groups.voice.title || label('nova_plus_voices'), 'voice');
-      var order = groups.voice.items.map(function (item, seat) {
-        return { item: item, index: typeof item.index === 'number' ? item.index : seat, seat: seat };
-      });
-      order.sort(function (a, b) { return (voiceRank(a.item.title) - voiceRank(b.item.title)) || (a.seat - b.seat); });
-      order.forEach(function (entry) {
-        var key = 'voice:' + entry.index;
-        put(voices, key, entry.item.title, '', { active: !!entry.item.selected, plain: true }, function () {
-          wideChooseOption('voice', entry.index, key);
-        });
-      });
-    }
+    if (groups.voice && groups.voice.items.length > 0) compactGroup('voice',groups.voice.title || label('nova_plus_voices'));
 
     if (!serial && !nav && items.length > 1) {
       var selectedMovie = pickResume(items);
-      if(items.length>6){
         tool('movievoice',label('nova_plus_voices'),selectedMovie && selectedMovie.title || '',{},function(){
           Lampa.Select.show({title:label('nova_plus_voices'),items:items.filter(function(item){return !item.folder;}).map(function(item){return {title:item.title,subtitle:shortQuality(item.quality),selected:item===selectedMovie,file:item};}),
             onSelect:function(entry){Lampa.Select.hide();contentEnable();chooseMovie(entry.file);},
             onBack:function(){Lampa.Select.hide();ui_focus='movievoice';contentEnable();restoreFocus(false);}});
         });
-      }else{
-      var movieVoices = group(label('nova_plus_voices'), 'movievoice');
-      items.forEach(function (item) {
-        if (item.folder) return;
-        put(movieVoices, 'movievoice:' + item.index, item.title || movie.title || '', '', { active: item === selectedMovie, plain: true, badge: shortQuality(item.quality) }, function () { chooseMovie(item); });
-      });
-      }
     }
 
     extras.forEach(function (entry, index) {

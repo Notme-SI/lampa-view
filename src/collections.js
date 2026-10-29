@@ -1,8 +1,8 @@
 import catalogue,{animeMode} from './catalogue.js';
 import animeTabs from './anime-tabs.js';
 import continueWatching,{CONTINUE,isWatching} from './continue-watching.js';
-export function rowKey(row){return String(row.url || row.title || 'Без названия');}
-function matchesRow(row,id){return rowKey(row)===id || (row.minimal_row_aliases || []).includes(id) || isWatching(row) && ['mixed/trending','movies/trending','shows/trending','?sort=now_playing','movie/now_playing'].includes(id);}
+export function rowKey(row){return String(row.minimal_row_id || row.url || row.title || 'Без названия');}
+function matchesRow(row,id){return rowKey(row)===id || row.url===id || (row.minimal_row_aliases || []).includes(id) || isWatching(row) && ['mixed/trending','movies/trending','shows/trending','?sort=now_playing','movie/now_playing'].includes(id);}
 export function arrange(rows,prefs){
  const order=prefs.order || [],hidden=prefs.hidden || [];
  const matches=matchesRow;

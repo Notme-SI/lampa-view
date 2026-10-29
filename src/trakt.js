@@ -4,14 +4,18 @@ import flag from './storage-flag.js';
 import traktMetadata from './trakt-metadata.js';
 const BASE='https://api.trakt.tv/';
 const TYPES={movie:'movies',tv:'shows'};
+const FEEDS=[
+ ['Сейчас смотрят','trending'],
+ ['Популярное','popular'],
+ ['Самое просматриваемое за неделю','watched/weekly'],
+ ['В коллекциях за месяц','collected/monthly'],
+ ['Ожидаемые','anticipated']
+];
 export function traktPlan(kind){
- if(!kind)return [{title:'Сейчас смотрят',url:'mixed/trending',minimal_row_aliases:['?sort=now_playing','movie/now_playing','movies/trending','shows/trending']},{title:'Популярное',url:'mixed/popular',minimal_row_aliases:['movie/popular','tv/popular','movies/popular','shows/popular']}];
+ if(!kind)return FEEDS.map(([title,path],index)=>({title,url:'mixed/'+path,...(index===0?{minimal_row_aliases:['?sort=now_playing','movie/now_playing','movies/trending','shows/trending']}:index===1?{minimal_row_aliases:['movie/popular','tv/popular','movies/popular','shows/popular']}:{})}));
  const types=TYPES[kind]?[TYPES[kind]]:kind==='anime'?['shows']:['movies','shows'];
  const filter=kind==='anime'?'?genres=animation&languages=ja':kind==='cartoon'?'?genres=animation':'';
- return types.flatMap(type=>[
-  {title:kind==='cartoon'?(type==='movies'?'Мультфильмы · Сейчас смотрят':'Мультсериалы · Сейчас смотрят'):'Сейчас смотрят',url:type+'/trending'+filter},
-  {title:kind==='cartoon'?(type==='movies'?'Популярные мультфильмы':'Популярные мультсериалы'):'Популярное',url:type+'/popular'+filter}
- ]);
+ return types.flatMap(type=>FEEDS.map(([title,path],index)=>({title:kind==='cartoon'?(index===1?(type==='movies'?'Популярные мультфильмы':'Популярные мультсериалы'):(type==='movies'?'Мультфильмы':'Мультсериалы')+' · '+title):title,url:type+'/'+path+filter})));
 }
 function image(value){
  const url=Array.isArray(value)?value[0]:'';
@@ -66,7 +70,7 @@ export default function installTrakt(L){
   if(!enabled())return error(fail,'Включите Trakt в настройках каталога L A M P A');
   const id=client();if(!id)return error(fail,'Добавьте Client ID в Настройки → L A M P A → Каталог и поиск → Trakt');
   if(id!==lastKey){clear();cache.clear();lastKey=id;}
-  const mixed=String(params.url || '').match(/^mixed\/(trending|popular)$/);
+  const mixed=String(params.url || '').match(/^mixed\/(trending|popular|watched\/weekly|collected\/monthly|anticipated)$/);
   if(mixed){
    const parts=new Array(2);let left=2,reason;
    ['movies','shows'].forEach((type,index)=>list({...params,url:type+'/'+mixed[1],minimal_limit:10},json=>{parts[index]=json;finish();},e=>{reason=e;finish();}));
@@ -77,7 +81,7 @@ export default function installTrakt(L){
    return;
   }
   // Only our fixed public list routes can receive the API key.
-  const path=String(params.url || 'movies/trending'),match=path.match(/^(movies|shows)\/(trending|popular)(\?(?:genres=animation(?:&languages=ja)?))?$/);
+  const path=String(params.url || 'movies/trending'),match=path.match(/^(movies|shows)\/(trending|popular|watched\/weekly|collected\/monthly|anticipated)(\?(?:genres=animation(?:&languages=ja)?))?$/);
   if(!match)return error(fail,'Неизвестная подборка Trakt');
   const page=Math.max(1,Math.min(1000,Number(params.page) || 1));
   const limit=params.minimal_limit===10?10:20;

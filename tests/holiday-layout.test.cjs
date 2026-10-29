@@ -7,7 +7,12 @@ test('late seasonal decorations survive theme refresh and use scoped rules witho
   const head=L.Head.render();if(!head[0].isConnected)head.appendTo(w.document.body);
   head.find('.head__logo-icon').replaceWith('<div class="head__logo-icon head__logo-halloween"><div class="head__logo-halloween-fire"></div><div class="head__logo-halloween-svg"><svg viewBox="0 0 512 494"><path d="M0 0h20v20z"/></svg></div></div>');
   let opens=0;head.find('.head__logo-halloween').on('mousedown',()=>opens++);
-  apply();assert.equal(head.find('.head__logo-halloween-svg svg').length,1);head.find('.head__logo-halloween').trigger('mousedown');assert.equal(opens,1);
+  await new Promise(resolve=>w.setTimeout(resolve,0));
+  assert.equal(head.find('.head__logo-halloween .pt-brand').text(),'LAMPA','Late Halloween replacement retains the wordmark');
+  const art=head.find('.head__logo-halloween-svg')[0];
+  apply();apply();assert.equal(head.find('.pt-holiday-art').length,1);assert.equal(head.find('.head__logo-halloween-svg')[0],art);head.find('.head__logo-halloween').trigger('mousedown');assert.equal(opens,1);
+  L.Storage.set('lampa_view_enabled',false);apply();assert.equal(head.find('.pt-holiday-art,.head__logo-halloween .pt-brand').length,0);assert.equal(head.find('.head__logo-halloween-svg')[0],art);
+  L.Storage.set('lampa_view_enabled',true);apply();assert.equal(head.find('.head__logo-halloween .pt-brand').text(),'LAMPA');
   head.find('.head__logo-icon').replaceWith('<div class="head__logo-icon"><span class="pt-brand">LAMPA</span><div class="head__logo-cap"><svg viewBox="0 0 24 24"></svg></div></div>');
   apply();apply();assert.equal(head.find('.head__logo-cap').length,1);assert.equal(head.find('.pt-brand').text(),'LAMPA');
   L.Storage.set('lampa_view_enabled',false);apply();assert.equal(head.find('.head__logo-cap').length,1);L.Storage.set('lampa_view_enabled',true);apply();assert.equal(head.find('.head__logo-cap').length,1);

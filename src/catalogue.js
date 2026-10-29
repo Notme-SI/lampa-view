@@ -18,7 +18,24 @@ export function cataloguePlan(kind,mode='standard',date=new Date()){
   ['Популярное','order=popularity'],['С высоким рейтингом','order=ranked'],['Сейчас выходит','order=popularity&status=ongoing'],['Ожидаемые','order=popularity&status=anons'],
   ['Новинки этого года','order=popularity&season='+year],['Прошлый год','order=ranked&season='+(year-1)],['Полнометражные','order=ranked&kind=movie'],['Боевики','order=popularity&genre=1'],['Приключения','order=popularity&genre=2'],['Детективы','order=popularity&genre=7'],['Все',SHIKI_ALL]
  ].map(([title,shiki])=>({title,shiki}));
- function add(key,title,cub,query){defs.push({key,title,cub:cub+(kind==='tv' || kind==='movie'?'&without_genres=16':''),tmdb:'discover/'+type+'?include_adult=false&'+(kind==='tv' || kind==='movie'?'without_genres=16&':'')+(kind==='anime' && /with_genres=/.test(query || '')?'with_original_language=ja&':base)+(query || 'sort_by=popularity.desc')});}
+ const day=offset=>{const value=new Date(date);value.setDate(value.getDate()+offset);return value.getFullYear()+'-'+('0'+(value.getMonth()+1)).slice(-2)+'-'+('0'+value.getDate()).slice(-2);};
+ function add(key,title,cub,query){
+  const prefix='discover/'+type+'?include_adult=false&'+(kind==='tv' || kind==='movie'?'without_genres=16&':'')+(kind==='anime' && /with_genres=/.test(query || '')?'with_original_language=ja&':base);
+  const previous=prefix+(query || 'sort_by=popularity.desc');
+  let tmdbTitle=title;
+  // TMDB has no release-quality catalogue. Rating, release dates and current
+  // airings are separate feeds, rather than differently named popularity rows.
+  if(kind==='movie' || kind==='tv'){
+   if(key==='watch')query='sort_by=popularity.desc&'+(type==='movie'?'primary_release_date':'air_date')+'.gte='+day(type==='movie'?-60:-7)+'&'+(type==='movie'?'primary_release_date':'air_date')+'.lte='+day(0);
+   if(key==='uhd'){tmdbTitle='С высоким рейтингом';query='sort_by=vote_average.desc&vote_count.gte=1000';}
+   if(key==='ongoing')query='sort_by=popularity.desc&air_date.gte='+day(0)+'&air_date.lte='+day(7);
+   if(key==='popular')query='sort_by=popularity.desc';
+   if(key==='year')query='sort_by='+(type==='movie'?'primary_release_date':'first_air_date')+'.desc&vote_count.gte=20&'+(type==='movie'?'primary_release_date':'first_air_date')+'.gte='+year+'-01-01&'+(type==='movie'?'primary_release_date':'first_air_date')+'.lte='+day(0);
+   if(key==='last-year')query=query.replace('sort_by=popularity.desc','sort_by=vote_average.desc&vote_count.gte=100');
+  }
+  const tmdb=prefix+(query || 'sort_by=popularity.desc');
+  defs.push({key,title,tmdb_title:tmdbTitle,cub:cub+(kind==='tv' || kind==='movie'?'&without_genres=16':''),tmdb,...(tmdb!==previous?{minimal_row_aliases:[previous]}:{})});
+ }
  const airdate=kind==='anime'?'&airdate='+year:'';
  add('watch','Сейчас смотрят','?cat='+kind+'&sort=now_playing'+airdate);
  if(kind==='anime')add('top','В топе','?cat=anime&sort=top','sort_by=vote_average.desc&vote_count.gte=500');
@@ -41,11 +58,11 @@ export default function catalogue(L,shiki,object,hidden,ok){
  const source=object.source || L.Storage.get('source','cub'),cub=L.Api.sources && L.Api.sources.cub && L.Api.sources.cub.list,plan=cataloguePlan(kind,animeMode(L,object)),rows=new Array(plan.length);let cursor=0,running=0,done=0,ended=false,failures=0;
  const status=object.minimal_catalogue_status={state:'loading'};
  const useCub=job=>!!(cub && job.cub && (source==='cub' || kind==='cartoon'));
- const rowFor=job=>({title:job.title,url:job.shiki || (useCub(job)?job.cub:job.tmdb || job.cub),source:job.shiki?'minimal_shiki':useCub(job) || !job.tmdb?'cub':'tmdb',results:[]});
- function complete(){if(done===plan.length && !ended){ended=true;const result=rows.filter(Boolean);status.state=result.some(row=>row.results.length)?'ready':failures?'error':result.length===plan.length?'hidden':'empty';ok(result);}}
+ const rowFor=job=>({title:useCub(job)?job.title:job.tmdb_title || job.title,url:job.shiki || (useCub(job)?job.cub:job.tmdb || job.cub),source:job.shiki?'minimal_shiki':useCub(job) || !job.tmdb?'cub':'tmdb',...(!useCub(job) && job.tmdb && job.key?{minimal_row_id:'minimal:tmdb:'+kind+':'+job.key,minimal_row_aliases:[job.tmdb,...(job.minimal_row_aliases || [])]}:{}),results:[]});
+ function complete(){if(done===plan.length && !ended){ended=true;const result=uniquePreviews(rows.filter(Boolean));status.state=result.some(row=>row.results.length)?'ready':failures?'error':result.length===plan.length?'hidden':'empty';ok(result);}}
  function pump(){
   if(ended)return;if(object.activity && object.activity.component && object.activity.component.destroyed){ended=true;return;}if(done===plan.length){complete();return;}
-  while(!ended && running<3 && cursor<plan.length){const index=cursor++,job=plan[index],row=rowFor(job);if(hidden.includes(row.url)){row.minimal_hidden=true;rows[index]=row;done++;continue;}
+  while(!ended && running<3 && cursor<plan.length){const index=cursor++,job=plan[index],row=rowFor(job);if([row.minimal_row_id,row.url,...(row.minimal_row_aliases || [])].some(url=>hidden.includes(url))){row.minimal_hidden=true;rows[index]=row;done++;continue;}
    running++;let settled=false;
    function finish(json){if(settled)return;settled=true;running--;done++;if(!json)failures++;json=catalogueResults(row.url,json);if(json && Array.isArray(json.results) && json.results.length)rows[index]={...row,page:Number(json.page)||1,total_pages:Math.max(Number(json.total_pages)||1,json.results.length>20?2:1),results:json.results.slice(0,20).map(card=>kind==='anime'?{...card,minimal_anime:true}:job.media_type?{...card,source:'tmdb',media_type:job.media_type}:card)};pump();}
    if(job.shiki)shiki.list({url:job.shiki,page:1},finish,()=>finish(null));
@@ -56,4 +73,21 @@ export default function catalogue(L,shiki,object,hidden,ok){
   complete();
  }
  pump();
+}
+
+// A title may qualify for several feeds. Keep it in the first preview only;
+// More still opens the full, unmodified feed with native pagination and rank.
+// Use the plan order, not response arrival order, without extra API requests.
+export function uniquePreviews(rows){
+ const seen=new Set();
+ return rows.map(row=>{
+  if(row.minimal_hidden)return row;
+  const results=row.results.filter(card=>{
+   const type=card.media_type || (/^(?:discover\/)?movie(?:\/|\?)/.test(row.url)?'movie':/^(?:discover\/)?tv(?:\/|\?)/.test(row.url)?'tv':card.name?'tv':'movie');
+   const id=Number(card.id);if(!Number.isSafeInteger(id) || id<=0)return true;
+   const key=type+':'+id,duplicate=seen.has(key);seen.add(key);
+   return row.source!=='tmdb' || !duplicate;
+  });
+  return {...row,results};
+ }).filter(row=>row.minimal_hidden || row.results.length);
 }

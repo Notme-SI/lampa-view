@@ -1,6 +1,7 @@
 const test=require('node:test'),assert=require('node:assert/strict'),path=require('node:path'),esbuild=require('esbuild'),{JSDOM}=require('jsdom'),native=require('./fixtures/native-lampa.cjs');
 const code=esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/online-state.js')],bundle:true,write:false,format:'iife',globalName:'OnlineState'}).outputFiles[0].text;
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+function selectMovie(s,L,index){s.root.find('[data-nova-focus=movievoice]').trigger('hover:enter');L.Select.render().find('.selectbox-item').eq(index).trigger('hover:enter');}
 const tag=row=>'<div class="videos__item" data-json="'+JSON.stringify(row).replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'"></div>';
 
 test('provider folders resolve only a unique matching title and requested season, never another film or sequel',()=>{
@@ -92,6 +93,19 @@ test('a long voice list uses one native selection menu and keeps the provider or
  }finally{if(s)s.close();n.close();}
 });
 
+test('one or two native dubbing options use the same compact menu, preserve original indices and do not autoplay',async()=>{
+ const n=await native({built:true}),{L}=n;let s;try{
+  for(const count of [1,2,6]){
+   if(s)s.close();s=screen(n);let selected=-1;s.filter.onSelect=(type,group,item)=>{selected=item.index;};
+   s.filter.set('filter',[{stype:'voice',title:'Перевод',items:Array.from({length:count},(_,i)=>({title:'Студия '+i,selected:i===0}))}]);await wait(300);
+   assert.equal(s.root.find('[data-nova-group=voice]').length,0);assert.equal(s.root.find('[data-nova-focus=voice]').length,1);
+   s.root.find('[data-nova-focus=voice]').trigger('hover:enter');assert.equal(L.Select.render().find('.selectbox-item').length,count);
+   L.Select.render().find('.selectbox-item').last().trigger('hover:enter');await wait(60);assert.equal(selected,count===1?-1:count-1);assert.equal(s.played(),0);assert.equal(L.Controller.enabled().name,'content');
+  }
+  assert.deepEqual(n.errors,[]);
+ }finally{if(s)s.close();n.close();}
+});
+
 test('source and dubbing menus restore content control so Back keeps working after selection and cancellation',async()=>{
  const n=await native({built:true}),{L}=n;let s;try{
   s=screen(n);s.filter.set('filter',[{stype:'voice',title:'Перевод',items:Array.from({length:8},(_,i)=>({title:'Студия '+i,selected:i===0}))}]);await wait(200);
@@ -135,9 +149,9 @@ test('online controls start with a layout icon and source popup; long movie voic
 test('movies always use the wide banner, expose all voice choices and play selected versions from the compact main button',async()=>{
  const n=await native({built:true}),{L}=n;let s;try{
   s=screen(n,{serial:false});s.movie.overview='Описание уже есть на странице фильма';await wait(200);
-  assert.ok(s.root.find('.nova-plus-root').hasClass('nova-plus'));assert.equal(s.root.find('.nova-card').length,0);assert.equal(s.root.find('[data-nova-group=movievoice] .nova-chip').length,3);assert.equal(s.root.find('.nova-hero__descr').css('display'),'none');
-  s.root.find('[data-nova-focus="movievoice:1"]').trigger('hover:enter');await wait(100);assert.equal(s.played(),0,'choosing a voice must not start playback');const button=s.root.find('[data-nova-focus=hero]');assert.equal(button.text(),'Смотреть');assert.equal(button.attr('aria-label'),'Смотреть');assert.equal(button.find('.nova-btn__details').length,0);button.trigger('hover:enter');assert.equal(s.played(),2);assert.equal(s.root.find('.nova-card').length,0);assert.equal(s.root.find('[data-nova-focus=view]').length,0);
-  L.Storage.set('nova_plus_mode','skin');L.Listener.send('activity',{type:'start'});await wait(180);assert.ok(s.root.find('.nova-plus-root').hasClass('nova-plus'));assert.equal(s.root.find('.nova-card').length,0);s.root.find('[data-nova-focus="movievoice:2"]').trigger('hover:enter');await wait(90);s.root.find('[data-nova-focus=hero]').trigger('hover:enter');assert.equal(s.played(),3);assert.deepEqual(n.errors,[]);
+  assert.ok(s.root.find('.nova-plus-root').hasClass('nova-plus'));assert.equal(s.root.find('.nova-card').length,0);assert.equal(s.root.find('[data-nova-group=movievoice] .nova-chip').length,0);assert.equal(s.root.find('[data-nova-focus=movievoice]').length,1);assert.equal(s.root.find('.nova-hero__descr').css('display'),'none');
+  selectMovie(s,L,1);await wait(100);assert.equal(s.played(),0,'choosing a voice must not start playback');const button=s.root.find('[data-nova-focus=hero]');assert.equal(button.text(),'Смотреть');assert.equal(button.attr('aria-label'),'Смотреть');assert.equal(button.find('.nova-btn__details').length,0);button.trigger('hover:enter');assert.equal(s.played(),2);assert.equal(s.root.find('.nova-card').length,0);assert.equal(s.root.find('[data-nova-focus=view]').length,0);
+  L.Storage.set('nova_plus_mode','skin');L.Listener.send('activity',{type:'start'});await wait(180);assert.ok(s.root.find('.nova-plus-root').hasClass('nova-plus'));assert.equal(s.root.find('.nova-card').length,0);selectMovie(s,L,2);await wait(90);s.root.find('[data-nova-focus=hero]').trigger('hover:enter');assert.equal(s.played(),3);assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}
 });
 test('logo metadata requests share the native API and deduplicate concurrent full-card notifications',async()=>{
@@ -148,7 +162,7 @@ test('the film banner keeps native watch progress when changing voices and updat
  const n=await native({built:true}),{L}=n;let s;try{
   const hash=L.Utils.hash('Original');L.Timeline.update({hash,percent:55,time:3300,duration:6000});s=screen(n,{serial:false});await wait(190);
   const fill=()=>s.root.find('.nova-hero__progress .time-line>div');assert.equal(fill().css('width'),'55%');assert.ok(s.root.find('.nova-btn__focus').length);assert.equal(s.root.find('.nova-card').length,0);
-  s.root.find('[data-nova-focus="movievoice:2"]').trigger('hover:enter');await wait(90);assert.equal(fill().css('width'),'55%');L.Timeline.update({hash,percent:70,time:4200,duration:6000});await wait(140);assert.equal(fill().css('width'),'70%');s.root.find('[data-nova-focus=hero]').trigger('hover:enter');assert.equal(s.played(),3);assert.deepEqual(n.errors,[]);
+  selectMovie(s,L,2);await wait(90);assert.equal(fill().css('width'),'55%');L.Timeline.update({hash,percent:70,time:4200,duration:6000});await wait(140);assert.equal(fill().css('width'),'70%');s.root.find('[data-nova-focus=hero]').trigger('hover:enter');assert.equal(s.played(),3);assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}
 });
 
@@ -208,7 +222,7 @@ test('film facts show native countries and runtime below the year while the main
  const n=await native({built:true}),{L}=n;let s;try{
   s=screen(n,{id:996,serial:false});Object.assign(s.movie,{release_date:'2026-07-29',runtime:145,production_countries:[{iso_3166_1:'US',name:'United States of America'}],vote_average:8.5});await wait(220);
   const root=s.root,button=root.find('[data-nova-focus=hero]');assert.equal(root.find('.nova-hero__year').text(),'2026, США');assert.equal(root.find('.nova-hero__runtime').text(),'02:25');assert.equal(root.find('.nova-hero__date').children().last().attr('class'),'nova-hero__runtime');assert.equal(root.find('.nova-hero__season-label').length,0);assert.equal(button.text(),'Смотреть');
-  root.find('[data-nova-focus="movievoice:2"]').trigger('hover:enter');await wait(90);root.find('[data-nova-focus=hero]').trigger('hover:enter');assert.equal(s.played(),3);assert.equal(root.find('[data-nova-focus=hero]').text(),'Смотреть');assert.deepEqual(n.errors,[]);
+  selectMovie(s,L,2);await wait(90);root.find('[data-nova-focus=hero]').trigger('hover:enter');assert.equal(s.played(),3);assert.equal(root.find('[data-nova-focus=hero]').text(),'Смотреть');assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}
 });
 

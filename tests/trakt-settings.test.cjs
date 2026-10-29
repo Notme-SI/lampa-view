@@ -14,6 +14,6 @@ test('Trakt category reports ready state to anime tabs and preserves collection 
  const n=await native({built:true}),{L,w}=n;try{
   w.XMLHttpRequest=class{open(){}setRequestHeader(){}send(){w.setTimeout(()=>{this.status=200;this.responseText=JSON.stringify([{show:{title:'Anime',language:'ja',year:2022,ids:{tmdb:123,trakt:456}}}]);this.onload();},0);}getResponseHeader(){return '2';}abort(){this.onabort();}};
   L.Storage.set('minimal_trakt_enabled',true);L.Storage.set('minimal_trakt_client_id','public-test-id');L.Storage.set('minimal_anime_catalogue','standard');
-  const object={source:'trakt',url:'anime'},rows=await new Promise((resolve,reject)=>L.Api.category(object,resolve,reject));assert.equal(object.minimal_catalogue_status.state,'ready');assert.equal(rows.length,2);assert.equal(rows[0].source,'trakt');assert.equal(rows[0].results[0].id,123);assert.ok(L.Storage.get('minimal_collection_rows_v2',{})['category:anime:standard'].some(row=>row.id.includes('shows/trending')));assert.deepEqual(n.errors,[]);
+  const object={source:'trakt',url:'anime'},rows=await new Promise((resolve,reject)=>L.Api.category(object,resolve,reject));assert.equal(object.minimal_catalogue_status.state,'ready');assert.equal(rows.length,5);assert.equal(rows[0].source,'trakt');assert.equal(rows[0].results[0].id,123);assert.ok(L.Storage.get('minimal_collection_rows_v2',{})['category:anime:standard'].some(row=>row.id.includes('shows/trending')));assert.deepEqual(n.errors,[]);
  }finally{n.close();}
 });
