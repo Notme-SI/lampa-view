@@ -12,10 +12,13 @@ async function verify(page,mobile){
   const rect=n=>{const r=n.getBoundingClientRect();return {top:r.top,bottom:r.bottom,left:r.left,right:r.right,height:r.height,width:r.width};};
   const banner=root.querySelector('.minimal-torrent-banner'),head=root.querySelector('.explorer__files-head'),scroll=root.querySelector('.explorer__files-body>.scroll');
   const nav=document.querySelector('.navigation-bar');
-  return {root:rect(root),banner:rect(banner),head:rect(head),scroll:rect(scroll),nav:nav&&rect(nav),first:rect(root.querySelector('.torrent-item')),sidebarScroll:getComputedStyle(root.querySelector('.explorer__left>.scroll')).display,back:getComputedStyle(root.querySelector('.filter--back')).display,buttons:[...root.querySelectorAll('.filter--search,.filter--sort,.filter--filter')].map(rect),width:innerWidth,height:innerHeight};
+  const labelSizes=['dubbing','subtitles'].map(kind=>getComputedStyle(root.querySelector('.tc-tag-group--'+kind+' .tc-group-label')).fontSize);
+  const tagSizes=['dubbing','subtitles'].map(kind=>getComputedStyle(root.querySelector('.tc-tag-group--'+kind+' .tc-tag')).fontSize);
+  return {root:rect(root),banner:rect(banner),head:rect(head),scroll:rect(scroll),nav:nav&&rect(nav),first:rect(root.querySelector('.torrent-item')),labelSizes,tagSizes,sidebarScroll:getComputedStyle(root.querySelector('.explorer__left>.scroll')).display,back:getComputedStyle(root.querySelector('.filter--back')).display,buttons:[...root.querySelectorAll('.filter--search,.filter--sort,.filter--filter')].map(rect),width:innerWidth,height:innerHeight};
  });
  assert.equal(data.sidebarScroll,'none');
  assert.equal(data.back,'none','redundant card return button is hidden');
+ assert.equal(data.labelSizes[0],data.labelSizes[1],'dubbing and subtitle labels use the same scale');assert.equal(data.tagSizes[0],data.tagSizes[1],'language tags use the same scale');
  assert.ok(data.scroll.height>90,'release list has usable scrolling space');
  assert.ok(data.scroll.right<=data.width+1,'list fits the viewport');
  assert.ok(data.head.top>=data.banner.bottom-1 || !mobile,'mobile controls follow the banner');
@@ -45,7 +48,7 @@ async function verify(page,mobile){
    await page.evaluate(mobile=>{
     const L=Lampa;L.DeviceInput.init();L.Controller.observe();if(mobile){const screen=L.Platform.screen;L.Platform.screen=type=>type==='mobile' || type!=='tv'&&screen(type);document.body.classList.add('true--mobile','touch-device','orientation--portrait');L.NavigationBar.init();}
     window.qaStarts=[];L.Torrent.start=row=>window.qaStarts.push(row.Title);
-    L.Parser.get=(p,ok)=>setTimeout(()=>ok({Results:Array.from({length:40},(_,i)=>({Title:'Гангстерленд / MobLand (2025) WEB-DL [H.264/1080p] (сезон 1, серия '+(i+1)+' из 40) TVShows AC-3 E-AC-3 5.1',Tracker:'rutor',PublishDate:'2025-04-01',Size:4520453079,Seeders:435-i,Peers:109,MagnetUri:'magnet:?xt=urn:btih:'+String(i).padStart(40,'0')}))}),0);
+    L.Parser.get=(p,ok)=>setTimeout(()=>ok({Results:Array.from({length:40},(_,i)=>({Title:'Гангстерленд / MobLand (2025) WEB-DL [H.264/1080p] (сезон 1, серия '+(i+1)+' из 40) TVShows AC-3 E-AC-3 5.1 RUS/ENG',ffprobe:[{codec_type:'subtitle',tags:{language:'rus'}}],Tracker:'rutor',PublishDate:'2025-04-01',Size:4520453079,Seeders:435-i,Peers:109,MagnetUri:'magnet:?xt=urn:btih:'+String(i).padStart(40,'0')}))}),0);
     L.Activity.push({component:'torrents',movie:{id:99,title:'Гангстерленд',name:'Гангстерленд',original_name:'MobLand',number_of_seasons:1,seasons:[{season_number:1,episode_count:40}],source:'tmdb',first_air_date:'2025-01-01',genres:[]},search:'MobLand',url:'',page:1});L.Layer.update();
    },mobile);
    await page.waitForTimeout(350);

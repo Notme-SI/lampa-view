@@ -27,6 +27,13 @@ test('season restoration only indexes actual season navigation, never episodes o
  }finally{w.close();}
 });
 
+test('clearing a timecode clears title aliases in the active profile without touching another film or profile',()=>{
+ const dom=new JSDOM('',{runScripts:'outside-only'}),w=dom.window;try{w.eval(code);
+  const records={file_view:{'11Original':{time:700,percent:70},'11Перевод':{time:600,percent:60},Other:{time:4,percent:4}},other:{'11Original':{time:500,percent:50}}},L={Storage:{get:k=>records[k]},Utils:{hash:v=>v},Timeline:{filename:()=> 'file_view',update:v=>records.file_view[v.hash]=v}},api=w.OnlineState.default(L),card={title:'Перевод',original_title:'Original'};
+  api.clearProgress(card,1,1,'11Original');assert.equal(api.reader(card)(1,1).time,0);assert.equal(records.file_view['11Перевод'].percent,0);assert.equal(records.file_view.Other.time,4);assert.equal(records.other['11Original'].time,500);
+ }finally{w.close();}
+});
+
 function screen(n,{id=900,season=1,episodes=[1,2,3],serial=true,component={}}={}){
  const {w,L}=n,$=w.jQuery,root=$('<div class="explorer"><div class="explorer__files"><div class="explorer__files-head"></div><div class="explorer__files-body"><div class="scroll"><div class="scroll__body"></div></div></div></div></div>').appendTo(w.document.body),body=root.find('.scroll__body'),filter=new L.Filter({search:false,sort:true,filter:true});root.find('.explorer__files-head').append(filter.render());filter.set('sort',[{title:'Test',source:'test',selected:true},{title:'Other',source:'other',ghost:false}]);filter.set('filter',serial?[{stype:'season',title:'Сезон',items:[{title:'Сезон '+season,selected:true}]},{stype:'voice',title:'Озвучка',items:[{title:'TVShows',selected:true}]}]:[]);
  const movie={id,title:'Русское название',original_title:'Original',...(serial?{name:'Сериал',original_name:'Original',number_of_seasons:2,seasons:[{season_number:1,episode_count:3},{season_number:2,episode_count:3}]}:{}),source:'tmdb'};let played=0;
@@ -82,6 +89,38 @@ test('a long voice list uses one native selection menu and keeps the provider or
   s.filter.set('filter',[{stype:'voice',title:'Озвучка',items:Array.from({length:18},(_,i)=>({title:'Студия '+i,selected:i===0}))}]);await wait(200);
   assert.equal(s.root.find('[data-nova-group=voice]').length,0);assert.equal(s.root.find('[data-nova-focus=voice]').length,1);
   s.root.find('[data-nova-focus=voice]').trigger('hover:enter');assert.equal(L.Select.render().find('.selectbox-item').length,18);L.Select.render().find('.selectbox-item').eq(17).trigger('hover:enter');await wait(90);assert.equal(selected,17);assert.equal(L.Select.opened(),false);assert.deepEqual(n.errors,[]);
+ }finally{if(s)s.close();n.close();}
+});
+
+test('source and dubbing menus restore content control so Back keeps working after selection and cancellation',async()=>{
+ const n=await native({built:true}),{L}=n;let s;try{
+  s=screen(n);s.filter.set('filter',[{stype:'voice',title:'Перевод',items:Array.from({length:8},(_,i)=>({title:'Студия '+i,selected:i===0}))}]);await wait(200);
+  let backs=0;L.Controller.add('content',{toggle(){L.Controller.collectionSet(s.root[0]);},back(){backs++;}});L.Controller.toggle('content');
+  for(const name of ['source','voice'])for(const select of [false,true]){
+   s.root.find('[data-nova-focus='+name+']').trigger('hover:enter');assert.equal(L.Controller.enabled().name,'select');
+   if(name==='voice')assert.equal(L.Select.render().find('.selectbox__title').text(),'Дубляж');
+   if(select)L.Select.render().find('.selectbox-item.selected').first().trigger('hover:enter');else L.Controller.back();
+   assert.equal(L.Select.opened(),false);assert.equal(L.Controller.enabled().name,'content');L.Controller.back();
+  }
+  assert.equal(backs,4);assert.deepEqual(n.errors,[]);
+ }finally{if(s)s.close();n.close();}
+});
+
+test('online context actions mark files and clear current or all timecodes without resolving a video',async()=>{
+ const n=await native({built:true}),{L,w}=n;let s;try{
+  const component={changeBalanser(){},contextMenu(){}};s=screen(n,{component});await wait(180);let nativeRequests=0,allmarks=0,alltimes=0;
+  s.body.find('.online-prestige').each(function(index){const origin=w.jQuery(this),hash=L.Utils.hash('1'+(index+1)+'Original');origin.find('.time-line').attr('data-hash',hash);L.Timeline.update({hash,percent:35,time:300,duration:900});
+   origin.on('hover:long',()=>nativeRequests++);
+   component.contextMenu({html:origin,element:{mark(){origin.append('<div class="online-prestige__viewed"></div>');},unmark(){origin.find('.online-prestige__viewed').remove();},timeclear(){L.Timeline.update({hash,percent:0,time:0,duration:0});}},onClearAllMark(){allmarks++;s.body.find('.online-prestige__viewed').remove();},onClearAllTime(){alltimes++;}});
+  });await wait(120);
+  async function action(name){s.root.find('.nova-card').first().trigger('contextmenu');assert.equal(L.Select.opened(),true);const button=L.Select.render().find('.selectbox-item').filter(function(){return w.jQuery(this).text().trim()===name;}).first();assert.equal(button.length,1,name+': '+L.Select.render().text());button.trigger('hover:enter');await wait(80);assert.equal(L.Controller.enabled().name,'content');}
+  await action('Отметить просмотренным');assert.equal(s.root.find('.nova-card__viewed,.nova-card__eye').length,1);
+  await action('Снять отметку просмотра');assert.equal(s.root.find('.nova-card__viewed,.nova-card__eye').length,0);
+  await action('Очистить таймкод');assert.equal(L.Timeline.view(L.Utils.hash('11Original')).time,0);assert.equal(L.Timeline.view(L.Utils.hash('12Original')).time,300);
+  await action('Очистить таймкоды всех файлов');assert.equal(alltimes,1);assert.equal(L.Timeline.view(L.Utils.hash('12Original')).time,0);
+  await action('Снять отметки у всех файлов');assert.equal(allmarks,1);assert.equal(nativeRequests,0);assert.equal(s.played(),0);assert.deepEqual(n.errors,[]);
+  L.Timeline.update({hash:L.Utils.hash('11Original'),percent:35,time:300,duration:900});await wait(80);await action('Отметить просмотренным');
+  assert.match(s.root.find('[data-nova-focus=hero]').text(),/Серия 2/);assert.equal(s.root.find('.nova-hero__progress .time-line>div').css('width'),'33%');
  }finally{if(s)s.close();n.close();}
 });
 
@@ -154,6 +193,14 @@ test('compact episode cards keep titles, file quality and season facts without r
   // Native metadata can arrive after the interface has already rendered.
   nativeRows.eq(0).find('.online-prestige__quality')[0].firstChild.nodeValue='1920x800';await wait(180);assert.equal(root.find('.nova-card__quality').first().text(),'FHD');assert.equal(root.find('.nova-hero__meta .nova-badge').text(),'FHD');
   L.Storage.set('nova_plus_view','list');L.Listener.send('activity',{type:'start'});await wait(180);assert.equal(root.find('.nova-card__title').first().text(),'Пан или пропал');assert.doesNotMatch(root.find('.nova-card__meta').text(),/TVShows|Описание/);assert.equal(root.find('.nova-card__descr,.nova-card__voice').length,0);assert.deepEqual(n.errors,[]);
+ }finally{if(s)s.close();n.close();}
+});
+
+test('episode list retains the episode label and late rating when switching from tiles',async()=>{
+ const n=await native({built:true}),{L,w}=n;let s;try{
+  L.Api.sources.tmdb.get=(url,p,ok)=>w.setTimeout(()=>ok(url.includes('/season/')?{episodes:[{episode_number:1,name:'Название эпизода',vote_average:8.7,air_date:'2025-04-01'}]}:{logos:[]}),25);
+  s=screen(n,{id:1666,episodes:[1,2]});await wait(200);L.Storage.set('nova_plus_view','list');L.Listener.send('activity',{type:'start'});await wait(150);
+  const card=s.root.find('.nova-card').first();assert.equal(card.find('.nova-card__num').text(),'Серия 1');assert.equal(card.find('.nova-card__rate').text(),'★ 8.7');assert.equal(card.find('.nova-card__title').text(),'Название эпизода');assert.equal(card.find('.nova-card__rate').length,1);assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}
 });
 

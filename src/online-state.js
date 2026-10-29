@@ -87,5 +87,11 @@ export default function onlineState(L){
   const links=rows.filter(row=>row.method==='link');if(links.length<2)return -1;
   return links.findIndex(row=>{const param=row.url.match(/[?&](?:s|season)=(\d+)/),name=String(row.name || row.title || '').match(/(?:сезон|season)\s*(\d+)|(\d+)\s*(?:сезон|season)/i);return Number(row.season || (param?param[1]:name?name[1] || name[2]:0))===Number(season);});
  }
- return {availability,reader,resume,seasonIndex,folderTarget};
+ function clearProgress(card,season=0,episode=0,explicit){
+  if(!L.Timeline || !L.Timeline.update)return;
+  const records=L.Storage.get(file(),{}) || {},keys=names(card).map(title=>hash(title,season,episode));
+  if(explicit)keys.push(explicit);
+  for(const key of new Set(keys))if(records[key] || key===explicit)L.Timeline.update({hash:key,percent:0,time:0,duration:0});
+ }
+ return {availability,reader,resume,seasonIndex,folderTarget,clearProgress};
 }

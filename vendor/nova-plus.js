@@ -872,7 +872,7 @@
       var now = Lampa.Controller.enabled();
       if (now && now.name === 'content') return;
     } catch (e) {}
-    try { Lampa.Controller.enable('content'); } catch (e) {}
+    try { Lampa.Controller.toggle('content'); } catch (e) {}
   }
 
   function scrollFreeze() {
@@ -1057,7 +1057,7 @@
       if (group.stype === 'season') out.season = group;
       if (group.stype === 'voice') {
         group.items = voiceDedup(group.items);
-        if (group.items.length) out.voice = group;
+        if (group.items.length) out.voice = $.extend({},group,{title:label('nova_plus_voices')});
       }
     });
 
@@ -1351,6 +1351,8 @@
     if (long) {
       element.on('hover:long', function () {
         try { long(); } catch (e) {}
+      }).on('contextmenu.novaActions',function(event){
+        event.preventDefault();event.stopImmediatePropagation();long();
       });
     }
     return element;
@@ -2376,6 +2378,13 @@
     if (typeof comp.changeBalanser !== 'function') return;
 
     comp.nova_host_hooked = true;
+    if(typeof comp.contextMenu==='function'){
+      var nativeContextMenu=comp.contextMenu;
+      comp.contextMenu=function(params){
+        if(params && params.html && params.element)params.html.data('nova-native-actions',params);
+        return nativeContextMenu.apply(this,arguments);
+      };
+    }
     probeStop(); probe_done_for = 0; probe_url = '';
     var availabilityGeneration=0,requestSource='',folderChain=[],parsing=false;
     function resetAvailability(source) {
@@ -2701,13 +2710,13 @@
 
   function isSeen(item) {
     if (!item) return false;
-    if (item.viewed && !item.recorded) return true;
+    if (item.viewed) return true;
     return percentOf(item) >= SEEN_PERCENT;
   }
 
   function isStarted(item) {
     var value = percentOf(item);
-    return (value > 0 || item && item.position > 0) && value < SEEN_PERCENT;
+    return !isSeen(item) && (value > 0 || item && item.position > 0) && value < SEEN_PERCENT;
   }
 
   function seasonText(season) {
@@ -2730,7 +2739,7 @@
     list.forEach(function(item){max=Math.max(max,item.num || 0);if(item.soon || unique[item.num])return;unique[item.num]=item;total++;});
     var details=movie && Array.isArray(movie.seasons) ? movie.seasons : [],detail=details.filter(function(row){return Number(row.season_number)===season;})[0];
     planned=Math.max(planned || 0,detail && Number(detail.episode_count) || 0,max,total);
-    for(var e=1;e<=Math.min(500,planned);e++){var record=read(season,e);if(record.found ? record.percent>=SEEN_PERCENT : unique[e] && isSeen(unique[e]))seen++;}
+    for(var e=1;e<=Math.min(500,planned);e++){var record=read(season,e);if(unique[e] && isSeen(unique[e]) || record.found && record.percent>=SEEN_PERCENT)seen++;}
     return {seen:seen,total:total,planned:planned};
   }
 
@@ -2756,7 +2765,7 @@
 
     list.sort(function(a,b){return a.num-b.num;});
     var state=onlineState(),saved=state && movie ? state.resume(movie) : null;
-    if(saved && saved.season===(seasonNumber() || 1)){var exact=list.filter(function(item){return item.num===saved.episode;})[0];if(exact)return exact;}
+    if(saved && saved.season===(seasonNumber() || 1)){var exact=list.filter(function(item){return item.num===saved.episode;})[0];if(exact && !isSeen(exact))return exact;}
     var partial=list.filter(isStarted).sort(function(a,b){return (b.updated || 0)-(a.updated || 0);});
     if(partial.length)return partial[0];
     for (i = 0; i < list.length; i++) {
@@ -2787,7 +2796,28 @@
 
   function longPress(item) {
     if (!item) return;
-    try { item.origin.trigger('hover:long'); } catch (e) {}
+    var params=item.origin && item.origin.data('nova-native-actions');
+    if(!params || !params.element){try { item.origin.trigger('hover:long'); } catch (e) {}return;}
+    if(Lampa.Select.opened && Lampa.Select.opened())return;
+    var key='item:'+item.index,element=params.element;
+    var menu=[{title:'Отметить просмотренным',action:'mark'},{title:'Снять отметку просмотра',action:'unmark'},{title:'Очистить таймкод',action:'timeclear'}];
+    if(params.onClearAllMark)menu.push({title:'Снять отметки у всех файлов',action:'allmarks'});
+    if(params.onClearAllTime)menu.push({title:'Очистить таймкоды всех файлов',action:'alltimes'});
+    menu.push({title:'Другие действия',action:'native'});
+    var restore=function(){Lampa.Select.hide();contentEnable();ui_focus=key;restoreFocus(false);};
+    Lampa.Select.show({title:serial?'Серия '+item.num:(movie.title || movie.name || 'Действия'),items:menu,
+      onBack:restore,onSelect:function(entry){
+        restore();
+        if(entry.action==='native')return item.origin.trigger('hover:long');
+        if(entry.action==='allmarks')params.onClearAllMark();
+        else if(entry.action==='alltimes')params.onClearAllTime();
+        else if(typeof element[entry.action]==='function')element[entry.action]();
+        var progress=onlineState();
+        if(progress && progress.clearProgress && /^(timeclear|alltimes)$/.test(entry.action)){
+          (entry.action==='alltimes'?items:[item]).forEach(function(row){if(!row.folder && !row.soon)progress.clearProgress(movie,serial?(seasonNumber() || 1):0,serial?row.num:0,row.hash);});
+        }
+        refreshMarks();schedule();
+      }});
   }
 
   function ownArt(item) {
@@ -3114,6 +3144,7 @@
 
 
 
+    if(target && target.origin && target.origin.data('nova-native-actions'))menu.push({title:'Просмотр и таймкод',marks:target});
     try {
       Lampa.Select.show({
         title: text('title_action', 'nova_plus_action'),
@@ -3123,6 +3154,7 @@
         },
         onSelect: function (a) {
           try { Lampa.Controller.toggle(active); } catch (e) {}
+          if(a.marks){Lampa.Select.hide();return longPress(a.marks);}
           if (a.jump) return uiToggle('jump');
           play(a.item);
         }
@@ -4872,7 +4904,7 @@
       var record=read(serial ? (seasonNumber() || 1) : 0,serial ? item.num : 0,item.hash);
       if(record.found){percent=record.percent;item.position=record.time;item.updated=record.updated;}
       item.recorded=!!record.found;item.percent = percent;
-      if (item.origin && item.origin.find('.' + (item.px || '') + 'online-prestige__viewed').length) item.viewed = true;
+      if (item.origin) item.viewed = item.origin.find('.' + (item.px || '') + 'online-prestige__viewed').length>0;
 
       var card = item.card;
       if (!card || !card.length) return;
@@ -5214,7 +5246,7 @@
   var WIDE_OWN = {
     nova_plus_seasons: { ru: 'Сезон', uk: 'Сезон', en: 'Season' },
     nova_plus_parts: { ru: 'Части', uk: 'Частини', en: 'Parts' },
-    nova_plus_voices: { ru: 'Перевод', uk: 'Переклад', en: 'Audio' },
+    nova_plus_voices: { ru: 'Дубляж', uk: 'Дубляж', en: 'Dubbing' },
     nova_plus_ep_one: { ru: '{count} эпизод', uk: '{count} епізод', en: '{count} episode' },
     nova_plus_ep_few: { ru: '{count} эпизода', uk: '{count} епізоди', en: '{count} episodes' },
     nova_plus_ep_many: { ru: '{count} эпизодов', uk: '{count} епізодів', en: '{count} episodes' },
@@ -5568,7 +5600,7 @@
     if (number) {
       var plain = parseInt(digits(number), 10) || 0;
       var slot = card.find('.nova-card__num > span');
-      if (slot.length) slot.text(plain || number);
+      if (slot.length) slot.text(text('torrent_serial_episode', 'nova_plus_episode') + ' ' + (plain || number));
     } else card.find('.nova-card__num').remove();
 
     var line = card.find('.nova-card__line');
@@ -5576,6 +5608,7 @@
     line.addClass('nova-card__line--body').appendTo(card.find('.nova-card__body'));
 
     var bits = [];
+    if (picked.rate) bits.push('<span class="nova-card__rate">\u2605 ' + esc(picked.rate) + '</span>');
     if (picked.date) bits.push('<span class="nova-card__date">' + esc(picked.date) + '</span>');
     if (!serial && picked.rest.length) bits.push('<span>' + esc(picked.rest[0]) + '</span>');
     card.find('.nova-card__meta').html(bits.join('<span class="nova-dot">\u25cf</span>'));
@@ -5597,10 +5630,11 @@
       var title = card.find('.nova-card__title');
       if (episode.name) title.text(episodeTitle(item, episode.name));
       var meta = card.find('.nova-card__meta');
-      if (episode.air_date && !meta.find('.nova-card__date').length) {
-        var when = wideDate(episode.air_date);
-        if (when) meta.prepend($('<span class="nova-card__date"></span>').text(when), $('<span class="nova-dot">\u25cf</span>'));
-      }
+      var rating=episode.vote_average ? parseFloat(episode.vote_average + '').toFixed(1) : meta.find('.nova-card__rate').text().replace(/\u2605\s*/, '');
+      var when=wideDate(episode.air_date) || meta.find('.nova-card__date').text();
+      meta.empty();
+      if(rating)meta.append($('<span class="nova-card__rate"></span>').text('\u2605 '+rating));
+      if(when){if(rating)meta.append('<span class="nova-dot">\u25cf</span>');meta.append($('<span class="nova-card__date"></span>').text(when));}
       if (episode.still_path && !thumb.hasClass('nova-card__thumb--loaded')) paintThumb(thumb, image(episode.still_path, 'w500'), false);
     });
   }
@@ -6343,7 +6377,7 @@
       var options=groups[name],selected=options.items.filter(function(item){return item.selected;})[0] || options.items[0];
       tool(name,title,selected.title,{plain:true},function(){
         Lampa.Select.show({title:title,items:options.items.map(function(item,seat){return {title:item.title,selected:!!item.selected,index:typeof item.index==='number'?item.index:seat};}),
-          onSelect:function(item){Lampa.Select.hide();contentEnable();wideChooseOption(name,item.index,name);},
+          onSelect:function(item){Lampa.Select.hide();ui_focus=name;contentEnable();wideChooseOption(name,item.index,name);restoreFocus(false);},
           onBack:function(){Lampa.Select.hide();ui_focus=name;contentEnable();restoreFocus(false);}});
       });
     };

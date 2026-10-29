@@ -27,6 +27,7 @@ import onlineState from './online-state.js';
 import torrentBanner,{bannerCountries} from './torrent-banner.js';
 import torrentSearch from './torrent-search.js';
 import installTrakt from './trakt.js';
+import holidayLayout from './holidays.js';
 
 const ROOT = window;
 if (!ROOT.LampaView) {
@@ -35,9 +36,9 @@ if (!ROOT.LampaView) {
     const boot=document.createElement('style');boot.id='lampa-minimal-boot';boot.textContent=BOOT;
     (document.head || document.documentElement).appendChild(boot);
   }
-  const P = ROOT.LampaView = {version: '0.4.65', identity: C.identity, ready: false, bridge: false};
+  const P = ROOT.LampaView = {version: '0.4.66', identity: C.identity, ready: false, bridge: false};
   P.matchCatalogue=matchCatalogue;
-  let L, $, lastCard, initialized = false, playlist = [], activeVideo,loadLogo,artwork,back;
+  let L, $, lastCard, initialized = false, playlist = [], activeVideo,loadLogo,artwork,back,holidays;
   const metadata = new Map();
   const heroes = new WeakSet();
   const carousels = new Set();
@@ -89,10 +90,17 @@ if (!ROOT.LampaView) {
     refreshCarousels();
     const logo = document.querySelector('.head__logo-icon');
     if (logo) {
-      if (!logo.dataset.lampa_viewOriginal) logo.dataset.lampa_viewOriginal = logo.innerHTML;
-      if (enabled) logo.innerHTML = '<span class="pt-brand">LAMPA</span>';
+      if (!logo.dataset.lampa_viewOriginal) {
+        const original=logo.cloneNode(true);
+        original.querySelectorAll('.head__logo-cap,.garland').forEach(node=>node.remove());
+        logo.dataset.lampa_viewOriginal = original.innerHTML;
+      }
+      const ornaments=Array.from(logo.children).filter(node=>node.classList.contains('head__logo-cap') || node.classList.contains('garland'));
+      if (enabled && !logo.classList.contains('head__logo-halloween')) logo.innerHTML = '<span class="pt-brand">LAMPA</span>';
       else logo.innerHTML = logo.dataset.lampa_viewOriginal;
+      ornaments.forEach(node=>{if(!logo.contains(node))logo.appendChild(node);});
     }
+    if(holidays)holidays.update();
   }
   function navigate(section) {
     if (section === 'search') return $('.head .open--search').trigger('hover:enter');
@@ -372,7 +380,7 @@ if (!ROOT.LampaView) {
     artwork=installArtwork(L,()=>yes('lampa_view_enabled'));
     torrentBanner(L,loadLogo);
     torrentSearch(L);
-    settings(); bridge(); shell();back=installBack(L,$,()=>yes('lampa_view_enabled'));artwork.refresh();
+    settings(); bridge(); shell();back=installBack(L,$,()=>yes('lampa_view_enabled'));holidays=holidayLayout(L,()=>yes('lampa_view_enabled'));artwork.refresh();
     tvPerformance(()=>yes('lampa_view_enabled'));
     on('menu',event=>{if(yes('lampa_view_enabled') && event.type==='action' && event.action==='cartoon'){if(event.abort)event.abort();navigate('cartoon');}});
     trimSections();

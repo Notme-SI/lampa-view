@@ -33,6 +33,7 @@ jobs:
           node tests/browser/torrent-tv-controls.cjs
           node tests/browser/remote-navigation.cjs
           node tests/browser/trakt-interface.cjs
+          node tests/browser/online-polish.cjs
       - run: python3 server/test-bootstrap.py
       - run: python3 server/test-online.py
       - name: Check published files match source

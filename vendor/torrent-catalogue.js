@@ -220,6 +220,7 @@
         function credited(value) {return contains(evidence,value) && (!cat.aliases.some(function(a){return contains(a.title,value);}) || contains(credits+' '+tracks.join(' '),value));}
         function addVoice(value, explicit) {
             value = text(value).trim(); if (!value) return;
+            value = value.replace(/^(?:dub|dubbing|дубляж)\s*[\[(]([^\])]+)[\])]$/i,'$1').trim();
             if(!explicit && author && norm(author)===norm(value) && !tracks.some(function(t){return contains(t,value);}))return;
             var group = groups.filter(function (g) { return g.some(function (v) { return norm(v) === norm(value); }); })[0];
             if (group) { if (explicit || group.some(function (v) { return v.length > 3 && credited(v); })) names.push(group[0]); }
@@ -552,22 +553,28 @@
                 var right = $('<div class="tc-right"></div>').appendTo(head);
                 $('<span class="tc-size"></span>').text(row.size || (L.Utils && L.Utils.bytesToSize(row.Size)) || '').appendTo(right);
                 $('<span class="tc-seeds"></span>').text('Раздают ' + (+row.Seeders || 0) + (row.Peers !== undefined ? ' · Качают ' + (+row.Peers || 0) : '')).appendTo(right);
-                var tags = $('<div class="tc-tags"></div>').appendTo(content);
-                function group(kind, label, values) {
+                if(Number(row.bitrate)>0) $('<span class="tc-bitrate"></span>').text(row.bitrate+' Мбит/с').appendTo(right);
+                var languages = $('<div class="tc-tags tc-language-tags"></div>').appendTo(content);
+                var tags = $('<div class="tc-tags tc-technical-tags"></div>').appendTo(content);
+                function group(parent, kind, label, values) {
                     values = values.filter(function(value,index,all){return value && all.indexOf(value) === index;});
-                    if (!values.length) return;
-                    var part = $('<div class="tc-tag-group"></div>').addClass('tc-tag-group--' + kind).attr('aria-label', label).appendTo(tags);
+                    if (!values.length && !(kind==='dubbing' && m.voices.types.length)) return null;
+                    var part = $('<div class="tc-tag-group"></div>').addClass('tc-tag-group--' + kind).attr('aria-label', label).appendTo(parent);
                     $('<span class="tc-group-label"></span>').text(label).appendTo(part);
-                    values.forEach(function(value){pill(part,value,kind === 'audio' && value === m.technical.languages.join(' / ') ? 'language' : '');});
+                    values.forEach(function(value){pill(part,value,kind === 'dubbing' && value === m.technical.languages.join(' / ') ? 'language' : '');});
+                    return part;
                 }
-                group('video','Видео',[m.technical.source && (m.seasonLabel || m.technical.quality) ? m.technical.source : ''].concat(m.technical.video,m.technical.hdr,Number(row.bitrate)>0 && !m.seasonLabel ? ['≈ '+row.bitrate+' Мбит/с'] : []));
-                group('audio','Аудио',[m.technical.languages.join(' / ')].concat(m.technical.audio,m.technical.channels));
-                group('subtitles','Субтитры',[m.technical.subtitles.join(' / ')]);
+                var dubbing = group(languages,'dubbing','Дубляж',[m.technical.languages.join(' / ')].concat(m.voices.types.filter(function(value){return value!=='Дубляж';}),m.voices.names));
+                if(dubbing){
+                    dubbing.addClass('tc-voices').find('.tc-group-label').addClass('tc-tag--translation');
+                    var studios=dubbing.children('.tc-tag').filter(function(){return m.voices.names.indexOf($(this).text())>=0;});
+                    if(studios.length)studios.wrapAll('<span class="tc-voice-names"></span>');
+                }
+                group(languages,'subtitles','Субтитры',[m.technical.subtitles.join(' / ')]);
+                group(tags,'video','Видео',[m.technical.source && (m.seasonLabel || m.technical.quality) ? m.technical.source : ''].concat(m.technical.video,m.technical.hdr));
+                group(tags,'audio','Аудио',m.technical.audio.concat(m.technical.channels));
+                if (!languages.children().length) languages.remove();
                 if (!tags.children().length) tags.remove();
-                var voices = $('<div class="tc-voices"></div>').appendTo(content), voiceTags=m.voices.names;
-                m.voices.types.forEach(function(v){pill(voices,v,'translation');});
-                if(voiceTags.length) $('<span class="tc-voice-names"></span>').text(voiceTags.join(' · ')).appendTo(voices);
-                if(!voices.children().length) voices.remove();
                 if (m.identity.state==='mismatch') $('<div class="tc-warning"></div>').text('Другое произведение').appendTo(content);
                 var foot = $('<div class="tc-foot"></div>').appendTo(content);
                 var source=$('<span class="tc-source"></span>').text((row._tcSources || [row.Tracker]).filter(Boolean).join(', ') + (row.PublishDate ? ' · ' + String(row.PublishDate).slice(0, 10) : '')).appendTo(foot);
@@ -585,7 +592,7 @@
             '.torrent-list .torrent-item.tc-item.focus,.torrent-list .torrent-item.tc-item:hover{background:#26333f!important;color:#fff!important;border-color:#b7d8ef;box-shadow:0 0 0 2px #b7d8ef}' +
             '.tc-item>.torrent-item__title,.tc-item>.torrent-item__ffprobe,.tc-item>.torrent-item__details,.tc-item>.stv-tor{display:none!important}' +
             '.tc-head{display:flex;align-items:center;gap:1em;justify-content:space-between}.tc-title{font-size:1.15em;font-weight:600;overflow-wrap:anywhere;min-width:0}.tc-right{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:.25em;white-space:nowrap}.tc-size{font-size:1.15em;font-weight:700;color:#fff}.tc-seeds{font-size:1em;font-weight:700;color:#72dc87}.tc-item .tc-head .torrent-item__viewed{position:static;width:1em;height:1em;flex-shrink:0}' +
-            '.tc-tags{display:flex;flex-wrap:wrap;gap:.5em 1.2em;margin:.65em 0}.tc-tag-group{display:flex;align-items:center;flex-wrap:wrap;gap:.35em}.tc-group-label{font-size:.72em;color:#929ba6;margin-right:.1em}.tc-voices{display:flex;align-items:baseline;flex-wrap:wrap;gap:.4em .7em}.tc-voices .tc-tag--translation{border:0;padding:0;font-size:inherit}.tc-tag{border:1px solid rgba(255,255,255,.15);border-radius:.5em;padding:.25em .5em;font-size:.8em;line-height:1.4}.tc-tag--voice{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.12);color:#e8edf2}' +
+            '.tc-tags{display:flex;flex-wrap:wrap;gap:.5em 1.2em;margin:.65em 0}.tc-tag-group{display:flex;align-items:center;flex-wrap:wrap;gap:.35em}.tc-group-label{font-size:.72em;color:#929ba6;margin-right:.1em}.tc-voices{display:flex;align-items:baseline;flex-wrap:wrap;gap:.4em .7em}.tc-tag{border:1px solid rgba(255,255,255,.15);border-radius:.5em;padding:.25em .5em;font-size:.8em;line-height:1.4}.tc-tag--voice{background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.12);color:#e8edf2}' +
             '.tc-tag--complete{color:#a8ebc8;border-color:#3a6b56}.tc-tag--partial{color:#ffe0a3;border-color:#80683c}.tc-tag--conflict,.tc-tag--mismatch{color:#ffb7af;border-color:#86554f}.tc-tag--unknown{color:#d0d6de}' +
             '.tc-muted{color:#aeb5bf}.tc-foot{margin-top:.75em;color:#aeb5bf;font-size:.8em}.tc-original{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#b7bdc6;font-size:.8em;line-height:1.5}' +
             '@media(max-width:600px){.tc-head{display:block}.tc-size{display:block;font-size:.85em;margin-top:.35em}}';
