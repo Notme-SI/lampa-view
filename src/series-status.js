@@ -67,7 +67,7 @@ function watchFooter(L,node,data,series){
  let summary=row.querySelector('.pt-card-watch__row');
  if(!summary){summary=document.createElement('div');summary.className='pt-card-watch__row';summary.innerHTML='<span class="pt-card-watch__label"></span><span class="pt-card-watch__time"></span>';row.insertBefore(summary,row.firstChild);}
  const nativeLabel=row.querySelector(':scope > span'),text=nativeLabel && nativeLabel.textContent || '';
- let label='Просмотрено',timeline=null,watchSeason=0,watchEpisode=0;
+ let label='Просмотрено:',timeline=null,watchSeason=0,watchEpisode=0;
  const progressHash=row.querySelector('.time-line').getAttribute('data-hash');
  if(progressHash)timeline=view(progressHash);
  if(shared){watchSeason=target?target.season:shared.season;watchEpisode=target?target.episode:shared.episode;timeline=view(shared.hash);label='Серия '+watchEpisode+' • Сезон '+watchSeason;}else if(series){
@@ -101,7 +101,7 @@ function watchFooter(L,node,data,series){
  if(complete){watchEpisode=0;label=series?'Сериал просмотрен':'Фильм просмотрен';}
  const fill=row.querySelector('.time-line>div');if(fill)fill.style.width=Math.min(100,Math.max(0,Number(shown.percent)||0))+'%';
  const time=complete?'':clock(shown.time),name=summary.firstElementChild,stamp=summary.lastElementChild;
- const action=Number(shown.time)>0 || Number(shown.percent)>0?'Продолжить: ':'Смотреть: ';
+ const action='Просмотрено: ';
  if(name.dataset.label!==label || name.dataset.action!==action){
   name.dataset.label=label;name.dataset.action=action;
   name.textContent='';

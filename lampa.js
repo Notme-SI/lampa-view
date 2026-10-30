@@ -1,4 +1,4 @@
-/*! Lampa View 0.4.85 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.4.86 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -3190,7 +3190,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     }
     var nativeLabel = row.querySelector(":scope > span"),
       text = nativeLabel && nativeLabel.textContent || "";
-    var label = "Просмотрено",
+    var label = "Просмотрено:",
       timeline = null,
       watchSeason = 0,
       watchEpisode = 0;
@@ -3261,7 +3261,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var time = complete ? "" : clock(shown.time),
       name = summary.firstElementChild,
       stamp2 = summary.lastElementChild;
-    var action = Number(shown.time) > 0 || Number(shown.percent) > 0 ? "Продолжить: " : "Смотреть: ";
+    var action = "Просмотрено: ";
     if (name.dataset.label !== label || name.dataset.action !== action) {
       name.dataset.label = label;
       name.dataset.action = action;
@@ -9405,7 +9405,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       (document.head || document.documentElement).appendChild(boot);
     }
     var P = ROOT.LampaView = {
-      version: "0.4.85",
+      version: "0.4.86",
       identity: import_identity.default.identity,
       ready: false,
       bridge: false
