@@ -136,7 +136,7 @@ test('online context actions mark files and clear current or all timecodes witho
   await action('Очистить таймкоды сериала');assert.equal(L.Timeline.view(L.Utils.hash('26Original')).time,0);assert.equal(L.Storage.get('online_watched_last',{})[L.Utils.hash('Original')],undefined);assert.equal(L.Storage.get('online_watched_last',{}).other.episode,1);
   await action('Снять отметки у всех файлов');assert.equal(allmarks,1);assert.equal(nativeRequests,0);assert.equal(s.played(),0);assert.deepEqual(n.errors,[]);
   L.Timeline.update({hash:L.Utils.hash('11Original'),percent:35,time:300,duration:900});await wait(80);await action('Отметить просмотренным');
-  assert.match(s.root.find('[data-nova-focus=hero]').text(),/Серия 2/);assert.equal(s.root.find('.nova-hero__progress .time-line>div').css('width'),'33%');
+  assert.match(s.root.find('[data-nova-focus=hero]').text(),/Серия 2/);assert.equal(s.root.find('.nova-hero__progress .time-line>div').css('width'),'0%');assert.equal(L.Timeline.view(L.Utils.hash('11Original')).percent,100);assert.equal(L.Timeline.view(L.Utils.hash('12Original')).percent,0);assert.equal(w.LampaView.online.lastWatched(s.movie).episode,1);assert.equal(w.LampaView.online.resume(s.movie).episode,2);assert.equal(w.LampaView.online.resume(s.movie).percent,0);
  }finally{if(s)s.close();n.close();}
 });
 
@@ -147,6 +147,15 @@ test('clearing a title resets all known seasons and aliases only in the active p
   assert.equal(api.resume(card).episode,6);api.clearTitleProgress(card,['provider-hash']);
   assert.equal(api.reader(card)(1,1).time,0);assert.equal(api.reader(card)(2,6).time,0);assert.equal(records.file_view['provider-hash'].time,0);assert.equal(api.resume(card),null);
   assert.equal(records.online_watched_last.Original,undefined);assert.equal(records.online_watched_last.Перевод,undefined);assert.equal(records.online_watched_last.Other.episode,1);assert.equal(records.file_view['11Other'].time,900);assert.equal(records.other['11Original'].time,1260);assert.equal(reads,1);
+ }finally{w.close();}
+});
+
+test('manual completion records the selected season and aliases, while resume starts the next episode at zero',()=>{
+ const dom=new JSDOM('',{runScripts:'outside-only'}),w=dom.window;try{
+  w.eval(code);const records={file_view:{},online_watched_last:{}},L={Utils:{hash:v=>v},Storage:{get:k=>records[k],set:(k,v)=>records[k]=v},Timeline:{filename:()=> 'file_view',update:v=>records.file_view[v.hash]={...v,updated:Date.now()},read(){}}},api=w.OnlineState.default(L),card={name:'Перевод',original_name:'Original',number_of_seasons:2,seasons:[{season_number:1,episode_count:10},{season_number:2,episode_count:10}]};
+  api.setWatched(card,1,1,true,'provider-item');assert.equal(api.reader(card)(1,1).percent,100);assert.equal(api.lastWatched(card).season,1);assert.equal(api.lastWatched(card).episode,1);assert.equal(api.resume(card).episode,2);assert.equal(api.resume(card).time,0);assert.equal(api.resume(card).percent,0);assert.equal(api.reader(card)(1,2).found,false);assert.equal(api.reader(card)(2,1).found,false);assert.equal(records.file_view['provider-item'].percent,100);
+  api.setWatched(card,1,1,false,'provider-item');assert.equal(api.lastWatched(card),null);assert.equal(records.online_watched_last.Original,undefined);
+  api.setWatched(card,2,1,true);assert.equal(api.lastWatched(card).season,2);assert.equal(api.resume(card).season,2);
  }finally{w.close();}
 });
 

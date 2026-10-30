@@ -2828,7 +2828,7 @@
     if(serial && onlineState() && onlineState().clearTitleProgress)menu.push({title:'Очистить таймкоды сериала',action:'titletimes'});
     menu.push({title:'Другие действия',action:'native'});
     var restore=function(){Lampa.Select.hide();contentEnable();ui_focus=key;restoreFocus(false);};
-    Lampa.Select.show({title:serial?'Серия '+item.num:(movie.title || movie.name || 'Действия'),items:menu,
+    Lampa.Select.show({title:serial?'Сезон '+(seasonNumber() || 1)+' • Серия '+item.num:(movie.title || movie.name || 'Действия'),items:menu,
       onBack:restore,onSelect:function(entry){
         restore();
         if(entry.action==='native')return item.origin.trigger('hover:long');
@@ -2836,6 +2836,7 @@
         else if(entry.action==='alltimes')params.onClearAllTime();
         else if(typeof element[entry.action]==='function')element[entry.action]();
         var progress=onlineState();
+        if(progress && progress.setWatched && /^(mark|unmark)$/.test(entry.action))progress.setWatched(movie,serial?(seasonNumber() || 1):0,serial?item.num:0,entry.action==='mark',item.hash);
         if(entry.action==='titletimes' && progress && progress.clearTitleProgress)progress.clearTitleProgress(movie,items.filter(function(row){return !row.folder && !row.soon;}).map(function(row){return row.hash;}));
         if(progress && progress.clearProgress && /^(timeclear|alltimes)$/.test(entry.action)){
           (entry.action==='alltimes'?items:[item]).forEach(function(row){if(!row.folder && !row.soon)progress.clearProgress(movie,serial?(seasonNumber() || 1):0,serial?row.num:0,row.hash);});
@@ -3517,11 +3518,9 @@
   function heroProgress(target, season) {
     if (!ui.hero || !target) return;
     var progress = ui.hero.find('.nova-hero__progress').empty();
-    var percent = season
-      ? Math.min(100, Math.round(season.seen / Math.max(1, season.total, season.planned) * 100))
-      : Math.min(100, target.percent);
-    if (percent > 0 || !serial) progress.show().append('<div class="time-line"><div style="width:' + percent + '%"></div></div>');
-    else progress.hide();
+    var percent = Math.min(100,Math.max(0,target.percent || 0));
+    progress.attr('data-progress-scope','episode').attr('aria-label',(serial?'Серия '+target.num:'Видео')+': '+percent+'%');
+    progress.show().append('<div class="time-line"><div style="width:' + percent + '%"></div></div>');
   }
 
   function heroStatic(withArt) {
@@ -3620,21 +3619,7 @@
 
     wideHeroTune();
 
-    var season = serial && !nav && items.length ? seasonSeen(items) : null;
-
-    if (season) {
-      if (season.planned <= season.total) {
-        var want_season = seasonNumber() || 1;
-        var want_id = tmdbId();
-        seasonPlanned(want_season, function (planned) {
-          if (!planned || planned <= season.total) return;
-          if (!ui.hero || tmdbId() !== want_id || (seasonNumber() || 1) !== want_season) return;
-          season = seasonSeen(items,planned);
-          heroProgress(pickResume(items), season);
-        });
-      }
-    }
-    heroProgress(target, season);
+    heroProgress(target);
 
     return button;
   }

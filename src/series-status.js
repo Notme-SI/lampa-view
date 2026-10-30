@@ -14,13 +14,22 @@ export function episodeLabel(text){
  return match?'Серия '+Number(match[1] || match[2]):value;
 }
 const clock=value=>{
- const seconds=Math.floor(Number(value)||0);if(seconds<=0)return '';
+ const seconds=Math.floor(Number(value)||0);if(seconds<=0)return '00:00';
  const minutes=Math.floor(seconds/60),tail=String(seconds%60).padStart(2,'0');
  return minutes>=60?Math.floor(minutes/60)+':'+String(minutes%60).padStart(2,'0')+':'+tail:String(minutes).padStart(2,'0')+':'+tail;
 };
 function watchFooter(L,node,data,series){
- const slot=node.querySelector('.pt-card-watch'),wrap=node.querySelector('.card-watched');
- if(!slot || !wrap)return;
+ const slot=node.querySelector('.pt-card-watch');let wrap=node.querySelector('.card-watched');
+ if(!slot)return;
+ slot.classList.remove('pt-card-watch--has-progress');
+ const state=window.LampaView && window.LampaView.online;
+ const shared=series && state && state.lastWatched?state.lastWatched(data):null;
+ // Manual completion and native playback use the same persisted timeline.
+ // They must remain visible even when native timetable has no watched overlay.
+ if(series && state && state.lastWatched && !shared){if(wrap)wrap.classList.add('pt-card-watch--empty');return;}
+ if(shared && !wrap){wrap=document.createElement('div');wrap.className='card-watched';wrap.innerHTML='<div class="card-watched__inner"><div class="card-watched__body"></div></div>';slot.appendChild(wrap);}
+ if(!wrap)return;
+ for(const other of slot.querySelectorAll('.card-watched'))if(other!==wrap)other.remove();
  // Move the original timeline, keeping its native updates and destroy lifecycle.
  if(wrap.parentNode!==slot)slot.appendChild(wrap);
  const hash=value=>L.Utils && L.Utils.hash?L.Utils.hash(value):value;
@@ -33,7 +42,11 @@ function watchFooter(L,node,data,series){
   }
   return L.Timeline && L.Timeline.view?L.Timeline.view(key):null;
  };
- let row=Array.from(wrap.querySelectorAll('.card-watched__item')).find(item=>item.querySelector('.time-line'));
+ let row=Array.from(wrap.querySelectorAll('.card-watched__item')).find(item=>{const line=item.querySelector('.time-line');return line && (!shared || line.getAttribute('data-hash')===String(shared.hash));});
+ if(shared && !row && L.Timeline && L.Timeline.render){
+  const rendered=L.Timeline.render(L.Timeline.view(shared.hash)),line=rendered && (rendered.nodeType?rendered:rendered[0]);
+  if(line){row=document.createElement('div');row.className='card-watched__item';const span=document.createElement('span');span.textContent='Серия '+shared.episode;row.appendChild(span);row.appendChild(line);(wrap.querySelector('.card-watched__body') || wrap).appendChild(row);}
+ }
  // Native timetable slicing can drop an older-season watch row entirely.
  // Restore only an existing saved timeline, using Lampa's own render/updates.
  if(!row && series && L.Timeline && L.Timeline.render){
@@ -54,7 +67,7 @@ function watchFooter(L,node,data,series){
  let label='Просмотрено',timeline=null,watchSeason=0,watchEpisode=0;
  const progressHash=row.querySelector('.time-line').getAttribute('data-hash');
  if(progressHash)timeline=view(progressHash);
- if(series){
+ if(shared){watchSeason=shared.season;watchEpisode=shared.episode;timeline=view(shared.hash);label='Серия '+watchEpisode+' • Сезон '+watchSeason;}else if(series){
   const match=text.match(/^(\d+)\s*[-–]|(?:Эпизод|Серия|Episode)\s*(\d+)/i),episode=match && Number(match[1] || match[2]);
   const table=L.TimeTable && L.TimeTable.get?L.TimeTable.get(data) || []:[];
   let season=0;
@@ -71,19 +84,22 @@ function watchFooter(L,node,data,series){
    if(history && Number(history.episode)===episode){const key=hash([Number(history.season),Number(history.season)>10?':':'',episode,data.original_title].join(''));if(!progressHash || String(key)===progressHash){season=Number(history.season)||0;timeline=view(key);}}
   }
   watchSeason=season;watchEpisode=episode;
-  label=episode?(season?'Сезон '+season+' • ':'')+'Эпизод '+episode:'Просмотрено';
+  label=episode?'Серия '+episode+(season?' • Сезон '+season:''):'Просмотрено';
  }else{
   if(!progressHash)timeline=L.Timeline && L.Timeline.filename?view(hash(data.original_title)):L.Timeline && L.Timeline.watched?L.Timeline.watched(data,true):view(hash(data.original_title));
   if(Array.isArray(timeline))timeline=view(hash(data.original_title));
  }
  if(!timeline || !(Number(timeline.percent)>0 || Number(timeline.time)>0)){wrap.classList.add('pt-card-watch--empty');return;}
  wrap.classList.remove('pt-card-watch--empty');
+ slot.classList.add('pt-card-watch--has-progress');
  const time=clock(timeline.time),name=summary.firstElementChild,stamp=summary.lastElementChild;
- if(name.textContent!==label){
+ if(name.dataset.label!==label){
+  name.dataset.label=label;
   name.textContent='';
   if(watchEpisode){
-   if(watchSeason){const season=document.createElement('span');season.textContent='Сезон '+watchSeason+' • ';name.appendChild(season);}
-   const episode=document.createElement('span');episode.textContent='Эпизод '+watchEpisode;name.appendChild(episode);
+   const heading=document.createElement('span');heading.className='pt-card-watch__heading';heading.textContent='Просмотрена: ';name.appendChild(heading);
+   const episode=document.createElement('span');episode.textContent='Серия '+watchEpisode+(watchSeason?' • ':'');name.appendChild(episode);
+   if(watchSeason){const season=document.createElement('span');season.textContent='Сезон '+watchSeason;name.appendChild(season);}
   }else name.textContent=label;
  }
  if(stamp.textContent!==time)stamp.textContent=time;
@@ -94,11 +110,11 @@ function watchFooter(L,node,data,series){
 export default function seriesStatus(L,schedule){
  const cards=new WeakMap(),cache=new Map(),pending=new Map(),queue=[];let running=0;
  function paint(node){
-  const data=cards.get(node);if(!data || !node.matches('.focus,.hover'))return;
+  const data=cards.get(node);if(!data)return;
   const view=node.querySelector('.card__view');if(!view)return;
   const series=data.media_type!=='movie' && !!(data.name || data.original_name || data.first_air_date || data.media_type==='tv');
   watchFooter(L,node,data,series);
-  if(!series)return;
+  if(!series || !node.matches('.focus,.hover'))return;
   const key=String(data.id),entry=cache.get(key),fresh=entry && Date.now()-entry.at<(entry.value?900000:60000),facts=fresh?entry.value:null;
   const table=L.TimeTable && L.TimeTable.get?L.TimeTable.get(data) || []:[];
   const available=facts || releaseStatus(data,table);
@@ -107,8 +123,8 @@ export default function seriesStatus(L,schedule){
    if(!box){box=document.createElement('div');box.className='pt-series-status';box.innerHTML='<span></span><span></span>';view.appendChild(box);}
    const partial=available.total>available.count;
    const released=partial?available.count+'/'+available.total:String(available.count);
-   const text='Сезон '+available.season+' • '+(partial?'Эпизод ':'Эпизодов ')+released;
-   if(box.textContent!==text){box.firstElementChild.textContent='Сезон '+available.season+' • ';box.lastElementChild.textContent=(partial?'Эпизод ':'Эпизодов ')+released;}
+   const text='Сезон '+available.season+' • '+(partial?'Серия ':'Серий ')+released;
+   if(box.textContent!==text){box.firstElementChild.textContent='Сезон '+available.season+' • ';box.lastElementChild.textContent=(partial?'Серия ':'Серий ')+released;}
    box.title='Сезон '+available.season+': вышло '+released+'. История просмотра — под обложкой.';
   }else if(box)box.remove();
   // Release metadata stays independent of the native watch timeline below the cover.
@@ -121,10 +137,10 @@ export default function seriesStatus(L,schedule){
    tmdbGet(L,'tv/'+task.data.id,{},finish,()=>finish(null),{life:60});
   }
  }
- // Timeline writes update the original progress node directly. Refresh only
- // focused captions without rescanning cached rows.
+ // Timeline writes update the original progress node directly. Refresh visible
+ // rails through the batched badge queue; captions still require focus.
  if(L.Listener && L.Listener.follow)L.Listener.follow('state:changed',event=>{
-  if(event.target==='timeline')for(const node of document.querySelectorAll('.card.focus,.card.hover'))if(cards.has(node))schedule(node);
+  if(event.target==='timeline')for(const node of document.querySelectorAll('.card'))if(cards.has(node))schedule(node);
  });
  return {track(node,data){
   cards.set(node,data);
