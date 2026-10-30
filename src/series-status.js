@@ -110,7 +110,7 @@ function watchFooter(L,node,data,series){
 export default function seriesStatus(L,schedule){
  const cards=new WeakMap(),cache=new Map(),pending=new Map(),queue=[];let running=0;
  function paint(node){
-  const data=cards.get(node);if(!data)return;
+  const data=cards.get(node);if(!data || !node.matches('.focus,.hover'))return;
   const view=node.querySelector('.card__view');if(!view)return;
   const series=data.media_type!=='movie' && !!(data.name || data.original_name || data.first_air_date || data.media_type==='tv');
   watchFooter(L,node,data,series);
@@ -137,10 +137,10 @@ export default function seriesStatus(L,schedule){
    tmdbGet(L,'tv/'+task.data.id,{},finish,()=>finish(null),{life:60});
   }
  }
- // Timeline writes update the original progress node directly. Refresh visible
- // rails through the batched badge queue; captions still require focus.
+ // Native timeline writes update progress directly. Only the focused card
+ // needs its history caption refreshed by the batched badge queue.
  if(L.Listener && L.Listener.follow)L.Listener.follow('state:changed',event=>{
-  if(event.target==='timeline')for(const node of document.querySelectorAll('.card'))if(cards.has(node))schedule(node);
+  if(event.target==='timeline')for(const node of document.querySelectorAll('.card.focus,.card.hover'))if(cards.has(node))schedule(node);
  });
  return {track(node,data){
   cards.set(node,data);

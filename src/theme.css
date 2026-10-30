@@ -558,7 +558,7 @@ body.lampa_view.pt-mobile .minimal-detail-columns>.minimal-detail-cast,body.lamp
 }
 
 /* Equal footer space on every poster: focus never changes card/row geometry. */
-body.lampa_view .card .pt-card-watch {position:relative;height:5.1em;margin-top:.4em;font-size:.72em;line-height:1.35;pointer-events:none}
+body.lampa_view .card .pt-card-watch {position:relative;height:5.1em;margin-top:.4em;font-size:.72em;line-height:1.35;pointer-events:none;visibility:hidden}
 body.lampa_view .card__view>.card-watched {display:none!important}
 body.lampa_view .card .pt-card-watch>.card-watched {display:block;position:absolute;inset:0;width:100%;height:100%;max-width:100%;font-size:1em;line-height:1.35;transform:none;-webkit-transform:none;border:0;border-radius:0;background:none!important;color:var(--pt-muted);box-sizing:border-box}
 body.lampa_view .card .pt-card-watch .card-watched__inner,body.lampa_view .card .pt-card-watch .card-watched__body {padding:0;font-size:1em}
@@ -573,14 +573,10 @@ body.lampa_view .pt-card-watch__label>.pt-card-watch__heading {flex-basis:100%;m
 body.lampa_view .pt-card-watch__time {grid-column:2;grid-row:2;align-self:center;font-variant-numeric:tabular-nums;font-size:.9em;line-height:1}
 body.lampa_view .card .pt-card-watch .time-line {grid-column:1;grid-row:2;align-self:center;margin:0;min-width:0}
 body.lampa_view .card .pt-card-watch .time-line>div {height:2px}
-/* Keep the progress rail in every card, including unwatched titles. Captions
-   still appear on focus; an empty rail is not a saved watch record. */
-body.lampa_view .pt-card-watch:after {content:'';position:absolute;left:0;right:3.6em;bottom:.4em;height:2px;background:#ffffff30;border-radius:1px}
-body.lampa_view .pt-card-watch:before {content:'00:00';position:absolute;right:0;bottom:0;font-size:.9em;line-height:1;font-variant-numeric:tabular-nums}
-body.lampa_view .pt-card-watch.pt-card-watch--has-progress:after,body.lampa_view .pt-card-watch.pt-card-watch--has-progress:before {display:none}
+/* Reveal saved viewing history only for the card under pointer/remote focus.
+   Reserved footer space prevents neighbouring rows from jumping on focus. */
+body.lampa_view .card.focus .pt-card-watch--has-progress,body.lampa_view .card.hover .pt-card-watch--has-progress {visibility:visible}
 body.lampa_view .card .pt-card-watch .time-line {position:relative;inset:auto;width:100%}
-body.lampa_view .card .pt-card-watch .pt-card-watch__label {visibility:hidden}
-body.lampa_view .card.focus .pt-card-watch .pt-card-watch__label,body.lampa_view .card.hover .pt-card-watch .pt-card-watch__label,body.lampa_view .card.focus .pt-card-watch .pt-card-watch__time,body.lampa_view .card.hover .pt-card-watch .pt-card-watch__time {visibility:visible}
 body.lampa_view .card .pt-card-watch>.card-watched.pt-card-watch--empty {display:none!important}
 /* One release pill below Series; logical segments wrap on narrow covers. */
 body.lampa_view .pt-series-status {position:absolute;left:auto!important;right:4px!important;top:2.6em;z-index:4;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:0 .25em;width:max-content;max-width:calc(100% - 8px);font-size:.6em;line-height:1.25;white-space:normal;padding:.35em .5em;border:1px solid #ffffff25;border-radius:.35em;background:#000b;color:#d4e2e6;pointer-events:none;box-sizing:border-box}
