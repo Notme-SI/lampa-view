@@ -516,18 +516,7 @@ body.lampa_view.pt-mobile.orientation--landscape .navigation-bar {padding:.6em .
 body.lampa_view.pt-mobile.orientation--landscape .navigation-bar__body {gap:.45em;padding:.55em}
 
 /* TV geometry is separate from desktop sizes and the rest of the interface. */
-body.lampa_view.pt-tv .pt-hero {height:44vh;min-height:18em;max-height:29em;max-width:90vw;margin:0 auto 1.1em}
-body.lampa_view.pt-tv .pt-hero__body {left:2em;bottom:3.8em;max-width:40%;padding-right:0}
-body.lampa_view.pt-tv .pt-hero__title {font-size:2.1em;max-width:100%;margin-bottom:.5em}
-body.lampa_view.pt-tv .pt-hero__title--translation {font-size:1.05em;line-height:1.35}
-body.lampa_view.pt-tv .pt-hero__logo {max-height:4.2em;max-width:100%;margin-bottom:.8em}
-body.lampa_view.pt-tv .pt-hero__overview {-webkit-line-clamp:2;line-height:1.5}
-body.lampa_view.pt-tv .pt-hero__actions {margin-top:1em}
-body.lampa_view.pt-tv .pt-hero__dots {bottom:1.3em}
 body.lampa_view.pt-tv .items-line {max-width:90vw;margin-left:auto;margin-right:auto}
-body.lampa_view.pt-tv .items-line .card:not(.card--wide):not(.card--collection) {width:clamp(6.4em,calc((90vw - 9em / var(--pt-interface-scale,1)) / 10 * var(--pt-interface-scale,1)),8.5em)!important}
-body.lampa_view.pt-tv .mapping--grid>.card:not(.card--wide):not(.card--collection),body.lampa_view.pt-tv .category-full>.card:not(.card--wide):not(.card--collection) {width:calc(12.5% * var(--pt-interface-scale,1))!important}
-body.lampa_view.pt-tv .card--wide,body.lampa_view.pt-tv .card--collection {width:clamp(15em,calc(27vw * var(--pt-interface-scale,1)),23em)!important}
 body.lampa_view.pt-tv .card,body.lampa_view.pt-mobile .settings-folder {will-change:auto}
 /* Clip TV rails without an extra full-width gradient compositing layer. */
 body.lampa_view.pt-tv .items-line__body {-webkit-mask-image:none;mask-image:none}
@@ -547,18 +536,12 @@ body.lampa_view.pt-tv .selectbox-item__subtitle {font-size:.85em;line-height:1.4
 body.lampa_view.pt-tv .settings-folder,body.lampa_view.pt-tv .settings-param {will-change:auto}
 
 /* Compact TV badges and captions retain the existing poster geometry. */
-body.lampa_view.pt-tv .pt-quality,body.lampa_view.pt-tv .card__quality,body.lampa_view.pt-tv .card__vote {font-size:.35em}
-body.lampa_view.pt-tv .pt-kind {font-size:.32em}
-body.lampa_view.pt-tv .card__title {font-size:.76em}
 /* TV uses the same focus treatment as the browser; keep repaint cost bounded. */
 body.lampa_view.pt-tv .card.focus .card__view,body.lampa_view.pt-tv .card.hover .card__view {-webkit-transform:translateY(-.2em) scale(1.045);transform:translateY(-.2em) scale(1.045);box-shadow:0 0 .85em rgba(173,217,229,.4),0 0 1.8em rgba(173,217,229,.22)}
 body.lampa_view.pt-tv .card.hover:not(.focus) .card__view {box-shadow:none!important;transform:none!important}
 body.lampa_view.pt-tv .card.hover:not(.focus) .card__view:after {border-color:transparent!important;box-shadow:none!important}
 body.lampa_view .pt-hero__studio.selector {cursor:pointer;border-radius:.2em}
 body.lampa_view .pt-hero__studio.selector.focus,body.lampa_view .pt-hero__studio.selector:focus-visible {outline:none;box-shadow:0 0 0 2px var(--pt-accent);filter:none}
-body.lampa_view.pt-tv .card--wide .card__title {font-size:.92em}
-body.lampa_view.pt-tv .card__age {font-size:.66em}
-body.lampa_view.pt-tv .card__icons,body.lampa_view.pt-tv .card__marker {font-size:.72em}
 
 /* A native cast rail stays inside its grid cell at every scroll position. */
 body.lampa_view .minimal-detail-columns>.minimal-detail-cast {grid-column:1;grid-row:1;position:relative;display:flex;flex-direction:column;flex:1;min-width:0;max-width:100%;width:100%;box-sizing:border-box;overflow:hidden}
@@ -832,7 +815,6 @@ body.lampa_view .minimal-fit-posters .scroll__body>.card:last-child {margin-righ
 body.lampa_view {--pt-banner-unit:calc(clamp(14px,.94vw,18px) * 1.05)}
 body.lampa_view .pt-hero {height:clamp(calc(32 * var(--pt-banner-unit)),67vh,calc(43 * var(--pt-banner-unit)));min-height:0;max-height:none}
 @media(min-width:1100px){body.lampa_view .pt-hero {height:clamp(calc(27 * var(--pt-banner-unit)),56vh,calc(34 * var(--pt-banner-unit)))}}
-body.lampa_view.pt-tv .pt-hero {height:clamp(calc(18 * var(--pt-banner-unit)),44vh,calc(29 * var(--pt-banner-unit)));min-height:0;max-height:none}
 body.lampa_view.pt-mobile .pt-hero {height:calc(36 * 16px * 1.05);min-height:0;max-height:none}
 body.lampa_view .minimal-home-first-row {min-height:var(--minimal-home-row-height)}
 
@@ -859,3 +841,33 @@ body.lampa_view .nova-plus-root .nova-card.focus .nova-card__title,body.lampa_vi
 body.lampa_view.pt-tv .nova-plus-root .nova__list--grid .nova-card.hover:not(.focus) .nova-card__thumb {transform:none!important;box-shadow:none!important}
 body.lampa_view.pt-tv .nova-plus-root .nova__list--grid .nova-card.hover:not(.focus) .nova-card__thumb:after {border-color:transparent!important}
 body.lampa_view.pt-tv .nova-plus-root .nova-card.hover:not(.focus) .nova-card__title {color:var(--pt-text)}
+
+/* Match the proportions of the Windows 2560px reference on TV WebViews,
+   including 960/1280px viewports scaled by Android to the panel resolution.
+   A 14px minimum here made TV Small larger than Windows Bigger. */
+body.lampa_view.pt-tv {font-size:calc(.703125vw * var(--pt-interface-scale,1))!important;--pt-banner-unit:calc(.703125vw * 1.05)}
+body.lampa_view.pt-tv .pt-hero {max-width:90vw;margin:0 auto 2em}
+body.lampa_view.pt-tv .pt-hero__body {left:3em;bottom:7em;max-width:31em;padding-right:1em}
+body.lampa_view.pt-tv .pt-hero__title {font-size:2.55em;max-width:15em;margin-bottom:.65em}
+body.lampa_view.pt-tv .pt-hero__title--translation {font-size:1.05em;line-height:1.35;letter-spacing:0;max-width:100%;margin-bottom:1.1em}
+body.lampa_view.pt-tv .pt-hero__logo {max-height:7em;max-width:100%;margin-bottom:1.4em}
+body.lampa_view.pt-tv .pt-hero__overview {-webkit-line-clamp:3;line-height:1.65}
+body.lampa_view.pt-tv .pt-hero__actions {margin-top:1.6em}
+body.lampa_view.pt-tv .pt-hero__dots {left:45%;bottom:1.5em}
+body.lampa_view.pt-tv .items-line {margin-bottom:.8em;padding-bottom:.7em}
+body.lampa_view.pt-tv .items-line .card:not(.card--wide):not(.card--collection) {width:clamp(8.4em,calc((90vw - 10em / var(--pt-interface-scale,1)) / 10 * var(--pt-interface-scale,1)),11.1em)!important}
+body.lampa_view.pt-tv .items-line>.items-line__head {padding-left:1.1em}
+body.lampa_view.pt-tv .card__title {font-size:.79em}
+body.lampa_view.pt-tv .mapping--grid>.card:not(.card--wide):not(.card--collection),body.lampa_view.pt-tv .category-full>.card:not(.card--wide):not(.card--collection) {width:calc(10% * var(--pt-interface-scale,1))!important}
+
+/* The same native menu becomes a dock only when the native preference is on. */
+body.lampa_view.pt-menu-pinned {--pt-menu-width:min(16em,28vw)}
+body.lampa_view.pt-menu-pinned .head__menu-icon {display:none!important}
+body.lampa_view.pt-menu-pinned .wrap__left,body.lampa_view.menu--always.pt-menu-pinned .wrap__left {top:3.6em!important;bottom:0!important;left:0!important;width:var(--pt-menu-width)!important;height:calc(100% - 3.6em)!important;max-height:none!important;padding:.7em .35em!important;border:0;border-right:1px solid var(--pt-line);border-radius:0;box-shadow:none;visibility:visible!important;opacity:1!important;pointer-events:auto;transition:none}
+body.lampa_view.pt-menu-pinned .wrap__left>.scroll {height:100%!important;max-height:100%!important}
+body.lampa_view.pt-menu-pinned .wrap__left>.scroll>.scroll__content {height:100%!important;max-height:100%!important}
+body.lampa_view.pt-menu-pinned .wrap__content {width:calc(100% - var(--pt-menu-width))!important;max-width:calc(100% - var(--pt-menu-width))!important;margin-left:var(--pt-menu-width)!important}
+body.lampa_view.pt-menu-pinned .pt-hero,body.lampa_view.pt-menu-pinned .items-line {max-width:94%!important}
+body.lampa_view.pt-menu-pinned .menu__text {white-space:normal}
+body.lampa_view.pt-mobile.pt-menu-pinned {--pt-menu-width:min(14em,38vw)}
+body.lampa_view.pt-mobile.pt-menu-pinned .wrap__left {bottom:5.5em!important;height:calc(100% - 9.1em)!important}

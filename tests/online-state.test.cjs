@@ -35,8 +35,8 @@ test('clearing a timecode clears title aliases in the active profile without tou
  }finally{w.close();}
 });
 
-function screen(n,{id=900,season=1,episodes=[1,2,3],serial=true,component={}}={}){
- const {w,L}=n,$=w.jQuery,root=$('<div class="explorer"><div class="explorer__files"><div class="explorer__files-head"></div><div class="explorer__files-body"><div class="scroll"><div class="scroll__body"></div></div></div></div></div>').appendTo(w.document.body),body=root.find('.scroll__body'),filter=new L.Filter({search:false,sort:true,filter:true});root.find('.explorer__files-head').append(filter.render());filter.set('sort',[{title:'Test',source:'test',selected:true},{title:'Other',source:'other',ghost:false}]);filter.set('filter',serial?[{stype:'season',title:'Сезон',items:[{title:'Сезон '+season,selected:true}]},{stype:'voice',title:'Озвучка',items:[{title:'TVShows',selected:true}]}]:[]);
+function screen(n,{id=900,season=1,episodes=[1,2,3],serial=true,voices=true,component={}}={}){
+ const {w,L}=n,$=w.jQuery,root=$('<div class="explorer"><div class="explorer__files"><div class="explorer__files-head"></div><div class="explorer__files-body"><div class="scroll"><div class="scroll__body"></div></div></div></div></div>').appendTo(w.document.body),body=root.find('.scroll__body'),filter=new L.Filter({search:false,sort:true,filter:true});root.find('.explorer__files-head').append(filter.render());filter.set('sort',[{title:'Test',source:'test',selected:true},{title:'Other',source:'other',ghost:false}]);filter.set('filter',serial?[{stype:'season',title:'Сезон',items:[{title:'Сезон '+season,selected:true}]},...(voices?[{stype:'voice',title:'Озвучка',items:[{title:'TVShows',selected:true}]}]:[])]:[]);
  const movie={id,title:'Русское название',original_title:'Original',...(serial?{name:'Сериал',original_name:'Original',number_of_seasons:2,seasons:[{season_number:1,episode_count:3},{season_number:2,episode_count:3}]}:{}),source:'tmdb'};let played=0;
  for(const num of episodes)$('<div class="online-prestige online-prestige--full selector"><div class="online-prestige__img"><img src="https://image.example.test/frame.jpg"></div><div class="online-prestige__title">Серия '+num+'</div>'+(serial?'<div class="online-prestige__episode-number">'+num+'</div>':'')+'<div class="online-prestige__quality">1080p</div><div class="online-prestige__info"><span>TVShows</span></div><div class="time-line"><div style="width:0%"></div></div></div>').on('hover:enter',()=>played=num).appendTo(body);
  Object.assign(component,{render:()=>root});L.Activity.active=()=>({component:'online_test',movie,activity:{render:()=>root,component}});L.Listener.send('activity',{type:'start'});return {root,body,movie,filter,component,played:()=>played,close(){L.Listener.send('activity',{type:'destroy'});root.remove();}};
@@ -275,4 +275,37 @@ test('provider folders accept native JSON objects, JSON strings and escaped HTML
   assert.equal(api.folderRows('<script>'+tag({method:'link',similar:true,url:'/bad',title:card.name})+'</script>').length,0);
   assert.equal(api.folderSeasons([{method:'link',similar:true,title:'Other',url:'/other'}],card).length,0);
  }finally{w.close();}
+});
+
+
+test('late native voice choices appear after first entry without changing source or episode DOM',async()=>{
+ const n=await native({built:true}),{L}=n;let s;try{
+  s=screen(n,{voices:false});const season={stype:'season',title:'Сезон',items:[{title:'Сезон 1',selected:true}]};
+  s.filter.set('filter',[season]);await wait(220);assert.equal(s.root.find('[data-nova-focus=voice]').length,0);
+  let selected=-1;s.filter.onSelect=(type,group,item)=>{selected=item.index;};
+  const voice={stype:'voice',title:'Озвучка',items:[{title:'TVShows',selected:true},{title:'LostFilm'}]};
+  s.filter.set('filter',[season,voice]);await wait(240);assert.equal(s.root.find('[data-nova-focus=voice]').length,1);
+  s.root.find('[data-nova-focus=voice]').trigger('hover:enter');L.Select.render().find('.selectbox-item').last().trigger('hover:enter');assert.equal(selected,1);assert.equal(voice.items.length,2);assert.equal(s.played(),0);assert.deepEqual(n.errors,[]);
+ }finally{if(s)s.close();n.close();}
+});
+
+test('compact episode direction toggle restores both grid and horizontal rail without changing tile/list preference',async()=>{
+ const n=await native({built:true}),{L}=n;let s;try{
+  L.Storage.set('nova_plus_view','grid');L.Storage.set('nova_plus_layout','grid');s=screen(n);await wait(220);
+  const button=()=>s.root.find('[data-nova-focus=direction]');assert.equal(button().find('svg').length,1);assert.equal(button().text(),'');assert.equal(button().attr('data-current-direction'),'vertical');
+  button().trigger('hover:enter');await wait(150);assert.equal(L.Storage.get('nova_plus_layout'),'row');assert.equal(button().attr('data-current-direction'),'horizontal');assert.equal(s.root.find('.nova__list--row').length,1);
+  button().trigger('hover:enter');await wait(150);assert.equal(L.Storage.get('nova_plus_layout'),'grid');assert.equal(s.root.find('.nova__list--row').length,0);assert.equal(L.Storage.get('nova_plus_view'),'grid');assert.deepEqual(n.errors,[]);
+ }finally{if(s)s.close();n.close();}
+});
+
+test('tile and list progress fill from timeline and watched markers while empty tracks remain visible',async()=>{
+ const n=await native({built:true}),{L,w}=n;let s;try{
+  L.Storage.set('nova_plus_view','grid');L.Timeline.update({hash:L.Utils.hash('11Original'),percent:40,time:720,duration:1800});
+  s=screen(n);s.body.find('.online-prestige').eq(1).append('<div class="online-prestige__viewed"></div>');await wait(250);
+  const widths=()=>Array.from(s.root.find('.nova-card__line .time-line>div'),n=>n.style.width);
+  assert.deepEqual(widths(),['40%','100%','0%']);assert.equal(s.root.find('.nova-card__line .time-line.hide').length,0);
+  s.root.find('[data-nova-focus=view]').trigger('hover:enter');await wait(150);assert.deepEqual(widths(),['40%','100%','0%']);assert.equal(s.root.find('.nova-card__line--body').length,3);
+  L.Timeline.update({hash:L.Utils.hash('11Original'),percent:65,time:1170,duration:1800});await wait(180);assert.deepEqual(widths(),['65%','100%','0%']);
+  L.Timeline.update({hash:L.Utils.hash('21Original'),percent:80,time:1440,duration:1800});await wait(150);assert.equal(widths()[0],'65%','Another season never overwrites this episode');assert.deepEqual(n.errors,[]);
+ }finally{if(s)s.close();n.close();}
 });

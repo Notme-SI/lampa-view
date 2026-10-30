@@ -493,7 +493,9 @@
       inst.nova_sets = {};
       inst.set = function (type, list) {
         inst.nova_sets[type] = list;
-        return setter.apply(inst, arguments);
+        var result=setter.apply(inst, arguments);
+        if(inst===filter && (type==='filter' || type==='sort'))schedule();
+        return result;
       };
       filters.unshift(inst);
       if (filters.length > 4) filters.pop();
@@ -1056,8 +1058,8 @@
       if (!group || !group.items || !group.items.length) return;
       if (group.stype === 'season') out.season = group;
       if (group.stype === 'voice') {
-        group.items = voiceDedup(group.items);
-        if (group.items.length) out.voice = $.extend({},group,{title:label('nova_plus_voices')});
+        var choices=voiceDedup(group.items);
+        if(choices.length)out.voice=$.extend({},group,{items:choices,title:label('nova_plus_voices')});
       }
     });
 
@@ -2969,7 +2971,10 @@
 
   function progressLine(item) {
     var line=item.line && item.line.length ? item.line.clone() : $('<div class="time-line"><div></div></div>');
-    if(item.recorded)line.toggleClass('hide',!item.percent).children('div').first().css('width',item.percent+'%');
+    // Native viewed markers may exist without a timeline record. Paint both
+    // layouts from the resolved state rather than cloning a stale 0% width.
+    var percent=isSeen(item) ? 100 : Math.min(100,percentOf(item));
+    line.removeClass('hide').children('div').first().css('width',percent+'%');
     return line;
   }
 
@@ -3010,7 +3015,7 @@
     card.find('.nova-card__time').text(item.time || '');
 
     var line = card.find('.nova-card__line');
-    if (item.line.length || item.recorded) {
+    if (!item.folder && (serial || item.line.length || item.recorded)) {
       line.append(progressLine(item));
       if (!grid) line.addClass('nova-card__line--body').appendTo(body);
     } else line.remove();
@@ -4664,8 +4669,8 @@
       items.length,
       nav ? 'nav' : 'files',
       sourceTitle(),
-      groups.season ? groups.season.subtitle : '',
-      groups.voice ? groups.voice.subtitle : '',
+      groups.season ? JSON.stringify(groups.season.items) : '',
+      groups.voice ? JSON.stringify(groups.voice.items) : '',
       extrasStamp(),
       viewMode(),
       ui_open,
@@ -4924,8 +4929,8 @@
       if (!card || !card.length) return;
 
       var box = card.find('.nova-card__line');
-      if (!box.length && item.recorded && !isSeen(item))box=$('<div class="nova-card__line"></div>').appendTo(grid ? card.find('.nova-card__thumb') : card.find('.nova-card__body')).toggleClass('nova-card__line--body',!grid);
-      if (box.length && (item.line && item.line.length || item.recorded)) {
+      if (!box.length && (serial || item.recorded || isSeen(item)))box=$('<div class="nova-card__line"></div>').appendTo(grid ? card.find('.nova-card__thumb') : card.find('.nova-card__body')).toggleClass('nova-card__line--body',!grid);
+      if (box.length) {
         box.empty().append(progressLine(item));
       }
 
@@ -6402,6 +6407,12 @@
       tool('view','','',{plain:true,icon:ICON[viewMode()==='list'?'list':'grid']},function(){
         save(viewKey(),viewMode()==='list'?'grid':'list');lockFocus('view');redraw();
       }).addClass('nova-chip--view-icon').attr({'aria-label':viewLabel,title:viewLabel,'data-current-view':viewMode()}).find('svg').attr('aria-hidden','true');
+    }
+    if(serial && !nav && viewMode()==='grid'){
+      var directionLabel=wideRow()?'Показать серии вертикально':'Показать серии горизонтально';
+      var directionIcon=wideRow()?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16M8 8l-4 4 4 4m8-8 4 4-4 4"/></svg>':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16m-4-12 4-4 4 4m-8 8 4 4 4-4"/></svg>';
+      tool('direction','','',{plain:true,icon:directionIcon},function(){save(WIDE_LAYOUT_KEY,wideRow()?'grid':'row');lockFocus('direction');redraw();})
+        .addClass('nova-chip--view-icon').attr({'aria-label':directionLabel,title:directionLabel,'data-current-direction':wideRow()?'horizontal':'vertical'}).find('svg').attr('aria-hidden','true');
     }
     if(groups.sort && groups.sort.length){
       tool('source',text('nova_source','nova_plus_source'),'',{},function(){

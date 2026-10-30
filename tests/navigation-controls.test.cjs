@@ -70,3 +70,24 @@ test('held TV navigation scrolls once per card, builds the next lazy batch and h
   assert.deepEqual(r.errors,[]);
  }finally{r.close();}
 });
+
+
+test('dorama opens the same native category rows and More pages using live-action Asian TV filters',async()=>{
+ const r=await native({built:true}),{w,L}=r,requests=[];try{
+  const item=w.document.querySelector('.menu__item[data-action="dorama"]');assert.equal(item.querySelector('.menu__text').textContent,'Дорамы');assert.equal(w.document.querySelectorAll('.menu__item[data-action="dorama"]').length,1);
+  L.Api.sources.tmdb.get=(url,params,ok)=>{requests.push(url);w.setTimeout(()=>ok({results:[{id:requests.length+1900,name:'Дорама',genre_ids:[18],original_language:'ko'}],page:1,total_pages:2}),0);};
+  w.jQuery(item).trigger('hover:enter');await wait(230);assert.equal(L.Activity.active().url,'dorama');assert.equal(requests.length,10);
+  for(const path of requests){assert.match(path,/^discover\/tv\?/);const q=new URLSearchParams(path.split('?')[1]);assert.ok(q.get('with_origin_country'));assert.match(q.get('without_genres'),/16/);}
+  const rows=L.Activity.active().activity.component;assert.ok(rows.items.length+rows.loaded.length<=10);assert.deepEqual(r.errors,[]);
+ }finally{r.close();}
+});
+
+test('native menu_always switches a single native menu between dock and popover and restores the button',async()=>{
+ const r=await native({built:true}),{w,L}=r;try{
+  const button=w.document.querySelector('.head__menu-icon'),panel=w.document.querySelector('.wrap__left');
+  L.Storage.set('menu_always',true);assert.ok(w.document.body.classList.contains('pt-menu-pinned'));assert.equal(w.getComputedStyle(button).display,'none');assert.equal(w.getComputedStyle(panel).visibility,'visible');
+  L.Controller.toggle('menu');L.Controller.toggle('content');await wait(330);assert.equal(w.getComputedStyle(panel).visibility,'visible');assert.equal(w.document.querySelectorAll('.menu').length,1);
+  L.Storage.set('menu_always',false);assert.ok(!w.document.body.classList.contains('pt-menu-pinned'));assert.equal(w.getComputedStyle(button).display,'flex');assert.equal(w.getComputedStyle(panel).visibility,'hidden');
+  L.Storage.set('menu_always',true);L.Storage.set('lampa_view_enabled',false);assert.ok(!w.document.body.classList.contains('pt-menu-pinned'));assert.deepEqual(r.errors,[]);
+ }finally{r.close();}
+});

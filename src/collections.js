@@ -16,9 +16,9 @@ export default function collections(L,shiki){
  const key='minimal_collections',knownKey='minimal_collection_rows_v2';
  const read=()=>L.Storage.get(key,{}) || {},known=()=>L.Storage.get(knownKey,{}) || {};
  const captured=new Set(),homeRows=continueWatching(L);
- const labels={'main:':'Главная','category:movie':'Фильмы','category:tv':'Сериалы','category:cartoon':'Мультфильмы','category:anime':'Аниме'};
+ const labels={'main:':'Главная','category:movie':'Фильмы','category:tv':'Сериалы','category:cartoon':'Мультфильмы','category:anime':'Аниме','category:dorama':'Дорамы'};
  const animeContext=o=>'category:anime:'+animeMode(L,o);
- const context=o=>{o=o || {};const component=o.component || 'main';if(component==='main')return 'main:';const kind=o.url || o.cat;return component==='category' && ['movie','tv','cartoon','anime'].includes(kind)?kind==='anime'?animeContext(o):'category:'+kind:null;};
+ const context=o=>{o=o || {};const component=o.component || 'main';if(component==='main')return 'main:';const kind=o.url || o.cat;return component==='category' && ['movie','tv','cartoon','anime','dorama'].includes(kind)?kind==='anime'?animeContext(o):'category:'+kind:null;};
  function remember(ctx,rows,append=false){
   if(!ctx)return;const names=known(),previous=append?(names[ctx] || []):[],next=previous.slice();
   rows.filter(row=>row && row.title && !/^(shots|спорт|расписание)$/i.test(String(row.title).trim()) && ((row.results || []).length || row.minimal_hidden || row.minimal_configurable)).forEach(row=>{const id=rowKey(row),entry={id,title:row.title,...(row.minimal_row_aliases?{aliases:row.minimal_row_aliases}:{}),...(row.minimal_empty?{subtitle:'Появится после начала просмотра'}:{})};const index=next.findIndex(old=>old.id===id);if(index<0)next.push(entry);else next[index]=entry;});
@@ -55,8 +55,8 @@ export default function collections(L,shiki){
  const category=L.Api.category;
  if(category)L.Api.category=function(object,ok,fail){
   const kind=object.url || object.cat,ctx=context({...object,component:'category'});
-  if(!['movie','tv','cartoon','anime'].includes(kind))return category.apply(this,arguments);
-  if((object.source || L.Storage.get('source','cub'))==='trakt' && !(kind==='anime' && animeMode(L,object)==='shikimori')){
+  if(!['movie','tv','cartoon','anime','dorama'].includes(kind))return category.apply(this,arguments);
+  if((object.source || L.Storage.get('source','cub'))==='trakt' && kind!=='dorama' && !(kind==='anime' && animeMode(L,object)==='shikimori')){
    const status=object.minimal_catalogue_status={state:'loading'};
    return category.call(this,{...object,source:'trakt'},rows=>{status.state=rows.some(row=>row.results && row.results.length)?'ready':'empty';remember(ctx,rows);ok(arrange(rows,prefs(ctx)));},error=>{status.state='error';if(fail)fail(error);});
   }

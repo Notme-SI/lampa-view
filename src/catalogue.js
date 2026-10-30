@@ -6,6 +6,21 @@ export function animeMode(L,object={}){
 }
 export function cataloguePlan(kind,mode='standard',date=new Date()){
  const year=date.getFullYear(),type=kind==='movie'?'movie':'tv',base=kind==='anime'?'with_genres=16&with_original_language=ja&':'',defs=[];
+ if(kind==='dorama'){
+  const asian='with_origin_country=KR|JP|CN|TW|TH&without_genres=16,99,10764,10767&';
+  return [
+   ['Популярное',asian+'sort_by=popularity.desc'],
+   ['Новинки этого года',asian+'sort_by=popularity.desc&first_air_date.gte='+year+'-01-01'],
+   ['С высоким рейтингом',asian+'sort_by=vote_average.desc&vote_count.gte=100'],
+   ['Корейские дорамы','with_origin_country=KR&without_genres=16,99,10764,10767&sort_by=popularity.desc'],
+   ['Японские дорамы','with_origin_country=JP&without_genres=16,99,10764,10767&sort_by=popularity.desc'],
+   ['Китайские дорамы','with_origin_country=CN|TW&without_genres=16,99,10764,10767&sort_by=popularity.desc'],
+   ['Тайские дорамы','with_origin_country=TH&without_genres=16,99,10764,10767&sort_by=popularity.desc'],
+   ['Драмы',asian+'with_genres=18&sort_by=popularity.desc'],
+   ['Комедии',asian+'with_genres=35&sort_by=popularity.desc'],
+   ['Детективы',asian+'with_genres=9648&sort_by=popularity.desc']
+  ].map(([title,query],index)=>({key:'dorama-'+index,title,media_type:'tv',tmdb:'discover/tv?include_adult=false&'+query}));
+ }
  if(kind==='cartoon')return [{key:'watch',title:'Сейчас смотрят',cub:'?sort=now_playing&genre=16'},...[
   ['Популярные мультфильмы','movie','sort_by=popularity.desc'],
   ['Новые мультфильмы','movie','sort_by=popularity.desc&primary_release_date.gte='+year+'-01-01'],
