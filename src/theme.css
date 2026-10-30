@@ -757,8 +757,7 @@ body.lampa_view .nova-plus-root .nova-card--rowlist .nova-card__thumb--loaded im
  body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__side .nova-card__eye {margin:0!important}
  body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__line--body {margin-top:.35em}
 }
-/* Seasonal extensions load after the theme: keep their native handlers and art,
-   while sizing decorations independently of their injected styles. */
+/* Seasonal extensions retain native handlers; header art follows our icon grid. */
 body.lampa_view .head__logo-icon {position:relative;align-items:center;min-height:2.2em}
 body.lampa_view .head__logo-icon.head__logo-halloween {width:auto!important;min-width:2.2em;height:2.2em!important;gap:.55em}
 body.lampa_view .pt-holiday-art {display:block;position:relative;flex:0 0 2.2em;width:2.2em;height:2.2em}
@@ -805,15 +804,13 @@ body.lampa_view .search-box {z-index:90!important;background:#080b10!important;b
 
 /* Keep hero focus inside its paint bounds, including keyboard and remote input. */
 body.lampa_view .pt-hero__action {outline:none!important;transition-property:background-color,color!important}
-body.lampa_view.pt-tv .card.hover:not(.focus) .card__view {box-shadow:none!important;transform:none!important}
-body.lampa_view.pt-tv .card.hover:not(.focus) .card__view:after {border-color:transparent!important;box-shadow:none!important}
 body.lampa_view .pt-hero__studio.selector {outline:none!important;transition:none!important}
 body.lampa_view .pt-hero__studio.selector.focus,body.lampa_view .pt-hero__studio.selector:focus-visible {outline:none!important;box-shadow:inset 0 0 0 2px var(--pt-accent)!important}
 
-/* Use the loaded native holiday buttons themselves: no copied or redrawn SVG. */
+/* Seasonal controls keep their native nodes and use the shared SVG style. */
 body.lampa_view .pt-holiday-icons {display:flex;align-items:center;gap:.35em;flex-shrink:0}
-body.lampa_view .pt-holiday-icons>.head__action {display:flex!important;align-items:center;justify-content:center;flex:0 0 2.2em;box-sizing:border-box;width:2.2em;height:2.2em;margin:0;padding:.3em;border:1px solid transparent;border-radius:.5em;background:transparent!important;color:#fff!important;animation:none!important}
-body.lampa_view .pt-holiday-icons>.head__action svg {display:block;width:1.6em!important;height:1.6em!important;object-fit:contain}
+body.lampa_view .pt-holiday-icons>.head__action {display:flex!important;align-items:center;justify-content:center;flex:0 0 2.2em;box-sizing:border-box;width:2.2em;height:2.2em;margin:0;padding:.3em;border:1px solid transparent;border-radius:.5em;background:transparent!important;color:var(--pt-accent)!important;animation:none!important}
+body.lampa_view .pt-holiday-icons>.head__action svg {display:block;width:1.45em!important;height:1.45em!important;object-fit:contain}
 body.lampa_view .pt-holiday-icons>.head__action.focus,body.lampa_view .pt-holiday-icons>.head__action.hover,body.lampa_view .pt-holiday-icons>.head__action:hover {border-color:var(--pt-accent);background:var(--pt-high)!important}
 body.lampa_view .head__logo-halloween .pt-holiday-art {display:none}
 /* Episode grids wrap by the scaled minimum rather than a fixed poster count. */
@@ -843,3 +840,7 @@ body.lampa_view .minimal-home-first-row {min-height:var(--minimal-home-row-heigh
 body.lampa_view .torrent-item .torrent-item__viewed {position:absolute;top:.85em;left:auto;right:.85em;width:1.5em;height:1.5em;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:.2em;border:1px solid var(--pt-accent);border-radius:50%;background:var(--pt-accent);color:#13232c;z-index:2;pointer-events:none}
 body.lampa_view .torrent-item__viewed svg {width:100%;height:100%}
 body.lampa_view .torrent-item .tc-right {padding-right:2em}
+
+body.lampa_view .pt-holiday-native,body.lampa_view .head__logo-cap,body.lampa_view .head__logo-icon>.garland {display:none!important}
+body.lampa_view .pt-holiday-winter {display:flex;align-items:center;justify-content:center;flex:0 0 2.2em;width:2.2em;height:2.2em;color:var(--pt-accent);pointer-events:none}
+body.lampa_view .pt-holiday-winter svg {display:block;width:1.45em;height:1.45em}
