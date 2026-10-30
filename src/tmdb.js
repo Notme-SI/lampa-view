@@ -13,7 +13,8 @@ export function catalogueResults(path,json){
  const query=String(path || '').split('?')[1] || '';
  if(!json || !Array.isArray(json.results))return json;
  const scope=new URLSearchParams(query),kind=scope.get('minimal_kind'),regional=/^discover\/tv\?/.test(path) && (scope.has('with_origin_country') || scope.get('with_original_language')==='ru' && /10764|10767/.test(scope.get('with_genres') || ''));
- json={...json,results:presentableCards(json.results,regional || kind==='dorama' || kind==='tvshow')};
+ const visible=presentableCards(json.results,regional || kind==='dorama' || kind==='tvshow');
+ if(visible.length!==json.results.length)json={...json,results:visible};
  if(kind==='tvshow' || kind==='dorama'){
   const countries=(scope.get('minimal_countries') || 'KR,JP,CN,TW,TH').split(','),language=scope.get('minimal_language');
   return {...json,results:json.results.filter(card=>{

@@ -14,7 +14,7 @@ test('desktop Chrome restores cover space while Safari and TV keep compact detai
  }
 });
 
-test('native desktop TV screen mode keeps original badges; actual TVs and manual choice retain compact sizes',async()=>{
+test('native desktop TV screen mode and actual TVs share readable badges and preserve poster geometry',async()=>{
  const r=await native({built:true}),{w,L}=r;
  w.document.body.style.setProperty('font-size','16px','important');
  const refresh=async()=>{w.dispatchEvent(new w.Event('resize'));await new Promise(resolve=>setTimeout(resolve,210));};
@@ -26,13 +26,13 @@ test('native desktop TV screen mode keeps original badges; actual TVs and manual
   assert.deepEqual(sizes(),[.65,.6,.65]);
   const caption=()=>['.card__title','.card__age','.card__icons','.card__marker','.card-watched'].map(selector=>w.getComputedStyle(card.querySelector(selector)).fontSize);
   const desktop=caption(),cardWidth=w.getComputedStyle(card).width;
-  L.Platform.tv=()=>true;await refresh();assert.equal(w.LampaView.layout,'tv');assert.deepEqual(sizes(),[.35,.32,.35]);
+  L.Platform.tv=()=>true;await refresh();assert.equal(w.LampaView.layout,'tv');assert.deepEqual(sizes(),[.65,.6,.65]);
   assert.equal(w.getComputedStyle(card).width,cardWidth,'Badge sizing must not resize the poster');
-  caption().forEach((size,i)=>assert.ok(parseFloat(size)<parseFloat(desktop[i]),'TV captions and watch indicators must be smaller'));
-  card.classList.add('card--wide');assert.equal(w.getComputedStyle(card.querySelector('.card__title')).fontSize,.92*parseFloat(w.getComputedStyle(card).fontSize)+'px');card.classList.remove('card--wide');
+  assert.equal(w.getComputedStyle(card.querySelector('.card-watched')).transform,'none','TV keeps the native watch panel readable');
+  card.classList.add('card--wide');assert.equal(w.getComputedStyle(card.querySelector('.card__title')).fontSize,.79*parseFloat(w.getComputedStyle(card).fontSize)+'px');card.classList.remove('card--wide');
   L.Platform.tv=()=>false;await refresh();assert.equal(w.LampaView.layout,'desktop');assert.deepEqual(sizes(),[.65,.6,.65]);
   assert.deepEqual(caption(),desktop,'Desktop captions and native watch indicators must retain their sizes');
   L.Storage.set('lampa_view_layout','tv');await refresh();assert.equal(w.LampaView.layout,'tv');
-  assert.equal(w.getComputedStyle(card.querySelector('.card-watched')).transform,'scale(.7)');assert.deepEqual(r.errors,[]);
+  assert.equal(w.getComputedStyle(card.querySelector('.card-watched')).transform,'none');assert.deepEqual(r.errors,[]);
  }finally{r.close();}
 });
