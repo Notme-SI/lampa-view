@@ -558,21 +558,24 @@ body.lampa_view.pt-mobile .minimal-detail-columns>.minimal-detail-cast,body.lamp
 }
 
 /* Equal footer space on every poster: focus never changes card/row geometry. */
-body.lampa_view .card .pt-card-watch {height:2.3em;margin-top:.4em;font-size:.72em;line-height:1.35;pointer-events:none}
+body.lampa_view .card .pt-card-watch {height:3.9em;margin-top:.4em;font-size:.72em;line-height:1.35;pointer-events:none}
 body.lampa_view .card__view>.card-watched {display:none!important}
 body.lampa_view .card .pt-card-watch>.card-watched {position:static;top:auto;left:auto;right:auto;bottom:auto;width:100%;max-width:100%;font-size:1em;line-height:1.35;transform:none;-webkit-transform:none;border:0;border-radius:0;background:none!important;color:var(--pt-muted);box-sizing:border-box}
 body.lampa_view .card .pt-card-watch .card-watched__inner,body.lampa_view .card .pt-card-watch .card-watched__body {padding:0;font-size:1em}
 body.lampa_view .card .pt-card-watch .card-watched__item {display:none;margin:0;color:var(--pt-muted)}
-body.lampa_view .card .pt-card-watch .pt-card-watch__current {display:block}
+body.lampa_view .card .pt-card-watch .pt-card-watch__current {display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto 1em;gap:.2em .4em;line-height:1.25}
 body.lampa_view .card .pt-card-watch .card-watched__item>span {display:none}
-body.lampa_view .pt-card-watch__row {display:flex;align-items:center;gap:.4em;min-width:0}
-body.lampa_view .pt-card-watch__label {flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-body.lampa_view .pt-card-watch__time {flex:none;font-variant-numeric:tabular-nums}
-body.lampa_view .card .pt-card-watch .time-line {margin-top:.35em}
+body.lampa_view .pt-card-watch__row {display:contents}
+body.lampa_view .pt-card-watch__label {grid-column:1/-1;grid-row:1;display:flex;flex-wrap:wrap;gap:0 .25em;min-width:0;white-space:normal}
+body.lampa_view .pt-card-watch__label>span {white-space:nowrap}
+body.lampa_view .pt-card-watch__time {grid-column:2;grid-row:2;align-self:center;font-variant-numeric:tabular-nums;font-size:.9em;line-height:1}
+body.lampa_view .card .pt-card-watch .time-line {grid-column:1;grid-row:2;align-self:center;margin:0;min-width:0}
 body.lampa_view .card .pt-card-watch .time-line>div {height:2px}
 body.lampa_view .card.hover .pt-card-watch>.card-watched {display:block}
-/* One release pill below Series, using exactly the same surface and type. */
-body.lampa_view .pt-series-status {position:absolute;right:.6em;top:2.6em;z-index:4;display:block;width:max-content;max-width:calc(100% - 8px);font-size:.6em;line-height:1;white-space:nowrap;padding:.35em .5em;border:1px solid #ffffff25;border-radius:.35em;background:#000b;color:#d4e2e6;pointer-events:none;box-sizing:border-box}
+body.lampa_view .card .pt-card-watch>.card-watched.pt-card-watch--empty {display:none!important}
+/* One release pill below Series; logical segments wrap on narrow covers. */
+body.lampa_view .pt-series-status {position:absolute;left:auto!important;right:4px!important;top:2.6em;z-index:4;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:0 .25em;width:max-content;max-width:calc(100% - 8px);font-size:.6em;line-height:1.25;white-space:normal;padding:.35em .5em;border:1px solid #ffffff25;border-radius:.35em;background:#000b;color:#d4e2e6;pointer-events:none;box-sizing:border-box}
+body.lampa_view .pt-series-status>span {white-space:nowrap}
 
 /* Badges keep their own corners and wrap to another line when space is short. */
 body.lampa_view .card__view .pt-quality,body.lampa_view .card__view .pt-kind {max-width:calc(100% - 8px);box-sizing:border-box;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

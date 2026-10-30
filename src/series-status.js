@@ -24,7 +24,15 @@ function watchFooter(L,node,data,series){
  // Move the original timeline, keeping its native updates and destroy lifecycle.
  if(wrap.parentNode!==slot)slot.appendChild(wrap);
  const hash=value=>L.Utils && L.Utils.hash?L.Utils.hash(value):value;
- const view=key=>L.Timeline && L.Timeline.view?L.Timeline.view(key):null;
+ const view=key=>{
+  // A cached native card/timeline can outlive a cleared storage record.
+  // Storage is authoritative when the host exposes its active profile file.
+  if(L.Timeline && L.Timeline.filename && L.Storage && L.Storage.get){
+   const records=L.Storage.get(L.Timeline.filename(),{}) || {},raw=records[key];
+   if(!raw || !(typeof raw==='number'?raw:Number(raw.percent) || Number(raw.time)))return null;
+  }
+  return L.Timeline && L.Timeline.view?L.Timeline.view(key):null;
+ };
  let row=Array.from(wrap.querySelectorAll('.card-watched__item')).find(item=>item.querySelector('.time-line'));
  // Native timetable slicing can drop an older-season watch row entirely.
  // Restore only an existing saved timeline, using Lampa's own render/updates.
@@ -38,33 +46,46 @@ function watchFooter(L,node,data,series){
    }
   }
  }
- if(!row)return;
+ if(!row){wrap.classList.add('pt-card-watch--empty');return;}
  wrap.querySelectorAll('.card-watched__item').forEach(item=>item.classList.toggle('pt-card-watch__current',item===row));
  let summary=row.querySelector('.pt-card-watch__row');
  if(!summary){summary=document.createElement('div');summary.className='pt-card-watch__row';summary.innerHTML='<span class="pt-card-watch__label"></span><span class="pt-card-watch__time"></span>';row.insertBefore(summary,row.firstChild);}
  const nativeLabel=row.querySelector(':scope > span'),text=nativeLabel && nativeLabel.textContent || '';
- let label='Просмотрено',timeline=null;
+ let label='Просмотрено',timeline=null,watchSeason=0,watchEpisode=0;
+ const progressHash=row.querySelector('.time-line').getAttribute('data-hash');
+ if(progressHash)timeline=view(progressHash);
  if(series){
   const match=text.match(/^(\d+)\s*[-–]|(?:Эпизод|Серия|Episode)\s*(\d+)/i),episode=match && Number(match[1] || match[2]);
   const table=L.TimeTable && L.TimeTable.get?L.TimeTable.get(data) || []:[];
   let season=0;
   for(const ep of table){
    if(Number(ep.episode_number)!==episode)continue;
-   const time=view(hash([ep.season_number,ep.season_number>10?':':'',episode,data.original_title].join('')));
-   if(time && time.percent){season=Number(ep.season_number);timeline=time;}
+   const key=hash([ep.season_number,ep.season_number>10?':':'',episode,data.original_title].join(''));
+   if(progressHash && String(key)!==progressHash)continue;
+   const time=view(key);
+   if(time && (time.percent || time.time)){season=Number(ep.season_number);timeline=time;}
   }
   if(!season && episode){
    const last=L.Storage && L.Storage.get?L.Storage.get('online_watched_last','{}') || {}:{};
    const history=last[hash(data.original_title)];
-   if(history && Number(history.episode)===episode){season=Number(history.season)||0;timeline=view(hash([season,season>10?':':'',episode,data.original_title].join('')));}
+   if(history && Number(history.episode)===episode){const key=hash([Number(history.season),Number(history.season)>10?':':'',episode,data.original_title].join(''));if(!progressHash || String(key)===progressHash){season=Number(history.season)||0;timeline=view(key);}}
   }
-  label=episode?(season?'С'+season+' · ':'')+episode+' серия':episodeLabel(text);
+  watchSeason=season;watchEpisode=episode;
+  label=episode?(season?'Сезон '+season+' • ':'')+'Эпизод '+episode:'Просмотрено';
  }else{
-  timeline=L.Timeline && L.Timeline.watched?L.Timeline.watched(data,true):view(hash(data.original_title));
-  if(!timeline || Array.isArray(timeline))timeline=view(hash(data.original_title));
+  if(!progressHash)timeline=L.Timeline && L.Timeline.filename?view(hash(data.original_title)):L.Timeline && L.Timeline.watched?L.Timeline.watched(data,true):view(hash(data.original_title));
+  if(Array.isArray(timeline))timeline=view(hash(data.original_title));
  }
- const time=clock(timeline && timeline.time),name=summary.firstElementChild,stamp=summary.lastElementChild;
- if(name.textContent!=='▶ '+label)name.textContent='▶ '+label;
+ if(!timeline || !(Number(timeline.percent)>0 || Number(timeline.time)>0)){wrap.classList.add('pt-card-watch--empty');return;}
+ wrap.classList.remove('pt-card-watch--empty');
+ const time=clock(timeline.time),name=summary.firstElementChild,stamp=summary.lastElementChild;
+ if(name.textContent!==label){
+  name.textContent='';
+  if(watchEpisode){
+   if(watchSeason){const season=document.createElement('span');season.textContent='Сезон '+watchSeason+' • ';name.appendChild(season);}
+   const episode=document.createElement('span');episode.textContent='Эпизод '+watchEpisode;name.appendChild(episode);
+  }else name.textContent=label;
+ }
  if(stamp.textContent!==time)stamp.textContent=time;
  summary.title='История просмотра: '+label+(time?', '+time:'');
 }
@@ -83,11 +104,11 @@ export default function seriesStatus(L,schedule){
   const available=facts || releaseStatus(data,table);
   let box=view.querySelector('.pt-series-status');
   if(available){
-   if(!box){box=document.createElement('div');box.className='pt-series-status';view.appendChild(box);}
+   if(!box){box=document.createElement('div');box.className='pt-series-status';box.innerHTML='<span></span><span></span>';view.appendChild(box);}
    const partial=available.total>available.count;
    const released=partial?available.count+'/'+available.total:String(available.count);
    const text='Сезон '+available.season+' • '+(partial?'Эпизод ':'Эпизодов ')+released;
-   if(box.textContent!==text)box.textContent=text;
+   if(box.textContent!==text){box.firstElementChild.textContent='Сезон '+available.season+' • ';box.lastElementChild.textContent=(partial?'Эпизод ':'Эпизодов ')+released;}
    box.title='Сезон '+available.season+': вышло '+released+'. История просмотра — под обложкой.';
   }else if(box)box.remove();
   // Release metadata stays independent of the native watch timeline below the cover.
@@ -101,7 +122,7 @@ export default function seriesStatus(L,schedule){
   }
  }
  // Timeline writes update the original progress node directly. Refresh only
- // focused captions, without querying metadata or rescanning cached rows.
+ // focused captions without rescanning cached rows.
  if(L.Listener && L.Listener.follow)L.Listener.follow('state:changed',event=>{
   if(event.target==='timeline')for(const node of document.querySelectorAll('.card.focus,.card.hover'))if(cards.has(node))schedule(node);
  });
