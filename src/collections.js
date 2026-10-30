@@ -16,7 +16,7 @@ export default function collections(L,shiki){
  const key='minimal_collections',knownKey='minimal_collection_rows_v2';
  const read=()=>L.Storage.get(key,{}) || {},known=()=>L.Storage.get(knownKey,{}) || {};
  const captured=new Set(),homeRows=continueWatching(L);
- const labels={'main:':'Главная','category:movie':'Фильмы','category:tv':'Сериалы','category:cartoon':'Мультфильмы','category:anime':'Аниме','category:dorama':'Дорамы','category:tvshow':'ТВ-шоу'};
+ const labels={'main:':'Главная','category:movie':'Фильмы','category:tv':'Сериалы','category:dorama':'Дорамы','category:tvshow':'ТВ-шоу','category:cartoon':'Мультфильмы','category:anime':'Аниме'};
  const animeContext=o=>'category:anime:'+animeMode(L,o);
  const context=o=>{o=o || {};const component=o.component || 'main';if(component==='main')return 'main:';const kind=o.url || o.cat;return component==='category' && ['movie','tv','cartoon','anime','dorama','tvshow'].includes(kind)?kind==='anime'?animeContext(o):'category:'+kind:null;};
  function remember(ctx,rows,append=false){
@@ -56,7 +56,7 @@ export default function collections(L,shiki){
  if(category)L.Api.category=function(object,ok,fail){
   const kind=object.url || object.cat,ctx=context({...object,component:'category'});
   if(!['movie','tv','cartoon','anime','dorama','tvshow'].includes(kind))return category.apply(this,arguments);
-  if((object.source || L.Storage.get('source','cub'))==='trakt' && !['dorama','tvshow'].includes(kind) && !(kind==='anime' && animeMode(L,object)==='shikimori')){
+  if((object.source || L.Storage.get('source','cub'))==='trakt' && !(kind==='anime' && animeMode(L,object)==='shikimori')){
    const status=object.minimal_catalogue_status={state:'loading'};
    return category.call(this,{...object,source:'trakt'},rows=>{status.state=rows.some(row=>row.results && row.results.length)?'ready':'empty';remember(ctx,rows);ok(arrange(rows,prefs(ctx)));},error=>{status.state='error';if(fail)fail(error);});
   }

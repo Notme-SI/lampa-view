@@ -4,6 +4,16 @@ import {isAnime} from './metadata.js';
 export function catalogueResults(path,json){
  const query=String(path || '').split('?')[1] || '';
  if(!json || !Array.isArray(json.results))return json;
+ const scope=new URLSearchParams(query),kind=scope.get('minimal_kind');
+ if(kind==='tvshow' || kind==='dorama'){
+  const countries=(scope.get('minimal_countries') || 'KR,JP,CN,TW,TH').split(','),language=scope.get('minimal_language');
+  return {...json,results:json.results.filter(card=>{
+   const genres=[...(card.genre_ids || []),...(card.genres || [])].map(g=>Number(g.id || g)),lang=String(card.original_language || '').toLowerCase(),origin=card.origin_country || [];
+   if(genres.includes(16))return false;
+   if(kind==='tvshow')return (lang==='ru' || !lang && origin.includes('RU')) && genres.some(g=>[10764,10767,10751,35].includes(g));
+   return !genres.some(g=>[99,10764,10767].includes(g)) && (origin.some(c=>countries.includes(c)) || !origin.length && (language?lang===language:countries.some(c=>({KR:'ko',JP:'ja',CN:'zh',TW:'zh',TH:'th'})[c]===lang)));
+  })};
+ }
  const liveAction=(/^discover\/(movie|tv)\?/.test(path) || /^\?/.test(path) && /(^|&)cat=(movie|tv)(&|$)/.test(query)) && /(^|&)without_genres=16(&|$)/.test(query);
  if(liveAction)return {...json,results:json.results.filter(card=>!isAnime(card) && ![...(card.genre_ids || []),...(card.genres || [])].some(g=>Number(g.id || g)===16))};
  const cartoons=/^discover\/(movie|tv)\?/.test(path) && /(^|&)with_genres=16(&|$)/.test(query) && /(^|&)without_keywords=210024(&|$)/.test(query)

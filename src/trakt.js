@@ -12,6 +12,8 @@ const FEEDS=[
  ['Ожидаемые','anticipated']
 ];
 export function traktPlan(kind){
+ if(kind==='dorama')return FEEDS.map(([title,path])=>({title,url:'shows/'+path+'?countries=kr,jp,cn,tw,th&genres=drama,romance,comedy,mystery'}));
+ if(kind==='tvshow')return FEEDS.map(([title,path])=>({title,url:'shows/'+path+'?genres=reality,talk-show,game-show&languages=ru'}));
  if(!kind)return FEEDS.map(([title,path],index)=>({title,url:'mixed/'+path,...(index===0?{minimal_row_aliases:['?sort=now_playing','movie/now_playing','movies/trending','shows/trending']}:index===1?{minimal_row_aliases:['movie/popular','tv/popular','movies/popular','shows/popular']}:{})}));
  const types=TYPES[kind]?[TYPES[kind]]:kind==='anime'?['shows']:['movies','shows'];
  const filter=kind==='anime'?'?genres=animation&languages=ja':kind==='cartoon'?'?genres=animation':'';
@@ -81,12 +83,20 @@ export default function installTrakt(L){
    return;
   }
   // Only our fixed public list routes can receive the API key.
-  const path=String(params.url || 'movies/trending'),match=path.match(/^(movies|shows)\/(trending|popular|watched\/weekly|collected\/monthly|anticipated)(\?(?:genres=animation(?:&languages=ja)?))?$/);
-  if(!match)return error(fail,'Неизвестная подборка Trakt');
+  const path=String(params.url || 'movies/trending'),match=path.match(/^(movies|shows)\/(trending|popular|watched\/weekly|collected\/monthly|anticipated)(\?.*)?$/);
+  const allowed=new Set(['','?genres=animation','?genres=animation&languages=ja',...['dorama','tvshow'].flatMap(kind=>traktPlan(kind).map(row=>row.url.slice(row.url.indexOf('?'))))]);
+  if(!match || !allowed.has(match[3] || ''))return error(fail,'Неизвестная подборка Trakt');
   const page=Math.max(1,Math.min(1000,Number(params.page) || 1));
   const limit=params.minimal_limit===10?10:20;
   const route=path+(path.includes('?')?'&':'?')+'extended=full&limit='+limit+'&page='+page,key=route;
-  const own=generation,done=json=>metadata.enrich(traktCards(json.rows,match[1]==='movies'?'movie':'tv'),results=>{if(own===generation)ok({results,page,total_pages:json.pages});});
+  const own=generation,done=json=>{
+   const rows=json.rows.filter(entry=>{const data=entry.show || entry.movie || entry;
+    if(path.includes('languages=ru'))return data.language==='ru' || !data.language && data.country==='ru';
+    if(path.includes('countries=kr,jp,cn,tw,th'))return !(data.genres || []).some(g=>['animation','reality','talk-show','game-show','documentary'].includes(g));
+    return true;
+   });
+   metadata.enrich(traktCards(rows,match[1]==='movies'?'movie':'tv'),results=>{if(own===generation)ok({results,page,total_pages:json.pages});});
+  };
   const saved=cache.get(key);if(saved && Date.now()-saved.at<600000)return done(saved.value);
   if(pending.has(key)){pending.get(key).callbacks.push([done,fail]);return;}
   const job={key,path:route,client:id,generation,callbacks:[[done,fail]]};pending.set(key,job);queue.push(job);pump();

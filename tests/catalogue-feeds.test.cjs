@@ -45,5 +45,13 @@ test('dorama and TV show feeds start with recent airings and keep stable identit
   assert.equal(q.get('air_date.gte'),'2026-10-23');assert.equal(q.get('air_date.lte'),'2026-10-30');assert.equal(new Set(plan.map(row=>row.tmdb)).size,plan.length);assert.ok(plan.every(row=>row.media_type==='tv'));
  }
  assert.equal(dorama[1].key,'dorama-0');assert.equal(dorama[1].title,'Популярное');assert.equal(dorama.length,11);assert.equal(shows.length,8);
- assert.ok(shows.every(row=>/with_genres=10764(?:\|10767)?&|with_genres=10767&/.test(row.tmdb)));
+ assert.ok(shows.every(row=>new URLSearchParams(row.tmdb.split('?')[1]).get('with_original_language')==='ru'));
+});
+
+
+test('CUB TV-show scope retains native ranking and pagination while removing foreign and animated entries',()=>{
+ const calls=[],russian={id:1,name:'Реалити',original_language:'ru',genre_ids:[10764]},foreign={id:2,name:'Foreign',original_language:'en',genre_ids:[10764]},animation={id:3,name:'Animation',original_language:'ru',genre_ids:[16]};
+ const L={Storage:{get:(k,d)=>d},Api:{sources:{cub:{list(p,ok){calls.push(p);ok({results:[russian,foreign,animation],page:1,total_pages:12});}}}}};let output;
+ catalogue(L,{}, {url:'tvshow',source:'cub'},[],rows=>output=rows);assert.equal(calls.length,8);assert.ok(output.every(row=>row.source==='cub' && row.total_pages===12));assert.deepEqual(output[0].results.map(c=>c.id),[1]);assert.equal(output[0].results[0].source,'cub');
+ for(const call of calls){const q=new URLSearchParams(call.url.slice(1));assert.equal(q.get('cat'),'tv');assert.equal(q.get('minimal_kind'),'tvshow');assert.equal(q.get('minimal_language'),'ru');}
 });

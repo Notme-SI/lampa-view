@@ -76,3 +76,18 @@ test('Trakt categories expose five genuine public feeds, retain animation filter
   const count=r.sent.length;for(const url of ['movies/watched/weekly?api_key=bad','movies/anticipated?redirect=https://evil.invalid','movies/watched/../users/me'])r.api.list({url},assert.fail,()=>{});assert.equal(r.sent.length,count);
  }finally{r.close();}
 });
+
+
+test('Trakt dorama and Russian TV shows use their own filters and preserve them on subsequent pages',()=>{
+ const r=setup();try{
+  r.storage.minimal_trakt_enabled=true;r.storage.minimal_trakt_client_id='own-id';
+  for(const kind of ['dorama','tvshow']){
+   const plan=r.w.Trakt.traktPlan(kind);assert.equal(plan.length,5);assert.equal(plan[0].title,'Сейчас смотрят');assert.ok(plan.every(row=>row.url.startsWith('shows/')));
+   let result;r.api.list({url:plan[0].url,page:2},v=>result=v,assert.fail);const req=r.sent.at(-1),q=new URL(req.url).searchParams;
+   assert.equal(q.get('page'),'2');assert.equal(q.get('genres'),kind==='tvshow'?'reality,talk-show,game-show':'drama,romance,comedy,mystery');
+   if(kind==='tvshow'){assert.equal(q.get('languages'),'ru');req.reply([{show:{...movie(1,'Шоу'),language:'ru'}},{show:{...movie(2,'Foreign'),language:'en'}}]);assert.deepEqual(Array.from(result.results,c=>c.id),[1]);}
+   else{assert.equal(q.get('countries'),'kr,jp,cn,tw,th');req.reply([{show:{...movie(3,'Drama'),country:'kr',genres:['drama']}},{show:{...movie(4,'Anime'),genres:['animation']}}]);assert.deepEqual(Array.from(result.results,c=>c.id),[3]);}
+   assert.equal(result.page,2);assert.equal(result.total_pages,9);
+  }
+ }finally{r.close();}
+});

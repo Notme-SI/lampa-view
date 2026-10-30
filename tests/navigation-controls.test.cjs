@@ -74,7 +74,7 @@ test('held TV navigation scrolls once per card, builds the next lazy batch and h
 
 test('dorama opens the same native category rows and More pages using live-action Asian TV filters',async()=>{
  const r=await native({built:true}),{w,L}=r,requests=[];try{
-  const item=w.document.querySelector('.menu__item[data-action="dorama"]');assert.equal(item.querySelector('.menu__text').textContent,'Дорамы');assert.equal(w.document.querySelectorAll('.menu__item[data-action="dorama"]').length,1);
+  L.Storage.set('source','tmdb');const item=w.document.querySelector('.menu__item[data-action="dorama"]');assert.equal(item.querySelector('.menu__text').textContent,'Дорамы');assert.equal(w.document.querySelectorAll('.menu__item[data-action="dorama"]').length,1);
   L.Api.sources.tmdb.get=(url,params,ok)=>{requests.push(url);w.setTimeout(()=>ok({results:[{id:requests.length+1900,name:'Дорама',genre_ids:[18],original_language:'ko'}],page:1,total_pages:2}),0);};
   w.jQuery(item).trigger('hover:enter');await wait(230);assert.equal(L.Activity.active().url,'dorama');assert.equal(requests.length,11);
   for(const path of requests){assert.match(path,/^discover\/tv\?/);const q=new URLSearchParams(path.split('?')[1]);assert.ok(q.get('with_origin_country'));assert.match(q.get('without_genres'),/16/);}
@@ -95,7 +95,7 @@ test('native menu_always switches a single native menu between dock and popover 
 
 test('TV shows follow dorama in the native menu, open bounded feeds and preserve genre filters on More',async()=>{
  const r=await native({built:true}),{w,L}=r,requests=[];try{
-  const series=w.document.querySelector('.menu__item[data-action="tv"]'),dorama=series.nextElementSibling,shows=dorama.nextElementSibling;
+  L.Storage.set('source','tmdb');const series=w.document.querySelector('.menu__item[data-action="tv"]'),dorama=series.nextElementSibling,shows=dorama.nextElementSibling;
   assert.equal(dorama.dataset.action,'dorama');assert.equal(shows.dataset.action,'tvshow');assert.equal(shows.querySelector('.menu__text').textContent,'ТВ-шоу');
   L.Api.sources.tmdb.get=(url,params,ok)=>{requests.push(url);const id=requests.length;w.setTimeout(()=>ok({results:[{id:2200+id,name:'Шоу '+id,genre_ids:[10764],original_language:'ru'}],page:1,total_pages:3}),0);};
   shows.click();await wait(220);assert.equal(L.Activity.active().url,'tvshow');assert.equal(requests.length,8);

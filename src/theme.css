@@ -558,15 +558,20 @@ body.lampa_view.pt-mobile .minimal-detail-columns>.minimal-detail-cast,body.lamp
 }
 
 /* One compact watch-status style for desktop, phones and TVs. */
-body.lampa_view .card .card-watched {top:auto;left:12%;right:12%;bottom:28%;font-size:.68em;line-height:1.35;-webkit-transform:scale(.7);transform:scale(.7);-webkit-transform-origin:center bottom;transform-origin:center bottom;border-radius:.6em;background:rgba(0,0,0,.78)!important;border:1px solid #ffffff14;box-sizing:border-box}
-body.lampa_view .card .card-watched__inner {padding:.55em .65em}
+body.lampa_view .card .card-watched {top:auto;left:.6em;right:auto;bottom:.6em;width:auto;max-width:calc(100% - 1.2em);font-size:.65em;line-height:1.35;transform:none;-webkit-transform:none;border-radius:.35em;background:rgba(0,0,0,.86)!important;border:1px solid #ffffff25;box-sizing:border-box}
+body.lampa_view .card .card-watched__inner {padding:.35em .5em}
 body.lampa_view .card .card-watched__body {font-size:1em;padding:0}
-body.lampa_view .card .card-watched__item {margin-top:.55em}
+body.lampa_view .card .card-watched__item {margin-top:.35em}
 body.lampa_view .card .card-watched__item:first-child {margin-top:0}
-body.lampa_view .card .card-watched__item .time-line {margin-top:.35em}
-body.lampa_view .card .card-watched .time-line>div {height:3px}
-body.lampa_view .card--wide .card-watched {top:.7em;left:.7em;right:auto;bottom:auto;width:38%;max-width:13em;-webkit-transform-origin:left top;transform-origin:left top}
-body.lampa_view.pt-tv .card .card-watched {font-size:.5em}
+body.lampa_view .card .card-watched .time-line {margin-top:.35em}
+body.lampa_view .card .card-watched .time-line>div {height:2px}
+body.lampa_view .pt-has-series-status .card-watched {display:none!important}
+body.lampa_view .pt-series-status {position:absolute;left:.6em;bottom:.6em;right:auto;top:auto;z-index:4;width:max-content;max-width:calc(100% - 1.2em);font-size:.65em;line-height:1.35;font-weight:500;padding:.35em .5em;border:1px solid #ffffff25;border-radius:.35em;background:#000000dc;color:#eeeff2;pointer-events:none;box-sizing:border-box}
+body.lampa_view .pt-series-status>span {display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.lampa_view .pt-series-status>span[hidden] {display:none}
+body.lampa_view .pt-series-status__released {color:#c5cbd1;font-size:.95em;margin-top:.25em}
+body.lampa_view .pt-series-status .time-line {display:block!important;height:2px;margin:.35em 0 0;background:#ffffff30}
+body.lampa_view .pt-series-status .time-line>div {height:100%;background:var(--pt-accent)}
 /* Badges keep their own corners and wrap to another line when space is short. */
 body.lampa_view .card__view .pt-quality,body.lampa_view .card__view .pt-kind {max-width:calc(100% - 8px);box-sizing:border-box;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 body.lampa_view .card__view .card__icons {right:auto;width:auto;max-width:calc(100% - 8px)}
@@ -871,3 +876,5 @@ body.lampa_view.pt-menu-pinned .pt-hero,body.lampa_view.pt-menu-pinned .items-li
 body.lampa_view.pt-menu-pinned .menu__text {white-space:normal}
 body.lampa_view.pt-mobile.pt-menu-pinned {--pt-menu-width:min(14em,38vw)}
 body.lampa_view.pt-mobile.pt-menu-pinned .wrap__left {bottom:5.5em!important;height:calc(100% - 9.1em)!important}
+
+body.lampa_view .card:not(.focus):not(.hover) .pt-series-status {display:none}

@@ -23,15 +23,15 @@ export function cataloguePlan(kind,mode='standard',date=new Date()){
   ].map(([title,query],index)=>({key:'dorama-'+index,title,media_type:'tv',tmdb:'discover/tv?include_adult=false&'+query}))];
  }
  if(kind==='tvshow'){
-  const shows='without_genres=16&with_genres=10764|10767&';
+  const shows='without_genres=16&with_genres=10764|10767&with_original_language=ru&';
   return [
    ['watch','Сейчас смотрят',shows+'sort_by=popularity.desc&air_date.gte='+day(-7)+'&air_date.lte='+day(0)],
    ['popular','Популярное',shows+'sort_by=popularity.desc'],
    ['year','Новинки этого года',shows+'sort_by=popularity.desc&first_air_date.gte='+year+'-01-01&first_air_date.lte='+day(0)],
    ['rated','С высоким рейтингом',shows+'sort_by=vote_average.desc&vote_count.gte=100'],
-   ['reality','Реалити-шоу','without_genres=16&with_genres=10764&sort_by=popularity.desc'],
-   ['talk','Ток-шоу','without_genres=16&with_genres=10767&sort_by=popularity.desc'],
-   ['russian','Русскоязычные шоу',shows+'with_original_language=ru&sort_by=popularity.desc'],
+   ['reality','Российские реалити','without_genres=16&with_genres=10764&with_original_language=ru&sort_by=popularity.desc'],
+   ['talk','Российские ток-шоу','without_genres=16&with_genres=10767&with_original_language=ru&sort_by=popularity.desc'],
+   ['russian','Семейные и развлекательные','without_genres=16&with_genres=10764|10767|10751|35&with_original_language=ru&sort_by=popularity.desc'],
    ['last-year','Прошлый год',shows+'sort_by=vote_average.desc&vote_count.gte=30&first_air_date.gte='+(year-1)+'-01-01&first_air_date.lte='+(year-1)+'-12-31']
   ].map(([key,title,query])=>({key,title,media_type:'tv',tmdb:'discover/tv?include_adult=false&'+query}));
  }
@@ -81,9 +81,17 @@ export function cataloguePlan(kind,mode='standard',date=new Date()){
  genres.forEach(([id,title])=>add('genre-'+id,title,'?cat='+kind+'&sort=top&genre='+id,'sort_by=popularity.desc&with_genres='+id+(kind==='anime'?',16':'')));
  return defs.slice(0,10);
 }
+function cubScoped(job,kind){
+ const p=new URLSearchParams(job.tmdb.split('?')[1]),q=new URLSearchParams({cat:'tv',sort:job.key==='watch'?'now_playing':job.key==='year'?'now':'top',minimal_kind:kind});
+ if(p.get('with_genres'))q.set('genre',p.get('with_genres').replace(/\|/g,','));
+ if(p.get('with_origin_country'))q.set('minimal_countries',p.get('with_origin_country').replace(/\|/g,','));
+ if(p.get('with_original_language'))q.set('minimal_language',p.get('with_original_language'));
+ const year=(p.get('first_air_date.gte') || '').slice(0,4);if(year)q.set('airdate',year);
+ return {...job,cub:'?'+q.toString()};
+}
 export default function catalogue(L,shiki,object,hidden,ok){
  const kind=object.url || object.cat;
- const source=object.source || L.Storage.get('source','cub'),cub=L.Api.sources && L.Api.sources.cub && L.Api.sources.cub.list,plan=cataloguePlan(kind,animeMode(L,object)),rows=new Array(plan.length);let cursor=0,running=0,done=0,ended=false,failures=0;
+ const source=object.source || L.Storage.get('source','cub'),cub=L.Api.sources && L.Api.sources.cub && L.Api.sources.cub.list,plan=cataloguePlan(kind,animeMode(L,object)).map(job=>['dorama','tvshow'].includes(kind)?cubScoped(job,kind):job),rows=new Array(plan.length);let cursor=0,running=0,done=0,ended=false,failures=0;
  const status=object.minimal_catalogue_status={state:'loading'};
  const useCub=job=>!!(cub && job.cub && (source==='cub' || kind==='cartoon'));
  const rowFor=job=>({title:useCub(job)?job.title:job.tmdb_title || job.title,url:job.shiki || (useCub(job)?job.cub:job.tmdb || job.cub),source:job.shiki?'minimal_shiki':useCub(job) || !job.tmdb?'cub':'tmdb',...(!useCub(job) && job.tmdb && job.key?{minimal_row_id:'minimal:tmdb:'+kind+':'+job.key,minimal_row_aliases:[job.tmdb,...(job.minimal_row_aliases || [])]}:{}),results:[]});
@@ -92,7 +100,7 @@ export default function catalogue(L,shiki,object,hidden,ok){
   if(ended)return;if(object.activity && object.activity.component && object.activity.component.destroyed){ended=true;return;}if(done===plan.length){complete();return;}
   while(!ended && running<3 && cursor<plan.length){const index=cursor++,job=plan[index],row=rowFor(job);if([row.minimal_row_id,row.url,...(row.minimal_row_aliases || [])].some(url=>hidden.includes(url))){row.minimal_hidden=true;rows[index]=row;done++;continue;}
    running++;let settled=false;
-   function finish(json){if(settled)return;settled=true;running--;done++;if(!json)failures++;json=catalogueResults(row.url,json);if(json && Array.isArray(json.results) && json.results.length)rows[index]={...row,page:Number(json.page)||1,total_pages:Math.max(Number(json.total_pages)||1,json.results.length>20?2:1),results:json.results.slice(0,20).map(card=>kind==='anime'?{...card,minimal_anime:true}:job.media_type?{...card,source:'tmdb',media_type:job.media_type}:card)};pump();}
+   function finish(json){if(settled)return;settled=true;running--;done++;if(!json)failures++;json=catalogueResults(row.url,json);if(json && Array.isArray(json.results) && json.results.length)rows[index]={...row,page:Number(json.page)||1,total_pages:Math.max(Number(json.total_pages)||1,json.results.length>20?2:1),results:json.results.slice(0,20).map(card=>kind==='anime'?{...card,minimal_anime:true}:job.media_type?{...card,source:row.source,media_type:job.media_type}:card)};pump();}
    if(job.shiki)shiki.list({url:job.shiki,page:1},finish,()=>finish(null));
    else if(useCub(job))cub.call(L.Api.sources.cub,{...object,url:job.cub,page:1},finish,()=>finish(null));
    else if(job.tmdb)tmdbGet(L,job.tmdb,{page:1},finish,()=>finish(null));

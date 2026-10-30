@@ -17,7 +17,7 @@ export function placeBadges(width,height,badges,padding=4,gap=3){
  }
  return placed;
 }
-export default function badgeLayout(){
+export default function badgeLayout(status){
  const pending=new Set();let frame=0;
  const paused=()=>document.body.matches('.pt-wheel-active,.pt-tv-busy') || document.hidden;
  function flush(){
@@ -26,10 +26,11 @@ export default function badgeLayout(){
   for(const node of pending){
    if(document.body.classList.contains('pt-tv') && count++>=6)break;
    pending.delete(node);if(!node.isConnected)continue;
+   if(status)status.paint(node);
    const view=node.querySelector('.card__view');if(!view)continue;const rect=view.getBoundingClientRect();
    if(!rect.width || !rect.height || rect.bottom<0 || rect.top>window.innerHeight || rect.right<0 || rect.left>window.innerWidth)continue;
    const width=view.clientWidth || rect.width,height=view.clientHeight || rect.height,scale=rect.width/width || 1,entries=[];
-   for(const [selector,corner] of [['.card__vote','br'],['.pt-quality,.card__quality','tl'],['.pt-kind','tr'],['.card__marker','bl'],['.card__icons','tl'],['.card__new-episode','bl']])for(const el of view.querySelectorAll(selector)){
+   for(const [selector,corner] of [['.card__vote','br'],['.pt-quality,.card__quality','tl'],['.pt-kind','tr'],['.card__marker','bl'],['.card__icons','tl'],['.card__new-episode','bl'],['.pt-series-status','bl']])for(const el of view.querySelectorAll(selector)){
     if(el.hidden || el.classList.contains('hide') || getComputedStyle(el).display==='none')continue;
     const r=el.getBoundingClientRect();if(r.width && r.height)entries.push({el,corner,width:r.width/scale,height:r.height/scale});
    }

@@ -5,9 +5,10 @@ import onlineQuality,{qualityLabel} from './online-quality.js';
 import cacheControl from './cache-control.js';
 import badgeLayout from './badge-layout.js';
 import flag from './storage-flag.js';
+import seriesStatus from './series-status.js';
 // Visible cards only, two requests at a time, bounded cache; use the user's parser.
 export default function quality(L,$){
-  const info=cardInfo(L),hydrating=new WeakSet(),badges=badgeLayout();
+  const info=cardInfo(L),hydrating=new WeakSet(),status=seriesStatus(L,node=>badges.schedule(node)),badges=badgeLayout(status);
   const cache=new Map(),pending=new Map(),queue=[],tracked=new Map(),visible=new Set(),deferred=new Set(),retries=new Set();let running=0,timer,saveTimer,generation=0;
   const storage='minimal_quality_v2',valid=entry=>entry && Date.now()-entry.time<(entry.q?21600000:120000);
   const saved=L.Storage && L.Storage.get(storage,[]);if(Array.isArray(saved))saved.slice(-400).forEach(pair=>{if(Array.isArray(pair) && typeof pair[0]==='string' && valid(pair[1]))cache.set(pair[0],pair[1]);});
@@ -85,7 +86,7 @@ export default function quality(L,$){
     const raw=item.data || {};info.remember(raw);
     const data=info.read(raw),render=item.render && item.render(true),node=render && (render.nodeType?render:render[0]);
     if(!node || !node.classList.contains('card') || (!data.title && !data.original_title && !data.name && !data.original_name))return;
-    track(item,node);
+    track(item,node);status.track(node,data);
     paintYear(node,data);
     const tv=data.media_type==='movie'?false:data.media_type==='tv' || !!data.original_name || !!data.first_air_date || node.classList.contains('card--tv');
     const anime=isAnime(data);

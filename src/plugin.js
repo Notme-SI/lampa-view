@@ -38,7 +38,7 @@ if (!ROOT.LampaView) {
     const boot=document.createElement('style');boot.id='lampa-minimal-boot';boot.textContent=BOOT;
     (document.head || document.documentElement).appendChild(boot);
   }
-  const P = ROOT.LampaView = {version: '0.4.74', identity: C.identity, ready: false, bridge: false};
+  const P = ROOT.LampaView = {version: '0.4.75', identity: C.identity, ready: false, bridge: false};
   P.matchCatalogue=matchCatalogue;
   let L, $, lastCard, initialized = false, playlist = [], activeVideo,loadLogo,artwork,back,holidays,pinnedMenu;
   const metadata = new Map();
@@ -122,7 +122,7 @@ if (!ROOT.LampaView) {
       return;
     }
     const titles = {movie:'Фильмы',tv:'Сериалы',cartoon:'Мультфильмы',anime:'Аниме',dorama:'Дорамы',tvshow:'ТВ-шоу'};
-    L.Activity.push({url:section, title:titles[section], component:'category', source:section === 'anime' ? 'cub' : 'tmdb', page:1});
+    L.Activity.push({url:section, title:titles[section], component:'category', source:section === 'anime' ? 'cub' : (L.Storage.get('source','tmdb') || 'tmdb'), page:1});
   }
   function shell() {
     if (!$('.pt-topnav').length) {
@@ -159,13 +159,13 @@ if (!ROOT.LampaView) {
     let dorama=document.querySelector('.menu__item[data-action="dorama"]');
     if(!dorama && (anime || cartoons || series)){
       dorama=document.createElement('li');dorama.className='menu__item selector';dorama.dataset.action='dorama';
-      dorama.innerHTML='<div class="menu__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="15" rx="2"/><path d="m8 2 4 3 4-3m-6 8 5 3-5 3Z"/></svg></div><div class="menu__text">Дорамы</div>';
+      dorama.innerHTML='<div class="menu__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-8-4.8-8-10a4.4 4.4 0 0 1 8-2.5A4.4 4.4 0 0 1 20 10c0 5.2-8 10-8 10Z"/><path d="m18 2 .6 1.8L20.5 4l-1.9.6L18 6.5l-.6-1.9L15.5 4l1.9-.2Z"/></svg></div><div class="menu__text">Дорамы</div>';
     }
     if(dorama && !dorama.dataset.minimalDorama){dorama.dataset.minimalDorama='1';pointer($(dorama).off('hover:enter').on('hover:enter.minimalDorama',event=>{event.stopImmediatePropagation();navigate('dorama');}));}
     let shows=document.querySelector('.menu__item[data-action="tvshow"]');
     if(!shows && series){
       shows=document.createElement('li');shows.className='menu__item selector';shows.dataset.action='tvshow';
-      shows.innerHTML='<div class="menu__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="m8 2 4 4 4-4m-6 12h4m-2-2v4"/></svg></div><div class="menu__text">ТВ-шоу</div>';
+      shows.innerHTML='<div class="menu__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="15" rx="2"/><path d="m8 2 4 3 4-3m-6 8 5 3-5 3Z"/></svg></div><div class="menu__text">ТВ-шоу</div>';
     }
     if(shows && !shows.dataset.minimalShows){shows.dataset.minimalShows='1';pointer($(shows).off('hover:enter').on('hover:enter.minimalShows',event=>{event.stopImmediatePropagation();navigate('tvshow');}));}
     // Move only out-of-order nodes: the native menu observer must settle.
@@ -314,11 +314,12 @@ if (!ROOT.LampaView) {
             back:()=>L.Controller.toggle('head')
           });L.Controller.toggle('lampa_view_hero');
         };
-        nativeLine.use({onlyUp:enterHero});
+        let firstFocus=true;
+        nativeLine.use({onlyUp:enterHero,onToggle:()=>{if(firstFocus){firstFocus=false;focus=0;setTimeout(()=>{if((L.Activity.active() || {}).activity===activity && !document.body.matches('.settings--open,.selectbox--open,.menu--open'))enterHero();},0);}}});
         if(activity.component && activity.component.use){
           activity.component.use({onStart:()=>{if(P.layout!=='mobile')setTimeout(()=>{if((L.Activity.active() || {}).activity===activity)enterHero();},0);}});
           const enabled=L.Controller.enabled && L.Controller.enabled();
-          if(enabled && enabled.name==='content' && P.layout!=='mobile')enterHero();
+          if(enabled && (enabled.name==='content' || enabled.controller && enabled.controller.link===nativeLine) && P.layout!=='mobile'){firstFocus=false;focus=0;enterHero();}
         }
       }
     },0);
