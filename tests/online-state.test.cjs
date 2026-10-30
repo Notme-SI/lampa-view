@@ -196,11 +196,11 @@ test('late background source replies are ignored after switching and root checks
  }finally{if(s)s.close();n.close();}
 });
 
-test('season progress uses the full season when watched episodes are absent from the current provider',async()=>{
+test('next episode starts at zero when completed episodes are absent from the current provider',async()=>{
  const n=await native({built:true}),{L}=n;let s;try{
  for(let episode=1;episode<=4;episode++)L.Timeline.update({hash:L.Utils.hash('1'+episode+'Original'),percent:100,time:1800,duration:1800});
  s=screen(n,{id:991,episodes:[5,6]});s.movie.number_of_seasons=1;s.movie.seasons=[{season_number:1,episode_count:6}];await wait(250);
- assert.equal(s.root.find('.nova-hero__season').length,0);assert.equal(s.root.find('.nova-hero__season-label').text(),'Сезон 1');assert.equal(s.root.find('.nova-hero__progress .time-line>div').css('width'),'67%');assert.deepEqual(n.errors,[]);
+ assert.equal(s.root.find('.nova-hero__season').length,0);assert.equal(s.root.find('.nova-hero__season-label').text(),'Сезон 1');assert.equal(s.root.find('.nova-hero__progress .time-line>div').css('width'),'0%');assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}
 });
 
