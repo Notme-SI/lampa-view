@@ -32,7 +32,7 @@ export default function fitRail(line,root,card,state,enabled){
  if(!target || available<=0)return;
  const scale=parseFloat(getComputedStyle(document.body).getPropertyValue('--pt-interface-scale'))||1;
  let count=Math.max(1,Math.min(24,Math.round((available+gap)/(target+gap))));
- if(scale>1){const normal=normalSlots(root,font,viewWidth,scale);if(normal>2)count=Math.min(count,normal-1);}
+ if(scale>1){const normal=normalSlots(root,font,viewWidth,scale);if(normal>2)count=Math.min(count,normal-(scale>1.05?2:1));}
  const width=Math.floor((available-(count-1)*gap)/count*64)/64;
  if(width<=0)return;
  root.style.setProperty('--minimal-poster-width',width+'px');

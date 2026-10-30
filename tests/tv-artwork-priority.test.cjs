@@ -17,7 +17,7 @@ test('TV starts visible posters immediately and a stalled first cover does not h
   assert.equal(loaders.length,2,'No initial 360ms delay and at most two requests');
   assert.match(cards[0].img.src,/^data:/);
   loaders[1].onload();
-  assert.match(cards[1].img.src,/w500\/visible1/,'A slow first image must not leave the entire row blank');
+  assert.match(cards[1].img.src,/w780\/visible1/,'A slow first image must not leave the entire row blank');
   await wait(30);assert.equal(loaders.length,3,'Next request starts without another 80ms gap');
   assert.deepEqual(n.errors,[]);
  }finally{cards.forEach(card=>card.destroy());n.close();}
@@ -41,21 +41,21 @@ test('TV banner loads one bounded backdrop before optional branding and warms on
   const cards=[1,2,3].map(id=>({id,title:'Film '+id,overview:'Summary',backdrop_path:'/banner'+id+'.jpg',source:'tmdb'}));
   L.Listener.send('line',{type:'append',params:{object:{component:'main',activity}},data:{results:cards}});
   await wait(30);
-  assert.equal(images.length,1);assert.match(images[0].url,/\/w1280\/banner1/);
+  assert.equal(images.length,1);assert.match(images[0].url,/\/original\/banner1/);
   assert.equal(requests.length,0,'Metadata must not contend with the selected image');
   await wait(1250);assert.equal(images.length,1,'Do not warm neighbours while the selected cover is stalled');
   images[0].onload();await wait(20);
-  assert.match(root.find('.pt-hero__image').attr('src'),/\/w1280\/banner1/);
+  assert.match(root.find('.pt-hero__image').attr('src'),/\/original\/banner1/);
   assert.equal(requests.length,1);
   requests[0].ok({images:{logos:[{file_path:'/title.png',iso_639_1:'ru'}]}});
-  assert.match(images[1].url,/\/w500\/title.png/);images[1].onload();await wait(1250);
+  assert.match(images[1].url,/\/original\/title.png/);images[1].onload();await wait(1250);
   const warmed=images.filter(image=>/banner[23]/.test(image.url));
-  assert.equal(warmed.length,1);assert.match(warmed[0].url,/\/w1280\/banner2/);
+  assert.equal(warmed.length,1);assert.match(warmed[0].url,/\/original\/banner2/);
   warmed[0].onload();await wait(10);
   const count=images.length;root.find('.pt-hero__dot').eq(1).trigger('hover:enter');
-  assert.match(root.find('.pt-hero__image').attr('src'),/\/w1280\/banner2/);
+  assert.match(root.find('.pt-hero__image').attr('src'),/\/original\/banner2/);
   assert.equal(images.length,count,'The next slide reuses the warmed final-size image');
-  assert.ok(images.every(image=>!image.url.includes('/original/')));
+  assert.equal(images.filter(image=>/banner[123]/.test(image.url)).length,2,'Only selected and one neighbour are fetched');
   assert.deepEqual(n.errors,[]);
  }finally{n.close();}
 });

@@ -1,6 +1,6 @@
 import posterPreview from './poster-cache.js';
-// Medium retains the previous High. High avoids oversized original posters;
-// Only a small (at most 12.5%) backdrop upscale is allowed on compact screens.
+// High keeps the same source detail on TVs and desktops. A TV WebView can
+// report a 960px viewport while displaying the artwork on a 4K panel.
 export function artworkQuality(L){
  const get=(key,def)=>L.Storage && L.Storage.get?L.Storage.get(key,def):def;
  const value=get('minimal_banner_quality','maximum');
@@ -10,13 +10,13 @@ export function artworkQuality(L){
 export function artworkSize(L,kind){
  if(artworkQuality(L)==='medium')return kind==='backdrop'?'w1280':'w500';
  if(kind!=='backdrop')return 'w780';
- // TV banners occupy part of the screen. An original can decode to tens of
- // megabytes on a 1080p TV, competing with every visible poster and video.
- if(document.body.classList.contains('pt-tv'))return 'w1280';
+ // CSS pixels alone underestimate the TV panel. Keep originals behind the
+ // explicit High preference; image queues and decoded caches remain bounded.
+ if(document.body.classList.contains('pt-tv'))return 'original';
  const width=(window.innerWidth || 1920)*Math.min(2,window.devicePixelRatio || 1);
  return width>1440?'original':'w1280';
 }
-export function logoSize(){return document.body.classList.contains('pt-tv')?'w500':'original';}
+export function logoSize(){return 'original';}
 export default function installArtwork(L,enabled){
  const quality=artworkQuality(L);
  if(L.Storage.set){L.Storage.set('minimal_banner_quality',quality);L.Storage.set('minimal_artwork_quality_revision',2);}

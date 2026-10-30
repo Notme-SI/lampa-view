@@ -25,6 +25,8 @@ export default function posterCache(L,enabled,highQuality){
  // Measure only after navigation has settled. Keep at least two source
  // pixels per displayed pixel for cards; large cards retain their prior size.
  function fit(image,url){
+  // High on a TV must not be downgraded from its CSS viewport dimensions.
+  if(tv())return url;
   const card=image.closest('.card'),view=card && card.querySelector('.card__view');
   const box=(view || image).getBoundingClientRect();
   const width=(box.width || card && card.getBoundingClientRect().width || 0)*(window.devicePixelRatio || 1);
@@ -39,7 +41,7 @@ export default function posterCache(L,enabled,highQuality){
  function trim(){
   let bytes=0;cache.forEach(entry=>bytes+=entry.bytes || 0);
   for(const [url,entry] of cache){
-   if(cache.size<=40 && bytes<=(tv()?32:64)*1048576)break;
+   if(cache.size<=40 && bytes<=64*1048576)break;
    if(entry.done){cache.delete(url);bytes-=entry.bytes || 0;}
   }
  }

@@ -93,8 +93,11 @@ export default function catalogue(L,shiki,object,hidden,ok){
  const kind=object.url || object.cat;
  const source=object.source || L.Storage.get('source','cub'),cub=L.Api.sources && L.Api.sources.cub && L.Api.sources.cub.list,plan=cataloguePlan(kind,animeMode(L,object)).map(job=>['dorama','tvshow'].includes(kind)?cubScoped(job,kind):job),rows=new Array(plan.length);let cursor=0,running=0,done=0,ended=false,failures=0;
  const status=object.minimal_catalogue_status={state:'loading'};
- const useCub=job=>!!(cub && job.cub && (source==='cub' || kind==='cartoon'));
- const rowFor=job=>({title:useCub(job)?job.title:job.tmdb_title || job.title,url:job.shiki || (useCub(job)?job.cub:job.tmdb || job.cub),source:job.shiki?'minimal_shiki':useCub(job) || !job.tmdb?'cub':'tmdb',...(!useCub(job) && job.tmdb && job.key?{minimal_row_id:'minimal:tmdb:'+kind+':'+job.key,minimal_row_aliases:[job.tmdb,...(job.minimal_row_aliases || [])]}:{}),results:[]});
+ // CUB does not implement the country/language filters needed by these two
+ // sections. Use real TMDB Discover feeds, not a filtered global CUB top-20.
+ const scoped=['dorama','tvshow'].includes(kind);
+ const useCub=job=>!!(!scoped && cub && job.cub && (source==='cub' || kind==='cartoon'));
+ const rowFor=job=>({title:useCub(job)?job.title:job.tmdb_title || job.title,url:job.shiki || (useCub(job)?job.cub:job.tmdb || job.cub),source:job.shiki?'minimal_shiki':useCub(job) || !job.tmdb?'cub':'tmdb',...(!useCub(job) && job.tmdb && job.key?{minimal_row_id:'minimal:tmdb:'+kind+':'+job.key,minimal_row_aliases:[job.tmdb,...(scoped && job.cub?[job.cub]:[]),...(job.minimal_row_aliases || [])]}:{}),results:[]});
  function complete(){if(done===plan.length && !ended){ended=true;const result=uniquePreviews(rows.filter(Boolean));status.state=result.some(row=>row.results.length)?'ready':failures?'error':result.length===plan.length?'hidden':'empty';ok(result);}}
  function pump(){
   if(ended)return;if(object.activity && object.activity.component && object.activity.component.destroyed){ended=true;return;}if(done===plan.length){complete();return;}
@@ -122,7 +125,8 @@ export function uniquePreviews(rows){
    const type=card.media_type || (/^(?:discover\/)?movie(?:\/|\?)/.test(row.url)?'movie':/^(?:discover\/)?tv(?:\/|\?)/.test(row.url)?'tv':card.name?'tv':'movie');
    const id=Number(card.id);if(!Number.isSafeInteger(id) || id<=0)return true;
    const key=type+':'+id,duplicate=seen.has(key);seen.add(key);
-   return row.source!=='tmdb' || !duplicate;
+   const scoped=/^discover\/tv\?/.test(row.url) && /with_origin_country=|with_original_language=ru/.test(row.url);
+   return row.source!=='tmdb' || scoped || !duplicate;
   });
   return {...row,results};
  }).filter(row=>row.minimal_hidden || row.results.length);

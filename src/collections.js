@@ -58,7 +58,16 @@ export default function collections(L,shiki){
   if(!['movie','tv','cartoon','anime','dorama','tvshow'].includes(kind))return category.apply(this,arguments);
   if((object.source || L.Storage.get('source','cub'))==='trakt' && !(kind==='anime' && animeMode(L,object)==='shikimori')){
    const status=object.minimal_catalogue_status={state:'loading'};
-   return category.call(this,{...object,source:'trakt'},rows=>{status.state=rows.some(row=>row.results && row.results.length)?'ready':'empty';remember(ctx,rows);ok(arrange(rows,prefs(ctx)));},error=>{status.state='error';if(fail)fail(error);});
+   const special=['dorama','tvshow'].includes(kind);
+   function accept(rows){status.state=rows.some(row=>row.results && row.results.length)?'ready':'empty';remember(ctx,rows);ok(arrange(rows,prefs(ctx)));}
+   function supplement(rows){
+    const usable=rows.filter(row=>row.results && row.results.length);
+    if(!special || usable.length>=3 && usable.reduce((n,row)=>n+row.results.length,0)>=20)return accept(rows);
+    // Missing regional coverage is supplemented explicitly by TMDB feeds;
+    // their URLs/source remain TMDB, including More and subsequent pages.
+    catalogue(L,shiki,{...object,source:'tmdb'},prefs(ctx).hidden || [],extra=>accept(usable.concat(extra.filter(row=>!row.minimal_hidden).map(row=>({...row,title:row.title+' · TMDB'})))));
+   }
+   return category.call(this,{...object,source:'trakt'},supplement,error=>{if(special)return supplement([]);status.state='error';if(fail)fail(error);});
   }
   catalogue(L,shiki,object,prefs(ctx).hidden || [],rows=>{remember(ctx,rows);ok(arrange(rows.filter(row=>!row.minimal_hidden),prefs(ctx)));});
   // Only the selected catalogue runs, with a fixed plan and no next row loader.

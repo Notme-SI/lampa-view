@@ -42,3 +42,8 @@ jobs:
       - run: python3 server/test-online.py
       - name: Check published files match source
         run: git diff --exit-code -- lampa.js dist docs
+
+      - name: Check header focus
+        env:
+          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
+        run: node tests/browser/header-focus.cjs

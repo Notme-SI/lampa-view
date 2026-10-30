@@ -38,7 +38,7 @@ if (!ROOT.LampaView) {
     const boot=document.createElement('style');boot.id='lampa-minimal-boot';boot.textContent=BOOT;
     (document.head || document.documentElement).appendChild(boot);
   }
-  const P = ROOT.LampaView = {version: '0.4.75', identity: C.identity, ready: false, bridge: false};
+  const P = ROOT.LampaView = {version: '0.4.76', identity: C.identity, ready: false, bridge: false};
   P.matchCatalogue=matchCatalogue;
   let L, $, lastCard, initialized = false, playlist = [], activeVideo,loadLogo,artwork,back,holidays,pinnedMenu;
   const metadata = new Map();
@@ -260,11 +260,11 @@ if (!ROOT.LampaView) {
         const useOriginal=size==='original',ready=assets.ready(index,size);let originalShown=!!ready;
         if(ready){image.attr('src',ready);branding();}
         else{
-          assets.cover(index,useOriginal?'w780':size,url=>{
+          assets.cover(index,useOriginal && !tv?'w780':size,url=>{
             if(token===logoToken && url && !originalShown)image.attr('src',url);
             if(tv)branding();
           });
-          if(useOriginal)upgradeTimer=setTimeout(()=>assets.cover(index,'original',url=>{if(token===logoToken && url){originalShown=true;image.attr('src',url);}}),300);
+          if(useOriginal && !tv)upgradeTimer=setTimeout(()=>assets.cover(index,'original',url=>{if(token===logoToken && url){originalShown=true;image.attr('src',url);}}),300);
         }
         assets.warm(index);
         dots.children().each(function(i){$(this).toggleClass('active',i===index).attr('aria-pressed',String(i===index));});

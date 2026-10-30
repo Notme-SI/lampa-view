@@ -30,7 +30,7 @@ export default function badgeLayout(status){
    const view=node.querySelector('.card__view');if(!view)continue;const rect=view.getBoundingClientRect();
    if(!rect.width || !rect.height || rect.bottom<0 || rect.top>window.innerHeight || rect.right<0 || rect.left>window.innerWidth)continue;
    const width=view.clientWidth || rect.width,height=view.clientHeight || rect.height,scale=rect.width/width || 1,entries=[];
-   for(const [selector,corner] of [['.card__vote','br'],['.pt-quality,.card__quality','tl'],['.pt-kind','tr'],['.card__marker','bl'],['.card__icons','tl'],['.card__new-episode','bl'],['.pt-series-status','bl']])for(const el of view.querySelectorAll(selector)){
+   for(const [selector,corner] of [['.card__vote','br'],['.pt-quality,.card__quality','tl'],['.pt-kind','tr'],['.card__marker','bl'],['.card__icons','tl'],['.card__new-episode','bl'],['.pt-series-status','tr']])for(const el of view.querySelectorAll(selector)){
     if(el.hidden || el.classList.contains('hide') || getComputedStyle(el).display==='none')continue;
     const r=el.getBoundingClientRect();if(r.width && r.height)entries.push({el,corner,width:r.width/scale,height:r.height/scale});
    }

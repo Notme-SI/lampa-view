@@ -565,13 +565,10 @@ body.lampa_view .card .card-watched__item {margin-top:.35em}
 body.lampa_view .card .card-watched__item:first-child {margin-top:0}
 body.lampa_view .card .card-watched .time-line {margin-top:.35em}
 body.lampa_view .card .card-watched .time-line>div {height:2px}
-body.lampa_view .pt-has-series-status .card-watched {display:none!important}
-body.lampa_view .pt-series-status {position:absolute;left:.6em;bottom:.6em;right:auto;top:auto;z-index:4;width:max-content;max-width:calc(100% - 1.2em);font-size:.65em;line-height:1.35;font-weight:500;padding:.35em .5em;border:1px solid #ffffff25;border-radius:.35em;background:#000000dc;color:#eeeff2;pointer-events:none;box-sizing:border-box}
-body.lampa_view .pt-series-status>span {display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-body.lampa_view .pt-series-status>span[hidden] {display:none}
-body.lampa_view .pt-series-status__released {color:#c5cbd1;font-size:.95em;margin-top:.25em}
-body.lampa_view .pt-series-status .time-line {display:block!important;height:2px;margin:.35em 0 0;background:#ffffff30}
-body.lampa_view .pt-series-status .time-line>div {height:100%;background:var(--pt-accent)}
+/* Release metadata stacks below the Series badge, never inside watch history. */
+body.lampa_view .pt-series-status {position:absolute;right:.6em;top:2.6em;z-index:4;display:flex;flex-direction:column;align-items:flex-end;gap:3px;width:max-content;max-width:calc(100% - 8px);font-size:.6em;line-height:1;pointer-events:none;box-sizing:border-box}
+body.lampa_view .pt-series-status>span {display:block;white-space:nowrap;padding:.35em .5em;border:1px solid #ffffff25;border-radius:.35em;background:#000000dc;color:#d4e2e6;box-sizing:border-box}
+
 /* Badges keep their own corners and wrap to another line when space is short. */
 body.lampa_view .card__view .pt-quality,body.lampa_view .card__view .pt-kind {max-width:calc(100% - 8px);box-sizing:border-box;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 body.lampa_view .card__view .card__icons {right:auto;width:auto;max-width:calc(100% - 8px)}
@@ -850,7 +847,7 @@ body.lampa_view.pt-tv .nova-plus-root .nova-card.hover:not(.focus) .nova-card__t
 /* Match the proportions of the Windows 2560px reference on TV WebViews,
    including 960/1280px viewports scaled by Android to the panel resolution.
    A 14px minimum here made TV Small larger than Windows Bigger. */
-body.lampa_view.pt-tv {font-size:calc(.703125vw * var(--pt-interface-scale,1))!important;--pt-banner-unit:calc(.703125vw * 1.05)}
+body.lampa_view.pt-tv {font-size:calc(.703125vw * var(--pt-interface-scale,1))!important;--pt-banner-unit:calc(.703125vw * var(--pt-interface-max-scale,1.12))}
 body.lampa_view.pt-tv .pt-hero {max-width:90vw;margin:0 auto 2em}
 body.lampa_view.pt-tv .pt-hero__body {left:3em;bottom:7em;max-width:31em;padding-right:1em}
 body.lampa_view.pt-tv .pt-hero__title {font-size:2.55em;max-width:15em;margin-bottom:.65em}
@@ -862,7 +859,7 @@ body.lampa_view.pt-tv .pt-hero__dots {left:45%;bottom:1.5em}
 body.lampa_view.pt-tv .items-line {margin-bottom:.8em;padding-bottom:.7em}
 body.lampa_view.pt-tv .items-line .card:not(.card--wide):not(.card--collection) {width:clamp(8.4em,calc((90vw - 10em / var(--pt-interface-scale,1)) / 10 * var(--pt-interface-scale,1)),11.1em)!important}
 body.lampa_view.pt-tv .items-line>.items-line__head {padding-left:1.1em}
-body.lampa_view.pt-tv .card__title {font-size:.79em}
+body.lampa_view.pt-tv .card__title {font-size:.79em;max-height:4.2em;-webkit-line-clamp:3;line-clamp:3;overflow-wrap:break-word}
 body.lampa_view.pt-tv .mapping--grid>.card:not(.card--wide):not(.card--collection),body.lampa_view.pt-tv .category-full>.card:not(.card--wide):not(.card--collection) {width:calc(10% * var(--pt-interface-scale,1))!important}
 
 /* The same native menu becomes a dock only when the native preference is on. */
@@ -878,3 +875,16 @@ body.lampa_view.pt-mobile.pt-menu-pinned {--pt-menu-width:min(14em,38vw)}
 body.lampa_view.pt-mobile.pt-menu-pinned .wrap__left {bottom:5.5em!important;height:calc(100% - 9.1em)!important}
 
 body.lampa_view .card:not(.focus):not(.hover) .pt-series-status {display:none}
+
+/* Header controls keep their boxes when focused. Draw outside the avatar so
+   its image cannot cover the remote/keyboard focus indicator. */
+body.lampa_view .head__body {box-sizing:border-box;min-width:0}
+body.lampa_view .head__actions {flex-shrink:0}
+body.lampa_view .head__menu-icon,body.lampa_view .head__backward {position:relative;align-self:center;top:auto;left:auto;transform:none!important;transition:none!important}
+body.lampa_view.pt-tv .head__menu-icon {order:-4}
+body.lampa_view .head__action {outline:2px solid transparent;outline-offset:3px;transition:none!important;transform:none!important}
+body.lampa_view .head__action.focus,body.lampa_view .head__action:focus-visible,
+body.lampa_view:not(.pt-tv) .head__action.hover,body.lampa_view:not(.pt-tv) .head__action:hover {outline-color:var(--pt-accent);background:var(--pt-high);color:var(--pt-text);box-shadow:0 0 0 1px #000}
+body.lampa_view .head__action.open--search.focus:after,body.lampa_view .head__action.open--search:focus-visible:after {color:var(--pt-text)}
+body.lampa_view .menu__item {min-width:0;box-sizing:border-box}
+body.lampa_view .menu__text {flex:1;min-width:0;white-space:normal!important;overflow-wrap:break-word;line-height:1.35;max-height:none;text-overflow:clip}

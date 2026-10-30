@@ -1,0 +1,25 @@
+const assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWRIGHT_MODULE),{setup}=require('../fixtures/native-browser.cjs');
+(async()=>{const browser=await chromium.launch({headless:true});try{
+ for(const mode of ['desktop','tv']){
+  const r=await setup(browser,{viewport:{width:1280,height:720},mode},{beforePlugin:page=>page.evaluate(()=>Lampa.Search.init())});
+  const result=await r.page.evaluate(()=>{
+   const L=Lampa;L.DeviceInput.init();L.Controller.observe();Navigator.follow('focus',e=>L.Controller.focus(e.elem));
+   const head=document.querySelector('.head'),menu=head.querySelector('.head__menu-icon'),back=head.querySelector('.head__backward'),body=document.body;
+   body.classList.add('pt-home');back.classList.add('pt-back-visible');
+   const before=menu.getBoundingClientRect().left;body.classList.remove('pt-home');const after=menu.getBoundingClientRect().left;
+   // This isolated runtime has no signed-in account; add the native avatar shell.
+   if(!head.querySelector('.open--profile')){const profile=document.createElement('div');profile.className='head__action selector open--profile';profile.innerHTML='<img src="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2740%27 height=%2740%27/%3E">';head.querySelector('.head__actions').appendChild(profile);}
+   const controls=[];
+   for(const selector of ['.open--search','.open--profile']){
+    const node=head.querySelector(selector);L.Controller.collectionSet(head);L.Controller.collectionFocus(node,head);
+    const rect=node.getBoundingClientRect(),style=getComputedStyle(node);
+    controls.push({selector,focused:node.classList.contains('focus'),color:style.outlineColor,width:parseFloat(style.outlineWidth),inside:rect.right+5<=innerWidth && rect.top>=5 && rect.bottom+5<=head.getBoundingClientRect().bottom});
+   }
+   const text=document.querySelector('.menu__text');text.textContent='Длинное название раздела для проверки переноса';const style=getComputedStyle(text);
+   return {before,after,controls,wrap:style.whiteSpace,mode:body.classList.contains('pt-tv')?'tv':'desktop'};
+  });
+  if(mode==='tv')assert.equal(result.before,result.after,'Menu anchor must not move when Back appears');
+  assert.equal(result.wrap,'normal');for(const control of result.controls){assert.equal(control.focused,true);assert.equal(control.width,2);assert.equal(control.color,'rgb(173, 217, 229)');assert.equal(control.inside,true);}
+  assert.deepEqual(r.errors,[]);console.log(mode,result);await r.context.close();
+ }
+}finally{await browser.close();}})().catch(error=>{console.error(error);process.exitCode=1;});

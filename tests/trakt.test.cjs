@@ -91,3 +91,18 @@ test('Trakt dorama and Russian TV shows use their own filters and preserve them 
   }
  }finally{r.close();}
 });
+
+
+test('enabled Trakt participates in native search with independent movie/show results, safe queries and More pagination',()=>{
+ const r=setup();try{
+  assert.equal(r.api.discovery,undefined);r.storage.minimal_trakt_enabled=true;r.storage.minimal_trakt_client_id='own-id';r.settings[0].onChange();
+  const provider=r.api.discovery();assert.equal(provider.title,'Trakt');let result;
+  provider.search({query:encodeURIComponent('Матрица & фильм')},rows=>result=rows);assert.equal(r.sent.length,2);
+  assert.equal(new URL(r.sent[0].url).searchParams.get('query'),'Матрица & фильм');
+  r.sent[0].reply([{movie:movie(1,'Movie')}]);r.sent[1].reply([{show:movie(2,'Series')}]);
+  assert.deepEqual(Array.from(result,row=>row.title),['Фильмы','Сериалы']);assert.equal(result[0].results[0].media_type,'movie');assert.equal(result[1].results[0].media_type,'tv');
+  let next;r.api.list({url:result[1].url,page:2},json=>next=json,assert.fail);const req=r.sent.at(-1);assert.equal(new URL(req.url).pathname,'/search/show');assert.equal(new URL(req.url).searchParams.get('page'),'2');req.reply([{show:movie(3,'Next')}]);assert.equal(next.page,2);assert.equal(next.results[0].id,3);
+  let stale=0;provider.search({query:'Cancelled'},()=>stale++);provider.onCancel();assert.equal(stale,0);
+  r.storage.minimal_trakt_enabled=false;r.settings[0].onChange();assert.equal(r.api.discovery,undefined);
+ }finally{r.close();}
+});

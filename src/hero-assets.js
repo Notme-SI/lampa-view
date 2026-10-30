@@ -1,4 +1,4 @@
-import {logoSize} from './artwork.js';
+import {artworkSize,logoSize} from './artwork.js';
 // Keep a bounded working set across carousel mounts. Successful images survive
 // navigation; pending requests and callbacks still belong to their screen.
 const pools=new WeakMap();
@@ -15,7 +15,7 @@ export default function heroAssets(L,cards,loadLogo){
  }
  function trim(){
   let bytes=0;images.forEach(e=>bytes+=e.bytes || 0);
-  const budget=(document.body.classList.contains('pt-tv')?24:48)*1048576;
+  const budget=(document.body.classList.contains('pt-tv')?64:48)*1048576;
   let originals=[...images.values()].filter(e=>e.original && e.done).length;
   for(const [url,entry] of images){
    const crowded=images.size>24 || bytes>budget;
@@ -89,8 +89,8 @@ export default function heroAssets(L,cards,loadLogo){
    warmWanted=false;
    const tv=document.body.classList.contains('pt-tv');
    [...new Set(tv?[wrap(current+1)]:[wrap(current+1),wrap(current-1)])].filter(n=>n!==current).forEach(n=>{
-    // Warm the size TV will actually display, keeping only one neighbour.
-    if(tv)cover(n,'w1280',url=>{if(url && !paused())logo(n,()=>{});},true);
+    // Warm only one TV neighbour at the selected quality, reusing the final image.
+    if(tv)cover(n,artworkSize(L,'backdrop'),url=>{if(url && !paused())logo(n,()=>{});},true);
     else{cover(n,'w780',()=>{},true);logo(n,()=>{});}
    });
   },delay);

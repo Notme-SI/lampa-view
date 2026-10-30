@@ -8,7 +8,7 @@ const assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWR
   if(hero){
    await r.page.evaluate(()=>{Lampa.TimeTable.get=()=>[{season_number:2,episode_number:8,air_date:'2020-01-01'}];Lampa.Api.sources.tmdb.get=(path,p,ok)=>ok({id:500,seasons:[{season_number:2,episode_count:10}],last_episode_to_air:{season_number:2,episode_number:8,air_date:'2020-01-01'}});Lampa.Storage.set('online_watched_last',{[Lampa.Utils.hash('Series 0')]:{season:2,episode:6}});Lampa.Controller.enabled().controller.down();Lampa.Controller.enabled().controller.down();});
    await r.page.waitForTimeout(350);const status=await r.page.locator('.activity--active .card.focus .pt-series-status').evaluate(n=>{const r=n.getBoundingClientRect(),p=n.closest('.card__view').getBoundingClientRect();return {text:n.textContent,font:parseFloat(getComputedStyle(n).fontSize),transform:getComputedStyle(n).transform,inside:r.left>=p.left-1 && r.right<=p.right+1 && r.top>=p.top-1 && r.bottom<=p.bottom+1};});
-   assert.match(status.text,/Сезон 2 · Серия 6/);assert.match(status.text,/Вышло 8/);assert.equal(status.transform,'none');assert.equal(status.inside,true);console.log(mode,status);
+   assert.match(status.text,/Сезон 2/);assert.match(status.text,/8 из 10/);assert.equal(status.transform,'none');assert.equal(status.inside,true);console.log(mode,status);
    if(process.env.LAMPA_QA_OUTPUT && mode==='desktop')await r.page.screenshot({path:require('node:path').join(process.env.LAMPA_QA_OUTPUT,'lampa-series-status.png')});
   }
   assert.deepEqual(r.errors,[]);await r.context.close();

@@ -40,7 +40,7 @@ export function traktCards(json,type){
 }
 export default function installTrakt(L){
  if(!L.Api || !L.Api.sources || L.Api.sources.trakt)return;
- const cache=new Map(),pending=new Map(),queue=[],live=new Set(),metadata=traktMetadata(L);let running=0,generation=0,lastKey='';
+ const cache=new Map(),pending=new Map(),queue=[],live=new Set(),metadata=traktMetadata(L);let running=0,generation=0,lastKey='',searchRevision=0;
  const client=()=>String(L.Storage.get('minimal_trakt_client_id','') || '').trim();
  const enabled=()=>flag(L,'minimal_trakt_enabled',false);
  const error=(fail,message)=>{if(fail)fail({status_message:message});};
@@ -56,6 +56,7 @@ export default function installTrakt(L){
     }
     pump();
    }
+   xhr.minimalTraktPath=job.path;
    xhr.open('GET',BASE+job.path,true);xhr.timeout=10000;
    xhr.setRequestHeader('trakt-api-key',job.client);xhr.setRequestHeader('trakt-api-version','2');xhr.setRequestHeader('Accept','application/json');
    xhr.onload=()=>{
@@ -83,7 +84,9 @@ export default function installTrakt(L){
    return;
   }
   // Only our fixed public list routes can receive the API key.
-  const path=String(params.url || 'movies/trending'),match=path.match(/^(movies|shows)\/(trending|popular|watched\/weekly|collected\/monthly|anticipated)(\?.*)?$/);
+  const path=String(params.url || 'movies/trending'),search=path.match(/^search\/(movie|show)\?query=([^&]+)$/);
+  if(search)return searchPage({type:search[1],query:decodeQuery(search[2]),page:params.page},ok,fail);
+  const match=path.match(/^(movies|shows)\/(trending|popular|watched\/weekly|collected\/monthly|anticipated)(\?.*)?$/);
   const allowed=new Set(['','?genres=animation','?genres=animation&languages=ja',...['dorama','tvshow'].flatMap(kind=>traktPlan(kind).map(row=>row.url.slice(row.url.indexOf('?'))))]);
   if(!match || !allowed.has(match[3] || ''))return error(fail,'Неизвестная подборка Trakt');
   const page=Math.max(1,Math.min(1000,Number(params.page) || 1));
@@ -101,6 +104,36 @@ export default function installTrakt(L){
   if(pending.has(key)){pending.get(key).callbacks.push([done,fail]);return;}
   const job={key,path:route,client:id,generation,callbacks:[[done,fail]]};pending.set(key,job);queue.push(job);pump();
  }
+ function cancelSearch(){
+  searchRevision++;
+  for(let i=queue.length-1;i>=0;i--)if(queue[i].path.startsWith('search/')){pending.delete(queue[i].key);queue.splice(i,1);}
+  for(const [key,job] of pending)if(job.path.startsWith('search/'))job.callbacks=[];
+  for(const xhr of Array.from(live))if((xhr.minimalTraktPath || '').startsWith('search/'))xhr.abort();
+ }
+ function decodeQuery(value){try{return decodeURIComponent(String(value || ''));}catch(e){return String(value || '');}}
+ function searchPage(params,ok,fail){
+  if(!enabled() || !client())return error(fail,'Включите Trakt и добавьте Client ID');
+  const id=client();if(id!==lastKey){clear();cache.clear();lastKey=id;}
+  const type=params.type==='show'?'show':'movie',query=String(params.query || '').trim().slice(0,200),page=Math.max(1,Math.min(1000,Number(params.page)||1));
+  if(!query)return ok({results:[],page,total_pages:1});
+  const path='search/'+type+'?query='+encodeURIComponent(query)+'&extended=full&limit=20&page='+page,key=path,own=generation;
+  const done=json=>metadata.enrich(traktCards(json.rows,type==='show'?'tv':'movie'),results=>{if(own===generation)ok({results,page,total_pages:json.pages});});
+  const saved=cache.get(key);if(saved && Date.now()-saved.at<600000)return done(saved.value);
+  if(pending.has(key)){pending.get(key).callbacks.push([done,fail]);return;}
+  const job={key,path,client:id,generation,callbacks:[[done,fail]]};pending.set(key,job);queue.push(job);pump();
+ }
+ function discovery(){
+  return {title:'Trakt',params:{save:true},onCancel:cancelSearch,
+   search(params,ok){
+    cancelSearch();const token=searchRevision,query=decodeQuery(params.query),rows=new Array(2);let left=2;
+    ['movie','show'].forEach((type,index)=>{
+     const finish=json=>{rows[index]={title:index?'Сериалы':'Фильмы',type,...json,source:'trakt',url:'search/'+type+'?query='+encodeURIComponent(query)};if(!--left && token===searchRevision)ok(rows);};
+     searchPage({type,query,page:1},finish,()=>finish({results:[],page:1,total_pages:1}));
+    });
+   },
+   onMore(params,close){close();L.Activity.push({component:'category_full',source:'trakt',url:'search/'+(params.data.type==='show'?'show':'movie')+'?query='+encodeURIComponent(params.query),title:'Trakt · '+params.query,page:2});}
+  };
+ }
  function rows(object,ok,fail){
   const plan=traktPlan(object.url || object.cat),output=new Array(plan.length);let left=plan.length,failures=0,reason;
   function finish(){if(--left)return;const result=output.filter(Boolean);if(!result.length && failures)return error(fail,reason || 'Trakt недоступен');ok(result);}
@@ -113,7 +146,7 @@ export default function installTrakt(L){
  function sources(){
   if(!L.Params || !L.Params.select)return;
   const options={...(L.Params.values.source || {tmdb:'TMDB',cub:'CUB'})};delete options.trakt;
-  if(enabled() && client())options.trakt='Trakt';
+  if(enabled() && client()){options.trakt='Trakt';adapter.discovery=discovery;}else delete adapter.discovery;
   const selected=L.Storage.get('source','tmdb');
   if(selected!=='trakt' && L.Storage.get('minimal_trakt_previous_source','')!==selected)L.Storage.set('minimal_trakt_previous_source',selected);
   if(selected==='trakt' && !options.trakt){const previous=L.Storage.get('minimal_trakt_previous_source','tmdb');L.Storage.set('source',previous!=='trakt' && options[previous]?previous:'tmdb');}

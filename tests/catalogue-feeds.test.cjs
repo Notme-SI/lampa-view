@@ -49,9 +49,10 @@ test('dorama and TV show feeds start with recent airings and keep stable identit
 });
 
 
-test('CUB TV-show scope retains native ranking and pagination while removing foreign and animated entries',()=>{
- const calls=[],russian={id:1,name:'Реалити',original_language:'ru',genre_ids:[10764]},foreign={id:2,name:'Foreign',original_language:'en',genre_ids:[10764]},animation={id:3,name:'Animation',original_language:'ru',genre_ids:[16]};
- const L={Storage:{get:(k,d)=>d},Api:{sources:{cub:{list(p,ok){calls.push(p);ok({results:[russian,foreign,animation],page:1,total_pages:12});}}}}};let output;
- catalogue(L,{}, {url:'tvshow',source:'cub'},[],rows=>output=rows);assert.equal(calls.length,8);assert.ok(output.every(row=>row.source==='cub' && row.total_pages===12));assert.deepEqual(output[0].results.map(c=>c.id),[1]);assert.equal(output[0].results[0].source,'cub');
- for(const call of calls){const q=new URLSearchParams(call.url.slice(1));assert.equal(q.get('cat'),'tv');assert.equal(q.get('minimal_kind'),'tvshow');assert.equal(q.get('minimal_language'),'ru');}
+test('CUB regional sections request actual TMDB Discover feeds, preserving full-list routes and complete previews',()=>{
+ const calls=[],cards=Array.from({length:20},(_,i)=>({id:i+1,name:'Программа '+i,original_language:'ru',genre_ids:[10764]}));
+ const L={Storage:{get:(k,d)=>d},Api:{sources:{cub:{list(){assert.fail('Global CUB list cannot implement regional discovery');}},tmdb:{get(url,p,ok){calls.push(url);ok({results:cards,page:1,total_pages:12});}}}}};
+ for(const kind of ['tvshow','dorama']){let output;catalogue(L,{}, {url:kind,source:'cub'},[],rows=>output=rows);
+ assert.equal(output.length,kind==='tvshow'?8:11);assert.ok(output.every(row=>row.source==='tmdb' && row.total_pages===12 && row.results.length===20));assert.ok(output.every(row=>row.url.startsWith('discover/tv?')));}
+ assert.equal(calls.length,19);
 });
