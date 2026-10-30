@@ -38,7 +38,7 @@ if (!ROOT.LampaView) {
     const boot=document.createElement('style');boot.id='lampa-minimal-boot';boot.textContent=BOOT;
     (document.head || document.documentElement).appendChild(boot);
   }
-  const P = ROOT.LampaView = {version: '0.4.76', identity: C.identity, ready: false, bridge: false};
+  const P = ROOT.LampaView = {version: '0.4.77', identity: C.identity, ready: false, bridge: false};
   P.matchCatalogue=matchCatalogue;
   let L, $, lastCard, initialized = false, playlist = [], activeVideo,loadLogo,artwork,back,holidays,pinnedMenu;
   const metadata = new Map();
@@ -273,7 +273,7 @@ if (!ROOT.LampaView) {
       const qualityChanged=()=>show(index);
       document.addEventListener('minimal:artwork-quality',qualityChanged);
       if(activity.component && activity.component.use)activity.component.use({onDestroy:()=>document.removeEventListener('minimal:artwork-quality',qualityChanged)});
-      cards.forEach((card,i)=>$('<div class="pt-hero__dot selector" role="button" tabindex="0">').attr({'aria-label':'Обложка '+(i+1),title:card.title || card.name}).on('hover:enter',()=>show(i)).appendTo(dots));
+      cards.forEach((card,i)=>$('<div class="pt-hero__dot selector" role="button" tabindex="0">').attr({'aria-label':'Обложка '+(i+1)+': '+(card.title || card.name || ''),title:document.body.classList.contains('pt-tv')?null:card.title || card.name}).on('hover:enter',()=>show(i)).appendTo(dots));
       details.on('hover:enter',()=>openCard(item));
       const controls=element.find('.selector');
       pointer(controls);

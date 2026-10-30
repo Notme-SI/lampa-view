@@ -15,10 +15,16 @@ const assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWR
     const rect=node.getBoundingClientRect(),style=getComputedStyle(node);
     controls.push({selector,focused:node.classList.contains('focus'),color:style.outlineColor,width:parseFloat(style.outlineWidth),inside:rect.right+5<=innerWidth && rect.top>=5 && rect.bottom+5<=head.getBoundingClientRect().bottom});
    }
+   const sample=document.createElement('button');sample.className='pt-hero__action selector';sample.textContent='Подробнее';head.after(sample);
+   const primary=[];for(const focused of [false,true,false]){sample.classList.toggle('focus',focused);const r=sample.getBoundingClientRect(),s=getComputedStyle(sample);primary.push({width:r.width,height:r.height,bg:s.backgroundColor,border:s.borderColor,shadow:s.boxShadow});}sample.remove();
    const text=document.querySelector('.menu__text');text.textContent='Длинное название раздела для проверки переноса';const style=getComputedStyle(text);
-   return {before,after,controls,wrap:style.whiteSpace,mode:body.classList.contains('pt-tv')?'tv':'desktop'};
+   return {before,after,controls,primary,wrap:style.whiteSpace,mode:body.classList.contains('pt-tv')?'tv':'desktop'};
   });
-  if(mode==='tv')assert.equal(result.before,result.after,'Menu anchor must not move when Back appears');
+  if(mode==='tv'){
+   assert.equal(result.before,result.after,'Menu anchor must not move when Back appears');
+   for(const p of result.primary){assert.equal(p.bg,'rgb(173, 217, 229)');assert.equal(p.shadow,'none');assert.equal(p.width,result.primary[0].width);assert.equal(p.height,result.primary[0].height);}
+   assert.equal(result.primary[1].border,'rgb(255, 255, 255)');assert.equal(result.primary[2].border,'rgba(0, 0, 0, 0)');
+  }
   assert.equal(result.wrap,'normal');for(const control of result.controls){assert.equal(control.focused,true);assert.equal(control.width,2);assert.equal(control.color,'rgb(173, 217, 229)');assert.equal(control.inside,true);}
   assert.deepEqual(r.errors,[]);console.log(mode,result);await r.context.close();
  }
