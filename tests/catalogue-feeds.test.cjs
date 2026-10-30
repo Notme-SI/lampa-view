@@ -56,3 +56,12 @@ test('CUB regional sections request actual TMDB Discover feeds, preserving full-
  assert.equal(output.length,kind==='tvshow'?8:11);assert.ok(output.every(row=>row.source==='tmdb' && row.total_pages===12 && row.results.length===20));assert.ok(output.every(row=>row.url.startsWith('discover/tv?')));}
  assert.equal(calls.length,19);
 });
+
+
+test('catalogue previews hide explicitly missing posters and untranslated regional titles without inventing a dub',()=>{
+ const bundle=esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/tmdb.js')],bundle:true,write:false,format:'cjs',platform:'node'}).outputFiles[0].text,m={exports:{}};new Function('module','exports',bundle)(m,m.exports);
+ const {catalogueResults,presentableCards}=m.exports,cards=[{id:1,name:'Есть обложка',poster_path:'/poster.jpg'},{id:2,name:'Нет обложки',poster_path:null},{id:3,name:'Unknown metadata'},{id:4,name:'日本語',poster_path:'/jp.jpg'},{id:5,name:'Club Friday',poster_path:'/club.jpg'},{id:6,name:'Название',poster_path:null,img:'https://media.trakt.tv/poster.jpg'}];
+ assert.deepEqual(presentableCards(cards).map(c=>c.id),[1,3,4,5,6]);
+ for(const url of ['discover/tv?with_origin_country=KR|JP','discover/tv?with_original_language=ru&with_genres=10764|10767'])assert.deepEqual(catalogueResults(url,{results:cards,page:3,total_pages:40}).results.map(c=>c.id),[1,6]);
+ assert.equal(cards.length,6);assert.equal(catalogueResults('tv/popular',{results:cards,page:3}).page,3);
+});

@@ -2425,6 +2425,15 @@
           // Ordinary episode responses need no extra HTML parsing. Only provider
           // search/season folders need title disambiguation, not episode files.
           var folderState=onlineState(),folders=folderState && folderState.folderRows(str);
+          if(card && folders && folders.length && folderState.relevantFolders){
+            var relevant=folderState.relevantFolders(folders,card);
+            if(relevant.length!==folders.length){
+              // An empty exact-title result belongs to the native no-results flow.
+              // Do not offer unrelated fuzzy provider search hits as this title.
+              str=relevant.length?relevant.map(function(row){return '<div class="videos__item" data-json="'+JSON.stringify(row).replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'"></div>';}).join(''):'<div class="videos__line"></div>';
+              arguments[0]=str;folders=relevant;
+            }
+          }
           var seasons=card && folderState && folderState.folderSeasons(folders,card);
           var desiredSeason=comp.lampaViewManualSeason || folders && folders.length && folderState.resume(card || {}),seasonNumberWanted=desiredSeason && typeof desiredSeason==='object'?desiredSeason.season:desiredSeason || 1;
           var seasonTarget=seasons && seasons.find(function(row){return row.season===seasonNumberWanted;}) || seasons && seasons[0];

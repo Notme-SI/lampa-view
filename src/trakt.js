@@ -1,3 +1,4 @@
+import {presentableCards} from './tmdb.js';
 // Trakt determines list membership and order. TMDB IDs keep native Lampa
 // details, online providers and torrent search interoperable with these cards.
 import flag from './storage-flag.js';
@@ -98,7 +99,7 @@ export default function installTrakt(L){
     if(path.includes('countries=kr,jp,cn,tw,th'))return !(data.genres || []).some(g=>['animation','reality','talk-show','game-show','documentary'].includes(g));
     return true;
    });
-   metadata.enrich(traktCards(rows,match[1]==='movies'?'movie':'tv'),results=>{if(own===generation)ok({results,page,total_pages:json.pages});});
+   metadata.enrich(traktCards(rows,match[1]==='movies'?'movie':'tv'),results=>{if(own===generation)ok({results:presentableCards(results,path.includes('countries=kr,jp,cn,tw,th') || path.includes('languages=ru')),page,total_pages:json.pages});});
   };
   const saved=cache.get(key);if(saved && Date.now()-saved.at<600000)return done(saved.value);
   if(pending.has(key)){pending.get(key).callbacks.push([done,fail]);return;}

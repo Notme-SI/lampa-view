@@ -49,6 +49,28 @@ export function folderSeasons(rows,card){
  }
  return found.length>1?found.sort((a,b)=>a.season-b.season):[];
 }
+// Provider fuzzy matches are not alternatives to the requested movie.
+// Keep same-title seasons; never touch playable entries or native voice lists.
+export function relevantFolders(rows,card){
+ if(!card || !Array.isArray(rows) || !rows.some(row=>row.similar))return rows;
+ const clean=value=>String(value || '').toLowerCase().replace(/ё/g,'е').replace(/(?:сезон|season)\s*\d+|\d+\s*(?:сезон|season)|\bs\d+\b/gi,' ').replace(/\b(?:19|20)\d{2}\b/g,' ').replace(/[^a-zа-я0-9\u3040-\u30ff\u3400-\u9fff]+/g,' ').trim();
+ const aliases=value=>String(value || '').split(/\s+[\/|]\s+/).map(clean).filter(Boolean);
+ const names=new Set([card.title,card.name,card.original_title,card.original_name].flatMap(aliases));if(!names.size)return rows;
+ const serial=!!(card.name || card.original_name),year=Number(String(card.first_air_date || card.release_date || '').slice(0,4));
+ const known=Math.max(1,Number(card.number_of_seasons)||0,...(card.seasons || []).map(row=>Number(row.season_number)||0));
+ return rows.filter(row=>{
+  if(!row.similar)return true;
+  if(row.method!=='link' || !/^(?:https?:\/\/|\/)/i.test(row.url || ''))return false;
+  const title=String(row.title || row.name || row.text || ''),season=title.match(/(?:сезон|season)\s*(\d+)|(\d+)\s*(?:сезон|season)|\bs(\d+)\b/i);
+  let part=Number(row.season || season && (season[1] || season[2] || season[3])) || 1;
+  const match=aliases(title).some(name=>names.has(name) || serial && [...names].some(alias=>{
+   const tail=name.startsWith(alias+' ')?name.slice(alias.length+1):'';
+   if(!/^[1-9]\d?$/.test(tail) || Number(tail)>known)return false;part=Number(tail);return true;
+  }));
+  const ownYear=Number(String(row.year || row.start_date || '').slice(0,4));
+  return match && (!year || !ownYear || part>1 && ownYear>=year || Math.abs(year-ownYear)<=1);
+ });
+}
 export function folderRows(body){
  let json=body;
  if(typeof body==='string'){try{json=JSON.parse(body);}catch(error){json=null;}}
@@ -130,5 +152,5 @@ export default function onlineState(L){
   if(explicit)keys.push(explicit);
   for(const key of new Set(keys))if(records[key] || key===explicit)L.Timeline.update({hash:key,percent:0,time:0,duration:0});
  }
- return {availability,reader,resume,seasonIndex,folderTarget,folderRows,folderSeasons,clearProgress};
+ return {availability,reader,resume,seasonIndex,folderTarget,folderRows,folderSeasons,relevantFolders,clearProgress};
 }

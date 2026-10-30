@@ -258,6 +258,7 @@ test('online host follows native bilingual search HTML to the title without an i
   comp.parse(body);assert.equal(parsed.length,2,'Repeated target must not recurse');
   const seasonBody=tag({method:'link',url:'/lite/provider?season=1',title:'Киберпанк: Бегущие по краю / Cyberpunk: Edgerunners',season:1}).replace('videos__item','videos__item videos__season');
   comp.request('/lite/provider/search');comp.parse(seasonBody);assert.equal(requests.at(-1),'/lite/provider?season=1','Native season folders do not require the similar flag');
+  comp.request('/lite/provider/search');comp.parse(tag({method:'link',similar:true,title:'Посторонний фильм',url:'/wrong'}));assert.equal(parsed.at(-1),'<div class="videos__line"></div>');assert.notEqual(requests.at(-1),'/wrong');
   const episode=tag({method:'play',url:'/test.mp4',title:'Серия 1'});comp.parse(episode);assert.equal(parsed.at(-1),episode);assert.equal(s.played(),0);assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}
 });
@@ -308,4 +309,14 @@ test('tile and list progress fill from timeline and watched markers while empty 
   L.Timeline.update({hash:L.Utils.hash('11Original'),percent:65,time:1170,duration:1800});await wait(180);assert.deepEqual(widths(),['65%','100%','0%']);
   L.Timeline.update({hash:L.Utils.hash('21Original'),percent:80,time:1440,duration:1800});await wait(150);assert.equal(widths()[0],'65%','Another season never overwrites this episode');assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}
+});
+
+
+test('unrelated fuzzy search hits disappear while matching title seasons and native voice rows remain',()=>{
+ const dom=new JSDOM('',{runScripts:'outside-only'}),w=dom.window;try{w.eval(code);const card={name:'Фактор BY. Дети',original_name:'Factor BY Kids',first_air_date:'2026-01-01'},pick=w.OnlineState.relevantFolders;
+ const other=['Adam by Eve','Пси Фактор: Хроники паранормальных явлений','Метаморфозы: Фактор чужого','Человеческий фактор'].map(title=>({title,method:'link',similar:true,url:'/lite/test/'+encodeURIComponent(title)}));
+ assert.equal(pick(other,card).length,0);const exact={title:card.name,year:2026,method:'link',similar:true,url:'/lite/test/exact'};assert.equal(pick([...other,exact],card)[0].url,exact.url);
+ const seasons=[{...exact,title:'Factor BY Kids (1 сезон)'},{...exact,title:'Factor BY Kids (2 сезон)',year:2027}];assert.equal(pick(seasons,{...card,number_of_seasons:2}).length,2);
+ const voices=[{title:'TVShows',method:'link',url:'/voice/1'}];assert.equal(pick(voices,card),voices);
+ }finally{w.close();}
 });

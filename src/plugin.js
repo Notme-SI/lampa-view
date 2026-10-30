@@ -38,7 +38,7 @@ if (!ROOT.LampaView) {
     const boot=document.createElement('style');boot.id='lampa-minimal-boot';boot.textContent=BOOT;
     (document.head || document.documentElement).appendChild(boot);
   }
-  const P = ROOT.LampaView = {version: '0.4.77', identity: C.identity, ready: false, bridge: false};
+  const P = ROOT.LampaView = {version: '0.4.78', identity: C.identity, ready: false, bridge: false};
   P.matchCatalogue=matchCatalogue;
   let L, $, lastCard, initialized = false, playlist = [], activeVideo,loadLogo,artwork,back,holidays,pinnedMenu;
   const metadata = new Map();
@@ -46,6 +46,7 @@ if (!ROOT.LampaView) {
   const carousels = new Set();
   function refreshCarousels(){carousels.forEach(value=>value.refresh());}
   const icons = {
+    menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
     home: '<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-8H9v8H4a1 1 0 0 1-1-1Z"/>',
     search: '<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/>',
     calendar: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18"/>',
@@ -145,6 +146,8 @@ if (!ROOT.LampaView) {
     // Only the native menu's presentation changes to an anchored popover.
     $('.head__menu-icon').addClass('selector').attr({role:'button',tabindex:'0','aria-label':'Меню'})
       .off('hover:enter.minimal').on('hover:enter.minimal',()=>L.Controller.toggle('menu'));
+    const menu=$('.head__menu-icon');
+    if(!menu.find('[data-pt-menu]').length)menu.html(icon('menu')).find('svg').attr('data-pt-menu','');
     setTheme();
     updateRoute();
   }

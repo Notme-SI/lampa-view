@@ -1,10 +1,19 @@
 import {isAnime} from './metadata.js';
 
+// Explicitly missing artwork is not a useful catalogue preview. Unknown image
+// metadata may still be supplied by a provider, so do not discard it here.
+export function presentableCards(cards,russian=false){
+ return cards.filter(card=>{
+  if(Object.prototype.hasOwnProperty.call(card,'poster_path') && !card.poster_path && !card.img)return false;
+  return !russian || /[а-яё]/i.test(String(card.title || card.name || ''));
+ });
+}
 // The same scoped exclusion must survive More and subsequent native pages.
 export function catalogueResults(path,json){
  const query=String(path || '').split('?')[1] || '';
  if(!json || !Array.isArray(json.results))return json;
- const scope=new URLSearchParams(query),kind=scope.get('minimal_kind');
+ const scope=new URLSearchParams(query),kind=scope.get('minimal_kind'),regional=/^discover\/tv\?/.test(path) && (scope.has('with_origin_country') || scope.get('with_original_language')==='ru' && /10764|10767/.test(scope.get('with_genres') || ''));
+ json={...json,results:presentableCards(json.results,regional || kind==='dorama' || kind==='tvshow')};
  if(kind==='tvshow' || kind==='dorama'){
   const countries=(scope.get('minimal_countries') || 'KR,JP,CN,TW,TH').split(','),language=scope.get('minimal_language');
   return {...json,results:json.results.filter(card=>{

@@ -1,3 +1,4 @@
+import {presentableCards} from './tmdb.js';
 import catalogue,{animeMode} from './catalogue.js';
 import animeTabs from './anime-tabs.js';
 import continueWatching,{CONTINUE,isWatching} from './continue-watching.js';
@@ -48,7 +49,7 @@ export default function collections(L,shiki){
  const main=L.Api.main;
  L.Api.main=function(object,ok,fail){
   const ctx=context(object),compact=(!object.component || object.component==='main');
-  function process(rows){const selected=compact?homeRows(rows):rows;remember(ctx,selected);ok(arrange(selected,prefs(ctx)).filter(row=>!row.minimal_empty));}
+  function process(rows){rows=rows.map(row=>({...row,results:presentableCards(row.results || [])}));const selected=compact?homeRows(rows):rows;remember(ctx,selected);ok(arrange(selected,prefs(ctx)).filter(row=>!row.minimal_empty));}
   const next=main.call(this,object,process,fail);
   return !compact && typeof next==='function'?function(resolve,reject){return next(rows=>{remember(ctx,rows,true);resolve(arrange(rows,prefs(ctx)));},reject);}:undefined;
  };
