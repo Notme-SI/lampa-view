@@ -36,3 +36,14 @@ test('TMDB preview deduplication follows plan order despite out-of-order replies
  pending.length=0;catalogue(L,{}, {source:'tmdb',url:'movie'},['minimal:tmdb:movie:watch'],rows=>output=rows);for(let i=0;i<pending.length;i++)reply(i);
  assert.equal(pending.length,9);assert.ok(output.some(row=>row.minimal_hidden && row.minimal_row_id==='minimal:tmdb:movie:watch'),'Daily date windows must not change a saved row identity');
 });
+
+
+test('dorama and TV show feeds start with recent airings and keep stable identities for existing collections',()=>{
+ const date=new Date(2026,9,30),dorama=cataloguePlan('dorama','standard',date),shows=cataloguePlan('tvshow','standard',date);
+ for(const plan of [dorama,shows]){
+  assert.equal(plan[0].key,'watch');assert.equal(plan[0].title,'Сейчас смотрят');const q=new URLSearchParams(plan[0].tmdb.split('?')[1]);
+  assert.equal(q.get('air_date.gte'),'2026-10-23');assert.equal(q.get('air_date.lte'),'2026-10-30');assert.equal(new Set(plan.map(row=>row.tmdb)).size,plan.length);assert.ok(plan.every(row=>row.media_type==='tv'));
+ }
+ assert.equal(dorama[1].key,'dorama-0');assert.equal(dorama[1].title,'Популярное');assert.equal(dorama.length,11);assert.equal(shows.length,8);
+ assert.ok(shows.every(row=>/with_genres=10764(?:\|10767)?&|with_genres=10767&/.test(row.tmdb)));
+});

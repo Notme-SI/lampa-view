@@ -38,7 +38,7 @@ if (!ROOT.LampaView) {
     const boot=document.createElement('style');boot.id='lampa-minimal-boot';boot.textContent=BOOT;
     (document.head || document.documentElement).appendChild(boot);
   }
-  const P = ROOT.LampaView = {version: '0.4.73', identity: C.identity, ready: false, bridge: false};
+  const P = ROOT.LampaView = {version: '0.4.74', identity: C.identity, ready: false, bridge: false};
   P.matchCatalogue=matchCatalogue;
   let L, $, lastCard, initialized = false, playlist = [], activeVideo,loadLogo,artwork,back,holidays,pinnedMenu;
   const metadata = new Map();
@@ -121,13 +121,13 @@ if (!ROOT.LampaView) {
       else L.Noty.show('Расписание доступно в медиатеке Lampa');
       return;
     }
-    const titles = {movie:'Фильмы',tv:'Сериалы',cartoon:'Мультфильмы',anime:'Аниме',dorama:'Дорамы'};
+    const titles = {movie:'Фильмы',tv:'Сериалы',cartoon:'Мультфильмы',anime:'Аниме',dorama:'Дорамы',tvshow:'ТВ-шоу'};
     L.Activity.push({url:section, title:titles[section], component:'category', source:section === 'anime' ? 'cub' : 'tmdb', page:1});
   }
   function shell() {
     if (!$('.pt-topnav').length) {
       const nav = $('<div class="pt-topnav" role="navigation" aria-label="Каталог">');
-      [['home','Главная'],['movie','Фильмы'],['tv','Сериалы'],['anime','Аниме'],['dorama','Дорамы']].forEach(([key,label]) => {
+      [['home','Главная'],['movie','Фильмы'],['tv','Сериалы'],['dorama','Дорамы'],['tvshow','ТВ-шоу'],['anime','Аниме']].forEach(([key,label]) => {
         pointer($('<div class="pt-topnav__item selector" role="button" tabindex="0">').attr('data-section',key).text(label)
           .on('hover:enter', () => navigate(key))).appendTo(nav);
       });
@@ -154,16 +154,23 @@ if (!ROOT.LampaView) {
     if(!cartoons && series){
       cartoons=document.createElement('li');cartoons.className='menu__item selector';cartoons.dataset.action='cartoon';cartoons.innerHTML='<div class="menu__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z"/></svg></div><div class="menu__text">Мультфильмы</div>';
     }
-    if(series && cartoons && series.nextElementSibling!==cartoons)series.after(cartoons);
     if(cartoons && !cartoons.dataset.minimalCartoons){cartoons.dataset.minimalCartoons='1';pointer($(cartoons).off('hover:enter').on('hover:enter.minimalCartoons',event=>{event.stopImmediatePropagation();navigate('cartoon');}));}
     const anime=document.querySelector('.menu__item[data-action="anime"]');
     let dorama=document.querySelector('.menu__item[data-action="dorama"]');
     if(!dorama && (anime || cartoons || series)){
       dorama=document.createElement('li');dorama.className='menu__item selector';dorama.dataset.action='dorama';
       dorama.innerHTML='<div class="menu__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="15" rx="2"/><path d="m8 2 4 3 4-3m-6 8 5 3-5 3Z"/></svg></div><div class="menu__text">Дорамы</div>';
-      (anime || cartoons || series).after(dorama);
     }
     if(dorama && !dorama.dataset.minimalDorama){dorama.dataset.minimalDorama='1';pointer($(dorama).off('hover:enter').on('hover:enter.minimalDorama',event=>{event.stopImmediatePropagation();navigate('dorama');}));}
+    let shows=document.querySelector('.menu__item[data-action="tvshow"]');
+    if(!shows && series){
+      shows=document.createElement('li');shows.className='menu__item selector';shows.dataset.action='tvshow';
+      shows.innerHTML='<div class="menu__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="m8 2 4 4 4-4m-6 12h4m-2-2v4"/></svg></div><div class="menu__text">ТВ-шоу</div>';
+    }
+    if(shows && !shows.dataset.minimalShows){shows.dataset.minimalShows='1';pointer($(shows).off('hover:enter').on('hover:enter.minimalShows',event=>{event.stopImmediatePropagation();navigate('tvshow');}));}
+    // Move only out-of-order nodes: the native menu observer must settle.
+    let previous=series;
+    for(const node of [dorama,shows,cartoons])if(previous && node){if(previous.nextElementSibling!==node)previous.after(node);previous=node;}
     document.querySelectorAll('.menu__item,.settings-folder').forEach(node=>{
       const label=(node.querySelector('.menu__text,.settings-folder__name') || node).textContent.trim();
       node.classList.toggle('pt-removed-section',/^(shots|спорт|расписание)$/i.test(label));
@@ -394,7 +401,7 @@ if (!ROOT.LampaView) {
     settings(); bridge(); shell();back=installBack(L,$,()=>yes('lampa_view_enabled'));holidays=holidayLayout(L,()=>yes('lampa_view_enabled'));artwork.refresh();
     tvPerformance(()=>yes('lampa_view_enabled'));
     pinnedMenu=menuLayout(L,()=>yes('lampa_view_enabled'));
-    on('menu',event=>{if(yes('lampa_view_enabled') && event.type==='action' && ['cartoon','dorama'].includes(event.action)){if(event.abort)event.abort();navigate(event.action);}});
+    on('menu',event=>{if(yes('lampa_view_enabled') && event.type==='action' && ['cartoon','dorama','tvshow'].includes(event.action)){if(event.abort)event.abort();navigate(event.action);}});
     trimSections();
     const menu=document.querySelector('.menu');
     if(menu && ROOT.MutationObserver)new ROOT.MutationObserver(trimSections).observe(menu,{childList:true,subtree:true});

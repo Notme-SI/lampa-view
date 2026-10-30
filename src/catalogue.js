@@ -6,9 +6,10 @@ export function animeMode(L,object={}){
 }
 export function cataloguePlan(kind,mode='standard',date=new Date()){
  const year=date.getFullYear(),type=kind==='movie'?'movie':'tv',base=kind==='anime'?'with_genres=16&with_original_language=ja&':'',defs=[];
+ const day=offset=>{const value=new Date(date);value.setDate(value.getDate()+offset);return value.getFullYear()+'-'+('0'+(value.getMonth()+1)).slice(-2)+'-'+('0'+value.getDate()).slice(-2);};
  if(kind==='dorama'){
   const asian='with_origin_country=KR|JP|CN|TW|TH&without_genres=16,99,10764,10767&';
-  return [
+  return [{key:'watch',title:'Сейчас смотрят',media_type:'tv',tmdb:'discover/tv?include_adult=false&'+asian+'sort_by=popularity.desc&air_date.gte='+day(-7)+'&air_date.lte='+day(0)},...[
    ['Популярное',asian+'sort_by=popularity.desc'],
    ['Новинки этого года',asian+'sort_by=popularity.desc&first_air_date.gte='+year+'-01-01'],
    ['С высоким рейтингом',asian+'sort_by=vote_average.desc&vote_count.gte=100'],
@@ -19,7 +20,20 @@ export function cataloguePlan(kind,mode='standard',date=new Date()){
    ['Драмы',asian+'with_genres=18&sort_by=popularity.desc'],
    ['Комедии',asian+'with_genres=35&sort_by=popularity.desc'],
    ['Детективы',asian+'with_genres=9648&sort_by=popularity.desc']
-  ].map(([title,query],index)=>({key:'dorama-'+index,title,media_type:'tv',tmdb:'discover/tv?include_adult=false&'+query}));
+  ].map(([title,query],index)=>({key:'dorama-'+index,title,media_type:'tv',tmdb:'discover/tv?include_adult=false&'+query}))];
+ }
+ if(kind==='tvshow'){
+  const shows='without_genres=16&with_genres=10764|10767&';
+  return [
+   ['watch','Сейчас смотрят',shows+'sort_by=popularity.desc&air_date.gte='+day(-7)+'&air_date.lte='+day(0)],
+   ['popular','Популярное',shows+'sort_by=popularity.desc'],
+   ['year','Новинки этого года',shows+'sort_by=popularity.desc&first_air_date.gte='+year+'-01-01&first_air_date.lte='+day(0)],
+   ['rated','С высоким рейтингом',shows+'sort_by=vote_average.desc&vote_count.gte=100'],
+   ['reality','Реалити-шоу','without_genres=16&with_genres=10764&sort_by=popularity.desc'],
+   ['talk','Ток-шоу','without_genres=16&with_genres=10767&sort_by=popularity.desc'],
+   ['russian','Русскоязычные шоу',shows+'with_original_language=ru&sort_by=popularity.desc'],
+   ['last-year','Прошлый год',shows+'sort_by=vote_average.desc&vote_count.gte=30&first_air_date.gte='+(year-1)+'-01-01&first_air_date.lte='+(year-1)+'-12-31']
+  ].map(([key,title,query])=>({key,title,media_type:'tv',tmdb:'discover/tv?include_adult=false&'+query}));
  }
  if(kind==='cartoon')return [{key:'watch',title:'Сейчас смотрят',cub:'?sort=now_playing&genre=16'},...[
   ['Популярные мультфильмы','movie','sort_by=popularity.desc'],
@@ -33,7 +47,6 @@ export function cataloguePlan(kind,mode='standard',date=new Date()){
   ['Популярное','order=popularity'],['С высоким рейтингом','order=ranked'],['Сейчас выходит','order=popularity&status=ongoing'],['Ожидаемые','order=popularity&status=anons'],
   ['Новинки этого года','order=popularity&season='+year],['Прошлый год','order=ranked&season='+(year-1)],['Полнометражные','order=ranked&kind=movie'],['Боевики','order=popularity&genre=1'],['Приключения','order=popularity&genre=2'],['Детективы','order=popularity&genre=7'],['Все',SHIKI_ALL]
  ].map(([title,shiki])=>({title,shiki}));
- const day=offset=>{const value=new Date(date);value.setDate(value.getDate()+offset);return value.getFullYear()+'-'+('0'+(value.getMonth()+1)).slice(-2)+'-'+('0'+value.getDate()).slice(-2);};
  function add(key,title,cub,query){
   const prefix='discover/'+type+'?include_adult=false&'+(kind==='tv' || kind==='movie'?'without_genres=16&':'')+(kind==='anime' && /with_genres=/.test(query || '')?'with_original_language=ja&':base);
   const previous=prefix+(query || 'sort_by=popularity.desc');
