@@ -30,7 +30,7 @@ test('TV detail builds lower rows gradually, including empty comments, while rem
  }finally{n.close();}
 });
 
-test('TV posters wait for remote idle, skip offscreen cards, use two slots and defer late paints',async()=>{
+test('TV poster downloads wait for remote idle, use two slots and paint completed covers without blanking',async()=>{
  const observers=[],loaders=[];
  const n=await native({built:true,prepare(w,L){prepare(w,L);w.IntersectionObserver=class{constructor(callback){this.callback=callback;this.nodes=new Set();observers.push(this);}observe(node){this.nodes.add(node);}unobserve(node){this.nodes.delete(node);}};}}),{w,L}=n;
  try{
@@ -44,8 +44,8 @@ test('TV posters wait for remote idle, skip offscreen cards, use two slots and d
   const move=()=>w.document.dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowDown',keyCode:40,bubbles:true}));
   move();assert.ok(w.document.body.classList.contains('pt-tv-busy'));await wait(200);move();await wait(200);move();await wait(250);
   assert.equal(loaders.length,0,'No originals while the remote is moving');await wait(760);
-  assert.equal(loaders.length,2);assert.equal(loaders[0].decoding,'async');assert.equal(loaders[0].fetchPriority,'auto');
-  move();loaders[0].onload();assert.match(cards[0].img.src,/^data:image\/gif/,'A completed original must not paint during movement');
+  assert.equal(loaders.length,2);assert.equal(loaders[0].decoding,'async');assert.equal(loaders[0].fetchPriority,'high');
+  move();loaders[0].onload();assert.match(cards[0].img.src,/\/w500\//,'A decoded cover can paint immediately during movement');
   await wait(1010);assert.match(cards[0].img.src,/\/w500\//);assert.equal(loaders.length,2);assert.match(loaders[1].url,/poster2/,'Offscreen original must be skipped');
   loaders[1].onload();cards[1].onscreen=true;
   for(const observer of observers)if(observer.nodes.has(cards[1].render(true)))observer.callback([{target:cards[1].render(true),isIntersecting:true}]);

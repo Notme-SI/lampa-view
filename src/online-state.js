@@ -9,10 +9,10 @@ export function folderTarget(rows,card,season=1){
  const normalize=value=>String(value || '').toLowerCase().replace(/ё/g,'е').replace(/(?:сезон|season)\s*\d+|\d+\s*(?:сезон|season)|\bs\d+\b/gi,' ').replace(/\b(?:19|20)\d{2}\b/g,' ').replace(/[^a-zа-я0-9\u3040-\u30ff\u3400-\u9fff]+/g,' ').trim();
  const aliases=value=>Array.from(new Set([String(value || ''),...String(value || '').split(/\s+[\/|]\s+/)].map(normalize).filter(Boolean)));
  const names=new Set([card.title,card.name,card.original_title,card.original_name].flatMap(aliases));
- const year=Number(String(card.release_date || card.first_air_date || '').slice(0,4));
+ const year=Number(String(card.first_air_date || card.release_date || '').slice(0,4));
  const candidates=rows.filter(row=>{
   if(row.method!=='link' || typeof row.url!=='string' || !/^(?:https?:\/\/|\/)/i.test(row.url))return false;
-  const title=String(row.text || row.title || row.name || '');if(!aliases(title).some(name=>names.has(name)))return false;
+  const title=String(row.title || row.name || row.text || '');if(!aliases(title).some(name=>names.has(name)))return false;
   const found=title.match(/(?:сезон|season)\s*(\d+)|(\d+)\s*(?:сезон|season)|\bs(\d+)\b/i),param=row.url.match(/[?&](?:s|season)=(\d+)/);
   const ownSeason=Number(row.season || (found && (found[1] || found[2] || found[3])) || (param && param[1]));
   if(ownSeason && ownSeason!==Number(season))return false;
@@ -21,16 +21,52 @@ export function folderTarget(rows,card,season=1){
  });
  return candidates.length===1?candidates[0].url:'';
 }
-export function catalogueRows(body){
+// Search responses vary by provider: native HTML, a JSON string, or an object.
+// Read only data attributes; never mount provider HTML or load its images.
+export function folderSeasons(rows,card){
+ if(!card || !(card.name || card.original_name) || !Array.isArray(rows))return [];
+ const names=[card.name,card.original_name,card.title,card.original_title].filter(Boolean);
+ const clean=v=>String(v || '').toLowerCase().replace(/ё/g,'е').replace(/[^a-zа-я0-9\u3040-\u30ff\u3400-\u9fff]+/g,' ').trim();
+ const aliases=v=>String(v || '').split(/\s*[\/|]\s*/).map(clean).filter(Boolean);
+ const family=new Set(names.flatMap(aliases)),year=Number(String(card.first_air_date || card.release_date || '').slice(0,4));
+ const known=Math.max(1,Number(card.number_of_seasons)||0,...(Array.isArray(card.seasons)?card.seasons.map(row=>Number(row.season_number)||0):[])),found=[];
+ for(const row of rows){
+  if(!row.similar || row.method!=='link' || !/^(?:https?:\/\/|\/)/i.test(row.url || ''))continue;
+  const title=String(row.title || row.name || row.text || ''),match=title.match(/(?:сезон|season)\s*(\d+)|(\d+)\s*(?:сезон|season)|\bs(\d+)\b/i);
+  let season=Number(row.season || (match && (match[1] || match[2] || match[3])));
+  const base=title.replace(/(?:сезон|season)\s*\d+|\d+\s*(?:сезон|season)|\bs\d+\b/gi,' ');
+  const hit=aliases(base).find(name=>family.has(name) || [...family].some(alias=>{
+   if(!name.startsWith(alias+' '))return false;
+   const tail=name.slice(alias.length+1);if(!/^[1-9]\d?$/.test(tail))return false;
+   if(Number(tail)>known)return false;if(!season)season=Number(tail);return season===Number(tail);
+  }));
+  if(!hit)continue;
+  if(!season){const param=(row.url || '').match(/[?&](?:s|season)=(\d+)/);season=Number(param && param[1]) || 1;}
+  const ownYear=Number(row.year || String(row.start_date || '').slice(0,4));
+  if(year && ownYear && (season===1?Math.abs(year-ownYear)>1:ownYear<year))continue;
+  if(found.some(value=>value.season===season))return [];
+  found.push({season,title:'Сезон '+season,method:'link',url:row.url});
+ }
+ return found.length>1?found.sort((a,b)=>a.season-b.season):[];
+}
+export function folderRows(body){
+ let json=body;
+ if(typeof body==='string'){try{json=JSON.parse(body);}catch(error){json=null;}}
+ if(json && typeof json==='object')return /^(similar|season)$/.test(json.type) && Array.isArray(json.data)?json.data:[];
+ if(typeof body!=='string' || !/\bvideos__season\b|\bsimilar\b/.test(body))return [];
+ return htmlRows(body).filter(row=>row.method==='link');
+}
+function htmlRows(body){
  if(typeof body!=='string')return [];
  const clean=body.replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,''),tags=clean.match(/<(?:div|span|a)\b[^>]*>/gi) || [],decoder=document.createElement('textarea'),rows=[];
  for(const tag of tags){
   const cls=tag.match(/\bclass\s*=\s*(["'])([\s\S]*?)\1/i),data=tag.match(/\bdata-json\s*=\s*(["'])([\s\S]*?)\1/i);
   if(!cls || !/(^|\s)videos__item(\s|$)/.test(cls[2]) || !data)continue;
-  try{decoder.innerHTML=data[2].replace(/</g,'&lt;');const row=JSON.parse(decoder.value);if(row && typeof row.url==='string' && row.url.trim() && !row.similar && /^(play|call|link)$/.test(row.method))rows.push(row);}catch(error){}
+  try{decoder.innerHTML=data[2].replace(/</g,'&lt;');const row=JSON.parse(decoder.value);if(row && typeof row.url==='string' && row.url.trim() && /^(play|call|link)$/.test(row.method))rows.push(row);}catch(error){}
  }
  return rows;
 }
+export function catalogueRows(body){return htmlRows(body).filter(row=>!row.similar);}
 export function availability(body){
  let json=body,count=0,visited=0;
  if(typeof body==='string'){try{json=JSON.parse(body);}catch(error){json=null;}}
@@ -94,5 +130,5 @@ export default function onlineState(L){
   if(explicit)keys.push(explicit);
   for(const key of new Set(keys))if(records[key] || key===explicit)L.Timeline.update({hash:key,percent:0,time:0,duration:0});
  }
- return {availability,reader,resume,seasonIndex,folderTarget,clearProgress};
+ return {availability,reader,resume,seasonIndex,folderTarget,folderRows,folderSeasons,clearProgress};
 }

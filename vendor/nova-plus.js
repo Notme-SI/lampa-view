@@ -2421,9 +2421,19 @@
         try {
           // Ordinary episode responses need no extra HTML parsing. Only provider
           // search/season folders need title disambiguation, not episode files.
-          var folderPage=typeof str==='string' && /(?:\bsimilar(?:&quot;|["'])?\s*:\s*(?:true|1)|\bvideos__season\b)/i.test(str);
-          var folderState=folderPage && onlineState(),resume=folderState && folderState.resume(card || {});
-          var folder=card && folderState && typeof comp.parseJsonDate==='function' && folderState.folderTarget(comp.parseJsonDate(str,'.videos__item'),card,comp.lampaViewManualSeason || resume && resume.season || 1);
+          var folderState=onlineState(),folders=folderState && folderState.folderRows(str);
+          var seasons=card && folderState && folderState.folderSeasons(folders,card);
+          var desiredSeason=comp.lampaViewManualSeason || folders && folders.length && folderState.resume(card || {}),seasonNumberWanted=desiredSeason && typeof desiredSeason==='object'?desiredSeason.season:desiredSeason || 1;
+          var seasonTarget=seasons && seasons.find(function(row){return row.season===seasonNumberWanted;}) || seasons && seasons[0];
+          if(folderChain.length>=6 || seasonTarget && folderChain.indexOf(seasonTarget.url)>=0)seasons=[];
+          if(seasons && seasons.length){
+            // Let the native parser retain its season URLs and selection state.
+            // Skipping this page would open episodes but leave no season picker.
+            str=seasons.map(function(row){return '<div class="videos__item videos__season" data-json="'+JSON.stringify(row).replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'">'+row.title+'</div>';}).join('');
+            arguments[0]=str;folders=[];
+          }
+          var resume=folders && folders.length && folderState.resume(card || {});
+          var folder=card && folders && folders.length && folderState.folderTarget(folders,card,comp.lampaViewManualSeason || resume && resume.season || 1);
           if(folder && folderChain.length<6 && folderChain.indexOf(folder)<0){
             parsing=true;
             try { if(typeof comp.reset==='function')comp.reset();return comp.request(folder); }

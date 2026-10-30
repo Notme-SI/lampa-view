@@ -53,6 +53,8 @@ async function verify(page,mobile){
    },mobile);
    await page.waitForTimeout(350);
    await verify(page,mobile);
+   const ring=await page.locator('.activity--active .torrent-item').first().evaluate(item=>{item.classList.add('focus');const s=getComputedStyle(item);return {shadow:s.boxShadow,outline:s.outlineStyle,after:getComputedStyle(item,'::after').display};});
+   assert.ok(ring.shadow.includes('inset'),'Torrent focus stays inside the release: '+JSON.stringify(ring));assert.equal(ring.outline,'none');assert.equal(ring.after,'none');
    const marks=[];
    for(const moved of [false,true]){
     marks.push(await page.evaluate(moved=>{

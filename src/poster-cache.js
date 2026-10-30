@@ -12,7 +12,11 @@ export default function posterCache(L,enabled,highQuality){
  const paused=()=>document.hidden || document.body.classList.contains('pt-wheel-active') || tv() && document.body.classList.contains('pt-tv-busy');
  const observer=typeof window.IntersectionObserver==='function'?new window.IntersectionObserver(entries=>entries.forEach(entry=>{
   if(entry.isIntersecting){const callback=callbacks.get(entry.target);if(callback)callback();}
- })):null;
+ }),{rootMargin:'240px 360px'}):null;
+ function nearby(image){
+  const box=(image.closest('.card') || image).getBoundingClientRect();
+  return box.width>0 && box.bottom> -240 && box.top<window.innerHeight+240 && box.right> -360 && box.left<window.innerWidth+360;
+ }
  function visible(image){
   const box=(image.closest('.card') || image).getBoundingClientRect();
   if(!tv() && !box.width && !box.height)return true; // Native visibility remains authoritative before layout.
@@ -39,18 +43,21 @@ export default function posterCache(L,enabled,highQuality){
    if(entry.done){cache.delete(url);bytes-=entry.bytes || 0;}
   }
  }
- function schedule(delay){if(!timer && queue.length && !paused())timer=setTimeout(drain,typeof delay==='number'?delay:0);}
+ function schedule(delay){if(!timer && queue.length)timer=setTimeout(drain,typeof delay==='number'?delay:0);}
  function paint(job){
-  job.finished=true;if(!job.alive() || !visible(job.image))return;
-  if(paused()){job.finished=false;queue.unshift(job);return;}
+  job.finished=true;if(!job.alive() || !nearby(job.image) && !visible(job.image))return;
   job.image.src=job.url;
  }
  function drain(){
-  timer=null;if(paused())return;
+  timer=null;
+  // Cached covers can paint during remote navigation. Only new network/decode
+  // work waits for idle, with visible cards ahead of the small look-ahead band.
+  const visibleJobs=new Map(queue.map(job=>[job,visible(job.image)]));
+  queue.sort((a,b)=>Number(visibleJobs.get(b))-Number(visibleJobs.get(a)));
   // Cached and shared in-flight images do not consume another network slot.
   for(let remaining=queue.length;remaining>0;remaining--){
    const job=queue.shift();if(!job.alive())continue;
-   if(!visible(job.image)){job.finished=true;continue;}
+   if(!visibleJobs.get(job) && !nearby(job.image)){job.finished=true;continue;}
    job.url=job.resolve();
    let entry=cache.get(job.url);
    if(entry){
@@ -58,8 +65,8 @@ export default function posterCache(L,enabled,highQuality){
     if(entry.done){paint(job);continue;}
     entry.jobs.add(job);job.entry=entry;continue;
    }
-   if(running>=(tv()?2:3)){queue.push(job);continue;}
-   const loader=new Image();loader.fetchPriority=tv()?'auto':'low';loader.decoding='async';
+   if(paused() || running>=(tv()?2:3) || !visibleJobs.get(job) && running>=1){queue.push(job);continue;}
+   const loader=new Image();loader.fetchPriority=visibleJobs.get(job)?'high':'low';loader.decoding='async';
    entry={loader,jobs:new Set([job]),done:false};job.entry=entry;cache.set(job.url,entry);running++;
    let finished=false;
    const finish=ok=>{
@@ -104,7 +111,7 @@ export default function posterCache(L,enabled,highQuality){
     if(!disposed && maximum() && source && image.getAttribute('src')===blank){enqueue();return;}
     if(nativeError)return nativeError.call(this,event);
    };
-   if(observer){observed=image.closest('.card');if(observed){callbacks.set(observed,enqueue);observer.observe(observed);}}
+   if(observer){observed=image.closest('.card');if(observed){callbacks.set(observed,()=>{if(!original && maximum())item.getPosterPath();enqueue();});observer.observe(observed);}}
    item.getPosterPath=function(){
     const url=getPoster.apply(this,arguments);
     if(!maximum() || !/\/t\/p\/(?:w780|w1280|original)\//.test(url))return url;

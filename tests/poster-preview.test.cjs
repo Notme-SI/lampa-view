@@ -12,7 +12,7 @@ test('posters appear at final quality, share cached originals and cancel stale q
    c.visible();assert.match(c.img.src,/^data:image\/gif/,'No blurry intermediate poster');
   }
   await wait(50);assert.equal(loaders.filter(l=>l.url).length,3,'Original downloads stay bounded');
-  assert.equal(loaders[0].fetchPriority,'low');assert.match(loaders[0].url,/\/w780\//);
+  assert.equal(loaders[0].fetchPriority,'high');assert.match(loaders[0].url,/\/w780\//);
   loaders[0].onload();assert.match(cards[0].img.src,/\/w780\//);
   loaders[1].onerror();assert.match(cards[1].img.src,/img_broken/,'Failed original has a stable fallback');
   await wait(50);assert.equal(loaders.filter(l=>l.url).length,4);

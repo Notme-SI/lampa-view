@@ -29,6 +29,7 @@ jobs:
           node tests/browser/mpvplus-preload.cjs
           node tests/browser/torrent-native-playback.cjs
           node tests/browser/button-focus.cjs
+          node tests/browser/episode-focus.cjs
           node tests/browser/hero-proxy.cjs
           node tests/browser/torrent-tv-controls.cjs
           node tests/browser/remote-navigation.cjs

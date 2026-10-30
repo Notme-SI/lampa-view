@@ -251,13 +251,28 @@ test('bilingual provider folders resolve the exact original title, preserving ye
 
 test('online host follows native bilingual search HTML to the title without an intermediate manual folder click',async()=>{
  const n=await native({built:true}),{w}=n;let s;try{
-  const requests=[],parsed=[],comp={changeBalanser(){},reset(){},request:url=>requests.push(url),parse:body=>parsed.push(body),parseJsonDate:body=>Array.from(w.jQuery('<div>').html(body).find('.videos__item'),node=>JSON.parse(w.jQuery(node).attr('data-json')))};
+  const requests=[],parsed=[],comp={changeBalanser(){},reset(){},request:url=>requests.push(url),parse:body=>{parsed.push(body);const nativeRows=Array.from(w.jQuery('<div>').html(body).find('.videos__item'),node=>JSON.parse(w.jQuery(node).attr('data-json')));if(nativeRows.length && nativeRows.every(row=>row.method==='link' && !row.similar))comp.request(nativeRows[0].url);},parseJsonDate:body=>Array.from(w.jQuery('<div>').html(body).find('.videos__item'),node=>JSON.parse(w.jQuery(node).attr('data-json')))};
   s=screen(n,{component:comp});Object.assign(s.movie,{name:'Киберпанк: Бегущие по краю',original_name:'Cyberpunk: Edgerunners',first_air_date:'2022-09-13'});await wait(180);
   const rows=[{method:'link',url:'/lite/aniliberty?releases=9307',title:'Киберпанк: Бегущие по краю / Cyberpunk: Edgerunners',year:2022,similar:true},{method:'link',url:'/lite/aniliberty?releases=10364',title:'Киберпанк: Бегущие по краю 2 / Cyberpunk: Edgerunners 2',year:2026,similar:true}],body=rows.map(tag).join('');
-  comp.request('/lite/aniliberty?title=Cyberpunk');comp.parse(body);assert.equal(requests.at(-1),rows[0].url);assert.equal(parsed.length,0);assert.equal(s.played(),0);
-  comp.parse(body);assert.equal(parsed.length,1,'Repeated target must not recurse');
+  comp.request('/lite/aniliberty?title=Cyberpunk');comp.parse(body);assert.equal(requests.at(-1),rows[0].url);assert.equal(parsed.length,1);assert.equal(parsed[0].includes('similar'),false,'Native season page retains the picker URLs');assert.deepEqual(Array.from(w.jQuery('<div>').html(parsed[0]).find('.videos__item'),node=>node.textContent),['Сезон 1','Сезон 2']);assert.equal(s.played(),0);
+  comp.parse(body);assert.equal(parsed.length,2,'Repeated target must not recurse');
   const seasonBody=tag({method:'link',url:'/lite/provider?season=1',title:'Киберпанк: Бегущие по краю / Cyberpunk: Edgerunners',season:1}).replace('videos__item','videos__item videos__season');
   comp.request('/lite/provider/search');comp.parse(seasonBody);assert.equal(requests.at(-1),'/lite/provider?season=1','Native season folders do not require the similar flag');
   const episode=tag({method:'play',url:'/test.mp4',title:'Серия 1'});comp.parse(episode);assert.equal(parsed.at(-1),episode);assert.equal(s.played(),0);assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}
+});
+
+test('provider folders accept native JSON objects, JSON strings and escaped HTML attributes uniformly',()=>{
+ const dom=new JSDOM('',{runScripts:'outside-only'}),w=dom.window;try{w.eval(code);
+  const api=w.OnlineState,card={name:'Киберпанк: Бегущие по краю',original_name:'Cyberpunk: Edgerunners',first_air_date:'2022-09-13'};
+  for(const source of ['animebesst','aniliberty','animelib','kinobase']){
+   const rows=[{title:card.name+' (2 сезон)',method:'link',similar:true,year:2026,url:'/lite/'+source+'?uri=second&s=2'},{title:card.name,text:'Посторонний год и подпись 2022',method:'link',similar:true,year:2022,url:'/lite/'+source+'?uri=first&s=0'}];
+   for(const body of [{type:'similar',data:rows},JSON.stringify({type:'similar',data:rows}),rows.map(tag).join('')]){
+    const parsed=api.folderRows(body);assert.equal(parsed.length,2);assert.equal(api.folderTarget(parsed,card),rows[1].url);const seasons=api.folderSeasons(parsed,card);assert.deepEqual(Array.from(seasons,row=>row.season),[1,2]);assert.equal(seasons[0].url,rows[1].url);
+   }
+  }
+  assert.equal(api.folderRows(JSON.stringify({type:'video',data:[{method:'play',url:'/movie'}]})).length,0);
+  assert.equal(api.folderRows('<script>'+tag({method:'link',similar:true,url:'/bad',title:card.name})+'</script>').length,0);
+  assert.equal(api.folderSeasons([{method:'link',similar:true,title:'Other',url:'/other'}],card).length,0);
+ }finally{w.close();}
 });

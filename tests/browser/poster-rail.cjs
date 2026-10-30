@@ -6,9 +6,21 @@ async function geometry(page){return page.locator('.activity--active .minimal-po
  const view=root.querySelector('.scroll--horizontal').getBoundingClientRect(),cards=[...root.querySelectorAll('.card')].map(node=>{const r=node.querySelector('.card__view').getBoundingClientRect();return {left:r.left,right:r.right,width:r.width};});
  const visible=cards.filter(r=>r.right>view.left+1 && r.left<view.right-1);
  const component=Lampa.Activity.active().activity.component,line=component.items.find(item=>item.render(true)===root),fit=line.scroll.minimalPosterFit;
- return {fit,view:{left:view.left,right:view.right,width:view.width},visible,partial:visible.filter(r=>r.left<view.left-1 || r.right>view.right+1),active:line.active,total:cards.length,results:line.data.results.length};
+ return {fit,view:{left:view.left,right:view.right,width:view.width},visible,partial:visible.filter(r=>r.left<view.left-1 || r.right>view.right+1),active:line.active,position:line.scroll.position(),scrollLeft:root.querySelector('.scroll--horizontal').scrollLeft,focused:[...root.querySelectorAll('.card.focus,.card.hover')].map(n=>[...root.querySelectorAll('.card')].indexOf(n)),total:cards.length,results:line.data.results.length};
 });}
 function whole(result,label){assert.deepEqual(result.partial,[],label+' crops a poster: '+JSON.stringify(result));assert.equal(result.visible.length,Math.min(result.fit.count,result.results),label+' must show a complete row: '+JSON.stringify(result));}
+// Wait for actual geometry to settle: WebKit animation frames can lag behind
+// a fixed wall-clock timeout on the shared Linux runner. Keep the same checks.
+async function settled(page,label){
+ let previous='',stable=0,result;
+ for(let i=0;i<50;i++){
+  result=await geometry(page);const key=JSON.stringify(result.visible);
+  stable=key===previous && !result.partial.length?stable+1:0;previous=key;
+  if(stable>=2)return whole(result,label);
+  await page.waitForTimeout(40);
+ }
+ whole(result,label);
+}
 (async()=>{
  for(const [engineName,engine] of [['chromium',chromium],['webkit',webkit]]){
   const browser=await engine.launch({headless:true});try{
@@ -28,8 +40,8 @@ function whole(result,label){assert.deepEqual(result.partial,[],label+' crops a 
      const navigation=(device.mode==='desktop' && device.width===2559) || (device.mode==='tv' && device.width===1920) || (device.mode==='mobile' && device.width===393);
      if(navigation){
       await page.evaluate(()=>{const line=Lampa.Activity.active().activity.component.items[0];line.toggle();});
-      for(let i=0;i<result.fit.count+2;i++)await page.keyboard.press('ArrowRight');await page.waitForTimeout(400);whole(await geometry(page),label+' remote');
-      for(let i=0;i<result.fit.count+2;i++)await page.keyboard.press('ArrowLeft');await page.waitForTimeout(400);whole(await geometry(page),label+' remote return');
+      for(let i=0;i<result.fit.count+2;i++)await page.keyboard.press('ArrowRight');await settled(page,label+' remote');
+      for(let i=0;i<result.fit.count+2;i++)await page.keyboard.press('ArrowLeft');await settled(page,label+' remote return');
       if(device.mode==='desktop'){
        const arrows=page.locator('.activity--active .items-line .minimal-row-arrow');
        await arrows.last().click();await page.waitForTimeout(420);whole(await geometry(page),label+' next page');
