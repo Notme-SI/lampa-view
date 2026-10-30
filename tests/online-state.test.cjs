@@ -132,10 +132,22 @@ test('online context actions mark files and clear current or all timecodes witho
   await action('Снять отметку просмотра');assert.equal(s.root.find('.nova-card__viewed,.nova-card__eye').length,0);
   await action('Очистить таймкод');assert.equal(L.Timeline.view(L.Utils.hash('11Original')).time,0);assert.equal(L.Timeline.view(L.Utils.hash('12Original')).time,300);
   await action('Очистить таймкоды всех файлов');assert.equal(alltimes,1);assert.equal(L.Timeline.view(L.Utils.hash('12Original')).time,0);
+  L.Timeline.update({hash:L.Utils.hash('26Original'),percent:40,time:720,duration:1800});L.Storage.set('online_watched_last',{[L.Utils.hash('Original')]:{season:2,episode:6},other:{season:1,episode:1}});
+  await action('Очистить таймкоды сериала');assert.equal(L.Timeline.view(L.Utils.hash('26Original')).time,0);assert.equal(L.Storage.get('online_watched_last',{})[L.Utils.hash('Original')],undefined);assert.equal(L.Storage.get('online_watched_last',{}).other.episode,1);
   await action('Снять отметки у всех файлов');assert.equal(allmarks,1);assert.equal(nativeRequests,0);assert.equal(s.played(),0);assert.deepEqual(n.errors,[]);
   L.Timeline.update({hash:L.Utils.hash('11Original'),percent:35,time:300,duration:900});await wait(80);await action('Отметить просмотренным');
   assert.match(s.root.find('[data-nova-focus=hero]').text(),/Серия 2/);assert.equal(s.root.find('.nova-hero__progress .time-line>div').css('width'),'33%');
  }finally{if(s)s.close();n.close();}
+});
+
+test('clearing a title resets all known seasons and aliases only in the active profile and removes stale last-played history',()=>{
+ const dom=new JSDOM('',{runScripts:'outside-only'}),w=dom.window;try{
+  w.eval(code);const records={file_view:{'11Original':{percent:100,time:1800},'26Перевод':{percent:40,time:720},'provider-hash':{percent:20,time:360},'11Other':{percent:50,time:900}},other:{'11Original':{percent:70,time:1260}},online_watched_last:{Original:{season:2,episode:6},Перевод:{season:2,episode:6},Other:{season:1,episode:1}}};let reads=0;
+  const L={Utils:{hash:t=>t},Storage:{get:k=>records[k],set:(k,v)=>records[k]=v},Timeline:{filename:()=> 'file_view',update:r=>records.file_view[r.hash]={...r},read:()=>reads++}},api=w.OnlineState.default(L),card={name:'Перевод',original_name:'Original',number_of_seasons:2};
+  assert.equal(api.resume(card).episode,6);api.clearTitleProgress(card,['provider-hash']);
+  assert.equal(api.reader(card)(1,1).time,0);assert.equal(api.reader(card)(2,6).time,0);assert.equal(records.file_view['provider-hash'].time,0);assert.equal(api.resume(card),null);
+  assert.equal(records.online_watched_last.Original,undefined);assert.equal(records.online_watched_last.Перевод,undefined);assert.equal(records.online_watched_last.Other.episode,1);assert.equal(records.file_view['11Other'].time,900);assert.equal(records.other['11Original'].time,1260);assert.equal(reads,1);
+ }finally{w.close();}
 });
 
 test('online controls start with a layout icon and source popup; long movie voices select a file without autoplay',async()=>{

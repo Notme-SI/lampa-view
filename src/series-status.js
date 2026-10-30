@@ -84,8 +84,9 @@ export default function seriesStatus(L,schedule){
   let box=view.querySelector('.pt-series-status');
   if(available){
    if(!box){box=document.createElement('div');box.className='pt-series-status';view.appendChild(box);}
-   const released=available.total>available.count?available.count+'/'+available.total:available.count+' серий';
-   const text='С'+available.season+' · вышло '+released;
+   const partial=available.total>available.count;
+   const released=partial?available.count+'/'+available.total:String(available.count);
+   const text='Сезон '+available.season+' • '+(partial?'Эпизод ':'Эпизодов ')+released;
    if(box.textContent!==text)box.textContent=text;
    box.title='Сезон '+available.season+': вышло '+released+'. История просмотра — под обложкой.';
   }else if(box)box.remove();

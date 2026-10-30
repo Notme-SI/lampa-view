@@ -146,11 +146,45 @@ export default function onlineState(L){
   const links=rows.filter(row=>row.method==='link');if(links.length<2)return -1;
   return links.findIndex(row=>{const param=row.url.match(/[?&](?:s|season)=(\d+)/),name=String(row.name || row.title || '').match(/(?:сезон|season)\s*(\d+)|(\d+)\s*(?:сезон|season)/i);return Number(row.season || (param?param[1]:name?name[1] || name[2]:0))===Number(season);});
  }
+ function clearLast(card,season,episode){
+  const saved=L.Storage.get('online_watched_last',{}) || {},next={...saved};let changed=false;
+  for(const title of names(card)){
+   const key=L.Utils.hash(title),row=saved[key];
+   if(row && (season===undefined || Number(row.season)===Number(season) && Number(row.episode)===Number(episode))){delete next[key];changed=true;}
+  }
+  if(changed)L.Storage.set('online_watched_last',next);
+ }
  function clearProgress(card,season=0,episode=0,explicit){
   if(!L.Timeline || !L.Timeline.update)return;
   const records=L.Storage.get(file(),{}) || {},keys=names(card).map(title=>hash(title,season,episode));
   if(explicit)keys.push(explicit);
+  clearLast(card,season,episode);
   for(const key of new Set(keys))if(records[key] || key===explicit)L.Timeline.update({hash:key,percent:0,time:0,duration:0});
+  revision++;snapshots.clear();
+  if(L.Timeline.read)L.Timeline.read();
  }
- return {availability,reader,resume,seasonIndex,folderTarget,folderRows,folderSeasons,relevantFolders,clearProgress};
+ function clearTitleProgress(card,explicit=[]){
+  if(!L.Timeline || !L.Timeline.update)return;
+  const records=L.Storage.get(file(),{}) || {},titles=names(card),keys=new Set(explicit.filter(Boolean));
+  const serial=card.media_type==='tv' || card.name || card.original_name || card.first_air_date;
+  if(serial){
+   const seasons=Array.isArray(card.seasons)?card.seasons:[],limits=new Map();
+   const remember=(season,total)=>{season=number(season);if(season>0 && season<=100)limits.set(season,Math.min(5000,Math.max(100,limits.get(season)||0,number(total))));};
+   for(const row of seasons)remember(row.season_number,row.episode_count);
+   const table=L.TimeTable && L.TimeTable.get?L.TimeTable.get(card) || []:[];
+   for(const row of table)remember(row.season_number,row.episode_number);
+   const last=L.Storage.get('online_watched_last',{}) || {};
+   for(const title of titles){const row=last[L.Utils.hash(title)];if(row)remember(row.season,row.episode);}
+   const max=Math.min(100,Math.max(1,number(card.number_of_seasons),...limits.keys()));
+   for(let season=1;season<=max;season++)for(let episode=1;episode<=(limits.get(season)||100);episode++)for(const title of titles)keys.add(hash(title,season,episode));
+  }else for(const title of titles)keys.add(hash(title));
+  // Zero via the native API so the active profile and its normal sync are kept.
+  // Never clear the complete timeline store or another title's history.
+  clearLast(card);
+  for(const key of keys){const row=records[key];if(row && (typeof row==='number'?row:row.percent || row.time))L.Timeline.update({hash:key,percent:0,time:0,duration:0});}
+  revision++;snapshots.clear();
+  if(L.Timeline.read)L.Timeline.read();
+ }
+
+ return {availability,reader,resume,seasonIndex,folderTarget,folderRows,folderSeasons,relevantFolders,clearProgress,clearTitleProgress};
 }

@@ -2825,6 +2825,7 @@
     var menu=[{title:'Отметить просмотренным',action:'mark'},{title:'Снять отметку просмотра',action:'unmark'},{title:'Очистить таймкод',action:'timeclear'}];
     if(params.onClearAllMark)menu.push({title:'Снять отметки у всех файлов',action:'allmarks'});
     if(params.onClearAllTime)menu.push({title:'Очистить таймкоды всех файлов',action:'alltimes'});
+    if(serial && onlineState() && onlineState().clearTitleProgress)menu.push({title:'Очистить таймкоды сериала',action:'titletimes'});
     menu.push({title:'Другие действия',action:'native'});
     var restore=function(){Lampa.Select.hide();contentEnable();ui_focus=key;restoreFocus(false);};
     Lampa.Select.show({title:serial?'Серия '+item.num:(movie.title || movie.name || 'Действия'),items:menu,
@@ -2835,6 +2836,7 @@
         else if(entry.action==='alltimes')params.onClearAllTime();
         else if(typeof element[entry.action]==='function')element[entry.action]();
         var progress=onlineState();
+        if(entry.action==='titletimes' && progress && progress.clearTitleProgress)progress.clearTitleProgress(movie,items.filter(function(row){return !row.folder && !row.soon;}).map(function(row){return row.hash;}));
         if(progress && progress.clearProgress && /^(timeclear|alltimes)$/.test(entry.action)){
           (entry.action==='alltimes'?items:[item]).forEach(function(row){if(!row.folder && !row.soon)progress.clearProgress(movie,serial?(seasonNumber() || 1):0,serial?row.num:0,row.hash);});
         }
