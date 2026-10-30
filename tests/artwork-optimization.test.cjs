@@ -63,6 +63,7 @@ test('decoded banner memory pressure evicts old full-size images without reducin
   api.cover(0,'original',()=>{});images[0].naturalWidth=3840;images[0].naturalHeight=2160;images[0].onload();await wait(0);
   api.cover(1,'original',()=>{});images[1].naturalWidth=3840;images[1].naturalHeight=2160;images[1].onload();await wait(0);
   assert.ok(api.ready(0,'original').includes('/original/'),'Two 4K covers fit the 64 MiB TV budget');
+  assert.ok(api.ready(1,'original').includes('/original/'),'The most recent selection remains the second cover');
   api.cover(3,'original',()=>{});images[2].naturalWidth=3840;images[2].naturalHeight=2160;images[2].onload();await wait(0);
   assert.equal(api.ready(0,'original'),'');assert.ok(api.ready(3,'original').includes('/original/'));
   assert.equal(images[0].src,'','Eviction releases the decoded image reference');
