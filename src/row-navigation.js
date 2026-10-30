@@ -14,8 +14,8 @@ export default function rowNavigation(L,line,enabled){
  function geometry(){
   const view=viewport().getBoundingClientRect(),first=node(line.items[0]),a=first && first.getBoundingClientRect(),second=node(line.items[1]),b=second && second.getBoundingClientRect();
   const style=first && window.getComputedStyle(first),pitch=a && (b && b.left-a.left || a.width+(parseFloat(style.marginLeft)||0)+(parseFloat(style.marginRight)||0));
-  const inset=(parseFloat(window.getComputedStyle(root).fontSize)||16)*1.5,gap=pitch && a?Math.max(0,pitch-a.width):0;
-  const count=Math.max(1,Math.floor(((view.width || root.getBoundingClientRect().width || pitch || 1)-2*inset+gap)/(pitch || 1)));
+  const fit=line.scroll.minimalPosterFit,inset=fit?fit.inset:(parseFloat(window.getComputedStyle(root).fontSize)||16)*1.5,gap=pitch && a?Math.max(0,pitch-a.width):0;
+  const count=fit?fit.count:Math.max(1,Math.floor(((view.width || root.getBoundingClientRect().width || pitch || 1)-2*inset+gap)/(pitch || 1)));
   let start=line.items.findIndex(item=>{const box=node(item).getBoundingClientRect();return box.width && box.right>view.left+inset+2 && box.left<view.right-inset;});
   if(start<0)start=Math.max(0,line.active || 0);
   return {view,count,start,inset};

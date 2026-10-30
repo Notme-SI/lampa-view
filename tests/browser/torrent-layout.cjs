@@ -53,6 +53,18 @@ async function verify(page,mobile){
    },mobile);
    await page.waitForTimeout(350);
    await verify(page,mobile);
+   const marks=[];
+   for(const moved of [false,true]){
+    marks.push(await page.evaluate(moved=>{
+     const item=document.querySelector('.activity--active .torrent-item');
+     let mark=item.querySelector('.torrent-item__viewed');if(!mark){mark=document.createElement('div');mark.className='torrent-item__viewed';mark.innerHTML=Lampa.Template.get('icon_viewed',{},true);item.appendChild(mark);}
+     if(moved)item.querySelector('.tc-head').appendChild(mark);
+     const r=mark.getBoundingClientRect(),box=item.getBoundingClientRect(),size=item.querySelector('.tc-size').getBoundingClientRect();
+     return {left:r.left-box.left,right:box.right-r.right,top:r.top-box.top,bottom:r.bottom-box.top,sizeGap:r.left-size.right};
+    },moved));
+   }
+   for(const mark of marks){assert.ok(mark.left>0 && mark.right>0 && mark.top>0,'Viewed mark must remain inside the release');assert.ok(mark.sizeGap>=0,'Viewed mark must not overlap the file size');}
+   assert.deepEqual(marks[0],marks[1],'Moving the native mark during an update cannot change its position');
    if(output)await page.screenshot({path:path.join(output,name+(mobile?'-phone':'-desktop')+'-top.png')});
    await page.locator('.activity--active .torrent-item').first()[mobile?'tap':'click']();
    await page.waitForTimeout(100);

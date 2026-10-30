@@ -550,11 +550,8 @@ body.lampa_view.pt-tv .settings-folder,body.lampa_view.pt-tv .settings-param {wi
 body.lampa_view.pt-tv .pt-quality,body.lampa_view.pt-tv .card__quality,body.lampa_view.pt-tv .card__vote {font-size:.35em}
 body.lampa_view.pt-tv .pt-kind {font-size:.32em}
 body.lampa_view.pt-tv .card__title {font-size:.76em}
-/* Stable, high-contrast TV selection: no scaling, blur or fading borders. */
-body.lampa_view.pt-tv .card__title {padding:.25em .45em .25em .6em;max-height:3.3em;background:transparent;border-radius:.25em}
-body.lampa_view.pt-tv .card.focus .card__view {box-shadow:none!important}
-body.lampa_view.pt-tv .card.focus .card__view:after {display:block!important;inset:0!important;border:4px solid var(--pt-accent)!important;box-shadow:inset 0 0 0 2px #080b10!important;transition:none!important;pointer-events:none}
-body.lampa_view.pt-tv .card.focus .card__title {background:var(--pt-accent);color:#080b10;font-weight:700}
+/* TV uses the same focus treatment as the browser; keep repaint cost bounded. */
+body.lampa_view.pt-tv .card.focus .card__view,body.lampa_view.pt-tv .card.hover .card__view {-webkit-transform:translateY(-.2em) scale(1.045);transform:translateY(-.2em) scale(1.045);box-shadow:0 0 .85em rgba(173,217,229,.4),0 0 1.8em rgba(173,217,229,.22)}
 body.lampa_view.pt-tv .card.hover:not(.focus) .card__view {box-shadow:none!important;transform:none!important}
 body.lampa_view.pt-tv .card.hover:not(.focus) .card__view:after {border-color:transparent!important;box-shadow:none!important}
 body.lampa_view .pt-hero__studio.selector {cursor:pointer;border-radius:.2em}
@@ -808,6 +805,8 @@ body.lampa_view .search-box {z-index:90!important;background:#080b10!important;b
 
 /* Keep hero focus inside its paint bounds, including keyboard and remote input. */
 body.lampa_view .pt-hero__action {outline:none!important;transition-property:background-color,color!important}
+body.lampa_view.pt-tv .card.hover:not(.focus) .card__view {box-shadow:none!important;transform:none!important}
+body.lampa_view.pt-tv .card.hover:not(.focus) .card__view:after {border-color:transparent!important;box-shadow:none!important}
 body.lampa_view .pt-hero__studio.selector {outline:none!important;transition:none!important}
 body.lampa_view .pt-hero__studio.selector.focus,body.lampa_view .pt-hero__studio.selector:focus-visible {outline:none!important;box-shadow:inset 0 0 0 2px var(--pt-accent)!important}
 
@@ -824,3 +823,23 @@ body.lampa_view .nova-plus-root .nova__list--grid:not(.nova__list--row)>.nova-ca
 
 body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar>.nova-chip {min-height:44px;min-width:44px}
 body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar>.nova-chip--view-icon {width:44px;height:44px;flex-basis:44px}
+
+/* Whole poster slots leave a small gutter for the focus ring at both ends. */
+body.lampa_view .minimal-fit-posters>.items-line__body>.scroll--horizontal>.scroll__content {padding-left:var(--minimal-poster-gutter,.55em);padding-right:var(--minimal-poster-gutter,.55em)}
+body.lampa_view .items-line.minimal-posters-sized .card:not(.card--wide):not(.card--collection) {width:var(--minimal-poster-width)!important}
+body.lampa_view .minimal-fit-posters>.items-line__body {-webkit-mask-image:none!important;mask-image:none!important}
+body.lampa_view .minimal-fit-posters .mapping--line>.card+.card {margin-left:var(--minimal-poster-gap,1em)}
+body.lampa_view .minimal-fit-posters .scroll__body>.card:last-child {margin-right:0}
+
+/* The banner frame uses the reference Bigger size, independent of UI scale. */
+body.lampa_view {--pt-banner-unit:calc(clamp(14px,.94vw,18px) * 1.05)}
+body.lampa_view .pt-hero {height:clamp(calc(32 * var(--pt-banner-unit)),67vh,calc(43 * var(--pt-banner-unit)));min-height:0;max-height:none}
+@media(min-width:1100px){body.lampa_view .pt-hero {height:clamp(calc(27 * var(--pt-banner-unit)),56vh,calc(34 * var(--pt-banner-unit)))}}
+body.lampa_view.pt-tv .pt-hero {height:clamp(calc(18 * var(--pt-banner-unit)),44vh,calc(29 * var(--pt-banner-unit)));min-height:0;max-height:none}
+body.lampa_view.pt-mobile .pt-hero {height:calc(36 * 16px * 1.05);min-height:0;max-height:none}
+body.lampa_view .minimal-home-first-row {min-height:var(--minimal-home-row-height)}
+
+/* The same mark has one position, before and after the native update. */
+body.lampa_view .torrent-item .torrent-item__viewed {position:absolute;top:.85em;left:auto;right:.85em;width:1.5em;height:1.5em;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:.2em;border:1px solid var(--pt-accent);border-radius:50%;background:var(--pt-accent);color:#13232c;z-index:2;pointer-events:none}
+body.lampa_view .torrent-item__viewed svg {width:100%;height:100%}
+body.lampa_view .torrent-item .tc-right {padding-right:2em}

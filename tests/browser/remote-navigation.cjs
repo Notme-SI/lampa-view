@@ -34,7 +34,7 @@ const {setup}=require('../fixtures/native-browser.cjs');
    const first=await page.locator('#qa-selection .card').nth(0).screenshot();
    for(let i=0;i<8;i++){await page.keyboard.press('ArrowRight');await page.keyboard.press('ArrowLeft');}
    const focus=await page.locator('#qa-selection .card').evaluateAll(nodes=>nodes.map(n=>{const s=getComputedStyle(n.querySelector('.card__view'),'::after'),t=getComputedStyle(n.querySelector('.card__title'));return {focus:n.classList.contains('focus'),border:s.borderWidth,borderColor:s.borderColor,shadow:s.boxShadow,title:t.backgroundColor,color:t.color,transform:getComputedStyle(n.querySelector('.card__view')).transform};}));
-   assert.equal(focus.filter(n=>n.focus).length,1);assert.equal(focus[0].border,'4px');assert.notEqual(focus[0].title,'rgba(0, 0, 0, 0)');assert.equal(focus[0].transform,'none');
+   assert.equal(focus.filter(n=>n.focus).length,1);assert.equal(focus[0].border,'2px');assert.equal(focus[0].title,'rgba(0, 0, 0, 0)');assert.equal(focus[0].color,'rgb(173, 217, 229)');assert.notEqual(focus[0].transform,'none');
    assert.ok(Number(await page.locator('#qa-selection .card.focus .card__view').evaluate(n=>getComputedStyle(n,'::after').zIndex))>0,'The ring must render above the poster rather than behind it');
    assert.equal(Buffer.compare(first,await page.locator('#qa-selection .card').nth(0).screenshot()),0,'Rapid remote navigation leaves no residual ring pixels');
    await page.keyboard.press('ArrowRight');assert.equal(await page.locator('#qa-selection .card.focus').count(),1);

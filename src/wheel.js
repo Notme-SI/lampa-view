@@ -1,3 +1,4 @@
+import {settleRail} from './rail-fit.js';
 // Pointer scrolling must not enter row controllers (their boundary opens the menu).
 // Scroll.wheel still owns position, bounds, rendering and lazy-loading callbacks.
 export default function installWheel(L,enabled){
@@ -15,7 +16,7 @@ export default function installWheel(L,enabled){
     if(state.frame && window.cancelAnimationFrame)window.cancelAnimationFrame(state.frame);
     states.delete(state.node);state.node.classList.remove('pt-wheel-moving');
     document.body.classList.toggle('pt-wheel-active',states.size>0);
-    if(state.node.isConnected)notify(state,true);
+    if(state.node.isConnected){if(enabled())settleRail(state.node);notify(state,true);}
     if(!states.size)document.dispatchEvent(new Event('minimal:wheel-idle'));
   }
   function animate(state,time){

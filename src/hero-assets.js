@@ -1,8 +1,10 @@
 import {logoSize} from './artwork.js';
-// Share artwork by URL, retain a small decoded working set, and cancel obsolete
-// full-size requests as soon as selection changes.
+// Keep a bounded working set across carousel mounts. Successful images survive
+// navigation; pending requests and callbacks still belong to their screen.
+const pools=new WeakMap();
 export default function heroAssets(L,cards,loadLogo){
- const images=new Map(),logos=new Map(),studios=new Map();let disposed=false,current=0,warmTimer,warmWanted=false,activeCover='';
+ let pool=pools.get(L);if(!pool){pool={images:new Map(),active:new Map()};pools.set(L,pool);}
+ const images=pool.images,owner={},logos=new Map(),studios=new Map();let disposed=false,current=0,warmTimer,warmWanted=false;
  const wrap=i=>(i+cards.length)%cards.length;
  const paused=()=>document.hidden || document.body.matches('.pt-wheel-active,.pt-tv-busy');
  const coverUrl=(i,size)=>L.TMDB.image('/t/p/'+size+cards[wrap(i)].backdrop_path);
@@ -19,11 +21,12 @@ export default function heroAssets(L,cards,loadLogo){
    const crowded=images.size>24 || bytes>budget;
    if(!crowded && originals<=2)break;
    if(!crowded && !entry.original)continue;
-   if(url!==activeCover && entry.done){bytes-=entry.bytes || 0;if(entry.original)originals--;remove(url,entry);}
+   if(![...pool.active.values()].includes(url) && entry.done){bytes-=entry.bytes || 0;if(entry.original)originals--;remove(url,entry);}
   }
  }
  function fetchImage(url,callback,type,priority,coverPath){
   if(disposed)return;
+  const notify=callback;callback=value=>{if(!disposed)notify(value);};callback.owner=owner;
   const existing=images.get(url);
   if(existing){
    images.delete(url);images.set(url,existing);
@@ -31,10 +34,10 @@ export default function heroAssets(L,cards,loadLogo){
    if(existing.done)callback(existing.url);else existing.callbacks.push(callback);
    return;
   }
-  const entry={image:new Image(),callbacks:[callback],url,done:false,original:type==='original',cover:type==='cover' || type==='original',coverPath,background:priority==='low'};images.set(url,entry);
+  const entry={image:new Image(),callbacks:[callback],url,owner,done:false,original:type==='original',cover:type==='cover' || type==='original',coverPath,background:priority==='low'};images.set(url,entry);
   entry.image.decoding='async';entry.image.fetchPriority=priority || 'auto';
   function finish(value){
-   if(disposed || images.get(url)!==entry || entry.done)return;
+   if(images.get(url)!==entry || entry.done)return;
    clearTimeout(entry.timeout);entry.image.onload=entry.image.onerror=null;entry.done=true;entry.url=value;
    entry.bytes=(entry.image.naturalWidth || 1)*(entry.image.naturalHeight || 1)*4;
    // A transient proxy error is not a reusable cached image. Selecting the
@@ -51,11 +54,11 @@ export default function heroAssets(L,cards,loadLogo){
   const path=cards[current].backdrop_path;
   // Proxy URLs may encode the path or append account/uid parameters. Keep
   // selection identity separately; URL suffixes cannot identify a backdrop.
-  for(const [url,entry] of images)if(entry.cover && !entry.background && !entry.done && entry.coverPath!==path)remove(url,entry);
+  for(const [url,entry] of images)if(entry.owner===owner && entry.cover && !entry.background && !entry.done && entry.coverPath!==path && entry.callbacks.every(fn=>fn.owner===owner))remove(url,entry);
  }
  function cover(i,size,callback,background){
   i=wrap(i);const url=coverUrl(i,size);
-  if(!background){select(i);activeCover=url;}
+  if(!background){select(i);pool.active.clear();pool.active.set(owner,url);}
   fetchImage(url,callback,size==='original'?'original':'cover',background?'low':'high',cards[i].backdrop_path);
  }
  function logo(i,callback){
@@ -100,13 +103,15 @@ export default function heroAssets(L,cards,loadLogo){
  function ready(i,size){
   const url=coverUrl(i,size),saved=images.get(url);
   if(!saved || !saved.done || !saved.url)return '';
-  images.delete(url);images.set(url,saved);activeCover=url;
+  images.delete(url);images.set(url,saved);pool.active.clear();pool.active.set(owner,url);
   return saved.url;
  }
  function dispose(){
   disposed=true;clearTimeout(warmTimer);
   document.removeEventListener('minimal:wheel-idle',resume);document.removeEventListener('minimal:tv-idle',resume);document.removeEventListener('visibilitychange',resume);
-  for(const [url,entry] of images)remove(url,entry);
+  pool.active.delete(owner);
+  for(const [url,entry] of images)if(!entry.done){entry.callbacks=entry.callbacks.filter(fn=>fn.owner!==owner);if(!entry.callbacks.length)remove(url,entry);}
+  trim();
   logos.clear();studios.clear();
  }
  return {cover,logo,studio,warm,ready,select,dispose};

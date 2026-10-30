@@ -1,4 +1,5 @@
 import rowNavigation from './row-navigation.js';
+import fitRail,{settleRail} from './rail-fit.js';
 export default function fillRows(L,enabled){
   const lines=new Map();
   const roots=new WeakMap();
@@ -19,7 +20,7 @@ export default function fillRows(L,enabled){
       if(!enabled() || document.body.matches('.pt-wheel-active,.pt-tv-busy'))return;
       const render=line.render(true),root=render && (render.nodeType?render:render[0]);
       if(!root || !root.isConnected)return;
-      if(!state.root){state.root=root;roots.set(root,line);if(observer)observer.observe(root);if(sizes)sizes.observe(root);}
+      if(!state.root){state.root=root;roots.set(root,line);if(observer)observer.observe(root);if(sizes)sizes.observe(root);root.addEventListener('touchend',()=>{if(enabled())settleRail(line.scroll && line.scroll.render(true));},{passive:true});}
       const box=root.getBoundingClientRect();
       if(!box.width || box.bottom<0 || box.top>window.innerHeight+200)return;
       const card=root.querySelector('.card,.full-person');if(!card)return;
@@ -32,6 +33,7 @@ export default function fillRows(L,enabled){
           if(available>0){const count=Math.max(1,Math.floor((available+gap)/(base+gap))),width=(available-(count-1)*gap)/count;root.style.setProperty('--minimal-person-width',width.toFixed(3)+'px');}
         }
       }
+      fitRail(line,root,card,state,enabled);
       const size=card.getBoundingClientRect().width;if(!size)return;
       const style=window.getComputedStyle(card),gap=(parseFloat(style.marginLeft)||0)+(parseFloat(style.marginRight)||0);
       const desired=Math.min(state.data.results.length,24,Math.ceil(box.width/(size+gap))+1);
@@ -59,6 +61,7 @@ export default function fillRows(L,enabled){
   };
   let resize;
   window.addEventListener('resize',()=>{clearTimeout(resize);resize=setTimeout(()=>lines.forEach((state,line)=>schedule(line,state.data)),150);});
+  document.addEventListener('minimal:hero-layout',()=>lines.forEach((state,line)=>schedule(line,state.data)));
   document.addEventListener('minimal:wheel-idle',()=>lines.forEach((state,line)=>schedule(line,state.data)));
   document.addEventListener('minimal:tv-idle',()=>lines.forEach((state,line)=>schedule(line,state.data)));
   let scrolling;

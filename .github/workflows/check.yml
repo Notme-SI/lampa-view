@@ -35,6 +35,8 @@ jobs:
           node tests/browser/trakt-interface.cjs
           node tests/browser/online-polish.cjs
           node tests/browser/interface-size.cjs
+          node tests/browser/poster-rail.cjs
+          node tests/browser/home-stage.cjs
       - run: python3 server/test-bootstrap.py
       - run: python3 server/test-online.py
       - name: Check published files match source

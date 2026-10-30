@@ -1,0 +1,23 @@
+const test=require('node:test'),assert=require('node:assert/strict'),path=require('node:path'),{JSDOM}=require('jsdom'),esbuild=require('esbuild');
+test('decoded banners and branding survive carousel destruction without retaining obsolete requests',async()=>{
+ const dom=new JSDOM('<body class="pt-tv"></body>',{runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,images=[];
+ w.Image=class{constructor(){images.push(this);this.naturalWidth=1280;this.naturalHeight=720;}set src(v){this.url=v;}get src(){return this.url;}decode(){return Promise.resolve();}};
+ w.eval(esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/hero-assets.js')],bundle:true,write:false,format:'iife',globalName:'Assets'}).outputFiles[0].text);
+ const L={TMDB:{image:p=>'http://images.test'+p}},cards=[{id:1,backdrop_path:'/one.jpg'},{id:2,backdrop_path:'/two.jpg'}],load=(c,ok)=>ok('/title.png');
+ let first=w.Assets.default(L,cards,load),shown;
+ first.cover(0,'w1280',u=>shown=u);images[0].onload();await new Promise(r=>setTimeout(r,0));
+ first.logo(0,()=>{});images[1].onload();await new Promise(r=>setTimeout(r,0));
+ first.cover(1,'w1280',()=>assert.fail('Disposed request must not paint'));const late=images[2].onload;
+ first.dispose();late();await new Promise(r=>setTimeout(r,0));
+ assert.equal(images[0].src,shown,'Successful decoded cover remains bounded in the shared pool');assert.equal(images[2].src,'','Unfinished request is cancelled');
+ const second=w.Assets.default(L,cards,load);assert.equal(second.ready(0,'w1280'),shown);
+ second.cover(0,'w1280',u=>assert.equal(u,shown));second.logo(0,u=>assert.match(u,/title.png/));
+ assert.equal(images.length,3,'Reopening creates no extra Image or decode for cached cover and logo');
+ second.dispose();
+ const third=w.Assets.default(L,cards,load);let called=0;
+ third.cover(1,'w1280',()=>assert.fail('Destroyed screen must not receive a shared result'));
+ const loader=images[3],fourth=w.Assets.default(L,cards,load);fourth.cover(1,'w1280',()=>called++);
+ third.dispose();loader.onload();await new Promise(r=>setTimeout(r,0));
+ assert.equal(called,1,'Another live screen keeps a shared in-flight request alive');assert.equal(images.length,4);
+ fourth.dispose();w.close();
+});
