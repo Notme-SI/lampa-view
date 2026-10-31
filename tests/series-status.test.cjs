@@ -2,7 +2,7 @@ const test=require('node:test'),assert=require('node:assert/strict'),path=requir
 const code=esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/series-status.js')],bundle:true,write:false,format:'iife',globalName:'SeriesStatus'}).outputFiles[0].text;
 test('release counts belong to the latest aired season and do not count future episodes or specials',()=>{
  const d=new JSDOM('',{runScripts:'outside-only'});try{d.window.eval(code);const api=d.window.SeriesStatus,episodes=[{season_number:0,episode_number:99,air_date:'2020-01-01'},{season_number:1,episode_number:10,air_date:'2020-01-01'},{season_number:2,episode_number:6,air_date:'2026-10-29'},{season_number:2,episode_number:7,air_date:'2026-11-05'}];
- assert.deepEqual({...api.releaseStatus({seasons:[{season_number:2,episode_count:10}]},episodes,'2026-10-30')},{season:2,count:6,total:10});assert.equal(api.releaseStatus({},[]),null);assert.equal(api.episodeLabel('6 - Эпизод 6'),'Серия 6');assert.equal(api.episodeLabel('Эпизод 8'),'Серия 8');
+ assert.deepEqual({...api.releaseStatus({seasons:[{season_number:2,episode_count:10}]},episodes,'2026-10-30')},{season:2,count:6,total:10});assert.equal(api.releaseStatus({},[]),null);assert.doesNotThrow(()=>api.releaseStatus({seasons:2,last_episode_to_air:episodes[2]},[],'2026-10-30'));assert.equal(api.episodeLabel('6 - Эпизод 6'),'Серия 6');assert.equal(api.episodeLabel('Эпизод 8'),'Серия 8');
  }finally{d.window.close();}
 });
 test('focused series gets readable watch and release status, preserves native progress and shares metadata across duplicate cards',()=>{

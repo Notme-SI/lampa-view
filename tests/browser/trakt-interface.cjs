@@ -33,7 +33,7 @@ const {stage}=require('../fixtures/online-browser.cjs');
    await stage(page,true);
    await page.evaluate(()=>{Lampa.DeviceInput.init();Lampa.Controller.observe();Lampa.Keypad.init();Lampa.Keypad.enable();Navigator.follow('focus',event=>Lampa.Controller.focus(event.elem));});
    const bar=await page.locator('.nova-plus-root .nova-plus__bar').last().evaluate(el=>[...el.querySelectorAll('.nova-chip')].map(n=>({key:n.dataset.novaFocus,text:n.innerText,icon:!!n.querySelector('svg')})));
-   assert.deepEqual(bar.map(item=>item.key),['view','source','voice']);assert.equal(bar[0].text,'');assert.ok(bar[0].icon);
+   assert.deepEqual(bar.map(item=>item.key),['view','direction','source','voice']);assert.equal(bar[0].text,'');assert.ok(bar[0].icon);
    await page.evaluate(()=>jQuery('.nova-plus-root [data-nova-focus=source]').last().trigger('hover:enter'));await page.waitForSelector('.selectbox--open');assert.equal(await page.locator('.selectbox-item').count(),1);await page.keyboard.press('Escape');
    await page.evaluate(()=>jQuery('.nova-plus-root [data-nova-focus=view]').last().trigger('hover:enter'));await page.waitForTimeout(100);assert.equal(await page.evaluate(()=>Lampa.Storage.get('nova_plus_view')),'list');
    assert.equal(await page.locator('.nova-plus-root [data-nova-focus=order],.nova-plus-root [data-nova-focus=look]').count(),0);

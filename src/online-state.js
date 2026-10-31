@@ -57,7 +57,7 @@ export function relevantFolders(rows,card){
  const aliases=value=>String(value || '').split(/\s+[\/|]\s+/).map(clean).filter(Boolean);
  const names=new Set([card.title,card.name,card.original_title,card.original_name].flatMap(aliases));if(!names.size)return rows;
  const serial=!!(card.name || card.original_name),year=Number(String(card.first_air_date || card.release_date || '').slice(0,4));
- const known=Math.max(1,Number(card.number_of_seasons)||0,...(card.seasons || []).map(row=>Number(row.season_number)||0));
+ const known=Math.max(1,Number(card.number_of_seasons)||0,...(Array.isArray(card.seasons)?card.seasons:[]).map(row=>Number(row.season_number)||0));
  return rows.filter(row=>{
   if(!row.similar)return true;
   if(row.method!=='link' || !/^(?:https?:\/\/|\/)/i.test(row.url || ''))return false;
@@ -127,7 +127,7 @@ export default function onlineState(L){
  }
  function lastWatched(card){
   const titles=names(card),saved=L.Storage.get('online_watched_last',{}) || {},lastSeason=titles.reduce((max,title)=>Math.max(max,number(saved[L.Utils.hash(title)] && saved[L.Utils.hash(title)].season)),0);
-  const key=[file(),card.source || 'tmdb',card.name || card.original_name?'tv':'movie',card.id || '',card.number_of_seasons || 0,lastSeason,(card.seasons || []).map(season=>season.season_number+':'+season.episode_count).join(','),...titles].join('|'),old=snapshots.get(key);
+  const key=[file(),card.source || 'tmdb',card.name || card.original_name?'tv':'movie',card.id || '',card.number_of_seasons || 0,lastSeason,(Array.isArray(card.seasons)?card.seasons:[]).map(season=>season.season_number+':'+season.episode_count).join(','),...titles].join('|'),old=snapshots.get(key);
   if(old && old.revision===revision && Date.now()-old.at<5000)return old.value;
   const read=reader(card),seasons=Array.isArray(card.seasons)?card.seasons:[],max=Math.min(60,Math.max(1,lastSeason,number(card.number_of_seasons),seasons.reduce((n,s)=>Math.max(n,number(s.season_number)),0)));let latest=null;
   for(let s=1;s<=max;s++){

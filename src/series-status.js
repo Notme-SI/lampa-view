@@ -6,7 +6,7 @@ export function releaseStatus(data={},episodes=[],today=day(new Date().toISOStri
  if(last && Number(last.season_number)>0 && last.air_date && day(last.air_date)<=today)aired.push(last);
  if(!aired.length)return null;
  const season=Math.max(...aired.map(e=>Number(e.season_number))),rows=aired.filter(e=>Number(e.season_number)===season);
- const count=Math.max(...rows.map(e=>Number(e.episode_number))),detail=(data.seasons || []).find(s=>Number(s.season_number)===season);
+ const count=Math.max(...rows.map(e=>Number(e.episode_number))),detail=(Array.isArray(data.seasons)?data.seasons:[]).find(s=>Number(s.season_number)===season);
  return {season,count,total:Math.max(count,Number(detail && detail.episode_count)||0)};
 }
 export function episodeLabel(text){
@@ -123,7 +123,7 @@ export default function seriesStatus(L,schedule){
   const view=node.querySelector('.card__view');if(!view)return;
   const series=data.media_type!=='movie' && !!(data.name || data.original_name || data.first_air_date || data.media_type==='tv');
   const key=String(data.id),entry=cache.get(key),fresh=entry && Date.now()-entry.at<(entry.value?900000:60000),facts=fresh?entry.value:null;
-  const details=fresh && entry.details,historyData=details?{...data,number_of_seasons:details.number_of_seasons || data.number_of_seasons,seasons:Array.from(new Map([...(data.seasons || []),...(details.seasons || [])].map(season=>[Number(season.season_number),season])).values())}:data;
+  const details=fresh && entry.details,historyData=details?{...data,number_of_seasons:details.number_of_seasons || data.number_of_seasons,seasons:Array.from(new Map([...(Array.isArray(data.seasons)?data.seasons:[]),...(Array.isArray(details.seasons)?details.seasons:[])].map(season=>[Number(season.season_number),season])).values())}:data;
   watchFooter(L,node,historyData,series);
   if(!series)return;
   const table=L.TimeTable && L.TimeTable.get?L.TimeTable.get(data) || []:[];
