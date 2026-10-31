@@ -3519,7 +3519,7 @@
     if (countryYear) date.append($('<span class="nova-hero__year"></span>').text(countryYear));
     if (tmdbKind(movie) === 'movie') {
       var duration = fallbackTime() || (target && target.time) || '';
-      if (duration) ui.hero.append($('<span class="nova-hero__runtime"></span>').text(duration));
+      if (duration) meta.append($('<span class="nova-hero__runtime"></span>').text(duration));
     } else meta.append($('<span class="nova-hero__season-label"></span>').text(text('torrent_serial_season', 'nova_plus_season') + ' ' + (seasonNumber() || 1)));
     if (date.children().length) meta.append(date);
   }

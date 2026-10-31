@@ -46,7 +46,14 @@ export default function cardInfo(L){
   cache.delete(id);cache.set(id,entry);if(cache.size>400)cache.delete(cache.keys().next().value);save();
  }
  function read(c){
-  const entry=cache.get(key(c));if(!fresh(entry))return c;
+  const entry=cache.get(key(c));
+  // Old bookmarks may retain an English title next to a localized name or
+  // a Russian alias already learned from this same catalogue ID.
+  if(/^ru(?:-|$)/i.test(L.Storage && L.Storage.get?L.Storage.get('language','ru'):'ru')){
+   const local=[c.name,c.title,...(fresh(entry)?entry.names || []:[])].find(name=>typeof name==='string' && /[а-яё]/i.test(name));
+   if(local)c={...c,title:local,...(kind(c)==='tv'?{name:local}:{})};
+  }
+  if(!fresh(entry))return c;
   return {...c,...(!releaseYear(c)?{...(entry.release_date?{release_date:entry.release_date}:{}),...(entry.first_air_date?{first_air_date:entry.first_air_date}:{})}:{}),...(!c.genre_ids || !c.genre_ids.length?{genre_ids:entry.genre_ids}:{}),...(!c.original_language?{original_language:entry.original_language}:{}),...(!c.origin_country || !c.origin_country.length?{origin_country:entry.origin_country}:{}),...(!(Number(c.vote_average)>0) && entry.vote_average?{vote_average:entry.vote_average}:{}),...(entry.minimal_anime?{minimal_anime:true}:{})};
  }
  const paused=()=>document.body.matches('.pt-wheel-active,.pt-tv-busy') || document.hidden;

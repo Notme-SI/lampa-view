@@ -31,7 +31,16 @@ export default function quality(L,$){
   }
   const norm=s=>String(s || '').toLowerCase().replace(/ё/g,'е').replace(/[^a-zа-я0-9\u3040-\u30ff\u3400-\u9fff]/g,'');
   const label=qualityLabel;
-  function paintYear(node,data){const year=releaseYear(data);if(!year)return;let age=node.querySelector('.card__age');if(!age){age=document.createElement('div');age.className='card__age';const title=node.querySelector('.card__title');(title && title.parentNode || node).appendChild(age);}if(age.textContent!==year)age.textContent=year;}
+  function paintCaption(node,data){
+    const title=node.querySelector('.card__title'),text=data.title || data.name || '';
+    if(title && text && title.textContent!==text)title.textContent=text;
+    const year=releaseYear(data);if(!year || !title)return;
+    let age=node.querySelector('.card__age');
+    if(!age){age=document.createElement('div');age.className='card__age';}
+    // Late metadata belongs before the reserved watch footer, not after it.
+    if(age.parentNode!==title.parentNode || age.previousElementSibling!==title)title.parentNode.insertBefore(age,title.nextSibling);
+    if(age.textContent!==year)age.textContent=year;
+  }
   function paint(node,q){
     if(!q || !node.isConnected)return;
     const view=node.querySelector('.card__view');if(!view)return;
@@ -87,7 +96,7 @@ export default function quality(L,$){
     const data=info.read(raw),render=item.render && item.render(true),node=render && (render.nodeType?render:render[0]);
     if(!node || !node.classList.contains('card') || (!data.title && !data.original_title && !data.name && !data.original_name))return;
     node._minimalCardData=data;track(item,node);status.track(node,data);
-    paintYear(node,data);
+    paintCaption(node,data);
     const tv=data.media_type==='movie'?false:data.media_type==='tv' || !!data.original_name || !!data.first_air_date || node.classList.contains('card--tv');
     const anime=isAnime(data);
     // Some native history/continue cards omit the rating module even though

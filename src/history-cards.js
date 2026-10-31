@@ -1,4 +1,6 @@
+import watchHistory from './watch-history.js';
 export default function historyCards(L,enabled){
+ watchHistory(L);
  function activate(event){
   if(!enabled() || !L.Activity || !L.Activity.active)return;
   const active=L.Activity.active() || {};

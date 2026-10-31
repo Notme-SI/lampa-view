@@ -230,6 +230,7 @@ if (!ROOT.LampaView) {
       let logoToken=0,upgradeTimer,rotation;
       const assets=heroAssets(L,cards,loadLogo);
       if(activity.component && activity.component.use)activity.component.use({onDestroy:()=>{clearTimeout(upgradeTimer);assets.dispose();}});
+      const requestHeroLayout=()=>element[0].dispatchEvent(new Event('minimal:hero-layout',{bubbles:true}));
       function show(next){
         index=(next+cards.length)%cards.length;
         assets.select(index);
@@ -246,8 +247,8 @@ if (!ROOT.LampaView) {
          assets.logo(selected,(url,language)=>{
           if(token!==logoToken || !url)return;
           logo.attr('alt',card.title || card.name).on('load',()=>{
-            if(token===logoToken){const translated=language!==String(L.Storage.get('language','ru') || 'ru').slice(0,2);logo.removeClass('pt-hidden').toggleClass('pt-hero__logo--translated',translated);title.toggleClass('pt-hidden',!translated).toggleClass('pt-hero__title--translation',translated);}
-          }).on('error',()=>{if(token===logoToken){logo.addClass('pt-hidden');title.removeClass('pt-hidden pt-hero__title--translation');}})
+            if(token===logoToken){const translated=language!==String(L.Storage.get('language','ru') || 'ru').slice(0,2);logo.removeClass('pt-hidden').toggleClass('pt-hero__logo--translated',translated);title.toggleClass('pt-hidden',!translated).toggleClass('pt-hero__title--translation',translated);requestHeroLayout();}
+          }).on('error',()=>{if(token===logoToken){logo.addClass('pt-hidden');title.removeClass('pt-hidden pt-hero__title--translation');requestHeroLayout();}})
             .attr('src',url);
         });
          assets.studio(selected,value=>{
@@ -274,6 +275,7 @@ if (!ROOT.LampaView) {
         }
         assets.warm(index);
         dots.children().each(function(i){$(this).toggleClass('active',i===index).attr('aria-pressed',String(i===index));});
+        requestHeroLayout();
         if(rotation)rotation.refresh();
       }
       const qualityChanged=()=>show(index);

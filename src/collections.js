@@ -22,7 +22,7 @@ export default function collections(L,shiki){
  const context=o=>{o=o || {};const component=o.component || 'main';if(component==='main')return 'main:';const kind=o.url || o.cat;return component==='category' && ['movie','tv','cartoon','anime','dorama','tvshow'].includes(kind)?kind==='anime'?animeContext(o):'category:'+kind:null;};
  function remember(ctx,rows,append=false){
   if(!ctx)return;const names=known(),previous=append?(names[ctx] || []):[],next=previous.slice();
-  rows.filter(row=>row && row.title && !/^(shots|спорт|расписание)$/i.test(String(row.title).trim()) && ((row.results || []).length || row.minimal_hidden || row.minimal_configurable)).forEach(row=>{const id=rowKey(row),entry={id,title:row.title,...(row.minimal_row_aliases?{aliases:row.minimal_row_aliases}:{}),...(row.minimal_empty?{subtitle:'Появится после начала просмотра'}:{})};const index=next.findIndex(old=>old.id===id);if(index<0)next.push(entry);else next[index]=entry;});
+  rows.filter(row=>row && row.title && !/^(shots|спорт|расписание)$/i.test(String(row.title).trim()) && ((row.results || []).length || row.minimal_hidden || row.minimal_configurable)).forEach(row=>{const id=rowKey(row),entry={id,title:row.title,...(row.minimal_row_aliases?{aliases:row.minimal_row_aliases}:{}),...(row.minimal_empty?{subtitle:'Появится после добавления в историю'}:{})};const index=next.findIndex(old=>old.id===id);if(index<0)next.push(entry);else next[index]=entry;});
   captured.add(ctx);if(JSON.stringify(names[ctx] || [])!==JSON.stringify(next)){names[ctx]=next;L.Storage.set(knownKey,names);}
  }
  function prefs(ctx){const all=read(),p=all[ctx] || (ctx==='category:anime:standard'?all['category:anime']:null) || {};if(ctx!=='main:' || !(p.order || []).length || p.order.includes(CONTINUE))return p;const rows=known()[ctx] || [],watch=rows.find(isWatching),order=p.order.slice(),index=watch?order.findIndex(id=>matchesRow({url:watch.id,title:watch.title,minimal_row_aliases:watch.aliases},id)):-1;order.splice(index+1,0,CONTINUE);return {...p,order};}
@@ -75,18 +75,10 @@ export default function collections(L,shiki){
  if(category)L.Api.category=function(object,ok,fail){
   const kind=object.url || object.cat,ctx=context({...object,component:'category'});
   if(!['movie','tv','cartoon','anime','dorama','tvshow'].includes(kind))return category.apply(this,arguments);
-  if((object.source || L.Storage.get('source','cub'))==='trakt' && !(kind==='anime' && animeMode(L,object)==='shikimori')){
+  if((object.source || L.Storage.get('source','cub'))==='trakt' && !['dorama','tvshow'].includes(kind) && !(kind==='anime' && animeMode(L,object)==='shikimori')){
    const status=object.minimal_catalogue_status={state:'loading'};
-   const special=['dorama','tvshow'].includes(kind);
    function accept(rows){status.state=rows.some(row=>row.results && row.results.length)?'ready':'empty';remember(ctx,rows);ok(arrange(rows,prefs(ctx)));}
-   function supplement(rows){
-    const usable=rows.filter(row=>row.results && row.results.length);
-    if(!special || usable.length>=3 && usable.reduce((n,row)=>n+row.results.length,0)>=20)return accept(rows);
-    // Missing regional coverage is supplemented explicitly by TMDB feeds;
-    // their URLs/source remain TMDB, including More and subsequent pages.
-    catalogue(L,shiki,{...object,source:'tmdb'},prefs(ctx).hidden || [],extra=>accept(usable.concat(extra.filter(row=>!row.minimal_hidden).map(row=>({...row})))));
-   }
-   return category.call(this,{...object,source:'trakt'},supplement,error=>{if(special)return supplement([]);status.state='error';if(fail)fail(error);});
+   return category.call(this,{...object,source:'trakt'},accept,error=>{status.state='error';if(fail)fail(error);});
   }
   catalogue(L,shiki,object,prefs(ctx).hidden || [],rows=>{remember(ctx,rows);ok(arrange(rows.filter(row=>!row.minimal_hidden),prefs(ctx)));});
   // Only the selected catalogue runs, with a fixed plan and no next row loader.

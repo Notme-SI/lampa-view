@@ -25,12 +25,13 @@ const {setup}=require('../fixtures/native-browser.cjs');
      frames.push({...value.hero,count:value.count,posterWidth:value.posterWidth});
      if(process.env.LAMPA_QA_OUTPUT && device.width===2048){fs.mkdirSync(process.env.LAMPA_QA_OUTPUT,{recursive:true});await page.screenshot({path:path.join(process.env.LAMPA_QA_OUTPUT,engineName+'-home-'+size+'.png')});}
     }
-    assert.ok(frames.every(frame=>Math.abs(frame.height-frames[0].height)<1 && Math.abs(frame.width-frames[0].width)<1),'Banner dimensions must not change with UI scale: '+JSON.stringify(frames));
+    assert.ok(frames.every(frame=>Math.abs(frame.width-frames[0].width)<1),'Banner width stays consistent: '+JSON.stringify(frames));
+    assert.ok(frames[0].height>=frames[2].height,'Carousel uses the space left by the actual scaled row: '+JSON.stringify(frames));
     assert.ok(frames[2].posterWidth>frames[1].posterWidth+2,'Bigger must increase real poster width: '+JSON.stringify(frames));
     assert.ok(frames[0].count>=frames[1].count && frames[1].count>=frames[2].count,'Bigger must not shrink the first-row posters: '+JSON.stringify(frames));
     await page.locator('.activity--active .pt-hero').hover();await page.mouse.wheel(0,600);await page.waitForTimeout(600);
     assert.ok(await page.locator('.activity--active .pt-hero').evaluate(n=>n.getBoundingClientRect().top)<frames[2].top-100,'The rest of the page remains accessible by scrolling');
-    assert.deepEqual(r.errors,[]);await r.context.close();console.log(engineName+' '+device.mode+' '+device.width+'x'+device.height+': fixed banner and one whole first row at every native size');
+    assert.deepEqual(r.errors,[]);await r.context.close();console.log(engineName+' '+device.mode+' '+device.width+'x'+device.height+': adaptive banner and one whole first row at every native size');
    }
   }finally{await browser.close();}
  }

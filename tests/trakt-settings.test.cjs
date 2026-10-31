@@ -19,13 +19,16 @@ test('Trakt category reports ready state to anime tabs and preserves collection 
 });
 
 
-test('sparse regional Trakt categories are supplemented with explicitly attributed TMDB feeds',async()=>{
+test('CUB and Trakt use the full TMDB TV-show catalogue without a sparse regional Trakt detour',async()=>{
  const n=await native({built:true}),{L}=n;try{
   L.Storage.set('minimal_trakt_enabled',true);L.Storage.set('minimal_trakt_client_id','public-test-id');
-  L.Api.sources.trakt.category=(o,ok)=>ok([{title:'Популярное',url:'shows/popular',source:'trakt',results:[{id:900,name:'Шоу',media_type:'tv'}]}]);
+  L.Api.sources.trakt.category=()=>assert.fail('Regional categories must use TMDB directly');
   const requests=[];L.Api.sources.tmdb.get=(url,p,ok)=>{requests.push(url);ok({results:Array.from({length:20},(_,i)=>({id:100+i,name:'Русское шоу '+i,media_type:'tv',genre_ids:[10764],original_language:'ru'})),page:1,total_pages:7});};
-  const object={source:'trakt',url:'tvshow'},rows=await new Promise((resolve,reject)=>L.Api.category(object,resolve,reject));
-  assert.equal(rows[0].source,'trakt');assert.equal(rows.length,9);assert.equal(requests.length,8);
-  assert.ok(rows.slice(1).every(row=>row.source==='tmdb' && row.title.endsWith(' · TMDB') && row.results.length===20 && row.total_pages===7 && row.url.startsWith('discover/tv?')));assert.equal(object.minimal_catalogue_status.state,'ready');assert.deepEqual(n.errors,[]);
+  for(const source of ['cub','trakt']){
+   requests.length=0;const object={source,url:'tvshow'},rows=await new Promise((resolve,reject)=>L.Api.category(object,resolve,reject));
+   assert.equal(rows.length,8);assert.equal(requests.length,8);
+   assert.ok(rows.every(row=>row.source==='tmdb' && !row.title.endsWith(' · TMDB') && row.results.length===20 && row.total_pages===7 && row.url.startsWith('discover/tv?')));assert.equal(object.minimal_catalogue_status.state,'ready');
+  }
+  assert.deepEqual(n.errors,[]);
  }finally{n.close();}
 });

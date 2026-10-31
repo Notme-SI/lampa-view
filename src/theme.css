@@ -579,8 +579,8 @@ body.lampa_view .card .pt-card-watch--complete .time-line,body.lampa_view .card 
 body.lampa_view .card.focus .pt-card-watch--has-progress,body.lampa_view .card.hover .pt-card-watch--has-progress {visibility:visible}
 body.lampa_view .card .pt-card-watch .time-line {position:relative;inset:auto;width:100%}
 body.lampa_view .card .pt-card-watch>.card-watched.pt-card-watch--empty {display:none!important}
-/* One release pill below Series; logical segments wrap on narrow covers. */
-body.lampa_view .pt-series-status {position:absolute;left:auto!important;right:4px!important;top:2.6em;z-index:4;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:0 .25em;width:max-content;max-width:calc(100% - 8px);font-size:.6em;line-height:1.25;white-space:normal;padding:.35em .5em;border:1px solid #ffffff25;border-radius:.35em;background:#000b;color:#d4e2e6;pointer-events:none;box-sizing:border-box}
+/* One compact release pill below Series, shared by desktop and TV. */
+body.lampa_view .pt-series-status {position:absolute;left:auto!important;right:4px!important;top:2.6em;z-index:4;display:block;width:max-content;max-width:calc(100% - 8px);font-size:.6em;line-height:1.25;white-space:nowrap;padding:.35em .5em;border:1px solid #ffffff25;border-radius:.35em;background:#000b;color:#d4e2e6;pointer-events:none;box-sizing:border-box}
 body.lampa_view .pt-series-status>span {white-space:nowrap}
 
 /* Badges keep their own corners and wrap to another line when space is short. */
@@ -838,7 +838,7 @@ body.lampa_view {--pt-banner-unit:calc(clamp(14px,.94vw,18px) * 1.05)}
 body.lampa_view .pt-hero {height:clamp(calc(32 * var(--pt-banner-unit)),67vh,calc(43 * var(--pt-banner-unit)));min-height:0;max-height:none}
 @media(min-width:1100px){body.lampa_view .pt-hero {height:clamp(calc(27 * var(--pt-banner-unit)),56vh,calc(34 * var(--pt-banner-unit)))}}
 body.lampa_view.pt-mobile .pt-hero {height:calc(36 * 16px * 1.05);min-height:0;max-height:none}
-body.lampa_view .minimal-home-first-row {min-height:var(--minimal-home-row-height)}
+body.lampa_view .minimal-fit-posters .card__title {min-height:2.8em}
 
 /* The same mark has one position, before and after the native update. */
 body.lampa_view .torrent-item .torrent-item__viewed {position:absolute;top:.85em;left:auto;right:.85em;width:1.5em;height:1.5em;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:.2em;border:1px solid var(--pt-accent);border-radius:50%;background:var(--pt-accent);color:#13232c;z-index:2;pointer-events:none}
@@ -880,7 +880,7 @@ body.lampa_view.pt-tv .items-line {margin-bottom:.8em;padding-bottom:.7em}
 body.lampa_view.pt-tv .items-line .card:not(.card--wide):not(.card--collection) {width:clamp(8.4em,calc((90vw - 10em / var(--pt-interface-scale,1)) / 10 * var(--pt-interface-scale,1)),11.1em)!important}
 body.lampa_view.pt-tv .items-line.minimal-posters-sized .card:not(.card--wide):not(.card--collection) {width:var(--minimal-poster-width)!important}
 body.lampa_view.pt-tv .items-line>.items-line__head {padding-left:1.1em}
-body.lampa_view.pt-tv .card__title {font-size:.79em;max-height:4.2em;-webkit-line-clamp:3;line-clamp:3;overflow-wrap:break-word}
+body.lampa_view.pt-tv .card__title {font-size:.79em;max-height:2.8em;-webkit-line-clamp:2;line-clamp:2;overflow-wrap:break-word}
 body.lampa_view.pt-tv .mapping--grid>.card:not(.card--wide):not(.card--collection),body.lampa_view.pt-tv .category-full>.card:not(.card--wide):not(.card--collection) {width:calc(10% * var(--pt-interface-scale,1))!important}
 
 /* The same native menu becomes a dock only when the native preference is on. */
@@ -903,7 +903,6 @@ body.lampa_view .card:not(.focus):not(.hover) .pt-series-status {display:none}
 body.lampa_view .head__body {box-sizing:border-box;min-width:0}
 body.lampa_view .head__actions {flex-shrink:0}
 body.lampa_view .head__menu-icon,body.lampa_view .head__backward {position:relative;align-self:center;top:auto;left:auto;transform:none!important;transition:none!important}
-body.lampa_view.pt-tv .head__menu-icon {order:-4}
 body.lampa_view .head__menu-icon svg {display:block;flex:none;margin:0!important;position:static!important;transform:none!important}
 /* Header focus stays inside the control, matching Menu, with no second ring. */
 body.lampa_view .head__menu-icon,body.lampa_view .head__backward,body.lampa_view .head__action.open--search,body.lampa_view .head__action.open--profile,body.lampa_view .pt-holiday-icons>.head__action {outline:0 solid transparent!important;outline-offset:0!important;box-shadow:none!important;animation:none!important;transition:none!important;transform:none!important;border:1px solid var(--pt-line)!important}
@@ -926,20 +925,20 @@ body.lampa_view.pt-tv .pt-hero__action.hover:not(.focus):not(:focus-visible) {bo
 body.lampa_view.pt-tv .minimal-anime-tab[aria-selected="true"] {box-shadow:0 0 .65em #add9e540!important}
 body.lampa_view.pt-tv .full-start__button.button--alc-auto.focus,body.lampa_view.pt-tv .alc-ap__play.focus {background:var(--pt-accent)!important;color:#13232c!important;border-color:#fff!important;box-shadow:none!important;outline:none!important}
 
-/* TV assets retain their full vertical composition; text fits within the frame. */
-body.lampa_view.pt-tv .pt-hero__image {object-fit:contain;object-position:right center}
-body.lampa_view.pt-tv .pt-hero__body {top:46%;bottom:auto;transform:translateY(-50%);max-height:calc(100% - 4em)}
-body.lampa_view.pt-tv .pt-hero__logo {max-height:min(7em,15vh);margin-bottom:.8em}
-body.lampa_view.pt-tv .pt-hero__overview {-webkit-line-clamp:2}
+/* TV uses the same full-frame artwork and text composition as desktop. */
+body.lampa_view.pt-tv .pt-hero__image {object-fit:cover;object-position:70% 35%}
+body.lampa_view.pt-tv .pt-hero__body {top:auto;bottom:7em;transform:none}
+body.lampa_view.pt-tv .pt-hero__logo {max-height:7em;margin-bottom:1.4em}
+body.lampa_view.pt-tv .pt-hero__overview {-webkit-line-clamp:3}
 body.lampa_view.pt-tv .head {font-size:1.25em;height:3.6em}
 body.lampa_view.pt-tv .head__body {max-width:none;width:94%;padding:.5em 0}
 body.lampa_view.pt-tv .wrap__content {padding-top:4.5em!important}
 body.lampa_view.pt-tv.pt-menu-pinned .wrap__left {top:4.5em!important;height:calc(100% - 4.5em)!important}
 body.lampa_view.pt-tv .head__menu-icon,body.lampa_view.pt-tv .head__backward,body.lampa_view.pt-tv .head__action.open--search,body.lampa_view.pt-tv .head__action.open--profile,body.lampa_view.pt-tv .pt-holiday-icons>.head__action {border-width:2px!important}
-body.lampa_view.pt-tv .pt-series-status {font-size:.52em;line-height:1.15;gap:0 .2em;padding:.25em .4em;max-width:calc(100% - 8px);flex-wrap:wrap}
+body.lampa_view.pt-tv .pt-series-status {font-size:.6em;line-height:1.25;padding:.35em .5em}
 body.lampa_view.pt-tv .pt-series-status>span {white-space:nowrap}
 body.lampa_view .nova-plus-root .nova-hero__meta {background:rgba(8,11,16,.52);padding:.2em .4em}
-body.lampa_view .nova-plus-root .nova-hero__runtime {position:absolute;right:1em;top:3.15em;padding:.2em .45em;border-radius:.35em;background:rgba(8,11,16,.52);color:var(--pt-text);font-size:.8em;line-height:1.3}
+body.lampa_view .nova-plus-root .nova-hero__runtime {position:absolute;right:0;top:calc(100% + .45em);padding:.2em .45em;white-space:nowrap;border-radius:.35em;background:rgba(8,11,16,.52);color:var(--pt-text);font-size:.8em;line-height:1.3}
 body.lampa_view.pt-tv .minimal-comments-nav {display:none!important}
 body.lampa_view .nova-episode-nav {display:flex;justify-content:flex-end;gap:.4em;margin-bottom:.5em}
 body.lampa_view .nova-episode-nav button {width:2.1em;height:2.1em;display:flex;align-items:center;justify-content:center;border:1px solid var(--pt-line);border-radius:.6em;background:#ffffff04;color:var(--pt-muted);cursor:pointer}
@@ -947,3 +946,16 @@ body.lampa_view .nova-episode-nav svg {width:1em;height:1em}
 body.lampa_view.pt-tv .nova-episode-nav {display:none!important}
 body.lampa_view.pt-favorites .category-full>.card,body.lampa_view.pt-favorites .mapping--grid>.card {width:calc(12.5% * var(--pt-interface-scale,1))!important}
 @media(max-width:650px){body.lampa_view.pt-favorites .category-full>.card,body.lampa_view.pt-favorites .mapping--grid>.card {width:33.333%!important}}
+
+/* Episode arrows share the collection buttons' pointer and keyboard focus. */
+body.lampa_view .nova-episode-nav button:hover,body.lampa_view .nova-episode-nav button:focus-visible,body.lampa_view .nova-episode-nav button.focus,body.lampa_view .nova-episode-nav button.hover {border-color:var(--pt-accent);background:#add9e512;color:var(--pt-accent);box-shadow:0 0 0 1px var(--pt-accent);outline:none}
+
+/* Fixed pixel focus geometry is identical on TV and desktop, independent of
+   native focus themes and the interface font scale. */
+body.lampa_view .card.focus .card__view:after,body.lampa_view .card.hover .card__view:after {border:2px solid var(--pt-accent)!important;top:0!important;left:0!important;right:0!important;bottom:0!important;outline:none!important;box-shadow:none!important;border-radius:.5em!important}
+body.lampa_view .head__menu-icon:before,body.lampa_view .head__menu-icon:after,body.lampa_view .head__backward:before,body.lampa_view .head__backward:after,body.lampa_view .head__action.open--profile:before,body.lampa_view .head__action.open--profile:after,body.lampa_view .head__action.open--search:before,body.lampa_view .pt-holiday-icons>.head__action:before,body.lampa_view .pt-holiday-icons>.head__action:after {content:none!important;display:none!important}
+body.lampa_view .head__menu-icon,body.lampa_view .head__backward,body.lampa_view .head__action.open--search,body.lampa_view .head__action.open--profile,body.lampa_view .pt-holiday-icons>.head__action {border-width:2px!important}
+body.lampa_view .menu__item.focus,body.lampa_view .menu__item.hover,body.lampa_view .menu__item.traverse {background:#20272e!important;color:var(--pt-text)!important;outline:none!important;box-shadow:inset 2px 0 var(--pt-accent)!important;animation:none!important;transform:none!important}
+body.lampa_view .menu__ico [stroke] {stroke:currentColor!important}
+body.lampa_view .menu__ico [fill]:not([fill="none"]) {fill:currentColor!important}
+body.lampa_view .menu__item .menu__text {color:inherit!important}

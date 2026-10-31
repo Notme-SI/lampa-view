@@ -20,7 +20,7 @@ export default function fitRail(line,root,card,state,enabled){
  if(!viewWidth)return;
  const hero=root.previousElementSibling,home=hero && hero.matches('.pt-hero') && !document.body.classList.contains('pt-mobile');
  const key=innerWidth+':'+innerHeight+':'+Boolean(home)+':'+viewWidth.toFixed(3)+':'+font.toFixed(3)+':'+(document.body.classList.contains('pt-tv')?'tv':document.body.classList.contains('pt-mobile')?'mobile':'desktop');
- if(state.posterFitKey===key)return;
+ if(state.posterFitKey===key){if(home)homeStage(hero,root);return;}
  root.classList.add('minimal-fit-posters');
  root.style.setProperty('--minimal-poster-gutter',Math.ceil(font*.55)+'px');
  root.style.removeProperty('--minimal-poster-gap');
@@ -37,7 +37,7 @@ export default function fitRail(line,root,card,state,enabled){
  if(width<=0)return;
  root.style.setProperty('--minimal-poster-width',width+'px');
  root.classList.add('minimal-posters-sized');
- if(home)homeStage(hero,root,card,viewWidth,normalSlots);
+ if(home)homeStage(hero,root);
  const previous=state.posterFitKey;state.posterFitKey=key;
  line.scroll.minimalPosterFit={count,width,gap,inset};
  if(!state.posterFitWrapped){

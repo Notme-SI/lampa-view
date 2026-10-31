@@ -5,7 +5,7 @@ test('CUB logos resolve a verified TMDB match instead of using a foreign catalog
  const L={Storage:{get:()=> 'ru'},TMDB:{},Api:{sources:{tmdb:{get:(url,p,ok)=>requests.push({url,ok})}}}};const load=w.Logos.default(L);let result;
  load({id:999,source:'cub',name:'Кэрри',original_name:'Carrie',first_air_date:'2026-10-07',poster_path:'/poster.jpg'},value=>result=value);
  assert.ok(requests[0].url.startsWith('search/tv?query=Carrie'));requests[0].ok({results:[{id:288673,name:'Кэрри',original_name:'Carrie',first_air_date:'2026-10-07',poster_path:'/poster.jpg'},{id:1,name:'Кэрри',first_air_date:'1976-01-01'}]});
- assert.ok(requests[1].url.startsWith('tv/288673?append_to_response=images'));requests[1].ok({images:{logos:[{file_path:'/ru.png',iso_639_1:'ru'},{file_path:'/ru.svg',iso_639_1:'ru',width:5000,vote_count:100}]}});assert.equal(result,'/ru.png');dom.window.close();
+ assert.ok(requests[1].url.startsWith('tv/288673?append_to_response=images'));requests[1].ok({images:{logos:[{file_path:'/ru.png',iso_639_1:'ru'},{file_path:'/ru.svg',iso_639_1:'ru',width:5000,vote_count:100}]}});assert.equal(result,'/ru.svg');dom.window.close();
 });
 test('neighbour covers and logos are decoded once and reused when selected',async()=>{
  const dom=new JSDOM('<body></body>',{runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,images=[];w.Image=class{constructor(){images.push(this);}set src(v){this.url=v;}get src(){return this.url;}decode(){return Promise.resolve();}};
