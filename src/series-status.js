@@ -24,7 +24,7 @@ function watchFooter(L,node,data,series){
  slot.classList.remove('pt-card-watch--has-progress','pt-card-watch--complete');
  const state=window.LampaView && window.LampaView.online;
  const shared=series && state && state.lastWatched?state.lastWatched(data):null;
- const target=shared && state.resume?state.resume(data):null;
+ const target=shared;
  const title=data.original_title || data.original_name || data.title || data.name || '';
  const targetHash=target && (target.season!==shared.season || target.episode!==shared.episode)?L.Utils.hash([target.season,target.season>10?':':'',target.episode,title].join('')):shared && shared.hash;
  // Manual completion and native playback use the same persisted timeline.
@@ -95,10 +95,15 @@ function watchFooter(L,node,data,series){
  if(!timeline || !(Number(timeline.percent)>0 || Number(timeline.time)>0)){wrap.classList.add('pt-card-watch--empty');return;}
  wrap.classList.remove('pt-card-watch--empty');
  slot.classList.add('pt-card-watch--has-progress');
- const complete=series?!!(target && target.complete):Number(timeline.percent)>=90;
+ const seasonDetail=series && shared && (Array.isArray(data.seasons)?data.seasons:[]).find(season=>Number(season.season_number)===shared.season);
+ const seasonTotal=Number(seasonDetail && seasonDetail.episode_count) || shared && shared.total || 0;
+ const next=data.next_episode_to_air;
+ const seasonComplete=series && shared && shared.percent>=90 && seasonTotal>0 && shared.episode>=seasonTotal && !(next && Number(next.season_number)===shared.season);
+ const complete=series?seasonComplete:Number(timeline.percent)>=90;
  slot.classList.toggle('pt-card-watch--complete',complete);
- const shown=target || timeline;
- if(complete){watchEpisode=0;label=series?'Сериал просмотрен':'Фильм просмотрен';}
+ const shown={...(target || timeline)};
+ if(Number(shown.percent)>=90){shown.percent=100;shown.time=Number(shown.duration) || Number(shown.time) || Number(series?(data.episode_run_time || [])[0]:data.runtime)*60 || 0;}
+ if(complete){watchEpisode=0;label=series?'Сезон '+shared.season+' просмотрен':'Фильм просмотрен';}
  const fill=row.querySelector('.time-line>div');if(fill)fill.style.width=Math.min(100,Math.max(0,Number(shown.percent)||0))+'%';
  const time=complete?'':clock(shown.time),name=summary.firstElementChild,stamp=summary.lastElementChild;
  const action=Number(shown.time)>0 || Number(shown.percent)>0?'Просмотрено: ':'Смотреть: ';
@@ -123,7 +128,7 @@ export default function seriesStatus(L,schedule){
   const view=node.querySelector('.card__view');if(!view)return;
   const series=data.media_type!=='movie' && !!(data.name || data.original_name || data.first_air_date || data.media_type==='tv');
   const key=String(data.id),entry=cache.get(key),fresh=entry && Date.now()-entry.at<(entry.value?900000:60000),facts=fresh?entry.value:null;
-  const details=fresh && entry.details,historyData=details?{...data,last_episode_to_air:details.last_episode_to_air || data.last_episode_to_air,number_of_seasons:details.number_of_seasons || data.number_of_seasons,seasons:Array.from(new Map([...(Array.isArray(data.seasons)?data.seasons:[]),...(Array.isArray(details.seasons)?details.seasons:[])].map(season=>[Number(season.season_number),season])).values())}:data;
+  const details=fresh && entry.details,historyData=details?{...data,last_episode_to_air:details.last_episode_to_air || data.last_episode_to_air,next_episode_to_air:details.next_episode_to_air,episode_run_time:details.episode_run_time || data.episode_run_time,number_of_seasons:details.number_of_seasons || data.number_of_seasons,seasons:Array.from(new Map([...(Array.isArray(data.seasons)?data.seasons:[]),...(Array.isArray(details.seasons)?details.seasons:[])].map(season=>[Number(season.season_number),season])).values())}:data;
   watchFooter(L,node,historyData,series);
   if(!series)return;
   const table=L.TimeTable && L.TimeTable.get?L.TimeTable.get(data) || []:[];

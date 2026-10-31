@@ -65,7 +65,7 @@ async function holiday(page,name){
     }
     await page.evaluate(()=>{Lampa.DeviceInput.init();Lampa.Controller.observe();window.qaBacks=0;Lampa.Controller.add('content',{toggle(){Lampa.Controller.collectionSet(qaRoot[0]);},back(){qaBacks++;}});Lampa.Controller.toggle('content');});
     const center=await page.locator('[data-nova-focus=view]').evaluate(node=>{const a=node.getBoundingClientRect(),b=node.querySelector('svg').getBoundingClientRect();return [Math.abs(a.x+a.width/2-b.x-b.width/2),Math.abs(a.y+a.height/2-b.y-b.height/2)];});assert.ok(center.every(value=>value<=1),'layout icon centered: '+center);
-    const meta=await page.locator('.nova-hero__meta').evaluate(node=>({bg:getComputedStyle(node).backgroundColor,color:getComputedStyle(node).color}));assert.match(meta.bg,/0\.78/);assert.equal(meta.color,'rgb(245, 247, 250)');
+    const meta=await page.locator('.nova-hero__meta').evaluate(node=>({bg:getComputedStyle(node).backgroundColor,color:getComputedStyle(node).color}));assert.match(meta.bg,/0\.52/);assert.equal(meta.color,'rgb(245, 247, 250)');
     const season=await page.locator('.nova-hero__season-label').evaluate(node=>{const a=node.getBoundingClientRect(),b=node.parentNode.getBoundingClientRect();return {top:a.top,bottom:b.bottom,parent:node.parentNode.className,bg:getComputedStyle(node).backgroundColor,height:b.height,font:parseFloat(getComputedStyle(node.parentNode).fontSize)};});
     assert.equal(season.parent,'nova-hero__meta');assert.match(season.bg,/0\.78/);assert.ok(season.top>season.bottom,'season has its own separate plate');assert.ok(season.height<season.font*2.4,'main facts stay one compact line');
     for(const key of ['source','voice']){

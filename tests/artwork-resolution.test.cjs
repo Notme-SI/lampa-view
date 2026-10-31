@@ -20,3 +20,16 @@ test('High trims small posters while retaining two source pixels per displayed p
   assert.deepEqual(n.errors,[]);
  }finally{cards.forEach(c=>c.destroy());n.close();}
 });
+
+test('TV High upgrades ready-made small catalogue poster URLs before decoding',async()=>{
+ const n=await native({built:true}),{w,L}=n,loaders=[];let c;
+ w.Image=class{constructor(){loaders.push(this);}set src(v){this.url=v;}get src(){return this.url;}};
+ try{
+  w.document.body.classList.add('pt-tv');
+  c=L.Utils.createInstance(L.Maker.get('Card',{}),{id:73,title:'Film',img:'https://image.tmdb.org/t/p/w300/direct.jpg',source:'cub'});
+  c.create();const node=c.render(true);w.document.body.appendChild(node);
+  node.getBoundingClientRect=()=>({width:120,height:180,left:0,right:120,top:30,bottom:210});
+  c.visible();await wait(60);const loader=loaders.at(-1);assert.ok(loader);assert.match(loader.url,/\/w780\/direct.jpg/);
+  loader.onload();assert.equal(c.img.src,loader.url);assert.deepEqual(n.errors,[]);
+ }finally{if(c)c.destroy();n.close();}
+});

@@ -255,7 +255,7 @@ test('episode list retains the episode label and late rating when switching from
 test('film facts show native countries and runtime below the year while the main button retains selected playback',async()=>{
  const n=await native({built:true}),{L}=n;let s;try{
   s=screen(n,{id:996,serial:false});Object.assign(s.movie,{release_date:'2026-07-29',runtime:145,production_countries:[{iso_3166_1:'US',name:'United States of America'}],vote_average:8.5});await wait(220);
-  const root=s.root,button=root.find('[data-nova-focus=hero]');assert.equal(root.find('.nova-hero__year').text(),'2026, США');assert.equal(root.find('.nova-hero__runtime').text(),'02:25');assert.equal(root.find('.nova-hero__date').children().last().attr('class'),'nova-hero__runtime');assert.equal(root.find('.nova-hero__season-label').length,0);assert.equal(button.text(),'Смотреть');
+  const root=s.root,button=root.find('[data-nova-focus=hero]');assert.equal(root.find('.nova-hero__year').text(),'2026, США');assert.equal(root.find('.nova-hero__runtime').text(),'02:25');assert.equal(root.find('.nova-hero__meta .nova-hero__runtime').length,0);assert.equal(root.find('.nova-hero > .nova-hero__runtime').length,1);assert.equal(root.find('.nova-hero__season-label').length,0);assert.equal(button.text(),'Смотреть');
   selectMovie(s,L,2);await wait(90);root.find('[data-nova-focus=hero]').trigger('hover:enter');assert.equal(s.played(),3);assert.equal(root.find('[data-nova-focus=hero]').text(),'Смотреть');assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}
 });

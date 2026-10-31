@@ -17,15 +17,16 @@ export function watchActions(L,root,card,link){
   L.Noty.show('Онлайн-источник не подключён');
  }
  const click=event=>{event.preventDefault();event.stopImmediatePropagation();open();};
+ const enter=event=>{event.preventDefault();event.stopImmediatePropagation();open();};
  function update(){
   buttons.querySelectorAll('.button--alc-auto,.button--priority').forEach(button=>button.remove());
   play.classList.remove('minimal-source-hidden','hide');play.classList.add('selector');play.removeAttribute('aria-hidden');play.title='Смотреть';play.setAttribute('aria-label','Смотреть');
   const label=play.querySelector('span');if(label && label.textContent!=='Смотреть')label.textContent='Смотреть';
   $(play).off('hover:enter').on('hover:enter.lampaViewWatch',open);
  }
- update();play.addEventListener('click',click,true);
+ update();play.addEventListener('click',click,true);play.addEventListener('hover:enter',enter,true);
  // Only action changes can affect this button; cast, images and badges cannot.
  const observer=window.MutationObserver?new MutationObserver(update):null;
  if(observer)observer.observe(buttons,{childList:true,subtree:true});
- if(link && link.use)link.use({onDestroy:()=>{if(observer)observer.disconnect();play.removeEventListener('click',click,true);$(play).off('.lampaViewWatch');}});
+ if(link && link.use)link.use({onDestroy:()=>{if(observer)observer.disconnect();play.removeEventListener('click',click,true);play.removeEventListener('hover:enter',enter,true);$(play).off('.lampaViewWatch');}});
 }

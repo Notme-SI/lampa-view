@@ -1,3 +1,4 @@
+import tmdbGet from './tmdb.js';
 // Selected metadata/progress fixes adapted from the user-provided community interface.
 // Read the host's timeline; opening the online screen never rewrites watch history.
 const number=value=>Number.isFinite(Number(value))?Math.max(0,Number(value)):0;
@@ -137,7 +138,7 @@ export default function onlineState(L){
     if(!latest || record.updated>latest.record.updated || record.updated===latest.record.updated && (s>latest.season || s===latest.season && e>latest.episode))latest={season:s,episode:e,total,record};
    }
   }
-  const value=latest?{season:latest.season,episode:latest.episode,total:latest.total,max,hash:latest.record.hash,time:latest.record.time,percent:latest.record.percent}:null;
+  const value=latest?{season:latest.season,episode:latest.episode,total:latest.total,max,hash:latest.record.hash,time:latest.record.time,duration:latest.record.duration,percent:latest.record.percent}:null;
   snapshots.set(key,{at:Date.now(),revision,value});if(snapshots.size>100)snapshots.delete(snapshots.keys().next().value);return value;
  }
  function resume(card){
@@ -161,7 +162,12 @@ export default function onlineState(L){
   return value;
  }
 
- if(L.Timeline && L.Timeline.listener)L.Timeline.listener.follow('update',()=>{revision++;snapshots.clear();});
+ if(L.Timeline && L.Timeline.listener)for(const event of ['update','read'])L.Timeline.listener.follow(event,()=>{revision++;snapshots.clear();});
+ function writeTimeline(value){
+  const current=L.Timeline.view?L.Timeline.view(value.hash):{};
+  const permit=L.Account && L.Account.Permit,profile=permit && permit.sync && permit.account && permit.account.profile;
+  L.Timeline.update({...value,profile:current && current.profile || profile && profile.id || 0});
+ }
  function seasonIndex(body,season){
   const rows=catalogueRows(body);if(rows.some(row=>row.method==='play' || row.method==='call'))return -1;
   const links=rows.filter(row=>row.method==='link');if(links.length<2)return -1;
@@ -180,7 +186,7 @@ export default function onlineState(L){
   const records=L.Storage.get(file(),{}) || {},keys=names(card).map(title=>hash(title,season,episode));
   if(explicit)keys.push(explicit);
   clearLast(card,season,episode);
-  for(const key of new Set(keys))if(records[key] || key===explicit)L.Timeline.update({hash:key,percent:0,time:0,duration:0});
+  for(const key of new Set(keys))if(records[key] || key===explicit)writeTimeline({hash:key,percent:0,time:0,duration:0});
   revision++;snapshots.clear();
   if(L.Timeline.read)L.Timeline.read();
  }
@@ -197,10 +203,28 @@ export default function onlineState(L){
   }else if(!watched)clearLast(card,season,episode);
   for(const key of keys){
    const raw=records[key],percent=typeof raw==='number'?raw:number(raw && raw.percent);
-   if(watched || percent>=90)L.Timeline.update({hash:key,percent:watched?100:0,time:0,duration:number(raw && raw.duration)});
+   if(watched || percent>=90){const duration=number(raw && raw.duration) || number(season?(card.episode_run_time || [])[0]:card.runtime)*60;writeTimeline({hash:key,percent:watched?100:0,time:watched?duration:0,duration});}
   }
   revision++;snapshots.clear();
   if(L.Timeline.read)L.Timeline.read();
+ }
+ function setAllWatched(card,done){
+  const mark=details=>{
+   const full={...card,...details},table=L.TimeTable && L.TimeTable.get?L.TimeTable.get(full) || []:[];
+   const today=new Date().toISOString().slice(0,10),last=full.last_episode_to_air;
+   const aired=last && last.air_date && String(last.air_date).slice(0,10)<=today?last:null;
+   const episodes=new Map();
+   for(const row of table)if(row.air_date && String(row.air_date).slice(0,10)<=today && Number(row.season_number)>0)episodes.set(row.season_number+':'+row.episode_number,row);
+   if(aired)for(const season of Array.isArray(full.seasons)?full.seasons:[]){
+    const n=Number(season.season_number);if(n<=0 || n>Number(aired.season_number))continue;
+    const count=n===Number(aired.season_number)?Number(aired.episode_number):Number(season.episode_count);
+    for(let e=1;e<=Math.min(count,500);e++)if(!episodes.has(n+':'+e))episodes.set(n+':'+e,{season_number:n,episode_number:e});
+   }
+   for(const row of episodes.values())setWatched({...full,episode_run_time:row.runtime?[row.runtime]:full.episode_run_time},Number(row.season_number),Number(row.episode_number),true);
+   if(done)done(episodes.size);
+  };
+  if(Number(card.id)>0 && (!card.source || ['tmdb','cub','trakt'].includes(card.source)))tmdbGet(L,'tv/'+card.id,{},value=>mark(value && Number(value.id)===Number(card.id)?value:{}),()=>mark({}),{life:60});
+  else mark({});
  }
  function clearTitleProgress(card,explicit=[]){
   if(!L.Timeline || !L.Timeline.update)return;
@@ -220,10 +244,10 @@ export default function onlineState(L){
   // Zero via the native API so the active profile and its normal sync are kept.
   // Never clear the complete timeline store or another title's history.
   clearLast(card);
-  for(const key of keys){const row=records[key];if(row && (typeof row==='number'?row:row.percent || row.time))L.Timeline.update({hash:key,percent:0,time:0,duration:0});}
+  for(const key of keys){const row=records[key];if(row && (typeof row==='number'?row:row.percent || row.time))writeTimeline({hash:key,percent:0,time:0,duration:0});}
   revision++;snapshots.clear();
   if(L.Timeline.read)L.Timeline.read();
  }
 
- return {availability,reader,resume,seasonIndex,folderTarget,folderRows,folderSeasons,relevantFolders,clearProgress,clearTitleProgress,setWatched,lastWatched};
+ return {availability,reader,resume,seasonIndex,folderTarget,folderRows,folderSeasons,relevantFolders,clearProgress,clearTitleProgress,setWatched,setAllWatched,lastWatched};
 }

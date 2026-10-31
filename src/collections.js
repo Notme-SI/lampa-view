@@ -49,10 +49,28 @@ export default function collections(L,shiki){
  const main=L.Api.main;
  L.Api.main=function(object,ok,fail){
   const ctx=context(object),compact=(!object.component || object.component==='main');
-  function process(rows){rows=rows.map(row=>({...row,results:presentableCards(row.results || [])}));const selected=compact?homeRows(rows):rows;remember(ctx,selected);ok(arrange(selected,prefs(ctx)).filter(row=>!row.minimal_empty));}
+  function process(rows){if(compact)rows=rows.filter(row=>!/недавние.*(?:эпизод|сери)|recent.*episode/i.test(String(row.title || '')));rows=rows.map(row=>({...row,results:presentableCards(row.results || [])}));const selected=compact?homeRows(rows):rows;remember(ctx,selected);ok(arrange(selected,prefs(ctx)).filter(row=>!row.minimal_empty));}
   const next=main.call(this,object,process,fail);
   return !compact && typeof next==='function'?function(resolve,reject){return next(rows=>{remember(ctx,rows,true);resolve(arrange(rows,prefs(ctx)));},reject);}:undefined;
  };
+ // CUB bookmarks can arrive after the cached home has rendered. Refresh only
+ // when membership changed, and never take focus from an open actions menu.
+ let historyTimer;
+ if(L.Listener && L.Listener.follow)L.Listener.follow('state:changed',event=>{
+  if(event.target!=='favorite')return;
+  clearTimeout(historyTimer);
+  const refresh=()=>{
+   const active=L.Activity && L.Activity.active && L.Activity.active();
+   if(!active || active.component!=='main')return;
+   if(L.Select && L.Select.opened && L.Select.opened()){historyTimer=setTimeout(refresh,500);return;}
+   const component=active.activity && active.activity.component,items=component && component.items;
+   if(!items)return;
+   const row=items.find(item=>item.data && item.data.url===CONTINUE);
+   const signature=cards=>(cards || []).map(card=>(card.source || '')+':'+card.id).join('|');
+   if(signature(row && row.data.results)!==signature(homeRows.cards().slice(0,20)) && L.Activity.replace)L.Activity.replace({component:'main',source:active.source,url:active.url || '',page:1});
+  };
+  historyTimer=setTimeout(refresh,400);
+ });
  const category=L.Api.category;
  if(category)L.Api.category=function(object,ok,fail){
   const kind=object.url || object.cat,ctx=context({...object,component:'category'});
@@ -66,7 +84,7 @@ export default function collections(L,shiki){
     if(!special || usable.length>=3 && usable.reduce((n,row)=>n+row.results.length,0)>=20)return accept(rows);
     // Missing regional coverage is supplemented explicitly by TMDB feeds;
     // their URLs/source remain TMDB, including More and subsequent pages.
-    catalogue(L,shiki,{...object,source:'tmdb'},prefs(ctx).hidden || [],extra=>accept(usable.concat(extra.filter(row=>!row.minimal_hidden).map(row=>({...row,title:row.title+' · TMDB'})))));
+    catalogue(L,shiki,{...object,source:'tmdb'},prefs(ctx).hidden || [],extra=>accept(usable.concat(extra.filter(row=>!row.minimal_hidden).map(row=>({...row})))));
    }
    return category.call(this,{...object,source:'trakt'},supplement,error=>{if(special)return supplement([]);status.state='error';if(fail)fail(error);});
   }
@@ -83,6 +101,10 @@ export default function collections(L,shiki){
    item.use({onBuild:sort,onPushLoaded:sort});
    function sort(){
     if(!item.items || !item.items.length)return;
+    if(ctx==='main:'){
+     const recent=item.items.filter(line=>line.data && (line.data.name==='timetable_recently' || /недавние.*(?:эпизод|сери)|recent.*episode/i.test(String(line.data.title || ''))));
+     if(recent.length){item.items=item.items.filter(line=>!recent.includes(line));recent.forEach(line=>line.destroy && line.destroy());item.active=Math.min(item.active || 0,Math.max(0,item.items.length-1));}
+    }
     if(!captured.has(ctx))remember(ctx,item.items.map(i=>i.data || {}));
     const active=item.items[item.active],p=prefs(ctx),all=item.items.slice();
     if(!(p.order || []).length && !(p.hidden || []).length)return;

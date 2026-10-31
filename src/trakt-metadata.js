@@ -15,7 +15,7 @@ export default function traktMetadata(L){
  function fields(json,kind,id){
   if(!json || Number(json.id)!==Number(id) || !(json.title || json.name))return null;
   const value={};
-  for(const name of ['title','name','original_title','original_name','overview','poster_path','backdrop_path','release_date','first_air_date','original_language','vote_average','vote_count','genre_ids','genres','production_companies','networks'])if(json[name]!=null)value[name]=json[name];
+  for(const name of ['title','name','original_title','original_name','overview','poster_path','backdrop_path','release_date','first_air_date','original_language','vote_average','vote_count','genre_ids','genres','origin_country','production_companies','networks'])if(json[name]!=null)value[name]=json[name];
   value.title=json.title || json.name;
   if(kind==='tv'){value.name=json.name || json.title;value.original_title=json.original_name || json.original_title || value.title;}
   if(!value.genre_ids && value.genres)value.genre_ids=value.genres.map(g=>g.id);

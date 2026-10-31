@@ -26,7 +26,7 @@ export default function posterCache(L,enabled,highQuality){
  // pixels per displayed pixel for cards; large cards retain their prior size.
  function fit(image,url){
   // High on a TV must not be downgraded from its CSS viewport dimensions.
-  if(tv())return url;
+  if(tv())return url.replace(/(\/t\/p\/)w(\d+)(\/)/,(all,prefix,size,suffix)=>Number(size)<780?prefix+'w780'+suffix:all);
   const card=image.closest('.card'),view=card && card.querySelector('.card__view');
   const box=(view || image).getBoundingClientRect();
   const width=(box.width || card && card.getBoundingClientRect().width || 0)*(window.devicePixelRatio || 1);
@@ -116,7 +116,7 @@ export default function posterCache(L,enabled,highQuality){
    if(observer){observed=image.closest('.card');if(observed){callbacks.set(observed,()=>{if(!original && maximum())item.getPosterPath();enqueue();});observer.observe(observed);}}
    item.getPosterPath=function(){
     const url=getPoster.apply(this,arguments);
-    if(!maximum() || !/\/t\/p\/(?:w780|w1280|original)\//.test(url))return url;
+    if(!maximum() || !/\/t\/p\/(?:w\d+|original)\//.test(url))return url;
     if(source!==url){cancel();source=url;original=url;}
     enqueue();return image.src===original?original:blank;
    };

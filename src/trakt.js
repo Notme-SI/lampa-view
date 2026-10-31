@@ -17,7 +17,7 @@ export function traktPlan(kind){
  if(kind==='tvshow')return FEEDS.map(([title,path])=>({title,url:'shows/'+path+'?genres=reality,talk-show,game-show&languages=ru'}));
  if(!kind)return FEEDS.map(([title,path],index)=>({title,url:'mixed/'+path,...(index===0?{minimal_row_aliases:['?sort=now_playing','movie/now_playing','movies/trending','shows/trending']}:index===1?{minimal_row_aliases:['movie/popular','tv/popular','movies/popular','shows/popular']}:{})}));
  const types=TYPES[kind]?[TYPES[kind]]:kind==='anime'?['shows']:['movies','shows'];
- const filter=kind==='anime'?'?genres=animation&languages=ja':kind==='cartoon'?'?genres=animation':'';
+ const filter=kind==='movie' || kind==='tv'?'?without_genres=animation':kind==='anime'?'?genres=animation&languages=ja':kind==='cartoon'?'?genres=animation':'';
  return types.flatMap(type=>FEEDS.map(([title,path],index)=>({title:kind==='cartoon'?(index===1?(type==='movies'?'Популярные мультфильмы':'Популярные мультсериалы'):(type==='movies'?'Мультфильмы':'Мультсериалы')+' · '+title):title,url:type+'/'+path+filter})));
 }
 function image(value){
@@ -35,7 +35,7 @@ export function traktCards(json,type){
   return {id,source:'tmdb',media_type:kind,title:data.title,original_title:data.original_title || data.title,
    ...(kind==='tv'?{name:data.title,original_name:data.original_title || data.title,first_air_date:date}:{release_date:date}),
    overview:data.overview || '',vote_average:Number(data.rating) || 0,vote_count:Number(data.votes) || 0,
-   original_language:data.language || '',trakt_id:data.ids.trakt,img:image(data.images && data.images.poster),
+   original_language:data.language || '',origin_country:data.country?[String(data.country).toUpperCase()]:[],genre_ids:(data.genres || []).map(g=>({animation:16,documentary:99,reality:10764,'talk-show':10767,'game-show':10764,drama:18,romance:10749,comedy:35,mystery:9648})[g]).filter(Boolean),trakt_genres:data.genres || [],trakt_id:data.ids.trakt,img:image(data.images && data.images.poster),
    minimal_trakt:true};
  }).filter(Boolean);
 }
@@ -88,18 +88,20 @@ export default function installTrakt(L){
   const path=String(params.url || 'movies/trending'),search=path.match(/^search\/(movie|show)\?query=([^&]+)$/);
   if(search)return searchPage({type:search[1],query:decodeQuery(search[2]),page:params.page},ok,fail);
   const match=path.match(/^(movies|shows)\/(trending|popular|watched\/weekly|collected\/monthly|anticipated)(\?.*)?$/);
-  const allowed=new Set(['','?genres=animation','?genres=animation&languages=ja',...['dorama','tvshow'].flatMap(kind=>traktPlan(kind).map(row=>row.url.slice(row.url.indexOf('?'))))]);
+  const allowed=new Set(['','?without_genres=animation','?genres=animation','?genres=animation&languages=ja',...['dorama','tvshow'].flatMap(kind=>traktPlan(kind).map(row=>row.url.slice(row.url.indexOf('?'))))]);
   if(!match || !allowed.has(match[3] || ''))return error(fail,'Неизвестная подборка Trakt');
   const page=Math.max(1,Math.min(1000,Number(params.page) || 1));
   const limit=params.minimal_limit===10?10:20;
-  const route=path+(path.includes('?')?'&':'?')+'extended=full&limit='+limit+'&page='+page,key=route;
+  const requestPath=path.replace('?without_genres=animation','');
+  const route=requestPath+(requestPath.includes('?')?'&':'?')+'extended=full&limit='+limit+'&page='+page,key=route;
   const own=generation,done=json=>{
    const rows=json.rows.filter(entry=>{const data=entry.show || entry.movie || entry;
     if(path.includes('languages=ru'))return data.language==='ru' || !data.language && data.country==='ru';
-    if(path.includes('countries=kr,jp,cn,tw,th'))return !(data.genres || []).some(g=>['animation','reality','talk-show','game-show','documentary'].includes(g));
+    if(path.includes('countries=kr,jp,cn,tw,th'))return ['kr','jp','cn','tw','th'].includes(String(data.country || '').toLowerCase()) && !(data.genres || []).some(g=>['animation','reality','talk-show','game-show','documentary'].includes(g));
+    if(path.includes('without_genres=animation'))return !(data.genres || []).includes('animation');
     return true;
    });
-   metadata.enrich(traktCards(rows,match[1]==='movies'?'movie':'tv'),results=>{if(own===generation)ok({results:presentableCards(results,path.includes('countries=kr,jp,cn,tw,th') || path.includes('languages=ru')),page,total_pages:json.pages});});
+   metadata.enrich(traktCards(rows,match[1]==='movies'?'movie':'tv'),results=>{if(own===generation)ok({results:presentableCards(results,path.includes('countries=kr,jp,cn,tw,th') || path.includes('languages=ru')).filter(card=>{const genres=[...(card.genre_ids || []),...(card.genres || [])].map(g=>Number(g.id || g));if(path.includes('without_genres=animation'))return !genres.includes(16);if(path.includes('countries=kr,jp,cn,tw,th'))return !genres.some(g=>[16,99,10764,10767].includes(g)) && (card.origin_country || []).some(country=>['KR','JP','CN','TW','TH'].includes(country));return true;}),page,total_pages:json.pages});});
   };
   const saved=cache.get(key);if(saved && Date.now()-saved.at<600000)return done(saved.value);
   if(pending.has(key)){pending.get(key).callbacks.push([done,fail]);return;}

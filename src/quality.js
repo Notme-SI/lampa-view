@@ -86,7 +86,7 @@ export default function quality(L,$){
     const raw=item.data || {};info.remember(raw);
     const data=info.read(raw),render=item.render && item.render(true),node=render && (render.nodeType?render:render[0]);
     if(!node || !node.classList.contains('card') || (!data.title && !data.original_title && !data.name && !data.original_name))return;
-    track(item,node);status.track(node,data);
+    node._minimalCardData=data;track(item,node);status.track(node,data);
     paintYear(node,data);
     const tv=data.media_type==='movie'?false:data.media_type==='tv' || !!data.original_name || !!data.first_air_date || node.classList.contains('card--tv');
     const anime=isAnime(data);

@@ -29,7 +29,7 @@ const assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWR
    for(const p of result.primary){assert.equal(p.bg,'rgb(173, 217, 229)');assert.equal(p.shadow,'none');assert.equal(p.width,result.primary[0].width);assert.equal(p.height,result.primary[0].height);}
    assert.equal(result.primary[1].border,'rgb(255, 255, 255)');assert.equal(result.primary[2].border,'rgba(0, 0, 0, 0)');
   }
-  assert.equal(result.wrap,'normal');assert.ok(result.menuCenter<.1,'Menu glyph stays centered');for(const control of result.controls){assert.equal(control.focused,true);assert.equal(control.width,0,'No external ring');assert.equal(control.borderWidth,1,'One thin border');assert.equal(control.shadow,'none');assert.equal(control.border,'rgb(173, 217, 229)');assert.equal(control.inside,true);}
+  assert.equal(result.wrap,'normal');assert.ok(result.menuCenter<.1,'Menu glyph stays centered');for(const control of result.controls){assert.equal(control.focused,true);assert.equal(control.width,0,'No external ring');assert.equal(control.borderWidth,mode==='tv'?2:1,'One clear border');assert.equal(control.shadow,'none');assert.equal(control.border,'rgb(173, 217, 229)');assert.equal(control.inside,true);}
   assert.deepEqual(r.errors,[]);console.log(mode,result);await r.context.close();
  }
 }finally{await browser.close();}})().catch(error=>{console.error(error);process.exitCode=1;});

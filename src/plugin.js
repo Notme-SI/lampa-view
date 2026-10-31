@@ -18,6 +18,8 @@ import startup from './startup.js';
 import shikimoriPosters from './shikimori-posters.js';
 import torrentEpisodes from './torrent-episodes.js';
 import installArtwork,{artworkSize} from './artwork.js';
+import progressSync from './progress-sync.js';
+import historyCards from './history-cards.js';
 import installBack from './back.js';
 import mpvLaunch from './mpv-launch.cjs';
 import carousel from './carousel.js';
@@ -38,7 +40,7 @@ if (!ROOT.LampaView) {
     const boot=document.createElement('style');boot.id='lampa-minimal-boot';boot.textContent=BOOT;
     (document.head || document.documentElement).appendChild(boot);
   }
-  const P = ROOT.LampaView = {version: '0.4.89', identity: C.identity, ready: false, bridge: false};
+  const P = ROOT.LampaView = {version: '0.4.90', identity: C.identity, ready: false, bridge: false};
   P.matchCatalogue=matchCatalogue;
   let L, $, lastCard, initialized = false, playlist = [], activeVideo,loadLogo,artwork,back,holidays,pinnedMenu;
   const metadata = new Map();
@@ -192,6 +194,7 @@ if (!ROOT.LampaView) {
     }
     const section = active.component === 'main' ? 'home' : active.url || active.component;
     document.body.classList.toggle('pt-home',active.component==='main');
+    document.body.classList.toggle('pt-favorites',/^(favorite|bookmarks)$/.test(active.component || ''));
     $('.pt-topnav__item,.pt-mobile-nav__item').each(function() {this.classList.toggle('active', this.getAttribute('data-section') === section);});
   }
   function openCard(card) {
@@ -400,6 +403,8 @@ if (!ROOT.LampaView) {
     P.online=onlineState(L);
     interfaceSize(L);installTmdb(L);installFullGuard(L);torrentEpisodes(L,ROOT);inputs(L);
     artwork=installArtwork(L,()=>yes('lampa_view_enabled'));
+    progressSync(L,()=>yes('lampa_view_enabled'));
+    historyCards(L,()=>yes('lampa_view_enabled'));
     torrentBanner(L,loadLogo);
     torrentSearch(L);
     settings(); bridge(); shell();back=installBack(L,$,()=>yes('lampa_view_enabled'));holidays=holidayLayout(L,()=>yes('lampa_view_enabled'));artwork.refresh();

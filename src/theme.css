@@ -925,3 +925,25 @@ body.lampa_view.pt-tv .pt-hero__action.focus,body.lampa_view.pt-tv .pt-hero__act
 body.lampa_view.pt-tv .pt-hero__action.hover:not(.focus):not(:focus-visible) {border-color:transparent!important;box-shadow:none!important}
 body.lampa_view.pt-tv .minimal-anime-tab[aria-selected="true"] {box-shadow:0 0 .65em #add9e540!important}
 body.lampa_view.pt-tv .full-start__button.button--alc-auto.focus,body.lampa_view.pt-tv .alc-ap__play.focus {background:var(--pt-accent)!important;color:#13232c!important;border-color:#fff!important;box-shadow:none!important;outline:none!important}
+
+/* TV assets retain their full vertical composition; text fits within the frame. */
+body.lampa_view.pt-tv .pt-hero__image {object-fit:contain;object-position:right center}
+body.lampa_view.pt-tv .pt-hero__body {top:46%;bottom:auto;transform:translateY(-50%);max-height:calc(100% - 4em)}
+body.lampa_view.pt-tv .pt-hero__logo {max-height:min(7em,15vh);margin-bottom:.8em}
+body.lampa_view.pt-tv .pt-hero__overview {-webkit-line-clamp:2}
+body.lampa_view.pt-tv .head {font-size:1.25em;height:3.6em}
+body.lampa_view.pt-tv .head__body {max-width:none;width:94%;padding:.5em 0}
+body.lampa_view.pt-tv .wrap__content {padding-top:4.5em!important}
+body.lampa_view.pt-tv.pt-menu-pinned .wrap__left {top:4.5em!important;height:calc(100% - 4.5em)!important}
+body.lampa_view.pt-tv .head__menu-icon,body.lampa_view.pt-tv .head__backward,body.lampa_view.pt-tv .head__action.open--search,body.lampa_view.pt-tv .head__action.open--profile,body.lampa_view.pt-tv .pt-holiday-icons>.head__action {border-width:2px!important}
+body.lampa_view.pt-tv .pt-series-status {font-size:.52em;line-height:1.15;gap:0 .2em;padding:.25em .4em;max-width:calc(100% - 8px);flex-wrap:wrap}
+body.lampa_view.pt-tv .pt-series-status>span {white-space:nowrap}
+body.lampa_view .nova-plus-root .nova-hero__meta {background:rgba(8,11,16,.52);padding:.2em .4em}
+body.lampa_view .nova-plus-root .nova-hero__runtime {position:absolute;right:1em;top:3.15em;padding:.2em .45em;border-radius:.35em;background:rgba(8,11,16,.52);color:var(--pt-text);font-size:.8em;line-height:1.3}
+body.lampa_view.pt-tv .minimal-comments-nav {display:none!important}
+body.lampa_view .nova-episode-nav {display:flex;justify-content:flex-end;gap:.4em;margin-bottom:.5em}
+body.lampa_view .nova-episode-nav button {width:2.1em;height:2.1em;display:flex;align-items:center;justify-content:center;border:1px solid var(--pt-line);border-radius:.6em;background:#ffffff04;color:var(--pt-muted);cursor:pointer}
+body.lampa_view .nova-episode-nav svg {width:1em;height:1em}
+body.lampa_view.pt-tv .nova-episode-nav {display:none!important}
+body.lampa_view.pt-favorites .category-full>.card,body.lampa_view.pt-favorites .mapping--grid>.card {width:calc(12.5% * var(--pt-interface-scale,1))!important}
+@media(max-width:650px){body.lampa_view.pt-favorites .category-full>.card,body.lampa_view.pt-favorites .mapping--grid>.card {width:33.333%!important}}

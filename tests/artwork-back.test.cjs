@@ -8,7 +8,7 @@ test('built plugin migrates image quality and applies both quality levels to pos
   assert.equal(setting.param.default,'high');assert.deepEqual(Object.values(setting.param.values),['Среднее','Высокое']);
   assert.equal(L.Storage.get('minimal_banner_quality'),'high');
   assert.match(L.Api.sources.tmdb.img('/poster.jpg'),/\/w780\//);assert.match(L.Api.img('/poster.jpg','w300'),/\/w780\//);
-  assert.match(L.Api.sources.tmdb.img('/backdrop.jpg','w1280'),/\/w1280\//);assert.match(L.Api.img('/avatar.jpg','w92'),/\/w92\//);
+  assert.match(L.Api.sources.tmdb.img('/backdrop.jpg','w1280'),/\/w1280\//);assert.match(L.Api.img('/avatar.jpg','w92'),/\/w(?:500|780)\//);assert.match(L.Api.sources.tmdb.img('/actor.jpg','w276_and_h350_face'),/\/w(?:500|780)\//);
   const root=w.document.createElement('div');root.innerHTML='<img class="card__img" src="https://image.tmdb.org/t/p/original/poster.jpg"><img class="full-start__background" src="https://image.tmdb.org/t/p/original/backdrop.jpg"><img class="card__img" src="https://shikimori.io/poster.jpg">';w.document.body.appendChild(root);
   for(const [quality,poster,backdrop] of [['medium','w500','w1280'],['high','w780','w1280']]){
    L.Storage.set('minimal_banner_quality',quality);setting.onChange();

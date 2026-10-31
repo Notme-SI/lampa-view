@@ -25,7 +25,7 @@ export default function homeStage(hero,root,card,width,normalSlots){
  const margin=(parseFloat(getComputedStyle(hero).marginBottom)||0)*maxScale/scale;
  // Use the same banner frame for Small / Normal / Bigger. No viewport-based
  // poster override: all rows retain their common native-scale width.
- hero.style.height=Math.max(12*reference,Math.floor(innerHeight-3.6*reference-margin-rowHeight-8))+'px';
+ hero.style.height=Math.max(12*reference,Math.floor(innerHeight-(document.body.classList.contains('pt-tv')?4.5:3.6)*reference-margin-rowHeight-8))+'px';
  const rowTop=root.getBoundingClientRect().top-offset;
  root.style.setProperty('--minimal-home-row-height',Math.max(0,innerHeight-rowTop+2)+'px');
  root.classList.add('minimal-home-first-row');

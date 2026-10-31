@@ -21,11 +21,14 @@ export default function installArtwork(L,enabled){
  const quality=artworkQuality(L);
  if(L.Storage.set){L.Storage.set('minimal_banner_quality',quality);L.Storage.set('minimal_artwork_quality_revision',2);}
  const wrappers=new Map(),wrapped=new WeakSet(),imageWrappers=new WeakSet();let depth=0;
- const canonical=url=>typeof url==='string'?url.replace(/\/+t\/p\/(w\d+|original)\/+/,'/t/p/$1/'):url;
+ const canonical=url=>typeof url==='string'?url.replace(/\/+t\/p\/(w\d+(?:_and_h\d+_face)?|original)\/+/,'/t/p/$1/'):url;
  function wrapImage(api){
   if(!api || typeof api.image!=='function' || imageWrappers.has(api.image))return;
   const image=api.image;
-  api.image=function(){const value=image.apply(this,arguments);return enabled()?canonical(value):value;};
+  api.image=function(){
+   const value=image.apply(this,arguments);if(!enabled())return value;
+   return typeof value==='string'?canonical(value).replace(/(\/t\/p\/)w(\d+)(?:_and_h\d+_face)?(\/)/,(all,prefix,size,suffix)=>prefix+(Number(size)<=185?'w500':Number(size)<=500?artworkSize(L,'poster'):'w'+size)+suffix):value;
+  };
   imageWrappers.add(api.image);
  }
  function wrap(api){
@@ -33,11 +36,13 @@ export default function installArtwork(L,enabled){
   const original=api.img;
   if(!wrappers.has(original)){
    const wrapper=function(src,size){
-    if(depth || !enabled() || (size && !/^(?:w200|w300|w500|w780|w1280|original)$/.test(size)))return original.apply(this,arguments);
+    if(depth || !enabled() || (size && !/^(?:w\d+(?:_and_h\d+_face)?|original)$/.test(size)))return original.apply(this,arguments);
     // Native MediaLoading asks for original: it is a fullscreen backdrop,
     // never a small portrait. Delegating APIs must not classify the size twice.
     const kind=['w780','w1280','original'].includes(size)?'backdrop':'poster';
-    depth++;try{return canonical(original.call(this,src,artworkSize(L,kind)));}finally{depth--;}
+    const face=size && /_face$/.test(size);
+    const requested=face?'w500':size && /^w\d+$/.test(size) && Number(size.slice(1))<=185?'w500':artworkSize(L,kind);
+    depth++;try{return canonical(original.call(this,src,requested));}finally{depth--;}
    };
    wrappers.set(original,wrapper);wrapped.add(wrapper);
   }
@@ -48,7 +53,7 @@ export default function installArtwork(L,enabled){
  posterPreview(L,enabled,()=>artworkQuality(L)==='high');
  function refresh(){
   if(!enabled())return;
-  document.querySelectorAll('.card__img,.full-start-new__img,.full-start__img,.full-start__background,.pt-hero__image,.media-loading__backdrop').forEach(image=>{
+  document.querySelectorAll('.card__img,.full-person img,.full-start-new__img,.full-start__img,.full-start__background,.pt-hero__image,.media-loading__backdrop').forEach(image=>{
    const url=image.getAttribute('src') || '';
    if(image._minimalArtwork && image._minimalArtwork(/^https?:/.test(url)))return;
    if(!/\/t\/p\/(?:w\d+|original)\//.test(url))return;

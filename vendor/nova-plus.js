@@ -2823,6 +2823,7 @@
     if(Lampa.Select.opened && Lampa.Select.opened())return;
     var key='item:'+item.index,element=params.element;
     var menu=[{title:'Отметить просмотренным',action:'mark'},{title:'Снять отметку просмотра',action:'unmark'},{title:'Очистить таймкод',action:'timeclear'}];
+    if(serial)menu.push({title:'Отметить все вышедшие серии просмотренными',action:'allseen'});
     if(params.onClearAllMark)menu.push({title:'Снять отметки у всех файлов',action:'allmarks'});
     if(params.onClearAllTime)menu.push({title:'Очистить таймкоды всех файлов',action:'alltimes'});
     if(serial && onlineState() && onlineState().clearTitleProgress)menu.push({title:'Очистить таймкоды сериала',action:'titletimes'});
@@ -2832,7 +2833,14 @@
       onBack:restore,onSelect:function(entry){
         restore();
         if(entry.action==='native')return item.origin.trigger('hover:long');
-        if(entry.action==='allmarks')params.onClearAllMark();
+        if(entry.action==='allseen'){
+          var shared=onlineState();if(shared && shared.setAllWatched)shared.setAllWatched(movie,function(){refreshMarks();schedule();});
+          items.filter(function(row){return !row.folder && !row.soon;}).forEach(function(row){
+            var action=row.origin && row.origin.data('nova-native-actions');
+            if(action && action.element && action.element.mark)action.element.mark();
+            var state=onlineState();if(state && state.setWatched)state.setWatched(movie,seasonNumber() || 1,row.num,true,row.hash);
+          });
+        }else if(entry.action==='allmarks')params.onClearAllMark();
         else if(entry.action==='alltimes')params.onClearAllTime();
         else if(typeof element[entry.action]==='function')element[entry.action]();
         var progress=onlineState();
@@ -3499,6 +3507,7 @@
 
   function heroMetadata(target) {
     var meta = ui.hero.find('.nova-hero__meta').empty();
+    ui.hero.find('.nova-hero__runtime').remove();
     var badge = target ? shortQuality(target.quality) : '';
     if (badge) meta.append($('<div class="nova-badge"></div>').text(badge));
     if (movie.vote_average) meta.append($('<div class="nova-hero__rating"></div>').text('\u2605 ' + parseFloat(movie.vote_average + '').toFixed(1)));
@@ -3510,7 +3519,7 @@
     if (countryYear) date.append($('<span class="nova-hero__year"></span>').text(countryYear));
     if (tmdbKind(movie) === 'movie') {
       var duration = fallbackTime() || (target && target.time) || '';
-      if (duration) date.append($('<span class="nova-hero__runtime"></span>').text(duration));
+      if (duration) ui.hero.append($('<span class="nova-hero__runtime"></span>').text(duration));
     } else meta.append($('<span class="nova-hero__season-label"></span>').text(text('torrent_serial_season', 'nova_plus_season') + ' ' + (seasonNumber() || 1)));
     if (date.children().length) meta.append(date);
   }
@@ -4069,6 +4078,9 @@
   }
 
   function restoreFocus(fallback) {
+    if (Lampa.Select.opened && Lampa.Select.opened()) return false;
+    var controller=Lampa.Controller.enabled();
+    if(controller && /^(select|modal|settings)/.test(controller.name || '')) return false;
     gentleMark();
     refreshCollection();
     if (lockActive()) {
@@ -4174,6 +4186,10 @@
   }
 
   function keepFocus() {
+    // Native select/modal controllers own focus until their window closes.
+    if (Lampa.Select.opened && Lampa.Select.opened()) return false;
+    var controller = Lampa.Controller.enabled();
+    if (controller && /^(select|modal|settings)$/.test(controller.name)) return false;
     if (!inSkin()) return false;
     refreshCollection();
     var wanted = lockActive() ? seek(ui_lock) : null;
@@ -4961,7 +4977,7 @@
           Lampa.Controller.collectionFocus(keep, host);
         }
       } catch (e) {}
-    } else keepFocus();
+    } else if(!(Lampa.Select.opened && Lampa.Select.opened())) keepFocus();
     relayout();
   }
 
@@ -6950,6 +6966,12 @@
     if (wideRowOn() && !nav && list.length > 0) ui.list.addClass('nova__list--row');
     else ui.list.removeClass('nova__list--row');
     var strip = ui.list.parent();
+    strip.children('.nova-episode-nav').remove();
+    if(ui.list.hasClass('nova__list--row') && !document.body.classList.contains('pt-tv')){
+      var arrows=$('<div class="nova-episode-nav"></div>');
+      [-1,1].forEach(function(direction){$('<button type="button"></button>').attr('aria-label',direction<0?'Предыдущие серии':'Следующие серии').html('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="'+(direction<0?'m14 6-6 6 6 6':'m10 6 6 6-6 6')+'"/></svg>').on('click',function(event){event.preventDefault();event.stopImmediatePropagation();var width=strip[0].clientWidth,limit=Math.min(0,width-ui.list[0].scrollWidth),next=Math.max(limit,Math.min(0,(parseFloat(ui.list.attr('data-nova-x')) || 0)-direction*width*.9));ui.list.attr('data-nova-x',next).css('transform','translate3d('+next+'px,0,0)');}).appendTo(arrows);});
+      strip.prepend(arrows);
+    }
     if (ui.list.hasClass('nova__list--row')) {
       wideDragBind(ui.list, 'x');
       strip.addClass('nova-plus__strip--clip');

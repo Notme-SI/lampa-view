@@ -2,7 +2,7 @@ import tmdbGet from './tmdb.js';
 export function chooseLogo(images,language){
  const choices=(images || []).filter(image=>image && /^\/[^\s]+\.(png|webp|svg)$/i.test(image.file_path || ''));
  const priority=lang=>lang===language?0:lang==='en'?1:!lang?2:3;
- choices.sort((a,b)=>priority(a.iso_639_1)-priority(b.iso_639_1) || Number(/\.svg$/i.test(a.file_path))-Number(/\.svg$/i.test(b.file_path)) || (b.vote_count || 0)-(a.vote_count || 0) || (b.width || 0)-(a.width || 0));
+ choices.sort((a,b)=>priority(a.iso_639_1)-priority(b.iso_639_1) || Number(/\.svg$/i.test(b.file_path))-Number(/\.svg$/i.test(a.file_path)) || (b.width || 0)-(a.width || 0) || (b.vote_count || 0)-(a.vote_count || 0));
  return choices[0] || null;
 }
 export function pickLogo(images,language){const logo=chooseLogo(images,language);return logo && logo.file_path || '';}
