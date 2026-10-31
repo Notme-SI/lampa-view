@@ -571,7 +571,7 @@ body.lampa_view .pt-card-watch__label>span {white-space:nowrap}
 body.lampa_view .pt-card-watch__label {align-content:start}
 body.lampa_view .pt-card-watch__label>.pt-card-watch__heading {flex-basis:100%;margin-bottom:.1em}
 body.lampa_view .pt-card-watch__time {grid-column:2;grid-row:2;align-self:center;font-variant-numeric:tabular-nums;font-size:.9em;line-height:1}
-body.lampa_view .card .pt-card-watch .time-line {grid-column:1;grid-row:2;align-self:center;margin:0;min-width:0}
+body.lampa_view .card .pt-card-watch .time-line {grid-column:1;grid-row:2;align-self:center;margin:0;min-width:0;height:2px;background:rgba(255,255,255,.24)!important}
 body.lampa_view .card .pt-card-watch .time-line>div {height:2px;background:var(--pt-accent)!important}
 body.lampa_view .card .pt-card-watch--complete .time-line,body.lampa_view .card .pt-card-watch--complete .pt-card-watch__time {display:none!important}
 /* Reveal saved viewing history only for the card under pointer/remote focus.

@@ -17,12 +17,25 @@ test('source availability checks real entries, excludes similar titles and disti
  }finally{w.close();}
 });
 test('native progress picks the latest title alias, advances completed seasons and isolates profiles without writing records',()=>{
- const dom=new JSDOM('',{runScripts:'outside-only'}),w=dom.window;try{w.eval(code);let profile='file_view',update,writes=0;const records={file_view:{},file_view_other:{}},L={Utils:{hash:t=>t},Storage:{get:k=>records[k],set:()=>writes++},Timeline:{filename:()=>profile,listener:{follow:(e,f)=>update=f}}},api=w.OnlineState.default(L),card={id:1,name:'Перевод',original_name:'Original',number_of_seasons:2,seasons:[{season_number:1,episode_count:2},{season_number:2,episode_count:3}]};
+ const dom=new JSDOM('',{runScripts:'outside-only'}),w=dom.window;try{w.eval(code);let profile='file_view',update,writes=0;const records={file_view:{},file_view_other:{}},L={Utils:{hash:t=>t},Storage:{get:k=>records[k],set:()=>writes++},Timeline:{filename:()=>profile,listener:{follow:(e,f)=>update=f}}},api=w.OnlineState.default(L),card={id:1,name:'Перевод',original_name:'Original',number_of_seasons:2,seasons:[{season_number:1,episode_count:2,air_date:"2020-01-01"},{season_number:2,episode_count:3,air_date:"2021-01-01"}]};
  records.file_view['11Original']={percent:50,time:600,updated:1};records.file_view['11Перевод']={percent:20,time:240,updated:2};assert.equal(api.reader(card)(1,1).time,240);assert.equal(api.resume(card).episode,1);
  records.file_view['12Original']={percent:95,time:1000,updated:3};update();assert.equal(api.resume(card).season,2);assert.equal(api.resume(card).episode,1);assert.equal(api.resume(card).time,0);
  profile='file_view_other';assert.equal(api.resume(card),null);assert.equal(api.reader(card)(1,1).found,false);assert.equal(writes,0);
  }finally{w.close();}
 });
+test('resume never offers an unaired season or an episode beyond the last release',()=>{
+ const dom=new JSDOM('',{runScripts:'outside-only'}),w=dom.window;try{
+  w.eval(code);const records={'18Original':{percent:100,time:0,updated:1}},L={Utils:{hash:t=>t},Storage:{get:k=>k==='file_view'?records:{}},Timeline:{filename:()=> 'file_view'}},api=w.OnlineState.default(L);
+  const card={name:'Кэрри',original_name:'Original',number_of_seasons:2,seasons:[{season_number:1,episode_count:8,air_date:'2020-01-01'},{season_number:2,episode_count:10,air_date:'2099-01-01'}],last_episode_to_air:{season_number:1,episode_number:8,air_date:'2020-02-01'}};
+  assert.equal(api.resume(card).complete,true,'announced season is not playable');
+  assert.equal(api.resume({...card,last_episode_to_air:undefined}).complete,true,'future season date is not playable either');
+  const released={...card,last_episode_to_air:{season_number:2,episode_number:6,air_date:'2021-02-01'}};
+  assert.equal(api.resume(released).season,2);assert.equal(api.resume(released).episode,1);assert.equal(api.resume(released).percent,0);assert.equal(api.resume(released).time,0);
+  const current={...released,id:99};delete records['18Original'];records['26Original']={percent:100,time:0,updated:2};assert.equal(api.resume(current).complete,true,'all currently released episodes completed');
+  const partial={...released,id:100};records['26Original']={percent:35,time:600,updated:3};assert.equal(api.resume(partial).episode,6);assert.equal(api.resume(partial).time,600);assert.equal(api.resume(partial).complete,undefined);
+ }finally{w.close();}
+});
+
 test('season restoration only indexes actual season navigation, never episodes or voice options',()=>{
  const dom=new JSDOM('',{runScripts:'outside-only'}),w=dom.window;try{w.eval(code);const api=w.OnlineState.default({Timeline:{},Utils:{},Storage:{}}),rows=tag({method:'link',url:'/lite/source?s=1',name:'Сезон 1'})+tag({method:'link',url:'/lite/source?s=2',name:'Сезон 2'});assert.equal(api.seasonIndex(rows,2),1);assert.equal(api.seasonIndex(rows,3),-1);assert.equal(api.seasonIndex(rows+tag({method:'play',url:'/file'}),2),-1);assert.equal(api.seasonIndex(tag({method:'link',url:'/voice/1',name:'Studio 1'})+tag({method:'link',url:'/voice/2',name:'Studio 2'}),2),-1);
  }finally{w.close();}

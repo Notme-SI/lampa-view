@@ -21,12 +21,12 @@ const assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWR
 
    await r.page.evaluate(()=>{const node=document.querySelector('.activity--active .card.focus');LampaView.online.clearTitleProgress(node.card_data || {id:500,name:'Сериал 0',original_name:'Series 0',original_title:'Series 0',number_of_seasons:2});});await r.page.waitForTimeout(180);assert.equal(await watch.locator('.pt-card-watch__label').isVisible(),false,'Full-series reset is reflected on an existing home card');assert.equal(await r.page.locator('.activity--active .card.focus .pt-series-status').textContent(),'Сезон 2 • Серия 8/10','Release count is independent of watch history');
 
-   await r.page.evaluate(()=>LampaView.online.setWatched({id:500,name:'Сериал 0',original_name:'Series 0',original_title:'Series 0',number_of_seasons:2},1,1,true));await r.page.waitForTimeout(180);assert.equal(await watch.locator('.pt-card-watch__label').isVisible(),true);assert.equal(await watch.locator('.pt-card-watch__label').textContent(),'Просмотрено: Серия 2 • Сезон 1');assert.equal(await watch.locator('.time-line>div').last().evaluate(n=>n.style.width),'0%');assert.equal(await watch.locator('.pt-card-watch__time').textContent(),'00:00');
+   await r.page.evaluate(()=>LampaView.online.setWatched({id:500,name:'Сериал 0',original_name:'Series 0',original_title:'Series 0',number_of_seasons:2},1,1,true));await r.page.waitForTimeout(180);assert.equal(await watch.locator('.pt-card-watch__label').isVisible(),true);assert.equal(await watch.locator('.pt-card-watch__label').textContent(),'Смотреть: Серия 2 • Сезон 1');assert.equal(await watch.locator('.time-line>div').last().evaluate(n=>n.style.width),'0%');assert.equal(await watch.locator('.pt-card-watch__time').textContent(),'00:00');
 
    if(mode==='desktop'){
     const movie={id:500,name:'Сериал 0',original_name:'Series 0',original_title:'Series 0',number_of_seasons:2};
     await r.page.evaluate(movie=>LampaView.online.setWatched(movie,1,10,true),movie);await r.page.waitForTimeout(160);
-    assert.equal(await watch.locator('.pt-card-watch__label').textContent(),'Просмотрено: Серия 1 • Сезон 2');assert.equal(await watch.locator('.time-line>div').last().evaluate(n=>n.style.width),'0%');
+    assert.equal(await watch.locator('.pt-card-watch__label').textContent(),'Смотреть: Серия 1 • Сезон 2');assert.equal(await watch.locator('.time-line>div').last().evaluate(n=>n.style.width),'0%');
     await r.page.evaluate(movie=>LampaView.online.setWatched(movie,2,10,true),movie);await r.page.waitForTimeout(160);
     assert.equal(await watch.locator('.pt-card-watch__label').textContent(),'Сериал просмотрен');assert.equal(await watch.locator('.time-line').last().isVisible(),false);assert.equal(await watch.locator('.pt-card-watch__time').isVisible(),false);
    }

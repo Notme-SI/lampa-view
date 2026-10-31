@@ -143,7 +143,21 @@ export default function onlineState(L){
  function resume(card){
   const last=lastWatched(card);if(!last)return null;
   const value={season:last.season,episode:last.episode,time:last.time,percent:last.percent};
-  if(value.percent>=90){value.episode++;value.time=0;value.percent=0;if(last.total && value.episode>last.total){if(value.season<last.max){value.season++;value.episode=1;}else{value.episode=last.episode;value.complete=true;}}}
+  if(value.percent>=90){
+   const aired=card.last_episode_to_air,seasons=Array.isArray(card.seasons)?card.seasons:[];
+   const released=date=>!!date && Number.isFinite(Date.parse(date)) && Date.parse(date)<=Date.now();
+   const bound=aired && Number(aired.season_number)>0 && Number(aired.episode_number)>0 && released(aired.air_date)?aired:null;
+   value.episode++;value.time=0;value.percent=0;
+   if(last.total && value.episode>last.total){
+    const next=seasons.find(season=>Number(season.season_number)===value.season+1);
+    // A planned season count is not evidence that its episodes are available.
+    const nextReleased=bound?Number(bound.season_number)>value.season:next && Number(next.episode_count)>0 && released(next.air_date);
+    if(nextReleased){value.season++;value.episode=1;}
+    else value.complete=true;
+   }
+   if(bound && (value.season>Number(bound.season_number) || value.season===Number(bound.season_number) && value.episode>Number(bound.episode_number)))value.complete=true;
+   if(value.complete){value.season=last.season;value.episode=last.episode;}
+  }
   return value;
  }
 
