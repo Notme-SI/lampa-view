@@ -30,11 +30,6 @@ function watchFooter(L,node,data,series){
  // Manual completion and native playback use the same persisted timeline.
  // They must remain visible even when native timetable has no watched overlay.
  if(series && state && state.lastWatched && !shared){if(wrap)wrap.classList.add('pt-card-watch--empty');return;}
- if(shared && !wrap){wrap=document.createElement('div');wrap.className='card-watched';wrap.innerHTML='<div class="card-watched__inner"><div class="card-watched__body"></div></div>';slot.appendChild(wrap);}
- if(!wrap)return;
- for(const other of slot.querySelectorAll('.card-watched'))if(other!==wrap)other.remove();
- // Move the original timeline, keeping its native updates and destroy lifecycle.
- if(wrap.parentNode!==slot)slot.appendChild(wrap);
  const hash=value=>L.Utils && L.Utils.hash?L.Utils.hash(value):value;
  const view=key=>{
   // A cached native card/timeline can outlive a cleared storage record.
@@ -42,10 +37,24 @@ function watchFooter(L,node,data,series){
   if(L.Timeline && L.Timeline.filename && L.Storage && L.Storage.get){
    const records=L.Storage.get(L.Timeline.filename(),{}) || {},raw=records[key];
    if(!raw || !(typeof raw==='number'?raw:Number(raw.percent) || Number(raw.time)))return null;
+   const saved=typeof raw==='number'?{percent:raw,time:0,duration:0}:raw;
+   return {...(L.Timeline.view?L.Timeline.view(key):{}),...saved,hash:key};
   }
   return L.Timeline && L.Timeline.view?L.Timeline.view(key):null;
  };
+ // Movie progress must not depend on the native hover overlay already existing.
+ const movieSaved=!series && (state && state.reader?state.reader(data)(0,0):[data.original_title,data.title].filter(Boolean).map(title=>view(hash(title))).find(value=>value && (value.percent || value.time)));
+ const movieTime=movieSaved && (movieSaved.percent || movieSaved.time)?movieSaved:null;
+ if((shared || movieTime) && !wrap){wrap=document.createElement('div');wrap.className='card-watched';wrap.innerHTML='<div class="card-watched__inner"><div class="card-watched__body"></div></div>';slot.appendChild(wrap);}
+ if(!wrap)return;
+ for(const other of slot.querySelectorAll('.card-watched'))if(other!==wrap)other.remove();
+ // Move the original timeline, keeping its native updates and destroy lifecycle.
+ if(wrap.parentNode!==slot)slot.appendChild(wrap);
  let row=Array.from(wrap.querySelectorAll('.card-watched__item')).find(item=>{const line=item.querySelector('.time-line');return line && (!shared || line.getAttribute('data-hash')===String(targetHash));});
+ if(movieTime && !row && L.Timeline && L.Timeline.render){
+  const rendered=L.Timeline.render(movieTime),line=rendered && (rendered.nodeType?rendered:rendered[0]);
+  if(line){row=document.createElement('div');row.className='card-watched__item';row.appendChild(line);(wrap.querySelector('.card-watched__body') || wrap).appendChild(row);}
+ }
  if(shared && !row && L.Timeline && L.Timeline.render){
   const rendered=L.Timeline.render({...L.Timeline.view(targetHash),hash:targetHash,...(target?{percent:target.percent,time:target.time}:{})}),line=rendered && (rendered.nodeType?rendered:rendered[0]);
   if(line){row=document.createElement('div');row.className='card-watched__item';const span=document.createElement('span');span.textContent='Серия '+shared.episode;row.appendChild(span);row.appendChild(line);(wrap.querySelector('.card-watched__body') || wrap).appendChild(row);}
@@ -89,7 +98,8 @@ function watchFooter(L,node,data,series){
   watchSeason=season;watchEpisode=episode;
   label=episode?'Серия '+episode+(season?' • Сезон '+season:''):'Просмотрено';
  }else{
-  if(!progressHash)timeline=L.Timeline && L.Timeline.filename?view(hash(data.original_title)):L.Timeline && L.Timeline.watched?L.Timeline.watched(data,true):view(hash(data.original_title));
+  if(movieTime)timeline=movieTime;
+  else if(!progressHash)timeline=L.Timeline && L.Timeline.filename?view(hash(data.original_title)):L.Timeline && L.Timeline.watched?L.Timeline.watched(data,true):view(hash(data.original_title));
   if(Array.isArray(timeline))timeline=view(hash(data.original_title));
  }
  if(!timeline || !(Number(timeline.percent)>0 || Number(timeline.time)>0)){wrap.classList.add('pt-card-watch--empty');return;}

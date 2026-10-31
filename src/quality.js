@@ -137,7 +137,7 @@ export default function quality(L,$){
     L.Utils.createInstance=function(Base,data){
       const item=create.apply(this,arguments);
       if(Base===Card && item && item.use){
-        item.use({onCreate(){schedule(item);},onVisible(){schedule(item);},onDestroy(){forget(item);}});
+        item.use({onCreate(){schedule(item);},onVisible(){schedule(item);},onFocus(){schedule(item);},onDestroy(){forget(item);}});
         schedule(item);
       }
       return item;
@@ -187,7 +187,9 @@ export default function quality(L,$){
   // IntersectionObserver already follows viewport changes, including transforms.
   // Button transitions and remote focus must not rescan every cached row.
   if(!observer){document.addEventListener('scroll',revisit,true);document.addEventListener('transitionend',event=>{if(event.target.matches && event.target.matches('.scroll__body'))revisit();},true);}
-  document.addEventListener('hover:focus',event=>{const node=event.target.closest && event.target.closest('.card'),item=node && tracked.get(node);if(item)schedule(item);},true);
+  // Lampa sends these custom events through jQuery.trigger, not dispatchEvent.
+  // Delegation also covers legacy/history cards without a Maker onFocus hook.
+  if(typeof $==='function')$(document).on('hover:focus.lampaViewQuality hover:hover.lampaViewQuality hover:touch.lampaViewQuality','.card',function(){const item=tracked.get(this);if(item)schedule(item);});
   window.addEventListener('resize',revisit);
   cacheControl(L).register('quality',()=>{generation++;clearTimeout(saveTimer);pending.forEach(job=>{if(job.cancel)job.cancel();if(job.request && job.request.clear)job.request.clear();});cache.clear();pending.clear();queue.length=0;retries.clear();running=0;if(L.Storage && L.Storage.set)L.Storage.set(storage,[]);for(const [node] of tracked){node.querySelectorAll('.pt-quality').forEach(b=>b.remove());node.classList.remove('pt-has-quality');}revisit();});
 }

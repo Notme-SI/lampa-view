@@ -40,3 +40,23 @@ test('cleared storage hides cached native watch history even if native memory an
   saved.file_view={};api.paint(node);assert.equal(wrap.classList.contains('pt-card-watch--empty'),true,'Global timecode reset overrides stale native timeline memory');
  }finally{w.close();}
 });
+
+test('movie progress is restored from saved title aliases without a native hover overlay',()=>{
+ const d=new JSDOM('<body></body>',{runScripts:'outside-only'}),w=d.window;try{
+  w.eval(code);let saved={hash:'Localized',time:969,percent:40,duration:2400};
+  w.LampaView={online:{reader:()=>()=>saved}};
+  const L={Timeline:{render:value=>{const line=w.document.createElement('div');line.className='time-line';line.dataset.hash=value.hash;line.innerHTML='<div></div>';return line;}}},api=w.SeriesStatus.default(L,()=>{}),node=w.document.createElement('div');
+  node.className='card focus';node.innerHTML='<div class="card__view"></div>';w.document.body.appendChild(node);api.track(node,{title:'Localized',original_title:'Original',media_type:'movie'});api.paint(node);
+  assert.equal(node.querySelector('.pt-card-watch__time').textContent,'16:09');assert.equal(node.querySelector('.time-line>div').style.width,'40%');
+  saved={...saved,percent:100,time:2400};api.paint(node);assert.equal(node.querySelector('.pt-card-watch__label').textContent,'Фильм просмотрен');assert.ok(node.querySelector('.pt-card-watch--complete'));
+  saved={found:false,time:0,percent:0};api.paint(node);assert.equal(node.querySelector('.pt-card-watch--has-progress'),null,'Cleared saved progress cannot persist as a footer');
+ }finally{w.close();}
+});
+
+test('persisted progress overrides stale native memory after a profile sync',()=>{
+ const d=new JSDOM('<body></body>',{runScripts:'outside-only'}),w=d.window;try{
+  w.eval(code);const records={Original:{time:720,percent:30,duration:2400}},L={Utils:{hash:x=>x},Storage:{get:()=>records},Timeline:{filename:()=> 'file_view',view:()=>({time:0,percent:0})}},api=w.SeriesStatus.default(L,()=>{}),node=w.document.createElement('div');
+  node.className='card focus';node.innerHTML='<div class="card__view"><div class="card-watched"><div class="card-watched__item"><div class="time-line" data-hash="Original"><div></div></div></div></div></div>';w.document.body.appendChild(node);api.track(node,{original_title:'Original',media_type:'movie'});api.paint(node);
+  assert.equal(node.querySelector('.pt-card-watch__time').textContent,'12:00');assert.equal(node.querySelector('.time-line>div').style.width,'30%');
+ }finally{w.close();}
+});
