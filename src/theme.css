@@ -878,6 +878,7 @@ body.lampa_view.pt-tv .pt-hero__actions {margin-top:1.6em}
 body.lampa_view.pt-tv .pt-hero__dots {left:45%;bottom:1.5em}
 body.lampa_view.pt-tv .items-line {margin-bottom:.8em;padding-bottom:.7em}
 body.lampa_view.pt-tv .items-line .card:not(.card--wide):not(.card--collection) {width:clamp(8.4em,calc((90vw - 10em / var(--pt-interface-scale,1)) / 10 * var(--pt-interface-scale,1)),11.1em)!important}
+body.lampa_view.pt-tv .items-line.minimal-posters-sized .card:not(.card--wide):not(.card--collection) {width:var(--minimal-poster-width)!important}
 body.lampa_view.pt-tv .items-line>.items-line__head {padding-left:1.1em}
 body.lampa_view.pt-tv .card__title {font-size:.79em;max-height:4.2em;-webkit-line-clamp:3;line-clamp:3;overflow-wrap:break-word}
 body.lampa_view.pt-tv .mapping--grid>.card:not(.card--wide):not(.card--collection),body.lampa_view.pt-tv .category-full>.card:not(.card--wide):not(.card--collection) {width:calc(10% * var(--pt-interface-scale,1))!important}

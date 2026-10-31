@@ -22,9 +22,9 @@ async function settled(page,label){
  whole(result,label);
 }
 (async()=>{
- for(const [engineName,engine] of [['chromium',chromium],['webkit',webkit]]){
+ for(const [engineName,engine] of [['chromium',chromium],['webkit',webkit]].filter(([name])=>!process.env.LAMPA_QA_ENGINE || name===process.env.LAMPA_QA_ENGINE)){
   const browser=await engine.launch({headless:true});try{
-   for(const device of [{mode:'mobile',width:320,height:740},{mode:'mobile',width:393,height:852},{mode:'mobile',width:852,height:393},{mode:'desktop',width:768,height:1024},{mode:'desktop',width:1280,height:800},{mode:'desktop',width:1920,height:1080},{mode:'desktop',width:2559,height:1338},{mode:'tv',width:1920,height:1080},{mode:'tv',width:3840,height:2160}]){
+   for(const device of [{mode:'mobile',width:320,height:740},{mode:'mobile',width:393,height:852},{mode:'mobile',width:852,height:393},{mode:'desktop',width:768,height:1024},{mode:'desktop',width:1280,height:800},{mode:'desktop',width:1920,height:1080},{mode:'desktop',width:2559,height:1338},{mode:'tv',width:1920,height:1080},{mode:'tv',width:3840,height:2160}].filter(device=>!process.env.LAMPA_QA_DEVICE || device.mode+':'+device.width===process.env.LAMPA_QA_DEVICE)){
     const r=await setup(browser,{viewport:{width:device.width,height:device.height},mode:device.mode,isMobile:device.mode==='mobile',hasTouch:device.mode==='mobile'},{beforePlugin:page=>page.evaluate(()=>{
      const L=Lampa;L.Params.init();L.Layer.init();L.Storage.set('lampa_view_hero',false);
      L.Api.main=(o,ok)=>ok([{title:'Подборка',url:'test',results:Array.from({length:40},(_,i)=>({id:i+1,title:'Фильм '+(i+1),poster_path:'/poster'+i+'.jpg',release_date:'2025-01-01',source:'tmdb'}))}]);
