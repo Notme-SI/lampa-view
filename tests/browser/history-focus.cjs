@@ -43,6 +43,22 @@ const {setup}=require('../fixtures/native-browser.cjs'),{stage}=require('../fixt
   assert.ok(Math.abs(progress.fill/progress.width-.4)<.02 && progress.right<progress.timeLeft,'Fill and actual time share one row');
   await page.evaluate(()=>{document.querySelector('#qa-release').remove();document.querySelector('#qa-movie').remove();});
 
+  // Native Lampa's manual episode action persists 95%, not 100%.
+  await page.evaluate(()=>{
+   const data={id:740004,name:'Киберпанк: Бегущие по краю',original_name:'Cyberpunk: Edgerunners',media_type:'tv',source:'test',seasons:[{season_number:2,episode_count:10}],last_episode_to_air:{season_number:2,episode_number:10,air_date:'2020-01-01'}};
+   for(let episode=1;episode<=10;episode++)Lampa.Timeline.update({hash:Lampa.Utils.hash('2'+episode+data.original_name),percent:95,time:0,duration:0});
+   const n=document.createElement('div');n.id='qa-native-season';n.className='card focus';n.style.cssText='position:fixed;z-index:50;top:100px;left:40px;width:154px;font-size:18px';n.innerHTML='<div class="card__view"></div><div class="card__title">'+data.name+'</div>';n.card_data=data;document.body.appendChild(n);
+  });
+  await page.waitForSelector('#qa-native-season .pt-card-watch--complete');
+  assert.equal(await page.locator('#qa-native-season .pt-card-watch__label').textContent(),'Сезон 2 просмотрен');
+  assert.equal(await page.locator('#qa-native-season .pt-card-watch__time').textContent(),'');
+  assert.equal(await page.locator('#qa-native-season .time-line').evaluate(n=>getComputedStyle(n).display),'none','A completed season has no progress track');
+  await page.evaluate(()=>Lampa.Timeline.update({hash:Lampa.Utils.hash('210Cyberpunk: Edgerunners'),percent:40,time:915,duration:2400}));
+  await page.waitForFunction(()=>!document.querySelector('#qa-native-season .pt-card-watch--complete'));
+  assert.equal(await page.locator('#qa-native-season .pt-card-watch__time').textContent(),'15:15');
+  assert.notEqual(await page.locator('#qa-native-season .time-line').evaluate(n=>getComputedStyle(n).display),'none','A partial final episode must keep its track');
+  await page.locator('#qa-native-season').evaluate(n=>n.remove());
+
   await stage(page,false);
   const runtime=await page.locator('.nova-hero__runtime').evaluate(node=>{const r=node.getBoundingClientRect(),m=node.closest('.nova-hero__meta').getBoundingClientRect(),h=node.closest('.nova-hero').getBoundingClientRect();return {gap:r.top-m.bottom,right:r.right,edge:h.right,bottom:r.bottom,height:h.bottom};});
   assert.ok(runtime.gap>=2,'Runtime has a real gap below facts: '+JSON.stringify(runtime));assert.ok(runtime.right<=runtime.edge && runtime.bottom<=runtime.height);

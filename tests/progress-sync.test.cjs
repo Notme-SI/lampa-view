@@ -45,3 +45,17 @@ test('bulk completion marks aired episodes only and preserves the current CUB pr
   load(w,'online-state','State').default(L).setAllWatched(card,n=>count=n);assert.equal(count,5);assert.equal(records['23Original'].percent,100);assert.equal(records['23Original'].profile,7);assert.equal(records['24Original'],undefined);
  }finally{w.close();}
 });
+
+test('all ten native 95-percent Cyberpunk marks complete the season, but a missing or partial episode never does',()=>{
+ const d=new JSDOM('<body><div class="card focus"><div class="card__view"></div></div></body>',{runScripts:'outside-only'}),w=d.window;try{
+  const records={},hooks={},saved={file_view:records};
+  for(let episode=1;episode<=10;episode++)records['2'+episode+'Cyberpunk: Edgerunners']={percent:95,time:0,duration:0,updated:episode};
+  const L={Utils:{hash:x=>x},Storage:{get:(key,fallback)=>saved[key] || fallback},TimeTable:{get:()=>[]},Timeline:{filename:()=> 'file_view',listener:{follow:(event,fn)=>hooks[event]=fn},view:hash=>({...records[hash],hash}),render:value=>{const n=w.document.createElement('div');n.className='time-line';n.dataset.hash=value.hash;n.innerHTML='<div></div>';return n;}}};
+  const online=load(w,'online-state','State').default(L);w.LampaView={online};
+  const api=load(w,'series-status','Status').default(L,()=>{}),node=w.document.querySelector('.card'),card={id:3,name:'Киберпанк: Бегущие по краю',original_name:'Cyberpunk: Edgerunners',source:'minimal_shiki',seasons:[{season_number:2,episode_count:10}],last_episode_to_air:{season_number:2,episode_number:10,air_date:'2020-01-01'}};
+  api.track(node,card);api.paint(node);assert.equal(node.querySelector('.pt-card-watch__label').textContent,'Сезон 2 просмотрен');assert.ok(node.querySelector('.pt-card-watch--complete'));assert.equal(node.querySelector('.pt-card-watch__time').textContent,'','A manual mark does not invent elapsed time');
+  records['210Cyberpunk: Edgerunners']={percent:40,time:915,updated:11};hooks.update();api.paint(node);assert.equal(node.querySelector('.pt-card-watch--complete'),null);assert.equal(node.querySelector('.pt-card-watch__label').textContent,'Просмотрено: Серия 10 • Сезон 2');assert.equal(node.querySelector('.pt-card-watch__time').textContent,'15:15');
+  records['210Cyberpunk: Edgerunners']={percent:95,time:0,updated:12};delete records['25Cyberpunk: Edgerunners'];hooks.update();api.paint(node);assert.equal(node.querySelector('.pt-card-watch--complete'),null,'A completed final episode cannot replace a missing earlier mark');
+  records['25Cyberpunk: Edgerunners']={percent:94,time:915};hooks.update();api.paint(node);assert.equal(node.querySelector('.pt-card-watch--complete'),null,'An episode below the native manual-completion mark remains incomplete');
+ }finally{w.close();}
+});

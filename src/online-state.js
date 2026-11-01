@@ -146,7 +146,8 @@ export default function onlineState(L){
  function seasonWatched(card,season,total){
   if(!Number.isInteger(total) || total<1 || total>500)return false;
   const read=reader(card);
-  for(let episode=1;episode<=total;episode++)if(read(season,episode).percent<100)return false;
+  // Native FullEpisode.Mark stores a completed manual mark as 95%, not 100%.
+  for(let episode=1;episode<=total;episode++)if(read(season,episode).percent<95)return false;
   return true;
  }
  function resume(card){

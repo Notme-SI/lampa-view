@@ -1,4 +1,4 @@
-/*! Lampa View 0.4.93 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.4.94 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -7210,7 +7210,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     function seasonWatched(card, season, total) {
       if (!Number.isInteger(total) || total < 1 || total > 500) return false;
       var read = reader(card);
-      for (var episode = 1; episode <= total; episode++) if (read(season, episode).percent < 100) return false;
+      for (var episode = 1; episode <= total; episode++) if (read(season, episode).percent < 95) return false;
       return true;
     }
     function resume(card) {
