@@ -112,8 +112,12 @@ export default function sharedTimeline(L,enabled){
   const method=loaded?'changelog?since='+cursor+'&limit=1000':'dump';
   request(ctx,method,null,value=>{
    pulling=false;
-   if(!value || !Array.isArray(value.rows) || !Number.isFinite(Number(value.version))){failed();return;}
-   merge(ctx,value.rows);cursor=Math.max(cursor,number(value.version));loaded=true;failures=0;retryAt=0;health.lastSuccess=Date.now();health.state='ready';
+   if(!value || !Array.isArray(value.rows)){failed();return;}
+   // Lampac's JSON serializer omits zero-valued fields. Its first empty dump
+   // is {rows:[]}, not {rows:[],version:0}; bootstrap must still upload locals.
+   const version=value.version===undefined && !value.rows.length?cursor:Number(value.version);
+   if(!Number.isFinite(version)){failed();return;}
+   merge(ctx,value.rows);cursor=Math.max(cursor,number(version));loaded=true;failures=0;retryAt=0;health.lastSuccess=Date.now();health.state='ready';
    if(value.truncated)setTimeout(refresh,0);else later();
   },()=>{pulling=false;failed();});
  }

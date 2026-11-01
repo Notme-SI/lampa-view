@@ -117,9 +117,11 @@ function watchFooter(L,node,data,series){
  const ended=shared && released && (released.season>shared.season || released.season===shared.season && released.count>=seasonTotal);
  const seasonComplete=series && shared && seasonTotal>0 && ended && !(next && Number(next.season_number)===shared.season) && state && state.seasonWatched && state.seasonWatched(data,shared.season,seasonTotal);
  const complete=series?seasonComplete:Number(timeline.percent)>=90;
- slot.classList.toggle('pt-card-watch--complete',complete);
+ const episodeComplete=series && Number(timeline.percent)>=95;
+ const hideProgress=complete || episodeComplete;
+ slot.classList.toggle('pt-card-watch--complete',hideProgress);
  const shown={...(target || timeline)};
- if(Number(shown.percent)>=90)shown.percent=100;
+ if(Number(shown.percent)>=(series?95:90))shown.percent=100;
  if(complete){watchEpisode=0;label=series?'Сезон '+shared.season+' просмотрен':'Фильм просмотрен';}
  // Keep the native timeline node (and data-hash) in an explicit flex progress row.
  const line=row.querySelector('.time-line');let meter=row.querySelector('.pt-card-watch__meter');
@@ -128,7 +130,7 @@ function watchFooter(L,node,data,series){
  const timestamp=row.querySelector('.pt-card-watch__time');if(timestamp.parentNode!==meter)meter.appendChild(timestamp);
  line.classList.remove('hide');
  const fill=row.querySelector('.time-line>div');if(fill)fill.style.width=Math.min(100,Math.max(0,Number(shown.percent)||0))+'%';
- const time=complete || !Number(shown.time)?'':clock(shown.time),name=summary.firstElementChild,stamp=row.querySelector('.pt-card-watch__time');
+ const time=hideProgress || !Number(shown.time)?'':clock(shown.time),name=summary.firstElementChild,stamp=row.querySelector('.pt-card-watch__time');
  const action=Number(shown.time)>0 || Number(shown.percent)>0?'Просмотрено: ':'Смотреть: ';
  if(name.dataset.label!==label || name.dataset.action!==action){
   name.dataset.label=label;name.dataset.action=action;

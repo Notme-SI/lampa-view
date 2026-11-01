@@ -1,4 +1,5 @@
 import detail from './detail.js';
+import {version} from '../package.json';
 import inputs from './inputs.js';
 import {installTmdb,installFullGuard} from './tmdb.js';
 import heroAssets from './hero-assets.js';
@@ -40,7 +41,7 @@ if (!ROOT.LampaView) {
     const boot=document.createElement('style');boot.id='lampa-minimal-boot';boot.textContent=BOOT;
     (document.head || document.documentElement).appendChild(boot);
   }
-  const P = ROOT.LampaView = {version: '0.4.90', identity: C.identity, ready: false, bridge: false};
+  const P = ROOT.LampaView = {version, identity: C.identity, ready: false, bridge: false};
   P.matchCatalogue=matchCatalogue;
   let L, $, lastCard, initialized = false, playlist = [], activeVideo,loadLogo,artwork,back,holidays,pinnedMenu;
   const metadata = new Map();
@@ -392,13 +393,13 @@ if (!ROOT.LampaView) {
     L.SettingsApi.addComponent({component:'lampa_view',name:'L A M P A',icon:icon('play')});
     unifiedSettings(L.SettingsApi,L);
     const options=[
-      ['lampa_view_enabled','Минималистичный интерфейс','Единый стиль каталога, карточек, источников и настроек.',true],
+      ['lampa_view_enabled','Минималистичный интерфейс','Единый стиль каталога, карточек, источников и настроек. Версия '+version+'.',true],
       ['lampa_view_hero','Обложка на главной','Карусель каждые 10 секунд, ручное переключение и жесты.',true]
     ];
     if(L.Platform && L.Platform.desktop && L.Platform.desktop() || ROOT.electronAPI && ROOT.electronAPI.lampa_view) options.push(['lampa_view_metadata','Уточнять данные mpv+','Передавать сведения карточки для проверки названия, сезона и серии.',true]);
     options.forEach(([name,label,description,value]) => L.SettingsApi.addParam({component:'lampa_view',param:{name,type:'trigger',default:value},field:{name:label,description},onChange:setTheme}));
     L.SettingsApi.addParam({component:'lampa_view',param:{name:'lampa_view_layout',type:'select',values:{auto:'Автоматически',tv:'Телевизор',mobile:'Телефон',desktop:'Компьютер'},default:'auto'},field:{name:'Тип устройства',description:'Авто использует режим экрана Lampa. Можно выбрать вручную.'},onChange:setTheme});
-    L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_banner_quality',type:'select',values:{medium:'Среднее',high:'Высокое'},default:'high'},field:{name:'Качество баннеров и обложек',description:'Общее качество баннеров, фонов загрузки и карточек. Высокое подбирает чёткий размер под экран и использует общий кеш обложек.'},onChange:()=>artwork && artwork.refresh()});
+    L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_banner_quality',type:'select',values:{medium:'Среднее',high:'Высокое'},default:'high'},field:{name:'Качество баннеров и обложек',description:'Общее качество баннеров, фонов загрузки и карточек. Высокое подбирает чёткий размер под экран и использует общий кеш обложек.'},onChange:()=>artwork && artwork.choose()});
   }
   function start() {
     if (initialized || !ROOT.Lampa || !ROOT.jQuery) return;

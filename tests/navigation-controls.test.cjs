@@ -36,7 +36,7 @@ test('TV rows replace arrows with More that can be focused from the last card an
   Object.defineProperty(w.HTMLElement.prototype,'offsetParent',{get(){return this.isConnected?w.document.body:null;},configurable:true});
   w.Navigator.follow('focus',event=>L.Controller.focus(event.elem));
   L.Api.sources.tmdb.get=(url,params,ok)=>w.setTimeout(()=>ok({results:[{id:601,title:'Animation',genre_ids:[16],original_language:'en'}],page:1,total_pages:2}),0);
-  w.jQuery(w.document.querySelector('[data-action="cartoon"]')).trigger('hover:enter');await wait(160);
+  w.jQuery(w.document.querySelector('[data-action="cartoon"]')).trigger('hover:enter');for(let tries=0;tries<100 && !L.Activity.active().activity.component.items.length;tries++)await wait(20);
   const row=L.Activity.active().activity.component.items[0],root=row.render(true),button=root.querySelector('.minimal-row-more');assert.ok(button);assert.equal(w.getComputedStyle(button).display,'flex');for(const arrow of root.querySelectorAll('.minimal-row-arrow'))assert.equal(w.getComputedStyle(arrow).display,'none');
   row.toggle();L.Controller.enabled().controller.right();assert.equal(row.last,button);assert.ok(button.classList.contains('focus'),'Remote cannot highlight More');
   button.dispatchEvent(new w.Event('hover:enter'));await wait(100);assert.equal(L.Activity.active().component,'category_full');assert.match(L.Activity.active().url,/with_genres=16/);

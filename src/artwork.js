@@ -3,10 +3,12 @@ import posterPreview from './poster-cache.js';
 // report a 960px viewport while displaying the artwork on a 4K panel.
 export function artworkQuality(L){
  const get=(key,def)=>L.Storage && L.Storage.get?L.Storage.get(key,def):def;
- const value=get('minimal_banner_quality','maximum');
- // Preserve explicit High from older installs; only explicit medium stays medium.
- if(get('minimal_artwork_quality_revision',0)!==2)return ['medium','w1280'].includes(value)?'medium':'high';
- return value==='medium'?'medium':'high';
+ const value=get('minimal_banner_quality','maximum'),choice=get('minimal_artwork_quality_choice','');
+ if(choice==='medium' || choice==='high')return choice;
+ // Old automatic migration could leave medium while native TMDB explicitly
+ // says High. Reconcile that conflict once; future explicit choices are tracked.
+ if(Number(get('minimal_artwork_quality_revision',0))<3 && get('poster_size','')==='w500')return 'high';
+ return ['medium','w1280'].includes(value)?'medium':'high';
 }
 export function artworkSize(L,kind){
  if(artworkQuality(L)==='medium')return kind==='backdrop'?'w1280':'w500';
@@ -20,7 +22,7 @@ export function artworkSize(L,kind){
 export function logoSize(){return 'original';}
 export default function installArtwork(L,enabled){
  const quality=artworkQuality(L);
- if(L.Storage.set){L.Storage.set('minimal_banner_quality',quality);L.Storage.set('minimal_artwork_quality_revision',2);}
+ if(L.Storage.set){L.Storage.set('minimal_banner_quality',quality);L.Storage.set('minimal_artwork_quality_revision',3);L.Storage.set('poster_size',quality==='high'?'w500':'w300');}
  const wrappers=new Map(),wrapped=new WeakSet(),imageWrappers=new WeakSet();let depth=0;
  const canonical=url=>typeof url==='string'?url.replace(/\/+t\/p\/(w\d+(?:_and_h\d+_face)?|original)\/+/,'/t/p/$1/'):url;
  function wrapImage(api){
@@ -64,5 +66,17 @@ export default function installArtwork(L,enabled){
   });
   document.dispatchEvent(new Event('minimal:artwork-quality'));
  }
- return {refresh};
+ let choosing=false;
+ function choose(){
+  const value=L.Storage.get('minimal_banner_quality','high')==='medium'?'medium':'high';
+  choosing=true;
+  try{L.Storage.set('minimal_artwork_quality_choice',value);L.Storage.set('poster_size',value==='high'?'w500':'w300');}finally{choosing=false;}
+  refresh();
+ }
+ if(L.Storage.listener)L.Storage.listener.follow('change',event=>{
+  if(event.name!=='poster_size' || choosing || !['w200','w300','w500'].includes(event.value))return;
+  const value=event.value==='w500'?'high':'medium';
+  L.Storage.set('minimal_banner_quality',value);L.Storage.set('minimal_artwork_quality_choice',value);refresh();
+ });
+ return {refresh,choose};
 }

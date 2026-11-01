@@ -28,7 +28,7 @@ const assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWR
     await r.page.evaluate(movie=>{for(let episode=1;episode<=10;episode++)LampaView.online.setWatched(movie,1,episode,true);},movie);await r.page.waitForTimeout(160);
     assert.equal(await watch.locator('.pt-card-watch__current .pt-card-watch__label').textContent(),'Сезон 1 просмотрен');assert.equal(await watch.locator('.pt-card-watch__current .time-line').last().isVisible(),false);
     await r.page.evaluate(movie=>LampaView.online.setWatched(movie,2,10,true),movie);await r.page.waitForTimeout(160);
-    assert.equal(await watch.locator('.pt-card-watch__current .pt-card-watch__label').textContent(),'Просмотрено: Серия 10 • Сезон 2');assert.equal(await watch.locator('.pt-card-watch__current .time-line').last().isVisible(),true,'One final episode does not complete a season');assert.equal(await watch.locator('.pt-card-watch__current .pt-card-watch__time').textContent(),'');
+    assert.equal(await watch.locator('.pt-card-watch__current .pt-card-watch__label').textContent(),'Просмотрено: Серия 10 • Сезон 2');assert.equal(await watch.locator('.pt-card-watch__current .time-line').last().isVisible(),false,'Completed individual episodes hide progress without completing a season');assert.equal(await watch.locator('.pt-card-watch__current .pt-card-watch__time').textContent(),'');
    }
    if(process.env.LAMPA_QA_OUTPUT && mode==='desktop')await r.page.screenshot({path:require('node:path').join(process.env.LAMPA_QA_OUTPUT,'lampa-series-status.png')});
   }

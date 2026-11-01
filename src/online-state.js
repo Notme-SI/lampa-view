@@ -132,7 +132,10 @@ export default function onlineState(L){
   const titles=names(card),saved=L.Storage.get('online_watched_last',{}) || {},lastSeason=titles.reduce((max,title)=>Math.max(max,number(saved[L.Utils.hash(title)] && saved[L.Utils.hash(title)].season)),0);
   const key=[file(),card.source || 'tmdb',card.name || card.original_name?'tv':'movie',card.id || '',card.number_of_seasons || 0,lastSeason,(Array.isArray(card.seasons)?card.seasons:[]).map(season=>season.season_number+':'+season.episode_count).join(','),...titles].join('|'),old=snapshots.get(key);
   if(old && old.revision===revision && Date.now()-old.at<5000)return old.value;
-  const read=reader(card),seasons=Array.isArray(card.seasons)?card.seasons:[],max=Math.min(60,Math.max(1,lastSeason,number(card.number_of_seasons),seasons.reduce((n,s)=>Math.max(n,number(s.season_number)),0)));let latest=null;
+  // Release metadata and the local resume hint can lag behind another device.
+  // Search the supported season range in the shared records, not just seasons
+  // that this particular card/device happened to cache. Focus snapshots bound it.
+  const read=reader(card),seasons=Array.isArray(card.seasons)?card.seasons:[],max=60;let latest=null;
   for(let s=1;s<=max;s++){
    const detail=seasons.find(row=>Number(row.season_number)===s),total=number(detail && detail.episode_count),limit=Math.min(500,total || 100);
    for(let e=1;e<=limit;e++){

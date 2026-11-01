@@ -1,9 +1,9 @@
 const assert=require('node:assert/strict');
 const {chromium,webkit}=require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const {setup}=require('../fixtures/native-browser.cjs');
-(async()=>{for(const engine of [chromium,webkit]){const browser=await engine.launch({headless:true});try{
- for(const width of [1280,1920]){
-  const r=await setup(browser,{viewport:{width,height:width===1280?720:1080},mode:'tv'},{beforePlugin:page=>page.evaluate(()=>{Lampa.Params.init();Lampa.Layer.init();})}),{page}=r;
+(async()=>{for(const engine of [chromium,webkit]){const browser=await engine.launch({headless:true,...(engine===chromium?{args:['--blink-settings=minimumFontSize=8']}: {})});try{
+ for(const width of [960,1280,1920]){
+  const r=await setup(browser,{viewport:{width,height:Math.round(width*9/16)},deviceScaleFactor:2,mode:'tv'},{beforePlugin:page=>page.evaluate(()=>{Lampa.Params.init();Lampa.Layer.init();})}),{page}=r;
   await page.evaluate(()=>{
    document.body.classList.add('platform--android','light--version','advanced--animation');
    const line=document.createElement('div');line.className='items-line';line.id='qa-tv-captions';line.style.cssText='position:fixed;top:80px;left:40px;width:90vw';

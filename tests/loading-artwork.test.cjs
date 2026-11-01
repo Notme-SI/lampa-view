@@ -5,7 +5,7 @@ test('native torrent loading keeps fullscreen backdrop quality and preserves pre
  try{
   const setting=L.SettingsApi.getParam('minimal_settings_appearance').find(p=>p.param.name==='minimal_banner_quality');
   assert.equal(L.Storage.get('minimal_banner_quality'),'high');
-  assert.equal(L.Storage.get('minimal_artwork_quality_revision'),2);
+  assert.equal(L.Storage.get('minimal_artwork_quality_revision'),3);
   assert.match(L.Api.img('/poster.jpg'),/\/w780\//);
   w.innerWidth=1920;
   L.Loading.start(()=>{},'Загрузка',{media:{card:{title:'Film',backdrop_path:'/loading-backdrop.jpg'}}});
@@ -21,6 +21,18 @@ test('native torrent loading keeps fullscreen backdrop quality and preserves pre
   w.innerWidth=960;setting.onChange();
   assert.match(image.src,/\/w1280\//,'Smaller screens avoid downloading an unnecessary original');
   assert.equal(L.Storage.get('minimal_banner_quality'),'high','A selected new High must not migrate back to Medium');
+  assert.deepEqual(n.errors,[]);
+ }finally{n.close();}
+});
+
+
+test('legacy plugin Medium conflicting with native High is reconciled once; later explicit choices remain stable',async()=>{
+ const n=await native({built:true,initialStorage:{lampa_view_layout:'tv',minimal_banner_quality:'medium',minimal_artwork_quality_revision:2,poster_size:'w500'}}),{L}=n;
+ try{
+  const setting=L.SettingsApi.getParam('minimal_settings_appearance').find(p=>p.param.name==='minimal_banner_quality');
+  assert.equal(L.Storage.get('minimal_banner_quality'),'high');assert.match(L.Api.img('/banner.jpg','w1280'),/\/original\//);assert.match(L.Api.img('/poster.jpg'),/\/w780\//);
+  L.Storage.set('minimal_banner_quality','medium');setting.onChange();assert.equal(L.Storage.get('minimal_artwork_quality_choice'),'medium');assert.equal(L.Storage.get('poster_size'),'w300');assert.match(L.Api.img('/banner.jpg','w1280'),/\/w1280\//);
+  L.Storage.set('poster_size','w500');assert.equal(L.Storage.get('minimal_banner_quality'),'high');assert.equal(L.Storage.get('minimal_artwork_quality_choice'),'high');assert.match(L.Api.img('/banner.jpg','w1280'),/\/original\//);
   assert.deepEqual(n.errors,[]);
  }finally{n.close();}
 });

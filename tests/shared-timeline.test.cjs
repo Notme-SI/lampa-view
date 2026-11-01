@@ -68,3 +68,19 @@ test('no server discovery, disabled CUB sync, hidden screen and playback do not 
   Object.defineProperty(b.w.document,'hidden',{value:false,configurable:true});b.L.Controller={enabled:()=>({name:'player'})};b.sync.refresh();assert.equal(server.requests.length,0);
  }finally{a.close();b.close();}
 });
+
+test('real Lampac empty dump omits version zero and still bootstraps local uploads',async()=>{
+ const server=backend(),ajax=server.ajax;server.ajax=function(params){const success=params.success;return ajax.call(this,{...params,success:value=>{if(value && value.rows && !value.rows.length && value.version===0){value={rows:[]};}success(value);}});};
+ const a=client(server),b=client(server);try{
+  a.store.file_view_7={episode:{percent:40,time:1304,duration:3200,updated:123}};a.sync.refresh();await wait(400);
+  assert.equal(a.sync.status().state,'ready');assert.equal(server.areas.get('viewer@example.test|7').get('episode').position,1304);
+  b.sync.refresh();await wait(30);assert.equal(b.records().episode.time,1304);
+ }finally{a.close();b.close();}
+});
+
+
+test('a nonempty dump without a version remains an error and never uploads over it',async()=>{
+ const server=backend(),ajax=server.ajax;server.inject('viewer@example.test',7,'episode',{percent:40,position:100,duration:250,watched_at:10});
+ server.ajax=function(params){const success=params.success;return ajax.call(this,{...params,success:value=>{if(value && value.rows && value.rows.length){value={rows:value.rows};}success(value);}});};
+ const a=client(server);try{a.sync.refresh();await wait(30);assert.equal(a.sync.status().state,'offline');assert.equal(a.records().episode,undefined);assert.equal(server.requests.filter(r=>r.method.endsWith('/set')).length,0);}finally{a.close();}
+});

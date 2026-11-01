@@ -38,7 +38,7 @@ export default function badgeLayout(status){
      const range=document.createRange();range.selectNodeContents(el);
      const natural=range.getBoundingClientRect().width/scale+(parseFloat(style.paddingLeft)||0)+(parseFloat(style.paddingRight)||0);
      const available=Math.max(1,Math.min(width-8,parseFloat(style.maxWidth)||width)-border);
-     if(natural>available)el.style.fontSize=(parseFloat(style.fontSize)*Math.max(1,available-1)/natural).toFixed(2)+'px';
+     if(natural>available && !document.body.classList.contains('pt-tv'))el.style.fontSize=(parseFloat(style.fontSize)*Math.max(1,available-1)/natural).toFixed(2)+'px';
     }
     const r=el.getBoundingClientRect();if(r.width && r.height)entries.push({el,corner,width:r.width/scale,height:r.height/scale});
    }

@@ -1,7 +1,7 @@
 const test=require('node:test'),assert=require('node:assert/strict'),native=require('./fixtures/native-lampa.cjs');
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 
-test('built plugin migrates image quality and applies both quality levels to posters and backdrops without changing native preferences',async()=>{
+test('built plugin migrates image quality and applies both quality levels to posters and backdrops and keeps native and plugin choices aligned',async()=>{
  const n=await native({built:true,initialStorage:{minimal_banner_quality:'auto',poster_size:'w300'}}),{w,L}=n;
  try{
   const setting=L.SettingsApi.getParam('minimal_settings_appearance').find(p=>p.param.name==='minimal_banner_quality');
@@ -15,7 +15,7 @@ test('built plugin migrates image quality and applies both quality levels to pos
    assert.ok(L.Api.img('/poster.jpg').includes('/'+poster+'/'));assert.ok(L.Api.sources.tmdb.img('/backdrop.jpg','w780').includes('/'+backdrop+'/'));
    assert.ok(root.children[0].src.includes('/'+poster+'/'));assert.ok(root.children[1].src.includes('/'+backdrop+'/'));assert.equal(root.children[2].src,'https://shikimori.io/poster.jpg');
   }
-  assert.equal(L.Storage.get('poster_size'),'w300');L.Storage.set('lampa_view_enabled',false);assert.match(L.Api.img('/poster.jpg'),/\/w300\//);
+  assert.equal(L.Storage.get('poster_size'),'w500');L.Storage.set('lampa_view_enabled',false);assert.match(L.Api.img('/poster.jpg'),/\/w500\//);
   assert.deepEqual(n.errors,[]);
  }finally{n.close();}
 });

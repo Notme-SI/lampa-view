@@ -38,8 +38,8 @@ export default function quality(L,$){
     if(title && text && title.textContent!==text)title.textContent=text;
     if(title){
       if(document.body.matches('.pt-tv.pt-tv-caption-flow')){
-        // Round the actual scaled font to whole pixels. Android TV's old WebKit
-        // line-clamp can report one line's box while painting a second line.
+        // Round the actual scaled font to whole pixels so the caption box
+        // contains two complete lines after native text-size clamping.
         const line=Math.ceil(parseFloat(window.getComputedStyle(title).fontSize)*1.4);
         if(line>0 && title.style.getPropertyValue('--pt-caption-line')!==line+'px')title.style.setProperty('--pt-caption-line',line+'px');
       }else title.style.removeProperty('--pt-caption-line');

@@ -8,7 +8,7 @@ const {setup}=require('../fixtures/native-browser.cjs');
     const url=new URL(p.url);traffic.push(url.pathname);if(!url.pathname.includes('/timecode/'))return null;
     assert.equal(url.searchParams.get('profile_id'),'7');assert.equal(url.searchParams.get('account_email'),'viewer@example.test');
     if(p.type==='POST'){for(const row of JSON.parse(p.data).rows)rows.set(row.hash,{...row,updated_at:++version});return {success:true,version,skipped:0};}
-    const result=Array.from(rows.values()).filter(row=>!url.pathname.endsWith('/changelog') || row.updated_at>Number(url.searchParams.get('since')));return {rows:result,version:result.length?result.at(-1).updated_at:Number(url.searchParams.get('since')),truncated:false};
+    const result=Array.from(rows.values()).filter(row=>!url.pathname.endsWith('/changelog') || row.updated_at>Number(url.searchParams.get('since')));if(!result.length && !url.pathname.endsWith('/changelog'))return {rows:[]};return {rows:result,version:result.length?result.at(-1).updated_at:Number(url.searchParams.get('since')),truncated:false};
    });
    await page.evaluate(()=>{
     window.lampa_settings.account_use=true;window.lampa_settings.account_sync=true;Lampa.Storage.set('account_use',true,true);Lampa.Storage.set('account',{email:'viewer@example.test',token:'isolated-test',profile:{id:7,main:true}},true);Lampa.Timeline.read();
