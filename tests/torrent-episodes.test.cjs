@@ -33,3 +33,34 @@ test('native Lampa uses the mapped season for episode artwork, playback coordina
   assert.deepEqual(n.errors,[]);
  }finally{n.close();}
 });
+
+test('nearest season markers and same-family anime folders resolve separately inside a multi-season torrent',()=>{
+ const {explicitSeason,familySeason}=moduleObject.exports;
+ const files=[{path:'Pack/[1] Jujutsu Kaisen [tv]/01.avi'},{path:'Pack/[3] Jujutsu Kaisen 2 [tv]/01.avi'},{path:'Pack/[6] Jujutsu Kaisen 3-1 [tv]/01.avi'},{path:'Pack/[2] Gekijouban Jujutsu Kaisen 0 [movie]/Movie.avi'}];
+ assert.equal(explicitSeason('Show.S01-S03/Season 2/Audio/Show.S03E01.mkv'),3);
+ assert.equal(explicitSeason('Show.S01-S03/Season 2/Audio/01.mkv'),2);
+ assert.equal(explicitSeason('Show.S01-S03/01.mkv'),null);
+ assert.equal(explicitSeason('Show [ТВ-2]/01.mkv'),2);
+ assert.equal(familySeason({files,path:files[1].path}),2);
+ assert.equal(familySeason({files,path:files[2].path}),3);
+ assert.equal(familySeason({files,path:files[3].path}),null);
+ assert.equal(familySeason({files,path:'Pack/[9] Unrelated Show 2 [tv]/01.avi'}),null);
+ assert.equal(familySeason({files,path:'Pack/[3] Unrelated Show [tv]/01.avi'}),null,'Folder ordinal is not a season');
+});
+
+test('native torrent bundle requests distinct seasons, artwork and Timeline keys before playback',async()=>{
+ const n=await native({built:true}),{L,w}=n;try{
+  const card={id:95479,name:'МАГИЧЕСКАЯ БИТВА',original_name:'呪術廻戦',original_title:'呪術廻戦',source:'tmdb',number_of_seasons:1,seasons:[{season_number:1,episode_count:59}]};
+  const row={...release(),Title:'[uni] Магическая битва / Jujutsu Kaisen [3TV+Movie][2020-2026]',MagnetUri:'magnet:?xt=urn:btih:0123456789012345678901234567890123456789',info:{}};
+  L.Parser.get=(p,ok)=>w.setTimeout(()=>ok({Results:[row]}),0);L.Activity.push({component:'torrents',movie:card,search:card.original_name,url:''});await new Promise(r=>setTimeout(r,180));
+  const paths=['Pack/[1] Jujutsu Kaisen [tv]/01.avi','Pack/[3] Jujutsu Kaisen 2 [tv]/01.avi','Pack/[6] Jujutsu Kaisen 3-1 [tv]/01.avi'];
+  L.Torserver.url=()=>true;L.Torserver.connected=ok=>ok();L.Torserver.hash=(p,ok)=>ok({hash:'0123456789012345678901234567890123456789'});L.Torserver.files=(hash,ok)=>ok({file_stats:paths.map((path,i)=>({id:i+1,path,length:1000}))});L.Torserver.viewed=(hash,ok)=>ok([]);L.Torserver.stream=(file,hash,id)=>'http://localhost/stream?link='+hash+'&index='+id+'&play';
+  let requested,played;L.Api.seasons=(movie,seasons,ok)=>{requested=Array.from(seasons);ok(Object.fromEntries([1,2,3].map(s=>[s,{episodes:[{season_number:s,episode_number:1,name:'Actual season '+s,still_path:'/actual-season-'+s+'.jpg'}]}])));};
+  L.Player.play=data=>{played=data;};L.Player.playlist=()=>{};L.Player.callback=()=>{};
+  L.Torrent.start(row,card);await new Promise(r=>setTimeout(r,2250));
+  assert.deepEqual(requested,[1,2,3]);const nodes=[...w.document.querySelectorAll('.torrent-serial')];assert.equal(nodes.length,3);
+  for(let i=0;i<3;i++){assert.ok(nodes[i].textContent.includes('Actual season '+(i+1)));assert.ok(nodes[i].querySelector('img').getAttribute('data-src').includes('/actual-season-'+(i+1)+'.jpg'));assert.equal(nodes[i].querySelector('.time-line').getAttribute('data-hash'),String(L.Utils.hash(''+(i+1)+'1呪術廻戦')));}
+  assert.equal(new Set(nodes.map(node=>node.querySelector('.time-line').getAttribute('data-hash'))).size,3);
+  nodes[1].dispatchEvent(new w.CustomEvent('hover:enter',{bubbles:true}));assert.equal(played.season,2);assert.equal(played.episode,1);assert.match(played.img,/actual-season-2/);assert.deepEqual(n.errors,[]);
+ }finally{n.close();}
+});

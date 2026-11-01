@@ -1,9 +1,29 @@
 // Keep file labels, thumbnails, history and external-player coordinates together.
 // A verified release season replaces only the native parser's invented season 1.
 export function explicitSeason(path){
- const value=String(path || '').replace(/_/g,' ');
- const expressions=[/\bs(\d{1,2})(?=\b|\.?ep?\d)/i,/\b(\d{1,2})[x-]\d{1,4}\b/i,/(?:season|сезон)\s*(\d{1,2})\b/i,/\b(\d{1,2})\s*(?:season|сезон)\b/i];
- for(const expression of expressions){const m=value.match(expression);if(m)return Number(m[1]);}
+ const expressions=[/\bs(\d{1,2})(?=\b|\.?ep?\d)/i,/\b(\d{1,2})[x-]\d{1,4}\b/i,/(?:season|сезон)\s*(\d{1,2})\b/i,/\b(\d{1,2})\s*(?:season|сезон)\b/i,/(?:^|[^a-zа-я])(?:tv|тв)\s*-\s*(\d{1,2})\b/i];
+ // A file or its nearest season folder wins over an outer bundle folder.
+ for(const value of String(path || '').replace(/_/g,' ').split(/[\\/]/).reverse()){
+  if(/\bs\d+\s*-\s*s?\d+\b|(?:season|сезон)\s*\d+\s*-\s*\d+|\d+\s*-\s*\d+\s*(?:season|сезон)/i.test(value))continue;
+  for(const expression of expressions){const m=value.match(expression);if(m)return Number(m[1]);}
+ }
+ return null;
+}
+const folderFamilies=new WeakMap();
+export function familySeason(data){
+ const folders=path=>String(path || '').replace(/\\/g,'/').split('/').slice(0,-1);
+ const clean=value=>String(value).replace(/\[[^\]]*\]/g,' ').replace(/_/g,' ').toLowerCase().replace(/ё/g,'е').replace(/[^a-zа-я0-9\u3040-\u30ff\u3400-\u9fff-]+/g,' ').trim();
+ const own=folders(data.path);
+ if(own.some(part=>/\[(?:movie|film|ova|specials?)\]/i.test(part)))return null;
+ // Bare anime sequel folders ("Jujutsu Kaisen 2 [tv]") have no S02 marker.
+ // Accept them only beside the exact unnumbered series folder in this torrent.
+ const files=Array.isArray(data.files)?data.files:[];
+ let anchors=folderFamilies.get(files);
+ if(!anchors){anchors=new Set(files.flatMap(file=>folders(file.path)).filter(part=>!explicitSeason(part) && !/\[(?:movie|film|ova|specials?)\]/i.test(part)).map(clean));folderFamilies.set(files,anchors);}
+ for(const part of own.reverse()){
+  const match=clean(part).match(/^(.+?)\s+([1-9]\d?)(?:-\d{1,2})?$/);
+  if(match && Number(match[2])<=60 && anchors.has(match[1]))return Number(match[2]);
+ }
  return null;
 }
 import torrentWatchMenu from './torrent-watch-menu.js';
@@ -26,13 +46,15 @@ export default function torrentEpisodes(L,root=window){
  if(typeof open==='function')L.Torrent.open=function(){selected=null;return open.apply(this,arguments);};
  L.Torserver.parse=function(data){
   const result=parse.apply(this,arguments);
-  if(!selected || !data || key(data.movie)!==selected.key || !result.serial || data.is_file)return result;
-  const explicit=explicitSeason(data.path);
-  if(explicit!==null && explicit!==selected.releaseSeason && explicit!==selected.season)return result;
-  if(result.season===selected.season)return result;
+  if(!data || !result.serial || data.is_file)return result;
+  const explicit=explicitSeason(data.path),pathSeason=explicit===null?familySeason(data):explicit;
+  let season=pathSeason;
+  if(selected && key(data.movie)===selected.key && (pathSeason===null || pathSeason===selected.releaseSeason || pathSeason===selected.season))season=selected.season;
+  if(season===null || season===undefined)return result;
+  if(result.season===season)return result;
   // The torrent's numbering may differ from the catalogue's. Its verified
   // single-season mapping is used both before Api.seasons() and for each file.
-  const corrected={...result,season:selected.season};
+  const corrected={...result,season};
   corrected.hash_string=[corrected.season,corrected.season>10?':':'',corrected.episode,data.movie.original_title].join('');
   corrected.hash=L.Utils.hash(corrected.hash_string);
   return corrected;
