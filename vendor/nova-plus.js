@@ -2819,38 +2819,72 @@
   function longPress(item) {
     if (!item) return;
     var params=item.origin && item.origin.data('nova-native-actions');
-    if(!params || !params.element){try { item.origin.trigger('hover:long'); } catch (e) {}return;}
+    if(!params || !params.element || item.folder || item.soon){try { item.origin.trigger('hover:long'); } catch (e) {}return;}
     if(Lampa.Select.opened && Lampa.Select.opened())return;
-    var key='item:'+item.index,element=params.element;
-    var menu=[{title:'Отметить просмотренным',action:'mark'},{title:'Снять отметку просмотра',action:'unmark'},{title:'Очистить таймкод',action:'timeclear'}];
-    if(serial)menu.push({title:'Отметить все вышедшие серии просмотренными',action:'allseen'});
-    if(params.onClearAllMark)menu.push({title:'Снять отметки у всех файлов',action:'allmarks'});
-    if(params.onClearAllTime)menu.push({title:'Очистить таймкоды всех файлов',action:'alltimes'});
-    if(serial && onlineState() && onlineState().clearTitleProgress)menu.push({title:'Очистить таймкоды сериала',action:'titletimes'});
-    menu.push({title:'Другие действия',action:'native'});
+    var key='item:'+item.index,element=params.element,season=serial?(seasonNumber() || 1):0;
+    var state=onlineState(),record=state && state.reader?state.reader(movie)(season,serial?item.num:0,item.hash):{},seen=record.found?record.percent>=SEEN_PERCENT:isSeen(item);
+    var title=serial?'Сезон '+season+' • Серия '+item.num:(movie.title || movie.name || 'Просмотр');
     var restore=function(){Lampa.Select.hide();contentEnable();ui_focus=key;restoreFocus(false);};
-    Lampa.Select.show({title:serial?'Сезон '+(seasonNumber() || 1)+' • Серия '+item.num:(movie.title || movie.name || 'Действия'),items:menu,
-      onBack:restore,onSelect:function(entry){
-        restore();
-        if(entry.action==='native')return item.origin.trigger('hover:long');
-        if(entry.action==='allseen'){
-          var shared=onlineState();if(shared && shared.setAllWatched)shared.setAllWatched(movie,function(){refreshMarks();schedule();});
-          items.filter(function(row){return !row.folder && !row.soon;}).forEach(function(row){
-            var action=row.origin && row.origin.data('nova-native-actions');
-            if(action && action.element && action.element.mark)action.element.mark();
-            var state=onlineState();if(state && state.setWatched)state.setWatched(movie,seasonNumber() || 1,row.num,true,row.hash);
-          });
-        }else if(entry.action==='allmarks')params.onClearAllMark();
-        else if(entry.action==='alltimes')params.onClearAllTime();
+    var visibleRows=function(){return items.filter(function(row){return !row.folder && !row.soon;});};
+    var changed=function(){refreshMarks();schedule();};
+    function nativeActions(){
+      // Keep provider-specific playback/link actions without presenting a
+      // second, contradictory set of watch-mark and timecode controls.
+      var show=Lampa.Select.show;
+      Lampa.Select.show=function(options){
+        if(options && Array.isArray(options.items))options=$.extend({},options,{items:options.items.filter(function(entry){return !/^(пометить|отметить просмотр|снять отметку|сбросить тайм|очистить все метки|очистить все тайм)/i.test(String(entry.title || '').trim());})});
+        return show.call(Lampa.Select,options);
+      };
+      try{item.origin.trigger('hover:long');}finally{Lampa.Select.show=show;}
+    }
+    function execute(entry){
+      restore();
+      var progress=onlineState(),rows=visibleRows();
+      if(entry.action==='native')return nativeActions();
+      if(entry.action==='previous'){
+        if(progress && progress.setPreviousWatched)progress.setPreviousWatched(movie,season,item.num,changed,items.map(function(row){return {episode:row.num,hash:row.hash,soon:row.soon};}));
+      }else if(entry.action==='allseen'){
+        if(progress && progress.setAllWatched)progress.setAllWatched(movie,changed);
+        if(progress && progress.setWatchedRows)progress.setWatchedRows(movie,rows.map(function(row){return {season:season,episode:row.num,hash:row.hash};}));
+      }else if(entry.action==='allmarks'){
+        if(params.onClearAllMark)params.onClearAllMark();
+        if(progress && progress.setWatched)rows.forEach(function(row){progress.setWatched(movie,season,serial?row.num:0,false,row.hash);});
+      }else if(entry.action==='titletimes'){
+        if(params.onClearAllMark)params.onClearAllMark();
+        if(progress && progress.clearTitleProgress)progress.clearTitleProgress(movie,rows.map(function(row){return row.hash;}));
+      }else if(/^(mark|unmark)$/.test(entry.action)){
+        // The shared writer preserves genuine elapsed time. Some providers'
+        // mark() handlers synthesize an entire runtime for a manual mark.
+        if(entry.action==='unmark' && element.unmark)element.unmark();
+        if(progress && progress.setWatched)progress.setWatched(movie,season,serial?item.num:0,entry.action==='mark',item.hash);
         else if(typeof element[entry.action]==='function')element[entry.action]();
-        var progress=onlineState();
-        if(progress && progress.setWatched && /^(mark|unmark)$/.test(entry.action))progress.setWatched(movie,serial?(seasonNumber() || 1):0,serial?item.num:0,entry.action==='mark',item.hash);
-        if(entry.action==='titletimes' && progress && progress.clearTitleProgress)progress.clearTitleProgress(movie,items.filter(function(row){return !row.folder && !row.soon;}).map(function(row){return row.hash;}));
-        if(progress && progress.clearProgress && /^(timeclear|alltimes)$/.test(entry.action)){
-          (entry.action==='alltimes'?items:[item]).forEach(function(row){if(!row.folder && !row.soon)progress.clearProgress(movie,serial?(seasonNumber() || 1):0,serial?row.num:0,row.hash);});
-        }
-        refreshMarks();schedule();
-      }});
+      }else if(/^(timeclear|alltimes)$/.test(entry.action)){
+        if(entry.action==='alltimes' && params.onClearAllTime)params.onClearAllTime();
+        else if(entry.action==='timeclear' && element.timeclear)element.timeclear();
+        if(progress && progress.clearProgress)(entry.action==='alltimes'?rows:[item]).forEach(function(row){progress.clearProgress(movie,season,serial?row.num:0,row.hash);});
+      }
+      changed();
+    }
+    function confirmReset(entry){
+      Lampa.Select.hide();Lampa.Select.show({title:entry.title+'?',items:[{title:'Да, сбросить',subtitle:entry.subtitle,action:entry.action},{title:'Отмена',cancel:true}],onBack:bulkMenu,onSelect:function(choice){if(choice.cancel)bulkMenu();else execute(choice);}});
+    }
+    function bulkMenu(){
+      Lampa.Select.hide();var menu=[];
+      if(serial)menu.push({title:'Отметить все вышедшие серии',subtitle:'Все сезоны сериала. Будущие серии не отмечаются.',action:'allseen'});
+      if(params.onClearAllMark)menu.push({title:serial?'Снять отметки текущего сезона':'Снять отметки всех вариантов',subtitle:serial?'Только сезон '+season+'. Другие сезоны сохранятся.':'Все варианты фильма в этом источнике.',action:'allmarks'});
+      if(params.onClearAllTime)menu.push({title:serial?'Очистить таймкоды текущего сезона':'Очистить таймкоды всех вариантов',subtitle:serial?'Сбросить позиции серий сезона '+season+'.':'Сбросить позиции всех вариантов фильма.',action:'alltimes'});
+      if(serial && state && state.clearTitleProgress)menu.push({title:'Очистить таймкоды всего сериала',subtitle:'Сбросить прогресс всех сезонов этого сериала.',action:'titletimes'});
+      Lampa.Select.show({title:serial?'Сезон '+season+' и весь сериал':'Все варианты фильма',items:menu,onBack:mainMenu,onSelect:function(entry){if(entry.action==='allseen')execute(entry);else confirmReset(entry);}});
+    }
+    function mainMenu(){
+      Lampa.Select.hide();var menu=[{title:seen?'Снять отметку просмотра':(serial?'Отметить серию просмотренной':'Отметить фильм просмотренным'),subtitle:seen?'Снимет отметку и сбросит прогресс.':'Сохранённая позиция не изменится.',action:seen?'unmark':'mark'}];
+      if(serial && item.num>1 && state && state.setPreviousWatched)menu.push({title:'Отметить серии 1–'+item.num+' просмотренными',subtitle:'Только сезон '+season+', включая выбранную серию '+item.num+'.',action:'previous'});
+      menu.push({title:'Очистить таймкод',subtitle:'Удалить сохранённую позицию и прогресс '+(serial?'этой серии.':'этого варианта фильма.'),action:'timeclear',noenter:!record.percent && !record.time});
+      if(serial || params.onClearAllMark || params.onClearAllTime)menu.push({title:serial?'Сезон и сериал…':'Все варианты фильма…',subtitle:'Массовые отметки и сброс прогресса.',submenu:true});
+      menu.push({title:'Действия с видео…',subtitle:'Плеер и ссылка на видео.',action:'native'});
+      Lampa.Select.show({title:title,items:menu,onBack:restore,onSelect:function(entry){if(entry.submenu)bulkMenu();else execute(entry);}});
+    }
+    mainMenu();
   }
 
   function ownArt(item) {

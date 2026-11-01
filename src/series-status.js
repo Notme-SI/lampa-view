@@ -147,14 +147,30 @@ function watchFooter(L,node,data,series){
 // Metadata is requested only for a focused series, with bounded shared cache.
 // Native timetable data and native watch history remain authoritative.
 export default function seriesStatus(L,schedule){
- const cards=new WeakMap(),cache=new Map(),pending=new Map(),queue=[];let running=0;
+ const cards=new WeakMap(),cache=new Map(),pending=new Map(),queue=[];let running=0,saveTimer;
+ const storage='minimal_series_release_v1',lifetime=900000;
+ const saved=L.Storage && L.Storage.get?L.Storage.get(storage,[]):[];
+ if(Array.isArray(saved))for(const pair of saved.slice(-80))if(Array.isArray(pair) && typeof pair[0]==='string' && pair[1] && pair[1].details && Date.now()-pair[1].at<lifetime)cache.set(pair[0],pair[1]);
+ const cacheKey=data=>(data.source==='minimal_shiki'?'shiki':'tmdb')+':'+data.id+':'+(L.Storage && L.Storage.get?L.Storage.get('language','ru'):'ru');
+ function save(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{if(L.Storage && L.Storage.set)L.Storage.set(storage,Array.from(cache).filter(([,entry])=>entry.details).slice(-80));},150);}
+ function detailsOnly(json){return {id:json.id,number_of_seasons:json.number_of_seasons,seasons:(Array.isArray(json.seasons)?json.seasons:[]).map(s=>({season_number:s.season_number,episode_count:s.episode_count,air_date:s.air_date})),last_episode_to_air:json.last_episode_to_air,next_episode_to_air:json.next_episode_to_air,episode_run_time:json.episode_run_time};}
  function paint(node){
   const data=cards.get(node);if(!data || !node.matches('.focus,.hover,.pt-card-pointer'))return;
   const view=node.querySelector('.card__view');if(!view)return;
   const series=data.media_type!=='movie' && !!(data.name || data.original_name || data.first_air_date || data.media_type==='tv');
-  const key=String(data.id),entry=cache.get(key),fresh=entry && Date.now()-entry.at<(entry.value?900000:60000),facts=fresh?entry.value:null;
+  const key=cacheKey(data),entry=cache.get(key),fresh=entry && Date.now()-entry.at<(entry.details?lifetime:60000),facts=fresh?entry.value:null;
   const details=fresh && entry.details,historyData=details?{...data,last_episode_to_air:details.last_episode_to_air || data.last_episode_to_air,next_episode_to_air:details.next_episode_to_air,episode_run_time:details.episode_run_time || data.episode_run_time,number_of_seasons:details.number_of_seasons || data.number_of_seasons,seasons:Array.from(new Map([...(Array.isArray(data.seasons)?data.seasons:[]),...(Array.isArray(details.seasons)?details.seasons:[])].map(season=>[Number(season.season_number),season])).values())}:data;
-  watchFooter(L,node,historyData,series);
+  const fetchable=series && (!data.source || ['cub','tmdb','trakt'].includes(data.source)) && Number(data.id)>0;
+  const state=window.LampaView && window.LampaView.online,last=series && state && state.lastWatched?state.lastWatched(historyData):null;
+  const season=last && (Array.isArray(historyData.seasons)?historyData.seasons:[]).find(s=>Number(s.season_number)===last.season);
+  const known=Number(season && season.episode_count)>0 && releaseStatus(historyData,L.TimeTable && L.TimeTable.get?L.TimeTable.get(historyData) || []:[]);
+  // A completed episode may become a completed season once metadata arrives.
+  // Reserve the footer while that fact is unknown, instead of flashing a false
+  // intermediate episode caption. Partial episodes are immediately usable.
+  if(fetchable && !fresh && last && last.percent>=95 && !known){
+   const slot=node.querySelector('.pt-card-watch'),wrap=node.querySelector('.card-watched');
+   if(slot){slot.classList.remove('pt-card-watch--has-progress');if(wrap && wrap.parentNode!==slot)slot.appendChild(wrap);}
+  }else watchFooter(L,node,historyData,series);
   if(!series)return;
   const table=L.TimeTable && L.TimeTable.get?L.TimeTable.get(data) || []:[];
   const available=facts || releaseStatus(data,table);
@@ -168,12 +184,12 @@ export default function seriesStatus(L,schedule){
    box.title='Сезон '+available.season+': вышло '+released+'. История просмотра — под обложкой.';
   }else if(box)box.remove();
   // Release metadata stays independent of the native watch timeline below the cover.
-  if(!fresh && !pending.has(key) && (!data.source || ['cub','tmdb','trakt'].includes(data.source)) && Number(data.id)>0 && queue.length<8){const task={key,data,nodes:new Set([node])};pending.set(key,task);queue.push(task);pump();}
+  if(!fresh && !pending.has(key) && fetchable && queue.length<8){const task={key,data,nodes:new Set([node])};pending.set(key,task);queue.push(task);pump();}
   else if(pending.has(key))pending.get(key).nodes.add(node);
  }
  function pump(){
   while(running<(document.body.classList.contains('pt-tv')?1:2) && queue.length){const task=queue.shift();running++;let done=false;
-   const finish=json=>{if(done)return;done=true;running--;pending.delete(task.key);const table=L.TimeTable && L.TimeTable.get?L.TimeTable.get(task.data) || []:[];cache.set(task.key,{at:Date.now(),details:json && Number(json.id)===Number(task.data.id)?json:null,value:releaseStatus(json && Number(json.id)===Number(task.data.id)?json:task.data,table)});if(cache.size>80)cache.delete(cache.keys().next().value);for(const node of task.nodes)if(node.isConnected && node.matches('.focus,.hover,.pt-card-pointer'))schedule(node);pump();};
+   const finish=json=>{if(done)return;done=true;running--;pending.delete(task.key);const table=L.TimeTable && L.TimeTable.get?L.TimeTable.get(task.data) || []:[];cache.set(task.key,{at:Date.now(),details:json && Number(json.id)===Number(task.data.id)?detailsOnly(json):null,value:releaseStatus(json && Number(json.id)===Number(task.data.id)?json:task.data,table)});if(cache.size>80)cache.delete(cache.keys().next().value);save();for(const node of task.nodes)if(node.isConnected && node.matches('.focus,.hover,.pt-card-pointer'))schedule(node);pump();};
    tmdbGet(L,'tv/'+task.data.id,{},finish,()=>finish(null),{life:60});
   }
  }

@@ -1,12 +1,12 @@
-import {artworkSize,logoSize} from './artwork.js';
+import {logoSize} from './artwork.js';
 // Keep a bounded working set across carousel mounts. Successful images survive
 // navigation; pending requests and callbacks still belong to their screen.
 const pools=new WeakMap();
-export default function heroAssets(L,cards,loadLogo){
+export default function heroAssets(L,cards,loadLogo,element){
  let pool=pools.get(L);if(!pool){pool={images:new Map(),active:new Map()};pools.set(L,pool);}
- const images=pool.images,owner={},logos=new Map(),studios=new Map();let disposed=false,current=0,warmTimer,warmWanted=false;
+ const images=pool.images,owner={},logos=new Map(),studios=new Map();let disposed=false,current=0,warmTimer,warmWanted=false,upgradeTimer,upgradeWanted,onscreen=true;
  const wrap=i=>(i+cards.length)%cards.length;
- const paused=()=>document.hidden || document.body.matches('.pt-wheel-active,.pt-tv-busy');
+ const paused=()=>!onscreen || document.hidden || document.body.matches('.pt-wheel-active,.pt-tv-busy');
  const coverUrl=(i,size)=>L.TMDB.image('/t/p/'+size+cards[wrap(i)].backdrop_path);
  function remove(url,entry){
   images.delete(url);clearTimeout(entry.timeout);entry.image.onload=entry.image.onerror=null;
@@ -15,11 +15,11 @@ export default function heroAssets(L,cards,loadLogo){
  }
  function trim(){
   let bytes=0;images.forEach(e=>bytes+=e.bytes || 0);
-  const budget=(document.body.classList.contains('pt-tv')?64:48)*1048576;
+  const tv=document.body.classList.contains('pt-tv'),budget=(tv?40:48)*1048576,maximumOriginals=tv?1:2;
   let originals=[...images.values()].filter(e=>e.original && e.done).length;
   for(const [url,entry] of images){
    const crowded=images.size>24 || bytes>budget;
-   if(!crowded && originals<=2)break;
+   if(!crowded && originals<=maximumOriginals)break;
    if(!crowded && !entry.original)continue;
    if(![...pool.active.values()].includes(url) && entry.done){bytes-=entry.bytes || 0;if(entry.original)originals--;remove(url,entry);}
   }
@@ -50,7 +50,7 @@ export default function heroAssets(L,cards,loadLogo){
   entry.image.onerror=()=>finish('');entry.timeout=setTimeout(()=>{finish('');entry.image.src='';},12000);entry.image.src=url;trim();
  }
  function select(i){
-  current=wrap(i);
+  if(current!==wrap(i)){clearTimeout(upgradeTimer);upgradeWanted=null;}current=wrap(i);
   const path=cards[current].backdrop_path;
   // Proxy URLs may encode the path or append account/uid parameters. Keep
   // selection identity separately; URL suffixes cannot identify a backdrop.
@@ -86,17 +86,29 @@ export default function heroAssets(L,cards,loadLogo){
   if([...images.values()].some(entry=>entry.cover && !entry.background && !entry.done))return;
   warmTimer=setTimeout(()=>{
    warmTimer=null;if(paused())return;
+   if([...images.values()].some(entry=>entry.cover && !entry.background && !entry.done))return;
    warmWanted=false;
    const tv=document.body.classList.contains('pt-tv');
    [...new Set(tv?[wrap(current+1)]:[wrap(current+1),wrap(current-1)])].filter(n=>n!==current).forEach(n=>{
-    // Warm only one TV neighbour at the selected quality, reusing the final image.
-    if(tv)cover(n,artworkSize(L,'backdrop'),url=>{if(url && !paused())logo(n,()=>{});},true);
+    // A lightweight neighbour must not allocate another decoded 4K original.
+    if(tv)cover(n,'w1280',()=>{},true);
     else{cover(n,'w780',()=>{},true);logo(n,()=>{});}
    });
   },delay);
  }
  function warm(i){select(i);warmWanted=true;scheduleWarm(1200);}
- function resume(){scheduleWarm(300);}
+ function scheduleUpgrade(){
+  clearTimeout(upgradeTimer);if(!upgradeWanted || disposed || paused())return;
+  upgradeTimer=setTimeout(()=>{if(paused() || !upgradeWanted)return;const task=upgradeWanted;upgradeWanted=null;cover(task.i,task.size,task.callback);},700);
+ }
+ function cancelUpgrade(cancelPendingOriginal=false){
+  clearTimeout(upgradeTimer);upgradeWanted=null;
+  if(cancelPendingOriginal)for(const [url,entry] of images)if(entry.owner===owner && entry.original && !entry.done && entry.callbacks.every(fn=>fn.owner===owner))remove(url,entry);
+ }
+ function upgrade(i,size,callback){upgradeWanted={i:wrap(i),size,callback};scheduleUpgrade();}
+ function resume(){scheduleUpgrade();scheduleWarm(document.body.classList.contains('pt-tv')?1200:300);}
+ const observer=element && typeof IntersectionObserver==='function'?new IntersectionObserver(entries=>{onscreen=entries.some(entry=>entry.isIntersecting);if(onscreen)resume();else{clearTimeout(upgradeTimer);clearTimeout(warmTimer);}}):null;
+ if(observer)observer.observe(element);
  document.addEventListener('minimal:wheel-idle',resume);
  document.addEventListener('minimal:tv-idle',resume);
  document.addEventListener('visibilitychange',resume);
@@ -107,12 +119,12 @@ export default function heroAssets(L,cards,loadLogo){
   return saved.url;
  }
  function dispose(){
-  disposed=true;clearTimeout(warmTimer);
+  disposed=true;clearTimeout(warmTimer);clearTimeout(upgradeTimer);upgradeWanted=null;if(observer)observer.disconnect();
   document.removeEventListener('minimal:wheel-idle',resume);document.removeEventListener('minimal:tv-idle',resume);document.removeEventListener('visibilitychange',resume);
   pool.active.delete(owner);
   for(const [url,entry] of images)if(!entry.done){entry.callbacks=entry.callbacks.filter(fn=>fn.owner!==owner);if(!entry.callbacks.length)remove(url,entry);}
   trim();
   logos.clear();studios.clear();
  }
- return {cover,logo,studio,warm,ready,select,dispose};
+ return {cover,logo,studio,warm,ready,select,upgrade,cancelUpgrade,dispose};
 }

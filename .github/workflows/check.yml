@@ -110,3 +110,8 @@ jobs:
         env:
           PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
         run: node tests/browser/quiet-sync.cjs
+
+      - name: Watch menu and stable completed season
+        env:
+          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
+        run: node tests/browser/watch-menu.cjs

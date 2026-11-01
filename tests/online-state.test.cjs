@@ -140,15 +140,20 @@ test('online context actions mark files and clear current or all timecodes witho
    origin.on('hover:long',()=>nativeRequests++);
    component.contextMenu({html:origin,element:{mark(){origin.append('<div class="online-prestige__viewed"></div>');},unmark(){origin.find('.online-prestige__viewed').remove();},timeclear(){L.Timeline.update({hash,percent:0,time:0,duration:0});}},onClearAllMark(){allmarks++;s.body.find('.online-prestige__viewed').remove();},onClearAllTime(){alltimes++;}});
   });await wait(120);
-  async function action(name){s.root.find('.nova-card').first().trigger('contextmenu');assert.equal(L.Select.opened(),true);const button=L.Select.render().find('.selectbox-item').filter(function(){return w.jQuery(this).text().trim()===name;}).first();assert.equal(button.length,1,name+': '+L.Select.render().text());button.trigger('hover:enter');await wait(80);assert.equal(L.Controller.enabled().name,'content');}
-  await action('Отметить просмотренным');assert.equal(s.root.find('.nova-card__viewed,.nova-card__eye').length,1);
+  async function action(name,bulk=false){
+   s.root.find('.nova-card').first().trigger('contextmenu');assert.equal(L.Select.opened(),true);
+   const pick=title=>{const button=L.Select.render().find('.selectbox-item').filter(function(){return w.jQuery(this).find('.selectbox-item__title').text().trim()===title;}).first();assert.equal(button.length,1,title+': '+L.Select.render().text());button.trigger('hover:enter');};
+   if(bulk)pick('Сезон и сериал…');pick(name);if(bulk && name!=='Отметить все вышедшие серии')pick('Да, сбросить');
+   await wait(100);assert.equal(L.Controller.enabled().name,'content');
+  }
+  await action('Отметить серию просмотренной');assert.equal(s.root.find('.nova-card__viewed,.nova-card__eye').length,1);
   await action('Снять отметку просмотра');assert.equal(s.root.find('.nova-card__viewed,.nova-card__eye').length,0);
-  await action('Очистить таймкод');assert.equal(L.Timeline.view(L.Utils.hash('11Original')).time,0);assert.equal(L.Timeline.view(L.Utils.hash('12Original')).time,300);
-  await action('Очистить таймкоды всех файлов');assert.equal(alltimes,1);assert.equal(L.Timeline.view(L.Utils.hash('12Original')).time,0);
+  L.Timeline.update({hash:L.Utils.hash('11Original'),percent:35,time:300,duration:900});await wait(80);await action('Очистить таймкод');assert.equal(L.Timeline.view(L.Utils.hash('11Original')).time,0);assert.equal(L.Timeline.view(L.Utils.hash('12Original')).time,300);
+  await action('Очистить таймкоды текущего сезона',true);assert.equal(alltimes,1);assert.equal(L.Timeline.view(L.Utils.hash('12Original')).time,0);
   L.Timeline.update({hash:L.Utils.hash('26Original'),percent:40,time:720,duration:1800});L.Storage.set('online_watched_last',{[L.Utils.hash('Original')]:{season:2,episode:6},other:{season:1,episode:1}});
-  await action('Очистить таймкоды сериала');assert.equal(L.Timeline.view(L.Utils.hash('26Original')).time,0);assert.equal(L.Storage.get('online_watched_last',{})[L.Utils.hash('Original')],undefined);assert.equal(L.Storage.get('online_watched_last',{}).other.episode,1);
-  await action('Снять отметки у всех файлов');assert.equal(allmarks,1);assert.equal(nativeRequests,0);assert.equal(s.played(),0);assert.deepEqual(n.errors,[]);
-  L.Timeline.update({hash:L.Utils.hash('11Original'),percent:35,time:300,duration:900});await wait(80);await action('Отметить просмотренным');
+  await action('Очистить таймкоды всего сериала',true);assert.equal(L.Timeline.view(L.Utils.hash('26Original')).time,0);assert.equal(L.Storage.get('online_watched_last',{})[L.Utils.hash('Original')],undefined);assert.equal(L.Storage.get('online_watched_last',{}).other.episode,1);
+  await action('Снять отметки текущего сезона',true);assert.equal(allmarks,2);assert.equal(nativeRequests,0);assert.equal(s.played(),0);assert.deepEqual(n.errors,[]);
+  L.Timeline.update({hash:L.Utils.hash('11Original'),percent:35,time:300,duration:900});await wait(80);await action('Отметить серию просмотренной');
   assert.match(s.root.find('[data-nova-focus=hero]').text(),/Серия 2/);assert.equal(s.root.find('.nova-hero__progress .time-line>div').css('width'),'0%');assert.equal(L.Timeline.view(L.Utils.hash('11Original')).percent,100);assert.equal(L.Timeline.view(L.Utils.hash('12Original')).percent,0);assert.equal(w.LampaView.online.lastWatched(s.movie).episode,1);assert.equal(w.LampaView.online.resume(s.movie).episode,2);assert.equal(w.LampaView.online.resume(s.movie).percent,0);
  }finally{if(s)s.close();n.close();}
 });
@@ -390,5 +395,19 @@ test('a single dubbing arriving after the initial empty filter appears without s
   voice.items.push({title:'AniLibria',selected:false,index:1});s.filter.set('filter',[season,voice]);await wait(240);
   s.root.find('[data-nova-focus=voice]').trigger('hover:enter');assert.equal(L.Select.render().find('.selectbox-item').length,2);L.Select.render().find('.selectbox-item').last().trigger('hover:enter');assert.equal(selected,1,'A new choice reaches the native handler');assert.equal(sourceChanges,0);assert.equal(s.played(),0);
   s.filter.set('filter',[season]);await wait(240);assert.equal(s.root.find('[data-nova-focus=voice]').length,0,'An empty group removes its old button');assert.deepEqual(n.errors,[]);
+ }finally{if(s)s.close();n.close();}
+});
+
+
+test('previous-episodes action is inclusive, explicit about its season, preserves real elapsed time and never invokes provider fake-runtime marks',async()=>{
+ const n=await native({built:true}),{L,w}=n;let s;try{
+  s=screen(n,{episodes:[4,3,2,1],component:{changeBalanser(){},contextMenu(){}}});await wait(180);let providerMarks=0;
+  s.body.find('.online-prestige').each(function(){const origin=w.jQuery(this),num=Number(origin.find('.online-prestige__episode-number').text()),hash=L.Utils.hash('1'+num+'Original');origin.find('.time-line').attr('data-hash',hash);s.component.contextMenu({html:origin,element:{mark(){providerMarks++;L.Timeline.update({hash,percent:100,time:9999,duration:9999});}}});});
+  L.Timeline.update({hash:L.Utils.hash('13Original'),percent:35,time:300,duration:900});L.Timeline.update({hash:L.Utils.hash('21Original'),percent:40,time:500,duration:1200});await wait(160);
+  s.root.find('.nova-card').eq(1).trigger('contextmenu');const select=L.Select.render(),option=select.find('.selectbox-item').filter(function(){return w.jQuery(this).find('.selectbox-item__title').text()==='Отметить серии 1–3 просмотренными';});
+  assert.equal(option.length,1);assert.match(option.find('.selectbox-item__subtitle').text(),/Только сезон 1/);option.trigger('hover:enter');await wait(180);
+  for(let e=1;e<=3;e++)assert.equal(L.Timeline.view(L.Utils.hash('1'+e+'Original')).percent,100);
+  assert.equal(L.Timeline.view(L.Utils.hash('11Original')).time,0);assert.equal(L.Timeline.view(L.Utils.hash('13Original')).time,300);assert.equal(L.Timeline.view(L.Utils.hash('14Original')).percent,0);assert.equal(L.Timeline.view(L.Utils.hash('21Original')).time,500);
+  assert.equal(providerMarks,0);assert.equal(s.played(),0);assert.equal(L.Controller.enabled().name,'content');assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}
 });

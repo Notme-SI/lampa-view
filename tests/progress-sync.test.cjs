@@ -70,3 +70,34 @@ test('shared episodes remain discoverable beyond stale card season metadata and 
   saved.online_watched_last.Stars={season:3,episode:2};assert.equal(online.lastWatched(card).hash,last.hash);
  }finally{w.close();}
 });
+
+
+test('a completed Kerry episode waits for season facts and returns directly to the cached completed-season caption',async()=>{
+ const d=new JSDOM('<body><div class="card focus"><div class="card__view"></div></div></body>',{runScripts:'outside-only'}),w=d.window;try{
+  let requests=0,finish;const saved={},last={season:1,episode:8,hash:'18Kerry',percent:100,time:0,duration:0};
+  w.LampaView={online:{lastWatched:()=>last,seasonWatched:()=>true}};
+  const L={Storage:{get:(k,v)=>saved[k] || v,set:(k,v)=>saved[k]=v},Utils:{hash:x=>x},Api:{sources:{tmdb:{get:(path,p,ok)=>{requests++;finish=ok;}}}},TimeTable:{get:()=>[]},Timeline:{view:()=>last,render:()=>{const line=w.document.createElement('div');line.className='time-line';line.dataset.hash=last.hash;line.innerHTML='<div></div>';return line;}}};
+  let api=load(w,'series-status','Status').default(L,node=>api.paint(node)),node=w.document.querySelector('.card'),card={id:48,name:'Кэрри',original_name:'Kerry',source:'tmdb'};
+  api.track(node,card);api.paint(node);assert.equal(requests,1);assert.equal(node.querySelector('.pt-card-watch--has-progress'),null,'Do not flash episode 8 while completion facts are pending');
+  finish({id:48,seasons:[{season_number:1,episode_count:8}],last_episode_to_air:{season_number:1,episode_number:8,air_date:'2020-01-01'},next_episode_to_air:null});
+  assert.equal(node.querySelector('.pt-card-watch__current .pt-card-watch__label').textContent,'Сезон 1 просмотрен');await wait(170);
+  api=load(w,'series-status','Status2').default(L,()=>{});api.track(node,card);api.paint(node);assert.equal(requests,1,'Bounded release metadata survives a new screen/session');assert.equal(node.querySelector('.pt-card-watch__current .pt-card-watch__label').textContent,'Сезон 1 просмотрен');
+ }finally{w.close();}
+});
+
+test('range marks batch native reads, retain actual time/profile and ignore known future entries and other seasons',()=>{
+ const d=new JSDOM('',{runScripts:'outside-only'}),w=d.window;try{
+  const records={'13Original':{percent:40,time:915,duration:2800,profile:7},'23Original':{percent:50,time:100}},saved={file_view_7:records};let reads=0,count;
+  const L={Utils:{hash:x=>x},Storage:{get:(k,v)=>saved[k] || v,set:(k,v)=>saved[k]=v},Timeline:{filename:()=> 'file_view_7',view:hash=>records[hash] || {profile:7},update:value=>records[value.hash]=value,read:()=>reads++}},api=load(w,'online-state','RangeState').default(L);
+  api.setPreviousWatched({name:'Сериал',original_name:'Original'},1,3,n=>count=n,[{episode:2,soon:true},{episode:3,hash:'provider-3'}]);
+  assert.equal(count,2);assert.equal(reads,1);assert.equal(records['13Original'].time,915);assert.equal(records['13Original'].profile,7);assert.equal(records['11Original'].time,0);assert.equal(records['12Original'],undefined);assert.equal(records['14Original'],undefined);assert.equal(records['23Original'].time,100);assert.equal(records['provider-3'].percent,100);
+ }finally{w.close();}
+});
+
+
+test('a late bulk-mark metadata response cannot mark another account profile',()=>{
+ const d=new JSDOM('',{runScripts:'outside-only'}),w=d.window;try{
+  let profile='file_view_7',finish,writes=0;const L={Utils:{hash:x=>x},Storage:{get:(k,v)=>v,set(){}},Api:{sources:{tmdb:{get:(path,p,ok)=>finish=ok}}},Timeline:{filename:()=>profile,view:()=>({}),update:()=>writes++,read(){}}};
+  const api=load(w,'online-state','BulkRace').default(L);api.setAllWatched({id:8,name:'Сериал',original_name:'Original',source:'tmdb'});profile='file_view_8';finish({id:8,seasons:[{season_number:1,episode_count:2}],last_episode_to_air:{season_number:1,episode_number:2,air_date:'2020-01-01'}});assert.equal(writes,0);
+ }finally{w.close();}
+});

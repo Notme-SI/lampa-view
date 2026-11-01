@@ -110,7 +110,7 @@ export function availability(body){
  return {state:count?'ok':/\bvideos__(?:item|line|empty|body)\b/.test(clean)?'empty':'unknown',count};
 }
 export default function onlineState(L){
- let revision=0;const snapshots=new Map();
+ let revision=0,batching=0;const snapshots=new Map();
  const file=()=>L.Timeline && L.Timeline.filename?L.Timeline.filename():'file_view';
  const info=L.Storage && L.Storage.get?cardInfo(L):null;
  const names=card=>Array.from(new Set([card.original_title,card.original_name,card.title,card.name,...(info?info.names(card):[])].filter(value=>typeof value==='string' && value.trim()).map(value=>value.trim())));
@@ -135,12 +135,16 @@ export default function onlineState(L){
   // Release metadata and the local resume hint can lag behind another device.
   // Search the supported season range in the shared records, not just seasons
   // that this particular card/device happened to cache. Focus snapshots bound it.
-  const read=reader(card),seasons=Array.isArray(card.seasons)?card.seasons:[],max=60;let latest=null;
-  for(let s=1;s<=max;s++){
-   const detail=seasons.find(row=>Number(row.season_number)===s),total=number(detail && detail.episode_count),limit=Math.min(500,total || 100);
-   for(let e=1;e<=limit;e++){
-    const record=read(s,e);if(!record.percent && !record.time)continue;
-    if(!latest || record.updated>latest.record.updated || record.updated===latest.record.updated && (s>latest.season || s===latest.season && e>latest.episode))latest={season:s,episode:e,total,record};
+  const records=L.Storage.get(file(),{}) || {},seasons=Array.isArray(card.seasons)?card.seasons:[],max=60;let latest=null;
+  // Most candidates have no record. Do not allocate an array, Set and empty
+  // result object for every episode while a TV is moving through its cards.
+  if(Object.keys(records).length)for(let s=1;s<=max;s++){
+   const detail=seasons.find(row=>Number(row.season_number)===s),total=number(detail && detail.episode_count),limit=Math.min(500,Math.max(100,total));
+   for(let e=1;e<=limit;e++)for(const title of titles){
+    const key=hash(title,s,e),raw=records[key];if(!raw)continue;
+    const percent=Math.min(100,number(typeof raw==='number'?raw:raw.percent)),time=number(raw.time);if(!percent && !time)continue;
+    const updated=stamp(raw.updated);
+    if(!latest || updated>latest.record.updated || updated===latest.record.updated && (s>latest.season || s===latest.season && (e>latest.episode || e===latest.episode && percent>latest.record.percent)))latest={season:s,episode:e,total,record:{hash:key,percent,time,duration:number(raw.duration),updated}};
    }
   }
   const value=latest?{season:latest.season,episode:latest.episode,total:latest.total,max,hash:latest.record.hash,time:latest.record.time,duration:latest.record.duration,percent:latest.record.percent}:null;
@@ -211,7 +215,7 @@ export default function onlineState(L){
   if(titles.length)keys.add(hash(titles[0],season,episode));
   if(explicit)keys.add(explicit);
   for(const title of titles){const key=hash(title,season,episode);if(records[key])keys.add(key);}
-  if(watched && season){
+  if(watched && season && !batching){
    const saved={...(L.Storage.get('online_watched_last',{}) || {})};
    for(const title of titles.slice(0,2)){const key=L.Utils.hash(title);saved[key]={...saved[key],season,episode};}
    L.Storage.set('online_watched_last',saved);
@@ -221,10 +225,26 @@ export default function onlineState(L){
    if(watched || percent>=90){const duration=number(raw && raw.duration);writeTimeline({hash:key,percent:watched?100:0,time:watched?number(raw && raw.time):0,duration});}
   }
   revision++;snapshots.clear();
+  if(!batching && L.Timeline.read)L.Timeline.read();
+ }
+ function markRows(card,rows){
+  batching++;
+  try{for(const row of rows)setWatched(card,row.season,row.episode,true,row.hash);}finally{batching--;}
+  const last=rows[rows.length-1];
+  if(last){const saved={...(L.Storage.get('online_watched_last',{}) || {})};for(const title of names(card).slice(0,2)){const key=L.Utils.hash(title);saved[key]={...saved[key],season:last.season,episode:last.episode};}L.Storage.set('online_watched_last',saved);}
   if(L.Timeline.read)L.Timeline.read();
  }
+ function setPreviousWatched(card,season,episode,done,explicit=[]){
+  season=Number(season);episode=Number(episode);
+  if(!Number.isInteger(season) || season<1 || season>100 || !Number.isInteger(episode) || episode<1 || episode>500){if(done)done(0);return;}
+  const supplied=new Map(explicit.map(row=>[Number(row.episode),row]));
+  const rows=Array.from({length:episode},(_,i)=>({season,episode:i+1,hash:supplied.get(i+1) && supplied.get(i+1).hash})).filter(row=>!(supplied.get(row.episode) || {}).soon);
+  markRows(card,rows);if(done)done(rows.length);
+ }
  function setAllWatched(card,done){
+  const scope=file();
   const mark=details=>{
+   if(file()!==scope){if(done)done(0);return;}
    const full={...card,...details},table=L.TimeTable && L.TimeTable.get?L.TimeTable.get(full) || []:[];
    const today=new Date().toISOString().slice(0,10),last=full.last_episode_to_air;
    const aired=last && last.air_date && String(last.air_date).slice(0,10)<=today?last:null;
@@ -235,7 +255,7 @@ export default function onlineState(L){
     const count=n===Number(aired.season_number)?Number(aired.episode_number):Number(season.episode_count);
     for(let e=1;e<=Math.min(count,500);e++)if(!episodes.has(n+':'+e))episodes.set(n+':'+e,{season_number:n,episode_number:e});
    }
-   for(const row of episodes.values())setWatched({...full,episode_run_time:row.runtime?[row.runtime]:full.episode_run_time},Number(row.season_number),Number(row.episode_number),true);
+   markRows(full,Array.from(episodes.values()).map(row=>({season:Number(row.season_number),episode:Number(row.episode_number)})).sort((a,b)=>a.season-b.season || a.episode-b.episode));
    if(done)done(episodes.size);
   };
   if(Number(card.id)>0 && (!card.source || ['tmdb','cub','trakt'].includes(card.source)))tmdbGet(L,'tv/'+card.id,{},value=>mark(value && Number(value.id)===Number(card.id)?value:{}),()=>mark({}),{life:60});
@@ -264,5 +284,5 @@ export default function onlineState(L){
   if(L.Timeline.read)L.Timeline.read();
  }
 
- return {availability,reader,resume,seasonIndex,folderTarget,folderRows,folderSeasons,relevantFolders,clearProgress,clearTitleProgress,setWatched,setAllWatched,lastWatched,seasonWatched};
+ return {availability,reader,resume,seasonIndex,folderTarget,folderRows,folderSeasons,relevantFolders,clearProgress,clearTitleProgress,setWatched,setAllWatched,setPreviousWatched,setWatchedRows:markRows,lastWatched,seasonWatched};
 }

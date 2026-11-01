@@ -62,8 +62,8 @@ test('decoded banner memory pressure evicts old full-size images without reducin
  try{
   api.cover(0,'original',()=>{});images[0].naturalWidth=3840;images[0].naturalHeight=2160;images[0].onload();await wait(0);
   api.cover(1,'original',()=>{});images[1].naturalWidth=3840;images[1].naturalHeight=2160;images[1].onload();await wait(0);
-  assert.ok(api.ready(0,'original').includes('/original/'),'Two 4K covers fit the 64 MiB TV budget');
-  assert.ok(api.ready(1,'original').includes('/original/'),'The most recent selection remains the second cover');
+  assert.equal(api.ready(0,'original'),'','TV releases the previous decoded 4K original instead of retaining two');
+  assert.ok(api.ready(1,'original').includes('/original/'),'The currently selected original retains full resolution');
   api.cover(3,'original',()=>{});images[2].naturalWidth=3840;images[2].naturalHeight=2160;images[2].onload();await wait(0);
   assert.equal(api.ready(0,'original'),'');assert.ok(api.ready(3,'original').includes('/original/'));
   assert.equal(images[0].src,'','Eviction releases the decoded image reference');
@@ -107,4 +107,16 @@ test('nearby posters preload before native visibility and stay painted during TV
   near.x=20;w.document.body.classList.add('pt-tv-busy');near.visible();await wait(30);
   assert.equal(near.img.src,painted);assert.equal(loaders.length,2,'No repeat download and no blanking during the next remote movement');assert.deepEqual(n.errors,[]);
  }finally{cards.forEach(c=>c.destroy());n.close();}
+});
+
+
+test('TV cancels stale quality upgrades and keeps offscreen original work paused until the hero returns',async()=>{
+ const n=assets(),{w,images}=n;let change;
+ w.document.body.classList.add('pt-tv');w.IntersectionObserver=class{constructor(fn){change=fn;}observe(){}disconnect(){}};
+ const api=w.Assets.default({TMDB:{image:p=>'https://images.test'+p}},[{backdrop_path:'/visible.jpg'}],(_,ok)=>ok(''),w.document.body);
+ try{
+  api.upgrade(0,'original',()=>{});api.cancelUpgrade(true);await wait(750);assert.equal(images.length,0,'Changing the same slide to Medium cancels its queued original');
+  api.upgrade(0,'original',()=>{});change([{isIntersecting:false}]);w.document.dispatchEvent(new w.Event('minimal:tv-idle'));await wait(750);assert.equal(images.length,0,'No background original while browsing lower rows');
+  change([{isIntersecting:true}]);await wait(750);assert.equal(images.length,1);assert.match(images[0].src,/original/);api.cancelUpgrade(true);assert.equal(images[0].src,'','Changing quality also aborts an already started original');
+ }finally{api.dispose();n.close();}
 });

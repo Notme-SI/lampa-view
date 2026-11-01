@@ -229,11 +229,12 @@ if (!ROOT.LampaView) {
       const details=$('<div class="pt-hero__action selector" role="button" tabindex="0">').html(icon('info')+'<span>Подробнее</span>').appendTo(buttons);
       const dots=$('<div class="pt-hero__dots" role="group" aria-label="Переключить обложку">').appendTo(element);
       let logoToken=0,upgradeTimer,rotation;
-      const assets=heroAssets(L,cards,loadLogo);
+      const assets=heroAssets(L,cards,loadLogo,element[0]);
       if(activity.component && activity.component.use)activity.component.use({onDestroy:()=>{clearTimeout(upgradeTimer);assets.dispose();}});
       const requestHeroLayout=()=>element[0].dispatchEvent(new Event('minimal:hero-layout',{bubbles:true}));
       function show(next){
         index=(next+cards.length)%cards.length;
+        assets.cancelUpgrade(artworkSize(L,'backdrop')!=='original');
         assets.select(index);
         const selected=index,card=cards[index],kind=card.media_type || (card.name?'tv':'movie');
         item={...card,media_type:kind,source:card.source || 'tmdb'};
@@ -268,9 +269,10 @@ if (!ROOT.LampaView) {
         const useOriginal=size==='original',ready=assets.ready(index,size);let originalShown=!!ready;
         if(ready){image.attr('src',ready);branding();}
         else{
-          assets.cover(index,useOriginal && !tv?'w780':size,url=>{
+          const preview=useOriginal?(tv?'w1280':'w780'):size;
+          assets.cover(index,preview,url=>{
             if(token===logoToken && url && !originalShown)image.attr('src',url);
-            if(tv)branding();
+            if(tv){branding();if(useOriginal && url)assets.upgrade(selected,'original',original=>{if(token===logoToken && original){originalShown=true;image.attr('src',original);}});}
           });
           if(useOriginal && !tv)upgradeTimer=setTimeout(()=>assets.cover(index,'original',url=>{if(token===logoToken && url){originalShown=true;image.attr('src',url);}}),300);
         }

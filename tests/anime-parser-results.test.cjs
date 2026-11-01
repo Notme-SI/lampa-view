@@ -9,7 +9,9 @@ test('native anime search retains dubbed releases classified as series, even whe
   const requests=[];
   const anime={Title:'Киберпанк / Cyberpunk: Edgerunners (Сезон 2) Ukr/Jpn',Tracker:'toloka',Size:1e9};
   const series={Title:'Киберпанк: Бегущие по краю / Cyberpunk: Edgerunners S02E01 LostFilm',Tracker:'lostfilm',Size:1e9};
-  w.testNetwork=(url,ok)=>{
+  const nativeNetwork=w.testNetwork;
+  w.testNetwork=(url,ok,fail)=>{
+   if(new URL(url).origin!=='http://parser.test')return nativeNetwork(url,ok,fail);
    requests.push(new URL(url));
    const type=new URL(url).searchParams.get('is_serial');
    w.setTimeout(()=>ok({Results:type==='5'?[anime]:[anime,series]}),0);
