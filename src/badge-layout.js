@@ -33,12 +33,13 @@ export default function badgeLayout(status){
    for(const [selector,corner] of [['.card__vote','br'],['.pt-quality,.card__quality','tl'],['.pt-kind','tr'],['.pt-series-status','tr'],['.card__marker','bl'],['.card__icon:not(.icon--history)','tl'],['.card__new-episode','bl']])for(const el of view.querySelectorAll(selector)){
     if(el.hidden || el.classList.contains('hide') || getComputedStyle(el).display==='none')continue;
     if(el.classList.contains('pt-series-status')){
-     el.style.fontSize='';
+     el.style.fontSize='';if(document.body.classList.contains('pt-tv'))el.style.transform='none';
      const style=getComputedStyle(el),border=(parseFloat(style.borderLeftWidth)||0)+(parseFloat(style.borderRightWidth)||0);
      const range=document.createRange();range.selectNodeContents(el);
      const natural=range.getBoundingClientRect().width/scale+(parseFloat(style.paddingLeft)||0)+(parseFloat(style.paddingRight)||0);
      const available=Math.max(1,Math.min(width-8,parseFloat(style.maxWidth)||width)-border);
-     if(natural>available && !document.body.classList.contains('pt-tv'))el.style.fontSize=(parseFloat(style.fontSize)*Math.max(1,available-1)/natural).toFixed(2)+'px';
+     if(document.body.classList.contains('pt-tv'))el.style.transform='scale('+Math.min(.72,Math.max(1,width-8)/(natural+border)).toFixed(3)+')';
+     else if(natural>available)el.style.fontSize=(parseFloat(style.fontSize)*Math.max(1,available-1)/natural).toFixed(2)+'px';
     }
     const r=el.getBoundingClientRect();if(r.width && r.height)entries.push({el,corner,width:r.width/scale,height:r.height/scale});
    }

@@ -120,3 +120,12 @@ test('TV cancels stale quality upgrades and keeps offscreen original work paused
   change([{isIntersecting:true}]);await wait(750);assert.equal(images.length,1);assert.match(images[0].src,/original/);api.cancelUpgrade(true);assert.equal(images[0].src,'','Changing quality also aborts an already started original');
  }finally{api.dispose();n.close();}
 });
+
+test('TV keeps previously decoded 2K originals when they fit the same memory budget',async()=>{
+ const n=assets(),{w,api,images}=n;w.document.body.classList.add('pt-tv');
+ try{
+  for(const index of [0,1,3]){api.cover(index,'original',()=>{});images[images.length-1].onload();await wait(0);}
+  assert.ok(api.ready(0,'original') && api.ready(1,'original') && api.ready(3,'original'));
+  const before=images.length;api.cover(0,'original',()=>{});assert.equal(images.length,before,'A small source needs no repeated decode on returning to the slide');
+ }finally{n.close();}
+});

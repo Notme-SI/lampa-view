@@ -1,21 +1,22 @@
 import {logoSize} from './artwork.js';
+import imageFiles from './image-files.js';
 // Keep a bounded working set across carousel mounts. Successful images survive
 // navigation; pending requests and callbacks still belong to their screen.
 const pools=new WeakMap();
 export default function heroAssets(L,cards,loadLogo,element){
  let pool=pools.get(L);if(!pool){pool={images:new Map(),active:new Map()};pools.set(L,pool);}
- const images=pool.images,owner={},logos=new Map(),studios=new Map();let disposed=false,current=0,warmTimer,warmWanted=false,upgradeTimer,upgradeWanted,onscreen=true;
+ const files=imageFiles(L),images=pool.images,owner={},logos=new Map(),studios=new Map();let disposed=false,current=0,warmTimer,warmWanted=false,upgradeTimer,upgradeWanted,onscreen=true;
  const wrap=i=>(i+cards.length)%cards.length;
  const paused=()=>!onscreen || document.hidden || document.body.matches('.pt-wheel-active,.pt-tv-busy');
  const coverUrl=(i,size)=>L.TMDB.image('/t/p/'+size+cards[wrap(i)].backdrop_path);
  function remove(url,entry){
   images.delete(url);clearTimeout(entry.timeout);entry.image.onload=entry.image.onerror=null;
   if(!entry.done)entry.callbacks=[];
-  entry.image.src='';
+  if(entry.release)entry.release();entry.image.src='';
  }
  function trim(){
   let bytes=0;images.forEach(e=>bytes+=e.bytes || 0);
-  const tv=document.body.classList.contains('pt-tv'),budget=(tv?40:48)*1048576,maximumOriginals=tv?1:2;
+  const tv=document.body.classList.contains('pt-tv'),budget=(tv?40:48)*1048576,maximumOriginals=tv?4:2;
   let originals=[...images.values()].filter(e=>e.original && e.done).length;
   for(const [url,entry] of images){
    const crowded=images.size>24 || bytes>budget;
@@ -42,12 +43,12 @@ export default function heroAssets(L,cards,loadLogo,element){
    entry.bytes=(entry.image.naturalWidth || 1)*(entry.image.naturalHeight || 1)*4;
    // A transient proxy error is not a reusable cached image. Selecting the
    // slide again must be able to retry rather than retain a permanent blank.
-   if(!value)images.delete(url);
+   if(!value){images.delete(url);if(entry.release)entry.release();}
    const callbacks=entry.callbacks;entry.callbacks=[];callbacks.forEach(fn=>fn(value));trim();
    if(entry.cover && !entry.background)scheduleWarm(1200);
   }
-  entry.image.onload=()=>{if(entry.image.decode)entry.image.decode().catch(()=>{}).then(()=>finish(url));else finish(url);};
-  entry.image.onerror=()=>finish('');entry.timeout=setTimeout(()=>{finish('');entry.image.src='';},12000);entry.image.src=url;trim();
+  entry.image.onload=()=>{if(entry.image.decode)entry.image.decode().catch(()=>{}).then(()=>finish(entry.image.src));else finish(entry.image.src);};
+  entry.image.onerror=()=>{files.invalidate(url);finish('');};entry.timeout=setTimeout(()=>{finish('');entry.image.src='';},12000);entry.release=files.load(url,src=>{entry.image.src=src;});trim();
  }
  function select(i){
   if(current!==wrap(i)){clearTimeout(upgradeTimer);upgradeWanted=null;}current=wrap(i);

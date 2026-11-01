@@ -17,7 +17,7 @@ const {setup}=require('../fixtures/native-browser.cjs');
      };
     })});
     const {page}=r;
-    await page.route('http://images.example.invalid/**',route=>route.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720"><rect width="1280" height="720" fill="#28474c"/></svg>'}));
+    await page.route('http://images.example.invalid/**',route=>{const id=Number(route.request().url().match(/(?:cover|logo|studio)(\d+)/)?.[1] || 0);return route.fulfill({contentType:'image/svg+xml',headers:{'access-control-allow-origin':'*'},body:'<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720"><rect width="1280" height="720" fill="rgb('+(id*40)+',100,100)"/></svg>'});});
     await page.evaluate(()=>{
      const root=jQuery('<main style="position:relative;width:100vw;min-height:100vh"><div class="items-line"></div></main>').appendTo(document.body);
      const activity={render:()=>root};
@@ -29,9 +29,8 @@ const {setup}=require('../fixtures/native-browser.cjs');
      await page.evaluate(id=>jQuery('.pt-hero__dot').eq(id-1).trigger('hover:enter'),id);
      await page.waitForFunction(id=>{
       const image=document.querySelector('.pt-hero__image'),logo=document.querySelector('.pt-hero__logo'),studio=document.querySelector('.pt-hero__studio');
-      return image?.src.includes('/cover'+id+'.jpg?') && image.complete && image.naturalWidth>0
-       && logo?.src.includes('/logo'+id+'.png?') && logo.complete && logo.naturalWidth>0 && !logo.classList.contains('pt-hidden')
-       && studio?.src.includes('/studio'+id+'.png?') && !studio.classList.contains('pt-hidden');
+      const color=img=>{if(!img || !img.complete || !img.naturalWidth)return -1;try{const c=document.createElement('canvas');c.width=c.height=1;const x=c.getContext('2d');x.drawImage(img,0,0,1,1);return x.getImageData(0,0,1,1).data[0];}catch(_){return -1;}};
+      return color(image)===id*40 && color(logo)===id*40 && !logo.classList.contains('pt-hidden') && color(studio)===id*40 && !studio.classList.contains('pt-hidden');
      },id,{timeout:6000});
      assert.equal(await page.locator('.pt-hero__logo').getAttribute('alt'),'Фильм '+id);
     }

@@ -1,7 +1,9 @@
 // Shared final-size covers are decoded before display; no low-resolution intermediate.
 // Decoded memory is bounded. The browser also retains its native HTTP cache.
+import imageFiles from './image-files.js';
 export default function posterCache(L,enabled,highQuality){
  if(!L.Maker || !L.Utils)return;
+ const files=imageFiles(L);
  const Card=L.Maker.get('Card',{}),create=L.Utils.createInstance,queue=[],cache=new Map(),callbacks=new WeakMap();
  // Complete GIF89a, including its palette and pixel data. Apple's image
  // decoder can reject the old truncated placeholder as a broken cover.
@@ -32,13 +34,13 @@ export default function posterCache(L,enabled,highQuality){
   let bytes=0;cache.forEach(entry=>bytes+=entry.bytes || 0);
   for(const [url,entry] of cache){
    if(cache.size<=40 && bytes<=64*1048576)break;
-   if(entry.done){cache.delete(url);bytes-=entry.bytes || 0;}
+   if(entry.done){cache.delete(url);bytes-=entry.bytes || 0;if(entry.release)entry.release();entry.loader.src='';}
   }
  }
  function schedule(delay){if(!timer && queue.length)timer=setTimeout(drain,typeof delay==='number'?delay:0);}
  function paint(job){
   job.finished=true;if(!job.alive() || !nearby(job.image) && !visible(job.image))return;
-  job.image.src=job.url;
+  job.paint();
  }
  function drain(){
   timer=null;
@@ -63,14 +65,14 @@ export default function posterCache(L,enabled,highQuality){
    let finished=false;
    const finish=ok=>{
     if(finished)return;finished=true;clearTimeout(entry.timeout);loader.onload=loader.onerror=null;running--;entry.abort=null;
-    if(ok){entry.done=true;entry.bytes=(loader.naturalWidth || 1)*(loader.naturalHeight || 1)*4;trim();}else cache.delete(job.url);
+    if(ok){entry.done=true;entry.bytes=(loader.naturalWidth || 1)*(loader.naturalHeight || 1)*4;trim();}else{cache.delete(job.url);if(entry.release)entry.release();}
     entry.jobs.forEach(waiting=>{waiting.entry=null;if(ok)paint(waiting);else{waiting.finished=true;if(waiting.alive())waiting.image.src='./img/img_broken.svg';}});entry.jobs.clear();
     schedule(0);
    };
-   entry.abort=()=>{finish(false);loader.src='';};
+   entry.abort=()=>{finish(false);if(entry.release)entry.release();loader.src='';};
    loader.onload=()=>{if(loader.decode)loader.decode().then(()=>finish(true),()=>finish(true));else finish(true);};
-   loader.onerror=()=>finish(false);
-   entry.timeout=setTimeout(()=>entry.abort && entry.abort(),12000);loader.src=job.url;
+   loader.onerror=()=>{files.invalidate(job.url);finish(false);};
+   entry.timeout=setTimeout(()=>entry.abort && entry.abort(),12000);entry.release=files.load(job.url,src=>{loader.src=src;});
   }
  }
  document.addEventListener('minimal:tv-idle',schedule);
@@ -78,19 +80,25 @@ export default function posterCache(L,enabled,highQuality){
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)schedule();});
  L.Utils.createInstance=function(Base,data){
   const item=create.apply(this,arguments);if(Base!==Card || !item || !item.use)return item;
-  let image,source,original,getPoster,observed,disposed=false,generation=0,job;
+  let image,source,original,getPoster,observed,disposed=false,generation=0,job,painted,release;
   function cancel(){
-   generation++;
+   generation++;painted=null;if(release){release();release=null;}
    if(job){
     const index=queue.indexOf(job);if(index>=0)queue.splice(index,1);
     const entry=job.entry;if(entry){entry.jobs.delete(job);if(!entry.done && !entry.jobs.size && entry.abort)entry.abort();}
    }
    job=null;
   }
+  function paintSource(url){
+   if(release)release();release=files.load(url,src=>{if(!disposed){painted=url;image.src=src;}});
+  }
   function enqueue(){
-   if(!maximum() || !original || image.src===original || job && !job.finished && job.alive())return;
+   if(!maximum() || !original || painted===original || image.src===original || job && !job.finished && job.alive())return;
+   original=fit(image,source);
+   const saved=cache.get(original);
+   if(saved && saved.done || files.has(original)){paintSource(original);return;}
    const current=generation;
-   job={image,url:original,resolve:()=>{original=fit(image,source);return original;},alive:()=>!disposed && current===generation && maximum() && image.isConnected};
+   job={image,url:original,paint:()=>paintSource(original),resolve:()=>{original=fit(image,source);return original;},alive:()=>!disposed && current===generation && maximum() && image.isConnected};
    if(queue.length>=80)queue.shift().finished=true;queue.push(job);schedule();
   }
   item.use({onCreate(){
@@ -108,18 +116,18 @@ export default function posterCache(L,enabled,highQuality){
     const url=getPoster.apply(this,arguments);
     if(!maximum() || !/\/t\/p\/(?:w\d+|original)\//.test(url))return url;
     if(source!==url){cancel();source=url;original=url;}
-    enqueue();return image.src===original?original:blank;
+    enqueue();return painted===original || image.src===original?image.src:blank;
    };
    image._minimalArtwork=()=>{
     const next=getPoster.call(item);
-    if(image.src===next || source===next && (image.src===original || job && !job.finished && job.alive()))return true;
+    if(image.src===next || source===next && (painted===original || image.src===original || job && !job.finished && job.alive()))return true;
     cancel();source=next;
     if(!/\/t\/p\/(?:w\d+|original)\//.test(next))return false;
     if(maximum()){original=next;image.src=blank;enqueue();}else image.src=next;
     return true;
    };
   },onVisible(){if(maximum() && original){clearTimeout(item.img_timer);enqueue();}},onDestroy(){
-   disposed=true;cancel();if(observed){observer.unobserve(observed);callbacks.delete(observed);}if(image)delete image._minimalArtwork;
+   disposed=true;cancel();if(release)release();if(observed){observer.unobserve(observed);callbacks.delete(observed);}if(image)delete image._minimalArtwork;
   }});
   return item;
  };

@@ -6,8 +6,10 @@ export function explicitSeason(path){
  for(const expression of expressions){const m=value.match(expression);if(m)return Number(m[1]);}
  return null;
 }
+import torrentWatchMenu from './torrent-watch-menu.js';
 export default function torrentEpisodes(L,root=window){
  if(!L.Torrent || !L.Torserver || typeof L.Torserver.parse!=='function' || typeof L.Torrent.start!=='function')return;
+ torrentWatchMenu(L,root);
  let selected;
  const start=L.Torrent.start,parse=L.Torserver.parse,open=L.Torrent.open;
  function key(movie){return movie && movie.id!=null?(movie.source || 'tmdb')+':'+movie.id:null;}
