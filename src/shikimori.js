@@ -1,11 +1,13 @@
+import {locale} from './i18n.js';
 import shikimoriMatch from './shikimori-match.js';
 const BASE='https://shikimori.io';
 export const SHIKI_ALL='minimal:shikimori:all';
 export function shikiCard(a,base=BASE){
+ const title=locale()==='ru'?(a.russian || a.name):(a.name || a.russian);
  const tv=a.kind!=='movie',date=a.aired_on || '',img=a.image && a.image.original || '';
  const url=value=>value?(value.startsWith('http')?value:base+value):'';
  const posterSources={high:url(img),medium:url(img || a.image && a.image.preview)};
- return {id:a.id,shikimori_id:a.id,title:a.russian || a.name,original_title:a.name,...(tv?{name:a.russian || a.name,original_name:a.name,first_air_date:date}:{release_date:date}),media_type:tv?'tv':'movie',source:'minimal_shiki',img:url(img),minimalPosterSources:posterSources,vote_average:Number(a.score) || 0};
+ return {id:a.id,shikimori_id:a.id,title,original_title:a.name,...(tv?{name:title,original_name:a.name,first_air_date:date}:{release_date:date}),media_type:tv?'tv':'movie',source:'minimal_shiki',img:url(img),minimalPosterSources:posterSources,vote_average:Number(a.score) || 0};
 }
 export default function shikimori(L){
  const cache=new Map(),pending=new Map(),queue=[];let timer=null,running=0,lastStart=0;

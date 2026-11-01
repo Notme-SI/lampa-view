@@ -1,3 +1,4 @@
+import {text as lampaViewText} from './i18n.js';
 import watchHistory from './watch-history.js';
 export const CONTINUE='minimal:continue';
 export const isContinue=row=>row.url===CONTINUE || row.name==='continue_watch' || /^(?:Продолжить просмотр|История просмотра)$/i.test(String(row.title || '').trim());
@@ -12,7 +13,7 @@ export default function continueWatching(L){
  const build=rows=>{
   const result=rows.filter(row=>!isContinue(row)).slice(0,6).map(row=>({...row,results:(row.results || []).slice(0,20)}));
   const index=result.findIndex(isWatching),history=cards();
-  result.splice(index<0?0:index+1,0,{title:'История просмотра',url:CONTINUE,source:'minimal_continue',results:history.slice(0,20),minimal_configurable:true,minimal_empty:!history.length});
+  result.splice(index<0?0:index+1,0,{title:lampaViewText("История просмотра"),url:CONTINUE,source:'minimal_continue',results:history.slice(0,20),minimal_configurable:true,minimal_empty:!history.length});
   return result;
  };
  build.cards=cards;build.ready=history.ready;return build;

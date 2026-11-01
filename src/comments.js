@@ -1,11 +1,12 @@
+import {text as lampaViewText} from './i18n.js';
 // Page the existing Lampa row: native cards, reading, touch and remote focus stay intact.
 export default function comments(item,node){
  if(!node || node.dataset.minimalComments)return;
  node.dataset.minimalComments='1';node.classList.add('minimal-comments-native');
- const add=node.querySelector('.full-review-add');if(add){add.setAttribute('aria-label','Написать комментарий');add.title='Написать комментарий';}
+ const add=node.querySelector('.full-review-add');if(add){add.setAttribute('aria-label',lampaViewText("Написать комментарий"));add.title=lampaViewText("Написать комментарий");}
  const head=node.querySelector('.items-line__head'),viewport=node.querySelector('.scroll--horizontal');
  if(!head || !viewport || !viewport.Scroll)return;
- const scroll=viewport.Scroll,body=scroll.body(true),nav=document.createElement('div');nav.className='minimal-comments-nav';nav.setAttribute('role','group');nav.setAttribute('aria-label','Листать комментарии');
+ const scroll=viewport.Scroll,body=scroll.body(true),nav=document.createElement('div');nav.className='minimal-comments-nav';nav.setAttribute('role','group');nav.setAttribute('aria-label',lampaViewText("Листать комментарии"));
  let disposed=false,frame=0;
  function cards(){return Array.from(body.children);}
  function update(){
@@ -31,7 +32,7 @@ export default function comments(item,node){
   control.addEventListener('click',event=>{event.preventDefault();event.stopImmediatePropagation();move(direction);});
   control.addEventListener('hover:enter',()=>move(direction));nav.appendChild(control);return control;
  }
- const previous=button(-1,'Предыдущий комментарий'),next=button(1,'Следующий комментарий');head.appendChild(nav);
+ const previous=button(-1,lampaViewText("Предыдущий комментарий")),next=button(1,lampaViewText("Следующий комментарий"));head.appendChild(nav);
  const observer=window.ResizeObserver?new ResizeObserver(schedule):null;if(observer){observer.observe(viewport);observer.observe(body);}
  viewport.addEventListener('scroll',schedule,{passive:true});viewport.addEventListener('touchend',schedule,{passive:true});window.addEventListener('resize',schedule);
  function dispose(){disposed=true;if(frame)window.cancelAnimationFrame(frame);if(observer)observer.disconnect();viewport.removeEventListener('scroll',schedule);viewport.removeEventListener('touchend',schedule);window.removeEventListener('resize',schedule);}

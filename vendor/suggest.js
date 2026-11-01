@@ -1,3 +1,4 @@
+function lampaViewText(source,values){return window.LampaView && window.LampaView.text?window.LampaView.text(source,values):String(source).replace(/\{(\d+)\}/g,function(_,n){return String((values || [])[n]);});}
 // Suggest 1.3.2 by @nikitagk22 — https://nikitagk22.github.io/suggest.js
 // Adapted for Lampa Minimal: unified settings/palette, no extension polling or manifest replacement, safe text, request cleanup.
 (function () {
@@ -761,8 +762,8 @@
                 default: true
             },
             field: {
-                name: 'Включить подсказки',
-                description: 'Отображать подсказки тайтлов при вводе в строке поиска'
+                name: lampaViewText("Включить подсказки"),
+                description: lampaViewText("Отображать подсказки тайтлов при вводе в строке поиска")
             }
         });
 
@@ -772,15 +773,15 @@
                 name: 'kino_suggest_min_chars',
                 type: 'select',
                 values: {
-                    '2': '2 символа',
-                    '3': '3 символа (рекомендуется)',
-                    '4': '4 символа'
+                    '2': lampaViewText("2 символа"),
+                    '3': lampaViewText("3 символа (рекомендуется)"),
+                    '4': lampaViewText("4 символа")
                 },
                 default: '3'
             },
             field: {
-                name: 'Минимум символов',
-                description: 'С какого количества введённых букв запрашивать подсказки'
+                name: lampaViewText("Минимум символов"),
+                description: lampaViewText("С какого количества введённых букв запрашивать подсказки")
             }
         });
     }

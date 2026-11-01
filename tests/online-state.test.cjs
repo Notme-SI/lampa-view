@@ -233,19 +233,19 @@ test('availability is cleared on source switch, retry and reset and nested reque
  }finally{if(s)s.close();n.close();}
 });
 
-test('compact episode cards keep titles, file quality and season facts without repeated descriptions or voices',async()=>{
+test('episode cards share canonical descriptions while hero facts and voice labels stay compact',async()=>{
  const n=await native({built:true,initialStorage:{nova_plus_view:'grid'}}),{L,w}=n;let s;try{
-  L.Api.sources.tmdb.get=(url,p,ok)=>w.setTimeout(()=>ok(url.includes('/season/')?{episodes:[{episode_number:1,name:'Пан или пропал',overview:'Описание не нужно повторять',vote_average:8.4,air_date:'2025-03-30'}]}:{logos:[]}),0);
+  L.Api.sources.tmdb.get=(url,p,ok)=>w.setTimeout(()=>ok(url.includes('/season/')?{episodes:[{episode_number:1,name:'Пан или пропал',overview:'Краткое описание серии',vote_average:8.4,air_date:'2025-03-30'}]}:{logos:[]}),0);
   s=screen(n,{id:995,episodes:[1,2,3]});Object.assign(s.movie,{first_air_date:'2025-03-30',origin_country:['US'],vote_average:8.5});
   s.filter.set('sort',[{title:'Test - 4K',source:'test',selected:true}]);
   const nativeRows=s.body.find('.online-prestige--full');nativeRows.eq(0).find('.online-prestige__quality').text('720p');nativeRows.eq(1).find('.online-prestige__quality').text('SD');nativeRows.eq(2).find('.online-prestige__quality').empty();
   await wait(260);
   const root=s.root;assert.equal(root.find('.nova-card__title').first().text(),'Пан или пропал');assert.equal(root.find('.nova-card__tag').first().text(),'Серия 1');assert.equal(root.find('.nova-card__quality').eq(0).text(),'HD');assert.equal(root.find('.nova-card__quality').eq(1).text(),'SD');assert.equal(root.find('.nova-card').eq(2).find('.nova-card__quality').length,0);
-  assert.equal(root.find('.nova-card__descr,.nova-card__voice,.nova-card__tags,[data-nova-focus=hero-next],.nova-hero__season').length,0);assert.doesNotMatch(root.find('.nova-card').text(),/TVShows|Описание не нужно повторять/);
+  assert.equal(root.find('.nova-card__descr,.nova-card__voice,.nova-card__tags,[data-nova-focus=hero-next],.nova-hero__season').length,0);assert.doesNotMatch(root.find('.nova-card').text(),/TVShows/);assert.equal(root.find('.nova-card__overview').first().text(),'Краткое описание серии');
   assert.equal(root.find('.nova-hero__year').text(),'2025, США');assert.equal(root.find('.nova-hero__season-label').text(),'Сезон 1');assert.equal(root.find('.nova-hero__runtime').length,0);assert.equal(root.find('.nova-hero__meta .nova-badge').text(),'HD');
   // Native metadata can arrive after the interface has already rendered.
   nativeRows.eq(0).find('.online-prestige__quality')[0].firstChild.nodeValue='1920x800';await wait(180);assert.equal(root.find('.nova-card__quality').first().text(),'FHD');assert.equal(root.find('.nova-hero__meta .nova-badge').text(),'FHD');
-  L.Storage.set('nova_plus_view','list');L.Listener.send('activity',{type:'start'});await wait(180);assert.equal(root.find('.nova-card__title').first().text(),'Пан или пропал');assert.doesNotMatch(root.find('.nova-card__meta').text(),/TVShows|Описание/);assert.equal(root.find('.nova-card__descr,.nova-card__voice').length,0);assert.deepEqual(n.errors,[]);
+  L.Storage.set('nova_plus_view','list');L.Listener.send('activity',{type:'start'});await wait(180);assert.equal(root.find('.nova-card__title').first().text(),'Пан или пропал');assert.doesNotMatch(root.find('.nova-card__meta').text(),/TVShows|Описание/);assert.equal(root.find('.nova-card__descr,.nova-card__voice').length,0);assert.equal(root.find('.nova-card__overview').first().text(),'Краткое описание серии');assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}
 });
 

@@ -1,9 +1,12 @@
+import {text as lampaViewText} from './i18n.js';
 import detail from './detail.js';
+import installI18n from './i18n.js';
 import {version} from '../package.json';
 import inputs from './inputs.js';
 import {installTmdb,installFullGuard} from './tmdb.js';
 import heroAssets from './hero-assets.js';
 import CSS from './theme.css';
+import appearance from './appearance.js';
 import BOOT from './boot.css';
 import C from './identity.cjs';
 import quality from './quality.js';
@@ -43,7 +46,7 @@ if (!ROOT.LampaView) {
   }
   const P = ROOT.LampaView = {version, identity: C.identity, ready: false, bridge: false};
   P.matchCatalogue=matchCatalogue;
-  let L, $, lastCard, initialized = false, playlist = [], activeVideo,loadLogo,artwork,back,holidays,pinnedMenu;
+  let L, $, lastCard, initialized = false, playlist = [], activeVideo,loadLogo,artwork,back,holidays,pinnedMenu,appearanceTheme;
   const metadata = new Map();
   const heroes = new WeakSet();
   const carousels = new Set();
@@ -88,7 +91,9 @@ if (!ROOT.LampaView) {
 
     document.body.classList.remove('pt-reduce-motion');
     if (!document.getElementById('lampa_view-lampa-style')) $('<style id="lampa_view-lampa-style">').text(CSS).appendTo('head');
+    if(!appearanceTheme)appearanceTheme=appearance(L);
     const enabled = yes('lampa_view_enabled');
+    document.querySelectorAll('.head__action.open--search').forEach(node=>node.setAttribute('data-pt-placeholder',lampaViewText('Поиск…')));
     $('.minimal-detail-logo.loaded').each(function(){
       $(this).siblings('.full-start-new__title').toggleClass('pt-hidden',enabled);
     });
@@ -112,34 +117,34 @@ if (!ROOT.LampaView) {
   function navigate(section) {
     if (section === 'search') return $('.head .open--search').trigger('hover:enter');
     if (section === 'settings') return $('.head .open--settings').trigger('hover:enter');
-    if (section === 'home') return L.Activity.push({url:'', title:'Главная', component:'main', source:'tmdb', page:1});
+    if (section === 'home') return L.Activity.push({url:'', title:lampaViewText("Главная"), component:'main', source:'tmdb', page:1});
     if (section === 'library') {
       const native = $('.menu__item[data-action="favorite"]');
       if (native.length) native.trigger('hover:enter');
-      else L.Activity.push({url:'', title:'Медиатека', component:'bookmarks', page:1});
+      else L.Activity.push({url:'', title:lampaViewText("Медиатека"), component:'bookmarks', page:1});
       return;
     }
     if (section === 'calendar') {
       const native = $('.menu__item[data-action="timetable"]');
       if (native.length) native.first().trigger('hover:enter');
-      else L.Noty.show('Расписание доступно в медиатеке Lampa');
+      else L.Noty.show(lampaViewText("Расписание доступно в медиатеке Lampa"));
       return;
     }
-    const titles = {movie:'Фильмы',tv:'Сериалы',cartoon:'Мультфильмы',anime:'Аниме',dorama:'Дорамы',tvshow:'ТВ-шоу'};
+    const titles = {movie:lampaViewText("Фильмы"),tv:lampaViewText("Сериалы"),cartoon:lampaViewText("Мультфильмы"),anime:lampaViewText("Аниме"),dorama:lampaViewText("Дорамы"),tvshow:lampaViewText("ТВ-шоу")};
     L.Activity.push({url:section, title:titles[section], component:'category', source:section === 'anime' ? 'cub' : (L.Storage.get('source','tmdb') || 'tmdb'), page:1});
   }
   function shell() {
     if (!$('.pt-topnav').length) {
-      const nav = $('<div class="pt-topnav" role="navigation" aria-label="Каталог">');
-      [['home','Главная'],['movie','Фильмы'],['tv','Сериалы'],['dorama','Дорамы'],['tvshow','ТВ-шоу'],['anime','Аниме']].forEach(([key,label]) => {
+      const nav = $(lampaViewText("<div class=\"pt-topnav\" role=\"navigation\" aria-label=\"Каталог\">"));
+      [['home',lampaViewText("Главная")],['movie',lampaViewText("Фильмы")],['tv',lampaViewText("Сериалы")],['dorama',lampaViewText("Дорамы")],['tvshow',lampaViewText("ТВ-шоу")],['anime',lampaViewText("Аниме")]].forEach(([key,label]) => {
         pointer($('<div class="pt-topnav__item selector" role="button" tabindex="0">').attr('data-section',key).text(label)
           .on('hover:enter', () => navigate(key))).appendTo(nav);
       });
       $('.head__title').before(nav);
     }
     if (!$('.pt-mobile-nav').length) {
-      const nav = $('<nav class="pt-mobile-nav" aria-label="Навигация">');
-      [['home','Главная','home'],['search','Поиск','search'],['calendar','Расписание','calendar'],['library','Медиатека','library'],['settings','Настройки','settings']].forEach(([key,label,glyph]) => {
+      const nav = $(lampaViewText("<nav class=\"pt-mobile-nav\" aria-label=\"Навигация\">"));
+      [['home',lampaViewText("Главная"),'home'],['search',lampaViewText("Поиск"),'search'],['calendar',lampaViewText("Расписание"),'calendar'],['library',lampaViewText("Медиатека"),'library'],['settings',lampaViewText("Настройки"),'settings']].forEach(([key,label,glyph]) => {
         $('<div class="pt-mobile-nav__item" role="button" tabindex="0">').attr('data-section',key).html(icon(glyph) + '<span></span>').find('span').text(label).end()
           .on('click', () => navigate(key)).on('keydown', e => {if(e.key === 'Enter') navigate(key);}).appendTo(nav);
       });
@@ -147,7 +152,7 @@ if (!ROOT.LampaView) {
     }
     // Keep Lampa's original menu, settings, account and bookmark handlers.
     // Only the native menu's presentation changes to an anchored popover.
-    $('.head__menu-icon').addClass('selector').attr({role:'button',tabindex:'0','aria-label':'Меню'})
+    $('.head__menu-icon').addClass('selector').attr({role:'button',tabindex:'0','aria-label':lampaViewText("Меню")})
       .off('hover:enter.minimal').on('hover:enter.minimal',()=>L.Controller.toggle('menu'));
     const menu=$('.head__menu-icon');
     if(!menu.find('[data-pt-menu]').length)menu.html(icon('menu')).find('svg').attr('data-pt-menu','');
@@ -158,20 +163,20 @@ if (!ROOT.LampaView) {
     const series=document.querySelector('.menu__item[data-action="tv"]');
     let cartoons=document.querySelector('.menu__item[data-action="cartoon"]');
     if(!cartoons && series){
-      cartoons=document.createElement('li');cartoons.className='menu__item selector';cartoons.dataset.action='cartoon';cartoons.innerHTML='<div class="menu__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z"/></svg></div><div class="menu__text">Мультфильмы</div>';
+      cartoons=document.createElement('li');cartoons.className='menu__item selector';cartoons.dataset.action='cartoon';cartoons.innerHTML=lampaViewText("<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\"><path d=\"m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z\"/></svg></div><div class=\"menu__text\">Мультфильмы</div>");
     }
     if(cartoons && !cartoons.dataset.minimalCartoons){cartoons.dataset.minimalCartoons='1';pointer($(cartoons).off('hover:enter').on('hover:enter.minimalCartoons',event=>{event.stopImmediatePropagation();navigate('cartoon');}));}
     const anime=document.querySelector('.menu__item[data-action="anime"]');
     let dorama=document.querySelector('.menu__item[data-action="dorama"]');
     if(!dorama && (anime || cartoons || series)){
       dorama=document.createElement('li');dorama.className='menu__item selector';dorama.dataset.action='dorama';
-      dorama.innerHTML='<div class="menu__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-8-4.8-8-10a4.4 4.4 0 0 1 8-2.5A4.4 4.4 0 0 1 20 10c0 5.2-8 10-8 10Z"/><path d="m18 2 .6 1.8L20.5 4l-1.9.6L18 6.5l-.6-1.9L15.5 4l1.9-.2Z"/></svg></div><div class="menu__text">Дорамы</div>';
+      dorama.innerHTML=lampaViewText("<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 20s-8-4.8-8-10a4.4 4.4 0 0 1 8-2.5A4.4 4.4 0 0 1 20 10c0 5.2-8 10-8 10Z\"/><path d=\"m18 2 .6 1.8L20.5 4l-1.9.6L18 6.5l-.6-1.9L15.5 4l1.9-.2Z\"/></svg></div><div class=\"menu__text\">Дорамы</div>");
     }
     if(dorama && !dorama.dataset.minimalDorama){dorama.dataset.minimalDorama='1';pointer($(dorama).off('hover:enter').on('hover:enter.minimalDorama',event=>{event.stopImmediatePropagation();navigate('dorama');}));}
     let shows=document.querySelector('.menu__item[data-action="tvshow"]');
     if(!shows && series){
       shows=document.createElement('li');shows.className='menu__item selector';shows.dataset.action='tvshow';
-      shows.innerHTML='<div class="menu__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="15" rx="2"/><path d="m8 2 4 3 4-3m-6 8 5 3-5 3Z"/></svg></div><div class="menu__text">ТВ-шоу</div>';
+      shows.innerHTML=lampaViewText("<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"5\" width=\"18\" height=\"15\" rx=\"2\"/><path d=\"m8 2 4 3 4-3m-6 8 5 3-5 3Z\"/></svg></div><div class=\"menu__text\">ТВ-шоу</div>");
     }
     if(shows && !shows.dataset.minimalShows){shows.dataset.minimalShows='1';pointer($(shows).off('hover:enter').on('hover:enter.minimalShows',event=>{event.stopImmediatePropagation();navigate('tvshow');}));}
     // Move only out-of-order nodes: the native menu observer must settle.
@@ -215,8 +220,8 @@ if (!ROOT.LampaView) {
       if(!root || root.find('.pt-hero').length)return;
       const line=root.find('.items-line').first();
       if(!line.length){heroes.delete(activity);return;}
-      let index=0,item,focus=0,studioTarget=null;
-      const element=$('<section class="pt-hero" aria-label="Подборка фильмов и сериалов">');
+      let index=0,item,focus=0;
+      const element=$(lampaViewText("<section class=\"pt-hero\" aria-label=\"Подборка фильмов и сериалов\">"));
       const image=$('<img class="pt-hero__image" alt="" decoding="async">').appendTo(element);
       const body=$('<div class="pt-hero__body">').appendTo(element);
       const logo=$('<img class="pt-hero__logo pt-hidden" decoding="async">').appendTo(body);
@@ -226,8 +231,8 @@ if (!ROOT.LampaView) {
       const metaText=$('<span>').appendTo(meta);
       const overview=$('<p class="pt-hero__overview">').appendTo(body);
       const buttons=$('<div class="pt-hero__actions">').appendTo(body);
-      const details=$('<div class="pt-hero__action selector" role="button" tabindex="0">').html(icon('info')+'<span>Подробнее</span>').appendTo(buttons);
-      const dots=$('<div class="pt-hero__dots" role="group" aria-label="Переключить обложку">').appendTo(element);
+      const details=$('<div class="pt-hero__action selector" role="button" tabindex="0">').html(lampaViewText("{0}<span>Подробнее</span>", [icon('info')])).appendTo(buttons);
+      const dots=$(lampaViewText("<div class=\"pt-hero__dots\" role=\"group\" aria-label=\"Переключить обложку\">")).appendTo(element);
       let logoToken=0,upgradeTimer,rotation;
       const assets=heroAssets(L,cards,loadLogo,element[0]);
       if(activity.component && activity.component.use)activity.component.use({onDestroy:()=>{clearTimeout(upgradeTimer);assets.dispose();}});
@@ -240,7 +245,7 @@ if (!ROOT.LampaView) {
         item={...card,media_type:kind,source:card.source || 'tmdb'};
         title.text(card.title || card.name);
         const token=++logoToken;
-        studioTarget=null;studio.off('load error').addClass('pt-hidden').removeClass('selector').removeAttr('src alt title role tabindex');
+        studio.off('load error').addClass('pt-hidden').removeClass('selector').removeAttr('src alt title role tabindex');
         logo.off('load error').addClass('pt-hidden').removeClass('pt-hero__logo--translated').removeAttr('src');title.removeClass('pt-hidden pt-hero__title--translation');
         let brandingStarted=false;
         function branding(){
@@ -255,12 +260,12 @@ if (!ROOT.LampaView) {
         });
          assets.studio(selected,value=>{
           if(token!==logoToken || !value)return;
-          studio.attr({alt:value.name,title:value.name}).on('load',()=>{if(token===logoToken){studio.removeClass('pt-hidden');if(Number(value.id)>0){studioTarget=value;studio.addClass('selector').attr({role:'button',tabindex:'0','aria-label':'Проекты '+value.name,title:'Проекты '+value.name});if(L.Controller.enabled().name==='lampa_view_hero')L.Controller.collectionAppend(studio);}}})
+          studio.attr({alt:value.name,title:value.name}).on('load',()=>{if(token===logoToken){studio.removeClass('pt-hidden');}})
             .on('error',()=>{if(token===logoToken)studio.addClass('pt-hidden');}).attr('src',value.url);
         });
         }
         const year=(card.release_date || card.first_air_date || '').slice(0,4);
-        metaText.text([year,kind==='tv'?'Сериал':'Фильм',card.vote_average?Number(card.vote_average).toFixed(1):''].filter(Boolean).join('  ·  '));
+        metaText.text([year,kind==='tv'?lampaViewText("Сериал"):lampaViewText("Фильм"),card.vote_average?Number(card.vote_average).toFixed(1):''].filter(Boolean).join('  ·  '));
         const tv=document.body.classList.contains('pt-tv');
         if(!tv)branding();
         overview.text(card.overview);
@@ -284,14 +289,11 @@ if (!ROOT.LampaView) {
       const qualityChanged=()=>show(index);
       document.addEventListener('minimal:artwork-quality',qualityChanged);
       if(activity.component && activity.component.use)activity.component.use({onDestroy:()=>document.removeEventListener('minimal:artwork-quality',qualityChanged)});
-      cards.forEach((card,i)=>$('<div class="pt-hero__dot selector" role="button" tabindex="0">').attr({'aria-label':'Обложка '+(i+1)+': '+(card.title || card.name || ''),title:document.body.classList.contains('pt-tv')?null:card.title || card.name}).on('hover:enter',()=>show(i)).appendTo(dots));
+      cards.forEach((card,i)=>$('<div class="pt-hero__dot selector" role="button" tabindex="0">').attr({'aria-label':lampaViewText("Обложка {0}: {1}", [i+1,card.title || card.name || '']),title:document.body.classList.contains('pt-tv')?null:card.title || card.name}).on('hover:enter',()=>show(i)).appendTo(dots));
       details.on('hover:enter',()=>openCard(item));
       const controls=element.find('.selector');
       pointer(controls);
       controls.on('hover:focus',event=>{focus=controls.index(event.currentTarget);});
-      studio.on('hover:focus',()=>{focus=-1;});
-      studio.on('hover:enter',()=>{if(!studioTarget || studio.hasClass('pt-hidden'))return;const s=studioTarget;L.Activity.push(s.kind==='network'?{component:'category_full',source:'tmdb',url:'discover/tv',networks:s.id,sort_by:'popularity.desc',title:s.name,page:1}:{component:'company',source:'tmdb',url:item.media_type,id:s.id,title:s.name});});
-      pointer(studio);
       // A swipe changes only the cover; vertical page scrolling remains native.
       let touch;
       element.on('touchstart',e=>{const t=e.originalEvent.touches[0];touch={x:t.clientX,y:t.clientY};});
@@ -313,17 +315,17 @@ if (!ROOT.LampaView) {
       if(L.Controller && nativeLine && nativeLine.use && nativeLine.toggle){
         const enterHero=()=>{
           if(!yes('lampa_view_enabled') || !yes('lampa_view_hero'))return L.Controller.toggle('head');
-          const focusControl=()=>L.Controller.collectionFocus(focus===-1?studio:controls.eq(focus),element);
+          const focusControl=()=>L.Controller.collectionFocus(controls.eq(focus),element);
           L.Controller.add('lampa_view_hero',{
             toggle:()=>{
               const component=activity.component;
               if(component && component.scroll && component.scroll.update)component.scroll.update(element[0]);
               L.Controller.collectionSet(element);focusControl();
             },
-            left:()=>{focus=Math.max(focus<0?-1:0,focus-1);focusControl();},
+            left:()=>{focus=Math.max(0,focus-1);focusControl();},
             right:()=>{focus=Math.min(controls.length-1,focus+1);focusControl();},
-            up:()=>{if(focus>0){focus=0;focusControl();}else if(focus===0 && studioTarget && !studio.hasClass('pt-hidden')){focus=-1;focusControl();}else L.Controller.toggle('head');},
-            down:()=>{if(focus===-1){focus=0;focusControl();}else if(focus<1 && cards.length>1){focus=index+1;focusControl();}else nativeLine.toggle();},
+            up:()=>{if(focus>0){focus=0;focusControl();}else L.Controller.toggle('head');},
+            down:()=>nativeLine.toggle(),
             back:()=>L.Controller.toggle('head')
           });L.Controller.toggle('lampa_view_hero');
         };
@@ -395,18 +397,20 @@ if (!ROOT.LampaView) {
     L.SettingsApi.addComponent({component:'lampa_view',name:'L A M P A',icon:icon('play')});
     unifiedSettings(L.SettingsApi,L);
     const options=[
-      ['lampa_view_enabled','Минималистичный интерфейс','Единый стиль каталога, карточек, источников и настроек. Версия '+version+'.',true],
-      ['lampa_view_hero','Обложка на главной','Карусель каждые 10 секунд, ручное переключение и жесты.',true]
+      ['lampa_view_enabled',lampaViewText("Оформление интерфейса"),lampaViewText("Единый стиль каталога, карточек, источников и настроек. Версия {0}.", [version]),true],
+      ['lampa_view_hero',lampaViewText("Обложка на главной"),lampaViewText("Карусель каждые 10 секунд, ручное переключение и жесты."),true]
     ];
-    if(L.Platform && L.Platform.desktop && L.Platform.desktop() || ROOT.electronAPI && ROOT.electronAPI.lampa_view) options.push(['lampa_view_metadata','Уточнять данные mpv+','Передавать сведения карточки для проверки названия, сезона и серии.',true]);
+    if(L.Platform && L.Platform.desktop && L.Platform.desktop() || ROOT.electronAPI && ROOT.electronAPI.lampa_view) options.push(['lampa_view_metadata',lampaViewText("Уточнять данные mpv+"),lampaViewText("Передавать сведения карточки для проверки названия, сезона и серии."),true]);
     options.forEach(([name,label,description,value]) => L.SettingsApi.addParam({component:'lampa_view',param:{name,type:'trigger',default:value},field:{name:label,description},onChange:setTheme}));
-    L.SettingsApi.addParam({component:'lampa_view',param:{name:'lampa_view_layout',type:'select',values:{auto:'Автоматически',tv:'Телевизор',mobile:'Телефон',desktop:'Компьютер'},default:'auto'},field:{name:'Тип устройства',description:'Авто использует режим экрана Lampa. Можно выбрать вручную.'},onChange:setTheme});
-    L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_banner_quality',type:'select',values:{medium:'Среднее',high:'Высокое'},default:'high'},field:{name:'Качество баннеров и обложек',description:'Общее качество баннеров, фонов загрузки и карточек. Высокое подбирает чёткий размер под экран и использует общий кеш обложек.'},onChange:()=>artwork && artwork.choose()});
+    L.SettingsApi.addParam({component:'lampa_view',param:{name:'lampa_view_theme',type:'select',values:{minimal:lampaViewText("Минималистичная"),apple:'Apple'},default:'minimal'},field:{name:lampaViewText("Тема интерфейса"),description:lampaViewText("Оформление всей Lampa. Переключается сразу, данные просмотра сохраняются.")},onChange:()=>{if(appearanceTheme)appearanceTheme.update();}});
+    L.SettingsApi.addParam({component:'lampa_view',param:{name:'lampa_view_layout',type:'select',values:{auto:lampaViewText("Автоматически"),tv:lampaViewText("Телевизор"),mobile:lampaViewText("Телефон"),desktop:lampaViewText("Компьютер")},default:'auto'},field:{name:lampaViewText("Тип устройства"),description:lampaViewText("Авто использует режим экрана Lampa. Можно выбрать вручную.")},onChange:setTheme});
+    L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_banner_quality',type:'select',values:{medium:lampaViewText("Среднее"),high:lampaViewText("Высокое")},default:'high'},field:{name:lampaViewText("Качество баннеров и обложек"),description:lampaViewText("Общее качество баннеров, фонов загрузки и карточек. Высокое подбирает чёткий размер под экран и использует общий кеш обложек.")},onChange:()=>artwork && artwork.choose()});
   }
   function start() {
     if (initialized || !ROOT.Lampa || !ROOT.jQuery) return;
     initialized=true; L=ROOT.Lampa; $=ROOT.jQuery;loadLogo=logoLoader(L);
     P.bannerCountries=card=>bannerCountries(card,L.Storage.get('language','ru'),L);
+    installI18n(L,P);
     P.online=onlineState(L);
     interfaceSize(L);installTmdb(L);installFullGuard(L);torrentEpisodes(L,ROOT);inputs(L);
     artwork=installArtwork(L,()=>yes('lampa_view_enabled'));
@@ -431,7 +435,7 @@ if (!ROOT.LampaView) {
       const route=event.data && event.data.url;
       if(event.line && event.line.use && typeof route==='string' && /^discover\/(movie|tv)\?/.test(route) && !event.line._minimalMore){
         event.line._minimalMore=true;
-        event.line.use({onlyMore:()=>L.Activity.push({component:'category_full',source:'tmdb',url:route.replace(/([?&])lang=/,'$1language='),title:event.data.title || 'Подборка',page:1})});
+        event.line.use({onlyMore:()=>L.Activity.push({component:'category_full',source:'tmdb',url:route.replace(/([?&])lang=/,'$1language='),title:event.data.title || lampaViewText("Подборка"),page:1})});
       }
       if(event.data && /^(shots|спорт|расписание)$/i.test(String(event.data.title || '').trim())){
         const root=event.line && event.line.render && event.line.render(true);

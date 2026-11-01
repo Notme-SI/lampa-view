@@ -1,8 +1,9 @@
+import {text as lampaViewText} from './i18n.js';
 import {presentableCards} from './tmdb.js';
 import catalogue,{animeMode} from './catalogue.js';
 import animeTabs from './anime-tabs.js';
 import continueWatching,{CONTINUE,isWatching} from './continue-watching.js';
-export function rowKey(row){return String(row.minimal_row_id || row.url || row.title || 'Без названия');}
+export function rowKey(row){return String(row.minimal_row_id || row.url || row.title || lampaViewText("Без названия"));}
 function matchesRow(row,id){return rowKey(row)===id || row.url===id || (row.minimal_row_aliases || []).includes(id) || isWatching(row) && ['mixed/trending','movies/trending','shows/trending','?sort=now_playing','movie/now_playing'].includes(id);}
 export function arrange(rows,prefs){
  const order=prefs.order || [],hidden=prefs.hidden || [];
@@ -17,26 +18,26 @@ export default function collections(L,shiki){
  const key='minimal_collections',knownKey='minimal_collection_rows_v2';
  const read=()=>L.Storage.get(key,{}) || {},known=()=>L.Storage.get(knownKey,{}) || {};
  const captured=new Set(),homeRows=continueWatching(L);
- const labels={'main:':'Главная','category:movie':'Фильмы','category:tv':'Сериалы','category:dorama':'Дорамы','category:tvshow':'ТВ-шоу','category:cartoon':'Мультфильмы','category:anime':'Аниме'};
+ const labels={'main:':lampaViewText("Главная"),'category:movie':lampaViewText("Фильмы"),'category:tv':lampaViewText("Сериалы"),'category:dorama':lampaViewText("Дорамы"),'category:tvshow':lampaViewText("ТВ-шоу"),'category:cartoon':lampaViewText("Мультфильмы"),'category:anime':lampaViewText("Аниме")};
  const animeContext=o=>'category:anime:'+animeMode(L,o);
  const context=o=>{o=o || {};const component=o.component || 'main';if(component==='main')return 'main:';const kind=o.url || o.cat;return component==='category' && ['movie','tv','cartoon','anime','dorama','tvshow'].includes(kind)?kind==='anime'?animeContext(o):'category:'+kind:null;};
  function remember(ctx,rows,append=false){
   if(!ctx)return;const names=known(),previous=append?(names[ctx] || []):[],next=previous.slice();
-  rows.filter(row=>row && row.title && !/^(shots|спорт|расписание)$/i.test(String(row.title).trim()) && ((row.results || []).length || row.minimal_hidden || row.minimal_configurable)).forEach(row=>{const id=rowKey(row),entry={id,title:row.title,...(row.minimal_row_aliases?{aliases:row.minimal_row_aliases}:{}),...(row.minimal_empty?{subtitle:'Появится после добавления в историю'}:{})};const index=next.findIndex(old=>old.id===id);if(index<0)next.push(entry);else next[index]=entry;});
+  rows.filter(row=>row && row.title && !/^(shots|спорт|расписание)$/i.test(String(row.title).trim()) && ((row.results || []).length || row.minimal_hidden || row.minimal_configurable)).forEach(row=>{const id=rowKey(row),entry={id,title:row.title,...(row.minimal_row_aliases?{aliases:row.minimal_row_aliases}:{}),...(row.minimal_empty?{subtitle:lampaViewText("Появится после добавления в историю")}:{})};const index=next.findIndex(old=>old.id===id);if(index<0)next.push(entry);else next[index]=entry;});
   captured.add(ctx);if(JSON.stringify(names[ctx] || [])!==JSON.stringify(next)){names[ctx]=next;L.Storage.set(knownKey,names);}
  }
  function prefs(ctx){const all=read(),p=all[ctx] || (ctx==='category:anime:standard'?all['category:anime']:null) || {};if(ctx!=='main:' || !(p.order || []).length || p.order.includes(CONTINUE))return p;const rows=known()[ctx] || [],watch=rows.find(isWatching),order=p.order.slice(),index=watch?order.findIndex(id=>matchesRow({url:watch.id,title:watch.title,minimal_row_aliases:watch.aliases},id)):-1;order.splice(index+1,0,CONTINUE);return {...p,order};}
  function save(ctx,p){const all=read();all[ctx]=p;L.Storage.set(key,all);}
  function select(title,items,onSelect,onBack){L.Select.show({title,items,onSelect,onBack:onBack || (()=>L.Controller.toggle('settings'))});}
- function contextName(ctx){return labels[ctx] || (ctx==='category:anime:shikimori'?'Аниме · Shikimori':'Аниме · Стандартные');}
+ function contextName(ctx){return labels[ctx] || (ctx==='category:anime:shikimori'?lampaViewText("Аниме · Shikimori"):lampaViewText("Аниме · Стандартные"));}
  function edit(ctx){
   const p=prefs(ctx),rows=(known()[ctx] || []).slice(),order=p.order || [];
   rows.sort((a,b)=>(order.includes(a.id)?order.indexOf(a.id):10000)-(order.includes(b.id)?order.indexOf(b.id):10000));
-  const items=rows.length?rows.map(r=>({...r,title:((p.hidden || []).includes(r.id)?'○ ':'● ')+r.title})).concat([{id:'reset',title:'Сбросить порядок и видимость'}]):[{title:'Список пока не загружен',subtitle:'Откройте раздел, чтобы получить актуальные подборки.',noenter:true}];
-  select('Подборки: '+contextName(ctx),items,r=>{
+  const items=rows.length?rows.map(r=>({...r,title:((p.hidden || []).includes(r.id)?'○ ':'● ')+r.title})).concat([{id:'reset',title:lampaViewText("Сбросить порядок и видимость")}]):[{title:lampaViewText("Список пока не загружен"),subtitle:lampaViewText("Откройте раздел, чтобы получить актуальные подборки."),noenter:true}];
+  select(lampaViewText("Подборки: {0}", [contextName(ctx)]),items,r=>{
    if(r.noenter)return;
    if(r.id==='reset'){save(ctx,{});return edit(ctx);}
-   select(r.title,[{id:'toggle',title:(p.hidden || []).includes(r.id)?'Показать':'Скрыть'},{id:'up',title:'Выше'},{id:'down',title:'Ниже'},{id:'first',title:'В начало'}],action=>{
+   select(r.title,[{id:'toggle',title:(p.hidden || []).includes(r.id)?lampaViewText("Показать"):lampaViewText("Скрыть")},{id:'up',title:lampaViewText("Выше")},{id:'down',title:lampaViewText("Ниже")},{id:'first',title:lampaViewText("В начало")}],action=>{
     p.hidden=p.hidden || [];p.order=rows.map(x=>x.id);
     if(action.id==='toggle')p.hidden=p.hidden.includes(r.id)?p.hidden.filter(id=>id!==r.id):p.hidden.concat(r.id);
     else {const i=p.order.indexOf(r.id),to=action.id==='first'?0:Math.max(0,Math.min(rows.length-1,i+(action.id==='up'?-1:1)));p.order.splice(i,1);p.order.splice(to,0,r.id);}
@@ -44,8 +45,8 @@ export default function collections(L,shiki){
    },()=>edit(ctx));
   },menu);
  }
- function menu(){select('Подборки (изменения при следующем открытии)',Object.keys(labels).map(id=>({id,title:labels[id]})),r=>edit(r.id==='category:anime'?animeContext():r.id));}
- L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_rows',type:'button'},field:{name:'Управление подборками',description:'Текущие подборки последнего открытого экрана. Старые и недоступные строки не показываются.'},onChange:menu});
+ function menu(){select(lampaViewText("Подборки (изменения при следующем открытии)"),Object.keys(labels).map(id=>({id,title:labels[id]})),r=>edit(r.id==='category:anime'?animeContext():r.id));}
+ L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_rows',type:'button'},field:{name:lampaViewText("Управление подборками"),description:lampaViewText("Текущие подборки последнего открытого экрана. Старые и недоступные строки не показываются.")},onChange:menu});
  const main=L.Api.main;
  L.Api.main=function(object,ok,fail){
   const ctx=context(object),compact=(!object.component || object.component==='main');

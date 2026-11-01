@@ -124,3 +124,13 @@ jobs:
         env:
           PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
         run: node tests/browser/torrent-watch-menu.cjs
+
+      - name: Appearance themes and languages
+        env:
+          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
+        run: node tests/browser/appearance-language.cjs
+
+      - name: Hero navigation and decorative studio
+        env:
+          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
+        run: node tests/browser/home-controls.cjs

@@ -1,3 +1,4 @@
+import {text as lampaViewText} from './i18n.js';
 import {isAnime} from './metadata.js';
 import cardInfo,{releaseYear} from './card-info.js';
 import {seriesName} from './shikimori-match.js';
@@ -59,7 +60,7 @@ export default function quality(L,$){
     node.classList.add('pt-has-quality');
     let badge=view.querySelector('.pt-quality');
     if(!badge){badge=document.createElement('span');badge.className='pt-quality';view.appendChild(badge);}
-    if(badge.textContent!==q)badge.textContent=q;badge.title='Качество доступного релиза';
+    if(badge.textContent!==q)badge.textContent=q;badge.title=lampaViewText("Качество доступного релиза");
     badges.schedule(node);
   }
   function drain(){
@@ -118,7 +119,7 @@ export default function quality(L,$){
     }
     if(tv || anime){
       const view=node.querySelector('.card__view');
-      if(view){let badge=view.querySelector('.pt-kind');if(!badge){badge=document.createElement('span');badge.className='pt-kind';view.appendChild(badge);}const text=anime?'Аниме':'Сериал';if(badge.textContent!==text)badge.textContent=text;}
+      if(view){let badge=view.querySelector('.pt-kind');if(!badge){badge=document.createElement('span');badge.className='pt-kind';view.appendChild(badge);}const text=anime?lampaViewText("Аниме"):lampaViewText("Сериал");if(badge.textContent!==text)badge.textContent=text;}
     }
     badges.schedule(node);
     if(!node.isConnected)return;

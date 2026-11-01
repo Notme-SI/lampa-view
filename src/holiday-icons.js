@@ -1,3 +1,4 @@
+import {text as lampaViewText} from './i18n.js';
 // Original Lampa View seasonal glyphs. All share the header's 24px stroke grid.
 const paths={
  // Lampa's horned skull and swept wings, simplified on our 24px stroke grid.
@@ -7,5 +8,5 @@ const paths={
  'new-year':'<path fill="currentColor" fill-opacity=".08" d="M4 11h16v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><rect x="3" y="7" width="18" height="4" rx="1.3"/><path d="M4 11v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M12 7v14M12 7C8 7 5.5 6.4 6 4.3c.6-2.6 4.8-.9 6 2.7Zm0 0c4 0 6.5-.6 6-2.7-.6-2.6-4.8-.9-6 2.7Z"/>',
  womens_day:'<path fill="currentColor" fill-opacity=".08" d="M6 4c2 0 4 1.1 6 3 2-1.9 4-3 6-3v4a6 6 0 0 1-12 0z"/><path d="M6 4c2 0 4 1.1 6 3 2-1.9 4-3 6-3v4a6 6 0 0 1-12 0V4Zm3 1 3-3 3 3M12 14v7M12 20c-4 0-6-1.7-6-4 3 0 5 1.2 6 4Zm0-1c1-3 3-4 6-4 0 2.5-2 4-6 4Z"/>'
 };
-export const holidayNames={halloween:'Хэллоуин','black-friday':'Чёрная пятница',snow:'Зимнее оформление','new-year':'Новый год',womens_day:'8 Марта'};
+export const holidayNames={halloween:lampaViewText("Хэллоуин"),'black-friday':lampaViewText("Чёрная пятница"),snow:lampaViewText("Зимнее оформление"),'new-year':lampaViewText("Новый год"),womens_day:lampaViewText("8 Марта")};
 export function holidayIcon(name){return '<svg class="pt-holiday-svg" data-holiday="'+name+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+paths[name]+'</svg>';}

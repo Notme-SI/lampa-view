@@ -3,6 +3,7 @@ const {JSDOM}=require('jsdom'),esbuild=require('esbuild');
 test('anime uses CUB, hero switches its action target, native remote navigation returns to the first row',async()=>{
  const dom=new JSDOM('<html><head></head><body><div class="head__logo-icon"></div><div class="head__menu-icon"></div><div class="head__title"></div><main><div class="items-line"></div></main></body></html>',{runScripts:'outside-only'}),w=dom.window;
  w.eval(fs.readFileSync(path.join(__dirname,'fixtures/jquery.js'),'utf8'));
+ try {
  const $=w.jQuery,events={},pushes=[],controllers={},params=[],used=[],toggles=[];let backToLine=0;
  const activity={render:()=>$('main')};
  w.appready=true;w.Lampa={Storage:{get:(key,def)=>def,set(){}},Platform:{screen:v=>v==='tv'},SettingsApi:{addComponent:v=>params.push(v),addParam:v=>params.push(v)},
@@ -23,7 +24,7 @@ test('anime uses CUB, hero switches its action target, native remote navigation 
  $('.pt-hero__dot')[1].dispatchEvent(new w.MouseEvent('click',{bubbles:true}));assert.equal($('.pt-hero__title').text(),'Второй');
  $('.pt-hero__action').eq(0).trigger('hover:enter');assert.equal(pushes.at(-1).id,102);assert.equal(pushes.at(-1).method,'tv');
  used[0].onlyUp();assert.equal(toggles.at(-1),'lampa_view_hero');
- controllers.lampa_view_hero.down();controllers.lampa_view_hero.down();assert.equal(backToLine,1);
+ controllers.lampa_view_hero.down();assert.equal(backToLine,1);
  w.eval(bundle);assert.equal($('.pt-topnav').length,1);assert.equal($('.pt-hero').length,1);
- dom.window.close();
+ }finally{dom.window.close();}
 });

@@ -1,0 +1,29 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const {chromium,webkit}=require(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const {setup}=require('../fixtures/native-browser.cjs'),{stage}=require('../fixtures/online-browser.cjs');
+(async()=>{for(const engine of [chromium,webkit]){const browser=await engine.launch({headless:true});try{for(const mode of ['desktop','tv','mobile']){
+ const r=await setup(browser,{viewport:mode==='tv'?{width:960,height:540}:mode==='mobile'?{width:390,height:844}:{width:1440,height:900},deviceScaleFactor:mode==='tv'?2:1,mode}),{page}=r;
+ try{
+  assert.equal(await page.evaluate(()=>document.body.classList.contains('pt-theme-apple')),false,'Previous theme is the default');
+  const before=await page.evaluate(()=>({history:JSON.stringify(Lampa.Storage.get('favorite',{})),timeline:JSON.stringify(Lampa.Storage.get('file_view',{}))}));
+  for(const value of ['apple','minimal','apple']){await page.evaluate(value=>Lampa.Storage.set('lampa_view_theme',value),value);assert.equal(await page.evaluate(()=>document.body.dataset.lampaTheme),value);}
+  assert.equal(await page.locator('#lampa-view-apple-style').count(),1);
+  const after=await page.evaluate(()=>({history:JSON.stringify(Lampa.Storage.get('favorite',{})),timeline:JSON.stringify(Lampa.Storage.get('file_view',{}))}));assert.deepEqual(after,before,'Changing style preserves viewing data');
+  await page.evaluate(()=>{const get=Lampa.Api.sources.tmdb.get;window.qaEpisodeRequests=0;Lampa.Api.sources.tmdb.get=(url,p,ok,fail)=>{if(/^tv\/799\/season\/1/.test(url)){qaEpisodeRequests++;return setTimeout(()=>ok({episodes:[1,2].map(n=>({episode_number:n,name:'Canonical episode '+n,overview:'Canonical description '+n+' from the shared season book.',air_date:'2020-01-01',vote_average:8}))}),0);}return get.call(Lampa.Api.sources.tmdb,url,p,ok,fail);};});
+  await stage(page,true,2,true);await page.waitForSelector('.nova-card');await page.getByText('Canonical description 1 from the shared season book.',{exact:true}).waitFor();assert.equal(await page.evaluate(()=>qaEpisodeRequests),1,'One metadata request per season');
+  assert.equal(await page.locator('.nova-hero').count(),1);assert.equal(await page.locator('.nova-hero__overview,.nova-hero__description').count(),0,'No duplicated card description');
+  const metrics=await page.evaluate(()=>{const root=document.querySelector('.nova-plus-root'),hero=root.querySelector('.nova-hero'),first=root.querySelector('.nova-card__thumb'),r=hero.getBoundingClientRect(),c=first.getBoundingClientRect();return {overflow:document.documentElement.scrollWidth>innerWidth+1,hero:r.width,card:c.width,radius:parseFloat(getComputedStyle(first).borderRadius),backdrop:getComputedStyle(document.querySelector('.selectbox__content')).backdropFilter};});assert.equal(metrics.overflow,false);assert.ok(metrics.hero>100 && metrics.card>60 && metrics.radius>0);if(mode==='tv')assert.ok(!metrics.backdrop || metrics.backdrop==='none');
+  await page.evaluate(()=>{const a=document.createElement('button');a.className='minimal-anime-tab pt-hero__action selector';a.setAttribute('aria-selected','true');a.textContent='Shikimori';document.body.appendChild(a);});
+  for(const theme of ['minimal','apple']){await page.evaluate(theme=>Lampa.Storage.set('lampa_view_theme',theme),theme);const glow=await page.locator('.minimal-anime-tab').evaluate(n=>getComputedStyle(n).boxShadow);assert.ok(glow && glow!=='none','Selected anime source glows without focus: '+mode+' '+theme);}
+  for(const language of ['ru','en','uk','be','zh','pt','bg','he','cs','ro','fr','pl']){
+   const info=await page.evaluate(language=>{Lampa.Storage.set('language',language);const params=Lampa.SettingsApi.getParam('minimal_settings_appearance'),theme=params.find(p=>p.param.name==='lampa_view_theme');return {label:theme.field.name,watch:LampaView.text('Отметить серии 1–{0} просмотренными',[14]),season:LampaView.text('Сезон {0} просмотрен',[1]),language:LampaView.locale(),rtl:document.body.classList.contains('pt-rtl'),unknown:LampaView.text('A movie title: Гангстерленд')};},language);
+   assert.equal(info.language,language);assert.equal(info.rtl,language==='he');assert.equal(info.unknown,'A movie title: Гангстерленд');assert.ok(info.watch.includes('14') && info.season.includes('1'));assert.ok(!/[{}]/.test(info.watch));if(!['ru','be','uk','bg'].includes(language))assert.ok(!/[а-яё]/i.test(info.label+info.watch+info.season),JSON.stringify(info));
+  }
+  await page.evaluate(()=>{Lampa.Storage.set('language','fr');Lampa.Storage.set('lampa_view_theme','apple');});
+  await page.evaluate(()=>jQuery('[data-nova-focus=voice]').last().trigger('hover:enter'));await page.waitForSelector('.selectbox--open');await page.waitForTimeout(260);
+  const menu=await page.locator('.selectbox__content').evaluate(n=>({inside:n.scrollWidth<=n.clientWidth+1,bg:getComputedStyle(n).backgroundColor,filter:getComputedStyle(n).backdropFilter}));assert.ok(menu.inside);if(mode==='tv')assert.ok(!menu.filter || menu.filter==='none');
+  if(process.env.SCREENSHOT_DIR){fs.mkdirSync(process.env.SCREENSHOT_DIR,{recursive:true});await page.screenshot({path:path.join(process.env.SCREENSHOT_DIR,'apple-'+engine.name()+'-'+mode+'.png')});}
+  await page.evaluate(()=>{Lampa.Select.hide();Lampa.Storage.set('language','ru');qaRoot.remove();});await stage(page,true,3,true);await page.getByText('Canonical description 1 from the shared season book.',{exact:true}).waitFor();assert.equal(await page.evaluate(()=>qaEpisodeRequests),1,'Descriptions and titles are reused after provider UI remount');
+  assert.deepEqual(r.errors,[]);console.log(engine.name()+' '+mode+': theme changes, viewing data, online structure, source glow and 12 languages passed');
+ }finally{await r.context.close();}
+ }}finally{await browser.close();}}})().catch(error=>{console.error(error);process.exitCode=1;});

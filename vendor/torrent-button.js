@@ -1,3 +1,4 @@
+function lampaViewText(source,values){return window.LampaView && window.LampaView.text?window.LampaView.text(source,values):String(source).replace(/\{(\d+)\}/g,function(_,n){return String((values || [])[n]);});}
 (function () {
   'use strict';
   // Torrent button next to "Play" on the full card (instead of only inside the play sub-menu).
@@ -10,7 +11,7 @@
   function label() {
     var t = '';
     try { t = Lampa.Lang.translate('title_torrents'); } catch (e) {}
-    return (t && t !== 'title_torrents') ? t : 'Торренты';
+    return (t && t !== 'title_torrents') ? t : lampaViewText("Торренты");
   }
 
   function openTorrents(movie) {

@@ -1,3 +1,4 @@
+import {text as lampaViewText} from './i18n.js';
 import {artworkSize} from './artwork.js';
 import flag from './storage-flag.js';
 
@@ -12,7 +13,7 @@ export function bannerCountries(card,language='ru',L){
    try{const values=L.TMDB.parseCountries({production_countries:[{iso_3166_1:code,name:name || code}]});if(values && values[0])return values[0];}catch(error){}
   }
   if(L && L.Lang && L.Lang.translate){const key='country_'+code.toLowerCase(),value=L.Lang.translate(key);if(value && value!==key)return value;}
-  const short=String(language).slice(0,2)==='ru'?({JP:'Япония',US:'США',GB:'Великобритания',RU:'Россия',KR:'Южная Корея',CN:'Китай',FR:'Франция',CA:'Канада',DE:'Германия'})[code]:'';
+  const short=String(language).slice(0,2)==='ru'?({JP:lampaViewText("Япония"),US:lampaViewText("США"),GB:lampaViewText("Великобритания"),RU:lampaViewText("Россия"),KR:lampaViewText("Южная Корея"),CN:lampaViewText("Китай"),FR:lampaViewText("Франция"),CA:lampaViewText("Канада"),DE:lampaViewText("Германия")})[code]:'';
   return short || (regions && regions.of(code)) || name || code;
  }).filter(Boolean))].join(' | ');
 }

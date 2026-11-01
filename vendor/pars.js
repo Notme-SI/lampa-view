@@ -1,8 +1,9 @@
+function lampaViewText(source,values){return window.LampaView && window.LampaView.text?window.LampaView.text(source,values):String(source).replace(/\{(\d+)\}/g,function(_,n){return String((values || [])[n]);});}
 /* Pars: anime search aliases, compact torrent details and recent releases. */
 (function () {
     'use strict';
     if (window.mpv_plus_companion) return;
-    window.mpv_plus_companion = {name: 'Парс', version: '1.4.0'};
+    window.mpv_plus_companion = {name: lampaViewText("Парс"), version: '1.4.0'};
 
     function enabled(name) { var key = 'mpv_plus_' + name, value = Lampa.Storage.value ? Lampa.Storage.value(key, '') : Lampa.Storage.get(key, true); return value !== false && value !== 'false' && value !== 0 && value !== '0'; }
     function anime(card) {
@@ -93,9 +94,9 @@
     function addRows() {
         if (!Lampa.ContentRows || !Lampa.ContentRows.add) return;
         [
-            {name: 'new_movies', title: 'Новинки кино', type: 'movie', sort: 'primary_release_date.desc', votes: 20},
-            {name: 'popular_movies', title: 'Популярные фильмы за год', type: 'movie', sort: 'popularity.desc', votes: 50},
-            {name: 'popular_series', title: 'Новые популярные сериалы', type: 'tv', sort: 'popularity.desc', votes: 20}
+            {name: 'new_movies', title: lampaViewText("Новинки кино"), type: 'movie', sort: 'primary_release_date.desc', votes: 20},
+            {name: 'popular_movies', title: lampaViewText("Популярные фильмы за год"), type: 'movie', sort: 'popularity.desc', votes: 50},
+            {name: 'popular_series', title: lampaViewText("Новые популярные сериалы"), type: 'tv', sort: 'popularity.desc', votes: 20}
         ].forEach(function (row, index) {
             Lampa.ContentRows.add({name: 'mpv_plus_' + row.name, title: row.title, index: index + 1, screen: ['main'],
                 call: function () {
@@ -124,12 +125,12 @@
         Lampa.Listener.follow('request_before', prepareRequest);
         Lampa.Listener.follow('request_secuses', fallbackSearch);
         addRows();
-        if (Lampa.Plugins && Lampa.Plugins.get) Lampa.Plugins.get().forEach(function (plugin) { if (/\/(lampa-extras|mpv-plus|plus|pars)\.js(?:[?#]|$)/.test(plugin.url || '')) plugin.name = 'Парс'; });
+        if (Lampa.Plugins && Lampa.Plugins.get) Lampa.Plugins.get().forEach(function (plugin) { if (/\/(lampa-extras|mpv-plus|plus|pars)\.js(?:[?#]|$)/.test(plugin.url || '')) plugin.name = lampaViewText("Парс"); });
         if (Lampa.SettingsApi) {
-            Lampa.SettingsApi.addComponent({component: 'mpv_plus', name: 'Парс', icon: '<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="9" width="38" height="30" rx="6" fill="none" stroke="currentColor" stroke-width="3"/><path d="m20 17 11 7-11 7z" fill="currentColor"/><path d="M8 5h22M12 43h22" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>'});
+            Lampa.SettingsApi.addComponent({component: 'mpv_plus', name: lampaViewText("Парс"), icon: '<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="9" width="38" height="30" rx="6" fill="none" stroke="currentColor" stroke-width="3"/><path d="m20 17 11 7-11 7z" fill="currentColor"/><path d="M8 5h22M12 43h22" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>'});
             [
-                ['anime_search', 'Названия аниме для поиска', 'Использовать альтернативное название из каталога, если поиск не дал результатов. Категории раздач остаются штатными.'],
-                ['recent_rows', 'Новинки и популярное за год', 'Три подборки в начале главной страницы. Изменение применяется при её следующем открытии.']
+                ['anime_search', lampaViewText("Названия аниме для поиска"), lampaViewText("Использовать альтернативное название из каталога, если поиск не дал результатов. Категории раздач остаются штатными.")],
+                ['recent_rows', lampaViewText("Новинки и популярное за год"), lampaViewText("Три подборки в начале главной страницы. Изменение применяется при её следующем открытии.")]
             ].forEach(function (option) {
                 Lampa.SettingsApi.addParam({component: 'mpv_plus', param: {name: 'mpv_plus_' + option[0], type: 'trigger', default: true},
                     field: {name: option[1], description: option[2]}, onChange: function () {}});

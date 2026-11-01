@@ -1,4 +1,4 @@
-/*! Lampa View 0.4.100 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.4.101 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -132,7 +132,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     "src/identity.cjs": function src_identityCjs(exports, module) {
       "use strict";
 
-      function text(value) {
+      function text2(value) {
         var max = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 300;
         return typeof value === "string" ? value.replace(/[\x00-\x1f]/g, " ").trim().slice(0, max) : "";
       }
@@ -154,11 +154,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }
       function unique(values) {
         return _toConsumableArray(new Set(values.map(function (v) {
-          return text(v);
+          return text2(v);
         }).filter(Boolean))).slice(0, 12);
       }
       function episodeFromTitle(value) {
-        var s = text(value, 1e3);
+        var s = text2(value, 1e3);
         var m = s.match(/\bS(\d{1,3})[ ._-]*E(\d{1,4})\b/i) || s.match(/\b(\d{1,2})x(\d{1,4})\b/i);
         if (m) return {
           season: integer(m[1], 0, 999),
@@ -177,8 +177,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var ep = video.episode && _typeof(video.episode) === "object" ? video.episode : {};
         var parsed = episodeFromTitle(video.title);
         var kind = card.media_type === "movie" ? "movie" : card.media_type === "tv" ? "tv" : card.release_date && !card.original_name ? "movie" : card.original_name || card.first_air_date || card.number_of_seasons || video.season !== void 0 ? "tv" : "movie";
-        var title = text(card.title || card.name);
-        var original = text(card.original_title || card.original_name);
+        var title = text2(card.title || card.name);
+        var original = text2(card.original_title || card.original_name);
         var source = card.source || video.source || "tmdb";
         var ids = card.external_ids || {};
         var imdb = first(card.imdb_id, ids.imdb_id);
@@ -193,7 +193,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           year: integer((card.release_date || card.first_air_date || "").slice(0, 4), 1870, 2200),
           season: integer(first(video.season, video.season_number, ep.season_number, parsed.season), 0, 999),
           episode: integer(first(_typeof(video.episode) === "object" ? ep.episode_number : video.episode, video.episode_number, parsed.episode), 1, 9999),
-          episode_title: text(video.episode_title || ep.name),
+          episode_title: text2(video.episode_title || ep.name),
           tmdb_id: source === "tmdb" ? integer(card.id) : integer(card.tmdb_id),
           imdb_id: /^tt\d{5,12}$/.test(imdb || "") ? imdb : void 0,
           mal_id: integer(card.mal_id || ids.mal_id || video.mal_id),
@@ -253,7 +253,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         };
       }
       module.exports = {
-        text: text,
+        text: text2,
         integer: integer,
         episodeFromTitle: episodeFromTitle,
         identity: identity,
@@ -400,6 +400,7721 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       };
     }
   });
+
+  // src/i18n-messages.json
+  var i18n_messages_default = {
+    Русский: {
+      en: "Russian",
+      uk: "Російська",
+      be: "Руская",
+      zh: "俄语",
+      pt: "Russo",
+      bg: "руски",
+      he: "Russian",
+      cs: "Ruština",
+      ro: "Rusă",
+      fr: "Russe",
+      pl: "Rosyjski"
+    },
+    Смотреть: {
+      en: "Watch",
+      uk: "Дивитись",
+      be: "Глядзець",
+      zh: "观看",
+      pt: "Assistir",
+      bg: "Гледайте",
+      he: "צפה",
+      cs: "Sledovat",
+      ro: "Vizionează",
+      fr: "Regarder",
+      pl: "Oglądaj"
+    },
+    Воспроизведение: {
+      en: "Playback",
+      uk: "Перегляд",
+      fr: "Lecture",
+      be: "Прайграванне",
+      zh: "播放",
+      pt: "Reprodu\xE7\xE3o",
+      bg: "Възпроизвеждане",
+      he: "ניגון",
+      cs: "Přehrávání",
+      ro: "Redare",
+      pl: "Odtwarzanie"
+    },
+    Сезон: {
+      en: "Season",
+      uk: "Сезон",
+      be: "Сезон",
+      zh: "季",
+      pt: "Temporada",
+      bg: "Сезон",
+      he: "עונה",
+      cs: "S\xE9rie",
+      ro: "Sezon",
+      fr: "Saison",
+      pl: "Sezon"
+    },
+    Озвучка: {
+      en: "Voice-over",
+      uk: "Озвучення",
+      fr: "Voix",
+      be: "Агучка",
+      zh: "配音",
+      pt: "Voz",
+      bg: "Озвучаване",
+      he: "דיבוב",
+      cs: "Dabing",
+      ro: "Dublaj",
+      pl: "Lektor"
+    },
+    "Сезон %s": {
+      en: "Season %s",
+      uk: "Сезон %s",
+      fr: "Saison %s",
+      be: "Сезон %s",
+      zh: "第%s季",
+      pt: "Temporada %s",
+      bg: "Сезон %s",
+      he: "עונה %s",
+      cs: "Řada %s",
+      ro: "Sezonul %s",
+      pl: "Sezon %s"
+    },
+    "Серия %s": {
+      en: "Episode %s",
+      uk: "Серія %s",
+      fr: "\xC9pisode %s",
+      be: "Серыя %s",
+      zh: "第%s集",
+      pt: "Epis\xF3dio %s",
+      bg: "Епизод %s",
+      he: "פרק %s",
+      cs: "D\xEDl %s",
+      ro: "Episodul %s",
+      pl: "Odcinek %s"
+    },
+    "%s ист.": {
+      en: "%s src",
+      uk: "%s джер.",
+      fr: "%s sources",
+      be: "%s крыніц",
+      zh: "%s个来源",
+      pt: "%s fontes",
+      bg: "%s източника",
+      he: "%s מקורות",
+      cs: "%s zdrojů",
+      ro: "%s surse",
+      pl: "%s źródeł"
+    },
+    "Ничего не найдено": {
+      en: "Nothing found",
+      uk: "Нічого не знайдено",
+      fr: "Aucun r\xE9sultat",
+      be: "Нічога не знойдзена",
+      zh: "未找到结果",
+      pt: "Nenhum resultado",
+      bg: "Няма резултати",
+      he: "לא נמצאו תוצאות",
+      cs: "Nic nenalezeno",
+      ro: "Niciun rezultat",
+      pl: "Brak wynik\xF3w"
+    },
+    "Ни один источник не нашёл этот тайтл": {
+      en: "No source has this title",
+      uk: "Жодне джерело не знайшло цей тайтл",
+      fr: "Aucune source ne propose ce titre",
+      be: "Ніводная крыніца не мае гэтага твора",
+      zh: "所有来源均无此作品",
+      pt: "Nenhuma fonte tem este t\xEDtulo",
+      bg: "Никой източник няма това заглавие",
+      he: "הכותר לא נמצא במקורות",
+      cs: "Žádný zdroj nemá tento titul",
+      ro: "Nicio sursă nu are acest titlu",
+      pl: "Żadne źródło nie ma tego tytułu"
+    },
+    "Нет сезонов ни в одном источнике": {
+      en: "No source has any season",
+      uk: "Жодне джерело не має сезонів",
+      fr: "Aucune saison disponible",
+      be: "Няма сезонаў у крыніцах",
+      zh: "所有来源均无可用季",
+      pt: "Nenhuma temporada nas fontes",
+      bg: "Няма сезони в източниците",
+      he: "אין עונות במקורות",
+      cs: "Ve zdrojích nejsou řady",
+      ro: "Niciun sezon \xEEn surse",
+      pl: "Brak sezonów w źródłach"
+    },
+    "Ни один источник не отдал поток": {
+      en: "No source returned a stream",
+      uk: "Жодне джерело не віддало потік",
+      fr: "Aucun flux disponible",
+      be: "Ніводная крыніца не вярнула паток",
+      zh: "所有来源均未返回视频流",
+      pt: "Nenhuma fonte retornou um fluxo",
+      bg: "Никой източник не върна поток",
+      he: "לא התקבל זרם מהמקורות",
+      cs: "Žádný zdroj nevrátil stream",
+      ro: "Nicio sursă nu a returnat un flux",
+      pl: "Żadne źródło nie zwróciło strumienia"
+    },
+    "Озвучка «%s»: других источников нет": {
+      en: "“%s”: no other sources",
+      uk: "Озвучення «%s»: інших джерел немає",
+      fr: "\xAB %s \xBB : aucune autre source",
+      be: "«%s»: няма іншых крыніц",
+      zh: "“%s”：没有其他来源",
+      pt: "“%s”: sem outras fontes",
+      bg: "„%s“: няма други източници",
+      he: "״%s״: אין מקורות אחרים",
+      cs: "„%s“: žádné další zdroje",
+      ro: "„%s”: nu există alte surse",
+      pl: "„%s”: brak innych źródeł"
+    },
+    "Все озвучки": {
+      en: "All voice-overs",
+      uk: "Усі озвучення",
+      fr: "Toutes les voix",
+      be: "Усе агучкі",
+      zh: "所有配音",
+      pt: "Todas as vozes",
+      bg: "Всички озвучавания",
+      he: "כל הדיבובים",
+      cs: "Všechny dabingy",
+      ro: "Toate dublajele",
+      pl: "Wszyscy lektorzy"
+    },
+    "Источник: %s": {
+      en: "Source: %s",
+      uk: "Джерело: %s",
+      fr: "Source : %s",
+      be: "Крыніца: %s",
+      zh: "来源：%s",
+      pt: "Fonte: %s",
+      bg: "Източник: %s",
+      he: "מקור: %s",
+      cs: "Zdroj: %s",
+      ro: "Sursă: %s",
+      pl: "Źródło: %s"
+    },
+    "вариант %s": {
+      en: "variant %s",
+      uk: "варіант %s",
+      fr: "version %s",
+      be: "версія %s",
+      zh: "版本%s",
+      pt: "vers\xE3o %s",
+      bg: "версия %s",
+      he: "גרסה %s",
+      cs: "verze %s",
+      ro: "versiunea %s",
+      pl: "wersja %s"
+    },
+    Автоматически: {
+      en: "Automatic",
+      uk: "Автоматично",
+      fr: "Automatique",
+      be: "Аўтаматычна",
+      zh: "自动",
+      pt: "Autom\xE1tico",
+      bg: "Автоматично",
+      he: "אוטומטי",
+      cs: "Automaticky",
+      ro: "Automat",
+      pl: "Automatycznie"
+    },
+    "Лучший работающий источник, остальные - запасные": {
+      en: "Best working source, the others as fallback",
+      uk: "Найкраще робоче джерело, решта - запасні",
+      fr: "Meilleure source disponible, les autres en secours",
+      be: "Лепшая працоўная крыніца, астатнія рэзервовыя",
+      zh: "优先可用的最佳来源，其余作为备用",
+      pt: "Melhor fonte dispon\xEDvel, outras como reserva",
+      bg: "Най-добрият работещ източник, останалите резервни",
+      he: "המקור הזמין הטוב ביותר, היתר לגיבוי",
+      cs: "Nejlepší funkční zdroj, ostatní jako záloha",
+      ro: "Cea mai bună sursă, restul de rezervă",
+      pl: "Najlepsze działające źródło, pozostałe zapasowe"
+    },
+    "Озвучка «%s»: все источники не отвечают": {
+      en: "“%s”: every source is down",
+      uk: "Озвучення «%s»: усі джерела не відповідають",
+      fr: "\xAB %s \xBB : toutes les sources sont indisponibles",
+      be: "«%s»: усе крыніцы недаступныя",
+      zh: "“%s”：所有来源不可用",
+      pt: "“%s”: todas as fontes indisponíveis",
+      bg: "„%s“: всички източници са недостъпни",
+      he: "״%s״: כל המקורות לא זמינים",
+      cs: "„%s“: všechny zdroje jsou nedostupné",
+      ro: "„%s”: toate sursele indisponibile",
+      pl: "„%s”: wszystkie źródła niedostępne"
+    },
+    "Опросить источники снова": {
+      en: "Ask the sources again",
+      uk: "Опитати джерела знову",
+      fr: "Interroger \xE0 nouveau les sources",
+      be: "Запытаць крыніцы зноў",
+      zh: "重新查询来源",
+      pt: "Consultar fontes novamente",
+      bg: "Повторна проверка на източниците",
+      he: "בדוק שוב מקורות",
+      cs: "Znovu ověřit zdroje",
+      ro: "Verifică din nou sursele",
+      pl: "Sprawdź źródła ponownie"
+    },
+    "Свежие ссылки той же озвучки": {
+      en: "Fresh links for the same voice-over",
+      uk: "Свіжі посилання того ж озвучення",
+      fr: "Nouveaux liens pour la m\xEAme voix",
+      be: "Новыя спасылкі той жа агучкі",
+      zh: "获取相同配音的新链接",
+      pt: "Novos links para a mesma voz",
+      bg: "Нови връзки за същото озвучаване",
+      he: "קישורים חדשים לאותו דיבוב",
+      cs: "Nov\xE9 odkazy pro stejn\xFD dabing",
+      ro: "Linkuri noi pentru același dublaj",
+      pl: "Nowe linki do tego samego lektora"
+    },
+    "Опрашиваю источники…": {
+      en: "Asking the sources…",
+      uk: "Опитую джерела…",
+      fr: "Recherche des sources…",
+      be: "Пошук у крыніцах…",
+      zh: "正在查询来源…",
+      pt: "Consultando fontes…",
+      bg: "Проверка на източниците…",
+      he: "בודק מקורות…",
+      cs: "Ověřování zdrojů…",
+      ro: "Se verifică sursele…",
+      pl: "Sprawdzanie źródeł…"
+    },
+    "Поток перестал отвечать": {
+      en: "The stream stopped responding",
+      uk: "Потік перестав відповідати",
+      fr: "Le flux ne r\xE9pond plus",
+      be: "Паток перастаў адказваць",
+      zh: "视频流停止响应",
+      pt: "O fluxo parou de responder",
+      bg: "Потокът спря да отговаря",
+      he: "הזרם הפסיק להגיב",
+      cs: "Stream přestal odpovídat",
+      ro: "Fluxul nu mai răspunde",
+      pl: "Strumień przestał odpowiadać"
+    },
+    "Коснитесь экрана, чтобы начать воспроизведение": {
+      en: "Tap the screen to start playback",
+      uk: "Торкніться екрана, щоб почати відтворення",
+      fr: "Touchez l’écran pour lancer la lecture",
+      be: "Дакраніцеся да экрана для прайгравання",
+      zh: "轻触屏幕开始播放",
+      pt: "Toque na tela para reproduzir",
+      bg: "Докоснете екрана за възпроизвеждане",
+      he: "געו במסך כדי להתחיל לנגן",
+      cs: "Klepnutím na obrazovku spusťte přehrávání",
+      ro: "Atinge ecranul pentru redare",
+      pl: "Dotknij ekranu, aby odtworzyć"
+    },
+    "другая озвучка с того же места": {
+      en: "another voice-over, same point",
+      uk: "інше озвучення з того ж місця",
+      fr: "autre voix, m\xEAme position",
+      be: "іншая агучка, тая ж пазіцыя",
+      zh: "切换配音，保持进度",
+      pt: "outra voz, mesma posi\xE7\xE3o",
+      bg: "друго озвучаване, същата позиция",
+      he: "דיבוב אחר, אותו מיקום",
+      cs: "jin\xFD dabing, stejn\xE1 pozice",
+      ro: "alt dublaj, aceeași poziție",
+      pl: "inny lektor, ta sama pozycja"
+    },
+    "Поток %s оборвался - перезапускаю с того же места": {
+      en: "Stream from %s dropped - restarting at the same point",
+      uk: "Потік %s обірвався - перезапускаю з того ж місця",
+      fr: "Flux de %s interrompu : reprise \xE0 la m\xEAme position",
+      be: "Паток %s абарваўся — працяг з той жа пазіцыі",
+      zh: "%s的流已中断，从相同位置重新播放",
+      pt: "Fluxo de %s interrompido — retomando na mesma posição",
+      bg: "Потокът от %s прекъсна — продължаване от същото място",
+      he: "הזרם מ־%s נותק — חידוש מאותו מיקום",
+      cs: "Stream z %s přerušen — pokračování ze stejné pozice",
+      ro: "Fluxul %s s-a întrerupt — reluare din același loc",
+      pl: "Strumień %s przerwany — wznowienie w tym samym miejscu"
+    },
+    "Источник %s не отвечает - переключаю на %s": {
+      en: "Source %s failed - switching to %s",
+      uk: "Джерело %s не відповідає - перемикаю на %s",
+      fr: "\xC9chec de %s : passage \xE0 %s",
+      be: "Збой %s — пераключэнне на %s",
+      zh: "来源%s失效，切换至%s",
+      pt: "Falha em %s — mudando para %s",
+      bg: "Грешка в %s — превключване към %s",
+      he: "תקלה ב־%s — מעבר אל %s",
+      cs: "Chyba %s — přepínání na %s",
+      ro: "Eroare %s — trecere la %s",
+      pl: "Błąd %s — przełączanie na %s"
+    },
+    "Озвучка: %s…": {
+      en: "Voice-over: %s…",
+      uk: "Озвучення: %s…",
+      fr: "Voix : %s…",
+      be: "Агучка: %s…",
+      zh: "配音：%s…",
+      pt: "Voz: %s…",
+      bg: "Озвучаване: %s…",
+      he: "דיבוב: %s…",
+      cs: "Dabing: %s…",
+      ro: "Dublaj: %s…",
+      pl: "Lektor: %s…"
+    },
+    "Для этой серии озвучки «%s» нет": {
+      en: "No “%s” for this episode",
+      uk: "Для цієї серії озвучення «%s» немає",
+      fr: "\xAB %s \xBB indisponible pour cet \xE9pisode",
+      be: "Няма «%s» для гэтай серыі",
+      zh: "此集没有“%s”",
+      pt: "Sem “%s” neste episódio",
+      bg: "Няма „%s“ за този епизод",
+      he: "אין ״%s״ לפרק הזה",
+      cs: "Pro tento díl není „%s“",
+      ro: "Nu există „%s” pentru acest episod",
+      pl: "Brak „%s” dla tego odcinka"
+    },
+    "выйдет %s": {
+      en: "airs %s",
+      uk: "вийде %s",
+      fr: "diffusion le %s",
+      be: "выхад %s",
+      zh: "%s播出",
+      pt: "estreia %s",
+      bg: "излиза на %s",
+      he: "ישודר ב־%s",
+      cs: "vych\xE1z\xED %s",
+      ro: "apare %s",
+      pl: "premiera %s"
+    },
+    "нет в источниках": {
+      en: "not in sources",
+      uk: "немає в джерелах",
+      fr: "absent des sources",
+      be: "няма ў крыніцах",
+      zh: "来源中暂无",
+      pt: "ausente nas fontes",
+      bg: "няма в източниците",
+      he: "לא נמצא במקורות",
+      cs: "nen\xED ve zdroj\xEDch",
+      ro: "lipsește din surse",
+      pl: "brak w źródłach"
+    },
+    Автосубтитры: {
+      en: "Auto subtitles",
+      uk: "Автосубтитри",
+      fr: "Sous-titres automatiques",
+      be: "Аўтасубцітры",
+      zh: "自动字幕",
+      pt: "Legendas autom\xE1ticas",
+      bg: "Автоматични субтитри",
+      he: "כתוביות אוטומטיות",
+      cs: "Automatick\xE9 titulky",
+      ro: "Subtitrări automate",
+      pl: "Napisy automatyczne"
+    },
+    "Язык - первый из «Субтитры»": {
+      en: "Language: the first of “Subtitles”",
+      uk: "Мова - перша з «Субтитри»",
+      fr: "Langue : premi\xE8re pr\xE9f\xE9rence des sous-titres",
+      be: "Мова: першая з пераваг субцітраў",
+      zh: "语言：字幕首选项中的第一项",
+      pt: "Idioma: primeira prefer\xEAncia de legendas",
+      bg: "Език: първото предпочитание за субтитри",
+      he: "שפה: ההעדפה הראשונה בכתוביות",
+      cs: "Jazyk: první volba titulků",
+      ro: "Limbă: prima preferință de subtitrări",
+      pl: "Język: pierwszy z preferowanych dla napisów"
+    },
+    выкл: {
+      en: "off",
+      uk: "вимк.",
+      fr: "d\xE9sactiv\xE9",
+      be: "выключана",
+      zh: "关闭",
+      pt: "desativado",
+      bg: "изключено",
+      he: "כבוי",
+      cs: "vypnuto",
+      ro: "oprit",
+      pl: "wyłączone"
+    },
+    "только форсированные": {
+      en: "forced only",
+      uk: "лише форсовані",
+      fr: "forc\xE9s uniquement",
+      be: "толькі прымусовыя",
+      zh: "仅强制字幕",
+      pt: "somente for\xE7adas",
+      bg: "само принудителни",
+      he: "מאולצות בלבד",
+      cs: "pouze vynucen\xE9",
+      ro: "doar forțate",
+      pl: "tylko wymuszone"
+    },
+    "по озвучке": {
+      en: "by voice-over",
+      uk: "за озвученням",
+      fr: "selon la voix",
+      be: "паводле агучкі",
+      zh: "根据配音",
+      pt: "conforme a voz",
+      bg: "според озвучаването",
+      he: "לפי הדיבוב",
+      cs: "podle dabingu",
+      ro: "după dublaj",
+      pl: "według lektora"
+    },
+    "Список серий": {
+      en: "Episode list",
+      uk: "Список серій",
+      fr: "Liste des \xE9pisodes",
+      be: "Спіс серый",
+      zh: "剧集列表",
+      pt: "Lista de epis\xF3dios",
+      bg: "Списък с епизоди",
+      he: "רשימת פרקים",
+      cs: "Seznam dílů",
+      ro: "Lista episoadelor",
+      pl: "Lista odcink\xF3w"
+    },
+    "Выбрать озвучку": {
+      en: "Choose voice-over",
+      uk: "Обрати озвучення",
+      fr: "Choisir une voix",
+      be: "Выбраць агучку",
+      zh: "选择配音",
+      pt: "Escolher voz",
+      bg: "Избор на озвучаване",
+      he: "בחר דיבוב",
+      cs: "Vybrat dabing",
+      ro: "Alege dublajul",
+      pl: "Wybierz lektora"
+    },
+    "Продолжить · S%sE%s": {
+      en: "Continue \xB7 S%sE%s",
+      uk: "Продовжити · S%sE%s",
+      fr: "Reprendre \xB7 S%sE%s",
+      be: "Працягнуць · S%sE%s",
+      zh: "继续播放 · S%sE%s",
+      pt: "Continuar \xB7 S%sE%s",
+      bg: "Продължаване · S%sE%s",
+      he: "המשך · S%sE%s",
+      cs: "Pokračovat · S%sE%s",
+      ro: "Continuă · S%sE%s",
+      pl: "Kontynuuj \xB7 S%sE%s"
+    },
+    "Поддержка (Telegram)": {
+      en: "Support (Telegram)",
+      uk: "Підтримка (Telegram)",
+      fr: "Assistance (Telegram)",
+      be: "Падтрымка (Telegram)",
+      zh: "支持（Telegram）",
+      pt: "Suporte (Telegram)",
+      bg: "Поддръжка (Telegram)",
+      he: "תמיכה (Telegram)",
+      cs: "Podpora (Telegram)",
+      ro: "Asistență (Telegram)",
+      pl: "Pomoc (Telegram)"
+    },
+    "Коды языков по приоритету: uk,en; «-» - без приоритета": {
+      en: "Language codes by priority: uk,en; “-” = none",
+      uk: "Коди мов за пріоритетом: uk,en; «-» - без пріоритету",
+      fr: "Langues par priorit\xE9 : fr,en ; \xAB - \xBB = aucune",
+      be: "Коды моў паводле перавагі: be,en; «-» = няма",
+      zh: "按优先级填写语言代码：zh,en；“-”表示无",
+      pt: "Idiomas por prioridade: pt,en; “-” = nenhum",
+      bg: "Езици по приоритет: bg,en; „-“ = няма",
+      he: "שפות לפי עדיפות: he,en; ״-״ = ללא",
+      cs: "Jazyky dle priority: cs,en; „-“ = žádný",
+      ro: "Limbi după prioritate: ro,en; „-” = fără",
+      pl: "Języki według priorytetu: pl,en; „-” = brak"
+    },
+    "Озвучка без названия": {
+      en: "Unnamed voice-over",
+      uk: "Озвучення без назви",
+      fr: "Voix sans nom",
+      be: "Агучка без назвы",
+      zh: "未命名配音",
+      pt: "Voz sem nome",
+      bg: "Озвучаване без име",
+      he: "דיבוב ללא שם",
+      cs: "Dabing bez n\xE1zvu",
+      ro: "Dublaj fără nume",
+      pl: "Lektor bez nazwy"
+    },
+    Дубляж: {
+      en: "Dubbing",
+      uk: "Дубляж",
+      be: "Дубляж",
+      zh: "配音",
+      pt: "Dobrados",
+      bg: "Гласов дублаж",
+      he: "דיבוב",
+      cs: "Dabing",
+      ro: "Dublaj",
+      fr: "Doublage",
+      pl: "Dubbing"
+    },
+    Одноголосая: {
+      en: "Single-voice",
+      uk: "Одноголосе",
+      fr: "Une voix",
+      be: "Адзін голас",
+      zh: "单人配音",
+      pt: "Uma voz",
+      bg: "Един глас",
+      he: "קול יחיד",
+      cs: "Jeden hlas",
+      ro: "O singură voce",
+      pl: "Jeden głos"
+    },
+    "Многоголосая закадровая": {
+      en: "Multi-voice over",
+      uk: "Багатоголосе закадрове",
+      fr: "Plusieurs voix",
+      be: "Шматгалосая агучка",
+      zh: "多人配音",
+      pt: "V\xE1rias vozes",
+      bg: "Многогласово озвучаване",
+      he: "מספר קולות",
+      cs: "Více hlasů",
+      ro: "Mai multe voci",
+      pl: "Wiele głosów"
+    },
+    "Фильмы: запускать сразу": {
+      en: "Movies: play at once",
+      uk: "Фільми: запускати одразу",
+      fr: "Films : lecture imm\xE9diate",
+      be: "Фільмы: адразу прайграваць",
+      zh: "电影：立即播放",
+      pt: "Filmes: reprodu\xE7\xE3o imediata",
+      bg: "Филми: незабавно пускане",
+      he: "סרטים: ניגון מידי",
+      cs: "Filmy: ihned přehrát",
+      ro: "Filme: redare imediată",
+      pl: "Filmy: odtwarzaj od razu"
+    },
+    "Сериалы: кнопка «Продолжить»": {
+      en: "Series: “Continue” button",
+      uk: "Серіали: кнопка «Продовжити»",
+      fr: "S\xE9ries : bouton \xAB Reprendre \xBB",
+      be: "Серыялы: кнопка «Працягнуць»",
+      zh: "剧集：“继续播放”按钮",
+      pt: "Séries: botão “Continuar”",
+      bg: "Сериали: бутон „Продължаване“",
+      he: "סדרות: כפתור ״המשך״",
+      cs: "Seriály: tlačítko „Pokračovat“",
+      ro: "Seriale: buton „Continuă”",
+      pl: "Seriale: przycisk „Kontynuuj”"
+    },
+    "Любимые озвучки": {
+      en: "Favourite voice-overs",
+      uk: "Улюблені озвучення",
+      fr: "Voix pr\xE9f\xE9r\xE9es",
+      be: "Любімыя агучкі",
+      zh: "首选配音",
+      pt: "Vozes favoritas",
+      bg: "Любими озвучавания",
+      he: "דיבובים מועדפים",
+      cs: "Obl\xEDben\xE9 dabingy",
+      ro: "Dublaje favorite",
+      pl: "Ulubieni lektorzy"
+    },
+    "Студии озвучки": {
+      en: "Voice-over studios",
+      uk: "Студії озвучення",
+      fr: "Studios de doublage",
+      be: "Студыі агучвання",
+      zh: "配音工作室",
+      pt: "Est\xFAdios de dublagem",
+      bg: "Студиа за озвучаване",
+      he: "אולפני דיבוב",
+      cs: "Dabingov\xE1 studia",
+      ro: "Studiouri de dublaj",
+      pl: "Studia lektorskie"
+    },
+    "Как разные источники называют одну студию": {
+      en: "How different sources name one studio",
+      uk: "Як різні джерела називають одну студію",
+      fr: "Noms d’un même studio selon les sources",
+      be: "Назвы адной студыі ў розных крыніцах",
+      zh: "不同来源对同一工作室的命名",
+      pt: "Nomes do mesmo est\xFAdio nas fontes",
+      bg: "Имена на едно студио в различни източници",
+      he: "שמות של אותו אולפן במקורות שונים",
+      cs: "Názvy stejného studia v různých zdrojích",
+      ro: "Numele aceluiași studio în surse diferite",
+      pl: "Nazwy tego samego studia w różnych źródłach"
+    },
+    "＋ Добавить студию": {
+      en: "＋ Add a studio",
+      uk: "＋ Додати студію",
+      fr: "＋ Ajouter un studio",
+      be: "＋ Дадаць студыю",
+      zh: "＋ 添加工作室",
+      pt: "＋ Adicionar estúdio",
+      bg: "＋ Добавяне на студио",
+      he: "＋ הוסף אולפן",
+      cs: "＋ Přidat studio",
+      ro: "＋ Adaugă studio",
+      pl: "＋ Dodaj studio"
+    },
+    "Нераспознанные названия": {
+      en: "Unrecognised names",
+      uk: "Нерозпізнані назви",
+      fr: "Noms non reconnus",
+      be: "Нераспазнаныя назвы",
+      zh: "未识别名称",
+      pt: "Nomes n\xE3o reconhecidos",
+      bg: "Неразпознати имена",
+      he: "שמות לא מזוהים",
+      cs: "Nerozpoznan\xE9 n\xE1zvy",
+      ro: "Nume nerecunoscute",
+      pl: "Nierozpoznane nazwy"
+    },
+    "Озвучки последних тайтлов, не попавшие ни в одну студию": {
+      en: "Voice-overs of recent titles that match no studio",
+      uk: "Озвучення останніх тайтлів, що не потрапили до жодної студії",
+      fr: "Voix r\xE9centes ne correspondant \xE0 aucun studio",
+      be: "Апошнія агучкі, якія не належаць студыям",
+      zh: "近期不匹配任何工作室的配音",
+      pt: "Vozes recentes sem est\xFAdio correspondente",
+      bg: "Последни озвучавания без съответстващо студио",
+      he: "דיבובים אחרונים ללא אולפן תואם",
+      cs: "Ned\xE1vn\xE9 dabingy bez odpov\xEDdaj\xEDc\xEDho studia",
+      ro: "Dublaje recente fără studio asociat",
+      pl: "Ostatni lektorzy bez przypisanego studia"
+    },
+    "Пока ничего нет": {
+      en: "Nothing yet",
+      uk: "Поки нічого немає",
+      fr: "Aucun \xE9l\xE9ment",
+      be: "Пакуль пуста",
+      zh: "暂无内容",
+      pt: "Ainda vazio",
+      bg: "Все още е празно",
+      he: "עדיין ריק",
+      cs: "Zat\xEDm pr\xE1zdn\xE9",
+      ro: "Încă gol",
+      pl: "Jeszcze pusto"
+    },
+    "Сбросить все изменения": {
+      en: "Reset all changes",
+      uk: "Скинути всі зміни",
+      fr: "R\xE9initialiser les modifications",
+      be: "Скінуць усе змены",
+      zh: "重置所有更改",
+      pt: "Redefinir altera\xE7\xF5es",
+      bg: "Нулиране на всички промени",
+      he: "אפס את כל השינויים",
+      cs: "Obnovit všechny změny",
+      ro: "Resetează toate modificările",
+      pl: "Zresetuj wszystkie zmiany"
+    },
+    "%s вариантов": {
+      en: "%s spellings",
+      uk: "%s варіантів",
+      fr: "%s variantes de nom",
+      be: "%s варыянтаў назвы",
+      zh: "%s种名称",
+      pt: "%s grafias",
+      bg: "%s изписвания",
+      he: "%s איותים",
+      cs: "%s variant n\xE1zvu",
+      ro: "%s variante de nume",
+      pl: "%s wariant\xF3w nazwy"
+    },
+    своя: {
+      en: "yours",
+      uk: "власна",
+      fr: "personnalis\xE9",
+      be: "ваша",
+      zh: "自定义",
+      pt: "seu",
+      bg: "ваше",
+      he: "שלך",
+      cs: "vlastn\xED",
+      ro: "propriu",
+      pl: "własne"
+    },
+    изменена: {
+      en: "edited",
+      uk: "змінена",
+      fr: "modifi\xE9",
+      be: "зменена",
+      zh: "已修改",
+      pt: "editado",
+      bg: "редактирано",
+      he: "נערך",
+      cs: "upraveno",
+      ro: "editat",
+      pl: "zmienione"
+    },
+    скрыта: {
+      en: "hidden",
+      uk: "прихована",
+      fr: "masqu\xE9",
+      be: "схавана",
+      zh: "已隐藏",
+      pt: "oculto",
+      bg: "скрито",
+      he: "מוסתר",
+      cs: "skryto",
+      ro: "ascuns",
+      pl: "ukryte"
+    },
+    Переименовать: {
+      en: "Rename",
+      uk: "Перейменувати",
+      fr: "Renommer",
+      be: "Перайменаваць",
+      zh: "重命名",
+      pt: "Renomear",
+      bg: "Преименуване",
+      he: "שנה שם",
+      cs: "Přejmenovat",
+      ro: "Redenumește",
+      pl: "Zmień nazwę"
+    },
+    "Добавить вариант написания": {
+      en: "Add a spelling",
+      uk: "Додати варіант написання",
+      fr: "Ajouter une variante de nom",
+      be: "Дадаць варыянт назвы",
+      zh: "添加名称变体",
+      pt: "Adicionar grafia",
+      bg: "Добавяне на изписване",
+      he: "הוסף איות",
+      cs: "Přidat variantu názvu",
+      ro: "Adaugă variantă de nume",
+      pl: "Dodaj wariant nazwy"
+    },
+    "Удалить вариант": {
+      en: "Remove a spelling",
+      uk: "Видалити варіант",
+      fr: "Retirer une variante de nom",
+      be: "Выдаліць варыянт назвы",
+      zh: "删除名称变体",
+      pt: "Remover grafia",
+      bg: "Премахване на изписване",
+      he: "הסר איות",
+      cs: "Odstranit variantu n\xE1zvu",
+      ro: "Elimină varianta de nume",
+      pl: "Usuń wariant nazwy"
+    },
+    "Удалить студию": {
+      en: "Delete the studio",
+      uk: "Видалити студію",
+      fr: "Supprimer le studio",
+      be: "Выдаліць студыю",
+      zh: "删除工作室",
+      pt: "Excluir est\xFAdio",
+      bg: "Изтриване на студио",
+      he: "מחק אולפן",
+      cs: "Smazat studio",
+      ro: "Șterge studioul",
+      pl: "Usuń studio"
+    },
+    "Скрыть студию": {
+      en: "Hide the studio",
+      uk: "Сховати студію",
+      fr: "Masquer le studio",
+      be: "Схаваць студыю",
+      zh: "隐藏工作室",
+      pt: "Ocultar est\xFAdio",
+      bg: "Скриване на студио",
+      he: "הסתר אולפן",
+      cs: "Skr\xFDt studio",
+      ro: "Ascunde studioul",
+      pl: "Ukryj studio"
+    },
+    "Вернуть студию": {
+      en: "Show the studio again",
+      uk: "Повернути студію",
+      fr: "Afficher le studio",
+      be: "Зноў паказаць студыю",
+      zh: "重新显示工作室",
+      pt: "Mostrar est\xFAdio novamente",
+      bg: "Показване на студиото отново",
+      he: "הצג שוב את האולפן",
+      cs: "Znovu zobrazit studio",
+      ro: "Arată din nou studioul",
+      pl: "Pokaż studio ponownie"
+    },
+    "Сбросить к стандартной": {
+      en: "Reset to the default",
+      uk: "Скинути до стандартної",
+      fr: "R\xE9tablir la valeur par d\xE9faut",
+      be: "Аднавіць стандартнае",
+      zh: "恢复默认",
+      pt: "Restaurar padr\xE3o",
+      bg: "Възстановяване по подразбиране",
+      he: "שחזר ברירת מחדל",
+      cs: "Obnovit v\xFDchoz\xED",
+      ro: "Restabilește implicit",
+      pl: "Przywróć domyślne"
+    },
+    "Создать студию из этого названия": {
+      en: "Make a studio of this name",
+      uk: "Створити студію з цієї назви",
+      fr: "Cr\xE9er un studio avec ce nom",
+      be: "Стварыць студыю з гэтай назвы",
+      zh: "以此名称创建工作室",
+      pt: "Criar est\xFAdio com este nome",
+      bg: "Създаване на студио с това име",
+      he: "צור אולפן בשם הזה",
+      cs: "Vytvořit studio s tímto názvem",
+      ro: "Creează studio cu acest nume",
+      pl: "Utw\xF3rz studio o tej nazwie"
+    },
+    "Добавить как вариант к…": {
+      en: "Add as a spelling of…",
+      uk: "Додати як варіант до…",
+      fr: "Ajouter comme variante de…",
+      be: "Дадаць як варыянт назвы…",
+      zh: "添加为名称变体…",
+      pt: "Adicionar como grafia de…",
+      bg: "Добавяне като изписване на…",
+      he: "הוסף כאיות של…",
+      cs: "Přidat jako variantu názvu…",
+      ro: "Adaugă ca variantă de nume…",
+      pl: "Dodaj jako wariant nazwy…"
+    },
+    "Название студии": {
+      en: "Studio name",
+      uk: "Назва студії",
+      fr: "Nom du studio",
+      be: "Назва студыі",
+      zh: "工作室名称",
+      pt: "Nome do est\xFAdio",
+      bg: "Име на студиото",
+      he: "שם האולפן",
+      cs: "N\xE1zev studia",
+      ro: "Numele studioului",
+      pl: "Nazwa studia"
+    },
+    "Вариант написания": {
+      en: "Spelling",
+      uk: "Варіант написання",
+      fr: "Variante de nom",
+      be: "Варыянт назвы",
+      zh: "名称变体",
+      pt: "Grafia",
+      bg: "Изписване",
+      he: "איות",
+      cs: "Varianta n\xE1zvu",
+      ro: "Variantă de nume",
+      pl: "Wariant nazwy"
+    },
+    Сохранено: {
+      en: "Saved",
+      uk: "Збережено",
+      fr: "Enregistr\xE9",
+      be: "Захавана",
+      zh: "已保存",
+      pt: "Salvo",
+      bg: "Запазено",
+      he: "נשמר",
+      cs: "Uloženo",
+      ro: "Salvat",
+      pl: "Zapisano"
+    },
+    "Слишком коротко": {
+      en: "Too short",
+      uk: "Закоротко",
+      fr: "Trop court",
+      be: "Занадта коратка",
+      zh: "内容过短",
+      pt: "Muito curto",
+      bg: "Твърде кратко",
+      he: "קצר מדי",
+      cs: "Příliš krátké",
+      ro: "Prea scurt",
+      pl: "Za kr\xF3tkie"
+    },
+    "Озвучки появятся после первых просмотров": {
+      en: "Voice-overs appear after the first titles",
+      uk: "Озвучення з’являться після перших переглядів",
+      fr: "Les voix apparaissent apr\xE8s les premiers titres",
+      be: "Агучкі з’явяцца пасля першых твораў",
+      zh: "浏览作品后将显示配音",
+      pt: "Vozes aparecem ap\xF3s os primeiros t\xEDtulos",
+      bg: "Озвучаванията се появяват след първите заглавия",
+      he: "דיבובים יופיעו אחרי הכותרים הראשונים",
+      cs: "Dabingy se objev\xED po prvn\xEDch titulech",
+      ro: "Dublajele apar după primele titluri",
+      pl: "Lektorzy pojawią się po pierwszych tytułach"
+    },
+    "выбрано %s раз": {
+      en: "chosen %s times",
+      uk: "обрано %s разів",
+      fr: "choisi %s fois",
+      be: "выбрана %s разоў",
+      zh: "已选择%s次",
+      pt: "escolhido %s vezes",
+      bg: "избрано %s пъти",
+      he: "נבחר %s פעמים",
+      cs: "vybr\xE1no %skr\xE1t",
+      ro: "ales de %s ori",
+      pl: "wybrano %s razy"
+    },
+    "%s долго не отвечает. Переключиться на %s?": {
+      en: "%s is slow to answer. Switch to %s?",
+      uk: "%s довго не відповідає. Перемкнутися на %s?",
+      fr: "%s tarde \xE0 r\xE9pondre. Passer \xE0 %s ?",
+      be: "%s адказвае павольна. Пераключыцца на %s?",
+      zh: "%s响应较慢，切换至%s？",
+      pt: "%s est\xE1 lento. Mudar para %s?",
+      bg: "%s отговаря бавно. Превключване към %s?",
+      he: "%s מגיב לאט. לעבור אל %s?",
+      cs: "%s odpovídá pomalu. Přepnout na %s?",
+      ro: "%s răspunde greu. Treci la %s?",
+      pl: "%s odpowiada wolno. Przełączyć na %s?"
+    },
+    "Да, переключиться": {
+      en: "Yes, switch",
+      uk: "Так, перемкнутися",
+      fr: "Oui, changer",
+      be: "Так, пераключыць",
+      zh: "是，切换",
+      pt: "Sim, mudar",
+      bg: "Да, превключване",
+      he: "כן, עבור",
+      cs: "Ano, přepnout",
+      ro: "Da, schimbă",
+      pl: "Tak, przełącz"
+    },
+    Ждём: {
+      en: "Keep waiting",
+      uk: "Чекаємо",
+      fr: "Continuer \xE0 attendre",
+      be: "Працягнуць чаканне",
+      zh: "继续等待",
+      pt: "Continuar esperando",
+      bg: "Продължаване на изчакването",
+      he: "המשך להמתין",
+      cs: "Čekat dál",
+      ro: "Continuă așteptarea",
+      pl: "Czekaj dalej"
+    },
+    "Оригинал + %s": {
+      en: "Original + %s",
+      uk: "Оригінал + %s",
+      fr: "Version originale + %s",
+      be: "Арыгінал + %s",
+      zh: "原声 + %s",
+      pt: "Original + %s",
+      bg: "Оригинал + %s",
+      he: "מקור + %s",
+      cs: "Origin\xE1l + %s",
+      ro: "Original + %s",
+      pl: "Oryginał + %s"
+    },
+    "Несколько дорожек (%s)": {
+      en: "Several tracks (%s)",
+      uk: "Кілька доріжок (%s)",
+      fr: "Plusieurs pistes (%s)",
+      be: "Некалькі дарожак (%s)",
+      zh: "多音轨（%s）",
+      pt: "V\xE1rias faixas (%s)",
+      bg: "Няколко писти (%s)",
+      he: "מספר רצועות (%s)",
+      cs: "V\xEDce stop (%s)",
+      ro: "Mai multe piste (%s)",
+      pl: "Wiele ścieżek (%s)"
+    },
+    "загрузка…": {
+      en: "loading…",
+      uk: "Завантаження",
+      be: "Загрузка",
+      zh: "加载中",
+      pt: "Carregando",
+      bg: "Зареждане",
+      he: "טוען",
+      cs: "Načítání",
+      ro: "Se încarcă...",
+      fr: "Chargement...",
+      pl: "Ładowanie"
+    },
+    "Ищем в источниках…": {
+      en: "Searching the sources…",
+      uk: "Шукаємо в джерелах…",
+      fr: "Recherche des sources…",
+      be: "Пошук крыніц…",
+      zh: "正在搜索来源…",
+      pt: "Buscando fontes…",
+      bg: "Търсене на източници…",
+      he: "מחפש מקורות…",
+      cs: "Hledání zdrojů…",
+      ro: "Se caută surse…",
+      pl: "Wyszukiwanie źródeł…"
+    },
+    Другие: {
+      en: "Other",
+      uk: "Решта",
+      be: "Астатняе",
+      zh: "休息",
+      pt: "Descansar",
+      bg: "Други",
+      he: "אחר",
+      cs: "Ostatn\xED",
+      ro: "Altele",
+      fr: "Autre",
+      pl: "Pozostałe"
+    },
+    "ещё не все источники ответили": {
+      en: "some sources have not answered yet",
+      uk: "ще не всі джерела відповіли",
+      fr: "certaines sources n’ont pas encore répondu",
+      be: "некаторыя крыніцы яшчэ не адказалі",
+      zh: "部分来源尚未响应",
+      pt: "algumas fontes ainda n\xE3o responderam",
+      bg: "някои източници още не са отговорили",
+      he: "חלק מהמקורות עדיין לא הגיבו",
+      cs: "některé zdroje ještě neodpověděly",
+      ro: "unele surse nu au răspuns încă",
+      pl: "niektóre źródła jeszcze nie odpowiedziały"
+    },
+    "Ищу субтитры других источников…": {
+      en: "Looking for subtitles of other sources…",
+      uk: "Шукаю субтитри інших джерел…",
+      fr: "Recherche de sous-titres dans les autres sources…",
+      be: "Пошук субцітраў іншых крыніц…",
+      zh: "正在其他来源搜索字幕…",
+      pt: "Buscando legendas de outras fontes…",
+      bg: "Търсене на субтитри в други източници…",
+      he: "מחפש כתוביות ממקורות אחרים…",
+      cs: "Hledání titulků v dalších zdrojích…",
+      ro: "Se caută subtitrări în alte surse…",
+      pl: "Szukanie napisów w innych źródłach…"
+    },
+    "Озвучки ещё загружаются…": {
+      en: "Voice-overs are still loading…",
+      uk: "Озвучення ще завантажуються…",
+      fr: "Chargement des voix…",
+      be: "Агучкі яшчэ загружаюцца…",
+      zh: "配音仍在加载中…",
+      pt: "Vozes ainda carregando…",
+      bg: "Озвучаванията още се зареждат…",
+      he: "הדיבובים עדיין נטענים…",
+      cs: "Dabingy se ještě načítají…",
+      ro: "Dublajele încă se încarcă…",
+      pl: "Lektorzy nadal się ładują…"
+    },
+    "Вместо фильма короткий фрагмент (%s) - пробую %s": {
+      en: "A short clip instead of the full video (%s) - trying %s",
+      uk: "Замість фільму короткий фрагмент (%s) - пробую %s",
+      fr: "Extrait au lieu de la vid\xE9o compl\xE8te (%s) : essai de %s",
+      be: "Кароткі ролік замест відэа (%s) — спроба %s",
+      zh: "返回的是短片（%s），正在尝试%s",
+      pt: "Clipe curto em vez do vídeo (%s) — tentando %s",
+      bg: "Кратък клип вместо видео (%s) — проба с %s",
+      he: "קטע קצר במקום סרטון מלא (%s) — מנסה %s",
+      cs: "Krátký klip místo videa (%s) — zkouší se %s",
+      ro: "Clip scurt în locul videoului (%s) — se încearcă %s",
+      pl: "Krótki klip zamiast filmu (%s) — próba %s"
+    },
+    "Не удалось получить поток ни из одного источника": {
+      en: "Could not get a stream from any source",
+      uk: "Не вдалося отримати потік з жодного джерела",
+      fr: "Aucune source n’a fourni de flux",
+      be: "Не атрыманы паток ні з адной крыніцы",
+      zh: "无法从任何来源获取视频流",
+      pt: "Nenhuma fonte forneceu fluxo",
+      bg: "Няма поток от никой източник",
+      he: "לא התקבל זרם מאף מקור",
+      cs: "Žádný zdroj neposkytl stream",
+      ro: "Nicio sursă nu a furnizat flux",
+      pl: "Nie uzyskano strumienia z żadnego źródła"
+    },
+    "Адрес вашего сервера (Lampac, Alpac…)": {
+      en: "Your server address (Lampac, Alpac…)",
+      uk: "Адреса вашого сервера (Lampac, Alpac…)",
+      fr: "Adresse de votre serveur (Lampac, Alpac…)",
+      be: "Адрас вашага сервера (Lampac, Alpac…)",
+      zh: "您的服务器地址（Lampac、Alpac…）",
+      pt: "Endereço do seu servidor (Lampac, Alpac…)",
+      bg: "Адрес на вашия сървър (Lampac, Alpac…)",
+      he: "כתובת השרת שלכם (Lampac, Alpac…)",
+      cs: "Adresa vašeho serveru (Lampac, Alpac…)",
+      ro: "Adresa serverului tău (Lampac, Alpac…)",
+      pl: "Adres twojego serwera (Lampac, Alpac…)"
+    },
+    "Сервер с онлайн-источниками. Оставьте пустым для автоматического определения": {
+      en: "Server with online sources. Leave empty to detect automatically",
+      uk: "Сервер з онлайн-джерелами. Залиште порожнім для автоматичного визначення",
+      fr: "Serveur des sources en ligne. Vide : d\xE9tection automatique",
+      be: "Сервер анлайн-крыніц. Пуста — аўтавызначэнне",
+      zh: "在线来源服务器，留空自动检测",
+      pt: "Servidor de fontes online. Vazio: detec\xE7\xE3o autom\xE1tica",
+      bg: "Сървър с онлайн източници. Празно: автоматично откриване",
+      he: "שרת מקורות מקוונים. השאירו ריק לזיהוי אוטומטי",
+      cs: "Server online zdrojů. Prázdné: automatická detekce",
+      ro: "Server de surse online. Gol: detectare automată",
+      pl: "Serwer źródeł online. Puste: wykrywanie automatyczne"
+    },
+    авто: {
+      en: "auto",
+      uk: "авто",
+      fr: "auto",
+      be: "аўта",
+      zh: "自动",
+      pt: "auto",
+      bg: "авто",
+      he: "אוטומטי",
+      cs: "auto",
+      ro: "auto",
+      pl: "auto"
+    },
+    "Сервер Lampac не найден": {
+      en: "No Lampac server found",
+      uk: "Сервер Lampac не знайдено",
+      fr: "Aucun serveur Lampac trouv\xE9",
+      be: "Сервер Lampac не знойдзены",
+      zh: "未找到Lampac服务器",
+      pt: "Servidor Lampac n\xE3o encontrado",
+      bg: "Няма намерен сървър Lampac",
+      he: "שרת Lampac לא נמצא",
+      cs: "Server Lampac nenalezen",
+      ro: "Server Lampac negăsit",
+      pl: "Nie znaleziono serwera Lampac"
+    },
+    "Укажите адрес: Настройки → L A M P A → Подключение → «Адрес вашего сервера»": {
+      en: "Set it in Settings → L A M P A → Connection → Your server address",
+      uk: "Вкажіть адресу: Налаштування → L A M P A → Підключення → «Адреса вашого сервера»",
+      fr: "Renseignez Réglages → L A M P A → Connexion → Adresse du serveur",
+      be: "Налады → L A M P A → Падключэнне → Адрас сервера",
+      zh: "请在设置 → L A M P A → 连接中填写服务器地址",
+      pt: "Configure em Configurações → L A M P A → Conexão → Endereço do servidor",
+      bg: "Задайте в Настройки → L A M P A → Свързване → Адрес на сървъра",
+      he: "הגדירו בהגדרות → L A M P A → חיבור → כתובת שרת",
+      cs: "Nastavte v Nastavení → L A M P A → Připojení → Adresa serveru",
+      ro: "Setează în Setări → L A M P A → Conexiune → Adresă server",
+      pl: "Ustaw w Ustawienia → L A M P A → Połączenie → Adres serwera"
+    },
+    "Сервер просит войти": {
+      en: "The server asks you to sign in",
+      uk: "Сервер просить увійти",
+      fr: "Le serveur demande une connexion",
+      be: "Сервер патрабуе ўваходу",
+      zh: "服务器要求登录",
+      pt: "O servidor exige login",
+      bg: "Сървърът изисква вход",
+      he: "השרת דורש כניסה",
+      cs: "Server vyžaduje přihlášení",
+      ro: "Serverul cere autentificare",
+      pl: "Serwer wymaga logowania"
+    },
+    "Войдите в аккаунт Lampa (Настройки → Аккаунт) или добавьте на сервере ID этого устройства: %s": {
+      en: "Sign in to your Lampa account (Settings → Account) or add this device ID on the server: %s",
+      uk: "Увійдіть в акаунт Lampa (Налаштування → Акаунт) або додайте на сервері ID цього пристрою: %s",
+      fr: "Connectez-vous dans Réglages → Compte ou ajoutez cet appareil au serveur : %s",
+      be: "Увайдзіце ў Налады → Акаўнт або дадайце прыладу на сервер: %s",
+      zh: "请在设置 → 账户中登录，或在服务器添加设备ID：%s",
+      pt: "Entre em Configurações → Conta ou adicione este dispositivo ao servidor: %s",
+      bg: "Влезте в Настройки → Акаунт или добавете устройството в сървъра: %s",
+      he: "היכנסו בהגדרות → חשבון או הוסיפו את המכשיר לשרת: %s",
+      cs: "Přihlaste se v Nastavení → Účet nebo přidejte zařízení na server: %s",
+      ro: "Conectează-te în Setări → Cont sau adaugă dispozitivul pe server: %s",
+      pl: "Zaloguj się w Ustawienia → Konto lub dodaj urządzenie na serwerze: %s"
+    },
+    "Этот сервер найден по плагину %s - войдите через него (он покажет код входа), затем откройте снова": {
+      en: "This server was found by the plugin %s: sign in through it (it shows the sign-in code), then open again",
+      uk: "Цей сервер знайдено за плагіном %s - увійдіть через нього (він покаже код входу), потім відкрийте знову",
+      fr: "Serveur d\xE9tect\xE9 par %s : connectez-vous via ce module, puis r\xE9essayez",
+      be: "Сервер знойдзены праз %s. Увайдзіце праз гэты плагін і паўтарыце.",
+      zh: "%s发现了此服务器，请通过该插件登录后重试",
+      pt: "Servidor encontrado por %s. Entre por esse plugin e tente novamente",
+      bg: "Сървърът е намерен от %s. Влезте чрез този плъгин и опитайте пак",
+      he: "השרת נמצא דרך %s. היכנסו דרך התוסף ונסו שוב",
+      cs: "Server nalezen přes %s. Přihlaste se přes tento doplněk a zkuste znovu",
+      ro: "Server găsit prin %s. Autentifică-te prin acel plugin și reîncearcă",
+      pl: "Serwer znaleziony przez %s. Zaloguj się przez tę wtyczkę i spróbuj ponownie"
+    },
+    "Сервер работает только через rch": {
+      en: "The server works in rch mode only",
+      uk: "Сервер працює лише через rch",
+      fr: "Le serveur fonctionne uniquement en mode rch",
+      be: "Сервер працуе толькі ў рэжыме rch",
+      zh: "服务器仅支持rch模式",
+      pt: "Servidor funciona apenas em modo rch",
+      bg: "Сървърът работи само в режим rch",
+      he: "השרת פועל רק במצב rch",
+      cs: "Server funguje jen v režimu rch",
+      ro: "Serverul funcționează doar în modul rch",
+      pl: "Serwer działa tylko w trybie rch"
+    },
+    "Источники этого сервера доступны только через устройство (rch). Подключите другой сервер": {
+      en: "This server requires device-side access (rch). Connect another server",
+      uk: "Джерела цього сервера доступні лише через пристрій (rch). Підключіть інший сервер",
+      fr: "Ce serveur exige un accès depuis l’appareil (rch). Choisissez un autre serveur",
+      be: "Патрэбны доступ з прылады (rch). Выберыце іншы сервер.",
+      zh: "此服务器需要设备端访问（rch），请连接其他服务器",
+      pt: "Exige acesso pelo dispositivo (rch). Escolha outro servidor",
+      bg: "Изисква достъп от устройството (rch). Изберете друг сървър",
+      he: "נדרשת גישה מהמכשיר (rch). בחרו שרת אחר",
+      cs: "Vyžaduje přístup ze zařízení (rch). Vyberte jiný server",
+      ro: "Necesită acces de pe dispozitiv (rch). Alege alt server",
+      pl: "Wymaga dostępu z urządzenia (rch). Wybierz inny serwer"
+    },
+    "Сервер Lampac недоступен": {
+      en: "The Lampac server cannot be reached",
+      uk: "Сервер Lampac недоступний",
+      fr: "Serveur Lampac inaccessible",
+      be: "Сервер Lampac недаступны",
+      zh: "无法连接Lampac服务器",
+      pt: "Servidor Lampac inacess\xEDvel",
+      bg: "Сървърът Lampac е недостъпен",
+      he: "שרת Lampac אינו נגיש",
+      cs: "Server Lampac nen\xED dostupn\xFD",
+      ro: "Serverul Lampac este inaccesibil",
+      pl: "Serwer Lampac jest niedostępny"
+    },
+    "Нет связи или браузер не пустил запрос (CORS) - проверьте адрес и что сервер запущен": {
+      en: "No connection, or the browser blocked the request (CORS): check the address and that the server runs",
+      uk: "Немає зв'язку або браузер не пропустив запит (CORS) - перевірте адресу і що сервер запущено",
+      fr: "Connexion impossible ou requête bloquée (CORS). Vérifiez l’adresse et le serveur",
+      be: "Няма сувязі або блакаванне CORS. Праверце адрас і сервер.",
+      zh: "无连接或请求被CORS阻止，请检查地址与服务器状态",
+      pt: "Sem conex\xE3o ou bloqueio CORS. Verifique endere\xE7o e servidor",
+      bg: "Няма връзка или блокиране от CORS. Проверете адреса и сървъра",
+      he: "אין חיבור או חסימת CORS. בדקו כתובת ושרת",
+      cs: "Bez spojení nebo blokování CORS. Ověřte adresu a server",
+      ro: "Fără conexiune sau blocare CORS. Verifică adresa și serverul",
+      pl: "Brak połączenia lub blokada CORS. Sprawdź adres i serwer"
+    },
+    "Сервер не ответил за %s с - он запущен?": {
+      en: "The server did not answer within %s s: is it running?",
+      uk: "Сервер не відповів за %s с - він запущений?",
+      fr: "Aucune r\xE9ponse apr\xE8s %s s. Le serveur fonctionne-t-il ?",
+      be: "Няма адказу за %s с. Сервер працуе?",
+      zh: "服务器在%s秒内未响应，是否正在运行？",
+      pt: "Sem resposta em %s s. O servidor est\xE1 ativo?",
+      bg: "Няма отговор за %s с. Работи ли сървърът?",
+      he: "אין תגובה אחרי %s שניות. השרת פועל?",
+      cs: "Bez odpovědi po %s s. Běží server?",
+      ro: "Fără răspuns în %s s. Serverul funcționează?",
+      pl: "Brak odpowiedzi przez %s s. Czy serwer działa?"
+    },
+    "Lampa открыта по https, а сервер - по http: браузер такое блокирует, а по https этот сервер не ответил. Нужен https-адрес сервера": {
+      en: "Lampa is open over https and the server is http: the browser blocks that, and the server did not answer over https. Use an https address",
+      uk: "Lampa відкрита через https, а сервер - через http: браузер таке блокує, а через https цей сервер не відповів. Потрібна https-адреса сервера",
+      fr: "Lampa est en HTTPS mais le serveur est en HTTP. Utilisez une adresse HTTPS",
+      be: "Lampa працуе праз HTTPS, сервер праз HTTP. Выкарыстайце HTTPS-адрас.",
+      zh: "Lampa使用HTTPS而服务器使用HTTP，请改用HTTPS服务器地址",
+      pt: "Lampa em HTTPS e servidor em HTTP. Use um endere\xE7o HTTPS",
+      bg: "Lampa е през HTTPS, сървърът е HTTP. Използвайте HTTPS адрес",
+      he: "Lampa ב־HTTPS והשרת ב־HTTP. השתמשו בכתובת HTTPS",
+      cs: "Lampa běží přes HTTPS, server přes HTTP. Použijte adresu HTTPS",
+      ro: "Lampa este pe HTTPS, serverul pe HTTP. Folosește adresă HTTPS",
+      pl: "Lampa używa HTTPS, a serwer HTTP. Użyj adresu HTTPS"
+    },
+    "Браузер не пускает сайт из интернета к адресу домашней сети. Откройте Lampa с самого сервера или укажите внешний адрес": {
+      en: "The browser keeps an internet site away from a home-network address. Open Lampa from the server itself or use an outside address",
+      uk: "Браузер не пускає сайт з інтернету до адреси домашньої мережі. Відкрийте Lampa з самого сервера або вкажіть зовнішню адресу",
+      fr: "Le navigateur bloque l’accès au réseau local. Ouvrez Lampa depuis le serveur ou utilisez une adresse externe",
+      be: "Браўзер блакуе лакальную сетку. Адкрыйце Lampa з сервера або праз знешні адрас.",
+      zh: "浏览器阻止访问家庭网络，请从服务器打开Lampa或使用外部地址",
+      pt: "Navegador bloqueou rede local. Abra Lampa pelo servidor ou use endere\xE7o externo",
+      bg: "Браузърът блокира локалната мрежа. Отворете Lampa от сървъра или с външен адрес",
+      he: "הדפדפן חוסם רשת מקומית. פתחו Lampa מהשרת או בכתובת חיצונית",
+      cs: "Prohlížeč blokuje místní síť. Otevřete Lampu ze serveru nebo přes vnější adresu",
+      ro: "Browserul blochează rețeaua locală. Deschide Lampa de pe server sau cu adresă externă",
+      pl: "Przeglądarka blokuje sieć lokalną. Otwórz Lampa z serwera lub przez adres zewnętrzny"
+    },
+    "Сервер требует вход (HTTP %s) - войдите в аккаунт Lampa или проверьте доступ на сервере": {
+      en: "The server wants a sign-in (HTTP %s): sign in to your Lampa account or check access on the server",
+      uk: "Сервер вимагає вхід (HTTP %s) - увійдіть в акаунт Lampa або перевірте доступ на сервері",
+      fr: "Connexion requise (HTTP %s). Vérifiez le compte et les droits d’accès",
+      be: "Патрэбны ўваход (HTTP %s). Праверце акаўнт і доступ да сервера.",
+      zh: "需要登录（HTTP %s），请检查账户与服务器访问权限",
+      pt: "Login necess\xE1rio (HTTP %s). Verifique conta e acesso ao servidor",
+      bg: "Изисква се вход (HTTP %s). Проверете акаунта и достъпа до сървъра",
+      he: "נדרשת כניסה (HTTP %s). בדקו חשבון וגישה לשרת",
+      cs: "Nutné přihlášení (HTTP %s). Ověřte účet a přístup k serveru",
+      ro: "Autentificare necesară (HTTP %s). Verifică contul și accesul",
+      pl: "Wymagane logowanie (HTTP %s). Sprawdź konto i dostęp do serwera"
+    },
+    "Сервер ответил ошибкой HTTP %s": {
+      en: "The server answered HTTP %s",
+      uk: "Сервер відповів помилкою HTTP %s",
+      fr: "R\xE9ponse du serveur : HTTP %s",
+      be: "Адказ сервера: HTTP %s",
+      zh: "服务器返回HTTP %s",
+      pt: "Resposta do servidor: HTTP %s",
+      bg: "Отговор от сървъра: HTTP %s",
+      he: "תגובת שרת: HTTP %s",
+      cs: "Odpověď serveru: HTTP %s",
+      ro: "Răspuns server: HTTP %s",
+      pl: "Odpowiedź serwera: HTTP %s"
+    },
+    "Источник медленный - включил %s": {
+      en: "Slow source: switched to %s",
+      uk: "Джерело повільне - увімкнув %s",
+      fr: "Source lente : passage \xE0 %s",
+      be: "Павольная крыніца: пераключана на %s",
+      zh: "来源响应慢，已切换至%s",
+      pt: "Fonte lenta: mudou para %s",
+      bg: "Бавен източник: преминаване към %s",
+      he: "מקור איטי: עבר אל %s",
+      cs: "Pomalý zdroj: přepnuto na %s",
+      ro: "Sursă lentă: s-a trecut la %s",
+      pl: "Wolne źródło: przełączono na %s"
+    },
+    " · другой источник: %s": {
+      en: " \xB7 another source: %s",
+      uk: " · інше джерело: %s",
+      fr: " \xB7 autre source : %s",
+      be: " · іншая крыніца: %s",
+      zh: " · 其他来源：%s",
+      pt: " \xB7 outra fonte: %s",
+      bg: " · друг източник: %s",
+      he: " · מקור אחר: %s",
+      cs: " \xB7 jin\xFD zdroj: %s",
+      ro: " · altă sursă: %s",
+      pl: " · inne źródło: %s"
+    },
+    Источники: {
+      en: "Sources",
+      uk: "Джерела",
+      fr: "Sources",
+      be: "Крыніцы",
+      zh: "来源",
+      pt: "Fontes",
+      bg: "Източници",
+      he: "מקורות",
+      cs: "Zdroje",
+      ro: "Surse",
+      pl: "Źródła"
+    },
+    Торренты: {
+      en: "Torrents",
+      uk: "Торренти",
+      be: "Торэнты",
+      zh: "种子",
+      pt: "Torrents",
+      bg: "Торенти",
+      he: "טורנטים",
+      cs: "Torrenty",
+      ro: "Torrente",
+      fr: "Torrents",
+      pl: "Torrenty"
+    },
+    "Скрытые не опрашиваются": {
+      en: "Hidden ones are not asked",
+      uk: "Приховані не опитуються",
+      fr: "Les sources masqu\xE9es ne sont pas interrog\xE9es",
+      be: "Схаваныя крыніцы не запытваюцца",
+      zh: "不查询隐藏的来源",
+      pt: "Fontes ocultas n\xE3o s\xE3o consultadas",
+      bg: "Скритите източници не се проверяват",
+      he: "מקורות מוסתרים לא נבדקים",
+      cs: "Skryté zdroje se neověřují",
+      ro: "Sursele ascunse nu sunt verificate",
+      pl: "Ukryte źródła nie są sprawdzane"
+    },
+    "скрыто: %s": {
+      en: "hidden: %s",
+      uk: "приховано: %s",
+      fr: "masqu\xE9es : %s",
+      be: "схавана: %s",
+      zh: "已隐藏：%s",
+      pt: "ocultas: %s",
+      bg: "скрити: %s",
+      he: "מוסתרים: %s",
+      cs: "skryto: %s",
+      ro: "ascunse: %s",
+      pl: "ukryte: %s"
+    },
+    "Все источники скрыты": {
+      en: "Every source is hidden",
+      uk: "Усі джерела приховано",
+      fr: "Toutes les sources sont masqu\xE9es",
+      be: "Усе крыніцы схаваны",
+      zh: "所有来源均已隐藏",
+      pt: "Todas as fontes est\xE3o ocultas",
+      bg: "Всички източници са скрити",
+      he: "כל המקורות מוסתרים",
+      cs: "Všechny zdroje jsou skryté",
+      ro: "Toate sursele sunt ascunse",
+      pl: "Wszystkie źródła są ukryte"
+    },
+    "Сервер не дал список источников": {
+      en: "The server gave no source list",
+      uk: "Сервер не дав список джерел",
+      fr: "Le serveur n’a fourni aucune liste de sources",
+      be: "Сервер не вярнуў спіс крыніц",
+      zh: "服务器未提供来源列表",
+      pt: "Servidor n\xE3o forneceu lista de fontes",
+      bg: "Сървърът не върна списък с източници",
+      he: "השרת לא סיפק רשימת מקורות",
+      cs: "Server neposkytl seznam zdrojů",
+      ro: "Serverul nu a furnizat lista surselor",
+      pl: "Serwer nie zwrócił listy źródeł"
+    },
+    "Серии: последние сверху": {
+      en: "Episodes: newest on top",
+      uk: "Серії: останні згори",
+      fr: "Épisodes : les plus récents d’abord",
+      be: "Серыі: спачатку новыя",
+      zh: "剧集：最新在前",
+      pt: "Epis\xF3dios: mais novos primeiro",
+      bg: "Епизоди: най-новите отгоре",
+      he: "פרקים: החדשים תחילה",
+      cs: "Díly: nejnovější nahoře",
+      ro: "Episoade: cele mai noi primele",
+      pl: "Odcinki: najnowsze najpierw"
+    },
+    вкл: {
+      en: "on",
+      uk: "увімк.",
+      fr: "activ\xE9",
+      be: "уключана",
+      zh: "开启",
+      pt: "ativado",
+      bg: "включено",
+      he: "פעיל",
+      cs: "zapnuto",
+      ro: "pornit",
+      pl: "włączone"
+    },
+    "Перейти к серии №…": {
+      en: "Go to episode #…",
+      uk: "Перейти до серії №…",
+      fr: "Aller à l’épisode n°…",
+      be: "Перайсці да серыі №…",
+      zh: "跳转到第…集",
+      pt: "Ir ao episódio nº…",
+      bg: "Отиди на епизод №…",
+      he: "עבור לפרק מספר…",
+      cs: "Přejít na díl č.…",
+      ro: "Mergi la episodul nr.…",
+      pl: "Przejdź do odcinka nr…"
+    },
+    "Номер серии": {
+      en: "Episode number",
+      uk: "Номер серії",
+      fr: "Numéro de l’épisode",
+      be: "Нумар серыі",
+      zh: "集数",
+      pt: "N\xFAmero do epis\xF3dio",
+      bg: "Номер на епизод",
+      he: "מספר פרק",
+      cs: "Číslo dílu",
+      ro: "Numărul episodului",
+      pl: "Numer odcinka"
+    },
+    "Все настройки": {
+      en: "All settings",
+      uk: "Усі налаштування",
+      fr: "Tous les r\xE9glages",
+      be: "Усе налады",
+      zh: "所有设置",
+      pt: "Todas as configura\xE7\xF5es",
+      bg: "Всички настройки",
+      he: "כל ההגדרות",
+      cs: "Všechna nastavení",
+      ro: "Toate setările",
+      pl: "Wszystkie ustawienia"
+    },
+    "Серии %s нет в этом сезоне": {
+      en: "No episode %s in this season",
+      uk: "Серії %s немає в цьому сезоні",
+      fr: "Aucun \xE9pisode %s dans cette saison",
+      be: "У сезоне няма серыі %s",
+      zh: "此季没有第%s集",
+      pt: "Sem epis\xF3dio %s nesta temporada",
+      bg: "Няма епизод %s в този сезон",
+      he: "אין פרק %s בעונה הזו",
+      cs: "V této řadě není díl %s",
+      ro: "Nu există episodul %s în acest sezon",
+      pl: "Brak odcinka %s w tym sezonie"
+    },
+    "Продолжить · S%s, E%s": {
+      en: "Continue \xB7 S%s, E%s",
+      uk: "Продовжити · S%s, E%s",
+      fr: "Reprendre \xB7 S%s, E%s",
+      be: "Працягнуць · S%s, E%s",
+      zh: "继续播放 · S%s, E%s",
+      pt: "Continuar \xB7 S%s, E%s",
+      bg: "Продължаване · S%s, E%s",
+      he: "המשך · S%s, E%s",
+      cs: "Pokračovat · S%s, E%s",
+      ro: "Continuă · S%s, E%s",
+      pl: "Kontynuuj \xB7 S%s, E%s"
+    },
+    "Смотреть · S%s, E%s": {
+      en: "Watch \xB7 S%s, E%s",
+      uk: "Дивитися · S%s, E%s",
+      fr: "Regarder \xB7 S%s, E%s",
+      be: "Глядзець · S%s, E%s",
+      zh: "观看 · S%s, E%s",
+      pt: "Assistir \xB7 S%s, E%s",
+      bg: "Гледане · S%s, E%s",
+      he: "צפה · S%s, E%s",
+      cs: "Sledovat \xB7 S%s, E%s",
+      ro: "Vizionează · S%s, E%s",
+      pl: "Oglądaj · S%s, E%s"
+    },
+    Продолжить: {
+      en: "Continue",
+      uk: "Продовжити",
+      be: "Працягнуць",
+      zh: "继续",
+      pt: "Continuar",
+      bg: "Продължи",
+      he: "המשך",
+      cs: "Pokračovat",
+      ro: "Continuă",
+      fr: "Continuer",
+      pl: "Kontynuuj"
+    },
+    Скоро: {
+      en: "Soon",
+      uk: "Незабаром",
+      be: "Хутка",
+      zh: "即将推出",
+      pt: "Em breve",
+      bg: "Скоро",
+      he: "בקרוב",
+      cs: "Již brzy",
+      ro: "\xCEn cur\xE2nd",
+      fr: "Bient\xF4t",
+      pl: "Wkr\xF3tce"
+    },
+    "%s мин": {
+      en: "%s min",
+      uk: "%s хв",
+      fr: "%s min",
+      be: "%s хв",
+      zh: "%s分钟",
+      pt: "%s min",
+      bg: "%s мин",
+      he: "%s דקות",
+      cs: "%s min",
+      ro: "%s min",
+      pl: "%s min"
+    },
+    "%s ч %s мин": {
+      en: "%s h %s min",
+      uk: "%s год %s хв",
+      fr: "%s h %s min",
+      be: "%s г %s хв",
+      zh: "%s小时%s分钟",
+      pt: "%s h %s min",
+      bg: "%s ч %s мин",
+      he: "%s שעות %s דקות",
+      cs: "%s h %s min",
+      ro: "%s h %s min",
+      pl: "%s godz. %s min"
+    },
+    "%s ч": {
+      en: "%s h",
+      uk: "%s год",
+      fr: "%s h",
+      be: "%s г",
+      zh: "%s小时",
+      pt: "%s h",
+      bg: "%s ч",
+      he: "%s שעות",
+      cs: "%s h",
+      ro: "%s h",
+      pl: "%s godz."
+    },
+    "в %s %s из %s": {
+      en: "in %s %s of %s",
+      uk: "у %s %s з %s",
+      fr: "dans %s %s sur %s",
+      be: "у %s %s з %s",
+      zh: "在%s中为%s，共%s",
+      pt: "em %s %s de %s",
+      bg: "в %s %s от %s",
+      he: "ב־%s %s מתוך %s",
+      cs: "v %s %s z %s",
+      ro: "\xEEn %s %s din %s",
+      pl: "w %s %s z %s"
+    },
+    "есть в %s": {
+      en: "also in %s",
+      uk: "є в %s",
+      fr: "aussi dans %s",
+      be: "таксама ў %s",
+      zh: "也在%s",
+      pt: "tamb\xE9m em %s",
+      bg: "също в %s",
+      he: "גם ב־%s",
+      cs: "tak\xE9 v %s",
+      ro: "și în %s",
+      pl: "także w %s"
+    },
+    "нет в %s": {
+      en: "not in %s",
+      uk: "немає в %s",
+      fr: "absent de %s",
+      be: "няма ў %s",
+      zh: "%s中暂无",
+      pt: "ausente em %s",
+      bg: "няма в %s",
+      he: "לא נמצא ב־%s",
+      cs: "nen\xED v %s",
+      ro: "lipsește din %s",
+      pl: "brak w %s"
+    },
+    "Смотреть в «%s»": {
+      en: "Watch in “%s”",
+      uk: "Дивитися в «%s»",
+      fr: "Regarder dans \xAB %s \xBB",
+      be: "Глядзець у «%s»",
+      zh: "在“%s”中观看",
+      pt: "Assistir em “%s”",
+      bg: "Гледане в „%s“",
+      he: "צפה ב־״%s״",
+      cs: "Sledovat v „%s“",
+      ro: "Vizionează în „%s”",
+      pl: "Oglądaj w „%s”"
+    },
+    "S%s E%s нет в «%s»": {
+      en: "S%s E%s is not in “%s”",
+      uk: "S%s E%s немає в «%s»",
+      fr: "S%s E%s absent de \xAB %s \xBB",
+      be: "S%s E%s няма ў «%s»",
+      zh: "S%s E%s在“%s”中不可用",
+      pt: "S%s E%s ausente em “%s”",
+      bg: "S%s E%s няма в „%s“",
+      he: "S%s E%s אינו נמצא ב־״%s״",
+      cs: "S%s E%s není v „%s“",
+      ro: "S%s E%s lipsește din „%s”",
+      pl: "S%s E%s brak w „%s”"
+    },
+    "Озвучка сериала": {
+      en: "Voice-over of the series",
+      uk: "Озвучення серіалу",
+      fr: "Voix de la s\xE9rie",
+      be: "Агучка серыяла",
+      zh: "剧集配音",
+      pt: "Voz da s\xE9rie",
+      bg: "Озвучаване на сериала",
+      he: "דיבוב הסדרה",
+      cs: "Dabing seri\xE1lu",
+      ro: "Dublajul serialului",
+      pl: "Lektor serialu"
+    },
+    "В другой озвучке": {
+      en: "In another voice-over",
+      uk: "В іншому озвученні",
+      fr: "Dans une autre voix",
+      be: "У іншай агучцы",
+      zh: "其他配音",
+      pt: "Em outra voz",
+      bg: "С друго озвучаване",
+      he: "בדיבוב אחר",
+      cs: "V jin\xE9m dabingu",
+      ro: "\xCEn alt dublaj",
+      pl: "Z innym lektorem"
+    },
+    "Отметить просмотренной": {
+      en: "Mark as watched",
+      uk: "Позначити переглянутою",
+      fr: "Marquer comme vu",
+      be: "Пазначыць прагледжаным",
+      zh: "标为已看",
+      pt: "Marcar como assistido",
+      bg: "Отбелязване като гледано",
+      he: "סמן כנצפה",
+      cs: "Označit jako zhlédnuté",
+      ro: "Marchează ca vizionat",
+      pl: "Oznacz jako obejrzane"
+    },
+    "Снять отметку «просмотрено»": {
+      en: "Mark as not watched",
+      uk: "Зняти позначку «переглянуто»",
+      fr: "Marquer comme non vu",
+      be: "Пазначыць непрагледжаным",
+      zh: "标为未看",
+      pt: "Marcar como n\xE3o assistido",
+      bg: "Отбелязване като негледано",
+      he: "סמן כלא נצפה",
+      cs: "Označit jako nezhlédnuté",
+      ro: "Marchează ca nevizionat",
+      pl: "Oznacz jako nieobejrzane"
+    },
+    "Вид карточки": {
+      en: "Card layout",
+      uk: "Вигляд картки",
+      fr: "Disposition des fiches",
+      be: "Кампановка картак",
+      zh: "卡片布局",
+      pt: "Layout dos cart\xF5es",
+      bg: "Оформление на картите",
+      he: "פריסת כרטיסים",
+      cs: "Rozložení karet",
+      ro: "Aspectul fișelor",
+      pl: "Układ kart"
+    },
+    "Широкий: две колонки, серии и файлы карточками. Классический: шапка, тулбар и список": {
+      en: "Wide: two columns, episodes and files as cards. Classic: header, toolbar and list",
+      uk: "Широкий: дві колонки, серії та файли картками. Класичний: шапка, тулбар і список",
+      fr: "Large : deux colonnes et vignettes. Classique : en-t\xEAte, outils et liste",
+      be: "Шырокая: дзве калонкі і карткі. Класічная: загаловак, панэль і спіс.",
+      zh: "宽屏：双列与卡片。经典：标题、工具栏和列表。",
+      pt: "Amplo: duas colunas e cart\xF5es. Cl\xE1ssico: cabe\xE7alho, barra e lista.",
+      bg: "Широко: две колони и карти. Класическо: заглавка, лента и списък.",
+      he: "רחב: שתי עמודות וכרטיסים. קלאסי: כותרת, כלים ורשימה.",
+      cs: "Široké: dva sloupce a karty. Klasické: záhlaví, nástroje a seznam.",
+      ro: "Larg: două coloane și fișe. Clasic: antet, instrumente și listă.",
+      pl: "Szeroki: dwie kolumny i karty. Klasyczny: nagłówek, narzędzia i lista."
+    },
+    Широкий: {
+      en: "Wide",
+      uk: "Широкий",
+      fr: "Large",
+      be: "Шырокая",
+      zh: "宽屏",
+      pt: "Amplo",
+      bg: "Широко",
+      he: "רחב",
+      cs: "Široké",
+      ro: "Larg",
+      pl: "Szeroki"
+    },
+    Классический: {
+      en: "Classic",
+      uk: "Класичний",
+      fr: "Classique",
+      be: "Класічная",
+      zh: "经典",
+      pt: "Cl\xE1ssico",
+      bg: "Класическо",
+      he: "קלאסי",
+      cs: "Klasick\xE9",
+      ro: "Clasic",
+      pl: "Klasyczny"
+    },
+    "в широком виде всегда включено": {
+      en: "always on in the wide layout",
+      uk: "у широкому вигляді завжди увімкнено",
+      fr: "toujours actif en disposition large",
+      be: "заўсёды ўключана ў шырокай кампаноўцы",
+      zh: "宽屏布局始终启用",
+      pt: "sempre ativo no layout amplo",
+      bg: "винаги включено в широкото оформление",
+      he: "תמיד פעיל בפריסה רחבה",
+      cs: "vždy zapnuté v širokém rozložení",
+      ro: "mereu activ \xEEn aspectul larg",
+      pl: "zawsze włączone w szerokim układzie"
+    },
+    "в широком виде не используется": {
+      en: "not used in the wide layout",
+      uk: "у широкому вигляді не використовується",
+      fr: "inutilis\xE9 en disposition large",
+      be: "не выкарыстоўваецца ў шырокай кампаноўцы",
+      zh: "宽屏布局不使用",
+      pt: "n\xE3o usado no layout amplo",
+      bg: "не се използва в широкото оформление",
+      he: "לא בשימוש בפריסה רחבה",
+      cs: "nepoužívá se v širokém rozložení",
+      ro: "nefolosit \xEEn aspectul larg",
+      pl: "nieużywane w szerokim układzie"
+    },
+    "Смотреть с начала": {
+      en: "Watch from start",
+      uk: "Дивитися з початку",
+      fr: "Regarder depuis le d\xE9but",
+      be: "Глядзець з пачатку",
+      zh: "从头播放",
+      pt: "Assistir do in\xEDcio",
+      bg: "Гледане отначало",
+      he: "צפה מההתחלה",
+      cs: "Sledovat od začátku",
+      ro: "Vizionează de la început",
+      pl: "Oglądaj od początku"
+    },
+    Следующая: {
+      en: "Next",
+      uk: "Наступна",
+      be: "Наступная",
+      zh: "下一集",
+      pt: "Seguinte",
+      bg: "Следващ",
+      he: "הבא",
+      cs: "Další epizoda",
+      ro: "Următorul",
+      fr: "Suivant",
+      pl: "Następny"
+    },
+    "Первая непросмотренная": {
+      en: "First unwatched",
+      uk: "Перша непроглянута",
+      fr: "Premier \xE9pisode non vu",
+      be: "Першая непрагледжаная",
+      zh: "第一个未看剧集",
+      pt: "Primeiro n\xE3o assistido",
+      bg: "Първи негледан",
+      he: "הפרק הראשון שלא נצפה",
+      cs: "Prvn\xED nezhl\xE9dnut\xFD",
+      ro: "Primul nevizionat",
+      pl: "Pierwszy nieobejrzany"
+    },
+    Источник: {
+      en: "Source",
+      uk: "Джерело",
+      be: "Крыніца",
+      zh: "源",
+      pt: "Fonte",
+      bg: "Източник",
+      he: "מקור",
+      cs: "Zdroj",
+      ro: "Sursă",
+      fr: "Source",
+      pl: "Źródło"
+    },
+    Перевод: {
+      en: "Audio",
+      uk: "Переклад",
+      be: "Пераклад",
+      zh: "翻译",
+      pt: "Tradu\xE7\xE3o",
+      bg: "Дублаж",
+      he: "תרגום",
+      cs: "Dabing",
+      ro: "Traducere",
+      fr: "Version/Doublage",
+      pl: "Tłumaczenie"
+    },
+    Серии: {
+      en: "Episodes",
+      uk: "Серії",
+      be: "Серыі",
+      zh: "集",
+      pt: "Series",
+      bg: "Епизоди",
+      he: "פרקים",
+      cs: "Epizody",
+      ro: "Episoade",
+      fr: "\xC9pisodes",
+      pl: "Odcinki"
+    },
+    "Выбрать серию": {
+      en: "Pick an episode",
+      uk: "Вибрати серію",
+      fr: "Choisir un \xE9pisode",
+      be: "Выбраць серыю",
+      zh: "选择剧集",
+      pt: "Escolher epis\xF3dio",
+      bg: "Избор на епизод",
+      he: "בחר פרק",
+      cs: "Vybrat d\xEDl",
+      ro: "Alege episodul",
+      pl: "Wybierz odcinek"
+    },
+    Файлы: {
+      en: "Files",
+      uk: "Файли",
+      be: "Файлы",
+      zh: "文件",
+      pt: "Ficheiros",
+      bg: "Файлове",
+      he: "קבצים",
+      cs: "Soubory",
+      ro: "Fișiere",
+      fr: "Fichiers",
+      pl: "Pliki"
+    },
+    Плейлист: {
+      en: "Playlist",
+      uk: "Плейлист",
+      be: "Плэйліст",
+      zh: "播放列表",
+      pt: "Lista de reprodu\xE7\xE3o",
+      bg: "Плейлиста",
+      he: "רשימת השמעה",
+      cs: "Playlist",
+      ro: "Listă de redare",
+      fr: "Playlist",
+      pl: "Playlista"
+    },
+    "Выбрать файл": {
+      en: "Pick a file",
+      uk: "Вибрати файл",
+      fr: "Choisir un fichier",
+      be: "Выбраць файл",
+      zh: "选择文件",
+      pt: "Escolher arquivo",
+      bg: "Избор на файл",
+      he: "בחר קובץ",
+      cs: "Vybrat soubor",
+      ro: "Alege fișierul",
+      pl: "Wybierz plik"
+    },
+    Вид: {
+      en: "Layout",
+      uk: "Вигляд",
+      fr: "Disposition",
+      be: "Кампановка",
+      zh: "布局",
+      pt: "Layout",
+      bg: "Оформление",
+      he: "פריסה",
+      cs: "Rozložení",
+      ro: "Aspect",
+      pl: "Układ"
+    },
+    Список: {
+      en: "List",
+      uk: "Список",
+      fr: "Liste",
+      be: "Спіс",
+      zh: "列表",
+      pt: "Lista",
+      bg: "Списък",
+      he: "רשימה",
+      cs: "Seznam",
+      ro: "Listă",
+      pl: "Lista"
+    },
+    Плитка: {
+      en: "Grid",
+      uk: "Плитка",
+      fr: "Grille",
+      be: "Сетка",
+      zh: "网格",
+      pt: "Grade",
+      bg: "Решетка",
+      he: "רשת",
+      cs: "Mřížka",
+      ro: "Grilă",
+      pl: "Siatka"
+    },
+    "Уточнить поиск": {
+      en: "Refine search",
+      uk: "Уточнити пошук",
+      be: "Удакладніць пошук",
+      zh: "优化搜索",
+      pt: "Refinar pesquisa",
+      bg: "Уточнете търсенето",
+      he: "Refine Search",
+      cs: "Upřesnit hledání",
+      ro: "Filtrează căutarea",
+      fr: "Affiner la recherche",
+      pl: "Doprecyzuj wyszukiwanie"
+    },
+    "Ещё {count}": {
+      en: "{count} more",
+      uk: "Ще {count}",
+      fr: "{count} de plus",
+      be: "яшчэ {count}",
+      zh: "另有{count}个",
+      pt: "mais {count}",
+      bg: "още {count}",
+      he: "עוד {count}",
+      cs: "dalších {count}",
+      ro: "încă {count}",
+      pl: "jeszcze {count}"
+    },
+    "Просмотрено {seen} из {total}": {
+      en: "Watched {seen} of {total}",
+      uk: "Переглянуто {seen} з {total}",
+      fr: "{seen} vus sur {total}",
+      be: "Прагледжана {seen} з {total}",
+      zh: "已看{seen}，共{total}",
+      pt: "Assistidos {seen} de {total}",
+      bg: "Гледани {seen} от {total}",
+      he: "נצפו {seen} מתוך {total}",
+      cs: "Zhl\xE9dnuto {seen} z {total}",
+      ro: "Vizionate {seen} din {total}",
+      pl: "Obejrzano {seen} z {total}"
+    },
+    "осталось {left}": {
+      en: "{left} left",
+      uk: "залишилось {left}",
+      fr: "{left} restants",
+      be: "засталося {left}",
+      zh: "剩余{left}",
+      pt: "faltam {left}",
+      bg: "остават {left}",
+      he: "נותרו {left}",
+      cs: "zb\xFDv\xE1 {left}",
+      ro: "mai sunt {left}",
+      pl: "pozostało {left}"
+    },
+    "всего в сезоне {planned}": {
+      en: "{planned} in the season",
+      uk: "усього в сезоні {planned}",
+      fr: "{planned} dans la saison",
+      be: "{planned} у сезоне",
+      zh: "本季共{planned}集",
+      pt: "{planned} na temporada",
+      bg: "{planned} за сезона",
+      he: "{planned} בעונה",
+      cs: "{planned} v řadě",
+      ro: "{planned} \xEEn sezon",
+      pl: "{planned} w sezonie"
+    },
+    "у источника {available} из {total}": {
+      en: "source has {available} of {total}",
+      uk: "у джерела {available} з {total}",
+      fr: "source : {available} sur {total}",
+      be: "у крыніцы {available} з {total}",
+      zh: "来源可用{available}，共{total}",
+      pt: "fonte tem {available} de {total}",
+      bg: "източникът има {available} от {total}",
+      he: "במקור {available} מתוך {total}",
+      cs: "zdroj m\xE1 {available} z {total}",
+      ro: "sursa are {available} din {total}",
+      pl: "źródło ma {available} z {total}"
+    },
+    осталось: {
+      en: "left",
+      uk: "Залишилось",
+      be: "Засталося",
+      zh: "左边",
+      pt: "Esquerda",
+      bg: "Остават",
+      he: "שמאלה",
+      cs: "Zb\xFDv\xE1",
+      ro: "Rămas",
+      fr: "Restant",
+      pl: "Pozostało"
+    },
+    "Ищем, где посмотреть": {
+      en: "Looking for a source",
+      uk: "Шукаємо, де подивитися",
+      fr: "Recherche d’une source",
+      be: "Пошук крыніцы",
+      zh: "正在查找来源",
+      pt: "Buscando fonte",
+      bg: "Търсене на източник",
+      he: "מחפש מקור",
+      cs: "Hled\xE1n\xED zdroje",
+      ro: "Se caută o sursă",
+      pl: "Szukanie źródła"
+    },
+    "Опрашиваем источники": {
+      en: "Checking sources",
+      uk: "Опитуємо джерела",
+      fr: "V\xE9rification des sources",
+      be: "Праверка крыніц",
+      zh: "正在检查来源",
+      pt: "Verificando fontes",
+      bg: "Проверка на източниците",
+      he: "בודק מקורות",
+      cs: "Kontrola zdrojů",
+      ro: "Se verifică sursele",
+      pl: "Sprawdzanie źródeł"
+    },
+    " с": {
+      en: " s",
+      uk: "с.",
+      be: "с.",
+      zh: "s.",
+      pt: "s.",
+      bg: "с.",
+      he: "ש.",
+      cs: "s.",
+      ro: "s.",
+      fr: "s.",
+      pl: "s"
+    },
+    Серия: {
+      en: "Episode",
+      uk: "Серія",
+      be: "Серыя",
+      zh: "剧集",
+      pt: "Epis\xF3dio",
+      bg: "Серии",
+      he: "סדרה",
+      cs: "Epizoda",
+      ro: "Episod",
+      fr: "\xC9pisode",
+      pl: "Odcinek"
+    },
+    Действие: {
+      en: "Action",
+      uk: "Дія",
+      be: "Дзеянне",
+      zh: "动作",
+      pt: "A\xE7\xE3o",
+      bg: "Действие",
+      he: "פעולה",
+      cs: "Akce",
+      ro: "Acțiune",
+      fr: "Action",
+      pl: "Akcja"
+    },
+    Неизвестно: {
+      en: "Unknown",
+      uk: "Невідомо",
+      be: "Невядома",
+      zh: "未知",
+      pt: "Desconhecido",
+      bg: "Непознат",
+      he: "לא ידוע",
+      cs: "Nezn\xE1m\xE9",
+      ro: "Necunoscut",
+      fr: "Inconnu",
+      pl: "Nieznane"
+    },
+    Многоголосый: {
+      en: "Multi-voice",
+      uk: "Багатоголосий",
+      be: "Шматгалосы",
+      zh: "复音",
+      pt: "Polif\xF4nico",
+      bg: "Полифонични",
+      he: "פוליפוני",
+      cs: "V\xEDcehlas\xFD",
+      ro: "Polifonic",
+      fr: "Polyphonique",
+      pl: "Wielogłosowy"
+    },
+    Двухголосый: {
+      en: "Two-voice",
+      uk: "Двоголосий",
+      be: "Двухгалосы",
+      zh: "双声部",
+      pt: "Duas vozes",
+      bg: "Два гласа",
+      he: "דו־ קול",
+      cs: "Dvouhlas\xFD",
+      ro: "Două voci",
+      fr: "Deux voix",
+      pl: "Dwugłosowy"
+    },
+    Авторский: {
+      en: "Single-voice",
+      uk: "Авторський",
+      fr: "Une voix",
+      be: "Адзін голас",
+      zh: "单人配音",
+      pt: "Uma voz",
+      bg: "Един глас",
+      he: "קול יחיד",
+      cs: "Jeden hlas",
+      ro: "O singură voce",
+      pl: "Jeden głos"
+    },
+    Оригинал: {
+      en: "Original",
+      uk: "Оригінал",
+      be: "Арыгінал",
+      zh: "原始",
+      pt: "Original",
+      bg: "Оригинал",
+      he: "מקורי",
+      cs: "Origin\xE1l",
+      ro: "Originală",
+      fr: "Originale",
+      pl: "Oryginał"
+    },
+    Субтитры: {
+      en: "Subtitles",
+      uk: "Субтитри",
+      be: "Субтытры",
+      zh: "字幕",
+      pt: "Legendas",
+      bg: "Субтитри",
+      he: "כתוביות",
+      cs: "Titulky",
+      ro: "Subtitrări",
+      fr: "Sous-titres",
+      pl: "Napisy"
+    },
+    Другое: {
+      en: "Other",
+      uk: "Решта",
+      be: "Астатняе",
+      zh: "休息",
+      pt: "Descansar",
+      bg: "Други",
+      he: "אחר",
+      cs: "Ostatn\xED",
+      ro: "Altele",
+      fr: "Autre",
+      pl: "Pozostałe"
+    },
+    "Попробовать {name}": {
+      en: "Try {name}",
+      uk: "Спробувати {name}",
+      fr: "Essayer {name}",
+      be: "Паспрабаваць {name}",
+      zh: "尝试{name}",
+      pt: "Tentar {name}",
+      bg: "Опит с {name}",
+      he: "נסה {name}",
+      cs: "Zkusit {name}",
+      ro: "Încearcă {name}",
+      pl: "Wypr\xF3buj {name}"
+    },
+    "Все источники": {
+      en: "All sources",
+      uk: "Всі джерела",
+      fr: "Toutes les sources",
+      be: "Усе крыніцы",
+      zh: "所有来源",
+      pt: "Todas as fontes",
+      bg: "Всички източници",
+      he: "כל המקורות",
+      cs: "Všechny zdroje",
+      ro: "Toate sursele",
+      pl: "Wszystkie źródła"
+    },
+    Повторить: {
+      en: "Retry",
+      uk: "Повторити",
+      fr: "R\xE9essayer",
+      be: "Паўтарыць",
+      zh: "重试",
+      pt: "Tentar novamente",
+      bg: "Повторен опит",
+      he: "נסה שוב",
+      cs: "Zkusit znovu",
+      ro: "Reîncearcă",
+      pl: "Spr\xF3buj ponownie"
+    },
+    "Через {sec} сек переключимся на «{name}»": {
+      en: 'Switching to "{name}" in {sec}s',
+      uk: "Через {sec} с перейдемо на «{name}»",
+      fr: "Passage \xE0 \xAB {name} \xBB dans {sec} s",
+      be: "Пераключэнне на «{name}» праз {sec} с",
+      zh: "{sec}秒后切换至“{name}”",
+      pt: "Mudando para “{name}” em {sec}s",
+      bg: "Превключване към „{name}“ след {sec} с",
+      he: "מעבר אל ״{name}״ בעוד {sec} שניות",
+      cs: "Přepnutí na „{name}“ za {sec} s",
+      ro: "Trecere la „{name}” în {sec}s",
+      pl: "Przełączenie na „{name}” za {sec} s"
+    },
+    "Ни один источник ничего не нашёл": {
+      en: "No source found anything",
+      uk: "Жодне джерело нічого не знайшло",
+      fr: "Aucun r\xE9sultat dans les sources",
+      be: "Ніводная крыніца нічога не знайшла",
+      zh: "所有来源均无结果",
+      pt: "Nenhuma fonte encontrou resultados",
+      bg: "Никой източник не намери резултат",
+      he: "לא נמצאו תוצאות באף מקור",
+      cs: "Žádný zdroj nic nenalezl",
+      ro: "Nicio sursă nu a găsit rezultate",
+      pl: "Żadne źródło nic nie znalazło"
+    },
+    "Улучшенный онлайн-интерфейс": {
+      en: "Enhanced online interface",
+      uk: "Покращений онлайн-інтерфейс",
+      fr: "Interface en ligne am\xE9lior\xE9e",
+      be: "Палепшаны анлайн-інтэрфейс",
+      zh: "增强在线界面",
+      pt: "Interface online aprimorada",
+      bg: "Подобрен онлайн интерфейс",
+      he: "ממשק מקוון משופר",
+      cs: "Vylepšené online rozhraní",
+      ro: "Interfață online îmbunătățită",
+      pl: "Ulepszony interfejs online"
+    },
+    "Баннер, выбор источника и озвучки, карточки серий в совместимых онлайн-плагинах.": {
+      en: "Banner, source and audio selection, and episode cards for compatible online plugins.",
+      uk: "Банер, вибір джерела й озвучення, картки серій у сумісних онлайн-плагінах.",
+      fr: "Bannière, sources, voix et vignettes d’épisodes des modules compatibles.",
+      be: "Банер, выбар крыніцы і агучкі, карткі серый для сумяшчальных плагінаў.",
+      zh: "兼容在线插件的横幅、来源与配音选择以及剧集卡片。",
+      pt: "Banner, fontes, vozes e cart\xF5es de epis\xF3dios para plugins compat\xEDveis.",
+      bg: "Банер, източници, озвучаване и карти с епизоди за съвместими плъгини.",
+      he: "באנר, בחירת מקורות ודיבוב וכרטיסי פרקים לתוספים תואמים.",
+      cs: "Banner, zdroje, dabing a karty dílů pro kompatibilní doplňky.",
+      ro: "Banner, surse, dublaj și fișe de episoade pentru pluginuri compatibile.",
+      pl: "Baner, źródła, lektorzy i karty odcinków dla zgodnych wtyczek."
+    },
+    "Шапка с кнопкой": {
+      en: "Header with button",
+      uk: "Шапка з кнопкою",
+      fr: "En-t\xEAte avec bouton",
+      be: "Загаловак з кнопкай",
+      zh: "带按钮的标题区",
+      pt: "Cabe\xE7alho com bot\xE3o",
+      bg: "Заглавка с бутон",
+      he: "כותרת עם כפתור",
+      cs: "Záhlaví s tlačítkem",
+      ro: "Antet cu buton",
+      pl: "Nagłówek z przyciskiem"
+    },
+    "Кадр, прогресс и кнопка продолжения сверху": {
+      en: "Backdrop, progress and continue button on top",
+      uk: "Кадр, прогрес і кнопка продовження вгорі",
+      fr: "Image, progression et bouton de reprise en haut",
+      be: "Выява, прагрэс і кнопка працягу зверху",
+      zh: "顶部显示背景、进度与继续播放按钮",
+      pt: "Imagem, progresso e bot\xE3o de continuar no topo",
+      bg: "Изображение, напредък и бутон за продължаване отгоре",
+      he: "תמונה, התקדמות וכפתור המשך למעלה",
+      cs: "Obrázek, průběh a tlačítko pokračování nahoře",
+      ro: "Imagine, progres și buton de continuare sus",
+      pl: "Obraz, postęp i przycisk kontynuowania u góry"
+    },
+    "Кадр в шапке": {
+      en: "Backdrop in header",
+      uk: "Кадр у шапці",
+      fr: "Image dans l’en-tête",
+      be: "Выява ў загалоўку",
+      zh: "标题区背景",
+      pt: "Imagem no cabe\xE7alho",
+      bg: "Изображение в заглавката",
+      he: "תמונה בכותרת",
+      cs: "Obr\xE1zek v z\xE1hlav\xED",
+      ro: "Imagine \xEEn antet",
+      pl: "Obraz w nagłówku"
+    },
+    "Выключите для компактной шапки без картинки": {
+      en: "Turn off for a compact header without artwork",
+      uk: "Вимкніть для компактної шапки без картинки",
+      fr: "D\xE9sactiver pour un en-t\xEAte compact sans image",
+      be: "Выключыце для кампактнага загалоўка без выявы",
+      zh: "关闭以显示无背景的紧凑标题区",
+      pt: "Desative para cabe\xE7alho compacto sem imagem",
+      bg: "Изключете за компактна заглавка без изображение",
+      he: "כבו לכותרת קומפקטית ללא תמונה",
+      cs: "Vypnout pro kompaktn\xED z\xE1hlav\xED bez obr\xE1zku",
+      ro: "Dezactivează pentru antet compact fără imagine",
+      pl: "Wyłącz, aby uzyskać nagłówek bez obrazu"
+    },
+    "Логотип вместо названия": {
+      en: "Logo instead of title",
+      uk: "Логотип замість назви",
+      fr: "Logo \xE0 la place du titre",
+      be: "Лагатып замест назвы",
+      zh: "用标志代替标题",
+      pt: "Logo em vez do t\xEDtulo",
+      bg: "Лого вместо заглавие",
+      he: "סמל במקום כותרת",
+      cs: "Logo m\xEDsto n\xE1zvu",
+      ro: "Logo \xEEn locul titlului",
+      pl: "Logo zamiast tytułu"
+    },
+    "Качество кадра": {
+      en: "Backdrop quality",
+      uk: "Якість кадру",
+      fr: "Qualité de l’image de fond",
+      be: "Якасць фонавай выявы",
+      zh: "背景画质",
+      pt: "Qualidade do fundo",
+      bg: "Качество на фона",
+      he: "איכות תמונת רקע",
+      cs: "Kvalita pozad\xED",
+      ro: "Calitatea fundalului",
+      pl: "Jakość tła"
+    },
+    "Разрешение картинки в шапке. Выше — резче, но тяжелее": {
+      en: "Header artwork resolution. Higher is sharper but heavier",
+      uk: "Роздільна здатність картинки в шапці. Вище — різкіше, але важче",
+      fr: "Résolution de l’en-tête. Une image plus nette demande plus de ressources",
+      be: "Раздзяляльнасць загалоўка. Больш выразная выява патрабуе больш рэсурсаў",
+      zh: "标题区图片分辨率，越清晰资源消耗越高",
+      pt: "Resolu\xE7\xE3o do cabe\xE7alho. Mais nitidez exige mais recursos",
+      bg: "Резолюция на заглавката. По-ясната картина изисква повече ресурси",
+      he: "רזולוציית הכותרת. חדות גבוהה דורשת יותר משאבים",
+      cs: "Rozlišení záhlaví. Ostřejší obraz vyžaduje více prostředků",
+      ro: "Rezoluția antetului. Claritatea mai mare cere mai multe resurse",
+      pl: "Rozdzielczość nagłówka. Wyższa ostrość wymaga więcej zasobów"
+    },
+    "Авто (по экрану)": {
+      en: "Auto (by screen)",
+      uk: "Авто (за екраном)",
+      fr: "Auto (selon l’écran)",
+      be: "Аўта (паводле экрана)",
+      zh: "自动（根据屏幕）",
+      pt: "Auto (pela tela)",
+      bg: "Авто (според екрана)",
+      he: "אוטומטי (לפי המסך)",
+      cs: "Auto (podle obrazovky)",
+      ro: "Auto (după ecran)",
+      pl: "Auto (według ekranu)"
+    },
+    "Обычное — 780px": {
+      en: "Normal — 780px",
+      uk: "Звичайна — 780px",
+      fr: "Normale — 780 px",
+      be: "Звычайная — 780 px",
+      zh: "标准 — 780像素",
+      pt: "Normal — 780px",
+      bg: "Нормално — 780px",
+      he: "רגילה — 780px",
+      cs: "Normální — 780 px",
+      ro: "Normală — 780px",
+      pl: "Normalna — 780px"
+    },
+    "Высокое — 1280px": {
+      en: "High — 1280px",
+      uk: "Висока — 1280px",
+      fr: "Haute — 1280 px",
+      be: "Высокая — 1280 px",
+      zh: "高 — 1280像素",
+      pt: "Alta — 1280px",
+      bg: "Високо — 1280px",
+      he: "גבוהה — 1280px",
+      cs: "Vysoká — 1280 px",
+      ro: "Înaltă — 1280px",
+      pl: "Wysoka — 1280px"
+    },
+    "Максимальное (тяжёлое)": {
+      en: "Maximum (heavy)",
+      uk: "Максимальна (важка)",
+      fr: "Maximale (lourde)",
+      be: "Максімальная (цяжкая)",
+      zh: "最高（较耗资源）",
+      pt: "M\xE1xima (pesada)",
+      bg: "Максимално (тежко)",
+      he: "מרבית (כבדה)",
+      cs: "Maximální (náročná)",
+      ro: "Maximă (solicitantă)",
+      pl: "Maksymalna (obciążająca)"
+    },
+    "Показывать логотип фильма в шапке, если он есть": {
+      en: "Show the movie logo in the header when available",
+      uk: "Показувати логотип фільму в шапці, якщо він є",
+      fr: "Afficher le logo du film s’il est disponible",
+      be: "Паказваць лагатып твора пры наяўнасці",
+      zh: "可用时在标题区显示作品标志",
+      pt: "Mostrar logo do filme quando dispon\xEDvel",
+      bg: "Показване на логото, когато е налично",
+      he: "הצג סמל של הסרט כשזמין",
+      cs: "Zobrazit logo filmu, je-li dostupn\xE9",
+      ro: "Arată logo-ul filmului dacă există",
+      pl: "Pokaż logo filmu, gdy jest dostępne"
+    },
+    "Во всю ширину экрана": {
+      en: "Full width",
+      uk: "На всю ширину екрана",
+      fr: "Pleine largeur",
+      be: "На ўсю шырыню",
+      zh: "全宽",
+      pt: "Largura total",
+      bg: "Пълна ширина",
+      he: "רוחב מלא",
+      cs: "Celá šířka",
+      ro: "Lățime completă",
+      pl: "Pełna szerokość"
+    },
+    "Скрыть маленький постер и описание слева": {
+      en: "Hide the small poster and overview on the left",
+      uk: "Сховати маленький постер і опис ліворуч",
+      fr: "Masquer la petite affiche et le r\xE9sum\xE9 \xE0 gauche",
+      be: "Схаваць малы постар і апісанне злева",
+      zh: "隐藏左侧小海报与简介",
+      pt: "Ocultar p\xF4ster pequeno e sinopse \xE0 esquerda",
+      bg: "Скриване на малкия плакат и описанието вляво",
+      he: "הסתר כרזה קטנה ותקציר משמאל",
+      cs: "Skr\xFDt mal\xFD plak\xE1t a obsah vlevo",
+      ro: "Ascunde posterul mic și descrierea din stânga",
+      pl: "Ukryj mały plakat i opis po lewej"
+    },
+    "Размытые края постера": {
+      en: "Faded poster edges",
+      uk: "Розмиті краї постера",
+      fr: "Bords de l’affiche estompés",
+      be: "Згасанне краёў постара",
+      zh: "柔化海报边缘",
+      pt: "Bordas do p\xF4ster esmaecidas",
+      bg: "Преливане на краищата на плаката",
+      he: "קצוות כרזה מעומעמים",
+      cs: "Ztlumen\xE9 okraje plak\xE1tu",
+      ro: "Margini estompate ale posterului",
+      pl: "Wygaszone krawędzie plakatu"
+    },
+    "Растворять постер вверху по краям со всех сторон": {
+      en: "Fade the header artwork out on every side",
+      uk: "Розчиняти постер угорі по краях з усіх боків",
+      fr: "Estomper tous les bords de l’image d’en-tête",
+      be: "Згасанне выявы загалоўка з усіх бакоў",
+      zh: "使标题区背景四周渐隐",
+      pt: "Esmaecer todos os lados da imagem do cabe\xE7alho",
+      bg: "Преливане на изображението от всички страни",
+      he: "עמעם את כל קצוות תמונת הכותרת",
+      cs: "Ztlumit všechny okraje obrázku záhlaví",
+      ro: "Estompează toate marginile imaginii din antet",
+      pl: "Wygaszaj wszystkie krawędzie obrazu nagłówka"
+    },
+    "Проверять источники в фоне": {
+      en: "Check sources in background",
+      uk: "Перевіряти джерела у фоні",
+      fr: "V\xE9rifier les sources en arri\xE8re-plan",
+      be: "Правяраць крыніцы ў фоне",
+      zh: "后台检查来源",
+      pt: "Verificar fontes em segundo plano",
+      bg: "Проверка на източниците във фонов режим",
+      he: "בדוק מקורות ברקע",
+      cs: "Kontrolovat zdroje na pozad\xED",
+      ro: "Verifică sursele în fundal",
+      pl: "Sprawdzaj źródła w tle"
+    },
+    "Проверять наличие видео у других источников. Отмечать доступные и показывать найденное качество.": {
+      en: "Check other sources for available videos and show availability and reported quality.",
+      uk: "Перевіряти наявність відео в інших джерел. Позначати доступні та показувати знайдену якість.",
+      fr: "V\xE9rifier les vid\xE9os disponibles et la qualit\xE9 annonc\xE9e par les autres sources.",
+      be: "Правяраць відэа і заяўленую якасць у іншых крыніцах.",
+      zh: "检查其他来源的视频可用性与标注画质。",
+      pt: "Verificar v\xEDdeos dispon\xEDveis e qualidade informada nas outras fontes.",
+      bg: "Проверка на налични видеа и обявеното качество в другите източници.",
+      he: "בדוק סרטונים זמינים ואיכות מדווחת במקורות אחרים.",
+      cs: "Ověřit dostupná videa a uváděnou kvalitu dalších zdrojů.",
+      ro: "Verifică videoclipurile și calitatea declarată de alte surse.",
+      pl: "Sprawdzaj dostępne filmy i deklarowaną jakość innych źródeł."
+    },
+    "Источники проверяет сам онлайн-плагин, повторный обход не нужен": {
+      en: "The online plugin checks sources itself, no second pass needed",
+      uk: "Джерела перевіряє сам онлайн-плагін, повторний обхід не потрібен",
+      fr: "Le module en ligne v\xE9rifie d\xE9j\xE0 les sources",
+      be: "Анлайн-плагін ужо правярае крыніцы, паўтор не патрэбны",
+      zh: "在线插件已自行检查来源，无需重复检查",
+      pt: "O plugin online j\xE1 verifica fontes, sem segunda consulta",
+      bg: "Онлайн плъгинът вече проверява източниците",
+      he: "התוסף המקוון כבר בודק את המקורות",
+      cs: "Online doplněk již zdroje kontroluje",
+      ro: "Pluginul online verifică deja sursele",
+      pl: "Wtyczka online już sprawdza źródła"
+    },
+    "Автопереход по источникам": {
+      en: "Auto switch source",
+      uk: "Автоперехід по джерелах",
+      fr: "Changer automatiquement de source",
+      be: "Аўтапераключэнне крыніцы",
+      zh: "自动切换来源",
+      pt: "Troca autom\xE1tica de fonte",
+      bg: "Автоматична смяна на източник",
+      he: "מעבר מקור אוטומטי",
+      cs: "Automaticky přepínat zdroj",
+      ro: "Schimbare automată a sursei",
+      pl: "Automatyczna zmiana źródła"
+    },
+    "Если источник не нашёл видео, автоматически попробовать следующий доступный.": {
+      en: "Automatically try the next available source when no videos are found.",
+      uk: "Якщо джерело не знайшло відео, автоматично спробувати наступне доступне.",
+      fr: "Essayer la source suivante si aucune vidéo n’est disponible.",
+      be: "Аўтаматычна спрабаваць наступную крыніцу, калі відэа няма.",
+      zh: "未找到视频时自动尝试下一个可用来源。",
+      pt: "Tentar a pr\xF3xima fonte quando n\xE3o houver v\xEDdeos.",
+      bg: "Автоматичен опит със следващия източник при липса на видео.",
+      he: "נסה את המקור הבא כשאין סרטונים.",
+      cs: "Automaticky zkusit další zdroj, pokud nejsou videa.",
+      ro: "Încearcă automat următoarea sursă dacă nu sunt videoclipuri.",
+      pl: "Automatycznie próbuj następnego źródła, gdy brak filmów."
+    },
+    "Вид серий": {
+      en: "Episodes layout",
+      uk: "Вигляд серій",
+      fr: "Disposition des \xE9pisodes",
+      be: "Кампановка серый",
+      zh: "剧集布局",
+      pt: "Layout dos epis\xF3dios",
+      bg: "Оформление на епизодите",
+      he: "פריסת פרקים",
+      cs: "Rozložení dílů",
+      ro: "Aspectul episoadelor",
+      pl: "Układ odcinków"
+    },
+    "Показывать серии списком или плиткой. Также переключается кнопкой над сериями.": {
+      en: "Show episodes as a list or grid. Also available from the button above the episodes.",
+      uk: "Показувати серії списком або плиткою. Також перемикається кнопкою над серіями.",
+      fr: "Liste ou grille. \xC9galement accessible au-dessus des \xE9pisodes.",
+      be: "Спіс або сетка. Таксама даступна праз кнопку над серыямі.",
+      zh: "以列表或网格显示，也可通过剧集上方按钮切换。",
+      pt: "Lista ou grade. Tamb\xE9m no bot\xE3o acima dos epis\xF3dios.",
+      bg: "Списък или решетка. Достъпно и от бутона над епизодите.",
+      he: "רשימה או רשת. זמין גם בכפתור מעל הפרקים.",
+      cs: "Seznam nebo mřížka. Také tlačítkem nad díly.",
+      ro: "Listă sau grilă. Disponibil și din butonul de deasupra episoadelor.",
+      pl: "Lista lub siatka. Również przyciskiem nad odcinkami."
+    },
+    "Вид файлов": {
+      en: "Files layout",
+      uk: "Вигляд файлів",
+      fr: "Disposition des fichiers",
+      be: "Кампановка файлаў",
+      zh: "文件布局",
+      pt: "Layout dos arquivos",
+      bg: "Оформление на файловете",
+      he: "פריסת קבצים",
+      cs: "Rozložení souborů",
+      ro: "Aspectul fișierelor",
+      pl: "Układ plików"
+    },
+    "Для фильмов: список или плитка — настраивается отдельно от серий": {
+      en: "For movies: list or grid — independent from episodes",
+      uk: "Для фільмів: список або плитка — налаштовується окремо від серій",
+      fr: "Films : liste ou grille, ind\xE9pendamment des \xE9pisodes",
+      be: "Фільмы: спіс або сетка, незалежна ад серый",
+      zh: "电影列表或网格，独立于剧集设置",
+      pt: "Filmes: lista ou grade, independente dos epis\xF3dios",
+      bg: "Филми: списък или решетка, независимо от епизодите",
+      he: "סרטים: רשימה או רשת, בנפרד מפרקים",
+      cs: "Filmy: seznam nebo mřížka, nezávisle na dílech",
+      ro: "Filme: listă sau grilă, independent de episoade",
+      pl: "Filmy: lista lub siatka, niezależnie od odcinków"
+    },
+    "Качество во встроенном плеере": {
+      en: "Built-in player quality",
+      uk: "Якість у вбудованому плеєрі",
+      fr: "Qualit\xE9 du lecteur int\xE9gr\xE9",
+      be: "Якасць убудаванага плэера",
+      zh: "内置播放器画质",
+      pt: "Qualidade do player interno",
+      bg: "Качество на вградения плейър",
+      he: "איכות הנגן המובנה",
+      cs: "Kvalita vestavěného přehrávače",
+      ro: "Calitatea playerului integrat",
+      pl: "Jakość wbudowanego odtwarzacza"
+    },
+    "Предпочтительное качество при наличии нескольких вариантов видео. Внешний плеер выбирает качество сам.": {
+      en: "Preferred quality when several video variants are available. External players select their own quality.",
+      uk: "Бажана якість за наявності кількох варіантів відео. Зовнішній плеєр вибирає якість сам.",
+      fr: "Qualit\xE9 pr\xE9f\xE9r\xE9e si plusieurs versions sont disponibles. Les lecteurs externes g\xE8rent leur qualit\xE9.",
+      be: "Пераважная якасць сярод даступных версій. Знешнія плэеры выбіраюць самастойна.",
+      zh: "多个视频版本可用时的首选画质，外部播放器自行选择。",
+      pt: "Qualidade preferida entre as vers\xF5es dispon\xEDveis. Players externos escolhem sua qualidade.",
+      bg: "Предпочитано качество сред наличните версии. Външните плейъри избират сами.",
+      he: "איכות מועדפת מבין הגרסאות. נגנים חיצוניים בוחרים בעצמם.",
+      cs: "Preferovaná kvalita dostupných verzí. Externí přehrávače vybírají samy.",
+      ro: "Calitatea preferată dintre versiuni. Playerele externe aleg singure.",
+      pl: "Preferowana jakość dostępnych wersji. Zewnętrzne odtwarzacze wybierają samodzielnie."
+    },
+    Авто: {
+      en: "Auto",
+      uk: "Авто",
+      fr: "Auto",
+      be: "Аўта",
+      zh: "自动",
+      pt: "Auto",
+      bg: "Авто",
+      he: "אוטומטי",
+      cs: "Auto",
+      ro: "Auto",
+      pl: "Auto"
+    },
+    Выделение: {
+      en: "Highlight style",
+      uk: "Виділення",
+      fr: "Style de s\xE9lection",
+      be: "Стыль вылучэння",
+      zh: "高亮样式",
+      pt: "Estilo de destaque",
+      bg: "Стил на маркиране",
+      he: "סגנון הדגשה",
+      cs: "Styl zvýraznění",
+      ro: "Stil de evidențiere",
+      pl: "Styl wyróżnienia"
+    },
+    "Чем подсвечивать выбранную кнопку, серию или озвучку": {
+      en: "How the focused button, episode or voice is highlighted",
+      uk: "Чим підсвічувати вибрану кнопку, серію або озвучення",
+      fr: "Mise en évidence du bouton, de l’épisode ou de la voix sélectionnés",
+      be: "Вылучэнне выбранай кнопкі, серыі або агучкі",
+      zh: "焦点按钮、剧集或配音的高亮方式",
+      pt: "Destaque do bot\xE3o, epis\xF3dio ou voz em foco",
+      bg: "Маркиране на избрания бутон, епизод или озвучаване",
+      he: "הדגשת כפתור, פרק או דיבוב ממוקדים",
+      cs: "Zvýraznění tlačítka, dílu nebo dabingu",
+      ro: "Evidențierea butonului, episodului sau dublajului selectat",
+      pl: "Wyróżnianie wybranego przycisku, odcinka lub lektora"
+    },
+    Ободок: {
+      en: "Outline",
+      uk: "Обідок",
+      fr: "Contour",
+      be: "Контур",
+      zh: "边框",
+      pt: "Contorno",
+      bg: "Контур",
+      he: "מסגרת",
+      cs: "Obrys",
+      ro: "Contur",
+      pl: "Obrys"
+    },
+    "Белая заливка": {
+      en: "White fill",
+      uk: "Біла заливка",
+      fr: "Fond blanc",
+      be: "Белая заліўка",
+      zh: "白色填充",
+      pt: "Fundo branco",
+      bg: "Бял фон",
+      he: "מילוי לבן",
+      cs: "Bílá výplň",
+      ro: "Fundal alb",
+      pl: "Białe wypełnienie"
+    },
+    Части: {
+      en: "Parts",
+      uk: "Частини",
+      fr: "Parties",
+      be: "Часткі",
+      zh: "部分",
+      pt: "Partes",
+      bg: "Части",
+      he: "חלקים",
+      cs: "Části",
+      ro: "Părți",
+      pl: "Części"
+    },
+    "{count} эпизод": {
+      en: "{count} episode",
+      uk: "{count} епізод",
+      fr: "{count} \xE9pisode",
+      be: "{count} серыя",
+      zh: "{count}集",
+      pt: "{count} epis\xF3dio",
+      bg: "{count} епизод",
+      he: "{count} פרק",
+      cs: "{count} d\xEDl",
+      ro: "{count} episod",
+      pl: "{count} odcinek"
+    },
+    "{count} эпизода": {
+      en: "{count} episodes",
+      uk: "{count} епізоди",
+      fr: "{count} \xE9pisodes",
+      be: "{count} серыі",
+      zh: "{count}集",
+      pt: "{count} epis\xF3dios",
+      bg: "{count} епизода",
+      he: "{count} פרקים",
+      cs: "{count} d\xEDly",
+      ro: "{count} episoade",
+      pl: "{count} odcinki"
+    },
+    "{count} эпизодов": {
+      en: "{count} episodes",
+      uk: "{count} епізодів",
+      fr: "{count} \xE9pisodes",
+      be: "{count} серый",
+      zh: "{count}集",
+      pt: "{count} epis\xF3dios",
+      bg: "{count} епизода",
+      he: "{count} פרקים",
+      cs: "{count} dílů",
+      ro: "{count} de episoade",
+      pl: "{count} odcink\xF3w"
+    },
+    "всего {count}": {
+      en: "{count} total",
+      uk: "усього {count}",
+      fr: "{count} au total",
+      be: "усяго {count}",
+      zh: "共{count}",
+      pt: "{count} no total",
+      bg: "общо {count}",
+      he: "{count} בסך הכול",
+      cs: "celkem {count}",
+      ro: "{count} \xEEn total",
+      pl: "łącznie {count}"
+    },
+    Порядок: {
+      en: "Order",
+      uk: "Порядок",
+      fr: "Ordre",
+      be: "Парадак",
+      zh: "顺序",
+      pt: "Ordem",
+      bg: "Ред",
+      he: "סדר",
+      cs: "Pořadí",
+      ro: "Ordine",
+      pl: "Kolejność"
+    },
+    Стандарт: {
+      en: "Standard",
+      uk: "Стандарт",
+      fr: "Standard",
+      be: "Звычайны",
+      zh: "标准",
+      pt: "Padr\xE3o",
+      bg: "Стандартен",
+      he: "רגיל",
+      cs: "Standardn\xED",
+      ro: "Standard",
+      pl: "Standardowa"
+    },
+    Обратный: {
+      en: "Reversed",
+      uk: "Зворотний",
+      fr: "Invers\xE9",
+      be: "Адваротны",
+      zh: "倒序",
+      pt: "Invertida",
+      bg: "Обратен",
+      he: "הפוך",
+      cs: "Obr\xE1cen\xE9",
+      ro: "Inversă",
+      pl: "Odwrotna"
+    },
+    Горизонтальный: {
+      en: "Horizontal",
+      uk: "Горизонтальний",
+      fr: "Horizontal",
+      be: "Гарызантальна",
+      zh: "横向",
+      pt: "Horizontal",
+      bg: "Хоризонтално",
+      he: "אופקי",
+      cs: "Vodorovně",
+      ro: "Orizontal",
+      pl: "Poziomo"
+    },
+    Вертикальный: {
+      en: "Vertical",
+      uk: "Вертикальний",
+      fr: "Vertical",
+      be: "Вертыкальна",
+      zh: "纵向",
+      pt: "Vertical",
+      bg: "Вертикално",
+      he: "אנכי",
+      cs: "Svisle",
+      ro: "Vertical",
+      pl: "Pionowo"
+    },
+    "Сбросить фильтр": {
+      en: "Reset filter",
+      uk: "Скинути фільтр",
+      be: "Скінуць фільтр",
+      zh: "重置筛选",
+      pt: "Redefinir filtro",
+      bg: "Нулиране на филтъра",
+      he: "אפס סנון",
+      cs: "Resetovat filtr",
+      ro: "Resetează filtrul",
+      fr: "R\xE9initialiser le filtre",
+      pl: "Resetuj filtr"
+    },
+    "Положение панели источника": {
+      en: "Source toolbar position",
+      uk: "Розташування панелі джерела",
+      fr: "Position des outils de sources",
+      be: "Размяшчэнне панэлі крыніц",
+      zh: "来源工具栏位置",
+      pt: "Posi\xE7\xE3o da barra de fontes",
+      bg: "Позиция на лентата с източници",
+      he: "מיקום סרגל המקורות",
+      cs: "Poloha panelu zdrojů",
+      ro: "Poziția barei de surse",
+      pl: "Położenie paska źródeł"
+    },
+    "Разместить панель выбора источника над сезонами и озвучками или под ними.": {
+      en: "Place the source toolbar above or below the seasons and audio choices.",
+      uk: "Розмістити панель вибору джерела над сезонами й озвученнями або під ними.",
+      fr: "Placer les sources au-dessus ou au-dessous des saisons et des voix.",
+      be: "Панэль крыніц над сезонамі і агучкамі або пад імі.",
+      zh: "将来源栏放在季与配音选项上方或下方。",
+      pt: "Barra de fontes acima ou abaixo das temporadas e vozes.",
+      bg: "Лента с източници над или под сезоните и озвучаванията.",
+      he: "סרגל מקורות מעל העונות והדיבובים או מתחתם.",
+      cs: "Panel zdrojů nad nebo pod řadami a dabingy.",
+      ro: "Bara de surse deasupra sau sub sezoane și dublaje.",
+      pl: "Pasek źródeł nad lub pod sezonami i lektorami."
+    },
+    Вверху: {
+      en: "Top",
+      uk: "У топі",
+      be: "У топе",
+      zh: "热门",
+      pt: "Top",
+      bg: "Топ",
+      he: "למעלה",
+      cs: "V topu",
+      ro: "\xCEn top",
+      fr: "Top",
+      pl: "W topie"
+    },
+    Внизу: {
+      en: "Bottom",
+      uk: "Внизу",
+      fr: "En bas",
+      be: "Знізу",
+      zh: "底部",
+      pt: "Embaixo",
+      bg: "Отдолу",
+      he: "למטה",
+      cs: "Dole",
+      ro: "Jos",
+      pl: "Na dole"
+    },
+    "Лента серий": {
+      en: "Episode strip",
+      uk: "Лента серій",
+      fr: "Bande d’épisodes",
+      be: "Стужка серый",
+      zh: "剧集栏",
+      pt: "Faixa de epis\xF3dios",
+      bg: "Лента с епизоди",
+      he: "רצועת פרקים",
+      cs: "Pás dílů",
+      ro: "Bandă de episoade",
+      pl: "Pasek odcink\xF3w"
+    },
+    "Для плитки: вертикальная сетка или горизонтальный ряд с прокруткой.": {
+      en: "For episode cards: a vertical grid or a horizontally scrolling row.",
+      uk: "Для плитки: вертикальна сітка або горизонтальний ряд із прокручуванням.",
+      fr: "Grille verticale ou rang\xE9e \xE0 d\xE9filement horizontal.",
+      be: "Вертыкальная сетка або гарызантальная стужка серый.",
+      zh: "剧集卡片可显示为纵向网格或横向滚动栏。",
+      pt: "Grade vertical ou faixa de epis\xF3dios com rolagem horizontal.",
+      bg: "Вертикална решетка или хоризонтална превъртаща се лента.",
+      he: "רשת אנכית או שורת פרקים בגלילה אופקית.",
+      cs: "Svislá mřížka nebo vodorovně posuvná řada dílů.",
+      ro: "Grilă verticală sau bandă de episoade cu derulare orizontală.",
+      pl: "Pionowa siatka lub poziomo przewijany pasek odcink\xF3w."
+    },
+    "Порядок серий": {
+      en: "Episode order",
+      uk: "Порядок серій",
+      fr: "Ordre des \xE9pisodes",
+      be: "Парадак серый",
+      zh: "剧集顺序",
+      pt: "Ordem dos epis\xF3dios",
+      bg: "Ред на епизодите",
+      he: "סדר פרקים",
+      cs: "Pořadí dílů",
+      ro: "Ordinea episoadelor",
+      pl: "Kolejność odcinków"
+    },
+    "Показывать серии от первой к последней или в обратном порядке.": {
+      en: "Show episodes from first to last or in reverse order.",
+      uk: "Показувати серії від першої до останньої або у зворотному порядку.",
+      fr: "Afficher du premier au dernier épisode ou dans l’ordre inverse.",
+      be: "Паказваць серыі ад першай да апошняй або наадварот.",
+      zh: "按从第一集到最后一集或倒序显示。",
+      pt: "Mostrar do primeiro ao \xFAltimo ou em ordem inversa.",
+      bg: "Показване от първия до последния или в обратен ред.",
+      he: "הצג מהפרק הראשון לאחרון או בסדר הפוך.",
+      cs: "Zobrazit od prvního po poslední nebo obráceně.",
+      ro: "Afișează de la primul la ultimul sau invers.",
+      pl: "Wyświetlaj od pierwszego do ostatniego lub odwrotnie."
+    },
+    "Данные серий": {
+      en: "Episode metadata",
+      uk: "Дані серій",
+      fr: "Informations des \xE9pisodes",
+      be: "Метаданыя серый",
+      zh: "剧集元数据",
+      pt: "Metadados dos epis\xF3dios",
+      bg: "Метаданни за епизодите",
+      he: "מטא־נתונים לפרקים",
+      cs: "Metadata dílů",
+      ro: "Metadatele episoadelor",
+      pl: "Metadane odcink\xF3w"
+    },
+    "Загружать названия, кадры, даты выхода и рейтинги серий из TMDB.": {
+      en: "Load episode titles, stills, air dates and ratings from TMDB.",
+      uk: "Завантажувати назви, кадри, дати виходу й рейтинги серій із TMDB.",
+      fr: "Charger les titres, images, dates et notes depuis TMDB.",
+      be: "Загружаць назвы, кадры, даты і ацэнкі серый з TMDB.",
+      zh: "从TMDB加载剧集标题、剧照、播出日期与评分。",
+      pt: "Carregar t\xEDtulos, imagens, datas e avalia\xE7\xF5es dos epis\xF3dios do TMDB.",
+      bg: "Зареждане на заглавия, кадри, дати и оценки от TMDB.",
+      he: "טען שמות, תמונות, תאריכים ודירוגי פרקים מ־TMDB.",
+      cs: "Načítat názvy, obrázky, data a hodnocení dílů z TMDB.",
+      ro: "Încarcă titluri, imagini, date și evaluări ale episoadelor din TMDB.",
+      pl: "Wczytuj tytuły, kadry, daty i oceny odcinków z TMDB."
+    },
+    "Загрузка подборок…": {
+      en: "Loading collections…",
+      fr: "Chargement des collections…",
+      uk: "Завантаження добірок…",
+      be: "Загрузка падборак…",
+      zh: "正在加载合集…",
+      pt: "Carregando coleções…",
+      bg: "Зареждане на колекции…",
+      he: "טוען אוספים…",
+      cs: "Načítání kolekcí…",
+      ro: "Se încarcă colecțiile…",
+      pl: "Ładowanie kolekcji…"
+    },
+    "Повторить загрузку": {
+      en: "Retry loading",
+      fr: "Relancer le chargement",
+      uk: "Повторити завантаження",
+      be: "Паўтарыць загрузку",
+      zh: "重新加载",
+      pt: "Tentar carregar novamente",
+      bg: "Повторно зареждане",
+      he: "טען שוב",
+      cs: "Zkusit načíst znovu",
+      ro: "Reîncearcă încărcarea",
+      pl: "Wczytaj ponownie"
+    },
+    "Каталог аниме": {
+      en: "Anime catalogue",
+      fr: "Catalogue d’anime",
+      uk: "Каталог аніме",
+      be: "Каталог анімэ",
+      zh: "动漫目录",
+      pt: "Cat\xE1logo de anime",
+      bg: "Каталог с аниме",
+      he: "קטלוג אנימה",
+      cs: "Katalog anime",
+      ro: "Catalog anime",
+      pl: "Katalog anime"
+    },
+    Стандартные: {
+      en: "Standard",
+      fr: "Standard",
+      uk: "Стандартні",
+      be: "Стандартныя",
+      zh: "标准",
+      pt: "Padr\xE3o",
+      bg: "Стандартни",
+      he: "רגיל",
+      cs: "Standardn\xED",
+      ro: "Standard",
+      pl: "Standardowe"
+    },
+    "Не удалось загрузить {0}. Попробуйте ещё раз.": {
+      en: "Could not load {0}. Please try again.",
+      fr: "Impossible de charger {0}. R\xE9essayez.",
+      uk: "Не вдалося завантажити {0}. Спробуйте ще раз.",
+      be: "Не ўдалося загрузіць {0}. Паўтарыце спробу.",
+      zh: "无法加载{0}，请重试。",
+      pt: "N\xE3o foi poss\xEDvel carregar {0}. Tente novamente.",
+      bg: "Неуспешно зареждане на {0}. Опитайте отново.",
+      he: "לא ניתן לטעון את {0}. נסו שוב.",
+      cs: "Nelze načíst {0}. Zkuste to znovu.",
+      ro: "Nu s-a putut încărca {0}. Reîncearcă.",
+      pl: "Nie udało się wczytać {0}. Spróbuj ponownie."
+    },
+    подборки: {
+      en: "collections",
+      uk: "Добірки",
+      be: "Падборкі",
+      zh: "合集",
+      pt: "Cole\xE7\xF5es",
+      bg: "Колекции",
+      he: "קולקציות",
+      cs: "Kolekce",
+      ro: "Colecții",
+      fr: "Collections",
+      pl: "Kolekcje"
+    },
+    "Все подборки скрыты в настройках.": {
+      en: "All collections are hidden in settings.",
+      fr: "Toutes les collections sont masqu\xE9es dans les r\xE9glages.",
+      uk: "Усі добірки приховані в налаштуваннях.",
+      be: "Усе падборкі схаваны ў наладах.",
+      zh: "所有合集均已在设置中隐藏。",
+      pt: "Todas as cole\xE7\xF5es est\xE3o ocultas nas configura\xE7\xF5es.",
+      bg: "Всички колекции са скрити в настройките.",
+      he: "כל האוספים מוסתרים בהגדרות.",
+      cs: "Všechny kolekce jsou skryté v nastavení.",
+      ro: "Toate colecțiile sunt ascunse în setări.",
+      pl: "Wszystkie kolekcje są ukryte w ustawieniach."
+    },
+    "В этом каталоге пока нет подборок.": {
+      en: "This catalogue has no collections yet.",
+      fr: "Ce catalogue ne contient pas encore de collections.",
+      uk: "У цьому каталозі ще немає добірок.",
+      be: "У гэтым каталогу пакуль няма падборак.",
+      zh: "此目录暂无合集。",
+      pt: "Este cat\xE1logo ainda n\xE3o tem cole\xE7\xF5es.",
+      bg: "В този каталог все още няма колекции.",
+      he: "אין עדיין אוספים בקטלוג הזה.",
+      cs: "Katalog zat\xEDm nem\xE1 kolekce.",
+      ro: "Acest catalog nu are încă colecții.",
+      pl: "Ten katalog nie ma jeszcze kolekcji."
+    },
+    Назад: {
+      en: "Back",
+      uk: "Назад",
+      be: "Назад",
+      zh: "后退",
+      pt: "Voltar",
+      bg: "Назад",
+      he: "אחורה",
+      cs: "Zpět",
+      ro: "\xCEnapoi",
+      fr: "Retour",
+      pl: "Wstecz"
+    },
+    "Резервная проверка качества": {
+      en: "Fallback quality check",
+      fr: "V\xE9rification de qualit\xE9 de secours",
+      uk: "Резервна перевірка якості",
+      be: "Рэзервовая праверка якасці",
+      zh: "备用画质检查",
+      pt: "Verifica\xE7\xE3o alternativa de qualidade",
+      bg: "Резервна проверка на качеството",
+      he: "בדיקת איכות חלופית",
+      cs: "Záložní kontrola kvality",
+      ro: "Verificare alternativă a calității",
+      pl: "Zapasowe sprawdzanie jakości"
+    },
+    "Если парсер не определил качество, проверить Alloha через ваш сервер онлайн-источников.": {
+      en: "Check Alloha through your online server when the parser cannot identify quality.",
+      fr: "Interroger Alloha via votre serveur si la qualité n’est pas identifiée.",
+      uk: "Перевіряти Alloha через ваш сервер, якщо парсер не визначив якість.",
+      be: "Правяраць Alloha праз ваш сервер, калі парсер не вызначыў якасць.",
+      zh: "解析器无法识别画质时，通过服务器检查Alloha。",
+      pt: "Consultar Alloha pelo seu servidor quando a qualidade n\xE3o for identificada.",
+      bg: "Проверка в Alloha чрез вашия сървър, ако качеството не е разпознато.",
+      he: "בדיקת Alloha דרך השרת כשהאיכות לא מזוהה.",
+      cs: "Ověřit Alloha přes váš server, pokud není kvalita rozpoznána.",
+      ro: "Verifică Alloha prin server dacă nu se identifică calitatea.",
+      pl: "Sprawdzaj Alloha przez serwer, gdy jakość nie zostanie rozpoznana."
+    },
+    "Очистить кеш рейтингов": {
+      en: "Clear ratings cache",
+      fr: "Vider le cache des notes",
+      uk: "Очистити кеш оцінок",
+      be: "Ачысціць кэш ацэнак",
+      zh: "清除评分缓存",
+      pt: "Limpar cache de avalia\xE7\xF5es",
+      bg: "Изчистване на кеша с оценки",
+      he: "נקה מטמון דירוגים",
+      cs: "Vymazat mezipaměť hodnocení",
+      ro: "Șterge cache-ul evaluărilor",
+      pl: "Wyczyść pamięć ocen"
+    },
+    "Удалить сохранённые оценки. История и закладки сохранятся.": {
+      en: "Remove cached ratings. Keep history and bookmarks.",
+      fr: "Supprimer les notes en cache. Conserver l’historique et les favoris.",
+      uk: "Видалити збережені оцінки. Зберегти історію та закладки.",
+      be: "Выдаліць захаваныя ацэнкі. Пакінуць гісторыю і закладкі.",
+      zh: "清除缓存评分，保留历史和收藏。",
+      pt: "Remover avalia\xE7\xF5es em cache. Manter hist\xF3rico e favoritos.",
+      bg: "Премахване на кешираните оценки. Запазване на историята и отметките.",
+      he: "מחק דירוגים במטמון. ההיסטוריה והמועדפים יישמרו.",
+      cs: "Odstranit uložená hodnocení. Historie a záložky zůstanou.",
+      ro: "Șterge evaluările salvate. Păstrează istoricul și favoritele.",
+      pl: "Usuń zapisane oceny. Zachowaj historię i ulubione."
+    },
+    "Очистить кеш качества": {
+      en: "Clear quality cache",
+      fr: "Vider le cache de qualit\xE9",
+      uk: "Очистити кеш якості",
+      be: "Ачысціць кэш якасці",
+      zh: "清除画质缓存",
+      pt: "Limpar cache de qualidade",
+      bg: "Изчистване на кеша за качество",
+      he: "נקה מטמון איכות",
+      cs: "Vymazat mezipaměť kvality",
+      ro: "Șterge cache-ul calității",
+      pl: "Wyczyść pamięć jakości"
+    },
+    "Удалить сохранённое качество карточек каталога и заново проверить видимые карточки.": {
+      en: "Remove cached release quality and check visible cards again.",
+      fr: "Supprimer les qualit\xE9s en cache et v\xE9rifier les fiches visibles.",
+      uk: "Видалити кеш якості й перевірити видимі картки знову.",
+      be: "Выдаліць кэш якасці і праверыць бачныя карткі зноў.",
+      zh: "清除画质缓存并重新检查可见卡片。",
+      pt: "Limpar qualidades salvas e verificar os cart\xF5es vis\xEDveis.",
+      bg: "Изтриване на кеша и повторна проверка на видимите карти.",
+      he: "מחק איכות שמורה ובדוק שוב כרטיסים גלויים.",
+      cs: "Odstranit uložené kvality a znovu ověřit viditelné karty.",
+      ro: "Șterge calitățile salvate și verifică din nou fișele vizibile.",
+      pl: "Usuń zapisane jakości i sprawdź ponownie widoczne karty."
+    },
+    "Кеш {0} очищен": {
+      en: "{0} cache cleared",
+      fr: "Cache {0} vid\xE9",
+      uk: "Кеш {0} очищено",
+      be: "Кэш {0} ачышчаны",
+      zh: "已清除{0}缓存",
+      pt: "Cache de {0} limpo",
+      bg: "Кешът за {0} е изчистен",
+      he: "המטמון של {0} נוקה",
+      cs: "Mezipaměť {0} vymazána",
+      ro: "Cache {0} șters",
+      pl: "Wyczyszczono pamięć {0}"
+    },
+    рейтингов: {
+      en: "Ratings",
+      fr: "Notes",
+      uk: "Оцінки",
+      be: "Ацэнкі",
+      zh: "评分",
+      pt: "Avalia\xE7\xF5es",
+      bg: "Оценки",
+      he: "דירוגים",
+      cs: "Hodnocen\xED",
+      ro: "Evaluări",
+      pl: "Oceny"
+    },
+    качества: {
+      en: "Quality",
+      uk: "Якість",
+      be: "Якасць",
+      zh: "质量",
+      pt: "Qualidade",
+      bg: "Качество",
+      he: "איכות",
+      cs: "Kvalita",
+      ro: "Calitate",
+      fr: "Qualit\xE9",
+      pl: "Jakość"
+    },
+    "Сейчас смотрят": {
+      en: "Watching now",
+      uk: "Зараз дивляться",
+      be: "Глядзяць зараз",
+      zh: "正在观看",
+      pt: "Assistindo agora",
+      bg: "Гледани сега",
+      he: "צופים עכשיו",
+      cs: "Nyn\xED sleduj\xED",
+      ro: "Se vizionează acum",
+      fr: "En cours",
+      pl: "Obecnie oglądają"
+    },
+    Популярное: {
+      en: "Popular",
+      uk: "Популярне",
+      be: "Папулярнае",
+      zh: "热门",
+      pt: "Popular",
+      bg: "Популярни",
+      he: "פופולרי",
+      cs: "Popul\xE1rn\xED",
+      ro: "Populare",
+      fr: "Populaire",
+      pl: "Popularne"
+    },
+    "Новинки этого года": {
+      en: "New this year",
+      uk: "Новинки цього року",
+      be: "Навінкі гэтага года",
+      zh: "今年新",
+      pt: "Novo este ano",
+      bg: "Нови тази година",
+      he: "חדש השנה",
+      cs: "Novinky tohoto roku",
+      ro: "Apărute anul acesta",
+      fr: "Nouveaut\xE9s de l'ann\xE9e",
+      pl: "Nowości tego roku"
+    },
+    "С высоким рейтингом": {
+      en: "Highly rated",
+      uk: "З високим рейтингом",
+      be: "З высокім рэйтынгам",
+      zh: "高度评价",
+      pt: "Altamente avaliado",
+      bg: "Най-високо оценени",
+      he: "מדורג גבוה",
+      cs: "S vysok\xFDm hodnocen\xEDm",
+      ro: "Top evaluate",
+      fr: "Mieux not\xE9s",
+      pl: "Wysoko oceniane"
+    },
+    "Корейские дорамы": {
+      en: "Korean dramas",
+      fr: "S\xE9ries cor\xE9ennes",
+      uk: "Корейські дорами",
+      be: "Карэйскія дарамы",
+      zh: "韩剧",
+      pt: "Dramas coreanos",
+      bg: "Корейски драми",
+      he: "דרמות קוריאניות",
+      cs: "Korejsk\xE1 dramata",
+      ro: "Drame coreene",
+      pl: "Dramy koreańskie"
+    },
+    "Японские дорамы": {
+      en: "Japanese dramas",
+      fr: "S\xE9ries japonaises",
+      uk: "Японські дорами",
+      be: "Японскія дарамы",
+      zh: "日剧",
+      pt: "Dramas japoneses",
+      bg: "Японски драми",
+      he: "דרמות יפניות",
+      cs: "Japonsk\xE1 dramata",
+      ro: "Drame japoneze",
+      pl: "Dramy japońskie"
+    },
+    "Китайские дорамы": {
+      en: "Chinese dramas",
+      fr: "S\xE9ries chinoises",
+      uk: "Китайські дорами",
+      be: "Кітайскія дарамы",
+      zh: "华语剧",
+      pt: "Dramas chineses",
+      bg: "Китайски драми",
+      he: "דרמות סיניות",
+      cs: "Čínská dramata",
+      ro: "Drame chinezești",
+      pl: "Dramy chińskie"
+    },
+    "Тайские дорамы": {
+      en: "Thai dramas",
+      fr: "S\xE9ries tha\xEFlandaises",
+      uk: "Тайські дорами",
+      be: "Тайскія дарамы",
+      zh: "泰剧",
+      pt: "Dramas tailandeses",
+      bg: "Тайландски драми",
+      he: "דרמות תאילנדיות",
+      cs: "Thajsk\xE1 dramata",
+      ro: "Drame thailandeze",
+      pl: "Dramy tajskie"
+    },
+    Драмы: {
+      en: "Drama",
+      uk: "Драма",
+      be: "Драма",
+      zh: "戏剧",
+      pt: "Drama",
+      bg: "Драма",
+      he: "דרמה",
+      cs: "Drama",
+      ro: "Dramă",
+      fr: "Drame",
+      pl: "Dramat"
+    },
+    Комедии: {
+      en: "Comedy",
+      uk: "Комедія",
+      be: "Камедыя",
+      zh: "喜剧",
+      pt: "Com\xE9dia",
+      bg: "Комедия",
+      he: "קומדיה",
+      cs: "Komedie",
+      ro: "Comedie",
+      fr: "Com\xE9die",
+      pl: "Komedia"
+    },
+    Детективы: {
+      en: "Mystery",
+      fr: "Myst\xE8re",
+      uk: "Детективи",
+      be: "Дэтэктывы",
+      zh: "悬疑",
+      pt: "Mist\xE9rio",
+      bg: "Мистерии",
+      he: "מסתורין",
+      cs: "Mysteri\xF3zn\xED",
+      ro: "Mister",
+      pl: "Tajemnica"
+    },
+    "Российские реалити": {
+      en: "Russian reality shows",
+      fr: "T\xE9l\xE9r\xE9alit\xE9 russe",
+      uk: "Російські реаліті",
+      be: "Расійскія рэаліці",
+      zh: "俄罗斯真人秀",
+      pt: "Reality shows russos",
+      bg: "Руски риалити предавания",
+      he: "ריאליטי רוסי",
+      cs: "Rusk\xE9 reality show",
+      ro: "Reality-show-uri rusești",
+      pl: "Rosyjskie reality show"
+    },
+    "Российские ток-шоу": {
+      en: "Russian talk shows",
+      fr: "\xC9missions de d\xE9bat russes",
+      uk: "Російські ток-шоу",
+      be: "Расійскія ток-шоу",
+      zh: "俄罗斯访谈节目",
+      pt: "Talk shows russos",
+      bg: "Руски токшоу програми",
+      he: "תוכניות אירוח רוסיות",
+      cs: "Rusk\xE9 talk show",
+      ro: "Talk-show-uri rusești",
+      pl: "Rosyjskie talk-show"
+    },
+    "Семейные и развлекательные": {
+      en: "Family and entertainment",
+      fr: "Famille et divertissement",
+      uk: "Сімейні та розважальні",
+      be: "Сямейныя і забаўляльныя",
+      zh: "家庭与娱乐",
+      pt: "Fam\xEDlia e entretenimento",
+      bg: "Семейни и развлекателни",
+      he: "משפחה ובידור",
+      cs: "Rodinn\xE9 a z\xE1bavn\xE9",
+      ro: "Familie și divertisment",
+      pl: "Rodzina i rozrywka"
+    },
+    "Прошлый год": {
+      en: "Last year",
+      uk: "Минулий рік",
+      be: "Мінулы год",
+      zh: "去年",
+      pt: "Ano passado",
+      bg: "Миналата година",
+      cs: "Minul\xFD rok",
+      ro: "Anul trecut",
+      fr: "L'ann\xE9e derni\xE8re",
+      pl: "Poprzedni rok",
+      he: "בשנה שעברה"
+    },
+    "Популярные мультфильмы": {
+      en: "Popular animated movies",
+      fr: "Films d’animation populaires",
+      uk: "Популярні мультфільми",
+      be: "Папулярныя мультфільмы",
+      zh: "热门动画电影",
+      pt: "Filmes de anima\xE7\xE3o populares",
+      bg: "Популярни анимационни филми",
+      he: "סרטי אנימציה פופולריים",
+      cs: "Popul\xE1rn\xED animovan\xE9 filmy",
+      ro: "Filme de animație populare",
+      pl: "Popularne filmy animowane"
+    },
+    "Новые мультфильмы": {
+      en: "New animated movies",
+      fr: "Nouveaux films d’animation",
+      uk: "Нові мультфільми",
+      be: "Новыя мультфільмы",
+      zh: "新动画电影",
+      pt: "Novos filmes de anima\xE7\xE3o",
+      bg: "Нови анимационни филми",
+      he: "סרטי אנימציה חדשים",
+      cs: "Nov\xE9 animovan\xE9 filmy",
+      ro: "Filme de animație noi",
+      pl: "Nowe filmy animowane"
+    },
+    "Мультфильмы с высоким рейтингом": {
+      en: "Top-rated animated movies",
+      fr: "Films d’animation les mieux notés",
+      uk: "Мультфільми з високим рейтингом",
+      be: "Мультфільмы з высокім рэйтынгам",
+      zh: "高分动画电影",
+      pt: "Anima\xE7\xF5es mais bem avaliadas",
+      bg: "Най-високо оценени анимационни филми",
+      he: "סרטי אנימציה בדירוג גבוה",
+      cs: "Nejl\xE9pe hodnocen\xE9 animovan\xE9 filmy",
+      ro: "Animații cu evaluări mari",
+      pl: "Najlepiej oceniane filmy animowane"
+    },
+    "Популярные мультсериалы": {
+      en: "Popular animated series",
+      fr: "Séries d’animation populaires",
+      uk: "Популярні мультсеріали",
+      be: "Папулярныя мультсерыялы",
+      zh: "热门动画剧集",
+      pt: "S\xE9ries animadas populares",
+      bg: "Популярни анимационни сериали",
+      he: "סדרות אנימציה פופולריות",
+      cs: "Popul\xE1rn\xED animovan\xE9 seri\xE1ly",
+      ro: "Seriale de animație populare",
+      pl: "Popularne seriale animowane"
+    },
+    "Мультсериалы с высоким рейтингом": {
+      en: "Top-rated animated series",
+      fr: "Séries d’animation les mieux notées",
+      uk: "Мультсеріали з високим рейтингом",
+      be: "Мультсерыялы з высокім рэйтынгам",
+      zh: "高分动画剧集",
+      pt: "S\xE9ries animadas mais bem avaliadas",
+      bg: "Най-високо оценени анимационни сериали",
+      he: "סדרות אנימציה בדירוג גבוה",
+      cs: "Nejl\xE9pe hodnocen\xE9 animovan\xE9 seri\xE1ly",
+      ro: "Seriale animate cu evaluări mari",
+      pl: "Najlepiej oceniane seriale animowane"
+    },
+    "Мультсериалы этого года": {
+      en: "Animated series this year",
+      fr: "Séries d’animation de l’année",
+      uk: "Мультсеріали цього року",
+      be: "Мультсерыялы гэтага года",
+      zh: "今年的动画剧集",
+      pt: "S\xE9ries animadas deste ano",
+      bg: "Анимационни сериали за тази година",
+      he: "סדרות אנימציה השנה",
+      cs: "Letošní animované seriály",
+      ro: "Seriale animate din acest an",
+      pl: "Seriale animowane tego roku"
+    },
+    "Сейчас выходит": {
+      en: "Airing now",
+      fr: "En cours de diffusion",
+      uk: "Зараз виходить",
+      be: "Зараз выходзіць",
+      zh: "正在播出",
+      pt: "Em exibi\xE7\xE3o",
+      bg: "Излъчват се сега",
+      he: "משודר עכשיו",
+      cs: "Právě vysílané",
+      ro: "\xCEn difuzare",
+      pl: "Obecnie emitowane"
+    },
+    Ожидаемые: {
+      en: "Upcoming",
+      fr: "\xC0 venir",
+      uk: "Очікувані",
+      be: "Чаканыя",
+      zh: "即将上映",
+      pt: "Em breve",
+      bg: "Предстоящи",
+      he: "בקרוב",
+      cs: "Připravované",
+      ro: "\xCEn cur\xE2nd",
+      pl: "Nadchodzące"
+    },
+    Полнометражные: {
+      en: "Feature films",
+      fr: "Longs m\xE9trages",
+      uk: "Повнометражні",
+      be: "Поўнаметражныя",
+      zh: "长篇电影",
+      pt: "Longas-metragens",
+      bg: "Пълнометражни филми",
+      he: "סרטים באורך מלא",
+      cs: "Celovečerní filmy",
+      ro: "Lungmetraje",
+      pl: "Filmy pełnometrażowe"
+    },
+    Боевики: {
+      en: "Action",
+      uk: "Бойовик",
+      be: "Баявік",
+      zh: "动作",
+      pt: "A\xE7\xE3o",
+      bg: "Екшън",
+      he: "פעולה",
+      cs: "Akční",
+      ro: "Acțiune",
+      fr: "Action",
+      pl: "Akcja"
+    },
+    Приключения: {
+      en: "Adventures",
+      uk: "Пригоди",
+      be: "Прыгоды",
+      zh: "冒险",
+      pt: "Aventura",
+      bg: "Приключения",
+      he: "הרפתקאות",
+      cs: "Dobrodružný",
+      ro: "Aventură",
+      fr: "Aventure",
+      pl: "Przygodowy"
+    },
+    Все: {
+      en: "All",
+      uk: "Усі",
+      be: "Усе",
+      zh: "全部",
+      pt: "Todos",
+      bg: "Всички",
+      he: "הכל",
+      cs: "Vše",
+      ro: "Toate",
+      fr: "Tout",
+      pl: "Wszystkie"
+    },
+    "В топе": {
+      en: "Top",
+      uk: "У топі",
+      be: "У топе",
+      zh: "热门",
+      pt: "Top",
+      bg: "Топ",
+      he: "למעלה",
+      cs: "V topu",
+      ro: "\xCEn top",
+      fr: "Top",
+      pl: "W topie"
+    },
+    "В высоком качестве": {
+      en: "High quality",
+      uk: "У високій якості",
+      be: "У высокай якасці",
+      zh: "高画质",
+      pt: "Alta qualidade",
+      bg: "С високо качество",
+      he: "באיכות גבוהה",
+      cs: "Ve vysoké kvalitě",
+      ro: "Calitate înaltă",
+      fr: "Haute qualit\xE9",
+      pl: "W wysokiej jakości"
+    },
+    "Стоит пересмотреть": {
+      en: "Worth a rewatch",
+      uk: "Варто переглянути",
+      be: "Варта перагледзець",
+      zh: "值得再看一遍",
+      pt: "Vale a pena assistir novamente",
+      bg: "Заслужава си повторно гледане",
+      he: "שווה צפייה חוזרת",
+      cs: "Stoj\xED za zhl\xE9dnut\xED znovu",
+      ro: "Merită revăzut",
+      fr: "\xC0 revoir absolument",
+      pl: "Warto obejrzeć ponownie"
+    },
+    Триллеры: {
+      en: "Thriller",
+      uk: "Трилер",
+      be: "Трылер",
+      zh: "惊悚片",
+      pt: "Thriller",
+      bg: "Трилър",
+      he: "סרט מתח",
+      cs: "Thriller",
+      ro: "Thriller",
+      fr: "Thriller",
+      pl: "Thriller"
+    },
+    Фантастика: {
+      en: "Fiction",
+      uk: "Фантастика",
+      be: "Фантастыка",
+      zh: "小说",
+      pt: "Fic\xE7\xE3o",
+      bg: "Фикция",
+      he: "ספרות בדיונית",
+      cs: "Sci-Fi",
+      ro: "SF",
+      fr: "Science-Fiction",
+      pl: "Sci-Fi"
+    },
+    Фэнтези: {
+      en: "Fantasy",
+      uk: "Фентезі",
+      be: "Фэнтэзі",
+      zh: "奇幻",
+      pt: "Fantasia",
+      bg: "Фантазия",
+      he: "פנטזיה",
+      cs: "Fantasy",
+      ro: "Fantezie",
+      fr: "Fantastique",
+      pl: "Fantasy"
+    },
+    Криминал: {
+      en: "Crime",
+      uk: "Кримінал",
+      be: "Крымінал",
+      zh: "犯罪",
+      pt: "Crime",
+      bg: "Криминален",
+      he: "פשע",
+      cs: "Krimi",
+      ro: "Crimă",
+      fr: "Crime",
+      pl: "Kryminał"
+    },
+    "Фантастика и фэнтези": {
+      en: "Science fiction and fantasy",
+      fr: "Science-fiction et fantastique",
+      uk: "Фантастика та фентезі",
+      be: "Фантастыка і фэнтэзі",
+      zh: "科幻与奇幻",
+      pt: "Fic\xE7\xE3o cient\xEDfica e fantasia",
+      bg: "Научна фантастика и фентъзи",
+      he: "מדע בדיוני ופנטזיה",
+      cs: "Sci-fi a fantasy",
+      ro: "SF și fantezie",
+      pl: "Science fiction i fantasy"
+    },
+    "Без названия": {
+      en: "Untitled",
+      uk: "Без назви",
+      be: "Без назвы",
+      zh: "无标题",
+      pt: "Sem t\xEDtulo",
+      bg: "Без заглавие",
+      he: "ללא כותרת",
+      cs: "Bez n\xE1zvu",
+      ro: "Fără nume",
+      fr: "Sans titre",
+      pl: "Bez nazwy"
+    },
+    Главная: {
+      en: "Home",
+      uk: "Головна",
+      be: "Галоўная",
+      zh: "首页",
+      pt: "In\xEDcio",
+      bg: "Главна",
+      he: "ראשי",
+      cs: "Hlavn\xED",
+      ro: "Acasă",
+      fr: "Accueil",
+      pl: "Strona główna"
+    },
+    Фильмы: {
+      en: "Movies",
+      uk: "Фільми",
+      be: "Фільмы",
+      zh: "电影",
+      pt: "Filmes",
+      bg: "Филми",
+      he: "סרטים",
+      cs: "Filmy",
+      ro: "Filme",
+      fr: "Films",
+      pl: "Filmy"
+    },
+    Сериалы: {
+      en: "Series",
+      uk: "Серіали",
+      be: "Серыялы",
+      zh: "剧集",
+      pt: "S\xE9ries",
+      bg: "Сериали",
+      he: "סדרה",
+      cs: "Seri\xE1ly",
+      ro: "Seriale",
+      fr: "S\xE9ries",
+      pl: "Seriale"
+    },
+    Дорамы: {
+      en: "Asian dramas",
+      fr: "S\xE9ries asiatiques",
+      uk: "Дорами",
+      be: "Дарамы",
+      zh: "亚洲剧",
+      pt: "Dramas asi\xE1ticos",
+      bg: "Азиатски драми",
+      he: "דרמות אסייתיות",
+      cs: "Asijsk\xE1 dramata",
+      ro: "Drame asiatice",
+      pl: "Dramy azjatyckie"
+    },
+    "ТВ-шоу": {
+      en: "TV shows",
+      fr: "\xC9missions TV",
+      uk: "ТБ-шоу",
+      be: "ТБ-шоу",
+      zh: "电视节目",
+      pt: "Programas de TV",
+      bg: "Телевизионни предавания",
+      he: "תוכניות טלוויזיה",
+      cs: "TV pořady",
+      ro: "Emisiuni TV",
+      pl: "Programy TV"
+    },
+    Мультфильмы: {
+      en: "Cartoons",
+      uk: "Мультфільми",
+      be: "Мультфільмы",
+      zh: "卡通",
+      pt: "Desenhos animados",
+      bg: "Анимации",
+      he: "סרטים מצוירים",
+      cs: "Animovan\xE9 filmy",
+      ro: "Desene animate",
+      fr: "Dessins anim\xE9s",
+      pl: "Filmy animowane"
+    },
+    Аниме: {
+      en: "Anime",
+      uk: "Аніме",
+      be: "Анімэ",
+      zh: "动漫",
+      pt: "Anime",
+      bg: "Аниме",
+      he: "אנימה",
+      cs: "Anime",
+      ro: "Anime",
+      fr: "Anime",
+      pl: "Anime"
+    },
+    "Появится после добавления в историю": {
+      en: "Appears after adding to history",
+      fr: "Apparaît après l’ajout à l’historique",
+      uk: "З’явиться після додавання в історію",
+      be: "З’явіцца пасля дадання ў гісторыю",
+      zh: "添加到历史后显示",
+      pt: "Aparece ap\xF3s adicionar ao hist\xF3rico",
+      bg: "Появява се след добавяне в историята",
+      he: "מופיע לאחר הוספה להיסטוריה",
+      cs: "Zobrazí se po přidání do historie",
+      ro: "Apare după adăugarea în istoric",
+      pl: "Pojawi się po dodaniu do historii"
+    },
+    "Аниме · Shikimori": {
+      en: "Anime \xB7 Shikimori",
+      fr: "Anime \xB7 Shikimori",
+      uk: "Аніме · Shikimori",
+      be: "Анімэ · Shikimori",
+      zh: "动漫 · Shikimori",
+      pt: "Anime \xB7 Shikimori",
+      bg: "Аниме · Shikimori",
+      he: "אנימה · Shikimori",
+      cs: "Anime \xB7 Shikimori",
+      ro: "Anime \xB7 Shikimori",
+      pl: "Anime \xB7 Shikimori"
+    },
+    "Аниме · Стандартные": {
+      en: "Anime \xB7 Standard",
+      fr: "Anime \xB7 Standard",
+      uk: "Аніме · Стандартні",
+      be: "Анімэ · Стандартныя",
+      zh: "动漫 · 标准",
+      pt: "Anime \xB7 Padr\xE3o",
+      bg: "Аниме · Стандартни",
+      he: "אנימה · רגיל",
+      cs: "Anime \xB7 Standardn\xED",
+      ro: "Anime \xB7 Standard",
+      pl: "Anime \xB7 Standardowe"
+    },
+    "Сбросить порядок и видимость": {
+      en: "Reset order and visibility",
+      fr: "Réinitialiser l’ordre et la visibilité",
+      uk: "Скинути порядок і видимість",
+      be: "Скінуць парадак і бачнасць",
+      zh: "重置顺序与显示状态",
+      pt: "Redefinir ordem e visibilidade",
+      bg: "Нулиране на реда и видимостта",
+      he: "אפס סדר ותצוגה",
+      cs: "Obnovit pořadí a viditelnost",
+      ro: "Resetează ordinea și vizibilitatea",
+      pl: "Przywróć kolejność i widoczność"
+    },
+    "Список пока не загружен": {
+      en: "The list has not loaded yet",
+      fr: "La liste n’est pas encore chargée",
+      uk: "Список ще не завантажено",
+      be: "Спіс яшчэ не загружаны",
+      zh: "列表尚未加载",
+      pt: "A lista ainda n\xE3o foi carregada",
+      bg: "Списъкът още не е зареден",
+      he: "הרשימה טרם נטענה",
+      cs: "Seznam ještě není načten",
+      ro: "Lista nu este încă încărcată",
+      pl: "Lista nie została jeszcze wczytana"
+    },
+    "Откройте раздел, чтобы получить актуальные подборки.": {
+      en: "Open a section to load its current collections.",
+      fr: "Ouvrez une rubrique pour charger ses collections.",
+      uk: "Відкрийте розділ, щоб завантажити добірки.",
+      be: "Адкрыйце раздзел, каб загрузіць падборкі.",
+      zh: "打开栏目以加载当前合集。",
+      pt: "Abra uma se\xE7\xE3o para carregar suas cole\xE7\xF5es.",
+      bg: "Отворете раздел, за да заредите колекциите.",
+      he: "פתחו מדור כדי לטעון את האוספים.",
+      cs: "Otevřete sekci pro načtení kolekcí.",
+      ro: "Deschide o secțiune pentru a încărca colecțiile.",
+      pl: "Otwórz sekcję, aby wczytać kolekcje."
+    },
+    "Подборки: {0}": {
+      en: "Collections: {0}",
+      fr: "Collections : {0}",
+      uk: "Добірки: {0}",
+      be: "Падборкі: {0}",
+      zh: "合集：{0}",
+      pt: "Cole\xE7\xF5es: {0}",
+      bg: "Колекции: {0}",
+      he: "אוספים: {0}",
+      cs: "Kolekce: {0}",
+      ro: "Colecții: {0}",
+      pl: "Kolekcje: {0}"
+    },
+    Показать: {
+      en: "Show",
+      fr: "Afficher",
+      uk: "Показати",
+      be: "Паказаць",
+      zh: "显示",
+      pt: "Mostrar",
+      bg: "Показване",
+      he: "הצג",
+      cs: "Zobrazit",
+      ro: "Afișează",
+      pl: "Pokaż"
+    },
+    Скрыть: {
+      en: "Hide",
+      fr: "Masquer",
+      uk: "Приховати",
+      be: "Схаваць",
+      zh: "隐藏",
+      pt: "Ocultar",
+      bg: "Скриване",
+      he: "הסתר",
+      cs: "Skr\xFDt",
+      ro: "Ascunde",
+      pl: "Ukryj"
+    },
+    Выше: {
+      en: "Move up",
+      fr: "Monter",
+      uk: "Перемістити вище",
+      be: "Перамясціць вышэй",
+      zh: "上移",
+      pt: "Mover para cima",
+      bg: "Преместване нагоре",
+      he: "העבר למעלה",
+      cs: "Posunout nahoru",
+      ro: "Mută în sus",
+      pl: "Przesuń w górę"
+    },
+    Ниже: {
+      en: "Move down",
+      fr: "Descendre",
+      uk: "Перемістити нижче",
+      be: "Перамясціць ніжэй",
+      zh: "下移",
+      pt: "Mover para baixo",
+      bg: "Преместване надолу",
+      he: "העבר למטה",
+      cs: "Posunout dolů",
+      ro: "Mută în jos",
+      pl: "Przesuń w dół"
+    },
+    "В начало": {
+      en: "Move to top",
+      fr: "Placer en premier",
+      uk: "На початок",
+      be: "У пачатак",
+      zh: "移到顶部",
+      pt: "Mover para o in\xEDcio",
+      bg: "Преместване най-отгоре",
+      he: "העבר לראש הרשימה",
+      cs: "Přesunout na začátek",
+      ro: "Mută la început",
+      pl: "Przenieś na początek"
+    },
+    "Подборки (изменения при следующем открытии)": {
+      en: "Collections (applied when reopened)",
+      fr: "Collections (\xE0 la r\xE9ouverture)",
+      uk: "Добірки (після повторного відкриття)",
+      be: "Падборкі (пасля паўторнага адкрыцця)",
+      zh: "合集（重新打开后生效）",
+      pt: "Cole\xE7\xF5es (ao reabrir)",
+      bg: "Колекции (при повторно отваряне)",
+      he: "אוספים (לאחר פתיחה מחדש)",
+      cs: "Kolekce (při dalším otevření)",
+      ro: "Colecții (la redeschidere)",
+      pl: "Kolekcje (po ponownym otwarciu)"
+    },
+    "Управление подборками": {
+      en: "Manage collections",
+      fr: "G\xE9rer les collections",
+      uk: "Керування добірками",
+      be: "Кіраванне падборкамі",
+      zh: "管理合集",
+      pt: "Gerenciar cole\xE7\xF5es",
+      bg: "Управление на колекции",
+      he: "ניהול אוספים",
+      cs: "Spravovat kolekce",
+      ro: "Gestionează colecțiile",
+      pl: "Zarządzaj kolekcjami"
+    },
+    "Текущие подборки последнего открытого экрана. Старые и недоступные строки не показываются.": {
+      en: "Collections from the last opened screen. Old and unavailable rows are omitted.",
+      fr: "Collections du dernier \xE9cran ouvert. Les \xE9l\xE9ments indisponibles sont omis.",
+      uk: "Добірки останнього відкритого екрана. Недоступні рядки пропущено.",
+      be: "Падборкі апошняга адкрытага экрана. Недаступныя радкі прапушчаны.",
+      zh: "上次打开页面的合集，不显示旧的或不可用的项目。",
+      pt: "Cole\xE7\xF5es da \xFAltima tela aberta. Itens indispon\xEDveis s\xE3o omitidos.",
+      bg: "Колекции от последния екран, без недостъпните редове.",
+      he: "אוספי המסך האחרון, ללא פריטים לא זמינים.",
+      cs: "Kolekce z poslední obrazovky bez nedostupných řádků.",
+      ro: "Colecții de pe ultimul ecran, fără rândurile indisponibile.",
+      pl: "Kolekcje z ostatniego ekranu, bez niedostępnych wierszy."
+    },
+    "Написать комментарий": {
+      en: "Write a comment",
+      fr: "\xC9crire un commentaire",
+      uk: "Написати коментар",
+      be: "Напісаць каментар",
+      zh: "发表评论",
+      pt: "Escrever coment\xE1rio",
+      bg: "Написване на коментар",
+      he: "כתוב תגובה",
+      cs: "Napsat komentář",
+      ro: "Scrie un comentariu",
+      pl: "Napisz komentarz"
+    },
+    "Листать комментарии": {
+      en: "Browse comments",
+      fr: "Parcourir les commentaires",
+      uk: "Переглянути коментарі",
+      be: "Прагледзець каментарыі",
+      zh: "浏览评论",
+      pt: "Ver coment\xE1rios",
+      bg: "Преглед на коментари",
+      he: "עיין בתגובות",
+      cs: "Procházet komentáře",
+      ro: "Răsfoiește comentariile",
+      pl: "Przeglądaj komentarze"
+    },
+    "Предыдущий комментарий": {
+      en: "Previous comment",
+      fr: "Commentaire pr\xE9c\xE9dent",
+      uk: "Попередній коментар",
+      be: "Папярэдні каментар",
+      zh: "上一条评论",
+      pt: "Coment\xE1rio anterior",
+      bg: "Предишен коментар",
+      he: "תגובה קודמת",
+      cs: "Předchozí komentář",
+      ro: "Comentariul anterior",
+      pl: "Poprzedni komentarz"
+    },
+    "Следующий комментарий": {
+      en: "Next comment",
+      fr: "Commentaire suivant",
+      uk: "Наступний коментар",
+      be: "Наступны каментар",
+      zh: "下一条评论",
+      pt: "Pr\xF3ximo coment\xE1rio",
+      bg: "Следващ коментар",
+      he: "תגובה הבאה",
+      cs: "Další komentář",
+      ro: "Comentariul următor",
+      pl: "Następny komentarz"
+    },
+    "История просмотра": {
+      en: "Watch history",
+      fr: "Historique de visionnage",
+      uk: "Історія перегляду",
+      be: "Гісторыя прагляду",
+      zh: "观看历史",
+      pt: "Hist\xF3rico de reprodu\xE7\xE3o",
+      bg: "История на гледане",
+      he: "היסטוריית צפייה",
+      cs: "Historie sledov\xE1n\xED",
+      ro: "Istoric de vizionare",
+      pl: "Historia oglądania"
+    },
+    января: {
+      en: "January",
+      uk: "Січня",
+      be: "Студзеня",
+      zh: "一月",
+      pt: "Jan",
+      bg: "Януари",
+      he: "ינואר",
+      cs: "Ledna",
+      ro: "Ianuarie",
+      fr: "Janvier",
+      pl: "Stycznia"
+    },
+    февраля: {
+      en: "February",
+      uk: "Лютого",
+      be: "Лютага",
+      zh: "二月",
+      pt: "Fevereiro",
+      bg: "Февруари",
+      he: "פברואר",
+      cs: "\xDAnora",
+      ro: "Februarie",
+      fr: "F\xE9vrier",
+      pl: "Lutego"
+    },
+    марта: {
+      en: "March",
+      uk: "Березня",
+      be: "Сакавіка",
+      zh: "三月",
+      pt: "Mar\xE7o",
+      bg: "Март",
+      he: "מרץ",
+      cs: "Března",
+      ro: "Martie",
+      fr: "Mars",
+      pl: "Marca"
+    },
+    апреля: {
+      en: "April",
+      uk: "Квітня",
+      be: "Красавіка",
+      zh: "四月",
+      pt: "Abril",
+      bg: "Април",
+      he: "אפריל",
+      cs: "Dubna",
+      ro: "Aprilie",
+      fr: "Avril",
+      pl: "Kwietnia"
+    },
+    мая: {
+      en: "May",
+      uk: "Травня",
+      be: "Мая",
+      zh: "五月",
+      pt: "Maio",
+      bg: "Май",
+      he: "מאי",
+      cs: "Května",
+      ro: "Mai",
+      fr: "Mai",
+      pl: "Maja"
+    },
+    июня: {
+      en: "June",
+      uk: "Червня",
+      be: "Чэрвеня",
+      zh: "六月",
+      pt: "Junho",
+      bg: "Юни",
+      he: "יוני",
+      cs: "Června",
+      ro: "Iunie",
+      fr: "Juin",
+      pl: "Czerwca"
+    },
+    июля: {
+      en: "July",
+      uk: "Липня",
+      be: "Ліпеня",
+      zh: "七月",
+      pt: "Julho",
+      bg: "Юли",
+      he: "יולי",
+      cs: "Července",
+      ro: "Iulie",
+      fr: "Juillet",
+      pl: "Lipca"
+    },
+    августа: {
+      en: "August",
+      uk: "Серпня",
+      be: "Жніўня",
+      zh: "八月",
+      pt: "Agosto",
+      bg: "Август",
+      he: "אוגוסט",
+      cs: "Srpna",
+      ro: "August",
+      fr: "Ao\xFBt",
+      pl: "Sierpnia"
+    },
+    сентября: {
+      en: "September",
+      uk: "Вересня",
+      be: "Верасня",
+      zh: "九月",
+      pt: "Setembro",
+      bg: "Септември",
+      he: "ספטמבר",
+      cs: "Září",
+      ro: "Septembrie",
+      fr: "Septembre",
+      pl: "Września"
+    },
+    октября: {
+      en: "October",
+      uk: "Жовтня",
+      be: "Кастрычніка",
+      zh: "十月",
+      pt: "Outubro",
+      bg: "Октомври",
+      he: "אוקטובר",
+      cs: "Října",
+      ro: "Octombrie",
+      fr: "Octobre",
+      pl: "Października"
+    },
+    ноября: {
+      en: "November",
+      uk: "Листопада",
+      be: "Лістапада",
+      zh: "十一月",
+      pt: "Novembro",
+      bg: "Ноември",
+      he: "נובמבר",
+      cs: "Listopadu",
+      ro: "Noiembrie",
+      fr: "Novembre",
+      pl: "Listopada"
+    },
+    декабря: {
+      en: "December",
+      uk: "Грудня",
+      be: "Снежня",
+      zh: "十二月",
+      pt: "Dezembro",
+      bg: "Декември",
+      he: "דצמבר",
+      cs: "Prosince",
+      ro: "Decembrie",
+      fr: "D\xE9cembre",
+      pl: "Grudnia"
+    },
+    "Прочитать описание полностью": {
+      en: "Read full overview",
+      fr: "Lire le r\xE9sum\xE9 complet",
+      uk: "Читати повний опис",
+      be: "Чытаць поўнае апісанне",
+      zh: "阅读完整简介",
+      pt: "Ler sinopse completa",
+      bg: "Прочитане на пълното описание",
+      he: "קרא תקציר מלא",
+      cs: "Přečíst celý obsah",
+      ro: "Citește descrierea completă",
+      pl: "Przeczytaj pełny opis"
+    },
+    Описание: {
+      en: "Overview",
+      fr: "R\xE9sum\xE9",
+      uk: "Опис",
+      be: "Апісанне",
+      zh: "简介",
+      pt: "Sinopse",
+      bg: "Описание",
+      he: "תקציר",
+      cs: "Obsah",
+      ro: "Descriere",
+      pl: "Opis"
+    },
+    "Качество:": {
+      en: "Quality:",
+      uk: "Якість",
+      be: "Якасць",
+      zh: "质量",
+      pt: "Qualidade",
+      bg: "Качество",
+      he: "איכות",
+      cs: "Kvalita",
+      ro: "Calitate",
+      fr: "Qualit\xE9",
+      pl: "Jakość"
+    },
+    Режиссёр: {
+      en: "Director",
+      uk: "Режисер",
+      be: "Рэжысёр",
+      zh: "制片人",
+      pt: "Produtor",
+      bg: "Продуцент",
+      he: "מפיק",
+      cs: "Režisér",
+      ro: "Producător",
+      fr: "Producteur",
+      pl: "Reżyser"
+    },
+    "Актёры и режиссёры": {
+      en: "Cast and directors",
+      fr: "Acteurs et r\xE9alisateurs",
+      uk: "Актори та режисери",
+      be: "Акцёры і рэжысёры",
+      zh: "演员与导演",
+      pt: "Elenco e diretores",
+      bg: "Актьори и режисьори",
+      he: "שחקנים ובמאים",
+      cs: "Herci a režiséři",
+      ro: "Actori și regizori",
+      pl: "Obsada i reżyserzy"
+    },
+    "Актёры и режиссёр": {
+      en: "Cast and director",
+      fr: "Acteurs et r\xE9alisateur",
+      uk: "Актори та режисер",
+      be: "Акцёры і рэжысёр",
+      zh: "演员与导演",
+      pt: "Elenco e diretor",
+      bg: "Актьори и режисьор",
+      he: "שחקנים ובמאי",
+      cs: "Herci a režisér",
+      ro: "Actori și regizor",
+      pl: "Obsada i reżyser"
+    },
+    "Оставить реакцию": {
+      en: "Leave a reaction",
+      fr: "Laisser une r\xE9action",
+      uk: "Залишити реакцію",
+      be: "Пакінуць рэакцыю",
+      zh: "添加反应",
+      pt: "Deixar rea\xE7\xE3o",
+      bg: "Оставяне на реакция",
+      he: "הוסף תגובה",
+      cs: "Přidat reakci",
+      ro: "Lasă o reacție",
+      pl: "Dodaj reakcję"
+    },
+    "О произведении": {
+      en: "About this title",
+      fr: "\xC0 propos de ce titre",
+      uk: "Про твір",
+      be: "Пра твор",
+      zh: "作品信息",
+      pt: "Sobre este t\xEDtulo",
+      bg: "За това заглавие",
+      he: "על הכותר",
+      cs: "O titulu",
+      ro: "Despre acest titlu",
+      pl: "O tym tytule"
+    },
+    "Оригинальное название": {
+      en: "Original title",
+      fr: "Titre original",
+      uk: "Оригінальна назва",
+      be: "Арыгінальная назва",
+      zh: "原名",
+      pt: "T\xEDtulo original",
+      bg: "Оригинално заглавие",
+      he: "שם מקורי",
+      cs: "Původní název",
+      ro: "Titlu original",
+      pl: "Tytuł oryginalny"
+    },
+    Тип: {
+      en: "Type of",
+      uk: "Тип",
+      be: "Тып",
+      zh: "类型",
+      pt: "Tipo de",
+      bg: "Тип",
+      he: "סוג של",
+      cs: "Typ",
+      ro: "Tip",
+      fr: "Type",
+      pl: "Typ"
+    },
+    "Аниме-сериал": {
+      en: "Anime series",
+      fr: "Série d’anime",
+      uk: "Аніме-серіал",
+      be: "Анімэ-серыял",
+      zh: "动漫剧集",
+      pt: "S\xE9rie de anime",
+      bg: "Аниме сериал",
+      he: "סדרת אנימה",
+      cs: "Anime seri\xE1l",
+      ro: "Serial anime",
+      pl: "Serial anime"
+    },
+    "Аниме-фильм": {
+      en: "Anime movie",
+      fr: "Film d’anime",
+      uk: "Аніме-фільм",
+      be: "Анімэ-фільм",
+      zh: "动漫电影",
+      pt: "Filme de anime",
+      bg: "Аниме филм",
+      he: "סרט אנימה",
+      cs: "Anime film",
+      ro: "Film anime",
+      pl: "Film anime"
+    },
+    Сериал: {
+      en: "TV series",
+      fr: "S\xE9rie TV",
+      uk: "Серіал",
+      be: "Серыял",
+      zh: "剧集",
+      pt: "S\xE9rie",
+      bg: "Сериал",
+      he: "סדרה",
+      cs: "Seri\xE1l",
+      ro: "Serial",
+      pl: "Serial"
+    },
+    Фильм: {
+      en: "Movie",
+      fr: "Film",
+      uk: "Фільм",
+      be: "Фільм",
+      zh: "电影",
+      pt: "Filme",
+      bg: "Филм",
+      he: "סרט",
+      cs: "Film",
+      ro: "Film",
+      pl: "Film"
+    },
+    "Дата релиза": {
+      en: "date of release",
+      uk: "Дата релізу",
+      be: "Дата рэлізу",
+      zh: "发布日期",
+      pt: "Data de lan\xE7amento",
+      bg: "дата на пускане",
+      he: "תאריך השקה",
+      cs: "Datum vyd\xE1n\xED",
+      ro: "Data lansării",
+      fr: "Date de sortie",
+      pl: "Data premiery"
+    },
+    "Длительность серии": {
+      en: "Episode runtime",
+      fr: "Durée d’un épisode",
+      uk: "Тривалість серії",
+      be: "Працягласць серыі",
+      zh: "单集时长",
+      pt: "Dura\xE7\xE3o do epis\xF3dio",
+      bg: "Продължителност на епизод",
+      he: "משך פרק",
+      cs: "D\xE9lka d\xEDlu",
+      ro: "Durata episodului",
+      pl: "Długość odcinka"
+    },
+    Длительность: {
+      en: "Runtime",
+      fr: "Dur\xE9e",
+      uk: "Тривалість",
+      be: "Працягласць",
+      zh: "时长",
+      pt: "Dura\xE7\xE3o",
+      bg: "Продължителност",
+      he: "משך",
+      cs: "D\xE9lka",
+      ro: "Durată",
+      pl: "Czas trwania"
+    },
+    "Тип релиза": {
+      en: "Release type",
+      fr: "Type de sortie",
+      uk: "Тип релізу",
+      be: "Тып рэлізу",
+      zh: "发行类型",
+      pt: "Tipo de lan\xE7amento",
+      bg: "Вид издание",
+      he: "סוג הפצה",
+      cs: "Typ vyd\xE1n\xED",
+      ro: "Tip lansare",
+      pl: "Typ wydania"
+    },
+    "Рейтинг TMDB": {
+      en: "TMDB rating",
+      fr: "Note TMDB",
+      uk: "Рейтинг TMDB",
+      be: "Рэйтынг TMDB",
+      zh: "TMDB评分",
+      pt: "Avalia\xE7\xE3o TMDB",
+      bg: "Оценка в TMDB",
+      he: "דירוג TMDB",
+      cs: "Hodnocen\xED TMDB",
+      ro: "Evaluare TMDB",
+      pl: "Ocena TMDB"
+    },
+    Жанры: {
+      en: "Genres",
+      fr: "Genres",
+      uk: "Жанри",
+      be: "Жанры",
+      zh: "类型",
+      pt: "G\xEAneros",
+      bg: "Жанрове",
+      he: "ז׳אנרים",
+      cs: "Žánry",
+      ro: "Genuri",
+      pl: "Gatunki"
+    },
+    "Проекты {0}": {
+      en: "Titles by {0}",
+      fr: "Titres de {0}",
+      uk: "Твори: {0}",
+      be: "Творы: {0}",
+      zh: "{0}的作品",
+      pt: "T\xEDtulos de {0}",
+      bg: "Заглавия от {0}",
+      he: "כותרים של {0}",
+      cs: "Tituly od {0}",
+      ro: "Titluri de {0}",
+      pl: "Tytuły: {0}"
+    },
+    "Укажите год от 1870 до 2100": {
+      en: "Enter a year between 1870 and 2100",
+      fr: "Saisissez une ann\xE9e entre 1870 et 2100",
+      uk: "Вкажіть рік від 1870 до 2100",
+      be: "Пакажыце год ад 1870 да 2100",
+      zh: "请输入1870至2100之间的年份",
+      pt: "Informe um ano entre 1870 e 2100",
+      bg: "Въведете година от 1870 до 2100",
+      he: "הזן שנה בין 1870 ל־2100",
+      cs: "Zadejte rok od 1870 do 2100",
+      ro: "Introdu un an între 1870 și 2100",
+      pl: "Podaj rok od 1870 do 2100"
+    },
+    "Начальный год не может быть больше конечного": {
+      en: "The start year cannot be later than the end year",
+      fr: "L’année de début doit précéder l’année de fin",
+      uk: "Початковий рік не може бути пізнішим за кінцевий",
+      be: "Пачатковы год не можа быць пазнейшым за канчатковы",
+      zh: "起始年份不能晚于结束年份",
+      pt: "O ano inicial n\xE3o pode ser posterior ao final",
+      bg: "Началната година не може да е след крайната",
+      he: "שנת ההתחלה לא יכולה להיות אחרי שנת הסיום",
+      cs: "Počáteční rok nesmí být pozdější než koncový",
+      ro: "Anul de început nu poate fi după cel de sfârșit",
+      pl: "Rok początkowy nie może być późniejszy niż końcowy"
+    },
+    "Любой статус": {
+      en: "Any status",
+      fr: "Tous les statuts",
+      uk: "Будь-який статус",
+      be: "Любы статус",
+      zh: "所有状态",
+      pt: "Qualquer status",
+      bg: "Всички състояния",
+      he: "כל המצבים",
+      cs: "Jak\xFDkoli stav",
+      ro: "Orice stare",
+      pl: "Dowolny status"
+    },
+    Выходит: {
+      en: "Airing",
+      fr: "En cours",
+      uk: "Виходить",
+      be: "Выходзіць",
+      zh: "连载中",
+      pt: "Em exibi\xE7\xE3o",
+      bg: "Излъчва се",
+      he: "משודר",
+      cs: "Vys\xEDl\xE1 se",
+      ro: "\xCEn difuzare",
+      pl: "Emitowany"
+    },
+    Вышло: {
+      en: "Released",
+      uk: "Випущено",
+      be: "Выпушчаны",
+      zh: "已发布",
+      pt: "Lan\xE7ado",
+      bg: "Излъчен",
+      cs: "Vyd\xE1no",
+      ro: "Lansat",
+      fr: "Sorti",
+      pl: "Wydane",
+      he: "יצא"
+    },
+    Анонс: {
+      en: "Announcement",
+      uk: "Анонс",
+      be: "Анонс",
+      zh: "公告",
+      pt: "An\xFAncio",
+      bg: "Съобщение",
+      he: "הודעה",
+      cs: "Ozn\xE1men\xED",
+      ro: "Anunț",
+      fr: "Annonce",
+      pl: "Zapowiedź"
+    },
+    "Любой формат": {
+      en: "Any format",
+      fr: "Tous les formats",
+      uk: "Будь-який формат",
+      be: "Любы фармат",
+      zh: "所有格式",
+      pt: "Qualquer formato",
+      bg: "Всички формати",
+      he: "כל הפורמטים",
+      cs: "Jak\xFDkoli form\xE1t",
+      ro: "Orice format",
+      pl: "Dowolny format"
+    },
+    Спешл: {
+      en: "Special",
+      fr: "Sp\xE9cial",
+      uk: "Спецвипуск",
+      be: "Спецвыпуск",
+      zh: "特别篇",
+      pt: "Especial",
+      bg: "Специален епизод",
+      he: "פרק מיוחד",
+      cs: "Speci\xE1l",
+      ro: "Special",
+      pl: "Odcinek specjalny"
+    },
+    Популярность: {
+      en: "Popularity",
+      fr: "Popularit\xE9",
+      uk: "Популярність",
+      be: "Папулярнасць",
+      zh: "热度",
+      pt: "Popularidade",
+      bg: "Популярност",
+      he: "פופולריות",
+      cs: "Popularita",
+      ro: "Popularitate",
+      pl: "Popularność"
+    },
+    Рейтинг: {
+      en: "Rating",
+      uk: "Рейтинг",
+      be: "Рэйтынг",
+      zh: "评级",
+      pt: "Classifica\xE7\xE3o",
+      bg: "Оценка",
+      he: "דירוג",
+      cs: "Hodnocen\xED",
+      ro: "Rating",
+      fr: "Note",
+      pl: "Ocena"
+    },
+    "Дата выхода": {
+      en: "Release date",
+      fr: "Date de sortie",
+      uk: "Дата виходу",
+      be: "Дата выхаду",
+      zh: "发行日期",
+      pt: "Data de lan\xE7amento",
+      bg: "Дата на излизане",
+      he: "תאריך יציאה",
+      cs: "Datum vyd\xE1n\xED",
+      ro: "Data lansării",
+      pl: "Data premiery"
+    },
+    Название: {
+      en: "Title",
+      fr: "Titre",
+      uk: "Назва",
+      be: "Назва",
+      zh: "标题",
+      pt: "T\xEDtulo",
+      bg: "Заглавие",
+      he: "כותרת",
+      cs: "N\xE1zev",
+      ro: "Titlu",
+      pl: "Tytuł"
+    },
+    "Любой язык": {
+      en: "Any language",
+      fr: "Toutes les langues",
+      uk: "Будь-яка мова",
+      be: "Любая мова",
+      zh: "所有语言",
+      pt: "Qualquer idioma",
+      bg: "Всички езици",
+      he: "כל השפות",
+      cs: "Jak\xFDkoli jazyk",
+      ro: "Orice limbă",
+      pl: "Dowolny język"
+    },
+    Японский: {
+      en: "Japanese",
+      uk: "Японська",
+      be: "Японская",
+      zh: "日语",
+      pt: "Japon\xEAs",
+      bg: "японски",
+      he: "Japanese",
+      cs: "Japonština",
+      ro: "Japoneză",
+      fr: "Japonais",
+      pl: "Japoński"
+    },
+    Корейский: {
+      en: "Korean",
+      uk: "Корейська",
+      be: "Карэйская",
+      zh: "韩语",
+      pt: "Coreano",
+      bg: "корейски",
+      he: "Korean",
+      cs: "Korejština",
+      ro: "Coreeană",
+      fr: "Cor\xE9en",
+      pl: "Koreański"
+    },
+    Жанр: {
+      en: "Genre",
+      uk: "Жанр",
+      be: "Жанр",
+      zh: "类型",
+      pt: "G\xEAnero",
+      bg: "Жанр",
+      he: "סגנון",
+      cs: "Žánr",
+      ro: "Gen",
+      fr: "Genre",
+      pl: "Gatunek"
+    },
+    "Любой жанр": {
+      en: "Any genre",
+      fr: "Tous les genres",
+      uk: "Будь-який жанр",
+      be: "Любы жанр",
+      zh: "所有类型",
+      pt: "Qualquer g\xEAnero",
+      bg: "Всички жанрове",
+      he: "כל הז׳אנרים",
+      cs: "Jakýkoli žánr",
+      ro: "Orice gen",
+      pl: "Dowolny gatunek"
+    },
+    "Не удалось загрузить жанры Shikimori": {
+      en: "Could not load Shikimori genres",
+      fr: "Impossible de charger les genres Shikimori",
+      uk: "Не вдалося завантажити жанри Shikimori",
+      be: "Не ўдалося загрузіць жанры Shikimori",
+      zh: "无法加载Shikimori类型",
+      pt: "N\xE3o foi poss\xEDvel carregar g\xEAneros do Shikimori",
+      bg: "Неуспешно зареждане на жанрове от Shikimori",
+      he: "לא ניתן לטעון ז׳אנרים מ־Shikimori",
+      cs: "Nelze načíst žánry Shikimori",
+      ro: "Nu se pot încărca genurile Shikimori",
+      pl: "Nie można wczytać gatunków Shikimori"
+    },
+    "Не удалось загрузить жанры": {
+      en: "Could not load genres",
+      fr: "Impossible de charger les genres",
+      uk: "Не вдалося завантажити жанри",
+      be: "Не ўдалося загрузіць жанры",
+      zh: "无法加载类型",
+      pt: "N\xE3o foi poss\xEDvel carregar g\xEAneros",
+      bg: "Неуспешно зареждане на жанрове",
+      he: "לא ניתן לטעון ז׳אנרים",
+      cs: "Nelze načíst žánry",
+      ro: "Nu se pot încărca genurile",
+      pl: "Nie można wczytać gatunków"
+    },
+    "{0} · фильтры": {
+      en: "{0} \xB7 filters",
+      fr: "{0} \xB7 filtres",
+      uk: "{0} · фільтри",
+      be: "{0} · фільтры",
+      zh: "{0} · 筛选",
+      pt: "{0} \xB7 filtros",
+      bg: "{0} · филтри",
+      he: "{0} · מסננים",
+      cs: "{0} \xB7 filtry",
+      ro: "{0} \xB7 filtre",
+      pl: "{0} \xB7 filtry"
+    },
+    "Некорректные параметры поиска": {
+      en: "Invalid search parameters",
+      fr: "Param\xE8tres de recherche invalides",
+      uk: "Некоректні параметри пошуку",
+      be: "Некарэктныя параметры пошуку",
+      zh: "搜索参数无效",
+      pt: "Par\xE2metros de busca inv\xE1lidos",
+      bg: "Невалидни параметри за търсене",
+      he: "פרמטרי חיפוש לא תקינים",
+      cs: "Neplatn\xE9 parametry hled\xE1n\xED",
+      ro: "Parametri de căutare incorecți",
+      pl: "Nieprawidłowe parametry wyszukiwania"
+    },
+    "Любые годы": {
+      en: "Any year",
+      fr: "Toutes les ann\xE9es",
+      uk: "Будь-які роки",
+      be: "Любыя гады",
+      zh: "所有年份",
+      pt: "Qualquer ano",
+      bg: "Всички години",
+      he: "כל השנים",
+      cs: "Jak\xFDkoli rok",
+      ro: "Orice an",
+      pl: "Dowolne lata"
+    },
+    Каталог: {
+      en: "Catalog",
+      uk: "Каталог",
+      be: "Каталог",
+      zh: "目录",
+      pt: "Cat\xE1logo",
+      bg: "Каталог",
+      he: "קטלוג",
+      cs: "Katalog",
+      ro: "Catalog",
+      fr: "Catalogue",
+      pl: "Katalog"
+    },
+    "Любое название": {
+      en: "Any title",
+      fr: "Tous les titres",
+      uk: "Будь-яка назва",
+      be: "Любая назва",
+      zh: "不限标题",
+      pt: "Qualquer t\xEDtulo",
+      bg: "Всички заглавия",
+      he: "כל הכותרים",
+      cs: "Jak\xFDkoli n\xE1zev",
+      ro: "Orice titlu",
+      pl: "Dowolny tytuł"
+    },
+    "Годы выпуска": {
+      en: "Release years",
+      fr: "Ann\xE9es de sortie",
+      uk: "Роки випуску",
+      be: "Гады выпуску",
+      zh: "发行年份",
+      pt: "Anos de lan\xE7amento",
+      bg: "Години на излизане",
+      he: "שנות יציאה",
+      cs: "Roky vyd\xE1n\xED",
+      ro: "Ani de lansare",
+      pl: "Lata premiery"
+    },
+    "От {0}": {
+      en: "From {0}",
+      fr: "\xC0 partir de {0}",
+      uk: "Від {0}",
+      be: "Ад {0}",
+      zh: "从{0}起",
+      pt: "A partir de {0}",
+      bg: "От {0}",
+      he: "מ־{0}",
+      cs: "Od {0}",
+      ro: "De la {0}",
+      pl: "Od {0}"
+    },
+    Любой: {
+      en: "Any",
+      uk: "Будь-який",
+      be: "Любы",
+      zh: "任何",
+      pt: "Qualquer",
+      bg: "Всеки",
+      he: "Any",
+      cs: "Jak\xFDkoli",
+      ro: "Oricare",
+      fr: "Tous",
+      pl: "Dowolny"
+    },
+    Статус: {
+      en: "Status",
+      uk: "Статус",
+      be: "Статус",
+      zh: "状态",
+      pt: "Estado",
+      bg: "Статус",
+      he: "מצב",
+      cs: "Stav",
+      ro: "Stare",
+      fr: "Statut",
+      pl: "Status"
+    },
+    Формат: {
+      en: "Format",
+      fr: "Format",
+      uk: "Формат",
+      be: "Фармат",
+      zh: "格式",
+      pt: "Formato",
+      bg: "Формат",
+      he: "פורמט",
+      cs: "Form\xE1t",
+      ro: "Format",
+      pl: "Format"
+    },
+    "Число оценок": {
+      en: "Rating count",
+      fr: "Nombre de notes",
+      uk: "Кількість оцінок",
+      be: "Колькасць ацэнак",
+      zh: "评分人数",
+      pt: "N\xFAmero de avalia\xE7\xF5es",
+      bg: "Брой оценки",
+      he: "מספר דירוגים",
+      cs: "Počet hodnocení",
+      ro: "Număr de evaluări",
+      pl: "Liczba ocen"
+    },
+    Любое: {
+      en: "Any",
+      uk: "Будь-яке",
+      be: "Любое",
+      zh: "任何",
+      pt: "Qualquer",
+      bg: "Всеки",
+      he: "כל",
+      cs: "Jak\xFDkoli",
+      ro: "Oricare",
+      fr: "Tous",
+      pl: "Dowolne"
+    },
+    "Язык оригинала": {
+      en: "Original language",
+      uk: "Мова оригіналу",
+      be: "Арыгінальная мова",
+      zh: "原始语言",
+      pt: "Idioma original",
+      bg: "Оригинален език",
+      he: "שפת מקור",
+      cs: "Jazyk origin\xE1lu",
+      ro: "Limba originală",
+      fr: "Langue originale",
+      pl: "Język oryginalny"
+    },
+    Сортировка: {
+      en: "Sort by",
+      fr: "Trier par",
+      uk: "Сортувати за",
+      be: "Сартаваць паводле",
+      zh: "排序方式",
+      pt: "Ordenar por",
+      bg: "Подреждане по",
+      he: "מיין לפי",
+      cs: "Řadit podle",
+      ro: "Sortează după",
+      pl: "Sortuj według"
+    },
+    "По совпадению названия": {
+      en: "Title match",
+      fr: "Correspondance du titre",
+      uk: "Збіг назви",
+      be: "Супадзенне назвы",
+      zh: "标题匹配度",
+      pt: "Correspond\xEAncia do t\xEDtulo",
+      bg: "Съвпадение на заглавието",
+      he: "התאמת כותרת",
+      cs: "Shoda n\xE1zvu",
+      ro: "Potrivirea titlului",
+      pl: "Dopasowanie tytułu"
+    },
+    "Показать результаты": {
+      en: "Show results",
+      fr: "Afficher les r\xE9sultats",
+      uk: "Показати результати",
+      be: "Паказаць вынікі",
+      zh: "显示结果",
+      pt: "Mostrar resultados",
+      bg: "Показване на резултатите",
+      he: "הצג תוצאות",
+      cs: "Zobrazit v\xFDsledky",
+      ro: "Afișează rezultatele",
+      pl: "Pokaż wyniki"
+    },
+    "Сбросить фильтры": {
+      en: "Reset filters",
+      fr: "R\xE9initialiser les filtres",
+      uk: "Скинути фільтри",
+      be: "Скінуць фільтры",
+      zh: "重置筛选",
+      pt: "Redefinir filtros",
+      bg: "Нулиране на филтрите",
+      he: "אפס מסננים",
+      cs: "Obnovit filtry",
+      ro: "Resetează filtrele",
+      pl: "Zresetuj filtry"
+    },
+    "Поиск и фильтры": {
+      en: "Search and filters",
+      fr: "Recherche et filtres",
+      uk: "Пошук і фільтри",
+      be: "Пошук і фільтры",
+      zh: "搜索与筛选",
+      pt: "Busca e filtros",
+      bg: "Търсене и филтри",
+      he: "חיפוש ומסננים",
+      cs: "Hled\xE1n\xED a filtry",
+      ro: "Căutare și filtre",
+      pl: "Wyszukiwanie i filtry"
+    },
+    "Год от": {
+      en: "Year from",
+      fr: "Depuis l’année",
+      uk: "Рік від",
+      be: "Год ад",
+      zh: "起始年份",
+      pt: "Ano inicial",
+      bg: "Начална година",
+      he: "משנה",
+      cs: "Od roku",
+      ro: "Din anul",
+      pl: "Rok od"
+    },
+    "Без ограничения": {
+      en: "No limit",
+      fr: "Sans limite",
+      uk: "Без обмеження",
+      be: "Без абмежавання",
+      zh: "不限",
+      pt: "Sem limite",
+      bg: "Без ограничение",
+      he: "ללא הגבלה",
+      cs: "Bez omezen\xED",
+      ro: "Fără limită",
+      pl: "Bez ograniczeń"
+    },
+    "Год до": {
+      en: "Year to",
+      fr: "Jusqu’à l’année",
+      uk: "Рік до",
+      be: "Год да",
+      zh: "结束年份",
+      pt: "Ano final",
+      bg: "Крайна година",
+      he: "עד שנה",
+      cs: "Do roku",
+      ro: "Până în anul",
+      pl: "Rok do"
+    },
+    "Минимальное число оценок": {
+      en: "Minimum rating count",
+      fr: "Nombre minimum de notes",
+      uk: "Мінімальна кількість оцінок",
+      be: "Мінімальная колькасць ацэнак",
+      zh: "最少评分人数",
+      pt: "M\xEDnimo de avalia\xE7\xF5es",
+      bg: "Минимален брой оценки",
+      he: "מספר דירוגים מזערי",
+      cs: "Minimální počet hodnocení",
+      ro: "Număr minim de evaluări",
+      pl: "Minimalna liczba ocen"
+    },
+    "Минимальный рейтинг": {
+      en: "Minimum rating",
+      fr: "Note minimum",
+      uk: "Мінімальний рейтинг",
+      be: "Мінімальны рэйтынг",
+      zh: "最低评分",
+      pt: "Avalia\xE7\xE3o m\xEDnima",
+      bg: "Минимална оценка",
+      he: "דירוג מזערי",
+      cs: "Minim\xE1ln\xED hodnocen\xED",
+      ro: "Evaluare minimă",
+      pl: "Minimalna ocena"
+    },
+    "Поиск по фильтрам": {
+      en: "Search with filters",
+      fr: "Recherche avec filtres",
+      uk: "Пошук за фільтрами",
+      be: "Пошук па фільтрах",
+      zh: "筛选搜索",
+      pt: "Busca com filtros",
+      bg: "Търсене с филтри",
+      he: "חיפוש עם מסננים",
+      cs: "Hled\xE1n\xED s filtry",
+      ro: "Căutare cu filtre",
+      pl: "Wyszukiwanie z filtrami"
+    },
+    "Фильмы, сериалы и аниме: жанр, диапазон годов, рейтинг и другие параметры.": {
+      en: "Movies, series and anime: genre, year range, rating and more.",
+      fr: "Films, s\xE9ries et anime : genre, ann\xE9es, note et autres crit\xE8res.",
+      uk: "Фільми, серіали й аніме: жанр, роки, рейтинг та інше.",
+      be: "Фільмы, серыялы і анімэ: жанр, гады, рэйтынг і іншае.",
+      zh: "电影、剧集与动漫：类型、年份、评分等筛选。",
+      pt: "Filmes, s\xE9ries e anime: g\xEAnero, anos, avalia\xE7\xE3o e mais.",
+      bg: "Филми, сериали и аниме: жанр, години, оценка и още.",
+      he: "סרטים, סדרות ואנימה: ז׳אנר, שנים, דירוג ועוד.",
+      cs: "Filmy, seriály a anime: žánr, roky, hodnocení a další.",
+      ro: "Filme, seriale și anime: gen, ani, evaluare și altele.",
+      pl: "Filmy, seriale i anime: gatunek, lata, ocena i inne."
+    },
+    Хэллоуин: {
+      en: "Halloween",
+      fr: "Halloween",
+      uk: "Гелловін",
+      be: "Хэлоўін",
+      zh: "万圣节",
+      pt: "Halloween",
+      bg: "Хелоуин",
+      he: "ליל כל הקדושים",
+      cs: "Halloween",
+      ro: "Halloween",
+      pl: "Halloween"
+    },
+    "Чёрная пятница": {
+      en: "Black Friday",
+      fr: "Black Friday",
+      uk: "Чорна п’ятниця",
+      be: "Чорная пятніца",
+      zh: "黑色星期五",
+      pt: "Black Friday",
+      bg: "Черен петък",
+      he: "בלאק פריידיי",
+      cs: "Černý pátek",
+      ro: "Vinerea neagră",
+      pl: "Czarny piątek"
+    },
+    "Зимнее оформление": {
+      en: "Winter theme",
+      fr: "Th\xE8me hivernal",
+      uk: "Зимова тема",
+      be: "Зімовая тэма",
+      zh: "冬日主题",
+      pt: "Tema de inverno",
+      bg: "Зимна тема",
+      he: "ערכת חורף",
+      cs: "Zimn\xED motiv",
+      ro: "Temă de iarnă",
+      pl: "Motyw zimowy"
+    },
+    "Новый год": {
+      en: "New Year",
+      fr: "Nouvel An",
+      uk: "Новий рік",
+      be: "Новы год",
+      zh: "新年",
+      pt: "Ano Novo",
+      bg: "Нова година",
+      he: "השנה החדשה",
+      cs: "Nov\xFD rok",
+      ro: "Anul Nou",
+      pl: "Nowy Rok"
+    },
+    "8 Марта": {
+      en: "International Women's Day",
+      fr: "Journ\xE9e internationale des femmes",
+      uk: "Міжнародний жіночий день",
+      be: "Міжнародны жаночы дзень",
+      zh: "国际妇女节",
+      pt: "Dia Internacional da Mulher",
+      bg: "Международен ден на жената",
+      he: "יום האישה הבינלאומי",
+      cs: "Mezinárodní den žen",
+      ro: "Ziua Internațională a Femeii",
+      pl: "Międzynarodowy Dzień Kobiet"
+    },
+    Медиатека: {
+      en: "Library",
+      fr: "Biblioth\xE8que",
+      uk: "Бібліотека",
+      be: "Бібліятэка",
+      zh: "媒体库",
+      pt: "Biblioteca",
+      bg: "Библиотека",
+      he: "ספרייה",
+      cs: "Knihovna",
+      ro: "Bibliotecă",
+      pl: "Biblioteka"
+    },
+    "Расписание доступно в медиатеке Lampa": {
+      en: "The schedule is available in the Lampa library",
+      fr: "Le programme est disponible dans la biblioth\xE8que Lampa",
+      uk: "Розклад доступний у бібліотеці Lampa",
+      be: "Расклад даступны ў бібліятэцы Lampa",
+      zh: "节目表可在Lampa媒体库中查看",
+      pt: "A programa\xE7\xE3o est\xE1 dispon\xEDvel na biblioteca Lampa",
+      bg: "Програмата е достъпна в библиотеката на Lampa",
+      he: "לוח השידורים זמין בספריית Lampa",
+      cs: "Program je dostupný v knihovně Lampa",
+      ro: "Programul este disponibil \xEEn biblioteca Lampa",
+      pl: "Harmonogram jest dostępny w bibliotece Lampa"
+    },
+    Поиск: {
+      en: "Search",
+      uk: "Пошук",
+      be: "Пошук",
+      zh: "搜索",
+      pt: "Pesquisar",
+      bg: "Търсене",
+      he: "חיפוש",
+      cs: "Hledat",
+      ro: "Căutare",
+      fr: "Recherche",
+      pl: "Wyszukiwanie"
+    },
+    Расписание: {
+      en: "Schedule",
+      uk: "Розклад",
+      be: "Расклад",
+      zh: "日历",
+      pt: "Calend\xE1rio",
+      bg: "Разписание",
+      he: "לוח זמנים",
+      cs: "Rozvrh",
+      ro: "Program",
+      fr: "Calendrier",
+      pl: "Harmonogram"
+    },
+    Настройки: {
+      en: "Settings",
+      uk: "Налаштування",
+      be: "Налады",
+      zh: "设置",
+      pt: "Configura\xE7\xF5es",
+      bg: "Настройки",
+      he: "הגדרות",
+      cs: "Nastaven\xED",
+      ro: "Setări",
+      fr: "Param\xE8tres",
+      pl: "Ustawienia"
+    },
+    Меню: {
+      en: "Menu",
+      fr: "Menu",
+      uk: "Меню",
+      be: "Меню",
+      zh: "菜单",
+      pt: "Menu",
+      bg: "Меню",
+      he: "תפריט",
+      cs: "Nab\xEDdka",
+      ro: "Meniu",
+      pl: "Menu"
+    },
+    "Обложка {0}: {1}": {
+      en: "Cover {0}: {1}",
+      fr: "Affiche {0} : {1}",
+      uk: "Обкладинка {0}: {1}",
+      be: "Вокладка {0}: {1}",
+      zh: "封面{0}：{1}",
+      pt: "Capa {0}: {1}",
+      bg: "Обложка {0}: {1}",
+      he: "עטיפה {0}: {1}",
+      cs: "Obal {0}: {1}",
+      ro: "Copertă {0}: {1}",
+      pl: "Okładka {0}: {1}"
+    },
+    "Минималистичный интерфейс": {
+      en: "Interface styling",
+      fr: "Style de l’interface",
+      uk: "Оформлення інтерфейсу",
+      be: "Афармленне інтэрфейсу",
+      zh: "界面外观",
+      pt: "Estilo da interface",
+      bg: "Оформление на интерфейса",
+      he: "עיצוב הממשק",
+      cs: "Vzhled rozhran\xED",
+      ro: "Stilul interfeței",
+      pl: "Wygląd interfejsu"
+    },
+    "Единый стиль каталога, карточек, источников и настроек. Версия {0}.": {
+      en: "One style for the catalogue, cards, sources and settings. Version {0}.",
+      fr: "Un style commun au catalogue, aux fiches, aux sources et aux r\xE9glages. Version {0}.",
+      uk: "Єдиний стиль каталогу, карток, джерел і налаштувань. Версія {0}.",
+      be: "Адзіны стыль каталога, картак, крыніц і налад. Версія {0}.",
+      zh: "目录、卡片、来源与设置的统一外观。版本{0}。",
+      pt: "Estilo \xFAnico para cat\xE1logo, cart\xF5es, fontes e configura\xE7\xF5es. Vers\xE3o {0}.",
+      bg: "Общ стил за каталог, карти, източници и настройки. Версия {0}.",
+      he: "עיצוב אחיד לקטלוג, לכרטיסים, למקורות ולהגדרות. גרסה {0}.",
+      cs: "Jednotný styl katalogu, karet, zdrojů a nastavení. Verze {0}.",
+      ro: "Stil comun pentru catalog, fișe, surse și setări. Versiunea {0}.",
+      pl: "Wspólny styl katalogu, kart, źródeł i ustawień. Wersja {0}."
+    },
+    "Обложка на главной": {
+      en: "Home cover",
+      fr: "Bannière d’accueil",
+      uk: "Обкладинка головної",
+      be: "Вокладка галоўнай",
+      zh: "首页横幅",
+      pt: "Banner inicial",
+      bg: "Банер на началния екран",
+      he: "באנר הבית",
+      cs: "\xDAvodn\xED banner",
+      ro: "Banner principal",
+      pl: "Baner główny"
+    },
+    "Карусель каждые 10 секунд, ручное переключение и жесты.": {
+      en: "Carousel every 10 seconds, manual switching and gestures.",
+      fr: "Carrousel toutes les 10 secondes, navigation manuelle et gestes.",
+      uk: "Карусель кожні 10 секунд, ручне перемикання й жести.",
+      be: "Карусель кожныя 10 секунд, ручное пераключэнне і жэсты.",
+      zh: "每10秒轮播，支持手动切换和手势。",
+      pt: "Carrossel a cada 10 segundos, troca manual e gestos.",
+      bg: "Карусел през 10 секунди, ръчно превключване и жестове.",
+      he: "קרוסלה כל 10 שניות, מעבר ידני ומחוות.",
+      cs: "Karusel po 10 sekundách, ruční přepínání a gesta.",
+      ro: "Carusel la 10 secunde, schimbare manuală și gesturi.",
+      pl: "Karuzela co 10 sekund, ręczne przełączanie i gesty."
+    },
+    "Уточнять данные mpv+": {
+      en: "Refine mpv+ metadata",
+      fr: "Pr\xE9ciser les m\xE9tadonn\xE9es mpv+",
+      uk: "Уточнювати метадані mpv+",
+      be: "Удакладняць метаданыя mpv+",
+      zh: "完善mpv+元数据",
+      pt: "Refinar metadados mpv+",
+      bg: "Уточняване на метаданни за mpv+",
+      he: "שיפור מטא־נתונים ל־mpv+",
+      cs: "Upřesnit metadata mpv+",
+      ro: "Rafinează metadatele mpv+",
+      pl: "Uściślij metadane mpv+"
+    },
+    "Передавать сведения карточки для проверки названия, сезона и серии.": {
+      en: "Send card metadata to verify the title, season and episode.",
+      fr: "Envoyer les métadonnées pour vérifier le titre, la saison et l’épisode.",
+      uk: "Надсилати метадані для перевірки назви, сезону й серії.",
+      be: "Адпраўляць метаданыя для праверкі назвы, сезона і серыі.",
+      zh: "发送卡片元数据以核对标题、季与集。",
+      pt: "Enviar metadados para verificar t\xEDtulo, temporada e epis\xF3dio.",
+      bg: "Изпращане на метаданни за проверка на заглавие, сезон и епизод.",
+      he: "שלח נתונים לאימות הכותרת, העונה והפרק.",
+      cs: "Odeslat metadata pro ověření názvu, řady a dílu.",
+      ro: "Trimite metadate pentru verificarea titlului, sezonului și episodului.",
+      pl: "Wyślij metadane do sprawdzenia tytułu, sezonu i odcinka."
+    },
+    Минималистичная: {
+      en: "Minimal",
+      fr: "Minimaliste",
+      uk: "Мінімалістична",
+      be: "Мінімалістычная",
+      zh: "简约",
+      pt: "Minimalista",
+      bg: "Минималистична",
+      he: "מינימליסטי",
+      cs: "Minimalistick\xFD",
+      ro: "Minimalist",
+      pl: "Minimalistyczny"
+    },
+    "Тема интерфейса": {
+      en: "Interface theme",
+      fr: "Thème de l’interface",
+      uk: "Тема інтерфейсу",
+      be: "Тэма інтэрфейсу",
+      zh: "界面主题",
+      pt: "Tema da interface",
+      bg: "Тема на интерфейса",
+      he: "ערכת עיצוב",
+      cs: "Motiv rozhran\xED",
+      ro: "Tema interfeței",
+      pl: "Motyw interfejsu"
+    },
+    "Оформление всей Lampa. Переключается сразу, данные просмотра сохраняются.": {
+      en: "A theme for all of Lampa. Applies immediately and keeps viewing data.",
+      fr: "Th\xE8me pour toute Lampa. Application imm\xE9diate, donn\xE9es de visionnage conserv\xE9es.",
+      uk: "Тема для всієї Lampa. Застосовується одразу, дані перегляду зберігаються.",
+      be: "Тэма для ўсёй Lampa. Ужываецца адразу, даныя прагляду захоўваюцца.",
+      zh: "适用于整个Lampa，立即生效并保留观看数据。",
+      pt: "Tema para toda a Lampa. Aplica na hora e mant\xE9m os dados de reprodu\xE7\xE3o.",
+      bg: "Тема за цялата Lampa. Прилага се веднага и запазва данните за гледане.",
+      he: "ערכת עיצוב לכל Lampa. חלה מיד ושומרת את נתוני הצפייה.",
+      cs: "Motiv pro celou Lampu. Plat\xED ihned a zachov\xE1 data sledov\xE1n\xED.",
+      ro: "Temă pentru toată Lampa. Se aplică imediat și păstrează datele de vizionare.",
+      pl: "Motyw dla całej Lampa. Działa od razu, zachowuje dane oglądania."
+    },
+    Телевизор: {
+      en: "TV",
+      fr: "T\xE9l\xE9viseur",
+      uk: "Телевізор",
+      be: "Тэлевізар",
+      zh: "电视",
+      pt: "TV",
+      bg: "Телевизор",
+      he: "טלוויזיה",
+      cs: "Televizor",
+      ro: "Televizor",
+      pl: "Telewizor"
+    },
+    Телефон: {
+      en: "Phone",
+      fr: "T\xE9l\xE9phone",
+      uk: "Телефон",
+      be: "Тэлефон",
+      zh: "手机",
+      pt: "Celular",
+      bg: "Телефон",
+      he: "טלפון",
+      cs: "Telefon",
+      ro: "Telefon",
+      pl: "Telefon"
+    },
+    Компьютер: {
+      en: "Computer",
+      fr: "Ordinateur",
+      uk: "Комп’ютер",
+      be: "Камп’ютар",
+      zh: "电脑",
+      pt: "Computador",
+      bg: "Компютър",
+      he: "מחשב",
+      cs: "Počítač",
+      ro: "Calculator",
+      pl: "Komputer"
+    },
+    "Тип устройства": {
+      en: "Device type",
+      fr: "Type d’appareil",
+      uk: "Тип пристрою",
+      be: "Тып прылады",
+      zh: "设备类型",
+      pt: "Tipo de dispositivo",
+      bg: "Вид устройство",
+      he: "סוג מכשיר",
+      cs: "Typ zařízení",
+      ro: "Tip dispozitiv",
+      pl: "Typ urządzenia"
+    },
+    "Авто использует режим экрана Lampa. Можно выбрать вручную.": {
+      en: "Auto uses Lampa's screen mode. You can also select a device manually.",
+      fr: "Auto utilise le mode de Lampa. S\xE9lection manuelle possible.",
+      uk: "Авто використовує режим Lampa. Можна вибрати пристрій вручну.",
+      be: "Аўта выкарыстоўвае рэжым Lampa. Можна выбраць прыладу ўручную.",
+      zh: "自动使用Lampa的屏幕模式，也可手动选择设备。",
+      pt: "Auto usa o modo da Lampa. Tamb\xE9m \xE9 poss\xEDvel escolher manualmente.",
+      bg: "Авто използва режима на Lampa. Възможен е и ръчен избор.",
+      he: "אוטומטי משתמש במצב של Lampa. ניתן לבחור ידנית.",
+      cs: "Automaticky použije režim Lampy. Lze vybrat ručně.",
+      ro: "Auto folosește modul Lampa. Poți alege și manual.",
+      pl: "Auto używa trybu Lampa. Można też wybrać ręcznie."
+    },
+    Среднее: {
+      en: "Average",
+      uk: "Середнє",
+      be: "Сярэдняе",
+      zh: "平均",
+      pt: "M\xE9dio",
+      bg: "Средно",
+      he: "ממוצע",
+      cs: "Střední",
+      ro: "Medie",
+      fr: "Moyenne",
+      pl: "Średnia"
+    },
+    Высокое: {
+      en: "High",
+      uk: "Висока",
+      be: "Высокае",
+      zh: "高",
+      pt: "Alto",
+      bg: "Високо",
+      he: "גבוה",
+      cs: "Vysok\xE1",
+      ro: "Ridicată",
+      fr: "Haute",
+      pl: "Wysoka"
+    },
+    "Качество баннеров и обложек": {
+      en: "Banner and cover quality",
+      fr: "Qualit\xE9 des banni\xE8res et affiches",
+      uk: "Якість банерів та обкладинок",
+      be: "Якасць банераў і вокладак",
+      zh: "横幅与封面画质",
+      pt: "Qualidade de banners e capas",
+      bg: "Качество на банери и обложки",
+      he: "איכות באנרים ועטיפות",
+      cs: "Kvalita bannerů a obalů",
+      ro: "Calitatea bannerelor și coperților",
+      pl: "Jakość banerów i okładek"
+    },
+    "Общее качество баннеров, фонов загрузки и карточек. Высокое подбирает чёткий размер под экран и использует общий кеш обложек.": {
+      en: "Shared quality for banners, loading backgrounds and cards. High uses a suitable sharp source and a shared cover cache.",
+      fr: "Qualit\xE9 commune aux images. Haute : source nette adapt\xE9e et cache partag\xE9.",
+      uk: "Спільна якість зображень. Висока: чітке джерело та спільний кеш обкладинок.",
+      be: "Агульная якасць выяў. Высокая: выразная крыніца і агульны кэш вокладак.",
+      zh: "统一图片画质。高画质使用适当的清晰源图和共享缓存。",
+      pt: "Qualidade comum das imagens. Alta: fonte n\xEDtida adequada e cache compartilhado.",
+      bg: "Общо качество на изображенията. Високо: ясен източник и общ кеш.",
+      he: "איכות אחידה לתמונות. גבוהה: מקור חד מתאים ומטמון משותף.",
+      cs: "Společná kvalita obrázků. Vysoká: vhodný ostrý zdroj a sdílená mezipaměť.",
+      ro: "Calitate comună a imaginilor. Înaltă: sursă clară potrivită și cache comun.",
+      pl: "Wspólna jakość obrazów. Wysoka: odpowiednie ostre źródło i wspólna pamięć."
+    },
+    Подборка: {
+      en: "Collection",
+      uk: "Колекція",
+      be: "Калекцыя",
+      zh: "合集",
+      pt: "Cole\xE7\xE3o",
+      bg: "Колекция",
+      he: "אוסף",
+      cs: "Kolekce",
+      ro: "Colecție",
+      fr: "Collection",
+      pl: "Kolekcja"
+    },
+    "Качество доступного релиза": {
+      en: "Available release quality",
+      fr: "Qualit\xE9 des versions disponibles",
+      uk: "Якість доступного релізу",
+      be: "Якасць даступнага рэлізу",
+      zh: "可用片源画质",
+      pt: "Qualidade da vers\xE3o dispon\xEDvel",
+      bg: "Качество на наличното издание",
+      he: "איכות גרסה זמינה",
+      cs: "Kvalita dostupn\xE9ho vyd\xE1n\xED",
+      ro: "Calitatea versiunii disponibile",
+      pl: "Jakość dostępnego wydania"
+    },
+    "Предыдущая страница": {
+      en: "Previous page",
+      fr: "Page pr\xE9c\xE9dente",
+      uk: "Попередня сторінка",
+      be: "Папярэдняя старонка",
+      zh: "上一页",
+      pt: "P\xE1gina anterior",
+      bg: "Предишна страница",
+      he: "עמוד קודם",
+      cs: "Předchozí stránka",
+      ro: "Pagina anterioară",
+      pl: "Poprzednia strona"
+    },
+    "Показать ещё": {
+      en: "Show more",
+      uk: "Показати ще",
+      be: "Паказаць яшчэ",
+      zh: "显示更多",
+      pt: "Mostrar mais",
+      bg: "Покажи още",
+      he: "הצג עוד",
+      cs: "Zobrazit v\xEDce",
+      ro: "Afișează mai mult",
+      fr: "Afficher plus",
+      pl: "Pokaż więcej"
+    },
+    "Следующая страница": {
+      en: "Next page",
+      fr: "Page suivante",
+      uk: "Наступна сторінка",
+      be: "Наступная старонка",
+      zh: "下一页",
+      pt: "Pr\xF3xima p\xE1gina",
+      bg: "Следваща страница",
+      he: "עמוד הבא",
+      cs: "Další stránka",
+      ro: "Pagina următoare",
+      pl: "Następna strona"
+    },
+    "Серия {0}": {
+      en: "Episode {0}",
+      fr: "\xC9pisode {0}",
+      uk: "Серія {0}",
+      be: "Серыя {0}",
+      zh: "第{0}集",
+      pt: "Epis\xF3dio {0}",
+      bg: "Епизод {0}",
+      he: "פרק {0}",
+      cs: "D\xEDl {0}",
+      ro: "Episodul {0}",
+      pl: "Odcinek {0}"
+    },
+    "Просмотрено:": {
+      en: "Watched:",
+      uk: "Переглянуто",
+      be: "Прагледжана",
+      zh: "看至",
+      pt: "Visualizado",
+      bg: "Изгледано",
+      he: "צפייה",
+      cs: "Zhl\xE9dnuto",
+      ro: "Vizionat",
+      fr: "Vu",
+      pl: "Oglądane"
+    },
+    "Серия {0} • Сезон {1}": {
+      en: "Episode {0} • Season {1}",
+      fr: "Épisode {0} • Saison {1}",
+      uk: "Серія {0} • Сезон {1}",
+      be: "Серыя {0} • Сезон {1}",
+      zh: "第{0}集 • 第{1}季",
+      pt: "Episódio {0} • Temporada {1}",
+      bg: "Епизод {0} • Сезон {1}",
+      he: "פרק {0} • עונה {1}",
+      cs: "Díl {0} • Řada {1}",
+      ro: "Episodul {0} • Sezonul {1}",
+      pl: "Odcinek {0} • Sezon {1}"
+    },
+    "Серия {0}{1}": {
+      en: "Episode {0}{1}",
+      fr: "\xC9pisode {0}{1}",
+      uk: "Серія {0}{1}",
+      be: "Серыя {0}{1}",
+      zh: "第{0}集{1}",
+      pt: "Epis\xF3dio {0}{1}",
+      bg: "Епизод {0}{1}",
+      he: "פרק {0}{1}",
+      cs: "D\xEDl {0}{1}",
+      ro: "Episodul {0}{1}",
+      pl: "Odcinek {0}{1}"
+    },
+    " • Сезон {0}": {
+      en: " • Season {0}",
+      fr: " • Saison {0}",
+      uk: " • Сезон {0}",
+      be: " • Сезон {0}",
+      zh: " • 第{0}季",
+      pt: " • Temporada {0}",
+      bg: " • Сезон {0}",
+      he: " • עונה {0}",
+      cs: " • Řada {0}",
+      ro: " • Sezonul {0}",
+      pl: " • Sezon {0}"
+    },
+    Просмотрено: {
+      en: "Viewed",
+      uk: "Переглянуто",
+      be: "Прагледжана",
+      zh: "看至",
+      pt: "Visualizado",
+      bg: "Изгледано",
+      he: "צפייה",
+      cs: "Zhl\xE9dnuto",
+      ro: "Vizionat",
+      fr: "Vu",
+      pl: "Oglądane"
+    },
+    "Сезон {0} просмотрен": {
+      en: "Season {0} watched",
+      fr: "Saison {0} vue",
+      uk: "Сезон {0} переглянуто",
+      be: "Сезон {0} прагледжаны",
+      zh: "第{0}季已看完",
+      pt: "Temporada {0} assistida",
+      bg: "Сезон {0} е гледан",
+      he: "עונה {0} נצפתה",
+      cs: "Řada {0} zhlédnuta",
+      ro: "Sezonul {0} vizionat",
+      pl: "Sezon {0} obejrzany"
+    },
+    "Фильм просмотрен": {
+      en: "Movie watched",
+      fr: "Film vu",
+      uk: "Фільм переглянуто",
+      be: "Фільм прагледжаны",
+      zh: "电影已看完",
+      pt: "Filme assistido",
+      bg: "Филмът е гледан",
+      he: "הסרט נצפה",
+      cs: "Film zhl\xE9dnut",
+      ro: "Film vizionat",
+      pl: "Film obejrzany"
+    },
+    "Просмотрено: ": {
+      en: "Watched: ",
+      uk: "Переглянуто",
+      be: "Прагледжана",
+      zh: "看至",
+      pt: "Visualizado",
+      bg: "Изгледано",
+      he: "צפייה",
+      cs: "Zhl\xE9dnuto",
+      ro: "Vizionat",
+      fr: "Vu",
+      pl: "Oglądane"
+    },
+    "Смотреть: ": {
+      en: "Watch: ",
+      uk: "Дивитись",
+      be: "Глядзець",
+      zh: "观看",
+      pt: "Assistir",
+      bg: "Гледайте",
+      he: "צפה",
+      cs: "Sledovat",
+      ro: "Vizionează",
+      fr: "Regarder",
+      pl: "Oglądaj"
+    },
+    "Сезон {0}": {
+      en: "Season {0}",
+      fr: "Saison {0}",
+      uk: "Сезон {0}",
+      be: "Сезон {0}",
+      zh: "第{0}季",
+      pt: "Temporada {0}",
+      bg: "Сезон {0}",
+      he: "עונה {0}",
+      cs: "Řada {0}",
+      ro: "Sezonul {0}",
+      pl: "Sezon {0}"
+    },
+    "Сезон {0} • {1}{2}": {
+      en: "Season {0} • {1}{2}",
+      fr: "Saison {0} • {1}{2}",
+      uk: "Сезон {0} • {1}{2}",
+      be: "Сезон {0} • {1}{2}",
+      zh: "第{0}季 • {1}{2}",
+      pt: "Temporada {0} • {1}{2}",
+      bg: "Сезон {0} • {1}{2}",
+      he: "עונה {0} • {1}{2}",
+      cs: "Řada {0} • {1}{2}",
+      ro: "Sezonul {0} • {1}{2}",
+      pl: "Sezon {0} • {1}{2}"
+    },
+    "Серия ": {
+      en: "Episode ",
+      uk: "Серія",
+      be: "Серыя",
+      zh: "剧集",
+      pt: "Epis\xF3dio",
+      bg: "Серии",
+      he: "סדרה",
+      cs: "Epizoda",
+      ro: "Episod",
+      fr: "\xC9pisode",
+      pl: "Odcinek"
+    },
+    "Серий ": {
+      en: "Episodes ",
+      uk: "Серії",
+      be: "Серыі",
+      zh: "集",
+      pt: "Series",
+      bg: "Епизоди",
+      he: "פרקים",
+      cs: "Epizody",
+      ro: "Episoade",
+      fr: "\xC9pisodes",
+      pl: "Odcinki"
+    },
+    "Сезон {0} • ": {
+      en: "Season {0} • ",
+      fr: "Saison {0} • ",
+      uk: "Сезон {0} • ",
+      be: "Сезон {0} • ",
+      zh: "第{0}季 • ",
+      pt: "Temporada {0} • ",
+      bg: "Сезон {0} • ",
+      he: "עונה {0} • ",
+      cs: "Řada {0} • ",
+      ro: "Sezonul {0} • ",
+      pl: "Sezon {0} • "
+    },
+    "Сезон {0}: вышло {1}. История просмотра — под обложкой.": {
+      en: "Season {0}: {1} released. Your viewing history is below the cover.",
+      fr: "Saison {0} : {1} sortis. Votre historique figure sous l’affiche.",
+      uk: "Сезон {0}: вийшло {1}. Ваша історія під обкладинкою.",
+      be: "Сезон {0}: выйшла {1}. Ваша гісторыя пад вокладкай.",
+      zh: "第{0}季：已播{1}。观看记录位于封面下方。",
+      pt: "Temporada {0}: {1} lan\xE7ados. Seu hist\xF3rico fica abaixo da capa.",
+      bg: "Сезон {0}: {1} излезли. Историята е под обложката.",
+      he: "עונה {0}: {1} יצאו. היסטוריית הצפייה מתחת לעטיפה.",
+      cs: "Řada {0}: vydáno {1}. Historie je pod obalem.",
+      ro: "Sezonul {0}: {1} lansate. Istoricul este sub copertă.",
+      pl: "Sezon {0}: wydano {1}. Historia znajduje się pod okładką."
+    },
+    Оформление: {
+      en: "Appearance",
+      fr: "Apparence",
+      uk: "Оформлення",
+      be: "Афармленне",
+      zh: "外观",
+      pt: "Apar\xEAncia",
+      bg: "Оформление",
+      he: "מראה",
+      cs: "Vzhled",
+      ro: "Aspect",
+      pl: "Wygląd"
+    },
+    "Тема, обложки и устройство": {
+      en: "Theme, covers and device",
+      fr: "Th\xE8me, affiches et appareil",
+      uk: "Тема, обкладинки та пристрій",
+      be: "Тэма, вокладкі і прылада",
+      zh: "主题、封面与设备",
+      pt: "Tema, capas e dispositivo",
+      bg: "Тема, обложки и устройство",
+      he: "ערכת עיצוב, עטיפות ומכשיר",
+      cs: "Motiv, obaly a zařízení",
+      ro: "Temă, coperți și dispozitiv",
+      pl: "Motyw, okładki i urządzenie"
+    },
+    "Каталог и поиск": {
+      en: "Catalogue and search",
+      fr: "Catalogue et recherche",
+      uk: "Каталог і пошук",
+      be: "Каталог і пошук",
+      zh: "目录与搜索",
+      pt: "Cat\xE1logo e busca",
+      bg: "Каталог и търсене",
+      he: "קטלוג וחיפוש",
+      cs: "Katalog a hled\xE1n\xED",
+      ro: "Catalog și căutare",
+      pl: "Katalog i wyszukiwanie"
+    },
+    "Подборки, аниме и фильтры": {
+      en: "Collections, anime and filters",
+      fr: "Collections, anime et filtres",
+      uk: "Добірки, аніме та фільтри",
+      be: "Падборкі, анімэ і фільтры",
+      zh: "合集、动漫与筛选",
+      pt: "Cole\xE7\xF5es, anime e filtros",
+      bg: "Колекции, аниме и филтри",
+      he: "אוספים, אנימה ומסננים",
+      cs: "Kolekce, anime a filtry",
+      ro: "Colecții, anime și filtre",
+      pl: "Kolekcje, anime i filtry"
+    },
+    "Запуск, источники и озвучки": {
+      en: "Playback, sources and audio",
+      fr: "Lecture, sources et voix",
+      uk: "Відтворення, джерела та озвучки",
+      be: "Прайграванне, крыніцы і агучкі",
+      zh: "播放、来源与配音",
+      pt: "Reprodu\xE7\xE3o, fontes e vozes",
+      bg: "Възпроизвеждане, източници и озвучаване",
+      he: "ניגון, מקורות ודיבוב",
+      cs: "Přehrávání, zdroje a dabing",
+      ro: "Redare, surse și dublaj",
+      pl: "Odtwarzanie, źródła i lektorzy"
+    },
+    "Языки и субтитры": {
+      en: "Languages and subtitles",
+      fr: "Langues et sous-titres",
+      uk: "Мови та субтитри",
+      be: "Мовы і субцітры",
+      zh: "语言与字幕",
+      pt: "Idiomas e legendas",
+      bg: "Езици и субтитри",
+      he: "שפות וכתוביות",
+      cs: "Jazyky a titulky",
+      ro: "Limbi și subtitrări",
+      pl: "Języki i napisy"
+    },
+    "Предпочтения дорожек и субтитров": {
+      en: "Preferred audio tracks and subtitles",
+      fr: "Pistes audio et sous-titres pr\xE9f\xE9r\xE9s",
+      uk: "Бажані доріжки та субтитри",
+      be: "Пераважныя дарожкі і субцітры",
+      zh: "首选音轨与字幕",
+      pt: "Faixas de \xE1udio e legendas preferidas",
+      bg: "Предпочитани аудиописти и субтитри",
+      he: "רצועות קול וכתוביות מועדפות",
+      cs: "Preferovan\xE9 zvukov\xE9 stopy a titulky",
+      ro: "Piste audio și subtitrări preferate",
+      pl: "Preferowane ścieżki dźwiękowe i napisy"
+    },
+    "Торренты и поиск релизов": {
+      en: "Torrents and releases",
+      fr: "Torrents et versions",
+      uk: "Торренти та пошук релізів",
+      be: "Торэнты і пошук рэлізаў",
+      zh: "种子与片源",
+      pt: "Torrents e vers\xF5es",
+      bg: "Торенти и издания",
+      he: "טורנטים וגרסאות",
+      cs: "Torrenty a vyd\xE1n\xED",
+      ro: "Torrente și versiuni",
+      pl: "Torrenty i wydania"
+    },
+    "Названия, раздачи и параметры поиска": {
+      en: "Titles, releases and search options",
+      fr: "Titres, versions et options de recherche",
+      uk: "Назви, релізи та параметри пошуку",
+      be: "Назвы, рэлізы і параметры пошуку",
+      zh: "标题、片源与搜索选项",
+      pt: "T\xEDtulos, vers\xF5es e op\xE7\xF5es de busca",
+      bg: "Заглавия, издания и опции за търсене",
+      he: "כותרים, גרסאות ואפשרויות חיפוש",
+      cs: "N\xE1zvy, vyd\xE1n\xED a volby hled\xE1n\xED",
+      ro: "Titluri, versiuni și opțiuni de căutare",
+      pl: "Tytuły, wydania i opcje wyszukiwania"
+    },
+    Подключение: {
+      en: "Connection",
+      uk: "підключення",
+      be: "падлучэнне",
+      zh: "连接",
+      pt: "conex\xE3o",
+      bg: "връзка",
+      cs: "připojení",
+      ro: "conexiune",
+      fr: "Connexion",
+      pl: "łączenie",
+      he: "חיבור"
+    },
+    "Адрес сервера онлайн-источников": {
+      en: "Online source server address",
+      fr: "Adresse du serveur de sources en ligne",
+      uk: "Адреса сервера онлайн-джерел",
+      be: "Адрас сервера анлайн-крыніц",
+      zh: "在线来源服务器地址",
+      pt: "Endere\xE7o do servidor de fontes online",
+      bg: "Адрес на сървъра с онлайн източници",
+      he: "כתובת שרת המקורות המקוונים",
+      cs: "Adresa serveru online zdrojů",
+      ro: "Adresa serverului de surse online",
+      pl: "Adres serwera źródeł online"
+    },
+    Кеш: {
+      en: "Cache",
+      fr: "Cache",
+      uk: "Кеш",
+      be: "Кэш",
+      zh: "缓存",
+      pt: "Cache",
+      bg: "Кеш",
+      he: "מטמון",
+      cs: "Mezipaměť",
+      ro: "Cache",
+      pl: "Pamięć podręczna"
+    },
+    "Очистка сохранённых рейтингов и качества карточек": {
+      en: "Clear cached card ratings and release quality",
+      fr: "Effacer les notes et qualit\xE9s en cache",
+      uk: "Очищення кешу оцінок і якості карток",
+      be: "Ачыстка кэшу ацэнак і якасці картак",
+      zh: "清除卡片评分与画质缓存",
+      pt: "Limpar avalia\xE7\xF5es e qualidades em cache",
+      bg: "Изчистване на кеширани оценки и качество",
+      he: "ניקוי דירוגים ואיכות שמורים",
+      cs: "Vymazat uložená hodnocení a kvality",
+      ro: "Șterge evaluările și calitățile salvate",
+      pl: "Wyczyść zapisane oceny i jakości"
+    },
+    "Сервер онлайн-источников": {
+      en: "Online source server",
+      fr: "Serveur de sources en ligne",
+      uk: "Сервер онлайн-джерел",
+      be: "Сервер анлайн-крыніц",
+      zh: "在线来源服务器",
+      pt: "Servidor de fontes online",
+      bg: "Сървър с онлайн източници",
+      he: "שרת מקורות מקוונים",
+      cs: "Server online zdrojů",
+      ro: "Server de surse online",
+      pl: "Serwer źródeł online"
+    },
+    Япония: {
+      en: "Japan",
+      uk: "Японія",
+      be: "Японія",
+      zh: "日本",
+      pt: "Jap\xE3o",
+      bg: "Япония",
+      he: "Japan",
+      cs: "Japonsko",
+      ro: "Japonia",
+      fr: "Japon",
+      pl: "Japonia"
+    },
+    США: {
+      en: "USA",
+      uk: "США",
+      be: "ЗША",
+      zh: "美国",
+      pt: "EUA",
+      bg: "САЩ",
+      he: "USA",
+      cs: "USA",
+      ro: "SUA",
+      fr: "\xC9tats-Unis",
+      pl: "USA"
+    },
+    Великобритания: {
+      en: "United Kingdom",
+      uk: "Великобританія",
+      be: "Вялікабрытанія",
+      zh: "英国",
+      pt: "Reino Unido",
+      bg: "Обединено кралство",
+      he: "United Kingdom",
+      cs: "Velk\xE1 Brit\xE1nie",
+      ro: "Regatul Unit",
+      fr: "Royaume-Uni",
+      pl: "Wielka Brytania"
+    },
+    Россия: {
+      en: "Russia",
+      uk: "Росія",
+      be: "Расія",
+      zh: "俄罗斯",
+      pt: "R\xFAssia",
+      bg: "Русия",
+      he: "Russia",
+      cs: "Rusko",
+      ro: "Rusia",
+      fr: "Russie",
+      pl: "Rosja"
+    },
+    "Южная Корея": {
+      en: "South Korea",
+      uk: "Південна Корея",
+      be: "Паўднёвая Карэя",
+      zh: "韩国",
+      pt: "Coreia do Sul",
+      bg: "Южна Корея",
+      he: "South Korea",
+      cs: "Jižní Korea",
+      ro: "Coreea de Sud",
+      fr: "Cor\xE9e du Sud",
+      pl: "Korea Południowa"
+    },
+    Китай: {
+      en: "China",
+      uk: "Китай",
+      be: "Кітай",
+      zh: "中国",
+      pt: "China",
+      bg: "Китай",
+      he: "China",
+      cs: "Čína",
+      ro: "China",
+      fr: "Chine",
+      pl: "Chiny"
+    },
+    Франция: {
+      en: "France",
+      uk: "Франція",
+      be: "Францыя",
+      zh: "法国",
+      pt: "Fran\xE7a",
+      bg: "Франция",
+      he: "France",
+      cs: "Francie",
+      ro: "Franța",
+      fr: "France",
+      pl: "Francja"
+    },
+    Канада: {
+      en: "Canada",
+      uk: "Канада",
+      be: "Канада",
+      zh: "加拿大",
+      pt: "Canad\xE1",
+      bg: "Канада",
+      he: "Canada",
+      cs: "Kanada",
+      ro: "Canada",
+      fr: "Canada",
+      pl: "Kanada"
+    },
+    Германия: {
+      en: "Germany",
+      uk: "Німеччина",
+      be: "Германія",
+      zh: "德国",
+      pt: "Alemanha",
+      bg: "Германия",
+      he: "Germany",
+      cs: "Německo",
+      ro: "Germania",
+      fr: "Allemagne",
+      pl: "Niemcy"
+    },
+    Фильтры: {
+      en: "Filters",
+      fr: "Filtres",
+      uk: "Фільтри",
+      be: "Фільтры",
+      zh: "筛选",
+      pt: "Filtros",
+      bg: "Филтри",
+      he: "מסננים",
+      cs: "Filtry",
+      ro: "Filtre",
+      pl: "Filtry"
+    },
+    "Да, сбросить": {
+      en: "Yes, reset",
+      fr: "Oui, r\xE9initialiser",
+      uk: "Так, скинути",
+      be: "Так, скінуць",
+      zh: "确认重置",
+      pt: "Sim, redefinir",
+      bg: "Да, нулиране",
+      he: "כן, אפס",
+      cs: "Ano, obnovit",
+      ro: "Da, resetează",
+      pl: "Tak, zresetuj"
+    },
+    Отмена: {
+      en: "Cancel",
+      uk: "Скасувати",
+      be: "Адмяніць",
+      zh: "取消",
+      pt: "Cancelar",
+      bg: "Отказ",
+      he: "ביטול",
+      cs: "Zrušit",
+      ro: "Anulează",
+      fr: "Annuler",
+      pl: "Anuluj"
+    },
+    "Сезон {0} и весь сериал": {
+      en: "Season {0} and the whole series",
+      fr: "Saison {0} et s\xE9rie enti\xE8re",
+      uk: "Сезон {0} і весь серіал",
+      be: "Сезон {0} і ўвесь серыял",
+      zh: "第{0}季与整部剧",
+      pt: "Temporada {0} e s\xE9rie inteira",
+      bg: "Сезон {0} и целият сериал",
+      he: "עונה {0} והסדרה כולה",
+      cs: "Řada {0} a celý seriál",
+      ro: "Sezonul {0} și întregul serial",
+      pl: "Sezon {0} i cały serial"
+    },
+    "Отметить серии этого сезона": {
+      en: "Mark this season's episodes as watched",
+      fr: "Marquer les \xE9pisodes de cette saison comme vus",
+      uk: "Позначити серії цього сезону переглянутими",
+      be: "Пазначыць серыі гэтага сезона прагледжанымі",
+      zh: "将本季剧集标为已看",
+      pt: "Marcar epis\xF3dios desta temporada como assistidos",
+      bg: "Отбелязване на епизодите от сезона като гледани",
+      he: "סמן את פרקי העונה כנצפו",
+      cs: "Označit díly této řady jako zhlédnuté",
+      ro: "Marchează episoadele sezonului ca vizionate",
+      pl: "Oznacz odcinki tego sezonu jako obejrzane"
+    },
+    "Только серии, перечисленные в открытой раздаче.": {
+      en: "Only the episodes listed in this release.",
+      fr: "Uniquement les \xE9pisodes de cette version.",
+      uk: "Лише серії в цьому релізі.",
+      be: "Толькі серыі ў гэтым рэлізе.",
+      zh: "仅限此片源中列出的剧集。",
+      pt: "Apenas epis\xF3dios desta vers\xE3o.",
+      bg: "Само епизодите в това издание.",
+      he: "רק הפרקים שבגרסה הזו.",
+      cs: "Pouze d\xEDly v tomto vyd\xE1n\xED.",
+      ro: "Doar episoadele din această versiune.",
+      pl: "Tylko odcinki z tego wydania."
+    },
+    "Отметить все вышедшие серии": {
+      en: "Mark all released episodes as watched",
+      fr: "Marquer tous les \xE9pisodes sortis comme vus",
+      uk: "Позначити всі випущені серії переглянутими",
+      be: "Пазначыць усе выпушчаныя серыі прагледжанымі",
+      zh: "将所有已播剧集标为已看",
+      pt: "Marcar todos os epis\xF3dios lan\xE7ados como assistidos",
+      bg: "Отбелязване на всички излезли епизоди като гледани",
+      he: "סמן את כל הפרקים שיצאו כנצפו",
+      cs: "Označit všechny vydané díly jako zhlédnuté",
+      ro: "Marchează toate episoadele lansate ca vizionate",
+      pl: "Oznacz wszystkie wydane odcinki jako obejrzane"
+    },
+    "Все сезоны по данным каталога, без будущих серий.": {
+      en: "All seasons from the catalogue, excluding future episodes.",
+      fr: "Toutes les saisons, sans les \xE9pisodes \xE0 venir.",
+      uk: "Усі сезони каталогу, без майбутніх серій.",
+      be: "Усе сезоны каталога, без будучых серый.",
+      zh: "目录中所有季，不包括尚未播出的剧集。",
+      pt: "Todas as temporadas do cat\xE1logo, sem epis\xF3dios futuros.",
+      bg: "Всички сезони от каталога, без бъдещите епизоди.",
+      he: "כל העונות בקטלוג, ללא פרקים עתידיים.",
+      cs: "Všechny řady katalogu bez budoucích dílů.",
+      ro: "Toate sezoanele din catalog, fără episoadele viitoare.",
+      pl: "Wszystkie sezony katalogu, bez przyszłych odcinków."
+    },
+    "Очистить таймкоды текущего сезона": {
+      en: "Clear this season's timecodes",
+      fr: "Effacer les positions de cette saison",
+      uk: "Очистити таймкоди поточного сезону",
+      be: "Ачысціць таймкоды бягучага сезона",
+      zh: "清除本季播放进度",
+      pt: "Limpar posi\xE7\xF5es desta temporada",
+      bg: "Изчистване на позициите на този сезон",
+      he: "נקה מיקומי ניגון של העונה",
+      cs: "Vymazat pozice této řady",
+      ro: "Șterge pozițiile acestui sezon",
+      pl: "Wyczyść pozycje tego sezonu"
+    },
+    "Только файлы сезона {0} в этой раздаче.": {
+      en: "Only season {0} files in this release.",
+      fr: "Fichiers de la saison {0} dans cette version uniquement.",
+      uk: "Лише файли сезону {0} в цьому релізі.",
+      be: "Толькі файлы сезона {0} у гэтым рэлізе.",
+      zh: "仅限此片源中第{0}季的文件。",
+      pt: "Somente arquivos da temporada {0} nesta vers\xE3o.",
+      bg: "Само файловете от сезон {0} в това издание.",
+      he: "רק קובצי עונה {0} בגרסה הזו.",
+      cs: "Pouze soubory řady {0} v tomto vydání.",
+      ro: "Doar fișierele sezonului {0} din această versiune.",
+      pl: "Tylko pliki sezonu {0} w tym wydaniu."
+    },
+    "Очистить таймкоды всего сериала": {
+      en: "Clear all series timecodes",
+      fr: "Effacer toutes les positions de la s\xE9rie",
+      uk: "Очистити таймкоди всього серіалу",
+      be: "Ачысціць таймкоды ўсяго серыяла",
+      zh: "清除整部剧的播放进度",
+      pt: "Limpar posi\xE7\xF5es de toda a s\xE9rie",
+      bg: "Изчистване на позициите на целия сериал",
+      he: "נקה מיקומי ניגון של כל הסדרה",
+      cs: "Vymazat pozice cel\xE9ho seri\xE1lu",
+      ro: "Șterge pozițiile întregului serial",
+      pl: "Wyczyść pozycje całego serialu"
+    },
+    "Сбросить прогресс всех сезонов этого сериала.": {
+      en: "Reset progress for all seasons of this series.",
+      fr: "R\xE9initialiser la progression de toutes les saisons.",
+      uk: "Скинути прогрес усіх сезонів серіалу.",
+      be: "Скінуць прагрэс усіх сезонаў серыяла.",
+      zh: "重置此剧所有季的观看进度。",
+      pt: "Redefinir progresso de todas as temporadas.",
+      bg: "Нулиране на напредъка за всички сезони.",
+      he: "אפס התקדמות בכל עונות הסדרה.",
+      cs: "Obnovit průběh všech řad seriálu.",
+      ro: "Resetează progresul tuturor sezoanelor.",
+      pl: "Zresetuj postęp wszystkich sezonów."
+    },
+    "Снять отметку просмотра": {
+      en: "Unmark as watched",
+      fr: "Retirer la marque \xAB vu \xBB",
+      uk: "Зняти позначку перегляду",
+      be: "Зняць адзнаку прагляду",
+      zh: "取消已看标记",
+      pt: "Remover marca de assistido",
+      bg: "Премахване на отметката за гледано",
+      he: "בטל סימון כנצפה",
+      cs: "Zrušit označení zhlédnutí",
+      ro: "Elimină marcajul vizionat",
+      pl: "Usuń oznaczenie obejrzenia"
+    },
+    "Отметить серию просмотренной": {
+      en: "Mark episode as watched",
+      fr: "Marquer l’épisode comme vu",
+      uk: "Позначити серію переглянутою",
+      be: "Пазначыць серыю прагледжанай",
+      zh: "将此集标为已看",
+      pt: "Marcar epis\xF3dio como assistido",
+      bg: "Отбелязване на епизода като гледан",
+      he: "סמן פרק כנצפה",
+      cs: "Označit díl jako zhlédnutý",
+      ro: "Marchează episodul ca vizionat",
+      pl: "Oznacz odcinek jako obejrzany"
+    },
+    "Отметить фильм просмотренным": {
+      en: "Mark movie as watched",
+      fr: "Marquer le film comme vu",
+      uk: "Позначити фільм переглянутим",
+      be: "Пазначыць фільм прагледжаным",
+      zh: "将电影标为已看",
+      pt: "Marcar filme como assistido",
+      bg: "Отбелязване на филма като гледан",
+      he: "סמן סרט כנצפה",
+      cs: "Označit film jako zhlédnutý",
+      ro: "Marchează filmul ca vizionat",
+      pl: "Oznacz film jako obejrzany"
+    },
+    "Снимет отметку и сбросит прогресс.": {
+      en: "Removes the watched mark and resets progress.",
+      fr: "Retirer la marque \xAB vu \xBB et r\xE9initialiser la progression.",
+      uk: "Знімає позначку та скидає прогрес.",
+      be: "Здымае адзнаку і скідае прагрэс.",
+      zh: "取消已看标记并重置进度。",
+      pt: "Remove a marca e redefine o progresso.",
+      bg: "Премахва отметката и нулира напредъка.",
+      he: "מבטל סימון ומאפס התקדמות.",
+      cs: "Zruší označení a obnoví průběh.",
+      ro: "Elimină marcajul și resetează progresul.",
+      pl: "Usuwa oznaczenie i resetuje postęp."
+    },
+    "Сохранённая позиция не изменится.": {
+      en: "Your saved position will remain unchanged.",
+      fr: "Votre position enregistr\xE9e sera conserv\xE9e.",
+      uk: "Збережена позиція залишиться незмінною.",
+      be: "Захаваная пазіцыя застанецца нязменнай.",
+      zh: "保留已保存的播放位置。",
+      pt: "Sua posi\xE7\xE3o salva ser\xE1 mantida.",
+      bg: "Запазената позиция остава непроменена.",
+      he: "מיקום הניגון השמור יישמר.",
+      cs: "Uložená pozice zůstane zachována.",
+      ro: "Poziția salvată va rămâne neschimbată.",
+      pl: "Zapisana pozycja pozostanie bez zmian."
+    },
+    "Отметить серии 1–{0} просмотренными": {
+      en: "Mark episodes 1–{0} as watched",
+      fr: "Marquer les épisodes 1–{0} comme vus",
+      uk: "Позначити серії 1–{0} переглянутими",
+      be: "Пазначыць серыі 1–{0} прагледжанымі",
+      zh: "将第1–{0}集标为已看",
+      pt: "Marcar episódios 1–{0} como assistidos",
+      bg: "Отбелязване на епизоди 1–{0} като гледани",
+      he: "סמן פרקים 1–{0} כנצפו",
+      cs: "Označit díly 1–{0} jako zhlédnuté",
+      ro: "Marchează episoadele 1–{0} ca vizionate",
+      pl: "Oznacz odcinki 1–{0} jako obejrzane"
+    },
+    "Только сезон {0}, включая выбранную серию {1}.": {
+      en: "Only season {0}, including the selected episode {1}.",
+      fr: "Saison {0} uniquement, \xE9pisode {1} inclus.",
+      uk: "Лише сезон {0}, включно із серією {1}.",
+      be: "Толькі сезон {0}, уключаючы серыю {1}.",
+      zh: "仅限第{0}季，包含所选第{1}集。",
+      pt: "Somente temporada {0}, incluindo o epis\xF3dio {1}.",
+      bg: "Само сезон {0}, включително епизод {1}.",
+      he: "רק עונה {0}, כולל פרק {1}.",
+      cs: "Pouze řada {0}, včetně dílu {1}.",
+      ro: "Doar sezonul {0}, inclusiv episodul {1}.",
+      pl: "Tylko sezon {0}, łącznie z odcinkiem {1}."
+    },
+    "Очистить таймкод": {
+      en: "Clear timecode",
+      fr: "Effacer la position de lecture",
+      uk: "Очистити таймкод",
+      be: "Ачысціць таймкод",
+      zh: "清除播放进度",
+      pt: "Limpar posi\xE7\xE3o de reprodu\xE7\xE3o",
+      bg: "Изчистване на позицията",
+      he: "נקה מיקום ניגון",
+      cs: "Vymazat pozici přehrávání",
+      ro: "Șterge poziția de redare",
+      pl: "Wyczyść pozycję odtwarzania"
+    },
+    "Удалить сохранённую позицию и прогресс этого файла.": {
+      en: "Remove the saved position and progress for this file.",
+      fr: "Retirer la position et la progression de ce fichier.",
+      uk: "Видалити позицію та прогрес цього файлу.",
+      be: "Выдаліць пазіцыю і прагрэс гэтага файла.",
+      zh: "删除此文件的保存位置与进度。",
+      pt: "Remover posi\xE7\xE3o e progresso deste arquivo.",
+      bg: "Премахване на позицията и напредъка на този файл.",
+      he: "מחק מיקום והתקדמות בקובץ הזה.",
+      cs: "Odstranit pozici a průběh tohoto souboru.",
+      ro: "Elimină poziția și progresul acestui fișier.",
+      pl: "Usuń pozycję i postęp tego pliku."
+    },
+    "Сезон и сериал…": {
+      en: "Season and series…",
+      fr: "Saison et série…",
+      uk: "Сезон і серіал…",
+      be: "Сезон і серыял…",
+      zh: "季与整部剧…",
+      pt: "Temporada e série…",
+      bg: "Сезон и сериал…",
+      he: "עונה וסדרה…",
+      cs: "Řada a seriál…",
+      ro: "Sezon și serial…",
+      pl: "Sezon i serial…"
+    },
+    "Массовые отметки и сброс прогресса.": {
+      en: "Bulk marks and progress reset.",
+      fr: "Marquage group\xE9 et r\xE9initialisation de la progression.",
+      uk: "Масові позначки та скидання прогресу.",
+      be: "Масавыя адзнакі і скід прагрэсу.",
+      zh: "批量标记与进度重置。",
+      pt: "Marca\xE7\xE3o em lote e redefini\xE7\xE3o do progresso.",
+      bg: "Групови отметки и нулиране на напредъка.",
+      he: "סימון קבוצתי ואיפוס התקדמות.",
+      cs: "Hromadné označení a obnovení průběhu.",
+      ro: "Marcaje în grup și resetarea progresului.",
+      pl: "Oznaczanie zbiorcze i resetowanie postępu."
+    },
+    "Действия с видео…": {
+      en: "Video actions…",
+      fr: "Actions vidéo…",
+      uk: "Дії з відео…",
+      be: "Дзеянні з відэа…",
+      zh: "视频操作…",
+      pt: "Ações do vídeo…",
+      bg: "Действия с видеото…",
+      he: "פעולות וידאו…",
+      cs: "Akce videa…",
+      ro: "Acțiuni video…",
+      pl: "Działania wideo…"
+    },
+    "Плеер и ссылка на видео.": {
+      en: "Player and video link.",
+      fr: "Lecteur et lien vid\xE9o.",
+      uk: "Плеєр і посилання на відео.",
+      be: "Плэер і спасылка на відэа.",
+      zh: "播放器与视频链接。",
+      pt: "Player e link do v\xEDdeo.",
+      bg: "Плейър и връзка към видеото.",
+      he: "נגן וקישור לווידאו.",
+      cs: "Přehrávač a odkaz na video.",
+      ro: "Player și link video.",
+      pl: "Odtwarzacz i link do wideo."
+    },
+    "Сезон {0} • Серия {1}": {
+      en: "Season {0} • Episode {1}",
+      fr: "Saison {0} • Épisode {1}",
+      uk: "Сезон {0} • Серія {1}",
+      be: "Сезон {0} • Серыя {1}",
+      zh: "第{0}季 • 第{1}集",
+      pt: "Temporada {0} • Episódio {1}",
+      bg: "Сезон {0} • Епизод {1}",
+      he: "עונה {0} • פרק {1}",
+      cs: "Řada {0} • Díl {1}",
+      ro: "Sezonul {0} • Episodul {1}",
+      pl: "Sezon {0} • Odcinek {1}"
+    },
+    Просмотр: {
+      en: "Viewing",
+      fr: "Visionnage",
+      uk: "Перегляд",
+      be: "Прагляд",
+      zh: "观看",
+      pt: "Visualiza\xE7\xE3o",
+      bg: "Гледане",
+      he: "צפייה",
+      cs: "Sledov\xE1n\xED",
+      ro: "Vizionare",
+      pl: "Oglądanie"
+    },
+    "Самое просматриваемое за неделю": {
+      en: "Most watched this week",
+      fr: "Les plus regard\xE9s de la semaine",
+      uk: "Найбільше переглядів за тиждень",
+      be: "Найбольш праглядаў за тыдзень",
+      zh: "本周观看最多",
+      pt: "Mais assistidos da semana",
+      bg: "Най-гледани тази седмица",
+      he: "הנצפים ביותר השבוע",
+      cs: "Nejsledovanější tento týden",
+      ro: "Cele mai vizionate săptămâna aceasta",
+      pl: "Najczęściej oglądane w tym tygodniu"
+    },
+    "В коллекциях за месяц": {
+      en: "Collected this month",
+      fr: "Ajout\xE9s ce mois-ci",
+      uk: "Додані цього місяця",
+      be: "Дададзеныя ў гэтым месяцы",
+      zh: "本月收藏",
+      pt: "Adicionados neste m\xEAs",
+      bg: "Добавени този месец",
+      he: "נוספו החודש",
+      cs: "Přidané tento měsíc",
+      ro: "Adăugate luna aceasta",
+      pl: "Dodane w tym miesiącu"
+    },
+    Мультсериалы: {
+      en: "Animated series",
+      uk: "Мультсеріали",
+      be: "Мультсерыялы",
+      zh: "动画系列",
+      pt: "S\xE9ries animada",
+      bg: "Анимационни сериали",
+      he: "סדרות משופשפות",
+      cs: "Animovan\xE9 seri\xE1ly",
+      ro: "Seriale animate",
+      fr: "S\xE9ries anim\xE9es",
+      pl: "Seriale animowane"
+    },
+    "Trakt: проверьте Client ID": {
+      en: "Trakt: check the Client ID",
+      fr: "Trakt : v\xE9rifiez le Client ID",
+      uk: "Trakt: перевірте Client ID",
+      be: "Trakt: праверце Client ID",
+      zh: "Trakt：请检查Client ID",
+      pt: "Trakt: verifique o Client ID",
+      bg: "Trakt: проверете Client ID",
+      he: "Trakt: בדקו את Client ID",
+      cs: "Trakt: zkontrolujte Client ID",
+      ro: "Trakt: verifică Client ID",
+      pl: "Trakt: sprawdź Client ID"
+    },
+    "Trakt: слишком много запросов, повторите позже": {
+      en: "Trakt: too many requests, try again later",
+      fr: "Trakt : trop de requ\xEAtes, r\xE9essayez plus tard",
+      uk: "Trakt: забагато запитів, спробуйте пізніше",
+      be: "Trakt: зашмат запытаў, паспрабуйце пазней",
+      zh: "Trakt：请求过多，请稍后重试",
+      pt: "Trakt: muitas solicita\xE7\xF5es, tente mais tarde",
+      bg: "Trakt: твърде много заявки, опитайте по-късно",
+      he: "Trakt: יותר מדי בקשות, נסו מאוחר יותר",
+      cs: "Trakt: příliš mnoho požadavků, zkuste později",
+      ro: "Trakt: prea multe cereri, încearcă mai târziu",
+      pl: "Trakt: zbyt wiele żądań, spróbuj później"
+    },
+    "Trakt недоступен ({0})": {
+      en: "Trakt is unavailable ({0})",
+      fr: "Trakt indisponible ({0})",
+      uk: "Trakt недоступний ({0})",
+      be: "Trakt недаступны ({0})",
+      zh: "Trakt不可用（{0}）",
+      pt: "Trakt indispon\xEDvel ({0})",
+      bg: "Trakt е недостъпен ({0})",
+      he: "Trakt אינו זמין ({0})",
+      cs: "Trakt nen\xED dostupn\xFD ({0})",
+      ro: "Trakt indisponibil ({0})",
+      pl: "Trakt jest niedostępny ({0})"
+    },
+    "Trakt вернул некорректный ответ": {
+      en: "Trakt returned an invalid response",
+      fr: "R\xE9ponse Trakt invalide",
+      uk: "Trakt повернув некоректну відповідь",
+      be: "Trakt вярнуў некарэктны адказ",
+      zh: "Trakt返回了无效响应",
+      pt: "Resposta inv\xE1lida do Trakt",
+      bg: "Невалиден отговор от Trakt",
+      he: "תגובה לא תקינה מ־Trakt",
+      cs: "Neplatná odpověď Trakt",
+      ro: "Răspuns Trakt incorect",
+      pl: "Nieprawidłowa odpowiedź Trakt"
+    },
+    "Не удалось подключиться к Trakt": {
+      en: "Could not connect to Trakt",
+      fr: "Connexion \xE0 Trakt impossible",
+      uk: "Не вдалося підключитися до Trakt",
+      be: "Не ўдалося падключыцца да Trakt",
+      zh: "无法连接Trakt",
+      pt: "N\xE3o foi poss\xEDvel conectar ao Trakt",
+      bg: "Неуспешна връзка с Trakt",
+      he: "לא ניתן להתחבר ל־Trakt",
+      cs: "Nelze se připojit k Trakt",
+      ro: "Conectarea la Trakt a eșuat",
+      pl: "Nie można połączyć się z Trakt"
+    },
+    "Запрос Trakt отменён": {
+      en: "Trakt request cancelled",
+      fr: "Requ\xEAte Trakt annul\xE9e",
+      uk: "Запит Trakt скасовано",
+      be: "Запыт Trakt скасаваны",
+      zh: "Trakt请求已取消",
+      pt: "Solicita\xE7\xE3o Trakt cancelada",
+      bg: "Заявката към Trakt е отменена",
+      he: "בקשת Trakt בוטלה",
+      cs: "Požadavek Trakt zrušen",
+      ro: "Cerere Trakt anulată",
+      pl: "Żądanie Trakt anulowane"
+    },
+    "Включите Trakt в настройках каталога L A M P A": {
+      en: "Enable Trakt in the L A M P A catalogue settings",
+      fr: "Activez Trakt dans les r\xE9glages du catalogue L A M P A",
+      uk: "Увімкніть Trakt у налаштуваннях каталогу L A M P A",
+      be: "Уключыце Trakt у наладах каталога L A M P A",
+      zh: "请在L A M P A目录设置中启用Trakt",
+      pt: "Ative Trakt nas configura\xE7\xF5es do cat\xE1logo L A M P A",
+      bg: "Включете Trakt в настройките на каталога L A M P A",
+      he: "הפעילו Trakt בהגדרות קטלוג L A M P A",
+      cs: "Zapněte Trakt v nastavení katalogu L A M P A",
+      ro: "Activează Trakt în setările catalogului L A M P A",
+      pl: "Włącz Trakt w ustawieniach katalogu L A M P A"
+    },
+    "Добавьте Client ID в Настройки → L A M P A → Каталог и поиск → Trakt": {
+      en: "Add a Client ID in Settings → L A M P A → Catalogue and search → Trakt",
+      fr: "Ajoutez un Client ID : Réglages → L A M P A → Catalogue et recherche → Trakt",
+      uk: "Додайте Client ID: Налаштування → L A M P A → Каталог і пошук → Trakt",
+      be: "Дадайце Client ID: Налады → L A M P A → Каталог і пошук → Trakt",
+      zh: "添加Client ID：设置 → L A M P A → 目录与搜索 → Trakt",
+      pt: "Adicione Client ID: Configurações → L A M P A → Catálogo e busca → Trakt",
+      bg: "Добавете Client ID: Настройки → L A M P A → Каталог и търсене → Trakt",
+      he: "הוסיפו Client ID: הגדרות → L A M P A → קטלוג וחיפוש → Trakt",
+      cs: "Přidejte Client ID: Nastavení → L A M P A → Katalog a hledání → Trakt",
+      ro: "Adaugă Client ID: Setări → L A M P A → Catalog și căutare → Trakt",
+      pl: "Dodaj Client ID: Ustawienia → L A M P A → Katalog i wyszukiwanie → Trakt"
+    },
+    "Trakt недоступен": {
+      en: "Trakt is unavailable",
+      fr: "Trakt indisponible",
+      uk: "Trakt недоступний",
+      be: "Trakt недаступны",
+      zh: "Trakt不可用",
+      pt: "Trakt indispon\xEDvel",
+      bg: "Trakt е недостъпен",
+      he: "Trakt אינו זמין",
+      cs: "Trakt nen\xED dostupn\xFD",
+      ro: "Trakt indisponibil",
+      pl: "Trakt jest niedostępny"
+    },
+    "Неизвестная подборка Trakt": {
+      en: "Unknown Trakt collection",
+      fr: "Collection Trakt inconnue",
+      uk: "Невідома добірка Trakt",
+      be: "Невядомая падборка Trakt",
+      zh: "未知的Trakt合集",
+      pt: "Cole\xE7\xE3o Trakt desconhecida",
+      bg: "Непозната колекция Trakt",
+      he: "אוסף Trakt לא מוכר",
+      cs: "Nezn\xE1m\xE1 kolekce Trakt",
+      ro: "Colecție Trakt necunoscută",
+      pl: "Nieznana kolekcja Trakt"
+    },
+    "Включите Trakt и добавьте Client ID": {
+      en: "Enable Trakt and add a Client ID",
+      fr: "Activez Trakt et ajoutez un Client ID",
+      uk: "Увімкніть Trakt і додайте Client ID",
+      be: "Уключыце Trakt і дадайце Client ID",
+      zh: "启用Trakt并添加Client ID",
+      pt: "Ative Trakt e adicione Client ID",
+      bg: "Включете Trakt и добавете Client ID",
+      he: "הפעילו Trakt והוסיפו Client ID",
+      cs: "Zapněte Trakt a přidejte Client ID",
+      ro: "Activează Trakt și adaugă Client ID",
+      pl: "Włącz Trakt i dodaj Client ID"
+    },
+    "Добавить в Настройки → Остальное → Основной источник. При первом включении потребуется Client ID.": {
+      en: "Add to Settings → Other → Main source. A Client ID is required on first activation.",
+      fr: "Ajouter à Réglages → Autre → Source principale. Client ID requis à l’activation.",
+      uk: "Додати в Налаштування → Інше → Основне джерело. Потрібен Client ID.",
+      be: "Дадаць у Налады → Іншае → Асноўная крыніца. Патрэбны Client ID.",
+      zh: "添加到设置 → 其他 → 主要来源，首次启用需Client ID。",
+      pt: "Adicionar em Configurações → Outros → Fonte principal. Exige Client ID.",
+      bg: "Добавяне в Настройки → Други → Основен източник. Изисква Client ID.",
+      he: "הוספה בהגדרות → אחר → מקור ראשי. נדרש Client ID.",
+      cs: "Přidat v Nastavení → Ostatní → Hlavní zdroj. Vyžaduje Client ID.",
+      ro: "Adaugă în Setări → Altele → Sursă principală. Necesită Client ID.",
+      pl: "Dodaj w Ustawienia → Inne → Źródło główne. Wymagany Client ID."
+    },
+    "Публичный Client ID собственного приложения Trakt. Выбор каталога: Настройки → Остальное → Основной источник. Client Secret не нужен.": {
+      en: "Public Client ID of your own Trakt app. Select the catalogue in Settings → Other → Main source. No Client Secret is required.",
+      fr: "Client ID public de votre application Trakt. Aucun Client Secret requis.",
+      uk: "Публічний Client ID вашої програми Trakt. Client Secret не потрібен.",
+      be: "Публічны Client ID вашай праграмы Trakt. Client Secret не патрэбны.",
+      zh: "使用您自己的Trakt应用公开Client ID，无需Client Secret。",
+      pt: "Client ID p\xFAblico do seu aplicativo Trakt. N\xE3o exige Client Secret.",
+      bg: "Публичен Client ID на вашето Trakt приложение. Не е нужен Client Secret.",
+      he: "Client ID ציבורי של יישום Trakt שלכם. אין צורך ב־Client Secret.",
+      cs: "Veřejné Client ID vaší aplikace Trakt. Client Secret není potřeba.",
+      ro: "Client ID public al aplicației tale Trakt. Nu necesită Client Secret.",
+      pl: "Publiczny Client ID twojej aplikacji Trakt. Client Secret nie jest potrzebny."
+    },
+    "Онлайн-источник не подключён": {
+      en: "No online source is connected",
+      fr: "Aucune source en ligne connect\xE9e",
+      uk: "Не підключено онлайн-джерело",
+      be: "Анлайн-крыніца не падключана",
+      zh: "未连接在线来源",
+      pt: "Nenhuma fonte online conectada",
+      bg: "Няма свързан онлайн източник",
+      he: "לא מחובר מקור מקוון",
+      cs: "Není připojen online zdroj",
+      ro: "Nicio sursă online conectată",
+      pl: "Brak połączonego źródła online"
+    },
+    "Все сезоны сериала. Будущие серии не отмечаются.": {
+      en: "All seasons of the series. Future episodes are excluded.",
+      fr: "Toutes les saisons, sans les \xE9pisodes \xE0 venir.",
+      uk: "Усі сезони серіалу, без майбутніх серій.",
+      be: "Усе сезоны серыяла, без будучых серый.",
+      zh: "此剧所有季，不包括尚未播出的剧集。",
+      pt: "Todas as temporadas, sem epis\xF3dios futuros.",
+      bg: "Всички сезони, без бъдещите епизоди.",
+      he: "כל עונות הסדרה, ללא פרקים עתידיים.",
+      cs: "Všechny řady bez budoucích dílů.",
+      ro: "Toate sezoanele, fără episoade viitoare.",
+      pl: "Wszystkie sezony, bez przyszłych odcinków."
+    },
+    "Снять отметки текущего сезона": {
+      en: "Unmark this season as watched",
+      fr: "Retirer les marques de cette saison",
+      uk: "Зняти позначки поточного сезону",
+      be: "Зняць адзнакі бягучага сезона",
+      zh: "取消本季已看标记",
+      pt: "Remover marcas desta temporada",
+      bg: "Премахване на отметките за този сезон",
+      he: "בטל סימונים בעונה הזו",
+      cs: "Zrušit označení této řady",
+      ro: "Elimină marcajele acestui sezon",
+      pl: "Usuń oznaczenia tego sezonu"
+    },
+    "Снять отметки всех вариантов": {
+      en: "Unmark all versions as watched",
+      fr: "Retirer les marques de toutes les versions",
+      uk: "Зняти позначки всіх версій",
+      be: "Зняць адзнакі ўсіх версій",
+      zh: "取消所有版本的已看标记",
+      pt: "Remover marcas de todas as vers\xF5es",
+      bg: "Премахване на отметките за всички версии",
+      he: "בטל סימונים בכל הגרסאות",
+      cs: "Zrušit označení všech verzí",
+      ro: "Elimină marcajele tuturor versiunilor",
+      pl: "Usuń oznaczenia wszystkich wersji"
+    },
+    "Только сезон {0}. Другие сезоны сохранятся.": {
+      en: "Only season {0}. Other seasons remain unchanged.",
+      fr: "Saison {0} uniquement. Les autres saisons sont conserv\xE9es.",
+      uk: "Лише сезон {0}. Інші сезони не змінюються.",
+      be: "Толькі сезон {0}. Іншыя сезоны не змяняюцца.",
+      zh: "仅限第{0}季，其他季保持不变。",
+      pt: "Somente temporada {0}. Outras temporadas n\xE3o mudam.",
+      bg: "Само сезон {0}. Другите сезони не се променят.",
+      he: "רק עונה {0}. שאר העונות לא ישתנו.",
+      cs: "Pouze řada {0}. Ostatní řady zůstanou.",
+      ro: "Doar sezonul {0}. Celelalte rămân neschimbate.",
+      pl: "Tylko sezon {0}. Pozostałe sezony bez zmian."
+    },
+    "Все варианты фильма в этом источнике.": {
+      en: "All versions of this movie in the current source.",
+      fr: "Toutes les versions du film dans la source actuelle.",
+      uk: "Усі версії фільму в поточному джерелі.",
+      be: "Усе версіі фільма ў бягучай крыніцы.",
+      zh: "当前来源中的所有电影版本。",
+      pt: "Todas as vers\xF5es do filme na fonte atual.",
+      bg: "Всички версии на филма в текущия източник.",
+      he: "כל גרסאות הסרט במקור הנוכחי.",
+      cs: "Všechny verze filmu v aktuálním zdroji.",
+      ro: "Toate versiunile filmului din sursa curentă.",
+      pl: "Wszystkie wersje filmu w bieżącym źródle."
+    },
+    "Очистить таймкоды всех вариантов": {
+      en: "Clear timecodes for all versions",
+      fr: "Effacer les positions de toutes les versions",
+      uk: "Очистити таймкоди всіх версій",
+      be: "Ачысціць таймкоды ўсіх версій",
+      zh: "清除所有版本的播放进度",
+      pt: "Limpar posi\xE7\xF5es de todas as vers\xF5es",
+      bg: "Изчистване на позициите за всички версии",
+      he: "נקה מיקומי ניגון בכל הגרסאות",
+      cs: "Vymazat pozice všech verzí",
+      ro: "Șterge pozițiile tuturor versiunilor",
+      pl: "Wyczyść pozycje wszystkich wersji"
+    },
+    "Сбросить позиции серий сезона {0}.": {
+      en: "Reset saved positions for season {0} episodes.",
+      fr: "R\xE9initialiser les positions des \xE9pisodes de la saison {0}.",
+      uk: "Скинути позиції серій сезону {0}.",
+      be: "Скінуць пазіцыі серый сезона {0}.",
+      zh: "重置第{0}季各集的播放位置。",
+      pt: "Redefinir posi\xE7\xF5es dos epis\xF3dios da temporada {0}.",
+      bg: "Нулиране на позициите на епизодите от сезон {0}.",
+      he: "אפס מיקומי ניגון בפרקי עונה {0}.",
+      cs: "Obnovit pozice dílů řady {0}.",
+      ro: "Resetează pozițiile episoadelor sezonului {0}.",
+      pl: "Zresetuj pozycje odcink\xF3w sezonu {0}."
+    },
+    "Сбросить позиции всех вариантов фильма.": {
+      en: "Reset saved positions for all versions of this movie.",
+      fr: "R\xE9initialiser les positions de toutes les versions du film.",
+      uk: "Скинути позиції всіх версій фільму.",
+      be: "Скінуць пазіцыі ўсіх версій фільма.",
+      zh: "重置电影所有版本的播放位置。",
+      pt: "Redefinir posi\xE7\xF5es de todas as vers\xF5es do filme.",
+      bg: "Нулиране на позициите за всички версии на филма.",
+      he: "אפס מיקומי ניגון בכל גרסאות הסרט.",
+      cs: "Obnovit pozice všech verzí filmu.",
+      ro: "Resetează pozițiile tuturor versiunilor filmului.",
+      pl: "Zresetuj pozycje wszystkich wersji filmu."
+    },
+    "Все варианты фильма": {
+      en: "All movie versions",
+      fr: "Toutes les versions du film",
+      uk: "Усі версії фільму",
+      be: "Усе версіі фільма",
+      zh: "所有电影版本",
+      pt: "Todas as vers\xF5es do filme",
+      bg: "Всички версии на филма",
+      he: "כל גרסאות הסרט",
+      cs: "Všechny verze filmu",
+      ro: "Toate versiunile filmului",
+      pl: "Wszystkie wersje filmu"
+    },
+    "Удалить сохранённую позицию и прогресс {0}": {
+      en: "Remove the saved position and progress for {0}",
+      fr: "Retirer la position et la progression de {0}",
+      uk: "Видалити позицію та прогрес для {0}",
+      be: "Выдаліць пазіцыю і прагрэс для {0}",
+      zh: "删除{0}的播放位置与进度",
+      pt: "Remover posi\xE7\xE3o e progresso de {0}",
+      bg: "Премахване на позицията и напредъка за {0}",
+      he: "מחק מיקום והתקדמות עבור {0}",
+      cs: "Odstranit pozici a průběh pro {0}",
+      ro: "Elimină poziția și progresul pentru {0}",
+      pl: "Usuń pozycję i postęp dla {0}"
+    },
+    "этой серии.": {
+      en: "this episode.",
+      fr: "cet \xE9pisode.",
+      uk: "цієї серії.",
+      be: "гэтай серыі.",
+      zh: "此集",
+      pt: "este epis\xF3dio.",
+      bg: "този епизод.",
+      he: "הפרק הזה.",
+      cs: "tento d\xEDl.",
+      ro: "acest episod.",
+      pl: "tego odcinka."
+    },
+    "этого варианта фильма.": {
+      en: "this version of the movie.",
+      fr: "cette version du film.",
+      uk: "цієї версії фільму.",
+      be: "гэтай версіі фільма.",
+      zh: "此电影版本",
+      pt: "esta vers\xE3o do filme.",
+      bg: "тази версия на филма.",
+      he: "גרסת הסרט הזו.",
+      cs: "tuto verzi filmu.",
+      ro: "această versiune a filmului.",
+      pl: "tej wersji filmu."
+    },
+    "Все варианты фильма…": {
+      en: "All movie versions…",
+      fr: "Toutes les versions du film…",
+      uk: "Усі версії фільму…",
+      be: "Усе версіі фільма…",
+      zh: "所有电影版本…",
+      pt: "Todas as versões do filme…",
+      bg: "Всички версии на филма…",
+      he: "כל גרסאות הסרט…",
+      cs: "Všechny verze filmu…",
+      ro: "Toate versiunile filmului…",
+      pl: "Wszystkie wersje filmu…"
+    },
+    "Просмотр и таймкод": {
+      en: "Viewing and timecode",
+      fr: "Visionnage et position de lecture",
+      uk: "Перегляд і таймкод",
+      be: "Прагляд і таймкод",
+      zh: "观看与播放进度",
+      pt: "Visualiza\xE7\xE3o e posi\xE7\xE3o",
+      bg: "Гледане и позиция",
+      he: "צפייה ומיקום ניגון",
+      cs: "Sledov\xE1n\xED a pozice",
+      ro: "Vizionare și poziție",
+      pl: "Oglądanie i pozycja"
+    },
+    Видео: {
+      en: "Video",
+      uk: "Відео",
+      be: "Відэа",
+      zh: "视频",
+      pt: "V\xEDdeo",
+      bg: "Видео",
+      he: "וידאו",
+      cs: "Video",
+      ro: "Video",
+      fr: "Vid\xE9o",
+      pl: "Wideo"
+    },
+    "Нет доступных источников": {
+      en: "No available sources",
+      fr: "Aucune source disponible",
+      uk: "Немає доступних джерел",
+      be: "Няма даступных крыніц",
+      zh: "暂无可用来源",
+      pt: "Nenhuma fonte dispon\xEDvel",
+      bg: "Няма налични източници",
+      he: "אין מקורות זמינים",
+      cs: "Žádné dostupné zdroje",
+      ro: "Nicio sursă disponibilă",
+      pl: "Brak dostępnych źródeł"
+    },
+    "Онлайн-интерфейс": {
+      en: "Online interface",
+      fr: "Interface en ligne",
+      uk: "Онлайн-інтерфейс",
+      be: "Анлайн-інтэрфейс",
+      zh: "在线界面",
+      pt: "Interface online",
+      bg: "Онлайн интерфейс",
+      he: "ממשק מקוון",
+      cs: "Online rozhran\xED",
+      ro: "Interfață online",
+      pl: "Interfejs online"
+    },
+    Января: {
+      en: "January",
+      uk: "Січня",
+      be: "Студзеня",
+      zh: "一月",
+      pt: "Jan",
+      bg: "Януари",
+      he: "ינואר",
+      cs: "Ledna",
+      ro: "Ianuarie",
+      fr: "Janvier",
+      pl: "Stycznia"
+    },
+    Февраля: {
+      en: "February",
+      uk: "Лютого",
+      be: "Лютага",
+      zh: "二月",
+      pt: "Fevereiro",
+      bg: "Февруари",
+      he: "פברואר",
+      cs: "\xDAnora",
+      ro: "Februarie",
+      fr: "F\xE9vrier",
+      pl: "Lutego"
+    },
+    Марта: {
+      en: "March",
+      uk: "Березня",
+      be: "Сакавіка",
+      zh: "三月",
+      pt: "Mar\xE7o",
+      bg: "Март",
+      he: "מרץ",
+      cs: "Března",
+      ro: "Martie",
+      fr: "Mars",
+      pl: "Marca"
+    },
+    Апреля: {
+      en: "April",
+      uk: "Квітня",
+      be: "Красавіка",
+      zh: "四月",
+      pt: "Abril",
+      bg: "Април",
+      he: "אפריל",
+      cs: "Dubna",
+      ro: "Aprilie",
+      fr: "Avril",
+      pl: "Kwietnia"
+    },
+    Мая: {
+      en: "May",
+      uk: "Травня",
+      be: "Мая",
+      zh: "五月",
+      pt: "Maio",
+      bg: "Май",
+      he: "מאי",
+      cs: "Května",
+      ro: "Mai",
+      fr: "Mai",
+      pl: "Maja"
+    },
+    Июня: {
+      en: "June",
+      uk: "Червня",
+      be: "Чэрвеня",
+      zh: "六月",
+      pt: "Junho",
+      bg: "Юни",
+      he: "יוני",
+      cs: "Června",
+      ro: "Iunie",
+      fr: "Juin",
+      pl: "Czerwca"
+    },
+    Июля: {
+      en: "July",
+      uk: "Липня",
+      be: "Ліпеня",
+      zh: "七月",
+      pt: "Julho",
+      bg: "Юли",
+      he: "יולי",
+      cs: "Července",
+      ro: "Iulie",
+      fr: "Juillet",
+      pl: "Lipca"
+    },
+    Августа: {
+      en: "August",
+      uk: "Серпня",
+      be: "Жніўня",
+      zh: "八月",
+      pt: "Agosto",
+      bg: "Август",
+      he: "אוגוסט",
+      cs: "Srpna",
+      ro: "August",
+      fr: "Ao\xFBt",
+      pl: "Sierpnia"
+    },
+    Сентября: {
+      en: "September",
+      uk: "Вересня",
+      be: "Верасня",
+      zh: "九月",
+      pt: "Setembro",
+      bg: "Септември",
+      he: "ספטמבר",
+      cs: "Září",
+      ro: "Septembrie",
+      fr: "Septembre",
+      pl: "Września"
+    },
+    Октября: {
+      en: "October",
+      uk: "Жовтня",
+      be: "Кастрычніка",
+      zh: "十月",
+      pt: "Outubro",
+      bg: "Октомври",
+      he: "אוקטובר",
+      cs: "Října",
+      ro: "Octombrie",
+      fr: "Octobre",
+      pl: "Października"
+    },
+    Ноября: {
+      en: "November",
+      uk: "Листопада",
+      be: "Лістапада",
+      zh: "十一月",
+      pt: "Novembro",
+      bg: "Ноември",
+      he: "נובמבר",
+      cs: "Listopadu",
+      ro: "Noiembrie",
+      fr: "Novembre",
+      pl: "Listopada"
+    },
+    Декабря: {
+      en: "December",
+      uk: "Грудня",
+      be: "Снежня",
+      zh: "十二月",
+      pt: "Dezembro",
+      bg: "Декември",
+      he: "דצמבר",
+      cs: "Prosince",
+      ro: "Decembrie",
+      fr: "D\xE9cembre",
+      pl: "Grudnia"
+    },
+    "Показать плиткой": {
+      en: "Grid view",
+      fr: "Vue en grille",
+      uk: "Вигляд сіткою",
+      be: "Выгляд сеткай",
+      zh: "网格视图",
+      pt: "Exibi\xE7\xE3o em grade",
+      bg: "Изглед решетка",
+      he: "תצוגת רשת",
+      cs: "Zobrazení mřížky",
+      ro: "Vizualizare grilă",
+      pl: "Widok siatki"
+    },
+    "Показать списком": {
+      en: "List view",
+      fr: "Vue en liste",
+      uk: "Вигляд списком",
+      be: "Выгляд спісам",
+      zh: "列表视图",
+      pt: "Exibi\xE7\xE3o em lista",
+      bg: "Изглед списък",
+      he: "תצוגת רשימה",
+      cs: "Zobrazen\xED seznamu",
+      ro: "Vizualizare listă",
+      pl: "Widok listy"
+    },
+    "Показать серии вертикально": {
+      en: "Vertical episode list",
+      fr: "Liste verticale des \xE9pisodes",
+      uk: "Вертикальний список серій",
+      be: "Вертыкальны спіс серый",
+      zh: "纵向剧集列表",
+      pt: "Lista vertical de epis\xF3dios",
+      bg: "Вертикален списък с епизоди",
+      he: "רשימת פרקים אנכית",
+      cs: "Svislý seznam dílů",
+      ro: "Listă verticală de episoade",
+      pl: "Pionowa lista odcink\xF3w"
+    },
+    "Показать серии горизонтально": {
+      en: "Horizontal episode list",
+      fr: "Liste horizontale des \xE9pisodes",
+      uk: "Горизонтальний список серій",
+      be: "Гарызантальны спіс серый",
+      zh: "横向剧集列表",
+      pt: "Lista horizontal de epis\xF3dios",
+      bg: "Хоризонтален списък с епизоди",
+      he: "רשימת פרקים אופקית",
+      cs: "Vodorovný seznam dílů",
+      ro: "Listă orizontală de episoade",
+      pl: "Pozioma lista odcink\xF3w"
+    },
+    "Предыдущие серии": {
+      en: "Previous episodes",
+      fr: "\xC9pisodes pr\xE9c\xE9dents",
+      uk: "Попередні серії",
+      be: "Папярэднія серыі",
+      zh: "上一组剧集",
+      pt: "Epis\xF3dios anteriores",
+      bg: "Предишни епизоди",
+      he: "פרקים קודמים",
+      cs: "Předchozí díly",
+      ro: "Episoadele anterioare",
+      pl: "Poprzednie odcinki"
+    },
+    "Следующие серии": {
+      en: "Next episodes",
+      fr: "\xC9pisodes suivants",
+      uk: "Наступні серії",
+      be: "Наступныя серыі",
+      zh: "下一组剧集",
+      pt: "Pr\xF3ximos epis\xF3dios",
+      bg: "Следващи епизоди",
+      he: "פרקים הבאים",
+      cs: "Další díly",
+      ro: "Episoadele următoare",
+      pl: "Następne odcinki"
+    },
+    Парс: {
+      en: "Parser",
+      uk: "Парсер",
+      be: "Парсер",
+      zh: "解析器",
+      pt: "Analisador",
+      bg: "Парсър",
+      he: "פארזר.",
+      cs: "Parser",
+      ro: "Parser",
+      fr: "Analyseur",
+      pl: "Parser"
+    },
+    "Новинки кино": {
+      en: "New movies",
+      fr: "Nouveaux films",
+      uk: "Нові фільми",
+      be: "Новыя фільмы",
+      zh: "新电影",
+      pt: "Novos filmes",
+      bg: "Нови филми",
+      he: "סרטים חדשים",
+      cs: "Nov\xE9 filmy",
+      ro: "Filme noi",
+      pl: "Nowe filmy"
+    },
+    "Популярные фильмы за год": {
+      en: "Popular movies this year",
+      fr: "Films populaires de l’année",
+      uk: "Популярні фільми цього року",
+      be: "Папулярныя фільмы гэтага года",
+      zh: "今年热门电影",
+      pt: "Filmes populares deste ano",
+      bg: "Популярни филми за тази година",
+      he: "סרטים פופולריים השנה",
+      cs: "Popul\xE1rn\xED filmy tohoto roku",
+      ro: "Filme populare din acest an",
+      pl: "Popularne filmy tego roku"
+    },
+    "Новые популярные сериалы": {
+      en: "New popular series",
+      fr: "Nouvelles s\xE9ries populaires",
+      uk: "Нові популярні серіали",
+      be: "Новыя папулярныя серыялы",
+      zh: "热门新剧",
+      pt: "Novas s\xE9ries populares",
+      bg: "Нови популярни сериали",
+      he: "סדרות חדשות פופולריות",
+      cs: "Nov\xE9 popul\xE1rn\xED seri\xE1ly",
+      ro: "Seriale noi populare",
+      pl: "Nowe popularne seriale"
+    },
+    "Названия аниме для поиска": {
+      en: "Anime search titles",
+      fr: "Titres de recherche d’anime",
+      uk: "Назви для пошуку аніме",
+      be: "Назвы для пошуку анімэ",
+      zh: "动漫搜索标题",
+      pt: "T\xEDtulos para busca de anime",
+      bg: "Заглавия за търсене на аниме",
+      he: "שמות לחיפוש אנימה",
+      cs: "N\xE1zvy pro hled\xE1n\xED anime",
+      ro: "Titluri pentru căutarea anime",
+      pl: "Tytuły do wyszukiwania anime"
+    },
+    "Использовать альтернативное название из каталога, если поиск не дал результатов. Категории раздач остаются штатными.": {
+      en: "Use an alternative catalogue title if search finds nothing. Keep the native release categories.",
+      fr: "Essayer un titre alternatif du catalogue si aucun r\xE9sultat. Conserver les cat\xE9gories natives.",
+      uk: "Спробувати іншу назву з каталогу, якщо немає результатів. Зберегти категорії релізів.",
+      be: "Паспрабаваць іншую назву з каталога пры адсутнасці вынікаў. Пакінуць катэгорыі рэлізаў.",
+      zh: "无结果时尝试目录中的其他标题，保留原始片源分类。",
+      pt: "Tentar t\xEDtulo alternativo do cat\xE1logo sem alterar categorias de lan\xE7amento.",
+      bg: "Проба с друго каталожно заглавие без промяна на категориите.",
+      he: "נסה שם חלופי מהקטלוג, ללא שינוי קטגוריות הגרסאות.",
+      cs: "Zkusit jiný název katalogu bez změny kategorií vydání.",
+      ro: "Încearcă un titlu alternativ, fără a schimba categoriile versiunilor.",
+      pl: "Wypróbuj inny tytuł z katalogu bez zmiany kategorii wydań."
+    },
+    "Новинки и популярное за год": {
+      en: "New and popular this year",
+      fr: "Nouveautés populaires de l’année",
+      uk: "Новинки й популярне цього року",
+      be: "Навінкі і папулярнае гэтага года",
+      zh: "今年新作与热门",
+      pt: "Novidades populares deste ano",
+      bg: "Нови и популярни за тази година",
+      he: "חדש ופופולרי השנה",
+      cs: "Nov\xE9 a popul\xE1rn\xED letos",
+      ro: "Noutăți și populare anul acesta",
+      pl: "Nowe i popularne w tym roku"
+    },
+    "Три подборки в начале главной страницы. Изменение применяется при её следующем открытии.": {
+      en: "Three collections at the start of the home page. Applies when it is reopened.",
+      fr: "Trois collections au début de l’accueil. À la réouverture.",
+      uk: "Три добірки на початку головної. Після повторного відкриття.",
+      be: "Тры падборкі ў пачатку галоўнай. Пасля паўторнага адкрыцця.",
+      zh: "首页顶部显示三个合集，重新打开后生效。",
+      pt: "Tr\xEAs cole\xE7\xF5es no in\xEDcio da p\xE1gina principal. Ao reabrir.",
+      bg: "Три колекции в началото на главния екран. При повторно отваряне.",
+      he: "שלושה אוספים בראש הבית. בפתיחה הבאה.",
+      cs: "Tři kolekce na začátku úvodu. Při dalším otevření.",
+      ro: "Trei colecții la începutul paginii principale. La redeschidere.",
+      pl: "Trzy kolekcje na początku strony głównej. Po ponownym otwarciu."
+    },
+    "Включить подсказки": {
+      en: "Enable suggestions",
+      fr: "Activer les suggestions",
+      uk: "Увімкнути підказки",
+      be: "Уключыць падказкі",
+      zh: "启用搜索建议",
+      pt: "Ativar sugest\xF5es",
+      bg: "Включване на предложения",
+      he: "הפעל הצעות",
+      cs: "Zapnout n\xE1vrhy",
+      ro: "Activează sugestiile",
+      pl: "Włącz podpowiedzi"
+    },
+    "Отображать подсказки тайтлов при вводе в строке поиска": {
+      en: "Suggest titles while typing in the search field",
+      fr: "Sugg\xE9rer des titres pendant la saisie",
+      uk: "Пропонувати назви під час введення",
+      be: "Прапаноўваць назвы пры ўводзе",
+      zh: "输入时推荐标题",
+      pt: "Sugerir t\xEDtulos ao digitar",
+      bg: "Предлагане на заглавия при писане",
+      he: "הצע כותרים בזמן ההקלדה",
+      cs: "Navrhovat názvy při psaní",
+      ro: "Sugerează titluri în timpul tastării",
+      pl: "Podpowiadaj tytuły podczas pisania"
+    },
+    "2 символа": {
+      en: "2 characters",
+      fr: "2 caract\xE8res",
+      uk: "2 символи",
+      be: "2 знакі",
+      zh: "2个字符",
+      pt: "2 caracteres",
+      bg: "2 знака",
+      he: "2 תווים",
+      cs: "2 znaky",
+      ro: "2 caractere",
+      pl: "2 znaki"
+    },
+    "3 символа (рекомендуется)": {
+      en: "3 characters (recommended)",
+      fr: "3 caract\xE8res (recommand\xE9)",
+      uk: "3 символи (рекомендовано)",
+      be: "3 знакі (рэкамендавана)",
+      zh: "3个字符（推荐）",
+      pt: "3 caracteres (recomendado)",
+      bg: "3 знака (препоръчително)",
+      he: "3 תווים (מומלץ)",
+      cs: "3 znaky (doporučeno)",
+      ro: "3 caractere (recomandat)",
+      pl: "3 znaki (zalecane)"
+    },
+    "4 символа": {
+      en: "4 characters",
+      fr: "4 caract\xE8res",
+      uk: "4 символи",
+      be: "4 знакі",
+      zh: "4个字符",
+      pt: "4 caracteres",
+      bg: "4 знака",
+      he: "4 תווים",
+      cs: "4 znaky",
+      ro: "4 caractere",
+      pl: "4 znaki"
+    },
+    "Минимум символов": {
+      en: "Minimum characters",
+      fr: "Nombre minimum de caract\xE8res",
+      uk: "Мінімум символів",
+      be: "Мінімум знакаў",
+      zh: "最少字符数",
+      pt: "M\xEDnimo de caracteres",
+      bg: "Минимален брой знаци",
+      he: "מספר תווים מזערי",
+      cs: "Minimum znaků",
+      ro: "Număr minim de caractere",
+      pl: "Minimalna liczba znak\xF3w"
+    },
+    "С какого количества введённых букв запрашивать подсказки": {
+      en: "Number of typed characters before requesting suggestions",
+      fr: "Nombre de caract\xE8res avant de proposer des titres",
+      uk: "Кількість символів до запиту підказок",
+      be: "Колькасць знакаў да запыту падказак",
+      zh: "开始请求建议前所需的输入字符数",
+      pt: "Caracteres digitados antes de solicitar sugest\xF5es",
+      bg: "Брой въведени знаци преди заявка за предложения",
+      he: "מספר התווים לפני בקשת הצעות",
+      cs: "Počet znaků před vyžádáním návrhů",
+      ro: "Caractere tastate \xEEnainte de a solicita sugestii",
+      pl: "Liczba znak\xF3w przed pobraniem podpowiedzi"
+    },
+    Навигация: {
+      en: "Navigation",
+      uk: "Навігація",
+      be: "Навігацыя",
+      zh: "导航",
+      pt: "Navega\xE7\xE3o",
+      bg: "Навигация",
+      he: "ניווט",
+      cs: "Navigace",
+      ro: "Navigare",
+      fr: "Navigation",
+      pl: "Nawigacja"
+    },
+    "Подборка фильмов и сериалов": {
+      en: "Movies and series collection",
+      fr: "Collection de films et s\xE9ries",
+      uk: "Добірка фільмів і серіалів",
+      be: "Падборка фільмаў і серыялаў",
+      zh: "电影与剧集精选",
+      pt: "Cole\xE7\xE3o de filmes e s\xE9ries",
+      bg: "Колекция от филми и сериали",
+      he: "אוסף סרטים וסדרות",
+      cs: "Kolekce filmů a seriálů",
+      ro: "Colecție de filme și seriale",
+      pl: "Kolekcja film\xF3w i seriali"
+    },
+    Подробнее: {
+      en: "Details",
+      fr: "D\xE9tails",
+      uk: "Докладніше",
+      be: "Падрабязней",
+      zh: "详情",
+      pt: "Detalhes",
+      bg: "Подробности",
+      he: "פרטים",
+      cs: "Podrobnosti",
+      ro: "Detalii",
+      pl: "Szczegóły"
+    },
+    "Переключить обложку": {
+      en: "Switch cover",
+      fr: "Changer d’affiche",
+      uk: "Змінити обкладинку",
+      be: "Змяніць вокладку",
+      zh: "切换封面",
+      pt: "Trocar capa",
+      bg: "Смяна на обложката",
+      he: "החלף עטיפה",
+      cs: "Změnit obal",
+      ro: "Schimbă coperta",
+      pl: "Zmień okładkę"
+    },
+    Английский: {
+      en: "English",
+      uk: "Англійська",
+      be: "Англійская",
+      zh: "英语",
+      pt: "Ingl\xEAs",
+      bg: "английски",
+      he: "English",
+      cs: "Angličtina",
+      ro: "Engleză",
+      fr: "Anglais",
+      pl: "Angielski"
+    },
+    "Поиск…": {
+      en: "Search…",
+      uk: "Пошук…",
+      be: "Пошук…",
+      zh: "搜索…",
+      pt: "Pesquisar…",
+      bg: "Търсене…",
+      he: "חיפוש…",
+      cs: "Hledat…",
+      ro: "Caută…",
+      fr: "Rechercher…",
+      pl: "Szukaj…"
+    },
+    "%s сезон": {
+      en: "%s season",
+      uk: "%s сезон",
+      be: "%s сезон",
+      zh: "%s季",
+      pt: "%s temporada",
+      bg: "%s сезон",
+      he: "%s עונה",
+      cs: "%s řada",
+      ro: "%s sezon",
+      fr: "%s saison",
+      pl: "%s sezon"
+    },
+    "%s сезона": {
+      en: "%s seasons",
+      uk: "%s сезони",
+      be: "%s сезоны",
+      zh: "%s季",
+      pt: "%s temporadas",
+      bg: "%s сезона",
+      he: "%s עונות",
+      cs: "%s řady",
+      ro: "%s sezoane",
+      fr: "%s saisons",
+      pl: "%s sezony"
+    },
+    "%s сезонов": {
+      en: "%s seasons",
+      uk: "%s сезонів",
+      be: "%s сезонаў",
+      zh: "%s季",
+      pt: "%s temporadas",
+      bg: "%s сезона",
+      he: "%s עונות",
+      cs: "%s řad",
+      ro: "%s de sezoane",
+      fr: "%s saisons",
+      pl: "%s sezon\xF3w"
+    },
+    "%s серия": {
+      en: "%s episode",
+      uk: "%s серія",
+      be: "%s серыя",
+      zh: "%s集",
+      pt: "%s epis\xF3dio",
+      bg: "%s епизод",
+      he: "%s פרק",
+      cs: "%s d\xEDl",
+      ro: "%s episod",
+      fr: "%s \xE9pisode",
+      pl: "%s odcinek"
+    },
+    "%s серии": {
+      en: "%s episodes",
+      uk: "%s серії",
+      be: "%s серыі",
+      zh: "%s集",
+      pt: "%s epis\xF3dios",
+      bg: "%s епизода",
+      he: "%s פרקים",
+      cs: "%s d\xEDly",
+      ro: "%s episoade",
+      fr: "%s \xE9pisodes",
+      pl: "%s odcinki"
+    },
+    "%s серий": {
+      en: "%s episodes",
+      uk: "%s серій",
+      be: "%s серый",
+      zh: "%s集",
+      pt: "%s epis\xF3dios",
+      bg: "%s епизода",
+      he: "%s פרקים",
+      cs: "%s dílů",
+      ro: "%s de episoade",
+      fr: "%s \xE9pisodes",
+      pl: "%s odcink\xF3w"
+    },
+    "%s источник": {
+      en: "%s source",
+      uk: "%s джерело",
+      be: "%s крыніца",
+      zh: "%s个来源",
+      pt: "%s fonte",
+      bg: "%s източник",
+      he: "%s מקור",
+      cs: "%s zdroj",
+      ro: "%s sursă",
+      fr: "%s source",
+      pl: "%s źródło"
+    },
+    "%s источника": {
+      en: "%s sources",
+      uk: "%s джерела",
+      be: "%s крыніцы",
+      zh: "%s个来源",
+      pt: "%s fontes",
+      bg: "%s източника",
+      he: "%s מקורות",
+      cs: "%s zdroje",
+      ro: "%s surse",
+      fr: "%s sources",
+      pl: "%s źródła"
+    },
+    "%s источников": {
+      en: "%s sources",
+      uk: "%s джерел",
+      be: "%s крыніц",
+      zh: "%s个来源",
+      pt: "%s fontes",
+      bg: "%s източника",
+      he: "%s מקורות",
+      cs: "%s zdrojů",
+      ro: "%s de surse",
+      fr: "%s sources",
+      pl: "%s źródeł"
+    },
+    "+%s озвучка": {
+      en: "+%s voice-over",
+      uk: "+%s озвучення",
+      be: "+%s агучка",
+      zh: "+%s个配音",
+      pt: "+%s dublagem",
+      bg: "+%s дублаж",
+      he: "+%s דיבוב",
+      cs: "+%s dabing",
+      ro: "+%s dublaj",
+      fr: "+%s doublage",
+      pl: "+%s lektor"
+    },
+    "+%s озвучки": {
+      en: "+%s voice-overs",
+      uk: "+%s озвучення",
+      be: "+%s агучкі",
+      zh: "+%s个配音",
+      pt: "+%s dublagens",
+      bg: "+%s дублажа",
+      he: "+%s דיבובים",
+      cs: "+%s dabingy",
+      ro: "+%s dublaje",
+      fr: "+%s doublages",
+      pl: "+%s lektorzy"
+    },
+    "+%s озвучек": {
+      en: "+%s voice-overs",
+      uk: "+%s озвучень",
+      be: "+%s агучак",
+      zh: "+%s个配音",
+      pt: "+%s dublagens",
+      bg: "+%s дублажа",
+      he: "+%s דיבובים",
+      cs: "+%s dabingů",
+      ro: "+%s de dublaje",
+      fr: "+%s doublages",
+      pl: "+%s lektor\xF3w"
+    },
+    "Оформление интерфейса": {
+      en: "Interface styling",
+      fr: "Style de l’interface",
+      uk: "Оформлення інтерфейсу",
+      be: "Афармленне інтэрфейсу",
+      zh: "界面外观",
+      pt: "Estilo da interface",
+      bg: "Оформление на интерфейса",
+      he: "עיצוב הממשק",
+      cs: "Vzhled rozhran\xED",
+      ro: "Stilul interfeței",
+      pl: "Wygląd interfejsu"
+    },
+    "<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M4 6h5m4 0h7M4 12h9m4 0h3M4 18h2m4 0h10\"/><circle cx=\"11\" cy=\"6\" r=\"2\"/><circle cx=\"15\" cy=\"12\" r=\"2\"/><circle cx=\"8\" cy=\"18\" r=\"2\"/></svg></div><div class=\"menu__text\">Поиск по фильтрам</div>": {
+      en: '<div class="menu__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M4 6h5m4 0h7M4 12h9m4 0h3M4 18h2m4 0h10"></path><circle cx="11" cy="6" r="2"></circle><circle cx="15" cy="12" r="2"></circle><circle cx="8" cy="18" r="2"></circle></svg></div><div class="menu__text">Search with filters</div>',
+      uk: "<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M4 6h5m4 0h7M4 12h9m4 0h3M4 18h2m4 0h10\"></path><circle cx=\"11\" cy=\"6\" r=\"2\"></circle><circle cx=\"15\" cy=\"12\" r=\"2\"></circle><circle cx=\"8\" cy=\"18\" r=\"2\"></circle></svg></div><div class=\"menu__text\">Пошук за фільтрами</div>",
+      be: "<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M4 6h5m4 0h7M4 12h9m4 0h3M4 18h2m4 0h10\"></path><circle cx=\"11\" cy=\"6\" r=\"2\"></circle><circle cx=\"15\" cy=\"12\" r=\"2\"></circle><circle cx=\"8\" cy=\"18\" r=\"2\"></circle></svg></div><div class=\"menu__text\">Пошук па фільтрах</div>",
+      zh: "<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M4 6h5m4 0h7M4 12h9m4 0h3M4 18h2m4 0h10\"></path><circle cx=\"11\" cy=\"6\" r=\"2\"></circle><circle cx=\"15\" cy=\"12\" r=\"2\"></circle><circle cx=\"8\" cy=\"18\" r=\"2\"></circle></svg></div><div class=\"menu__text\">筛选搜索</div>",
+      pt: '<div class="menu__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M4 6h5m4 0h7M4 12h9m4 0h3M4 18h2m4 0h10"></path><circle cx="11" cy="6" r="2"></circle><circle cx="15" cy="12" r="2"></circle><circle cx="8" cy="18" r="2"></circle></svg></div><div class="menu__text">Busca com filtros</div>',
+      bg: "<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M4 6h5m4 0h7M4 12h9m4 0h3M4 18h2m4 0h10\"></path><circle cx=\"11\" cy=\"6\" r=\"2\"></circle><circle cx=\"15\" cy=\"12\" r=\"2\"></circle><circle cx=\"8\" cy=\"18\" r=\"2\"></circle></svg></div><div class=\"menu__text\">Търсене с филтри</div>",
+      he: "<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M4 6h5m4 0h7M4 12h9m4 0h3M4 18h2m4 0h10\"></path><circle cx=\"11\" cy=\"6\" r=\"2\"></circle><circle cx=\"15\" cy=\"12\" r=\"2\"></circle><circle cx=\"8\" cy=\"18\" r=\"2\"></circle></svg></div><div class=\"menu__text\">חיפוש עם מסננים</div>",
+      cs: '<div class="menu__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M4 6h5m4 0h7M4 12h9m4 0h3M4 18h2m4 0h10"></path><circle cx="11" cy="6" r="2"></circle><circle cx="15" cy="12" r="2"></circle><circle cx="8" cy="18" r="2"></circle></svg></div><div class="menu__text">Hled\xE1n\xED s filtry</div>',
+      ro: "<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M4 6h5m4 0h7M4 12h9m4 0h3M4 18h2m4 0h10\"></path><circle cx=\"11\" cy=\"6\" r=\"2\"></circle><circle cx=\"15\" cy=\"12\" r=\"2\"></circle><circle cx=\"8\" cy=\"18\" r=\"2\"></circle></svg></div><div class=\"menu__text\">Căutare cu filtre</div>",
+      fr: '<div class="menu__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M4 6h5m4 0h7M4 12h9m4 0h3M4 18h2m4 0h10"></path><circle cx="11" cy="6" r="2"></circle><circle cx="15" cy="12" r="2"></circle><circle cx="8" cy="18" r="2"></circle></svg></div><div class="menu__text">Recherche avec filtres</div>',
+      pl: '<div class="menu__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M4 6h5m4 0h7M4 12h9m4 0h3M4 18h2m4 0h10"></path><circle cx="11" cy="6" r="2"></circle><circle cx="15" cy="12" r="2"></circle><circle cx="8" cy="18" r="2"></circle></svg></div><div class="menu__text">Wyszukiwanie z filtrami</div>'
+    },
+    "<div class=\"pt-topnav\" role=\"navigation\" aria-label=\"Каталог\">": {
+      en: '<div class="pt-topnav" role="navigation" aria-label="Catalog"></div>',
+      uk: "<div class=\"pt-topnav\" role=\"navigation\" aria-label=\"Каталог\"></div>",
+      be: "<div class=\"pt-topnav\" role=\"navigation\" aria-label=\"Каталог\"></div>",
+      zh: "<div class=\"pt-topnav\" role=\"navigation\" aria-label=\"目录\"></div>",
+      pt: '<div class="pt-topnav" role="navigation" aria-label="Cat\xE1logo"></div>',
+      bg: "<div class=\"pt-topnav\" role=\"navigation\" aria-label=\"Каталог\"></div>",
+      he: "<div class=\"pt-topnav\" role=\"navigation\" aria-label=\"קטלוג\"></div>",
+      cs: '<div class="pt-topnav" role="navigation" aria-label="Katalog"></div>',
+      ro: '<div class="pt-topnav" role="navigation" aria-label="Catalog"></div>',
+      fr: '<div class="pt-topnav" role="navigation" aria-label="Catalogue"></div>',
+      pl: '<div class="pt-topnav" role="navigation" aria-label="Katalog"></div>'
+    },
+    "<nav class=\"pt-mobile-nav\" aria-label=\"Навигация\">": {
+      en: '<nav class="pt-mobile-nav" aria-label="Navigation"></nav>',
+      uk: "<nav class=\"pt-mobile-nav\" aria-label=\"Навігація\"></nav>",
+      be: "<nav class=\"pt-mobile-nav\" aria-label=\"Навігацыя\"></nav>",
+      zh: "<nav class=\"pt-mobile-nav\" aria-label=\"导航\"></nav>",
+      pt: '<nav class="pt-mobile-nav" aria-label="Navega\xE7\xE3o"></nav>',
+      bg: "<nav class=\"pt-mobile-nav\" aria-label=\"Навигация\"></nav>",
+      he: "<nav class=\"pt-mobile-nav\" aria-label=\"ניווט\"></nav>",
+      cs: '<nav class="pt-mobile-nav" aria-label="Navigace"></nav>',
+      ro: '<nav class="pt-mobile-nav" aria-label="Navigare"></nav>',
+      fr: '<nav class="pt-mobile-nav" aria-label="Navigation"></nav>',
+      pl: '<nav class="pt-mobile-nav" aria-label="Nawigacja"></nav>'
+    },
+    "<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\"><path d=\"m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z\"/></svg></div><div class=\"menu__text\">Мультфильмы</div>": {
+      en: '<div class="menu__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z"></path></svg></div><div class="menu__text">Cartoons</div>',
+      uk: "<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\"><path d=\"m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z\"></path></svg></div><div class=\"menu__text\">Мультфільми</div>",
+      be: "<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\"><path d=\"m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z\"></path></svg></div><div class=\"menu__text\">Мультфільмы</div>",
+      zh: "<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\"><path d=\"m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z\"></path></svg></div><div class=\"menu__text\">卡通</div>",
+      pt: '<div class="menu__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z"></path></svg></div><div class="menu__text">Desenhos animados</div>',
+      bg: "<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\"><path d=\"m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z\"></path></svg></div><div class=\"menu__text\">Анимации</div>",
+      he: "<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\"><path d=\"m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z\"></path></svg></div><div class=\"menu__text\">סרטים מצוירים</div>",
+      cs: '<div class="menu__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z"></path></svg></div><div class="menu__text">Animovan\xE9 filmy</div>',
+      ro: '<div class="menu__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z"></path></svg></div><div class="menu__text">Desene animate</div>',
+      fr: '<div class="menu__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z"></path></svg></div><div class="menu__text">Dessins anim\xE9s</div>',
+      pl: '<div class="menu__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z"></path></svg></div><div class="menu__text">Filmy animowane</div>'
+    },
+    "<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 20s-8-4.8-8-10a4.4 4.4 0 0 1 8-2.5A4.4 4.4 0 0 1 20 10c0 5.2-8 10-8 10Z\"/><path d=\"m18 2 .6 1.8L20.5 4l-1.9.6L18 6.5l-.6-1.9L15.5 4l1.9-.2Z\"/></svg></div><div class=\"menu__text\">Дорамы</div>": {
+      en: '<div class="menu__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-8-4.8-8-10a4.4 4.4 0 0 1 8-2.5A4.4 4.4 0 0 1 20 10c0 5.2-8 10-8 10Z"></path><path d="m18 2 .6 1.8L20.5 4l-1.9.6L18 6.5l-.6-1.9L15.5 4l1.9-.2Z"></path></svg></div><div class="menu__text">Asian dramas</div>',
+      uk: "<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 20s-8-4.8-8-10a4.4 4.4 0 0 1 8-2.5A4.4 4.4 0 0 1 20 10c0 5.2-8 10-8 10Z\"></path><path d=\"m18 2 .6 1.8L20.5 4l-1.9.6L18 6.5l-.6-1.9L15.5 4l1.9-.2Z\"></path></svg></div><div class=\"menu__text\">Дорами</div>",
+      be: "<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 20s-8-4.8-8-10a4.4 4.4 0 0 1 8-2.5A4.4 4.4 0 0 1 20 10c0 5.2-8 10-8 10Z\"></path><path d=\"m18 2 .6 1.8L20.5 4l-1.9.6L18 6.5l-.6-1.9L15.5 4l1.9-.2Z\"></path></svg></div><div class=\"menu__text\">Дарамы</div>",
+      zh: "<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 20s-8-4.8-8-10a4.4 4.4 0 0 1 8-2.5A4.4 4.4 0 0 1 20 10c0 5.2-8 10-8 10Z\"></path><path d=\"m18 2 .6 1.8L20.5 4l-1.9.6L18 6.5l-.6-1.9L15.5 4l1.9-.2Z\"></path></svg></div><div class=\"menu__text\">亚洲剧</div>",
+      pt: '<div class="menu__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-8-4.8-8-10a4.4 4.4 0 0 1 8-2.5A4.4 4.4 0 0 1 20 10c0 5.2-8 10-8 10Z"></path><path d="m18 2 .6 1.8L20.5 4l-1.9.6L18 6.5l-.6-1.9L15.5 4l1.9-.2Z"></path></svg></div><div class="menu__text">Dramas asi\xE1ticos</div>',
+      bg: "<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 20s-8-4.8-8-10a4.4 4.4 0 0 1 8-2.5A4.4 4.4 0 0 1 20 10c0 5.2-8 10-8 10Z\"></path><path d=\"m18 2 .6 1.8L20.5 4l-1.9.6L18 6.5l-.6-1.9L15.5 4l1.9-.2Z\"></path></svg></div><div class=\"menu__text\">Азиатски драми</div>",
+      he: "<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 20s-8-4.8-8-10a4.4 4.4 0 0 1 8-2.5A4.4 4.4 0 0 1 20 10c0 5.2-8 10-8 10Z\"></path><path d=\"m18 2 .6 1.8L20.5 4l-1.9.6L18 6.5l-.6-1.9L15.5 4l1.9-.2Z\"></path></svg></div><div class=\"menu__text\">דרמות אסייתיות</div>",
+      cs: '<div class="menu__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-8-4.8-8-10a4.4 4.4 0 0 1 8-2.5A4.4 4.4 0 0 1 20 10c0 5.2-8 10-8 10Z"></path><path d="m18 2 .6 1.8L20.5 4l-1.9.6L18 6.5l-.6-1.9L15.5 4l1.9-.2Z"></path></svg></div><div class="menu__text">Asijsk\xE1 dramata</div>',
+      ro: '<div class="menu__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-8-4.8-8-10a4.4 4.4 0 0 1 8-2.5A4.4 4.4 0 0 1 20 10c0 5.2-8 10-8 10Z"></path><path d="m18 2 .6 1.8L20.5 4l-1.9.6L18 6.5l-.6-1.9L15.5 4l1.9-.2Z"></path></svg></div><div class="menu__text">Drame asiatice</div>',
+      fr: '<div class="menu__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-8-4.8-8-10a4.4 4.4 0 0 1 8-2.5A4.4 4.4 0 0 1 20 10c0 5.2-8 10-8 10Z"></path><path d="m18 2 .6 1.8L20.5 4l-1.9.6L18 6.5l-.6-1.9L15.5 4l1.9-.2Z"></path></svg></div><div class="menu__text">S\xE9ries asiatiques</div>',
+      pl: '<div class="menu__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-8-4.8-8-10a4.4 4.4 0 0 1 8-2.5A4.4 4.4 0 0 1 20 10c0 5.2-8 10-8 10Z"></path><path d="m18 2 .6 1.8L20.5 4l-1.9.6L18 6.5l-.6-1.9L15.5 4l1.9-.2Z"></path></svg></div><div class="menu__text">Dramy azjatyckie</div>'
+    },
+    "<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"5\" width=\"18\" height=\"15\" rx=\"2\"/><path d=\"m8 2 4 3 4-3m-6 8 5 3-5 3Z\"/></svg></div><div class=\"menu__text\">ТВ-шоу</div>": {
+      en: '<div class="menu__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="15" rx="2"></rect><path d="m8 2 4 3 4-3m-6 8 5 3-5 3Z"></path></svg></div><div class="menu__text">TV shows</div>',
+      uk: "<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"5\" width=\"18\" height=\"15\" rx=\"2\"></rect><path d=\"m8 2 4 3 4-3m-6 8 5 3-5 3Z\"></path></svg></div><div class=\"menu__text\">ТБ-шоу</div>",
+      be: "<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"5\" width=\"18\" height=\"15\" rx=\"2\"></rect><path d=\"m8 2 4 3 4-3m-6 8 5 3-5 3Z\"></path></svg></div><div class=\"menu__text\">ТБ-шоу</div>",
+      zh: "<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"5\" width=\"18\" height=\"15\" rx=\"2\"></rect><path d=\"m8 2 4 3 4-3m-6 8 5 3-5 3Z\"></path></svg></div><div class=\"menu__text\">电视节目</div>",
+      pt: '<div class="menu__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="15" rx="2"></rect><path d="m8 2 4 3 4-3m-6 8 5 3-5 3Z"></path></svg></div><div class="menu__text">Programas de TV</div>',
+      bg: "<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"5\" width=\"18\" height=\"15\" rx=\"2\"></rect><path d=\"m8 2 4 3 4-3m-6 8 5 3-5 3Z\"></path></svg></div><div class=\"menu__text\">Телевизионни предавания</div>",
+      he: "<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"5\" width=\"18\" height=\"15\" rx=\"2\"></rect><path d=\"m8 2 4 3 4-3m-6 8 5 3-5 3Z\"></path></svg></div><div class=\"menu__text\">תוכניות טלוויזיה</div>",
+      cs: "<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"5\" width=\"18\" height=\"15\" rx=\"2\"></rect><path d=\"m8 2 4 3 4-3m-6 8 5 3-5 3Z\"></path></svg></div><div class=\"menu__text\">TV pořady</div>",
+      ro: '<div class="menu__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="15" rx="2"></rect><path d="m8 2 4 3 4-3m-6 8 5 3-5 3Z"></path></svg></div><div class="menu__text">Emisiuni TV</div>',
+      fr: '<div class="menu__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="15" rx="2"></rect><path d="m8 2 4 3 4-3m-6 8 5 3-5 3Z"></path></svg></div><div class="menu__text">\xC9missions TV</div>',
+      pl: '<div class="menu__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="15" rx="2"></rect><path d="m8 2 4 3 4-3m-6 8 5 3-5 3Z"></path></svg></div><div class="menu__text">Programy TV</div>'
+    },
+    "<section class=\"pt-hero\" aria-label=\"Подборка фильмов и сериалов\">": {
+      en: '<section class="pt-hero" aria-label="Movies and series collection"></section>',
+      uk: "<section class=\"pt-hero\" aria-label=\"Добірка фільмів і серіалів\"></section>",
+      be: "<section class=\"pt-hero\" aria-label=\"Падборка фільмаў і серыялаў\"></section>",
+      zh: "<section class=\"pt-hero\" aria-label=\"电影与剧集精选\"></section>",
+      pt: '<section class="pt-hero" aria-label="Cole\xE7\xE3o de filmes e s\xE9ries"></section>',
+      bg: "<section class=\"pt-hero\" aria-label=\"Колекция от филми и сериали\"></section>",
+      he: "<section class=\"pt-hero\" aria-label=\"אוסף סרטים וסדרות\"></section>",
+      cs: "<section class=\"pt-hero\" aria-label=\"Kolekce filmů a seriálů\"></section>",
+      ro: "<section class=\"pt-hero\" aria-label=\"Colecție de filme și seriale\"></section>",
+      fr: '<section class="pt-hero" aria-label="Collection de films et s\xE9ries"></section>',
+      pl: '<section class="pt-hero" aria-label="Kolekcja film\xF3w i seriali"></section>'
+    },
+    "{0}<span>Подробнее</span>": {
+      en: "{0}<span>Details</span>",
+      uk: "{0}<span>Докладніше</span>",
+      be: "{0}<span>Падрабязней</span>",
+      zh: "{0}<span>详情</span>",
+      pt: "{0}<span>Detalhes</span>",
+      bg: "{0}<span>Подробности</span>",
+      he: "{0}<span>פרטים</span>",
+      cs: "{0}<span>Podrobnosti</span>",
+      ro: "{0}<span>Detalii</span>",
+      fr: "{0}<span>D\xE9tails</span>",
+      pl: "{0}<span>Szczegóły</span>"
+    },
+    "<div class=\"pt-hero__dots\" role=\"group\" aria-label=\"Переключить обложку\">": {
+      en: '<div class="pt-hero__dots" role="group" aria-label="Switch cover"></div>',
+      uk: "<div class=\"pt-hero__dots\" role=\"group\" aria-label=\"Змінити обкладинку\"></div>",
+      be: "<div class=\"pt-hero__dots\" role=\"group\" aria-label=\"Змяніць вокладку\"></div>",
+      zh: "<div class=\"pt-hero__dots\" role=\"group\" aria-label=\"切换封面\"></div>",
+      pt: '<div class="pt-hero__dots" role="group" aria-label="Trocar capa"></div>',
+      bg: "<div class=\"pt-hero__dots\" role=\"group\" aria-label=\"Смяна на обложката\"></div>",
+      he: "<div class=\"pt-hero__dots\" role=\"group\" aria-label=\"החלף עטיפה\"></div>",
+      cs: "<div class=\"pt-hero__dots\" role=\"group\" aria-label=\"Změnit obal\"></div>",
+      ro: "<div class=\"pt-hero__dots\" role=\"group\" aria-label=\"Schimbă coperta\"></div>",
+      fr: "<div class=\"pt-hero__dots\" role=\"group\" aria-label=\"Changer d’affiche\"></div>",
+      pl: "<div class=\"pt-hero__dots\" role=\"group\" aria-label=\"Zmień okładkę\"></div>"
+    }
+  };
+
+  // src/i18n.js
+  var languages = ["ru", "en", "uk", "be", "zh", "pt", "bg", "he", "cs", "ro", "fr", "pl"];
+  var host;
+  function locale(value) {
+    if (value === void 0) {
+      try {
+        var L = host || typeof window !== "undefined" && window.Lampa;
+        value = L && L.Storage.get("language", "ru");
+      } catch (error) {}
+    }
+    var code = String(value || "ru").toLowerCase().replace("_", "-").split("-")[0];
+    return {
+      ua: "uk",
+      iw: "he",
+      cn: "zh"
+    }[code] || (languages.includes(code) ? code : "en");
+  }
+  var reverse = /* @__PURE__ */new Map();
+  Object.keys(i18n_messages_default).forEach(function (source) {
+    reverse.set(source, source);
+    Object.values(i18n_messages_default[source]).forEach(function (value) {
+      if (typeof value === "string" && !reverse.has(value)) reverse.set(value, source);
+    });
+  });
+  function text(source, values, language) {
+    if (typeof source !== "string") return source;
+    var code = locale(language),
+      canonical = i18n_messages_default[source] ? source : reverse.get(source),
+      row = canonical && i18n_messages_default[canonical];
+    var output = row ? code === "ru" ? canonical : row[code] || row.en || canonical : source;
+    return values ? output.replace(/\{(\d+)\}/g, function (_, i) {
+      return values[i] === void 0 ? "{" + i + "}" : String(values[i]);
+    }) : output;
+  }
+  function pluralSource(forms, n) {
+    var code = locale();
+    var category = "other";
+    try {
+      category = new Intl.PluralRules(code).select(Number(n));
+    } catch (error) {
+      var v = Math.abs(Number(n)),
+        m = v % 10,
+        h = v % 100;
+      category = ["ru", "uk", "be"].includes(code) ? m === 1 && h !== 11 ? "one" : m >= 2 && m <= 4 && (h < 12 || h > 14) ? "few" : "other" : v === 1 ? "one" : code === "cs" && v >= 2 && v <= 4 ? "few" : "other";
+    }
+    var index = category === "one" ? 0 : category === "few" ? 1 : forms.length - 1;
+    return text(forms[index] || forms[forms.length - 1] || "%s").replace(/%s/g, String(n));
+  }
+  function installI18n(L, P) {
+    host = L;
+    P.text = text;
+    P.sourceText = function (source) {
+      return reverse.get(source) || source;
+    };
+    P.locale = locale;
+    P.pluralSource = pluralSource;
+    if (L.Lang && L.Lang.add) {
+      var add = L.Lang.add;
+      L.Lang.add = function (messages) {
+        var translated = {};
+        Object.keys(messages || {}).forEach(function (key) {
+          var row = messages[key];
+          if (!row || _typeof(row) !== "object" || Array.isArray(row)) {
+            translated[key] = row;
+            return;
+          }
+          var source = row.ru || reverse.get(row.en),
+            entry = __spreadValues({}, row);
+          if (source && i18n_messages_default[source]) languages.forEach(function (code) {
+            if (!entry[code]) entry[code] = text(source, void 0, code);
+          });
+          translated[key] = entry;
+        });
+        return add.call(this, translated);
+      };
+    }
+    function update() {
+      var code = locale();
+      document.documentElement.lang = code;
+      document.body.classList.toggle("pt-rtl", code === "he");
+      document.querySelectorAll(".head__action.open--search").forEach(function (node) {
+        return node.setAttribute("data-pt-placeholder", text("Поиск…"));
+      });
+    }
+    update();
+    if (L.Storage.listener) L.Storage.listener.follow("change", function (event) {
+      if (event.name === "language") update();
+    });
+    return {
+      update: update
+    };
+  }
 
   // src/metadata.js
   function localizedTitle(card) {
@@ -824,8 +8539,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     node.classList.add("minimal-comments-native");
     var add = node.querySelector(".full-review-add");
     if (add) {
-      add.setAttribute("aria-label", "Написать комментарий");
-      add.title = "Написать комментарий";
+      add.setAttribute("aria-label", text("Написать комментарий"));
+      add.title = text("Написать комментарий");
     }
     var head = node.querySelector(".items-line__head"),
       viewport = node.querySelector(".scroll--horizontal");
@@ -835,7 +8550,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       nav = document.createElement("div");
     nav.className = "minimal-comments-nav";
     nav.setAttribute("role", "group");
-    nav.setAttribute("aria-label", "Листать комментарии");
+    nav.setAttribute("aria-label", text("Листать комментарии"));
     var disposed = false,
       frame = 0;
     function cards() {
@@ -894,8 +8609,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       nav.appendChild(control);
       return control;
     }
-    var previous = button(-1, "Предыдущий комментарий"),
-      next = button(1, "Следующий комментарий");
+    var previous = button(-1, text("Предыдущий комментарий")),
+      next = button(1, text("Следующий комментарий"));
     head.appendChild(nav);
     var observer = window.ResizeObserver ? new ResizeObserver(schedule) : null;
     if (observer) {
@@ -1811,7 +9526,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         window.alc_auto_api.menu(card);
         return;
       }
-      L.Noty.show("Онлайн-источник не подключён");
+      L.Noty.show(text("Онлайн-источник не подключён"));
     }
     var click = function click(event) {
       event.preventDefault();
@@ -1830,10 +9545,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       play.classList.remove("minimal-source-hidden", "hide");
       play.classList.add("selector");
       play.removeAttribute("aria-hidden");
-      play.title = "Смотреть";
-      play.setAttribute("aria-label", "Смотреть");
+      play.title = text("Смотреть");
+      play.setAttribute("aria-label", text("Смотреть"));
       var label = play.querySelector("span");
-      if (label && label.textContent !== "Смотреть") label.textContent = "Смотреть";
+      if (label && label.textContent !== "Смотреть") label.textContent = text("Смотреть");
       $(play).off("hover:enter").on("hover:enter.lampaViewWatch", open);
     }
     update();
@@ -1866,23 +9581,23 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       day2 = _match$slice$map2[2],
       date = new Date(year, month - 1, day2);
     if (year < 100 || date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day2) return "";
-    return day2 + " " + ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"][month - 1] + " " + year;
+    return day2 + " " + [text("января"), text("февраля"), text("марта"), text("апреля"), text("мая"), text("июня"), text("июля"), text("августа"), text("сентября"), text("октября"), text("ноября"), text("декабря")][month - 1] + " " + year;
   }
   function readableOverview(L, card, right, link) {
     if (!card.overview || !String(card.overview).trim()) return;
-    var text = right.querySelector(".full-start-new__description,.minimal-detail-overview");
-    if (!text) {
-      text = document.createElement("p");
-      text.className = "minimal-detail-overview";
-      text.textContent = card.overview;
-      right.appendChild(text);
+    var text2 = right.querySelector(".full-start-new__description,.minimal-detail-overview");
+    if (!text2) {
+      text2 = document.createElement("p");
+      text2.className = "minimal-detail-overview";
+      text2.textContent = card.overview;
+      right.appendChild(text2);
     }
-    if (text.parentElement.classList.contains("minimal-overview-action")) return;
+    if (text2.parentElement.classList.contains("minimal-overview-action")) return;
     var control = document.createElement("div");
     control.className = "minimal-overview-action selector";
-    text.before(control);
-    control.appendChild(text);
-    text.classList.remove("minimal-overview-action", "selector", "focus");
+    text2.before(control);
+    control.appendChild(text2);
+    text2.classList.remove("minimal-overview-action", "selector", "focus");
     var ring = document.createElement("span");
     ring.className = "minimal-overview-focus";
     ring.setAttribute("aria-hidden", "true");
@@ -1890,24 +9605,24 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     control.setAttribute("role", "button");
     control.setAttribute("tabindex", "0");
     control.setAttribute("aria-haspopup", "dialog");
-    control.setAttribute("aria-label", "Прочитать описание полностью");
-    control.title = "Прочитать описание полностью";
+    control.setAttribute("aria-label", text("Прочитать описание полностью"));
+    control.title = text("Прочитать описание полностью");
     function remember() {
       if (link && link.items && link.items[0]) link.items[0].last = control;
     }
     function open() {
-      if (!text.isConnected || L.Modal.opened()) return;
+      if (!text2.isConnected || L.Modal.opened()) return;
       remember();
       var content = document.createElement("div");
       content.className = "about minimal-overview-full";
       content.textContent = card.overview;
       L.Modal.open({
-        title: "Описание",
+        title: text("Описание"),
         size: "large",
         html: window.jQuery(content),
         onBack: function onBack() {
           L.Modal.close();
-          if (text.isConnected) {
+          if (text2.isConnected) {
             remember();
             L.Controller.toggle("full_start");
           }
@@ -1934,21 +9649,21 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       genres = (card.genres || []).slice(0, 5).map(function (g) {
         return g.name;
       }).join(" | ").trim().toLowerCase(),
-      prefix = L.Lang && L.Lang.translate ? L.Lang.translate("player_quality") + ":" : "Качество:";
+      prefix = L.Lang && L.Lang.translate ? L.Lang.translate("player_quality") + ":" : text("Качество:");
     var duration = "",
       quality2 = "";
     if (line) {
       var retained = Array.from(line.children).filter(function (part) {
         if (part.classList.contains("full-start-new__split")) return false;
-        var text = (part.textContent || part.innerText || "").trim();
-        if (!text) return false;
-        if (/^\d{1,3}:\d{2}$/.test(text)) {
-          duration = text;
+        var text2 = (part.textContent || part.innerText || "").trim();
+        if (!text2) return false;
+        if (/^\d{1,3}:\d{2}$/.test(text2)) {
+          duration = text2;
           return false;
         }
-        if (genres && text.toLowerCase() === genres) return false;
-        if (text.toLowerCase().startsWith(prefix.toLowerCase())) {
-          quality2 = text.slice(prefix.length).trim();
+        if (genres && text2.toLowerCase() === genres) return false;
+        if (text2.toLowerCase().startsWith(prefix.toLowerCase())) {
+          quality2 = text2.slice(prefix.length).trim();
           return false;
         }
         return true;
@@ -2066,7 +9781,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         return __spreadProps(__spreadValues(__spreadValues({}, p), actor), {
           job: "Director",
           minimal_director: true,
-          character: ["Режиссёр", actor && actor.character].filter(Boolean).join(" \xB7 ")
+          character: [text("Режиссёр"), actor && actor.character].filter(Boolean).join(" \xB7 ")
         });
       })), _toConsumableArray(cast.filter(function (p) {
         return !ids.has(String(p.id || p.name));
@@ -2202,7 +9917,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             return p.minimal_director;
           }).length,
           heading = _node.querySelector(".items-line__title");
-        if (count && heading) heading.textContent = count > 1 ? "Актёры и режиссёры" : "Актёры и режиссёр";
+        if (count && heading) heading.textContent = count > 1 ? text("Актёры и режиссёры") : text("Актёры и режиссёр");
         var container = event.body && event.body[0] && event.body[0].querySelector(".minimal-detail-columns");
         mountCast(container, _node);
       }
@@ -2227,8 +9942,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       buttons = right.querySelector(".full-start-new__buttons");
     var reaction = body.querySelector(".button--reaction");
     if (reaction) {
-      reaction.title = "Оставить реакцию";
-      reaction.setAttribute("aria-label", "Оставить реакцию");
+      reaction.title = text("Оставить реакцию");
+      reaction.setAttribute("aria-label", text("Оставить реакцию"));
     }
     if (left) {
       left.classList.add("minimal-detail-identity");
@@ -2279,10 +9994,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var facts = document.createElement("aside");
       facts.className = "minimal-detail-facts";
       var _heading2 = document.createElement("h3");
-      _heading2.textContent = "О произведении";
+      _heading2.textContent = text("О произведении");
       facts.appendChild(_heading2);
       var series = card.media_type === "tv" || card.name || card.first_air_date;
-      var rows = [["Оригинальное название", card.original_title || card.original_name], ["Тип", isAnime(card) ? series ? "Аниме-сериал" : "Аниме-фильм" : series ? "Сериал" : "Фильм"], ["Дата релиза", releaseDate(card)], [series ? "Длительность серии" : "Длительность", technical.duration], ["Тип релиза", technical.quality], ["Рейтинг TMDB", card.vote_average ? Number(card.vote_average).toFixed(1) : ""], ["Жанры", (card.genres || []).map(function (g) {
+      var rows = [[text("Оригинальное название"), card.original_title || card.original_name], [text("Тип"), isAnime(card) ? series ? text("Аниме-сериал") : text("Аниме-фильм") : series ? text("Сериал") : text("Фильм")], [text("Дата релиза"), releaseDate(card)], [series ? text("Длительность серии") : text("Длительность"), technical.duration], [text("Тип релиза"), technical.quality], [text("Рейтинг TMDB"), card.vote_average ? Number(card.vote_average).toFixed(1) : ""], [text("Жанры"), (card.genres || []).map(function (g) {
         return g.name;
       }).join(", ")]];
       rows.forEach(function (_ref3) {
@@ -2292,11 +10007,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (!value) return;
         var row = document.createElement("div"),
           key = document.createElement("span"),
-          text = document.createElement("span");
+          text2 = document.createElement("span");
         key.textContent = name;
-        text.textContent = value;
+        text2.textContent = value;
         row.appendChild(key);
-        row.appendChild(text);
+        row.appendChild(text2);
         facts.appendChild(row);
       });
       columns.appendChild(facts);
@@ -2372,8 +10087,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         icon2.classList.add("selector");
         icon2.setAttribute("role", "button");
         icon2.tabIndex = 0;
-        icon2.setAttribute("aria-label", "Проекты " + studio.name);
-        icon2.title = "Проекты " + studio.name;
+        icon2.setAttribute("aria-label", text("Проекты {0}", [studio.name]));
+        icon2.title = text("Проекты {0}", [studio.name]);
         var open = function open() {
           if (!icon2.isConnected) return;
           L.Activity.push(studio.kind === "network" ? {
@@ -2477,7 +10192,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // package.json
-  var version = "0.4.100";
+  var version = "0.4.101";
 
   // src/inputs.js
   function inputs(L) {
@@ -2869,7 +10584,37 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // src/theme.css
-  var theme_default = ["/* Minimal presentation for native Lampa. No application replacement. */", ".pt-hidden {display:none!important}", "body.lampa_view {", " --pt-bg:#000000;--pt-side:#14161b;--pt-panel:#191d24;--pt-high:#252c34;", " --pt-line:#ffffff12;--pt-text:#eeeff2;--pt-muted:#9299a3;--pt-accent:#add9e5;--pt-dim:#add9e514;", ' background:var(--pt-bg)!important;color:var(--pt-text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;', " font-size:calc(clamp(14px,.94vw,18px) * var(--pt-interface-scale,1))!important;", "}", "body.lampa_view .background {opacity:.08!important}", "body.lampa_view .background__fade {background:linear-gradient(0deg,var(--pt-bg),transparent)!important}", "body.lampa_view .head {height:3.6em;background:#000000f5;border-bottom:1px solid var(--pt-line);z-index:30}", "body.lampa_view .head__body {height:100%;max-width:112em;margin:auto;padding:.5em 2.5em;gap:.65em;display:flex;align-items:center}", "body.lampa_view .head__menu-icon {display:flex!important;order:-2;align-items:center;justify-content:center;width:2.2em;height:2.2em;flex:0 0 2.2em;box-sizing:border-box;padding:0;border:1px solid var(--pt-line);border-radius:.6em;margin:0!important;background:#ffffff04;color:var(--pt-muted);cursor:pointer}", "body.lampa_view .head__menu-icon svg {width:1.1em;height:1.1em}", "body.lampa_view .head__logo-icon {display:flex!important;width:auto!important;margin:0 2em 0 0!important;flex-shrink:0;cursor:pointer}", "body.lampa_view .pt-brand {font-size:.92em;font-weight:700;letter-spacing:.13em;color:var(--pt-text)}", "body.lampa_view .head__split,body.lampa_view .head__time,body.lampa_view .head__markers,body.lampa_view .head__title,body.lampa_view .head__logo-local {display:none!important}", "body.lampa_view .head__backward {display:none!important}", "body.lampa_view .head__backward.pt-back-visible {display:flex!important;order:-3;align-items:center;justify-content:center;width:2.2em;height:2.2em;flex:0 0 2.2em;box-sizing:border-box;margin:0!important;padding:0;border:1px solid var(--pt-line);border-radius:.6em;background:#ffffff04;color:var(--pt-muted);cursor:pointer}", "body.lampa_view.pt-home .head__backward {display:none!important}", "body.lampa_view .minimal-back svg {width:1.1em;height:1.1em}", ".minimal-back--overlay {display:none}", "body.lampa_view .minimal-back-heading {display:flex;align-items:center;gap:.7em}", "body.lampa_view .minimal-back--overlay {display:flex;align-items:center;justify-content:center;flex:0 0 2em;width:2em;height:2em;border:1px solid var(--pt-line);border-radius:.6em;background:#ffffff04;color:var(--pt-muted);cursor:pointer;font-size:1em}", "body.lampa_view .minimal-back-heading>.selectbox__title,body.lampa_view .minimal-back-heading>.settings__title {flex:1;min-width:0}", "body.lampa_view .head .open--broadcast,body.lampa_view .head .notice--icon,body.lampa_view .head .full--screen,body.lampa_view .head .open--settings,body.lampa_view .head .open--notice,body.lampa_view .head .open--split {display:none!important}", "body.lampa_view .head__actions {margin-left:auto;display:flex;align-items:center;gap:.5em}", "body.lampa_view .head__action {width:2.2em;height:2.2em;border-radius:.55em;margin:0;color:var(--pt-muted)}", "body.lampa_view .head__action svg {width:1.15em;height:1.15em}", "body.lampa_view .head__action.focus,body.lampa_view .head__action.hover {background:var(--pt-high);color:white}", "body.lampa_view .head__action.open--search {width:18em;background:#ffffff04;border:1px solid var(--pt-line);justify-content:flex-start;padding:0 .8em;gap:.65em}", "body.lampa_view .head__action.open--search:after {content:'Поиск…';font-size:.8em;color:var(--pt-muted)}", "body.lampa_view .pt-topnav {display:flex;align-items:center;gap:1.5em}", "body.lampa_view .pt-topnav__item {font-size:.81em;color:var(--pt-muted);padding:.55em 0;cursor:pointer;border-bottom:1px solid transparent}", "body.lampa_view .pt-topnav__item.active {color:var(--pt-text);border-bottom-color:var(--pt-accent)}", "body.lampa_view .pt-topnav__item.focus,body.lampa_view .pt-topnav__item.hover {color:var(--pt-accent);outline:0;border-bottom-color:var(--pt-accent)}", "body.lampa_view .wrap {display:block!important}", "body.lampa_view .wrap__content,body.lampa_view.menu--always .wrap__content,body.lampa_view.menu--open .wrap__content {width:100%!important;max-width:100%;margin-left:0!important;transform:none!important;padding-top:3.6em!important}", "body.lampa_view .activitys,body.lampa_view .activity {width:100%!important;max-width:100%}", "body.lampa_view .wrap__left,body.lampa_view.menu--always:not(.light--version) .wrap__left {position:fixed!important;top:4.1em!important;bottom:auto!important;left:2.5em!important;width:19em!important;height:auto!important;max-height:calc(100% - 5em)!important;padding:.65em 0!important;margin:0!important;border:1px solid #ffffff19;border-radius:.9em;background:#121419;box-shadow:0 18px 60px #0008;z-index:40;transform:none!important;transition:opacity .12s;visibility:hidden!important;opacity:0;pointer-events:none}", "body.lampa_view.menu--open .wrap__left,body.lampa_view.menu--always.menu--open .wrap__left {visibility:visible!important;opacity:1;pointer-events:auto}", "body.lampa_view .wrap__left>.scroll {width:100%!important;max-height:75vh!important}", "body.lampa_view .menu {padding:0 .6em!important}", "body.lampa_view .menu__case {padding:0!important}", "body.lampa_view .menu__list {display:block!important}", "body.lampa_view .menu__item {font-size:.86em;padding:.85em .8em;margin:.12em 0;border-radius:.5em;color:#a9afb8}", "body.lampa_view .menu__text,body.lampa_view.menu--always .menu__text {display:block!important;font-size:1em;font-weight:450}", "body.lampa_view .menu__ico {width:1.15em;height:1.15em;min-width:1.15em;margin-right:1em;opacity:.8}", "body.lampa_view .menu__ico svg {width:100%;height:100%}", "body.lampa_view .menu__item.focus,body.lampa_view .menu__item.hover,body.lampa_view .menu__item.traverse {background:var(--pt-high);color:#fff;box-shadow:none}", "body.lampa_view .menu__split {display:none!important}", 'body.lampa_view .menu__item[data-action="console"],body.lampa_view .menu__item[data-action="edit"],body.lampa_view .menu__item[data-action="feed"],body.lampa_view .menu__item[data-action="relise"],body.lampa_view .menu__item[data-action="myperson"],body.lampa_view .menu__item[data-action="subscribes"],body.lampa_view .menu__item[data-action="catalog"],body.lampa_view .menu__item[data-action="filter"],body.lampa_view .menu__item[data-action="about"] {display:none}', "body.lampa_view .items-line {margin-bottom:.8em;padding-bottom:.7em}", "body.lampa_view .items-line__head {margin-bottom:1em}", "body.lampa_view .items-line__title {font-size:1.12em;font-weight:600;letter-spacing:-.02em}", "body.lampa_view .items-line__more {font-size:.8em;background:transparent;color:var(--pt-muted)}", "body.lampa_view .card__view,body.lampa_view .card__img {border-radius:.5em;background:var(--pt-panel);box-shadow:none;overflow:hidden}", "body.lampa_view .card__title {font-size:.83em;font-weight:500;line-height:1.4;margin-top:.65em;height:auto;min-height:0;max-height:2.85em;display:-webkit-box;-webkit-box-orient:vertical;white-space:normal;overflow:hidden;transform:none;-webkit-transform:none;-webkit-line-clamp:2;line-clamp:2;text-overflow:ellipsis}", "body.lampa_view .card__age {font-size:.73em;color:var(--pt-muted);margin-top:.2em}", "body.lampa_view .card__vote {background:#000000dc;color:#eee;border:0;font-size:.65em;border-radius:.3em;padding:.2em .4em}", "body.lampa_view .card.focus .card__view:after,body.lampa_view .card.hover .card__view:after {border:2px solid var(--pt-accent);border-radius:.5em;inset:0;box-shadow:none;z-index:5;box-sizing:border-box}", "body.lampa_view .card.focus .card__title {color:var(--pt-accent)}", "body.lampa_view .card__quality {border-radius:.3em;background:#000000dc;font-size:.65em}", "body.lampa_view .scroll--mask:before,body.lampa_view .scroll--mask:after {display:none}", "body.lampa_view .pt-hero {position:relative;min-height:32em;height:min(67vh,43em);margin:0 0 2.2em;overflow:hidden;border:0;box-shadow:none;background:#000;isolation:isolate}", "body.lampa_view .pt-hero__image {position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;object-position:70% 35%;z-index:-2}", "body.lampa_view .pt-hero:before {content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#000000 0%,#000000ed 13%,#0000008c 40%,#00000000 76%),linear-gradient(0deg,#000000 0%,#000000 1em,#00000020 35%,#00000000 80%)}", "body.lampa_view .pt-hero__body {position:absolute;left:max(4.5em,calc((100% - 100em)/2));bottom:6.5em;max-width:34em;padding-right:1em}", "body.lampa_view .pt-hero__title {font-size:2.9em;line-height:1.08;font-weight:650;letter-spacing:-.045em;margin:0 0 .65em;text-wrap:balance;max-width:14em}", "body.lampa_view .pt-hero__meta {display:flex;align-items:center;gap:.75em;font-size:.8em;line-height:1.5;font-weight:500;color:#dbdde2;margin-bottom:1.25em}", "body.lampa_view .pt-hero__studio {width:auto;max-width:6em;height:1.5em;object-fit:contain;flex:none;filter:drop-shadow(0 0 .6px rgba(255,255,255,.7)) drop-shadow(0 1px 2px #000);opacity:.95}", "body.lampa_view .pt-hero__overview {font-size:.85em;line-height:1.65;color:#a3a8b1;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;max-width:34em}", "body.lampa_view .pt-hero__actions {display:flex;gap:.8em;margin-top:1.6em}", "body.lampa_view .pt-hero__action {display:flex;align-items:center;gap:.6em;border-radius:.6em;font-size:.82em;font-weight:600;padding:.85em 1.15em;background:var(--pt-accent);color:#13232c;cursor:pointer;border:1px solid transparent}", "body.lampa_view .pt-hero__action svg {width:1.15em;height:1.15em}", "body.lampa_view .pt-hero__action--secondary {background:#212a35dd;color:#d4dce3;border-color:#ffffff12}", "body.lampa_view .pt-hero__action.focus,body.lampa_view .pt-hero__action.hover,body.lampa_view .pt-hero__action:hover,body.lampa_view .pt-hero__action:focus-visible {outline:none!important;box-shadow:inset 0 0 0 2px #fff!important}", "body.lampa_view .pt-hero__dots {position:absolute;bottom:2.8em;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:.5em}", "body.lampa_view .pt-hero__dot {width:.5em;height:.5em;background:#ffffff50;border-radius:1em;cursor:pointer;position:relative}", "body.lampa_view .pt-hero__dot:after {content:'';position:absolute;inset:-.6em}", "body.lampa_view .pt-hero__dot.active {width:1.5em;background:var(--pt-accent)}", "body.lampa_view .pt-hero__dot {box-sizing:border-box;border:1.5px solid transparent;outline:none!important;box-shadow:none!important;transition:none!important}", "body.lampa_view .pt-hero__dot.focus,body.lampa_view .pt-hero__dot:focus-visible {border-color:#fff}", "body.lampa_view .pt-mobile-nav {display:none!important}", "body.lampa_view.pt-reduce-motion *,body.lampa_view.pt-reduce-motion *:before,body.lampa_view.pt-reduce-motion *:after {animation-duration:0s!important;transition-duration:0s!important;scroll-behavior:auto!important}", "body.lampa_view .full-start-new {padding-top:1.5em}", "body.lampa_view .full-start-new__left {width:15em;min-width:15em}", "body.lampa_view .full-start-new__poster {border-radius:.8em;overflow:hidden;box-shadow:0 16px 48px #0007}", "body.lampa_view .full-start-new__title {font-size:2.45em;letter-spacing:-.04em;font-weight:750;line-height:1.08;max-width:22em}", "body.lampa_view .full-start-new__tagline {font-size:.92em;color:var(--pt-muted);font-weight:400;line-height:1.6}", "body.lampa_view .full-start-new__rate-line {gap:.7em;margin-top:1em}", "body.lampa_view .full-start__rate {border:1px solid var(--pt-line);border-radius:.45em;padding:.4em .65em;font-size:.85em;background:var(--pt-panel)}", "body.lampa_view .full-start__rate .source--name {color:var(--pt-muted);font-size:.65em;font-weight:500}", "body.lampa_view .full-start-new__details {font-size:.82em;color:#bdbdc5;line-height:1.6}", "body.lampa_view .full-start-new__head {font-size:.82em;color:#bdbdc5;margin-bottom:.75em}", "body.lampa_view .full-start-new__reactions {display:none}", "body.lampa_view .full-start__status,body.lampa_view .full-start__pg {font-size:.7em;border:1px solid var(--pt-line);border-radius:.4em;padding:.45em .7em;color:var(--pt-muted)}", "body.lampa_view .full-start-new__buttons {display:flex;align-items:center;gap:.7em;flex-wrap:wrap}", "body.lampa_view .button--alc-torrent span {display:inline!important;max-width:none!important;font-size:1em!important}", "body.lampa_view .full-start__button,body.lampa_view .full-descr__tag {background:var(--pt-high);border:1px solid var(--pt-line);color:white;border-radius:.625em;font-size:.85em;padding:.8em 1.15em;box-shadow:none}", "body.lampa_view .full-start__button.focus,body.lampa_view .full-start__button.hover {border-color:var(--pt-accent);background:var(--pt-high);color:white;box-shadow:0 0 0 1px var(--pt-accent)}", "body.lampa_view .full-start__button.button--alc-auto {background:var(--pt-accent);border-color:var(--pt-accent);color:#07151c}", "body.lampa_view .full-start__button.button--alc-auto.focus {background:#65c9f3;color:#07151c;box-shadow:0 0 0 3px #2bb4ed55}", "body.lampa_view .full-start__button svg {width:1.1em;height:1.1em}", "body.lampa_view .full-descr__text {color:#bfbfc6;font-size:.9em;line-height:1.75;max-width:65em}", "body.lampa_view .full-descr__title,body.lampa_view .full-persons__title {font-size:1.2em;font-weight:650}", "body.lampa_view .pt-context-badge {font-size:.62em;line-height:1.5;color:#98989f;margin-top:1.3em}", "body.lampa_view .pt-context-badge span {color:var(--pt-accent)}", "body.lampa_view .torrent-item,body.lampa_view .torrent-item.tc-item {background:var(--pt-panel)!important;border:1px solid var(--pt-line)!important;border-radius:.625em!important;padding:1em!important;margin-bottom:.55em!important;color:var(--pt-text)!important}", "body.lampa_view .torrent-item.focus,body.lampa_view .torrent-item.hover,body.lampa_view .torrent-list .torrent-item.tc-item.focus {background:var(--pt-high)!important;border-color:var(--pt-accent)!important;box-shadow:inset 0 0 0 2px var(--pt-accent)!important;color:white!important}", "body.lampa_view .torrent-item__title {font-size:.95em;font-weight:600;line-height:1.45}", "body.lampa_view .torrent-item__details {font-size:.72em;color:var(--pt-muted)}", "body.lampa_view .tc-title {font-size:1em;font-weight:600;letter-spacing:-.015em}", "body.lampa_view .tc-tag {border-radius:.35em;font-size:.68em;padding:.2em .5em;border-color:#ffffff14}", "body.lampa_view .tc-tag--voice {background:#ffffff08}", "body.lampa_view .tc-tag--complete {color:#7ed0a7;border-color:#7ed0a72c}", "body.lampa_view .tc-tag--partial {color:#d6b777;border-color:#d6b7772c}", "body.lampa_view .tc-original,body.lampa_view .tc-foot {font-size:.68em;color:var(--pt-muted)}", "body.lampa_view .tc-size {font-size:1em;font-weight:600}", "body.lampa_view .tc-seeds {font-size:.8em;font-weight:500;color:#7ed0a7}", "body.lampa_view .tc-summary {display:flex;align-items:center;flex-wrap:wrap;gap:.5em .8em;min-width:0}", "body.lampa_view .tc-season {font-size:1.06em;font-weight:650;line-height:1.35;color:var(--pt-accent)}", "body.lampa_view .tc-episodes {font-size:.88em;color:#c4c8cf;line-height:1.4}", "body.lampa_view .tc-summary .tc-tag--quality {font-size:.86em;color:var(--pt-accent);background:#add9e50c;border-color:#add9e52e}", "body.lampa_view .tc-head {gap:1em;align-items:flex-start}", "body.lampa_view .tc-right {flex:none;gap:.4em}", "body.lampa_view .tc-tags {gap:.5em 1.2em;margin:.65em 0}", "body.lampa_view .tc-tags .tc-tag {font-size:.8em;line-height:1.3;color:#c4c8cf;background:transparent}", "body.lampa_view .tc-voices {display:flex;align-items:baseline;flex-wrap:wrap;gap:.4em .8em;font-size:.86em;line-height:1.5}", "body.lampa_view .tc-voice-names {display:inline-flex;align-items:center;flex-wrap:wrap;gap:.35em;min-width:0;max-width:100%;color:#e2e5eb;white-space:normal;overflow:visible;overflow-wrap:anywhere}", "body.lampa_view .tc-languages {font-size:.88em;color:var(--pt-accent)}", "body.lampa_view .tc-language-tags .tc-voices {font-size:inherit;line-height:inherit;align-items:center;gap:.35em}", "body.lampa_view .tc-language-tags .tc-voices .tc-group-label {font-size:.72em}", "body.lampa_view .tc-bitrate {font-size:.8em;color:var(--pt-muted)}", "body.lampa_view .tc-warning {font-size:.8em;line-height:1.4;margin-top:.5em;color:#d6b777}", "body.lampa_view .tc-foot {display:flex;align-items:center;justify-content:space-between;gap:1em;margin-top:.7em;font-size:.8em}", "body.lampa_view .tc-source {min-width:0;overflow-wrap:anywhere}", "body.lampa_view .tc-info {flex:none;cursor:pointer;font:inherit;color:#c4c8cf;padding:.3em .6em;border:1px solid var(--pt-line);border-radius:.4em;background:transparent}", "body.lampa_view .tc-info:hover,body.lampa_view .tc-info:focus-visible {color:white;border-color:var(--pt-accent);outline:none}", "body.lampa_view .tc-info.focus {color:white;border-color:white;box-shadow:0 0 0 1px white,0 0 .6em #add9e540;outline:none}", "body.lampa_view .tc-release-name {color:#939ba5;white-space:normal;overflow-wrap:anywhere}", "body.lampa_view .tc-full-details {font-size:.95em;line-height:1.6}", "body.lampa_view .tc-full-details dl {margin:0}", "body.lampa_view .tc-full-details dt {color:var(--pt-muted);font-size:.85em;margin-top:1em}", "body.lampa_view .tc-full-details dt:first-child {margin-top:0}", "body.lampa_view .tc-full-details dd {margin:0;white-space:pre-wrap;overflow-wrap:anywhere}", "body.lampa_view .tc-item .tc-title,body.lampa_view .tc-item .tc-original {display:none!important}", "@media(max-width:650px){body.lampa_view .tc-head{display:flex;flex-wrap:wrap}body.lampa_view .tc-right{margin-left:auto}body.lampa_view .tc-seeds{white-space:normal;text-align:right}body.lampa_view .tc-summary{flex:1 1 12em}body.lampa_view .tc-foot{align-items:flex-end}}", "body.lampa_view .filter__item,body.lampa_view .selector--filter {border-radius:.5em;background:var(--pt-panel);border:1px solid var(--pt-line);color:#c4c4ca}", "body.lampa_view .filter__item.focus,body.lampa_view .filter__item.hover {background:var(--pt-high);border-color:var(--pt-accent);color:white}", "body.lampa_view .modal__content,body.lampa_view .selectbox__content,body.lampa_view .settings__content {background:var(--pt-panel)!important;color:var(--pt-text);border:1px solid var(--pt-line);border-radius:.85em;box-shadow:0 20px 80px #0008}", "body.lampa_view .modal__title,body.lampa_view .selectbox__title,body.lampa_view .settings__title {font-weight:650;letter-spacing:-.025em}", "body.lampa_view .settings-param {border-radius:.5em;border-bottom:1px solid var(--pt-line);font-size:.9em}", "body.lampa_view .settings-param__descr {color:var(--pt-muted);opacity:1;font-size:.8em;line-height:1.5}", "body.lampa_view .settings-param.focus,body.lampa_view .selectbox-item.focus,body.lampa_view .settings-folder.focus {background:var(--pt-high)!important;color:white;box-shadow:inset 3px 0 var(--pt-accent)}", "body.lampa_view .settings-param__value {color:var(--pt-accent)}", "body.lampa_view .selectbox-item {border-radius:.45em;font-size:.9em}", "body.lampa_view .settings-folder {border:1px solid var(--pt-line);border-radius:.7em;background:var(--pt-panel)}", "body.lampa_view .wrap__left {background:var(--pt-panel)!important;color:var(--pt-text)}", "body.lampa_view .menu__item,body.lampa_view .settings-folder,body.lampa_view .settings-param,body.lampa_view .selectbox-item {color:var(--pt-text)}", "body.lampa_view .settings-folder__name,body.lampa_view .settings-param__name,body.lampa_view .selectbox-item__title {color:inherit}", "body.lampa_view .menu__ico,body.lampa_view .settings-folder__icon {color:inherit;opacity:1}", "body.lampa_view .settings-param__descr,body.lampa_view .selectbox-item__subtitle {color:#a2aab4;opacity:1}", "body.lampa_view .settings-folder.focus,body.lampa_view .settings-param.focus,body.lampa_view .selectbox-item.focus,body.lampa_view .menu__item.focus,body.lampa_view .menu__item.traverse {background:#20272e!important;color:var(--pt-text);box-shadow:inset 2px 0 var(--pt-accent)}", "body.lampa_view .simple-button {background:var(--pt-high);border-radius:.5em;color:white;border:1px solid var(--pt-line)}", "body.lampa_view .simple-button.focus {border-color:var(--pt-accent);background:var(--pt-dim);color:white}", "body.lampa_view .search {background:var(--pt-bg)}", "body.lampa_view .search-source {background:var(--pt-panel);border:1px solid var(--pt-line);border-radius:.625em}", "body.lampa_view .search-source.focus {border-color:var(--pt-accent);color:white}", "body.lampa_view .alc-ap {background:var(--pt-bg)!important}", "body.lampa_view .alc-ap__head {border-radius:.8em;overflow:hidden}", "body.lampa_view .alc-ap__play {background:var(--pt-accent)!important;color:#07151c!important;border-radius:.6em!important}", "body.lampa_view .alc-chip,body.lampa_view .alc-ap-voice,body.lampa_view .alc-ep,body.lampa_view .alc-ap-season__head {background:var(--pt-panel)!important;border:1px solid var(--pt-line)!important;border-radius:.6em!important;color:var(--pt-text)!important;box-shadow:none!important}", "body.lampa_view .alc-chip--on,body.lampa_view .alc-chip.focus,body.lampa_view .alc-ap-voice.focus,body.lampa_view .alc-ep.focus {border-color:var(--pt-accent)!important;background:var(--pt-dim)!important;color:white!important;box-shadow:0 0 0 1px var(--pt-accent)!important}", "body.lampa_view input {accent-color:var(--pt-accent)}", "body.lampa_view .empty__title {font-size:1.4em;font-weight:650}", "body.lampa_view .empty__descr {color:var(--pt-muted);font-size:.85em;line-height:1.6}", "", "body.lampa_view .full-start-new__reactions,body.lampa_view .full-start-new__tagline {display:none}", "body.lampa_view .full-start-new__title {font-weight:600;font-size:2.4em}", "body.lampa_view .full-start__button.button--alc-auto,body.lampa_view .alc-ap__play {background:var(--pt-accent)!important;color:#13232c!important}", "body.lampa_view .full-start__button.button--alc-auto.focus {background:#d0eaf1;color:#13232c;box-shadow:0 0 0 2px #fff}", "body.lampa_view .simple-button,body.lampa_view .selectbox-item,body.lampa_view .settings-param {font-weight:450}", "@media(min-width:1100px) {", " body.lampa_view .items-line .card:not(.card--wide):not(.card--collection) {width:11.1em!important}", " body.lampa_view .items-line>.items-line__head {padding-left:1.1em}", "}", "@media(max-width:900px) {", " body.lampa_view .head__body {padding:.5em 1.2em}", " body.lampa_view .head__action.open--search {width:2.2em;padding:0;justify-content:center;border:0;background:transparent}", " body.lampa_view .head__action.open--search:after {display:none}", " body.lampa_view .head__logo-icon {margin-right:1em!important}", " body.lampa_view .pt-topnav {gap:1.2em;margin-left:auto}", " body.lampa_view .pt-hero__body {left:2em;max-width:29em;bottom:5.5em}", " body.lampa_view .pt-hero__title {font-size:2.5em}", " body.lampa_view .wrap__left {left:1.2em!important}", "}", "body.lampa_view.pt-mobile {font-size:calc(16px * var(--pt-interface-scale,1))!important}", "body.lampa_view.pt-mobile .head {height:6.5em}", "body.lampa_view.pt-mobile .head__body {height:3.5em;padding:.5em 1em;position:relative}", "body.lampa_view.pt-mobile .head__logo-icon {margin-right:auto!important}", "body.lampa_view.pt-mobile .pt-topnav {position:absolute;top:3.5em;left:1em;right:1em;height:3em;justify-content:space-around;gap:.5em;border-top:1px solid var(--pt-line);margin:0}", "body.lampa_view.pt-mobile .pt-topnav__item {font-size:.8em;padding:.6em .4em}", "body.lampa_view.pt-mobile .wrap__content {padding-top:6.5em!important;padding-bottom:1em!important}", "body.lampa_view.pt-mobile .wrap__left {top:3.8em!important;left:1em!important;width:18em!important}", "body.lampa_view.pt-mobile .pt-hero {height:36em;min-height:32em;max-height:none;margin-bottom:1.2em}", "body.lampa_view.pt-mobile .pt-hero__image {object-position:66% top;height:75%}", "body.lampa_view.pt-mobile .pt-hero:before {background:linear-gradient(0deg,#000000 8%,#000000f0 24%,#00000040 61%,#00000000 100%)}", "body.lampa_view.pt-mobile .pt-hero__body {left:1.3em;right:1.3em;bottom:4.8em;max-width:none;padding:0}", "body.lampa_view.pt-mobile .pt-hero__title {font-size:2.05em;max-width:15em;margin-bottom:.6em}", "body.lampa_view.pt-mobile .pt-hero__meta {font-size:.74em;margin-bottom:.85em}", "body.lampa_view.pt-mobile .pt-hero__overview {font-size:.8em;-webkit-line-clamp:3}", "body.lampa_view.pt-mobile .pt-hero__actions {gap:.6em;margin-top:1.2em}", "body.lampa_view.pt-mobile .pt-hero__action {font-size:.76em;padding:.95em .9em}", "body.lampa_view.pt-mobile .pt-hero__dots {bottom:2.2em;gap:.7em}", "body.lampa_view.pt-mobile .items-line .card:not(.card--wide):not(.card--collection) {width:9.1em!important}", "body.lampa_view.pt-mobile .items-line__title {font-size:1.08em}", "body.lampa_view.pt-mobile .full-start-new__left {width:7em;min-width:7em}", "body.lampa_view.pt-mobile .full-start-new__title {font-size:1.65em}", "@media(max-width:600px) {", " body.lampa_view:not(.pt-tv) .head__action.open--search {width:2.2em;padding:0;justify-content:center;border:0;background:transparent}", " body.lampa_view:not(.pt-tv) .head__action.open--search:after {display:none}", "}", "", "body.lampa_view .head__menu-icon svg {width:1.1em!important;height:1.1em!important}", "body.lampa_view.pt-home .activity--active>.activity__body>.scroll>.scroll__content {padding-top:0!important}", "body.lampa_view .app,body.lampa_view .wrap {background:var(--pt-bg)!important}", "body.lampa_view .scroll--mask {mask-image:none!important;-webkit-mask-image:none!important}", "", "body.lampa_view.pt-home .activity--active>.activity__body>div>.scroll>.scroll__content {padding-top:0!important}", "body.lampa_view .wrap__left>.scroll,body.lampa_view .wrap__left>.scroll>.scroll__content {height:auto!important;min-height:0!important;padding:0!important}", "", "body.lampa_view .wrap__left .menu__split:last-child {display:none}", "", "/* 0.3.1: all catalogue routes live in the menu. */", "body.lampa_view .pt-topnav,body.lampa_view .pt-mobile-nav {display:none!important}", "body.lampa_view .head__actions>.head__action:not(.open--search):not(.open--profile) {display:none!important}", "body.lampa_view .head__action.open--profile {width:2.4em!important;height:2.4em!important;min-width:2.4em;flex:0 0 2.4em;padding:0!important;border-radius:50%!important;overflow:hidden}", "body.lampa_view .head__action.open--profile img,body.lampa_view .head__action.open--profile svg {width:100%!important;height:100%!important;display:block;max-width:none;max-height:none;flex:1 0 auto;object-fit:cover;border-radius:50%!important;aspect-ratio:1}", 'body.lampa_view .menu__item[data-action="movie"],body.lampa_view .menu__item[data-action="tv"],body.lampa_view .menu__item[data-action="anime"],body.lampa_view .menu__item[data-action="main"] {display:flex!important}', 'body.lampa_view .menu__item[data-action="timetable"],body.lampa_view .menu__item[data-action*="sport"],body.lampa_view .menu__item[data-action*="shot"],body.lampa_view .pt-removed-section {display:none!important}', "body.lampa_view .settings {z-index:60!important}", "body.lampa_view .settings__head {padding:1.4em 1.5em 1em;flex-shrink:0}", "body.lampa_view .card__type {display:none!important}", "body.lampa_view .card--wide {width:26em!important}", "body.lampa_view .card--wide .card__title {font-size:1em;line-height:1.35;max-height:2.7em}", "body.lampa_view .card--wide .card__description,body.lampa_view .card--wide .card__descr {font-size:.85em;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}", "body.lampa_view .pt-quality {position:absolute;top:.6em;left:.6em;z-index:4;background:#000000e8;color:#d5e9ee;border:1px solid #ffffff25;border-radius:.35em;padding:.3em .5em;font-size:.65em;line-height:1;font-weight:600;pointer-events:none}", "", "body.lampa_view .card__quality {display:block!important;z-index:4}", "body.lampa_view.pt-mobile .head {height:3.5em!important}", "body.lampa_view.pt-mobile .wrap__content {padding-top:3.5em!important}", "body.lampa_view.pt-mobile .card--wide {width:20em!important}", "", "body.lampa_view .card--wide .card__textbox {font-size:.8em;line-height:1.4;padding:1.2em;overflow:hidden}", "body.lampa_view .card--wide .card__textbox>* {display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;max-height:2.8em}", "body.lampa_view .card__quality {top:.6em;left:.6em;bottom:auto;background:#000000e8;color:#d5e9ee;border:1px solid #ffffff25}", "", "/* Frame animation owns transforms while the pointer is moving. */", "body.lampa_view .pt-wheel-moving>.scroll__content>.scroll__body {transition:none!important;-webkit-transition:none!important}", "body.lampa_view.pt-wheel-active .card {transition:none!important}", "@media(min-width:1100px) {", " body.lampa_view .pt-hero {height:min(56vh,34em);min-height:27em;max-width:100em;margin:0 auto 2em}", " body.lampa_view .pt-hero__body {left:3em;bottom:7em;max-width:31em}", " body.lampa_view .pt-hero__title {font-size:2.55em;max-width:15em}", " body.lampa_view .pt-hero__dots {left:45%;bottom:1.5em}", " body.lampa_view .items-line {max-width:100em;margin-left:auto;margin-right:auto;margin-bottom:.8em;padding-bottom:.7em}", " body.lampa_view .items-line .card:not(.card--wide):not(.card--collection) {width:9.2em!important}", " body.lampa_view .card__title {font-size:.79em}", " body.lampa_view .head__body {max-width:100em;padding-left:1.5em;padding-right:1.5em}", "}", "", "@media(min-width:1100px) {", " body.lampa_view .pt-hero,body.lampa_view .items-line {max-width:90vw}", " body.lampa_view .head__body {max-width:90vw;padding-left:0;padding-right:0}", " body.lampa_view .items-line .card:not(.card--wide):not(.card--collection) {width:clamp(8.4em,calc((90vw - 10em / var(--pt-interface-scale,1)) / 10 * var(--pt-interface-scale,1)),11.1em)!important}", "}", "", "/* OLED: true black canvas; poster artwork retains its own colors. */", "body.lampa_view {--pt-bg:#000000;--pt-side:#080808;--pt-panel:#0b0b0b;--pt-high:#171717;background:#000000!important}", "body.lampa_view .background {display:none!important}", "body.lampa_view .head,body.lampa_view .app,body.lampa_view .wrap,body.lampa_view .search {background:#000000!important}", "body.lampa_view .pt-hero__dots {left:0!important;right:0!important;justify-content:center}", "body.lampa_view .pt-hero__logo {display:block;width:auto;max-width:100%;height:auto;max-height:7em;object-fit:contain;object-position:left center;margin:0 0 1.4em}", "body.lampa_view .pt-hero__logo.pt-hidden {display:none!important}", "body.lampa_view.pt-mobile .pt-hero__logo {max-width:90%;max-height:5.5em;margin-bottom:1em}", "", "body.lampa_view .pt-kind {position:absolute;top:.6em;right:.6em;z-index:4;pointer-events:none;font-size:.6em;line-height:1;padding:.35em .5em;background:#000b;color:#d4e2e6;border:1px solid #ffffff25;border-radius:.35em}", "body.lampa_view .card.pt-has-quality .card__quality {display:none!important}", "/* Search and circular profile share the same outer height. */", "body.lampa_view .head__action.open--search {box-sizing:border-box;height:2.2em}", "body.lampa_view .head__action.open--profile {box-sizing:border-box;width:2.2em!important;height:2.2em!important;min-width:2.2em;flex:0 0 2.2em}", "body.lampa_view .pt-hero__image {image-rendering:auto;filter:none!important}", "/* Compact detail cover, fading to OLED black before the following rows. */", "body.lampa_view .full-start__background {left:0!important;top:0!important;width:100%!important;height:30em!important;max-height:58vh;object-fit:cover;object-position:center 30%;-webkit-mask-image:linear-gradient(to bottom,#000 20%,transparent 100%)!important;mask-image:linear-gradient(to bottom,#000 20%,transparent 100%)!important}", "body.lampa_view .full-start-new {padding-top:2em;padding-bottom:1em}", "body.lampa_view .full-start-new__left {width:10em;min-width:10em;margin-right:2em}", "body.lampa_view .full-start-new__body {align-items:center}", "body.lampa_view .full-start-new__right {min-width:0;max-width:58em}", "body.lampa_view .full-start-new__title {font-size:2em}", "body.lampa_view .minimal-detail-logo {display:none;width:auto;max-width:min(24em,75%);height:auto;max-height:5.5em;object-fit:contain;object-position:left center;margin:0 0 1em}", "body.lampa_view .minimal-detail-logo.loaded {display:block}", "body.lampa_view .minimal-detail-overview,body.lampa_view .full-start-new__description {color:var(--pt-muted);font-size:.9em;line-height:1.55;max-width:52em;margin:1em 0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}", "body.lampa_view.pt-mobile .full-start-new__left {width:6.5em;min-width:6.5em;margin:0 1.2em 0 0}", "body.lampa_view.pt-mobile .full-start-new__body {display:flex;align-items:flex-start}", "body.lampa_view.pt-mobile .full-start-new__right {margin:0;padding:0;background:none;overflow:visible}", "body.lampa_view.pt-mobile .full-start-new__title {font-size:1.4em}", "body.lampa_view.pt-mobile .minimal-detail-logo {max-width:100%;max-height:4em}", "body.lampa_view.pt-mobile .full-start-new__buttons {gap:.4em}", ".minimal-detail-logo {display:none}", "/* Keep native modal/player order; file actions must stay above their dialog. */", "body.lampa_view .settings {z-index:40!important}", "body.lampa_view .selectbox {z-index:70!important}", "body.lampa_view .modal {z-index:50!important}", "body.lampa_view .settings-input {z-index:90!important}", "body.lampa_view .settings-input__content {background:#101010}", "body.lampa_view .minimal-detail-header {max-width:90%;margin:0 auto;padding:3em 0 1.5em;min-height:23em;display:flex;align-items:flex-end}", "body.lampa_view .minimal-detail-header .full-start-new__body {width:100%;align-items:flex-end;gap:2em}", "body.lampa_view .minimal-detail-identity {width:15em;min-width:15em;margin:0}", "body.lampa_view .minimal-detail-identity .full-start-new__poster {display:none}", "body.lampa_view .minimal-detail-identity .full-start-new__title {margin-bottom:1em;font-size:1.7em}", "body.lampa_view .minimal-detail-identity .minimal-detail-logo {max-width:100%;max-height:5em;margin:0 0 1.5em}", "body.lampa_view .minimal-detail-identity .full-start-new__buttons {display:flex;gap:.45em;flex-wrap:wrap}", "body.lampa_view .minimal-detail-identity .button--alc-auto {width:100%;justify-content:center;gap:.5em}", "body.lampa_view .minimal-detail-heading {overflow-wrap:anywhere;word-break:normal;min-width:0;font-size:1.15em;font-weight:600;line-height:1.35;margin:0 0 .7em}", "body.lampa_view .minimal-detail-header .full-start-new__right {max-width:60em}", "body.lampa_view .minimal-detail-header .full-start-new__rate-line {margin-top:.6em;font-size:.8em}", "body.lampa_view .minimal-detail-header .full-start-new__details {margin:.7em 0}", "body.lampa_view .minimal-detail-columns {max-width:90%;margin:1em auto 2em;display:flex;gap:1.25em;align-items:stretch}", "body.lampa_view .minimal-detail-cast>.minimal-cast-native {order:0;grid-column:1;grid-row:1;min-width:0;width:100%!important;max-width:100%;box-sizing:border-box;overflow:hidden;flex:1;background:#0b0b0b;border:1px solid var(--pt-line);border-radius:.8em;padding:1em;margin:0}", "body.lampa_view .minimal-detail-facts {order:1;width:22%;min-width:15em;flex-shrink:0;padding:1.2em;background:#0b0b0b;border:1px solid var(--pt-line);border-radius:.8em;margin:0}", "body.lampa_view .minimal-detail-facts h3 {font-size:1em;margin:0 0 1em}", "body.lampa_view .minimal-detail-facts>div {display:grid;grid-template-columns:minmax(7.5em,.9fr) minmax(0,1.1fr);gap:.75em;font-size:.78em;margin:.8em 0;line-height:1.5}", "body.lampa_view .minimal-detail-facts>div>span:first-child {color:var(--pt-muted)}", "body.lampa_view .minimal-detail-facts>div>span:last-child {text-align:right}", "body.lampa_view.pt-mobile .minimal-detail-header {min-height:18em;padding-top:2em}", "body.lampa_view.pt-mobile .minimal-detail-header .full-start-new__body {flex-direction:column;gap:1em}", "body.lampa_view.pt-mobile .minimal-detail-identity {width:100%;min-width:0}", "body.lampa_view.pt-mobile .minimal-detail-columns {display:block}", "body.lampa_view.pt-mobile .minimal-detail-facts {width:100%;min-width:0;box-sizing:border-box;margin:1em 0}", "body.lampa_view .minimal-cast-native .full-person {width:7em;box-sizing:border-box;flex-direction:column;align-items:center;padding:.4em;gap:.65em;font-size:.85em;text-align:center}", "body.lampa_view .minimal-cast-native .full-person__photo {width:5em;height:5em;border-radius:50%;margin:0;background:#151515}", "body.lampa_view .minimal-cast-native .full-person__photo>img {height:100%;object-fit:cover}", "body.lampa_view .minimal-cast-native .full-person__name {font-size:.95em;line-height:1.3}", "body.lampa_view .minimal-cast-native .full-person__role {font-size:.8em;color:var(--pt-muted);line-height:1.3}", "body.lampa_view .person-start__img {border-radius:50%;width:10em;height:10em;object-fit:cover}", "body.lampa_view .person-start {background:#000}", "/* The complete card is one vertical native row, including its lower columns. */", "body.lampa_view .minimal-detail-header {display:block;box-sizing:border-box;width:90%;max-width:90%;min-height:0;padding:0 0 1.5em}", "body.lampa_view .minimal-detail-header>.full-start-new__body {box-sizing:border-box;min-height:0;padding:1.5em 0 .4em;display:flex;-webkit-box-align:start;-webkit-align-items:flex-start;align-items:flex-start}", "body.lampa_view .minimal-detail-header>.minimal-detail-columns {position:relative;inset:auto;clear:both;float:none;width:100%;max-width:none;margin:.7em 0 0;min-height:0;box-sizing:border-box;display:grid;grid-template-columns:minmax(0,1fr) minmax(15em,22%);gap:1.25em;align-items:stretch}", "body.lampa_view.pt-desktop:not(.pt-safari) .minimal-detail-header>.full-start-new__body {min-height:24em;padding:3em 0 1em}", "body.lampa_view.pt-desktop:not(.pt-safari) .minimal-detail-header>.minimal-detail-columns {margin-top:1.5em}", "body.lampa_view .minimal-detail-columns>.minimal-detail-facts {grid-column:2;grid-row:1;position:relative;inset:auto;float:none;width:auto;min-width:0;box-sizing:border-box;align-self:stretch;overflow-wrap:anywhere}", "body.lampa_view .minimal-overview-action {cursor:pointer;border-radius:.3em;outline:none!important;border:0!important;box-shadow:none!important;position:relative;isolation:isolate;max-width:52em;margin:1em 0}", "body.lampa_view .minimal-overview-action>.full-start-new__description,body.lampa_view .minimal-overview-action>.minimal-detail-overview {width:100%;max-width:none;margin:0;outline:none!important;border:0!important;box-shadow:none!important}", "body.lampa_view .minimal-overview-focus {display:none;position:absolute;inset:0;border:2px solid var(--pt-accent);border-radius:.3em;pointer-events:none}", "body.lampa_view .minimal-overview-action:hover,body.lampa_view .minimal-overview-action.focus,body.lampa_view .minimal-overview-action:focus-visible {box-shadow:inset 0 0 0 2px var(--pt-accent)!important}", "body.lampa_view .minimal-overview-action {contain:paint;transition:none!important;transform:none!important}", "body.lampa_view .minimal-overview-action>.minimal-overview-focus {display:none!important}", "body.lampa_view .minimal-overview-action::before,body.lampa_view .minimal-overview-action::after {display:none!important}", "body.lampa_view .minimal-detail-studio.selector {cursor:pointer;border-radius:.2em;outline:none}", "body.lampa_view .minimal-detail-studio.selector.focus,body.lampa_view .minimal-detail-studio.selector:focus-visible {box-shadow:0 0 0 2px var(--pt-accent)}", "body.lampa_view .minimal-overview-full {white-space:pre-wrap;overflow-wrap:break-word;line-height:1.7}", "body.lampa_view .minimal-source-hidden {display:none!important}", "body.lampa_view .minimal-detail-facts>div>span {display:block}", "body.lampa_view .minimal-detail-identity .full-start-new__buttons {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.45em;align-items:stretch;overflow:visible}", "body.lampa_view .minimal-detail-identity .full-start__button {margin:0;min-width:0;box-sizing:border-box;justify-content:center;padding:.8em .5em;font-size:.85em}", "body.lampa_view .minimal-detail-identity .button--alc-auto {grid-column:1/-1;width:100%}", "body.lampa_view .minimal-detail-identity .full-start__button>span {display:none!important}", "body.lampa_view .minimal-detail-identity .button--alc-auto>span,body.lampa_view .minimal-detail-identity .button--alc-torrent>span {display:inline!important}", "body.lampa_view .minimal-detail-identity .button--alc-torrent {grid-column:span 2}", "body.lampa_view .minimal-detail-identity .minimal-actions--no-bell>.button--alc-torrent {grid-column:1/-1}", "body.lampa_view .minimal-detail-identity .full-start-new__buttons:not(.minimal-actions--auto)>.button--play {grid-column:1/-1}", "body.lampa_view .minimal-detail-identity .full-start-new__buttons:not(.minimal-actions--auto)>.button--play>span {display:inline!important}", "body.lampa_view.pt-mobile .minimal-detail-header>.full-start-new__body {min-height:0;padding-top:1em}", "body.lampa_view.pt-mobile .minimal-detail-header>.minimal-detail-columns {display:block}", "body.lampa_view.pt-mobile .minimal-detail-identity .full-start-new__buttons {max-width:24em}", "/* Compact filter form: labels and values are distinct, with a clear primary action. */", "body.lampa_view .minimal-filter-panel .selectbox__content {width:27em;max-width:100vw;background:#080808;border:1px solid var(--pt-line);box-sizing:border-box}", "body.lampa_view .minimal-filter-panel .selectbox__head {padding:1.3em 1.3em .8em}", "body.lampa_view .minimal-filter-panel .selectbox__title {font-size:1.3em;line-height:1.2}", "body.lampa_view .minimal-filter-panel .selectbox-item {display:flex;align-items:center;justify-content:space-between;gap:1em;padding:.85em 1.3em;border-radius:0;border-bottom:1px solid #ffffff0a;min-height:3.2em;box-sizing:border-box}", "body.lampa_view .minimal-filter-panel .selectbox-item__title {font-size:.9em;font-weight:500}", "body.lampa_view .minimal-filter-panel .selectbox-item__subtitle {font-size:.8em;text-align:right;color:var(--pt-muted);margin:0;max-width:55%;line-height:1.4}", "body.lampa_view .minimal-filter-panel .selectbox-item:nth-last-child(2) {background:var(--pt-accent);color:#07151a;justify-content:center;border-radius:.5em;margin:.9em 1.1em .5em}", "body.lampa_view .minimal-filter-panel .selectbox-item:last-child {justify-content:center;color:var(--pt-muted);min-height:2.8em}", "body.lampa_view .minimal-filter-panel .selectbox-item.focus {box-shadow:inset 3px 0 var(--pt-accent)}", "body.lampa_view .minimal-filter-panel .selectbox-item:nth-last-child(2).focus {background:#d1edf5;color:#07151a;box-shadow:inset 0 0 0 2px #fff}", "/* Legacy history/filter grids share the catalogue's content boundaries. */", "body.lampa_view .category-full,body.lampa_view .mapping--grid {width:100%;max-width:90vw;margin-left:auto;margin-right:auto;padding-left:0;padding-right:0;box-sizing:border-box}", "body.lampa_view .category-full>.card {box-sizing:border-box;margin-left:0;padding-left:.5em;padding-right:.5em}", "@media(min-width:1100px){body.lampa_view:not(.pt-tv) .category-full>.card:not(.card--wide):not(.card--collection) {width:clamp(8.4em,calc((90vw - 10em / var(--pt-interface-scale,1)) / 10 * var(--pt-interface-scale,1)),11.1em)!important}}", "@media(min-width:1200px){body.lampa_view:not(.pt-tv) .mapping--grid>.card,body.lampa_view:not(.pt-tv) .category-full>.card:not(.card--wide):not(.card--collection) {width:calc(12.5% * var(--pt-interface-scale,1))!important}}", "@media(min-width:1800px){body.lampa_view:not(.pt-tv) .mapping--grid>.card,body.lampa_view:not(.pt-tv) .category-full>.card:not(.card--wide):not(.card--collection) {width:calc(10% * var(--pt-interface-scale,1))!important}}", "@media(max-width:650px){body.lampa_view .minimal-filter-panel .selectbox__content {width:100%;max-height:90vh}body.lampa_view .minimal-filter-panel .selectbox-item {min-height:3em;padding:.7em 1em}}", "body.lampa_view .minimal-crew-native {max-width:90%;margin:1.2em auto}", "body.lampa_view .minimal-crew-native .full-person {font-size:.8em;padding-right:1em}", "body.lampa_view .minimal-crew-native .full-person__photo {width:4.5em;height:4.5em;border-radius:50%}", "body.lampa_view .minimal-crew-native .full-person__photo>img {height:100%;object-fit:cover}", "body.lampa_view .minimal-crew-native .full-person__name {font-size:1em}", "body.lampa_view .pt-hero__logo.pt-hero__logo--translated {margin-bottom:.5em}", "body.lampa_view .pt-hero__title.pt-hero__title--translation {font-size:1.05em;line-height:1.35;letter-spacing:0;font-weight:500;max-width:100%;margin:0 0 1.1em;color:#dbdde2}", "body.lampa_view .minimal-detail-identity .minimal-detail-logo.minimal-detail-logo--translated {margin-bottom:.5em}", "body.lampa_view .minimal-detail-identity .full-start-new__title.minimal-detail-translation {font-size:1em;line-height:1.35;letter-spacing:0;font-weight:500;margin-bottom:1.25em;color:#dbdde2}", "/* Clip translated rails to their own content column, with room for focus rings. */", "body.lampa_view .items-line__body {overflow:hidden;padding:1.1em 0;margin:-1.1em 0;-webkit-mask-image:linear-gradient(to right,transparent,#000 1.25em,#000 calc(100% - 1.25em),transparent);mask-image:linear-gradient(to right,transparent,#000 1.25em,#000 calc(100% - 1.25em),transparent)}", "body.lampa_view .items-line__body>.scroll--horizontal {-webkit-mask-image:none!important;mask-image:none!important}", "/* Native social actions and data stay with Lampa; only presentation changes. */", "body.lampa_view .full-start-new__reactions {display:flex;align-items:center;flex-wrap:wrap;gap:.4em;min-height:0;margin:.9em 0;color:var(--pt-muted);font-size:.8em}", "body.lampa_view .full-start-new__reactions>div {padding:0}", "body.lampa_view .full-start-new__reactions .reaction {gap:.3em;padding:.35em .65em;background:#0b0b0b;border:1px solid var(--pt-line);border-radius:.5em}", "body.lampa_view .full-start-new__reactions .reaction__icon {width:1.25em;height:1.25em}", "body.lampa_view .full-start-new__reactions .reaction__count {padding:0;font-size:1em;font-weight:500}", "body.lampa_view .full-start-new__reactions .reaction--voted {border-color:var(--pt-accent);color:var(--pt-accent)}", "body.lampa_view .minimal-comments-native {width:90%;max-width:90%;margin:1em auto 2em;padding-bottom:1em}", "body.lampa_view .minimal-comments-native .items-line__head {padding-left:0;padding-right:0}", "body.lampa_view .minimal-comments-native .scroll--horizontal>.scroll__content {padding-left:0;padding-right:0}", "body.lampa_view .minimal-comments-native .items-line__body,body.lampa_view .minimal-comments-native .scroll--horizontal {-webkit-mask-image:none!important;mask-image:none!important}", "body.lampa_view .full-review {background:#0b0b0b;border:1px solid var(--pt-line);border-radius:.7em;padding:1.1em;box-sizing:border-box;color:#e5e5e5}", "body.lampa_view .mapping--line>.full-review {min-width:18em;max-width:25em}", "body.lampa_view .full-review__text {font-size:.9em;line-height:1.6;margin-bottom:1.1em;-webkit-line-clamp:3;line-clamp:3}", "body.lampa_view .full-review__footer {font-size:.78em;color:var(--pt-muted)}", "body.lampa_view .full-review__user-icon {width:1.8em;height:1.8em}", "body.lampa_view .full-review.focus {border-color:var(--pt-accent);background:#111;color:#fff}", "body.lampa_view .mapping--line>.full-review-add {width:10em;min-height:7.5em;padding:1em;border:1px solid var(--pt-line);background:#0b0b0b;border-radius:.7em;box-sizing:border-box}", "body.lampa_view .full-review-add::before {width:1.4em;height:1.4em;margin:-1.3em 0 0 -.7em;opacity:.75}", "body.lampa_view .full-review-add::after {content:'Написать';position:absolute;inset:auto 0 1.2em;text-align:center;font-size:.8em;color:var(--pt-muted)}", "body.lampa_view .full-review-add.focus {border-color:var(--pt-accent);background:#111}", "body.lampa_view .full-review-add.focus::after {border:0;width:auto;border-radius:0;inset:auto 0 1.2em;color:var(--pt-accent)}", "body.lampa_view .full-review--full-text .full-review__text {-webkit-line-clamp:unset;line-clamp:unset}", "body.lampa_view .minimal-comments-native .items-line__head {gap:.7em}", "body.lampa_view .minimal-comments-native .items-line__title {margin-right:auto}", "body.lampa_view .minimal-comments-nav {display:flex;gap:.4em;flex:none}", "body.lampa_view .minimal-comments-nav[hidden] {display:none}", "body.lampa_view .minimal-comments-arrow {display:flex;align-items:center;justify-content:center;width:2.1em;height:2.1em;padding:0;border:1px solid var(--pt-line);border-radius:.6em;background:#ffffff04;color:var(--pt-muted);cursor:pointer}", "body.lampa_view .minimal-comments-arrow svg {width:1em;height:1em}", "/* Shared transparent badges: ratings, age, status and reactions. */", "body.lampa_view .minimal-detail-header .full-start-new__rate-line {display:flex;align-items:center;flex-wrap:wrap;gap:.5em;margin-bottom:.85em;font-size:.8em}", "body.lampa_view .minimal-detail-header .full-start-new__rate-line>* {margin:0!important}", "body.lampa_view .minimal-detail-header .full-start__rate,body.lampa_view .minimal-detail-header .full-start__pg,body.lampa_view .minimal-detail-header .full-start__status,body.lampa_view .minimal-detail-header .full-start-new__reactions .reaction {box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:.5em;min-height:2.3em;padding:.45em .7em;font-size:1em;line-height:1.1;border:1px solid var(--pt-line);border-radius:.45em;background:rgba(0,0,0,.36);color:#dbdde2;box-shadow:none}", "body.lampa_view .minimal-detail-header .full-start-new__reactions .reaction--voted {border-color:var(--pt-accent);color:var(--pt-accent)}", "body.lampa_view .minimal-detail-header .full-start__rate>div {width:auto;height:auto;padding:0;background:transparent}", "/* A stable card box keeps remote geometry intact; only the artwork moves. */", "body.lampa_view .card__view {transition:transform .24s cubic-bezier(.2,.75,.25,1),box-shadow .24s ease!important;-webkit-transition:-webkit-transform .24s cubic-bezier(.2,.75,.25,1),box-shadow .24s ease!important;transform-origin:center}", "body.lampa_view .card.focus .card__view,body.lampa_view .card.hover .card__view {animation:none!important;-webkit-animation:none!important;-webkit-transform:translateY(-.2em) scale(1.045);transform:translateY(-.2em) scale(1.045);box-shadow:0 0 .85em rgba(173,217,229,.4),0 0 1.8em rgba(173,217,229,.22)}", "body.lampa_view .minimal-cast-native .full-person.focus {background:#161b1e;color:var(--pt-text);box-shadow:inset 0 0 0 1px var(--pt-accent)}", "body.lampa_view .items-line__more {display:none!important}", "body.lampa_view .minimal-paged-row .card-more:not(.card-more--first) {display:none!important}", "body.lampa_view .items-line__head {display:flex;align-items:center;gap:.6em}", "body.lampa_view .items-line__title {margin-right:auto}", ".minimal-row-nav {display:none}", "body.lampa_view .minimal-row-nav {display:flex;gap:.4em;flex:none}", "body.lampa_view .minimal-row-arrow,body.lampa_view .minimal-row-more {display:flex;align-items:center;justify-content:center;width:2em;height:2em;padding:0;border:1px solid var(--pt-line);border-radius:.6em;background:#ffffff04;color:var(--pt-muted);cursor:pointer}", "body.lampa_view .minimal-row-arrow svg,body.lampa_view .minimal-row-more svg {width:1em;height:1em}", "body.lampa_view .minimal-paged-row .scroll__body>.card:last-child,body.lampa_view .minimal-paged-row .scroll__body>.full-person:last-child {margin-right:2.5em}", "body.lampa_view .minimal-paged-row .mapping--line>.card+.card {margin-left:.75em}", "body.lampa_view .minimal-paged-row .items-line__body {-webkit-mask-image:linear-gradient(to right,transparent 1em,#000 1.25em,#000 calc(100% - 1.25em),transparent calc(100% - 1em));mask-image:linear-gradient(to right,transparent 1em,#000 1.25em,#000 calc(100% - 1.25em),transparent calc(100% - 1em))}", "/* Header, row and comment navigation share one pointer/remote/keyboard focus. */", "body.lampa_view .minimal-back svg,body.lampa_view .head__menu-icon svg,body.lampa_view .minimal-row-nav svg,body.lampa_view .minimal-comments-arrow svg {stroke-width:2}", "body.lampa_view .minimal-back:hover,body.lampa_view .minimal-back.hover,body.lampa_view .minimal-back.focus,body.lampa_view .minimal-back:focus-visible,", "body.lampa_view .head__menu-icon:hover,body.lampa_view .head__menu-icon.hover,body.lampa_view .head__menu-icon.focus,body.lampa_view .head__menu-icon:focus-visible,", "body.lampa_view .minimal-row-arrow:hover:not(:disabled),body.lampa_view .minimal-row-arrow.hover:not(:disabled),body.lampa_view .minimal-row-arrow.focus:not(:disabled),body.lampa_view .minimal-row-arrow:focus-visible:not(:disabled),", "body.lampa_view .minimal-row-more:hover,body.lampa_view .minimal-row-more.hover,body.lampa_view .minimal-row-more.focus,body.lampa_view .minimal-row-more:focus-visible,", "body.lampa_view .minimal-comments-arrow:hover:not(:disabled),body.lampa_view .minimal-comments-arrow.hover:not(:disabled),body.lampa_view .minimal-comments-arrow.focus:not(:disabled),body.lampa_view .minimal-comments-arrow:focus-visible:not(:disabled) {color:var(--pt-text);background:var(--pt-high);border-color:var(--pt-line);outline:none;outline-offset:0;box-shadow:inset 0 0 0 1px var(--pt-accent)}", "body.lampa_view.pt-tv .minimal-row-arrow,body.lampa_view.pt-tv .minimal-person-row .minimal-row-nav {display:none}", "body.lampa_view .pt-row-paging>.scroll__content>.scroll__body {transition:none!important;-webkit-transition:none!important}", "body.lampa_view .minimal-people-grid {display:grid;grid-template-columns:repeat(auto-fill,minmax(7em,1fr));gap:1em;max-width:65em}", "body.lampa_view .minimal-people-grid .full-person {width:100%!important;margin:0;box-sizing:border-box}", "", "body.lampa_view .alc-ap__voices {--alc-vcol:29em}", "body.lampa_view .alc-ap-vgroup__title {font-size:.9em;color:var(--pt-text);margin:.85em 0 .5em}", "body.lampa_view .alc-ep--soon .alc-ep__time {color:var(--pt-accent)}", "", "body.lampa_view .minimal-detail-studio {display:inline-block;width:auto;max-width:6.5em;height:1.3em;object-fit:contain;vertical-align:middle;margin-right:.65em;filter:drop-shadow(0 0 .6px rgba(255,255,255,.7)) drop-shadow(0 1px 2px #000);opacity:1}", "body.lampa_view .minimal-detail-studio[hidden] {display:none}", "body.lampa_view .minimal-anime-controls {width:100%;box-sizing:border-box;margin:0 0 1.6em;padding:.4em 1em}", "body.lampa_view .minimal-anime-tabs {display:flex;justify-content:center;align-items:center;gap:.65em;width:100%;margin:0 auto}", "body.lampa_view .minimal-anime-tab {font-family:inherit;justify-content:center;min-width:9.5em;transition:box-shadow .24s ease!important;-webkit-transition:box-shadow .24s ease!important}", 'body.lampa_view .minimal-anime-tab[aria-selected="true"] {box-shadow:0 0 .35em rgba(173,217,229,.85),0 0 1.2em rgba(173,217,229,.65),0 0 2.4em rgba(173,217,229,.42);outline:none}', "body.lampa_view .minimal-anime-status {margin:1.2em auto;text-align:center;color:var(--pt-muted);line-height:1.5}", "body.lampa_view .minimal-anime-retry {display:inline-block;font:inherit;color:var(--pt-text);background:#111;border:1px solid var(--pt-line);border-radius:.6em;padding:.65em 1.2em;margin:.8em auto 0;cursor:pointer}", "body.lampa_view .minimal-anime-retry.focus,body.lampa_view .minimal-anime-retry:hover {background:var(--pt-accent);color:#11171b;outline:none}", "body.lampa_view .minimal-anime-status[hidden],body.lampa_view .minimal-anime-retry[hidden] {display:none!important}", "", "/* Small touch controls keep native actions, including the iPhone safe area. */", "body.lampa_view.pt-mobile .navigation-bar {font-size:calc(14px * var(--pt-interface-scale,1))!important;padding:0 .8em .65em;padding-bottom:calc(.65em + env(safe-area-inset-bottom,0px))}", "body.lampa_view.pt-mobile .navigation-bar__body {max-width:400px;margin:0 auto;padding:.5em .6em;border:1px solid var(--pt-line);background:#181a1cf2;box-shadow:0 4px 20px #0006}", "body.lampa_view.pt-mobile .navigation-bar__item {display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:44px;min-width:56px}", "body.lampa_view.pt-mobile .navigation-bar__icon {width:1.5em;height:1.5em}", "body.lampa_view.pt-mobile .navigation-bar__label {font-size:.78em;line-height:1.2;margin-top:.3em}", "body.lampa_view.pt-mobile .settings__content {font-size:calc(14px * var(--pt-interface-scale,1))!important;box-sizing:border-box;max-height:78vh!important;border-radius:1em}", "body.lampa_view.pt-mobile .settings__body,", "body.lampa_view.pt-tv .settings__body {font-size:1em!important;min-height:0;overflow:hidden}", "body.lampa_view.pt-mobile .settings__head,", "body.lampa_view.pt-tv .settings__head {padding:1em 1.1em .8em}", "body.lampa_view.pt-mobile .settings__title,", "body.lampa_view.pt-tv .settings__title {font-size:1.4em;line-height:1.3}", "body.lampa_view.pt-mobile .settings .minimal-back--overlay {font-size:1em}", "body.lampa_view.pt-mobile .settings-folder,", "body.lampa_view.pt-tv .settings-folder {padding:.9em 1.1em;min-height:3.6em;align-items:center;box-sizing:border-box;border-radius:.5em}", "body.lampa_view.pt-mobile .settings-folder__icon,", "body.lampa_view.pt-tv .settings-folder__icon {width:1.4em;height:1.4em;min-width:1.4em;margin-right:.9em}", "body.lampa_view.pt-mobile .settings-folder__icon>*,", "body.lampa_view.pt-tv .settings-folder__icon>* {width:100%;height:100%}", "body.lampa_view.pt-mobile .settings-folder__name,", "body.lampa_view.pt-tv .settings-folder__name {font-size:1em;line-height:1.35}", "body.lampa_view.pt-mobile .settings-param,", "body.lampa_view.pt-tv .settings-param {padding:1em 1.1em;font-size:1em}", "body.lampa_view.pt-mobile .settings-param__name,", "body.lampa_view.pt-tv .settings-param__name {font-size:1em}", "body.lampa_view.pt-mobile .settings-param__value,", "body.lampa_view.pt-tv .settings-param__value {font-size:.95em}", "body.lampa_view.pt-mobile .wrap__content {padding-bottom:calc(5.1em + env(safe-area-inset-bottom,0px))!important}", "body.lampa_view.pt-mobile.orientation--landscape .navigation-bar {padding:.6em .6em .6em 0}", "body.lampa_view.pt-mobile.orientation--landscape .navigation-bar__body {gap:.45em;padding:.55em}", "", "/* TV geometry is separate from desktop sizes and the rest of the interface. */", "body.lampa_view.pt-tv .items-line {max-width:90vw;margin-left:auto;margin-right:auto}", "body.lampa_view.pt-tv .card,body.lampa_view.pt-mobile .settings-folder {will-change:auto}", "/* Clip TV rails without an extra full-width gradient compositing layer. */", "body.lampa_view.pt-tv .items-line__body {-webkit-mask-image:none;mask-image:none}", "body.lampa_view.pt-tv .minimal-paged-row .scroll--horizontal>.scroll__content>.scroll__body {transition:transform .12s linear;-webkit-transition:-webkit-transform .12s linear}", "body.lampa_view.pt-tv .card__view {transition:none!important;-webkit-transition:none!important}", "body.lampa_view.pt-tv .card.focus .card__view,body.lampa_view.pt-tv .card.hover .card__view {-webkit-transform:none;transform:none;box-shadow:0 0 .55em rgba(173,217,229,.4)}", "", "/* TV drawers use the same compact rows as phones, with readable TV text. */", "body.lampa_view.pt-tv .settings__content {font-size:calc(clamp(14px,.84vw,16px) * var(--pt-interface-scale,1))!important;width:30em;max-width:38vw;box-sizing:border-box}", "body.lampa_view.pt-tv .settings .minimal-back--overlay {font-size:1em}", "body.lampa_view.pt-tv .selectbox__content {font-size:calc(clamp(14px,.84vw,16px) * var(--pt-interface-scale,1))!important;box-sizing:border-box}", "body.lampa_view.pt-tv .selectbox__head {padding:1em 1.1em .8em}", "body.lampa_view.pt-tv .selectbox__title {font-size:1.4em;line-height:1.3}", "body.lampa_view.pt-tv .selectbox-item {padding:.85em 1.1em;font-size:1em;min-height:3.2em;box-sizing:border-box}", "body.lampa_view.pt-tv .selectbox-item__title {font-size:1em;line-height:1.35}", "body.lampa_view.pt-tv .selectbox-item__subtitle {font-size:.85em;line-height:1.4}", "body.lampa_view.pt-tv .settings-folder,body.lampa_view.pt-tv .settings-param {will-change:auto}", "", "/* Compact TV badges and captions retain the existing poster geometry. */", "/* TV uses the same focus treatment as the browser; keep repaint cost bounded. */", "body.lampa_view.pt-tv .card.focus .card__view,body.lampa_view.pt-tv .card.hover .card__view {-webkit-transform:translateY(-.2em) scale(1.045);transform:translateY(-.2em) scale(1.045);box-shadow:0 0 .85em rgba(173,217,229,.4),0 0 1.8em rgba(173,217,229,.22)}", "body.lampa_view.pt-tv .card.hover:not(.focus) .card__view {box-shadow:none!important;transform:none!important}", "body.lampa_view.pt-tv .card.hover:not(.focus) .card__view:after {border-color:transparent!important;box-shadow:none!important}", "body.lampa_view .pt-hero__studio.selector {cursor:pointer;border-radius:.2em}", "body.lampa_view .pt-hero__studio.selector.focus,body.lampa_view .pt-hero__studio.selector:focus-visible {outline:none;box-shadow:0 0 0 2px var(--pt-accent);filter:none}", "", "/* A native cast rail stays inside its grid cell at every scroll position. */", "body.lampa_view .minimal-detail-columns>.minimal-detail-cast {grid-column:1;grid-row:1;position:relative;display:flex;flex-direction:column;flex:1;min-width:0;max-width:100%;width:100%;box-sizing:border-box;overflow:hidden}", "body.lampa_view .minimal-detail-cast .items-line__body,body.lampa_view .minimal-detail-cast .scroll--horizontal {min-width:0;max-width:100%;box-sizing:border-box}", "body.lampa_view .minimal-detail-facts>div>span {min-width:0;overflow-wrap:anywhere}", "body.lampa_view .minimal-detail-facts>div>span:first-child {overflow-wrap:normal;word-break:normal}", "body.lampa_view.pt-tv .minimal-cast-native .full-person {width:var(--minimal-person-width,7em);flex-basis:var(--minimal-person-width,7em)}", "body.lampa_view.pt-tv .minimal-cast-native .full-person:last-child {margin-right:0}", "body.lampa_view.pt-mobile .minimal-detail-header>.minimal-detail-columns {grid-template-columns:minmax(0,1fr)}", "body.lampa_view.pt-mobile .minimal-detail-columns>.minimal-detail-cast,body.lampa_view.pt-mobile .minimal-detail-columns>.minimal-detail-facts {grid-column:1;grid-row:auto}", "@media(max-width:900px){", " body.lampa_view .minimal-detail-header>.minimal-detail-columns {grid-template-columns:minmax(0,1fr)}", " body.lampa_view .minimal-detail-columns>.minimal-detail-cast,body.lampa_view .minimal-detail-columns>.minimal-detail-facts {grid-column:1;grid-row:auto}", "}", "", "/* Equal footer space on every poster: focus never changes card/row geometry. */", "body.lampa_view .card .pt-card-watch {position:relative;height:4.1em;margin-top:.4em;font-size:.72em;line-height:1.35;pointer-events:none;visibility:hidden}", "body.lampa_view .card__view>.card-watched {display:none!important}", "body.lampa_view .card .pt-card-watch>.card-watched {display:block;position:absolute;inset:0;width:100%;height:100%;max-width:100%;font-size:1em;line-height:1.35;transform:none;-webkit-transform:none;border:0;border-radius:0;background:none!important;color:var(--pt-muted);box-sizing:border-box}", "body.lampa_view .card .pt-card-watch .card-watched__inner,body.lampa_view .card .pt-card-watch .card-watched__body {padding:0;font-size:1em}", "body.lampa_view .card .pt-card-watch .card-watched__item {display:none;margin:0;color:var(--pt-muted)}", "body.lampa_view .card .pt-card-watch .pt-card-watch__current {position:absolute;inset:0;display:flex;flex-direction:column;align-items:stretch;line-height:1.25}", "body.lampa_view .card .pt-card-watch .card-watched__item>span {display:none}", "body.lampa_view .pt-card-watch__row {display:block}", "body.lampa_view .pt-card-watch__meter {display:flex;align-items:center;min-width:0;margin-top:.25em;min-height:1em}", "body.lampa_view .pt-card-watch__label {display:flex;flex-wrap:wrap;gap:0 .25em;min-width:0;white-space:normal}", "body.lampa_view .pt-card-watch__label>span {white-space:nowrap}", "body.lampa_view .pt-card-watch__label {align-content:start}", "body.lampa_view .pt-card-watch__label>.pt-card-watch__heading {flex-basis:100%;margin-bottom:.1em}", "body.lampa_view .pt-card-watch__time {flex:0 0 auto;margin-left:.4em;font-variant-numeric:tabular-nums;font-size:.9em;line-height:1}", "body.lampa_view .card .pt-card-watch .time-line {display:block;flex:1 1 0%;align-self:center;position:relative;top:auto;right:auto;bottom:auto;left:auto;width:auto;margin:0;min-width:1px;height:3px;min-height:3px;overflow:hidden;background:rgba(255,255,255,.24)!important}", "body.lampa_view .card .pt-card-watch .time-line>div {display:block;height:3px;min-height:3px;background:var(--pt-accent)!important}", "body.lampa_view .card .pt-card-watch--complete .time-line,body.lampa_view .card .pt-card-watch--complete .pt-card-watch__time {display:none!important}", "/* Reveal saved viewing history only for the card under pointer/remote focus.", "   Reserved footer space prevents neighbouring rows from jumping on focus. */", "body.lampa_view .card.focus .pt-card-watch--has-progress,body.lampa_view .card.hover .pt-card-watch--has-progress,body.lampa_view .card.pt-card-pointer .pt-card-watch--has-progress {visibility:visible}", "body.lampa_view .card .pt-card-watch>.card-watched.pt-card-watch--empty {display:none!important}", "/* One compact release pill below Series, shared by desktop and TV. */", "body.lampa_view .pt-series-status {position:absolute;left:auto;right:4px;top:2.6em;z-index:4;display:block;width:auto;max-width:calc(100% - 8px);font-size:.55em;line-height:1;white-space:nowrap;padding:.3em .4em;border:1px solid #ffffff25;border-radius:.35em;background:#000b;color:#d4e2e6;pointer-events:none;box-sizing:border-box}", "body.lampa_view .pt-series-status>span {white-space:pre}", "", "/* Badges keep their own corners and wrap to another line when space is short. */", "body.lampa_view .card__view .pt-quality,body.lampa_view .card__view .pt-kind {max-width:calc(100% - 8px);box-sizing:border-box;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}", "/* Native history/play marker, in the same understated pill as metadata.", "   Put it above the artwork title, leaving faces and top metadata uncovered. */", "body.lampa_view .card__view .card__icons {inset:0!important;width:auto;max-width:none;pointer-events:none}", "body.lampa_view .card__view .card__icons-inner {position:static;background:none!important;border-radius:0}", "body.lampa_view .card__view .card__icon {position:absolute}", "body.lampa_view .card__view .icon--history {top:62%!important;left:50%!important;right:auto!important;bottom:auto!important;transform:translate(-50%,-50%);box-sizing:border-box;width:2.2em;height:1.8em;font-size:.65em;background:#000b!important;border:1px solid #ffffff25;border-radius:.35em;color:#d4e2e6;box-shadow:none!important}", "body.lampa_view .card__view .icon--history:before {content:'';position:absolute;top:50%;left:53%;transform:translate(-50%,-50%);width:0;height:0;border-top:.38em solid transparent;border-bottom:.38em solid transparent;border-left:.58em solid currentColor}", "body.lampa_view .card__view.minimal-badge-layout>.card__vote,body.lampa_view .card__view.minimal-badge-layout>.card__icons {z-index:4}", "body.lampa_view .settings .minimal-settings .settings-param {padding:.7em 1em;font-size:.95em}", "body.lampa_view .settings .minimal-settings .settings-param__name {font-size:1em;line-height:1.35;margin-bottom:.3em}", "body.lampa_view .settings .minimal-settings .settings-param__descr {font-size:.78em;line-height:1.4;margin-top:.45em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}", "body.lampa_view .settings .minimal-settings .settings-param__value {font-size:.9em;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}", "/* Shared controls for both online layouts. */", "body.lampa_view .nova-plus-root .nova-btn,body.lampa_view .nova-plus-root .nova-chip,body.lampa_view .nova-plus-root .nova-group {background:#171717!important;color:var(--pt-text)!important;border:1px solid var(--pt-line)!important;border-radius:.625em!important;box-shadow:none!important;outline:none!important}", "body.lampa_view .nova-plus-root .nova-btn {padding:.75em 1.15em;font-weight:600}", "body.lampa_view .nova-plus-root .nova-chip--view-icon {display:inline-flex;align-items:center;justify-content:center;flex:0 0 2.65em;width:2.65em;min-width:2.65em;height:2.65em;box-sizing:border-box;padding:0!important;gap:0;line-height:1}", "body.lampa_view .nova-plus-root .nova-chip--view-icon>.nova-chip__label {display:none}", "body.lampa_view .nova-plus-root .nova-chip--view-icon>svg {display:block;flex:none;width:1.1em;height:1.1em;margin:0!important;align-self:center}", "body.lampa_view .nova-plus-root .nova-chip--active,body.lampa_view .nova-plus-root .nova-group--open {background:var(--pt-high)!important;border-color:#add9e560!important}", "body.lampa_view .nova-plus-root .nova-btn.focus,body.lampa_view .nova-plus-root .nova-btn.hover,body.lampa_view .nova-plus-root .nova-btn:hover,body.lampa_view .nova-plus-root .nova-chip.focus,body.lampa_view .nova-plus-root .nova-chip.hover,body.lampa_view .nova-plus-root .nova-chip:hover,body.lampa_view .nova-plus-root .nova-group.focus,body.lampa_view .nova-plus-root .nova-group:hover {background:var(--pt-high)!important;color:var(--pt-text)!important;border-color:var(--pt-accent)!important;box-shadow:0 0 0 1px var(--pt-accent)!important}", "body.lampa_view .nova-plus-root .nova-chip__badge,body.lampa_view .nova-plus-root .nova-chip.focus .nova-chip__badge {background:#ffffff1a!important;color:var(--pt-text)!important;border-radius:.25em}", "body.lampa_view .nova-plus-root .nova-card.focus {background:var(--pt-high)!important;color:var(--pt-text)!important;box-shadow:inset 0 0 0 2px var(--pt-accent)!important}", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card.focus {background:none!important;box-shadow:none!important}", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card.focus .nova-card__thumb {box-shadow:0 0 0 2px var(--pt-accent)!important}", "body.lampa_view .nova-plus-root .nova-card__line .time-line>div,body.lampa_view .nova-plus-root .nova-hero__progress .time-line>div {background:var(--pt-accent)!important}", "/* Native torrent focus has an outer white pseudo-element; use one accent border. */", "body.lampa_view .torrent-item.focus::after {display:none!important;content:none!important}", "body.lampa_view .torrent-filter .filter__item.focus,body.lampa_view .torrent-filter .filter__item.hover,body.lampa_view .torrent-filter .selector--filter.focus {border-color:var(--pt-accent)!important;box-shadow:0 0 0 1px var(--pt-accent)!important;outline:none!important}", "body.lampa_view .torrent-filter .simple-button.focus,body.lampa_view .torrent-filter .simple-button.hover {border-color:var(--pt-accent)!important;box-shadow:0 0 0 1px var(--pt-accent)!important;outline:none!important}", "body.lampa_view .minimal-torrent-view>.explorer__left {display:block!important;width:28.7%;flex:0 0 28.7%;min-width:0;padding:.3em 1.6em 0 .3em;box-sizing:border-box}", "body.lampa_view .minimal-torrent-view>.explorer__left .explorer__card {display:none!important}", "/* The hidden native sidebar scroll still reserves a full viewport of height. */", "body.lampa_view .minimal-torrent-view>.explorer__left>.scroll {display:none!important}", "body.lampa_view .minimal-torrent-view>.explorer__files {width:71.3%;min-width:0;box-sizing:border-box}", "body.lampa_view .minimal-torrent-view .explorer__files-head {padding:.3em .6em .6em 0}", "body.lampa_view .minimal-torrent-view .explorer__files-body .scroll__body {padding-left:0}", "body.lampa_view .minimal-torrent-view .filter--back {display:none!important}", ".minimal-torrent-banner {display:none}", "body.lampa_view .minimal-torrent-banner {display:block;position:relative;width:100%;min-width:0;overflow:hidden;border-radius:1em;background:#0b1016;aspect-ratio:1.65;min-height:0;color:var(--pt-text)}", "body.lampa_view .minimal-torrent-banner__image,body.lampa_view .minimal-torrent-banner__shade {position:absolute;inset:0;width:100%;height:100%;object-fit:cover}", "body.lampa_view .minimal-torrent-banner__shade {background:linear-gradient(180deg,#080d1633 30%,#080d16e6 100%)}", "body.lampa_view .minimal-torrent-banner__meta {position:absolute;top:1em;right:1.2em;left:1.2em;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:.7em;font-size:.9em;text-shadow:0 1px 5px #000}", "body.lampa_view .minimal-torrent-banner__title {position:absolute;left:1.3em;right:1.3em;bottom:1.2em;font-size:1.7em;font-weight:650;line-height:1.2;text-shadow:0 2px 8px #000}", "body.lampa_view .minimal-torrent-banner__logo {display:block;width:auto;height:auto;max-width:100%;max-height:4em;object-fit:contain;filter:drop-shadow(0 2px 5px #0009)}", "body.lampa_view .minimal-torrent-view--classic {flex-wrap:wrap}", "body.lampa_view .minimal-torrent-view--classic>.explorer__left,body.lampa_view .minimal-torrent-view--classic>.explorer__files {width:100%}", "body.lampa_view .minimal-torrent-view--classic>.explorer__left {padding-right:.3em;margin-bottom:1em}", "body.lampa_view .minimal-torrent-view--classic .minimal-torrent-banner {aspect-ratio:auto;height:14.7em;min-height:0}", "body.lampa_view .minimal-torrent-view--classic .minimal-torrent-banner__logo {max-width:55%}", "@media(max-width:767px){", " body.lampa_view .minimal-torrent-view {flex-direction:column;flex-wrap:nowrap;min-height:0}", " body.lampa_view .minimal-torrent-view>.explorer__left {width:100%;flex:0 0 auto;padding-right:.3em;margin-bottom:.5em}", " body.lampa_view .minimal-torrent-view>.explorer__files {width:100%;flex:1 1 0;min-height:0;display:flex;flex-direction:column}", " body.lampa_view .minimal-torrent-banner {width:100%;min-height:0;max-height:22vh}", " body.lampa_view .minimal-torrent-banner__title {font-size:1.4em;bottom:.8em}", " body.lampa_view .minimal-torrent-banner__meta {font-size:.8em;top:.8em;right:1em;left:1em}", " body.lampa_view .minimal-torrent-view .explorer__files-head {padding-left:.3em;padding-right:.3em;flex:0 0 auto}", " body.lampa_view .minimal-torrent-view .explorer__files-head>.scroll {width:100%;min-width:0;overflow:visible!important}", " body.lampa_view .minimal-torrent-view .explorer__files-head .scroll__content {padding:0!important}", " body.lampa_view .minimal-torrent-view .explorer__files-head .scroll__body {transform:none!important;-webkit-transform:none!important;width:100%!important}", " body.lampa_view .minimal-torrent-view .torrent-filter {display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:.5em;margin:0!important;white-space:normal;align-items:stretch}", " body.lampa_view .minimal-torrent-view .torrent-filter .simple-button {font-size:.88em;min-height:44px;min-width:0;margin:0;padding:.5em .65em;box-sizing:border-box;justify-content:center}", " body.lampa_view .minimal-torrent-view .filter--search>div {display:none!important}", " body.lampa_view .minimal-torrent-view .filter--search>svg {width:1.3em;height:1.3em;margin:0}", " body.lampa_view .minimal-torrent-view .filter--sort {flex-wrap:wrap;gap:.15em .4em}", " body.lampa_view .minimal-torrent-view .filter--sort>div {margin:0;padding:0;background:transparent;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.8em;color:var(--pt-muted)}", " body.lampa_view .minimal-torrent-view .filter--filter>div:not(.hide) {margin-left:.4em;padding:.15em .3em}", " body.lampa_view .minimal-torrent-view .explorer__files-body {flex:1 1 0;min-height:0}", " /* Lampa sizes this scroll for the whole screen; it now shares it with the banner. */", " body.lampa_view .minimal-torrent-view .explorer__files-body>.scroll {height:100%!important}", " body.lampa_view .minimal-torrent-view .explorer__files-body .scroll__content {padding-top:.5em}", " body.lampa_view .minimal-torrent-view .explorer__files-body .scroll__body {padding-left:.3em;padding-right:.3em;box-sizing:border-box}", " body.lampa_view .minimal-torrent-view .watched-history {font-size:.8em;padding:.6em;margin-bottom:.5em}", " body.lampa_view .minimal-torrent-view .torrent-item.tc-item {padding:.75em!important}", " body.lampa_view .minimal-torrent-view .tc-head {display:flex;flex-wrap:wrap;gap:.4em .7em}", " body.lampa_view .minimal-torrent-view .tc-summary {flex:1 1 50%;gap:.3em .55em}", " body.lampa_view .minimal-torrent-view .tc-right {font-size:.8em;gap:.2em;max-width:100%}", " body.lampa_view .minimal-torrent-view .tc-size {margin-top:0;font-size:1em}", " body.lampa_view .minimal-torrent-view .tc-seeds {font-size:.85em}", " body.lampa_view .minimal-torrent-view .tc-tags {margin:.5em 0}", " body.lampa_view .minimal-torrent-view .tc-tags .tc-tag {font-size:.72em}", " body.lampa_view .minimal-torrent-view .tc-voices {font-size:inherit}", " body.lampa_view .minimal-torrent-view .tc-foot {font-size:.72em;gap:.6em;margin-top:.5em}", " body.lampa_view .minimal-torrent-view .tc-source {display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}", "}", "/* Let the activity scroll whole catalogues; selector groups never become inner carousels. */", "@media(max-width:767px){", " body.lampa_view .minimal-torrent-files .modal__content {display:flex;flex-direction:column;box-sizing:border-box;padding:1em;padding-bottom:calc(1em + env(safe-area-inset-bottom,0px));max-height:calc(100vh - 1em);max-height:calc(100dvh - 1em);overflow:hidden}", " body.lampa_view .minimal-torrent-files .modal__head {flex-shrink:0}", " body.lampa_view .minimal-torrent-files .modal__body {display:flex;flex-direction:column;min-height:0}", " body.lampa_view .minimal-torrent-files .modal__head {margin-bottom:.5em}", " body.lampa_view .minimal-torrent-files .modal__title {font-size:1.5em;line-height:1.25}", " body.lampa_view .minimal-torrent-files .modal__body .scroll {display:block;height:auto!important;max-height:calc(100vh - 8em);max-height:calc(100dvh - 8em);overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior-y:contain;touch-action:pan-y;-webkit-overflow-scrolling:touch}", " body.lampa_view .minimal-torrent-files--virtual .modal__body .scroll {overflow:hidden!important;touch-action:none}", " body.lampa_view .minimal-torrent-files .modal__body .scroll__content {padding:.4em 0;max-height:none!important}", " body.lampa_view .torrent-files .torrnet-folder-name {font-size:.85em;line-height:1.4;padding:.6em 0 .8em;overflow-wrap:anywhere;color:var(--pt-muted);opacity:1}", " body.lampa_view .torrent-files .torrent-serial {display:grid;grid-template-columns:clamp(72px,24vw,100px) minmax(0,1fr);align-items:stretch;min-width:0;overflow:hidden;border-radius:.55em}", " body.lampa_view .torrent-files .torrent-serial__img {width:100%;height:100%;min-height:5.5em;object-fit:cover;align-self:stretch;border-radius:0}", " body.lampa_view .torrent-files .torrent-serial__content {display:grid;grid-template-columns:minmax(0,1fr);gap:.4em;min-width:0;padding:.65em .75em;overflow:hidden}", " body.lampa_view .torrent-files .torrent-serial__body {float:none;min-width:0;max-width:100%}", " body.lampa_view .torrent-files .torrent-serial__title {font-size:1.05em;line-height:1.25;margin:0;white-space:normal;overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2}", " body.lampa_view .torrent-files .torrent-serial__line {display:flex;flex-direction:row;flex-wrap:wrap;font-size:.72em;line-height:1.3;margin-top:.3em;padding:0}", " body.lampa_view .torrent-files .torrent-serial__detail {display:flex;flex-wrap:wrap;gap:.3em .7em;float:none;margin:0;min-width:0;text-align:left;font-size:.75em;color:var(--pt-muted)}", " body.lampa_view .torrent-files .torrent-serial__size {font-size:1em;line-height:1.3;padding:0;background:none;color:var(--pt-text)}", " body.lampa_view .torrent-files .torrent-serial__exe {font-size:1em;line-height:1.3;margin:0}", " body.lampa_view .torrent-files .torrent-serial__clear {display:none}", " body.lampa_view .torrent-files .torrent-serial .time-line {position:static;inset:auto;width:100%;min-width:0;margin:0;align-self:end}", " body.lampa_view .torrent-files .time-line>div {height:3px;background:var(--pt-accent)}", " body.lampa_view .torrent-files .torrent-serial__episode {font-size:.8em;line-height:1.2;padding:.25em .4em}", " body.lampa_view .torrent-files .torrent-serial__progress {width:2px;background:var(--pt-accent)}", " body.lampa_view .torrent-files .torrent-file {display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.5em;padding:.8em}", " body.lampa_view .torrent-files .torrent-file__title {font-size:1em;min-width:0;padding:0;overflow-wrap:anywhere}", " body.lampa_view .torrent-files .torrent-file__size {font-size:.8em;padding:.2em .4em}", " body.lampa_view .torrent-files .torrent-file .time-line {grid-column:1/-1;position:static;inset:auto;margin:0;width:100%}", "}", "", "body.lampa_view .nova-plus-root .nova-toolbar {flex-wrap:wrap!important;white-space:normal}", "body.lampa_view .nova-plus-root .nova-toolbar__label {margin-left:.8em!important;margin-right:.55em!important}", "body.lampa_view .nova-plus-root .nova-toolbar__label:first-child {margin-left:0!important}", "body.lampa_view .nova-plus-root .nova-plus__row,body.lampa_view .nova-plus-root .nova-plus__pane {display:flex!important;flex-wrap:wrap!important;transform:none!important;-webkit-transform:none!important;width:100%!important;height:auto!important;max-height:none!important;overflow:visible!important}", "body.lampa_view .nova-plus-root .nova-plus__group,body.lampa_view .nova-plus-root .nova-drop {height:auto!important;max-height:none!important;overflow:visible!important}", "body.lampa_view .nova-plus-root .nova__rows,body.lampa_view .nova-plus-root .nova-plus__panel {height:auto!important;max-height:none!important;overflow:visible!important}", "body.lampa_view .nova-plus-root .nova-plus__row .nova-chip,body.lampa_view .nova-plus-root .nova-plus__pane .nova-chip {flex-shrink:0;max-width:100%;white-space:normal}", "body.lampa_view .nova-plus-root .nova-btn--movie {max-width:100%;white-space:normal;text-align:left}", "body.lampa_view .nova-plus-root .nova-btn--movie .nova-btn__label {max-width:none;white-space:normal;overflow:visible;text-overflow:clip}", "/* Composite the artwork and its shade inside one rounded clip. */", "body.lampa_view .minimal-torrent-banner,body.lampa_view .nova-plus-root .nova-hero {border-radius:1em;overflow:hidden;isolation:isolate;-webkit-clip-path:inset(0 round 1em);clip-path:inset(0 round 1em);-webkit-transform:translateZ(0);transform:translateZ(0)}", "body.lampa_view .minimal-torrent-banner__image,body.lampa_view .minimal-torrent-banner__shade {inset:-1px;width:calc(100% + 2px);height:calc(100% + 2px)}", "body.lampa_view .nova-plus-root .nova-hero__bg,body.lampa_view .nova-plus-root .nova-hero__shade {top:-1px;right:-1px;bottom:-1px;left:-1px}", "/* An independent focus layer avoids repainting a border over the banner image. */", "body.lampa_view .nova-plus-root .nova-hero .nova-btn {background:rgba(18,21,25,.68)!important;border:0!important;box-shadow:none!important;outline:none!important}", "body.lampa_view .nova-plus-root .nova-hero .nova-btn.focus,body.lampa_view .nova-plus-root .nova-hero .nova-btn.hover,body.lampa_view .nova-plus-root .nova-hero .nova-btn:hover {background:rgba(37,44,52,.78)!important;border:0!important;box-shadow:none!important}", "body.lampa_view .nova-plus-root .nova-btn__focus {display:none;position:absolute;inset:0;border:2px solid var(--pt-accent);border-radius:inherit;pointer-events:none}", "body.lampa_view .nova-plus-root .nova-hero .nova-btn.focus>.nova-btn__focus,body.lampa_view .nova-plus-root .nova-hero .nova-btn.hover>.nova-btn__focus,body.lampa_view .nova-plus-root .nova-hero .nova-btn:hover>.nova-btn__focus,body.lampa_view .nova-plus-root .nova-hero .nova-btn:focus-visible>.nova-btn__focus {display:block}", "/* Keep focus paint inside controls: exterior shadows can leave stale edge pixels", "   when adjacent chips change focus in WebKit. Never animate the ring itself. */", "body.lampa_view .nova-plus-root .nova-btn,body.lampa_view .nova-plus-root .nova-chip,body.lampa_view .nova-plus-root .nova-group,body.lampa_view .full-start__button,body.lampa_view .simple-button,body.lampa_view .tc-info,body.lampa_view .alc-chip,body.lampa_view .alc-ap-voice,body.lampa_view .alc-ep,body.lampa_view .minimal-comments-arrow,body.lampa_view .minimal-detail-studio.selector {outline:none!important;transition-property:background-color,color!important;box-shadow:none!important}", "body.lampa_view .nova-plus-root .nova-btn,body.lampa_view .nova-plus-root .nova-chip,body.lampa_view .nova-plus-root .nova-group {transform:none!important;-webkit-transform:none!important}", "body.lampa_view .nova-plus-root .nova-btn.focus,body.lampa_view .nova-plus-root .nova-btn.hover,body.lampa_view .nova-plus-root .nova-btn:hover,body.lampa_view .nova-plus-root .nova-btn:focus-visible,body.lampa_view .nova-plus-root .nova-chip.focus,body.lampa_view .nova-plus-root .nova-chip.hover,body.lampa_view .nova-plus-root .nova-chip:hover,body.lampa_view .nova-plus-root .nova-chip:focus-visible,body.lampa_view .nova-plus-root .nova-group.focus,body.lampa_view .nova-plus-root .nova-group:hover,body.lampa_view .nova-plus-root .nova-group:focus-visible,body.lampa_view .full-start__button.focus,body.lampa_view .full-start__button.hover,body.lampa_view .full-start__button:focus-visible,body.lampa_view .simple-button.focus,body.lampa_view .simple-button.hover,body.lampa_view .simple-button:focus-visible,body.lampa_view .tc-info.focus,body.lampa_view .tc-info:hover,body.lampa_view .tc-info:focus-visible,body.lampa_view .alc-chip.focus,body.lampa_view .alc-ap-voice.focus,body.lampa_view .alc-ep.focus,body.lampa_view .minimal-detail-studio.selector.focus,body.lampa_view .minimal-detail-studio.selector:focus-visible,body.lampa_view .minimal-comments-arrow.focus,body.lampa_view .minimal-comments-arrow.hover,body.lampa_view .minimal-comments-arrow:hover,body.lampa_view .minimal-comments-arrow:focus-visible {outline:none!important;border-color:var(--pt-accent)!important;box-shadow:inset 0 0 0 1px var(--pt-accent)!important}", "body.lampa_view .nova-plus-root .nova-btn::after,body.lampa_view .nova-plus-root .nova-chip::after,body.lampa_view .nova-plus-root .nova-group::after,body.lampa_view .full-start__button.focus::after {display:none!important;content:none!important}", "body.lampa_view .nova-plus-root .nova-hero .nova-btn.focus,body.lampa_view .nova-plus-root .nova-hero .nova-btn.hover,body.lampa_view .nova-plus-root .nova-hero .nova-btn:hover,body.lampa_view .nova-plus-root .nova-hero .nova-btn:focus-visible {box-shadow:none!important}", "body.lampa_view .nova-plus-root .nova-hero__progress {position:absolute;left:0;right:0;bottom:0;width:100%;height:.3em;border-radius:0;background:rgba(255,255,255,.15);overflow:hidden}", "/* Banner facts share a baseline; duration belongs to the year, season to the banner. */", "body.lampa_view .nova-plus-root .nova-hero__meta {display:flex;align-items:flex-start;gap:.65em;line-height:1.5;max-width:calc(100% - 2.4em);padding:.25em .5em;border-radius:.45em;background:rgba(8,11,16,.78);color:#f5f7fa!important;text-shadow:0 1px 2px #000}", "body.lampa_view .nova-plus-root .nova-hero__meta>* {margin:0;white-space:normal}", "body.lampa_view .nova-plus-root .nova-hero__date {display:flex;flex-direction:column;align-items:flex-end;min-width:0;text-align:right}", "body.lampa_view .nova-plus-root .nova-hero__runtime {color:inherit;font-size:.9em;line-height:1.5}", "body.lampa_view .nova-plus-root .nova-hero__season-label {position:absolute;top:calc(100% + .35em);right:0;padding:.15em .5em;border-radius:.4em;background:rgba(8,11,16,.78)!important;font-size:.9em;line-height:1.5}", "body.lampa_view .nova-plus-root .nova-badge,body.lampa_view .nova-plus-root .nova-chip__badge {display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;flex:0 0 auto;min-width:2.3em;height:1.5em;padding:0 .35em;font-size:.78em;line-height:1;font-weight:600;vertical-align:middle}", "body.lampa_view .nova-plus-root .nova-hero__meta>.nova-badge {font-size:.85em;margin-top:.12em;background:#ffffff1a!important;text-shadow:none}", "body.lampa_view .nova-plus-root .nova-card__head .nova-card__quality {display:inline-flex;align-items:center;justify-content:center;min-width:2.3em;height:1.5em;padding:0 .35em;font-size:.85em;line-height:1}", "body.lampa_view .nova-plus-root .nova-card__head {align-items:center}", "body.lampa_view .nova-source-option {box-sizing:border-box;min-height:2.8em;padding:.6em 2.6em .6em 1em}", "body.lampa_view .nova-source-option .selectbox-item__title {display:flex;align-items:center;gap:.6em;line-height:1.4}", "body.lampa_view .nova-source-option__quality {display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;min-width:2.3em;height:1.5em;padding:0 .35em;border-radius:.3em;background:#ffffff1a;color:inherit;font-size:.78em;line-height:1;font-weight:600}", "/* A compact, consistent toolbar; native values and callbacks remain in menus. */", "body.lampa_view .minimal-torrent-banner__meta {width:max-content;max-width:calc(100% - 2em);margin-left:auto;padding:.4em .6em;border-radius:.55em;background:rgba(8,11,16,.78);color:#f5f7fa!important;text-shadow:0 1px 2px #000}", "body.lampa_view .nova-plus-root .nova-card--rowlist .nova-card__num {position:absolute;top:auto;right:auto;bottom:.3em;left:.3em;display:block;width:auto;height:auto;min-width:0;padding:0;border-radius:.35em;background:none!important;font-size:.8em;line-height:1.4;white-space:nowrap}", "body.lampa_view .nova-plus-root .nova-card--rowlist .nova-card__thumb--loaded img {opacity:1}", "@media(max-width:767px){", " body.lampa_view .nova-plus-root .nova-plus__bar {display:flex;flex-wrap:wrap!important;gap:.45em;margin-bottom:.6em;padding:0}", " body.lampa_view .nova-plus-root .nova-plus__bar>.nova-toolbar__label {display:none}", " body.lampa_view .nova-plus-root .nova-plus__bar>.nova-chip {display:inline-flex;align-items:center;box-sizing:border-box;flex:1 1 0;min-width:0;max-width:100%;min-height:44px;margin:0;padding:.45em .6em;font-size:.9em;line-height:1.3}", " body.lampa_view .nova-plus-root .nova-plus__bar>.nova-chip--view-icon {flex:0 0 44px;width:44px;min-width:44px;height:44px;padding:0!important}", " body.lampa_view .nova-plus-root .nova-plus__bar .nova-chip__label {min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}", " body.lampa_view .nova-plus-root .nova-plus__bar .nova-chip>svg {flex-shrink:0}", " body.lampa_view .nova-plus-root .nova-hero__meta {top:.65em;right:.65em;font-size:.78em;max-width:calc(100% - 1.3em);gap:.4em}", " body.lampa_view .nova-plus-root .nova__list .nova-card.nova-card--rowlist {display:grid;grid-template-columns:clamp(calc(88px * var(--pt-interface-scale,1)),calc(28vw * var(--pt-interface-scale,1)),calc(120px * var(--pt-interface-scale,1))) minmax(0,1fr);gap:.25em .7em;padding:.6em;margin-bottom:.6em;box-sizing:border-box}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__thumb {grid-column:1;grid-row:1 / span 2;align-self:center;width:100%;height:auto;aspect-ratio:16/9;margin:0;padding:0}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__body {grid-column:2;grid-row:1;min-width:0;padding:0}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__title {font-size:1em;line-height:1.3;margin-bottom:.3em;-webkit-line-clamp:2}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__meta {display:flex;flex-wrap:wrap;align-items:baseline;gap:.2em .45em;min-width:0;font-size:.75em;line-height:1.4;-webkit-line-clamp:unset}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-dot {display:none}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__side {grid-column:2;grid-row:2;display:flex!important;align-items:center;gap:.5em;max-width:none;min-width:0;padding:0;text-align:left;font-size:.75em}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__side .nova-card__eye {margin:0!important}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__line--body {margin-top:.35em}", "}", "/* Seasonal extensions retain native handlers; header art follows our icon grid. */", "body.lampa_view .head__logo-icon {position:relative;align-items:center;min-height:2.2em}", "body.lampa_view .head__logo-icon.head__logo-halloween {width:auto!important;min-width:2.2em;height:2.2em!important;gap:.55em}", "body.lampa_view .pt-holiday-art {display:block;position:relative;flex:0 0 2.2em;width:2.2em;height:2.2em}", "body.lampa_view .head__logo-halloween .head__logo-halloween-svg,", "body.lampa_view .head__logo-halloween .head__logo-halloween-svg svg {width:2.2em!important;height:2.2em!important}", "body.lampa_view .head__logo-halloween .head__logo-halloween-fire {top:.75em;bottom:.4em}", "body.lampa_view .head__logo-cap {top:-.4em!important;left:-.55em!important;pointer-events:none}", "body.lampa_view .head__logo-cap svg {display:block;width:1.8em!important;height:1.8em!important}", "body.lampa_view .head__logo-icon>.garland {position:absolute;width:5em!important;height:3em!important;top:-.4em!important;left:-.3em!important;opacity:.7;z-index:0!important;pointer-events:none}", "body.lampa_view .head__logo-icon>.pt-brand {position:relative;z-index:1}", "body.lampa_view .head__body {position:relative;z-index:1}", "body.lampa_view .head__actions>.head__action.halloween__button,", "body.lampa_view .head__actions>.head__action.black-friday__button,", "body.lampa_view .head__actions>.head__action.new-year__button,", "body.lampa_view .head__actions>.head__action.womens_day__button {display:flex!important;align-items:center;justify-content:center;box-sizing:border-box;flex:0 0 2.2em;width:2.2em;height:2.2em;padding:0;border:1px solid var(--pt-line);border-radius:.6em;background:var(--pt-panel);color:var(--pt-text);overflow:hidden}", "body.lampa_view .head__action.halloween__button svg,", "body.lampa_view .head__action.black-friday__button svg,", "body.lampa_view .head__action.new-year__button svg,", "body.lampa_view .head__action.womens_day__button svg {width:1.15em!important;height:1.15em!important;margin:0!important}", "body.lampa_view .halloween,body.lampa_view .womens_day {font-size:1em;line-height:1.5;color:var(--pt-text)}", "body.lampa_view .halloween__title,body.lampa_view .womens_day__title {font-size:1.35em;line-height:1.3}", "body.lampa_view .halloween__details,body.lampa_view .womens_day__details {font-size:.95em;color:var(--pt-muted)}", "body.lampa_view .black-friday,body.lampa_view .new-year {z-index:110}", "body.lampa_view .black-friday .head-backward__button,body.lampa_view .new-year .head-backward__button {border:1px solid var(--pt-line);border-radius:.6em;background:var(--pt-panel);color:var(--pt-text)}", "body.lampa_view.pt-tv .head__action.--animate {animation:none!important;background:var(--pt-panel)}", "body.lampa_view.pt-tv .head__logo-halloween-fire {animation:none!important;background:#ffc13b}", "@media(prefers-reduced-motion:reduce){body.lampa_view .head__action.--animate,body.lampa_view .head__logo-halloween-fire {animation:none!important}}", ".minimal-toolbar-label {display:none}", "body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar {display:flex;flex-wrap:nowrap;align-items:stretch;gap:.55em;white-space:normal;margin:0!important}", "body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button {display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-width:0;min-height:2.65em;margin:0;padding:.6em 1em;font-size:.9em;line-height:1.2;border:1px solid var(--pt-line);border-radius:.6em;background:var(--pt-panel);color:var(--pt-text);flex:0 1 auto}", "body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button>:not(.minimal-toolbar-label) {display:none!important}", "body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .minimal-toolbar-label {display:inline;margin:0;padding:0;background:none;font-size:1em;white-space:nowrap}", "body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button:after {display:none!important}", "body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button.focus,body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button.hover {border-color:var(--pt-accent);box-shadow:inset 0 0 0 1px var(--pt-accent)!important}", "body.lampa_view .minimal-torrent-view .watched-history {box-sizing:border-box;min-width:0;border:1px solid var(--pt-line);border-radius:.6em;background:var(--pt-panel);margin-top:.5em}", "body.lampa_view .minimal-torrent-view .watched-history.focus {border-color:var(--pt-accent);box-shadow:inset 0 0 0 1px var(--pt-accent)}", "body.lampa_view .minimal-torrent-view .watched-history:after {display:none!important}", "/* The native search overlay was transparent, showing controls over releases. */", "body.lampa_view .search-box {z-index:90!important;background:#080b10!important;box-sizing:border-box;isolation:isolate}", "@media(max-width:767px){", " body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.45em}", " body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button {min-height:44px;padding:.55em .3em;font-size:.88em}", "}", "", "/* Keep hero focus inside its paint bounds, including keyboard and remote input. */", "body.lampa_view .pt-hero__action {outline:none!important;transition-property:background-color,color!important}", "body.lampa_view .pt-hero__studio.selector {outline:none!important;transition:none!important}", "body.lampa_view .pt-hero__studio.selector.focus,body.lampa_view .pt-hero__studio.selector:focus-visible {outline:none!important;box-shadow:inset 0 0 0 2px var(--pt-accent)!important}", "", "/* Seasonal controls keep their native nodes and use the shared SVG style. */", "body.lampa_view .pt-holiday-icons {display:flex;align-items:center;gap:.35em;flex-shrink:0}", "body.lampa_view .pt-holiday-icons>.head__action {display:flex!important;align-items:center;justify-content:center;flex:0 0 2.2em;box-sizing:border-box;width:2.2em;height:2.2em;margin:0;padding:.3em;border:1px solid transparent;border-radius:.5em;background:transparent!important;color:var(--pt-accent)!important;animation:none!important;outline:none!important;box-shadow:none!important}", "body.lampa_view .pt-holiday-icons>.head__action svg {display:block;width:1.45em!important;height:1.45em!important;object-fit:contain}", "body.lampa_view .pt-holiday-icons>.head__action.focus,body.lampa_view .pt-holiday-icons>.head__action.hover,body.lampa_view .pt-holiday-icons>.head__action:hover {border-color:var(--pt-accent);background:var(--pt-high)!important}", "body.lampa_view .head__logo-halloween .pt-holiday-art {display:none}", "/* Episode grids wrap by the scaled minimum rather than a fixed poster count. */", "body.lampa_view .nova-plus-root .nova__list--grid:not(.nova__list--row) {display:grid!important;grid-template-columns:repeat(auto-fill,minmax(min(100%,18em),1fr));gap:.8em;margin:0}", "body.lampa_view .nova-plus-root .nova__list--grid:not(.nova__list--row)>.nova-card--wide {width:100%!important;max-width:100%!important;min-width:0;padding:0;margin:0}", "@media(max-width:767px){body.lampa_view .nova-plus-root .nova__list--grid:not(.nova__list--row) {grid-template-columns:repeat(auto-fill,minmax(min(100%,9em),1fr))}}", "", "body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar>.nova-chip {min-height:44px;min-width:44px}", "body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar>.nova-chip--view-icon {width:44px;height:44px;flex-basis:44px}", "", "/* Whole poster slots leave a small gutter for the focus ring at both ends. */", "body.lampa_view .minimal-fit-posters>.items-line__body>.scroll--horizontal>.scroll__content {padding-left:var(--minimal-poster-gutter,.55em);padding-right:var(--minimal-poster-gutter,.55em)}", "body.lampa_view .items-line.minimal-posters-sized .card:not(.card--wide):not(.card--collection) {width:var(--minimal-poster-width)!important}", "body.lampa_view .minimal-fit-posters>.items-line__body {-webkit-mask-image:none!important;mask-image:none!important}", "body.lampa_view .minimal-fit-posters .mapping--line>.card+.card {margin-left:var(--minimal-poster-gap,1em)}", "body.lampa_view .minimal-fit-posters .scroll__body>.card:last-child {margin-right:0}", "", "/* The banner frame uses the reference Bigger size, independent of UI scale. */", "body.lampa_view {--pt-banner-unit:calc(clamp(14px,.94vw,18px) * 1.05)}", "body.lampa_view .pt-hero {height:clamp(calc(32 * var(--pt-banner-unit)),67vh,calc(43 * var(--pt-banner-unit)));min-height:0;max-height:none}", "@media(min-width:1100px){body.lampa_view .pt-hero {height:clamp(calc(27 * var(--pt-banner-unit)),56vh,calc(34 * var(--pt-banner-unit)))}}", "body.lampa_view.pt-mobile .pt-hero {height:calc(36 * 16px * 1.05);min-height:0;max-height:none}", "", "/* The same mark has one position, before and after the native update. */", "body.lampa_view .torrent-item .torrent-item__viewed {position:absolute;top:.85em;left:auto;right:.85em;width:1.5em;height:1.5em;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:.2em;border:1px solid var(--pt-accent);border-radius:50%;background:var(--pt-accent);color:#13232c;z-index:2;pointer-events:none}", "body.lampa_view .torrent-item__viewed svg {width:100%;height:100%}", "body.lampa_view .torrent-item .tc-right {padding-right:2em}", "", "body.lampa_view .pt-holiday-native,body.lampa_view .head__logo-cap,body.lampa_view .head__logo-icon>.garland {display:none!important}", "body.lampa_view .pt-holiday-winter {display:flex;align-items:center;justify-content:center;flex:0 0 2.2em;width:2.2em;height:2.2em;color:var(--pt-accent);pointer-events:none}", "body.lampa_view .pt-holiday-winter svg {display:block;width:1.45em;height:1.45em}", "", "/* Torrent focus belongs inside the tile; the scroll viewport cannot clip it. */", "body.lampa_view .torrent-item.focus,body.lampa_view .torrent-item.hover,body.lampa_view .torrent-list .torrent-item.tc-item.focus,body.lampa_view .torrent-list .torrent-item.tc-item:hover {outline:none!important;box-shadow:inset 0 0 0 2px var(--pt-accent)!important}", "", "/* Episode tiles share the main poster selection. Animate position only, never", "   the border or shadow; dormant hover cannot leave another TV tile selected. */", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card {background:none!important;box-shadow:none!important;transform:none!important;transition:none!important}", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card__thumb {position:relative;transform:none;box-shadow:none!important;transition:transform .2s!important;will-change:auto}", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card__thumb:after {content:''!important;display:block!important;position:absolute;inset:0!important;width:auto!important;height:auto!important;margin:0!important;padding:0!important;transform:none!important;background:transparent!important;opacity:1!important;transition:none!important;z-index:5;border:2px solid transparent;border-radius:inherit;box-sizing:border-box!important;pointer-events:none}", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card.focus .nova-card__thumb,body.lampa_view .nova-plus-root .nova__list--grid .nova-card.hover .nova-card__thumb {transform:translateY(-.2em) scale(1.045);box-shadow:0 0 .85em rgba(173,217,229,.4),0 0 1.8em rgba(173,217,229,.22)!important}", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card.focus .nova-card__thumb:after,body.lampa_view .nova-plus-root .nova__list--grid .nova-card.hover .nova-card__thumb:after {border-color:var(--pt-accent)}", "body.lampa_view .nova-plus-root .nova-card.focus .nova-card__title,body.lampa_view .nova-plus-root .nova-card.hover .nova-card__title {color:var(--pt-accent)}", "body.lampa_view.pt-tv .nova-plus-root .nova__list--grid .nova-card.hover:not(.focus) .nova-card__thumb {transform:none!important;box-shadow:none!important}", "body.lampa_view.pt-tv .nova-plus-root .nova__list--grid .nova-card.hover:not(.focus) .nova-card__thumb:after {border-color:transparent!important}", "body.lampa_view.pt-tv .nova-plus-root .nova-card.hover:not(.focus) .nova-card__title {color:var(--pt-text)}", "", "/* Match the proportions of the Windows 2560px reference on TV WebViews,", "   including 960/1280px viewports scaled by Android to the panel resolution.", "   A 14px minimum here made TV Small larger than Windows Bigger. */", "body.lampa_view.pt-tv {font-size:calc(.703125vw * var(--pt-interface-scale,1))!important;--pt-banner-unit:calc(.703125vw * var(--pt-interface-max-scale,1.12))}", "body.lampa_view.pt-tv .pt-hero {max-width:90vw;margin:0 auto 2em}", "body.lampa_view.pt-tv .pt-hero__body {left:3em;bottom:7em;max-width:31em;padding-right:1em}", "body.lampa_view.pt-tv .pt-hero__title {font-size:2.55em;max-width:15em;margin-bottom:.65em}", "body.lampa_view.pt-tv .pt-hero__title--translation {font-size:1.05em;line-height:1.35;letter-spacing:0;max-width:100%;margin-bottom:1.1em}", "body.lampa_view.pt-tv .pt-hero__logo {max-height:7em;max-width:100%;margin-bottom:1.4em}", "body.lampa_view.pt-tv .pt-hero__overview {-webkit-line-clamp:3;line-height:1.65}", "body.lampa_view.pt-tv .pt-hero__actions {margin-top:1.6em}", "body.lampa_view.pt-tv .pt-hero__dots {left:45%;bottom:1.5em}", "body.lampa_view.pt-tv .items-line {margin-bottom:.8em;padding-bottom:.7em}", "body.lampa_view.pt-tv .items-line .card:not(.card--wide):not(.card--collection) {width:clamp(8.4em,calc((90vw - 10em / var(--pt-interface-scale,1)) / 10 * var(--pt-interface-scale,1)),11.1em)!important}", "body.lampa_view.pt-tv .items-line.minimal-posters-sized .card:not(.card--wide):not(.card--collection) {width:var(--minimal-poster-width)!important}", "body.lampa_view.pt-tv .items-line>.items-line__head {padding-left:1.1em}", "/* Android WebView clamps text below 8 CSS px. Declare that floor so em-based", "   height limits use the rendered font, including the real 960px TV viewport. */", "body.lampa_view.pt-tv .card__title {font-size:max(8px,.79em);line-height:1.4;max-height:2.85em;overflow-wrap:break-word}", "body.lampa_view.pt-tv .card__age {font-size:max(8px,.73em)}", "/* Flow uses the measured line height after the interface scale is applied. */", "body.lampa_view.pt-tv.pt-tv-caption-flow .card__title {display:block;height:auto;min-height:0;line-height:var(--pt-caption-line,1.4em);max-height:calc(var(--pt-caption-line,1.4em) * 2);-webkit-line-clamp:unset;line-clamp:unset;transform:none}", "body.lampa_view.pt-tv.pt-tv-caption-flow .card__age {position:static;clear:both;transform:none}", "body.lampa_view.pt-tv .mapping--grid>.card:not(.card--wide):not(.card--collection),body.lampa_view.pt-tv .category-full>.card:not(.card--wide):not(.card--collection) {width:calc(10% * var(--pt-interface-scale,1))!important}", "", "/* The same native menu becomes a dock only when the native preference is on. */", "body.lampa_view.pt-menu-pinned {--pt-menu-width:min(16em,28vw)}", "body.lampa_view.pt-menu-pinned .head__menu-icon {display:none!important}", "body.lampa_view.pt-menu-pinned .wrap__left,body.lampa_view.menu--always.pt-menu-pinned .wrap__left {top:3.6em!important;bottom:0!important;left:0!important;width:var(--pt-menu-width)!important;height:calc(100% - 3.6em)!important;max-height:none!important;padding:.7em .35em!important;border:0;border-right:1px solid var(--pt-line);border-radius:0;box-shadow:none;visibility:visible!important;opacity:1!important;pointer-events:auto;transition:none}", "body.lampa_view.pt-menu-pinned .wrap__left>.scroll {height:100%!important;max-height:100%!important}", "body.lampa_view.pt-menu-pinned .wrap__left>.scroll>.scroll__content {height:100%!important;max-height:100%!important}", "body.lampa_view.pt-menu-pinned .wrap {width:100%!important;max-width:100%}", "body.lampa_view.pt-menu-pinned .wrap__content {min-width:0;box-sizing:border-box;flex:0 0 auto;width:calc(100% - var(--pt-menu-width))!important;max-width:calc(100% - var(--pt-menu-width))!important;margin-left:var(--pt-menu-width)!important}", "body.lampa_view.pt-menu-pinned .pt-hero,body.lampa_view.pt-menu-pinned .items-line {width:94%;max-width:94%!important;margin-left:auto!important;margin-right:auto!important}", "body.lampa_view.pt-menu-pinned .menu__text {white-space:normal}", "body.lampa_view.pt-mobile.pt-menu-pinned {--pt-menu-width:min(14em,38vw)}", "body.lampa_view.pt-mobile.pt-menu-pinned .wrap__left {bottom:5.5em!important;height:calc(100% - 9.1em)!important}", "", "body.lampa_view .card:not(.focus):not(.hover):not(.pt-card-pointer) .pt-series-status {display:none}", "", "/* Header controls keep their boxes when focused. Draw outside the avatar so", "   its image cannot cover the remote/keyboard focus indicator. */", "body.lampa_view .head__body {box-sizing:border-box;min-width:0}", "body.lampa_view .head__actions {flex-shrink:0}", "body.lampa_view .head__menu-icon,body.lampa_view .head__backward {position:relative;align-self:center;top:auto;left:auto;transform:none!important;transition:none!important}", "body.lampa_view .head__menu-icon svg {display:block;flex:none;margin:0!important;position:static!important;transform:none!important}", "/* Header focus stays inside the control, matching Menu, with no second ring. */", "body.lampa_view .head__menu-icon,body.lampa_view .head__backward,body.lampa_view .head__action.open--search,body.lampa_view .head__action.open--profile,body.lampa_view .pt-holiday-icons>.head__action {outline:0 solid transparent!important;outline-offset:0!important;box-shadow:none!important;animation:none!important;transition:none!important;transform:none!important;border:1px solid var(--pt-line)!important}", "body.lampa_view .head__action.open--profile {padding:0!important}", "body.lampa_view .head__menu-icon.focus,body.lampa_view .head__menu-icon:focus-visible,body.lampa_view .head__backward.focus,body.lampa_view .head__backward:focus-visible,", "body.lampa_view .head__action.open--search.focus,body.lampa_view .head__action.open--profile.focus,body.lampa_view .head__action.open--search:focus-visible,body.lampa_view .head__action.open--profile:focus-visible,", "body.lampa_view .pt-holiday-icons>.head__action.focus,body.lampa_view .pt-holiday-icons>.head__action:focus-visible,", "body.lampa_view:not(.pt-tv) .head__menu-icon:hover,body.lampa_view:not(.pt-tv) .head__backward:hover,body.lampa_view:not(.pt-tv) .head__action.open--search:hover,body.lampa_view:not(.pt-tv) .head__action.open--profile:hover,", "body.lampa_view:not(.pt-tv) .pt-holiday-icons>.head__action:hover {border-color:var(--pt-accent)!important;background:var(--pt-high)!important;color:var(--pt-text)}", "body.lampa_view .head__action.open--search.focus:after,body.lampa_view .head__action.open--search:focus-visible:after {color:var(--pt-text)}", "body.lampa_view .menu__item {min-width:0;box-sizing:border-box}", "body.lampa_view .menu__text {flex:1;min-width:0;white-space:normal!important;overflow-wrap:break-word;line-height:1.35;max-height:none;text-overflow:clip}", "", "/* Android WebView can rasterize white inset focus shadows as a solid fill.", "   Use a real, constant-width border for primary TV controls instead. */", "body.lampa_view.pt-tv .pt-hero__action {appearance:none;-webkit-appearance:none;box-sizing:border-box;border:2px solid transparent;padding:calc(.85em - 1px) calc(1.15em - 1px);background:var(--pt-accent)!important;color:#13232c!important;box-shadow:none!important;transition:none!important}", "body.lampa_view.pt-tv .pt-hero__action--secondary {background:#212a35dd!important;color:#d4dce3!important}", "body.lampa_view.pt-tv .pt-hero__action.focus,body.lampa_view.pt-tv .pt-hero__action:focus-visible {border-color:#fff!important;box-shadow:none!important;outline:none!important}", "body.lampa_view.pt-tv .pt-hero__action.hover:not(.focus):not(:focus-visible) {border-color:transparent!important;box-shadow:none!important}", 'body.lampa_view.pt-tv .minimal-anime-tab[aria-selected="true"] {box-shadow:0 0 .65em #add9e540!important}', "body.lampa_view.pt-tv .full-start__button.button--alc-auto.focus,body.lampa_view.pt-tv .alc-ap__play.focus {background:var(--pt-accent)!important;color:#13232c!important;border-color:#fff!important;box-shadow:none!important;outline:none!important}", "", "/* TV uses the same full-frame artwork and text composition as desktop. */", "body.lampa_view.pt-tv .pt-hero__image {object-fit:cover;object-position:70% 35%}", "body.lampa_view.pt-tv .pt-hero__body {top:auto;bottom:7em;transform:none}", "body.lampa_view.pt-tv .pt-hero__logo {max-height:7em;margin-bottom:1.4em}", "body.lampa_view.pt-tv .pt-hero__overview {-webkit-line-clamp:3}", "body.lampa_view.pt-tv .head {font-size:1.25em;height:3.6em}", "body.lampa_view.pt-tv .head__body {max-width:none;width:94%;padding:.5em 0}", "body.lampa_view.pt-tv .wrap__content {padding-top:4.5em!important}", "body.lampa_view.pt-tv.pt-menu-pinned .wrap__left {top:4.5em!important;height:calc(100% - 4.5em)!important}", "body.lampa_view.pt-tv .head__menu-icon,body.lampa_view.pt-tv .head__backward,body.lampa_view.pt-tv .head__action.open--search,body.lampa_view.pt-tv .head__action.open--profile,body.lampa_view.pt-tv .pt-holiday-icons>.head__action {border-width:2px!important}", "body.lampa_view.pt-tv .pt-series-status {font-size:max(8px,.55em);line-height:1;padding:.2em .4em;display:block;width:max-content;max-width:none;white-space:nowrap;transform-origin:0 0}", "body.lampa_view.pt-tv .pt-series-status>span {white-space:pre}", "body.lampa_view.pt-tv .card__view .pt-quality,body.lampa_view.pt-tv .card__view .pt-kind,body.lampa_view.pt-tv .card__view .card__quality {padding:.2em .4em;transform:scale(.85);transform-origin:0 0}", "body.lampa_view.pt-tv .card__view .icon--history {font-size:.95em;width:2.1em;height:1.7em}", "body.lampa_view.pt-tv .card {-webkit-text-size-adjust:100%;text-size-adjust:100%}", "body.lampa_view.pt-tv .card__img,body.lampa_view.pt-tv .nova-card__thumb img,body.lampa_view.pt-tv .minimal-torrent-banner__image {image-rendering:auto;transform:none}", "", "body.lampa_view .nova-plus-root .nova-hero__meta {background:rgba(8,11,16,.52);padding:.2em .4em}", "body.lampa_view .nova-plus-root .nova-hero__runtime {position:absolute;right:0;top:calc(100% + .45em);padding:.2em .45em;white-space:nowrap;border-radius:.35em;background:rgba(8,11,16,.52);color:var(--pt-text);font-size:.8em;line-height:1.3}", "body.lampa_view.pt-tv .minimal-comments-nav {display:none!important}", "body.lampa_view .nova-episode-nav {display:flex;justify-content:flex-end;gap:.4em;margin-bottom:.5em}", "body.lampa_view .nova-episode-nav button {width:2.1em;height:2.1em;display:flex;align-items:center;justify-content:center;border:1px solid var(--pt-line);border-radius:.6em;background:#ffffff04;color:var(--pt-muted);cursor:pointer}", "body.lampa_view .nova-episode-nav svg {width:1em;height:1em}", "body.lampa_view.pt-tv .nova-episode-nav {display:none!important}", "body.lampa_view.pt-favorites .category-full>.card,body.lampa_view.pt-favorites .mapping--grid>.card {width:calc(12.5% * var(--pt-interface-scale,1))!important}", "@media(max-width:650px){body.lampa_view.pt-favorites .category-full>.card,body.lampa_view.pt-favorites .mapping--grid>.card {width:33.333%!important}}", "", "/* Episode arrows share the collection buttons' pointer and keyboard focus. */", "body.lampa_view .nova-episode-nav button:hover,body.lampa_view .nova-episode-nav button:focus-visible,body.lampa_view .nova-episode-nav button.focus,body.lampa_view .nova-episode-nav button.hover {border-color:var(--pt-accent);background:#add9e512;color:var(--pt-accent);box-shadow:0 0 0 1px var(--pt-accent);outline:none}", "", "/* Fixed pixel focus geometry is identical on TV and desktop, independent of", "   native focus themes and the interface font scale. */", "body.lampa_view .card.focus .card__view:after,body.lampa_view .card.hover .card__view:after {border:2px solid var(--pt-accent)!important;top:0!important;left:0!important;right:0!important;bottom:0!important;outline:none!important;box-shadow:none!important;border-radius:.5em!important}", "body.lampa_view .head__menu-icon:before,body.lampa_view .head__menu-icon:after,body.lampa_view .head__backward:before,body.lampa_view .head__backward:after,body.lampa_view .head__action.open--profile:before,body.lampa_view .head__action.open--profile:after,body.lampa_view .head__action.open--search:before,body.lampa_view .pt-holiday-icons>.head__action:before,body.lampa_view .pt-holiday-icons>.head__action:after {content:none!important;display:none!important}", "body.lampa_view .head__menu-icon,body.lampa_view .head__backward,body.lampa_view .head__action.open--search,body.lampa_view .head__action.open--profile,body.lampa_view .pt-holiday-icons>.head__action {border-width:2px!important}", "body.lampa_view .menu__item.focus,body.lampa_view .menu__item.hover,body.lampa_view .menu__item.traverse {background:#20272e!important;color:var(--pt-text)!important;outline:none!important;box-shadow:inset 2px 0 var(--pt-accent)!important;animation:none!important;transform:none!important}", "body.lampa_view .menu__ico [stroke] {stroke:currentColor!important}", 'body.lampa_view .menu__ico [fill]:not([fill="none"]) {fill:currentColor!important}', "body.lampa_view .menu__item .menu__text {color:inherit!important}", ""].join("\n");
+  var theme_default = ["/* Minimal presentation for native Lampa. No application replacement. */", ".pt-hidden {display:none!important}", "body.lampa_view {", " --pt-bg:#000000;--pt-side:#14161b;--pt-panel:#191d24;--pt-high:#252c34;", " --pt-line:#ffffff12;--pt-text:#eeeff2;--pt-muted:#9299a3;--pt-accent:#add9e5;--pt-dim:#add9e514;", ' background:var(--pt-bg)!important;color:var(--pt-text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;', " font-size:calc(clamp(14px,.94vw,18px) * var(--pt-interface-scale,1))!important;", "}", "body.lampa_view .background {opacity:.08!important}", "body.lampa_view .background__fade {background:linear-gradient(0deg,var(--pt-bg),transparent)!important}", "body.lampa_view .head {height:3.6em;background:#000000f5;border-bottom:1px solid var(--pt-line);z-index:30}", "body.lampa_view .head__body {height:100%;max-width:112em;margin:auto;padding:.5em 2.5em;gap:.65em;display:flex;align-items:center}", "body.lampa_view .head__menu-icon {display:flex!important;order:-2;align-items:center;justify-content:center;width:2.2em;height:2.2em;flex:0 0 2.2em;box-sizing:border-box;padding:0;border:1px solid var(--pt-line);border-radius:.6em;margin:0!important;background:#ffffff04;color:var(--pt-muted);cursor:pointer}", "body.lampa_view .head__menu-icon svg {width:1.1em;height:1.1em}", "body.lampa_view .head__logo-icon {display:flex!important;width:auto!important;margin:0 2em 0 0!important;flex-shrink:0;cursor:pointer}", "body.lampa_view .pt-brand {font-size:.92em;font-weight:700;letter-spacing:.13em;color:var(--pt-text)}", "body.lampa_view .head__split,body.lampa_view .head__time,body.lampa_view .head__markers,body.lampa_view .head__title,body.lampa_view .head__logo-local {display:none!important}", "body.lampa_view .head__backward {display:none!important}", "body.lampa_view .head__backward.pt-back-visible {display:flex!important;order:-3;align-items:center;justify-content:center;width:2.2em;height:2.2em;flex:0 0 2.2em;box-sizing:border-box;margin:0!important;padding:0;border:1px solid var(--pt-line);border-radius:.6em;background:#ffffff04;color:var(--pt-muted);cursor:pointer}", "body.lampa_view.pt-home .head__backward {display:none!important}", "body.lampa_view .minimal-back svg {width:1.1em;height:1.1em}", ".minimal-back--overlay {display:none}", "body.lampa_view .minimal-back-heading {display:flex;align-items:center;gap:.7em}", "body.lampa_view .minimal-back--overlay {display:flex;align-items:center;justify-content:center;flex:0 0 2em;width:2em;height:2em;border:1px solid var(--pt-line);border-radius:.6em;background:#ffffff04;color:var(--pt-muted);cursor:pointer;font-size:1em}", "body.lampa_view .minimal-back-heading>.selectbox__title,body.lampa_view .minimal-back-heading>.settings__title {flex:1;min-width:0}", "body.lampa_view .head .open--broadcast,body.lampa_view .head .notice--icon,body.lampa_view .head .full--screen,body.lampa_view .head .open--settings,body.lampa_view .head .open--notice,body.lampa_view .head .open--split {display:none!important}", "body.lampa_view .head__actions {margin-left:auto;display:flex;align-items:center;gap:.5em}", "body.lampa_view .head__action {width:2.2em;height:2.2em;border-radius:.55em;margin:0;color:var(--pt-muted)}", "body.lampa_view .head__action svg {width:1.15em;height:1.15em}", "body.lampa_view .head__action.focus,body.lampa_view .head__action.hover {background:var(--pt-high);color:white}", "body.lampa_view .head__action.open--search {width:18em;background:#ffffff04;border:1px solid var(--pt-line);justify-content:flex-start;padding:0 .8em;gap:.65em}", "body.lampa_view .head__action.open--search:after {content:attr(data-pt-placeholder);font-size:.8em;color:var(--pt-muted)}", "body.lampa_view .pt-topnav {display:flex;align-items:center;gap:1.5em}", "body.lampa_view .pt-topnav__item {font-size:.81em;color:var(--pt-muted);padding:.55em 0;cursor:pointer;border-bottom:1px solid transparent}", "body.lampa_view .pt-topnav__item.active {color:var(--pt-text);border-bottom-color:var(--pt-accent)}", "body.lampa_view .pt-topnav__item.focus,body.lampa_view .pt-topnav__item.hover {color:var(--pt-accent);outline:0;border-bottom-color:var(--pt-accent)}", "body.lampa_view .wrap {display:block!important}", "body.lampa_view .wrap__content,body.lampa_view.menu--always .wrap__content,body.lampa_view.menu--open .wrap__content {width:100%!important;max-width:100%;margin-left:0!important;transform:none!important;padding-top:3.6em!important}", "body.lampa_view .activitys,body.lampa_view .activity {width:100%!important;max-width:100%}", "body.lampa_view .wrap__left,body.lampa_view.menu--always:not(.light--version) .wrap__left {position:fixed!important;top:4.1em!important;bottom:auto!important;left:2.5em!important;width:19em!important;height:auto!important;max-height:calc(100% - 5em)!important;padding:.65em 0!important;margin:0!important;border:1px solid #ffffff19;border-radius:.9em;background:#121419;box-shadow:0 18px 60px #0008;z-index:40;transform:none!important;transition:opacity .12s;visibility:hidden!important;opacity:0;pointer-events:none}", "body.lampa_view.menu--open .wrap__left,body.lampa_view.menu--always.menu--open .wrap__left {visibility:visible!important;opacity:1;pointer-events:auto}", "body.lampa_view .wrap__left>.scroll {width:100%!important;max-height:75vh!important}", "body.lampa_view .menu {padding:0 .6em!important}", "body.lampa_view .menu__case {padding:0!important}", "body.lampa_view .menu__list {display:block!important}", "body.lampa_view .menu__item {font-size:.86em;padding:.85em .8em;margin:.12em 0;border-radius:.5em;color:#a9afb8}", "body.lampa_view .menu__text,body.lampa_view.menu--always .menu__text {display:block!important;font-size:1em;font-weight:450}", "body.lampa_view .menu__ico {width:1.15em;height:1.15em;min-width:1.15em;margin-right:1em;opacity:.8}", "body.lampa_view .menu__ico svg {width:100%;height:100%}", "body.lampa_view .menu__item.focus,body.lampa_view .menu__item.hover,body.lampa_view .menu__item.traverse {background:var(--pt-high);color:#fff;box-shadow:none}", "body.lampa_view .menu__split {display:none!important}", 'body.lampa_view .menu__item[data-action="console"],body.lampa_view .menu__item[data-action="edit"],body.lampa_view .menu__item[data-action="feed"],body.lampa_view .menu__item[data-action="relise"],body.lampa_view .menu__item[data-action="myperson"],body.lampa_view .menu__item[data-action="subscribes"],body.lampa_view .menu__item[data-action="catalog"],body.lampa_view .menu__item[data-action="filter"],body.lampa_view .menu__item[data-action="about"] {display:none}', "body.lampa_view .items-line {margin-bottom:.8em;padding-bottom:.7em}", "body.lampa_view .items-line__head {margin-bottom:1em}", "body.lampa_view .items-line__title {font-size:1.12em;font-weight:600;letter-spacing:-.02em}", "body.lampa_view .items-line__more {font-size:.8em;background:transparent;color:var(--pt-muted)}", "body.lampa_view .card__view,body.lampa_view .card__img {border-radius:.5em;background:var(--pt-panel);box-shadow:none;overflow:hidden}", "body.lampa_view .card__title {font-size:.83em;font-weight:500;line-height:1.4;margin-top:.65em;height:auto;min-height:0;max-height:2.85em;display:-webkit-box;-webkit-box-orient:vertical;white-space:normal;overflow:hidden;transform:none;-webkit-transform:none;-webkit-line-clamp:2;line-clamp:2;text-overflow:ellipsis}", "body.lampa_view .card__age {font-size:.73em;color:var(--pt-muted);margin-top:.2em}", "body.lampa_view .card__vote {background:#000000dc;color:#eee;border:0;font-size:.65em;border-radius:.3em;padding:.2em .4em}", "body.lampa_view .card.focus .card__view:after,body.lampa_view .card.hover .card__view:after {border:2px solid var(--pt-accent);border-radius:.5em;inset:0;box-shadow:none;z-index:5;box-sizing:border-box}", "body.lampa_view .card.focus .card__title {color:var(--pt-accent)}", "body.lampa_view .card__quality {border-radius:.3em;background:#000000dc;font-size:.65em}", "body.lampa_view .scroll--mask:before,body.lampa_view .scroll--mask:after {display:none}", "body.lampa_view .pt-hero {position:relative;min-height:32em;height:min(67vh,43em);margin:0 0 2.2em;overflow:hidden;border:0;box-shadow:none;background:#000;isolation:isolate}", "body.lampa_view .pt-hero__image {position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;object-position:70% 35%;z-index:-2}", "body.lampa_view .pt-hero:before {content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#000000 0%,#000000ed 13%,#0000008c 40%,#00000000 76%),linear-gradient(0deg,#000000 0%,#000000 1em,#00000020 35%,#00000000 80%)}", "body.lampa_view .pt-hero__body {position:absolute;left:max(4.5em,calc((100% - 100em)/2));bottom:6.5em;max-width:34em;padding-right:1em}", "body.lampa_view .pt-hero__title {font-size:2.9em;line-height:1.08;font-weight:650;letter-spacing:-.045em;margin:0 0 .65em;text-wrap:balance;max-width:14em}", "body.lampa_view .pt-hero__meta {display:flex;align-items:center;gap:.75em;font-size:.8em;line-height:1.5;font-weight:500;color:#dbdde2;margin-bottom:1.25em}", "body.lampa_view .pt-hero__studio {width:auto;max-width:6em;height:1.5em;object-fit:contain;flex:none;filter:drop-shadow(0 0 .6px rgba(255,255,255,.7)) drop-shadow(0 1px 2px #000);opacity:.95}", "body.lampa_view .pt-hero__overview {font-size:.85em;line-height:1.65;color:#a3a8b1;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;max-width:34em}", "body.lampa_view .pt-hero__actions {display:flex;gap:.8em;margin-top:1.6em}", "body.lampa_view .pt-hero__action {display:flex;align-items:center;gap:.6em;border-radius:.6em;font-size:.82em;font-weight:600;padding:.85em 1.15em;background:var(--pt-accent);color:#13232c;cursor:pointer;border:1px solid transparent}", "body.lampa_view .pt-hero__action svg {width:1.15em;height:1.15em}", "body.lampa_view .pt-hero__action--secondary {background:#212a35dd;color:#d4dce3;border-color:#ffffff12}", "body.lampa_view .pt-hero__action.focus,body.lampa_view .pt-hero__action.hover,body.lampa_view .pt-hero__action:hover,body.lampa_view .pt-hero__action:focus-visible {outline:none!important;box-shadow:inset 0 0 0 2px #fff!important}", "body.lampa_view .pt-hero__dots {position:absolute;bottom:2.8em;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:.5em}", "body.lampa_view .pt-hero__dot {width:.5em;height:.5em;background:#ffffff50;border-radius:1em;cursor:pointer;position:relative}", "body.lampa_view .pt-hero__dot:after {content:'';position:absolute;inset:-.6em}", "body.lampa_view .pt-hero__dot.active {width:1.5em;background:var(--pt-accent)}", "body.lampa_view .pt-hero__dot {box-sizing:border-box;border:1.5px solid transparent;outline:none!important;box-shadow:none!important;transition:none!important}", "body.lampa_view .pt-hero__dot.focus,body.lampa_view .pt-hero__dot:focus-visible {border-color:#fff}", "body.lampa_view .pt-mobile-nav {display:none!important}", "body.lampa_view.pt-reduce-motion *,body.lampa_view.pt-reduce-motion *:before,body.lampa_view.pt-reduce-motion *:after {animation-duration:0s!important;transition-duration:0s!important;scroll-behavior:auto!important}", "body.lampa_view .full-start-new {padding-top:1.5em}", "body.lampa_view .full-start-new__left {width:15em;min-width:15em}", "body.lampa_view .full-start-new__poster {border-radius:.8em;overflow:hidden;box-shadow:0 16px 48px #0007}", "body.lampa_view .full-start-new__title {font-size:2.45em;letter-spacing:-.04em;font-weight:750;line-height:1.08;max-width:22em}", "body.lampa_view .full-start-new__tagline {font-size:.92em;color:var(--pt-muted);font-weight:400;line-height:1.6}", "body.lampa_view .full-start-new__rate-line {gap:.7em;margin-top:1em}", "body.lampa_view .full-start__rate {border:1px solid var(--pt-line);border-radius:.45em;padding:.4em .65em;font-size:.85em;background:var(--pt-panel)}", "body.lampa_view .full-start__rate .source--name {color:var(--pt-muted);font-size:.65em;font-weight:500}", "body.lampa_view .full-start-new__details {font-size:.82em;color:#bdbdc5;line-height:1.6}", "body.lampa_view .full-start-new__head {font-size:.82em;color:#bdbdc5;margin-bottom:.75em}", "body.lampa_view .full-start-new__reactions {display:none}", "body.lampa_view .full-start__status,body.lampa_view .full-start__pg {font-size:.7em;border:1px solid var(--pt-line);border-radius:.4em;padding:.45em .7em;color:var(--pt-muted)}", "body.lampa_view .full-start-new__buttons {display:flex;align-items:center;gap:.7em;flex-wrap:wrap}", "body.lampa_view .button--alc-torrent span {display:inline!important;max-width:none!important;font-size:1em!important}", "body.lampa_view .full-start__button,body.lampa_view .full-descr__tag {background:var(--pt-high);border:1px solid var(--pt-line);color:white;border-radius:.625em;font-size:.85em;padding:.8em 1.15em;box-shadow:none}", "body.lampa_view .full-start__button.focus,body.lampa_view .full-start__button.hover {border-color:var(--pt-accent);background:var(--pt-high);color:white;box-shadow:0 0 0 1px var(--pt-accent)}", "body.lampa_view .full-start__button.button--alc-auto {background:var(--pt-accent);border-color:var(--pt-accent);color:#07151c}", "body.lampa_view .full-start__button.button--alc-auto.focus {background:#65c9f3;color:#07151c;box-shadow:0 0 0 3px #2bb4ed55}", "body.lampa_view .full-start__button svg {width:1.1em;height:1.1em}", "body.lampa_view .full-descr__text {color:#bfbfc6;font-size:.9em;line-height:1.75;max-width:65em}", "body.lampa_view .full-descr__title,body.lampa_view .full-persons__title {font-size:1.2em;font-weight:650}", "body.lampa_view .pt-context-badge {font-size:.62em;line-height:1.5;color:#98989f;margin-top:1.3em}", "body.lampa_view .pt-context-badge span {color:var(--pt-accent)}", "body.lampa_view .torrent-item,body.lampa_view .torrent-item.tc-item {background:var(--pt-panel)!important;border:1px solid var(--pt-line)!important;border-radius:.625em!important;padding:1em!important;margin-bottom:.55em!important;color:var(--pt-text)!important}", "body.lampa_view .torrent-item.focus,body.lampa_view .torrent-item.hover,body.lampa_view .torrent-list .torrent-item.tc-item.focus {background:var(--pt-high)!important;border-color:var(--pt-accent)!important;box-shadow:inset 0 0 0 2px var(--pt-accent)!important;color:white!important}", "body.lampa_view .torrent-item__title {font-size:.95em;font-weight:600;line-height:1.45}", "body.lampa_view .torrent-item__details {font-size:.72em;color:var(--pt-muted)}", "body.lampa_view .tc-title {font-size:1em;font-weight:600;letter-spacing:-.015em}", "body.lampa_view .tc-tag {border-radius:.35em;font-size:.68em;padding:.2em .5em;border-color:#ffffff14}", "body.lampa_view .tc-tag--voice {background:#ffffff08}", "body.lampa_view .tc-tag--complete {color:#7ed0a7;border-color:#7ed0a72c}", "body.lampa_view .tc-tag--partial {color:#d6b777;border-color:#d6b7772c}", "body.lampa_view .tc-original,body.lampa_view .tc-foot {font-size:.68em;color:var(--pt-muted)}", "body.lampa_view .tc-size {font-size:1em;font-weight:600}", "body.lampa_view .tc-seeds {font-size:.8em;font-weight:500;color:#7ed0a7}", "body.lampa_view .tc-summary {display:flex;align-items:center;flex-wrap:wrap;gap:.5em .8em;min-width:0}", "body.lampa_view .tc-season {font-size:1.06em;font-weight:650;line-height:1.35;color:var(--pt-accent)}", "body.lampa_view .tc-episodes {font-size:.88em;color:#c4c8cf;line-height:1.4}", "body.lampa_view .tc-summary .tc-tag--quality {font-size:.86em;color:var(--pt-accent);background:#add9e50c;border-color:#add9e52e}", "body.lampa_view .tc-head {gap:1em;align-items:flex-start}", "body.lampa_view .tc-right {flex:none;gap:.4em}", "body.lampa_view .tc-tags {gap:.5em 1.2em;margin:.65em 0}", "body.lampa_view .tc-tags .tc-tag {font-size:.8em;line-height:1.3;color:#c4c8cf;background:transparent}", "body.lampa_view .tc-voices {display:flex;align-items:baseline;flex-wrap:wrap;gap:.4em .8em;font-size:.86em;line-height:1.5}", "body.lampa_view .tc-voice-names {display:inline-flex;align-items:center;flex-wrap:wrap;gap:.35em;min-width:0;max-width:100%;color:#e2e5eb;white-space:normal;overflow:visible;overflow-wrap:anywhere}", "body.lampa_view .tc-languages {font-size:.88em;color:var(--pt-accent)}", "body.lampa_view .tc-language-tags .tc-voices {font-size:inherit;line-height:inherit;align-items:center;gap:.35em}", "body.lampa_view .tc-language-tags .tc-voices .tc-group-label {font-size:.72em}", "body.lampa_view .tc-bitrate {font-size:.8em;color:var(--pt-muted)}", "body.lampa_view .tc-warning {font-size:.8em;line-height:1.4;margin-top:.5em;color:#d6b777}", "body.lampa_view .tc-foot {display:flex;align-items:center;justify-content:space-between;gap:1em;margin-top:.7em;font-size:.8em}", "body.lampa_view .tc-source {min-width:0;overflow-wrap:anywhere}", "body.lampa_view .tc-info {flex:none;cursor:pointer;font:inherit;color:#c4c8cf;padding:.3em .6em;border:1px solid var(--pt-line);border-radius:.4em;background:transparent}", "body.lampa_view .tc-info:hover,body.lampa_view .tc-info:focus-visible {color:white;border-color:var(--pt-accent);outline:none}", "body.lampa_view .tc-info.focus {color:white;border-color:white;box-shadow:0 0 0 1px white,0 0 .6em #add9e540;outline:none}", "body.lampa_view .tc-release-name {color:#939ba5;white-space:normal;overflow-wrap:anywhere}", "body.lampa_view .tc-full-details {font-size:.95em;line-height:1.6}", "body.lampa_view .tc-full-details dl {margin:0}", "body.lampa_view .tc-full-details dt {color:var(--pt-muted);font-size:.85em;margin-top:1em}", "body.lampa_view .tc-full-details dt:first-child {margin-top:0}", "body.lampa_view .tc-full-details dd {margin:0;white-space:pre-wrap;overflow-wrap:anywhere}", "body.lampa_view .tc-item .tc-title,body.lampa_view .tc-item .tc-original {display:none!important}", "@media(max-width:650px){body.lampa_view .tc-head{display:flex;flex-wrap:wrap}body.lampa_view .tc-right{margin-left:auto}body.lampa_view .tc-seeds{white-space:normal;text-align:right}body.lampa_view .tc-summary{flex:1 1 12em}body.lampa_view .tc-foot{align-items:flex-end}}", "body.lampa_view .filter__item,body.lampa_view .selector--filter {border-radius:.5em;background:var(--pt-panel);border:1px solid var(--pt-line);color:#c4c4ca}", "body.lampa_view .filter__item.focus,body.lampa_view .filter__item.hover {background:var(--pt-high);border-color:var(--pt-accent);color:white}", "body.lampa_view .modal__content,body.lampa_view .selectbox__content,body.lampa_view .settings__content {background:var(--pt-panel)!important;color:var(--pt-text);border:1px solid var(--pt-line);border-radius:.85em;box-shadow:0 20px 80px #0008}", "body.lampa_view .modal__title,body.lampa_view .selectbox__title,body.lampa_view .settings__title {font-weight:650;letter-spacing:-.025em}", "body.lampa_view .settings-param {border-radius:.5em;border-bottom:1px solid var(--pt-line);font-size:.9em}", "body.lampa_view .settings-param__descr {color:var(--pt-muted);opacity:1;font-size:.8em;line-height:1.5}", "body.lampa_view .settings-param.focus,body.lampa_view .selectbox-item.focus,body.lampa_view .settings-folder.focus {background:var(--pt-high)!important;color:white;box-shadow:inset 3px 0 var(--pt-accent)}", "body.lampa_view .settings-param__value {color:var(--pt-accent)}", "body.lampa_view .selectbox-item {border-radius:.45em;font-size:.9em}", "body.lampa_view .settings-folder {border:1px solid var(--pt-line);border-radius:.7em;background:var(--pt-panel)}", "body.lampa_view .wrap__left {background:var(--pt-panel)!important;color:var(--pt-text)}", "body.lampa_view .menu__item,body.lampa_view .settings-folder,body.lampa_view .settings-param,body.lampa_view .selectbox-item {color:var(--pt-text)}", "body.lampa_view .settings-folder__name,body.lampa_view .settings-param__name,body.lampa_view .selectbox-item__title {color:inherit}", "body.lampa_view .menu__ico,body.lampa_view .settings-folder__icon {color:inherit;opacity:1}", "body.lampa_view .settings-param__descr,body.lampa_view .selectbox-item__subtitle {color:#a2aab4;opacity:1}", "body.lampa_view .settings-folder.focus,body.lampa_view .settings-param.focus,body.lampa_view .selectbox-item.focus,body.lampa_view .menu__item.focus,body.lampa_view .menu__item.traverse {background:#20272e!important;color:var(--pt-text);box-shadow:inset 2px 0 var(--pt-accent)}", "body.lampa_view .simple-button {background:var(--pt-high);border-radius:.5em;color:white;border:1px solid var(--pt-line)}", "body.lampa_view .simple-button.focus {border-color:var(--pt-accent);background:var(--pt-dim);color:white}", "body.lampa_view .search {background:var(--pt-bg)}", "body.lampa_view .search-source {background:var(--pt-panel);border:1px solid var(--pt-line);border-radius:.625em}", "body.lampa_view .search-source.focus {border-color:var(--pt-accent);color:white}", "body.lampa_view .alc-ap {background:var(--pt-bg)!important}", "body.lampa_view .alc-ap__head {border-radius:.8em;overflow:hidden}", "body.lampa_view .alc-ap__play {background:var(--pt-accent)!important;color:#07151c!important;border-radius:.6em!important}", "body.lampa_view .alc-chip,body.lampa_view .alc-ap-voice,body.lampa_view .alc-ep,body.lampa_view .alc-ap-season__head {background:var(--pt-panel)!important;border:1px solid var(--pt-line)!important;border-radius:.6em!important;color:var(--pt-text)!important;box-shadow:none!important}", "body.lampa_view .alc-chip--on,body.lampa_view .alc-chip.focus,body.lampa_view .alc-ap-voice.focus,body.lampa_view .alc-ep.focus {border-color:var(--pt-accent)!important;background:var(--pt-dim)!important;color:white!important;box-shadow:0 0 0 1px var(--pt-accent)!important}", "body.lampa_view input {accent-color:var(--pt-accent)}", "body.lampa_view .empty__title {font-size:1.4em;font-weight:650}", "body.lampa_view .empty__descr {color:var(--pt-muted);font-size:.85em;line-height:1.6}", "", "body.lampa_view .full-start-new__reactions,body.lampa_view .full-start-new__tagline {display:none}", "body.lampa_view .full-start-new__title {font-weight:600;font-size:2.4em}", "body.lampa_view .full-start__button.button--alc-auto,body.lampa_view .alc-ap__play {background:var(--pt-accent)!important;color:#13232c!important}", "body.lampa_view .full-start__button.button--alc-auto.focus {background:#d0eaf1;color:#13232c;box-shadow:0 0 0 2px #fff}", "body.lampa_view .simple-button,body.lampa_view .selectbox-item,body.lampa_view .settings-param {font-weight:450}", "@media(min-width:1100px) {", " body.lampa_view .items-line .card:not(.card--wide):not(.card--collection) {width:11.1em!important}", " body.lampa_view .items-line>.items-line__head {padding-left:1.1em}", "}", "@media(max-width:900px) {", " body.lampa_view .head__body {padding:.5em 1.2em}", " body.lampa_view .head__action.open--search {width:2.2em;padding:0;justify-content:center;border:0;background:transparent}", " body.lampa_view .head__action.open--search:after {display:none}", " body.lampa_view .head__logo-icon {margin-right:1em!important}", " body.lampa_view .pt-topnav {gap:1.2em;margin-left:auto}", " body.lampa_view .pt-hero__body {left:2em;max-width:29em;bottom:5.5em}", " body.lampa_view .pt-hero__title {font-size:2.5em}", " body.lampa_view .wrap__left {left:1.2em!important}", "}", "body.lampa_view.pt-mobile {font-size:calc(16px * var(--pt-interface-scale,1))!important}", "body.lampa_view.pt-mobile .head {height:6.5em}", "body.lampa_view.pt-mobile .head__body {height:3.5em;padding:.5em 1em;position:relative}", "body.lampa_view.pt-mobile .head__logo-icon {margin-right:auto!important}", "body.lampa_view.pt-mobile .pt-topnav {position:absolute;top:3.5em;left:1em;right:1em;height:3em;justify-content:space-around;gap:.5em;border-top:1px solid var(--pt-line);margin:0}", "body.lampa_view.pt-mobile .pt-topnav__item {font-size:.8em;padding:.6em .4em}", "body.lampa_view.pt-mobile .wrap__content {padding-top:6.5em!important;padding-bottom:1em!important}", "body.lampa_view.pt-mobile .wrap__left {top:3.8em!important;left:1em!important;width:18em!important}", "body.lampa_view.pt-mobile .pt-hero {height:36em;min-height:32em;max-height:none;margin-bottom:1.2em}", "body.lampa_view.pt-mobile .pt-hero__image {object-position:66% top;height:75%}", "body.lampa_view.pt-mobile .pt-hero:before {background:linear-gradient(0deg,#000000 8%,#000000f0 24%,#00000040 61%,#00000000 100%)}", "body.lampa_view.pt-mobile .pt-hero__body {left:1.3em;right:1.3em;bottom:4.8em;max-width:none;padding:0}", "body.lampa_view.pt-mobile .pt-hero__title {font-size:2.05em;max-width:15em;margin-bottom:.6em}", "body.lampa_view.pt-mobile .pt-hero__meta {font-size:.74em;margin-bottom:.85em}", "body.lampa_view.pt-mobile .pt-hero__overview {font-size:.8em;-webkit-line-clamp:3}", "body.lampa_view.pt-mobile .pt-hero__actions {gap:.6em;margin-top:1.2em}", "body.lampa_view.pt-mobile .pt-hero__action {font-size:.76em;padding:.95em .9em}", "body.lampa_view.pt-mobile .pt-hero__dots {bottom:2.2em;gap:.7em}", "body.lampa_view.pt-mobile .items-line .card:not(.card--wide):not(.card--collection) {width:9.1em!important}", "body.lampa_view.pt-mobile .items-line__title {font-size:1.08em}", "body.lampa_view.pt-mobile .full-start-new__left {width:7em;min-width:7em}", "body.lampa_view.pt-mobile .full-start-new__title {font-size:1.65em}", "@media(max-width:600px) {", " body.lampa_view:not(.pt-tv) .head__action.open--search {width:2.2em;padding:0;justify-content:center;border:0;background:transparent}", " body.lampa_view:not(.pt-tv) .head__action.open--search:after {display:none}", "}", "", "body.lampa_view .head__menu-icon svg {width:1.1em!important;height:1.1em!important}", "body.lampa_view.pt-home .activity--active>.activity__body>.scroll>.scroll__content {padding-top:0!important}", "body.lampa_view .app,body.lampa_view .wrap {background:var(--pt-bg)!important}", "body.lampa_view .scroll--mask {mask-image:none!important;-webkit-mask-image:none!important}", "", "body.lampa_view.pt-home .activity--active>.activity__body>div>.scroll>.scroll__content {padding-top:0!important}", "body.lampa_view .wrap__left>.scroll,body.lampa_view .wrap__left>.scroll>.scroll__content {height:auto!important;min-height:0!important;padding:0!important}", "", "body.lampa_view .wrap__left .menu__split:last-child {display:none}", "", "/* 0.3.1: all catalogue routes live in the menu. */", "body.lampa_view .pt-topnav,body.lampa_view .pt-mobile-nav {display:none!important}", "body.lampa_view .head__actions>.head__action:not(.open--search):not(.open--profile) {display:none!important}", "body.lampa_view .head__action.open--profile {width:2.4em!important;height:2.4em!important;min-width:2.4em;flex:0 0 2.4em;padding:0!important;border-radius:50%!important;overflow:hidden}", "body.lampa_view .head__action.open--profile img,body.lampa_view .head__action.open--profile svg {width:100%!important;height:100%!important;display:block;max-width:none;max-height:none;flex:1 0 auto;object-fit:cover;border-radius:50%!important;aspect-ratio:1}", 'body.lampa_view .menu__item[data-action="movie"],body.lampa_view .menu__item[data-action="tv"],body.lampa_view .menu__item[data-action="anime"],body.lampa_view .menu__item[data-action="main"] {display:flex!important}', 'body.lampa_view .menu__item[data-action="timetable"],body.lampa_view .menu__item[data-action*="sport"],body.lampa_view .menu__item[data-action*="shot"],body.lampa_view .pt-removed-section {display:none!important}', "body.lampa_view .settings {z-index:60!important}", "body.lampa_view .settings__head {padding:1.4em 1.5em 1em;flex-shrink:0}", "body.lampa_view .card__type {display:none!important}", "body.lampa_view .card--wide {width:26em!important}", "body.lampa_view .card--wide .card__title {font-size:1em;line-height:1.35;max-height:2.7em}", "body.lampa_view .card--wide .card__description,body.lampa_view .card--wide .card__descr {font-size:.85em;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}", "body.lampa_view .pt-quality {position:absolute;top:.6em;left:.6em;z-index:4;background:#000000e8;color:#d5e9ee;border:1px solid #ffffff25;border-radius:.35em;padding:.3em .5em;font-size:.65em;line-height:1;font-weight:600;pointer-events:none}", "", "body.lampa_view .card__quality {display:block!important;z-index:4}", "body.lampa_view.pt-mobile .head {height:3.5em!important}", "body.lampa_view.pt-mobile .wrap__content {padding-top:3.5em!important}", "body.lampa_view.pt-mobile .card--wide {width:20em!important}", "", "body.lampa_view .card--wide .card__textbox {font-size:.8em;line-height:1.4;padding:1.2em;overflow:hidden}", "body.lampa_view .card--wide .card__textbox>* {display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;max-height:2.8em}", "body.lampa_view .card__quality {top:.6em;left:.6em;bottom:auto;background:#000000e8;color:#d5e9ee;border:1px solid #ffffff25}", "", "/* Frame animation owns transforms while the pointer is moving. */", "body.lampa_view .pt-wheel-moving>.scroll__content>.scroll__body {transition:none!important;-webkit-transition:none!important}", "body.lampa_view.pt-wheel-active .card {transition:none!important}", "@media(min-width:1100px) {", " body.lampa_view .pt-hero {height:min(56vh,34em);min-height:27em;max-width:100em;margin:0 auto 2em}", " body.lampa_view .pt-hero__body {left:3em;bottom:7em;max-width:31em}", " body.lampa_view .pt-hero__title {font-size:2.55em;max-width:15em}", " body.lampa_view .pt-hero__dots {left:45%;bottom:1.5em}", " body.lampa_view .items-line {max-width:100em;margin-left:auto;margin-right:auto;margin-bottom:.8em;padding-bottom:.7em}", " body.lampa_view .items-line .card:not(.card--wide):not(.card--collection) {width:9.2em!important}", " body.lampa_view .card__title {font-size:.79em}", " body.lampa_view .head__body {max-width:100em;padding-left:1.5em;padding-right:1.5em}", "}", "", "@media(min-width:1100px) {", " body.lampa_view .pt-hero,body.lampa_view .items-line {max-width:90vw}", " body.lampa_view .head__body {max-width:90vw;padding-left:0;padding-right:0}", " body.lampa_view .items-line .card:not(.card--wide):not(.card--collection) {width:clamp(8.4em,calc((90vw - 10em / var(--pt-interface-scale,1)) / 10 * var(--pt-interface-scale,1)),11.1em)!important}", "}", "", "/* OLED: true black canvas; poster artwork retains its own colors. */", "body.lampa_view {--pt-bg:#000000;--pt-side:#080808;--pt-panel:#0b0b0b;--pt-high:#171717;background:#000000!important}", "body.lampa_view .background {display:none!important}", "body.lampa_view .head,body.lampa_view .app,body.lampa_view .wrap,body.lampa_view .search {background:#000000!important}", "body.lampa_view .pt-hero__dots {left:0!important;right:0!important;justify-content:center}", "body.lampa_view .pt-hero__logo {display:block;width:auto;max-width:100%;height:auto;max-height:7em;object-fit:contain;object-position:left center;margin:0 0 1.4em}", "body.lampa_view .pt-hero__logo.pt-hidden {display:none!important}", "body.lampa_view.pt-mobile .pt-hero__logo {max-width:90%;max-height:5.5em;margin-bottom:1em}", "", "body.lampa_view .pt-kind {position:absolute;top:.6em;right:.6em;z-index:4;pointer-events:none;font-size:.6em;line-height:1;padding:.35em .5em;background:#000b;color:#d4e2e6;border:1px solid #ffffff25;border-radius:.35em}", "body.lampa_view .card.pt-has-quality .card__quality {display:none!important}", "/* Search and circular profile share the same outer height. */", "body.lampa_view .head__action.open--search {box-sizing:border-box;height:2.2em}", "body.lampa_view .head__action.open--profile {box-sizing:border-box;width:2.2em!important;height:2.2em!important;min-width:2.2em;flex:0 0 2.2em}", "body.lampa_view .pt-hero__image {image-rendering:auto;filter:none!important}", "/* Compact detail cover, fading to OLED black before the following rows. */", "body.lampa_view .full-start__background {left:0!important;top:0!important;width:100%!important;height:30em!important;max-height:58vh;object-fit:cover;object-position:center 30%;-webkit-mask-image:linear-gradient(to bottom,#000 20%,transparent 100%)!important;mask-image:linear-gradient(to bottom,#000 20%,transparent 100%)!important}", "body.lampa_view .full-start-new {padding-top:2em;padding-bottom:1em}", "body.lampa_view .full-start-new__left {width:10em;min-width:10em;margin-right:2em}", "body.lampa_view .full-start-new__body {align-items:center}", "body.lampa_view .full-start-new__right {min-width:0;max-width:58em}", "body.lampa_view .full-start-new__title {font-size:2em}", "body.lampa_view .minimal-detail-logo {display:none;width:auto;max-width:min(24em,75%);height:auto;max-height:5.5em;object-fit:contain;object-position:left center;margin:0 0 1em}", "body.lampa_view .minimal-detail-logo.loaded {display:block}", "body.lampa_view .minimal-detail-overview,body.lampa_view .full-start-new__description {color:var(--pt-muted);font-size:.9em;line-height:1.55;max-width:52em;margin:1em 0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}", "body.lampa_view.pt-mobile .full-start-new__left {width:6.5em;min-width:6.5em;margin:0 1.2em 0 0}", "body.lampa_view.pt-mobile .full-start-new__body {display:flex;align-items:flex-start}", "body.lampa_view.pt-mobile .full-start-new__right {margin:0;padding:0;background:none;overflow:visible}", "body.lampa_view.pt-mobile .full-start-new__title {font-size:1.4em}", "body.lampa_view.pt-mobile .minimal-detail-logo {max-width:100%;max-height:4em}", "body.lampa_view.pt-mobile .full-start-new__buttons {gap:.4em}", ".minimal-detail-logo {display:none}", "/* Keep native modal/player order; file actions must stay above their dialog. */", "body.lampa_view .settings {z-index:40!important}", "body.lampa_view .selectbox {z-index:70!important}", "body.lampa_view .modal {z-index:50!important}", "body.lampa_view .settings-input {z-index:90!important}", "body.lampa_view .settings-input__content {background:#101010}", "body.lampa_view .minimal-detail-header {max-width:90%;margin:0 auto;padding:3em 0 1.5em;min-height:23em;display:flex;align-items:flex-end}", "body.lampa_view .minimal-detail-header .full-start-new__body {width:100%;align-items:flex-end;gap:2em}", "body.lampa_view .minimal-detail-identity {width:15em;min-width:15em;margin:0}", "body.lampa_view .minimal-detail-identity .full-start-new__poster {display:none}", "body.lampa_view .minimal-detail-identity .full-start-new__title {margin-bottom:1em;font-size:1.7em}", "body.lampa_view .minimal-detail-identity .minimal-detail-logo {max-width:100%;max-height:5em;margin:0 0 1.5em}", "body.lampa_view .minimal-detail-identity .full-start-new__buttons {display:flex;gap:.45em;flex-wrap:wrap}", "body.lampa_view .minimal-detail-identity .button--alc-auto {width:100%;justify-content:center;gap:.5em}", "body.lampa_view .minimal-detail-heading {overflow-wrap:anywhere;word-break:normal;min-width:0;font-size:1.15em;font-weight:600;line-height:1.35;margin:0 0 .7em}", "body.lampa_view .minimal-detail-header .full-start-new__right {max-width:60em}", "body.lampa_view .minimal-detail-header .full-start-new__rate-line {margin-top:.6em;font-size:.8em}", "body.lampa_view .minimal-detail-header .full-start-new__details {margin:.7em 0}", "body.lampa_view .minimal-detail-columns {max-width:90%;margin:1em auto 2em;display:flex;gap:1.25em;align-items:stretch}", "body.lampa_view .minimal-detail-cast>.minimal-cast-native {order:0;grid-column:1;grid-row:1;min-width:0;width:100%!important;max-width:100%;box-sizing:border-box;overflow:hidden;flex:1;background:#0b0b0b;border:1px solid var(--pt-line);border-radius:.8em;padding:1em;margin:0}", "body.lampa_view .minimal-detail-facts {order:1;width:22%;min-width:15em;flex-shrink:0;padding:1.2em;background:#0b0b0b;border:1px solid var(--pt-line);border-radius:.8em;margin:0}", "body.lampa_view .minimal-detail-facts h3 {font-size:1em;margin:0 0 1em}", "body.lampa_view .minimal-detail-facts>div {display:grid;grid-template-columns:minmax(7.5em,.9fr) minmax(0,1.1fr);gap:.75em;font-size:.78em;margin:.8em 0;line-height:1.5}", "body.lampa_view .minimal-detail-facts>div>span:first-child {color:var(--pt-muted)}", "body.lampa_view .minimal-detail-facts>div>span:last-child {text-align:right}", "body.lampa_view.pt-mobile .minimal-detail-header {min-height:18em;padding-top:2em}", "body.lampa_view.pt-mobile .minimal-detail-header .full-start-new__body {flex-direction:column;gap:1em}", "body.lampa_view.pt-mobile .minimal-detail-identity {width:100%;min-width:0}", "body.lampa_view.pt-mobile .minimal-detail-columns {display:block}", "body.lampa_view.pt-mobile .minimal-detail-facts {width:100%;min-width:0;box-sizing:border-box;margin:1em 0}", "body.lampa_view .minimal-cast-native .full-person {width:7em;box-sizing:border-box;flex-direction:column;align-items:center;padding:.4em;gap:.65em;font-size:.85em;text-align:center}", "body.lampa_view .minimal-cast-native .full-person__photo {width:5em;height:5em;border-radius:50%;margin:0;background:#151515}", "body.lampa_view .minimal-cast-native .full-person__photo>img {height:100%;object-fit:cover}", "body.lampa_view .minimal-cast-native .full-person__name {font-size:.95em;line-height:1.3}", "body.lampa_view .minimal-cast-native .full-person__role {font-size:.8em;color:var(--pt-muted);line-height:1.3}", "body.lampa_view .person-start__img {border-radius:50%;width:10em;height:10em;object-fit:cover}", "body.lampa_view .person-start {background:#000}", "/* The complete card is one vertical native row, including its lower columns. */", "body.lampa_view .minimal-detail-header {display:block;box-sizing:border-box;width:90%;max-width:90%;min-height:0;padding:0 0 1.5em}", "body.lampa_view .minimal-detail-header>.full-start-new__body {box-sizing:border-box;min-height:0;padding:1.5em 0 .4em;display:flex;-webkit-box-align:start;-webkit-align-items:flex-start;align-items:flex-start}", "body.lampa_view .minimal-detail-header>.minimal-detail-columns {position:relative;inset:auto;clear:both;float:none;width:100%;max-width:none;margin:.7em 0 0;min-height:0;box-sizing:border-box;display:grid;grid-template-columns:minmax(0,1fr) minmax(15em,22%);gap:1.25em;align-items:stretch}", "body.lampa_view.pt-desktop:not(.pt-safari) .minimal-detail-header>.full-start-new__body {min-height:24em;padding:3em 0 1em}", "body.lampa_view.pt-desktop:not(.pt-safari) .minimal-detail-header>.minimal-detail-columns {margin-top:1.5em}", "body.lampa_view .minimal-detail-columns>.minimal-detail-facts {grid-column:2;grid-row:1;position:relative;inset:auto;float:none;width:auto;min-width:0;box-sizing:border-box;align-self:stretch;overflow-wrap:anywhere}", "body.lampa_view .minimal-overview-action {cursor:pointer;border-radius:.3em;outline:none!important;border:0!important;box-shadow:none!important;position:relative;isolation:isolate;max-width:52em;margin:1em 0}", "body.lampa_view .minimal-overview-action>.full-start-new__description,body.lampa_view .minimal-overview-action>.minimal-detail-overview {width:100%;max-width:none;margin:0;outline:none!important;border:0!important;box-shadow:none!important}", "body.lampa_view .minimal-overview-focus {display:none;position:absolute;inset:0;border:2px solid var(--pt-accent);border-radius:.3em;pointer-events:none}", "body.lampa_view .minimal-overview-action:hover,body.lampa_view .minimal-overview-action.focus,body.lampa_view .minimal-overview-action:focus-visible {box-shadow:inset 0 0 0 2px var(--pt-accent)!important}", "body.lampa_view .minimal-overview-action {contain:paint;transition:none!important;transform:none!important}", "body.lampa_view .minimal-overview-action>.minimal-overview-focus {display:none!important}", "body.lampa_view .minimal-overview-action::before,body.lampa_view .minimal-overview-action::after {display:none!important}", "body.lampa_view .minimal-detail-studio.selector {cursor:pointer;border-radius:.2em;outline:none}", "body.lampa_view .minimal-detail-studio.selector.focus,body.lampa_view .minimal-detail-studio.selector:focus-visible {box-shadow:0 0 0 2px var(--pt-accent)}", "body.lampa_view .minimal-overview-full {white-space:pre-wrap;overflow-wrap:break-word;line-height:1.7}", "body.lampa_view .minimal-source-hidden {display:none!important}", "body.lampa_view .minimal-detail-facts>div>span {display:block}", "body.lampa_view .minimal-detail-identity .full-start-new__buttons {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.45em;align-items:stretch;overflow:visible}", "body.lampa_view .minimal-detail-identity .full-start__button {margin:0;min-width:0;box-sizing:border-box;justify-content:center;padding:.8em .5em;font-size:.85em}", "body.lampa_view .minimal-detail-identity .button--alc-auto {grid-column:1/-1;width:100%}", "body.lampa_view .minimal-detail-identity .full-start__button>span {display:none!important}", "body.lampa_view .minimal-detail-identity .button--alc-auto>span,body.lampa_view .minimal-detail-identity .button--alc-torrent>span {display:inline!important}", "body.lampa_view .minimal-detail-identity .button--alc-torrent {grid-column:span 2}", "body.lampa_view .minimal-detail-identity .minimal-actions--no-bell>.button--alc-torrent {grid-column:1/-1}", "body.lampa_view .minimal-detail-identity .full-start-new__buttons:not(.minimal-actions--auto)>.button--play {grid-column:1/-1}", "body.lampa_view .minimal-detail-identity .full-start-new__buttons:not(.minimal-actions--auto)>.button--play>span {display:inline!important}", "body.lampa_view.pt-mobile .minimal-detail-header>.full-start-new__body {min-height:0;padding-top:1em}", "body.lampa_view.pt-mobile .minimal-detail-header>.minimal-detail-columns {display:block}", "body.lampa_view.pt-mobile .minimal-detail-identity .full-start-new__buttons {max-width:24em}", "/* Compact filter form: labels and values are distinct, with a clear primary action. */", "body.lampa_view .minimal-filter-panel .selectbox__content {width:27em;max-width:100vw;background:#080808;border:1px solid var(--pt-line);box-sizing:border-box}", "body.lampa_view .minimal-filter-panel .selectbox__head {padding:1.3em 1.3em .8em}", "body.lampa_view .minimal-filter-panel .selectbox__title {font-size:1.3em;line-height:1.2}", "body.lampa_view .minimal-filter-panel .selectbox-item {display:flex;align-items:center;justify-content:space-between;gap:1em;padding:.85em 1.3em;border-radius:0;border-bottom:1px solid #ffffff0a;min-height:3.2em;box-sizing:border-box}", "body.lampa_view .minimal-filter-panel .selectbox-item__title {font-size:.9em;font-weight:500}", "body.lampa_view .minimal-filter-panel .selectbox-item__subtitle {font-size:.8em;text-align:right;color:var(--pt-muted);margin:0;max-width:55%;line-height:1.4}", "body.lampa_view .minimal-filter-panel .selectbox-item:nth-last-child(2) {background:var(--pt-accent);color:#07151a;justify-content:center;border-radius:.5em;margin:.9em 1.1em .5em}", "body.lampa_view .minimal-filter-panel .selectbox-item:last-child {justify-content:center;color:var(--pt-muted);min-height:2.8em}", "body.lampa_view .minimal-filter-panel .selectbox-item.focus {box-shadow:inset 3px 0 var(--pt-accent)}", "body.lampa_view .minimal-filter-panel .selectbox-item:nth-last-child(2).focus {background:#d1edf5;color:#07151a;box-shadow:inset 0 0 0 2px #fff}", "/* Legacy history/filter grids share the catalogue's content boundaries. */", "body.lampa_view .category-full,body.lampa_view .mapping--grid {width:100%;max-width:90vw;margin-left:auto;margin-right:auto;padding-left:0;padding-right:0;box-sizing:border-box}", "body.lampa_view .category-full>.card {box-sizing:border-box;margin-left:0;padding-left:.5em;padding-right:.5em}", "@media(min-width:1100px){body.lampa_view:not(.pt-tv) .category-full>.card:not(.card--wide):not(.card--collection) {width:clamp(8.4em,calc((90vw - 10em / var(--pt-interface-scale,1)) / 10 * var(--pt-interface-scale,1)),11.1em)!important}}", "@media(min-width:1200px){body.lampa_view:not(.pt-tv) .mapping--grid>.card,body.lampa_view:not(.pt-tv) .category-full>.card:not(.card--wide):not(.card--collection) {width:calc(12.5% * var(--pt-interface-scale,1))!important}}", "@media(min-width:1800px){body.lampa_view:not(.pt-tv) .mapping--grid>.card,body.lampa_view:not(.pt-tv) .category-full>.card:not(.card--wide):not(.card--collection) {width:calc(10% * var(--pt-interface-scale,1))!important}}", "@media(max-width:650px){body.lampa_view .minimal-filter-panel .selectbox__content {width:100%;max-height:90vh}body.lampa_view .minimal-filter-panel .selectbox-item {min-height:3em;padding:.7em 1em}}", "body.lampa_view .minimal-crew-native {max-width:90%;margin:1.2em auto}", "body.lampa_view .minimal-crew-native .full-person {font-size:.8em;padding-right:1em}", "body.lampa_view .minimal-crew-native .full-person__photo {width:4.5em;height:4.5em;border-radius:50%}", "body.lampa_view .minimal-crew-native .full-person__photo>img {height:100%;object-fit:cover}", "body.lampa_view .minimal-crew-native .full-person__name {font-size:1em}", "body.lampa_view .pt-hero__logo.pt-hero__logo--translated {margin-bottom:.5em}", "body.lampa_view .pt-hero__title.pt-hero__title--translation {font-size:1.05em;line-height:1.35;letter-spacing:0;font-weight:500;max-width:100%;margin:0 0 1.1em;color:#dbdde2}", "body.lampa_view .minimal-detail-identity .minimal-detail-logo.minimal-detail-logo--translated {margin-bottom:.5em}", "body.lampa_view .minimal-detail-identity .full-start-new__title.minimal-detail-translation {font-size:1em;line-height:1.35;letter-spacing:0;font-weight:500;margin-bottom:1.25em;color:#dbdde2}", "/* Clip translated rails to their own content column, with room for focus rings. */", "body.lampa_view .items-line__body {overflow:hidden;padding:1.1em 0;margin:-1.1em 0;-webkit-mask-image:linear-gradient(to right,transparent,#000 1.25em,#000 calc(100% - 1.25em),transparent);mask-image:linear-gradient(to right,transparent,#000 1.25em,#000 calc(100% - 1.25em),transparent)}", "body.lampa_view .items-line__body>.scroll--horizontal {-webkit-mask-image:none!important;mask-image:none!important}", "/* Native social actions and data stay with Lampa; only presentation changes. */", "body.lampa_view .full-start-new__reactions {display:flex;align-items:center;flex-wrap:wrap;gap:.4em;min-height:0;margin:.9em 0;color:var(--pt-muted);font-size:.8em}", "body.lampa_view .full-start-new__reactions>div {padding:0}", "body.lampa_view .full-start-new__reactions .reaction {gap:.3em;padding:.35em .65em;background:#0b0b0b;border:1px solid var(--pt-line);border-radius:.5em}", "body.lampa_view .full-start-new__reactions .reaction__icon {width:1.25em;height:1.25em}", "body.lampa_view .full-start-new__reactions .reaction__count {padding:0;font-size:1em;font-weight:500}", "body.lampa_view .full-start-new__reactions .reaction--voted {border-color:var(--pt-accent);color:var(--pt-accent)}", "body.lampa_view .minimal-comments-native {width:90%;max-width:90%;margin:1em auto 2em;padding-bottom:1em}", "body.lampa_view .minimal-comments-native .items-line__head {padding-left:0;padding-right:0}", "body.lampa_view .minimal-comments-native .scroll--horizontal>.scroll__content {padding-left:0;padding-right:0}", "body.lampa_view .minimal-comments-native .items-line__body,body.lampa_view .minimal-comments-native .scroll--horizontal {-webkit-mask-image:none!important;mask-image:none!important}", "body.lampa_view .full-review {background:#0b0b0b;border:1px solid var(--pt-line);border-radius:.7em;padding:1.1em;box-sizing:border-box;color:#e5e5e5}", "body.lampa_view .mapping--line>.full-review {min-width:18em;max-width:25em}", "body.lampa_view .full-review__text {font-size:.9em;line-height:1.6;margin-bottom:1.1em;-webkit-line-clamp:3;line-clamp:3}", "body.lampa_view .full-review__footer {font-size:.78em;color:var(--pt-muted)}", "body.lampa_view .full-review__user-icon {width:1.8em;height:1.8em}", "body.lampa_view .full-review.focus {border-color:var(--pt-accent);background:#111;color:#fff}", "body.lampa_view .mapping--line>.full-review-add {width:10em;min-height:7.5em;padding:1em;border:1px solid var(--pt-line);background:#0b0b0b;border-radius:.7em;box-sizing:border-box}", "body.lampa_view .full-review-add::before {width:1.4em;height:1.4em;margin:-1.3em 0 0 -.7em;opacity:.75}", "body.lampa_view .full-review-add::after {content:'Написать';position:absolute;inset:auto 0 1.2em;text-align:center;font-size:.8em;color:var(--pt-muted)}", "body.lampa_view .full-review-add.focus {border-color:var(--pt-accent);background:#111}", "body.lampa_view .full-review-add.focus::after {border:0;width:auto;border-radius:0;inset:auto 0 1.2em;color:var(--pt-accent)}", "body.lampa_view .full-review--full-text .full-review__text {-webkit-line-clamp:unset;line-clamp:unset}", "body.lampa_view .minimal-comments-native .items-line__head {gap:.7em}", "body.lampa_view .minimal-comments-native .items-line__title {margin-right:auto}", "body.lampa_view .minimal-comments-nav {display:flex;gap:.4em;flex:none}", "body.lampa_view .minimal-comments-nav[hidden] {display:none}", "body.lampa_view .minimal-comments-arrow {display:flex;align-items:center;justify-content:center;width:2.1em;height:2.1em;padding:0;border:1px solid var(--pt-line);border-radius:.6em;background:#ffffff04;color:var(--pt-muted);cursor:pointer}", "body.lampa_view .minimal-comments-arrow svg {width:1em;height:1em}", "/* Shared transparent badges: ratings, age, status and reactions. */", "body.lampa_view .minimal-detail-header .full-start-new__rate-line {display:flex;align-items:center;flex-wrap:wrap;gap:.5em;margin-bottom:.85em;font-size:.8em}", "body.lampa_view .minimal-detail-header .full-start-new__rate-line>* {margin:0!important}", "body.lampa_view .minimal-detail-header .full-start__rate,body.lampa_view .minimal-detail-header .full-start__pg,body.lampa_view .minimal-detail-header .full-start__status,body.lampa_view .minimal-detail-header .full-start-new__reactions .reaction {box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:.5em;min-height:2.3em;padding:.45em .7em;font-size:1em;line-height:1.1;border:1px solid var(--pt-line);border-radius:.45em;background:rgba(0,0,0,.36);color:#dbdde2;box-shadow:none}", "body.lampa_view .minimal-detail-header .full-start-new__reactions .reaction--voted {border-color:var(--pt-accent);color:var(--pt-accent)}", "body.lampa_view .minimal-detail-header .full-start__rate>div {width:auto;height:auto;padding:0;background:transparent}", "/* A stable card box keeps remote geometry intact; only the artwork moves. */", "body.lampa_view .card__view {transition:transform .24s cubic-bezier(.2,.75,.25,1),box-shadow .24s ease!important;-webkit-transition:-webkit-transform .24s cubic-bezier(.2,.75,.25,1),box-shadow .24s ease!important;transform-origin:center}", "body.lampa_view .card.focus .card__view,body.lampa_view .card.hover .card__view {animation:none!important;-webkit-animation:none!important;-webkit-transform:translateY(-.2em) scale(1.045);transform:translateY(-.2em) scale(1.045);box-shadow:0 0 .85em rgba(173,217,229,.4),0 0 1.8em rgba(173,217,229,.22)}", "body.lampa_view .minimal-cast-native .full-person.focus {background:#161b1e;color:var(--pt-text);box-shadow:inset 0 0 0 1px var(--pt-accent)}", "body.lampa_view .items-line__more {display:none!important}", "body.lampa_view .minimal-paged-row .card-more:not(.card-more--first) {display:none!important}", "body.lampa_view .items-line__head {display:flex;align-items:center;gap:.6em}", "body.lampa_view .items-line__title {margin-right:auto}", ".minimal-row-nav {display:none}", "body.lampa_view .minimal-row-nav {display:flex;gap:.4em;flex:none}", "body.lampa_view .minimal-row-arrow,body.lampa_view .minimal-row-more {display:flex;align-items:center;justify-content:center;width:2em;height:2em;padding:0;border:1px solid var(--pt-line);border-radius:.6em;background:#ffffff04;color:var(--pt-muted);cursor:pointer}", "body.lampa_view .minimal-row-arrow svg,body.lampa_view .minimal-row-more svg {width:1em;height:1em}", "body.lampa_view .minimal-paged-row .scroll__body>.card:last-child,body.lampa_view .minimal-paged-row .scroll__body>.full-person:last-child {margin-right:2.5em}", "body.lampa_view .minimal-paged-row .mapping--line>.card+.card {margin-left:.75em}", "body.lampa_view .minimal-paged-row .items-line__body {-webkit-mask-image:linear-gradient(to right,transparent 1em,#000 1.25em,#000 calc(100% - 1.25em),transparent calc(100% - 1em));mask-image:linear-gradient(to right,transparent 1em,#000 1.25em,#000 calc(100% - 1.25em),transparent calc(100% - 1em))}", "/* Header, row and comment navigation share one pointer/remote/keyboard focus. */", "body.lampa_view .minimal-back svg,body.lampa_view .head__menu-icon svg,body.lampa_view .minimal-row-nav svg,body.lampa_view .minimal-comments-arrow svg {stroke-width:2}", "body.lampa_view .minimal-back:hover,body.lampa_view .minimal-back.hover,body.lampa_view .minimal-back.focus,body.lampa_view .minimal-back:focus-visible,", "body.lampa_view .head__menu-icon:hover,body.lampa_view .head__menu-icon.hover,body.lampa_view .head__menu-icon.focus,body.lampa_view .head__menu-icon:focus-visible,", "body.lampa_view .minimal-row-arrow:hover:not(:disabled),body.lampa_view .minimal-row-arrow.hover:not(:disabled),body.lampa_view .minimal-row-arrow.focus:not(:disabled),body.lampa_view .minimal-row-arrow:focus-visible:not(:disabled),", "body.lampa_view .minimal-row-more:hover,body.lampa_view .minimal-row-more.hover,body.lampa_view .minimal-row-more.focus,body.lampa_view .minimal-row-more:focus-visible,", "body.lampa_view .minimal-comments-arrow:hover:not(:disabled),body.lampa_view .minimal-comments-arrow.hover:not(:disabled),body.lampa_view .minimal-comments-arrow.focus:not(:disabled),body.lampa_view .minimal-comments-arrow:focus-visible:not(:disabled) {color:var(--pt-text);background:var(--pt-high);border-color:var(--pt-line);outline:none;outline-offset:0;box-shadow:inset 0 0 0 1px var(--pt-accent)}", "body.lampa_view.pt-tv .minimal-row-arrow,body.lampa_view.pt-tv .minimal-person-row .minimal-row-nav {display:none}", "body.lampa_view .pt-row-paging>.scroll__content>.scroll__body {transition:none!important;-webkit-transition:none!important}", "body.lampa_view .minimal-people-grid {display:grid;grid-template-columns:repeat(auto-fill,minmax(7em,1fr));gap:1em;max-width:65em}", "body.lampa_view .minimal-people-grid .full-person {width:100%!important;margin:0;box-sizing:border-box}", "", "body.lampa_view .alc-ap__voices {--alc-vcol:29em}", "body.lampa_view .alc-ap-vgroup__title {font-size:.9em;color:var(--pt-text);margin:.85em 0 .5em}", "body.lampa_view .alc-ep--soon .alc-ep__time {color:var(--pt-accent)}", "", "body.lampa_view .minimal-detail-studio {display:inline-block;width:auto;max-width:6.5em;height:1.3em;object-fit:contain;vertical-align:middle;margin-right:.65em;filter:drop-shadow(0 0 .6px rgba(255,255,255,.7)) drop-shadow(0 1px 2px #000);opacity:1}", "body.lampa_view .minimal-detail-studio[hidden] {display:none}", "body.lampa_view .minimal-anime-controls {width:100%;box-sizing:border-box;margin:0 0 1.6em;padding:.4em 1em}", "body.lampa_view .minimal-anime-tabs {display:flex;justify-content:center;align-items:center;gap:.65em;width:100%;margin:0 auto}", "body.lampa_view .minimal-anime-tab {font-family:inherit;justify-content:center;min-width:9.5em;transition:box-shadow .24s ease!important;-webkit-transition:box-shadow .24s ease!important}", 'body.lampa_view .minimal-anime-tab[aria-selected="true"] {box-shadow:0 0 .35em rgba(173,217,229,.85),0 0 1.2em rgba(173,217,229,.65),0 0 2.4em rgba(173,217,229,.42);outline:none}', "body.lampa_view .minimal-anime-status {margin:1.2em auto;text-align:center;color:var(--pt-muted);line-height:1.5}", "body.lampa_view .minimal-anime-retry {display:inline-block;font:inherit;color:var(--pt-text);background:#111;border:1px solid var(--pt-line);border-radius:.6em;padding:.65em 1.2em;margin:.8em auto 0;cursor:pointer}", "body.lampa_view .minimal-anime-retry.focus,body.lampa_view .minimal-anime-retry:hover {background:var(--pt-accent);color:#11171b;outline:none}", "body.lampa_view .minimal-anime-status[hidden],body.lampa_view .minimal-anime-retry[hidden] {display:none!important}", "", "/* Small touch controls keep native actions, including the iPhone safe area. */", "body.lampa_view.pt-mobile .navigation-bar {font-size:calc(14px * var(--pt-interface-scale,1))!important;padding:0 .8em .65em;padding-bottom:calc(.65em + env(safe-area-inset-bottom,0px))}", "body.lampa_view.pt-mobile .navigation-bar__body {max-width:400px;margin:0 auto;padding:.5em .6em;border:1px solid var(--pt-line);background:#181a1cf2;box-shadow:0 4px 20px #0006}", "body.lampa_view.pt-mobile .navigation-bar__item {display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:44px;min-width:56px}", "body.lampa_view.pt-mobile .navigation-bar__icon {width:1.5em;height:1.5em}", "body.lampa_view.pt-mobile .navigation-bar__label {font-size:.78em;line-height:1.2;margin-top:.3em}", "body.lampa_view.pt-mobile .settings__content {font-size:calc(14px * var(--pt-interface-scale,1))!important;box-sizing:border-box;max-height:78vh!important;border-radius:1em}", "body.lampa_view.pt-mobile .settings__body,", "body.lampa_view.pt-tv .settings__body {font-size:1em!important;min-height:0;overflow:hidden}", "body.lampa_view.pt-mobile .settings__head,", "body.lampa_view.pt-tv .settings__head {padding:1em 1.1em .8em}", "body.lampa_view.pt-mobile .settings__title,", "body.lampa_view.pt-tv .settings__title {font-size:1.4em;line-height:1.3}", "body.lampa_view.pt-mobile .settings .minimal-back--overlay {font-size:1em}", "body.lampa_view.pt-mobile .settings-folder,", "body.lampa_view.pt-tv .settings-folder {padding:.9em 1.1em;min-height:3.6em;align-items:center;box-sizing:border-box;border-radius:.5em}", "body.lampa_view.pt-mobile .settings-folder__icon,", "body.lampa_view.pt-tv .settings-folder__icon {width:1.4em;height:1.4em;min-width:1.4em;margin-right:.9em}", "body.lampa_view.pt-mobile .settings-folder__icon>*,", "body.lampa_view.pt-tv .settings-folder__icon>* {width:100%;height:100%}", "body.lampa_view.pt-mobile .settings-folder__name,", "body.lampa_view.pt-tv .settings-folder__name {font-size:1em;line-height:1.35}", "body.lampa_view.pt-mobile .settings-param,", "body.lampa_view.pt-tv .settings-param {padding:1em 1.1em;font-size:1em}", "body.lampa_view.pt-mobile .settings-param__name,", "body.lampa_view.pt-tv .settings-param__name {font-size:1em}", "body.lampa_view.pt-mobile .settings-param__value,", "body.lampa_view.pt-tv .settings-param__value {font-size:.95em}", "body.lampa_view.pt-mobile .wrap__content {padding-bottom:calc(5.1em + env(safe-area-inset-bottom,0px))!important}", "body.lampa_view.pt-mobile.orientation--landscape .navigation-bar {padding:.6em .6em .6em 0}", "body.lampa_view.pt-mobile.orientation--landscape .navigation-bar__body {gap:.45em;padding:.55em}", "", "/* TV geometry is separate from desktop sizes and the rest of the interface. */", "body.lampa_view.pt-tv .items-line {max-width:90vw;margin-left:auto;margin-right:auto}", "body.lampa_view.pt-tv .card,body.lampa_view.pt-mobile .settings-folder {will-change:auto}", "/* Clip TV rails without an extra full-width gradient compositing layer. */", "body.lampa_view.pt-tv .items-line__body {-webkit-mask-image:none;mask-image:none}", "body.lampa_view.pt-tv .minimal-paged-row .scroll--horizontal>.scroll__content>.scroll__body {transition:transform .12s linear;-webkit-transition:-webkit-transform .12s linear}", "body.lampa_view.pt-tv .card__view {transition:none!important;-webkit-transition:none!important}", "body.lampa_view.pt-tv .card.focus .card__view,body.lampa_view.pt-tv .card.hover .card__view {-webkit-transform:none;transform:none;box-shadow:0 0 .55em rgba(173,217,229,.4)}", "", "/* TV drawers use the same compact rows as phones, with readable TV text. */", "body.lampa_view.pt-tv .settings__content {font-size:calc(clamp(14px,.84vw,16px) * var(--pt-interface-scale,1))!important;width:30em;max-width:38vw;box-sizing:border-box}", "body.lampa_view.pt-tv .settings .minimal-back--overlay {font-size:1em}", "body.lampa_view.pt-tv .selectbox__content {font-size:calc(clamp(14px,.84vw,16px) * var(--pt-interface-scale,1))!important;box-sizing:border-box}", "body.lampa_view.pt-tv .selectbox__head {padding:1em 1.1em .8em}", "body.lampa_view.pt-tv .selectbox__title {font-size:1.4em;line-height:1.3}", "body.lampa_view.pt-tv .selectbox-item {padding:.85em 1.1em;font-size:1em;min-height:3.2em;box-sizing:border-box}", "body.lampa_view.pt-tv .selectbox-item__title {font-size:1em;line-height:1.35}", "body.lampa_view.pt-tv .selectbox-item__subtitle {font-size:.85em;line-height:1.4}", "body.lampa_view.pt-tv .settings-folder,body.lampa_view.pt-tv .settings-param {will-change:auto}", "", "/* Compact TV badges and captions retain the existing poster geometry. */", "/* TV uses the same focus treatment as the browser; keep repaint cost bounded. */", "body.lampa_view.pt-tv .card.focus .card__view,body.lampa_view.pt-tv .card.hover .card__view {-webkit-transform:translateY(-.2em) scale(1.045);transform:translateY(-.2em) scale(1.045);box-shadow:0 0 .85em rgba(173,217,229,.4),0 0 1.8em rgba(173,217,229,.22)}", "body.lampa_view.pt-tv .card.hover:not(.focus) .card__view {box-shadow:none!important;transform:none!important}", "body.lampa_view.pt-tv .card.hover:not(.focus) .card__view:after {border-color:transparent!important;box-shadow:none!important}", "body.lampa_view .pt-hero__studio.selector {cursor:pointer;border-radius:.2em}", "body.lampa_view .pt-hero__studio.selector.focus,body.lampa_view .pt-hero__studio.selector:focus-visible {outline:none;box-shadow:0 0 0 2px var(--pt-accent);filter:none}", "", "/* A native cast rail stays inside its grid cell at every scroll position. */", "body.lampa_view .minimal-detail-columns>.minimal-detail-cast {grid-column:1;grid-row:1;position:relative;display:flex;flex-direction:column;flex:1;min-width:0;max-width:100%;width:100%;box-sizing:border-box;overflow:hidden}", "body.lampa_view .minimal-detail-cast .items-line__body,body.lampa_view .minimal-detail-cast .scroll--horizontal {min-width:0;max-width:100%;box-sizing:border-box}", "body.lampa_view .minimal-detail-facts>div>span {min-width:0;overflow-wrap:anywhere}", "body.lampa_view .minimal-detail-facts>div>span:first-child {overflow-wrap:normal;word-break:normal}", "body.lampa_view.pt-tv .minimal-cast-native .full-person {width:var(--minimal-person-width,7em);flex-basis:var(--minimal-person-width,7em)}", "body.lampa_view.pt-tv .minimal-cast-native .full-person:last-child {margin-right:0}", "body.lampa_view.pt-mobile .minimal-detail-header>.minimal-detail-columns {grid-template-columns:minmax(0,1fr)}", "body.lampa_view.pt-mobile .minimal-detail-columns>.minimal-detail-cast,body.lampa_view.pt-mobile .minimal-detail-columns>.minimal-detail-facts {grid-column:1;grid-row:auto}", "@media(max-width:900px){", " body.lampa_view .minimal-detail-header>.minimal-detail-columns {grid-template-columns:minmax(0,1fr)}", " body.lampa_view .minimal-detail-columns>.minimal-detail-cast,body.lampa_view .minimal-detail-columns>.minimal-detail-facts {grid-column:1;grid-row:auto}", "}", "", "/* Equal footer space on every poster: focus never changes card/row geometry. */", "body.lampa_view .card .pt-card-watch {position:relative;height:4.1em;margin-top:.4em;font-size:.72em;line-height:1.35;pointer-events:none;visibility:hidden}", "body.lampa_view .card__view>.card-watched {display:none!important}", "body.lampa_view .card .pt-card-watch>.card-watched {display:block;position:absolute;inset:0;width:100%;height:100%;max-width:100%;font-size:1em;line-height:1.35;transform:none;-webkit-transform:none;border:0;border-radius:0;background:none!important;color:var(--pt-muted);box-sizing:border-box}", "body.lampa_view .card .pt-card-watch .card-watched__inner,body.lampa_view .card .pt-card-watch .card-watched__body {padding:0;font-size:1em}", "body.lampa_view .card .pt-card-watch .card-watched__item {display:none;margin:0;color:var(--pt-muted)}", "body.lampa_view .card .pt-card-watch .pt-card-watch__current {position:absolute;inset:0;display:flex;flex-direction:column;align-items:stretch;line-height:1.25}", "body.lampa_view .card .pt-card-watch .card-watched__item>span {display:none}", "body.lampa_view .pt-card-watch__row {display:block}", "body.lampa_view .pt-card-watch__meter {display:flex;align-items:center;min-width:0;margin-top:.25em;min-height:1em}", "body.lampa_view .pt-card-watch__label {display:flex;flex-wrap:wrap;gap:0 .25em;min-width:0;white-space:normal}", "body.lampa_view .pt-card-watch__label>span {white-space:nowrap}", "body.lampa_view .pt-card-watch__label {align-content:start}", "body.lampa_view .pt-card-watch__label>.pt-card-watch__heading {flex-basis:100%;margin-bottom:.1em}", "body.lampa_view .pt-card-watch__time {flex:0 0 auto;margin-left:.4em;font-variant-numeric:tabular-nums;font-size:.9em;line-height:1}", "body.lampa_view .card .pt-card-watch .time-line {display:block;flex:1 1 0%;align-self:center;position:relative;top:auto;right:auto;bottom:auto;left:auto;width:auto;margin:0;min-width:1px;height:3px;min-height:3px;overflow:hidden;background:rgba(255,255,255,.24)!important}", "body.lampa_view .card .pt-card-watch .time-line>div {display:block;height:3px;min-height:3px;background:var(--pt-accent)!important}", "body.lampa_view .card .pt-card-watch--complete .time-line,body.lampa_view .card .pt-card-watch--complete .pt-card-watch__time {display:none!important}", "/* Reveal saved viewing history only for the card under pointer/remote focus.", "   Reserved footer space prevents neighbouring rows from jumping on focus. */", "body.lampa_view .card.focus .pt-card-watch--has-progress,body.lampa_view .card.hover .pt-card-watch--has-progress,body.lampa_view .card.pt-card-pointer .pt-card-watch--has-progress {visibility:visible}", "body.lampa_view .card .pt-card-watch>.card-watched.pt-card-watch--empty {display:none!important}", "/* One compact release pill below Series, shared by desktop and TV. */", "body.lampa_view .pt-series-status {position:absolute;left:auto;right:4px;top:2.6em;z-index:4;display:block;width:auto;max-width:calc(100% - 8px);font-size:.55em;line-height:1;white-space:nowrap;padding:.3em .4em;border:1px solid #ffffff25;border-radius:.35em;background:#000b;color:#d4e2e6;pointer-events:none;box-sizing:border-box}", "body.lampa_view .pt-series-status>span {white-space:pre}", "", "/* Badges keep their own corners and wrap to another line when space is short. */", "body.lampa_view .card__view .pt-quality,body.lampa_view .card__view .pt-kind {max-width:calc(100% - 8px);box-sizing:border-box;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}", "/* Native history/play marker, in the same understated pill as metadata.", "   Put it above the artwork title, leaving faces and top metadata uncovered. */", "body.lampa_view .card__view .card__icons {inset:0!important;width:auto;max-width:none;pointer-events:none}", "body.lampa_view .card__view .card__icons-inner {position:static;background:none!important;border-radius:0}", "body.lampa_view .card__view .card__icon {position:absolute}", "body.lampa_view .card__view .icon--history {top:62%!important;left:50%!important;right:auto!important;bottom:auto!important;transform:translate(-50%,-50%);box-sizing:border-box;width:2.2em;height:1.8em;font-size:.65em;background:#000b!important;border:1px solid #ffffff25;border-radius:.35em;color:#d4e2e6;box-shadow:none!important}", "body.lampa_view .card__view .icon--history:before {content:'';position:absolute;top:50%;left:53%;transform:translate(-50%,-50%);width:0;height:0;border-top:.38em solid transparent;border-bottom:.38em solid transparent;border-left:.58em solid currentColor}", "body.lampa_view .card__view.minimal-badge-layout>.card__vote,body.lampa_view .card__view.minimal-badge-layout>.card__icons {z-index:4}", "body.lampa_view .settings .minimal-settings .settings-param {padding:.7em 1em;font-size:.95em}", "body.lampa_view .settings .minimal-settings .settings-param__name {font-size:1em;line-height:1.35;margin-bottom:.3em}", "body.lampa_view .settings .minimal-settings .settings-param__descr {font-size:.78em;line-height:1.4;margin-top:.45em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}", "body.lampa_view .settings .minimal-settings .settings-param__value {font-size:.9em;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}", "/* Shared controls for both online layouts. */", "body.lampa_view .nova-plus-root .nova-btn,body.lampa_view .nova-plus-root .nova-chip,body.lampa_view .nova-plus-root .nova-group {background:#171717!important;color:var(--pt-text)!important;border:1px solid var(--pt-line)!important;border-radius:.625em!important;box-shadow:none!important;outline:none!important}", "body.lampa_view .nova-plus-root .nova-btn {padding:.75em 1.15em;font-weight:600}", "body.lampa_view .nova-plus-root .nova-chip--view-icon {display:inline-flex;align-items:center;justify-content:center;flex:0 0 2.65em;width:2.65em;min-width:2.65em;height:2.65em;box-sizing:border-box;padding:0!important;gap:0;line-height:1}", "body.lampa_view .nova-plus-root .nova-chip--view-icon>.nova-chip__label {display:none}", "body.lampa_view .nova-plus-root .nova-chip--view-icon>svg {display:block;flex:none;width:1.1em;height:1.1em;margin:0!important;align-self:center}", "body.lampa_view .nova-plus-root .nova-chip--active,body.lampa_view .nova-plus-root .nova-group--open {background:var(--pt-high)!important;border-color:#add9e560!important}", "body.lampa_view .nova-plus-root .nova-btn.focus,body.lampa_view .nova-plus-root .nova-btn.hover,body.lampa_view .nova-plus-root .nova-btn:hover,body.lampa_view .nova-plus-root .nova-chip.focus,body.lampa_view .nova-plus-root .nova-chip.hover,body.lampa_view .nova-plus-root .nova-chip:hover,body.lampa_view .nova-plus-root .nova-group.focus,body.lampa_view .nova-plus-root .nova-group:hover {background:var(--pt-high)!important;color:var(--pt-text)!important;border-color:var(--pt-accent)!important;box-shadow:0 0 0 1px var(--pt-accent)!important}", "body.lampa_view .nova-plus-root .nova-chip__badge,body.lampa_view .nova-plus-root .nova-chip.focus .nova-chip__badge {background:#ffffff1a!important;color:var(--pt-text)!important;border-radius:.25em}", "body.lampa_view .nova-plus-root .nova-card.focus {background:var(--pt-high)!important;color:var(--pt-text)!important;box-shadow:inset 0 0 0 2px var(--pt-accent)!important}", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card.focus {background:none!important;box-shadow:none!important}", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card.focus .nova-card__thumb {box-shadow:0 0 0 2px var(--pt-accent)!important}", "body.lampa_view .nova-plus-root .nova-card__line .time-line>div,body.lampa_view .nova-plus-root .nova-hero__progress .time-line>div {background:var(--pt-accent)!important}", "/* Native torrent focus has an outer white pseudo-element; use one accent border. */", "body.lampa_view .torrent-item.focus::after {display:none!important;content:none!important}", "body.lampa_view .torrent-filter .filter__item.focus,body.lampa_view .torrent-filter .filter__item.hover,body.lampa_view .torrent-filter .selector--filter.focus {border-color:var(--pt-accent)!important;box-shadow:0 0 0 1px var(--pt-accent)!important;outline:none!important}", "body.lampa_view .torrent-filter .simple-button.focus,body.lampa_view .torrent-filter .simple-button.hover {border-color:var(--pt-accent)!important;box-shadow:0 0 0 1px var(--pt-accent)!important;outline:none!important}", "body.lampa_view .minimal-torrent-view>.explorer__left {display:block!important;width:28.7%;flex:0 0 28.7%;min-width:0;padding:.3em 1.6em 0 .3em;box-sizing:border-box}", "body.lampa_view .minimal-torrent-view>.explorer__left .explorer__card {display:none!important}", "/* The hidden native sidebar scroll still reserves a full viewport of height. */", "body.lampa_view .minimal-torrent-view>.explorer__left>.scroll {display:none!important}", "body.lampa_view .minimal-torrent-view>.explorer__files {width:71.3%;min-width:0;box-sizing:border-box}", "body.lampa_view .minimal-torrent-view .explorer__files-head {padding:.3em .6em .6em 0}", "body.lampa_view .minimal-torrent-view .explorer__files-body .scroll__body {padding-left:0}", "body.lampa_view .minimal-torrent-view .filter--back {display:none!important}", ".minimal-torrent-banner {display:none}", "body.lampa_view .minimal-torrent-banner {display:block;position:relative;width:100%;min-width:0;overflow:hidden;border-radius:1em;background:#0b1016;aspect-ratio:1.65;min-height:0;color:var(--pt-text)}", "body.lampa_view .minimal-torrent-banner__image,body.lampa_view .minimal-torrent-banner__shade {position:absolute;inset:0;width:100%;height:100%;object-fit:cover}", "body.lampa_view .minimal-torrent-banner__shade {background:linear-gradient(180deg,#080d1633 30%,#080d16e6 100%)}", "body.lampa_view .minimal-torrent-banner__meta {position:absolute;top:1em;right:1.2em;left:1.2em;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:.7em;font-size:.9em;text-shadow:0 1px 5px #000}", "body.lampa_view .minimal-torrent-banner__title {position:absolute;left:1.3em;right:1.3em;bottom:1.2em;font-size:1.7em;font-weight:650;line-height:1.2;text-shadow:0 2px 8px #000}", "body.lampa_view .minimal-torrent-banner__logo {display:block;width:auto;height:auto;max-width:100%;max-height:4em;object-fit:contain;filter:drop-shadow(0 2px 5px #0009)}", "body.lampa_view .minimal-torrent-view--classic {flex-wrap:wrap}", "body.lampa_view .minimal-torrent-view--classic>.explorer__left,body.lampa_view .minimal-torrent-view--classic>.explorer__files {width:100%}", "body.lampa_view .minimal-torrent-view--classic>.explorer__left {padding-right:.3em;margin-bottom:1em}", "body.lampa_view .minimal-torrent-view--classic .minimal-torrent-banner {aspect-ratio:auto;height:14.7em;min-height:0}", "body.lampa_view .minimal-torrent-view--classic .minimal-torrent-banner__logo {max-width:55%}", "@media(max-width:767px){", " body.lampa_view .minimal-torrent-view {flex-direction:column;flex-wrap:nowrap;min-height:0}", " body.lampa_view .minimal-torrent-view>.explorer__left {width:100%;flex:0 0 auto;padding-right:.3em;margin-bottom:.5em}", " body.lampa_view .minimal-torrent-view>.explorer__files {width:100%;flex:1 1 0;min-height:0;display:flex;flex-direction:column}", " body.lampa_view .minimal-torrent-banner {width:100%;min-height:0;max-height:22vh}", " body.lampa_view .minimal-torrent-banner__title {font-size:1.4em;bottom:.8em}", " body.lampa_view .minimal-torrent-banner__meta {font-size:.8em;top:.8em;right:1em;left:1em}", " body.lampa_view .minimal-torrent-view .explorer__files-head {padding-left:.3em;padding-right:.3em;flex:0 0 auto}", " body.lampa_view .minimal-torrent-view .explorer__files-head>.scroll {width:100%;min-width:0;overflow:visible!important}", " body.lampa_view .minimal-torrent-view .explorer__files-head .scroll__content {padding:0!important}", " body.lampa_view .minimal-torrent-view .explorer__files-head .scroll__body {transform:none!important;-webkit-transform:none!important;width:100%!important}", " body.lampa_view .minimal-torrent-view .torrent-filter {display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:.5em;margin:0!important;white-space:normal;align-items:stretch}", " body.lampa_view .minimal-torrent-view .torrent-filter .simple-button {font-size:.88em;min-height:44px;min-width:0;margin:0;padding:.5em .65em;box-sizing:border-box;justify-content:center}", " body.lampa_view .minimal-torrent-view .filter--search>div {display:none!important}", " body.lampa_view .minimal-torrent-view .filter--search>svg {width:1.3em;height:1.3em;margin:0}", " body.lampa_view .minimal-torrent-view .filter--sort {flex-wrap:wrap;gap:.15em .4em}", " body.lampa_view .minimal-torrent-view .filter--sort>div {margin:0;padding:0;background:transparent;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.8em;color:var(--pt-muted)}", " body.lampa_view .minimal-torrent-view .filter--filter>div:not(.hide) {margin-left:.4em;padding:.15em .3em}", " body.lampa_view .minimal-torrent-view .explorer__files-body {flex:1 1 0;min-height:0}", " /* Lampa sizes this scroll for the whole screen; it now shares it with the banner. */", " body.lampa_view .minimal-torrent-view .explorer__files-body>.scroll {height:100%!important}", " body.lampa_view .minimal-torrent-view .explorer__files-body .scroll__content {padding-top:.5em}", " body.lampa_view .minimal-torrent-view .explorer__files-body .scroll__body {padding-left:.3em;padding-right:.3em;box-sizing:border-box}", " body.lampa_view .minimal-torrent-view .watched-history {font-size:.8em;padding:.6em;margin-bottom:.5em}", " body.lampa_view .minimal-torrent-view .torrent-item.tc-item {padding:.75em!important}", " body.lampa_view .minimal-torrent-view .tc-head {display:flex;flex-wrap:wrap;gap:.4em .7em}", " body.lampa_view .minimal-torrent-view .tc-summary {flex:1 1 50%;gap:.3em .55em}", " body.lampa_view .minimal-torrent-view .tc-right {font-size:.8em;gap:.2em;max-width:100%}", " body.lampa_view .minimal-torrent-view .tc-size {margin-top:0;font-size:1em}", " body.lampa_view .minimal-torrent-view .tc-seeds {font-size:.85em}", " body.lampa_view .minimal-torrent-view .tc-tags {margin:.5em 0}", " body.lampa_view .minimal-torrent-view .tc-tags .tc-tag {font-size:.72em}", " body.lampa_view .minimal-torrent-view .tc-voices {font-size:inherit}", " body.lampa_view .minimal-torrent-view .tc-foot {font-size:.72em;gap:.6em;margin-top:.5em}", " body.lampa_view .minimal-torrent-view .tc-source {display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}", "}", "/* Let the activity scroll whole catalogues; selector groups never become inner carousels. */", "@media(max-width:767px){", " body.lampa_view .minimal-torrent-files .modal__content {display:flex;flex-direction:column;box-sizing:border-box;padding:1em;padding-bottom:calc(1em + env(safe-area-inset-bottom,0px));max-height:calc(100vh - 1em);max-height:calc(100dvh - 1em);overflow:hidden}", " body.lampa_view .minimal-torrent-files .modal__head {flex-shrink:0}", " body.lampa_view .minimal-torrent-files .modal__body {display:flex;flex-direction:column;min-height:0}", " body.lampa_view .minimal-torrent-files .modal__head {margin-bottom:.5em}", " body.lampa_view .minimal-torrent-files .modal__title {font-size:1.5em;line-height:1.25}", " body.lampa_view .minimal-torrent-files .modal__body .scroll {display:block;height:auto!important;max-height:calc(100vh - 8em);max-height:calc(100dvh - 8em);overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior-y:contain;touch-action:pan-y;-webkit-overflow-scrolling:touch}", " body.lampa_view .minimal-torrent-files--virtual .modal__body .scroll {overflow:hidden!important;touch-action:none}", " body.lampa_view .minimal-torrent-files .modal__body .scroll__content {padding:.4em 0;max-height:none!important}", " body.lampa_view .torrent-files .torrnet-folder-name {font-size:.85em;line-height:1.4;padding:.6em 0 .8em;overflow-wrap:anywhere;color:var(--pt-muted);opacity:1}", " body.lampa_view .torrent-files .torrent-serial {display:grid;grid-template-columns:clamp(72px,24vw,100px) minmax(0,1fr);align-items:stretch;min-width:0;overflow:hidden;border-radius:.55em}", " body.lampa_view .torrent-files .torrent-serial__img {width:100%;height:100%;min-height:5.5em;object-fit:cover;align-self:stretch;border-radius:0}", " body.lampa_view .torrent-files .torrent-serial__content {display:grid;grid-template-columns:minmax(0,1fr);gap:.4em;min-width:0;padding:.65em .75em;overflow:hidden}", " body.lampa_view .torrent-files .torrent-serial__body {float:none;min-width:0;max-width:100%}", " body.lampa_view .torrent-files .torrent-serial__title {font-size:1.05em;line-height:1.25;margin:0;white-space:normal;overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2}", " body.lampa_view .torrent-files .torrent-serial__line {display:flex;flex-direction:row;flex-wrap:wrap;font-size:.72em;line-height:1.3;margin-top:.3em;padding:0}", " body.lampa_view .torrent-files .torrent-serial__detail {display:flex;flex-wrap:wrap;gap:.3em .7em;float:none;margin:0;min-width:0;text-align:left;font-size:.75em;color:var(--pt-muted)}", " body.lampa_view .torrent-files .torrent-serial__size {font-size:1em;line-height:1.3;padding:0;background:none;color:var(--pt-text)}", " body.lampa_view .torrent-files .torrent-serial__exe {font-size:1em;line-height:1.3;margin:0}", " body.lampa_view .torrent-files .torrent-serial__clear {display:none}", " body.lampa_view .torrent-files .torrent-serial .time-line {position:static;inset:auto;width:100%;min-width:0;margin:0;align-self:end}", " body.lampa_view .torrent-files .time-line>div {height:3px;background:var(--pt-accent)}", " body.lampa_view .torrent-files .torrent-serial__episode {font-size:.8em;line-height:1.2;padding:.25em .4em}", " body.lampa_view .torrent-files .torrent-serial__progress {width:2px;background:var(--pt-accent)}", " body.lampa_view .torrent-files .torrent-file {display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.5em;padding:.8em}", " body.lampa_view .torrent-files .torrent-file__title {font-size:1em;min-width:0;padding:0;overflow-wrap:anywhere}", " body.lampa_view .torrent-files .torrent-file__size {font-size:.8em;padding:.2em .4em}", " body.lampa_view .torrent-files .torrent-file .time-line {grid-column:1/-1;position:static;inset:auto;margin:0;width:100%}", "}", "", "body.lampa_view .nova-plus-root .nova-toolbar {flex-wrap:wrap!important;white-space:normal}", "body.lampa_view .nova-plus-root .nova-toolbar__label {margin-left:.8em!important;margin-right:.55em!important}", "body.lampa_view .nova-plus-root .nova-toolbar__label:first-child {margin-left:0!important}", "body.lampa_view .nova-plus-root .nova-plus__row,body.lampa_view .nova-plus-root .nova-plus__pane {display:flex!important;flex-wrap:wrap!important;transform:none!important;-webkit-transform:none!important;width:100%!important;height:auto!important;max-height:none!important;overflow:visible!important}", "body.lampa_view .nova-plus-root .nova-plus__group,body.lampa_view .nova-plus-root .nova-drop {height:auto!important;max-height:none!important;overflow:visible!important}", "body.lampa_view .nova-plus-root .nova__rows,body.lampa_view .nova-plus-root .nova-plus__panel {height:auto!important;max-height:none!important;overflow:visible!important}", "body.lampa_view .nova-plus-root .nova-plus__row .nova-chip,body.lampa_view .nova-plus-root .nova-plus__pane .nova-chip {flex-shrink:0;max-width:100%;white-space:normal}", "body.lampa_view .nova-plus-root .nova-btn--movie {max-width:100%;white-space:normal;text-align:left}", "body.lampa_view .nova-plus-root .nova-btn--movie .nova-btn__label {max-width:none;white-space:normal;overflow:visible;text-overflow:clip}", "/* Composite the artwork and its shade inside one rounded clip. */", "body.lampa_view .minimal-torrent-banner,body.lampa_view .nova-plus-root .nova-hero {border-radius:1em;overflow:hidden;isolation:isolate;-webkit-clip-path:inset(0 round 1em);clip-path:inset(0 round 1em);-webkit-transform:translateZ(0);transform:translateZ(0)}", "body.lampa_view .minimal-torrent-banner__image,body.lampa_view .minimal-torrent-banner__shade {inset:-1px;width:calc(100% + 2px);height:calc(100% + 2px)}", "body.lampa_view .nova-plus-root .nova-hero__bg,body.lampa_view .nova-plus-root .nova-hero__shade {top:-1px;right:-1px;bottom:-1px;left:-1px}", "/* An independent focus layer avoids repainting a border over the banner image. */", "body.lampa_view .nova-plus-root .nova-hero .nova-btn {background:rgba(18,21,25,.68)!important;border:0!important;box-shadow:none!important;outline:none!important}", "body.lampa_view .nova-plus-root .nova-hero .nova-btn.focus,body.lampa_view .nova-plus-root .nova-hero .nova-btn.hover,body.lampa_view .nova-plus-root .nova-hero .nova-btn:hover {background:rgba(37,44,52,.78)!important;border:0!important;box-shadow:none!important}", "body.lampa_view .nova-plus-root .nova-btn__focus {display:none;position:absolute;inset:0;border:2px solid var(--pt-accent);border-radius:inherit;pointer-events:none}", "body.lampa_view .nova-plus-root .nova-hero .nova-btn.focus>.nova-btn__focus,body.lampa_view .nova-plus-root .nova-hero .nova-btn.hover>.nova-btn__focus,body.lampa_view .nova-plus-root .nova-hero .nova-btn:hover>.nova-btn__focus,body.lampa_view .nova-plus-root .nova-hero .nova-btn:focus-visible>.nova-btn__focus {display:block}", "/* Keep focus paint inside controls: exterior shadows can leave stale edge pixels", "   when adjacent chips change focus in WebKit. Never animate the ring itself. */", "body.lampa_view .nova-plus-root .nova-btn,body.lampa_view .nova-plus-root .nova-chip,body.lampa_view .nova-plus-root .nova-group,body.lampa_view .full-start__button,body.lampa_view .simple-button,body.lampa_view .tc-info,body.lampa_view .alc-chip,body.lampa_view .alc-ap-voice,body.lampa_view .alc-ep,body.lampa_view .minimal-comments-arrow,body.lampa_view .minimal-detail-studio.selector {outline:none!important;transition-property:background-color,color!important;box-shadow:none!important}", "body.lampa_view .nova-plus-root .nova-btn,body.lampa_view .nova-plus-root .nova-chip,body.lampa_view .nova-plus-root .nova-group {transform:none!important;-webkit-transform:none!important}", "body.lampa_view .nova-plus-root .nova-btn.focus,body.lampa_view .nova-plus-root .nova-btn.hover,body.lampa_view .nova-plus-root .nova-btn:hover,body.lampa_view .nova-plus-root .nova-btn:focus-visible,body.lampa_view .nova-plus-root .nova-chip.focus,body.lampa_view .nova-plus-root .nova-chip.hover,body.lampa_view .nova-plus-root .nova-chip:hover,body.lampa_view .nova-plus-root .nova-chip:focus-visible,body.lampa_view .nova-plus-root .nova-group.focus,body.lampa_view .nova-plus-root .nova-group:hover,body.lampa_view .nova-plus-root .nova-group:focus-visible,body.lampa_view .full-start__button.focus,body.lampa_view .full-start__button.hover,body.lampa_view .full-start__button:focus-visible,body.lampa_view .simple-button.focus,body.lampa_view .simple-button.hover,body.lampa_view .simple-button:focus-visible,body.lampa_view .tc-info.focus,body.lampa_view .tc-info:hover,body.lampa_view .tc-info:focus-visible,body.lampa_view .alc-chip.focus,body.lampa_view .alc-ap-voice.focus,body.lampa_view .alc-ep.focus,body.lampa_view .minimal-detail-studio.selector.focus,body.lampa_view .minimal-detail-studio.selector:focus-visible,body.lampa_view .minimal-comments-arrow.focus,body.lampa_view .minimal-comments-arrow.hover,body.lampa_view .minimal-comments-arrow:hover,body.lampa_view .minimal-comments-arrow:focus-visible {outline:none!important;border-color:var(--pt-accent)!important;box-shadow:inset 0 0 0 1px var(--pt-accent)!important}", "body.lampa_view .nova-plus-root .nova-btn::after,body.lampa_view .nova-plus-root .nova-chip::after,body.lampa_view .nova-plus-root .nova-group::after,body.lampa_view .full-start__button.focus::after {display:none!important;content:none!important}", "body.lampa_view .nova-plus-root .nova-hero .nova-btn.focus,body.lampa_view .nova-plus-root .nova-hero .nova-btn.hover,body.lampa_view .nova-plus-root .nova-hero .nova-btn:hover,body.lampa_view .nova-plus-root .nova-hero .nova-btn:focus-visible {box-shadow:none!important}", "body.lampa_view .nova-plus-root .nova-hero__progress {position:absolute;left:0;right:0;bottom:0;width:100%;height:.3em;border-radius:0;background:rgba(255,255,255,.15);overflow:hidden}", "/* Banner facts share a baseline; duration belongs to the year, season to the banner. */", "body.lampa_view .nova-plus-root .nova-hero__meta {display:flex;align-items:flex-start;gap:.65em;line-height:1.5;max-width:calc(100% - 2.4em);padding:.25em .5em;border-radius:.45em;background:rgba(8,11,16,.78);color:#f5f7fa!important;text-shadow:0 1px 2px #000}", "body.lampa_view .nova-plus-root .nova-hero__meta>* {margin:0;white-space:normal}", "body.lampa_view .nova-plus-root .nova-hero__date {display:flex;flex-direction:column;align-items:flex-end;min-width:0;text-align:right}", "body.lampa_view .nova-plus-root .nova-hero__runtime {color:inherit;font-size:.9em;line-height:1.5}", "body.lampa_view .nova-plus-root .nova-hero__season-label {position:absolute;top:calc(100% + .35em);right:0;padding:.15em .5em;border-radius:.4em;background:rgba(8,11,16,.78)!important;font-size:.9em;line-height:1.5}", "body.lampa_view .nova-plus-root .nova-badge,body.lampa_view .nova-plus-root .nova-chip__badge {display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;flex:0 0 auto;min-width:2.3em;height:1.5em;padding:0 .35em;font-size:.78em;line-height:1;font-weight:600;vertical-align:middle}", "body.lampa_view .nova-plus-root .nova-hero__meta>.nova-badge {font-size:.85em;margin-top:.12em;background:#ffffff1a!important;text-shadow:none}", "body.lampa_view .nova-plus-root .nova-card__head .nova-card__quality {display:inline-flex;align-items:center;justify-content:center;min-width:2.3em;height:1.5em;padding:0 .35em;font-size:.85em;line-height:1}", "body.lampa_view .nova-plus-root .nova-card__head {align-items:center}", "body.lampa_view .nova-source-option {box-sizing:border-box;min-height:2.8em;padding:.6em 2.6em .6em 1em}", "body.lampa_view .nova-source-option .selectbox-item__title {display:flex;align-items:center;gap:.6em;line-height:1.4}", "body.lampa_view .nova-source-option__quality {display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;min-width:2.3em;height:1.5em;padding:0 .35em;border-radius:.3em;background:#ffffff1a;color:inherit;font-size:.78em;line-height:1;font-weight:600}", "/* A compact, consistent toolbar; native values and callbacks remain in menus. */", "body.lampa_view .minimal-torrent-banner__meta {width:max-content;max-width:calc(100% - 2em);margin-left:auto;padding:.4em .6em;border-radius:.55em;background:rgba(8,11,16,.78);color:#f5f7fa!important;text-shadow:0 1px 2px #000}", "body.lampa_view .nova-plus-root .nova-card--rowlist .nova-card__num {position:absolute;top:auto;right:auto;bottom:.3em;left:.3em;display:block;width:auto;height:auto;min-width:0;padding:0;border-radius:.35em;background:none!important;font-size:.8em;line-height:1.4;white-space:nowrap}", "body.lampa_view .nova-plus-root .nova-card--rowlist .nova-card__thumb--loaded img {opacity:1}", "@media(max-width:767px){", " body.lampa_view .nova-plus-root .nova-plus__bar {display:flex;flex-wrap:wrap!important;gap:.45em;margin-bottom:.6em;padding:0}", " body.lampa_view .nova-plus-root .nova-plus__bar>.nova-toolbar__label {display:none}", " body.lampa_view .nova-plus-root .nova-plus__bar>.nova-chip {display:inline-flex;align-items:center;box-sizing:border-box;flex:1 1 0;min-width:0;max-width:100%;min-height:44px;margin:0;padding:.45em .6em;font-size:.9em;line-height:1.3}", " body.lampa_view .nova-plus-root .nova-plus__bar>.nova-chip--view-icon {flex:0 0 44px;width:44px;min-width:44px;height:44px;padding:0!important}", " body.lampa_view .nova-plus-root .nova-plus__bar .nova-chip__label {min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}", " body.lampa_view .nova-plus-root .nova-plus__bar .nova-chip>svg {flex-shrink:0}", " body.lampa_view .nova-plus-root .nova-hero__meta {top:.65em;right:.65em;font-size:.78em;max-width:calc(100% - 1.3em);gap:.4em}", " body.lampa_view .nova-plus-root .nova__list .nova-card.nova-card--rowlist {display:grid;grid-template-columns:clamp(calc(88px * var(--pt-interface-scale,1)),calc(28vw * var(--pt-interface-scale,1)),calc(120px * var(--pt-interface-scale,1))) minmax(0,1fr);gap:.25em .7em;padding:.6em;margin-bottom:.6em;box-sizing:border-box}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__thumb {grid-column:1;grid-row:1 / span 2;align-self:center;width:100%;height:auto;aspect-ratio:16/9;margin:0;padding:0}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__body {grid-column:2;grid-row:1;min-width:0;padding:0}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__title {font-size:1em;line-height:1.3;margin-bottom:.3em;-webkit-line-clamp:2}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__meta {display:flex;flex-wrap:wrap;align-items:baseline;gap:.2em .45em;min-width:0;font-size:.75em;line-height:1.4;-webkit-line-clamp:unset}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-dot {display:none}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__side {grid-column:2;grid-row:2;display:flex!important;align-items:center;gap:.5em;max-width:none;min-width:0;padding:0;text-align:left;font-size:.75em}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__side .nova-card__eye {margin:0!important}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__line--body {margin-top:.35em}", "}", "/* Seasonal extensions retain native handlers; header art follows our icon grid. */", "body.lampa_view .head__logo-icon {position:relative;align-items:center;min-height:2.2em}", "body.lampa_view .head__logo-icon.head__logo-halloween {width:auto!important;min-width:2.2em;height:2.2em!important;gap:.55em}", "body.lampa_view .pt-holiday-art {display:block;position:relative;flex:0 0 2.2em;width:2.2em;height:2.2em}", "body.lampa_view .head__logo-halloween .head__logo-halloween-svg,", "body.lampa_view .head__logo-halloween .head__logo-halloween-svg svg {width:2.2em!important;height:2.2em!important}", "body.lampa_view .head__logo-halloween .head__logo-halloween-fire {top:.75em;bottom:.4em}", "body.lampa_view .head__logo-cap {top:-.4em!important;left:-.55em!important;pointer-events:none}", "body.lampa_view .head__logo-cap svg {display:block;width:1.8em!important;height:1.8em!important}", "body.lampa_view .head__logo-icon>.garland {position:absolute;width:5em!important;height:3em!important;top:-.4em!important;left:-.3em!important;opacity:.7;z-index:0!important;pointer-events:none}", "body.lampa_view .head__logo-icon>.pt-brand {position:relative;z-index:1}", "body.lampa_view .head__body {position:relative;z-index:1}", "body.lampa_view .head__actions>.head__action.halloween__button,", "body.lampa_view .head__actions>.head__action.black-friday__button,", "body.lampa_view .head__actions>.head__action.new-year__button,", "body.lampa_view .head__actions>.head__action.womens_day__button {display:flex!important;align-items:center;justify-content:center;box-sizing:border-box;flex:0 0 2.2em;width:2.2em;height:2.2em;padding:0;border:1px solid var(--pt-line);border-radius:.6em;background:var(--pt-panel);color:var(--pt-text);overflow:hidden}", "body.lampa_view .head__action.halloween__button svg,", "body.lampa_view .head__action.black-friday__button svg,", "body.lampa_view .head__action.new-year__button svg,", "body.lampa_view .head__action.womens_day__button svg {width:1.15em!important;height:1.15em!important;margin:0!important}", "body.lampa_view .halloween,body.lampa_view .womens_day {font-size:1em;line-height:1.5;color:var(--pt-text)}", "body.lampa_view .halloween__title,body.lampa_view .womens_day__title {font-size:1.35em;line-height:1.3}", "body.lampa_view .halloween__details,body.lampa_view .womens_day__details {font-size:.95em;color:var(--pt-muted)}", "body.lampa_view .black-friday,body.lampa_view .new-year {z-index:110}", "body.lampa_view .black-friday .head-backward__button,body.lampa_view .new-year .head-backward__button {border:1px solid var(--pt-line);border-radius:.6em;background:var(--pt-panel);color:var(--pt-text)}", "body.lampa_view.pt-tv .head__action.--animate {animation:none!important;background:var(--pt-panel)}", "body.lampa_view.pt-tv .head__logo-halloween-fire {animation:none!important;background:#ffc13b}", "@media(prefers-reduced-motion:reduce){body.lampa_view .head__action.--animate,body.lampa_view .head__logo-halloween-fire {animation:none!important}}", ".minimal-toolbar-label {display:none}", "body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar {display:flex;flex-wrap:nowrap;align-items:stretch;gap:.55em;white-space:normal;margin:0!important}", "body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button {display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-width:0;min-height:2.65em;margin:0;padding:.6em 1em;font-size:.9em;line-height:1.2;border:1px solid var(--pt-line);border-radius:.6em;background:var(--pt-panel);color:var(--pt-text);flex:0 1 auto}", "body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button>:not(.minimal-toolbar-label) {display:none!important}", "body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .minimal-toolbar-label {display:inline;margin:0;padding:0;background:none;font-size:1em;white-space:nowrap}", "body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button:after {display:none!important}", "body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button.focus,body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button.hover {border-color:var(--pt-accent);box-shadow:inset 0 0 0 1px var(--pt-accent)!important}", "body.lampa_view .minimal-torrent-view .watched-history {box-sizing:border-box;min-width:0;border:1px solid var(--pt-line);border-radius:.6em;background:var(--pt-panel);margin-top:.5em}", "body.lampa_view .minimal-torrent-view .watched-history.focus {border-color:var(--pt-accent);box-shadow:inset 0 0 0 1px var(--pt-accent)}", "body.lampa_view .minimal-torrent-view .watched-history:after {display:none!important}", "/* The native search overlay was transparent, showing controls over releases. */", "body.lampa_view .search-box {z-index:90!important;background:#080b10!important;box-sizing:border-box;isolation:isolate}", "@media(max-width:767px){", " body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.45em}", " body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button {min-height:44px;padding:.55em .3em;font-size:.88em}", "}", "", "/* Keep hero focus inside its paint bounds, including keyboard and remote input. */", "body.lampa_view .pt-hero__action {outline:none!important;transition-property:background-color,color!important}", "body.lampa_view .pt-hero__studio.selector {outline:none!important;transition:none!important}", "body.lampa_view .pt-hero__studio.selector.focus,body.lampa_view .pt-hero__studio.selector:focus-visible {outline:none!important;box-shadow:inset 0 0 0 2px var(--pt-accent)!important}", "", "/* Seasonal controls keep their native nodes and use the shared SVG style. */", "body.lampa_view .pt-holiday-icons {display:flex;align-items:center;gap:.35em;flex-shrink:0}", "body.lampa_view .pt-holiday-icons>.head__action {display:flex!important;align-items:center;justify-content:center;flex:0 0 2.2em;box-sizing:border-box;width:2.2em;height:2.2em;margin:0;padding:.3em;border:1px solid transparent;border-radius:.5em;background:transparent!important;color:var(--pt-accent)!important;animation:none!important;outline:none!important;box-shadow:none!important}", "body.lampa_view .pt-holiday-icons>.head__action svg {display:block;width:1.45em!important;height:1.45em!important;object-fit:contain}", "body.lampa_view .pt-holiday-icons>.head__action.focus,body.lampa_view .pt-holiday-icons>.head__action.hover,body.lampa_view .pt-holiday-icons>.head__action:hover {border-color:var(--pt-accent);background:var(--pt-high)!important}", "body.lampa_view .head__logo-halloween .pt-holiday-art {display:none}", "/* Episode grids wrap by the scaled minimum rather than a fixed poster count. */", "body.lampa_view .nova-plus-root .nova__list--grid:not(.nova__list--row) {display:grid!important;grid-template-columns:repeat(auto-fill,minmax(min(100%,23em),1fr));gap:.8em;margin:0}", "body.lampa_view .nova-plus-root .nova__list--grid:not(.nova__list--row)>.nova-card--wide {width:100%!important;max-width:100%!important;min-width:0;padding:0;margin:0}", "@media(max-width:767px){body.lampa_view .nova-plus-root .nova__list--grid:not(.nova__list--row) {grid-template-columns:repeat(auto-fill,minmax(min(100%,9em),1fr))}}", "", "body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar>.nova-chip {min-height:44px;min-width:44px}", "body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar>.nova-chip--view-icon {width:44px;height:44px;flex-basis:44px}", "", "/* Whole poster slots leave a small gutter for the focus ring at both ends. */", "body.lampa_view .minimal-fit-posters>.items-line__body>.scroll--horizontal>.scroll__content {padding-left:var(--minimal-poster-gutter,.55em);padding-right:var(--minimal-poster-gutter,.55em)}", "body.lampa_view .items-line.minimal-posters-sized .card:not(.card--wide):not(.card--collection) {width:var(--minimal-poster-width)!important}", "body.lampa_view .minimal-fit-posters>.items-line__body {-webkit-mask-image:none!important;mask-image:none!important}", "body.lampa_view .minimal-fit-posters .mapping--line>.card+.card {margin-left:var(--minimal-poster-gap,1em)}", "body.lampa_view .minimal-fit-posters .scroll__body>.card:last-child {margin-right:0}", "", "/* The banner frame uses the reference Bigger size, independent of UI scale. */", "body.lampa_view {--pt-banner-unit:calc(clamp(14px,.94vw,18px) * 1.05)}", "body.lampa_view .pt-hero {height:clamp(calc(32 * var(--pt-banner-unit)),67vh,calc(43 * var(--pt-banner-unit)));min-height:0;max-height:none}", "@media(min-width:1100px){body.lampa_view .pt-hero {height:clamp(calc(27 * var(--pt-banner-unit)),56vh,calc(34 * var(--pt-banner-unit)))}}", "body.lampa_view.pt-mobile .pt-hero {height:calc(36 * 16px * 1.05);min-height:0;max-height:none}", "", "/* The same mark has one position, before and after the native update. */", "body.lampa_view .torrent-item .torrent-item__viewed {position:absolute;top:.85em;left:auto;right:.85em;width:1.5em;height:1.5em;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:.2em;border:1px solid var(--pt-accent);border-radius:50%;background:var(--pt-accent);color:#13232c;z-index:2;pointer-events:none}", "body.lampa_view .torrent-item__viewed svg {width:100%;height:100%}", "body.lampa_view .torrent-item .tc-right {padding-right:2em}", "", "body.lampa_view .pt-holiday-native,body.lampa_view .head__logo-cap,body.lampa_view .head__logo-icon>.garland {display:none!important}", "body.lampa_view .pt-holiday-winter {display:flex;align-items:center;justify-content:center;flex:0 0 2.2em;width:2.2em;height:2.2em;color:var(--pt-accent);pointer-events:none}", "body.lampa_view .pt-holiday-winter svg {display:block;width:1.45em;height:1.45em}", "", "/* Torrent focus belongs inside the tile; the scroll viewport cannot clip it. */", "body.lampa_view .torrent-item.focus,body.lampa_view .torrent-item.hover,body.lampa_view .torrent-list .torrent-item.tc-item.focus,body.lampa_view .torrent-list .torrent-item.tc-item:hover {outline:none!important;box-shadow:inset 0 0 0 2px var(--pt-accent)!important}", "", "/* Episode tiles share the main poster selection. Animate position only, never", "   the border or shadow; dormant hover cannot leave another TV tile selected. */", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card {background:none!important;box-shadow:none!important;transform:none!important;transition:none!important}", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card__thumb {position:relative;transform:none;box-shadow:none!important;transition:transform .2s!important;will-change:auto}", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card__thumb:after {content:''!important;display:block!important;position:absolute;inset:0!important;width:auto!important;height:auto!important;margin:0!important;padding:0!important;transform:none!important;background:transparent!important;opacity:1!important;transition:none!important;z-index:5;border:2px solid transparent;border-radius:inherit;box-sizing:border-box!important;pointer-events:none}", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card.focus .nova-card__thumb,body.lampa_view .nova-plus-root .nova__list--grid .nova-card.hover .nova-card__thumb {transform:translateY(-.2em) scale(1.045);box-shadow:0 0 .85em rgba(173,217,229,.4),0 0 1.8em rgba(173,217,229,.22)!important}", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card.focus .nova-card__thumb:after,body.lampa_view .nova-plus-root .nova__list--grid .nova-card.hover .nova-card__thumb:after {border-color:var(--pt-accent)}", "body.lampa_view .nova-plus-root .nova-card.focus .nova-card__title,body.lampa_view .nova-plus-root .nova-card.hover .nova-card__title {color:var(--pt-accent)}", "body.lampa_view.pt-tv .nova-plus-root .nova__list--grid .nova-card.hover:not(.focus) .nova-card__thumb {transform:none!important;box-shadow:none!important}", "body.lampa_view.pt-tv .nova-plus-root .nova__list--grid .nova-card.hover:not(.focus) .nova-card__thumb:after {border-color:transparent!important}", "body.lampa_view.pt-tv .nova-plus-root .nova-card.hover:not(.focus) .nova-card__title {color:var(--pt-text)}", "", "/* Match the proportions of the Windows 2560px reference on TV WebViews,", "   including 960/1280px viewports scaled by Android to the panel resolution.", "   A 14px minimum here made TV Small larger than Windows Bigger. */", "body.lampa_view.pt-tv {font-size:calc(.703125vw * var(--pt-interface-scale,1))!important;--pt-banner-unit:calc(.703125vw * var(--pt-interface-max-scale,1.12))}", "body.lampa_view.pt-tv .pt-hero {max-width:90vw;margin:0 auto 2em}", "body.lampa_view.pt-tv .pt-hero__body {left:3em;bottom:7em;max-width:31em;padding-right:1em}", "body.lampa_view.pt-tv .pt-hero__title {font-size:2.55em;max-width:15em;margin-bottom:.65em}", "body.lampa_view.pt-tv .pt-hero__title--translation {font-size:1.05em;line-height:1.35;letter-spacing:0;max-width:100%;margin-bottom:1.1em}", "body.lampa_view.pt-tv .pt-hero__logo {max-height:7em;max-width:100%;margin-bottom:1.4em}", "body.lampa_view.pt-tv .pt-hero__overview {-webkit-line-clamp:3;line-height:1.65}", "body.lampa_view.pt-tv .pt-hero__actions {margin-top:1.6em}", "body.lampa_view.pt-tv .pt-hero__dots {left:45%;bottom:1.5em}", "body.lampa_view.pt-tv .items-line {margin-bottom:.8em;padding-bottom:.7em}", "body.lampa_view.pt-tv .items-line .card:not(.card--wide):not(.card--collection) {width:clamp(8.4em,calc((90vw - 10em / var(--pt-interface-scale,1)) / 10 * var(--pt-interface-scale,1)),11.1em)!important}", "body.lampa_view.pt-tv .items-line.minimal-posters-sized .card:not(.card--wide):not(.card--collection) {width:var(--minimal-poster-width)!important}", "body.lampa_view.pt-tv .items-line>.items-line__head {padding-left:1.1em}", "/* Android WebView clamps text below 8 CSS px. Declare that floor so em-based", "   height limits use the rendered font, including the real 960px TV viewport. */", "body.lampa_view.pt-tv .card__title {font-size:max(8px,.79em);line-height:1.4;max-height:2.85em;overflow-wrap:break-word}", "body.lampa_view.pt-tv .card__age {font-size:max(8px,.73em)}", "/* Flow uses the measured line height after the interface scale is applied. */", "body.lampa_view.pt-tv.pt-tv-caption-flow .card__title {display:block;height:auto;min-height:0;line-height:var(--pt-caption-line,1.4em);max-height:calc(var(--pt-caption-line,1.4em) * 2);-webkit-line-clamp:unset;line-clamp:unset;transform:none}", "body.lampa_view.pt-tv.pt-tv-caption-flow .card__age {position:static;clear:both;transform:none}", "body.lampa_view.pt-tv .mapping--grid>.card:not(.card--wide):not(.card--collection),body.lampa_view.pt-tv .category-full>.card:not(.card--wide):not(.card--collection) {width:calc(10% * var(--pt-interface-scale,1))!important}", "", "/* The same native menu becomes a dock only when the native preference is on. */", "body.lampa_view.pt-menu-pinned {--pt-menu-width:min(16em,28vw)}", "body.lampa_view.pt-menu-pinned .head__menu-icon {display:none!important}", "body.lampa_view.pt-menu-pinned .wrap__left,body.lampa_view.menu--always.pt-menu-pinned .wrap__left {top:3.6em!important;bottom:0!important;left:0!important;width:var(--pt-menu-width)!important;height:calc(100% - 3.6em)!important;max-height:none!important;padding:.7em .35em!important;border:0;border-right:1px solid var(--pt-line);border-radius:0;box-shadow:none;visibility:visible!important;opacity:1!important;pointer-events:auto;transition:none}", "body.lampa_view.pt-menu-pinned .wrap__left>.scroll {height:100%!important;max-height:100%!important}", "body.lampa_view.pt-menu-pinned .wrap__left>.scroll>.scroll__content {height:100%!important;max-height:100%!important}", "body.lampa_view.pt-menu-pinned .wrap {width:100%!important;max-width:100%}", "body.lampa_view.pt-menu-pinned .wrap__content {min-width:0;box-sizing:border-box;flex:0 0 auto;width:calc(100% - var(--pt-menu-width))!important;max-width:calc(100% - var(--pt-menu-width))!important;margin-left:var(--pt-menu-width)!important}", "body.lampa_view.pt-menu-pinned .pt-hero,body.lampa_view.pt-menu-pinned .items-line {width:94%;max-width:94%!important;margin-left:auto!important;margin-right:auto!important}", "body.lampa_view.pt-menu-pinned .menu__text {white-space:normal}", "body.lampa_view.pt-mobile.pt-menu-pinned {--pt-menu-width:min(14em,38vw)}", "body.lampa_view.pt-mobile.pt-menu-pinned .wrap__left {bottom:5.5em!important;height:calc(100% - 9.1em)!important}", "", "body.lampa_view .card:not(.focus):not(.hover):not(.pt-card-pointer) .pt-series-status {display:none}", "", "/* Header controls keep their boxes when focused. Draw outside the avatar so", "   its image cannot cover the remote/keyboard focus indicator. */", "body.lampa_view .head__body {box-sizing:border-box;min-width:0}", "body.lampa_view .head__actions {flex-shrink:0}", "body.lampa_view .head__menu-icon,body.lampa_view .head__backward {position:relative;align-self:center;top:auto;left:auto;transform:none!important;transition:none!important}", "body.lampa_view .head__menu-icon svg {display:block;flex:none;margin:0!important;position:static!important;transform:none!important}", "/* Header focus stays inside the control, matching Menu, with no second ring. */", "body.lampa_view .head__menu-icon,body.lampa_view .head__backward,body.lampa_view .head__action.open--search,body.lampa_view .head__action.open--profile,body.lampa_view .pt-holiday-icons>.head__action {outline:0 solid transparent!important;outline-offset:0!important;box-shadow:none!important;animation:none!important;transition:none!important;transform:none!important;border:1px solid var(--pt-line)!important}", "body.lampa_view .head__action.open--profile {padding:0!important}", "body.lampa_view .head__menu-icon.focus,body.lampa_view .head__menu-icon:focus-visible,body.lampa_view .head__backward.focus,body.lampa_view .head__backward:focus-visible,", "body.lampa_view .head__action.open--search.focus,body.lampa_view .head__action.open--profile.focus,body.lampa_view .head__action.open--search:focus-visible,body.lampa_view .head__action.open--profile:focus-visible,", "body.lampa_view .pt-holiday-icons>.head__action.focus,body.lampa_view .pt-holiday-icons>.head__action:focus-visible,", "body.lampa_view:not(.pt-tv) .head__menu-icon:hover,body.lampa_view:not(.pt-tv) .head__backward:hover,body.lampa_view:not(.pt-tv) .head__action.open--search:hover,body.lampa_view:not(.pt-tv) .head__action.open--profile:hover,", "body.lampa_view:not(.pt-tv) .pt-holiday-icons>.head__action:hover {border-color:var(--pt-accent)!important;background:var(--pt-high)!important;color:var(--pt-text)}", "body.lampa_view .head__action.open--search.focus:after,body.lampa_view .head__action.open--search:focus-visible:after {color:var(--pt-text)}", "body.lampa_view .menu__item {min-width:0;box-sizing:border-box}", "body.lampa_view .menu__text {flex:1;min-width:0;white-space:normal!important;overflow-wrap:break-word;line-height:1.35;max-height:none;text-overflow:clip}", "", "/* Android WebView can rasterize white inset focus shadows as a solid fill.", "   Use a real, constant-width border for primary TV controls instead. */", "body.lampa_view.pt-tv .pt-hero__action {appearance:none;-webkit-appearance:none;box-sizing:border-box;border:2px solid transparent;padding:calc(.85em - 1px) calc(1.15em - 1px);background:var(--pt-accent)!important;color:#13232c!important;box-shadow:none!important;transition:none!important}", "body.lampa_view.pt-tv .pt-hero__action--secondary {background:#212a35dd!important;color:#d4dce3!important}", "body.lampa_view.pt-tv .pt-hero__action.focus,body.lampa_view.pt-tv .pt-hero__action:focus-visible {border-color:#fff!important;box-shadow:none!important;outline:none!important}", "body.lampa_view.pt-tv .pt-hero__action.hover:not(.focus):not(:focus-visible) {border-color:transparent!important;box-shadow:none!important}", 'body.lampa_view.pt-tv .minimal-anime-tab[aria-selected="true"] {box-shadow:0 0 .35em rgba(173,217,229,.85),0 0 1.2em rgba(173,217,229,.65),0 0 2.4em rgba(173,217,229,.42)!important;transition:none!important}', "body.lampa_view.pt-tv .full-start__button.button--alc-auto.focus,body.lampa_view.pt-tv .alc-ap__play.focus {background:var(--pt-accent)!important;color:#13232c!important;border-color:#fff!important;box-shadow:none!important;outline:none!important}", "", "/* TV uses the same full-frame artwork and text composition as desktop. */", "body.lampa_view.pt-tv .pt-hero__image {object-fit:cover;object-position:70% 35%}", "body.lampa_view.pt-tv .pt-hero__body {top:auto;bottom:7em;transform:none}", "body.lampa_view.pt-tv .pt-hero__logo {max-height:7em;margin-bottom:1.4em}", "body.lampa_view.pt-tv .pt-hero__overview {-webkit-line-clamp:3}", "body.lampa_view.pt-tv .head {font-size:1.25em;height:3.6em}", "body.lampa_view.pt-tv .head__body {max-width:none;width:94%;padding:.5em 0}", "body.lampa_view.pt-tv .wrap__content {padding-top:4.5em!important}", "body.lampa_view.pt-tv.pt-menu-pinned .wrap__left {top:4.5em!important;height:calc(100% - 4.5em)!important}", "body.lampa_view.pt-tv .head__menu-icon,body.lampa_view.pt-tv .head__backward,body.lampa_view.pt-tv .head__action.open--search,body.lampa_view.pt-tv .head__action.open--profile,body.lampa_view.pt-tv .pt-holiday-icons>.head__action {border-width:2px!important}", "body.lampa_view.pt-tv .pt-series-status {font-size:max(8px,.55em);line-height:1;padding:.2em .4em;display:block;width:max-content;max-width:none;white-space:nowrap;transform-origin:0 0}", "body.lampa_view.pt-tv .pt-series-status>span {white-space:pre}", "body.lampa_view.pt-tv .card__view .pt-quality,body.lampa_view.pt-tv .card__view .pt-kind,body.lampa_view.pt-tv .card__view .card__quality {padding:.2em .4em;transform:scale(.85);transform-origin:0 0}", "body.lampa_view.pt-tv .card__view .icon--history {font-size:.95em;width:2.1em;height:1.7em}", "body.lampa_view.pt-tv .card {-webkit-text-size-adjust:100%;text-size-adjust:100%}", "body.lampa_view.pt-tv .card__img,body.lampa_view.pt-tv .nova-card__thumb img,body.lampa_view.pt-tv .minimal-torrent-banner__image {image-rendering:auto;transform:none}", "", "body.lampa_view .nova-plus-root .nova-hero__meta {background:rgba(8,11,16,.52);padding:.2em .4em}", "body.lampa_view .nova-plus-root .nova-hero__runtime {position:absolute;right:0;top:calc(100% + .45em);padding:.2em .45em;white-space:nowrap;border-radius:.35em;background:rgba(8,11,16,.52);color:var(--pt-text);font-size:.8em;line-height:1.3}", "body.lampa_view.pt-tv .minimal-comments-nav {display:none!important}", "body.lampa_view .nova-episode-nav {display:flex;justify-content:flex-end;gap:.4em;margin-bottom:.5em}", "body.lampa_view .nova-episode-nav button {width:2.1em;height:2.1em;display:flex;align-items:center;justify-content:center;border:1px solid var(--pt-line);border-radius:.6em;background:#ffffff04;color:var(--pt-muted);cursor:pointer}", "body.lampa_view .nova-episode-nav svg {width:1em;height:1em}", "body.lampa_view.pt-tv .nova-episode-nav {display:none!important}", "body.lampa_view.pt-favorites .category-full>.card,body.lampa_view.pt-favorites .mapping--grid>.card {width:calc(12.5% * var(--pt-interface-scale,1))!important}", "@media(max-width:650px){body.lampa_view.pt-favorites .category-full>.card,body.lampa_view.pt-favorites .mapping--grid>.card {width:33.333%!important}}", "", "/* Episode arrows share the collection buttons' pointer and keyboard focus. */", "body.lampa_view .nova-episode-nav button:hover,body.lampa_view .nova-episode-nav button:focus-visible,body.lampa_view .nova-episode-nav button.focus,body.lampa_view .nova-episode-nav button.hover {border-color:var(--pt-accent);background:#add9e512;color:var(--pt-accent);box-shadow:0 0 0 1px var(--pt-accent);outline:none}", "", "/* Fixed pixel focus geometry is identical on TV and desktop, independent of", "   native focus themes and the interface font scale. */", "body.lampa_view .card.focus .card__view:after,body.lampa_view .card.hover .card__view:after {border:2px solid var(--pt-accent)!important;top:0!important;left:0!important;right:0!important;bottom:0!important;outline:none!important;box-shadow:none!important;border-radius:.5em!important}", "body.lampa_view .head__menu-icon:before,body.lampa_view .head__menu-icon:after,body.lampa_view .head__backward:before,body.lampa_view .head__backward:after,body.lampa_view .head__action.open--profile:before,body.lampa_view .head__action.open--profile:after,body.lampa_view .head__action.open--search:before,body.lampa_view .pt-holiday-icons>.head__action:before,body.lampa_view .pt-holiday-icons>.head__action:after {content:none!important;display:none!important}", "body.lampa_view .head__menu-icon,body.lampa_view .head__backward,body.lampa_view .head__action.open--search,body.lampa_view .head__action.open--profile,body.lampa_view .pt-holiday-icons>.head__action {border-width:2px!important}", "body.lampa_view .menu__item.focus,body.lampa_view .menu__item.hover,body.lampa_view .menu__item.traverse {background:#20272e!important;color:var(--pt-text)!important;outline:none!important;box-shadow:inset 2px 0 var(--pt-accent)!important;animation:none!important;transform:none!important}", "body.lampa_view .menu__ico [stroke] {stroke:currentColor!important}", 'body.lampa_view .menu__ico [fill]:not([fill="none"]) {fill:currentColor!important}', "body.lampa_view .menu__item .menu__text {color:inherit!important}", "", "/* RTL is scoped to plugin controls. Content titles and saved values retain their text. */", "body.lampa_view.pt-rtl .settings__content,body.lampa_view.pt-rtl .selectbox__content,body.lampa_view.pt-rtl .nova-plus__bar,body.lampa_view.pt-rtl .minimal-detail-facts {direction:rtl;text-align:start}", "body.lampa_view.pt-rtl .pt-hero__body {direction:rtl;text-align:right}", "body.lampa_view.pt-rtl .pt-hero__meta,body.lampa_view.pt-rtl .pt-watch-progress {direction:rtl}", "body.lampa_view.pt-rtl .minimal-back--overlay svg {transform:scaleX(-1)}", "body.lampa_view.pt-rtl .minimal-settings .settings-param__value {margin-left:0;margin-right:auto}", "", "/* Episode information comes from one TMDB season book, shared by providers. */", "body.lampa_view .nova-plus-root .nova-card__overview {font-size:.82em;line-height:1.45;color:var(--pt-muted);margin-top:.45em;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;overflow-wrap:break-word}", "body.lampa_view .nova-plus-root .nova__list--row>.nova-card--wide {width:24%!important;flex:0 0 24%!important;max-width:24%!important}", "body.lampa_view.pt-mobile .nova-plus-root .nova__list--row>.nova-card--wide {width:48%!important;flex-basis:48%!important;max-width:48%!important}", "body.lampa_view .minimal-online-option {position:relative;margin:.35em .6em;padding:.8em 2.8em .8em 1em;border:1px solid var(--pt-line);border-radius:.9em;background:var(--pt-panel);min-height:2.8em;box-sizing:border-box}", "body.lampa_view .minimal-online-option--selected {border-color:#add9e560;background:var(--pt-high)}", "body.lampa_view .minimal-online-option.focus {border-color:var(--pt-accent);background:var(--pt-high);color:var(--pt-text)}", "body.lampa_view .minimal-online-option .selectbox-item__title {white-space:normal;overflow-wrap:break-word;line-height:1.35}", "body.lampa_view .minimal-choice-check {position:absolute;right:.85em;top:50%;transform:translateY(-50%);width:1.1em;height:1.1em;color:var(--pt-accent)}", "body.lampa_view.pt-rtl .minimal-online-option {padding-right:1em;padding-left:2.8em}", "body.lampa_view.pt-rtl .minimal-choice-check {right:auto;left:.85em}", "body.lampa_view .pt-hero__studio {pointer-events:none;cursor:default}", "body.lampa_view .minimal-online-option:after {display:none!important}", ""].join("\n");
+
+  // src/apple.css
+  var apple_default = ["/* Apple-inspired surfaces. Structure, data and native controllers are shared.", "   Small glass panels on desktop/mobile; TV deliberately uses opaque surfaces. */", "body.lampa_view.pt-theme-apple {", " --pt-bg:#0c0e13;--pt-side:#191c25;--pt-panel:#20242e;--pt-high:#353c4b;", " --pt-text:#f5f6fa;--pt-muted:#a6adbc;--pt-line:#ffffff1c;--pt-accent:#b7dcff;--pt-dim:#b7dcff18;", " --pt-apple-surface:rgba(29,33,43,.9);--pt-apple-border:rgba(255,255,255,.12);", " background:radial-gradient(ellipse at 80% 0,#25304455,transparent 55%),var(--pt-bg)!important;", ' font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;letter-spacing:.005em;', "}", "body.lampa_view.pt-theme-apple .head {background:#11151de8;border-bottom-color:#ffffff0c}", "body.lampa_view.pt-theme-apple .head__menu-icon,body.lampa_view.pt-theme-apple .head__backward,body.lampa_view.pt-theme-apple .head__action.open--search {border-radius:.9em;background:#ffffff09!important}", "body.lampa_view.pt-theme-apple .head__action.open--search {border-radius:1.3em}", "body.lampa_view.pt-theme-apple .wrap__left,body.lampa_view.pt-theme-apple.menu--always.pt-menu-pinned .wrap__left {background:var(--pt-apple-surface);border-color:var(--pt-apple-border);box-shadow:0 16px 48px #0005}", "body.lampa_view.pt-theme-apple .menu__item {border-radius:.8em;padding:.85em 1em}", "body.lampa_view.pt-theme-apple .menu__item.focus,body.lampa_view.pt-theme-apple .menu__item.hover,body.lampa_view.pt-theme-apple .menu__item.traverse {background:#ffffff13;color:var(--pt-text)}", "body.lampa_view.pt-theme-apple .items-line__title,body.lampa_view.pt-theme-apple .category-full__title {font-weight:650;letter-spacing:-.025em}", "body.lampa_view.pt-theme-apple .card__view,body.lampa_view.pt-theme-apple .card__img {border-radius:.9em}", "body.lampa_view.pt-theme-apple .card.focus .card__view:after,body.lampa_view.pt-theme-apple .card.hover .card__view:after {border-radius:.9em!important;border-color:var(--pt-accent)!important}", "body.lampa_view.pt-theme-apple .card__title {font-weight:550;letter-spacing:-.015em}", "body.lampa_view.pt-theme-apple .card__age {color:var(--pt-muted)}", "body.lampa_view.pt-theme-apple .pt-quality,body.lampa_view.pt-theme-apple .pt-kind,body.lampa_view.pt-theme-apple .pt-series-status,body.lampa_view.pt-theme-apple .card__vote {background:#171b24df;border-radius:.45em;border-color:#ffffff1a}", "body.lampa_view.pt-theme-apple .pt-hero {background:var(--pt-bg)}", "body.lampa_view.pt-theme-apple .pt-hero:before {background:linear-gradient(90deg,#0c0e13 0%,#0c0e13eb 13%,#0c0e138c 40%,transparent 76%),linear-gradient(0deg,#0c0e13 0%,#0c0e13 1em,#0c0e1320 35%,transparent 80%)}", "body.lampa_view.pt-theme-apple .pt-hero__title {letter-spacing:-.04em;font-weight:700}", "body.lampa_view.pt-theme-apple .pt-hero__action,body.lampa_view.pt-theme-apple .full-start__button,body.lampa_view.pt-theme-apple .simple-button {border-radius:1.25em;background:#ffffff10;color:var(--pt-text)}", "body.lampa_view.pt-theme-apple .pt-hero__action {background:#e8f1ff;color:#142036}", "body.lampa_view.pt-theme-apple .pt-hero__dot {background:#ffffff40}", "body.lampa_view.pt-theme-apple .pt-hero__dot.active {background:var(--pt-accent)}", "body.lampa_view.pt-theme-apple .minimal-detail-header {border-radius:1.25em}", "body.lampa_view.pt-theme-apple .minimal-detail-facts,body.lampa_view.pt-theme-apple .minimal-detail-cast>.minimal-cast-native {background:var(--pt-apple-surface);border-color:var(--pt-apple-border);border-radius:1.2em}", "body.lampa_view.pt-theme-apple .full-start-new__rate-line>div,body.lampa_view.pt-theme-apple .full-start__rate-line>div,body.lampa_view.pt-theme-apple .full-descr__tag {border-color:var(--pt-apple-border);border-radius:.65em;background:#ffffff08}", "body.lampa_view.pt-theme-apple .full-descr__text,body.lampa_view.pt-theme-apple .full-start-new__details {color:#c2c8d3}", "body.lampa_view.pt-theme-apple .settings__content,body.lampa_view.pt-theme-apple .selectbox__content,body.lampa_view.pt-theme-apple .modal__content {background:var(--pt-apple-surface)!important;border:1px solid var(--pt-apple-border);border-radius:1.5em;box-shadow:0 22px 80px #0007}", "body.lampa_view.pt-theme-apple .settings-folder,body.lampa_view.pt-theme-apple .settings-param,body.lampa_view.pt-theme-apple .selectbox-item {border-radius:.95em;border-color:#ffffff0b}", "body.lampa_view.pt-theme-apple .settings-folder.focus,body.lampa_view.pt-theme-apple .settings-param.focus,body.lampa_view.pt-theme-apple .selectbox-item.focus {background:#ffffff12;color:var(--pt-text)}", "body.lampa_view.pt-theme-apple .settings-param__value {color:var(--pt-accent)}", "body.lampa_view.pt-theme-apple .minimal-back--overlay {background:#ffffff08;border-color:var(--pt-apple-border);border-radius:50%}", "body.lampa_view.pt-theme-apple .input,body.lampa_view.pt-theme-apple .search-input,body.lampa_view.pt-theme-apple .search__input {background:#ffffff09;border-radius:1em;border-color:var(--pt-apple-border);color:var(--pt-text)}", "body.lampa_view.pt-theme-apple .minimal-torrent-banner,body.lampa_view.pt-theme-apple .nova-plus-root .nova-hero {border-radius:1.2em;-webkit-clip-path:inset(0 round 1.2em);clip-path:inset(0 round 1.2em)}", "body.lampa_view.pt-theme-apple .torrent-item,body.lampa_view.pt-theme-apple .torrent-serial,body.lampa_view.pt-theme-apple .torrent-file {background:#20242de8;border-color:var(--pt-apple-border);border-radius:1em}", "body.lampa_view.pt-theme-apple .torrent-item.focus,body.lampa_view.pt-theme-apple .torrent-serial.focus {background:#313947;border-color:var(--pt-accent)}", "body.lampa_view.pt-theme-apple .tc-pill,body.lampa_view.pt-theme-apple .tc-quality,body.lampa_view.pt-theme-apple .torrent-filter .filter__item {background:#ffffff08;border-color:var(--pt-apple-border);border-radius:.65em}", "body.lampa_view.pt-theme-apple .nova-plus-root .nova-plus__bar {gap:.55em}", "body.lampa_view.pt-theme-apple .nova-plus-root .nova-btn,body.lampa_view.pt-theme-apple .nova-plus-root .nova-chip,body.lampa_view.pt-theme-apple .nova-plus-root .nova-group {background:#262b35e8!important;border-color:var(--pt-apple-border)!important;border-radius:.9em!important;color:var(--pt-text)!important}", "body.lampa_view.pt-theme-apple .nova-plus-root .nova-chip--active,body.lampa_view.pt-theme-apple .nova-plus-root .nova-chip.focus,body.lampa_view.pt-theme-apple .nova-plus-root .nova-group.focus {background:#414958!important;border-color:var(--pt-accent)!important;box-shadow:none!important}", "body.lampa_view.pt-theme-apple .nova-plus-root .nova-card__thumb,body.lampa_view.pt-theme-apple .nova-plus-root .nova-card__thumb img {border-radius:.85em}", "body.lampa_view.pt-theme-apple .nova-plus-root .nova-card--rowlist {background:#ffffff07;border:1px solid var(--pt-apple-border);border-radius:1em}", "body.lampa_view.pt-theme-apple .nova-plus-root .nova-hero .nova-btn {background:#e8f1ffeb!important;color:#142036!important;border-radius:1.3em!important}", "body.lampa_view.pt-theme-apple .player-panel,body.lampa_view.pt-theme-apple .player-info {background:#191e29eb;border-color:var(--pt-apple-border);border-radius:1.2em}", "body.lampa_view.pt-theme-apple .player-panel__button.focus {background:#ffffff18;color:var(--pt-accent)}", 'body.lampa_view.pt-theme-apple .minimal-anime-tab[aria-selected="true"] {background:var(--pt-accent)!important;color:#142036!important}', "@supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) {", " body.lampa_view.pt-theme-apple:not(.pt-tv) .head,body.lampa_view.pt-theme-apple:not(.pt-tv) .wrap__left,body.lampa_view.pt-theme-apple:not(.pt-tv) .settings__content,body.lampa_view.pt-theme-apple:not(.pt-tv) .selectbox__content {backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}", "}", "body.lampa_view.pt-theme-apple.pt-mobile .navigation-bar__body {border:1px solid var(--pt-apple-border);border-radius:2em;background:#242934eb;box-shadow:0 8px 30px #0005}", "body.lampa_view.pt-theme-apple.pt-mobile .navigation-bar__item {border-radius:1.5em}", "body.lampa_view.pt-theme-apple.pt-tv {--pt-apple-surface:#20252f;background:#10141c!important}", "body.lampa_view.pt-theme-apple.pt-tv .head {background:#151a23}", "body.lampa_view.pt-theme-apple.pt-tv .settings__content,body.lampa_view.pt-theme-apple.pt-tv .selectbox__content,body.lampa_view.pt-theme-apple.pt-tv .wrap__left {backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none}", "body.lampa_view.pt-theme-apple.pt-tv .pt-hero__action {background:#d8eaff!important;color:#142036!important}", "@media(prefers-reduced-motion:reduce){body.lampa_view.pt-theme-apple .minimal-anime-tab,body.lampa_view.pt-theme-apple .menu__item {transition:none!important}}", ""].join("\n");
+
+  // src/appearance.js
+  function themeValue(value) {
+    return value === "apple" ? "apple" : "minimal";
+  }
+  function appearance(L) {
+    if (!document.getElementById("lampa-view-apple-style")) {
+      var style = document.createElement("style");
+      style.id = "lampa-view-apple-style";
+      style.textContent = apple_default;
+      (document.head || document.documentElement).appendChild(style);
+    }
+    function update() {
+      var value = themeValue(L.Storage.get("lampa_view_theme", "minimal"));
+      document.body.classList.toggle("pt-theme-apple", value === "apple");
+      document.body.dataset.lampaTheme = value;
+      document.dispatchEvent(new Event("minimal:interface-size"));
+      document.dispatchEvent(new Event("minimal:hero-layout"));
+    }
+    update();
+    if (L.Storage.listener) L.Storage.listener.follow("change", function (event) {
+      if (event.name === "lampa_view_theme") update();
+    });
+    return {
+      update: update
+    };
+  }
 
   // src/boot.css
   var boot_default = ["html,body {background:#000!important}", ".welcome {background:#000!important;background-image:none!important}", ".welcome:before {content:'LAMPA';position:absolute;top:48%;left:0;right:0;text-align:center;color:#e9edef;font:500 28px/1.2 -apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;letter-spacing:.3em;padding-left:.3em}", ".welcome:after {content:'';position:absolute;top:calc(48% + 60px);left:50%;width:100px;height:2px;background:#add9e5;border-radius:2px;transform:translateX(-50%) scaleX(.35);animation:minimal-boot-breathe 2s ease-in-out infinite}", ".lp-step {position:fixed!important;top:calc(48% + 88px)!important;left:20px;right:20px;font:400 12px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif!important;letter-spacing:.04em;color:#858d94}", ".lp-status {display:none!important}", ".no-network {z-index:1100!important;background:#080808;color:#e9edef}", "@keyframes minimal-boot-breathe {0%,100%{opacity:.35;transform:translateX(-50%) scaleX(.35)}50%{opacity:1;transform:translateX(-50%) scaleX(1)}}", "@media(prefers-reduced-motion:reduce){.welcome:after{animation:none;opacity:.7;transform:translateX(-50%) scaleX(.65)}}", ""].join("\n");
@@ -2908,8 +10653,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         default: true
       },
       field: {
-        name: "Резервная проверка качества",
-        description: "Если парсер не определил качество, проверить Alloha через ваш сервер онлайн-источников."
+        name: text("Резервная проверка качества"),
+        description: text("Если парсер не определил качество, проверить Alloha через ваш сервер онлайн-источников.")
       },
       onChange: function onChange() {
         return cacheControl(L).clear("quality");
@@ -2932,11 +10677,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         },
         onChange: function onChange() {
           cacheControl(L).clear(type);
-          if (L.Noty) L.Noty.show("Кеш " + (type === "ratings" ? "рейтингов" : "качества") + " очищен");
+          if (L.Noty) L.Noty.show(text("Кеш {0} очищен", [type === "ratings" ? text("рейтингов") : text("качества")]));
         }
       });
     };
-    for (var _i4 = 0, _arr4 = [["ratings", "Очистить кеш рейтингов", "Удалить сохранённые оценки. История и закладки сохранятся."], ["quality", "Очистить кеш качества", "Удалить сохранённое качество карточек каталога и заново проверить видимые карточки."]]; _i4 < _arr4.length; _i4++) {
+    for (var _i4 = 0, _arr4 = [["ratings", text("Очистить кеш рейтингов"), text("Удалить сохранённые оценки. История и закладки сохранятся.")], ["quality", text("Очистить кеш качества"), text("Удалить сохранённое качество карточек каталога и заново проверить видимые карточки.")]]; _i4 < _arr4.length; _i4++) {
       _loop3();
     }
   }
@@ -3377,16 +11122,16 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
 
   // src/online-quality.js
   function qualityLabel(value) {
-    var text = String(value || "");
-    if (/(^|\W)(?:hd)?cam(?:rip)?(\W|$)/i.test(text)) return "CAM";
-    if (/(^|\W)(?:hd)?ts(?:rip)?(\W|$)/i.test(text)) return "TS";
-    if (/2160|\b4k\b|uhd/i.test(text)) return "4K";
-    if (/1080|fhd/i.test(text)) return "1080p";
-    if (/720|\bhd\b/i.test(text)) return "720p";
-    if (/480|360|\bsd\b/i.test(text)) return "SD";
-    if (/web[ .-]?dl/i.test(text)) return "WEB-DL";
-    if (/bd[ .-]?rip|blu[ .-]?ray/i.test(text)) return "BDRip";
-    if (/web[ .-]?rip/i.test(text)) return "WEBRip";
+    var text2 = String(value || "");
+    if (/(^|\W)(?:hd)?cam(?:rip)?(\W|$)/i.test(text2)) return "CAM";
+    if (/(^|\W)(?:hd)?ts(?:rip)?(\W|$)/i.test(text2)) return "TS";
+    if (/2160|\b4k\b|uhd/i.test(text2)) return "4K";
+    if (/1080|fhd/i.test(text2)) return "1080p";
+    if (/720|\bhd\b/i.test(text2)) return "720p";
+    if (/480|360|\bsd\b/i.test(text2)) return "SD";
+    if (/web[ .-]?dl/i.test(text2)) return "WEB-DL";
+    if (/bd[ .-]?rip|blu[ .-]?ray/i.test(text2)) return "BDRip";
+    if (/web[ .-]?rip/i.test(text2)) return "WEBRip";
     return "";
   }
   var rank = {
@@ -3767,7 +11512,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         row = document.createElement("div");
         row.className = "card-watched__item";
         var span = document.createElement("span");
-        span.textContent = "Серия " + shared.episode;
+        span.textContent = text("Серия {0}", [shared.episode]);
         row.appendChild(span);
         row.appendChild(_line);
         (wrap.querySelector(".card-watched__body") || wrap).appendChild(row);
@@ -3787,7 +11532,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             row = document.createElement("div");
             row.className = "card-watched__item";
             var _span = document.createElement("span");
-            _span.textContent = "Серия " + episode;
+            _span.textContent = text("Серия {0}", [episode]);
             row.appendChild(_span);
             row.appendChild(_line2);
             (wrap.querySelector(".card-watched__body") || wrap).appendChild(row);
@@ -3810,8 +11555,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       row.insertBefore(summary, row.firstChild);
     }
     var nativeLabel = row.querySelector(":scope > span"),
-      text = nativeLabel && nativeLabel.textContent || "";
-    var label = "Просмотрено:",
+      text2 = nativeLabel && nativeLabel.textContent || "";
+    var label = text("Просмотрено:"),
       timeline = null,
       watchSeason = 0,
       watchEpisode = 0;
@@ -3821,9 +11566,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       watchSeason = target ? target.season : shared.season;
       watchEpisode = target ? target.episode : shared.episode;
       timeline = view(shared.hash);
-      label = "Серия " + watchEpisode + " • Сезон " + watchSeason;
+      label = text("Серия {0} • Сезон {1}", [watchEpisode, watchSeason]);
     } else if (series) {
-      var match = text.match(/^(\d+)\s*[-–]|(?:Эпизод|Серия|Episode)\s*(\d+)/i),
+      var match = text2.match(/^(\d+)\s*[-–]|(?:Эпизод|Серия|Episode)\s*(\d+)/i),
         _episode = match && Number(match[1] || match[2]);
       var table = L.TimeTable && L.TimeTable.get ? L.TimeTable.get(data) || [] : [];
       var _season = 0;
@@ -3859,7 +11604,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }
       watchSeason = _season;
       watchEpisode = _episode;
-      label = _episode ? "Серия " + _episode + (_season ? " • Сезон " + _season : "") : "Просмотрено";
+      label = _episode ? text("Серия {0}{1}", [_episode, _season ? text(" • Сезон {0}", [_season]) : ""]) : text("Просмотрено");
     } else {
       if (movieTime) timeline = movieTime;else if (!progressHash) timeline = L.Timeline && L.Timeline.filename ? view(hash(data.original_title)) : L.Timeline && L.Timeline.watched ? L.Timeline.watched(data, true) : view(hash(data.original_title));
       if (Array.isArray(timeline)) timeline = view(hash(data.original_title));
@@ -3886,7 +11631,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     if (Number(shown.percent) >= (series ? 95 : 90)) shown.percent = 100;
     if (complete) {
       watchEpisode = 0;
-      label = series ? "Сезон " + shared.season + " просмотрен" : "Фильм просмотрен";
+      label = series ? text("Сезон {0} просмотрен", [shared.season]) : text("Фильм просмотрен");
     }
     var line = row.querySelector(".time-line");
     var meter = row.querySelector(".pt-card-watch__meter");
@@ -3904,7 +11649,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var time = hideProgress || !Number(shown.time) ? "" : clock(shown.time),
       name = summary.firstElementChild,
       stamp3 = row.querySelector(".pt-card-watch__time");
-    var action = Number(shown.time) > 0 || Number(shown.percent) > 0 ? "Просмотрено: " : "Смотреть: ";
+    var action = Number(shown.time) > 0 || Number(shown.percent) > 0 ? text("Просмотрено: ") : text("Смотреть: ");
     if (name.dataset.label !== label || name.dataset.action !== action) {
       name.dataset.label = label;
       name.dataset.action = action;
@@ -3915,11 +11660,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         heading.textContent = action;
         name.appendChild(heading);
         var _episode2 = document.createElement("span");
-        _episode2.textContent = "Серия " + watchEpisode + (watchSeason ? " • " : "");
+        _episode2.textContent = text("Серия {0}{1}", [watchEpisode, watchSeason ? " • " : ""]);
         name.appendChild(_episode2);
         if (watchSeason) {
           var _season2 = document.createElement("span");
-          _season2.textContent = "Сезон " + watchSeason;
+          _season2.textContent = text("Сезон {0}", [watchSeason]);
           name.appendChild(_season2);
         }
       } else name.textContent = label;
@@ -4028,12 +11773,12 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
         var partial = available.total > available.count;
         var released = partial ? available.count + "/" + available.total : String(available.count);
-        var text = "Сезон " + available.season + " • " + (partial ? "Серия " : "Серий ") + released;
-        if (box.textContent !== text) {
-          box.firstElementChild.textContent = "Сезон " + available.season + " • ";
-          box.lastElementChild.textContent = (partial ? "Серия " : "Серий ") + released;
+        var text2 = text("Сезон {0} • {1}{2}", [available.season, partial ? text("Серия ") : text("Серий "), released]);
+        if (box.textContent !== text2) {
+          box.firstElementChild.textContent = text("Сезон {0} • ", [available.season]);
+          box.lastElementChild.textContent = (partial ? text("Серия ") : text("Серий ")) + released;
         }
-        box.title = "Сезон " + available.season + ": вышло " + released + ". История просмотра — под обложкой.";
+        box.title = text("Сезон {0}: вышло {1}. История просмотра — под обложкой.", [available.season, released]);
       } else if (box) box.remove();
       if (!fresh && !pending.has(key) && fetchable && queue.length < 8) {
         var task = {
@@ -4231,8 +11976,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var label = qualityLabel;
     function paintCaption(node, data) {
       var title = node.querySelector(".card__title"),
-        text = data.title || data.name || "";
-      if (title && text && title.textContent !== text) title.textContent = text;
+        text2 = data.title || data.name || "";
+      if (title && text2 && title.textContent !== text2) title.textContent = text2;
       if (title) {
         if (document.body.matches(".pt-tv.pt-tv-caption-flow")) {
           var line = Math.ceil(parseFloat(window.getComputedStyle(title).fontSize) * 1.4);
@@ -4261,7 +12006,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         view.appendChild(badge);
       }
       if (badge.textContent !== q) badge.textContent = q;
-      badge.title = "Качество доступного релиза";
+      badge.title = text("Качество доступного релиза");
       badges.schedule(node);
     }
     function drain() {
@@ -4411,8 +12156,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             badge.className = "pt-kind";
             _view2.appendChild(badge);
           }
-          var text = anime ? "Аниме" : "Сериал";
-          if (badge.textContent !== text) badge.textContent = text;
+          var text2 = anime ? text("Аниме") : text("Сериал");
+          if (badge.textContent !== text2) badge.textContent = text2;
         }
       }
       badges.schedule(node);
@@ -5106,15 +12851,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       nav.appendChild(b);
       return b;
     }
-    button("minimal-row-arrow", "Предыдущая страница", '<path d="m14 6-6 6 6 6"/>', function () {
+    button("minimal-row-arrow", text("Предыдущая страница"), '<path d="m14 6-6 6 6 6"/>', function () {
       return page(-1);
     });
     var canMore = !people && (head.querySelector(".items-line__more") || line.data.url || line.data.onMore || line.params && line.params.emit && line.params.emit.onMore);
-    if (canMore) more = button("minimal-row-more selector", "Показать ещё", '<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>', function () {
+    if (canMore) more = button("minimal-row-more selector", text("Показать ещё"), '<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>', function () {
       if (!enabled()) return;
       line.emit("more", line.data);
     });
-    button("minimal-row-arrow", "Следующая страница", '<path d="m10 6 6 6-6 6"/>', function () {
+    button("minimal-row-arrow", text("Следующая страница"), '<path d="m10 6 6 6-6 6"/>', function () {
       return page(1);
     });
     head.appendChild(nav);
@@ -5309,9 +13054,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // src/settings.js
-  var GROUPS = [["appearance", "Оформление", "Тема, обложки и устройство"], ["catalogue", "Каталог и поиск", "Подборки, аниме и фильтры"], ["playback", "Воспроизведение", "Запуск, источники и озвучки"], ["languages", "Языки и субтитры", "Предпочтения дорожек и субтитров"], ["parser", "Торренты и поиск релизов", "Названия, раздачи и параметры поиска"], ["server", "Подключение", "Адрес сервера онлайн-источников"], ["cache", "Кеш", "Очистка сохранённых рейтингов и качества карточек"]];
-  function cleanText(text) {
-    return typeof text === "string" ? text.replace(/[\u2013\u2014]/g, "-").replace(/<a\b[^>]*>[\s\S]*?<\/a>/gi, "").replace(/https?:\/\/(?:t\.me|telegram\.(?:me|org))\/[^\s<]*/gi, "").replace(/Lampa Minimal|Закус[ььи](?: TV)?|Alcopa|ALC Auto|Автопилот|Lampa View|mpv.plus/gi, "").replace(/\s{2,}/g, " ").trim() : text;
+  var GROUPS = [["appearance", text("Оформление"), text("Тема, обложки и устройство")], ["catalogue", text("Каталог и поиск"), text("Подборки, аниме и фильтры")], ["playback", text("Воспроизведение"), text("Запуск, источники и озвучки")], ["languages", text("Языки и субтитры"), text("Предпочтения дорожек и субтитров")], ["parser", text("Торренты и поиск релизов"), text("Названия, раздачи и параметры поиска")], ["server", text("Подключение"), text("Адрес сервера онлайн-источников")], ["cache", text("Кеш"), text("Очистка сохранённых рейтингов и качества карточек")]];
+  function cleanText(text2) {
+    return typeof text2 === "string" ? text2.replace(/[\u2013\u2014]/g, "-").replace(/<a\b[^>]*>[\s\S]*?<\/a>/gi, "").replace(/https?:\/\/(?:t\.me|telegram\.(?:me|org))\/[^\s<]*/gi, "").replace(/Lampa Minimal|Закус[ььи](?: TV)?|Alcopa|ALC Auto|Автопилот|Lampa View|mpv.plus/gi, "").replace(/\s{2,}/g, " ").trim() : text2;
   }
   function groupOf(d) {
     var n = d.param && d.param.name || "",
@@ -5351,7 +13096,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         seen = /* @__PURE__ */new Set();
       return source.filter(function (d) {
         var n = d.param && d.param.name || "",
-          text = String(d.field && d.field.name || "");
+          text2 = String(d.field && d.field.name || "");
         if (seen.has(n)) return false;
         seen.add(n);
         if (n === "minimal_trakt_client_id" && !flag(L, "minimal_trakt_enabled", false)) return false;
@@ -5366,12 +13111,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           } catch (error) {}
         }
         if (["nova_plus_mode", "nova_plus_hero", "nova_plus_hero_art", "nova_plus_fullscreen", "nova_plus_art_size", "nova_plus_movie_view"].includes(n)) return false;
-        return d.param && !["title", "static"].includes(d.param.type) && !/^snack_open_/.test(n) && !/community|versions|snack_reset|telegram|donat|support|_bot/i.test(n) && !/telegram|тг.бот|телеграм|поддержать|сообщество/i.test(text);
+        return d.param && !["title", "static"].includes(d.param.type) && !/^snack_open_/.test(n) && !/community|versions|snack_reset|telegram|donat|support|_bot/i.test(n) && !/telegram|тг.бот|телеграм|поддержать|сообщество/i.test(text2);
       }).map(function (d) {
         return __spreadProps(__spreadValues({}, d), {
+          param: __spreadProps(__spreadValues({}, d.param), {
+            values: d.param && d.param.values ? Object.keys(d.param.values).reduce(function (out, key) {
+              out[key] = text(d.param.values[key]);
+              return out;
+            }, {}) : d.param && d.param.values
+          }),
           field: __spreadProps(__spreadValues({}, d.field), {
-            name: d.param.name === "alc_auto_server" ? "Сервер онлайн-источников" : cleanText(d.field && d.field.name),
-            description: cleanText(d.field && d.field.description)
+            name: d.param.name === "alc_auto_server" ? text("Сервер онлайн-источников") : text(cleanText(d.field && d.field.name)),
+            description: text(cleanText(d.field && d.field.description))
           })
         });
       });
@@ -5404,8 +13155,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               type: "button"
             },
             field: {
-              name: title,
-              description: description
+              name: text(title),
+              description: text(description)
             },
             onChange: function onChange() {
               return open(prefix + id);
@@ -5468,6 +13219,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   var SHIKI_ALL = "minimal:shikimori:all";
   function shikiCard(a) {
     var base = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : BASE;
+    var title = locale() === "ru" ? a.russian || a.name : a.name || a.russian;
     var tv = a.kind !== "movie",
       date = a.aired_on || "",
       img = a.image && a.image.original || "";
@@ -5481,10 +13233,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     return __spreadProps(__spreadValues({
       id: a.id,
       shikimori_id: a.id,
-      title: a.russian || a.name,
+      title: title,
       original_title: a.name
     }, tv ? {
-      name: a.russian || a.name,
+      name: title,
       original_name: a.name,
       first_air_date: date
     } : {
@@ -5683,10 +13435,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var asian = "with_origin_country=KR|JP|CN|TW|TH&without_genres=16,99,10764,10767&";
       return [{
         key: "watch",
-        title: "Сейчас смотрят",
+        title: text("Сейчас смотрят"),
         media_type: "tv",
         tmdb: "discover/tv?include_adult=false&" + asian + "sort_by=popularity.desc&air_date.gte=" + day2(-7) + "&air_date.lte=" + day2(0)
-      }].concat(_toConsumableArray([["Популярное", asian + "sort_by=popularity.desc"], ["Новинки этого года", asian + "sort_by=popularity.desc&first_air_date.gte=" + year + "-01-01"], ["С высоким рейтингом", asian + "sort_by=vote_average.desc&vote_count.gte=100"], ["Корейские дорамы", "with_origin_country=KR&without_genres=16,99,10764,10767&sort_by=popularity.desc"], ["Японские дорамы", "with_origin_country=JP&without_genres=16,99,10764,10767&sort_by=popularity.desc"], ["Китайские дорамы", "with_origin_country=CN|TW&without_genres=16,99,10764,10767&sort_by=popularity.desc"], ["Тайские дорамы", "with_origin_country=TH&without_genres=16,99,10764,10767&sort_by=popularity.desc"], ["Драмы", asian + "with_genres=18&sort_by=popularity.desc"], ["Комедии", asian + "with_genres=35&sort_by=popularity.desc"], ["Детективы", asian + "with_genres=9648&sort_by=popularity.desc"]].map(function (_ref13, index) {
+      }].concat(_toConsumableArray([[text("Популярное"), asian + "sort_by=popularity.desc"], [text("Новинки этого года"), asian + "sort_by=popularity.desc&first_air_date.gte=" + year + "-01-01"], [text("С высоким рейтингом"), asian + "sort_by=vote_average.desc&vote_count.gte=100"], [text("Корейские дорамы"), "with_origin_country=KR&without_genres=16,99,10764,10767&sort_by=popularity.desc"], [text("Японские дорамы"), "with_origin_country=JP&without_genres=16,99,10764,10767&sort_by=popularity.desc"], [text("Китайские дорамы"), "with_origin_country=CN|TW&without_genres=16,99,10764,10767&sort_by=popularity.desc"], [text("Тайские дорамы"), "with_origin_country=TH&without_genres=16,99,10764,10767&sort_by=popularity.desc"], [text("Драмы"), asian + "with_genres=18&sort_by=popularity.desc"], [text("Комедии"), asian + "with_genres=35&sort_by=popularity.desc"], [text("Детективы"), asian + "with_genres=9648&sort_by=popularity.desc"]].map(function (_ref13, index) {
         var _ref14 = _slicedToArray(_ref13, 2),
           title = _ref14[0],
           query = _ref14[1];
@@ -5700,7 +13452,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     }
     if (kind === "tvshow") {
       var shows = "without_genres=16&with_genres=10764|10767&with_original_language=ru&";
-      return [["watch", "Сейчас смотрят", shows + "sort_by=popularity.desc&air_date.gte=" + day2(-7) + "&air_date.lte=" + day2(0)], ["popular", "Популярное", shows + "sort_by=popularity.desc"], ["year", "Новинки этого года", shows + "sort_by=popularity.desc&first_air_date.gte=" + year + "-01-01&first_air_date.lte=" + day2(0)], ["rated", "С высоким рейтингом", shows + "sort_by=vote_average.desc&vote_count.gte=100"], ["reality", "Российские реалити", "without_genres=16&with_genres=10764&with_original_language=ru&sort_by=popularity.desc"], ["talk", "Российские ток-шоу", "without_genres=16&with_genres=10767&with_original_language=ru&sort_by=popularity.desc"], ["russian", "Семейные и развлекательные", "without_genres=16&with_genres=10764|10767|10751|35&with_original_language=ru&sort_by=popularity.desc"], ["last-year", "Прошлый год", shows + "sort_by=vote_average.desc&vote_count.gte=30&first_air_date.gte=" + (year - 1) + "-01-01&first_air_date.lte=" + (year - 1) + "-12-31"]].map(function (_ref15) {
+      return [["watch", text("Сейчас смотрят"), shows + "sort_by=popularity.desc&air_date.gte=" + day2(-7) + "&air_date.lte=" + day2(0)], ["popular", text("Популярное"), shows + "sort_by=popularity.desc"], ["year", text("Новинки этого года"), shows + "sort_by=popularity.desc&first_air_date.gte=" + year + "-01-01&first_air_date.lte=" + day2(0)], ["rated", text("С высоким рейтингом"), shows + "sort_by=vote_average.desc&vote_count.gte=100"], ["reality", text("Российские реалити"), "without_genres=16&with_genres=10764&with_original_language=ru&sort_by=popularity.desc"], ["talk", text("Российские ток-шоу"), "without_genres=16&with_genres=10767&with_original_language=ru&sort_by=popularity.desc"], ["russian", text("Семейные и развлекательные"), "without_genres=16&with_genres=10764|10767|10751|35&with_original_language=ru&sort_by=popularity.desc"], ["last-year", text("Прошлый год"), shows + "sort_by=vote_average.desc&vote_count.gte=30&first_air_date.gte=" + (year - 1) + "-01-01&first_air_date.lte=" + (year - 1) + "-12-31"]].map(function (_ref15) {
         var _ref16 = _slicedToArray(_ref15, 3),
           key = _ref16[0],
           title = _ref16[1],
@@ -5715,9 +13467,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     }
     if (kind === "cartoon") return [{
       key: "watch",
-      title: "Сейчас смотрят",
+      title: text("Сейчас смотрят"),
       cub: "?sort=now_playing&genre=16"
-    }].concat(_toConsumableArray([["Популярные мультфильмы", "movie", "sort_by=popularity.desc"], ["Новые мультфильмы", "movie", "sort_by=popularity.desc&primary_release_date.gte=" + year + "-01-01"], ["Мультфильмы с высоким рейтингом", "movie", "sort_by=vote_average.desc&vote_count.gte=200"], ["Популярные мультсериалы", "tv", "sort_by=popularity.desc"], ["Мультсериалы с высоким рейтингом", "tv", "sort_by=vote_average.desc&vote_count.gte=100"], ["Мультсериалы этого года", "tv", "sort_by=popularity.desc&first_air_date.gte=" + year + "-01-01"]].map(function (_ref17) {
+    }].concat(_toConsumableArray([[text("Популярные мультфильмы"), "movie", "sort_by=popularity.desc"], [text("Новые мультфильмы"), "movie", "sort_by=popularity.desc&primary_release_date.gte=" + year + "-01-01"], [text("Мультфильмы с высоким рейтингом"), "movie", "sort_by=vote_average.desc&vote_count.gte=200"], [text("Популярные мультсериалы"), "tv", "sort_by=popularity.desc"], [text("Мультсериалы с высоким рейтингом"), "tv", "sort_by=vote_average.desc&vote_count.gte=100"], [text("Мультсериалы этого года"), "tv", "sort_by=popularity.desc&first_air_date.gte=" + year + "-01-01"]].map(function (_ref17) {
       var _ref18 = _slicedToArray(_ref17, 3),
         title = _ref18[0],
         media_type = _ref18[1],
@@ -5728,7 +13480,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         tmdb: "discover/" + media_type + "?include_adult=false&with_genres=16&without_keywords=210024&" + query
       };
     })));
-    if (kind === "anime" && mode === "shikimori") return [["Популярное", "order=popularity"], ["С высоким рейтингом", "order=ranked"], ["Сейчас выходит", "order=popularity&status=ongoing"], ["Ожидаемые", "order=popularity&status=anons"], ["Новинки этого года", "order=popularity&season=" + year], ["Прошлый год", "order=ranked&season=" + (year - 1)], ["Полнометражные", "order=ranked&kind=movie"], ["Боевики", "order=popularity&genre=1"], ["Приключения", "order=popularity&genre=2"], ["Детективы", "order=popularity&genre=7"], ["Все", SHIKI_ALL]].map(function (_ref19) {
+    if (kind === "anime" && mode === "shikimori") return [[text("Популярное"), "order=popularity"], [text("С высоким рейтингом"), "order=ranked"], [text("Сейчас выходит"), "order=popularity&status=ongoing"], [text("Ожидаемые"), "order=popularity&status=anons"], [text("Новинки этого года"), "order=popularity&season=" + year], [text("Прошлый год"), "order=ranked&season=" + (year - 1)], [text("Полнометражные"), "order=ranked&kind=movie"], [text("Боевики"), "order=popularity&genre=1"], [text("Приключения"), "order=popularity&genre=2"], [text("Детективы"), "order=popularity&genre=7"], [text("Все"), SHIKI_ALL]].map(function (_ref19) {
       var _ref20 = _slicedToArray(_ref19, 2),
         title = _ref20[0],
         shiki = _ref20[1];
@@ -5744,7 +13496,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       if (kind === "movie" || kind === "tv") {
         if (key === "watch") query = "sort_by=popularity.desc&" + (type === "movie" ? "primary_release_date" : "air_date") + ".gte=" + day2(type === "movie" ? -60 : -7) + "&" + (type === "movie" ? "primary_release_date" : "air_date") + ".lte=" + day2(0);
         if (key === "uhd") {
-          tmdbTitle = "С высоким рейтингом";
+          tmdbTitle = text("С высоким рейтингом");
           query = "sort_by=vote_average.desc&vote_count.gte=1000";
         }
         if (key === "ongoing") query = "sort_by=popularity.desc&air_date.gte=" + day2(0) + "&air_date.lte=" + day2(7);
@@ -5764,19 +13516,19 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       } : {}));
     }
     var airdate = kind === "anime" ? "&airdate=" + year : "";
-    add("watch", "Сейчас смотрят", "?cat=" + kind + "&sort=now_playing" + airdate);
-    if (kind === "anime") add("top", "В топе", "?cat=anime&sort=top", "sort_by=vote_average.desc&vote_count.gte=500");
-    if (kind !== "anime") add("uhd", "В высоком качестве", "?cat=" + kind + "&sort=latest&uhd=true", "sort_by=popularity.desc&vote_average.gte=7&vote_count.gte=100");
-    if (kind !== "movie") add("ongoing", "Сейчас выходит", "?cat=" + kind + "&sort=airing" + airdate, "sort_by=popularity.desc&air_date.gte=" + year + "-01-01");
-    add("popular", "Популярное", "?cat=" + kind + "&sort=top" + airdate, "sort_by=popularity.desc&vote_count.gte=100" + (kind === "anime" ? "&first_air_date.gte=" + year + "-01-01" : ""));
+    add("watch", text("Сейчас смотрят"), "?cat=" + kind + "&sort=now_playing" + airdate);
+    if (kind === "anime") add("top", text("В топе"), "?cat=anime&sort=top", "sort_by=vote_average.desc&vote_count.gte=500");
+    if (kind !== "anime") add("uhd", text("В высоком качестве"), "?cat=" + kind + "&sort=latest&uhd=true", "sort_by=popularity.desc&vote_average.gte=7&vote_count.gte=100");
+    if (kind !== "movie") add("ongoing", text("Сейчас выходит"), "?cat=" + kind + "&sort=airing" + airdate, "sort_by=popularity.desc&air_date.gte=" + year + "-01-01");
+    add("popular", text("Популярное"), "?cat=" + kind + "&sort=top" + airdate, "sort_by=popularity.desc&vote_count.gte=100" + (kind === "anime" ? "&first_air_date.gte=" + year + "-01-01" : ""));
     var field = type === "movie" ? "primary_release_date" : "first_air_date";
-    add("year", "Новинки этого года", "?cat=" + kind + "&sort=now&airdate=" + year, "sort_by=popularity.desc&" + field + ".gte=" + year + "-01-01&" + field + ".lte=" + year + "-12-31");
-    add("last-year", "Прошлый год", "?cat=" + kind + "&sort=top&airdate=" + (year - 1), "sort_by=popularity.desc&" + field + ".gte=" + (year - 1) + "-01-01&" + field + ".lte=" + (year - 1) + "-12-31");
+    add("year", text("Новинки этого года"), "?cat=" + kind + "&sort=now&airdate=" + year, "sort_by=popularity.desc&" + field + ".gte=" + year + "-01-01&" + field + ".lte=" + year + "-12-31");
+    add("last-year", text("Прошлый год"), "?cat=" + kind + "&sort=top&airdate=" + (year - 1), "sort_by=popularity.desc&" + field + ".gte=" + (year - 1) + "-01-01&" + field + ".lte=" + (year - 1) + "-12-31");
     if (kind === "anime") {
-      add("rewatch", "Стоит пересмотреть", "?cat=anime&sort=top&airdate=" + (year - 7) + "-" + (year - 2) + "&vote=6-8", "sort_by=popularity.desc&vote_average.gte=6&vote_average.lte=8&vote_count.gte=100&first_air_date.lte=" + (year - 2) + "-12-31");
-      add("rated", "С высоким рейтингом", "?cat=anime&sort=top&airdate=" + (year - 7) + "-" + (year - 2) + "&vote=8-10", "sort_by=vote_average.desc&vote_average.gte=8&vote_count.gte=200&first_air_date.lte=" + (year - 2) + "-12-31");
+      add("rewatch", text("Стоит пересмотреть"), "?cat=anime&sort=top&airdate=" + (year - 7) + "-" + (year - 2) + "&vote=6-8", "sort_by=popularity.desc&vote_average.gte=6&vote_average.lte=8&vote_count.gte=100&first_air_date.lte=" + (year - 2) + "-12-31");
+      add("rated", text("С высоким рейтингом"), "?cat=anime&sort=top&airdate=" + (year - 7) + "-" + (year - 2) + "&vote=8-10", "sort_by=vote_average.desc&vote_average.gte=8&vote_count.gte=200&first_air_date.lte=" + (year - 2) + "-12-31");
     }
-    var genres = kind === "movie" ? [[28, "Боевики"], [35, "Комедии"], [18, "Драмы"], [53, "Триллеры"], [878, "Фантастика"]] : kind === "anime" ? [[10765, "Фэнтези"], [10759, "Приключения"]] : [[18, "Драмы"], [80, "Криминал"], [10765, "Фантастика и фэнтези"], [35, "Комедии"]];
+    var genres = kind === "movie" ? [[28, text("Боевики")], [35, text("Комедии")], [18, text("Драмы")], [53, text("Триллеры")], [878, text("Фантастика")]] : kind === "anime" ? [[10765, text("Фэнтези")], [10759, text("Приключения")]] : [[18, text("Драмы")], [80, text("Криминал")], [10765, text("Фантастика и фэнтези")], [35, text("Комедии")]];
     genres.forEach(function (_ref21) {
       var _ref22 = _slicedToArray(_ref21, 2),
         id = _ref22[0],
@@ -5946,10 +13698,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     wrapper.className = "minimal-anime-controls";
     status.className = "minimal-anime-status";
     status.setAttribute("role", "status");
-    message.textContent = "Загрузка подборок…";
+    message.textContent = text("Загрузка подборок…");
     retry.type = "button";
     retry.className = "minimal-anime-retry selector";
-    retry.textContent = "Повторить загрузку";
+    retry.textContent = text("Повторить загрузку");
     retry.hidden = true;
     status.appendChild(message);
     status.appendChild(retry);
@@ -5957,7 +13709,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     wrapper.appendChild(status);
     nav.className = "minimal-anime-tabs";
     nav.setAttribute("role", "tablist");
-    nav.setAttribute("aria-label", "Каталог аниме");
+    nav.setAttribute("aria-label", text("Каталог аниме"));
     var index = mode === "shikimori" ? 1 : 0,
       disposed = false,
       ready = false,
@@ -6004,7 +13756,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       });
       L.Controller.toggle("minimal_anime_tabs");
     }
-    [["standard", "Стандартные"], ["shikimori", "Shikimori"]].forEach(function (_ref23, i) {
+    [["standard", text("Стандартные")], ["shikimori", "Shikimori"]].forEach(function (_ref23, i) {
       var _ref24 = _slicedToArray(_ref23, 2),
         value = _ref24[0],
         title = _ref24[1];
@@ -6059,7 +13811,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var state = object.minimal_catalogue_status && object.minimal_catalogue_status.state || "empty";
         status.hidden = state === "ready";
         retry.hidden = state !== "error";
-        message.textContent = state === "error" ? "Не удалось загрузить " + (mode === "shikimori" ? "Shikimori" : "подборки") + ". Попробуйте ещё раз." : state === "hidden" ? "Все подборки скрыты в настройках." : "В этом каталоге пока нет подборок.";
+        message.textContent = state === "error" ? text("Не удалось загрузить {0}. Попробуйте ещё раз.", [mode === "shikimori" ? "Shikimori" : text("подборки")]) : state === "hidden" ? text("Все подборки скрыты в настройках.") : text("В этом каталоге пока нет подборок.");
       },
       onAppend: function onAppend(row) {
         if (item.items[0] === row) row.use({
@@ -6264,7 +14016,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var index = result.findIndex(isWatching),
         history2 = cards();
       result.splice(index < 0 ? 0 : index + 1, 0, {
-        title: "История просмотра",
+        title: text("История просмотра"),
         url: CONTINUE,
         source: "minimal_continue",
         results: history2.slice(0, 20),
@@ -6280,7 +14032,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
 
   // src/collections.js
   function rowKey(row) {
-    return String(row.minimal_row_id || row.url || row.title || "Без названия");
+    return String(row.minimal_row_id || row.url || row.title || text("Без названия"));
   }
   function matchesRow(row, id) {
     return rowKey(row) === id || row.url === id || (row.minimal_row_aliases || []).includes(id) || isWatching(row) && ["mixed/trending", "movies/trending", "shows/trending", "?sort=now_playing", "movie/now_playing"].includes(id);
@@ -6323,13 +14075,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var captured = /* @__PURE__ */new Set(),
       homeRows = continueWatching(L);
     var labels = {
-      "main:": "Главная",
-      "category:movie": "Фильмы",
-      "category:tv": "Сериалы",
-      "category:dorama": "Дорамы",
-      "category:tvshow": "ТВ-шоу",
-      "category:cartoon": "Мультфильмы",
-      "category:anime": "Аниме"
+      "main:": text("Главная"),
+      "category:movie": text("Фильмы"),
+      "category:tv": text("Сериалы"),
+      "category:dorama": text("Дорамы"),
+      "category:tvshow": text("ТВ-шоу"),
+      "category:cartoon": text("Мультфильмы"),
+      "category:anime": text("Аниме")
     };
     var animeContext = function animeContext(o) {
       return "category:anime:" + animeMode(L, o);
@@ -6357,7 +14109,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }, row.minimal_row_aliases ? {
             aliases: row.minimal_row_aliases
           } : {}), row.minimal_empty ? {
-            subtitle: "Появится после добавления в историю"
+            subtitle: text("Появится после добавления в историю")
           } : {});
         var index = next.findIndex(function (old) {
           return old.id === id;
@@ -6405,7 +14157,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       });
     }
     function contextName(ctx) {
-      return labels[ctx] || (ctx === "category:anime:shikimori" ? "Аниме · Shikimori" : "Аниме · Стандартные");
+      return labels[ctx] || (ctx === "category:anime:shikimori" ? text("Аниме · Shikimori") : text("Аниме · Стандартные"));
     }
     function edit(ctx) {
       var p = prefs(ctx),
@@ -6420,13 +14172,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
       }).concat([{
         id: "reset",
-        title: "Сбросить порядок и видимость"
+        title: text("Сбросить порядок и видимость")
       }]) : [{
-        title: "Список пока не загружен",
-        subtitle: "Откройте раздел, чтобы получить актуальные подборки.",
+        title: text("Список пока не загружен"),
+        subtitle: text("Откройте раздел, чтобы получить актуальные подборки."),
         noenter: true
       }];
-      select("Подборки: " + contextName(ctx), items, function (r) {
+      select(text("Подборки: {0}", [contextName(ctx)]), items, function (r) {
         if (r.noenter) return;
         if (r.id === "reset") {
           save(ctx, {});
@@ -6434,16 +14186,16 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
         select(r.title, [{
           id: "toggle",
-          title: (p.hidden || []).includes(r.id) ? "Показать" : "Скрыть"
+          title: (p.hidden || []).includes(r.id) ? text("Показать") : text("Скрыть")
         }, {
           id: "up",
-          title: "Выше"
+          title: text("Выше")
         }, {
           id: "down",
-          title: "Ниже"
+          title: text("Ниже")
         }, {
           id: "first",
-          title: "В начало"
+          title: text("В начало")
         }], function (action) {
           p.hidden = p.hidden || [];
           p.order = rows.map(function (x) {
@@ -6465,7 +14217,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }, menu);
     }
     function menu() {
-      select("Подборки (изменения при следующем открытии)", Object.keys(labels).map(function (id) {
+      select(text("Подборки (изменения при следующем открытии)"), Object.keys(labels).map(function (id) {
         return {
           id: id,
           title: labels[id]
@@ -6481,8 +14233,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         type: "button"
       },
       field: {
-        name: "Управление подборками",
-        description: "Текущие подборки последнего открытого экрана. Старые и недоступные строки не показываются."
+        name: text("Управление подборками"),
+        description: text("Текущие подборки последнего открытого экрана. Старые и недоступные строки не показываются.")
       },
       onChange: menu
     });
@@ -6659,9 +14411,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       to = String(f.year_to || f.year || "").trim();
     for (var _i10 = 0, _arr1 = [from, to]; _i10 < _arr1.length; _i10++) {
       var value = _arr1[_i10];
-      if (value && (!/^\d{4}$/.test(value) || Number(value) < 1870 || Number(value) > 2100)) throw Error("Укажите год от 1870 до 2100");
+      if (value && (!/^\d{4}$/.test(value) || Number(value) < 1870 || Number(value) > 2100)) throw Error(text("Укажите год от 1870 до 2100"));
     }
-    if (from && to && Number(from) > Number(to)) throw Error("Начальный год не может быть больше конечного");
+    if (from && to && Number(from) > Number(to)) throw Error(text("Начальный год не может быть больше конечного"));
     return {
       from: from,
       to: to
@@ -6674,8 +14426,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     return f.score ? f.kind === "tv" ? 100 : 200 : 0;
   }
   function discoverUrl(f) {
+    var language = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : locale();
     var kind = f.kind === "tv" ? "tv" : "movie",
-      p = ["language=ru", "include_adult=false", "sort_by=" + encodeURIComponent(kind === "tv" && f.sort === "primary_release_date.desc" ? "first_air_date.desc" : f.sort || "popularity.desc")],
+      p = ["language=" + encodeURIComponent(language), "include_adult=false", "sort_by=" + encodeURIComponent(kind === "tv" && f.sort === "primary_release_date.desc" ? "first_air_date.desc" : f.sort || "popularity.desc")],
       _yearBounds = yearBounds(f),
       from = _yearBounds.from,
       to = _yearBounds.to;
@@ -6709,42 +14462,42 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       return result;
     };
     var kinds = {
-      movie: "Фильмы",
-      tv: "Сериалы",
-      anime: "Аниме · Shikimori"
+      movie: text("Фильмы"),
+      tv: text("Сериалы"),
+      anime: text("Аниме · Shikimori")
     };
     var values = {
       status: {
-        "": "Любой статус",
-        ongoing: "Выходит",
-        released: "Вышло",
-        anons: "Анонс"
+        "": text("Любой статус"),
+        ongoing: text("Выходит"),
+        released: text("Вышло"),
+        anons: text("Анонс")
       },
       format: {
-        "": "Любой формат",
-        tv: "Сериал",
-        movie: "Фильм",
+        "": text("Любой формат"),
+        tv: text("Сериал"),
+        movie: text("Фильм"),
         ova: "OVA",
         ona: "ONA",
-        special: "Спешл"
+        special: text("Спешл")
       },
       sort: {
-        "popularity.desc": "Популярность",
-        "vote_average.desc": "Рейтинг",
-        "primary_release_date.desc": "Дата выхода"
+        "popularity.desc": text("Популярность"),
+        "vote_average.desc": text("Рейтинг"),
+        "primary_release_date.desc": text("Дата выхода")
       },
       animeSort: {
-        popularity: "Популярность",
-        ranked: "Рейтинг",
-        aired_on: "Дата выхода",
-        name: "Название"
+        popularity: text("Популярность"),
+        ranked: text("Рейтинг"),
+        aired_on: text("Дата выхода"),
+        name: text("Название")
       },
       language: {
-        "": "Любой язык",
-        ja: "Японский",
-        en: "Английский",
-        ru: "Русский",
-        ko: "Корейский"
+        "": text("Любой язык"),
+        ja: text("Японский"),
+        en: text("Английский"),
+        ru: text("Русский"),
+        ko: text("Корейский")
       }
     };
     function show(title, items, fn) {
@@ -6754,7 +14507,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         items: items,
         onSelect: fn,
         onBack: back,
-        minimalFilters: title === "Поиск и фильтры"
+        minimalFilters: true
       });
     }
     function choose(name, title, options) {
@@ -6784,14 +14537,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     function genres() {
       if (state.kind === "anime") {
         var ok = function ok(json) {
-            return choose("genre", "Жанр", entries([["", "Любой жанр"]].concat(json.filter(function (g) {
+            return choose("genre", text("Жанр"), entries([["", text("Любой жанр")]].concat(json.filter(function (g) {
               return g.entry_type === "Anime";
             }).map(function (g) {
-              return [g.id, g.russian || g.name];
+              return [g.id, locale() === "ru" ? g.russian || g.name : g.name || g.russian];
             }))));
           },
           fail = function fail() {
-            L.Noty.show("Не удалось загрузить жанры Shikimori");
+            L.Noty.show(text("Не удалось загрузить жанры Shikimori"));
             menu();
           };
         if (shiki && shiki.genres) shiki.genres(ok, fail);else {
@@ -6799,12 +14552,12 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           r.timeout(1e4);
           r.silent("https://shikimori.io/api/genres", ok, fail);
         }
-      } else tmdbGet(L, "genre/" + state.kind + "/list?language=ru", {}, function (json) {
-        return choose("genre", "Жанр", entries([["", "Любой жанр"]].concat((json.genres || []).map(function (g) {
+      } else tmdbGet(L, "genre/" + state.kind + "/list?language=" + encodeURIComponent(locale()), {}, function (json) {
+        return choose("genre", text("Жанр"), entries([["", text("Любой жанр")]].concat((json.genres || []).map(function (g) {
           return [g.id, g.name];
         }))));
       }, function () {
-        L.Noty.show("Не удалось загрузить жанры");
+        L.Noty.show(text("Не удалось загрузить жанры"));
         menu();
       });
     }
@@ -6831,7 +14584,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           component: "category_full",
           source: "minimal_shiki",
           url: parts.join("&"),
-          title: "Аниме · Shikimori",
+          title: text("Аниме · Shikimori"),
           page: 1
         });
       } else if (state.query) {
@@ -6846,7 +14599,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         component: "category_full",
         source: "tmdb",
         url: discoverUrl(state),
-        title: kinds[state.kind] + " · фильтры",
+        title: text("{0} · фильтры", [kinds[state.kind]]),
         page: 1
       });
     }
@@ -6870,7 +14623,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           f = JSON.parse(p.url);
           range = yearBounds(f);
         } catch (e) {
-          L.Noty.show("Некорректные параметры поиска");
+          L.Noty.show(text("Некорректные параметры поиска"));
           return fail();
         }
         var kind = f.kind === "tv" ? "tv" : "movie",
@@ -6898,7 +14651,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         function fetchNext() {
           if (cursor.cancelled) return;
           if (cursor.finished || cursor.results.length >= end) return finish();
-          var url = "search/" + kind + "?language=ru&query=" + encodeURIComponent(f.query) + "&page=" + cursor.next;
+          var url = "search/" + kind + "?language=" + encodeURIComponent(locale()) + "&query=" + encodeURIComponent(f.query) + "&page=" + cursor.next;
           tmdbGet(L, url, {}, function (json) {
             var _cursor$results;
             if (cursor.cancelled) return;
@@ -6923,58 +14676,58 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     };
     function menu() {
       var anime = state.kind === "anime";
-      var range = state.year_from || state.year_to ? (state.year_from || "…") + " - " + (state.year_to || "…") : "Любые годы";
+      var range = state.year_from || state.year_to ? (state.year_from || "…") + " - " + (state.year_to || "…") : text("Любые годы");
       var items = [{
         id: "kind",
-        title: "Каталог",
+        title: text("Каталог"),
         subtitle: kinds[state.kind]
       }, {
         id: "query",
-        title: "Название",
-        subtitle: state.query || "Любое название"
+        title: text("Название"),
+        subtitle: state.query || text("Любое название")
       }, {
         id: "genre",
-        title: "Жанр",
-        subtitle: state.genre_label || "Любой жанр"
+        title: text("Жанр"),
+        subtitle: state.genre_label || text("Любой жанр")
       }, {
         id: "years",
-        title: "Годы выпуска",
+        title: text("Годы выпуска"),
         subtitle: range
       }, {
         id: "score",
-        title: "Рейтинг",
-        subtitle: state.score ? "От " + state.score : "Любой"
+        title: text("Рейтинг"),
+        subtitle: state.score ? text("От {0}", [state.score]) : text("Любой")
       }];
       if (anime) items.push({
         id: "status",
-        title: "Статус",
+        title: text("Статус"),
         subtitle: values.status[state.status || ""]
       }, {
         id: "format",
-        title: "Формат",
+        title: text("Формат"),
         subtitle: values.format[state.format || ""]
       });else items.push({
         id: "votes",
-        title: "Число оценок",
-        subtitle: minimumVotes(state) ? "От " + minimumVotes(state) : "Любое"
+        title: text("Число оценок"),
+        subtitle: minimumVotes(state) ? text("От {0}", [minimumVotes(state)]) : text("Любое")
       }, {
         id: "language",
-        title: "Язык оригинала",
+        title: text("Язык оригинала"),
         subtitle: values.language[state.language || ""]
       });
       items.push({
         id: anime ? "animeSort" : "sort",
         noenter: !anime && !!state.query,
-        title: "Сортировка",
-        subtitle: !anime && state.query ? "По совпадению названия" : anime ? values.animeSort[state.animeSort || "popularity"] : values.sort[state.sort || "popularity.desc"]
+        title: text("Сортировка"),
+        subtitle: !anime && state.query ? text("По совпадению названия") : anime ? values.animeSort[state.animeSort || "popularity"] : values.sort[state.sort || "popularity.desc"]
       }, {
         id: "run",
-        title: "Показать результаты"
+        title: text("Показать результаты")
       }, {
         id: "reset",
-        title: "Сбросить фильтры"
+        title: text("Сбросить фильтры")
       });
-      show("Поиск и фильтры", items, function (r) {
+      show(text("Поиск и фильтры"), items, function (r) {
         if (r.id === "run") return run();
         if (r.id === "reset") {
           Object.keys(state).forEach(function (k) {
@@ -6982,7 +14735,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
           return menu();
         }
-        if (r.id === "kind") return show("Каталог", Object.keys(kinds).map(function (id) {
+        if (r.id === "kind") return show(text("Каталог"), Object.keys(kinds).map(function (id) {
           return {
             id: id,
             title: kinds[id]
@@ -6995,17 +14748,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           menu();
         });
         if (r.id === "genre") return genres();
-        if (r.id === "years") return show("Годы выпуска", [{
+        if (r.id === "years") return show(text("Годы выпуска"), [{
           id: "year_from",
-          title: "Год от",
-          subtitle: state.year_from || "Без ограничения"
+          title: text("Год от"),
+          subtitle: state.year_from || text("Без ограничения")
         }, {
           id: "year_to",
-          title: "Год до",
-          subtitle: state.year_to || "Без ограничения"
+          title: text("Год до"),
+          subtitle: state.year_to || text("Без ограничения")
         }, {
           id: "clear",
-          title: "Любые годы"
+          title: text("Любые годы")
         }], function (field) {
           if (field.id === "clear") {
             delete state.year_from;
@@ -7014,22 +14767,22 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }
           input(field.id, field.title);
         });
-        if (r.id === "votes") return choose("votes", "Минимальное число оценок", {
-          "0": "Любое",
+        if (r.id === "votes") return choose("votes", text("Минимальное число оценок"), {
+          "0": text("Любое"),
           100: "100+",
           200: "200+",
           500: "500+",
           1e3: "1000+"
         });
-        if (r.id === "score") return choose("score", "Минимальный рейтинг", {
-          "": "Любой",
+        if (r.id === "score") return choose("score", text("Минимальный рейтинг"), {
+          "": text("Любой"),
           6: "6+",
           7: "7+",
           8: "8+",
           9: "9+"
         });
         if (values[r.id]) return choose(r.id, r.title, values[r.id]);
-        input(r.id, r.id === "query" ? "Название" : r.id === "year_from" ? "Год от" : "Год до");
+        input(r.id, r.id === "query" ? text("Название") : r.id === "year_from" ? text("Год от") : text("Год до"));
       }, function () {
         return L.Controller.toggle("menu");
       });
@@ -7039,7 +14792,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var li = document.createElement("li");
       li.className = "menu__item selector";
       li.dataset.action = "minimal_filters";
-      li.innerHTML = "<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M4 6h5m4 0h7M4 12h9m4 0h3M4 18h2m4 0h10\"/><circle cx=\"11\" cy=\"6\" r=\"2\"/><circle cx=\"15\" cy=\"12\" r=\"2\"/><circle cx=\"8\" cy=\"18\" r=\"2\"/></svg></div><div class=\"menu__text\">Поиск по фильтрам</div>";
+      li.innerHTML = text("<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M4 6h5m4 0h7M4 12h9m4 0h3M4 18h2m4 0h10\"/><circle cx=\"11\" cy=\"6\" r=\"2\"/><circle cx=\"15\" cy=\"12\" r=\"2\"/><circle cx=\"8\" cy=\"18\" r=\"2\"/></svg></div><div class=\"menu__text\">Поиск по фильтрам</div>");
       window.jQuery(li).on("hover:enter", function (e) {
         e.stopImmediatePropagation();
         menu();
@@ -7055,8 +14808,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         type: "button"
       },
       field: {
-        name: "Поиск по фильтрам",
-        description: "Фильмы, сериалы и аниме: жанр, диапазон годов, рейтинг и другие параметры."
+        name: text("Поиск по фильтрам"),
+        description: text("Фильмы, сериалы и аниме: жанр, диапазон годов, рейтинг и другие параметры.")
       },
       onChange: menu
     });
@@ -7091,7 +14844,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var home = {
       component: "main",
       url: "",
-      title: L.Lang && L.Lang.translate ? L.Lang.translate("title_main") : "Главная",
+      title: L.Lang && L.Lang.translate ? L.Lang.translate("title_main") : text("Главная"),
       source: L.Storage.get("source", "cub") || "cub",
       page: 1
     };
@@ -7378,9 +15131,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         show.call(L.Select, {
           title: entry.title + "?",
           items: [__spreadProps(__spreadValues({}, entry), {
-            title: "Да, сбросить"
+            title: text("Да, сбросить")
           }), {
-            title: "Отмена",
+            title: text("Отмена"),
             cancel: true
           }],
           onBack: bulk,
@@ -7401,22 +15154,22 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       function bulk() {
         L.Select.hide();
         show.call(L.Select, {
-          title: "Сезон " + season + " и весь сериал",
+          title: text("Сезон {0} и весь сериал", [season]),
           items: [{
-            title: "Отметить серии этого сезона",
-            subtitle: "Только серии, перечисленные в открытой раздаче.",
+            title: text("Отметить серии этого сезона"),
+            subtitle: text("Только серии, перечисленные в открытой раздаче."),
             action: "season"
           }, {
-            title: "Отметить все вышедшие серии",
-            subtitle: "Все сезоны по данным каталога, без будущих серий.",
+            title: text("Отметить все вышедшие серии"),
+            subtitle: text("Все сезоны по данным каталога, без будущих серий."),
             action: "all"
           }, {
-            title: "Очистить таймкоды текущего сезона",
-            subtitle: "Только файлы сезона " + season + " в этой раздаче.",
+            title: text("Очистить таймкоды текущего сезона"),
+            subtitle: text("Только файлы сезона {0} в этой раздаче.", [season]),
             action: "seasonclear"
           }, {
-            title: "Очистить таймкоды всего сериала",
-            subtitle: "Сбросить прогресс всех сезонов этого сериала.",
+            title: text("Очистить таймкоды всего сериала"),
+            subtitle: text("Сбросить прогресс всех сезонов этого сериала."),
             action: "titleclear"
           }],
           onBack: main,
@@ -7428,33 +15181,33 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       function main() {
         L.Select.hide();
         var menu = [{
-          title: seen ? "Снять отметку просмотра" : serial ? "Отметить серию просмотренной" : "Отметить фильм просмотренным",
-          subtitle: seen ? "Снимет отметку и сбросит прогресс." : "Сохранённая позиция не изменится.",
+          title: seen ? text("Снять отметку просмотра") : serial ? text("Отметить серию просмотренной") : text("Отметить фильм просмотренным"),
+          subtitle: seen ? text("Снимет отметку и сбросит прогресс.") : text("Сохранённая позиция не изменится."),
           action: seen ? "unmark" : "mark"
         }];
         if (serial && episode > 1) menu.push({
-          title: "Отметить серии 1–" + episode + " просмотренными",
-          subtitle: "Только сезон " + season + ", включая выбранную серию " + episode + ".",
+          title: text("Отметить серии 1–{0} просмотренными", [episode]),
+          subtitle: text("Только сезон {0}, включая выбранную серию {1}.", [season, episode]),
           action: "previous"
         });
         menu.push({
-          title: "Очистить таймкод",
-          subtitle: "Удалить сохранённую позицию и прогресс этого файла.",
+          title: text("Очистить таймкод"),
+          subtitle: text("Удалить сохранённую позицию и прогресс этого файла."),
           action: "clear",
           noenter: !record.time && !record.percent
         });
         if (serial) menu.push({
-          title: "Сезон и сериал…",
-          subtitle: "Массовые отметки и сброс прогресса.",
+          title: text("Сезон и сериал…"),
+          subtitle: text("Массовые отметки и сброс прогресса."),
           action: "bulk"
         });
         menu.push({
-          title: "Действия с видео…",
-          subtitle: "Плеер и ссылка на видео.",
+          title: text("Действия с видео…"),
+          subtitle: text("Плеер и ссылка на видео."),
           action: "native"
         });
         show.call(L.Select, {
-          title: serial ? "Сезон " + season + " • Серия " + episode : movie.title || movie.name || "Просмотр",
+          title: serial ? text("Сезон {0} • Серия {1}", [season, episode]) : movie.title || movie.name || text("Просмотр"),
           items: menu,
           onBack: restore,
           onSelect: function onSelect(entry) {
@@ -8107,8 +15860,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       button2.addClass("minimal-back selector").attr({
         role: "button",
         tabindex: "0",
-        title: "Назад",
-        "aria-label": "Назад"
+        title: text("Назад"),
+        "aria-label": text("Назад")
       }).html(ARROW);
       var back = function back() {
         if (L.Controller && L.Controller.back) L.Controller.back();
@@ -9165,15 +16918,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (value && value !== key) return value;
       }
       var short = String(language).slice(0, 2) === "ru" ? {
-        JP: "Япония",
-        US: "США",
-        GB: "Великобритания",
-        RU: "Россия",
-        KR: "Южная Корея",
-        CN: "Китай",
-        FR: "Франция",
-        CA: "Канада",
-        DE: "Германия"
+        JP: text("Япония"),
+        US: text("США"),
+        GB: text("Великобритания"),
+        RU: text("Россия"),
+        KR: text("Южная Корея"),
+        CN: text("Китай"),
+        FR: text("Франция"),
+        CA: text("Канада"),
+        DE: text("Германия")
       }[code] : "";
       return short || regions && regions.of(code) || name || code;
     }).filter(Boolean))).join(" | ");
@@ -9329,18 +17082,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var bar = root.querySelector(".torrent-filter");
       if (!bar) return;
       bar.classList.add("minimal-torrent-toolbar");
-      [["search", "Поиск"], ["sort", "Сортировка"], ["filter", "Фильтры"]].forEach(function (_ref31) {
+      [["search", text("Поиск")], ["sort", text("Сортировка")], ["filter", text("Фильтры")]].forEach(function (_ref31) {
         var _ref32 = _slicedToArray(_ref31, 2),
           key = _ref32[0],
           label = _ref32[1];
         var button = bar.querySelector(".filter--" + key);
         if (!button) return;
-        var text = button.querySelector(".minimal-toolbar-label");
-        if (!text) {
-          text = document.createElement("span");
-          text.className = "minimal-toolbar-label";
-          text.textContent = label;
-          button.appendChild(text);
+        var text2 = button.querySelector(".minimal-toolbar-label");
+        if (!text2) {
+          text2 = document.createElement("span");
+          text2.className = "minimal-toolbar-label";
+          text2.textContent = label;
+          button.appendChild(text2);
         }
         button.setAttribute("aria-label", label);
         var value = button.querySelector("div:not(.hide)");
@@ -9578,7 +17331,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     movie: "movies",
     tv: "shows"
   };
-  var FEEDS = [["Сейчас смотрят", "trending"], ["Популярное", "popular"], ["Самое просматриваемое за неделю", "watched/weekly"], ["В коллекциях за месяц", "collected/monthly"], ["Ожидаемые", "anticipated"]];
+  var FEEDS = [[text("Сейчас смотрят"), "trending"], [text("Популярное"), "popular"], [text("Самое просматриваемое за неделю"), "watched/weekly"], [text("В коллекциях за месяц"), "collected/monthly"], [text("Ожидаемые"), "anticipated"]];
   function traktPlan(kind) {
     if (kind === "dorama") return FEEDS.map(function (_ref35) {
       var _ref36 = _slicedToArray(_ref35, 2),
@@ -9619,7 +17372,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           title = _ref42[0],
           path = _ref42[1];
         return {
-          title: kind === "cartoon" ? index === 1 ? type === "movies" ? "Популярные мультфильмы" : "Популярные мультсериалы" : (type === "movies" ? "Мультфильмы" : "Мультсериалы") + " \xB7 " + title : title,
+          title: kind === "cartoon" ? index === 1 ? type === "movies" ? text("Популярные мультфильмы") : text("Популярные мультсериалы") : (type === "movies" ? text("Мультфильмы") : text("Мультсериалы")) + " \xB7 " + title : title,
           url: type + "/" + path + filter
         };
       });
@@ -9738,7 +17491,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         xhr.setRequestHeader("trakt-api-version", "2");
         xhr.setRequestHeader("Accept", "application/json");
         xhr.onload = function () {
-          if (xhr.status < 200 || xhr.status >= 300) return finish(null, xhr.status === 401 || xhr.status === 403 ? "Trakt: проверьте Client ID" : xhr.status === 429 ? "Trakt: слишком много запросов, повторите позже" : "Trakt недоступен (" + xhr.status + ")");
+          if (xhr.status < 200 || xhr.status >= 300) return finish(null, xhr.status === 401 || xhr.status === 403 ? text("Trakt: проверьте Client ID") : xhr.status === 429 ? text("Trakt: слишком много запросов, повторите позже") : text("Trakt недоступен ({0})", [xhr.status]));
           try {
             var rows2 = JSON.parse(xhr.responseText);
             if (!Array.isArray(rows2)) throw new Error();
@@ -9747,19 +17500,19 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               pages: Math.max(1, Number(xhr.getResponseHeader("X-Pagination-Page-Count")) || 1)
             });
           } catch (e) {
-            finish(null, "Trakt вернул некорректный ответ");
+            finish(null, text("Trakt вернул некорректный ответ"));
           }
         };
         xhr.onerror = xhr.ontimeout = function () {
-          return finish(null, "Не удалось подключиться к Trakt");
+          return finish(null, text("Не удалось подключиться к Trakt"));
         };
         xhr.onabort = function () {
-          return finish(null, "Запрос Trakt отменён");
+          return finish(null, text("Запрос Trakt отменён"));
         };
         try {
           xhr.send();
         } catch (e) {
-          finish(null, "Не удалось подключиться к Trakt");
+          finish(null, text("Не удалось подключиться к Trakt"));
         }
       };
       while (running < 2 && queue.length) {
@@ -9777,9 +17530,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }
     }
     function list(params, ok, fail) {
-      if (!enabled()) return error(fail, "Включите Trakt в настройках каталога L A M P A");
+      if (!enabled()) return error(fail, text("Включите Trakt в настройках каталога L A M P A"));
       var id = client();
-      if (!id) return error(fail, "Добавьте Client ID в Настройки → L A M P A → Каталог и поиск → Trakt");
+      if (!id) return error(fail, text("Добавьте Client ID в Настройки → L A M P A → Каталог и поиск → Trakt"));
       if (id !== lastKey) {
         clear();
         cache.clear();
@@ -9790,7 +17543,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var finish = function finish() {
           if (--left) return;
           var good = parts.filter(Boolean);
-          if (!good.length) return error(fail, reason && reason.status_message || "Trakt недоступен");
+          if (!good.length) return error(fail, reason && reason.status_message || text("Trakt недоступен"));
           var results = [],
             seen = /* @__PURE__ */new Set();
           for (var i = 0; i < 10; i++) {
@@ -9849,7 +17602,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           return row.url.slice(row.url.indexOf("?"));
         });
       }))));
-      if (!match || !allowed.has(match[3] || "")) return error(fail, "Неизвестная подборка Trakt");
+      if (!match || !allowed.has(match[3] || "")) return error(fail, text("Неизвестная подборка Trakt"));
       var page = Math.max(1, Math.min(1e3, Number(params.page) || 1));
       var limit = params.minimal_limit === 10 ? 10 : 20;
       var requestPath = path.replace("?without_genres=animation", "");
@@ -9935,7 +17688,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }
     }
     function searchPage(params, ok, fail) {
-      if (!enabled() || !client()) return error(fail, "Включите Trakt и добавьте Client ID");
+      if (!enabled() || !client()) return error(fail, text("Включите Trakt и добавьте Client ID"));
       var id = client();
       if (id !== lastKey) {
         clear();
@@ -9995,7 +17748,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           ["movie", "show"].forEach(function (type, index) {
             var finish = function finish(json) {
               rows2[index] = __spreadProps(__spreadValues({
-                title: index ? "Сериалы" : "Фильмы",
+                title: index ? text("Сериалы") : text("Фильмы"),
                 type: type
               }, json), {
                 source: "trakt",
@@ -10037,7 +17790,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       function finish() {
         if (--left) return;
         var result = output.filter(Boolean);
-        if (!result.length && failures) return error(fail, reason || "Trakt недоступен");
+        if (!result.length && failures) return error(fail, reason || text("Trakt недоступен"));
         ok(result);
       }
       plan.forEach(function (row, index) {
@@ -10106,7 +17859,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       },
       field: {
         name: "Trakt",
-        description: "Добавить в Настройки → Остальное → Основной источник. При первом включении потребуется Client ID."
+        description: text("Добавить в Настройки → Остальное → Основной источник. При первом включении потребуется Client ID.")
       },
       onChange: function onChange() {
         clear();
@@ -10138,7 +17891,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       },
       field: {
         name: "Trakt \xB7 Client ID",
-        description: "Публичный Client ID собственного приложения Trakt. Выбор каталога: Настройки → Остальное → Основной источник. Client Secret не нужен."
+        description: text("Публичный Client ID собственного приложения Trakt. Выбор каталога: Настройки → Остальное → Основной источник. Client Secret не нужен.")
       },
       onChange: function onChange() {
         clear();
@@ -10161,11 +17914,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     womens_day: '<path fill="currentColor" fill-opacity=".08" d="M6 4c2 0 4 1.1 6 3 2-1.9 4-3 6-3v4a6 6 0 0 1-12 0z"/><path d="M6 4c2 0 4 1.1 6 3 2-1.9 4-3 6-3v4a6 6 0 0 1-12 0V4Zm3 1 3-3 3 3M12 14v7M12 20c-4 0-6-1.7-6-4 3 0 5 1.2 6 4Zm0-1c1-3 3-4 6-4 0 2.5-2 4-6 4Z"/>'
   };
   var holidayNames = {
-    halloween: "Хэллоуин",
-    "black-friday": "Чёрная пятница",
-    snow: "Зимнее оформление",
-    "new-year": "Новый год",
-    womens_day: "8 Марта"
+    halloween: text("Хэллоуин"),
+    "black-friday": text("Чёрная пятница"),
+    snow: text("Зимнее оформление"),
+    "new-year": text("Новый год"),
+    womens_day: text("8 Марта")
   };
   function holidayIcon(name) {
     return '<svg class="pt-holiday-svg" data-holiday="' + name + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + paths[name] + "</svg>";
@@ -10442,7 +18195,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (back) back.update();
         document.body.classList.remove("pt-reduce-motion");
         if (!document.getElementById("lampa_view-lampa-style")) _$('<style id="lampa_view-lampa-style">').text(theme_default).appendTo("head");
+        if (!appearanceTheme) appearanceTheme = appearance(L);
         var enabled = yes("lampa_view_enabled");
+        document.querySelectorAll(".head__action.open--search").forEach(function (node) {
+          return node.setAttribute("data-pt-placeholder", text("Поиск…"));
+        });
         _$(".minimal-detail-logo.loaded").each(function () {
           _$(this).siblings(".full-start-new__title").toggleClass("pt-hidden", enabled);
         });
@@ -10473,7 +18230,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (section === "settings") return _$(".head .open--settings").trigger("hover:enter");
         if (section === "home") return L.Activity.push({
           url: "",
-          title: "Главная",
+          title: text("Главная"),
           component: "main",
           source: "tmdb",
           page: 1
@@ -10482,7 +18239,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           var native = _$('.menu__item[data-action="favorite"]');
           if (native.length) native.trigger("hover:enter");else L.Activity.push({
             url: "",
-            title: "Медиатека",
+            title: text("Медиатека"),
             component: "bookmarks",
             page: 1
           });
@@ -10490,16 +18247,16 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
         if (section === "calendar") {
           var _native = _$('.menu__item[data-action="timetable"]');
-          if (_native.length) _native.first().trigger("hover:enter");else L.Noty.show("Расписание доступно в медиатеке Lampa");
+          if (_native.length) _native.first().trigger("hover:enter");else L.Noty.show(text("Расписание доступно в медиатеке Lampa"));
           return;
         }
         var titles = {
-          movie: "Фильмы",
-          tv: "Сериалы",
-          cartoon: "Мультфильмы",
-          anime: "Аниме",
-          dorama: "Дорамы",
-          tvshow: "ТВ-шоу"
+          movie: text("Фильмы"),
+          tv: text("Сериалы"),
+          cartoon: text("Мультфильмы"),
+          anime: text("Аниме"),
+          dorama: text("Дорамы"),
+          tvshow: text("ТВ-шоу")
         };
         L.Activity.push({
           url: section,
@@ -10511,8 +18268,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       },
       shell = function shell() {
         if (!_$(".pt-topnav").length) {
-          var nav = _$("<div class=\"pt-topnav\" role=\"navigation\" aria-label=\"Каталог\">");
-          [["home", "Главная"], ["movie", "Фильмы"], ["tv", "Сериалы"], ["dorama", "Дорамы"], ["tvshow", "ТВ-шоу"], ["anime", "Аниме"]].forEach(function (_ref45) {
+          var nav = _$(text("<div class=\"pt-topnav\" role=\"navigation\" aria-label=\"Каталог\">"));
+          [["home", text("Главная")], ["movie", text("Фильмы")], ["tv", text("Сериалы")], ["dorama", text("Дорамы")], ["tvshow", text("ТВ-шоу")], ["anime", text("Аниме")]].forEach(function (_ref45) {
             var _ref46 = _slicedToArray(_ref45, 2),
               key = _ref46[0],
               label = _ref46[1];
@@ -10523,8 +18280,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           _$(".head__title").before(nav);
         }
         if (!_$(".pt-mobile-nav").length) {
-          var _nav = _$("<nav class=\"pt-mobile-nav\" aria-label=\"Навигация\">");
-          [["home", "Главная", "home"], ["search", "Поиск", "search"], ["calendar", "Расписание", "calendar"], ["library", "Медиатека", "library"], ["settings", "Настройки", "settings"]].forEach(function (_ref47) {
+          var _nav = _$(text("<nav class=\"pt-mobile-nav\" aria-label=\"Навигация\">"));
+          [["home", text("Главная"), "home"], ["search", text("Поиск"), "search"], ["calendar", text("Расписание"), "calendar"], ["library", text("Медиатека"), "library"], ["settings", text("Настройки"), "settings"]].forEach(function (_ref47) {
             var _ref48 = _slicedToArray(_ref47, 3),
               key = _ref48[0],
               label = _ref48[1],
@@ -10540,7 +18297,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         _$(".head__menu-icon").addClass("selector").attr({
           role: "button",
           tabindex: "0",
-          "aria-label": "Меню"
+          "aria-label": text("Меню")
         }).off("hover:enter.minimal").on("hover:enter.minimal", function () {
           return L.Controller.toggle("menu");
         });
@@ -10556,7 +18313,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           cartoons = document.createElement("li");
           cartoons.className = "menu__item selector";
           cartoons.dataset.action = "cartoon";
-          cartoons.innerHTML = "<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\"><path d=\"m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z\"/></svg></div><div class=\"menu__text\">Мультфильмы</div>";
+          cartoons.innerHTML = text("<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\"><path d=\"m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z\"/></svg></div><div class=\"menu__text\">Мультфильмы</div>");
         }
         if (cartoons && !cartoons.dataset.minimalCartoons) {
           cartoons.dataset.minimalCartoons = "1";
@@ -10571,7 +18328,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           dorama = document.createElement("li");
           dorama.className = "menu__item selector";
           dorama.dataset.action = "dorama";
-          dorama.innerHTML = "<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 20s-8-4.8-8-10a4.4 4.4 0 0 1 8-2.5A4.4 4.4 0 0 1 20 10c0 5.2-8 10-8 10Z\"/><path d=\"m18 2 .6 1.8L20.5 4l-1.9.6L18 6.5l-.6-1.9L15.5 4l1.9-.2Z\"/></svg></div><div class=\"menu__text\">Дорамы</div>";
+          dorama.innerHTML = text("<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 20s-8-4.8-8-10a4.4 4.4 0 0 1 8-2.5A4.4 4.4 0 0 1 20 10c0 5.2-8 10-8 10Z\"/><path d=\"m18 2 .6 1.8L20.5 4l-1.9.6L18 6.5l-.6-1.9L15.5 4l1.9-.2Z\"/></svg></div><div class=\"menu__text\">Дорамы</div>");
         }
         if (dorama && !dorama.dataset.minimalDorama) {
           dorama.dataset.minimalDorama = "1";
@@ -10585,7 +18342,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           shows = document.createElement("li");
           shows.className = "menu__item selector";
           shows.dataset.action = "tvshow";
-          shows.innerHTML = "<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"5\" width=\"18\" height=\"15\" rx=\"2\"/><path d=\"m8 2 4 3 4-3m-6 8 5 3-5 3Z\"/></svg></div><div class=\"menu__text\">ТВ-шоу</div>";
+          shows.innerHTML = text("<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"5\" width=\"18\" height=\"15\" rx=\"2\"/><path d=\"m8 2 4 3 4-3m-6 8 5 3-5 3Z\"/></svg></div><div class=\"menu__text\">ТВ-шоу</div>");
         }
         if (shows && !shows.dataset.minimalShows) {
           shows.dataset.minimalShows = "1";
@@ -10665,9 +18422,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }
           var index = 0,
             item,
-            focus = 0,
-            studioTarget = null;
-          var element = _$("<section class=\"pt-hero\" aria-label=\"Подборка фильмов и сериалов\">");
+            focus = 0;
+          var element = _$(text("<section class=\"pt-hero\" aria-label=\"Подборка фильмов и сериалов\">"));
           var image2 = _$('<img class="pt-hero__image" alt="" decoding="async">').appendTo(element);
           var body = _$('<div class="pt-hero__body">').appendTo(element);
           var logo = _$('<img class="pt-hero__logo pt-hidden" decoding="async">').appendTo(body);
@@ -10677,8 +18433,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           var metaText = _$("<span>").appendTo(meta);
           var overview = _$('<p class="pt-hero__overview">').appendTo(body);
           var buttons = _$('<div class="pt-hero__actions">').appendTo(body);
-          var details = _$('<div class="pt-hero__action selector" role="button" tabindex="0">').html(icon("info") + "<span>Подробнее</span>").appendTo(buttons);
-          var dots = _$("<div class=\"pt-hero__dots\" role=\"group\" aria-label=\"Переключить обложку\">").appendTo(element);
+          var details = _$('<div class="pt-hero__action selector" role="button" tabindex="0">').html(text("{0}<span>Подробнее</span>", [icon("info")])).appendTo(buttons);
+          var dots = _$(text("<div class=\"pt-hero__dots\" role=\"group\" aria-label=\"Переключить обложку\">")).appendTo(element);
           var logoToken = 0,
             upgradeTimer,
             rotation;
@@ -10707,7 +18463,6 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             });
             title.text(card.title || card.name);
             var token = ++logoToken;
-            studioTarget = null;
             studio.off("load error").addClass("pt-hidden").removeClass("selector").removeAttr("src alt title role tabindex");
             logo.off("load error").addClass("pt-hidden").removeClass("pt-hero__logo--translated").removeAttr("src");
             title.removeClass("pt-hidden pt-hero__title--translation");
@@ -10740,16 +18495,6 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 }).on("load", function () {
                   if (token === logoToken) {
                     studio.removeClass("pt-hidden");
-                    if (Number(value.id) > 0) {
-                      studioTarget = value;
-                      studio.addClass("selector").attr({
-                        role: "button",
-                        tabindex: "0",
-                        "aria-label": "Проекты " + value.name,
-                        title: "Проекты " + value.name
-                      });
-                      if (L.Controller.enabled().name === "lampa_view_hero") L.Controller.collectionAppend(studio);
-                    }
                   }
                 }).on("error", function () {
                   if (token === logoToken) studio.addClass("pt-hidden");
@@ -10757,7 +18502,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               });
             }
             var year = (card.release_date || card.first_air_date || "").slice(0, 4);
-            metaText.text([year, kind === "tv" ? "Сериал" : "Фильм", card.vote_average ? Number(card.vote_average).toFixed(1) : ""].filter(Boolean).join("  \xB7  "));
+            metaText.text([year, kind === "tv" ? text("Сериал") : text("Фильм"), card.vote_average ? Number(card.vote_average).toFixed(1) : ""].filter(Boolean).join("  \xB7  "));
             var tv = document.body.classList.contains("pt-tv");
             if (!tv) branding2();
             overview.text(card.overview);
@@ -10810,7 +18555,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
           cards.forEach(function (card, i) {
             return _$('<div class="pt-hero__dot selector" role="button" tabindex="0">').attr({
-              "aria-label": "Обложка " + (i + 1) + ": " + (card.title || card.name || ""),
+              "aria-label": text("Обложка {0}: {1}", [i + 1, card.title || card.name || ""]),
               title: document.body.classList.contains("pt-tv") ? null : card.title || card.name
             }).on("hover:enter", function () {
               return show(i);
@@ -10824,29 +18569,6 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           controls.on("hover:focus", function (event2) {
             focus = controls.index(event2.currentTarget);
           });
-          studio.on("hover:focus", function () {
-            focus = -1;
-          });
-          studio.on("hover:enter", function () {
-            if (!studioTarget || studio.hasClass("pt-hidden")) return;
-            var s = studioTarget;
-            L.Activity.push(s.kind === "network" ? {
-              component: "category_full",
-              source: "tmdb",
-              url: "discover/tv",
-              networks: s.id,
-              sort_by: "popularity.desc",
-              title: s.name,
-              page: 1
-            } : {
-              component: "company",
-              source: "tmdb",
-              url: item.media_type,
-              id: s.id,
-              title: s.name
-            });
-          });
-          pointer(studio);
           var touch;
           element.on("touchstart", function (e) {
             var t = e.originalEvent.touches[0];
@@ -10891,7 +18613,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             var enterHero = function enterHero() {
               if (!yes("lampa_view_enabled") || !yes("lampa_view_hero")) return L.Controller.toggle("head");
               var focusControl = function focusControl() {
-                return L.Controller.collectionFocus(focus === -1 ? studio : controls.eq(focus), element);
+                return L.Controller.collectionFocus(controls.eq(focus), element);
               };
               L.Controller.add("lampa_view_hero", {
                 toggle: function toggle() {
@@ -10901,7 +18623,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                   focusControl();
                 },
                 left: function left() {
-                  focus = Math.max(focus < 0 ? -1 : 0, focus - 1);
+                  focus = Math.max(0, focus - 1);
                   focusControl();
                 },
                 right: function right() {
@@ -10912,19 +18634,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                   if (focus > 0) {
                     focus = 0;
                     focusControl();
-                  } else if (focus === 0 && studioTarget && !studio.hasClass("pt-hidden")) {
-                    focus = -1;
-                    focusControl();
                   } else L.Controller.toggle("head");
                 },
                 down: function down() {
-                  if (focus === -1) {
-                    focus = 0;
-                    focusControl();
-                  } else if (focus < 1 && cards.length > 1) {
-                    focus = index + 1;
-                    focusControl();
-                  } else nativeLine.toggle();
+                  return nativeLine.toggle();
                 },
                 back: function back() {
                   return L.Controller.toggle("head");
@@ -11039,8 +18752,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           icon: icon("play")
         });
         unifiedSettings(L.SettingsApi, L);
-        var options = [["lampa_view_enabled", "Минималистичный интерфейс", "Единый стиль каталога, карточек, источников и настроек. Версия " + version + ".", true], ["lampa_view_hero", "Обложка на главной", "Карусель каждые 10 секунд, ручное переключение и жесты.", true]];
-        if (L.Platform && L.Platform.desktop && L.Platform.desktop() || ROOT.electronAPI && ROOT.electronAPI.lampa_view) options.push(["lampa_view_metadata", "Уточнять данные mpv+", "Передавать сведения карточки для проверки названия, сезона и серии.", true]);
+        var options = [["lampa_view_enabled", text("Оформление интерфейса"), text("Единый стиль каталога, карточек, источников и настроек. Версия {0}.", [version]), true], ["lampa_view_hero", text("Обложка на главной"), text("Карусель каждые 10 секунд, ручное переключение и жесты."), true]];
+        if (L.Platform && L.Platform.desktop && L.Platform.desktop() || ROOT.electronAPI && ROOT.electronAPI.lampa_view) options.push(["lampa_view_metadata", text("Уточнять данные mpv+"), text("Передавать сведения карточки для проверки названия, сезона и серии."), true]);
         options.forEach(function (_ref49) {
           var _ref50 = _slicedToArray(_ref49, 4),
             name = _ref50[0],
@@ -11064,19 +18777,38 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         L.SettingsApi.addParam({
           component: "lampa_view",
           param: {
+            name: "lampa_view_theme",
+            type: "select",
+            values: {
+              minimal: text("Минималистичная"),
+              apple: "Apple"
+            },
+            default: "minimal"
+          },
+          field: {
+            name: text("Тема интерфейса"),
+            description: text("Оформление всей Lampa. Переключается сразу, данные просмотра сохраняются.")
+          },
+          onChange: function onChange() {
+            if (appearanceTheme) appearanceTheme.update();
+          }
+        });
+        L.SettingsApi.addParam({
+          component: "lampa_view",
+          param: {
             name: "lampa_view_layout",
             type: "select",
             values: {
-              auto: "Автоматически",
-              tv: "Телевизор",
-              mobile: "Телефон",
-              desktop: "Компьютер"
+              auto: text("Автоматически"),
+              tv: text("Телевизор"),
+              mobile: text("Телефон"),
+              desktop: text("Компьютер")
             },
             default: "auto"
           },
           field: {
-            name: "Тип устройства",
-            description: "Авто использует режим экрана Lampa. Можно выбрать вручную."
+            name: text("Тип устройства"),
+            description: text("Авто использует режим экрана Lampa. Можно выбрать вручную.")
           },
           onChange: setTheme
         });
@@ -11086,14 +18818,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             name: "minimal_banner_quality",
             type: "select",
             values: {
-              medium: "Среднее",
-              high: "Высокое"
+              medium: text("Среднее"),
+              high: text("Высокое")
             },
             default: "high"
           },
           field: {
-            name: "Качество баннеров и обложек",
-            description: "Общее качество баннеров, фонов загрузки и карточек. Высокое подбирает чёткий размер под экран и использует общий кеш обложек."
+            name: text("Качество баннеров и обложек"),
+            description: text("Общее качество баннеров, фонов загрузки и карточек. Высокое подбирает чёткий размер под экран и использует общий кеш обложек.")
           },
           onChange: function onChange() {
             return artwork && artwork.choose();
@@ -11109,6 +18841,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         P.bannerCountries = function (card) {
           return bannerCountries(card, L.Storage.get("language", "ru"), L);
         };
+        installI18n(L, P);
         P.online = onlineState(L);
         interfaceSize(L);
         installTmdb(L);
@@ -11176,7 +18909,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                   component: "category_full",
                   source: "tmdb",
                   url: route.replace(/([?&])lang=/, "$1language="),
-                  title: event.data.title || "Подборка",
+                  title: event.data.title || text("Подборка"),
                   page: 1
                 });
               }
@@ -11301,7 +19034,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       artwork,
       back,
       holidays2,
-      pinnedMenu;
+      pinnedMenu,
+      appearanceTheme;
     var metadata = /* @__PURE__ */new Map();
     var heroes = /* @__PURE__ */new WeakSet();
     var carousels = /* @__PURE__ */new Set();
@@ -12764,12 +20498,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
       }
     })(typeof window !== "undefined" ? window : null);
+    function lampaViewText(source, values) {
+      return window.LampaView && window.LampaView.text ? window.LampaView.text(source, values) : String(source).replace(/\{(\d+)\}/g, function (_, n) {
+        return String((values || [])[n]);
+      });
+    }
     (function () {
       "use strict";
 
       if (window.mpv_plus_companion) return;
       window.mpv_plus_companion = {
-        name: "Парс",
+        name: lampaViewText("Парс"),
         version: "1.4.0"
       };
       function enabled(name) {
@@ -16745,19 +24484,19 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (!Lampa.ContentRows || !Lampa.ContentRows.add) return;
         [{
           name: "new_movies",
-          title: "Новинки кино",
+          title: lampaViewText("Новинки кино"),
           type: "movie",
           sort: "primary_release_date.desc",
           votes: 20
         }, {
           name: "popular_movies",
-          title: "Популярные фильмы за год",
+          title: lampaViewText("Популярные фильмы за год"),
           type: "movie",
           sort: "popularity.desc",
           votes: 50
         }, {
           name: "popular_series",
-          title: "Новые популярные сериалы",
+          title: lampaViewText("Новые популярные сериалы"),
           type: "tv",
           sort: "popularity.desc",
           votes: 20
@@ -16805,15 +24544,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         Lampa.Listener.follow("request_secuses", fallbackSearch);
         addRows();
         if (Lampa.Plugins && Lampa.Plugins.get) Lampa.Plugins.get().forEach(function (plugin) {
-          if (/\/(lampa-extras|mpv-plus|plus|pars)\.js(?:[?#]|$)/.test(plugin.url || "")) plugin.name = "Парс";
+          if (/\/(lampa-extras|mpv-plus|plus|pars)\.js(?:[?#]|$)/.test(plugin.url || "")) plugin.name = lampaViewText("Парс");
         });
         if (Lampa.SettingsApi) {
           Lampa.SettingsApi.addComponent({
             component: "mpv_plus",
-            name: "Парс",
+            name: lampaViewText("Парс"),
             icon: '<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="9" width="38" height="30" rx="6" fill="none" stroke="currentColor" stroke-width="3"/><path d="m20 17 11 7-11 7z" fill="currentColor"/><path d="M8 5h22M12 43h22" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>'
           });
-          [["anime_search", "Названия аниме для поиска", "Использовать альтернативное название из каталога, если поиск не дал результатов. Категории раздач остаются штатными."], ["recent_rows", "Новинки и популярное за год", "Три подборки в начале главной страницы. Изменение применяется при её следующем открытии."]].forEach(function (option) {
+          [["anime_search", lampaViewText("Названия аниме для поиска"), lampaViewText("Использовать альтернативное название из каталога, если поиск не дал результатов. Категории раздач остаются штатными.")], ["recent_rows", lampaViewText("Новинки и популярное за год"), lampaViewText("Три подборки в начале главной страницы. Изменение применяется при её следующем открытии.")]].forEach(function (option) {
             Lampa.SettingsApi.addParam({
               component: "mpv_plus",
               param: {
@@ -16837,6 +24576,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (event.type === "ready") start();
       });
     })();
+    function lampaViewText(source, values) {
+      return window.LampaView && window.LampaView.text ? window.LampaView.text(source, values) : String(source).replace(/\{(\d+)\}/g, function (_, n) {
+        return String((values || [])[n]);
+      });
+    }
     (function () {
       "use strict";
 
@@ -16848,7 +24592,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         try {
           t = Lampa.Lang.translate("title_torrents");
         } catch (e) {}
-        return t && t !== "title_torrents" ? t : "Торренты";
+        return t && t !== "title_torrents" ? t : lampaViewText("Торренты");
       }
       function openTorrents(movie) {
         var year = ((movie.first_air_date || movie.release_date || "0000") + "").slice(0, 4);
@@ -17771,6 +25515,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         voices_plus: [["+%s озвучка", "+%s озвучки", "+%s озвучек"], ["+%s озвучення", "+%s озвучення", "+%s озвучень"], ["+%s voice-over", "+%s voice-overs"]]
       };
       function plural(key, n) {
+        if (window.LampaView && window.LampaView.pluralSource) return window.LampaView.pluralSource((PLURAL[key] || [])[0] || [], n);
         var li = langIdx(),
           forms = (PLURAL[key] || [])[li] || [],
           m10 = n % 10,
@@ -17791,6 +25536,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           s = row ? row[langIdx()] || row[0] : key,
           args = arguments,
           i = 1;
+        if (row && window.LampaView && window.LampaView.text) s = window.LampaView.text(row[0]);
         return s.replace(/%s/g, function () {
           return i < args.length ? args[i++] : "";
         });
@@ -27267,6 +35013,46 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
       };
     })();
+    var __defProp = Object.defineProperty;
+    var __defProps = Object.defineProperties;
+    var __getOwnPropDescs = Object.getOwnPropertyDescriptors;
+    var __getOwnPropSymbols = Object.getOwnPropertySymbols;
+    var __hasOwnProp = Object.prototype.hasOwnProperty;
+    var __propIsEnum = Object.prototype.propertyIsEnumerable;
+    var __defNormalProp = function __defNormalProp(obj, key, value) {
+      return key in obj ? __defProp(obj, key, {
+        enumerable: true,
+        configurable: true,
+        writable: true,
+        value: value
+      }) : obj[key] = value;
+    };
+    var __spreadValues = function __spreadValues(a, b) {
+      for (var prop in b || (b = {})) if (__hasOwnProp.call(b, prop)) __defNormalProp(a, prop, b[prop]);
+      if (__getOwnPropSymbols) {
+        var _iterator62 = _createForOfIteratorHelper(__getOwnPropSymbols(b)),
+          _step62;
+        try {
+          for (_iterator62.s(); !(_step62 = _iterator62.n()).done;) {
+            var prop = _step62.value;
+            if (__propIsEnum.call(b, prop)) __defNormalProp(a, prop, b[prop]);
+          }
+        } catch (err) {
+          _iterator62.e(err);
+        } finally {
+          _iterator62.f();
+        }
+      }
+      return a;
+    };
+    var __spreadProps = function __spreadProps(a, b) {
+      return __defProps(a, __getOwnPropDescs(b));
+    };
+    function lampaViewText(source, values) {
+      return window.LampaView && window.LampaView.text ? window.LampaView.text(source, values) : String(source).replace(/\{(\d+)\}/g, function (_, n) {
+        return String((values || [])[n]);
+      });
+    }
     (function () {
       "use strict";
 
@@ -29398,7 +37184,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
         var deadline = Date.now() + PROBE_BUDGET;
         var index = 0;
-        var _step62 = function step() {
+        var _step63 = function step() {
           if (!probe_busy || generation !== probe_generation || owner !== componentNow() || scopeId !== qualityScope() || index >= queue.length) return;
           if (Date.now() > deadline) return probeStop();
           var entry = queue[index++];
@@ -29419,7 +37205,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             if (answered || !probe_busy || generation !== probe_generation || owner !== componentNow() || scopeId !== qualityScope()) return;
             answered = true;
             probeAnswer(entry.key, answer);
-            _step62();
+            _step63();
           };
           try {
             net["native"](probeUrlFor(entry.key), done, function () {
@@ -29431,7 +37217,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             done("");
           }
         };
-        for (var worker = 0; worker < PROBE_PARALLEL; worker++) _step62();
+        for (var worker = 0; worker < PROBE_PARALLEL; worker++) _step63();
       }
       function probeSchedule() {
         if (!probeAllowed() || !movie) return;
@@ -29613,7 +37399,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           voice_seed_net = null;
           if (typeof after === "function") after();
         };
-        var _step63 = function step() {
+        var _step64 = function step() {
           if (!voice_seed_busy) return;
           if (seat >= jobs.length || Date.now() > deadline || !inSkin() || !movie) return finish();
           var job = jobs[seat++];
@@ -29642,7 +37428,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               } catch (e) {}
             }
             if (voiceListFresh()) return finish();
-            _step63();
+            _step64();
           };
           var guard = setTimeout(function () {
             if (settled) return;
@@ -29663,7 +37449,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             done("");
           }
         };
-        _step63();
+        _step64();
       }
       function voiceLink(url) {
         var value = String(url || "").replace("rjson=", "nojson=");
@@ -29823,7 +37609,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         voice_busy = true;
         var deadline = Date.now() + VOICE_BUDGET;
         var index = 0;
-        var _step64 = function step() {
+        var _step65 = function step() {
           if (!voice_busy || index >= queue.length) return;
           if (Date.now() > deadline || !inSkin()) return voiceStop();
           var entry = queue[index++];
@@ -29862,7 +37648,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             clearTimeout(guard);
             var got = voiceAnswer(entry.name, answer);
             if (!got) retryAlt();
-            _step64();
+            _step65();
           };
           var guard = setTimeout(function () {
             if (settled) return;
@@ -29883,7 +37669,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             done("");
           }
         };
-        for (var worker = 0; worker < VOICE_PARALLEL; worker++) _step64();
+        for (var worker = 0; worker < VOICE_PARALLEL; worker++) _step65();
       }
       function voiceSchedule() {
         if (!voiceWanted()) return;
@@ -30467,7 +38253,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var state = onlineState(),
           record = state && state.reader ? state.reader(movie)(season, serial ? item.num : 0, item.hash) : {},
           seen = record.found ? record.percent >= SEEN_PERCENT : isSeen(item);
-        var title = serial ? "Сезон " + season + " • Серия " + item.num : movie.title || movie.name || "Просмотр";
+        var title = serial ? lampaViewText("Сезон {0} • Серия {1}", [season, item.num]) : movie.title || movie.name || lampaViewText("Просмотр");
         var restore = function restore() {
           Lampa.Select.hide();
           contentEnable();
@@ -30488,7 +38274,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           Lampa.Select.show = function (options) {
             if (options && Array.isArray(options.items)) options = $.extend({}, options, {
               items: options.items.filter(function (entry) {
-                return !/^(пометить|отметить просмотр|снять отметку|сбросить тайм|очистить все метки|очистить все тайм)/i.test(String(entry.title || "").trim());
+                var title2 = String(entry.title || "").trim(),
+                  nativeKeys = ["torrent_parser_label_title", "torrent_parser_label_cancel_title", "time_reset"];
+                if (nativeKeys.some(function (key2) {
+                  return Lampa.Lang.translate(key2) === title2;
+                })) return false;
+                var source = window.LampaView && window.LampaView.sourceText ? window.LampaView.sourceText(title2) : title2;
+                return !/^(пометить|отметить просмотр|снять отметку|сбросить тайм|очистить все метки|очистить все тайм)/i.test(source);
               })
             });
             return show.call(Lampa.Select, options);
@@ -30547,11 +38339,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           Lampa.Select.show({
             title: entry.title + "?",
             items: [{
-              title: "Да, сбросить",
+              title: lampaViewText("Да, сбросить"),
               subtitle: entry.subtitle,
               action: entry.action
             }, {
-              title: "Отмена",
+              title: lampaViewText("Отмена"),
               cancel: true
             }],
             onBack: bulkMenu,
@@ -30564,27 +38356,27 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           Lampa.Select.hide();
           var menu = [];
           if (serial) menu.push({
-            title: "Отметить все вышедшие серии",
-            subtitle: "Все сезоны сериала. Будущие серии не отмечаются.",
+            title: lampaViewText("Отметить все вышедшие серии"),
+            subtitle: lampaViewText("Все сезоны сериала. Будущие серии не отмечаются."),
             action: "allseen"
           });
           if (params.onClearAllMark) menu.push({
-            title: serial ? "Снять отметки текущего сезона" : "Снять отметки всех вариантов",
-            subtitle: serial ? "Только сезон " + season + ". Другие сезоны сохранятся." : "Все варианты фильма в этом источнике.",
+            title: serial ? lampaViewText("Снять отметки текущего сезона") : lampaViewText("Снять отметки всех вариантов"),
+            subtitle: serial ? lampaViewText("Только сезон {0}. Другие сезоны сохранятся.", [season]) : lampaViewText("Все варианты фильма в этом источнике."),
             action: "allmarks"
           });
           if (params.onClearAllTime) menu.push({
-            title: serial ? "Очистить таймкоды текущего сезона" : "Очистить таймкоды всех вариантов",
-            subtitle: serial ? "Сбросить позиции серий сезона " + season + "." : "Сбросить позиции всех вариантов фильма.",
+            title: serial ? lampaViewText("Очистить таймкоды текущего сезона") : lampaViewText("Очистить таймкоды всех вариантов"),
+            subtitle: serial ? lampaViewText("Сбросить позиции серий сезона {0}.", [season]) : lampaViewText("Сбросить позиции всех вариантов фильма."),
             action: "alltimes"
           });
           if (serial && state && state.clearTitleProgress) menu.push({
-            title: "Очистить таймкоды всего сериала",
-            subtitle: "Сбросить прогресс всех сезонов этого сериала.",
+            title: lampaViewText("Очистить таймкоды всего сериала"),
+            subtitle: lampaViewText("Сбросить прогресс всех сезонов этого сериала."),
             action: "titletimes"
           });
           Lampa.Select.show({
-            title: serial ? "Сезон " + season + " и весь сериал" : "Все варианты фильма",
+            title: serial ? lampaViewText("Сезон {0} и весь сериал", [season]) : lampaViewText("Все варианты фильма"),
             items: menu,
             onBack: mainMenu,
             onSelect: function onSelect(entry) {
@@ -30595,29 +38387,29 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         function mainMenu() {
           Lampa.Select.hide();
           var menu = [{
-            title: seen ? "Снять отметку просмотра" : serial ? "Отметить серию просмотренной" : "Отметить фильм просмотренным",
-            subtitle: seen ? "Снимет отметку и сбросит прогресс." : "Сохранённая позиция не изменится.",
+            title: seen ? lampaViewText("Снять отметку просмотра") : serial ? lampaViewText("Отметить серию просмотренной") : lampaViewText("Отметить фильм просмотренным"),
+            subtitle: seen ? lampaViewText("Снимет отметку и сбросит прогресс.") : lampaViewText("Сохранённая позиция не изменится."),
             action: seen ? "unmark" : "mark"
           }];
           if (serial && item.num > 1 && state && state.setPreviousWatched) menu.push({
-            title: "Отметить серии 1–" + item.num + " просмотренными",
-            subtitle: "Только сезон " + season + ", включая выбранную серию " + item.num + ".",
+            title: lampaViewText("Отметить серии 1–{0} просмотренными", [item.num]),
+            subtitle: lampaViewText("Только сезон {0}, включая выбранную серию {1}.", [season, item.num]),
             action: "previous"
           });
           menu.push({
-            title: "Очистить таймкод",
-            subtitle: "Удалить сохранённую позицию и прогресс " + (serial ? "этой серии." : "этого варианта фильма."),
+            title: lampaViewText("Очистить таймкод"),
+            subtitle: lampaViewText("Удалить сохранённую позицию и прогресс {0}", [serial ? lampaViewText("этой серии.") : lampaViewText("этого варианта фильма.")]),
             action: "timeclear",
             noenter: !record.percent && !record.time
           });
           if (serial || params.onClearAllMark || params.onClearAllTime) menu.push({
-            title: serial ? "Сезон и сериал…" : "Все варианты фильма…",
-            subtitle: "Массовые отметки и сброс прогресса.",
+            title: serial ? lampaViewText("Сезон и сериал…") : lampaViewText("Все варианты фильма…"),
+            subtitle: lampaViewText("Массовые отметки и сброс прогресса."),
             submenu: true
           });
           menu.push({
-            title: "Действия с видео…",
-            subtitle: "Плеер и ссылка на видео.",
+            title: lampaViewText("Действия с видео…"),
+            subtitle: lampaViewText("Плеер и ссылка на видео."),
             action: "native"
           });
           Lampa.Select.show({
@@ -30959,7 +38751,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
         }
         if (target && target.origin && target.origin.data("nova-native-actions")) menu.push({
-          title: "Просмотр и таймкод",
+          title: lampaViewText("Просмотр и таймкод"),
           marks: target
         });
         try {
@@ -31073,7 +38865,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var direct = logoDirect(path);
         if (direct && urls.indexOf(direct) === -1) urls.push(direct);
         var at = 0;
-        var _step65 = function step() {
+        var _step66 = function step() {
           if (at >= urls.length) {
             LOGO_BLIND[src] = true;
             return done("blind");
@@ -31093,7 +38885,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             } catch (e) {
               tone = "";
             }
-            if (tone !== "invert" && tone !== "glow" && tone !== "ok") return _step65();
+            if (tone !== "invert" && tone !== "glow" && tone !== "ok") return _step66();
             var now = cached(LOGO_TONE_KEY, 500, {});
             if (now && _typeof(now) === "object") {
               now[src] = tone;
@@ -31101,10 +38893,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             }
             done(tone);
           };
-          probe.onerror = _step65;
+          probe.onerror = _step66;
           probe.src = url;
         };
-        _step65();
+        _step66();
       }
       function logoKey(target) {
         var card = target || movie;
@@ -31241,6 +39033,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       function seasonPlanned(season, done) {
         var id = tmdbId();
         if (!id || !season) return done(0);
+        var known = movie && Array.isArray(movie.seasons) && movie.seasons.filter(function (row) {
+          return Number(row.season_number) === Number(season);
+        })[0];
+        if (known && Number(known.episode_count) > 0) return done(Number(known.episode_count));
+        if (typeof wideBook === "function" && wideMeta()) return wideBook(season, function (book) {
+          done(book ? Object.keys(book).length : 0);
+        });
         var key = id + ":" + season;
         var box = cached("nova_plus_season_cache", 300, {});
         if (typeof box[key] === "number") return done(box[key]);
@@ -31335,7 +39134,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (!ui.hero || !target) return;
         var progress = ui.hero.find(".nova-hero__progress").empty();
         var percent = Math.min(100, Math.max(0, target.percent || 0));
-        progress.attr("data-progress-scope", "episode").attr("aria-label", (serial ? "Серия " + target.num : "Видео") + ": " + percent + "%");
+        progress.attr("data-progress-scope", "episode").attr("aria-label", (serial ? lampaViewText("Серия {0}", [target.num]) : lampaViewText("Видео")) + ": " + percent + "%");
         progress.show().append('<div class="time-line"><div style="width:' + percent + '%"></div></div>');
       }
       function heroStatic(withArt) {
@@ -31590,6 +39389,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (state === "empty" || state === "error" || item.ghost) return false;
         return true;
       }
+      function onlineChoiceDraw(node, entry) {
+        node.addClass("minimal-online-option").toggleClass("minimal-online-option--selected", !!entry.selected);
+        if (entry.selected && !node.find(".minimal-choice-check").length) node.append('<svg class="minimal-choice-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>');
+      }
       function sourceMenu() {
         ui_open = "";
         var entries = (groups.sort || []).filter(function (item) {
@@ -31608,10 +39411,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         Lampa.Select.show({
           title: text("nova_source", "nova_plus_source"),
           items: entries.length ? entries : [{
-            title: "Нет доступных источников",
+            title: lampaViewText("Нет доступных источников"),
             noenter: true
           }],
           onDraw: function onDraw(node, entry) {
+            onlineChoiceDraw(node, entry);
             node.addClass("nova-source-option");
             if (entry.quality) node.find(".selectbox-item__title").prepend($('<span class="nova-source-option__quality"></span>').text(entry.quality));
           },
@@ -32749,7 +40553,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           Lampa.SettingsApi.addComponent({
             component: "nova_plus",
             icon: '<svg height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 1c.9 6.2 2.2 10.4 4.1 12.7C24 16 28 17.3 34 18c-6 .7-10 2-11.9 4.3C20.2 24.6 18.9 28.8 18 35c-.9-6.2-2.2-10.4-4.1-12.7C12 20 8 18.7 2 18c6-.7 10-2 11.9-4.3C15.8 11.4 17.1 7.2 18 1z" fill="white"/><circle cx="18" cy="18" r="3.6" fill="white"/></svg>',
-            name: "Онлайн-интерфейс"
+            name: lampaViewText("Онлайн-интерфейс")
           });
           Lampa.SettingsApi.addParam({
             component: "nova_plus",
@@ -33114,7 +40918,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           body.closest(".explorer").removeClass(ALIEN_SCOPE);
         } catch (e) {}
       }
-      var WIDE_MONTHS = ["Января", "Февраля", "Марта", "Апреля", "Мая", "Июня", "Июля", "Августа", "Сентября", "Октября", "Ноября", "Декабря"];
+      var WIDE_MONTHS = [lampaViewText("Января"), lampaViewText("Февраля"), lampaViewText("Марта"), lampaViewText("Апреля"), lampaViewText("Мая"), lampaViewText("Июня"), lampaViewText("Июля"), lampaViewText("Августа"), lampaViewText("Сентября"), lampaViewText("Октября"), lampaViewText("Ноября"), lampaViewText("Декабря")];
       var WIDE_TAG_MAP = {
         HEVC: "HEVC",
         H265: "HEVC",
@@ -33145,7 +40949,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var WIDE_TAG_FIND = /(HDR10\+|HDR10|HDR|DTS-HD|DTS|H\.?26[45]|x26[45]|HEVC|AVC|AV1|VP9|EAC3|AC3|DD\+|AAC|FLAC|OPUS|MP3|Atmos|SDR|10 ?bit)/gi;
       var WIDE_CHANNELS = /(\d)(?:\.0)?\s*(?:ch\b|канал[аов]*)/i;
       var wide_counts = {};
-      var wide_book = {};
+      var wide_book = {},
+        wide_book_order = [];
       var wide_wait = {};
       var wide_sig = "";
       var wide_hold = null;
@@ -33183,7 +40988,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       function wideDate(value) {
         var found = String(value || "").match(/^(\d{4})-(\d{2})-(\d{2})/);
         if (!found) return "";
-        var month = WIDE_MONTHS[(parseInt(found[2], 10) || 1) - 1];
+        var month = lampaViewText(WIDE_MONTHS[(parseInt(found[2], 10) || 1) - 1]);
         var day = parseInt(found[3], 10) || 1;
         if (!month) return found[3] + "." + found[2] + "." + found[1];
         return day + " " + month + " " + found[1];
@@ -33210,43 +41015,70 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         return 0;
       }
       function wideBook(number, done) {
-        var id = tmdbId();
+        var id = tmdbId(),
+          language = window.LampaView && window.LampaView.locale ? window.LampaView.locale() : get("language", "ru");
         if (!id || !number || !wideMeta()) return done(null);
-        var key = id + ":" + number;
+        var key = id + ":" + number + ":" + language;
         if (wide_book[key]) return done(wide_book[key]);
         if (wide_wait[key]) return wide_wait[key].push(done);
-        var api = null;
-        try {
-          api = Lampa.Api.sources.tmdb;
-        } catch (e) {
-          api = null;
-        }
+        var api = Lampa.Api && Lampa.Api.sources && Lampa.Api.sources.tmdb;
         if (!api || typeof api.get !== "function") return done(null);
         wide_wait[key] = [done];
-        var finish = function finish(book) {
+        function finish(book) {
           var queue = wide_wait[key] || [];
           delete wide_wait[key];
-          if (book) wide_book[key] = book;
+          if (book) {
+            wide_book[key] = book;
+            wide_book_order.push(key);
+            while (wide_book_order.length > 24) delete wide_book[wide_book_order.shift()];
+          }
           queue.forEach(function (fn) {
             try {
               fn(book);
-            } catch (e) {}
+            } catch (error) {}
           });
-        };
+        }
+        var base = "tv/" + id + "/season/" + number;
         try {
-          api.get("tv/" + id + "/season/" + number, {}, function (data) {
-            var book = {};
+          api.get(base + "?language=" + encodeURIComponent(language), {}, function (data) {
+            var book = {},
+              missing = false;
             (data && data.episodes || []).forEach(function (episode) {
-              var num = parseInt(episode && episode.episode_number, 10) || 0;
-              if (num) book[num] = episode;
+              var num = Number(episode && episode.episode_number);
+              if (num) {
+                book[num] = episode;
+                if (!episode.overview || !episode.name) missing = true;
+              }
             });
-            finish(book);
+            if (!missing || language === "en") return finish(book);
+            api.get(base + "?language=en", {}, function (fallback) {
+              (fallback && fallback.episodes || []).forEach(function (episode) {
+                var local = book[Number(episode.episode_number)];
+                if (local) book[Number(episode.episode_number)] = __spreadProps(__spreadValues({}, local), {
+                  name: local.name || episode.name,
+                  overview: local.overview || episode.overview
+                });
+              });
+              finish(book);
+            }, function () {
+              finish(book);
+            });
           }, function () {
             finish(null);
           });
-        } catch (e) {
+        } catch (error) {
           finish(null);
         }
+      }
+      function episodeOverview(card, episode) {
+        var value = String(episode.overview || "").replace(/\s+/g, " ").trim(),
+          box = card.find(".nova-card__overview");
+        if (!value) {
+          box.remove();
+          return;
+        }
+        if (!box.length) box = $('<div class="nova-card__overview"></div>').appendTo(card.find(".nova-card__body"));
+        box.text(value);
       }
       function wideTags(item) {
         var source = [item.title || ""].concat(item.meta || []).join(" ");
@@ -33455,6 +41287,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           if (!episode) return;
           var title = card.find(".nova-card__title");
           if (episode.name) title.text(episodeTitle(item, episode.name));
+          episodeOverview(card, episode);
           var meta = card.find(".nova-card__meta");
           var rating = episode.vote_average ? parseFloat(episode.vote_average + "").toFixed(1) : meta.find(".nova-card__rate").text().replace(/\u2605\s*/, "");
           var when = wideDate(episode.air_date) || meta.find(".nova-card__date").text();
@@ -33487,6 +41320,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }
           var title = card.find(".nova-card__title");
           if (episode.name) title.text(episodeTitle(item, episode.name));
+          episodeOverview(card, episode);
           if (episode.still_path && !thumb.hasClass("nova-card__thumb--loaded")) paintThumb(thumb, image(episode.still_path, get("minimal_banner_quality", "high") === "medium" ? "w500" : "w780"), false);
         });
       }
@@ -34216,6 +42050,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                   index: typeof item.index === "number" ? item.index : seat
                 };
               }),
+              onDraw: onlineChoiceDraw,
               onSelect: function onSelect(item) {
                 Lampa.Select.hide();
                 ui_focus = name;
@@ -34233,7 +42068,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
         };
         if (serial && !nav) {
-          var viewLabel = viewMode() === "list" ? "Показать плиткой" : "Показать списком";
+          var viewLabel = viewMode() === "list" ? lampaViewText("Показать плиткой") : lampaViewText("Показать списком");
           tool("view", "", "", {
             plain: true,
             icon: ICON[viewMode() === "list" ? "list" : "grid"]
@@ -34248,7 +42083,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }).find("svg").attr("aria-hidden", "true");
         }
         if (serial && !nav && viewMode() === "grid") {
-          var directionLabel = wideRow() ? "Показать серии вертикально" : "Показать серии горизонтально";
+          var directionLabel = wideRow() ? lampaViewText("Показать серии вертикально") : lampaViewText("Показать серии горизонтально");
           var directionIcon = wideRow() ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h16M8 8l-4 4 4 4m8-8 4 4-4 4"/></svg>' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16m-4-12 4-4 4 4m-8 8 4 4 4-4"/></svg>';
           tool("direction", "", "", {
             plain: true,
@@ -34297,6 +42132,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                   file: item
                 };
               }),
+              onDraw: onlineChoiceDraw,
               onSelect: function onSelect(entry) {
                 Lampa.Select.hide();
                 contentEnable();
@@ -34812,7 +42648,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (ui.list.hasClass("nova__list--row") && !document.body.classList.contains("pt-tv")) {
           var arrows = $('<div class="nova-episode-nav"></div>');
           [-1, 1].forEach(function (direction) {
-            $('<button type="button"></button>').attr("aria-label", direction < 0 ? "Предыдущие серии" : "Следующие серии").html('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="' + (direction < 0 ? "m14 6-6 6 6 6" : "m10 6 6 6-6 6") + '"/></svg>').on("click", function (event) {
+            $('<button type="button"></button>').attr("aria-label", direction < 0 ? lampaViewText("Предыдущие серии") : lampaViewText("Следующие серии")).html('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="' + (direction < 0 ? "m14 6-6 6 6 6" : "m10 6 6 6-6 6") + '"/></svg>').on("click", function (event) {
               event.preventDefault();
               event.stopImmediatePropagation();
               var width = strip[0].clientWidth,
@@ -34929,6 +42765,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         } catch (e) {}
       }
     })();
+    function lampaViewText(source, values) {
+      return window.LampaView && window.LampaView.text ? window.LampaView.text(source, values) : String(source).replace(/\{(\d+)\}/g, function (_, n) {
+        return String((values || [])[n]);
+      });
+    }
     (function () {
       "use strict";
 
@@ -35489,8 +43330,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             default: true
           },
           field: {
-            name: "Включить подсказки",
-            description: "Отображать подсказки тайтлов при вводе в строке поиска"
+            name: lampaViewText("Включить подсказки"),
+            description: lampaViewText("Отображать подсказки тайтлов при вводе в строке поиска")
           }
         });
         Lampa.SettingsApi.addParam({
@@ -35499,15 +43340,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             name: "kino_suggest_min_chars",
             type: "select",
             values: {
-              "2": "2 символа",
-              "3": "3 символа (рекомендуется)",
-              "4": "4 символа"
+              "2": lampaViewText("2 символа"),
+              "3": lampaViewText("3 символа (рекомендуется)"),
+              "4": lampaViewText("4 символа")
             },
             default: "3"
           },
           field: {
-            name: "Минимум символов",
-            description: "С какого количества введённых букв запрашивать подсказки"
+            name: lampaViewText("Минимум символов"),
+            description: lampaViewText("С какого количества введённых букв запрашивать подсказки")
           }
         });
       }

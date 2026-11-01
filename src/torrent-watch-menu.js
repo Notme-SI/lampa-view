@@ -1,3 +1,4 @@
+import {text as lampaViewText} from './i18n.js';
 // Native torrent file coordinates and provider hashes share the same Timeline
 // writer as online. Keep playback/link handlers native; never synthesize time.
 export default function torrentWatchMenu(L,root){
@@ -35,21 +36,21 @@ export default function torrentWatchMenu(L,root){
    if(entry.action==='titleclear')state.clearTitleProgress(movie,(rendered.get(event.items) || []).map(row=>coordinates(row).hash));
    refresh();
   }
-  function confirm(entry){L.Select.hide();show.call(L.Select,{title:entry.title+'?',items:[{...entry,title:'Да, сбросить'},{title:'Отмена',cancel:true}],onBack:bulk,onSelect:choice=>choice.cancel?bulk():execute(choice)});}
+  function confirm(entry){L.Select.hide();show.call(L.Select,{title:entry.title+'?',items:[{...entry,title:lampaViewText("Да, сбросить")},{title:lampaViewText("Отмена"),cancel:true}],onBack:bulk,onSelect:choice=>choice.cancel?bulk():execute(choice)});}
   function native(){L.Select.hide();show.call(L.Select,{...options,items:options.items.filter(entry=>!entry.timeclear && !entry.timefull),onBack:main});}
-  function bulk(){L.Select.hide();show.call(L.Select,{title:'Сезон '+season+' и весь сериал',items:[
-   {title:'Отметить серии этого сезона',subtitle:'Только серии, перечисленные в открытой раздаче.',action:'season'},
-   {title:'Отметить все вышедшие серии',subtitle:'Все сезоны по данным каталога, без будущих серий.',action:'all'},
-   {title:'Очистить таймкоды текущего сезона',subtitle:'Только файлы сезона '+season+' в этой раздаче.',action:'seasonclear'},
-   {title:'Очистить таймкоды всего сериала',subtitle:'Сбросить прогресс всех сезонов этого сериала.',action:'titleclear'}
+  function bulk(){L.Select.hide();show.call(L.Select,{title:lampaViewText("Сезон {0} и весь сериал", [season]),items:[
+   {title:lampaViewText("Отметить серии этого сезона"),subtitle:lampaViewText("Только серии, перечисленные в открытой раздаче."),action:'season'},
+   {title:lampaViewText("Отметить все вышедшие серии"),subtitle:lampaViewText("Все сезоны по данным каталога, без будущих серий."),action:'all'},
+   {title:lampaViewText("Очистить таймкоды текущего сезона"),subtitle:lampaViewText("Только файлы сезона {0} в этой раздаче.", [season]),action:'seasonclear'},
+   {title:lampaViewText("Очистить таймкоды всего сериала"),subtitle:lampaViewText("Сбросить прогресс всех сезонов этого сериала."),action:'titleclear'}
   ],onBack:main,onSelect:entry=>/clear$/.test(entry.action)?confirm(entry):execute(entry)});}
   function main(){
-   L.Select.hide();const menu=[{title:seen?'Снять отметку просмотра':(serial?'Отметить серию просмотренной':'Отметить фильм просмотренным'),subtitle:seen?'Снимет отметку и сбросит прогресс.':'Сохранённая позиция не изменится.',action:seen?'unmark':'mark'}];
-   if(serial && episode>1)menu.push({title:'Отметить серии 1–'+episode+' просмотренными',subtitle:'Только сезон '+season+', включая выбранную серию '+episode+'.',action:'previous'});
-   menu.push({title:'Очистить таймкод',subtitle:'Удалить сохранённую позицию и прогресс этого файла.',action:'clear',noenter:!record.time && !record.percent});
-   if(serial)menu.push({title:'Сезон и сериал…',subtitle:'Массовые отметки и сброс прогресса.',action:'bulk'});
-   menu.push({title:'Действия с видео…',subtitle:'Плеер и ссылка на видео.',action:'native'});
-   show.call(L.Select,{title:serial?'Сезон '+season+' • Серия '+episode:(movie.title || movie.name || 'Просмотр'),items:menu,onBack:restore,onSelect:entry=>entry.action==='bulk'?bulk():entry.action==='native'?native():execute(entry)});
+   L.Select.hide();const menu=[{title:seen?lampaViewText("Снять отметку просмотра"):(serial?lampaViewText("Отметить серию просмотренной"):lampaViewText("Отметить фильм просмотренным")),subtitle:seen?lampaViewText("Снимет отметку и сбросит прогресс."):lampaViewText("Сохранённая позиция не изменится."),action:seen?'unmark':'mark'}];
+   if(serial && episode>1)menu.push({title:lampaViewText("Отметить серии 1–{0} просмотренными", [episode]),subtitle:lampaViewText("Только сезон {0}, включая выбранную серию {1}.", [season,episode]),action:'previous'});
+   menu.push({title:lampaViewText("Очистить таймкод"),subtitle:lampaViewText("Удалить сохранённую позицию и прогресс этого файла."),action:'clear',noenter:!record.time && !record.percent});
+   if(serial)menu.push({title:lampaViewText("Сезон и сериал…"),subtitle:lampaViewText("Массовые отметки и сброс прогресса."),action:'bulk'});
+   menu.push({title:lampaViewText("Действия с видео…"),subtitle:lampaViewText("Плеер и ссылка на видео."),action:'native'});
+   show.call(L.Select,{title:serial?lampaViewText("Сезон {0} • Серия {1}", [season,episode]):(movie.title || movie.name || lampaViewText("Просмотр")),items:menu,onBack:restore,onSelect:entry=>entry.action==='bulk'?bulk():entry.action==='native'?native():execute(entry)});
   }
   return main();
  };

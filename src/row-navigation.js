@@ -1,3 +1,4 @@
+import {text as lampaViewText} from './i18n.js';
 // Remote navigation keeps one-card steps; pointer arrows page the viewport.
 export default function rowNavigation(L,line,enabled){
  if(!line.use || !line.scroll || !L.Controller)return;
@@ -65,10 +66,10 @@ export default function rowNavigation(L,line,enabled){
   const activate=event=>{event.preventDefault();event.stopImmediatePropagation();action();};
   b.addEventListener('click',activate);b.addEventListener('hover:enter',activate);b.addEventListener('keydown',event=>{if(event.key==='Enter' || event.key===' ')activate(event);});nav.appendChild(b);return b;
  }
- button('minimal-row-arrow','Предыдущая страница','<path d="m14 6-6 6 6 6"/>',()=>page(-1));
+ button('minimal-row-arrow',lampaViewText("Предыдущая страница"),'<path d="m14 6-6 6 6 6"/>',()=>page(-1));
  const canMore=!people && (head.querySelector('.items-line__more') || line.data.url || line.data.onMore || line.params && line.params.emit && line.params.emit.onMore);
- if(canMore)more=button('minimal-row-more selector','Показать ещё','<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',()=>{if(!enabled())return;line.emit('more',line.data);});
- button('minimal-row-arrow','Следующая страница','<path d="m10 6 6 6-6 6"/>',()=>page(1));head.appendChild(nav);
+ if(canMore)more=button('minimal-row-more selector',lampaViewText("Показать ещё"),'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',()=>{if(!enabled())return;line.emit('more',line.data);});
+ button('minimal-row-arrow',lampaViewText("Следующая страница"),'<path d="m10 6 6 6-6 6"/>',()=>page(1));head.appendChild(nav);
  line.use({onController(controller){const left=controller.left,right=controller.right,toggle=controller.toggle;controller.left=()=>move(-1,left);controller.right=()=>move(1,right);controller.toggle=function(){const result=toggle && toggle.apply(this,arguments);if(tv() && more && !people)L.Controller.collectionAppend(more);return result;};},onDestroy(){disposed=true;stop();root.removeEventListener('wheel',stop,true);root.removeEventListener('keydown',stop,true);}});
  root.addEventListener('wheel',stop,true);root.addEventListener('keydown',stop,true);
 }

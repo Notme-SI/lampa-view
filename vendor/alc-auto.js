@@ -353,6 +353,7 @@
     voices_plus: [['+%s озвучка', '+%s озвучки', '+%s озвучек'], ['+%s озвучення', '+%s озвучення', '+%s озвучень'], ['+%s voice-over', '+%s voice-overs']]
   };
   function plural(key, n) {
+    if(window.LampaView && window.LampaView.pluralSource)return window.LampaView.pluralSource((PLURAL[key] || [])[0] || [],n);
     var li = langIdx(), forms = (PLURAL[key] || [])[li] || [], m10 = n % 10, m100 = n % 100, f;
     if (li === 2) f = n === 1 ? 0 : 1;
     else f = m10 === 1 && m100 !== 11 ? 0 : m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? 1 : 2;
@@ -365,6 +366,7 @@
   }
   function tr(key) {
     var row = STR[key], s = row ? (row[langIdx()] || row[0]) : key, args = arguments, i = 1;
+    if(row && window.LampaView && window.LampaView.text)s=window.LampaView.text(row[0]);
     return s.replace(/%s/g, function () { return i < args.length ? args[i++] : ''; });
   }
 

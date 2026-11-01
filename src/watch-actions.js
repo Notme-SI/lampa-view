@@ -1,3 +1,4 @@
+import {text as lampaViewText} from './i18n.js';
 // Reuse the installed online provider's own handler and card metadata.
 export function onlineButton(root){
  return Array.from(root.querySelectorAll('.buttons--container>.full-start__button')).find(button=>{
@@ -14,14 +15,14 @@ export function watchActions(L,root,card,link){
   if(target){target.dispatchEvent(new Event('hover:enter',{bubbles:true}));return;}
   // A standalone Lampa can use Autopilot when no Online provider is installed.
   if(window.alc_auto_api && window.alc_auto_api.menu){window.alc_auto_api.menu(card);return;}
-  L.Noty.show('Онлайн-источник не подключён');
+  L.Noty.show(lampaViewText("Онлайн-источник не подключён"));
  }
  const click=event=>{event.preventDefault();event.stopImmediatePropagation();open();};
  const enter=event=>{event.preventDefault();event.stopImmediatePropagation();open();};
  function update(){
   buttons.querySelectorAll('.button--alc-auto,.button--priority').forEach(button=>button.remove());
-  play.classList.remove('minimal-source-hidden','hide');play.classList.add('selector');play.removeAttribute('aria-hidden');play.title='Смотреть';play.setAttribute('aria-label','Смотреть');
-  const label=play.querySelector('span');if(label && label.textContent!=='Смотреть')label.textContent='Смотреть';
+  play.classList.remove('minimal-source-hidden','hide');play.classList.add('selector');play.removeAttribute('aria-hidden');play.title=lampaViewText("Смотреть");play.setAttribute('aria-label',lampaViewText("Смотреть"));
+  const label=play.querySelector('span');if(label && label.textContent!=='Смотреть')label.textContent=lampaViewText("Смотреть");
   $(play).off('hover:enter').on('hover:enter.lampaViewWatch',open);
  }
  update();play.addEventListener('click',click,true);play.addEventListener('hover:enter',enter,true);

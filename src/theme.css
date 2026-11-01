@@ -29,7 +29,7 @@ body.lampa_view .head__action {width:2.2em;height:2.2em;border-radius:.55em;marg
 body.lampa_view .head__action svg {width:1.15em;height:1.15em}
 body.lampa_view .head__action.focus,body.lampa_view .head__action.hover {background:var(--pt-high);color:white}
 body.lampa_view .head__action.open--search {width:18em;background:#ffffff04;border:1px solid var(--pt-line);justify-content:flex-start;padding:0 .8em;gap:.65em}
-body.lampa_view .head__action.open--search:after {content:'Поиск…';font-size:.8em;color:var(--pt-muted)}
+body.lampa_view .head__action.open--search:after {content:attr(data-pt-placeholder);font-size:.8em;color:var(--pt-muted)}
 body.lampa_view .pt-topnav {display:flex;align-items:center;gap:1.5em}
 body.lampa_view .pt-topnav__item {font-size:.81em;color:var(--pt-muted);padding:.55em 0;cursor:pointer;border-bottom:1px solid transparent}
 body.lampa_view .pt-topnav__item.active {color:var(--pt-text);border-bottom-color:var(--pt-accent)}
@@ -819,7 +819,7 @@ body.lampa_view .pt-holiday-icons>.head__action svg {display:block;width:1.45em!
 body.lampa_view .pt-holiday-icons>.head__action.focus,body.lampa_view .pt-holiday-icons>.head__action.hover,body.lampa_view .pt-holiday-icons>.head__action:hover {border-color:var(--pt-accent);background:var(--pt-high)!important}
 body.lampa_view .head__logo-halloween .pt-holiday-art {display:none}
 /* Episode grids wrap by the scaled minimum rather than a fixed poster count. */
-body.lampa_view .nova-plus-root .nova__list--grid:not(.nova__list--row) {display:grid!important;grid-template-columns:repeat(auto-fill,minmax(min(100%,18em),1fr));gap:.8em;margin:0}
+body.lampa_view .nova-plus-root .nova__list--grid:not(.nova__list--row) {display:grid!important;grid-template-columns:repeat(auto-fill,minmax(min(100%,23em),1fr));gap:.8em;margin:0}
 body.lampa_view .nova-plus-root .nova__list--grid:not(.nova__list--row)>.nova-card--wide {width:100%!important;max-width:100%!important;min-width:0;padding:0;margin:0}
 @media(max-width:767px){body.lampa_view .nova-plus-root .nova__list--grid:not(.nova__list--row) {grid-template-columns:repeat(auto-fill,minmax(min(100%,9em),1fr))}}
 
@@ -927,7 +927,7 @@ body.lampa_view.pt-tv .pt-hero__action {appearance:none;-webkit-appearance:none;
 body.lampa_view.pt-tv .pt-hero__action--secondary {background:#212a35dd!important;color:#d4dce3!important}
 body.lampa_view.pt-tv .pt-hero__action.focus,body.lampa_view.pt-tv .pt-hero__action:focus-visible {border-color:#fff!important;box-shadow:none!important;outline:none!important}
 body.lampa_view.pt-tv .pt-hero__action.hover:not(.focus):not(:focus-visible) {border-color:transparent!important;box-shadow:none!important}
-body.lampa_view.pt-tv .minimal-anime-tab[aria-selected="true"] {box-shadow:0 0 .65em #add9e540!important}
+body.lampa_view.pt-tv .minimal-anime-tab[aria-selected="true"] {box-shadow:0 0 .35em rgba(173,217,229,.85),0 0 1.2em rgba(173,217,229,.65),0 0 2.4em rgba(173,217,229,.42)!important;transition:none!important}
 body.lampa_view.pt-tv .full-start__button.button--alc-auto.focus,body.lampa_view.pt-tv .alc-ap__play.focus {background:var(--pt-accent)!important;color:#13232c!important;border-color:#fff!important;box-shadow:none!important;outline:none!important}
 
 /* TV uses the same full-frame artwork and text composition as desktop. */
@@ -969,3 +969,24 @@ body.lampa_view .menu__item.focus,body.lampa_view .menu__item.hover,body.lampa_v
 body.lampa_view .menu__ico [stroke] {stroke:currentColor!important}
 body.lampa_view .menu__ico [fill]:not([fill="none"]) {fill:currentColor!important}
 body.lampa_view .menu__item .menu__text {color:inherit!important}
+
+/* RTL is scoped to plugin controls. Content titles and saved values retain their text. */
+body.lampa_view.pt-rtl .settings__content,body.lampa_view.pt-rtl .selectbox__content,body.lampa_view.pt-rtl .nova-plus__bar,body.lampa_view.pt-rtl .minimal-detail-facts {direction:rtl;text-align:start}
+body.lampa_view.pt-rtl .pt-hero__body {direction:rtl;text-align:right}
+body.lampa_view.pt-rtl .pt-hero__meta,body.lampa_view.pt-rtl .pt-watch-progress {direction:rtl}
+body.lampa_view.pt-rtl .minimal-back--overlay svg {transform:scaleX(-1)}
+body.lampa_view.pt-rtl .minimal-settings .settings-param__value {margin-left:0;margin-right:auto}
+
+/* Episode information comes from one TMDB season book, shared by providers. */
+body.lampa_view .nova-plus-root .nova-card__overview {font-size:.82em;line-height:1.45;color:var(--pt-muted);margin-top:.45em;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;overflow-wrap:break-word}
+body.lampa_view .nova-plus-root .nova__list--row>.nova-card--wide {width:24%!important;flex:0 0 24%!important;max-width:24%!important}
+body.lampa_view.pt-mobile .nova-plus-root .nova__list--row>.nova-card--wide {width:48%!important;flex-basis:48%!important;max-width:48%!important}
+body.lampa_view .minimal-online-option {position:relative;margin:.35em .6em;padding:.8em 2.8em .8em 1em;border:1px solid var(--pt-line);border-radius:.9em;background:var(--pt-panel);min-height:2.8em;box-sizing:border-box}
+body.lampa_view .minimal-online-option--selected {border-color:#add9e560;background:var(--pt-high)}
+body.lampa_view .minimal-online-option.focus {border-color:var(--pt-accent);background:var(--pt-high);color:var(--pt-text)}
+body.lampa_view .minimal-online-option .selectbox-item__title {white-space:normal;overflow-wrap:break-word;line-height:1.35}
+body.lampa_view .minimal-choice-check {position:absolute;right:.85em;top:50%;transform:translateY(-50%);width:1.1em;height:1.1em;color:var(--pt-accent)}
+body.lampa_view.pt-rtl .minimal-online-option {padding-right:1em;padding-left:2.8em}
+body.lampa_view.pt-rtl .minimal-choice-check {right:auto;left:.85em}
+body.lampa_view .pt-hero__studio {pointer-events:none;cursor:default}
+body.lampa_view .minimal-online-option:after {display:none!important}

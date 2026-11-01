@@ -1,5 +1,6 @@
+import {text as lampaViewText} from './i18n.js';
 import flag from './storage-flag.js';
-const GROUPS=[['appearance','Оформление','Тема, обложки и устройство'],['catalogue','Каталог и поиск','Подборки, аниме и фильтры'],['playback','Воспроизведение','Запуск, источники и озвучки'],['languages','Языки и субтитры','Предпочтения дорожек и субтитров'],['parser','Торренты и поиск релизов','Названия, раздачи и параметры поиска'],['server','Подключение','Адрес сервера онлайн-источников'],['cache','Кеш','Очистка сохранённых рейтингов и качества карточек']];
+const GROUPS=[['appearance',lampaViewText("Оформление"),lampaViewText("Тема, обложки и устройство")],['catalogue',lampaViewText("Каталог и поиск"),lampaViewText("Подборки, аниме и фильтры")],['playback',lampaViewText("Воспроизведение"),lampaViewText("Запуск, источники и озвучки")],['languages',lampaViewText("Языки и субтитры"),lampaViewText("Предпочтения дорожек и субтитров")],['parser',lampaViewText("Торренты и поиск релизов"),lampaViewText("Названия, раздачи и параметры поиска")],['server',lampaViewText("Подключение"),lampaViewText("Адрес сервера онлайн-источников")],['cache',lampaViewText("Кеш"),lampaViewText("Очистка сохранённых рейтингов и качества карточек")]];
 export function cleanText(text){return typeof text==='string'?text.replace(/[\u2013\u2014]/g,'-').replace(/<a\b[^>]*>[\s\S]*?<\/a>/gi,'').replace(/https?:\/\/(?:t\.me|telegram\.(?:me|org))\/[^\s<]*/gi,'').replace(/Lampa Minimal|Закус[ььи](?: TV)?|Alcopa|ALC Auto|Автопилот|Lampa View|mpv.plus/gi,'').replace(/\s{2,}/g,' ').trim():text;}
 function groupOf(d){
  const n=d.param && d.param.name || '',g=d.snack_g;
@@ -36,11 +37,11 @@ export default function unifiedSettings(api,L){
    }
    if(['nova_plus_mode','nova_plus_hero','nova_plus_hero_art','nova_plus_fullscreen','nova_plus_art_size','nova_plus_movie_view'].includes(n))return false;
    return d.param && !['title','static'].includes(d.param.type) && !/^snack_open_/.test(n) && !/community|versions|snack_reset|telegram|donat|support|_bot/i.test(n) && !/telegram|тг.бот|телеграм|поддержать|сообщество/i.test(text);
-  }).map(d=>({...d,field:{...d.field,name:d.param.name==='alc_auto_server'?'Сервер онлайн-источников':cleanText(d.field && d.field.name),description:cleanText(d.field && d.field.description)}}));
+  }).map(d=>({...d,param:{...d.param,values:d.param && d.param.values?Object.keys(d.param.values).reduce((out,key)=>{out[key]=lampaViewText(d.param.values[key]);return out;},{}):d.param && d.param.values},field:{...d.field,name:d.param.name==='alc_auto_server'?lampaViewText("Сервер онлайн-источников"):lampaViewText(cleanText(d.field && d.field.name)),description:lampaViewText(cleanText(d.field && d.field.description))}}));
  }
  function open(id){if(L && L.Settings)L.Settings.create(id,{onBack:()=>L.Settings.create('lampa_view')});}
  api.getParam=function(name){
-  if(name==='lampa_view'){const available=params();return GROUPS.filter(([id])=>available.some(d=>groupOf(d)===id)).map(([id,title,description])=>({component:'lampa_view',param:{name:prefix+'open_'+id,type:'button'},field:{name:title,description},onChange:()=>open(prefix+id)}));}
+  if(name==='lampa_view'){const available=params();return GROUPS.filter(([id])=>available.some(d=>groupOf(d)===id)).map(([id,title,description])=>({component:'lampa_view',param:{name:prefix+'open_'+id,type:'button'},field:{name:lampaViewText(title),description:lampaViewText(description)},onChange:()=>open(prefix+id)}));}
   if(ids.includes(name))return params().filter(d=>prefix+groupOf(d)===name).map(d=>({...d,component:name}));
   return get.apply(this,arguments);
  };

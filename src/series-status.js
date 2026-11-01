@@ -1,3 +1,4 @@
+import {text as lampaViewText} from './i18n.js';
 import tmdbGet from './tmdb.js';
 const day=value=>String(value || '').slice(0,10);
 export function releaseStatus(data={},episodes=[],today=day(new Date().toISOString())){
@@ -11,7 +12,7 @@ export function releaseStatus(data={},episodes=[],today=day(new Date().toISOStri
 }
 export function episodeLabel(text){
  const value=String(text || '').trim(),match=value.match(/^(\d+)\s*[-–]\s*|^(?:Эпизод|Серия|Episode)\s*(\d+)/i);
- return match?'Серия '+Number(match[1] || match[2]):value;
+ return match?lampaViewText("Серия {0}", [Number(match[1] || match[2])]):value;
 }
 const clock=value=>{
  const seconds=Math.floor(Number(value)||0);if(seconds<=0)return '00:00';
@@ -62,7 +63,7 @@ function watchFooter(L,node,data,series){
  }
  if(shared && !row && L.Timeline && L.Timeline.render){
   const rendered=L.Timeline.render({...L.Timeline.view(targetHash),hash:targetHash,...(target?{percent:target.percent,time:target.time}:{})}),line=rendered && (rendered.nodeType?rendered:rendered[0]);
-  if(line){row=document.createElement('div');row.className='card-watched__item';const span=document.createElement('span');span.textContent='Серия '+shared.episode;row.appendChild(span);row.appendChild(line);(wrap.querySelector('.card-watched__body') || wrap).appendChild(row);}
+  if(line){row=document.createElement('div');row.className='card-watched__item';const span=document.createElement('span');span.textContent=lampaViewText("Серия {0}", [shared.episode]);row.appendChild(span);row.appendChild(line);(wrap.querySelector('.card-watched__body') || wrap).appendChild(row);}
  }
  // Native timetable slicing can drop an older-season watch row entirely.
  // Restore only an existing saved timeline, using Lampa's own render/updates.
@@ -72,7 +73,7 @@ function watchFooter(L,node,data,series){
    const season=Number(history.season),episode=Number(history.episode),time=view(hash([season,season>10?':':'',episode,data.original_title].join('')));
    if(time && time.percent){
     const rendered=L.Timeline.render(time),line=rendered && (rendered.nodeType?rendered:rendered[0]);
-    if(line){row=document.createElement('div');row.className='card-watched__item';const span=document.createElement('span');span.textContent='Серия '+episode;row.appendChild(span);row.appendChild(line);(wrap.querySelector('.card-watched__body') || wrap).appendChild(row);}
+    if(line){row=document.createElement('div');row.className='card-watched__item';const span=document.createElement('span');span.textContent=lampaViewText("Серия {0}", [episode]);row.appendChild(span);row.appendChild(line);(wrap.querySelector('.card-watched__body') || wrap).appendChild(row);}
    }
   }
  }
@@ -81,10 +82,10 @@ function watchFooter(L,node,data,series){
  let summary=row.querySelector('.pt-card-watch__row');
  if(!summary){summary=document.createElement('div');summary.className='pt-card-watch__row';summary.innerHTML='<span class="pt-card-watch__label"></span><span class="pt-card-watch__time"></span>';row.insertBefore(summary,row.firstChild);}
  const nativeLabel=row.querySelector(':scope > span'),text=nativeLabel && nativeLabel.textContent || '';
- let label='Просмотрено:',timeline=null,watchSeason=0,watchEpisode=0;
+ let label=lampaViewText("Просмотрено:"),timeline=null,watchSeason=0,watchEpisode=0;
  const progressHash=row.querySelector('.time-line').getAttribute('data-hash');
  if(progressHash)timeline=view(progressHash);
- if(shared){watchSeason=target?target.season:shared.season;watchEpisode=target?target.episode:shared.episode;timeline=view(shared.hash);label='Серия '+watchEpisode+' • Сезон '+watchSeason;}else if(series){
+ if(shared){watchSeason=target?target.season:shared.season;watchEpisode=target?target.episode:shared.episode;timeline=view(shared.hash);label=lampaViewText("Серия {0} • Сезон {1}", [watchEpisode,watchSeason]);}else if(series){
   const match=text.match(/^(\d+)\s*[-–]|(?:Эпизод|Серия|Episode)\s*(\d+)/i),episode=match && Number(match[1] || match[2]);
   const table=L.TimeTable && L.TimeTable.get?L.TimeTable.get(data) || []:[];
   let season=0;
@@ -101,7 +102,7 @@ function watchFooter(L,node,data,series){
    if(history && Number(history.episode)===episode){const key=hash([Number(history.season),Number(history.season)>10?':':'',episode,data.original_title].join(''));if(!progressHash || String(key)===progressHash){season=Number(history.season)||0;timeline=view(key);}}
   }
   watchSeason=season;watchEpisode=episode;
-  label=episode?'Серия '+episode+(season?' • Сезон '+season:''):'Просмотрено';
+  label=episode?lampaViewText("Серия {0}{1}", [episode,season?lampaViewText(" • Сезон {0}", [season]):'']):lampaViewText("Просмотрено");
  }else{
   if(movieTime)timeline=movieTime;
   else if(!progressHash)timeline=L.Timeline && L.Timeline.filename?view(hash(data.original_title)):L.Timeline && L.Timeline.watched?L.Timeline.watched(data,true):view(hash(data.original_title));
@@ -122,7 +123,7 @@ function watchFooter(L,node,data,series){
  slot.classList.toggle('pt-card-watch--complete',hideProgress);
  const shown={...(target || timeline)};
  if(Number(shown.percent)>=(series?95:90))shown.percent=100;
- if(complete){watchEpisode=0;label=series?'Сезон '+shared.season+' просмотрен':'Фильм просмотрен';}
+ if(complete){watchEpisode=0;label=series?lampaViewText("Сезон {0} просмотрен", [shared.season]):lampaViewText("Фильм просмотрен");}
  // Keep the native timeline node (and data-hash) in an explicit flex progress row.
  const line=row.querySelector('.time-line');let meter=row.querySelector('.pt-card-watch__meter');
  if(!meter){meter=document.createElement('div');meter.className='pt-card-watch__meter';row.appendChild(meter);}
@@ -131,14 +132,14 @@ function watchFooter(L,node,data,series){
  line.classList.remove('hide');
  const fill=row.querySelector('.time-line>div');if(fill)fill.style.width=Math.min(100,Math.max(0,Number(shown.percent)||0))+'%';
  const time=hideProgress || !Number(shown.time)?'':clock(shown.time),name=summary.firstElementChild,stamp=row.querySelector('.pt-card-watch__time');
- const action=Number(shown.time)>0 || Number(shown.percent)>0?'Просмотрено: ':'Смотреть: ';
+ const action=Number(shown.time)>0 || Number(shown.percent)>0?lampaViewText("Просмотрено: "):lampaViewText("Смотреть: ");
  if(name.dataset.label!==label || name.dataset.action!==action){
   name.dataset.label=label;name.dataset.action=action;
   name.textContent='';
   if(watchEpisode){
    const heading=document.createElement('span');heading.className='pt-card-watch__heading';heading.textContent=action;name.appendChild(heading);
-   const episode=document.createElement('span');episode.textContent='Серия '+watchEpisode+(watchSeason?' • ':'');name.appendChild(episode);
-   if(watchSeason){const season=document.createElement('span');season.textContent='Сезон '+watchSeason;name.appendChild(season);}
+   const episode=document.createElement('span');episode.textContent=lampaViewText("Серия {0}{1}", [watchEpisode,watchSeason?' • ':'']);name.appendChild(episode);
+   if(watchSeason){const season=document.createElement('span');season.textContent=lampaViewText("Сезон {0}", [watchSeason]);name.appendChild(season);}
   }else name.textContent=label;
  }
  if(stamp.textContent!==time)stamp.textContent=time;
@@ -179,9 +180,9 @@ export default function seriesStatus(L,schedule){
    if(!box){box=document.createElement('div');box.className='pt-series-status';box.innerHTML='<span></span><span></span>';view.appendChild(box);}
    const partial=available.total>available.count;
    const released=partial?available.count+'/'+available.total:String(available.count);
-   const text='Сезон '+available.season+' • '+(partial?'Серия ':'Серий ')+released;
-   if(box.textContent!==text){box.firstElementChild.textContent='Сезон '+available.season+' • ';box.lastElementChild.textContent=(partial?'Серия ':'Серий ')+released;}
-   box.title='Сезон '+available.season+': вышло '+released+'. История просмотра — под обложкой.';
+   const text=lampaViewText("Сезон {0} • {1}{2}", [available.season,partial?lampaViewText("Серия "):lampaViewText("Серий "),released]);
+   if(box.textContent!==text){box.firstElementChild.textContent=lampaViewText("Сезон {0} • ", [available.season]);box.lastElementChild.textContent=(partial?lampaViewText("Серия "):lampaViewText("Серий "))+released;}
+   box.title=lampaViewText("Сезон {0}: вышло {1}. История просмотра — под обложкой.", [available.season,released]);
   }else if(box)box.remove();
   // Release metadata stays independent of the native watch timeline below the cover.
   if(!fresh && !pending.has(key) && fetchable && queue.length<8){const task={key,data,nodes:new Set([node])};pending.set(key,task);queue.push(task);pump();}

@@ -1,3 +1,4 @@
+import {text as lampaViewText} from './i18n.js';
 import {localizedTitle,isAnime} from './metadata.js';
 import {chooseLogo,pickStudio} from './logos.js';
 import comments from './comments.js';
@@ -8,7 +9,7 @@ export function releaseDate(card){
  if(!match)return /^\d{4}$/.test(raw) && Number(raw)>0?raw:'';
  const [year,month,day]=match.slice(1).map(Number),date=new Date(year,month-1,day);
  if(year<100 || date.getFullYear()!==year || date.getMonth()!==month-1 || date.getDate()!==day)return '';
- return day+' '+['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'][month-1]+' '+year;
+ return day+' '+[lampaViewText("января"),lampaViewText("февраля"),lampaViewText("марта"),lampaViewText("апреля"),lampaViewText("мая"),lampaViewText("июня"),lampaViewText("июля"),lampaViewText("августа"),lampaViewText("сентября"),lampaViewText("октября"),lampaViewText("ноября"),lampaViewText("декабря")][month-1]+' '+year;
 }
 function readableOverview(L,card,right,link){
  if(!card.overview || !String(card.overview).trim())return;
@@ -18,19 +19,19 @@ function readableOverview(L,card,right,link){
  const control=document.createElement('div');control.className='minimal-overview-action selector';text.before(control);control.appendChild(text);
  text.classList.remove('minimal-overview-action','selector','focus');
  const ring=document.createElement('span');ring.className='minimal-overview-focus';ring.setAttribute('aria-hidden','true');control.appendChild(ring);
- control.setAttribute('role','button');control.setAttribute('tabindex','0');control.setAttribute('aria-haspopup','dialog');control.setAttribute('aria-label','Прочитать описание полностью');control.title='Прочитать описание полностью';
+ control.setAttribute('role','button');control.setAttribute('tabindex','0');control.setAttribute('aria-haspopup','dialog');control.setAttribute('aria-label',lampaViewText("Прочитать описание полностью"));control.title=lampaViewText("Прочитать описание полностью");
  function remember(){if(link && link.items && link.items[0])link.items[0].last=control;}
  function open(){
   if(!text.isConnected || L.Modal.opened())return;
   remember();const content=document.createElement('div');content.className='about minimal-overview-full';content.textContent=card.overview;
-  L.Modal.open({title:'Описание',size:'large',html:window.jQuery(content),onBack:()=>{L.Modal.close();if(text.isConnected){remember();L.Controller.toggle('full_start');}}});
+  L.Modal.open({title:lampaViewText("Описание"),size:'large',html:window.jQuery(content),onBack:()=>{L.Modal.close();if(text.isConnected){remember();L.Controller.toggle('full_start');}}});
  }
  control.addEventListener('hover:focus',remember);control.addEventListener('hover:enter',open);
  control.addEventListener('click',event=>{event.preventDefault();event.stopImmediatePropagation();open();});
  control.addEventListener('keydown',event=>{if(event.key==='Enter' || event.key===' '){event.preventDefault();event.stopImmediatePropagation();open();}});
 }
 function moveTechnicalDetails(L,card,right){
- const line=right.querySelector('.full-start-new__details'),genres=(card.genres || []).slice(0,5).map(g=>g.name).join(' | ').trim().toLowerCase(),prefix=L.Lang && L.Lang.translate?L.Lang.translate('player_quality')+':':'Качество:';
+ const line=right.querySelector('.full-start-new__details'),genres=(card.genres || []).slice(0,5).map(g=>g.name).join(' | ').trim().toLowerCase(),prefix=L.Lang && L.Lang.translate?L.Lang.translate('player_quality')+':':lampaViewText("Качество:");
  let duration='',quality='';
  if(line){
   const retained=Array.from(line.children).filter(part=>{
@@ -70,7 +71,7 @@ export function prepareDetail(data){
  }).map(entry=>entry.person);
  const directed=unique((persons.crew || []).filter(p=>p.job==='Director').map(person=>({...person,profile_path:person.profile_path || (allCast.find(actor=>String(actor.id || actor.name)===String(person.id || person.name)) || {}).profile_path}))).filter(hasPhoto),maxDirected=Math.max(0,...directed.map(episodes));
  const directors=directed.filter(person=>!maxDirected || episodes(person)>=Math.max(1,Math.ceil(maxDirected*.25))).sort((a,b)=>episodes(b)-episodes(a) || number(b.popularity)-number(a.popularity)).slice(0,3),ids=new Set(directors.map(p=>String(p.id || p.name)));
- data.persons={...persons,crew:(persons.crew || []).filter(p=>p.job!=='Director'),cast:[...directors.map(p=>{const actor=cast.find(a=>String(a.id || a.name)===String(p.id || p.name));return {...p,...actor,job:'Director',minimal_director:true,character:['Режиссёр',actor && actor.character].filter(Boolean).join(' · ')};}),...cast.filter(p=>!ids.has(String(p.id || p.name))).slice(0,20)]};
+ data.persons={...persons,crew:(persons.crew || []).filter(p=>p.job!=='Director'),cast:[...directors.map(p=>{const actor=cast.find(a=>String(a.id || a.name)===String(p.id || p.name));return {...p,...actor,job:'Director',minimal_director:true,character:[lampaViewText("Режиссёр"),actor && actor.character].filter(Boolean).join(' · ')};}),...cast.filter(p=>!ids.has(String(p.id || p.name))).slice(0,20)]};
  const disabled=window.lampa_settings && window.lampa_settings.disable_features || {};
  if(!disabled.discuss)data.discuss={...(data.discuss || {}),result:((data.discuss || {}).result || []).slice()};
  if(!data.reactions || !Array.isArray(data.reactions.result))data.reactions={result:[]};
@@ -131,7 +132,7 @@ export default function detail(L,event,loadLogo){
  if(event && event.type==='build' && event.name==='discuss' && event.item){const render=event.item.render(true),node=render && (render.nodeType?render:render[0]);comments(event.item,node);}
  if(event && event.type==='build' && event.name==='persons' && event.item && event.data && (event.data.title===L.Lang.translate('title_actors') || (event.data.results || []).some(p=>Object.prototype.hasOwnProperty.call(p,'character')))){
   const render=event.item.render(true),node=render && (render.nodeType?render:render[0]);
-  if(node){node.classList.add('minimal-cast-native');const count=(event.data.results || []).filter(p=>p.minimal_director).length,heading=node.querySelector('.items-line__title');if(count && heading)heading.textContent=count>1?'Актёры и режиссёры':'Актёры и режиссёр';const container=event.body && event.body[0] && event.body[0].querySelector('.minimal-detail-columns');mountCast(container,node);}
+  if(node){node.classList.add('minimal-cast-native');const count=(event.data.results || []).filter(p=>p.minimal_director).length,heading=node.querySelector('.items-line__title');if(count && heading)heading.textContent=count>1?lampaViewText("Актёры и режиссёры"):lampaViewText("Актёры и режиссёр");const container=event.body && event.body[0] && event.body[0].querySelector('.minimal-detail-columns');mountCast(container,node);}
   return;
  }
 
@@ -146,7 +147,7 @@ export default function detail(L,event,loadLogo){
  const technical=moveTechnicalDetails(L,card,right);
  const episodes=right.querySelector('.full-start-new__details'),ratings=right.querySelector('.full-start-new__rate-line');if(episodes && ratings)right.insertBefore(episodes,ratings);
  const start=right.closest('.full-start-new'),left=start && start.querySelector('.full-start-new__left'),buttons=right.querySelector('.full-start-new__buttons');
- const reaction=body.querySelector('.button--reaction');if(reaction){reaction.title='Оставить реакцию';reaction.setAttribute('aria-label','Оставить реакцию');}
+ const reaction=body.querySelector('.button--reaction');if(reaction){reaction.title=lampaViewText("Оставить реакцию");reaction.setAttribute('aria-label',lampaViewText("Оставить реакцию"));}
  if(left){
   left.classList.add('minimal-detail-identity');left.appendChild(title);if(buttons)left.appendChild(buttons);
   const heading=document.createElement('h2');heading.className='minimal-detail-heading';heading.textContent=localizedTitle(card,L.Storage.get('language','ru'));title.textContent=heading.textContent;right.prepend(heading);
@@ -161,9 +162,9 @@ export default function detail(L,event,loadLogo){
   start.classList.add('minimal-detail-header');
   const columns=document.createElement('section');columns.className='minimal-detail-columns';start.appendChild(columns);
   const cast=body.querySelector('.minimal-cast-native');mountCast(columns,cast);
-  const facts=document.createElement('aside');facts.className='minimal-detail-facts';const heading=document.createElement('h3');heading.textContent='О произведении';facts.appendChild(heading);
+  const facts=document.createElement('aside');facts.className='minimal-detail-facts';const heading=document.createElement('h3');heading.textContent=lampaViewText("О произведении");facts.appendChild(heading);
   const series=card.media_type==='tv' || card.name || card.first_air_date;
-  const rows=[['Оригинальное название',card.original_title || card.original_name],['Тип',isAnime(card)?(series?'Аниме-сериал':'Аниме-фильм'):(series?'Сериал':'Фильм')],['Дата релиза',releaseDate(card)],[series?'Длительность серии':'Длительность',technical.duration],['Тип релиза',technical.quality],['Рейтинг TMDB',card.vote_average?Number(card.vote_average).toFixed(1):''],['Жанры',(card.genres || []).map(g=>g.name).join(', ')]];
+  const rows=[[lampaViewText("Оригинальное название"),card.original_title || card.original_name],[lampaViewText("Тип"),isAnime(card)?(series?lampaViewText("Аниме-сериал"):lampaViewText("Аниме-фильм")):(series?lampaViewText("Сериал"):lampaViewText("Фильм"))],[lampaViewText("Дата релиза"),releaseDate(card)],[series?lampaViewText("Длительность серии"):lampaViewText("Длительность"),technical.duration],[lampaViewText("Тип релиза"),technical.quality],[lampaViewText("Рейтинг TMDB"),card.vote_average?Number(card.vote_average).toFixed(1):''],[lampaViewText("Жанры"),(card.genres || []).map(g=>g.name).join(', ')]];
   rows.forEach(([name,value])=>{if(!value)return;const row=document.createElement('div'),key=document.createElement('span'),text=document.createElement('span');key.textContent=name;text.textContent=value;row.appendChild(key);row.appendChild(text);facts.appendChild(row);});columns.appendChild(facts);
   // TV initially builds only three full-card rows. Load through the cast row,
   // then move both native rows and controller items into the displayed order.
@@ -206,7 +207,7 @@ export default function detail(L,event,loadLogo){
   if(!studio || !metaHead)return;
   function linkStudio(icon){
    if(!/^\d+$/.test(String(studio.id)) || Number(studio.id)<=0 || icon.dataset.studioId)return;
-   icon.dataset.studioId=String(studio.id);icon.classList.add('selector');icon.setAttribute('role','button');icon.tabIndex=0;icon.setAttribute('aria-label','Проекты '+studio.name);icon.title='Проекты '+studio.name;
+   icon.dataset.studioId=String(studio.id);icon.classList.add('selector');icon.setAttribute('role','button');icon.tabIndex=0;icon.setAttribute('aria-label',lampaViewText("Проекты {0}", [studio.name]));icon.title=lampaViewText("Проекты {0}", [studio.name]);
    const open=()=>{if(!icon.isConnected)return;L.Activity.push(studio.kind==='network'?{component:'category_full',source:'tmdb',url:'discover/tv',networks:studio.id,sort_by:'popularity.desc',title:studio.name,page:1}:{component:'company',source:'tmdb',url:movie.media_type,id:studio.id,title:studio.name});};
    window.jQuery(icon).on('hover:enter',open).on('hover:focus',()=>{if(event.link && event.link.items && event.link.items[0])event.link.items[0].last=icon;});
    icon.addEventListener('click',event=>{event.preventDefault();event.stopImmediatePropagation();open();});

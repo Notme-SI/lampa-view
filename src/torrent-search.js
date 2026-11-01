@@ -1,3 +1,4 @@
+import {text as lampaViewText} from './i18n.js';
 // Keep native search actions and callbacks, but present the catalogue's actual
 // names instead of repeated combinations of the same English title.
 export default function torrentSearch(L){
@@ -28,7 +29,7 @@ export default function torrentSearch(L){
   const root=document.querySelector('.activity--active .minimal-torrent-view');if(!root)return;
   const bar=root.querySelector('.torrent-filter');if(!bar)return;
   bar.classList.add('minimal-torrent-toolbar');
-  [['search','Поиск'],['sort','Сортировка'],['filter','Фильтры']].forEach(([key,label])=>{
+  [['search',lampaViewText("Поиск")],['sort',lampaViewText("Сортировка")],['filter',lampaViewText("Фильтры")]].forEach(([key,label])=>{
    const button=bar.querySelector('.filter--'+key);if(!button)return;
    let text=button.querySelector('.minimal-toolbar-label');
    if(!text){text=document.createElement('span');text.className='minimal-toolbar-label';text.textContent=label;button.appendChild(text);}
