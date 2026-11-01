@@ -15,5 +15,5 @@ export default function continueWatching(L){
   result.splice(index<0?0:index+1,0,{title:'История просмотра',url:CONTINUE,source:'minimal_continue',results:history.slice(0,20),minimal_configurable:true,minimal_empty:!history.length});
   return result;
  };
- build.cards=cards;return build;
+ build.cards=cards;build.ready=history.ready;return build;
 }

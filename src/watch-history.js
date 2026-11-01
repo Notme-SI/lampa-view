@@ -6,13 +6,13 @@ const instances=new WeakMap();
 export default function watchHistory(L){
  if(instances.has(L))return instances.get(L);
  const info=cardInfo(L),favorite=L.Favorite,get=favorite && favorite.get;
- let scope='',cloud=null,busy=false,generation=0;
+ let scope='',cloud=null,busy=false,generation=0,settled=false,waiters=[];
  const enabled=()=>!L.Storage || ![false,'false',0,'0'].includes(L.Storage.get('lampa_view_enabled',true));
  function context(){
   const p=L.Account && L.Account.Permit,a=p && p.account;
   return p && p.sync && a && a.profile?String(a.email || L.Storage.get('account_email',''))+'|'+a.profile.id:'';
  }
- function ensure(){const next=context();if(scope!==next){scope=next;cloud=null;busy=false;generation++;}return next;}
+ function ensure(){const next=context();if(scope!==next){scope=next;cloud=null;busy=false;settled=false;waiters=[];generation++;}return next;}
  function normalize(records){
   const seen=new Set();
   (records || []).forEach(card=>info.remember(card));
@@ -33,20 +33,25 @@ export default function watchHistory(L){
   },error=>{if(requested===context() && version===generation && fail)fail(error);});
   return true;
  }
+ function finish(){settled=true;const callbacks=waiters;waiters=[];callbacks.forEach(callback=>callback());}
+ function ready(callback){
+  ensure();if(settled || !enabled() || !scope || !nativeHistory())return callback();
+  waiters.push(callback);refresh();
+ }
  function refresh(){
   ensure();if(busy || !enabled() || !scope || !nativeHistory())return;
   busy=true;
   page(1,result=>{
    busy=false;
    const signature=cards=>JSON.stringify((cards || []).map(card=>[card.id,card.media_type || (card.name?'tv':'movie'),card.watch_history && card.watch_history.watched_at]));
-   const changed=signature(cloud && cloud.results)!==signature(result.results);cloud=result;
-   if(changed && L.Listener && L.Listener.send)L.Listener.send('state:changed',{target:'favorite',reason:'read'});
-  },()=>{busy=false;});
+   const changed=signature(cloud && cloud.results)!==signature(result.results);cloud=result;finish();
+   if(changed && L.Listener && L.Listener.send)L.Listener.send('state:changed',{target:'favorite',reason:'sync'});
+  },()=>{busy=false;finish();});
  }
  if(get)favorite.get=function(params){
   const records=get.apply(this,arguments);
   return enabled() && params && params.type==='history'?normalize(records):records;
  };
- const api={cards(){ensure();return cloud?cloud.results:favorite && favorite.get?favorite.get({type:'history'}) || []:[];},refresh,page};
+ const api={cards(){ensure();return cloud?cloud.results:favorite && favorite.get?favorite.get({type:'history'}) || []:[];},refresh,page,ready};
  instances.set(L,api);return api;
 }

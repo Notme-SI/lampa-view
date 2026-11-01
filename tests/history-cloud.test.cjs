@@ -32,3 +32,22 @@ test('movie completion follows remote CUB marks and their removal rather than st
   records.Movie={percent:40,time:915,duration:2400};api.paint(node);assert.equal(node.querySelector('.pt-card-watch__time').textContent,'15:15');assert.equal(node.querySelector('.pt-card-watch--complete'),null);
  }finally{w.close();}
 });
+
+test('initial history is awaited once and background notifications never request a native full refresh',()=>{
+ const d=new JSDOM('',{runScripts:'outside-only'}),w=d.window;try{
+  let complete,loads=0,shown=0,reloads=0;
+  const L={Storage:{get:(k,f)=>f},Favorite:{get:()=>[]},Account:{Permit:{sync:true,account:{email:'a@example.test',profile:{id:7}}},Api:{watchHistory:(p,ok)=>{loads++;complete=ok;}}},Listener:{send:(n,e)=>{if(['read','profile','clear'].includes(e.reason))reloads++;}}};
+  const history=load(w,'watch-history')(L);history.ready(()=>shown++);history.ready(()=>shown++);assert.equal(loads,1);assert.equal(shown,0);
+  complete({results:[{id:1,title:'Cloud'}]});assert.equal(shown,2);assert.equal(reloads,0);history.ready(()=>shown++);assert.equal(shown,3);assert.equal(loads,1);
+  history.refresh();complete({results:[{id:2,title:'New'}]});assert.equal(reloads,0);assert.equal(loads,2);assert.equal(history.cards()[0].id,2);
+ }finally{w.close();}
+});
+
+test('failed first history pull releases the initial render once and a failed background pull keeps the cached list',()=>{
+ const d=new JSDOM('',{runScripts:'outside-only'}),w=d.window;try{
+  let ok,fail,shown=0,reloads=0;
+  const L={Storage:{get:(k,f)=>f},Favorite:{get:()=>[{id:3,title:'Cached'}]},Account:{Permit:{sync:true,account:{email:'a@example.test',profile:{id:7}}},Api:{watchHistory:(p,yes,no)=>{ok=yes;fail=no;}}},Listener:{send:(n,e)=>{if(['read','profile','clear'].includes(e.reason))reloads++;}}};
+  const history=load(w,'watch-history')(L);history.ready(()=>shown++);fail({offline:true});assert.equal(shown,1);assert.equal(history.cards()[0].id,3);
+  history.ready(()=>shown++);assert.equal(shown,2);history.refresh();ok({results:[{id:4,title:'Cloud'}]});history.refresh();fail({offline:true});assert.equal(history.cards()[0].id,4);assert.equal(shown,2);assert.equal(reloads,0);
+ }finally{w.close();}
+});

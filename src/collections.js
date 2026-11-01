@@ -49,7 +49,8 @@ export default function collections(L,shiki){
  const main=L.Api.main;
  L.Api.main=function(object,ok,fail){
   const ctx=context(object),compact=(!object.component || object.component==='main');
-  function process(rows){if(compact)rows=rows.filter(row=>!/недавние.*(?:эпизод|сери)|recent.*episode/i.test(String(row.title || '')));rows=rows.map(row=>({...row,results:presentableCards(row.results || [])}));const selected=compact?homeRows(rows):rows;remember(ctx,selected);ok(arrange(selected,prefs(ctx)).filter(row=>!row.minimal_empty));}
+  function process(rows){if(compact)return homeRows.ready(()=>render(rows));render(rows);}
+  function render(rows){if(compact)rows=rows.filter(row=>!/недавние.*(?:эпизод|сери)|recent.*episode/i.test(String(row.title || '')));rows=rows.map(row=>({...row,results:presentableCards(row.results || [])}));const selected=compact?homeRows(rows):rows;remember(ctx,selected);ok(arrange(selected,prefs(ctx)).filter(row=>!row.minimal_empty));}
   const next=main.call(this,object,process,fail);
   return !compact && typeof next==='function'?function(resolve,reject){return next(rows=>{remember(ctx,rows,true);resolve(arrange(rows,prefs(ctx)));},reject);}:undefined;
  };
@@ -57,7 +58,7 @@ export default function collections(L,shiki){
  // when membership changed, and never take focus from an open actions menu.
  let historyTimer;
  if(L.Listener && L.Listener.follow)L.Listener.follow('state:changed',event=>{
-  if(event.target!=='favorite')return;
+  if(event.target!=='favorite' || event.reason==='sync')return;
   clearTimeout(historyTimer);
   const refresh=()=>{
    const active=L.Activity && L.Activity.active && L.Activity.active();

@@ -1,4 +1,4 @@
-/*! Lampa View 0.4.96 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.4.97 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -5466,7 +5466,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var scope = "",
       cloud = null,
       busy = false,
-      generation = 0;
+      generation = 0,
+      settled = false,
+      waiters = [];
     var enabled = function enabled() {
       return !L.Storage || ![false, "false", 0, "0"].includes(L.Storage.get("lampa_view_enabled", true));
     };
@@ -5481,6 +5483,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         scope = next;
         cloud = null;
         busy = false;
+        settled = false;
+        waiters = [];
         generation++;
       }
       return next;
@@ -5524,6 +5528,20 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       });
       return true;
     }
+    function finish() {
+      settled = true;
+      var callbacks = waiters;
+      waiters = [];
+      callbacks.forEach(function (callback) {
+        return callback();
+      });
+    }
+    function ready(callback) {
+      ensure();
+      if (settled || !enabled() || !scope || !nativeHistory()) return callback();
+      waiters.push(callback);
+      refresh();
+    }
     function refresh() {
       ensure();
       if (busy || !enabled() || !scope || !nativeHistory()) return;
@@ -5537,12 +5555,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         };
         var changed = signature(cloud && cloud.results) !== signature(result.results);
         cloud = result;
+        finish();
         if (changed && L.Listener && L.Listener.send) L.Listener.send("state:changed", {
           target: "favorite",
-          reason: "read"
+          reason: "sync"
         });
       }, function () {
         busy = false;
+        finish();
       });
     }
     if (get) favorite.get = function (params) {
@@ -5557,7 +5577,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }) || [] : [];
       },
       refresh: refresh,
-      page: page
+      page: page,
+      ready: ready
     };
     instances2.set(L, api);
     return api;
@@ -5623,6 +5644,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       return result;
     };
     build.cards = cards;
+    build.ready = history.ready;
     return build;
   }
 
@@ -5839,6 +5861,12 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var ctx = context(object),
         compact = !object.component || object.component === "main";
       function process(rows) {
+        if (compact) return homeRows.ready(function () {
+          return render(rows);
+        });
+        render(rows);
+      }
+      function render(rows) {
         if (compact) rows = rows.filter(function (row) {
           return !/недавние.*(?:эпизод|сери)|recent.*episode/i.test(String(row.title || ""));
         });
@@ -5863,7 +5891,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     };
     var historyTimer;
     if (L.Listener && L.Listener.follow) L.Listener.follow("state:changed", function (event) {
-      if (event.target !== "favorite") return;
+      if (event.target !== "favorite" || event.reason === "sync") return;
       clearTimeout(historyTimer);
       var _refresh = function refresh() {
         var active = L.Activity && L.Activity.active && L.Activity.active();
@@ -7181,7 +7209,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           var now = L.Account.Permit.account && L.Account.Permit.account.profile && L.Account.Permit.account.profile.id;
           if (now === profile && L.Listener && L.Listener.send) L.Listener.send("state:changed", {
             target: "favorite",
-            reason: "read"
+            reason: "sync"
           });
         });
       }

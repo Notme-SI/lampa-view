@@ -20,7 +20,7 @@ export default function progressSync(L,enabled){
    L.Account.Bookmarks.update(()=>{
     bookmarkBusy=false;
     const now=L.Account.Permit.account && L.Account.Permit.account.profile && L.Account.Permit.account.profile.id;
-    if(now===profile && L.Listener && L.Listener.send)L.Listener.send('state:changed',{target:'favorite',reason:'read'});
+    if(now===profile && L.Listener && L.Listener.send)L.Listener.send('state:changed',{target:'favorite',reason:'sync'});
    });
   }
  }
