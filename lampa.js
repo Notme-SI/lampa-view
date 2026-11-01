@@ -1,4 +1,4 @@
-/*! Lampa View 0.4.94 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.4.95 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -31902,7 +31902,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var parts = [];
         ["season", "voice"].forEach(function (name) {
           var group = groups[name];
-          if (!group || !group.items || group.items.length < 2) return parts.push(name + ":-");
+          if (!group || !group.items || !group.items.length) return parts.push(name + ":-");
           parts.push(name + ":" + (group.title || "") + ":" + group.items.map(function (item, seat) {
             return (typeof item.index === "number" ? item.index : seat) + "|" + item.title;
           }).join(","));

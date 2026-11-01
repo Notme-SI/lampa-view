@@ -63,6 +63,10 @@ jobs:
         env:
           PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
         run: node tests/browser/trakt-interface.cjs
+      - name: Initial dubbing
+        env:
+          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
+        run: node tests/browser/voice-initial.cjs
       - name: Online interface
         env:
           PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright

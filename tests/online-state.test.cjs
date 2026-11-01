@@ -375,3 +375,20 @@ test('exact catalogue aliases restore synced native records, manual marks keep u
   api.setWatched({title:'Вышка 2',runtime:100},0,0,true);assert.equal(api.reader({title:'Вышка 2'})(0,0).time,0);
  }finally{w.close();}
 });
+
+test('a single dubbing arriving after the initial empty filter appears without switching source',async()=>{
+ const n=await native({built:true}),{w,L}=n;let s;try{
+  s=screen(n,{voices:false});const season={stype:'season',title:'Сезон',items:[{title:'Сезон 2',selected:true}]};
+  s.filter.set('filter',[season]);await wait(240);assert.equal(s.root.find('[data-nova-focus=voice]').length,0);
+  const original=s.body.find('.online-prestige')[0];let selected=-1,sourceChanges=0;
+  s.filter.onSelect=(type,group,item)=>{if(type==='sort')sourceChanges++;else selected=item.index;};
+  const voice={stype:'voice',title:'Перевод',items:[{title:'КОМНАТА ДИДИ',selected:true,index:0}]};
+  s.filter.set('filter',[season,voice]);await wait(240);
+  const button=s.root.find('[data-nova-focus=voice]');assert.equal(button.length,1,'One available dubbing is a real group, not an absent group');assert.match(button.text(),/КОМНАТА ДИДИ/);
+  button.trigger('hover:enter');assert.equal(L.Select.render().find('.selectbox-item').length,1);L.Select.render().find('.selectbox-item').first().trigger('hover:enter');
+  assert.equal(selected,-1,'Choosing the already active dubbing must not reload its source');assert.equal(sourceChanges,0);assert.equal(s.played(),0);assert.equal(s.body.find('.online-prestige')[0],original,'Native playback node remains intact');
+  voice.items.push({title:'AniLibria',selected:false,index:1});s.filter.set('filter',[season,voice]);await wait(240);
+  s.root.find('[data-nova-focus=voice]').trigger('hover:enter');assert.equal(L.Select.render().find('.selectbox-item').length,2);L.Select.render().find('.selectbox-item').last().trigger('hover:enter');assert.equal(selected,1,'A new choice reaches the native handler');assert.equal(sourceChanges,0);assert.equal(s.played(),0);
+  s.filter.set('filter',[season]);await wait(240);assert.equal(s.root.find('[data-nova-focus=voice]').length,0,'An empty group removes its old button');assert.deepEqual(n.errors,[]);
+ }finally{if(s)s.close();n.close();}
+});

@@ -5757,7 +5757,8 @@
     var parts = [];
     ['season', 'voice'].forEach(function (name) {
       var group = groups[name];
-      if (!group || !group.items || group.items.length < 2) return parts.push(name + ':-');
+      // A single late option still creates a control; only zero options means absent.
+      if (!group || !group.items || !group.items.length) return parts.push(name + ':-');
       parts.push(name + ':' + (group.title || '') + ':' + group.items.map(function (item, seat) {
         return (typeof item.index === 'number' ? item.index : seat) + '|' + item.title;
       }).join(','));
