@@ -36,6 +36,14 @@ export default function quality(L,$){
   function paintCaption(node,data){
     const title=node.querySelector('.card__title'),text=data.title || data.name || '';
     if(title && text && title.textContent!==text)title.textContent=text;
+    if(title){
+      if(document.body.matches('.pt-tv.pt-tv-caption-flow')){
+        // Round the actual scaled font to whole pixels. Android TV's old WebKit
+        // line-clamp can report one line's box while painting a second line.
+        const line=Math.ceil(parseFloat(window.getComputedStyle(title).fontSize)*1.4);
+        if(line>0 && title.style.getPropertyValue('--pt-caption-line')!==line+'px')title.style.setProperty('--pt-caption-line',line+'px');
+      }else title.style.removeProperty('--pt-caption-line');
+    }
     const year=releaseYear(data);if(!year || !title)return;
     let age=node.querySelector('.card__age');
     if(!age){age=document.createElement('div');age.className='card__age';}
@@ -196,5 +204,6 @@ export default function quality(L,$){
   // Delegation also covers legacy/history cards without a Maker onFocus hook.
   if(typeof $==='function')$(document).on('hover:focus.lampaViewQuality hover:hover.lampaViewQuality hover:touch.lampaViewQuality','.card',function(){const item=tracked.get(this);if(item)schedule(item);});
   window.addEventListener('resize',revisit);
+  document.addEventListener('minimal:interface-size',revisit);
   cacheControl(L).register('quality',()=>{generation++;clearTimeout(saveTimer);pending.forEach(job=>{if(job.cancel)job.cancel();if(job.request && job.request.clear)job.request.clear();});cache.clear();pending.clear();queue.length=0;retries.clear();running=0;if(L.Storage && L.Storage.set)L.Storage.set(storage,[]);for(const [node] of tracked){node.querySelectorAll('.pt-quality').forEach(b=>b.remove());node.classList.remove('pt-has-quality');}revisit();});
 }

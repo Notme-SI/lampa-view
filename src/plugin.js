@@ -407,7 +407,7 @@ if (!ROOT.LampaView) {
     P.online=onlineState(L);
     interfaceSize(L);installTmdb(L);installFullGuard(L);torrentEpisodes(L,ROOT);inputs(L);
     artwork=installArtwork(L,()=>yes('lampa_view_enabled'));
-    progressSync(L,()=>yes('lampa_view_enabled'));
+    P.sync=progressSync(L,()=>yes('lampa_view_enabled'));
     historyCards(L,()=>yes('lampa_view_enabled'));
     torrentBanner(L,loadLogo);
     torrentSearch(L);

@@ -96,3 +96,12 @@ jobs:
         env:
           PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
         run: node tests/browser/header-focus.cjs
+
+      - name: TV title flow
+        env:
+          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
+        run: node tests/browser/tv-captions.cjs
+      - name: Timeline between devices
+        env:
+          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
+        run: node tests/browser/timeline-devices.cjs

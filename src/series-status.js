@@ -44,7 +44,10 @@ function watchFooter(L,node,data,series){
  };
  // Movie progress must not depend on the native hover overlay already existing.
  const movieSaved=!series && (state && state.reader?state.reader(data)(0,0):[data.original_title,data.title].filter(Boolean).map(title=>view(hash(title))).find(value=>value && (value.percent || value.time)));
- const marks=!series && L.Favorite && L.Favorite.check?L.Favorite.check(data):null;
+ const favorite=L.Favorite,synced=L.Account && L.Account.Permit && L.Account.Permit.sync;
+ // check() is the local list even while CUB sync is enabled. cloud() follows
+ // the current profile's bookmarks, including removal on another device.
+ const marks=!series && favorite?(synced && favorite.cloud?favorite.cloud(data):favorite.check?favorite.check(data):null):null;
  const movieMarked=marks && (marks.wath || marks.viewed);
  const movieTime=movieMarked?{hash:hash(title),percent:100,time:0,duration:0}:movieSaved && (movieSaved.percent || movieSaved.time)?movieSaved:null;
  if((shared || movieTime) && !wrap){wrap=document.createElement('div');wrap.className='card-watched';wrap.innerHTML='<div class="card-watched__inner"><div class="card-watched__body"></div></div>';slot.appendChild(wrap);}

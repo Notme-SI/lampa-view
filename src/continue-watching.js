@@ -6,7 +6,7 @@ export default function continueWatching(L){
  const history=watchHistory(L);
  const cards=()=>history.cards();
  if(L.Api.sources)L.Api.sources.minimal_continue={
-  list(params,ok){const all=cards(),page=Math.max(1,Number(params.page)||1);ok({results:all.slice((page-1)*20,page*20),page,total_pages:Math.max(1,Math.ceil(all.length/20))});},
+  list(params,ok,fail){if(history.page(Math.max(1,Number(params.page)||1),ok,fail))return;const all=cards(),page=Math.max(1,Number(params.page)||1);ok({results:all.slice((page-1)*20,page*20),page,total_pages:Math.max(1,Math.ceil(all.length/20))});},
   full(params,ok,fail){const card=params.card || {},source=card.source && card.source!=='minimal_continue'?card.source:L.Storage.get('source','cub'),api=L.Api.sources[source];if(api && api.full)api.full({...params,source,card:{...card,source}},ok,fail);else fail({empty:true});},clear(){}
  };
  const build=rows=>{

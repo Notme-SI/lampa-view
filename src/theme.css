@@ -880,6 +880,9 @@ body.lampa_view.pt-tv .items-line .card:not(.card--wide):not(.card--collection) 
 body.lampa_view.pt-tv .items-line.minimal-posters-sized .card:not(.card--wide):not(.card--collection) {width:var(--minimal-poster-width)!important}
 body.lampa_view.pt-tv .items-line>.items-line__head {padding-left:1.1em}
 body.lampa_view.pt-tv .card__title {font-size:.79em;line-height:1.4;max-height:2.85em;overflow-wrap:break-word}
+/* Normal document flow avoids old TV WebKit's fractional line-clamp box. */
+body.lampa_view.pt-tv.pt-tv-caption-flow .card__title {display:block;height:auto;min-height:0;line-height:var(--pt-caption-line,1.4em);max-height:calc(var(--pt-caption-line,1.4em) * 2);-webkit-line-clamp:unset;line-clamp:unset;transform:none}
+body.lampa_view.pt-tv.pt-tv-caption-flow .card__age {position:static;clear:both;transform:none}
 body.lampa_view.pt-tv .mapping--grid>.card:not(.card--wide):not(.card--collection),body.lampa_view.pt-tv .category-full>.card:not(.card--wide):not(.card--collection) {width:calc(10% * var(--pt-interface-scale,1))!important}
 
 /* The same native menu becomes a dock only when the native preference is on. */

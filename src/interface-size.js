@@ -6,6 +6,8 @@ export default function interfaceSize(L){
   const value=L.Storage.get('interface_size','normal');
   document.body.style.setProperty('--pt-interface-scale',String(factors[value] || factors.normal));
   document.body.style.setProperty('--pt-interface-max-scale',tv?'1.12':'1.05');
+  document.body.classList.toggle('pt-tv-caption-flow',value!=='bigger');
+  (window.requestAnimationFrame || (fn=>setTimeout(fn,16)))(()=>document.dispatchEvent(new Event('minimal:interface-size')));
   if(!tv)(window.requestAnimationFrame || (fn=>setTimeout(fn,16)))(()=>document.dispatchEvent(new Event('minimal:hero-layout')));
  }
  update();
