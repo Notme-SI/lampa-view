@@ -293,7 +293,9 @@ if (!ROOT.LampaView) {
       let touch;
       element.on('touchstart',e=>{const t=e.originalEvent.touches[0];touch={x:t.clientX,y:t.clientY};});
       element.on('touchend',e=>{if(!touch)return;const t=e.originalEvent.changedTouches[0],dx=t.clientX-touch.x,dy=t.clientY-touch.y;if(Math.abs(dx)>55 && Math.abs(dx)>Math.abs(dy)*1.4)show(index+(dx<0?1:-1));touch=null;});
-      show(0);line.before(element);line[0].dispatchEvent(new Event('minimal:hero-layout',{bubbles:true}));
+      line.before(element);show(0);
+      // Run after attachment; another frame observes native font/row layout settling.
+      if(!document.body.classList.contains('pt-tv'))(window.requestAnimationFrame || (fn=>setTimeout(fn,16)))(requestHeroLayout);
       if(cards.length>1){
         rotation=carousel(element[0],()=>show(index+1),()=>{
           const active=L.Activity.active() || {},controller=L.Controller.enabled && L.Controller.enabled();

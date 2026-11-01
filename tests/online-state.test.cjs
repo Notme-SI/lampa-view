@@ -354,3 +354,24 @@ test('unrelated fuzzy search hits disappear while matching title seasons and nat
  const voices=[{title:'TVShows',method:'link',url:'/voice/1'}];assert.equal(pick(voices,card),voices);
  }finally{w.close();}
 });
+
+test('exact catalogue aliases restore synced native records, manual marks keep unknown time and season completion requires every episode',()=>{
+ const d=new JSDOM('',{runScripts:'outside-only'}),w=d.window;try{
+  w.eval(code);const records={file_view_7:{},minimal_card_info_v1:[['tmdb:movie:91',{time:Date.now(),names:['Астрал 6: Они уже здесь']}]]},listeners={};
+  const L={Utils:{hash:x=>x},Storage:{get:(k,v)=>records[k] || v,set:(k,v)=>records[k]=v},Listener:{follow:(k,fn)=>listeners[k]=fn},Timeline:{filename:()=> 'file_view_7',view:()=>({}),update:v=>records.file_view_7[v.hash]={...v},read(){}}},api=w.OnlineState.default(L);
+  for(const title of ['Астрал 6: Они уже здесь','Вышка 2']){
+   records.file_view_7[title]={percent:40,time:915,duration:2400};assert.equal(api.reader({title,original_title:'Original '+title})(0,0).time,915);
+  }
+  assert.equal(api.reader({id:91,source:'tmdb',title:'Insidious',original_title:'Insidious 6'})(0,0).time,915,'Known alias is read only for the same catalogue ID');
+  const card={name:'Киберпанк: Бегущие по краю',original_name:'Cyberpunk: Edgerunners',seasons:[{season_number:1,episode_count:3}],episode_run_time:[47]};
+  records.file_view_7['13Cyberpunk: Edgerunners']={percent:100,time:2832,duration:2832};
+  assert.equal(api.lastWatched(card).episode,3);assert.equal(api.seasonWatched(card,1,3),false,'Last completed episode alone cannot complete a season');
+  api.setWatched(card,1,1,true);assert.equal(api.reader(card)(1,1).time,0,'A manual mark must not invent runtime');
+  assert.equal(api.reader(card)(1,1).percent,100);assert.equal(api.seasonWatched(card,1,3),false);
+  records.file_view_7['12Cyberpunk: Edgerunners']={percent:40,time:915};assert.equal(api.seasonWatched(card,1,3),false);
+  records.file_view_7['12Cyberpunk: Edgerunners']={percent:100,time:2832};assert.equal(api.seasonWatched(card,1,3),true);
+  records.file_view_7={'12Cyberpunk: Edgerunners':{percent:30,time:720,updated:100}};listeners['state:changed']({target:'timeline',reason:'read'});
+  assert.equal(api.lastWatched(card).episode,2);assert.equal(api.lastWatched(card).time,720,'Sync invalidates the focused snapshot');
+  api.setWatched({title:'Вышка 2',runtime:100},0,0,true);assert.equal(api.reader({title:'Вышка 2'})(0,0).time,0);
+ }finally{w.close();}
+});

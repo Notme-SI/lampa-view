@@ -22,21 +22,11 @@ export default function posterCache(L,enabled,highQuality){
   if(!tv() && !box.width && !box.height)return true; // Native visibility remains authoritative before layout.
   return box.width>0 && box.bottom>0 && box.top<window.innerHeight && box.right>0 && box.left<window.innerWidth;
  }
- // Measure only after navigation has settled. Keep at least two source
- // pixels per displayed pixel for cards; large cards retain their prior size.
+ // The artwork API already chose the source resolution. Preserve it through decoding.
  function fit(image,url){
   // High on a TV must not be downgraded from its CSS viewport dimensions.
   if(tv())return url.replace(/(\/t\/p\/)w(\d+)(\/)/,(all,prefix,size,suffix)=>Number(size)<780?prefix+'w780'+suffix:all);
-  const card=image.closest('.card'),view=card && card.querySelector('.card__view');
-  const box=(view || image).getBoundingClientRect();
-  const width=(box.width || card && card.getBoundingClientRect().width || 0)*(window.devicePixelRatio || 1);
-  if(!width || !Number.isFinite(width))return url;
-  const match=url.match(/\/t\/p\/(w500|w780|w1280|original)\//);if(!match)return url;
-  const wide=card && card.matches('.card--wide,.card--collection');
-  let size=match[1];
-  if(wide){if(width<=390 && ['w1280','original'].includes(size))size='w780';else if(width<=640 && size==='original')size='w1280';}
-  else if(width<=250 && ['w780','original'].includes(size))size='w500';
-  return url.replace(/(\/t\/p\/)(w500|w780|w1280|original)(\/)/,'$1'+size+'$3');
+  return url;
  }
  function trim(){
   let bytes=0;cache.forEach(entry=>bytes+=entry.bytes || 0);

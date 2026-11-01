@@ -1,4 +1,5 @@
 import tmdbGet from './tmdb.js';
+import cardInfo from './card-info.js';
 // Selected metadata/progress fixes adapted from the user-provided community interface.
 // Read the host's timeline; opening the online screen never rewrites watch history.
 const number=value=>Number.isFinite(Number(value))?Math.max(0,Number(value)):0;
@@ -111,7 +112,8 @@ export function availability(body){
 export default function onlineState(L){
  let revision=0;const snapshots=new Map();
  const file=()=>L.Timeline && L.Timeline.filename?L.Timeline.filename():'file_view';
- const names=card=>Array.from(new Set([card.original_title,card.original_name,card.title,card.name].filter(Boolean).map(String)));
+ const info=L.Storage && L.Storage.get?cardInfo(L):null;
+ const names=card=>Array.from(new Set([card.original_title,card.original_name,card.title,card.name,...(info?info.names(card):[])].filter(value=>typeof value==='string' && value.trim()).map(value=>value.trim())));
  const hash=(title,season,episode)=>L.Utils.hash(season?[season,season>10?':':'',episode,title].join(''):title);
  function reader(card){
   const records=L.Storage.get(file(),{}) || {},titles=names(card);
@@ -141,6 +143,12 @@ export default function onlineState(L){
   const value=latest?{season:latest.season,episode:latest.episode,total:latest.total,max,hash:latest.record.hash,time:latest.record.time,duration:latest.record.duration,percent:latest.record.percent}:null;
   snapshots.set(key,{at:Date.now(),revision,value});if(snapshots.size>100)snapshots.delete(snapshots.keys().next().value);return value;
  }
+ function seasonWatched(card,season,total){
+  if(!Number.isInteger(total) || total<1 || total>500)return false;
+  const read=reader(card);
+  for(let episode=1;episode<=total;episode++)if(read(season,episode).percent<100)return false;
+  return true;
+ }
  function resume(card){
   const last=lastWatched(card);if(!last)return null;
   const value={season:last.season,episode:last.episode,time:last.time,percent:last.percent};
@@ -163,6 +171,9 @@ export default function onlineState(L){
  }
 
  if(L.Timeline && L.Timeline.listener)for(const event of ['update','read'])L.Timeline.listener.follow(event,()=>{revision++;snapshots.clear();});
+ // CUB/profile reads may replace storage independently of Timeline's in-memory cache.
+ if(L.Listener && L.Listener.follow)L.Listener.follow('state:changed',event=>{if(event.target==='timeline'){revision++;snapshots.clear();}});
+ if(L.Storage && L.Storage.listener)L.Storage.listener.follow('change',event=>{if(event.name===file()){revision++;snapshots.clear();}});
  function writeTimeline(value){
   const current=L.Timeline.view?L.Timeline.view(value.hash):{};
   const permit=L.Account && L.Account.Permit,profile=permit && permit.sync && permit.account && permit.account.profile;
@@ -203,7 +214,7 @@ export default function onlineState(L){
   }else if(!watched)clearLast(card,season,episode);
   for(const key of keys){
    const raw=records[key],percent=typeof raw==='number'?raw:number(raw && raw.percent);
-   if(watched || percent>=90){const duration=number(raw && raw.duration) || number(season?(card.episode_run_time || [])[0]:card.runtime)*60;writeTimeline({hash:key,percent:watched?100:0,time:watched?duration:0,duration});}
+   if(watched || percent>=90){const duration=number(raw && raw.duration);writeTimeline({hash:key,percent:watched?100:0,time:watched?number(raw && raw.time):0,duration});}
   }
   revision++;snapshots.clear();
   if(L.Timeline.read)L.Timeline.read();
@@ -249,5 +260,5 @@ export default function onlineState(L){
   if(L.Timeline.read)L.Timeline.read();
  }
 
- return {availability,reader,resume,seasonIndex,folderTarget,folderRows,folderSeasons,relevantFolders,clearProgress,clearTitleProgress,setWatched,setAllWatched,lastWatched};
+ return {availability,reader,resume,seasonIndex,folderTarget,folderRows,folderSeasons,relevantFolders,clearProgress,clearTitleProgress,setWatched,setAllWatched,lastWatched,seasonWatched};
 }

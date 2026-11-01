@@ -4,7 +4,8 @@ import posterPreview from './poster-cache.js';
 export function artworkQuality(L){
  const get=(key,def)=>L.Storage && L.Storage.get?L.Storage.get(key,def):def;
  const value=get('minimal_banner_quality','maximum');
- if(get('minimal_artwork_quality_revision',0)!==2)return ['high','medium','w1280'].includes(value)?'medium':'high';
+ // Preserve explicit High from older installs; only explicit medium stays medium.
+ if(get('minimal_artwork_quality_revision',0)!==2)return ['medium','w1280'].includes(value)?'medium':'high';
  return value==='medium'?'medium':'high';
 }
 export function artworkSize(L,kind){
@@ -27,7 +28,7 @@ export default function installArtwork(L,enabled){
   const image=api.image;
   api.image=function(){
    const value=image.apply(this,arguments);if(!enabled())return value;
-   return typeof value==='string'?canonical(value).replace(/(\/t\/p\/)w(\d+)(?:_and_h\d+_face)?(\/)/,(all,prefix,size,suffix)=>prefix+(Number(size)<=185?'w500':Number(size)<=500?artworkSize(L,'poster'):'w'+size)+suffix):value;
+   return typeof value==='string'?canonical(value).replace(/(\/t\/p\/)w(\d+)(?:_and_h\d+_face)?(\/)/,(all,prefix,size,suffix)=>prefix+(Number(size)<=500?artworkSize(L,'poster'):'w'+size)+suffix):value;
   };
   imageWrappers.add(api.image);
  }
@@ -41,7 +42,7 @@ export default function installArtwork(L,enabled){
     // never a small portrait. Delegating APIs must not classify the size twice.
     const kind=['w780','w1280','original'].includes(size)?'backdrop':'poster';
     const face=size && /_face$/.test(size);
-    const requested=face?'w500':size && /^w\d+$/.test(size) && Number(size.slice(1))<=185?'w500':artworkSize(L,kind);
+    const requested=face?artworkSize(L,'poster'):artworkSize(L,kind);
     depth++;try{return canonical(original.call(this,src,requested));}finally{depth--;}
    };
    wrappers.set(original,wrapper);wrapped.add(wrapper);

@@ -44,7 +44,9 @@ function watchFooter(L,node,data,series){
  };
  // Movie progress must not depend on the native hover overlay already existing.
  const movieSaved=!series && (state && state.reader?state.reader(data)(0,0):[data.original_title,data.title].filter(Boolean).map(title=>view(hash(title))).find(value=>value && (value.percent || value.time)));
- const movieTime=movieSaved && (movieSaved.percent || movieSaved.time)?movieSaved:null;
+ const marks=!series && L.Favorite && L.Favorite.check?L.Favorite.check(data):null;
+ const movieMarked=marks && (marks.wath || marks.viewed);
+ const movieTime=movieMarked?{hash:hash(title),percent:100,time:0,duration:0}:movieSaved && (movieSaved.percent || movieSaved.time)?movieSaved:null;
  if((shared || movieTime) && !wrap){wrap=document.createElement('div');wrap.className='card-watched';wrap.innerHTML='<div class="card-watched__inner"><div class="card-watched__body"></div></div>';slot.appendChild(wrap);}
  if(!wrap)return;
  for(const other of slot.querySelectorAll('.card-watched'))if(other!==wrap)other.remove();
@@ -108,14 +110,22 @@ function watchFooter(L,node,data,series){
  const seasonDetail=series && shared && (Array.isArray(data.seasons)?data.seasons:[]).find(season=>Number(season.season_number)===shared.season);
  const seasonTotal=Number(seasonDetail && seasonDetail.episode_count) || shared && shared.total || 0;
  const next=data.next_episode_to_air;
- const seasonComplete=series && shared && shared.percent>=90 && seasonTotal>0 && shared.episode>=seasonTotal && !(next && Number(next.season_number)===shared.season);
+ const released=releaseStatus(data,L.TimeTable && L.TimeTable.get?L.TimeTable.get(data) || []:[]);
+ const ended=shared && released && (released.season>shared.season || released.season===shared.season && released.count>=seasonTotal);
+ const seasonComplete=series && shared && seasonTotal>0 && ended && !(next && Number(next.season_number)===shared.season) && state && state.seasonWatched && state.seasonWatched(data,shared.season,seasonTotal);
  const complete=series?seasonComplete:Number(timeline.percent)>=90;
  slot.classList.toggle('pt-card-watch--complete',complete);
  const shown={...(target || timeline)};
- if(Number(shown.percent)>=90){shown.percent=100;shown.time=Number(shown.duration) || Number(shown.time) || Number(series?(data.episode_run_time || [])[0]:data.runtime)*60 || 0;}
+ if(Number(shown.percent)>=90)shown.percent=100;
  if(complete){watchEpisode=0;label=series?'Сезон '+shared.season+' просмотрен':'Фильм просмотрен';}
+ // Keep the native timeline node (and data-hash) in an explicit flex progress row.
+ const line=row.querySelector('.time-line');let meter=row.querySelector('.pt-card-watch__meter');
+ if(!meter){meter=document.createElement('div');meter.className='pt-card-watch__meter';row.appendChild(meter);}
+ if(line.parentNode!==meter)meter.appendChild(line);
+ const timestamp=row.querySelector('.pt-card-watch__time');if(timestamp.parentNode!==meter)meter.appendChild(timestamp);
+ line.classList.remove('hide');
  const fill=row.querySelector('.time-line>div');if(fill)fill.style.width=Math.min(100,Math.max(0,Number(shown.percent)||0))+'%';
- const time=complete?'':clock(shown.time),name=summary.firstElementChild,stamp=summary.lastElementChild;
+ const time=complete || !Number(shown.time)?'':clock(shown.time),name=summary.firstElementChild,stamp=row.querySelector('.pt-card-watch__time');
  const action=Number(shown.time)>0 || Number(shown.percent)>0?'Просмотрено: ':'Смотреть: ';
  if(name.dataset.label!==label || name.dataset.action!==action){
   name.dataset.label=label;name.dataset.action=action;
@@ -134,7 +144,7 @@ function watchFooter(L,node,data,series){
 export default function seriesStatus(L,schedule){
  const cards=new WeakMap(),cache=new Map(),pending=new Map(),queue=[];let running=0;
  function paint(node){
-  const data=cards.get(node);if(!data || !node.matches('.focus,.hover'))return;
+  const data=cards.get(node);if(!data || !node.matches('.focus,.hover,.pt-card-pointer'))return;
   const view=node.querySelector('.card__view');if(!view)return;
   const series=data.media_type!=='movie' && !!(data.name || data.original_name || data.first_air_date || data.media_type==='tv');
   const key=String(data.id),entry=cache.get(key),fresh=entry && Date.now()-entry.at<(entry.value?900000:60000),facts=fresh?entry.value:null;
@@ -158,14 +168,14 @@ export default function seriesStatus(L,schedule){
  }
  function pump(){
   while(running<(document.body.classList.contains('pt-tv')?1:2) && queue.length){const task=queue.shift();running++;let done=false;
-   const finish=json=>{if(done)return;done=true;running--;pending.delete(task.key);const table=L.TimeTable && L.TimeTable.get?L.TimeTable.get(task.data) || []:[];cache.set(task.key,{at:Date.now(),details:json && Number(json.id)===Number(task.data.id)?json:null,value:releaseStatus(json && Number(json.id)===Number(task.data.id)?json:task.data,table)});if(cache.size>80)cache.delete(cache.keys().next().value);for(const node of task.nodes)if(node.isConnected && node.matches('.focus,.hover'))schedule(node);pump();};
+   const finish=json=>{if(done)return;done=true;running--;pending.delete(task.key);const table=L.TimeTable && L.TimeTable.get?L.TimeTable.get(task.data) || []:[];cache.set(task.key,{at:Date.now(),details:json && Number(json.id)===Number(task.data.id)?json:null,value:releaseStatus(json && Number(json.id)===Number(task.data.id)?json:task.data,table)});if(cache.size>80)cache.delete(cache.keys().next().value);for(const node of task.nodes)if(node.isConnected && node.matches('.focus,.hover,.pt-card-pointer'))schedule(node);pump();};
    tmdbGet(L,'tv/'+task.data.id,{},finish,()=>finish(null),{life:60});
   }
  }
  // Native timeline writes update progress directly. Only the focused card
  // needs its history caption refreshed by the batched badge queue.
  if(L.Listener && L.Listener.follow)L.Listener.follow('state:changed',event=>{
-  if(event.target==='timeline')for(const node of document.querySelectorAll('.card.focus,.card.hover'))if(cards.has(node))schedule(node);
+  if(event.target==='timeline' || event.target==='favorite')for(const node of document.querySelectorAll('.card.focus,.card.hover,.card.pt-card-pointer'))if(cards.has(node))schedule(node);
  });
  return {track(node,data){
   cards.set(node,data);

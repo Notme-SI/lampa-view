@@ -34,8 +34,8 @@ export default function badgeLayout(status){
     if(el.hidden || el.classList.contains('hide') || getComputedStyle(el).display==='none')continue;
     if(el.classList.contains('pt-series-status')){
      el.style.fontSize='';
-     const natural=el.scrollWidth,available=Math.max(1,width-8);
-     if(natural>available)el.style.fontSize=(parseFloat(getComputedStyle(el).fontSize)*available/natural).toFixed(2)+'px';
+     const style=getComputedStyle(el),border=(parseFloat(style.borderLeftWidth)||0)+(parseFloat(style.borderRightWidth)||0),natural=el.scrollWidth,available=Math.max(1,width-8-border);
+     if(natural>available)el.style.fontSize=(parseFloat(style.fontSize)*Math.max(1,available-1)/natural).toFixed(2)+'px';
     }
     const r=el.getBoundingClientRect();if(r.width && r.height)entries.push({el,corner,width:r.width/scale,height:r.height/scale});
    }

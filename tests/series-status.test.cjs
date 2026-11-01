@@ -60,3 +60,12 @@ test('persisted progress overrides stale native memory after a profile sync',()=
   assert.equal(node.querySelector('.pt-card-watch__time').textContent,'12:00');assert.equal(node.querySelector('.time-line>div').style.width,'30%');
  }finally{w.close();}
 });
+
+test('native manual movie marks show completion without invented time; history alone stays empty and sync can remove the mark',()=>{
+ const d=new JSDOM('<body><div class="card focus"><div class="card__view"></div></div></body>',{runScripts:'outside-only'}),w=d.window;try{
+  w.eval(code);let marks={history:true},refresh;const node=w.document.querySelector('.card'),L={Utils:{hash:x=>x},Favorite:{check:()=>marks},Listener:{follow:(event,fn)=>refresh=fn},Timeline:{view:()=>({}),render:row=>{const n=w.document.createElement('div');n.className='time-line';n.dataset.hash=row.hash;n.innerHTML='<div></div>';return n;}}},api=w.SeriesStatus.default(L,n=>api.paint(n));
+  api.track(node,{title:'Вышка 2',media_type:'movie'});api.paint(node);assert.equal(node.querySelector('.card-watched'),null,'Adding to history does not invent a timecode');
+  for(const mark of ['wath','viewed']){marks={[mark]:true};refresh({target:'favorite',reason:'read'});assert.equal(node.querySelector('.pt-card-watch__label').textContent,'Фильм просмотрен');assert.equal(node.querySelector('.pt-card-watch__time').textContent,'');assert.ok(node.querySelector('.pt-card-watch--complete'));}
+  marks={history:true};refresh({target:'favorite',reason:'read'});assert.equal(node.querySelector('.pt-card-watch--has-progress'),null);
+ }finally{w.close();}
+});

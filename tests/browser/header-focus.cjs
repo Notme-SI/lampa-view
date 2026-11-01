@@ -17,6 +17,8 @@ const assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWR
     const rect=node.getBoundingClientRect(),style=getComputedStyle(node);
     controls.push({selector,focused:node.classList.contains('focus'),color:style.outlineColor,width:parseFloat(style.outlineWidth),borderWidth:parseFloat(style.borderWidth),shadow:style.boxShadow,border:style.borderColor,inside:rect.right+5<=innerWidth && rect.top>=5 && rect.bottom+5<=head.getBoundingClientRect().bottom});
    }
+   const profile=head.querySelector('.open--profile'),avatar=profile.querySelector('img,svg'),pr=profile.getBoundingClientRect(),ar=avatar.getBoundingClientRect();
+   if(ar.width<pr.width-5 || ar.height<pr.height-5)throw new Error('Avatar image must fill its own button: '+JSON.stringify({button:pr.width,image:ar.width}));
    const mr=menu.getBoundingClientRect(),sr=menu.querySelector('svg').getBoundingClientRect();
    const menuCenter=Math.abs((mr.left+mr.right-sr.left-sr.right)/2)+Math.abs((mr.top+mr.bottom-sr.top-sr.bottom)/2);
    const sample=document.createElement('button');sample.className='pt-hero__action selector';sample.textContent='Подробнее';head.after(sample);

@@ -11,7 +11,7 @@ const {setup}=require('../fixtures/native-browser.cjs');
     })}),{page}=r;
     await page.evaluate(()=>Lampa.Activity.push({component:'main',source:'tmdb'}));const frames=[];
     for(const size of ['small','normal','bigger']){
-     await page.evaluate(size=>Lampa.Storage.set('interface_size',size),size);await page.waitForTimeout(1900);
+     await page.evaluate(size=>Lampa.Storage.set('interface_size',size),size);await page.waitForTimeout(350);
      await page.waitForSelector('.activity--active .pt-hero + .minimal-home-first-row');
      const value=await page.locator('.activity--active .pt-hero').evaluate(hero=>{
       const first=hero.nextElementSibling,second=first.nextElementSibling,view=first.querySelector('.scroll--horizontal').getBoundingClientRect(),rect=hero.getBoundingClientRect();

@@ -6,6 +6,7 @@ export default function interfaceSize(L){
   const value=L.Storage.get('interface_size','normal');
   document.body.style.setProperty('--pt-interface-scale',String(factors[value] || factors.normal));
   document.body.style.setProperty('--pt-interface-max-scale',tv?'1.12':'1.05');
+  if(!tv)(window.requestAnimationFrame || (fn=>setTimeout(fn,16)))(()=>document.dispatchEvent(new Event('minimal:hero-layout')));
  }
  update();
  if(L.Storage.listener)L.Storage.listener.follow('change',event=>{if(['interface_size','lampa_view_layout'].includes(event.name))update();});

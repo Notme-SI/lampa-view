@@ -18,11 +18,13 @@ export default function quality(L,$){
   },{rootMargin:'200px'}):null;
   function track(item,node){
     if(tracked.has(node))return;
-    tracked.set(node,item);if(observer)observer.observe(node);badges.track(node);
+    tracked.set(node,item);
+    if(typeof $==='function')$(node).on('hover:focus.lampaViewQuality hover:hover.lampaViewQuality hover:touch.lampaViewQuality',()=>schedule(item));
+    if(observer)observer.observe(node);badges.track(node);
   }
   function forget(item){
     deferred.delete(item);
-    for(const [node,value] of tracked)if(value===item){if(observer)observer.unobserve(node);visible.delete(node);badges.forget(node);tracked.delete(node);}
+    for(const [node,value] of tracked)if(value===item){if(observer)observer.unobserve(node);visible.delete(node);badges.forget(node);if(typeof $==='function')$(node).off('.lampaViewQuality');tracked.delete(node);}
   }
   function revisit(){
     if(observer){for(const node of visible){if(node.isConnected)deferred.add(tracked.get(node));}}
@@ -113,7 +115,7 @@ export default function quality(L,$){
     badges.schedule(node);
     if(!node.isConnected)return;
     const rect=node.getBoundingClientRect();if(rect.width===0 || rect.bottom< -200 || rect.top>ROOTHEIGHT()+200 || rect.right< -200 || rect.left>window.innerWidth+200)return;
-    if(!hydrating.has(node) && info.incomplete(data)){hydrating.add(node);info.fetch(data,result=>{if(result && node.isConnected)schedule(item);},()=>node.isConnected);}
+    if(!hydrating.has(node) && (info.incomplete(data) || node.matches('.focus,.hover,.pt-card-pointer'))){hydrating.add(node);info.fetch(data,result=>{if(result && node.isConnected)schedule(item);},()=>node.isConnected);}
     const native=label(data.quality || data.release_quality);if(native){paint(node,native);return;}
     const nativeNode=node.querySelector('.card__quality'),nativeLabel=nativeNode && label(nativeNode.textContent);
     if(nativeLabel){paint(node,nativeLabel);return;}
@@ -137,7 +139,7 @@ export default function quality(L,$){
     L.Utils.createInstance=function(Base,data){
       const item=create.apply(this,arguments);
       if(Base===Card && item && item.use){
-        item.use({onCreate(){schedule(item);},onVisible(){schedule(item);},onFocus(){schedule(item);},onDestroy(){forget(item);}});
+        item.use({onCreate(){schedule(item);},onVisible(){schedule(item);},onFocus(){schedule(item);},onHover(){schedule(item);},onDestroy(){forget(item);}});
         schedule(item);
       }
       return item;
@@ -187,6 +189,9 @@ export default function quality(L,$){
   // IntersectionObserver already follows viewport changes, including transforms.
   // Button transitions and remote focus must not rescan every cached row.
   if(!observer){document.addEventListener('scroll',revisit,true);document.addEventListener('transitionend',event=>{if(event.target.matches && event.target.matches('.scroll__body'))revisit();},true);}
+  // Mouse entry is independent of Lampa's focus controller and non-bubbling custom events.
+  document.addEventListener('mouseover',event=>{const node=event.target.closest && event.target.closest('.card');if(!node || event.relatedTarget && node.contains(event.relatedTarget))return;node.classList.add('pt-card-pointer');legacy(node);const item=tracked.get(node);if(item)schedule(item);},true);
+  document.addEventListener('mouseout',event=>{const node=event.target.closest && event.target.closest('.card');if(node && !(event.relatedTarget && node.contains(event.relatedTarget)))node.classList.remove('pt-card-pointer');},true);
   // Lampa sends these custom events through jQuery.trigger, not dispatchEvent.
   // Delegation also covers legacy/history cards without a Maker onFocus hook.
   if(typeof $==='function')$(document).on('hover:focus.lampaViewQuality hover:hover.lampaViewQuality hover:touch.lampaViewQuality','.card',function(){const item=tracked.get(this);if(item)schedule(item);});

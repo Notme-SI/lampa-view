@@ -84,7 +84,7 @@ test('desktop posters skip offscreen work, share active requests and paint cache
   card(3,'/two.jpg');card(4,'/three.jpg');card(5,'/four.jpg');await wait(30);assert.equal(loaders.length,4);
   const repeat=card(6,'/one.jpg'),shared=card(7,'/two.jpg');await wait(30);
   assert.equal(repeat.img.src,one.img.src,'A cached image must not wait behind three unrelated network requests');assert.equal(loaders.length,4);
-  loaders[1].onload();assert.match(shared.img.src,/\/w500\/two.jpg$/,'Attach repeated covers to the same in-flight request');
+  loaders[1].onload();assert.match(shared.img.src,/\/w780\/two.jpg$/,'Attach repeated covers to the same in-flight request');
   const before=repeat.img.src;
   L.SettingsApi.getParam('minimal_settings_appearance').find(p=>p.param.name==='minimal_banner_quality').onChange();
   assert.equal(repeat.img.src,before,'An unchanged quality refresh must not blank a loaded cover');assert.equal(loaders.length,4);

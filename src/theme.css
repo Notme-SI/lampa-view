@@ -55,14 +55,14 @@ body.lampa_view .items-line__head {margin-bottom:1em}
 body.lampa_view .items-line__title {font-size:1.12em;font-weight:600;letter-spacing:-.02em}
 body.lampa_view .items-line__more {font-size:.8em;background:transparent;color:var(--pt-muted)}
 body.lampa_view .card__view,body.lampa_view .card__img {border-radius:.5em;background:var(--pt-panel);box-shadow:none;overflow:hidden}
-body.lampa_view .card__title {font-size:.83em;font-weight:500;line-height:1.4;margin-top:.65em;max-height:2.8em;-webkit-line-clamp:2;line-clamp:2;text-overflow:ellipsis}
+body.lampa_view .card__title {font-size:.83em;font-weight:500;line-height:1.4;margin-top:.65em;height:auto;min-height:0;max-height:2.85em;display:-webkit-box;-webkit-box-orient:vertical;white-space:normal;overflow:hidden;transform:none;-webkit-transform:none;-webkit-line-clamp:2;line-clamp:2;text-overflow:ellipsis}
 body.lampa_view .card__age {font-size:.73em;color:var(--pt-muted);margin-top:.2em}
 body.lampa_view .card__vote {background:#000000dc;color:#eee;border:0;font-size:.65em;border-radius:.3em;padding:.2em .4em}
 body.lampa_view .card.focus .card__view:after,body.lampa_view .card.hover .card__view:after {border:2px solid var(--pt-accent);border-radius:.5em;inset:0;box-shadow:none;z-index:5;box-sizing:border-box}
 body.lampa_view .card.focus .card__title {color:var(--pt-accent)}
 body.lampa_view .card__quality {border-radius:.3em;background:#000000dc;font-size:.65em}
 body.lampa_view .scroll--mask:before,body.lampa_view .scroll--mask:after {display:none}
-body.lampa_view .pt-hero {position:relative;min-height:32em;height:min(67vh,43em);margin:0 0 2.2em;overflow:hidden;background:var(--pt-bg);isolation:isolate}
+body.lampa_view .pt-hero {position:relative;min-height:32em;height:min(67vh,43em);margin:0 0 2.2em;overflow:hidden;border:0;box-shadow:none;background:#000;isolation:isolate}
 body.lampa_view .pt-hero__image {position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;object-position:70% 35%;z-index:-2}
 body.lampa_view .pt-hero:before {content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#000000 0%,#000000ed 13%,#0000008c 40%,#00000000 76%),linear-gradient(0deg,#000000 0%,#000000 1em,#00000020 35%,#00000000 80%)}
 body.lampa_view .pt-hero__body {position:absolute;left:max(4.5em,calc((100% - 100em)/2));bottom:6.5em;max-width:34em;padding-right:1em}
@@ -236,7 +236,7 @@ body.lampa_view .wrap__left .menu__split:last-child {display:none}
 body.lampa_view .pt-topnav,body.lampa_view .pt-mobile-nav {display:none!important}
 body.lampa_view .head__actions>.head__action:not(.open--search):not(.open--profile) {display:none!important}
 body.lampa_view .head__action.open--profile {width:2.4em!important;height:2.4em!important;min-width:2.4em;flex:0 0 2.4em;padding:0!important;border-radius:50%!important;overflow:hidden}
-body.lampa_view .head__action.open--profile img,body.lampa_view .head__action.open--profile svg {width:100%!important;height:100%!important;object-fit:cover;border-radius:50%!important;aspect-ratio:1}
+body.lampa_view .head__action.open--profile img,body.lampa_view .head__action.open--profile svg {width:100%!important;height:100%!important;display:block;max-width:none;max-height:none;flex:1 0 auto;object-fit:cover;border-radius:50%!important;aspect-ratio:1}
 body.lampa_view .menu__item[data-action="movie"],body.lampa_view .menu__item[data-action="tv"],body.lampa_view .menu__item[data-action="anime"],body.lampa_view .menu__item[data-action="main"] {display:flex!important}
 body.lampa_view .menu__item[data-action="timetable"],body.lampa_view .menu__item[data-action*="sport"],body.lampa_view .menu__item[data-action*="shot"],body.lampa_view .pt-removed-section {display:none!important}
 body.lampa_view .settings {z-index:60!important}
@@ -563,24 +563,24 @@ body.lampa_view .card__view>.card-watched {display:none!important}
 body.lampa_view .card .pt-card-watch>.card-watched {display:block;position:absolute;inset:0;width:100%;height:100%;max-width:100%;font-size:1em;line-height:1.35;transform:none;-webkit-transform:none;border:0;border-radius:0;background:none!important;color:var(--pt-muted);box-sizing:border-box}
 body.lampa_view .card .pt-card-watch .card-watched__inner,body.lampa_view .card .pt-card-watch .card-watched__body {padding:0;font-size:1em}
 body.lampa_view .card .pt-card-watch .card-watched__item {display:none;margin:0;color:var(--pt-muted)}
-body.lampa_view .card .pt-card-watch .pt-card-watch__current {position:absolute;inset:0;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto 1em;align-content:start;gap:.25em .4em;line-height:1.25}
+body.lampa_view .card .pt-card-watch .pt-card-watch__current {position:absolute;inset:0;display:flex;flex-direction:column;align-items:stretch;line-height:1.25}
 body.lampa_view .card .pt-card-watch .card-watched__item>span {display:none}
-body.lampa_view .pt-card-watch__row {display:contents}
-body.lampa_view .pt-card-watch__label {grid-column:1/-1;grid-row:1;display:flex;flex-wrap:wrap;gap:0 .25em;min-width:0;white-space:normal}
+body.lampa_view .pt-card-watch__row {display:block}
+body.lampa_view .pt-card-watch__meter {display:flex;align-items:center;min-width:0;margin-top:.25em;min-height:1em}
+body.lampa_view .pt-card-watch__label {display:flex;flex-wrap:wrap;gap:0 .25em;min-width:0;white-space:normal}
 body.lampa_view .pt-card-watch__label>span {white-space:nowrap}
 body.lampa_view .pt-card-watch__label {align-content:start}
 body.lampa_view .pt-card-watch__label>.pt-card-watch__heading {flex-basis:100%;margin-bottom:.1em}
-body.lampa_view .pt-card-watch__time {grid-column:2;grid-row:2;align-self:center;font-variant-numeric:tabular-nums;font-size:.9em;line-height:1}
-body.lampa_view .card .pt-card-watch .time-line {grid-column:1;grid-row:2;align-self:center;margin:0;min-width:0;height:2px;background:rgba(255,255,255,.24)!important}
-body.lampa_view .card .pt-card-watch .time-line>div {height:2px;background:var(--pt-accent)!important}
+body.lampa_view .pt-card-watch__time {flex:0 0 auto;margin-left:.4em;font-variant-numeric:tabular-nums;font-size:.9em;line-height:1}
+body.lampa_view .card .pt-card-watch .time-line {display:block;flex:1 1 0%;align-self:center;position:relative;top:auto;right:auto;bottom:auto;left:auto;width:auto;margin:0;min-width:1px;height:3px;min-height:3px;overflow:hidden;background:rgba(255,255,255,.24)!important}
+body.lampa_view .card .pt-card-watch .time-line>div {display:block;height:3px;min-height:3px;background:var(--pt-accent)!important}
 body.lampa_view .card .pt-card-watch--complete .time-line,body.lampa_view .card .pt-card-watch--complete .pt-card-watch__time {display:none!important}
 /* Reveal saved viewing history only for the card under pointer/remote focus.
    Reserved footer space prevents neighbouring rows from jumping on focus. */
-body.lampa_view .card.focus .pt-card-watch--has-progress,body.lampa_view .card.hover .pt-card-watch--has-progress {visibility:visible}
-body.lampa_view .card .pt-card-watch .time-line {position:relative;inset:auto;width:100%}
+body.lampa_view .card.focus .pt-card-watch--has-progress,body.lampa_view .card.hover .pt-card-watch--has-progress,body.lampa_view .card.pt-card-pointer .pt-card-watch--has-progress {visibility:visible}
 body.lampa_view .card .pt-card-watch>.card-watched.pt-card-watch--empty {display:none!important}
 /* One compact release pill below Series, shared by desktop and TV. */
-body.lampa_view .pt-series-status {position:absolute;left:auto!important;right:4px!important;top:2.6em;z-index:4;display:block;width:max-content;max-width:calc(100% - 8px);font-size:.6em;line-height:1.25;white-space:nowrap;padding:.35em .5em;border:1px solid #ffffff25;border-radius:.35em;background:#000b;color:#d4e2e6;pointer-events:none;box-sizing:border-box}
+body.lampa_view .pt-series-status {position:absolute;left:auto;right:4px;top:2.6em;z-index:4;display:block;width:auto;max-width:calc(100% - 8px);font-size:.6em;line-height:1.25;white-space:nowrap;padding:.35em .5em;border:1px solid #ffffff25;border-radius:.35em;background:#000b;color:#d4e2e6;pointer-events:none;box-sizing:border-box}
 body.lampa_view .pt-series-status>span {white-space:nowrap}
 
 /* Badges keep their own corners and wrap to another line when space is short. */
@@ -879,7 +879,7 @@ body.lampa_view.pt-tv .items-line {margin-bottom:.8em;padding-bottom:.7em}
 body.lampa_view.pt-tv .items-line .card:not(.card--wide):not(.card--collection) {width:clamp(8.4em,calc((90vw - 10em / var(--pt-interface-scale,1)) / 10 * var(--pt-interface-scale,1)),11.1em)!important}
 body.lampa_view.pt-tv .items-line.minimal-posters-sized .card:not(.card--wide):not(.card--collection) {width:var(--minimal-poster-width)!important}
 body.lampa_view.pt-tv .items-line>.items-line__head {padding-left:1.1em}
-body.lampa_view.pt-tv .card__title {font-size:.79em;max-height:2.8em;-webkit-line-clamp:2;line-clamp:2;overflow-wrap:break-word}
+body.lampa_view.pt-tv .card__title {font-size:.79em;line-height:1.4;max-height:2.85em;overflow-wrap:break-word}
 body.lampa_view.pt-tv .mapping--grid>.card:not(.card--wide):not(.card--collection),body.lampa_view.pt-tv .category-full>.card:not(.card--wide):not(.card--collection) {width:calc(10% * var(--pt-interface-scale,1))!important}
 
 /* The same native menu becomes a dock only when the native preference is on. */
@@ -895,7 +895,7 @@ body.lampa_view.pt-menu-pinned .menu__text {white-space:normal}
 body.lampa_view.pt-mobile.pt-menu-pinned {--pt-menu-width:min(14em,38vw)}
 body.lampa_view.pt-mobile.pt-menu-pinned .wrap__left {bottom:5.5em!important;height:calc(100% - 9.1em)!important}
 
-body.lampa_view .card:not(.focus):not(.hover) .pt-series-status {display:none}
+body.lampa_view .card:not(.focus):not(.hover):not(.pt-card-pointer) .pt-series-status {display:none}
 
 /* Header controls keep their boxes when focused. Draw outside the avatar so
    its image cannot cover the remote/keyboard focus indicator. */
@@ -905,7 +905,7 @@ body.lampa_view .head__menu-icon,body.lampa_view .head__backward {position:relat
 body.lampa_view .head__menu-icon svg {display:block;flex:none;margin:0!important;position:static!important;transform:none!important}
 /* Header focus stays inside the control, matching Menu, with no second ring. */
 body.lampa_view .head__menu-icon,body.lampa_view .head__backward,body.lampa_view .head__action.open--search,body.lampa_view .head__action.open--profile,body.lampa_view .pt-holiday-icons>.head__action {outline:0 solid transparent!important;outline-offset:0!important;box-shadow:none!important;animation:none!important;transition:none!important;transform:none!important;border:1px solid var(--pt-line)!important}
-body.lampa_view .head__action.open--profile {padding:3px!important}
+body.lampa_view .head__action.open--profile {padding:0!important}
 body.lampa_view .head__menu-icon.focus,body.lampa_view .head__menu-icon:focus-visible,body.lampa_view .head__backward.focus,body.lampa_view .head__backward:focus-visible,
 body.lampa_view .head__action.open--search.focus,body.lampa_view .head__action.open--profile.focus,body.lampa_view .head__action.open--search:focus-visible,body.lampa_view .head__action.open--profile:focus-visible,
 body.lampa_view .pt-holiday-icons>.head__action.focus,body.lampa_view .pt-holiday-icons>.head__action:focus-visible,

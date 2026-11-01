@@ -22,7 +22,8 @@ export default function fillRows(L,enabled){
       if(!root || !root.isConnected)return;
       if(!state.root){state.root=root;roots.set(root,line);if(observer)observer.observe(root);if(sizes)sizes.observe(root);root.addEventListener('touchend',()=>{if(enabled())settleRail(line.scroll && line.scroll.render(true));},{passive:true});}
       const box=root.getBoundingClientRect();
-      if(!box.width || box.bottom<0 || box.top>window.innerHeight+200)return;
+      const first=!document.body.classList.contains('pt-tv') && root.previousElementSibling && root.previousElementSibling.matches('.pt-hero');
+      if(!box.width || !first && (box.bottom<0 || box.top>window.innerHeight+200))return;
       const card=root.querySelector('.card,.full-person');if(!card)return;
       if(document.body.classList.contains('pt-tv') && root.classList.contains('minimal-cast-native')){
         const viewport=line.scroll && line.scroll.render(true),content=viewport && viewport.querySelector('.scroll__content');
