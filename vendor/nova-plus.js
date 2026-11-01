@@ -1057,7 +1057,13 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
 
     (inst.nova_sets.filter || []).forEach(function (group) {
       if (!group || !group.items || !group.items.length) return;
-      if (group.stype === 'season') out.season = group;
+      if (group.stype === 'season') {
+        // Provider order and selected-first lists are not chronological.
+        // Keep native indexes so its URL table still receives the correct key.
+        var seasons=group.items.map(function(item,seat){return $.extend({},item,{index:typeof item.index==='number'?item.index:seat});});
+        seasons.sort(function(a,b){var av=digits(a.title),bv=digits(b.title);return av && bv?av-bv:a.index-b.index;});
+        out.season=$.extend({},group,{items:seasons});
+      }
       if (group.stype === 'voice') {
         var choices=voiceDedup(group.items);
         if(choices.length)out.voice=$.extend({},group,{items:choices,title:label('nova_plus_voices')});
@@ -1520,6 +1526,9 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
 
   function reloadable(comp) {
     if (!comp || comp.destroyed) return false;
+    // Lampac keeps season/voice URL arrays in constructor-local closures. Its
+    // reset() only clears the visible files, so reusing it leaks the old source.
+    if(typeof comp.parseJsonDate==='function' && typeof comp.display==='function' && typeof comp.filter==='function')return false;
     if (typeof comp.createSource !== 'function') return false;
     if (typeof comp.search !== 'function' && typeof comp.find !== 'function') return false;
     return true;
@@ -3771,7 +3780,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
 
   function chooseOption(group, index) {
     if (!filter || typeof filter.onSelect !== 'function') return;
-    var owner=componentNow();if(group.stype==='season' && owner && group.items[index])owner.lampaViewManualSeason=digits(group.items[index].title);
+    var selectedItem=group.items.filter(function(item,seat){return (typeof item.index==='number'?item.index:seat)===index;})[0],owner=componentNow();if(group.stype==='season' && owner && selectedItem)owner.lampaViewManualSeason=digits(selectedItem.title);
     var host_filter = filter;
     ui_open = '';
     buildRows();
@@ -5582,8 +5591,9 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     var group = groups[stype];
     if (!group || !filter || typeof filter.onSelect !== 'function') return;
 
-    var current = group.items[index];
+    var current = group.items.filter(function(item,seat){return (typeof item.index==='number'?item.index:seat)===index;})[0];
     if (current && current.selected) return;
+    var owner=componentNow();if(stype==='season' && owner && current)owner.lampaViewManualSeason=digits(current.title);
 
     ui_focus = key;
     wideMark(key);
@@ -6496,6 +6506,10 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     }
 
     if (groups.voice && groups.voice.items.length > 0) compactGroup('voice',groups.voice.title || label('nova_plus_voices'));
+    else if(serial && !nav && items.length){
+      // A provider without alternatives must not inherit another source's voices.
+      $('<span class="nova-chip nova-chip--unavailable" aria-disabled="true" data-nova-status="voice"><span class="nova-chip__label"></span></span>').attr({'aria-label':label('nova_plus_voices')+': '+lampaViewText('Озвучка источника'),title:lampaViewText('Источник не предлагает выбор озвучки.')}).find('.nova-chip__label').text(lampaViewText('Озвучка источника')).end().appendTo(bar);
+    }
 
     if (!serial && !nav && items.length > 1) {
       var selectedMovie = pickResume(items);

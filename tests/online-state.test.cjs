@@ -411,3 +411,22 @@ test('previous-episodes action is inclusive, explicit about its season, preserve
   assert.equal(providerMarks,0);assert.equal(s.played(),0);assert.equal(L.Controller.enabled().name,'content');assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}
 });
+
+test('AniLiberty numbered seasons survive stale one-season TMDB metadata while its prequel movie is excluded',()=>{
+ const d=new JSDOM('<body>',{runScripts:'outside-only'});try{d.window.eval(code);const api=d.window.OnlineState,card={name:'МАГИЧЕСКАЯ БИТВА',original_name:'呪術廻戦',first_air_date:'2020-10-03',number_of_seasons:1},rows=[
+ {title:'Магическая битва / Jujutsu Kaisen',method:'link',similar:true,url:'/lite/aniliberty?season=1'},
+ {title:'Магическая битва 0 Фильм / Jujutsu Kaisen 0 Movie',method:'link',similar:true,url:'/lite/aniliberty?movie=0'},
+ {title:'Магическая битва 2 / JUJUTSU KAISEN Season 2',method:'link',similar:true,url:'/lite/aniliberty?season=2'},
+ {title:'Магическая битва 3 / Jujutsu Kaisen: Shimetsu Kaiyuu - Zenpen',method:'link',similar:true,url:'/lite/aniliberty?season=3'}];
+ const kept=api.relevantFolders(rows,card);assert.equal(kept.length,3);const seasons=api.folderSeasons(kept,card);assert.deepEqual(Array.from(seasons,r=>r.season),[1,2,3]);assert.ok(seasons.every(r=>r.url.includes('season='+r.season)));
+ }finally{d.window.close();}
+});
+test('season UI is chronological but preserves provider indexes and selected season when choosing',async()=>{
+ const n=await native({built:true}),{L}=n;let s;try{s=screen(n);s.filter.set('filter',[{stype:'season',title:'Сезон',subtitle:'1 сезон',items:[{title:'3 сезон',index:0},{title:'1 сезон',index:1,selected:true},{title:'2 сезон',index:2}]}]);await wait(240);
+ assert.deepEqual(Array.from(s.root.find('[data-nova-group=season] .nova-chip__label').map(function(){return n.w.jQuery(this).text();}).get()),['1 сезон','2 сезон','3 сезон']);let index=-1;s.filter.onSelect=(type,group,item)=>index=item.index;s.root.find('[data-nova-focus="season:2"]').trigger('hover:enter');assert.equal(index,2);assert.equal(L.Activity.active().activity.component.lampaViewManualSeason,2);assert.deepEqual(n.errors,[]);
+ }finally{if(s)s.close();n.close();}
+});
+test('Lampac source changes delegate to its fresh native component instead of keeping private season and voice arrays',async()=>{
+ const n=await native({built:true}),{L}=n;let s;try{let nativeCalls=0,reused=0;const comp={parseJsonDate(){},display(){},filter(){},createSource(){reused++;return Promise.resolve();},search(){},changeBalanser(){nativeCalls++;}};s=screen(n,{component:comp});s.filter.onSelect=(type,item)=>{if(type==='sort')comp.changeBalanser(item.source);};await wait(230);s.root.find('[data-nova-focus=source]').trigger('hover:enter');L.Select.render().find('.selectbox-item').last().trigger('hover:enter');await wait(60);assert.equal(nativeCalls,1);assert.equal(reused,0);assert.equal(s.played(),0);assert.deepEqual(n.errors,[]);
+ }finally{if(s)s.close();n.close();}
+});

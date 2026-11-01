@@ -990,3 +990,5 @@ body.lampa_view.pt-rtl .minimal-online-option {padding-right:1em;padding-left:2.
 body.lampa_view.pt-rtl .minimal-choice-check {right:auto;left:.85em}
 body.lampa_view .pt-hero__studio {pointer-events:none;cursor:default}
 body.lampa_view .minimal-online-option:after {display:none!important}
+
+body.lampa_view .nova-plus-root .nova-chip--unavailable {opacity:.65;cursor:default;pointer-events:none}

@@ -7616,5 +7616,44 @@
   "ro": "<div class=\"pt-hero__dots\" role=\"group\" aria-label=\"Schimbă coperta\"></div>",
   "fr": "<div class=\"pt-hero__dots\" role=\"group\" aria-label=\"Changer d’affiche\"></div>",
   "pl": "<div class=\"pt-hero__dots\" role=\"group\" aria-label=\"Zmień okładkę\"></div>"
+ },
+ "Стекло": {
+  "en": "Glass",
+  "uk": "Скло",
+  "be": "Шкло",
+  "zh": "玻璃",
+  "pt": "Vidro",
+  "bg": "Стъкло",
+  "he": "זכוכית",
+  "cs": "Sklo",
+  "ro": "Sticlă",
+  "fr": "Verre",
+  "pl": "Szkło"
+ },
+ "Озвучка источника": {
+  "en": "Source audio",
+  "uk": "Озвучка джерела",
+  "be": "Агучка крыніцы",
+  "zh": "来源配音",
+  "pt": "Áudio da fonte",
+  "bg": "Озвучаване на източника",
+  "he": "דיבוב המקור",
+  "cs": "Dabing zdroje",
+  "ro": "Dublajul sursei",
+  "fr": "Audio de la source",
+  "pl": "Dźwięk źródła"
+ },
+ "Источник не предлагает выбор озвучки.": {
+  "en": "This source has no audio selection.",
+  "uk": "Джерело не пропонує вибору озвучки.",
+  "be": "Крыніца не прапануе выбару агучкі.",
+  "zh": "此来源不提供配音选择。",
+  "pt": "Esta fonte não oferece seleção de áudio.",
+  "bg": "Източникът не предлага избор на озвучаване.",
+  "he": "המקור אינו מציע בחירת דיבוב.",
+  "cs": "Tento zdroj nenabízí výběr dabingu.",
+  "ro": "Sursa nu oferă alegerea dublajului.",
+  "fr": "Cette source ne propose pas de choix audio.",
+  "pl": "To źródło nie oferuje wyboru dźwięku."
  }
 }

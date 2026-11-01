@@ -9,7 +9,7 @@ const {setup}=require('../fixtures/native-browser.cjs'),{stage}=require('../fixt
     console.log(name+' '+mode+': checking first-entry dubbing');
     await page.evaluate(()=>{Lampa.DeviceInput.init();Lampa.Controller.observe();});
     await stage(page,true,0);
-    assert.equal(await page.locator('[data-nova-focus=voice]').count(),0);
+    assert.equal(await page.locator('[data-nova-focus=voice]').count(),0);assert.equal(await page.locator('[data-nova-status=voice]').count(),1,'No phantom dubbing choices when the provider has none');
     await page.evaluate(()=>{
      window.qaVoiceSelection=-1;window.qaSourceChanges=0;
      qaFilter.onSelect=(type,group,item)=>{if(type==='sort')qaSourceChanges++;else qaVoiceSelection=item.index;};
@@ -24,7 +24,7 @@ const {setup}=require('../fixtures/native-browser.cjs'),{stage}=require('../fixt
     await page.evaluate(()=>Lampa.Select.render().find('.selectbox-item').first().trigger('hover:enter'));
     assert.deepEqual(await page.evaluate(()=>({selected:qaVoiceSelection,sourceChanges:qaSourceChanges,sameEpisode:qaOriginalEpisode===qaRoot.find('.online-prestige')[0]})),{selected:-1,sourceChanges:0,sameEpisode:true});
     await page.evaluate(()=>qaFilter.set('filter',qaFilter.get('filter').filter(group=>group.stype!=='voice')));
-    await button.waitFor({state:'detached'});assert.deepEqual(r.errors,[]);await r.context.close();console.log(name+' '+mode+': late single dubbing appears on first entry and uses native selection');
+    await button.waitFor({state:'detached'});assert.equal(await page.locator('[data-nova-status=voice]').count(),1);assert.deepEqual(r.errors,[]);await r.context.close();console.log(name+' '+mode+': late single dubbing appears on first entry and uses native selection');
    }
   }finally{await browser.close();}
  }

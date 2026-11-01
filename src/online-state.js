@@ -40,7 +40,7 @@ export function folderSeasons(rows,card){
   const hit=aliases(base).find(name=>family.has(name) || [...family].some(alias=>{
    if(!name.startsWith(alias+' '))return false;
    const tail=name.slice(alias.length+1);if(!/^[1-9]\d?$/.test(tail))return false;
-   if(Number(tail)>known)return false;if(!season)season=Number(tail);return season===Number(tail);
+   if(Number(tail)>60)return false;if(!season)season=Number(tail);return season===Number(tail);
   }));
   if(!hit)continue;
   if(!season){const param=(row.url || '').match(/[?&](?:s|season)=(\d+)/);season=Number(param && param[1]) || 1;}
@@ -67,7 +67,7 @@ export function relevantFolders(rows,card){
   let part=Number(row.season || season && (season[1] || season[2] || season[3])) || 1;
   const match=aliases(title).some(name=>names.has(name) || serial && [...names].some(alias=>{
    const tail=name.startsWith(alias+' ')?name.slice(alias.length+1):'';
-   if(!/^[1-9]\d?$/.test(tail) || Number(tail)>known)return false;part=Number(tail);return true;
+   if(!/^[1-9]\d?$/.test(tail) || Number(tail)>60)return false;part=Number(tail);return true;
   }));
   const ownYear=Number(String(row.year || row.start_date || '').slice(0,4));
   return match && (!year || !ownYear || part>1 && ownYear>=year || Math.abs(year-ownYear)<=1);
