@@ -42,10 +42,16 @@ export default function badgeLayout(status){
     }
     const r=el.getBoundingClientRect();if(r.width && r.height)entries.push({el,corner,width:r.width/scale,height:r.height/scale});
    }
-   reads.push({view,entries,places:placeBadges(width,height,entries)});
+   reads.push({view,width,height,entries,places:placeBadges(width,height,entries)});
   }
   // Read every card before writing styles; held remote navigation never enters here.
-  for(const {view,entries,places} of reads){view.classList.add('minimal-badge-layout');for(const entry of entries){const p=places.find(p=>p.el===entry.el);entry.el.style.visibility=p?'':'hidden';if(!p)continue;Object.assign(entry.el.style,{top:Math.round(p.y)+'px',left:Math.round(p.x)+'px',right:'auto',bottom:'auto'});}}
+  for(const {view,width,height,entries,places} of reads){view.classList.add('minimal-badge-layout');for(const entry of entries){
+   const p=places.find(p=>p.el===entry.el);entry.el.style.visibility=p?'':'hidden';if(!p)continue;
+   // Corners follow their poster immediately, even while remote navigation
+   // pauses measurements. Never freeze a right/bottom badge at old left/top.
+   const right=p.corner[1]==='r',bottom=p.corner[0]==='b';
+   Object.assign(entry.el.style,{top:bottom?'auto':Math.round(p.y)+'px',left:right?'auto':Math.round(p.x)+'px',right:right?Math.round(width-p.x-p.width)+'px':'auto',bottom:bottom?Math.round(height-p.y-p.height)+'px':'auto'});
+  }}
   if(pending.size)frame=requestAnimationFrame(flush);
  }
  function schedule(node){if(!node)return;pending.add(node);if(!frame && !paused())frame=requestAnimationFrame(flush);}

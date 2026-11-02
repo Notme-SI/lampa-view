@@ -57,20 +57,10 @@ export function prepareDetail(data){
  delete data.metadata;
  const persons=data.persons || {};
  const unique=list=>{const seen=new Map();list.forEach(person=>{if(!person || !(person.name || person.original_name))return;const key=String(person.id || person.name || person.original_name),old=seen.get(key);if(old){for(const field of ['popularity','episode_count','total_episode_count'])old[field]=Math.max(Number(old[field]) || 0,Number(person[field]) || 0);if(!old.profile_path && person.profile_path)old.profile_path=person.profile_path;}else seen.set(key,{...person});});return Array.from(seen.values());};
- const number=value=>Number.isFinite(Number(value))?Number(value):0;
- const allCast=unique(persons.cast || []),anime=isAnime(data.movie || {}),hasPhoto=person=>anime || !!String(person.profile_path || '').trim();
- const episodes=person=>number(person.total_episode_count || person.episode_count),maxEpisodes=Math.max(0,...allCast.map(episodes)),recurring=Math.max(3,Math.ceil(maxEpisodes*.2));
- const extras=person=>/uncredited|background|\bextra\b|\bcrowd\b|passerby|массовк|прохож|без указания в титрах|эпизодическая роль/i.test(person.character || '');
- const leadPopularity=allCast.filter((person,index)=>(person.order!=null?number(person.order):index)<6).map(person=>number(person.popularity)).sort((a,b)=>a-b);
- const popularity=Math.max(5,(leadPopularity[Math.floor(leadPopularity.length/2)] || 0)*.3);
- const cast=allCast.map((person,index)=>({person,billing:person.order!=null && number(person.order)>=0?number(person.order):index,index})).filter(entry=>hasPhoto(entry.person) && (entry.billing<6 || !extras(entry.person) && (episodes(entry.person)>=recurring || entry.billing<12 && !!entry.person.character || entry.billing<30 && !!entry.person.character && number(entry.person.popularity)>=popularity))).sort((a,b)=>{
-  // Preserve the principal billing before considering popularity. A famous
-  // cameo must not displace the leads; use native credit order when absent.
-  const tier=p=>p.billing<6?0:episodes(p.person)>=recurring?1:p.billing<12?2:3;
-  return tier(a)-tier(b) || (tier(a)===0?a.billing-b.billing:episodes(b.person)-episodes(a.person)) || number(b.person.popularity)-number(a.person.popularity) || a.billing-b.billing || a.index-b.index;
- }).map(entry=>entry.person);
- const directed=unique((persons.crew || []).filter(p=>p.job==='Director').map(person=>({...person,profile_path:person.profile_path || (allCast.find(actor=>String(actor.id || actor.name)===String(person.id || person.name)) || {}).profile_path}))).filter(hasPhoto),maxDirected=Math.max(0,...directed.map(episodes));
- const directors=directed.filter(person=>!maxDirected || episodes(person)>=Math.max(1,Math.ceil(maxDirected*.25))).sort((a,b)=>episodes(b)-episodes(a) || number(b.popularity)-number(a.popularity)).slice(0,3),ids=new Set(directors.map(p=>String(p.id || p.name)));
+ // Native credits already carry their intended billing. Keep that order,
+ // including native directors before any aggregate-credit supplements.
+ const cast=unique(persons.cast || []);
+ const directors=unique((persons.crew || []).filter(p=>p.job==='Director')).slice(0,3),ids=new Set(directors.map(p=>String(p.id || p.name)));
  data.persons={...persons,crew:(persons.crew || []).filter(p=>p.job!=='Director'),cast:[...directors.map(p=>{const actor=cast.find(a=>String(a.id || a.name)===String(p.id || p.name));return {...p,...actor,job:'Director',minimal_director:true,character:[lampaViewText("Режиссёр"),actor && actor.character].filter(Boolean).join(' · ')};}),...cast.filter(p=>!ids.has(String(p.id || p.name))).slice(0,20)]};
  const disabled=window.lampa_settings && window.lampa_settings.disable_features || {};
  if(!disabled.discuss)data.discuss={...(data.discuss || {}),result:((data.discuss || {}).result || []).slice()};
@@ -231,6 +221,13 @@ export default function detail(L,event,loadLogo){
  const supplied=chooseLogo((event.data.images || card.images || {}).logos,L.Storage.get('language','ru'));
  if(supplied){showLogo(supplied.file_path,null,supplied.iso_639_1);if(metaHead && !directStudio)loadLogo(movie,(path,studio)=>showStudio(studio));}else loadLogo(movie,showLogo);
  const background=body.querySelector('.full-start__background');
+ if(background && start){
+  // This image is a sibling of the header. Follow the complete header,
+  // including asynchronously mounted cast, instead of a fixed 58vh cutoff.
+  const fit=()=>{if(!start.isConnected)return;const rect=background.getBoundingClientRect(),scale=rect.height/(background.offsetHeight || rect.height) || 1,height=(start.getBoundingClientRect().bottom-rect.top)/scale;if(height>0)background.style.setProperty('--pt-detail-backdrop-height',height+'px');};
+  fit();const resize=window.ResizeObserver?new ResizeObserver(fit):null;if(resize)resize.observe(start);
+  if(event.link && event.link.use)event.link.use({onDestroy:()=>{if(resize)resize.disconnect();}});
+ }
  if(background && card.backdrop_path){
   const size=artworkSize(L,'backdrop');
   const preload=new Image();preload.onload=()=>{if(background.isConnected && artworkSize(L,'backdrop')===size)background.src=preload.src;};preload.src=L.TMDB.image('/t/p/'+size+card.backdrop_path);

@@ -54,6 +54,8 @@ body.lampa_view .items-line {margin-bottom:.8em;padding-bottom:.7em}
 body.lampa_view .items-line__head {margin-bottom:1em}
 body.lampa_view .items-line__title {font-size:1.12em;font-weight:600;letter-spacing:-.02em}
 body.lampa_view .items-line__more {font-size:.8em;background:transparent;color:var(--pt-muted)}
+/* The desktop profile owns scale; native Bigger adds another 14% otherwise. */
+body.lampa_view.pt-desktop .card {font-size:1em}
 body.lampa_view .card__view,body.lampa_view .card__img {border-radius:.5em;background:var(--pt-panel);box-shadow:none;overflow:hidden}
 body.lampa_view .card__title {font-size:.83em;font-weight:500;line-height:1.4;margin-top:.65em;height:auto;min-height:0;max-height:2.85em;display:-webkit-box;-webkit-box-orient:vertical;white-space:normal;overflow:hidden;transform:none;-webkit-transform:none;-webkit-line-clamp:2;line-clamp:2;text-overflow:ellipsis}
 body.lampa_view .card__age {font-size:.73em;color:var(--pt-muted);margin-top:.2em}
@@ -292,7 +294,7 @@ body.lampa_view .head__action.open--search {box-sizing:border-box;height:2.2em}
 body.lampa_view .head__action.open--profile {box-sizing:border-box;width:2.2em!important;height:2.2em!important;min-width:2.2em;flex:0 0 2.2em}
 body.lampa_view .pt-hero__image {image-rendering:auto;filter:none!important}
 /* Compact detail cover, fading to OLED black before the following rows. */
-body.lampa_view .full-start__background {left:0!important;top:0!important;width:100%!important;height:30em!important;max-height:58vh;object-fit:cover;object-position:center 30%;-webkit-mask-image:linear-gradient(to bottom,#000 20%,transparent 100%)!important;mask-image:linear-gradient(to bottom,#000 20%,transparent 100%)!important}
+body.lampa_view .full-start__background {left:0!important;top:0!important;width:100%!important;height:var(--pt-detail-backdrop-height,30em)!important;max-height:none;object-fit:cover;object-position:center 30%;-webkit-mask-image:linear-gradient(to bottom,#000 30%,#0008 78%,transparent 100%)!important;mask-image:linear-gradient(to bottom,#000 30%,#0008 78%,transparent 100%)!important}
 body.lampa_view .full-start-new {padding-top:2em;padding-bottom:1em}
 body.lampa_view .full-start-new__left {width:10em;min-width:10em;margin-right:2em}
 body.lampa_view .full-start-new__body {align-items:center}

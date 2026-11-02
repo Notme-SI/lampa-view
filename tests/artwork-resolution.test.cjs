@@ -33,3 +33,13 @@ test('TV High upgrades ready-made small catalogue poster URLs before decoding',a
   loader.onload();assert.equal(c.img.src,loader.url);assert.deepEqual(n.errors,[]);
  }finally{if(c)c.destroy();n.close();}
 });
+
+test('native cast portraits preserve a detailed square face crop through both TMDB API wrappers',async()=>{
+ const n=await native({built:true}),{L}=n;
+ try{
+  for(const size of ['w90_and_h90_face','w276_and_h350_face','w600_and_h600_face'])assert.match(L.Api.img('/person.jpg',size),/\/w600_and_h600_face\/person.jpg/);
+  assert.match(L.TMDB.image('t/p/w90_and_h90_face/person.jpg'),/\/w600_and_h600_face\/person.jpg/);
+  L.Storage.set('minimal_artwork_quality_choice','medium');assert.match(L.Api.img('/person.jpg','w276_and_h350_face'),/\/w300_and_h300_face\/person.jpg/);
+  assert.deepEqual(n.errors,[]);
+ }finally{n.close();}
+});

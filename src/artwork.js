@@ -20,6 +20,7 @@ export function artworkSize(L,kind){
  return width>1440?'original':'w1280';
 }
 export function logoSize(){return 'original';}
+export function portraitSize(L){return artworkQuality(L)==='high'?'w600_and_h600_face':'w300_and_h300_face';}
 export default function installArtwork(L,enabled){
  const quality=artworkQuality(L);
  if(L.Storage.set){L.Storage.set('minimal_banner_quality',quality);L.Storage.set('minimal_artwork_quality_revision',3);L.Storage.set('poster_size',quality==='high'?'w500':'w300');}
@@ -30,7 +31,7 @@ export default function installArtwork(L,enabled){
   const image=api.image;
   api.image=function(){
    const value=image.apply(this,arguments);if(!enabled())return value;
-   return typeof value==='string'?canonical(value).replace(/(\/t\/p\/)w(\d+)(?:_and_h\d+_face)?(\/)/,(all,prefix,size,suffix)=>prefix+(Number(size)<=500?artworkSize(L,'poster'):'w'+size)+suffix):value;
+   return typeof value==='string'?canonical(value).replace(/(\/t\/p\/)w(\d+)(?:_and_h\d+_face)?(\/)/,(all,prefix,size,suffix)=>prefix+(/_face\//.test(all)?portraitSize(L):Number(size)<=500?artworkSize(L,'poster'):'w'+size)+suffix):value;
   };
   imageWrappers.add(api.image);
  }
@@ -44,7 +45,7 @@ export default function installArtwork(L,enabled){
     // never a small portrait. Delegating APIs must not classify the size twice.
     const kind=['w780','w1280','original'].includes(size)?'backdrop':'poster';
     const face=size && /_face$/.test(size);
-    const requested=face?artworkSize(L,'poster'):artworkSize(L,kind);
+    const requested=face?portraitSize(L):artworkSize(L,kind);
     depth++;try{return canonical(original.call(this,src,requested));}finally{depth--;}
    };
    wrappers.set(original,wrapper);wrapped.add(wrapper);
@@ -59,9 +60,10 @@ export default function installArtwork(L,enabled){
   document.querySelectorAll('.card__img,.full-person img,.full-start-new__img,.full-start__img,.full-start__background,.pt-hero__image,.media-loading__backdrop').forEach(image=>{
    const url=image.getAttribute('src') || '';
    if(image._minimalArtwork && image._minimalArtwork(/^https?:/.test(url)))return;
-   if(!/\/t\/p\/(?:w\d+|original)\//.test(url))return;
+   if(!/\/t\/p\/(?:w\d+(?:_and_h\d+_face)?|original)\//.test(url))return;
    const backdrop=image.matches('.full-start__background,.pt-hero__image,.media-loading__backdrop') || image.closest('.card--wide,.card--collection');
-   const next=url.replace(/(\/t\/p\/)(?:w\d+|original)(\/)/,'$1'+artworkSize(L,backdrop?'backdrop':'poster')+'$2');
+   const portrait=image.matches('.full-person img,.person-start__img');
+   const next=url.replace(/(\/t\/p\/)(?:w\d+(?:_and_h\d+_face)?|original)(\/)/,'$1'+(portrait?portraitSize(L):artworkSize(L,backdrop?'backdrop':'poster'))+'$2');
    if(next!==url)image.src=next;
   });
   document.dispatchEvent(new Event('minimal:artwork-quality'));

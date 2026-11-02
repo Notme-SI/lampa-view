@@ -216,11 +216,14 @@ if (!ROOT.LampaView) {
     const active=L.Activity.active() || {},object=event.params && event.params.object;
     if ((object && object.component || active.component)!=='main') return;
     const activity=object && object.activity || active.activity;
-    if(!activity || heroes.has(activity))return;
+    if(!activity || heroes.has(activity) || activity.render().find('.pt-hero').length)return;
     const cards=((event.data || {}).results || []).filter(v=>v.backdrop_path && (v.title || v.name) && v.overview).slice(0,8).map(card=>({...card,source:card.source || active.source || 'tmdb'}));
     if(!cards.length)return;
+    // This set guards pending insertion only. Native resize may reuse an
+    // activity after removing its content, so a lifetime marker is stale.
     heroes.add(activity);
     setTimeout(()=>{
+      heroes.delete(activity);
       const root=activity.render();
       if(!root || root.find('.pt-hero').length)return;
       const line=root.find('.items-line').first();
@@ -304,8 +307,24 @@ if (!ROOT.LampaView) {
       element.on('touchstart',e=>{const t=e.originalEvent.touches[0];touch={x:t.clientX,y:t.clientY};});
       element.on('touchend',e=>{if(!touch)return;const t=e.originalEvent.changedTouches[0],dx=t.clientX-touch.x,dy=t.clientY-touch.y;if(Math.abs(dx)>55 && Math.abs(dx)>Math.abs(dy)*1.4)show(index+(dx<0?1:-1));touch=null;});
       line.before(element);show(0);
-      // Run after attachment; another frame observes native font/row layout settling.
-      if(!document.body.classList.contains('pt-tv'))(window.requestAnimationFrame || (fn=>setTimeout(fn,16)))(requestHeroLayout);
+      // Native fonts and lazy row contents can settle after the initial Line
+      // event. Observe their geometry directly; a slide change is not a clock.
+      let geometryFrame=0,geometryDisposed=false,keepHeroPosition=false;
+      const settleGeometry=()=>{
+        if(geometryFrame || geometryDisposed)return;
+        geometryFrame=(window.requestAnimationFrame || (fn=>setTimeout(fn,16)))(()=>{geometryFrame=0;if(!element[0].isConnected)return;
+          if(event.line && event.line.minimalPosterRefresh)event.line.minimalPosterRefresh();else requestHeroLayout();
+          const active=L.Activity.active() || {},controller=L.Controller.enabled && L.Controller.enabled(),scroll=activity.component && activity.component.scroll;
+          const restore=keepHeroPosition;keepHeroPosition=false;if(restore && active.activity===activity && controller && controller.name==='lampa_view_hero' && scroll && scroll.immediate)scroll.immediate(element[0]);
+        });
+      };
+      const resized=()=>{keepHeroPosition=true;settleGeometry();};
+      const geometryObserver=window.ResizeObserver?new ResizeObserver(settleGeometry):null;
+      if(geometryObserver){geometryObserver.observe(line[0]);geometryObserver.observe(body[0]);}
+      element[0].addEventListener('load',settleGeometry,true);window.addEventListener('resize',resized);if(L.Listener)L.Listener.follow('resize_end',resized);
+      if(document.fonts && document.fonts.ready)document.fonts.ready.then(settleGeometry);
+      settleGeometry();
+      if(activity.component && activity.component.use)activity.component.use({onStart:settleGeometry,onDestroy:()=>{geometryDisposed=true;(window.cancelAnimationFrame || clearTimeout)(geometryFrame);if(geometryObserver)geometryObserver.disconnect();element[0].removeEventListener('load',settleGeometry,true);window.removeEventListener('resize',resized);if(L.Listener)L.Listener.remove('resize_end',resized);}});
       if(cards.length>1){
         rotation=carousel(element[0],()=>show(index+1),()=>{
           const active=L.Activity.active() || {},controller=L.Controller.enabled && L.Controller.enabled();
@@ -470,8 +489,15 @@ if (!ROOT.LampaView) {
       (link.items || []).forEach((item,index)=>{const row=(link.rows || [])[index],name=Array.isArray(row)?row[0]:row;if(name==='persons' || name==='discuss'){const value=Array.isArray(row)?row[1]:data;detail(L,{type:'build',name,item,data:value,body},loadLogo);if(name==='persons')fill.track(item,value);}});
       detail(L,{type:'complite',object:active,data,body,link},loadLogo);
     }
+    function visibleHero(){
+      const active=L.Activity.active() || {},activity=active.activity,link=activity && activity.component;
+      if(active.component!=='main' || !link || activity.render().find('.pt-hero').length)return;
+      const line=(link.items || []).find(item=>item.data && Array.isArray(item.data.results));
+      if(line)hero({type:'visible',params:{object:active},line,data:line.data});
+    }
+    if(L.Listener)L.Listener.follow('resize_end',()=>setTimeout(visibleHero,0));
     on('activity',event => {
-      if (event.type === 'start') {updateRoute();trimSections();visibleDetail();}
+      if (event.type === 'start') {updateRoute();trimSections();visibleDetail();visibleHero();}
       refreshCarousels();
     });
     visibleDetail();

@@ -1,13 +1,10 @@
 // Desktop gives the carousel the remaining first-screen height. Poster sizing belongs
 // to the common rail fitter, so the first and subsequent collections match.
 export default function homeStage(hero,root){
- // Distance-sized TV cards may extend below the fold. Keep the TV carousel's
- // existing CSS geometry; squeezing it can clip a logo under WebView's font floor.
- if(document.body.classList.contains('pt-tv')){
-  hero.style.height='';const body=hero.querySelector('.pt-hero__body');
-  if(body){body.style.fontSize='';body.style.bottom='';}
-  root.classList.add('minimal-home-first-row');return;
- }
+ const tv=document.body.classList.contains('pt-tv');
+ // Expanded collections use native scrolling. Retain the preview's hero
+ // height so entry/return only animates cards, never the banner itself.
+ if(tv && !root.classList.contains('minimal-hero-preview')){root.classList.add('minimal-home-first-row');return;}
 
  const rowStyle=getComputedStyle(root),heroStyle=getComputedStyle(hero);
  const outer=root.closest('.scroll');
@@ -27,9 +24,9 @@ export default function homeStage(hero,root){
  if(body){
   body.style.fontSize='';body.style.bottom='';
   const style=getComputedStyle(body),font=parseFloat(style.fontSize)||16;
-  const minBottom=font*3,topInset=font*1.25;
+  const minBottom=font*(tv?1.5:3),topInset=font*(tv?1:1.25);
   const room=Math.max(1,height-minBottom-topInset),natural=body.offsetHeight;
-  if(natural>room)body.style.fontSize=(font*Math.max(.65,room/natural))+'px';
+  if(!tv && natural>room)body.style.fontSize=(font*Math.max(.65,room/natural))+'px';
   const bottom=Math.min(parseFloat(style.bottom)||font*7,height-body.offsetHeight-topInset);
   body.style.bottom=Math.max(minBottom,bottom)+'px';
  }

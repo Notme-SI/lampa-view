@@ -6,7 +6,7 @@ import homeStage from './home-stage.js';
 function normalSlots(root,font,width,scale){
  const probe=root.cloneNode(false);probe.removeAttribute('id');probe.classList.remove('minimal-fit-posters','minimal-posters-sized','minimal-home-first-row');
  probe.style.cssText='position:fixed;left:-10000px;top:0;width:'+width+'px;max-width:none;min-height:0;visibility:hidden;pointer-events:none;--pt-interface-scale:1';
- const card=document.createElement('div');card.className='card';card.style.setProperty('font-size',(font/scale/(innerWidth>=767?1.14:1))+'px','important');probe.appendChild(card);document.body.appendChild(probe);
+ const card=document.createElement('div');card.className='card';card.style.setProperty('font-size',(font/scale/(!document.body.classList.contains('pt-desktop') && document.body.classList.contains('size--bigger') && innerWidth>=767?1.14:1))+'px','important');probe.appendChild(card);document.body.appendChild(probe);
  try{const style=getComputedStyle(card),target=parseFloat(style.width),gap=parseFloat(style.fontSize),available=width-2*Math.ceil(gap*.55);return Math.max(1,Math.round((available+gap)/(target+gap)));}finally{probe.remove();}
 }
 
@@ -37,7 +37,7 @@ export default function fitRail(line,root,card,state,enabled){
  if(document.body.classList.contains('pt-tv')){
   // Explicit slots prevent round-to-nearest from making adjacent TV sizes equal.
   count=(parseInt(getComputedStyle(document.body).getPropertyValue('--pt-poster-columns'),10) || count)+(preview?2:0);
- }else if(scale>1){const normal=normalSlots(root,font,viewWidth,scale);if(normal>2)count=Math.min(count,normal-(scale>1.05?2:1));}
+ }else if(scale>1){const normal=normalSlots(root,font,viewWidth,scale);if(normal>2)count=document.body.classList.contains('pt-mobile')?Math.min(count,normal-1):Math.max(2,Math.round(normal/scale));}
  const width=Math.floor((available-(count-1)*gap)/count*64)/64;
  if(width<=0)return;
  root.style.setProperty('--minimal-poster-width',width+'px');
