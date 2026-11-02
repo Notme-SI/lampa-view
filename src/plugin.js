@@ -495,14 +495,14 @@ if (!ROOT.LampaView) {
       const active=L.Activity.active() || {},activity=active.activity,link=activity && activity.component;
       if(active.component!=='main' || !link || activity.render().find('.pt-hero').length)return;
       const line=(link.items || []).find(item=>item.data && Array.isArray(item.data.results));
-      if(line)hero({type:'visible',params:{object:active},line,data:line.data});
+      if(line){(link.items || []).forEach(item=>{if(item.data && Array.isArray(item.data.results))fill.track(item,item.data);});hero({type:'visible',params:{object:active},line,data:line.data});}
     }
     if(L.Listener)L.Listener.follow('resize_end',()=>setTimeout(visibleHero,0));
     on('activity',event => {
       if (event.type === 'start') {updateRoute();trimSections();visibleDetail();visibleHero();}
       refreshCarousels();
     });
-    visibleDetail();studioCatalogue(L);
+    visibleDetail();visibleHero();studioCatalogue(L);
     P.ready=true;startup(L,ROOT);
   }
   function ready() {

@@ -19598,14 +19598,19 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           var line = (link.items || []).find(function (item) {
             return item.data && Array.isArray(item.data.results);
           });
-          if (line) hero({
-            type: "visible",
-            params: {
-              object: active
-            },
-            line: line,
-            data: line.data
-          });
+          if (line) {
+            (link.items || []).forEach(function (item) {
+              if (item.data && Array.isArray(item.data.results)) fill.track(item, item.data);
+            });
+            hero({
+              type: "visible",
+              params: {
+                object: active
+              },
+              line: line,
+              data: line.data
+            });
+          }
         }
         if (L.Listener) L.Listener.follow("resize_end", function () {
           return setTimeout(visibleHero, 0);
@@ -19620,6 +19625,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           refreshCarousels();
         });
         visibleDetail();
+        visibleHero();
         studioCatalogue(L);
         P.ready = true;
         startup(L, ROOT);

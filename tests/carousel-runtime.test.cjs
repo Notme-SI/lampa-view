@@ -21,3 +21,14 @@ test('native home rotates cards, pauses behind settings and cleans up with its a
   hooks.forEach(hook=>hook.onDestroy?.());assert.equal(timers.size,0);assert.deepEqual(r.errors,[]);
  }finally{r.close();}
 });
+
+
+test('late plugin startup decorates the already built native home without another catalogue request',async()=>{
+ const r=await native({deferPlugin:true}),{w,L}=r;let calls=0;
+ try{
+  L.Params.init();L.Layer.init();L.Api.main=(o,ok)=>{calls++;ok([{title:'Now watching',results:[{id:1,title:'Film',overview:'Overview',poster_path:'/p.jpg',backdrop_path:'/b.jpg',source:'tmdb'}]}]);};
+  L.Activity.push({component:'main',source:'tmdb'});await new Promise(resolve=>setTimeout(resolve,40));assert.equal(w.document.querySelectorAll('.activity--active .pt-hero').length,0);
+  w.eval(require('node:fs').readFileSync(require('node:path').join(__dirname,'../dist/lampa.js'),'utf8'));await new Promise(resolve=>setTimeout(resolve,100));
+  assert.equal(w.document.querySelectorAll('.activity--active .pt-hero').length,1);assert.equal(calls,1,'No catalogue reload or repeated spinner');assert.deepEqual(r.errors,[]);
+ }finally{r.close();}
+});

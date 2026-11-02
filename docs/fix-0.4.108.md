@@ -11,3 +11,5 @@
 Validation before publication: build and ES5 checks passed; 341 Node tests and 10 Python checks passed. Chromium/WebKit coverage includes catalogue controls, pixel comparison after description blur, quality ordering, carousel return, artwork cache, home stage, interface size and complete poster rails. Physical Philips comparison uses the unchanged Android display mode; final published-build checks are recorded separately.
 
 - Reproduced next-screen blank posters during real browser scrolling. Extend bounded look-ahead to roughly one screen, continue it during wheel navigation, with one background request in motion or two at idle. Cover this with desktop/TV unit scenarios and Chromium/WebKit delayed native visibility checks.
+
+- Late plugin startup decorates and tracks an already built native main page once, without reloading its catalogue. Cover the real initial-load ordering before plugin insertion.
