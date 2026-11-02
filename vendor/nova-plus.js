@@ -3558,7 +3558,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     ui.hero.find('.nova-hero__runtime').remove();
     var badge = target ? shortQuality(target.quality) : '';
     if (badge) meta.append($('<div class="nova-badge"></div>').text(badge));
-    if (movie.vote_average) meta.append($('<div class="nova-hero__rating"></div>').text('\u2605 ' + parseFloat(movie.vote_average + '').toFixed(1)));
+    if (movie.vote_average) meta.append($('<div class="nova-hero__rating"></div>').text(parseFloat(movie.vote_average + '').toFixed(1)));
     var year = String(movie.release_date || movie.first_air_date || '').slice(0, 4);
     var countries = '';
     try { if (window.LampaView.bannerCountries) countries = window.LampaView.bannerCountries(movie); } catch (e) {}
@@ -5482,12 +5482,9 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     }
     var base='tv/'+id+'/season/'+number;
     try{api.get(base+'?language='+encodeURIComponent(language),{},function(data){
-      var book={},missing=false;
-      ((data && data.episodes) || []).forEach(function(episode){var num=Number(episode && episode.episode_number);if(num){book[num]=episode;if(!episode.overview || !episode.name)missing=true;}});
-      if(!missing || language==='en')return finish(book);
-      api.get(base+'?language=en',{},function(fallback){
-        ((fallback && fallback.episodes) || []).forEach(function(episode){var local=book[Number(episode.episode_number)];if(local)book[Number(episode.episode_number)]={...local,name:local.name || episode.name,overview:local.overview || episode.overview};});finish(book);
-      },function(){finish(book);});
+      var book={};
+      ((data && data.episodes) || []).forEach(function(episode){var num=Number(episode && episode.episode_number);if(num)book[num]=episode;});
+      finish(book);
     },function(){finish(null);});}catch(error){finish(null);}
   }
 
@@ -5667,7 +5664,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     if (strip.children().length) thumb.append(strip);
 
     var head = $('<div class="nova-card__head"></div>');
-    if (picked.rate) head.append($('<span class="nova-card__rate"></span>').text('\u2605 ' + picked.rate));
+    if (picked.rate) head.append($('<span class="nova-card__rate"></span>').text(picked.rate));
     var badge = card.find('.nova-card__quality');
     if (badge.length) head.append(badge.detach());
     if (picked.date) head.append($('<span class="nova-card__date"></span>').text(picked.date));
@@ -5697,7 +5694,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     line.addClass('nova-card__line--body').appendTo(card.find('.nova-card__body'));
 
     var bits = [];
-    if (picked.rate) bits.push('<span class="nova-card__rate">\u2605 ' + esc(picked.rate) + '</span>');
+    if (picked.rate) bits.push('<span class="nova-card__rate">' + esc(picked.rate) + '</span>');
     if (picked.date) bits.push('<span class="nova-card__date">' + esc(picked.date) + '</span>');
     if (!serial && picked.rest.length) bits.push('<span>' + esc(picked.rest[0]) + '</span>');
     card.find('.nova-card__meta').html(bits.join('<span class="nova-dot">\u25cf</span>'));
@@ -5723,7 +5720,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       var rating=episode.vote_average ? parseFloat(episode.vote_average + '').toFixed(1) : meta.find('.nova-card__rate').text().replace(/\u2605\s*/, '');
       var when=wideDate(episode.air_date) || meta.find('.nova-card__date').text();
       meta.empty();
-      if(rating)meta.append($('<span class="nova-card__rate"></span>').text('\u2605 '+rating));
+      if(rating)meta.append($('<span class="nova-card__rate"></span>').text(rating));
       if(when){if(rating)meta.append('<span class="nova-dot">\u25cf</span>');meta.append($('<span class="nova-card__date"></span>').text(when));}
       if (episode.still_path && !thumb.hasClass('nova-card__thumb--loaded')) paintThumb(thumb, image(episode.still_path, get('minimal_banner_quality', 'high') === 'medium' ? 'w500' : 'w780'), false);
     });
@@ -5741,7 +5738,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       if (!episode) return;
       var head = card.find('.nova-card__head');
       if (!card.find('.nova-card__rate').length && episode.vote_average) {
-        head.prepend($('<span class="nova-card__rate"></span>').text('\u2605 ' + parseFloat(episode.vote_average + '').toFixed(1)));
+        head.prepend($('<span class="nova-card__rate"></span>').text(parseFloat(episode.vote_average + '').toFixed(1)));
       }
       if (!card.find('.nova-card__date').length) {
         var when = wideDate(episode.air_date);

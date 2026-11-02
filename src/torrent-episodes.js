@@ -63,6 +63,14 @@ export default function torrentEpisodes(L,root=window){
   if(event.type==='list_close')selected=null;
   if(event.type==='render'){
    const item=event.item && (event.item.nodeType?event.item:event.item[0]);
+   const file=event.element || {},book=event.params && event.params.seasons && event.params.seasons[file.season];
+   const episode=book && (book.episodes || []).find(value=>Number(value.episode_number)===Number(file.episode));
+   if(item && episode && Number(file.episode)>0){
+    const line=item.querySelector('.torrent-serial__line'),content=item.querySelector('.torrent-serial__content');
+    if(line && Number(episode.vote_average)>0 && !line.querySelector('.minimal-episode-rating')){const rating=root.document.createElement('span');rating.className='minimal-episode-rating';rating.textContent=Number(episode.vote_average).toFixed(1);line.prepend(rating);}
+    const text=String(episode.overview || '').replace(/\s+/g,' ').trim();
+    if(content && text && !content.querySelector('.minimal-episode-overview')){const overview=root.document.createElement('div');overview.className='minimal-episode-overview';overview.textContent=text;content.appendChild(overview);item.classList.add('minimal-has-summary');}
+   }
    // File render events precede Modal.update(), so mark the mounted dialog later.
    if(item)setTimeout(()=>{
     const modal=item.closest('.modal');

@@ -940,7 +940,7 @@ body.lampa_view.pt-rtl .minimal-back--overlay svg {transform:scaleX(-1)}
 body.lampa_view.pt-rtl .minimal-settings .settings-param__value {margin-left:0;margin-right:auto}
 
 /* Episode information comes from one TMDB season book, shared by providers. */
-body.lampa_view .nova-plus-root .nova-card__overview {font-size:.82em;line-height:1.45;color:var(--pt-muted);margin-top:.45em;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;overflow-wrap:break-word}
+body.lampa_view .nova-plus-root .nova-card__overview {font-size:.82em;line-height:1.55;color:var(--pt-muted);margin-top:.65em;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:5;overflow:hidden;overflow-wrap:break-word}
 body.lampa_view .minimal-online-option {position:relative;margin:.35em .6em;padding:.8em 2.8em .8em 1em;border:1px solid var(--pt-line);border-radius:.9em;background:var(--pt-panel);min-height:2.8em;box-sizing:border-box}
 body.lampa_view .minimal-online-option--selected {border-color:#add9e560;background:var(--pt-high)}
 body.lampa_view .minimal-online-option.focus {border-color:var(--pt-accent);background:var(--pt-high);color:var(--pt-text)}
@@ -952,3 +952,7 @@ body.lampa_view .pt-hero__studio {pointer-events:none;cursor:default}
 body.lampa_view .minimal-online-option:after {display:none!important}
 
 body.lampa_view .nova-plus-root .nova-chip--unavailable {opacity:.65;cursor:default;pointer-events:none}
+
+/* Episode facts use the same catalogue coordinates as native file playback. */
+body.lampa_view .torrent-serial .minimal-episode-overview {clear:both;padding-top:.65em;color:var(--pt-muted);font-size:.85em;line-height:1.5;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;overflow-wrap:break-word}
+body.lampa_view .torrent-serial.minimal-has-summary .torrent-serial__content {padding-bottom:1.5em}

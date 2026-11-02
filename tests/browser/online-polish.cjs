@@ -81,7 +81,7 @@ async function holiday(page,name){
     }
     assert.equal(await page.evaluate(()=>qaBacks),2);
     await page.evaluate(()=>jQuery('[data-nova-focus=view]').last().trigger('hover:enter'));await page.waitForTimeout(150);
-    assert.equal(await page.locator('.nova-card__num').first().textContent(),'Серия 1');assert.equal(await page.locator('.nova-card__rate').first().textContent(),'★ 8.4');
+    assert.equal(await page.locator('.nova-card__num').first().textContent(),'Серия 1');assert.equal(await page.locator('.nova-card__rate').first().textContent(),'8.4');
     const thumbnail=await page.locator('.nova-card__thumb').first().evaluate(node=>{const image=node.querySelector('img'),number=node.querySelector('.nova-card__num'),r=node.getBoundingClientRect(),n=number.getBoundingClientRect();return {opacity:getComputedStyle(image).opacity,width:r.width,numberHeight:n.height,height:r.height};});
     assert.equal(thumbnail.opacity,'1','list thumbnails keep original brightness');assert.ok(thumbnail.numberHeight<thumbnail.height*.6,'number does not shade the whole thumbnail');
     if(mode==='mobile'){

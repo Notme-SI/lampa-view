@@ -33,7 +33,7 @@ export default function logoLoader(L){
   if(cache.has(key)){const value=cache.get(key);if(value.callbacks)value.callbacks.push(callback);else callback(value.path,value.studio,value.language);return;}
   const pending={callbacks:[callback]};cache.set(key,pending);
   queue.push(done=>{
-   function finish(json){const selected=chooseLogo(json && (json.images && json.images.logos || json.logos),language),path=selected && selected.file_path || '',studio=json?pickStudio(json,kind):null,logoLanguage=selected && selected.iso_639_1 || null;cache.set(key,{path,studio,language:logoLanguage});pending.callbacks.forEach(fn=>fn(path,studio,logoLanguage));if(cache.size>64)for(const [old,value] of cache){if(!value.callbacks){cache.delete(old);break;}}done();}
+   function finish(json){const selected=chooseLogo(json && (json.images && json.images.logos || json.logos),language),path=selected && selected.file_path || '',studio=json?pickStudio(json,kind):null,logoLanguage=selected && selected.iso_639_1 || null;if(json)cache.set(key,{path,studio,language:logoLanguage});else cache.delete(key);pending.callbacks.forEach(fn=>fn(path,studio,logoLanguage));if(cache.size>64)for(const [old,value] of cache){if(!value.callbacks){cache.delete(old);break;}}done();}
    function images(tmdbId){if(!tmdbId || !/^\d+$/.test(String(tmdbId)))return finish(null);tmdbGet(L,kind+'/'+tmdbId+'?append_to_response=images&include_image_language='+encodeURIComponent(language+',en,null'),{langs:language},finish,()=>finish(null),{life:60*24});}
    if(id)return images(id);
    const query=card.original_title || card.original_name || card.title || card.name;

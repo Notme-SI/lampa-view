@@ -15,7 +15,7 @@ async function check(page,mobile){
  assert.ok(separate(data.title,data.detail),'title and file details do not overlap');
  assert.ok(separate(data.image,data.timeline),'watch progress stays off the thumbnail');
  assert.ok(data.timeline.left>=data.content.left && data.timeline.right<=data.content.right+1,'progress stays inside content');
- if(mobile){assert.ok(data.title.height<=44,'long title takes at most two lines');assert.ok(data.row.height<175,'mobile file row stays compact');}
+ if(mobile){assert.ok(data.title.height<=44,'long title takes at most two lines');assert.ok(data.row.height<265,'mobile file row accommodates the synopsis without excessive height');}
  return data;
 }
 (async()=>{
@@ -33,14 +33,14 @@ async function check(page,mobile){
     L.Torserver.files=(hash,ok)=>ok({file_stats:Array.from({length:12},(_,i)=>({id:i+1,path:'MobLand.2025.S01.WEB-DL.1080p.TVShows/MobLand.S01E'+String(i+1).padStart(2,'0')+'.mkv',length:4520453079}))});
     L.Torserver.viewed=(hash,ok)=>ok([]);L.Torserver.stream=(file,hash,id)=>'http://localhost/stream?link='+hash+'&index='+id+'&play';
     const image='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180"><rect width="320" height="180" fill="#28454d"/></svg>');
-    L.Api.seasons=(card,seasons,ok)=>ok({1:{episodes:Array.from({length:12},(_,i)=>({season_number:1,episode_number:i+1,name:i===0?'Пан или пропал: длинное название серии для проверки мобильного экрана':'Серия '+(i+1),air_date:'2025-03-30',runtime:60,img:image}))}});
+    L.Api.seasons=(card,seasons,ok)=>ok({1:{episodes:Array.from({length:12},(_,i)=>({season_number:1,episode_number:i+1,name:i===0?'Пан или пропал: длинное название серии для проверки мобильного экрана':'Серия '+(i+1),air_date:'2025-03-30',runtime:60,img:image,vote_average:8.4,overview:'Описание серии из каталога. Достаточно места для нескольких строк текста.'}))}});
     window.qaPlayed=[];window.qaPlaylist=[];L.Player.play=data=>qaPlayed.push({season:data.season,episode:data.episode,url:data.url});L.Player.playlist=data=>window.qaPlaylist=data;L.Player.callback=()=>{};
     window.qaStartFiles=()=>L.Torrent.start(row,movie);
    },{mobile,virtual});
    await page.waitForSelector('.torrent-item.tc-item');await page.evaluate(()=>qaStartFiles());
    await page.waitForSelector('.torrent-files .torrent-serial',{timeout:7000});await page.waitForTimeout(150);
    await page.evaluate(()=>document.querySelectorAll('.torrent-serial').forEach(row=>jQuery(row).trigger('visible')));
-   await check(page,mobile);
+   await check(page,mobile);assert.equal(await page.locator('.minimal-episode-overview').count(),12);assert.equal(await page.locator('.minimal-episode-rating').first().textContent(),'8.4');
    if(output)await page.screenshot({path:path.join(output,name+(mobile?'-phone'+(virtual?'-virtual':''):'-desktop')+'-files.png')});
    if(mobile){
     await page.setViewportSize({width:320,height:640});await page.waitForTimeout(150);await check(page,true);
@@ -64,6 +64,7 @@ async function check(page,mobile){
     await client.detach();await page.waitForTimeout(700);
    }
    if(mobile && !virtual)await last.scrollIntoViewIfNeeded();else if(name!=='chromium' || !mobile)await last.evaluate(row=>{const scroll=Lampa.Modal.scroll();scroll.immediate(row);Lampa.Layer.visible(scroll.render(true));});
+   await page.waitForTimeout(180); // Allow native scroll/compositor hit testing to settle before the real touch.
    const point=await last.evaluate(row=>{const r=row.getBoundingClientRect(),s=row.closest('.scroll').getBoundingClientRect();return {x:r.left+r.width/2,y:(Math.max(r.top,s.top)+Math.min(r.bottom,s.bottom))/2};});
    // Windows WebKit reports a fractional native DPR and its touch protocol uses device pixels.
    const scale=mobile && name==='webkit' && process.platform==='win32'?await page.evaluate(()=>devicePixelRatio):1;

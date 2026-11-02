@@ -12,7 +12,7 @@ body.lampa_view.pt-mobile .nova-plus-root.nova-plus>.nova-plus__strip {padding:0
 body.lampa_view.pt-mobile .nova-plus-root .nova__list--row>.nova-card--wide {width:80%!important;flex-basis:80%!important;max-width:80%!important}
 /* One grid owner: mobile uses two columns, Glass portrait uses one; TV profiles
    set the column count together with poster slots and typography. */
-body.lampa_view .nova-plus-root .nova__list--grid:not(.nova__list--row) {display:grid!important;grid-template-columns:repeat(var(--pt-episode-columns,auto-fill),minmax(min(100%,23em),1fr));gap:1em;margin:0}
+body.lampa_view .nova-plus-root .nova__list--grid:not(.nova__list--row) {display:grid!important;grid-template-columns:repeat(var(--pt-episode-columns,auto-fill),minmax(min(100%,23em),1fr));gap:1.8em 1em;margin:0}
 body.lampa_view .nova-plus-root .nova__list--grid:not(.nova__list--row)>.nova-card--wide {width:100%!important;max-width:100%!important;min-width:0;padding:0;margin:0}
 body.lampa_view.pt-mobile .nova-plus-root .nova__list--grid:not(.nova__list--row) {grid-template-columns:repeat(2,minmax(0,1fr))}
 /* Keep the film synopsis and ratings in the full card. Online is for choosing
@@ -43,7 +43,7 @@ body.lampa_view.pt-theme-glass.pt-mobile .nova-plus-root .nova__list--grid>.nova
 body.lampa_view.pt-theme-glass.pt-mobile .nova-plus-root .nova__list--grid .nova-card__thumb {padding-top:56.25%;border-radius:1em}
 body.lampa_view.pt-theme-glass.pt-mobile .nova-plus-root .nova__list--grid .nova-card__body {padding:.65em .05em 0}
 body.lampa_view.pt-theme-glass.pt-mobile .nova-plus-root .nova-card__title {font-size:1.08em;line-height:1.4;-webkit-line-clamp:2}
-body.lampa_view.pt-theme-glass.pt-mobile .nova-plus-root .nova-card__overview {font-size:.88em;line-height:1.55;-webkit-line-clamp:3;margin-top:.5em}
+body.lampa_view.pt-theme-glass.pt-mobile .nova-plus-root .nova-card__overview {font-size:.88em;line-height:1.55;-webkit-line-clamp:5;margin-top:.65em}
 body.lampa_view.pt-theme-glass.pt-mobile .nova-plus-root .nova-card__head {font-size:.8em;line-height:1.4}
 @media(min-width:700px) and (orientation:landscape){body.lampa_view.pt-theme-glass.pt-mobile .nova-plus-root .nova__list--grid:not(.nova__list--row) {grid-template-columns:repeat(2,minmax(0,1fr))}}
 

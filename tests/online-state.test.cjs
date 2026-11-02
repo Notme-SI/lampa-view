@@ -253,7 +253,7 @@ test('episode list retains the episode label and late rating when switching from
  const n=await native({built:true}),{L,w}=n;let s;try{
   L.Api.sources.tmdb.get=(url,p,ok)=>w.setTimeout(()=>ok(url.includes('/season/')?{episodes:[{episode_number:1,name:'Название эпизода',vote_average:8.7,air_date:'2025-04-01'}]}:{logos:[]}),25);
   s=screen(n,{id:1666,episodes:[1,2]});await wait(200);L.Storage.set('nova_plus_view','list');L.Listener.send('activity',{type:'start'});await wait(150);
-  const card=s.root.find('.nova-card').first();assert.equal(card.find('.nova-card__num').text(),'Серия 1');assert.equal(card.find('.nova-card__rate').text(),'★ 8.7');assert.equal(card.find('.nova-card__title').text(),'Название эпизода');assert.equal(card.find('.nova-card__rate').length,1);assert.deepEqual(n.errors,[]);
+  const card=s.root.find('.nova-card').first();assert.equal(card.find('.nova-card__num').text(),'Серия 1');assert.equal(card.find('.nova-card__rate').text(),'8.7');assert.equal(card.find('.nova-card__title').text(),'Название эпизода');assert.equal(card.find('.nova-card__rate').length,1);assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}
 });
 
@@ -428,5 +428,12 @@ test('season UI is chronological but preserves provider indexes and selected sea
 });
 test('Lampac source changes delegate to its fresh native component instead of keeping private season and voice arrays',async()=>{
  const n=await native({built:true}),{L}=n;let s;try{let nativeCalls=0,reused=0;const comp={parseJsonDate(){},display(){},filter(){},createSource(){reused++;return Promise.resolve();},search(){},changeBalanser(){nativeCalls++;}};s=screen(n,{component:comp});s.filter.onSelect=(type,item)=>{if(type==='sort')comp.changeBalanser(item.source);};await wait(230);s.root.find('[data-nova-focus=source]').trigger('hover:enter');L.Select.render().find('.selectbox-item').last().trigger('hover:enter');await wait(60);assert.equal(nativeCalls,1);assert.equal(reused,0);assert.equal(s.played(),0);assert.deepEqual(n.errors,[]);
+ }finally{if(s)s.close();n.close();}
+});
+
+test('missing localized episode synopsis does not silently substitute English',async()=>{
+ const n=await native({built:true,initialStorage:{language:'ru',nova_plus_view:'grid'}}),{L,w}=n;let s;const requests=[];
+ try{L.Api.sources.tmdb.get=(url,p,ok)=>{requests.push(url);w.setTimeout(()=>ok(url.includes('/season/')?{episodes:[{episode_number:1,name:'Первая серия',overview:'',vote_average:8.4,air_date:'2027-03-30'},{episode_number:2,name:'Вторая',overview:'Описание на выбранном языке',vote_average:8.2}]}:{logos:[]}),0);};
+  s=screen(n,{id:1887,episodes:[1,2]});await wait(270);assert.equal(s.root.find('.nova-card').first().find('.nova-card__overview').length,0);assert.equal(s.root.find('.nova-card__overview').first().text(),'Описание на выбранном языке');assert.ok(!requests.some(url=>url.includes('language=en')));assert.doesNotMatch(s.root.find('.nova-card__rate,.nova-hero__rating').text(),/[★☆]/);assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}
 });

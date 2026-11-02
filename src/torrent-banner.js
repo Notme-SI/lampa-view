@@ -47,7 +47,7 @@ export default function torrentBanner(L,loadLogo){
   const meta=document.createElement('div');meta.className='minimal-torrent-banner__meta';
   const year=String(card.release_date || card.first_air_date || '').slice(0,4),rating=Number(card.vote_average);
   const countries=bannerCountries(card,L.Storage.get('language','ru'),L);
-  [rating>0?'★ '+rating.toFixed(1):'',[ /^\d{4}$/.test(year)?year:'',countries].filter(Boolean).join(', ')].filter(Boolean).forEach(value=>{const span=document.createElement('span');span.textContent=value;meta.appendChild(span);});banner.appendChild(meta);
+  [rating>0?rating.toFixed(1):'',[ /^\d{4}$/.test(year)?year:'',countries].filter(Boolean).join(', ')].filter(Boolean).forEach(value=>{const span=document.createElement('span');span.textContent=value;meta.appendChild(span);});banner.appendChild(meta);
   const title=document.createElement('div');title.className='minimal-torrent-banner__title';title.textContent=card.title || card.name || card.original_title || card.original_name || '';banner.appendChild(title);
   left.prepend(banner);
   if(loadLogo)loadLogo(card,path=>{

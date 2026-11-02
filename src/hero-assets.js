@@ -5,8 +5,9 @@ import imageFiles from './image-files.js';
 const pools=new WeakMap();
 export default function heroAssets(L,cards,loadLogo,element){
  let pool=pools.get(L);if(!pool){pool={images:new Map(),active:new Map()};pools.set(L,pool);}
- const files=imageFiles(L),images=pool.images,owner={},logos=new Map(),studios=new Map();let disposed=false,current=0,warmTimer,warmWanted=false,upgradeTimer,upgradeWanted,onscreen=true;
+ const files=imageFiles(L),images=pool.images,owner={},branding=new Map();let disposed=false,current=0,warmTimer,warmWanted=false,upgradeTimer,upgradeWanted,onscreen=true;
  const wrap=i=>(i+cards.length)%cards.length;
+ const pin=(kind,url)=>{const active=pool.active.get(owner) || {};active[kind]=url;pool.active.set(owner,active);};
  const paused=()=>!onscreen || document.hidden || document.body.matches('.pt-wheel-active,.pt-tv-busy');
  const coverUrl=(i,size)=>L.TMDB.image('/t/p/'+size+cards[wrap(i)].backdrop_path);
  function remove(url,entry){
@@ -22,7 +23,7 @@ export default function heroAssets(L,cards,loadLogo,element){
    const crowded=images.size>24 || bytes>budget;
    if(!crowded && originals<=maximumOriginals)break;
    if(!crowded && !entry.original)continue;
-   if(![...pool.active.values()].includes(url) && entry.done){bytes-=entry.bytes || 0;if(entry.original)originals--;remove(url,entry);}
+   if(![...pool.active.values()].some(active=>Object.values(active).includes(url)) && entry.done){bytes-=entry.bytes || 0;if(entry.original)originals--;remove(url,entry);}
   }
  }
  function fetchImage(url,callback,type,priority,coverPath){
@@ -51,7 +52,7 @@ export default function heroAssets(L,cards,loadLogo,element){
   entry.image.onerror=()=>{files.invalidate(url);finish('');};entry.timeout=setTimeout(()=>{finish('');entry.image.src='';},12000);entry.release=files.load(url,src=>{entry.image.src=src;});trim();
  }
  function select(i){
-  if(current!==wrap(i)){clearTimeout(upgradeTimer);upgradeWanted=null;}current=wrap(i);
+  if(current!==wrap(i)){clearTimeout(upgradeTimer);upgradeWanted=null;pin('logo','');pin('studio','');}current=wrap(i);
   const path=cards[current].backdrop_path;
   // Proxy URLs may encode the path or append account/uid parameters. Keep
   // selection identity separately; URL suffixes cannot identify a backdrop.
@@ -59,26 +60,32 @@ export default function heroAssets(L,cards,loadLogo,element){
  }
  function cover(i,size,callback,background){
   i=wrap(i);const url=coverUrl(i,size);
-  if(!background){select(i);pool.active.clear();pool.active.set(owner,url);}
+  if(!background){select(i);pin('cover',url);}
   fetchImage(url,callback,size==='original'?'original':'cover',background?'low':'high',cards[i].backdrop_path);
  }
- function logo(i,callback){
-  i=wrap(i);const saved=logos.get(i);if(saved){if(saved.callbacks)saved.callbacks.push(callback);else callback(saved.url,saved.language);return;}
-  const pending={callbacks:[callback]};logos.set(i,pending);
+ // Cache canonical metadata, never rendered blob URLs: decoded eviction can
+ // release/revoke those URLs while this carousel remains mounted.
+ function metadata(i,callback){
+  const saved=branding.get(i);if(saved){if(saved.callbacks)saved.callbacks.push(callback);else callback(saved);return;}
+  const pending={callbacks:[callback]};branding.set(i,pending);
   loadLogo(cards[i],(path,studio,language)=>{
    if(disposed)return;
-   const waiting=studios.get(i) || {callbacks:[]};studios.set(i,waiting);
-   function finishStudio(url){const value=url?{url,name:studio.name,id:studio.id,kind:studio.kind}:null;studios.set(i,{value});if(waiting)waiting.callbacks.forEach(fn=>fn(value));}
-   if(studio && studio.path)fetchImage(L.TMDB.image('/t/p/w300'+studio.path),finishStudio,'studio');else finishStudio('');
-   function finish(url){logos.set(i,{url,language});pending.callbacks.forEach(fn=>fn(url,language));}
-   if(!path)return finish('');
-   fetchImage(L.TMDB.image('/t/p/'+logoSize()+path),finish,'logo');
+   const value={path,studio,language};if(path || studio)branding.set(i,value);else branding.delete(i);pending.callbacks.forEach(fn=>fn(value));
+  });
+ }
+ function logo(i,callback){
+  i=wrap(i);metadata(i,value=>{
+   if(!value.path)return callback('',value.language);
+   const url=L.TMDB.image('/t/p/'+logoSize()+value.path);if(i===current)pin('logo',url);
+   fetchImage(url,src=>callback(src,value.language),'logo');
   });
  }
  function studio(i,callback){
-  i=wrap(i);const saved=studios.get(i);
-  if(saved){if(saved.callbacks)saved.callbacks.push(callback);else callback(saved.value);return;}
-  studios.set(i,{callbacks:[callback]});logo(i,()=>{});
+  i=wrap(i);metadata(i,value=>{
+   const studio=value.studio;if(!studio || !studio.path)return callback(null);
+   const url=L.TMDB.image('/t/p/w300'+studio.path);if(i===current)pin('studio',url);
+   fetchImage(url,src=>callback(src?{url:src,name:studio.name,id:studio.id,kind:studio.kind}:null),'studio');
+  });
  }
  function scheduleWarm(delay){
   clearTimeout(warmTimer);warmTimer=null;
@@ -115,8 +122,8 @@ export default function heroAssets(L,cards,loadLogo,element){
  document.addEventListener('visibilitychange',resume);
  function ready(i,size){
   const url=coverUrl(i,size),saved=images.get(url);
-  if(!saved || !saved.done || !saved.url){const source=files.peek(url);if(source){pool.active.clear();pool.active.set(owner,url);}return source;}
-  images.delete(url);images.set(url,saved);pool.active.clear();pool.active.set(owner,url);
+  if(!saved || !saved.done || !saved.url){const source=files.peek(url);if(source){pin('cover',url);}return source;}
+  images.delete(url);images.set(url,saved);pin('cover',url);
   return saved.url;
  }
  function dispose(){
@@ -125,7 +132,7 @@ export default function heroAssets(L,cards,loadLogo,element){
   pool.active.delete(owner);
   for(const [url,entry] of images)if(!entry.done){entry.callbacks=entry.callbacks.filter(fn=>fn.owner!==owner);if(!entry.callbacks.length)remove(url,entry);}
   trim();
-  logos.clear();studios.clear();
+  branding.clear();
  }
  return {cover,logo,studio,warm,ready,select,upgrade,cancelUpgrade,dispose};
 }

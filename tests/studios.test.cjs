@@ -19,3 +19,9 @@ test('prefetched studio images accept late subscribers and stay cached; missing 
  assets.warm(0);await new Promise(r=>setTimeout(r,1250));let selected;assets.studio(1,value=>selected=value);const studio=images.find(i=>i.url.includes('/w300/studio1.png'));studio.onload();await tick();assert.equal(selected.name,'Studio 1');assert.ok(selected.url.endsWith('/studio1.png'));const count=images.length;assets.studio(1,value=>selected=value);assert.equal(images.length,count);assert.equal(requests,2);
  let absent='pending';assets.studio(2,value=>absent=value);assert.equal(absent,null);assets.studio(0,value=>absent=value);images.find(i=>i.url.includes('/w300/studio0.png')).onerror();assert.equal(absent,null);assets.dispose();dom.window.close();
 });
+
+test('transient metadata failure retries on the next request rather than caching missing branding',()=>{
+ const dom=new JSDOM('',{runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window;bundle(w,'logos','Logos');let calls=0;
+ const L={Storage:{get:()=> 'ru'},TMDB:{},Api:{sources:{tmdb:{get:(url,p,ok,fail)=>{if(++calls===1)fail();else ok({images:{logos:[{file_path:'/ok.png',iso_639_1:'ru'}]}});}}}}},load=w.Logos.default(L),card={id:1,source:'tmdb',title:'Film'};let path;
+ load(card,value=>path=value);assert.equal(path,'');load(card,value=>path=value);assert.equal(path,'/ok.png');assert.equal(calls,2);w.close();
+});
