@@ -1,6 +1,14 @@
-// Give the carousel the remaining first-screen height. Poster sizing belongs
+// Desktop gives the carousel the remaining first-screen height. Poster sizing belongs
 // to the common rail fitter, so the first and subsequent collections match.
 export default function homeStage(hero,root){
+ // Distance-sized TV cards may extend below the fold. Keep the TV carousel's
+ // existing CSS geometry; squeezing it can clip a logo under WebView's font floor.
+ if(document.body.classList.contains('pt-tv')){
+  hero.style.height='';const body=hero.querySelector('.pt-hero__body');
+  if(body){body.style.fontSize='';body.style.bottom='';}
+  root.classList.add('minimal-home-first-row');return;
+ }
+
  const rowStyle=getComputedStyle(root),heroStyle=getComputedStyle(hero);
  const outer=root.closest('.scroll');
  // Scroll.position() is the animation target on TV, not the current transform.

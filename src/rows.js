@@ -23,7 +23,8 @@ export default function fillRows(L,enabled){
       if(!state.root){state.root=root;roots.set(root,line);if(observer)observer.observe(root);if(sizes)sizes.observe(root);root.addEventListener('touchend',()=>{if(enabled())settleRail(line.scroll && line.scroll.render(true));},{passive:true});}
       const box=root.getBoundingClientRect();
       const first=!document.body.classList.contains('pt-tv') && root.previousElementSibling && root.previousElementSibling.matches('.pt-hero');
-      if(!box.width || !first && (box.bottom<0 || box.top>window.innerHeight+200))return;
+      if(!box.width)return;
+      const nearby=first || box.bottom>=0 && box.top<=window.innerHeight+200;
       const card=root.querySelector('.card,.full-person');if(!card)return;
       if(document.body.classList.contains('pt-tv') && root.classList.contains('minimal-cast-native')){
         const viewport=line.scroll && line.scroll.render(true),content=viewport && viewport.querySelector('.scroll__content');
@@ -35,6 +36,7 @@ export default function fillRows(L,enabled){
         }
       }
       fitRail(line,root,card,state,enabled);
+      if(!nearby)return;
       const size=card.getBoundingClientRect().width;if(!size)return;
       const style=window.getComputedStyle(card),gap=(parseFloat(style.marginLeft)||0)+(parseFloat(style.marginRight)||0);
       const desired=Math.min(state.data.results.length,24,Math.ceil(box.width/(size+gap))+1);

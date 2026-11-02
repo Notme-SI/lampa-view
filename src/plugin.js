@@ -30,6 +30,7 @@ import historyCards from './history-cards.js';
 import installBack from './back.js';
 import mpvLaunch from './mpv-launch.cjs';
 import carousel from './carousel.js';
+import tvHomeStage from './tv-home-stage.js';
 import tvPerformance from './tv-performance.js';
 import {cacheSettings} from './cache-control.js';
 import onlineState from './online-state.js';
@@ -315,13 +316,14 @@ if (!ROOT.LampaView) {
         carousels.add(rotation);
         if(activity.component && activity.component.use)activity.component.use({onStart:refreshCarousels,onPause:refreshCarousels,onDestroy:()=>{rotation.dispose();carousels.delete(rotation);}});
       }
-      const nativeLine=event.line;
+      const nativeLine=event.line,tvStage=tvHomeStage(line[0],nativeLine,activity);
       if(L.Controller && nativeLine && nativeLine.use && nativeLine.toggle){
         const enterHero=()=>{
           if(!yes('lampa_view_enabled') || !yes('lampa_view_hero'))return L.Controller.toggle('head');
           const focusControl=()=>L.Controller.collectionFocus(controls.eq(focus),element);
           L.Controller.add('lampa_view_hero',{
             toggle:()=>{
+              if(tvStage)tvStage.compact();
               const component=activity.component;
               if(component && component.scroll && component.scroll.update)component.scroll.update(element[0]);
               L.Controller.collectionSet(element);focusControl();
@@ -334,7 +336,7 @@ if (!ROOT.LampaView) {
           });L.Controller.toggle('lampa_view_hero');
         };
         let firstFocus=true;
-        nativeLine.use({onlyUp:enterHero,onToggle:()=>{if(firstFocus){firstFocus=false;focus=0;setTimeout(()=>{if((L.Activity.active() || {}).activity===activity && !document.body.matches('.settings--open,.selectbox--open,.menu--open'))enterHero();},0);}}});
+        nativeLine.use({onlyUp:enterHero,onToggle:()=>{if(firstFocus){firstFocus=false;focus=0;setTimeout(()=>{if((L.Activity.active() || {}).activity===activity && !document.body.matches('.settings--open,.selectbox--open,.menu--open'))enterHero();},0);}else if(tvStage)tvStage.expand();}});
         if(activity.component && activity.component.use){
           activity.component.use({onStart:()=>{if(P.layout!=='mobile')setTimeout(()=>{if((L.Activity.active() || {}).activity===activity)enterHero();},0);}});
           const enabled=L.Controller.enabled && L.Controller.enabled();

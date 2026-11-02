@@ -1,7 +1,7 @@
 /* TV presentation: distance-readable type and artwork. No Android mode changes. */
 body.lampa_view.pt-tv {--pt-ui-font:calc(.703125vw * var(--pt-interface-scale,1));font-size:var(--pt-ui-font)!important;--pt-banner-unit:calc(.703125vw * 1.12)}
 body.lampa_view.pt-tv .pt-hero {max-width:90vw;margin:0 auto 2em}
-body.lampa_view.pt-tv .pt-hero__body {left:3em;bottom:7em;max-width:31em;padding-right:1em}
+body.lampa_view.pt-tv .pt-hero__body {font-size:max(8px,1em);left:3em;bottom:3em;max-width:31em;padding-right:1em}
 body.lampa_view.pt-tv .pt-hero__title {font-size:2.55em;max-width:15em;margin-bottom:.65em}
 body.lampa_view.pt-tv .pt-hero__title--translation {font-size:1.05em;line-height:1.35;letter-spacing:0;max-width:100%;margin-bottom:1.1em}
 body.lampa_view.pt-tv .pt-hero__logo {max-height:7em;max-width:100%;margin-bottom:1.4em}
@@ -34,3 +34,9 @@ body.lampa_view.pt-tv .card__view .icon--history {font-size:.95em;width:2.1em;he
 body.lampa_view.pt-tv .card {-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body.lampa_view.pt-tv .settings__content {font-size:calc(var(--pt-ui-font) * 1.1)!important;width:30em;max-width:38vw;box-sizing:border-box}
 body.lampa_view.pt-tv .selectbox__content {font-size:calc(var(--pt-ui-font) * 1.1)!important;box-sizing:border-box}
+
+/* Hero overview uses a compact preview. Entering collections restores the
+   shared profile immediately; only composited card transforms are animated. */
+body.lampa_view.pt-tv .items-line.minimal-hero-preview .card .pt-card-watch {height:0;margin:0;visibility:hidden!important;overflow:hidden}
+body.lampa_view.pt-tv .items-line.minimal-hero-preview .card__title {font-size:max(8px,.7em);line-height:1.4;max-height:2.85em}
+body.lampa_view.pt-tv .items-line.minimal-hero-preview .card__age {font-size:max(8px,.65em)}

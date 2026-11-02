@@ -3,8 +3,8 @@ const {chromium,webkit}=require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const {setup}=require('../fixtures/native-browser.cjs');
 (async()=>{
  for(const [engineName,engine] of [['chromium',chromium],['webkit',webkit]]){
-  const browser=await engine.launch({headless:true});try{
-   for(const device of [{mode:'desktop',width:1280,height:720},{mode:'desktop',width:1920,height:1080},{mode:'desktop',width:2048,height:1070},{mode:'desktop',width:2559,height:1338},{mode:'tv',width:1280,height:720},{mode:'tv',width:1920,height:1080},{mode:'tv',width:3840,height:2160}]){
+  const browser=await engine.launch({headless:true,...(engineName==='chromium'?{args:['--blink-settings=minimumFontSize=8']}: {})});try{
+   for(const device of [{mode:'desktop',width:1280,height:720},{mode:'desktop',width:1920,height:1080},{mode:'desktop',width:2048,height:1070},{mode:'desktop',width:2559,height:1338},{mode:'tv',width:960,height:540},{mode:'tv',width:1280,height:720},{mode:'tv',width:1920,height:1080},{mode:'tv',width:3840,height:2160}]){
     const r=await setup(browser,{viewport:{width:device.width,height:device.height},mode:device.mode},{beforePlugin:page=>page.evaluate(()=>{
      const L=Lampa;L.Params.init();L.Layer.init();L.Storage.set('lampa_view_hero',true);
      L.Api.main=(o,ok)=>ok(['Сейчас смотрят','Популярное'].map((title,row)=>({title,url:'qa/'+row,results:Array.from({length:20},(_,i)=>({id:row*100+i+1,title:'Очень длинное название фильма '+(i+1),overview:'Описание фильма для проверки первого экрана.',poster_path:'/poster'+i+'.jpg',backdrop_path:'/backdrop'+i+'.jpg',release_date:'2025-01-01',source:'tmdb'}))})));
@@ -13,15 +13,19 @@ const {setup}=require('../fixtures/native-browser.cjs');
     for(const size of ['small','normal','bigger']){
      await page.evaluate(size=>Lampa.Storage.set('interface_size',size),size);await page.waitForTimeout(350);
      await page.waitForSelector('.activity--active .pt-hero + .minimal-home-first-row');
+     if(device.mode==='tv')await page.locator('.activity--active .pt-hero').evaluate(hero=>{const logo=hero.querySelector('.pt-hero__logo');logo.classList.remove('pt-hidden');logo.src='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420"><rect width="1200" height="420" fill="white"/></svg>');hero.querySelector('.pt-hero__title').classList.add('pt-hidden');});
+
      const value=await page.locator('.activity--active .pt-hero').evaluate(hero=>{
       const first=hero.nextElementSibling,second=first.nextElementSibling,view=first.querySelector('.scroll--horizontal').getBoundingClientRect(),rect=hero.getBoundingClientRect();
       const cards=[...first.querySelectorAll('.card')].filter(n=>{const r=n.getBoundingClientRect();return r.left>=view.left-1 && r.right<=view.right+1;});
-      return {posterWidth:parseFloat(getComputedStyle(first.querySelector('.card')).width),secondPosterWidth:second && parseFloat(getComputedStyle(second.querySelector('.card')).width),secondFitted:second && second.classList.contains('minimal-posters-sized'),hero:{top:rect.top,width:rect.width,height:rect.height},row:{top:first.getBoundingClientRect().top,bottom:first.getBoundingClientRect().bottom},secondTop:second&&second.getBoundingClientRect().top,maxCardBottom:Math.max(...cards.map(n=>n.getBoundingClientRect().bottom)),viewport:innerHeight,count:cards.length};
+      const b=hero.querySelector('.pt-hero__body').getBoundingClientRect();return {bodyTop:b.top-rect.top,bodyBottom:b.bottom-rect.top,posterWidth:parseFloat(getComputedStyle(first.querySelector('.card')).width),secondPosterWidth:second && parseFloat(getComputedStyle(second.querySelector('.card')).width),secondFitted:second && second.classList.contains('minimal-posters-sized'),hero:{top:rect.top,width:rect.width,height:rect.height},row:{top:first.getBoundingClientRect().top,bottom:first.getBoundingClientRect().bottom},secondTop:second&&second.getBoundingClientRect().top,maxCardBottom:Math.max(...cards.map(n=>n.getBoundingClientRect().bottom)),viewport:innerHeight,count:cards.length};
      });
      assert.ok(value.hero.top>= -1,'Banner must remain at the top of the first screen: '+JSON.stringify(value));
+     if(device.mode==='tv'){assert.ok(value.bodyTop>=-1 && value.bodyBottom<=value.hero.height+1,'TV carousel branding stays inside its frame at the WebView font floor: '+JSON.stringify({device,size,value}));}else {
      assert.ok(value.maxCardBottom<=value.viewport-2,'First row must fit vertically: '+JSON.stringify({device,size,value}));
      assert.ok(value.secondTop===null || value.secondTop>=value.viewport,'Next collection must not show a strip: '+JSON.stringify({device,size,value}));
-     assert.ok(value.secondFitted,'The next row uses the same fitting rules');assert.ok(Math.abs(value.posterWidth-value.secondPosterWidth)<1,'The first collection must not get smaller cards: '+JSON.stringify({device,size,value}));
+     }
+     assert.ok(value.secondFitted,'The next row uses the same fitting rules');if(device.mode==='tv')assert.ok(value.posterWidth<value.secondPosterWidth,'Hero preview is compact until entering the collection');else assert.ok(Math.abs(value.posterWidth-value.secondPosterWidth)<1,'Desktop first collection uses shared card size: '+JSON.stringify({device,size,value}));
      frames.push({...value.hero,count:value.count,posterWidth:value.posterWidth});
      if(process.env.LAMPA_QA_OUTPUT && device.width===2048){fs.mkdirSync(process.env.LAMPA_QA_OUTPUT,{recursive:true});await page.screenshot({path:path.join(process.env.LAMPA_QA_OUTPUT,engineName+'-home-'+size+'.png')});}
     }
@@ -31,7 +35,7 @@ const {setup}=require('../fixtures/native-browser.cjs');
     assert.ok(frames[0].count>=frames[1].count && frames[1].count>=frames[2].count,'Bigger must not shrink the first-row posters: '+JSON.stringify(frames));
     await page.locator('.activity--active .pt-hero').hover();await page.mouse.wheel(0,600);await page.waitForTimeout(600);
     assert.ok(await page.locator('.activity--active .pt-hero').evaluate(n=>n.getBoundingClientRect().top)<frames[2].top-100,'The rest of the page remains accessible by scrolling');
-    assert.deepEqual(r.errors,[]);await r.context.close();console.log(engineName+' '+device.mode+' '+device.width+'x'+device.height+': adaptive banner and one whole first row at every native size');
+    assert.deepEqual(r.errors,[]);await r.context.close();console.log(engineName+' '+device.mode+' '+device.width+'x'+device.height+': adaptive desktop first screen / TV hero preview at every native size');
    }
   }finally{await browser.close();}
  }

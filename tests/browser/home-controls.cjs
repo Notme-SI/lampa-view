@@ -4,7 +4,10 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
  await page.evaluate(()=>{Lampa.Controller.toggle('lampa_view_hero');});assert.ok(await page.locator('.pt-hero__action.focus').count());
  await page.keyboard.press('ArrowRight');await page.waitForTimeout(80);assert.ok(await page.locator('.pt-hero__dot.focus').count(),'Right reaches carousel');
  await page.keyboard.press('ArrowUp');await page.waitForTimeout(80);assert.ok(await page.locator('.pt-hero__action.focus').count());
+ const previewWidth=await page.locator('.minimal-home-first-row .card').first().evaluate(n=>n.getBoundingClientRect().width);
  await page.keyboard.press('ArrowDown');await page.waitForTimeout(100);assert.ok(await page.locator('.minimal-home-first-row .card.focus').count(),'Down goes directly to Now watching');
+ if(mode==='tv'){await page.waitForTimeout(300);assert.equal(await page.locator('.minimal-hero-preview').count(),0,'Entering a collection restores its full profile');assert.ok(await page.locator('.minimal-home-first-row .card').first().evaluate(n=>n.getBoundingClientRect().width)>previewWidth+5,'TV cards grow on entry');await page.keyboard.press('ArrowUp');await page.waitForTimeout(300);assert.equal(await page.locator('.minimal-hero-preview').count(),1,'Returning to hero restores the compact preview');}
+
  await page.locator('.pt-hero__studio').evaluate(n=>n.dispatchEvent(new Event('load')));const studio=await page.locator('.pt-hero__studio').evaluate(n=>({selector:n.classList.contains('selector'),role:n.getAttribute('role'),pointer:getComputedStyle(n).pointerEvents,alt:n.alt}));assert.equal(studio.selector,false);assert.equal(studio.role,null);assert.equal(studio.pointer,'none');assert.equal(studio.alt,'Test studio');
  assert.deepEqual(r.errors,[]);console.log(engine.name()+' '+mode+': decorative studio and distinct Right/Down navigation passed');
  }finally{await r.context.close();}}}finally{await browser.close();}}})().catch(error=>{console.error(error);process.exitCode=1;});
