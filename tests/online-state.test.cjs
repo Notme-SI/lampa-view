@@ -437,3 +437,19 @@ test('missing localized episode synopsis does not silently substitute English',a
   s=screen(n,{id:1887,episodes:[1,2]});await wait(270);assert.equal(s.root.find('.nova-card').first().find('.nova-card__overview').length,0);assert.equal(s.root.find('.nova-card__overview').first().text(),'Описание на выбранном языке');assert.ok(!requests.some(url=>url.includes('language=en')));assert.doesNotMatch(s.root.find('.nova-card__rate,.nova-hero__rating').text(),/[★☆]/);assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}
 });
+
+
+test('both themes keep four seasons inline and five in a lower native menu with original provider indices',async()=>{
+ for(const theme of ['minimal','glass']){
+  const n=await native({built:true,initialStorage:{lampa_view_theme:theme}}),{L}=n;let s;
+  try{
+   s=screen(n);let selected=-1;s.filter.onSelect=(type,group,item)=>selected=item.index;
+   const seasons=count=>({stype:'season',title:'Сезон',items:Array.from({length:count},(_,i)=>({title:(count-i)+' сезон',index:i,selected:i===count-1}))});
+   s.filter.set('filter',[seasons(4)]);await wait(220);
+   const panel=s.root.find('.nova-plus__panel');assert.equal(panel.find('[data-nova-group=season] .nova-plus__label').length,0);assert.equal(panel.find('[data-nova-group=season] [data-nova-focus^="season:"]').length,4);assert.equal(panel.children('.nova-plus__bar').next().attr('data-nova-group'),'season');
+   panel.find('[data-nova-focus="season:2"]').trigger('hover:enter');assert.equal(selected,2);
+   s.filter.set('filter',[seasons(5)]);await wait(220);const control=s.root.find('[data-nova-focus=season]');assert.equal(control.closest('[data-nova-group=season]').length,1);assert.equal(s.root.find('[data-nova-focus^="season:"]').length,0);control.trigger('hover:enter');
+   assert.equal(L.Select.render().find('.selectbox-item').length,5);L.Select.render().find('.selectbox-item').eq(1).trigger('hover:enter');assert.equal(selected,3,'chronological season 2 retains provider index 3');assert.equal(s.played(),0,'choosing a season does not play an episode');assert.deepEqual(n.errors,[]);
+  }finally{if(s)s.close();n.close();}
+ }
+});

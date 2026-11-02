@@ -10,20 +10,24 @@ body.lampa_view.pt-mobile .nova-plus-root.nova-plus>.nova__hero {padding:0;flex:
 body.lampa_view.pt-mobile .nova-plus-root.nova-plus>.nova__rows {width:100%;padding:1em 0 0;flex:0 0 100%;min-width:0}
 body.lampa_view.pt-mobile .nova-plus-root.nova-plus>.nova-plus__strip {padding:0;margin-top:1.2em}
 body.lampa_view.pt-mobile .nova-plus-root .nova__list--row>.nova-card--wide {width:80%!important;flex-basis:80%!important;max-width:80%!important}
-/* One grid owner: mobile uses two columns, Glass portrait uses one; TV profiles
+/* One grid owner: portrait mobile uses one column in both themes; TV profiles
    set the column count together with poster slots and typography. */
 body.lampa_view .nova-plus-root .nova__list--grid:not(.nova__list--row) {display:grid!important;grid-template-columns:repeat(var(--pt-episode-columns,auto-fill),minmax(min(100%,23em),1fr));gap:1.8em 1em;margin:0}
 body.lampa_view .nova-plus-root .nova__list--grid:not(.nova__list--row)>.nova-card--wide {width:100%!important;max-width:100%!important;min-width:0;padding:0;margin:0}
-body.lampa_view.pt-mobile .nova-plus-root .nova__list--grid:not(.nova__list--row) {grid-template-columns:repeat(2,minmax(0,1fr))}
+body.lampa_view.pt-mobile .nova-plus-root .nova__list--grid:not(.nova__list--row) {grid-template-columns:minmax(0,1fr)}
 /* Keep the film synopsis and ratings in the full card. Online is for choosing
    playback: a restrained banner, source, season, audio and episode summaries. */
-body.lampa_view.pt-theme-glass .nova-plus-root .nova-plus__bar {display:flex;align-items:stretch;gap:.65em;margin:0 0 1em;overflow:visible}
-body.lampa_view.pt-theme-glass .nova-plus-root .nova-plus__bar>.nova-toolbar__label {display:none}
-body.lampa_view.pt-theme-glass .nova-plus-root .nova-plus__bar>.nova-chip {margin:0;max-width:100%;min-width:0;min-height:3em;box-sizing:border-box;padding:.6em .85em;gap:.35em}
-body.lampa_view.pt-theme-glass .nova-plus-root .nova-plus__bar>.nova-chip[data-nova-focus=season],body.lampa_view.pt-theme-glass .nova-plus-root .nova-plus__bar>.nova-chip[data-nova-focus=voice] {flex-wrap:wrap;flex:1 1 12em;padding-right:2em;position:relative}
-body.lampa_view.pt-theme-glass .nova-plus-root .nova-chip[data-nova-focus=season]:before,body.lampa_view.pt-theme-glass .nova-plus-root .nova-chip[data-nova-focus=voice]:before {content:attr(data-nova-label);display:block;flex:0 0 100%;font-size:.72em;line-height:1.2;opacity:.6}
-body.lampa_view.pt-theme-glass .nova-plus-root .nova-chip[data-nova-focus=season]>svg,body.lampa_view.pt-theme-glass .nova-plus-root .nova-chip[data-nova-focus=voice]>svg {position:absolute;right:.7em;top:50%;margin:0;transform:translateY(-50%)}
-body.lampa_view.pt-theme-glass .nova-plus-root .nova-chip__label {min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0}
+/* Shared placement: view/direction, source and audio, then seasons below. */
+body.lampa_view .nova-plus-root .nova-plus__panel>[data-nova-group=season] {margin-top:1em}
+body.lampa_view .nova-plus-root [data-nova-group=season] .nova-plus__row {display:flex;flex-wrap:wrap;gap:.5em}
+body.lampa_view .nova-plus-root [data-nova-group=season] .nova-chip {margin:0}
+body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar {display:flex;flex-wrap:wrap;align-items:stretch;gap:.5em}
+body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar>.nova-toolbar__label {display:none}
+body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar>.nova-chip {box-sizing:border-box;min-width:0;margin:0;min-height:44px}
+body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar>.nova-chip--view-icon {flex:0 0 44px;width:44px}
+body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar>[data-nova-focus=source],body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar>[data-nova-focus=voice],body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar>[data-nova-status=voice],body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar>[data-nova-focus=movievoice] {flex:1 1 0;max-width:none}
+body.lampa_view.pt-mobile .nova-plus-root [data-nova-group=season] .nova-chip {min-height:44px;box-sizing:border-box;max-width:100%}
+body.lampa_view.pt-mobile .nova-plus-root .nova-chip__label {min-width:0;overflow:hidden;text-overflow:ellipsis}
 body.lampa_view.pt-theme-glass .nova-plus-root .nova-hero__meta {background:#18181866;text-shadow:none;font-size:.8em;gap:.5em}
 body.lampa_view.pt-theme-glass .nova-plus-root .nova-hero__season-label {background:#18181866!important}
 body.lampa_view.pt-theme-glass .nova-plus-root .nova-hero .nova-btn {font-size:.95em;font-weight:500;padding:.6em .9em;min-height:2.5em;box-sizing:border-box}
@@ -31,24 +35,14 @@ body.lampa_view.pt-theme-glass .nova-plus-root .nova-hero__title--logo>img {max-
 body.lampa_view.pt-theme-glass.pt-mobile .nova-plus-root .nova-hero__bg {padding-top:62%}
 body.lampa_view.pt-theme-glass.pt-mobile .nova-plus-root .nova-hero__title--logo {margin-bottom:.6em}
 body.lampa_view.pt-theme-glass.pt-mobile .nova-plus-root .nova-hero__body {padding:.9em}
-body.lampa_view.pt-theme-glass.pt-mobile .nova-plus-root .nova-plus__bar {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.65em;margin:0}
-body.lampa_view.pt-theme-glass.pt-mobile .nova-plus-root .nova-plus__bar>[data-nova-focus=source] {grid-column:1/3;grid-row:1;justify-content:flex-start;min-height:44px}
-body.lampa_view.pt-theme-glass.pt-mobile .nova-plus-root .nova-plus__bar>[data-nova-focus=view] {grid-column:3;grid-row:1;justify-self:end;width:44px}
-body.lampa_view.pt-theme-glass.pt-mobile .nova-plus-root .nova-plus__bar>[data-nova-focus=direction] {grid-column:4;grid-row:1;justify-self:end;width:44px}
-body.lampa_view.pt-theme-glass.pt-mobile .nova-plus-root .nova-plus__bar>[data-nova-focus=season] {grid-column:1/3;grid-row:2}
-body.lampa_view.pt-theme-glass.pt-mobile .nova-plus-root .nova-plus__bar>[data-nova-focus=voice],body.lampa_view.pt-theme-glass.pt-mobile .nova-plus-root .nova-plus__bar>[data-nova-status=voice] {grid-column:3/5;grid-row:2}
-body.lampa_view.pt-theme-glass.pt-mobile .nova-plus-root .nova-plus__bar>.nova-chip {width:auto;font-size:.88em;min-height:48px;line-height:1.25}
-body.lampa_view.pt-theme-glass.pt-mobile .nova-plus-root .nova__list--grid:not(.nova__list--row) {grid-template-columns:minmax(0,1fr);margin:0;gap:1.7em;justify-content:center}
-body.lampa_view.pt-theme-glass.pt-mobile .nova-plus-root .nova__list--grid>.nova-card--wide {width:100%!important;max-width:100%!important;flex:0 0 100%!important;padding:0;margin:0}
-body.lampa_view.pt-theme-glass.pt-mobile .nova-plus-root .nova__list--grid .nova-card__thumb {padding-top:56.25%;border-radius:1em}
-body.lampa_view.pt-theme-glass.pt-mobile .nova-plus-root .nova__list--grid .nova-card__body {padding:.65em .05em 0}
-body.lampa_view.pt-theme-glass.pt-mobile .nova-plus-root .nova-card__title {font-size:1.08em;line-height:1.4;-webkit-line-clamp:2}
-body.lampa_view.pt-theme-glass.pt-mobile .nova-plus-root .nova-card__overview {font-size:.88em;line-height:1.55;-webkit-line-clamp:5;margin-top:.65em}
-body.lampa_view.pt-theme-glass.pt-mobile .nova-plus-root .nova-card__head {font-size:.8em;line-height:1.4}
-@media(min-width:700px) and (orientation:landscape){body.lampa_view.pt-theme-glass.pt-mobile .nova-plus-root .nova__list--grid:not(.nova__list--row) {grid-template-columns:repeat(2,minmax(0,1fr))}}
+body.lampa_view.pt-mobile .nova-plus-root .nova__list--grid:not(.nova__list--row)>.nova-card--wide {flex:0 0 100%!important;padding:0;margin:0}
+body.lampa_view.pt-mobile .nova-plus-root .nova__list--grid .nova-card__thumb {padding-top:56.25%;border-radius:1em}
+body.lampa_view.pt-mobile .nova-plus-root .nova__list--grid .nova-card__body {padding:.65em .05em 0}
+body.lampa_view.pt-mobile .nova-plus-root .nova-card__title {font-size:1.08em;line-height:1.4;-webkit-line-clamp:2}
+body.lampa_view.pt-mobile .nova-plus-root .nova-card__overview {font-size:.88em;line-height:1.55;-webkit-line-clamp:5;margin-top:.65em}
+body.lampa_view.pt-mobile .nova-plus-root .nova-card__head {font-size:.8em;line-height:1.4}
+@media(min-width:700px) and (orientation:landscape){body.lampa_view.pt-mobile .nova-plus-root .nova__list--grid:not(.nova__list--row) {grid-template-columns:repeat(2,minmax(0,1fr))}}
 
-body.lampa_view.pt-theme-glass.pt-mobile .nova-plus-root .nova-plus__bar>.nova-chip--view-icon {width:44px;min-width:44px;justify-self:end}
 /* A cached image is visible on the first paint, without replaying a fade on
    every new DOM mount. New network work remains lazy and bounded. */
 body.lampa_view .card__img,body.lampa_view .pt-hero__image,body.lampa_view .nova-plus-root .nova-card__thumb img,body.lampa_view .nova-plus-root .nova-hero__bg img {transition:none!important;-webkit-transition:none!important}
-body.lampa_view.pt-theme-glass.pt-mobile .nova-plus-root .nova-plus__bar>[data-nova-focus=movievoice] {grid-column:3/5;grid-row:1;min-width:0}

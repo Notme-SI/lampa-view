@@ -5809,10 +5809,8 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     if (hint.length && actions.length && !hint.parent().is(actions)) actions.append(hint);
   }
 
-  function wideGlass() { return get('lampa_view_theme','minimal') === 'glass'; }
-
   function wideSign() {
-    var parts = ['glass:'+wideGlass()];
+    var parts = [];
     ['season', 'voice'].forEach(function (name) {
       var group = groups[name];
       // A single late option still creates a control; only zero options means absent.
@@ -5841,7 +5839,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       var group = groups[name];
       if (!group || !group.items) return;
       var selected=group.items.filter(function(item){return item.selected;})[0] || group.items[0];
-      var compact=ui.rows.find('.nova-plus__bar [data-nova-focus="'+name+'"]').first();
+      var compact=ui.rows.find('[data-nova-focus="'+name+'"]').first();
       if(compact.length && selected)compact.find('.nova-chip__label').text(selected.title);
       group.items.forEach(function (item, seat) {
         var index = typeof item.index === 'number' ? item.index : seat;
@@ -6466,14 +6464,15 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
 
     // Dubbing always uses the same native selection menu, independent of
     // provider and option count. Small season groups stay beside episodes.
-    var compactGroup=function(name,title){
+    var compactGroup=function(name,title,row){
       var options=groups[name],selected=options.items.filter(function(item){return item.selected;})[0] || options.items[0];
-      tool(name,title,selected.title,{},function(){
+      var control=tool(name,name==='season'?'':title,selected.title,{},function(){
         Lampa.Select.show({title:title,items:options.items.map(function(item,seat){return {title:item.title,selected:!!item.selected,index:typeof item.index==='number'?item.index:seat};}),
           onDraw:onlineChoiceDraw,
           onSelect:function(item){Lampa.Select.hide();ui_focus=name;contentEnable();wideChooseOption(name,item.index,name);restoreFocus(false);},
           onBack:function(){Lampa.Select.hide();ui_focus=name;contentEnable();restoreFocus(false);}});
-      });
+      }).attr('aria-label',title);
+      if(row)control.appendTo(row);
     };
 
     if(serial && !nav){
@@ -6494,10 +6493,10 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       });
     }
 
-    if (groups.season && (wideGlass() || groups.season.items.length > 3)) compactGroup('season',groups.season.title || label('nova_plus_seasons'));
-    else if (groups.season && groups.season.items.length > 0) {
-      var seasons = group(serial ? (groups.season.title || label('nova_plus_seasons')) : label('nova_plus_parts'), 'season');
-      groups.season.items.forEach(function (item, seat) {
+    if (groups.season && groups.season.items.length > 0) {
+      var seasons = group('', 'season');
+      if(groups.season.items.length > 4)compactGroup('season',groups.season.title || label('nova_plus_seasons'),seasons);
+      else groups.season.items.forEach(function (item, seat) {
         var index = typeof item.index === 'number' ? item.index : seat;
         var key = 'season:' + index;
         put(seasons, key, serial ? item.title : partTitle(item.title), '', { active: !!item.selected, plain: true }, function () {
@@ -6529,6 +6528,8 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     });
 
     if (widePosBottom()) panel.append(bar);
+    // Season buttons and the larger-season menu share one lower row.
+    panel.children('[data-nova-group=season]').insertAfter(bar);
 
     wideTouch();
   }
