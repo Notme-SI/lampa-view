@@ -10,3 +10,5 @@
 References: https://www.apple.com/os/ios/ and https://support.apple.com/en-ie/guide/iphone/iphfed2c4091/27/ios/27
 
 Before-publication validation: build and ES5 parsing passed; 345/345 Node tests, Python 7/7 + 3/3. Chromium/WebKit theme, language and online checks pass at desktop/TV/mobile sizes; both themes pass native home navigation and all three interface sizes. Header focus and native settings entry pass with a single neutral Glass border. Physical published-theme inspection and current CI/Pages results are recorded separately.
+
+Wide-logo regression: Glass carousel pane uses natural flex centering; the adaptive height fitter no longer applies Minimal's bottom anchor to it. A 1990x449 logo and long synopsis remain inside the hero in all three interface sizes, on both engines and desktop/TV profiles.

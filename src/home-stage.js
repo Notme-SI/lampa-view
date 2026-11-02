@@ -23,11 +23,14 @@ export default function homeStage(hero,root){
  if(body){
   body.style.fontSize='';body.style.bottom='';
   const style=getComputedStyle(body),font=parseFloat(style.fontSize)||16;
-  const minBottom=font*(tv?1.5:3),topInset=font*(tv?1:1.25);
+  const glass=document.body.classList.contains('pt-theme-glass');
+  const minBottom=font*(glass?2:tv?1.5:3),topInset=font*(tv?1:1.25);
   const room=Math.max(1,height-minBottom-topInset),natural=body.offsetHeight;
-  if(!tv && natural>room)body.style.fontSize=(font*Math.max(.65,room/natural))+'px';
-  const bottom=Math.min(parseFloat(style.bottom)||font*7,height-body.offsetHeight-topInset);
-  body.style.bottom=Math.max(minBottom,bottom)+'px';
+  if((glass || !tv) && natural>room)body.style.fontSize=(font*Math.max(.65,room/natural))+'px';
+  // Glass uses normal flex centering; a relative bottom offset would move it
+  // above the hero after adaptive sizing. Minimal retains its anchored layout.
+  if(!glass){const bottom=Math.min(parseFloat(style.bottom)||font*7,height-body.offsetHeight-topInset);
+   body.style.bottom=Math.max(minBottom,bottom)+'px';}
  }
  root.classList.add('minimal-home-first-row');
 }
