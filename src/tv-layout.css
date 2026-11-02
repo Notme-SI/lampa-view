@@ -1,0 +1,36 @@
+/* TV presentation: distance-readable type and artwork. No Android mode changes. */
+body.lampa_view.pt-tv {--pt-ui-font:calc(.703125vw * var(--pt-interface-scale,1));font-size:var(--pt-ui-font)!important;--pt-banner-unit:calc(.703125vw * 1.12)}
+body.lampa_view.pt-tv .pt-hero {max-width:90vw;margin:0 auto 2em}
+body.lampa_view.pt-tv .pt-hero__body {left:3em;bottom:7em;max-width:31em;padding-right:1em}
+body.lampa_view.pt-tv .pt-hero__title {font-size:2.55em;max-width:15em;margin-bottom:.65em}
+body.lampa_view.pt-tv .pt-hero__title--translation {font-size:1.05em;line-height:1.35;letter-spacing:0;max-width:100%;margin-bottom:1.1em}
+body.lampa_view.pt-tv .pt-hero__logo {max-height:7em;max-width:100%;margin-bottom:1.4em}
+body.lampa_view.pt-tv .pt-hero__overview {-webkit-line-clamp:3;line-height:1.65}
+body.lampa_view.pt-tv .pt-hero__actions {margin-top:1.6em}
+body.lampa_view.pt-tv .pt-hero__dots {left:45%;bottom:1.5em}
+body.lampa_view.pt-tv .items-line {margin-bottom:.8em;padding-bottom:.7em}
+body.lampa_view.pt-tv .items-line .card:not(.card--wide):not(.card--collection) {width:clamp(8.4em,calc((90vw - 10em / var(--pt-interface-scale,1)) / 10 * var(--pt-interface-scale,1)),11.1em)!important}
+body.lampa_view.pt-tv .items-line.minimal-posters-sized .card:not(.card--wide):not(.card--collection) {width:var(--minimal-poster-width)!important}
+body.lampa_view.pt-tv .items-line>.items-line__head {padding-left:1.1em}
+/* Android WebView clamps text below 8 CSS px. Declare that floor so em-based
+   height limits use the rendered font, including the real 960px TV viewport. */
+body.lampa_view.pt-tv .card__title {font-size:max(9px,.9em);line-height:1.4;max-height:2.85em;overflow-wrap:break-word}
+body.lampa_view.pt-tv .card__age {font-size:max(8px,.8em)}
+/* Flow uses the measured line height after the interface scale is applied. */
+body.lampa_view.pt-tv.pt-tv-caption-flow .card__title {display:block;height:auto;min-height:0;line-height:var(--pt-caption-line,1.4em);max-height:calc(var(--pt-caption-line,1.4em) * 2);-webkit-line-clamp:unset;line-clamp:unset;transform:none}
+body.lampa_view.pt-tv.pt-tv-caption-flow .card__age {position:static;clear:both;transform:none}
+body.lampa_view.pt-tv .mapping--grid>.card:not(.card--wide):not(.card--collection),body.lampa_view.pt-tv .category-full>.card:not(.card--wide):not(.card--collection) {width:calc(10% * var(--pt-interface-scale,1))!important}
+
+body.lampa_view.pt-tv .head__menu-icon,body.lampa_view.pt-tv .head__backward,body.lampa_view.pt-tv .head__action.open--search,body.lampa_view.pt-tv .head__action.open--profile,body.lampa_view.pt-tv .pt-holiday-icons>.head__action {border-width:2px!important}
+body.lampa_view.pt-tv .pt-series-status {font-size:max(8px,.7em);line-height:1.2;padding:.2em .4em;display:block;width:max-content;max-width:none;white-space:nowrap;transform:none}
+body.lampa_view.pt-tv .pt-series-status>span {white-space:pre}
+body.lampa_view.pt-tv .card__view .pt-quality,body.lampa_view.pt-tv .card__view .pt-kind,body.lampa_view.pt-tv .card__view .card__quality {font-size:max(8px,.7em);line-height:1.2;padding:.2em .4em;transform:none}
+body.lampa_view.pt-tv .card__img,body.lampa_view.pt-tv .nova-card__thumb img,body.lampa_view.pt-tv .minimal-torrent-banner__image {image-rendering:auto;transform:none}
+body.lampa_view.pt-tv .card .pt-card-watch {font-size:max(8px,.8em)}
+body.lampa_view.pt-tv .head {font-size:1.12em;height:3.6em}
+body.lampa_view.pt-tv .head__body {max-width:none;width:94%;padding:.5em 0}
+body.lampa_view.pt-tv .wrap__content {padding-top:4.032em!important}
+body.lampa_view.pt-tv .card__view .icon--history {font-size:.95em;width:2.1em;height:1.7em}
+body.lampa_view.pt-tv .card {-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body.lampa_view.pt-tv .settings__content {font-size:calc(var(--pt-ui-font) * 1.1)!important;width:30em;max-width:38vw;box-sizing:border-box}
+body.lampa_view.pt-tv .selectbox__content {font-size:calc(var(--pt-ui-font) * 1.1)!important;box-sizing:border-box}

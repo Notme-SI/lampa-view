@@ -3,7 +3,7 @@
 const pools=new WeakMap();
 export function createImageFiles(w,limits={}){
  const memory=limits.memory || 24*1048576,disk=limits.disk || 64*1048576,max=limits.entries || 240,life=7*86400000;
- const files=new Map();let database,saveTimer;
+ const files=new Map(),stored=new Set();let database,saveTimer;
  const saves=new Map();
  const usable=typeof w.fetch==='function' && w.URL && typeof w.URL.createObjectURL==='function';
  function db(){
@@ -39,7 +39,7 @@ export function createImageFiles(w,limits={}){
    for(const row of rows){store.put(row);sizes.put({url:row.url,size:row.bytes.byteLength,at:row.at});}
    const request=sizes.getAll();request.onsuccess=()=>{
     const values=request.result.sort((a,b)=>b.at-a.at);let total=0,count=0;
-    for(const row of values){total+=row.size;count++;if(total>disk || count>max || Date.now()-row.at>=life){store.delete(row.url);sizes.delete(row.url);}}
+    for(const row of values){total+=row.size;count++;if(total>disk || count>max || Date.now()-row.at>=life){store.delete(row.url);sizes.delete(row.url);stored.delete(row.url);}else stored.add(row.url);}
    };
   }catch(_){} // Storage denial/quota never prevents displaying an image.
  }
@@ -73,8 +73,11 @@ export function createImageFiles(w,limits={}){
  }
  function invalidate(url){
   const row=files.get(url);if(row){files.delete(url);row.invalid=true;if(!row.users.size && row.object){w.URL.revokeObjectURL(row.src);row.object=false;}}
-  saves.delete(url);db().then(database=>{if(database)try{const tx=database.transaction(['files','sizes'],'readwrite');for(const store of ['files','sizes'])tx.objectStore(store).delete(url);tx.onerror=event=>event.preventDefault();}catch(_){} });
+  stored.delete(url);saves.delete(url);db().then(database=>{if(database)try{const tx=database.transaction(['files','sizes'],'readwrite');for(const store of ['files','sizes'])tx.objectStore(store).delete(url);tx.onerror=event=>event.preventDefault();}catch(_){} });
  }
- return {load,invalidate,has:url=>Boolean(files.get(url)?.object),size:()=>({entries:files.size,bytes:[...files.values()].reduce((n,row)=>n+row.bytes,0)})};
+ // Read only the bounded disk index once at startup. Returning covers can then
+ // restore saved bytes without waiting behind unrelated network/decode jobs.
+ db().then(database=>{if(database)try{const request=database.transaction('sizes').objectStore('sizes').getAll();request.onsuccess=()=>{for(const row of request.result || [])if(Date.now()-row.at<life)stored.add(row.url);};}catch(_){} });
+ return {load,invalidate,peek:url=>files.get(url)?.object?files.get(url).src:'',has:url=>Boolean(files.get(url)?.object) || stored.has(url),size:()=>({entries:files.size,bytes:[...files.values()].reduce((n,row)=>n+row.bytes,0)})};
 }
 export default function imageFiles(L){let pool=pools.get(L);if(!pool){pool=createImageFiles(window);pools.set(L,pool);}return pool;}

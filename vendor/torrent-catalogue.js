@@ -545,7 +545,9 @@
                 if(m)m.technical=C.technical(row);
             if (!item || !item.length || (row._tcPage && row._tcPage.destroyed) || item.find('.tc-row').length) return;
             try {
-                var content = $('<div class="tc-row"></div>'), head = $('<div class="tc-head"></div>').appendTo(content);
+                var content = $('<div class="tc-row"></div>');
+                $('<div class="tc-release-name"></div>').text(row.Title).appendTo(content);
+                var head = $('<div class="tc-head"></div>').appendTo(content);
                 var summary = $('<div class="tc-summary"></div>').appendTo(head);
                 $('<strong class="tc-season"></strong>').text(m.seasonLabel ? (m.parsed.bundle ? 'Сезоны '+C.ranges(m.parsed.seasons) : m.season.number!==null ? 'Сезон '+m.season.number : m.parsed.seasons.length ? 'Сезон '+C.ranges(m.parsed.seasons) : 'Сезон не указан') : m.technical.quality || m.technical.source || 'Разрешение не указано').appendTo(summary);
                 if (m.episodeLabel) $('<span class="tc-episodes"></span>').text(m.episodeLabel.replace(/ · заявлено/g, '')).appendTo(summary);
@@ -571,14 +573,13 @@
                     if(studios.length)studios.wrapAll('<span class="tc-voice-names"></span>');
                 }
                 group(languages,'subtitles','Субтитры',[m.technical.subtitles.join(' / ')]);
-                group(tags,'video','Видео',[m.technical.source && (m.seasonLabel || m.technical.quality) ? m.technical.source : ''].concat(m.technical.video,m.technical.hdr));
+                group(tags,'video','Видео',[m.technical.source && (m.seasonLabel || m.technical.quality) ? m.technical.source : '',m.technical.dimensions].concat(m.technical.video,m.technical.hdr));
                 group(tags,'audio','Аудио',m.technical.audio.concat(m.technical.channels));
                 if (!languages.children().length) languages.remove();
                 if (!tags.children().length) tags.remove();
                 if (m.identity.state==='mismatch') $('<div class="tc-warning"></div>').text('Другое произведение').appendTo(content);
                 var foot = $('<div class="tc-foot"></div>').appendTo(content);
                 var source=$('<span class="tc-source"></span>').text((row._tcSources || [row.Tracker]).filter(Boolean).join(', ') + (row.PublishDate ? ' · ' + String(row.PublishDate).slice(0, 10) : '')).appendTo(foot);
-                $('<span class="tc-release-name"></span>').text(' · '+row.Title).appendTo(source);
                 $('<button type="button" class="tc-info selector" aria-haspopup="dialog" aria-label="Сведения о раздаче">Сведения</button>').appendTo(foot).on('click hover:enter',function(event){event.preventDefault();event.stopImmediatePropagation();details(row,m,null,this);}).on('keydown',function(event){if(event.key==='Enter' || event.key===' '){event.preventDefault();event.stopImmediatePropagation();details(row,m,null,this);}});
                 content.attr('title', row.Title);
                 item.append(content).addClass('tc-item');

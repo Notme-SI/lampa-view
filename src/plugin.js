@@ -5,7 +5,10 @@ import {version} from '../package.json';
 import inputs from './inputs.js';
 import {installTmdb,installFullGuard} from './tmdb.js';
 import heroAssets from './hero-assets.js';
-import CSS from './theme.css';
+import BASE_CSS from './theme.css';
+import ONLINE_CSS from './online-layout.css';
+import TV_CSS from './tv-layout.css';
+const CSS=BASE_CSS+'\n'+ONLINE_CSS+'\n'+TV_CSS;
 import appearance from './appearance.js';
 import BOOT from './boot.css';
 import C from './identity.cjs';
@@ -46,7 +49,7 @@ if (!ROOT.LampaView) {
   }
   const P = ROOT.LampaView = {version, identity: C.identity, ready: false, bridge: false};
   P.matchCatalogue=matchCatalogue;
-  let L, $, lastCard, initialized = false, playlist = [], activeVideo,loadLogo,artwork,back,holidays,pinnedMenu,appearanceTheme;
+  let L, $, lastCard, initialized = false, playlist = [], activeVideo,loadLogo,artwork,back,holidays,pinnedMenu,appearanceTheme,interfaceLayout;
   const metadata = new Map();
   const heroes = new WeakSet();
   const carousels = new Set();
@@ -72,7 +75,7 @@ if (!ROOT.LampaView) {
   }
   function yes(key, fallback = true) { const value = L.Storage.value ? L.Storage.value(key,'') : L.Storage.get(key, fallback); return value === '' || value == null ? fallback : ![false,'false',0,'0','no'].includes(value); }
   function layout() {
-    const selected=L.Storage.get('lampa_view_layout','auto') || 'auto';
+    const previous=P.layout,selected=L.Storage.get('lampa_view_layout','auto') || 'auto';
     const screen=L.Platform && L.Platform.screen;
     const mobile=screen ? screen.call(L.Platform,'mobile') : ROOT.innerWidth<=600;
     // Lampa's screen('tv') also describes desktop browsers. Use its physical
@@ -80,6 +83,7 @@ if (!ROOT.LampaView) {
     const tv=L.Platform && typeof L.Platform.tv==='function' ? !!L.Platform.tv() : screen ? screen.call(L.Platform,'tv') : false;
     P.layout=selected==='auto' ? (tv ? 'tv' : mobile || ROOT.innerWidth<=650 ? 'mobile' : 'desktop') : selected;
     ['mobile','tv','desktop'].forEach(mode=>document.body.classList.toggle('pt-'+mode,P.layout===mode));
+    if(previous!==P.layout && interfaceLayout)interfaceLayout.update();
     const agent=ROOT.navigator && ROOT.navigator.userAgent || '';
     document.body.classList.toggle('pt-safari',/Safari\//.test(agent) && !/(?:Chrome|Chromium|Edg|OPR|Android)\//.test(agent));
   }
@@ -412,7 +416,7 @@ if (!ROOT.LampaView) {
     P.bannerCountries=card=>bannerCountries(card,L.Storage.get('language','ru'),L);
     installI18n(L,P);
     P.online=onlineState(L);
-    interfaceSize(L);installTmdb(L);installFullGuard(L);torrentEpisodes(L,ROOT);inputs(L);
+    layout();interfaceLayout=interfaceSize(L);installTmdb(L);installFullGuard(L);torrentEpisodes(L,ROOT);inputs(L);
     artwork=installArtwork(L,()=>yes('lampa_view_enabled'));
     P.sync=progressSync(L,()=>yes('lampa_view_enabled'));
     historyCards(L,()=>yes('lampa_view_enabled'));

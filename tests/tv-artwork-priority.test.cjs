@@ -7,18 +7,19 @@ test('TV starts visible posters immediately and a stalled first cover does not h
  const loaders=[],cards=[];
  const n=await native({built:true,prepare(w,L){L.Platform.tv=()=>true;}}),{w,L}=n;
  try{
+  w.document.body.classList.add('pt-tv-busy'); // Visible covers must not wait for remote idle.
   w.Image=class{constructor(){loaders.push(this);}set src(value){this.url=value;}get src(){return this.url;}};
-  for(let i=0;i<3;i++){
+  for(let i=0;i<5;i++){
    const card=L.Utils.createInstance(L.Maker.get('Card',{}),{id:100+i,title:'Film',poster_path:'/visible'+i+'.jpg'});
    card.create();const node=card.render(true);w.document.body.appendChild(node);cards.push(card);
    node.getBoundingClientRect=()=>({width:180,height:270,left:0,right:180,top:0,bottom:270});card.visible();
   }
   await wait(60);
-  assert.equal(loaders.length,2,'No initial 360ms delay and at most two requests');
+  assert.equal(loaders.length,4,'No initial 360ms delay and at most four visible requests');
   assert.match(cards[0].img.src,/^data:/);
   loaders[1].onload();
   assert.match(cards[1].img.src,/w780\/visible1/,'A slow first image must not leave the entire row blank');
-  await wait(30);assert.equal(loaders.length,3,'Next request starts without another 80ms gap');
+  await wait(30);assert.equal(loaders.length,5,'Next request starts without another 80ms gap');
   assert.deepEqual(n.errors,[]);
  }finally{cards.forEach(card=>card.destroy());n.close();}
 });

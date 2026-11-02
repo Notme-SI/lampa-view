@@ -26,10 +26,10 @@ test('native desktop TV screen mode and actual TVs share readable badges and pre
   assert.deepEqual(sizes(),[.65,.6,.65]);
   const caption=()=>['.card__title','.card__age','.card__icons','.card__marker','.card-watched'].map(selector=>w.getComputedStyle(card.querySelector(selector)).fontSize);
   const desktop=caption(),cardWidth=w.getComputedStyle(card).width;
-  L.Platform.tv=()=>true;await refresh();assert.equal(w.LampaView.layout,'tv');assert.deepEqual(sizes(),[.65,.6,.65]);
+  L.Platform.tv=()=>true;await refresh();assert.equal(w.LampaView.layout,'tv');assert.equal(w.document.body.style.getPropertyValue('--pt-poster-columns'),'7','Auto-detected TV applies the TV profile immediately');assert.deepEqual(sizes(),[.65,.6,.65]);
   assert.equal(w.getComputedStyle(card).width,cardWidth,'Badge sizing must not resize the poster');
   assert.equal(w.getComputedStyle(card.querySelector('.card-watched')).transform,'none','TV keeps the native watch panel readable');
-  card.classList.add('card--wide');assert.equal(w.getComputedStyle(card.querySelector('.card__title')).fontSize,.79*parseFloat(w.getComputedStyle(card).fontSize)+'px');card.classList.remove('card--wide');
+  card.classList.add('card--wide');assert.equal(w.getComputedStyle(card.querySelector('.card__title')).fontSize,.9*parseFloat(w.getComputedStyle(card).fontSize)+'px');card.classList.remove('card--wide');
   L.Platform.tv=()=>false;await refresh();assert.equal(w.LampaView.layout,'desktop');assert.deepEqual(sizes(),[.65,.6,.65]);
   assert.deepEqual(caption(),desktop,'Desktop captions and native watch indicators must retain their sizes');
   L.Storage.set('lampa_view_layout','tv');await refresh();assert.equal(w.LampaView.layout,'tv');

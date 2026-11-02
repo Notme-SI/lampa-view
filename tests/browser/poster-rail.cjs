@@ -52,6 +52,7 @@ async function settled(page,label){
      }
      if(output && device.width===2559){fs.mkdirSync(output,{recursive:true});await page.screenshot({path:path.join(output,engineName+'-poster-'+size+'.png')});}
     }
+    if(device.mode==='tv')assert.deepEqual(values.map(v=>v.fit.count),[8,7,6],'TV distance profiles use eight, seven and six complete posters');
     assert.ok(values[0].fit.count>=values[1].fit.count && values[1].fit.count>=values[2].fit.count,'Larger UI uses no more poster slots');
     assert.deepEqual(r.errors,[]);await r.context.close();console.log(engineName+' '+device.mode+' '+device.width+': all native sizes fit complete poster rows ('+values.map(v=>v.fit.count).join('/')+')');
    }

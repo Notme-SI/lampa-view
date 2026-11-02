@@ -59,7 +59,7 @@ export default function posterCache(L,enabled,highQuality){
     if(entry.done){paint(job);continue;}
     entry.jobs.add(job);job.entry=entry;continue;
    }
-   if(paused() || running>=(tv()?2:3) || !visibleJobs.get(job) && running>=1){queue.push(job);continue;}
+   if(!visibleJobs.get(job) && paused() || running>=(tv()?4:6) || !visibleJobs.get(job) && running>=1){queue.push(job);continue;}
    const loader=new Image();loader.fetchPriority=visibleJobs.get(job)?'high':'low';loader.decoding='async';
    entry={loader,jobs:new Set([job]),done:false};job.entry=entry;cache.set(job.url,entry);running++;
    let finished=false;
@@ -123,7 +123,7 @@ export default function posterCache(L,enabled,highQuality){
     if(image.src===next || source===next && (painted===original || image.src===original || job && !job.finished && job.alive()))return true;
     cancel();source=next;
     if(!/\/t\/p\/(?:w\d+|original)\//.test(next))return false;
-    if(maximum()){original=next;image.src=blank;enqueue();}else image.src=next;
+    if(maximum()){original=next;enqueue();}else image.src=next;
     return true;
    };
   },onVisible(){if(maximum() && original){clearTimeout(item.img_timer);enqueue();}},onDestroy(){

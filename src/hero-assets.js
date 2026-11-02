@@ -115,7 +115,7 @@ export default function heroAssets(L,cards,loadLogo,element){
  document.addEventListener('visibilitychange',resume);
  function ready(i,size){
   const url=coverUrl(i,size),saved=images.get(url);
-  if(!saved || !saved.done || !saved.url)return '';
+  if(!saved || !saved.done || !saved.url){const source=files.peek(url);if(source){pool.active.clear();pool.active.set(owner,url);}return source;}
   images.delete(url);images.set(url,saved);pool.active.clear();pool.active.set(owner,url);
   return saved.url;
  }
