@@ -9175,8 +9175,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var tv = function tv() {
       return document.body.classList.contains("pt-tv");
     };
+    var aheadY = Math.min(800, Math.max(360, window.innerHeight || 540)),
+      aheadX = Math.min(720, Math.max(360, (window.innerWidth || 960) / 2));
     var paused = function paused() {
-      return document.hidden || document.body.classList.contains("pt-wheel-active");
+      return document.hidden;
+    };
+    var moving = function moving() {
+      return document.body.classList.contains("pt-wheel-active") || document.body.classList.contains("pt-tv-busy");
     };
     var observer = typeof window.IntersectionObserver === "function" ? new window.IntersectionObserver(function (entries2) {
       return entries2.forEach(function (entry) {
@@ -9186,11 +9191,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
       });
     }, {
-      rootMargin: "240px 360px"
+      rootMargin: aheadY + "px " + aheadX + "px"
     }) : null;
     function nearby(image2) {
       var box = (image2.closest(".card") || image2).getBoundingClientRect();
-      return box.width > 0 && box.bottom > -240 && box.top < window.innerHeight + 240 && box.right > -360 && box.left < window.innerWidth + 360;
+      return box.width > 0 && box.bottom > -aheadY && box.top < window.innerHeight + aheadY && box.right > -aheadX && box.left < window.innerWidth + aheadX;
     }
     function visible(image2) {
       var box = (image2.closest(".card") || image2).getBoundingClientRect();
@@ -9265,7 +9270,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             job.entry = entry;
             return 0; // continue
           }
-          if (!visibleJobs.get(job) && paused() || running >= (tv() ? 4 : 6) || !visibleJobs.get(job) && running >= 1) {
+          if (!visibleJobs.get(job) && paused() || running >= (tv() ? 4 : 6) || !visibleJobs.get(job) && running >= (moving() ? 1 : 2)) {
             queue.push(job);
             return 0; // continue
           }
@@ -13168,7 +13173,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var lines = /* @__PURE__ */new Map();
     var roots = /* @__PURE__ */new WeakMap();
     var tracked = /* @__PURE__ */new WeakSet(),
-      navigated = /* @__PURE__ */new WeakSet();
+      navigated = /* @__PURE__ */new WeakSet(),
+      ahead = Math.min(800, Math.max(360, window.innerHeight || 540));
     var observer = window.IntersectionObserver ? new window.IntersectionObserver(function (entries2) {
       return entries2.forEach(function (entry) {
         var line = roots.get(entry.target),
@@ -13176,7 +13182,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (entry.isIntersecting && state) schedule(line, state.data);
       });
     }, {
-      rootMargin: "150px 0px"
+      rootMargin: ahead + "px 0px"
     }) : null;
     var sizes = window.ResizeObserver ? new window.ResizeObserver(function (entries2) {
       return entries2.forEach(function (entry) {
@@ -13222,7 +13228,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var box = root.getBoundingClientRect();
         var first = !document.body.classList.contains("pt-tv") && root.previousElementSibling && root.previousElementSibling.matches(".pt-hero");
         if (!box.width) return;
-        var nearby = first || box.bottom >= 0 && box.top <= window.innerHeight + 200;
+        var nearby = first || box.bottom >= 0 && box.top <= window.innerHeight + ahead;
         var card = root.querySelector(".card,.full-person");
         if (!card) return;
         if (document.body.classList.contains("pt-tv") && root.classList.contains("minimal-cast-native")) {

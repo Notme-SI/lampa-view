@@ -3,11 +3,11 @@ import fitRail,{settleRail} from './rail-fit.js';
 export default function fillRows(L,enabled){
   const lines=new Map();
   const roots=new WeakMap();
-  const tracked=new WeakSet(),navigated=new WeakSet();
+  const tracked=new WeakSet(),navigated=new WeakSet(),ahead=Math.min(800,Math.max(360,window.innerHeight || 540));
   const observer=window.IntersectionObserver?new window.IntersectionObserver(entries=>entries.forEach(entry=>{
     const line=roots.get(entry.target),state=line && lines.get(line);
     if(entry.isIntersecting && state)schedule(line,state.data);
-  }),{rootMargin:'150px 0px'}):null;
+  }),{rootMargin:ahead+'px 0px'}):null;
   const sizes=window.ResizeObserver?new window.ResizeObserver(entries=>entries.forEach(entry=>{const line=roots.get(entry.target),state=line && lines.get(line);if(state)schedule(line,state.data);})):null;
   function schedule(line,data){
     if(!line || !line.emit || !line.render || !data || !Array.isArray(data.results) || !enabled())return;
@@ -24,7 +24,7 @@ export default function fillRows(L,enabled){
       const box=root.getBoundingClientRect();
       const first=!document.body.classList.contains('pt-tv') && root.previousElementSibling && root.previousElementSibling.matches('.pt-hero');
       if(!box.width)return;
-      const nearby=first || box.bottom>=0 && box.top<=window.innerHeight+200;
+      const nearby=first || box.bottom>=0 && box.top<=window.innerHeight+ahead;
       const card=root.querySelector('.card,.full-person');if(!card)return;
       if(document.body.classList.contains('pt-tv') && root.classList.contains('minimal-cast-native')){
         const viewport=line.scroll && line.scroll.render(true),content=viewport && viewport.querySelector('.scroll__content');
