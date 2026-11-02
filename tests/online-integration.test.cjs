@@ -1,11 +1,11 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),esbuild=require('esbuild'),native=require('./fixtures/native-lampa.cjs');
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-test('native credits keep original entries and shared director portraits survive',()=>{
+test('all media types omit missing portraits and retain shared actor/director portraits',()=>{
  const code=esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/detail.js')],bundle:true,write:false,format:'cjs'}).outputFiles[0].text,m={exports:{}};new Function('module','exports','window',code)(m,m.exports,{});
  for(const anime of [false,true]){
   const data={movie:anime?{genres:[{id:16}],original_language:'ja'}:{genres:[{id:18}]},persons:{cast:[{id:1,name:'Без фото',profile_path:null,character:'A'},{id:2,name:'С фото',profile_path:'/actor.jpg',character:'B'},{id:3,name:'Актёр и режиссёр',profile_path:'/shared.jpg',character:'C'}],crew:[{id:4,name:'Режиссёр без фото',job:'Director'},{id:3,name:'Актёр и режиссёр',job:'Director'}]}};
   m.exports.prepareDetail(data);const cast=data.persons.cast;
-  assert.equal(cast.some(p=>p.id===1),true);assert.equal(cast.some(p=>p.id===4),true);assert.ok(cast.some(p=>p.id===2));assert.equal(cast.filter(p=>p.id===3).length,1);assert.equal(cast.find(p=>p.id===3).profile_path,'/shared.jpg');
+  assert.equal(cast.some(p=>p.id===1),false);assert.equal(cast.some(p=>p.id===4),false);assert.ok(cast.some(p=>p.id===2));assert.equal(cast.filter(p=>p.id===3).length,1);assert.equal(cast.find(p=>p.id===3).profile_path,'/shared.jpg');
  }
 });
 test('studio activation opens the native company page; TV networks use a network filter even with CUB selected',async()=>{

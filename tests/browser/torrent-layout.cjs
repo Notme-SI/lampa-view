@@ -53,6 +53,8 @@ async function verify(page,mobile){
    },mobile);
    await page.waitForTimeout(350);
    await verify(page,mobile);
+   const sequence=await page.locator('.activity--active .torrent-item .tc-row').first().evaluate(row=>({classes:[...row.children].map(n=>n.className),head:row.querySelector('.tc-head').getBoundingClientRect().bottom,title:row.querySelector('.tc-release-name').getBoundingClientRect().top,technical:row.querySelector('.tc-technical-tags').getBoundingClientRect().top,languages:row.querySelector('.tc-language-tags').getBoundingClientRect().top}));
+   assert.equal(sequence.classes[0],'tc-head');assert.equal(sequence.classes[1],'tc-release-name');assert.ok(sequence.title>=sequence.head-1);assert.ok(sequence.technical>=sequence.languages);
    const ring=await page.locator('.activity--active .torrent-item').first().evaluate(item=>{item.classList.add('focus');const s=getComputedStyle(item);return {shadow:s.boxShadow,outline:s.outlineStyle,after:getComputedStyle(item,'::after').display};});
    assert.ok(ring.shadow.includes('inset'),'Torrent focus stays inside the release: '+JSON.stringify(ring));assert.equal(ring.outline,'none');assert.equal(ring.after,'none');
    const marks=[];

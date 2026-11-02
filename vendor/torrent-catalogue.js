@@ -546,8 +546,8 @@
             if (!item || !item.length || (row._tcPage && row._tcPage.destroyed) || item.find('.tc-row').length) return;
             try {
                 var content = $('<div class="tc-row"></div>');
-                $('<div class="tc-release-name"></div>').text(row.Title).appendTo(content);
                 var head = $('<div class="tc-head"></div>').appendTo(content);
+                $('<div class="tc-release-name"></div>').text(row.Title).appendTo(content);
                 var summary = $('<div class="tc-summary"></div>').appendTo(head);
                 $('<strong class="tc-season"></strong>').text(m.seasonLabel ? (m.parsed.bundle ? 'Сезоны '+C.ranges(m.parsed.seasons) : m.season.number!==null ? 'Сезон '+m.season.number : m.parsed.seasons.length ? 'Сезон '+C.ranges(m.parsed.seasons) : 'Сезон не указан') : m.technical.quality || m.technical.source || 'Разрешение не указано').appendTo(summary);
                 if (m.episodeLabel) $('<span class="tc-episodes"></span>').text(m.episodeLabel.replace(/ · заявлено/g, '')).appendTo(summary);

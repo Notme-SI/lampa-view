@@ -61,7 +61,7 @@ if (!ROOT.LampaView) {
     search: '<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/>',
     calendar: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 11h18"/>',
     library: '<path d="M5 3v18m5-18v18m5-17 5 16"/>',
-    settings: '<circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/>',
+    settings: '<path d="m9 3-.5 2.3-1.3.8L5 5.4 2.6 9.6 4.4 11v2l-1.8 1.4L5 18.6l2.2-.7 1.3.8L9 21h6l.5-2.3 1.3-.8 2.2.7 2.4-4.2-1.8-1.4v-2l1.8-1.4L19 5.4l-2.2.7-1.3-.8L15 3Z"/><circle cx="12" cy="12" r="3"/>',
     play: '<path d="m9 5 11 7-11 7Z"/>',
     plus: '<path d="M12 5v14M5 12h14"/>',
     info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v2"/>'
@@ -99,6 +99,7 @@ if (!ROOT.LampaView) {
     if(!appearanceTheme)appearanceTheme=appearance(L);
     const enabled = yes('lampa_view_enabled');
     document.querySelectorAll('.head__action.open--search').forEach(node=>node.setAttribute('data-pt-placeholder',lampaViewText('Поиск…')));
+    document.querySelectorAll('.head__actions .open--settings').forEach(node=>{node.setAttribute('aria-label',lampaViewText('Настройки'));if(!node.querySelector('[data-pt-settings]')){node.innerHTML=icon('settings');node.firstElementChild.setAttribute('data-pt-settings','');}if(!node._minimalSettingsPointer){pointer($(node));node._minimalSettingsPointer=true;}const search=node.parentElement.querySelector('.open--search');if(search && search.nextElementSibling!==node)search.after(node);const profile=node.parentElement.querySelector('.open--profile');if(profile && node.nextElementSibling!==profile)profile.before(node);});
     $('.minimal-detail-logo.loaded').each(function(){
       $(this).siblings('.full-start-new__title').toggleClass('pt-hidden',enabled);
     });

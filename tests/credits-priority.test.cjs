@@ -8,3 +8,10 @@ test('native credit order wins over popularity and episode counts without mutati
  assert.equal(directors.length,3);assert.equal(actors.length,20);assert.deepEqual(directors.map(p=>p.id),[108,100,101]);assert.equal(directors[0].episode_count,8,'Duplicate credits retain aggregate facts without moving the person');
  assert.deepEqual(actors.map(p=>p.id),cast.slice(0,20).map(p=>p.id),'Do not replace the source billing with a popularity ranking');assert.equal(cast[0].id,40,'Input order was mutated');
 });
+
+test('portrait filtering happens before roster limits for movies, TV and anime; native photographed director leads',()=>{
+ for(const movie of [{title:'Movie'},{name:'TV'},{name:'Anime',genre_ids:[16],original_language:'ja'}]){
+  const data={movie,persons:{crew:[...Array.from({length:10},(_,i)=>({id:100+i,name:'No portrait '+i,job:'Director'})),{id:7,name:'Guy Ritchie',profile_path:'/guy.jpg',job:'Director'}],cast:[...Array.from({length:30},(_,i)=>({id:200+i,name:'Missing '+i})),{id:8,name:'Lead',profile_path:'/lead.jpg'},{id:9,name:'External portrait',img:'https://images.example/person.jpg'},{id:10,name:'Placeholder',img:'./img/actor.svg'}]}};
+  mod.exports.prepareDetail(data);assert.deepEqual(data.persons.cast.map(p=>p.id),[7,8,9]);assert.equal(data.persons.cast[0].name,'Guy Ritchie');
+ }
+});

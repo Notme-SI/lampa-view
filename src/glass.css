@@ -9,7 +9,7 @@ body.lampa_view.pt-theme-glass {
  background:radial-gradient(ellipse at 60% 0%,#3c383244,transparent 65%),var(--pt-bg)!important;letter-spacing:.005em;
 }
 body.lampa_view.pt-theme-glass .head {background:rgba(18,18,18,.32);border-bottom-color:#ffffff12;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
-body.lampa_view.pt-theme-glass .head__menu-icon,body.lampa_view.pt-theme-glass .head__backward,body.lampa_view.pt-theme-glass .head__action.open--search {border-radius:.9em;background:var(--pt-glass-button)!important;border-color:var(--pt-glass-border)}
+body.lampa_view.pt-theme-glass .head__menu-icon,body.lampa_view.pt-theme-glass .head__backward,body.lampa_view.pt-theme-glass .head__action.open--search,body.lampa_view.pt-theme-glass .head__action.open--settings {border-radius:.9em;background:var(--pt-glass-button)!important;border-color:var(--pt-glass-border)}
 body.lampa_view.pt-theme-glass .head__action.open--search {border-radius:1.3em}
 body.lampa_view.pt-theme-glass .wrap__left,body.lampa_view.pt-theme-glass.menu--always.pt-menu-pinned .wrap__left,
 body.lampa_view.pt-theme-glass .settings__content,body.lampa_view.pt-theme-glass .selectbox__content,body.lampa_view.pt-theme-glass .settings-input__content,body.lampa_view.pt-theme-glass .modal__content {

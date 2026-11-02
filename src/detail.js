@@ -59,8 +59,10 @@ export function prepareDetail(data){
  const unique=list=>{const seen=new Map();list.forEach(person=>{if(!person || !(person.name || person.original_name))return;const key=String(person.id || person.name || person.original_name),old=seen.get(key);if(old){for(const field of ['popularity','episode_count','total_episode_count'])old[field]=Math.max(Number(old[field]) || 0,Number(person[field]) || 0);if(!old.profile_path && person.profile_path)old.profile_path=person.profile_path;}else seen.set(key,{...person});});return Array.from(seen.values());};
  // Native credits already carry their intended billing. Keep that order,
  // including native directors before any aggregate-credit supplements.
- const cast=unique(persons.cast || []);
- const directors=unique((persons.crew || []).filter(p=>p.job==='Director')).slice(0,3),ids=new Set(directors.map(p=>String(p.id || p.name)));
+ const known=unique(persons.cast || []);
+ const hasPortrait=person=>!!String(person.profile_path || person.img || '').trim() && !/(?:^|\/)(?:actor|img_broken)\.svg(?:$|\?)/i.test(person.profile_path || person.img);
+ const cast=known.filter(hasPortrait);
+ const directors=unique((persons.crew || []).filter(p=>p.job==='Director').map(person=>({...person,profile_path:person.profile_path || (known.find(actor=>String(actor.id || actor.name)===String(person.id || person.name)) || {}).profile_path}))).filter(hasPortrait).slice(0,3),ids=new Set(directors.map(p=>String(p.id || p.name)));
  data.persons={...persons,crew:(persons.crew || []).filter(p=>p.job!=='Director'),cast:[...directors.map(p=>{const actor=cast.find(a=>String(a.id || a.name)===String(p.id || p.name));return {...p,...actor,job:'Director',minimal_director:true,character:[lampaViewText("Режиссёр"),actor && actor.character].filter(Boolean).join(' · ')};}),...cast.filter(p=>!ids.has(String(p.id || p.name))).slice(0,20)]};
  const disabled=window.lampa_settings && window.lampa_settings.disable_features || {};
  if(!disabled.discuss)data.discuss={...(data.discuss || {}),result:((data.discuss || {}).result || []).slice()};
@@ -209,6 +211,17 @@ export default function detail(L,event,loadLogo){
   icon.onload=()=>{if(icon.isConnected){icon.hidden=false;metaHead.classList.remove('hide');if(icon.dataset.studioId && L.Controller && L.Controller.enabled().name==='full_start')L.Controller.collectionAppend(window.jQuery(icon));}};
   icon.onerror=()=>icon.remove();metaHead.prepend(icon);icon.src=L.TMDB.image('/t/p/w300'+studio.path);
  }
+ // Give the studio an explicit path from the action column. Spatial
+ // navigation otherwise prefers a nearer bookmark/reaction button.
+ const headerItem=event.link && event.link.items && event.link.items[0];
+ const wiredStudioControllers=new WeakSet();
+ const wireStudioController=controller=>{
+  if(wiredStudioControllers.has(controller))return;wiredStudioControllers.add(controller);
+  const rightMove=controller.right,leftMove=controller.left;
+  controller.right=function(){const focused=start && start.querySelector('.focus'),studio=metaHead && metaHead.querySelector('.minimal-detail-studio.selector:not([hidden])');if(studio && focused && focused.classList.contains('button--play')){headerItem.last=studio;L.Controller.collectionFocus(window.jQuery(studio),window.jQuery(start));}else if(rightMove)rightMove.apply(this,arguments);};
+  controller.left=function(){const focused=start && start.querySelector('.focus'),watch=start && start.querySelector('.button--play');if(focused && focused.classList.contains('minimal-detail-studio') && watch){headerItem.last=watch;L.Controller.collectionFocus(window.jQuery(watch),window.jQuery(start));}else if(leftMove)leftMove.apply(this,arguments);};
+ };
+ if(headerItem && headerItem.use){headerItem.use({onController:wireStudioController});const enabled=L.Controller.enabled && L.Controller.enabled();if(enabled && enabled.controller && enabled.controller.link===headerItem)wireStudioController(enabled.controller);}
  const directStudio=pickStudio(card,movie.media_type);showStudio(directStudio);
  function showLogo(path,studio,language){
   showStudio(studio);

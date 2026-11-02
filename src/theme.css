@@ -23,10 +23,11 @@ body.lampa_view .minimal-back svg {width:1.1em;height:1.1em}
 body.lampa_view .minimal-back-heading {display:flex;align-items:center;gap:.7em}
 body.lampa_view .minimal-back--overlay {display:flex;align-items:center;justify-content:center;flex:0 0 2em;width:2em;height:2em;border:1px solid var(--pt-line);border-radius:.6em;background:#ffffff04;color:var(--pt-muted);cursor:pointer;font-size:1em}
 body.lampa_view .minimal-back-heading>.selectbox__title,body.lampa_view .minimal-back-heading>.settings__title {flex:1;min-width:0}
-body.lampa_view .head .open--broadcast,body.lampa_view .head .notice--icon,body.lampa_view .head .full--screen,body.lampa_view .head .open--settings,body.lampa_view .head .open--notice,body.lampa_view .head .open--split {display:none!important}
+body.lampa_view .head .open--broadcast,body.lampa_view .head .notice--icon,body.lampa_view .head .full--screen,body.lampa_view .head .open--notice,body.lampa_view .head .open--split {display:none!important}
 body.lampa_view .head__actions {margin-left:auto;display:flex;align-items:center;gap:.5em}
 body.lampa_view .head__action {width:2.2em;height:2.2em;border-radius:.55em;margin:0;color:var(--pt-muted)}
 body.lampa_view .head__action svg {width:1.15em;height:1.15em}
+body.lampa_view .head__action.open--settings {display:flex!important;align-items:center;justify-content:center;box-sizing:border-box;flex:0 0 2.2em;padding:0}
 body.lampa_view .head__action.focus,body.lampa_view .head__action.hover {background:var(--pt-high);color:white}
 body.lampa_view .head__action.open--search {width:18em;background:#ffffff04;border:1px solid var(--pt-line);justify-content:flex-start;padding:0 .8em;gap:.65em}
 body.lampa_view .head__action.open--search:after {content:attr(data-pt-placeholder);font-size:.8em;color:var(--pt-muted)}
@@ -65,7 +66,7 @@ body.lampa_view .card.focus .card__title {color:var(--pt-accent)}
 body.lampa_view .card__quality {border-radius:.3em;background:#000000dc;font-size:.65em}
 body.lampa_view .scroll--mask:before,body.lampa_view .scroll--mask:after {display:none}
 body.lampa_view .pt-hero {position:relative;min-height:32em;height:min(67vh,43em);margin:0 0 2.2em;overflow:hidden;border:0;box-shadow:none;background:#000;isolation:isolate}
-body.lampa_view .pt-hero__image {position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;object-position:70% 35%;z-index:-2}
+body.lampa_view .pt-hero__image {position:absolute;top:0;left:auto;right:0;width:auto;max-width:100%;height:100%;object-fit:contain;object-position:right center;z-index:-2;-webkit-mask-image:linear-gradient(90deg,transparent,#000 16%);mask-image:linear-gradient(90deg,transparent,#000 16%)}
 body.lampa_view .pt-hero:before {content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#000000 0%,#000000ed 13%,#0000008c 40%,#00000000 76%),linear-gradient(0deg,#000000 0%,#000000 1em,#00000020 35%,#00000000 80%)}
 body.lampa_view .pt-hero__body {position:absolute;left:max(4.5em,calc((100% - 100em)/2));bottom:6.5em;max-width:34em;padding-right:1em}
 body.lampa_view .pt-hero__title {font-size:2.9em;line-height:1.08;font-weight:650;letter-spacing:-.045em;margin:0 0 .65em;text-wrap:balance;max-width:14em}
@@ -140,7 +141,7 @@ body.lampa_view .tc-source {min-width:0;overflow-wrap:anywhere}
 body.lampa_view .tc-info {flex:none;cursor:pointer;font:inherit;color:#c4c8cf;padding:.3em .6em;border:1px solid var(--pt-line);border-radius:.4em;background:transparent}
 body.lampa_view .tc-info:hover,body.lampa_view .tc-info:focus-visible {color:white;border-color:var(--pt-accent);outline:none}
 body.lampa_view .tc-info.focus {color:white;border-color:white;box-shadow:0 0 0 1px white,0 0 .6em #add9e540;outline:none}
-body.lampa_view .tc-release-name {font-size:.9em;font-weight:500;line-height:1.45;color:var(--pt-text);margin-bottom:.65em;white-space:normal;overflow-wrap:anywhere}
+body.lampa_view .tc-release-name {font-size:.9em;font-weight:500;line-height:1.45;color:var(--pt-text);margin:.65em 0;white-space:normal;overflow-wrap:anywhere}
 body.lampa_view .tc-full-details {font-size:.95em;line-height:1.6}
 body.lampa_view .tc-full-details dl {margin:0}
 body.lampa_view .tc-full-details dt {color:var(--pt-muted);font-size:.85em;margin-top:1em}
@@ -206,7 +207,7 @@ body.lampa_view.pt-mobile .pt-topnav__item {font-size:.8em;padding:.6em .4em}
 body.lampa_view.pt-mobile .wrap__content {padding-top:6.5em!important;padding-bottom:1em!important}
 body.lampa_view.pt-mobile .wrap__left {top:3.8em!important;left:1em!important;width:18em!important}
 body.lampa_view.pt-mobile .pt-hero {height:36em;min-height:32em;max-height:none;margin-bottom:1.2em}
-body.lampa_view.pt-mobile .pt-hero__image {object-position:66% top;height:75%}
+body.lampa_view.pt-mobile .pt-hero__image {width:100%;object-position:center top;height:75%;-webkit-mask-image:none;mask-image:none}
 body.lampa_view.pt-mobile .pt-hero:before {background:linear-gradient(0deg,#000000 8%,#000000f0 24%,#00000040 61%,#00000000 100%)}
 body.lampa_view.pt-mobile .pt-hero__body {left:1.3em;right:1.3em;bottom:4.8em;max-width:none;padding:0}
 body.lampa_view.pt-mobile .pt-hero__title {font-size:2.05em;max-width:15em;margin-bottom:.6em}
@@ -236,7 +237,7 @@ body.lampa_view .wrap__left .menu__split:last-child {display:none}
 
 /* 0.3.1: all catalogue routes live in the menu. */
 body.lampa_view .pt-topnav,body.lampa_view .pt-mobile-nav {display:none!important}
-body.lampa_view .head__actions>.head__action:not(.open--search):not(.open--profile) {display:none!important}
+body.lampa_view .head__actions>.head__action:not(.open--search):not(.open--settings):not(.open--profile) {display:none!important}
 body.lampa_view .head__action.open--profile {width:2.4em!important;height:2.4em!important;min-width:2.4em;flex:0 0 2.4em;padding:0!important;border-radius:50%!important;overflow:hidden}
 body.lampa_view .head__action.open--profile img,body.lampa_view .head__action.open--profile svg {width:100%!important;height:100%!important;display:block;max-width:none;max-height:none;flex:1 0 auto;object-fit:cover;border-radius:50%!important;aspect-ratio:1}
 body.lampa_view .menu__item[data-action="movie"],body.lampa_view .menu__item[data-action="tv"],body.lampa_view .menu__item[data-action="anime"],body.lampa_view .menu__item[data-action="main"] {display:flex!important}
@@ -361,8 +362,8 @@ body.lampa_view .minimal-overview-action:hover,body.lampa_view .minimal-overview
 body.lampa_view .minimal-overview-action {contain:paint;transition:none!important;transform:none!important}
 body.lampa_view .minimal-overview-action>.minimal-overview-focus {display:none!important}
 body.lampa_view .minimal-overview-action::before,body.lampa_view .minimal-overview-action::after {display:none!important}
-body.lampa_view .minimal-detail-studio.selector {cursor:pointer;border-radius:.2em;outline:none}
-body.lampa_view .minimal-detail-studio.selector.focus,body.lampa_view .minimal-detail-studio.selector:focus-visible {box-shadow:0 0 0 2px var(--pt-accent)}
+body.lampa_view .minimal-detail-studio.selector {cursor:pointer;border-radius:.2em;outline:none;transition:none!important}
+body.lampa_view .minimal-detail-studio.selector.focus,body.lampa_view .minimal-detail-studio.selector:focus-visible {outline:none!important;border:0!important;box-shadow:none!important;filter:drop-shadow(0 0 .25em var(--pt-accent)) drop-shadow(0 0 .65em var(--pt-accent))}
 body.lampa_view .minimal-overview-full {white-space:pre-wrap;overflow-wrap:break-word;line-height:1.7}
 body.lampa_view .minimal-source-hidden {display:none!important}
 body.lampa_view .minimal-detail-facts>div>span {display:block}
@@ -720,9 +721,9 @@ body.lampa_view .nova-plus-root .nova-btn__focus {display:none;position:absolute
 body.lampa_view .nova-plus-root .nova-hero .nova-btn.focus>.nova-btn__focus,body.lampa_view .nova-plus-root .nova-hero .nova-btn.hover>.nova-btn__focus,body.lampa_view .nova-plus-root .nova-hero .nova-btn:hover>.nova-btn__focus,body.lampa_view .nova-plus-root .nova-hero .nova-btn:focus-visible>.nova-btn__focus {display:block}
 /* Keep focus paint inside controls: exterior shadows can leave stale edge pixels
    when adjacent chips change focus in WebKit. Never animate the ring itself. */
-body.lampa_view .nova-plus-root .nova-btn,body.lampa_view .nova-plus-root .nova-chip,body.lampa_view .nova-plus-root .nova-group,body.lampa_view .full-start__button,body.lampa_view .simple-button,body.lampa_view .tc-info,body.lampa_view .alc-chip,body.lampa_view .alc-ap-voice,body.lampa_view .alc-ep,body.lampa_view .minimal-comments-arrow,body.lampa_view .minimal-detail-studio.selector {outline:none!important;transition-property:background-color,color!important;box-shadow:none!important}
+body.lampa_view .nova-plus-root .nova-btn,body.lampa_view .nova-plus-root .nova-chip,body.lampa_view .nova-plus-root .nova-group,body.lampa_view .full-start__button,body.lampa_view .simple-button,body.lampa_view .tc-info,body.lampa_view .alc-chip,body.lampa_view .alc-ap-voice,body.lampa_view .alc-ep,body.lampa_view .minimal-comments-arrow {outline:none!important;transition-property:background-color,color!important;box-shadow:none!important}
 body.lampa_view .nova-plus-root .nova-btn,body.lampa_view .nova-plus-root .nova-chip,body.lampa_view .nova-plus-root .nova-group {transform:none!important;-webkit-transform:none!important}
-body.lampa_view .nova-plus-root .nova-btn.focus,body.lampa_view .nova-plus-root .nova-btn.hover,body.lampa_view .nova-plus-root .nova-btn:hover,body.lampa_view .nova-plus-root .nova-btn:focus-visible,body.lampa_view .nova-plus-root .nova-chip.focus,body.lampa_view .nova-plus-root .nova-chip.hover,body.lampa_view .nova-plus-root .nova-chip:hover,body.lampa_view .nova-plus-root .nova-chip:focus-visible,body.lampa_view .nova-plus-root .nova-group.focus,body.lampa_view .nova-plus-root .nova-group:hover,body.lampa_view .nova-plus-root .nova-group:focus-visible,body.lampa_view .full-start__button.focus,body.lampa_view .full-start__button.hover,body.lampa_view .full-start__button:focus-visible,body.lampa_view .simple-button.focus,body.lampa_view .simple-button.hover,body.lampa_view .simple-button:focus-visible,body.lampa_view .tc-info.focus,body.lampa_view .tc-info:hover,body.lampa_view .tc-info:focus-visible,body.lampa_view .alc-chip.focus,body.lampa_view .alc-ap-voice.focus,body.lampa_view .alc-ep.focus,body.lampa_view .minimal-detail-studio.selector.focus,body.lampa_view .minimal-detail-studio.selector:focus-visible,body.lampa_view .minimal-comments-arrow.focus,body.lampa_view .minimal-comments-arrow.hover,body.lampa_view .minimal-comments-arrow:hover,body.lampa_view .minimal-comments-arrow:focus-visible {outline:none!important;border-color:var(--pt-accent)!important;box-shadow:inset 0 0 0 1px var(--pt-accent)!important}
+body.lampa_view .nova-plus-root .nova-btn.focus,body.lampa_view .nova-plus-root .nova-btn.hover,body.lampa_view .nova-plus-root .nova-btn:hover,body.lampa_view .nova-plus-root .nova-btn:focus-visible,body.lampa_view .nova-plus-root .nova-chip.focus,body.lampa_view .nova-plus-root .nova-chip.hover,body.lampa_view .nova-plus-root .nova-chip:hover,body.lampa_view .nova-plus-root .nova-chip:focus-visible,body.lampa_view .nova-plus-root .nova-group.focus,body.lampa_view .nova-plus-root .nova-group:hover,body.lampa_view .nova-plus-root .nova-group:focus-visible,body.lampa_view .full-start__button.focus,body.lampa_view .full-start__button.hover,body.lampa_view .full-start__button:focus-visible,body.lampa_view .simple-button.focus,body.lampa_view .simple-button.hover,body.lampa_view .simple-button:focus-visible,body.lampa_view .tc-info.focus,body.lampa_view .tc-info:hover,body.lampa_view .tc-info:focus-visible,body.lampa_view .alc-chip.focus,body.lampa_view .alc-ap-voice.focus,body.lampa_view .alc-ep.focus,body.lampa_view .minimal-comments-arrow.focus,body.lampa_view .minimal-comments-arrow.hover,body.lampa_view .minimal-comments-arrow:hover,body.lampa_view .minimal-comments-arrow:focus-visible {outline:none!important;border-color:var(--pt-accent)!important;box-shadow:inset 0 0 0 1px var(--pt-accent)!important}
 body.lampa_view .nova-plus-root .nova-btn::after,body.lampa_view .nova-plus-root .nova-chip::after,body.lampa_view .nova-plus-root .nova-group::after,body.lampa_view .full-start__button.focus::after {display:none!important;content:none!important}
 body.lampa_view .nova-plus-root .nova-hero .nova-btn.focus,body.lampa_view .nova-plus-root .nova-hero .nova-btn.hover,body.lampa_view .nova-plus-root .nova-hero .nova-btn:hover,body.lampa_view .nova-plus-root .nova-hero .nova-btn:focus-visible {box-shadow:none!important}
 body.lampa_view .nova-plus-root .nova-hero__progress {position:absolute;left:0;right:0;bottom:0;width:100%;height:.3em;border-radius:0;background:rgba(255,255,255,.15);overflow:hidden}
@@ -881,12 +882,12 @@ body.lampa_view .head__actions {flex-shrink:0}
 body.lampa_view .head__menu-icon,body.lampa_view .head__backward {position:relative;align-self:center;top:auto;left:auto;transform:none!important;transition:none!important}
 body.lampa_view .head__menu-icon svg {display:block;flex:none;margin:0!important;position:static!important;transform:none!important}
 /* Header focus stays inside the control, matching Menu, with no second ring. */
-body.lampa_view .head__menu-icon,body.lampa_view .head__backward,body.lampa_view .head__action.open--search,body.lampa_view .head__action.open--profile,body.lampa_view .pt-holiday-icons>.head__action {outline:0 solid transparent!important;outline-offset:0!important;box-shadow:none!important;animation:none!important;transition:none!important;transform:none!important;border:1px solid var(--pt-line)!important}
+body.lampa_view .head__menu-icon,body.lampa_view .head__backward,body.lampa_view .head__action.open--search,body.lampa_view .head__action.open--profile,body.lampa_view .head__action.open--settings,body.lampa_view .pt-holiday-icons>.head__action {outline:0 solid transparent!important;outline-offset:0!important;box-shadow:none!important;animation:none!important;transition:none!important;transform:none!important;border:1px solid var(--pt-line)!important}
 body.lampa_view .head__action.open--profile {padding:0!important}
 body.lampa_view .head__menu-icon.focus,body.lampa_view .head__menu-icon:focus-visible,body.lampa_view .head__backward.focus,body.lampa_view .head__backward:focus-visible,
-body.lampa_view .head__action.open--search.focus,body.lampa_view .head__action.open--profile.focus,body.lampa_view .head__action.open--search:focus-visible,body.lampa_view .head__action.open--profile:focus-visible,
+body.lampa_view .head__action.open--search.focus,body.lampa_view .head__action.open--profile.focus,body.lampa_view .head__action.open--settings.focus,body.lampa_view .head__action.open--search:focus-visible,body.lampa_view .head__action.open--profile:focus-visible,body.lampa_view .head__action.open--settings:focus-visible,
 body.lampa_view .pt-holiday-icons>.head__action.focus,body.lampa_view .pt-holiday-icons>.head__action:focus-visible,
-body.lampa_view:not(.pt-tv) .head__menu-icon:hover,body.lampa_view:not(.pt-tv) .head__backward:hover,body.lampa_view:not(.pt-tv) .head__action.open--search:hover,body.lampa_view:not(.pt-tv) .head__action.open--profile:hover,
+body.lampa_view:not(.pt-tv) .head__menu-icon:hover,body.lampa_view:not(.pt-tv) .head__backward:hover,body.lampa_view:not(.pt-tv) .head__action.open--search:hover,body.lampa_view:not(.pt-tv) .head__action.open--profile:hover,body.lampa_view:not(.pt-tv) .head__action.open--settings:hover,
 body.lampa_view:not(.pt-tv) .pt-holiday-icons>.head__action:hover {border-color:var(--pt-accent)!important;background:var(--pt-high)!important;color:var(--pt-text)}
 body.lampa_view .head__action.open--search.focus:after,body.lampa_view .head__action.open--search:focus-visible:after {color:var(--pt-text)}
 body.lampa_view .menu__item {min-width:0;box-sizing:border-box}
@@ -902,7 +903,7 @@ body.lampa_view.pt-tv .minimal-anime-tab[aria-selected="true"] {box-shadow:0 0 .
 body.lampa_view.pt-tv .full-start__button.button--alc-auto.focus,body.lampa_view.pt-tv .alc-ap__play.focus {background:var(--pt-accent)!important;color:#13232c!important;border-color:#fff!important;box-shadow:none!important;outline:none!important}
 
 /* TV uses the same full-frame artwork and text composition as desktop. */
-body.lampa_view.pt-tv .pt-hero__image {object-fit:cover;object-position:70% 35%}
+body.lampa_view.pt-tv .pt-hero__image {object-position:right center}
 body.lampa_view.pt-tv .pt-hero__body {top:auto;bottom:7em;transform:none}
 body.lampa_view.pt-tv .pt-hero__logo {max-height:7em;margin-bottom:1.4em}
 body.lampa_view.pt-tv .pt-hero__overview {-webkit-line-clamp:3}
@@ -925,7 +926,7 @@ body.lampa_view .nova-episode-nav button:hover,body.lampa_view .nova-episode-nav
    native focus themes and the interface font scale. */
 body.lampa_view .card.focus .card__view:after,body.lampa_view .card.hover .card__view:after {border:2px solid var(--pt-accent)!important;top:0!important;left:0!important;right:0!important;bottom:0!important;outline:none!important;box-shadow:none!important;border-radius:.5em!important}
 body.lampa_view .head__menu-icon:before,body.lampa_view .head__menu-icon:after,body.lampa_view .head__backward:before,body.lampa_view .head__backward:after,body.lampa_view .head__action.open--profile:before,body.lampa_view .head__action.open--profile:after,body.lampa_view .head__action.open--search:before,body.lampa_view .pt-holiday-icons>.head__action:before,body.lampa_view .pt-holiday-icons>.head__action:after {content:none!important;display:none!important}
-body.lampa_view .head__menu-icon,body.lampa_view .head__backward,body.lampa_view .head__action.open--search,body.lampa_view .head__action.open--profile,body.lampa_view .pt-holiday-icons>.head__action {border-width:2px!important}
+body.lampa_view .head__menu-icon,body.lampa_view .head__backward,body.lampa_view .head__action.open--search,body.lampa_view .head__action.open--profile,body.lampa_view .head__action.open--settings,body.lampa_view .pt-holiday-icons>.head__action {border-width:2px!important}
 body.lampa_view .menu__item.focus,body.lampa_view .menu__item.hover,body.lampa_view .menu__item.traverse {background:#20272e!important;color:var(--pt-text)!important;outline:none!important;box-shadow:inset 2px 0 var(--pt-accent)!important;animation:none!important;transform:none!important}
 body.lampa_view .menu__ico [stroke] {stroke:currentColor!important}
 body.lampa_view .menu__ico [fill]:not([fill="none"]) {fill:currentColor!important}
