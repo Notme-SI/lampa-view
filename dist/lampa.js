@@ -10358,6 +10358,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         image2.onload = function () {
           image2.hidden = false;
           name.hidden = true;
+          var focused = body.querySelector(".card.focus");
+          if (scroll && focused) scroll.update(focused);
         };
         image2.onerror = function () {
           return image2.remove();
@@ -10365,6 +10367,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         heading.append(image2, name);
         body.prepend(heading);
         root.classList.add("minimal-studio-catalogue");
+        var scroll = body.closest(".scroll").Scroll;
+        if (scroll) {
+          var update = scroll.update;
+          scroll.update = function (element, center) {
+            var target = element && (element.nodeType ? element : element[0]),
+              first = body.querySelector(".card"),
+              card = target && target.closest(".card");
+            if (target && first && (target.contains(first) || card && card.parentNode === first.parentNode && card.offsetTop === first.offsetTop)) return update.call(this, heading, false);
+            return update.apply(this, arguments);
+          };
+          scroll.update(heading, false);
+        }
         image2.src = L.TMDB.image("/t/p/w780" + studio.path);
         return true;
       }
