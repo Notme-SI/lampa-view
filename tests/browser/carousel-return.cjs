@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium,webkit}=require(process.env.PLAYWRIGHT_MODULE || 'playwright'),{setup}=require('../fixtures/native-browser.cjs');
-(async()=>{for(const engine of [chromium,webkit]){const browser=await engine.launch({headless:true});try{for(const mode of ['desktop','tv','mobile']){
+(async()=>{for(const engine of [chromium,webkit]){const browser=await engine.launch({headless:true});try{for(const mode of ['desktop','tv','mobile'])for(const theme of mode==='mobile'?['minimal','glass']:['minimal']){
  const viewport=mode==='mobile'?{width:390,height:844}:mode==='tv'?{width:960,height:540}:{width:2559,height:1410};
  const r=await setup(browser,{viewport,mode},{beforePlugin:page=>page.evaluate(()=>{
   const profile=document.createElement('div');profile.className='head__action selector open--profile';profile.innerHTML='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg>';document.querySelector('.head__actions').appendChild(profile);const L=Lampa;L.Params.init();L.Layer.init();L.Search.init();L.DeviceInput.init();L.Controller.observe();L.Keypad.init();L.Keypad.enable();Navigator.follow('focus',e=>L.Controller.focus(e.elem));
@@ -9,10 +9,18 @@ const {chromium,webkit}=require(process.env.PLAYWRIGHT_MODULE || 'playwright'),{
   L.Api.full=(p,ok)=>ok({movie:{id:p.id,title:'Film',overview:'Overview',backdrop_path:'/b.jpg',release_date:'2025-01-01',production_companies:[],production_countries:[],spoken_languages:[],genres:[],source:'tmdb'},persons:{cast:[],crew:[]},images:{logos:[]},discuss:{result:[]},videos:{results:[]},simular:{results:[]},recomend:{results:[]}});
  })}),{page}=r;
  try{
+  await page.evaluate(theme=>Lampa.Storage.set('lampa_view_theme',theme),theme);
   if(mode==='mobile'){await page.setViewportSize({width:320,height:740});await page.waitForTimeout(180);const controls=await page.locator('.head__actions>.head__action').evaluateAll(nodes=>nodes.map(n=>({class:n.className,left:n.getBoundingClientRect().left,right:n.getBoundingClientRect().right,width:n.getBoundingClientRect().width})).filter(n=>n.width>0));for(const n of controls)assert.ok(n.left>=0 && n.right<=320,'Native head controls fit the narrow phone: '+JSON.stringify(controls));await page.setViewportSize(viewport);await page.waitForTimeout(180);}
   await page.evaluate(()=>Lampa.Activity.push({component:'main',source:'tmdb'}));await page.waitForSelector('.activity--active .pt-hero__image[src]');await page.waitForTimeout(450);
   const geometry=()=>page.locator('.activity--active .pt-hero').evaluate(h=>({height:h.offsetHeight,row:h.nextElementSibling.offsetTop,width:h.offsetWidth,fit:getComputedStyle(h.querySelector('.pt-hero__image')).objectFit,image:[h.querySelector('.pt-hero__image').naturalWidth,h.querySelector('.pt-hero__image').naturalHeight]}));
-  const initial=await geometry();assert.equal(initial.fit,'contain','Every source corner, including faces at the top, must remain in frame');assert.deepEqual(initial.image,[1600,900]);
+  const initial=await geometry();const zoom=await page.locator('.activity--active .pt-hero__image').evaluate(n=>({transform:getComputedStyle(n).transform,origin:getComputedStyle(n).transformOrigin}));assert.match(zoom.transform,/matrix\(1\.06,/);assert.match(zoom.origin,/ 0px$/,'Zoom anchors the top edge');
+  if(mode==='mobile'){const mobile=await page.locator('.activity--active .pt-hero').evaluate(h=>{const i=h.querySelector('.pt-hero__image').getBoundingClientRect(),p=h.querySelector('.pt-hero__body').getBoundingClientRect();return {gap:p.top-i.bottom,gear:getComputedStyle(document.querySelector('.head .open--settings')).display,position:getComputedStyle(h.querySelector('.pt-hero__body')).position};});assert.equal(mobile.gear,'none');assert.equal(mobile.position,'relative');assert.ok(mobile.gap<=20 && mobile.gap>=-25,'No empty image/logo gap: '+JSON.stringify(mobile));}
+  assert.equal(initial.fit,'contain','The source keeps its aspect ratio inside the frame');assert.deepEqual(initial.image,[1600,900]);
+  if(mode!=='mobile'){
+   await page.locator('.activity--active .pt-hero').evaluate(h=>{h.style.marginBottom='2em';document.dispatchEvent(new Event('minimal:hero-layout'));});await page.waitForTimeout(200);const old=await geometry();
+   await page.locator('.activity--active .pt-hero').evaluate(h=>{h.style.marginBottom='';document.dispatchEvent(new Event('minimal:hero-layout'));});await page.waitForTimeout(200);
+   assert.ok(initial.height>=old.height+4,'Carousel gains real height from the former gap');assert.ok(Math.abs(initial.row-old.row)<=1,'Growing the banner does not push the collection down');
+  }
   // Simulate the native Activity entrance transform without changing layout.
   await page.locator('.activity--active .pt-hero').evaluate(h=>{const host=h.closest('.activity__body');window.qaEntrance=host.animate([{transform:'translateY(120px)'},{transform:'translateY(120px)'}],{duration:10000});document.dispatchEvent(new Event('minimal:hero-layout'));});await page.waitForTimeout(120);
   assert.equal((await geometry()).height,initial.height,'An ancestor entrance animation cannot shrink the frame');await page.evaluate(()=>qaEntrance.cancel());
@@ -21,6 +29,6 @@ const {chromium,webkit}=require(process.env.PLAYWRIGHT_MODULE || 'playwright'),{
   for(const value of samples){assert.ok(Math.abs(value.height-initial.height)<=1,'Returning from a card keeps the first slide height: '+JSON.stringify({mode,initial,value}));assert.ok(Math.abs(value.row-initial.row)<=1,'First collection does not jump on return');}
   await page.locator('.activity--active .pt-hero__dot').nth(1).click();await page.waitForTimeout(150);assert.equal((await geometry()).height,initial.height,'Advancing a slide cannot repair/change frame geometry');
   if(process.env.LAMPA_QA_OUTPUT){fs.mkdirSync(process.env.LAMPA_QA_OUTPUT,{recursive:true});await page.screenshot({path:path.join(process.env.LAMPA_QA_OUTPUT,'return-'+engine.name()+'-'+mode+'.png')});}
-  assert.deepEqual(r.errors,[]);console.log(engine.name()+' '+mode+': full artwork, ancestor animation and main/full/Back/slide keep identical geometry');
+  assert.deepEqual(r.errors,[]);console.log(engine.name()+' '+mode+' '+theme+': gently zoomed artwork, ancestor animation and main/full/Back/slide keep identical geometry');
  }finally{await r.context.close();}
 }}finally{await browser.close();}}})().catch(e=>{console.error(e);process.exitCode=1;});

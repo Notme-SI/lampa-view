@@ -28,6 +28,7 @@ body.lampa_view .head__actions {margin-left:auto;display:flex;align-items:center
 body.lampa_view .head__action {width:2.2em;height:2.2em;border-radius:.55em;margin:0;color:var(--pt-muted)}
 body.lampa_view .head__action svg {width:1.15em;height:1.15em}
 body.lampa_view .head__action.open--settings {display:flex!important;align-items:center;justify-content:center;box-sizing:border-box;flex:0 0 2.2em;padding:0}
+body.lampa_view.pt-mobile .head__action.open--settings {display:none!important}
 body.lampa_view .head__action.focus,body.lampa_view .head__action.hover {background:var(--pt-high);color:white}
 body.lampa_view .head__action.open--search {width:18em;background:#ffffff04;border:1px solid var(--pt-line);justify-content:flex-start;padding:0 .8em;gap:.65em}
 body.lampa_view .head__action.open--search:after {content:attr(data-pt-placeholder);font-size:.8em;color:var(--pt-muted)}
@@ -206,10 +207,10 @@ body.lampa_view.pt-mobile .pt-topnav {position:absolute;top:3.5em;left:1em;right
 body.lampa_view.pt-mobile .pt-topnav__item {font-size:.8em;padding:.6em .4em}
 body.lampa_view.pt-mobile .wrap__content {padding-top:6.5em!important;padding-bottom:1em!important}
 body.lampa_view.pt-mobile .wrap__left {top:3.8em!important;left:1em!important;width:18em!important}
-body.lampa_view.pt-mobile .pt-hero {height:36em;min-height:32em;max-height:none;margin-bottom:1.2em}
-body.lampa_view.pt-mobile .pt-hero__image {width:100%;object-position:center top;height:75%;-webkit-mask-image:none;mask-image:none}
+body.lampa_view.pt-mobile .pt-hero {display:flex;flex-direction:column;align-items:stretch;height:auto;min-height:0;max-height:none;margin-bottom:1.2em}
+body.lampa_view.pt-mobile .pt-hero__image {position:relative;top:auto;right:auto;left:auto;width:100%;height:auto;aspect-ratio:16/9;flex:none;object-position:center top;transform-origin:center top;-webkit-mask-image:none;mask-image:none}
 body.lampa_view.pt-mobile .pt-hero:before {background:linear-gradient(0deg,#000000 8%,#000000f0 24%,#00000040 61%,#00000000 100%)}
-body.lampa_view.pt-mobile .pt-hero__body {left:1.3em;right:1.3em;bottom:4.8em;max-width:none;padding:0}
+body.lampa_view.pt-mobile .pt-hero__body {position:relative;left:auto;right:auto;bottom:auto;max-width:none;padding:.8em 1.3em 4.5em}
 body.lampa_view.pt-mobile .pt-hero__title {font-size:2.05em;max-width:15em;margin-bottom:.6em}
 body.lampa_view.pt-mobile .pt-hero__meta {font-size:.74em;margin-bottom:.85em}
 body.lampa_view.pt-mobile .pt-hero__overview {font-size:.8em;-webkit-line-clamp:3}
@@ -293,7 +294,7 @@ body.lampa_view .card.pt-has-quality .card__quality {display:none!important}
 /* Search and circular profile share the same outer height. */
 body.lampa_view .head__action.open--search {box-sizing:border-box;height:2.2em}
 body.lampa_view .head__action.open--profile {box-sizing:border-box;width:2.2em!important;height:2.2em!important;min-width:2.2em;flex:0 0 2.2em}
-body.lampa_view .pt-hero__image {image-rendering:auto;filter:none!important}
+body.lampa_view .pt-hero__image {image-rendering:auto;filter:none!important;transform:scale(1.06);transform-origin:right top}
 /* Compact detail cover, fading to OLED black before the following rows. */
 body.lampa_view .full-start__background {left:0!important;top:0!important;width:100%!important;height:var(--pt-detail-backdrop-height,30em)!important;max-height:none;object-fit:cover;object-position:center 30%;-webkit-mask-image:linear-gradient(to bottom,#000 30%,#0008 78%,transparent 100%)!important;mask-image:linear-gradient(to bottom,#000 30%,#0008 78%,transparent 100%)!important}
 body.lampa_view .full-start-new {padding-top:2em;padding-bottom:1em}
@@ -834,7 +835,8 @@ body.lampa_view .minimal-fit-posters .scroll__body>.card:last-child {margin-righ
 body.lampa_view {--pt-banner-unit:calc(clamp(14px,.94vw,18px) * 1.05)}
 body.lampa_view .pt-hero {height:clamp(calc(32 * var(--pt-banner-unit)),67vh,calc(43 * var(--pt-banner-unit)));min-height:0;max-height:none}
 @media(min-width:1100px){body.lampa_view .pt-hero {height:clamp(calc(27 * var(--pt-banner-unit)),56vh,calc(34 * var(--pt-banner-unit)))}}
-body.lampa_view.pt-mobile .pt-hero {height:calc(36 * 16px * 1.05);min-height:0;max-height:none}
+body.lampa_view.pt-desktop .pt-hero {margin-bottom:.8em}
+
 
 /* The same mark has one position, before and after the native update. */
 body.lampa_view .torrent-item .torrent-item__viewed {position:absolute;top:.85em;left:auto;right:.85em;width:1.5em;height:1.5em;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:.2em;border:1px solid var(--pt-accent);border-radius:50%;background:var(--pt-accent);color:#13232c;z-index:2;pointer-events:none}

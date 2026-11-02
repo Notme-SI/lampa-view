@@ -99,7 +99,8 @@ body.lampa_view.pt-theme-glass.pt-mobile .head {height:4.8em!important}
 body.lampa_view.pt-theme-glass.pt-mobile .wrap__content {padding-top:5.4em!important}
 body.lampa_view.pt-theme-glass.pt-mobile .head__menu-icon,body.lampa_view.pt-theme-glass.pt-mobile .head__backward,body.lampa_view.pt-theme-glass.pt-mobile .head__action.open--settings,body.lampa_view.pt-theme-glass.pt-mobile .head__action.open--profile {min-width:44px;min-height:44px;flex-shrink:0}
 body.lampa_view.pt-theme-glass.pt-mobile .head__body {width:94%;height:3.8em;padding:.4em .5em}
-body.lampa_view.pt-theme-glass.pt-mobile .pt-hero__body {position:absolute;left:1em;right:1em;padding:1.1em;bottom:3.5em;max-width:none}
+body.lampa_view.pt-theme-glass.pt-mobile .pt-hero {align-items:stretch}
+body.lampa_view.pt-theme-glass.pt-mobile .pt-hero__body {position:relative;left:auto;right:auto;padding:1.1em;bottom:auto;margin:.4em 1em 3.8em;max-width:none}
 body.lampa_view.pt-theme-glass.pt-mobile .navigation-bar__body {border:1px solid var(--pt-glass-border);border-radius:2.5em;background:var(--pt-glass-button);box-shadow:var(--pt-glass-edge),0 10px 28px #00000055;backdrop-filter:blur(var(--pt-glass-blur)) saturate(1.4);-webkit-backdrop-filter:blur(var(--pt-glass-blur)) saturate(1.4)}
 body.lampa_view.pt-theme-glass.pt-mobile .navigation-bar__item {border-radius:2em}
 body.lampa_view.pt-theme-glass.pt-mobile .navigation-bar__item.active {background:#ffffff15}

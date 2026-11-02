@@ -1,6 +1,6 @@
 /* TV presentation: distance-readable type and artwork. No Android mode changes. */
 body.lampa_view.pt-tv {--pt-ui-font:calc(.703125vw * var(--pt-interface-scale,1));font-size:var(--pt-ui-font)!important;--pt-banner-unit:calc(.703125vw * 1.12)}
-body.lampa_view.pt-tv .pt-hero {max-width:90vw;margin:0 auto 2em}
+body.lampa_view.pt-tv .pt-hero {max-width:90vw;margin:0 auto .9em}
 body.lampa_view.pt-tv .pt-hero__body {font-size:max(8px,1em);left:3em;bottom:3em;max-width:31em;padding-right:1em}
 body.lampa_view.pt-tv .pt-hero__title {font-size:2.55em;max-width:15em;margin-bottom:.65em}
 body.lampa_view.pt-tv .pt-hero__title--translation {font-size:1.05em;line-height:1.35;letter-spacing:0;max-width:100%;margin-bottom:1.1em}
