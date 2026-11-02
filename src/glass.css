@@ -1,12 +1,12 @@
 /* Clear glass reveals a bounded, preblurred scene from decoded artwork.
    Original posters remain sharp. Only navigation and open overlays blur live. */
 body.lampa_view.pt-theme-glass {
- --pt-bg:#101113;--pt-side:rgba(42,42,42,.30);--pt-panel:rgba(255,255,255,.09);--pt-high:rgba(255,255,255,.19);
+ --pt-bg:#101113;--pt-side:rgba(42,42,42,.22);--pt-panel:rgba(255,255,255,.06);--pt-high:rgba(255,255,255,.14);
  --pt-text:#f8f8fa;--pt-muted:#c2c1c6;--pt-line:#ffffff29;--pt-accent:#f4f4f6;--pt-dim:#ffffff13;
- --pt-glass-tone-a:94,78,68;--pt-glass-tone-b:69,73,80;--pt-glass-alpha:.30;--pt-glass-blur:24px;
- --pt-glass-border:#ffffff24;--pt-glass-surface:rgba(28,28,28,calc(var(--pt-glass-alpha)*.65));
- --pt-glass-button:linear-gradient(140deg,#ffffff14,transparent 48%,#ffffff07),rgba(24,24,24,.12);
- --pt-glass-edge:inset 0 1px 0 #ffffff55,inset 1px 0 0 #ffffff18,inset 0 -1px 0 #00000045;
+ --pt-glass-tone-a:94,78,68;--pt-glass-tone-b:69,73,80;--pt-glass-alpha:.30;--pt-glass-blur:12px;
+ --pt-glass-border:#ffffff38;--pt-glass-surface:rgba(28,28,28,calc(var(--pt-glass-alpha)*.52));
+ --pt-glass-button:linear-gradient(165deg,#ffffff21 0%,#ffffff05 30%,transparent 55%,#ffffff07 100%),rgba(18,18,18,.07);
+ --pt-glass-edge:inset 0 1px 0 #ffffff70,inset 1px 0 0 #ffffff20,inset 0 -1px 0 #00000035;
  background:linear-gradient(180deg,#080808b3,#080808a8 55%,#080808d9),var(--pt-glass-scene,radial-gradient(ellipse at 15% 10%,rgba(var(--pt-glass-tone-a),.7),rgba(var(--pt-glass-tone-b),.5))) center/cover!important;
  background-attachment:fixed!important;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI Variable','Segoe UI',Roboto,sans-serif;letter-spacing:0;
 }
@@ -34,7 +34,7 @@ body.lampa_view.pt-theme-glass .settings__content,body.lampa_view.pt-theme-glass
 }
 body.lampa_view.pt-theme-glass .settings__layer,body.lampa_view.pt-theme-glass .selectbox__layer,body.lampa_view.pt-theme-glass .modal__layer {background:#00000052}
 /* A sidebar can cover bright artwork; its material carries a stronger tint. */
-body.lampa_view.pt-theme-glass .wrap__left {background-color:rgba(22,24,28,.42)!important}
+body.lampa_view.pt-theme-glass .wrap__left {background-color:rgba(22,24,28,.34)!important}
 body.lampa_view.pt-theme-glass .menu__item {border-radius:1.05em;padding:.85em 1em;color:#e2e1e6}
 body.lampa_view.pt-theme-glass .menu__item.focus,body.lampa_view.pt-theme-glass .menu__item.hover,body.lampa_view.pt-theme-glass .menu__item.traverse {background:var(--pt-glass-button);color:white;box-shadow:inset 0 1px 0 #ffffff30}
 body.lampa_view.pt-theme-glass .menu__item.focus:before {background:#fff}
@@ -50,8 +50,8 @@ body.lampa_view.pt-theme-glass .pt-hero {display:flex;align-items:center;backgro
 body.lampa_view.pt-theme-glass .pt-hero:before {background:linear-gradient(90deg,#10111366,transparent 68%),linear-gradient(0deg,#10111399,transparent 65%)}
 body.lampa_view.pt-theme-glass .pt-hero__body {
  position:relative;top:auto;bottom:auto;transform:none;padding:1em 1.3em;box-sizing:border-box;border:1px solid var(--pt-glass-border);border-radius:1.6em;
- background:linear-gradient(140deg,#ffffff0c,transparent 55%),rgba(18,18,18,.20);box-shadow:var(--pt-glass-edge),0 12px 38px #0000002e;
- backdrop-filter:blur(12px) saturate(1.2);-webkit-backdrop-filter:blur(12px) saturate(1.2);
+ background:linear-gradient(165deg,#ffffff18,transparent 45%,#ffffff05),rgba(18,18,18,.10);box-shadow:var(--pt-glass-edge),0 12px 38px #0000002e;
+ backdrop-filter:blur(8px) saturate(1.35);-webkit-backdrop-filter:blur(8px) saturate(1.35);
 }
 body.lampa_view.pt-theme-glass .pt-hero__title {font-weight:700;letter-spacing:-.04em}
 body.lampa_view.pt-theme-glass .pt-hero__overview {color:#e1e0e6}
@@ -79,7 +79,7 @@ body.lampa_view.pt-theme-glass .torrent-item.focus,body.lampa_view.pt-theme-glas
 body.lampa_view.pt-theme-glass .tc-pill,body.lampa_view.pt-theme-glass .tc-quality,body.lampa_view.pt-theme-glass .torrent-filter .filter__item {background:#ffffff0d;border-color:#ffffff30;border-radius:.8em}
 body.lampa_view.pt-theme-glass .nova-plus-root {background:transparent}
 body.lampa_view.pt-theme-glass .nova-plus-root .nova-btn,body.lampa_view.pt-theme-glass .nova-plus-root .nova-chip,body.lampa_view.pt-theme-glass .nova-plus-root .nova-group {background:var(--pt-glass-button)!important;border:1px solid var(--pt-glass-border)!important;border-radius:1.3em!important;color:#f5f5f8!important;box-shadow:var(--pt-glass-edge)!important}
-body.lampa_view.pt-theme-glass .nova-plus-root .nova-plus__bar>.nova-chip,body.lampa_view.pt-theme-glass .nova-plus-root [data-nova-group=season] .nova-chip,body.lampa_view.pt-theme-glass .full-start__button,body.lampa_view.pt-theme-glass.pt-mobile .navigation-bar__body {backdrop-filter:blur(18px) saturate(1.3);-webkit-backdrop-filter:blur(18px) saturate(1.3)}
+body.lampa_view.pt-theme-glass .nova-plus-root .nova-plus__bar>.nova-chip,body.lampa_view.pt-theme-glass .nova-plus-root [data-nova-group=season] .nova-chip,body.lampa_view.pt-theme-glass .full-start__button,body.lampa_view.pt-theme-glass.pt-mobile .navigation-bar__body {backdrop-filter:blur(10px) saturate(1.45);-webkit-backdrop-filter:blur(10px) saturate(1.45)}
 body.lampa_view.pt-theme-glass .nova-plus-root .nova-chip--active,body.lampa_view.pt-theme-glass .nova-plus-root .nova-chip.focus,body.lampa_view.pt-theme-glass .nova-plus-root .nova-group.focus {background:linear-gradient(150deg,#ffffff26,#ffffff0a)!important;border-color:#ffffffa6!important}
 body.lampa_view.pt-theme-glass .nova-plus-root .nova-card__thumb,body.lampa_view.pt-theme-glass .nova-plus-root .nova-card__thumb img {border-radius:1.15em}
 body.lampa_view.pt-theme-glass .nova-plus-root .nova__list--grid .nova-card.focus .nova-card__thumb,body.lampa_view.pt-theme-glass .nova-plus-root .nova__list--grid .nova-card.hover .nova-card__thumb {box-shadow:0 0 .7em #ffffff3b,0 8px 20px #00000044!important}
@@ -105,7 +105,7 @@ body.lampa_view.pt-theme-glass.pt-mobile .navigation-bar__body {border:1px solid
 body.lampa_view.pt-theme-glass.pt-mobile .navigation-bar__item {border-radius:2em}
 body.lampa_view.pt-theme-glass.pt-mobile .navigation-bar__item.active {background:#ffffff15}
 body.lampa_view.pt-theme-glass.pt-tv {--pt-glass-blur:10px}
-body.lampa_view.pt-theme-glass.pt-tv .pt-hero__body {backdrop-filter:none;-webkit-backdrop-filter:none;background:linear-gradient(140deg,#ffffff12,transparent),#10121852}
+body.lampa_view.pt-theme-glass.pt-tv .pt-hero__body {backdrop-filter:none;-webkit-backdrop-filter:none;background:linear-gradient(165deg,#ffffff18,transparent 45%,#ffffff05),#10121838}
 body.lampa_view.pt-theme-glass.pt-tv .nova-plus-root .nova-plus__bar>.nova-chip,body.lampa_view.pt-theme-glass.pt-tv .nova-plus-root [data-nova-group=season] .nova-chip,body.lampa_view.pt-theme-glass.pt-tv .full-start__button {backdrop-filter:none;-webkit-backdrop-filter:none}
 body.lampa_view.pt-theme-glass.pt-tv .head__body {backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
 @media(prefers-reduced-motion:reduce){body.lampa_view.pt-theme-glass .minimal-anime-tab,body.lampa_view.pt-theme-glass .menu__item {transition:none!important}}
