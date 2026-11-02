@@ -1,0 +1,15 @@
+const test=require('node:test'),assert=require('node:assert/strict'),path=require('node:path'),esbuild=require('esbuild'),{JSDOM}=require('jsdom');
+const source=esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/glass-ambient.js')],bundle:true,format:'iife',globalName:'Ambient',write:false}).outputFiles[0].text;
+test('glass ambience samples loaded artwork once after navigation, without requests or changing image sources',async()=>{
+ const dom=new JSDOM('<body><main class="activity activity--active"><img class="pt-hero__image" src="https://images.test/cover.jpg"></main></body>',{runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,image=w.document.querySelector('img');let active=true,draws=0,requests=0;
+ const pixels=new w.Uint8ClampedArray(6*6*4);for(let i=0;i<36;i++){const color=i%6<3?[60,30,20]:[20,40,60];pixels.set([...color,255],i*4);}
+ w.HTMLCanvasElement.prototype.getContext=()=>({clearRect(){},drawImage(){draws++;},getImageData(){return {data:pixels};}});w.fetch=()=>{requests++;throw Error('Unexpected request');};Object.defineProperties(image,{complete:{value:true},naturalWidth:{value:1920}});w.eval(source);const ambient=w.Ambient.default(()=>active),tick=()=>new Promise(resolve=>setTimeout(resolve,15));
+ try{
+  w.document.body.classList.add('pt-tv-busy');ambient.refresh();await tick();assert.equal(draws,0,'No synchronous canvas work during navigation');w.document.body.classList.remove('pt-tv-busy');w.document.dispatchEvent(new w.Event('minimal:tv-idle'));await tick();assert.equal(draws,1);assert.equal(w.document.body.style.getPropertyValue('--pt-glass-tone-a'),'144,72,48');assert.equal(w.document.body.style.getPropertyValue('--pt-glass-tone-b'),'45,90,135');
+  image.dispatchEvent(new w.Event('load'));await tick();assert.equal(draws,1,'Repeated image events reuse the palette');active=false;image.src='https://images.test/other.jpg';image.dispatchEvent(new w.Event('load'));await tick();assert.equal(draws,1,'Minimal does no ambient work');assert.equal(requests,0);assert.equal(image.src,'https://images.test/other.jpg','The artwork source is never replaced');
+ }finally{dom.window.close();}
+});
+test('cross-origin canvas denial keeps the neutral glass background and leaves navigation usable',async()=>{
+ const dom=new JSDOM('<body><img class="pt-hero__image" src="https://images.test/cover.jpg"></body>',{runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,image=w.document.querySelector('img');Object.defineProperties(image,{complete:{value:true},naturalWidth:{value:1920}});w.HTMLCanvasElement.prototype.getContext=()=>({clearRect(){},drawImage(){},getImageData(){throw new w.DOMException('Tainted canvas','SecurityError');}});w.eval(source);
+ try{w.Ambient.default(()=>true).refresh();await new Promise(resolve=>setTimeout(resolve,15));assert.equal(w.document.body.style.getPropertyValue('--pt-glass-tone-a'),'');}finally{dom.window.close();}
+});

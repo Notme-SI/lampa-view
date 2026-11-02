@@ -1,7 +1,8 @@
 const assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWRIGHT_MODULE),{setup}=require('../fixtures/native-browser.cjs');
 (async()=>{const browser=await chromium.launch({headless:true});try{
- for(const mode of ['desktop','tv']){
+ for(const theme of ['minimal','glass'])for(const mode of ['desktop','tv']){
   const r=await setup(browser,{viewport:{width:1280,height:720},mode},{beforePlugin:page=>page.evaluate(()=>Lampa.Search.init())});
+  await r.page.evaluate(theme=>Lampa.Storage.set('lampa_view_theme',theme),theme);
   await r.page.evaluate(()=>{for(const name of ['halloween','black-friday','new-year','womens_day'])Lampa.Head.addIcon('<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg>',()=>{}).addClass(name+'__button');});
   await r.page.waitForSelector('.pt-holiday-icons>.womens_day__button');
   const result=await r.page.evaluate(()=>{
@@ -29,10 +30,10 @@ const assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWR
   });
   if(mode==='tv'){
    assert.ok(result.after>result.before,'Back appears before Menu, as on desktop');
-   for(const p of result.primary){assert.equal(p.bg,'rgb(173, 217, 229)');assert.equal(p.shadow,'none');assert.equal(p.width,result.primary[0].width);assert.equal(p.height,result.primary[0].height);}
-   assert.equal(result.primary[1].border,'rgb(255, 255, 255)');assert.equal(result.primary[2].border,'rgba(0, 0, 0, 0)');
+   for(const p of result.primary){if(theme==='minimal'){assert.equal(p.bg,'rgb(173, 217, 229)');assert.equal(p.shadow,'none');}assert.equal(p.width,result.primary[0].width);assert.equal(p.height,result.primary[0].height);}
+   if(theme==='minimal'){assert.equal(result.primary[1].border,'rgb(255, 255, 255)');assert.equal(result.primary[2].border,'rgba(0, 0, 0, 0)');}else{assert.notEqual(result.primary[1].border,result.primary[0].border);assert.equal(result.primary[2].border,result.primary[0].border);}
   }
-  assert.equal(result.wrap,'normal');assert.ok(result.menuCenter<.1,'Menu glyph stays centered');for(const control of result.controls){assert.equal(control.focused,true);assert.equal(control.width,0,'No external ring');assert.equal(control.borderWidth,2,'One clear border');assert.equal(control.shadow,'none');assert.equal(control.border,'rgb(173, 217, 229)');assert.equal(control.inside,true);}
+  assert.equal(result.wrap,'normal');assert.ok(result.menuCenter<.1,'Menu glyph stays centered');for(const control of result.controls){assert.equal(control.focused,true);assert.equal(control.width,0,'No external ring');assert.equal(control.borderWidth,theme==='glass'?1:2,'One clear border');assert.equal(control.shadow,'none');assert.equal(control.border,theme==='glass'?'rgb(244, 244, 246)':'rgb(173, 217, 229)');assert.equal(control.inside,true);}
   await r.page.locator('.head .open--settings').click();await r.page.waitForSelector('body.settings--open');await r.page.waitForSelector('.settings__content .settings-folder');assert.ok(await r.page.locator('.settings__content .settings-folder').count()>0,'Gear opens native settings: '+JSON.stringify(await r.page.locator('.settings__content').evaluate(n=>({text:n.textContent.slice(0,300),html:n.innerHTML.slice(0,300)}))));await r.page.evaluate(()=>Lampa.Controller.back());
   assert.deepEqual(r.errors,[]);console.log(mode,result);await r.context.close();
  }

@@ -1,4 +1,4 @@
-/*! Lampa View 0.4.108 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.4.109 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -10409,7 +10409,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // package.json
-  var version = "0.4.108";
+  var version = "0.4.109";
 
   // src/inputs.js
   function inputs(L) {
@@ -10821,7 +10821,111 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   var tv_layout_default = ["/* TV presentation: distance-readable type and artwork. No Android mode changes. */", "body.lampa_view.pt-tv {--pt-ui-font:calc(.703125vw * var(--pt-interface-scale,1));font-size:var(--pt-ui-font)!important;--pt-banner-unit:calc(.703125vw * 1.12)}", "body.lampa_view.pt-tv .pt-hero {max-width:90vw;margin:0 auto 2em}", "body.lampa_view.pt-tv .pt-hero__body {font-size:max(8px,1em);left:3em;bottom:3em;max-width:31em;padding-right:1em}", "body.lampa_view.pt-tv .pt-hero__title {font-size:2.55em;max-width:15em;margin-bottom:.65em}", "body.lampa_view.pt-tv .pt-hero__title--translation {font-size:1.05em;line-height:1.35;letter-spacing:0;max-width:100%;margin-bottom:1.1em}", "body.lampa_view.pt-tv .pt-hero__logo {max-height:7em;max-width:100%;margin-bottom:1.4em}", "body.lampa_view.pt-tv .pt-hero__overview {-webkit-line-clamp:2;line-height:1.65}", "body.lampa_view.pt-tv .pt-hero__actions {margin-top:1.6em}", "body.lampa_view.pt-tv .pt-hero__dots {left:45%;bottom:1.5em}", "body.lampa_view.pt-tv .items-line {margin-bottom:.8em;padding-bottom:.7em}", "body.lampa_view.pt-tv .items-line .card:not(.card--wide):not(.card--collection) {width:clamp(8.4em,calc((90vw - 10em / var(--pt-interface-scale,1)) / 10 * var(--pt-interface-scale,1)),11.1em)!important}", "body.lampa_view.pt-tv .items-line.minimal-posters-sized .card:not(.card--wide):not(.card--collection) {width:var(--minimal-poster-width)!important}", "body.lampa_view.pt-tv .items-line>.items-line__head {padding-left:1.1em}", "/* Android WebView clamps text below 8 CSS px. Declare that floor so em-based", "   height limits use the rendered font, including the real 960px TV viewport. */", "body.lampa_view.pt-tv .card__title {font-size:max(9px,.9em);line-height:1.4;max-height:2.85em;overflow-wrap:break-word}", "body.lampa_view.pt-tv .card__age {font-size:max(8px,.8em)}", "/* Flow uses the measured line height after the interface scale is applied. */", "body.lampa_view.pt-tv.pt-tv-caption-flow .card__title {display:block;height:auto;min-height:0;line-height:var(--pt-caption-line,1.4em);max-height:calc(var(--pt-caption-line,1.4em) * 2);-webkit-line-clamp:unset;line-clamp:unset;transform:none}", "body.lampa_view.pt-tv.pt-tv-caption-flow .card__age {position:static;clear:both;transform:none}", "body.lampa_view.pt-tv .mapping--grid>.card:not(.card--wide):not(.card--collection),body.lampa_view.pt-tv .category-full>.card:not(.card--wide):not(.card--collection) {width:calc(10% * var(--pt-interface-scale,1))!important}", "", "body.lampa_view.pt-tv .head__menu-icon,body.lampa_view.pt-tv .head__backward,body.lampa_view.pt-tv .head__action.open--search,body.lampa_view.pt-tv .head__action.open--profile,body.lampa_view.pt-tv .pt-holiday-icons>.head__action {border-width:2px!important}", "body.lampa_view.pt-tv .pt-series-status {font-size:max(8px,.7em);line-height:1.2;padding:.2em .4em;display:block;width:max-content;max-width:none;white-space:nowrap;transform:none}", "body.lampa_view.pt-tv .pt-series-status>span {white-space:pre}", "body.lampa_view.pt-tv .card__view .pt-quality,body.lampa_view.pt-tv .card__view .pt-kind,body.lampa_view.pt-tv .card__view .card__quality {font-size:max(8px,.7em);line-height:1.2;padding:.2em .4em;transform:none}", "body.lampa_view.pt-tv .card__img,body.lampa_view.pt-tv .nova-card__thumb img,body.lampa_view.pt-tv .minimal-torrent-banner__image {image-rendering:auto;transform:none}", "body.lampa_view.pt-tv .card .pt-card-watch {font-size:max(8px,.8em)}", "body.lampa_view.pt-tv .head {font-size:1.12em;height:3.6em}", "body.lampa_view.pt-tv .head__body {max-width:none;width:94%;padding:.5em 0}", "body.lampa_view.pt-tv .wrap__content {padding-top:4.032em!important}", "body.lampa_view.pt-tv .card__view .icon--history {font-size:.95em;width:2.1em;height:1.7em}", "body.lampa_view.pt-tv .card {-webkit-text-size-adjust:100%;text-size-adjust:100%}", "body.lampa_view.pt-tv .settings__content {font-size:calc(var(--pt-ui-font) * 1.1)!important;width:30em;max-width:38vw;box-sizing:border-box}", "body.lampa_view.pt-tv .selectbox__content {font-size:calc(var(--pt-ui-font) * 1.1)!important;box-sizing:border-box}", "", "/* Hero overview uses a compact preview. Entering collections restores the", "   shared profile immediately; only composited card transforms are animated. */", "body.lampa_view.pt-tv .items-line.minimal-hero-preview .card .pt-card-watch {height:0;margin:0;visibility:hidden!important;overflow:hidden}", "body.lampa_view.pt-tv .items-line.minimal-hero-preview .card__title {font-size:max(8px,.7em);line-height:1.4;max-height:2.85em}", "body.lampa_view.pt-tv .items-line.minimal-hero-preview .card__age {font-size:max(8px,.65em)}", ""].join("\n");
 
   // src/glass.css
-  var glass_default = ["/* Shared native Lampa glass surfaces, extended to plugin controls.", "   Blur stays on panels and the two hero actions, never on each poster/card. */", "body.lampa_view.pt-theme-glass {", " --pt-bg:#080808;--pt-side:rgba(28,28,28,.42);--pt-panel:rgba(255,255,255,.07);--pt-high:rgba(255,255,255,.16);", " --pt-text:#f5f5f5;--pt-muted:#aaa;--pt-line:#ffffff24;--pt-accent:#eee;--pt-dim:#ffffff12;", " --pt-glass-blur:24px;--pt-glass-alpha:.32;--pt-glass-border:rgba(255,255,255,.12);", " --pt-glass-surface:rgba(32,32,32,var(--pt-glass-alpha));", " --pt-glass-button:linear-gradient(155deg,#ffffff20,#ffffff0d 60%,#ffffff16);", " background:radial-gradient(ellipse at 60% 0%,#3c383244,transparent 65%),var(--pt-bg)!important;letter-spacing:.005em;", "}", "body.lampa_view.pt-theme-glass .head {background:rgba(18,18,18,.32);border-bottom-color:#ffffff12;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}", "body.lampa_view.pt-theme-glass .head__menu-icon,body.lampa_view.pt-theme-glass .head__backward,body.lampa_view.pt-theme-glass .head__action.open--search,body.lampa_view.pt-theme-glass .head__action.open--settings {border-radius:.9em;background:var(--pt-glass-button)!important;border-color:var(--pt-glass-border)}", "body.lampa_view.pt-theme-glass .head__action.open--search {border-radius:1.3em}", "body.lampa_view.pt-theme-glass .wrap__left,body.lampa_view.pt-theme-glass.menu--always.pt-menu-pinned .wrap__left,", "body.lampa_view.pt-theme-glass .settings__content,body.lampa_view.pt-theme-glass .selectbox__content,body.lampa_view.pt-theme-glass .settings-input__content,body.lampa_view.pt-theme-glass .modal__content {", " background:var(--pt-glass-surface)!important;border:1px solid var(--pt-glass-border);border-radius:1.5em;", " box-shadow:inset 0 1px 0 #ffffff20,0 18px 55px #0005;backdrop-filter:blur(var(--pt-glass-blur));-webkit-backdrop-filter:blur(var(--pt-glass-blur));", "}", "body.lampa_view.pt-theme-glass .menu__item {border-radius:.8em;padding:.85em 1em}", "body.lampa_view.pt-theme-glass .menu__item.focus,body.lampa_view.pt-theme-glass .menu__item.hover,body.lampa_view.pt-theme-glass .menu__item.traverse {background:#ffffff15;color:var(--pt-text)}", "body.lampa_view.pt-theme-glass .items-line__title,body.lampa_view.pt-theme-glass .category-full__title {font-weight:650;letter-spacing:-.025em}", "body.lampa_view.pt-theme-glass .card__view,body.lampa_view.pt-theme-glass .card__img {border-radius:.9em}", "body.lampa_view.pt-theme-glass .card.focus .card__view,body.lampa_view.pt-theme-glass .card.hover .card__view {box-shadow:0 0 .8em #ffffff45,0 0 1.7em #ffffff18!important}", "body.lampa_view.pt-theme-glass .card.focus .card__view:after,body.lampa_view.pt-theme-glass .card.hover .card__view:after {border-radius:.9em!important;border-color:#eeeeee!important}", "body.lampa_view.pt-theme-glass .card__title {font-weight:550;letter-spacing:-.015em}", "body.lampa_view.pt-theme-glass .pt-quality,body.lampa_view.pt-theme-glass .pt-kind,body.lampa_view.pt-theme-glass .pt-series-status,body.lampa_view.pt-theme-glass .card__vote {background:#1818189c;border-radius:.45em;border-color:#ffffff24}", "body.lampa_view.pt-theme-glass .pt-hero {background:var(--pt-bg)}", "body.lampa_view.pt-theme-glass .pt-hero:before {background:linear-gradient(90deg,#080808 0%,#080808eb 13%,#0808088c 40%,transparent 76%),linear-gradient(0deg,#080808 0%,#080808 1em,#08080820 35%,transparent 80%)}", "body.lampa_view.pt-theme-glass .pt-hero__title {letter-spacing:-.04em;font-weight:700}", "body.lampa_view.pt-theme-glass .pt-hero__action,body.lampa_view.pt-theme-glass .full-start__button,body.lampa_view.pt-theme-glass .simple-button {", " border-radius:1.25em;background:var(--pt-glass-button)!important;border:1px solid var(--pt-glass-border);color:var(--pt-text)!important;box-shadow:inset 0 1px 0 #ffffff20,0 5px 20px #0003;", "}", "body.lampa_view.pt-theme-glass .pt-hero__action {backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}", "body.lampa_view.pt-theme-glass .pt-hero__action.focus,body.lampa_view.pt-theme-glass .pt-hero__action.hover,body.lampa_view.pt-theme-glass .simple-button.focus {border-color:#ffffffb3!important;box-shadow:inset 0 1px 0 #ffffff25,0 0 0 1px #ffffff80!important}", "body.lampa_view.pt-theme-glass .pt-hero__dot {background:#ffffff40}", "body.lampa_view.pt-theme-glass .pt-hero__dot.active {background:#eee}", "body.lampa_view.pt-theme-glass .minimal-detail-header {border-radius:1.25em}", "body.lampa_view.pt-theme-glass .minimal-detail-facts,body.lampa_view.pt-theme-glass .minimal-detail-cast>.minimal-cast-native {background:#ffffff08;border-color:var(--pt-glass-border);border-radius:1.2em}", "body.lampa_view.pt-theme-glass .full-start-new__rate-line>div,body.lampa_view.pt-theme-glass .full-start__rate-line>div,body.lampa_view.pt-theme-glass .full-descr__tag {border-color:var(--pt-glass-border);border-radius:.65em;background:#ffffff08}", "body.lampa_view.pt-theme-glass .settings-folder,body.lampa_view.pt-theme-glass .settings-param,body.lampa_view.pt-theme-glass .selectbox-item {border-radius:.95em;border-color:#ffffff12}", "body.lampa_view.pt-theme-glass .settings-folder.focus,body.lampa_view.pt-theme-glass .settings-param.focus,body.lampa_view.pt-theme-glass .selectbox-item.focus {background:#ffffff18!important;color:var(--pt-text)!important}", "body.lampa_view.pt-theme-glass .settings-folder.focus .settings-folder__icon,body.lampa_view.pt-theme-glass .selectbox-item.focus .selectbox-item__checkbox,body.lampa_view.pt-theme-glass .settings-param.focus .selectbox-item__checkbox {filter:none;-webkit-filter:none}", "body.lampa_view.pt-theme-glass .selectbox-item.focus:after {border-color:#eee}", "body.lampa_view.pt-theme-glass .settings-param__value {color:#ddd}", "body.lampa_view.pt-theme-glass .minimal-back--overlay {background:var(--pt-glass-button);border-color:var(--pt-glass-border);border-radius:50%}", "body.lampa_view.pt-theme-glass .input,body.lampa_view.pt-theme-glass .search-input,body.lampa_view.pt-theme-glass .search__input {background:#ffffff09;border-radius:1em;border-color:var(--pt-glass-border);color:var(--pt-text)}", "body.lampa_view.pt-theme-glass .minimal-torrent-banner,body.lampa_view.pt-theme-glass .nova-plus-root .nova-hero {border-radius:1.2em;-webkit-clip-path:inset(0 round 1.2em);clip-path:inset(0 round 1.2em)}", "body.lampa_view.pt-theme-glass .torrent-item,body.lampa_view.pt-theme-glass .torrent-serial,body.lampa_view.pt-theme-glass .torrent-file {background:#ffffff0b;border-color:var(--pt-glass-border);border-radius:1em}", "body.lampa_view.pt-theme-glass .torrent-item.focus,body.lampa_view.pt-theme-glass .torrent-serial.focus {background:#ffffff1c;border-color:#eee}", "body.lampa_view.pt-theme-glass .tc-pill,body.lampa_view.pt-theme-glass .tc-quality,body.lampa_view.pt-theme-glass .torrent-filter .filter__item {background:#ffffff0a;border-color:var(--pt-glass-border);border-radius:.65em}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-plus__bar {gap:.55em}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-btn,body.lampa_view.pt-theme-glass .nova-plus-root .nova-chip,body.lampa_view.pt-theme-glass .nova-plus-root .nova-group {background:var(--pt-glass-button)!important;border-color:var(--pt-glass-border)!important;border-radius:.9em!important;color:var(--pt-text)!important;box-shadow:inset 0 1px 0 #ffffff15!important}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-chip--active,body.lampa_view.pt-theme-glass .nova-plus-root .nova-chip.focus,body.lampa_view.pt-theme-glass .nova-plus-root .nova-group.focus {background:#ffffff1c!important;border-color:#ffffffb3!important;box-shadow:inset 0 1px 0 #ffffff20!important}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-card__thumb,body.lampa_view.pt-theme-glass .nova-plus-root .nova-card__thumb img {border-radius:.85em}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova__list--grid .nova-card.focus .nova-card__thumb,body.lampa_view.pt-theme-glass .nova-plus-root .nova__list--grid .nova-card.hover .nova-card__thumb {box-shadow:0 0 .85em #ffffff40,0 0 1.8em #ffffff18!important}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-card--rowlist {background:#ffffff07;border:1px solid var(--pt-glass-border);border-radius:1em}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-hero .nova-btn {background:var(--pt-glass-button)!important;color:#f5f5f5!important;border-radius:1.3em!important;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}", "body.lampa_view.pt-theme-glass .minimal-online-option {background:#ffffff08;border-color:#ffffff24}", "body.lampa_view.pt-theme-glass .minimal-online-option--selected,body.lampa_view.pt-theme-glass .minimal-online-option.focus {background:#ffffff16;border-color:#ffffff80}", "body.lampa_view.pt-theme-glass .nova-source-option__quality {background:#ffffff12;border-color:#ffffff30;color:#eee}", "body.lampa_view.pt-theme-glass .player-panel,body.lampa_view.pt-theme-glass .player-info {background:#1a1a1a99;border-color:var(--pt-glass-border);border-radius:1.2em}", "body.lampa_view.pt-theme-glass .player-panel__button.focus {background:#ffffff18;color:#eee}", "body.lampa_view.pt-theme-glass .time-line>div {background:#dedede!important}", 'body.lampa_view.pt-theme-glass .minimal-anime-tab[aria-selected="true"] {background:var(--pt-glass-button)!important;border-color:#ffffffb3!important;color:#f5f5f5!important;box-shadow:0 0 .4em #ffffff80,0 0 1.4em #ffffff35!important}', "body.lampa_view.pt-theme-glass.pt-mobile .navigation-bar__body {border:1px solid var(--pt-glass-border);border-radius:2em;background:var(--pt-glass-surface);box-shadow:inset 0 1px 0 #ffffff20,0 8px 30px #0004;backdrop-filter:blur(var(--pt-glass-blur));-webkit-backdrop-filter:blur(var(--pt-glass-blur))}", "body.lampa_view.pt-theme-glass.pt-mobile .navigation-bar__item {border-radius:1.5em}", "body.lampa_view.pt-theme-glass.pt-tv {--pt-glass-blur:14px}", "body.lampa_view.pt-theme-glass.pt-tv .pt-hero__action,body.lampa_view.pt-theme-glass.pt-tv .nova-plus-root .nova-hero .nova-btn {backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}", "@media(prefers-reduced-motion:reduce){body.lampa_view.pt-theme-glass .minimal-anime-tab,body.lampa_view.pt-theme-glass .menu__item {transition:none!important}}", "", "/* One quiet glass edge rather than thick inset/exterior outlines. */", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-chip,body.lampa_view.pt-theme-glass .nova-plus-root .nova-btn,body.lampa_view.pt-theme-glass .nova-plus-root .nova-group {box-shadow:none!important;border-width:1px!important}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-hero .nova-btn {backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}", "body.lampa_view.pt-theme-glass .background {opacity:.2!important}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-hero__shade {background:linear-gradient(0deg,#101010b3,transparent 78%)}", "body.lampa_view.pt-theme-glass.pt-mobile .navigation-bar__body {background:rgba(55,55,55,.38);border-color:#ffffff24;box-shadow:inset 0 1px 0 #ffffff15,0 8px 30px #0004}", "body.lampa_view.pt-theme-glass .nova-plus-root.nova-plus {background:radial-gradient(ellipse at 50% 0%,#7569562b,transparent 65%)}", ""].join("\n");
+  var glass_default = ["/* Glass is a separate material system. Content artwork stays sharp; only", "   navigation and open overlays blur. No per-poster/backdrop blur or re-encoding. */", "body.lampa_view.pt-theme-glass {", " --pt-bg:#101113;--pt-side:rgba(42,42,42,.30);--pt-panel:rgba(255,255,255,.09);--pt-high:rgba(255,255,255,.19);", " --pt-text:#f8f8fa;--pt-muted:#c2c1c6;--pt-line:#ffffff29;--pt-accent:#f4f4f6;--pt-dim:#ffffff13;", " --pt-glass-tone-a:94,78,68;--pt-glass-tone-b:69,73,80;--pt-glass-alpha:.30;--pt-glass-blur:24px;", " --pt-glass-border:#ffffff3b;--pt-glass-surface:rgba(42,42,42,var(--pt-glass-alpha));", " --pt-glass-button:linear-gradient(160deg,#ffffff32,#ffffff0b 56%,#ffffff17);", " --pt-glass-edge:inset 0 1px 0 #ffffff55,inset 0 -1px 0 #00000040;", " background:radial-gradient(ellipse at 8% 0%,rgba(var(--pt-glass-tone-a),.58),transparent 65%),radial-gradient(ellipse at 95% 70%,rgba(var(--pt-glass-tone-b),.34),transparent 70%),linear-gradient(#151517,#090a0c)!important;", " background-attachment:fixed!important;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI Variable','Segoe UI',Roboto,sans-serif;letter-spacing:0;", "}", "/* The old opaque canvas hid the glass background even when the theme was active. */", "body.lampa_view.pt-theme-glass .app,body.lampa_view.pt-theme-glass .wrap,body.lampa_view.pt-theme-glass .search,body.lampa_view.pt-theme-glass .explorer,body.lampa_view.pt-theme-glass .explorer__files,body.lampa_view.pt-theme-glass .explorer__files-body {background:transparent!important}", "body.lampa_view.pt-theme-glass .head {height:4.5em!important;background:transparent!important;border:0;box-shadow:none}", "body.lampa_view.pt-theme-glass .head__body {", " width:94%;max-width:94vw;height:3.4em;box-sizing:border-box;margin:.45em auto;padding:.4em .7em;border-radius:2em;", " background:linear-gradient(135deg,#ffffff18,#ffffff05),rgba(38,38,40,.50);border:1px solid var(--pt-glass-border);", " box-shadow:var(--pt-glass-edge),0 8px 24px #00000030;backdrop-filter:blur(var(--pt-glass-blur)) saturate(1.3);-webkit-backdrop-filter:blur(var(--pt-glass-blur)) saturate(1.3);", "}", "body.lampa_view.pt-theme-glass .wrap__content {padding-top:5.2em!important}", "body.lampa_view.pt-theme-glass .head__logo {font-weight:650;letter-spacing:.13em}", "body.lampa_view.pt-theme-glass .head__menu-icon,body.lampa_view.pt-theme-glass .head__backward,body.lampa_view.pt-theme-glass .head__action.open--settings {border-radius:50%;background:var(--pt-glass-button)!important;border:1px solid var(--pt-glass-border)!important;box-shadow:var(--pt-glass-edge)}", "body.lampa_view.pt-theme-glass .head__action.open--search {border-radius:2em;background:#ffffff0b!important;border:1px solid #ffffff24;box-shadow:inset 0 1px 0 #ffffff14}", "body.lampa_view.pt-theme-glass .head__menu-icon,body.lampa_view.pt-theme-glass .head__backward,body.lampa_view.pt-theme-glass .head .head__action {border-width:1px!important}", "body.lampa_view.pt-theme-glass .head__menu-icon.focus,body.lampa_view.pt-theme-glass .head__backward.focus,body.lampa_view.pt-theme-glass .head .head__action.focus,body.lampa_view.pt-theme-glass .head .head__action.hover {background:#ffffff25!important;color:white;border-color:#f4f4f6!important;box-shadow:none!important}", "", "/* One glass navigation layer, not a blur layer for every menu row. */", "body.lampa_view.pt-theme-glass .wrap__left,body.lampa_view.pt-theme-glass.menu--always.pt-menu-pinned .wrap__left,", "body.lampa_view.pt-theme-glass .settings__content,body.lampa_view.pt-theme-glass .selectbox__content,body.lampa_view.pt-theme-glass .settings-input__content,body.lampa_view.pt-theme-glass .modal__content {", " background-color:var(--pt-glass-surface)!important;background-image:linear-gradient(135deg,#ffffff1f,#ffffff05 55%,#ffffff0c)!important;", " border:1px solid var(--pt-glass-border);border-radius:1.7em;box-shadow:var(--pt-glass-edge),0 24px 70px #00000060;", " backdrop-filter:blur(var(--pt-glass-blur)) saturate(1.4);-webkit-backdrop-filter:blur(var(--pt-glass-blur)) saturate(1.4);", "}", "body.lampa_view.pt-theme-glass .settings__layer,body.lampa_view.pt-theme-glass .selectbox__layer,body.lampa_view.pt-theme-glass .modal__layer {background:#0000008c}", "/* A sidebar can cover bright artwork; its material carries a stronger tint. */", "body.lampa_view.pt-theme-glass .wrap__left {background-color:rgba(28,28,30,.76)!important}", "body.lampa_view.pt-theme-glass .menu__item {border-radius:1.05em;padding:.85em 1em;color:#e2e1e6}", "body.lampa_view.pt-theme-glass .menu__item.focus,body.lampa_view.pt-theme-glass .menu__item.hover,body.lampa_view.pt-theme-glass .menu__item.traverse {background:var(--pt-glass-button);color:white;box-shadow:inset 0 1px 0 #ffffff30}", "body.lampa_view.pt-theme-glass .menu__item.focus:before {background:#fff}", "body.lampa_view.pt-theme-glass .items-line__title,body.lampa_view.pt-theme-glass .category-full__title {font-weight:650;letter-spacing:-.025em}", "body.lampa_view.pt-theme-glass .card__title {font-weight:550;letter-spacing:-.015em;color:#eeeef1}", "body.lampa_view.pt-theme-glass .card__view,body.lampa_view.pt-theme-glass .card__img {border-radius:1.05em}", "body.lampa_view.pt-theme-glass .card.focus .card__view,body.lampa_view.pt-theme-glass .card.hover .card__view {box-shadow:0 0 .65em #ffffff3b,0 7px 20px #00000055!important}", "body.lampa_view.pt-theme-glass .card.focus .card__view:after,body.lampa_view.pt-theme-glass .card.hover .card__view:after {border-radius:1.05em!important;border-color:#f7f7fa!important}", "body.lampa_view.pt-theme-glass .pt-quality,body.lampa_view.pt-theme-glass .pt-kind,body.lampa_view.pt-theme-glass .pt-series-status,body.lampa_view.pt-theme-glass .card__vote {background:#18181c9c;border-radius:.6em;border-color:#ffffff45;color:#fff}", "", "/* Artwork sits behind a compact, readable glass information pane. */", "body.lampa_view.pt-theme-glass .pt-hero {background:transparent!important;border-radius:1.8em;overflow:hidden;box-shadow:0 18px 50px #00000024}", "body.lampa_view.pt-theme-glass .pt-hero:before {background:linear-gradient(90deg,#10111366,transparent 68%),linear-gradient(0deg,#10111399,transparent 65%)}", "body.lampa_view.pt-theme-glass .pt-hero__body {", " padding:1.4em 1.5em;box-sizing:border-box;border:1px solid #ffffff30;border-radius:1.6em;", " background:linear-gradient(140deg,#ffffff17,#ffffff04),rgba(21,21,23,.60);box-shadow:var(--pt-glass-edge),0 12px 38px #0000002e;", " backdrop-filter:blur(12px) saturate(1.2);-webkit-backdrop-filter:blur(12px) saturate(1.2);", "}", "body.lampa_view.pt-theme-glass .pt-hero__title {font-weight:700;letter-spacing:-.04em}", "body.lampa_view.pt-theme-glass .pt-hero__overview {color:#e1e0e6}", "body.lampa_view.pt-theme-glass .pt-hero__action,body.lampa_view.pt-theme-glass .full-start__button,body.lampa_view.pt-theme-glass .simple-button {", " border-radius:2em;background:var(--pt-glass-button)!important;border:1px solid #ffffff45;color:#fafaff!important;box-shadow:var(--pt-glass-edge),0 4px 12px #00000020;", "}", "body.lampa_view.pt-theme-glass .pt-hero__action.focus,body.lampa_view.pt-theme-glass .pt-hero__action.hover,body.lampa_view.pt-theme-glass .simple-button.focus {background:linear-gradient(160deg,#ffffff4d,#ffffff1f)!important;border-color:#ffffffb3!important;box-shadow:var(--pt-glass-edge)!important}", "body.lampa_view.pt-theme-glass .pt-hero__dots {gap:.55em}", "body.lampa_view.pt-theme-glass .pt-hero__dot {background:#ffffff50}", "body.lampa_view.pt-theme-glass .pt-hero__dot.active {background:#f5f5f7}", "body.lampa_view.pt-theme-glass .minimal-detail-header {border-radius:1.4em}", "body.lampa_view.pt-theme-glass .minimal-detail-facts,body.lampa_view.pt-theme-glass .minimal-detail-cast>.minimal-cast-native {background:linear-gradient(145deg,#ffffff0d,#ffffff03),#1b1b1f61;border-color:#ffffff30;border-radius:1.5em;box-shadow:inset 0 1px 0 #ffffff15}", "body.lampa_view.pt-theme-glass .full-start-new__rate-line>div,body.lampa_view.pt-theme-glass .full-start__rate-line>div,body.lampa_view.pt-theme-glass .full-descr__tag {border-color:#ffffff30;border-radius:.9em;background:#ffffff10}", "body.lampa_view.pt-theme-glass .settings-folder,body.lampa_view.pt-theme-glass .settings-param,body.lampa_view.pt-theme-glass .selectbox-item {border-radius:1.1em;border-color:#ffffff10}", "body.lampa_view.pt-theme-glass .settings-folder.focus,body.lampa_view.pt-theme-glass .settings-param.focus,body.lampa_view.pt-theme-glass .selectbox-item.focus {background:var(--pt-glass-button)!important;color:white!important;box-shadow:inset 0 1px 0 #ffffff35!important}", "body.lampa_view.pt-theme-glass .settings-folder.focus .settings-folder__icon,body.lampa_view.pt-theme-glass .selectbox-item.focus .selectbox-item__checkbox,body.lampa_view.pt-theme-glass .settings-param.focus .selectbox-item__checkbox {filter:none;-webkit-filter:none}", "body.lampa_view.pt-theme-glass .selectbox-item.focus:after {border-color:#f5f5f7}", "body.lampa_view.pt-theme-glass .settings-param__value {color:#e2e1e6}", "body.lampa_view.pt-theme-glass .minimal-back--overlay {background:var(--pt-glass-button);border-color:#ffffff45;border-radius:50%}", "body.lampa_view.pt-theme-glass .input,body.lampa_view.pt-theme-glass .search-input,body.lampa_view.pt-theme-glass .search__input {background:#ffffff0b;border-radius:1.5em;border-color:var(--pt-glass-border);color:var(--pt-text)}", "", "body.lampa_view.pt-theme-glass .minimal-torrent-banner,body.lampa_view.pt-theme-glass .nova-plus-root .nova-hero {border-radius:1.6em;-webkit-clip-path:inset(0 round 1.6em);clip-path:inset(0 round 1.6em)}", "body.lampa_view.pt-theme-glass .torrent-item,body.lampa_view.pt-theme-glass .torrent-serial,body.lampa_view.pt-theme-glass .torrent-file {background:linear-gradient(140deg,#ffffff0f,#ffffff03),#1b1b1b4d;border-color:#ffffff2b;border-radius:1.25em}", "body.lampa_view.pt-theme-glass .torrent-item.focus,body.lampa_view.pt-theme-glass .torrent-serial.focus {background-color:#ffffff18;border-color:#ffffff99}", "body.lampa_view.pt-theme-glass .tc-pill,body.lampa_view.pt-theme-glass .tc-quality,body.lampa_view.pt-theme-glass .torrent-filter .filter__item {background:#ffffff0d;border-color:#ffffff30;border-radius:.8em}", "body.lampa_view.pt-theme-glass .nova-plus-root {background:transparent}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-btn,body.lampa_view.pt-theme-glass .nova-plus-root .nova-chip,body.lampa_view.pt-theme-glass .nova-plus-root .nova-group {background:var(--pt-glass-button)!important;border:1px solid #ffffff40!important;border-radius:1.3em!important;color:#f5f5f8!important;box-shadow:var(--pt-glass-edge)!important}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-chip--active,body.lampa_view.pt-theme-glass .nova-plus-root .nova-chip.focus,body.lampa_view.pt-theme-glass .nova-plus-root .nova-group.focus {background:linear-gradient(150deg,#ffffff38,#ffffff12)!important;border-color:#ffffffa6!important}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-card__thumb,body.lampa_view.pt-theme-glass .nova-plus-root .nova-card__thumb img {border-radius:1.15em}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova__list--grid .nova-card.focus .nova-card__thumb,body.lampa_view.pt-theme-glass .nova-plus-root .nova__list--grid .nova-card.hover .nova-card__thumb {box-shadow:0 0 .7em #ffffff3b,0 8px 20px #00000044!important}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-card--rowlist {background:#ffffff09;border:1px solid #ffffff25;border-radius:1.3em}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-hero .nova-btn {border-radius:2em!important;background:var(--pt-glass-button)!important;color:#f5f5f5!important}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-hero__shade {background:linear-gradient(0deg,#131316bf,transparent 78%)}", "body.lampa_view.pt-theme-glass .minimal-online-option {background:#ffffff0c;border-color:#ffffff30;border-radius:1em}", "body.lampa_view.pt-theme-glass .minimal-online-option--selected,body.lampa_view.pt-theme-glass .minimal-online-option.focus {background:var(--pt-glass-button);border-color:#ffffff99}", "body.lampa_view.pt-theme-glass .nova-source-option__quality {background:#ffffff13;border-color:#ffffff35;color:#f5f5f7}", "body.lampa_view.pt-theme-glass .player-panel,body.lampa_view.pt-theme-glass .player-info {background:#1c1c20b3;border-color:#ffffff40;border-radius:1.6em}", "body.lampa_view.pt-theme-glass .player-panel__button.focus {background:#ffffff25;color:#fff}", "body.lampa_view.pt-theme-glass .time-line>div {background:#ededf1!important}", 'body.lampa_view.pt-theme-glass .minimal-anime-tab[aria-selected="true"] {background:var(--pt-glass-button)!important;border-color:#ffffffb3!important;color:#fff!important;box-shadow:0 0 .4em #ffffff66,0 0 1.3em #ffffff30!important}', "", "body.lampa_view.pt-theme-glass.pt-mobile .head {height:4.8em!important}", "body.lampa_view.pt-theme-glass.pt-mobile .wrap__content {padding-top:5.4em!important}", "body.lampa_view.pt-theme-glass.pt-mobile .head__menu-icon,body.lampa_view.pt-theme-glass.pt-mobile .head__backward,body.lampa_view.pt-theme-glass.pt-mobile .head__action.open--settings,body.lampa_view.pt-theme-glass.pt-mobile .head__action.open--profile {min-width:44px;min-height:44px;flex-shrink:0}", "body.lampa_view.pt-theme-glass.pt-mobile .head__body {width:94%;height:3.8em;padding:.4em .5em}", "body.lampa_view.pt-theme-glass.pt-mobile .pt-hero__body {left:1em;right:1em;padding:1.1em;bottom:3.5em;max-width:none}", "body.lampa_view.pt-theme-glass.pt-mobile .navigation-bar__body {border:1px solid #ffffff55;border-radius:2.5em;background:linear-gradient(150deg,#ffffff28,#ffffff07),rgba(42,42,42,.44);box-shadow:var(--pt-glass-edge),0 10px 28px #00000055;backdrop-filter:blur(var(--pt-glass-blur)) saturate(1.4);-webkit-backdrop-filter:blur(var(--pt-glass-blur)) saturate(1.4)}", "body.lampa_view.pt-theme-glass.pt-mobile .navigation-bar__item {border-radius:2em}", "body.lampa_view.pt-theme-glass.pt-mobile .navigation-bar__item.active {background:#ffffff15}", "body.lampa_view.pt-theme-glass.pt-tv {--pt-glass-blur:10px}", "body.lampa_view.pt-theme-glass.pt-tv .pt-hero__body {backdrop-filter:none;-webkit-backdrop-filter:none;background:linear-gradient(140deg,#ffffff1c,#ffffff05),#18181bba}", "body.lampa_view.pt-theme-glass.pt-tv .head__body {backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}", "@media(prefers-reduced-motion:reduce){body.lampa_view.pt-theme-glass .minimal-anime-tab,/* A sidebar can cover bright artwork; its material carries a stronger tint. */", "body.lampa_view.pt-theme-glass .wrap__left {background-color:rgba(28,28,30,.76)!important}", "body.lampa_view.pt-theme-glass .menu__item {transition:none!important}}", "@media(prefers-reduced-transparency:reduce){body.lampa_view.pt-theme-glass {--pt-glass-alpha:.9;--pt-glass-blur:0px}body.lampa_view.pt-theme-glass .head__body {background:#242426}body.lampa_view.pt-theme-glass .pt-hero__body {background:#202023;backdrop-filter:none;-webkit-backdrop-filter:none}}", ""].join("\n");
+
+  // src/glass-ambient.js
+  function glassAmbient(active) {
+    var selector = ".pt-hero__image,.full-start__background,.nova-hero__bg img,.minimal-torrent-banner__image",
+      cache = /* @__PURE__ */new Map();
+    var pending, timer, canvas;
+    var moving = function moving() {
+      return document.hidden || document.body.matches(".pt-tv-busy,.pt-wheel-active");
+    };
+    function current(image2) {
+      var activity = image2.closest(".activity");
+      return image2.isConnected && (!activity || activity.classList.contains("activity--active"));
+    }
+    function apply(colors) {
+      colors.forEach(function (color, index) {
+        return document.body.style.setProperty("--pt-glass-tone-" + (index ? "b" : "a"), color.join(","));
+      });
+    }
+    function sample() {
+      timer = null;
+      if (!active() || moving() || !pending || !current(pending) || !pending.complete || !pending.naturalWidth) return;
+      var image2 = pending,
+        url = image2.currentSrc || image2.src;
+      pending = null;
+      if (cache.has(url)) {
+        var colors = cache.get(url);
+        cache.delete(url);
+        cache.set(url, colors);
+        apply(colors);
+        return;
+      }
+      try {
+        if (!canvas) {
+          canvas = document.createElement("canvas");
+          canvas.width = 6;
+          canvas.height = 6;
+        }
+        var ctx = canvas.getContext("2d", {
+          willReadFrequently: true
+        });
+        if (!ctx) return;
+        ctx.clearRect(0, 0, 6, 6);
+        ctx.drawImage(image2, 0, 0, 6, 6);
+        var pixels = ctx.getImageData(0, 0, 6, 6).data,
+          _colors = [];
+        var _loop4 = function _loop4() {
+            var sum = [0, 0, 0];
+            var count = 0;
+            for (var y = 0; y < 6; y++) for (var x = half * 3; x < half * 3 + 3; x++) {
+              var i = (y * 6 + x) * 4;
+              if (pixels[i + 3] < 128) continue;
+              count++;
+              for (var k = 0; k < 3; k++) sum[k] += pixels[i + k];
+            }
+            if (!count) return {
+              v: void 0
+            };
+            var average = sum.map(function (value) {
+                return value / count;
+              }),
+              level = average.reduce(function (a, b) {
+                return a + b;
+              }, 0) / 3,
+              gain = Math.min(2.4, Math.max(0.7, 90 / Math.max(1, level)));
+            _colors.push(average.map(function (value) {
+              return Math.round(Math.max(24, Math.min(150, value * gain)));
+            }));
+          },
+          _ret3;
+        for (var half = 0; half < 2; half++) {
+          _ret3 = _loop4();
+          if (_ret3) return _ret3.v;
+        }
+        cache.set(url, _colors);
+        if (cache.size > 32) cache.delete(cache.keys().next().value);
+        apply(_colors);
+      } catch (_) {}
+    }
+    function queue(image2) {
+      if (!active() || !image2 || !current(image2)) return;
+      pending = image2;
+      if (!moving() && !timer) timer = setTimeout(sample, 0);
+    }
+    function refresh() {
+      if (!active()) return;
+      var images = Array.from(document.querySelectorAll(selector)).filter(current);
+      queue(images[images.length - 1]);
+    }
+    document.addEventListener("load", function (event) {
+      if (event.target.matches && event.target.matches(selector)) queue(event.target);
+    }, true);
+    document.addEventListener("minimal:tv-idle", function () {
+      if (pending && !timer) timer = setTimeout(sample, 0);
+    });
+    document.addEventListener("minimal:wheel-idle", function () {
+      if (pending && !timer) timer = setTimeout(sample, 0);
+    });
+    document.addEventListener("visibilitychange", function () {
+      if (!document.hidden) refresh();
+    });
+    return {
+      refresh: refresh
+    };
+  }
 
   // src/appearance.js
   function themeValue(value) {
@@ -10837,6 +10941,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       style.textContent = glass_default;
       (document.head || document.documentElement).appendChild(style);
     }
+    var ambient = glassAmbient(function () {
+      return document.body.classList.contains("pt-theme-glass") && yes(L.Storage.get("lampa_view_enabled", true));
+    });
     function nativeValue(name, fallback) {
       try {
         return L.Storage.field ? L.Storage.field(name) : L.Storage.get(name, fallback);
@@ -10859,16 +10966,20 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         return document.body.classList.toggle("glass--style-opacity--" + mode, glass && opacity === mode);
       });
       document.body.style.setProperty("--pt-glass-alpha", String({
-        easy: 0.26,
-        medium: 0.42,
-        blacked: 0.66
+        easy: 0.16,
+        medium: 0.3,
+        blacked: 0.58
       }[opacity] || 0.32));
+      ambient.refresh();
       document.dispatchEvent(new Event("minimal:interface-size"));
       document.dispatchEvent(new Event("minimal:hero-layout"));
     }
     update();
     if (L.Storage.listener) L.Storage.listener.follow("change", function (event) {
       if (["lampa_view_theme", "lampa_view_enabled", "glass_style", "glass_opacity"].includes(event.name)) update();
+    });
+    if (L.Listener) L.Listener.follow("activity", function (event) {
+      if (event.type === "start") setTimeout(ambient.refresh, 0);
     });
     return {
       update: update
@@ -10919,7 +11030,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         return cacheControl(L).clear("quality");
       }
     });
-    var _loop4 = function _loop4() {
+    var _loop5 = function _loop5() {
       var _arr5$_i = _slicedToArray(_arr5[_i5], 3),
         type = _arr5$_i[0],
         name = _arr5$_i[1],
@@ -10941,7 +11052,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       });
     };
     for (var _i5 = 0, _arr5 = [["ratings", text("Очистить кеш рейтингов"), text("Удалить сохранённые оценки. История и закладки сохранятся.")], ["quality", text("Очистить кеш качества"), text("Удалить сохранённое качество карточек каталога и заново проверить видимые карточки.")]]; _i5 < _arr5.length; _i5++) {
-      _loop4();
+      _loop5();
     }
   }
 
@@ -11073,7 +11184,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       return document.body.matches(".pt-wheel-active,.pt-tv-busy") || document.hidden;
     };
     function pump() {
-      var _loop5 = function _loop5() {
+      var _loop6 = function _loop6() {
         var job = queue.shift();
         if (!job.listeners.some(function (l) {
           return !l.alive || l.alive();
@@ -11117,7 +11228,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
       };
       while (!paused() && running < (document.body.classList.contains("pt-tv") ? 1 : 2) && queue.length) {
-        if (_loop5()) continue;
+        if (_loop6()) continue;
       }
     }
     function fetch(c, ok, alive) {
@@ -11457,7 +11568,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var _iterator14 = _createForOfIteratorHelper(badges),
       _step14;
     try {
-      var _loop6 = function _loop6() {
+      var _loop7 = function _loop7() {
           var badge = _step14.value;
           var w = Math.min(badge.width, Math.max(0, width - padding * 2)),
             h = badge.height;
@@ -11481,10 +11592,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             height: h
           }));
         },
-        _ret3;
+        _ret4;
       for (_iterator14.s(); !(_step14 = _iterator14.n()).done;) {
-        _ret3 = _loop6();
-        if (_ret3 === 0) continue;
+        _ret4 = _loop7();
+        if (_ret4 === 0) continue;
       }
     } catch (err) {
       _iterator14.e(err);
@@ -11580,7 +11691,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var _iterator16 = _createForOfIteratorHelper(entries2),
           _step16;
         try {
-          var _loop7 = function _loop7() {
+          var _loop8 = function _loop8() {
             var entry = _step16.value;
             var p = places.find(function (p2) {
               return p2.el === entry.el;
@@ -11597,7 +11708,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             });
           };
           for (_iterator16.s(); !(_step16 = _iterator16.n()).done;) {
-            if (_loop7()) continue;
+            if (_loop8()) continue;
           }
         } catch (err) {
           _iterator16.e(err);
@@ -12057,7 +12168,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       } else if (pending.has(key)) pending.get(key).nodes.add(node);
     }
     function pump() {
-      var _loop8 = function _loop8() {
+      var _loop9 = function _loop9() {
         var task = queue.shift();
         running++;
         var done = false;
@@ -12095,7 +12206,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
       };
       while (running < (document.body.classList.contains("pt-tv") ? 1 : 2) && queue.length) {
-        _loop8();
+        _loop9();
       }
     }
     if (L.Listener && L.Listener.follow) L.Listener.follow("state:changed", function (event) {
@@ -12275,7 +12386,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       badges.schedule(node);
     }
     function drain() {
-      var _loop9 = function _loop9() {
+      var _loop0 = function _loop0() {
         var _next2 = function next() {
           if (job.generation !== generation) return;
           if (!job.nodes.some(function (n) {
@@ -12386,7 +12497,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         _next2();
       };
       while (!document.body.matches(".pt-wheel-active,.pt-tv-busy") && running < (document.body.classList.contains("pt-tv") ? 1 : 2) && queue.length) {
-        if (_loop9()) continue;
+        if (_loop0()) continue;
       }
     }
     function inspect(item) {
@@ -12790,7 +12901,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     };
     if (!state.posterFitWrapped) {
       state.posterFitWrapped = true;
-      var _loop0 = function _loop0() {
+      var _loop1 = function _loop1() {
         var method = _arr1[_i10];
         var original = line.scroll[method];
         if (!original) return 1; // continue
@@ -12806,7 +12917,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         };
       };
       for (var _i10 = 0, _arr1 = ["update", "immediate"]; _i10 < _arr1.length; _i10++) {
-        if (_loop0()) continue;
+        if (_loop1()) continue;
       }
     }
     if (previous && line.last && line.scroll.immediate) line.scroll.immediate(line.last, true);
@@ -13885,7 +13996,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         complete();
         return;
       }
-      var _loop1 = function _loop1() {
+      var _loop10 = function _loop10() {
         var finish = function finish(json) {
           if (settled) return;
           settled = true;
@@ -13937,7 +14048,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });else finish(null);
       };
       while (!ended && running < 3 && cursor < plan.length) {
-        if (_loop1()) continue;
+        if (_loop10()) continue;
       }
       complete();
     }
@@ -16602,7 +16713,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var _iterator42 = _createForOfIteratorHelper(rows),
       _step42;
     try {
-      var _loop10 = function _loop10() {
+      var _loop11 = function _loop11() {
           var row = _step42.value;
           if (!row.similar || row.method !== "link" || !/^(?:https?:\/\/|\/)/i.test(row.url || "")) return 0; // continue
           var title = String(row.title || row.name || row.text || ""),
@@ -16638,11 +16749,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             url: row.url
           });
         },
-        _ret4;
+        _ret5;
       for (_iterator42.s(); !(_step42 = _iterator42.n()).done;) {
-        _ret4 = _loop10();
-        if (_ret4 === 0) continue;
-        if (_ret4) return _ret4.v;
+        _ret5 = _loop11();
+        if (_ret5 === 0) continue;
+        if (_ret5) return _ret5.v;
       }
     } catch (err) {
       _iterator42.e(err);
@@ -16858,7 +16969,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         max = 60;
       var latest = null;
       if (Object.keys(records).length) {
-        var _loop11 = function _loop11(s) {
+        var _loop12 = function _loop12(s) {
           var detail2 = seasons.find(function (row) {
               return Number(row.season_number) === s;
             }),
@@ -16898,7 +17009,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }
         };
         for (var s = 1; s <= max; s++) {
-          _loop11(s);
+          _loop12(s);
         }
       }
       var value = latest ? {
@@ -17665,7 +17776,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       save();
     }
     function pump() {
-      var _loop12 = function _loop12() {
+      var _loop13 = function _loop13() {
         var task = queue.shift();
         if (task.generation !== generation) return 1; // continue
         running++;
@@ -17695,7 +17806,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
       };
       while (running < 2 && queue.length) {
-        if (_loop12()) continue;
+        if (_loop13()) continue;
       }
     }
     function request(path, lang, done) {
@@ -17947,7 +18058,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       });
     };
     function pump() {
-      var _loop13 = function _loop13() {
+      var _loop14 = function _loop14() {
         var finish = function finish(json, message) {
           if (settled) return;
           settled = true;
@@ -18009,7 +18120,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
       };
       while (running < 2 && queue.length) {
-        if (_loop13()) continue;
+        if (_loop14()) continue;
       }
     }
     function clear() {
@@ -18309,14 +18420,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         list: list,
         clear: clear
       };
-    var _loop14 = function _loop14() {
+    var _loop15 = function _loop15() {
       var method = _arr14[_i17];
       if (tmdb[method]) adapter[method] = function () {
         return tmdb[method].apply(tmdb, arguments);
       };
     };
     for (var _i17 = 0, _arr14 = ["full", "person", "seasons", "menu", "menuCategory", "genres", "collections"]; _i17 < _arr14.length; _i17++) {
-      _loop14();
+      _loop15();
     }
     L.Api.sources.trakt = adapter;
     function sources() {
@@ -18484,7 +18595,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           var _iterator65 = _createForOfIteratorHelper(buttons),
             _step65;
           try {
-            var _loop15 = function _loop15() {
+            var _loop16 = function _loop16() {
               var button = _step65.value;
               if (!origins.has(button)) {
                 var native = document.createElement("span");
@@ -18508,7 +18619,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               if (button.parentNode !== group) group.appendChild(button);
             };
             for (_iterator65.s(); !(_step65 = _iterator65.n()).done;) {
-              _loop15();
+              _loop16();
             }
           } catch (err) {
             _iterator65.e(err);
