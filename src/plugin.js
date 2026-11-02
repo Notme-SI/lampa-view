@@ -234,8 +234,9 @@ if (!ROOT.LampaView) {
       const element=$(lampaViewText("<section class=\"pt-hero\" aria-label=\"Подборка фильмов и сериалов\">"));
       const image=$('<img class="pt-hero__image" alt="" decoding="async">').appendTo(element);
       const body=$('<div class="pt-hero__body">').appendTo(element);
-      const logo=$('<img class="pt-hero__logo pt-hidden" decoding="async">').appendTo(body);
-      const title=$('<h1 class="pt-hero__title">').appendTo(body);
+      const brandingSlot=$('<div class="pt-hero__branding">').appendTo(body);
+      const logo=$('<img class="pt-hero__logo pt-hidden" decoding="async">').appendTo(brandingSlot);
+      const title=$('<h1 class="pt-hero__title">').appendTo(brandingSlot);
       const meta=$('<div class="pt-hero__meta">').appendTo(body);
       const studio=$('<img class="pt-hero__studio pt-hidden" decoding="async">').appendTo(meta);
       const metaText=$('<span>').appendTo(meta);

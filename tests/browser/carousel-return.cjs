@@ -13,7 +13,7 @@ const {chromium,webkit}=require(process.env.PLAYWRIGHT_MODULE || 'playwright'),{
   if(mode==='mobile'){await page.setViewportSize({width:320,height:740});await page.waitForTimeout(180);const controls=await page.locator('.head__actions>.head__action').evaluateAll(nodes=>nodes.map(n=>({class:n.className,left:n.getBoundingClientRect().left,right:n.getBoundingClientRect().right,width:n.getBoundingClientRect().width})).filter(n=>n.width>0));for(const n of controls)assert.ok(n.left>=0 && n.right<=320,'Native head controls fit the narrow phone: '+JSON.stringify(controls));await page.setViewportSize(viewport);await page.waitForTimeout(180);}
   await page.evaluate(()=>Lampa.Activity.push({component:'main',source:'tmdb'}));await page.waitForSelector('.activity--active .pt-hero__image[src]');await page.waitForTimeout(450);
   const geometry=()=>page.locator('.activity--active .pt-hero').evaluate(h=>({height:h.offsetHeight,row:h.nextElementSibling.offsetTop,width:h.offsetWidth,fit:getComputedStyle(h.querySelector('.pt-hero__image')).objectFit,image:[h.querySelector('.pt-hero__image').naturalWidth,h.querySelector('.pt-hero__image').naturalHeight]}));
-  const initial=await geometry();const zoom=await page.locator('.activity--active .pt-hero__image').evaluate(n=>({transform:getComputedStyle(n).transform,origin:getComputedStyle(n).transformOrigin}));assert.match(zoom.transform,/matrix\(1\.06,/);assert.match(zoom.origin,/ 0px$/,'Zoom anchors the top edge');
+  const initial=await geometry();const zoom=await page.locator('.activity--active .pt-hero__image').evaluate(n=>({transform:getComputedStyle(n).transform,origin:getComputedStyle(n).transformOrigin}));assert.match(zoom.transform,mode==='desktop'?/matrix\(1\.12,/:/matrix\(1\.06,/);assert.match(zoom.origin,/ 0px$/,'Zoom anchors the top edge');
   if(mode==='mobile'){const mobile=await page.locator('.activity--active .pt-hero').evaluate(h=>{const i=h.querySelector('.pt-hero__image').getBoundingClientRect(),p=h.querySelector('.pt-hero__body').getBoundingClientRect();return {gap:p.top-i.bottom,gear:getComputedStyle(document.querySelector('.head .open--settings')).display,position:getComputedStyle(h.querySelector('.pt-hero__body')).position};});assert.equal(mobile.gear,'none');assert.equal(mobile.position,'relative');assert.ok(mobile.gap<=20 && mobile.gap>=-25,'No empty image/logo gap: '+JSON.stringify(mobile));}
   assert.equal(initial.fit,'contain','The source keeps its aspect ratio inside the frame');assert.deepEqual(initial.image,[1600,900]);
   if(mode!=='mobile'){
@@ -28,6 +28,35 @@ const {chromium,webkit}=require(process.env.PLAYWRIGHT_MODULE || 'playwright'),{
   const samples=[];for(const wait of [60,160,450]){await page.waitForTimeout(wait);samples.push(await geometry());}
   for(const value of samples){assert.ok(Math.abs(value.height-initial.height)<=1,'Returning from a card keeps the first slide height: '+JSON.stringify({mode,initial,value}));assert.ok(Math.abs(value.row-initial.row)<=1,'First collection does not jump on return');}
   await page.locator('.activity--active .pt-hero__dot').nth(1).click();await page.waitForTimeout(150);assert.equal((await geometry()).height,initial.height,'Advancing a slide cannot repair/change frame geometry');
+  if(mode==='mobile'){
+   // Different artwork proportions and text lengths used to resize the natural-flow panel.
+   for(const width of [320,390,430]){
+    await page.setViewportSize({width,height:844});await page.waitForTimeout(160);
+    const samples=[];
+    for(const variant of ['fallback','wide','tall','square','translated','pending','loaded']){
+     const sample=await page.locator('.activity--active .pt-hero').evaluate(async(h,variant)=>{
+      const logo=h.querySelector('.pt-hero__logo'),title=h.querySelector('.pt-hero__title'),overview=h.querySelector('.pt-hero__overview');
+      logo.className='pt-hero__logo'+(['fallback','pending'].includes(variant)?' pt-hidden':'')+(variant==='translated'?' pt-hero__logo--translated':'');
+      title.className='pt-hero__title'+(['fallback','pending','translated'].includes(variant)?'':' pt-hidden')+(variant==='translated'?' pt-hero__title--translation':'');
+      title.textContent='A long localized title for the current movie';
+      overview.textContent=variant==='wide'?'Short synopsis.':variant==='fallback'?'':'A much longer synopsis which wraps across several lines and is clamped without moving the action or the collection. '.repeat(8);
+      h.querySelector('.pt-hero__meta>span').textContent=variant==='translated'?'2026 · A longer translated media type · 8.0':'2026 · Film · 8.0';
+      if(!['fallback','pending'].includes(variant)){
+       const [w,ht]=variant==='tall'?[250,500]:variant==='square'?[500,500]:[1990,449];
+       logo.src='data:image/svg+xml,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${ht}"><rect width="${w}" height="${ht}" fill="white"/></svg>`);await logo.decode();
+      }
+      const b=n=>{const r=n.getBoundingClientRect();return {top:r.top-h.getBoundingClientRect().top,height:r.height};};
+      return {variant,panel:b(h.querySelector('.pt-hero__body')),brand:b(h.querySelector('.pt-hero__branding')),meta:b(h.querySelector('.pt-hero__meta')),overview:b(overview),action:b(h.querySelector('.pt-hero__action')),dots:b(h.querySelector('.pt-hero__dots')),row:h.nextElementSibling.offsetTop,hero:h.offsetHeight,padding:parseFloat(getComputedStyle(h.querySelector('.pt-hero__body')).paddingTop),font:parseFloat(getComputedStyle(h).fontSize)};
+     },variant);samples.push(sample);
+    }
+    const first=samples[0];for(const sample of samples){
+     for(const key of ['panel','brand','meta','overview','action','dots'])for(const axis of ['top','height'])assert.ok(Math.abs(sample[key][axis]-first[key][axis])<=1,`${engine.name()} ${theme} ${width}: ${key}.${axis} stays fixed after ${sample.variant}: `+JSON.stringify(samples));
+     assert.ok(Math.abs(sample.row-first.row)<=1 && Math.abs(sample.hero-first.hero)<=1,'Content and late logo decode do not move the collection');
+     assert.ok(sample.padding>=1.4*sample.font,'Logo has a modest, consistent gap from the image');
+    }
+   }
+   await page.setViewportSize(viewport);await page.waitForTimeout(160);
+  }
   if(process.env.LAMPA_QA_OUTPUT){fs.mkdirSync(process.env.LAMPA_QA_OUTPUT,{recursive:true});await page.screenshot({path:path.join(process.env.LAMPA_QA_OUTPUT,'return-'+engine.name()+'-'+mode+'.png')});}
   assert.deepEqual(r.errors,[]);console.log(engine.name()+' '+mode+' '+theme+': gently zoomed artwork, ancestor animation and main/full/Back/slide keep identical geometry');
  }finally{await r.context.close();}
