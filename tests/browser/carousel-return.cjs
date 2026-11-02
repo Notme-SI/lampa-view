@@ -21,6 +21,12 @@ const {chromium,webkit}=require(process.env.PLAYWRIGHT_MODULE || 'playwright'),{
    await page.locator('.activity--active .pt-hero').evaluate(h=>{h.style.marginBottom='';document.dispatchEvent(new Event('minimal:hero-layout'));});await page.waitForTimeout(200);
    assert.ok(initial.height>=old.height+4,'Carousel gains real height from the former gap');assert.ok(Math.abs(initial.row-old.row)<=1,'Growing the banner does not push the collection down');
   }
+  if(mode==='desktop'){
+   await page.evaluate(()=>Lampa.Storage.set('lampa_view_layout','auto'));await page.setViewportSize({width:390,height:844});await page.waitForTimeout(650);
+   const flow=await page.locator('.activity--active .pt-hero').evaluate(h=>({mobile:document.body.classList.contains('pt-mobile'),inline:h.style.height,bodyBottom:h.querySelector('.pt-hero__body').getBoundingClientRect().bottom,heroBottom:h.getBoundingClientRect().bottom,dotsTop:h.querySelector('.pt-hero__dots').getBoundingClientRect().top,actionBottom:h.querySelector('.pt-hero__action').getBoundingClientRect().bottom}));
+   assert.equal(flow.mobile,true);assert.equal(flow.inline,'','Desktop frame height is released on mobile');assert.ok(flow.heroBottom>=flow.bodyBottom-1 && flow.dotsTop>flow.actionBottom,'Mobile content and dots stay inside their natural frame: '+JSON.stringify(flow));
+   await page.evaluate(()=>Lampa.Storage.set('lampa_view_layout','desktop'));await page.setViewportSize(viewport);await page.waitForTimeout(650);assert.ok(Math.abs((await geometry()).height-initial.height)<=1,'Responsive round trip restores desktop geometry');
+  }
   // Simulate the native Activity entrance transform without changing layout.
   await page.locator('.activity--active .pt-hero').evaluate(h=>{const host=h.closest('.activity__body');window.qaEntrance=host.animate([{transform:'translateY(120px)'},{transform:'translateY(120px)'}],{duration:10000});document.dispatchEvent(new Event('minimal:hero-layout'));});await page.waitForTimeout(120);
   assert.equal((await geometry()).height,initial.height,'An ancestor entrance animation cannot shrink the frame');await page.evaluate(()=>qaEntrance.cancel());

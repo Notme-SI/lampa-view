@@ -86,6 +86,11 @@ if (!ROOT.LampaView) {
     P.layout=selected==='auto' ? (tv ? 'tv' : mobile || ROOT.innerWidth<=650 ? 'mobile' : 'desktop') : selected;
     ['mobile','tv','desktop'].forEach(mode=>document.body.classList.toggle('pt-'+mode,P.layout===mode));
     if(previous!==P.layout && interfaceLayout)interfaceLayout.update();
+    if(previous!==P.layout && P.layout==='mobile')document.querySelectorAll('.pt-hero').forEach(hero=>{
+      // A desktop frame height must not constrain the mobile image/panel flow.
+      hero.style.height='';const body=hero.querySelector('.pt-hero__body');
+      if(body){body.style.fontSize='';body.style.bottom='';}
+    });
     const agent=ROOT.navigator && ROOT.navigator.userAgent || '';
     document.body.classList.toggle('pt-safari',/Safari\//.test(agent) && !/(?:Chrome|Chromium|Edg|OPR|Android)\//.test(agent));
   }
