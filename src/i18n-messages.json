@@ -7655,5 +7655,31 @@
   "ro": "Sursa nu oferă alegerea dublajului.",
   "fr": "Cette source ne propose pas de choix audio.",
   "pl": "To źródło nie oferuje wyboru dźwięku."
+ },
+ "Качество на странице": {
+  "en": "Quality on this page",
+  "uk": "Якість на сторінці",
+  "be": "Якасць на старонцы",
+  "zh": "本页画质",
+  "pt": "Qualidade nesta página",
+  "bg": "Качество на страницата",
+  "he": "איכות בעמוד זה",
+  "cs": "Kvalita na této stránce",
+  "ro": "Calitatea pe această pagină",
+  "fr": "Qualité sur cette page",
+  "pl": "Jakość na tej stronie"
+ },
+ "Сначала 4K; неизвестное качество в конце": {
+  "en": "4K first; unknown quality last",
+  "uk": "Спочатку 4K; невідома якість наприкінці",
+  "be": "Спачатку 4K; невядомая якасць у канцы",
+  "zh": "4K 优先；未知画质置后",
+  "pt": "4K primeiro; qualidade desconhecida no fim",
+  "bg": "Първо 4K; неизвестното качество е накрая",
+  "he": "4K תחילה; איכות לא ידועה בסוף",
+  "cs": "Nejprve 4K; neznámá kvalita nakonec",
+  "ro": "Mai întâi 4K; calitate necunoscută la final",
+  "fr": "4K en premier ; qualité inconnue à la fin",
+  "pl": "Najpierw 4K; nieznana jakość na końcu"
  }
 }

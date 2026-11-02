@@ -1,5 +1,6 @@
 import {text as lampaViewText} from './i18n.js';
 import detail from './detail.js';
+import studioCatalogue from './studio-catalogue.js';
 import installI18n from './i18n.js';
 import {version} from '../package.json';
 import inputs from './inputs.js';
@@ -501,7 +502,7 @@ if (!ROOT.LampaView) {
       if (event.type === 'start') {updateRoute();trimSections();visibleDetail();visibleHero();}
       refreshCarousels();
     });
-    visibleDetail();
+    visibleDetail();studioCatalogue(L);
     P.ready=true;startup(L,ROOT);
   }
   function ready() {

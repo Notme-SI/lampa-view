@@ -11,6 +11,11 @@ export function releaseDate(card){
  if(year<100 || date.getFullYear()!==year || date.getMonth()!==month-1 || date.getDate()!==day)return '';
  return day+' '+[lampaViewText("января"),lampaViewText("февраля"),lampaViewText("марта"),lampaViewText("апреля"),lampaViewText("мая"),lampaViewText("июня"),lampaViewText("июля"),lampaViewText("августа"),lampaViewText("сентября"),lampaViewText("октября"),lampaViewText("ноября"),lampaViewText("декабря")][month-1]+' '+year;
 }
+const overviewControls=new Set();let overviewDocument;
+function overviewFocus(target){
+ const active=document.activeElement;if(active && active.matches('.minimal-overview-action,.minimal-detail-studio') && active!==target && !active.contains(target))active.blur();
+ for(const control of overviewControls){if(!control.isConnected){overviewControls.delete(control);continue;}const ring=control.querySelector('.minimal-overview-focus');if(ring)ring.hidden=!(target===control || control.contains(target));}
+}
 function readableOverview(L,card,right,link){
  if(!card.overview || !String(card.overview).trim())return;
  let text=right.querySelector('.full-start-new__description,.minimal-detail-overview');
@@ -18,7 +23,8 @@ function readableOverview(L,card,right,link){
  if(text.parentElement.classList.contains('minimal-overview-action'))return;
  const control=document.createElement('div');control.className='minimal-overview-action selector';text.before(control);control.appendChild(text);
  text.classList.remove('minimal-overview-action','selector','focus');
- const ring=document.createElement('span');ring.className='minimal-overview-focus';ring.setAttribute('aria-hidden','true');control.appendChild(ring);
+ const ring=document.createElement('span');ring.className='minimal-overview-focus';ring.setAttribute('aria-hidden','true');ring.hidden=true;control.appendChild(ring);overviewControls.add(control);
+ if(overviewDocument!==document){overviewDocument=document;for(const name of ['hover:focus','hover:hover','focusin'])document.addEventListener(name,event=>overviewFocus(event.target),true);}
  control.setAttribute('role','button');control.setAttribute('tabindex','0');control.setAttribute('aria-haspopup','dialog');control.setAttribute('aria-label',lampaViewText("Прочитать описание полностью"));control.title=lampaViewText("Прочитать описание полностью");
  function remember(){if(link && link.items && link.items[0])link.items[0].last=control;}
  function open(){
@@ -200,7 +206,7 @@ export default function detail(L,event,loadLogo){
   function linkStudio(icon){
    if(!/^\d+$/.test(String(studio.id)) || Number(studio.id)<=0 || icon.dataset.studioId)return;
    icon.dataset.studioId=String(studio.id);icon.classList.add('selector');icon.setAttribute('role','button');icon.tabIndex=0;icon.setAttribute('aria-label',lampaViewText("Проекты {0}", [studio.name]));icon.title=lampaViewText("Проекты {0}", [studio.name]);
-   const open=()=>{if(!icon.isConnected)return;L.Activity.push(studio.kind==='network'?{component:'category_full',source:'tmdb',url:'discover/tv',networks:studio.id,sort_by:'popularity.desc',title:studio.name,page:1}:{component:'company',source:'tmdb',url:movie.media_type,id:studio.id,title:studio.name});};
+   const open=()=>{if(!icon.isConnected)return;L.Activity.push(studio.kind==='network'?{component:'category_full',source:'tmdb',url:'discover/tv',networks:studio.id,sort_by:'popularity.desc',title:studio.name,page:1,minimal_studio:{...studio}}:{component:'company',source:'tmdb',url:movie.media_type,id:studio.id,title:studio.name,minimal_studio:{...studio}});};
    window.jQuery(icon).on('hover:enter',open).on('hover:focus',()=>{if(event.link && event.link.items && event.link.items[0])event.link.items[0].last=icon;});
    icon.addEventListener('click',event=>{event.preventDefault();event.stopImmediatePropagation();open();});
    icon.addEventListener('keydown',event=>{if(event.key==='Enter' || event.key===' '){event.preventDefault();event.stopImmediatePropagation();open();}});

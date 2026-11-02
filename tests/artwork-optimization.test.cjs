@@ -100,9 +100,9 @@ test('nearby posters preload before native visibility and stay painted during TV
  function make(id,x){const c=L.Utils.createInstance(L.Maker.get('Card',{}),{id,title:'Film',poster_path:'/prefetch'+id+'.jpg'});c.create();const node=c.render(true);w.document.body.appendChild(node);c.x=x;node.getBoundingClientRect=()=>({width:120,height:180,left:c.x,right:c.x+120,top:30,bottom:210});cards.push(c);return c;}
  try{
   const visible=make(201,0),near=make(202,w.innerWidth+40),distant=make(203,w.innerWidth+4000);
-  visible.visible();enter([{target:near.render(true),isIntersecting:true},{target:distant.render(true),isIntersecting:true}]);await wait(30);
+  w.document.body.classList.add('pt-tv-busy');visible.visible();enter([{target:near.render(true),isIntersecting:true},{target:distant.render(true),isIntersecting:true}]);await wait(30);
   assert.equal(loaders.length,1,'A neighbour does not consume the visible request slot');assert.match(loaders[0].url,/prefetch201/);
-  loaders[0].onload();await wait(30);assert.equal(loaders.length,2);assert.match(loaders[1].url,/prefetch202/);
+  loaders[0].onload();await wait(30);assert.equal(loaders.length,2);assert.match(loaders[1].url,/prefetch202/,'Near-viewport preloading continues during remote navigation, one spare slot at a time');
   loaders[1].onload();const painted=near.img.src;assert.match(painted,/prefetch202/,'Paint the near viewport image before navigation');
   near.x=20;w.document.body.classList.add('pt-tv-busy');near.visible();await wait(30);
   assert.equal(near.img.src,painted);assert.equal(loaders.length,2,'No repeat download and no blanking during the next remote movement');assert.deepEqual(n.errors,[]);

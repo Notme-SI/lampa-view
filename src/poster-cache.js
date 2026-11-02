@@ -11,7 +11,7 @@ export default function posterCache(L,enabled,highQuality){
  let running=0,timer;
  const maximum=()=>enabled() && highQuality();
  const tv=()=>document.body.classList.contains('pt-tv');
- const paused=()=>document.hidden || document.body.classList.contains('pt-wheel-active') || tv() && document.body.classList.contains('pt-tv-busy');
+ const paused=()=>document.hidden || document.body.classList.contains('pt-wheel-active');
  const observer=typeof window.IntersectionObserver==='function'?new window.IntersectionObserver(entries=>entries.forEach(entry=>{
   if(entry.isIntersecting){const callback=callbacks.get(entry.target);if(callback)callback();}
  }),{rootMargin:'240px 360px'}):null;
