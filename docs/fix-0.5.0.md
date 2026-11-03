@@ -1,18 +1,14 @@
-# 0.5.0 — Follow-up acceptance criteria
+# 0.5.0 — Короткое ТЗ и критерии готовности
 
-- Mobile hero: soften the lower artwork edge only in Minimal; centre Glass title/logo inside the fixed slot. Button, dots and first row must not jump between slides.
-- Settings: Lampa View precedes Account; a separate noninteractive version row at the bottom displays 0.5.0 and is localised in all 12 languages.
-- Home studios: pointer/touch/Enter open the native studio catalogue on desktop/mobile, with its heading logo; TV home studios stay decorative. Right/Down hero navigation remains unchanged.
-- Glass: person header, comments, reactions and torrent banner metadata use the shared translucent material. Minimal stays unchanged. No live blur per comment/reaction.
-- Torrent episode files: Online list proportions, vertically centred thumbnail, title, rating/date without separator dots, progress and synopsis; preserve size/extension, native actions, playback and playlist.
-- iPhone: host lacks viewport-fit=cover and Apple standalone/status-bar metadata. Plugin CSS cannot guarantee extending the installed viewport under the status bar. Host/PWA work and physical validation remain.
-- Thin vertical line in the mobile logo pane was not reproduced in Chromium; the original PNG contains no white edge. Physical iPhone verification remains; do not claim resolved.
-- Build, mandatory checks, targeted Chromium/WebKit regressions, latest CI and Pages hash. Physical TV/iPhone not tested for this release.
+- Темы называются «Оригинал» и «Стекло». Сохранённый ключ `minimal` не меняется. Раздел плагина первый в настройках; отдельная неактивная строка «Версия 0.5.0» находится после всех групп. Сохранить 12 языков.
+- «Стекло»: общая прозрачная поверхность у шапки актёра/режиссёра, комментариев, реакций и сведений торрент-баннера. Поиск плотнее и контрастнее. У выделения бокового меню менять только прозрачность фона.
+- Телефон: смягчать нижнюю границу баннера только в «Оригинале»; центрировать логотип названия только в «Стекле». Сохранить одинаковую высоту информационных слотов между слайдами.
+- Карусель: единый неподвижный контейнер изображения с нижней маской, внутри него масштабируется фото. Явный порядок слоёв изображения, затемнения и информации. В «Стекле» плавно смешивать фото с нейтральной основой без конкурирующих цветных пятен фонового слоя. Не менять геометрию ТВ.
+- Карточка в «Стекле»: один статичный градиент под сведениями повышает читаемость на светлых изображениях; высота следует за уже существующим фоном и блоком актёров. Без обработки фото при каждом кадре прокрутки.
+- Серии в торренте: как список онлайна — кадр по вертикальному центру, название, рейтинг/дата без разделительных точек, прогресс и описание. Сохранить размер/формат файла, меню действий, воспроизведение и плейлист.
+- Студии на главной: клики/касания/Enter открывают штатную подборку с логотипом в браузере и на телефоне; на ТВ главная остаётся декоративной. Сохранить разные переходы Вправо/Вниз от «Подробнее».
+- README: основные парные скриншоты браузера для обеих тем; телефонные адаптивные виды отдельным дополнительным блоком. Указывать размер и способ съёмки.
 
-- Glass search retains a stronger dark tint; only menu highlight transparency changes to match settings.
+Проверки: сборка с ES5-проверкой, обязательные тесты проекта, соответствующие Chromium/WebKit сценарии, актуальные CI и Pages с проверкой хеша. Не повторять успешные проверки без изменения сценария или кода.
 
-- Rename the Minimal theme label to Original using the existing 12-language message. Preserve its stored key `minimal` and current selection.
-
-- Screenshot QA found scaled hero artwork painting below its overflow boundary in both themes. Add a static compositor clip to the existing hero container; keep geometry and top-anchored zoom unchanged.
-
-- Further live screenshots show uneven Glass hero blending and poor detail text contrast on bright art. Use one neutral hero base with an eased image alpha ramp and explicit nonnegative layer order; add one static detail shade sized with the existing backdrop observer. No per-frame image processing or extra requests.
+Открытые ограничения: тонкая вертикальная линия у мобильного логотипа не воспроизвелась в доступном браузере, в исходном PNG белого края нет. Чёрная область часов iPhone связана с параметрами установленного веб-приложения/хоста (на текущей странице нет viewport-fit=cover и Apple standalone/status-bar метаданных); CSS плагина не гарантирует расширение viewport. Эти два пункта требуют отдельной проверки на физическом iPhone. Физические ТВ и телефон, а также Android APK в этом проходе не проверены; системный режим Philips не менять.

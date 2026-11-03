@@ -237,7 +237,8 @@ if (!ROOT.LampaView) {
       if(!line.length){heroes.delete(activity);return;}
       let index=0,item,focus=0;
       const element=$(lampaViewText("<section class=\"pt-hero\" aria-label=\"Подборка фильмов и сериалов\">"));
-      const image=$('<img class="pt-hero__image" alt="" decoding="async">').appendTo(element);
+      const artworkFrame=$('<div class="pt-hero__artwork" aria-hidden="true">').appendTo(element);
+      const image=$('<img class="pt-hero__image" alt="" decoding="async">').appendTo(artworkFrame);
       const body=$('<div class="pt-hero__body">').appendTo(element);
       const brandingSlot=$('<div class="pt-hero__branding">').appendTo(body);
       const logo=$('<img class="pt-hero__logo pt-hidden" decoding="async">').appendTo(brandingSlot);
