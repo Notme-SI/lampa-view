@@ -19,6 +19,10 @@ const {setup}=require('../fixtures/native-browser.cjs'),{stage}=require('../fixt
    await page.evaluate(()=>Lampa.Storage.set('lampa_view_theme','glass'));
    const chrome=await page.evaluate(()=>({meta:document.querySelector('meta[name="theme-color"]').content,canvas:getComputedStyle(document.documentElement).backgroundColor,edge:getComputedStyle(document.body).backgroundImage}));
    assert.equal(chrome.meta.replace(/\s/g,''),chrome.canvas.replace(/\s/g,''));assert.match(chrome.edge,/linear-gradient/);assert.notEqual(chrome.canvas,'rgb(0, 0, 0)');assert.deepEqual(await geometry(),beforeColor);
+   const edge=await page.locator('.pt-ios-chrome-edge').evaluate(n=>({top:n.getBoundingClientRect().top,height:n.getBoundingClientRect().height,width:n.getBoundingClientRect().width,viewport:innerWidth,bg:getComputedStyle(n).backgroundColor,pointer:getComputedStyle(n).pointerEvents}));assert.equal(edge.top,0);assert.ok(edge.height>10,'The real edge exceeds WebKit thin-border rejection');assert.ok(Math.abs(edge.width-edge.viewport)<1,'Full width allows the subpixel rounding of integer innerWidth');assert.equal(edge.bg,chrome.canvas);assert.equal(edge.pointer,'none');
+   await page.evaluate(()=>{Lampa.Background.theme('black');});assert.equal(await page.locator('.pt-ios-chrome-edge').evaluate(n=>getComputedStyle(n).backgroundColor),'rgb(0, 0, 0)');await page.evaluate(()=>Lampa.Background.theme('reset'));
+   await page.evaluate(()=>Lampa.Storage.set('lampa_view_theme','minimal'));assert.equal(await page.locator('.pt-ios-chrome-edge').count(),0);await page.evaluate(()=>Lampa.Storage.set('lampa_view_theme','glass'));assert.equal(await page.locator('.pt-ios-chrome-edge').count(),1);assert.deepEqual(await geometry(),beforeColor);
+
   }
 
   if(mode==='mobile'){assert.equal(await page.locator('.head .open--settings').evaluate(n=>getComputedStyle(n).display),'none');await page.evaluate(()=>jQuery('.pt-mobile-nav__item[data-section=settings]').trigger('click'));await page.waitForSelector('body.settings--open');await page.evaluate(()=>Lampa.Controller.back());}

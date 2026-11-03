@@ -7,7 +7,7 @@ body.lampa_view.pt-theme-glass {
  --pt-glass-border:#ffffff38;--pt-glass-surface:rgba(28,28,28,calc(var(--pt-glass-alpha)*.52));
  --pt-glass-button:linear-gradient(165deg,#ffffff21 0%,#ffffff05 30%,transparent 55%,#ffffff07 100%),rgba(18,18,18,.07);
  --pt-glass-edge:inset 0 1px 0 #ffffff70,inset 1px 0 0 #ffffff20,inset 0 -1px 0 #00000035;
- background:var(--pt-chrome-edge,linear-gradient(transparent,transparent)),linear-gradient(180deg,#080808b3,#080808a8 55%,#080808d9),var(--pt-glass-scene,radial-gradient(ellipse at 15% 10%,rgba(var(--pt-glass-tone-a),.7),rgba(var(--pt-glass-tone-b),.5))) center/cover!important;
+ background:var(--pt-chrome-edge,linear-gradient(180deg,#080808b3,#080808a8 55%,#080808d9)),var(--pt-glass-scene,radial-gradient(ellipse at 15% 10%,rgba(var(--pt-glass-tone-a),.7),rgba(var(--pt-glass-tone-b),.5))) center/cover!important;
  background-attachment:fixed!important;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI Variable','Segoe UI',Roboto,sans-serif;letter-spacing:0;
 }
 /* The old opaque canvas hid the glass background even when the theme was active. */
