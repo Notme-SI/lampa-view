@@ -1,4 +1,4 @@
-/*! Lampa View 0.5.5 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.5.6 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -10615,7 +10615,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // package.json
-  var version = "0.5.5";
+  var version = "0.5.6";
 
   // src/inputs.js
   function inputs(L) {
@@ -11191,25 +11191,37 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       shade = "rgb(30,28,28)",
       native = initial || "#000000",
       created,
-      edge;
+      header,
+      headerStyle;
     function normalize(color) {
       return color === "black" ? "#000000" : color === "reset" ? "#1d1f20" : color;
     }
     function paint(color) {
-      if (!edge) {
-        edge = document.createElement("div");
-        edge.className = "pt-ios-chrome-edge";
-        edge.setAttribute("aria-hidden", "true");
-        edge.style.cssText = "position:fixed;top:0;left:0;right:0;height:12px;z-index:2147483646;pointer-events:none;";
-        document.body.appendChild(edge);
+      var next = document.querySelector(".head");
+      if (next !== header) {
+        restoreHeader();
+        header = next;
+        if (header) headerStyle = [header.style.getPropertyValue("background-color"), header.style.getPropertyPriority("background-color")];
       }
-      edge.style.backgroundColor = color;
+      if (header) {
+        var rgb = color.indexOf("#") === 0 ? [1, 3, 5].map(function (i) {
+          return parseInt(color.slice(i, i + 2), 16);
+        }) : color.match(/[\d.]+/g).slice(0, 3);
+        header.style.setProperty("background-color", "rgba(" + rgb.join(",") + ",0.01)", "important");
+      }
       root.style.setProperty("background-color", color, "important");
       root.style.setProperty("--pt-chrome-edge", "linear-gradient(180deg," + color + ",transparent 5em),linear-gradient(180deg,#080808b3,#080808a8 55%,#080808d9)");
       var node = existing || created || (created = document.createElement("meta"));
       node.name = "theme-color";
       node.content = color;
       if (!node.isConnected) (document.head || root).appendChild(node);
+    }
+    function restoreHeader() {
+      if (header) {
+        if (headerStyle[0]) header.style.setProperty("background-color", headerStyle[0], headerStyle[1]);else header.style.removeProperty("background-color");
+        header = null;
+        headerStyle = null;
+      }
     }
     function publish(color) {
       if (original) original.call(background, color);
@@ -11235,10 +11247,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }
       if (!enabled) return;
       enabled = false;
-      if (edge) {
-        edge.remove();
-        edge = null;
-      }
+      restoreHeader();
       saved.forEach(function (_ref5) {
         var _ref6 = _slicedToArray(_ref5, 3),
           name = _ref6[0],
