@@ -5489,10 +5489,11 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     return count;
   }
 
+  function wideCountKey(number){return tmdbId()+':'+number+':'+providerSeasonNumbers().join(',');}
   function wideSeasonCount(number, box) {
     var id = tmdbId();
     if (!id || !number) return 0;
-    var key = id + ':' + number + ':' + providerSeasonNumbers().join(',');
+    var key = wideCountKey(number);
     if (typeof wide_counts[key] === 'number') return wide_counts[key];
     seasonPlanned(number, function (count) {
       if (!count) return;
@@ -5501,7 +5502,8 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       var slot = box.find('.nova-chip__sub');
       if (slot.length) slot.text(wideCount(count));
     });
-    return 0;
+    // Cached metadata may answer synchronously: do not erase its caption below.
+    return typeof wide_counts[key] === 'number' ? wide_counts[key] : 0;
   }
 
   function providerSeasonNumbers(){return (groups.season && groups.season.items || []).map(function(item){return Number(digits(item.title));});}
@@ -5816,7 +5818,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
   function wideGroupCount() {
     var id = tmdbId();
     var season = seasonNumber() || 0;
-    var known = id && season ? wide_counts[id + ':' + season] : 0;
+    var known = id && season ? wide_counts[wideCountKey(season)] : 0;
     return known || wideFiles();
   }
 

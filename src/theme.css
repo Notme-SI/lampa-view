@@ -1015,3 +1015,6 @@ body.lampa_view .nova-source-option__status {display:inline-block;flex:0 0 auto;
 body.lampa_view .nova-source-option .selectbox-item__title>.nova-source-option__status {position:absolute;inset-inline-end:3.6em;top:50%;transform:translateY(-50%);margin:0}
 body.lampa_view .nova-source-option {padding-inline-end:5.2em!important}
 
+
+/* Native immediate/shift temporarily disables transitions; keep that contract on TV. */
+body.lampa_view.pt-tv .minimal-paged-row .scroll__body.notransition,body.lampa_view.pt-tv .minimal-paged-row .scroll__body.transition-reset {transition:none!important;-webkit-transition:none!important}

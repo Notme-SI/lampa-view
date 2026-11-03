@@ -22,7 +22,20 @@ export default function fitRail(line,root,card,state,enabled){
  const hero=root.previousElementSibling,home=hero && hero.matches('.pt-hero') && !document.body.classList.contains('pt-mobile');
  const preview=root.classList.contains('minimal-hero-preview');
  const key=columns+':'+scale+':'+Boolean(preview)+':'+innerWidth+':'+innerHeight+':'+Boolean(home)+':'+viewWidth.toFixed(3)+':'+font.toFixed(3)+':'+(document.body.classList.contains('pt-tv')?'tv':document.body.classList.contains('pt-mobile')?'mobile':'desktop');
- if(state.posterFitKey===key){if(home)homeStage(hero,root);return;}
+ // Lazy append can change native scroll bounds without changing poster dimensions.
+ // Reconcile the focused card after TV navigation is idle as well as after resize.
+ function revealFocus(){
+  if(!document.body.classList.contains('pt-tv'))return;
+  const last=line.last,target=last && (last.nodeType?last:last[0]);
+  if(!target || target.parentNode!==body || !target.matches('.focus') || !line.scroll.immediate)return;
+  const bounds=view.getBoundingClientRect(),rect=target.getBoundingClientRect(),fit=line.scroll.minimalPosterFit,start=Math.max(0,bounds.left)+(fit?fit.inset:0),end=Math.min(innerWidth,bounds.right)-(fit?fit.inset:0);
+  if(rect.left>=start-1 && rect.right<=end+1)return;
+  line.scroll.immediate(target,true);
+  const placed=target.getBoundingClientRect(),overflow=placed.left<start?placed.left-start:placed.right>end?placed.right-end:0;
+  if(overflow && line.scroll.shift)line.scroll.shift(overflow);
+ }
+ if(state.posterFitKey===key){if(home)homeStage(hero,root);revealFocus();return;}
+
  root.classList.add('minimal-fit-posters');
  root.style.setProperty('--minimal-poster-gutter',Math.ceil(font*.55)+'px');
  root.style.removeProperty('--minimal-poster-gap');
@@ -61,6 +74,7 @@ export default function fitRail(line,root,card,state,enabled){
  // The first fit may be deferred until TV navigation becomes idle. Preserve
  // the focused card when replacing the native width, just as on later resizes.
  if(line.last && line.scroll.immediate)line.scroll.immediate(line.last,true);
+ revealFocus();
 }
 
 // Finish a pointer gesture on a complete slot, through the native bounds check.

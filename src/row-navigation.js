@@ -21,6 +21,7 @@ export default function rowNavigation(L,line,enabled){
   if(start<0)start=Math.max(0,line.active || 0);
   return {view,count,start,inset};
  }
+ function idle(){if(!disposed && enabled() && tv() && root.isConnected && L.Controller.own(line) && line.minimalPosterRefresh)line.minimalPosterRefresh();}
  function stop(){if(frame)window.cancelAnimationFrame(frame);frame=0;pageStart=null;viewport().classList.remove('pt-row-paging');}
  function focus(target,alignLeft=false){
   const params=line.params && line.params.items,align=params && params.align_left;
@@ -70,6 +71,7 @@ export default function rowNavigation(L,line,enabled){
  const canMore=!people && (head.querySelector('.items-line__more') || line.data.url || line.data.onMore || line.params && line.params.emit && line.params.emit.onMore);
  if(canMore)more=button('minimal-row-more selector',lampaViewText("Показать ещё"),'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',()=>{if(!enabled())return;line.emit('more',line.data);});
  button('minimal-row-arrow',lampaViewText("Следующая страница"),'<path d="m10 6 6 6-6 6"/>',()=>page(1));head.appendChild(nav);
- line.use({onController(controller){const left=controller.left,right=controller.right,toggle=controller.toggle;controller.left=()=>move(-1,left);controller.right=()=>move(1,right);controller.toggle=function(){const result=toggle && toggle.apply(this,arguments);if(tv() && more && !people)L.Controller.collectionAppend(more);return result;};},onDestroy(){disposed=true;stop();root.removeEventListener('wheel',stop,true);root.removeEventListener('keydown',stop,true);}});
+ line.use({onController(controller){const left=controller.left,right=controller.right,toggle=controller.toggle;controller.left=()=>move(-1,left);controller.right=()=>move(1,right);controller.toggle=function(){const result=toggle && toggle.apply(this,arguments);if(tv() && more && !people)L.Controller.collectionAppend(more);return result;};},onDestroy(){disposed=true;document.removeEventListener('minimal:tv-idle',idle);stop();root.removeEventListener('wheel',stop,true);root.removeEventListener('keydown',stop,true);}});
+ document.addEventListener('minimal:tv-idle',idle);
  root.addEventListener('wheel',stop,true);root.addEventListener('keydown',stop,true);
 }
