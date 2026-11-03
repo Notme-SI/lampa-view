@@ -10,8 +10,6 @@
 
 ## Скриншоты
 
-Версия **0.5.0**. Основные снимки — браузерный интерфейс при ширине 1440 пикселей. Тема выбирается в **Настройки → L A M P A → Оформление → Тема интерфейса**.
-
 <table>
   <tr><th>Оригинал</th><th>Стекло</th></tr>
   <tr><td><a href="docs/screenshots/original-home.jpg"><img src="docs/screenshots/original-home.jpg" alt="Главная — Оригинал" width="600"></a><br>Главная</td><td><a href="docs/screenshots/glass-home.jpg"><img src="docs/screenshots/glass-home.jpg" alt="Главная — Стекло" width="600"></a><br>Главная</td></tr>
@@ -20,8 +18,6 @@
 </table>
 
 ### Дополнительно: телефонный вид
-
-Адаптивный интерфейс в браузере при ширине 390 пикселей. Это не фотографии физического iPhone или Android APK; системные панели зависят от устройства и приложения.
 
 <table>
   <tr><th>Оригинал</th><th>Стекло</th></tr>
