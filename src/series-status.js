@@ -1,5 +1,6 @@
 import {text as lampaViewText} from './i18n.js';
 import tmdbGet from './tmdb.js';
+import {namedSeason} from './episode-metadata.js';
 const day=value=>String(value || '').slice(0,10);
 export function releaseStatus(data={},episodes=[],today=day(new Date().toISOString())){
  const aired=episodes.filter(e=>Number(e.season_number)>0 && Number(e.episode_number)>0 && e.air_date && day(e.air_date)<=today);
@@ -149,12 +150,12 @@ function watchFooter(L,node,data,series){
 // Native timetable data and native watch history remain authoritative.
 export default function seriesStatus(L,schedule){
  const cards=new WeakMap(),cache=new Map(),pending=new Map(),queue=[];let running=0,saveTimer;
- const storage='minimal_series_release_v1',lifetime=900000;
+ const storage='minimal_series_release_v2',lifetime=900000;
  const saved=L.Storage && L.Storage.get?L.Storage.get(storage,[]):[];
  if(Array.isArray(saved))for(const pair of saved.slice(-80))if(Array.isArray(pair) && typeof pair[0]==='string' && pair[1] && pair[1].details && Date.now()-pair[1].at<lifetime)cache.set(pair[0],pair[1]);
  const cacheKey=data=>(data.source==='minimal_shiki'?'shiki':'tmdb')+':'+data.id+':'+(L.Storage && L.Storage.get?L.Storage.get('language','ru'):'ru');
  function save(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{if(L.Storage && L.Storage.set)L.Storage.set(storage,Array.from(cache).filter(([,entry])=>entry.details).slice(-80));},150);}
- function detailsOnly(json){return {id:json.id,number_of_seasons:json.number_of_seasons,seasons:(Array.isArray(json.seasons)?json.seasons:[]).map(s=>({season_number:s.season_number,episode_count:s.episode_count,air_date:s.air_date})),last_episode_to_air:json.last_episode_to_air,next_episode_to_air:json.next_episode_to_air,episode_run_time:json.episode_run_time};}
+ function detailsOnly(json){return {id:json.id,number_of_seasons:json.number_of_seasons,seasons:(Array.isArray(json.seasons)?json.seasons:[]).map(s=>({season_number:s.season_number,name:s.name,episode_count:s.episode_count,air_date:s.air_date})),last_episode_to_air:json.last_episode_to_air,next_episode_to_air:json.next_episode_to_air,episode_run_time:json.episode_run_time};}
  function paint(node){
   const data=cards.get(node);if(!data || !node.matches('.focus,.hover,.pt-card-pointer'))return;
   const view=node.querySelector('.card__view');if(!view)return;
@@ -180,9 +181,10 @@ export default function seriesStatus(L,schedule){
    if(!box){box=document.createElement('div');box.className='pt-series-status';box.innerHTML='<span></span><span></span>';view.appendChild(box);}
    const partial=available.total>available.count;
    const released=partial?available.count+'/'+available.total:String(available.count);
-   const text=lampaViewText("Сезон {0} • {1}{2}", [available.season,partial?lampaViewText("Серия "):lampaViewText("Серий "),released]);
-   if(box.textContent!==text){box.firstElementChild.textContent=lampaViewText("Сезон {0} • ", [available.season]);box.lastElementChild.textContent=(partial?lampaViewText("Серия "):lampaViewText("Серий "))+released;}
-   box.title=lampaViewText("Сезон {0}: вышло {1}. История просмотра — под обложкой.", [available.season,released]);
+   const seasonName=namedSeason(historyData,available.season) || lampaViewText("Сезон {0}",[available.season]);
+   const text=seasonName+" • "+(partial?lampaViewText("Серия "):lampaViewText("Серий "))+released;
+   if(box.textContent!==text){box.firstElementChild.textContent=seasonName+" • ";box.lastElementChild.textContent=(partial?lampaViewText("Серия "):lampaViewText("Серий "))+released;}
+   box.title=lampaViewText("Сезон {0}: вышло {1}. История просмотра — под обложкой.", [available.season,released]).replace(lampaViewText("Сезон {0}",[available.season]),seasonName);
   }else if(box)box.remove();
   // Release metadata stays independent of the native watch timeline below the cover.
   if(!fresh && !pending.has(key) && fetchable && queue.length<8){const task={key,data,nodes:new Set([node])};pending.set(key,task);queue.push(task);pump();}

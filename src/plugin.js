@@ -35,6 +35,7 @@ import tvHomeStage from './tv-home-stage.js';
 import tvPerformance from './tv-performance.js';
 import {cacheSettings} from './cache-control.js';
 import onlineState from './online-state.js';
+import episodeMetadata from './episode-metadata.js';
 import torrentBanner,{bannerCountries} from './torrent-banner.js';
 import torrentSearch from './torrent-search.js';
 import installTrakt from './trakt.js';
@@ -460,7 +461,7 @@ if (!ROOT.LampaView) {
     initialized=true; L=ROOT.Lampa; $=ROOT.jQuery;loadLogo=logoLoader(L);
     P.bannerCountries=card=>bannerCountries(card,L.Storage.get('language','ru'),L);
     installI18n(L,P);
-    P.online=onlineState(L);
+    P.online=onlineState(L);P.episodeMetadata=episodeMetadata(L);
     layout();interfaceLayout=interfaceSize(L);installTmdb(L);installFullGuard(L);torrentEpisodes(L,ROOT);inputs(L);
     artwork=installArtwork(L,()=>yes('lampa_view_enabled'));
     P.sync=progressSync(L,()=>yes('lampa_view_enabled'));

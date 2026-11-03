@@ -1,12 +1,12 @@
 {
-  "version": "0.5.2",
+  "version": "0.5.3",
   "files": {
-    "dist/lampa.js": "4bb3beacf9ed2af2f6575d11a93d7854ffccd1c5534484b90826f6da8affe09f",
-    "dist/lampa-minimal.boot.js": "9531a027ff3a356b89feadf7f8dd756f80b47cb0cb7a596218ce6fa9761f075a",
+    "dist/lampa.js": "8be82c0a4493b2fefafbfda1d8ec75abb4983bde6d9ef7a9bc52bb5d15273efe",
+    "dist/lampa-minimal.boot.js": "ea24f981a1a15b824b233effd47cc034b2de8c3836dcc4c58efdb9030d8e03ad",
     "dist/lampa-minimal.svg": "4ee868fea677562c30456b374792174be6523b5977dc982935d9ff5d47d9f657",
     "dist/lampa.ico": "d11faa7d80764ad5fb38f5b8cef53e59b88ee5965eda53ba230d8e006cce3bbb",
     "server/install.sh": "6a97a6ff1d30f19fa26aa8923021c6729200be32472d6857ee3c09ea779625d7",
-    "server/install-bootstrap.py": "5851ddddb75ee83019631fa8b5e5044ba585ff137adfa6922e027980c54d4410",
+    "server/install-bootstrap.py": "597861ce10bd58c0fcbb762b3e27961627675da9a5a912b0f98387e272f1b5ae",
     "server/remove-bootstrap.sh": "9f82fded9f188a4d661a5128fe6672df0911f5584133f1ccc5045e20210b7cc0",
     "server/lampa-minimal-bootstrap.service": "2663e58ae05c6aa09609d232aa3f2626856d0f0f54d22aab9c7b6408f7d767d3",
     "server/lampa-minimal-bootstrap.path": "261d127a9106ef27a4beef74d54902fea1c3122b5bd2759e3f657cf91edd642c"

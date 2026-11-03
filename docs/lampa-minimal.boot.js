@@ -69,7 +69,38 @@ function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == 
 
   // src/branding.js
   var import_favicon = __toESM(require_favicon());
+
+  // src/mobile-viewport.js
+  function mobileViewport() {
+    var head = document.head || document.documentElement;
+    function meta(name, content2) {
+      var nodes = Array.from(document.querySelectorAll('meta[name="' + name + '"]')),
+        node = nodes.shift() || document.createElement("meta");
+      node.name = name;
+      node.content = content2;
+      if (!node.isConnected) head.appendChild(node);
+      nodes.forEach(function (n) {
+        return n.remove();
+      });
+      return node;
+    }
+    var viewport = document.querySelector('meta[name="viewport"]'),
+      content = viewport && viewport.content || "width=device-width, initial-scale=1";
+    meta("viewport", content.split(",").map(function (s) {
+      return s.trim();
+    }).filter(function (s) {
+      return s && !/^viewport-fit\s*=/i.test(s);
+    }).concat("viewport-fit=cover").join(", "));
+    meta("apple-mobile-web-app-capable", "yes");
+    meta("apple-mobile-web-app-status-bar-style", "black-translucent");
+    var ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1,
+      standalone = navigator.standalone === true || window.matchMedia && window.matchMedia("(display-mode: standalone)").matches;
+    document.documentElement.classList.toggle("pt-ios-standalone", !!(ios && standalone));
+  }
+
+  // src/branding.js
   function branding() {
+    mobileViewport();
     document.title = "L A M P A";
     document.documentElement.lang = "ru";
     var icons = Array.from(document.querySelectorAll('link[rel~="icon"]'));

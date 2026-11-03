@@ -1,4 +1,5 @@
 import {text as lampaViewText} from './i18n.js';
+import {namedPartCount} from './episode-metadata.js';
 import {localizedTitle,isAnime} from './metadata.js';
 import {chooseLogo,pickStudio} from './logos.js';
 import comments from './comments.js';
@@ -40,6 +41,8 @@ function moveTechnicalDetails(L,card,right){
  const line=right.querySelector('.full-start-new__details'),genres=(card.genres || []).slice(0,5).map(g=>g.name).join(' | ').trim().toLowerCase(),prefix=L.Lang && L.Lang.translate?L.Lang.translate('player_quality')+':':lampaViewText("Качество:");
  let duration='',quality='';
  if(line){
+  const parts=namedPartCount(card);
+  if(parts>Number(card.number_of_seasons)){const prefix=(L.Lang.translate('title_seasons') || '')+':',counter=Array.from(line.children).find(part=>part.textContent.trim().startsWith(prefix));if(counter)counter.textContent=lampaViewText('Части')+': '+parts;}
   const retained=Array.from(line.children).filter(part=>{
    if(part.classList.contains('full-start-new__split'))return false;
    const text=(part.textContent || part.innerText || '').trim();

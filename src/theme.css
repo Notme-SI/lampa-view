@@ -1014,3 +1014,10 @@ body.lampa_view.pt-mobile .torrent-files .torrent-serial__line {font-size:.72em}
 body.lampa_view .nova-source-option__status {display:inline-block;flex:0 0 auto;width:.55em;height:.55em;margin-inline-start:.65em;border-radius:50%;background:#fff;box-shadow:0 0 .3em #ffffffb3,0 0 .65em #ffffff66;vertical-align:middle}
 body.lampa_view .nova-source-option .selectbox-item__title>.nova-source-option__status {position:absolute;inset-inline-end:3.6em;top:50%;transform:translateY(-50%);margin:0}
 body.lampa_view .nova-source-option {padding-inline-end:5.2em!important}
+
+/* Paint the complete standalone iPhone viewport; keep controls in its safe area. */
+html.pt-ios-standalone body.lampa_view.pt-mobile {--pt-safe-top:env(safe-area-inset-top,0px)}
+html.pt-ios-standalone body.lampa_view.pt-mobile .head {top:var(--pt-safe-top)!important}
+html.pt-ios-standalone body.lampa_view.pt-mobile .wrap__content {padding-top:calc(3.5em + var(--pt-safe-top))!important}
+html.pt-ios-standalone body.lampa_view.pt-mobile.pt-theme-glass .wrap__content {padding-top:calc(5.2em + var(--pt-safe-top))!important}
+html.pt-ios-standalone body.lampa_view.pt-mobile .main-search .search {padding-top:var(--pt-safe-top);box-sizing:border-box}

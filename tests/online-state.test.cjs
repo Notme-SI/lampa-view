@@ -502,3 +502,14 @@ test('manual source selection persists before playback, restores natively and re
   L.Timeline.filename=()=> 'another-profile';assert.equal(create(card).lampac_auto_select,undefined);assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}
 });
+
+
+test('split provider parts use localized canonical episodes, counts and pictures while native playback hashes stay unchanged',async()=>{
+ const n=await native({built:true}),{L}=n;let s;try{
+  L.Api.sources.tmdb.get=(url,p,ok)=>{if(url.includes('episode_groups'))return ok({results:[{id:'parts',group_count:4,episode_count:25,network:{id:213}}]});if(url.includes('episode_group/'))return ok({groups:[5,5,7,8].map((count,i)=>({order:i+1,episodes:Array.from({length:count},(_,j)=>({order:j,season_number:i<2?1:i,episode_number:i===1?j+6:j+1}))}))});const season=Number(url.match(/season\/(\d+)/)?.[1]);ok({episodes:Array.from({length:[0,10,7,8][season]||0},(_,i)=>({episode_number:i+1,season_number:season,name:'Correct '+season+':'+(i+1),overview:'Localized description '+season+':'+(i+1),vote_average:7.4,air_date:'2020-01-01',still_path:'/correct'+season+'e'+(i+1)+'.jpg'}))});};
+  s=screen(n,{id:1799,season:2,episodes:[1,2,3,4,5]});Object.assign(s.movie,{number_of_seasons:3,number_of_episodes:25,networks:[{id:213}],seasons:[{season_number:1,episode_count:10},{season_number:2,episode_count:7,name:'Часть 3'},{season_number:3,episode_count:8,name:'Часть 4'}]});s.filter.set('filter',[{stype:'season',title:'Сезон',subtitle:'Сезон 2',items:[1,2,3,4].map(i=>({title:'Сезон '+i,selected:i===2}))}]);
+  const timeline=JSON.stringify(L.Storage.get('file_view',{}));await wait(300);
+  assert.match(s.root.find('.nova-card').first().find('.nova-card__title').text(),/Correct 1:6/);assert.equal(s.root.find('.nova-card__overview').first().text(),'Localized description 1:6');assert.equal(s.root.find('[data-nova-focus="season:1"] .nova-chip__sub').text(),'5 эпизодов');assert.match(s.root.find('.nova-card__thumb').first().html(),/correct1e6/);
+  assert.equal(JSON.stringify(L.Storage.get('file_view',{})),timeline);assert.equal(s.played(),0);assert.deepEqual(n.errors,[]);
+ }finally{if(s)s.close();n.close();}
+});

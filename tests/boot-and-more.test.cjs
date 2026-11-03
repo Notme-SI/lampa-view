@@ -16,3 +16,12 @@ test('More on discover rows uses TMDB explicitly and normalizes legacy lang para
  w.eval(bundle());let hook;const line={use:v=>hook=v};events.line.forEach(fn=>fn({type:'create',line,data:{title:'Новые сериалы',url:'discover/tv?lang=ru&sort_by=popularity.desc'}}));hook.onlyMore();
  assert.equal(pushes.length,1);assert.equal(pushes[0].component,'category_full');assert.equal(pushes[0].source,'tmdb');assert.equal(pushes[0].url,'discover/tv?language=ru&sort_by=popularity.desc');assert.equal(pushes[0].page,1);dom.window.close();
 });
+
+
+test('standalone iPhone boot configures an edge-to-edge viewport once and keeps normal browser mode separate',()=>{
+ const code=esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/mobile-viewport.js')],bundle:true,write:false,format:'iife',globalName:'MobileViewport'}).outputFiles[0].text;
+ for(const standalone of [false,true]){const d=new JSDOM('<head><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=contain"><meta name="apple-mobile-web-app-status-bar-style" content="black"></head>',{runScripts:'outside-only'}),w=d.window;try{
+  Object.defineProperty(w.navigator,'userAgent',{value:'Mozilla/5.0 (iPhone; CPU iPhone OS 27_0 like Mac OS X)'});Object.defineProperty(w.navigator,'standalone',{value:standalone});w.eval(code);w.MobileViewport.default();w.MobileViewport.default();
+  assert.equal(w.document.querySelectorAll('meta[name=viewport]').length,1);assert.match(w.document.querySelector('meta[name=viewport]').content,/viewport-fit=cover/);assert.doesNotMatch(w.document.querySelector('meta[name=viewport]').content,/contain/);assert.equal(w.document.querySelector('meta[name=apple-mobile-web-app-status-bar-style]').content,'black-translucent');assert.equal(w.document.documentElement.classList.contains('pt-ios-standalone'),standalone);
+ }finally{w.close();}}
+});
