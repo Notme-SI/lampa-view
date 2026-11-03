@@ -4632,7 +4632,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     var dead = currentSourceKey();
     // A timeout or authorization screen is not proof that the title is absent.
     var statusOwner=componentNow();
-    if (dead && movie && statusOwner && statusOwner.lampaViewAvailabilitySource === dead && statusOwner.lampaViewAvailability === 'empty') probeSave(qualityScope(), dead, 'empty', 0);
+    if (dead && movie && statusOwner && !statusOwner.lampaViewManualNavigation && statusOwner.lampaViewAvailabilitySource === dead && statusOwner.lampaViewAvailability === 'empty') probeSave(qualityScope(), dead, 'empty', 0);
 
     note.find('.nova-note__title').text(native.node.find('.online-empty__title,.onl-online-empty__title').text().trim());
     note.find('.nova-note__text').text(native.node.find('.online-empty__time,.onl-online-empty__time').text().trim());

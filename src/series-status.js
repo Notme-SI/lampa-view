@@ -181,7 +181,8 @@ export default function seriesStatus(L,schedule){
    if(!box){box=document.createElement('div');box.className='pt-series-status';box.innerHTML='<span></span><span></span>';view.appendChild(box);}
    const partial=available.total>available.count;
    const released=partial?available.count+'/'+available.total:String(available.count);
-   const seasonName=namedSeason(historyData,available.season) || lampaViewText("Сезон {0}",[available.season]);
+   const group=namedSeason(historyData,available.season),published=group?Number((group.match(/\d+/)||[])[0]):0;
+   const seasonName=lampaViewText("Сезон {0}",[published || available.season]);
    const text=seasonName+" • "+(partial?lampaViewText("Серия "):lampaViewText("Серий "))+released;
    if(box.textContent!==text){box.firstElementChild.textContent=seasonName+" • ";box.lastElementChild.textContent=(partial?lampaViewText("Серия "):lampaViewText("Серий "))+released;}
    box.title=lampaViewText("Сезон {0}: вышло {1}. История просмотра — под обложкой.", [available.season,released]).replace(lampaViewText("Сезон {0}",[available.season]),seasonName);

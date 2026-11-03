@@ -70,7 +70,7 @@ test('native manual movie marks show completion without invented time; history a
  }finally{w.close();}
 });
 
-test('release badge uses the published part name while retaining canonical season coordinates',()=>{
- const d=new JSDOM('<body><div class="card focus"><div class="card__view"></div></div></body>',{runScripts:'outside-only'}),w=d.window;try{w.eval(code);const facts={id:96677,number_of_seasons:3,seasons:[{season_number:3,name:'Часть 4',episode_count:8}],last_episode_to_air:{season_number:3,episode_number:8,air_date:'2020-01-01'}},L={Storage:{get:(k,f)=>f,set(){}},Api:{sources:{tmdb:{get:(url,p,ok)=>ok(facts)}}}};const api=w.SeriesStatus.default(L,n=>api.paint(n)),node=w.document.querySelector('.card');api.track(node,{id:96677,name:'Люпен',media_type:'tv',source:'tmdb'});api.paint(node);assert.equal(node.querySelector('.pt-series-status').textContent,'Часть 4 • Серий 8');assert.match(node.querySelector('.pt-series-status').title,/Часть 4/);assert.equal(facts.last_episode_to_air.season_number,3);
+test('release badge labels the published group number as a season without changing canonical coordinates',()=>{
+ const d=new JSDOM('<body><div class="card focus"><div class="card__view"></div></div></body>',{runScripts:'outside-only'}),w=d.window;try{w.eval(code);const facts={id:96677,number_of_seasons:3,seasons:[{season_number:3,name:'Часть 4',episode_count:8}],last_episode_to_air:{season_number:3,episode_number:8,air_date:'2020-01-01'}},L={Storage:{get:(k,f)=>f,set(){}},Api:{sources:{tmdb:{get:(url,p,ok)=>ok(facts)}}}};const api=w.SeriesStatus.default(L,n=>api.paint(n)),node=w.document.querySelector('.card');api.track(node,{id:96677,name:'Люпен',media_type:'tv',source:'tmdb'});api.paint(node);assert.equal(node.querySelector('.pt-series-status').textContent,'Сезон 4 • Серий 8');assert.match(node.querySelector('.pt-series-status').title,/Сезон 4/);assert.equal(facts.last_episode_to_air.season_number,3);
  }finally{w.close();}
 });

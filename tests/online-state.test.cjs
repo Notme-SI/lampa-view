@@ -572,3 +572,13 @@ test('real native TMDB season splitting preserves canonical descriptions and cou
   choose(4);await wait(120);assert.equal(s.root.find('[data-nova-focus="season:1"] .nova-chip__sub').text(),'5 эпизодов');assert.equal(JSON.stringify(L.Storage.get('file_view',{})),timeline);assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}
 });
+
+
+test('an empty manually chosen season neither hides the entire source nor starts an automatic source hop',async()=>{
+ const n=await native({built:true}),{L}=n;let s;try{
+  const comp={lampaViewManualNavigation:true,request(){},reset(){},parse(){},changeBalanser(){}};s=screen(n,{id:1802,episodes:[],component:comp});await wait(160);
+  comp.request('/lite/test?s=4');comp.parse('<div class="videos__line"></div>');
+  s.body.empty().append('<div class="online-empty"><div class="online-empty__title">Здесь пусто</div><div class="online-empty__time"></div></div>');await wait(200);
+  assert.equal(s.root.find('.nova-note').length,1);assert.ok(!L.Storage.get('nova_probe',{})['tmdb:tv:1802']?.list.test,'A missing season is not a failed provider');assert.doesNotMatch(s.root.find('.nova-note').text(),/Через .*сек/);assert.deepEqual(n.errors,[]);
+ }finally{if(s)s.close();n.close();}
+});
