@@ -3887,7 +3887,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     var value=state || 'unknown',marker=node.find('.nova-source-option__status');
     if(node.attr('data-nova-availability')!==value)node.attr('data-nova-availability',value);
     if(state==='ok'){
-      if(!marker.length)node.append($('<span class="nova-source-option__status" role="img"></span>').attr({'aria-label':lampaViewText("Видео найдено"),title:lampaViewText("Видео найдено")}));
+      if(!marker.length){var title=node.find(".selectbox-item__title").first();(title.length?title:node).append($('<span class="nova-source-option__status" role="img"></span>').attr({'aria-label':lampaViewText("Видео найдено"),title:lampaViewText("Видео найдено")}));}
     }else if(marker.length)marker.remove();
   }
   function refreshSourceIndicators(key,state){
