@@ -6,6 +6,10 @@ const {setup}=require('../fixtures/native-browser.cjs'),{stage}=require('../fixt
  try{
   assert.equal(await page.evaluate(()=>document.body.classList.contains('pt-theme-glass')),false,'Previous theme is the default');
   await page.evaluate(()=>Lampa.Storage.set('lampa_view_theme','apple'));assert.equal(await page.evaluate(()=>Lampa.Storage.get('lampa_view_theme')),'glass','Legacy Apple selection migrates to Glass');await page.evaluate(()=>Lampa.Storage.set('lampa_view_theme','minimal'));
+  await page.evaluate(()=>{Lampa.Params.init();Lampa.Controller.toggle('settings');});await page.waitForSelector('.settings-folder[data-component=lampa_view]');
+  assert.equal(await page.locator('.settings-folder').first().getAttribute('data-component'),'lampa_view','Plugin settings are first');
+  await page.evaluate(()=>Lampa.Settings.create('lampa_view'));await page.waitForSelector('[data-name=lampa_view_version]');
+  const version=await page.locator('[data-name=lampa_view_version]').evaluate(n=>({text:n.textContent,selector:n.classList.contains('selector')}));assert.equal(version.selector,false);assert.ok(version.text.includes(require('../../package.json').version));await page.evaluate(()=>Lampa.Controller.back());await page.evaluate(()=>Lampa.Controller.back());
   const before=await page.evaluate(()=>({history:JSON.stringify(Lampa.Storage.get('favorite',{})),timeline:JSON.stringify(Lampa.Storage.get('file_view',{}))}));
   for(const value of ['glass','minimal','glass']){await page.evaluate(value=>Lampa.Storage.set('lampa_view_theme',value),value);assert.equal(await page.evaluate(()=>document.body.dataset.lampaTheme),value);}
   assert.equal(await page.locator('#lampa-view-glass-style').count(),1);

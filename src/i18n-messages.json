@@ -7681,5 +7681,31 @@
   "ro": "Mai întâi 4K; calitate necunoscută la final",
   "fr": "4K en premier ; qualité inconnue à la fin",
   "pl": "Najpierw 4K; nieznana jakość na końcu"
+ },
+ "Версия {0}": {
+  "en": "Version {0}",
+  "uk": "Версія {0}",
+  "be": "Версія {0}",
+  "zh": "版本 {0}",
+  "pt": "Versão {0}",
+  "bg": "Версия {0}",
+  "he": "גרסה {0}",
+  "cs": "Verze {0}",
+  "ro": "Versiunea {0}",
+  "fr": "Version {0}",
+  "pl": "Wersja {0}"
+ },
+ "Единый стиль каталога, карточек, источников и настроек.": {
+  "en": "One style for the catalogue, cards, sources and settings.",
+  "uk": "Єдиний стиль каталогу, карток, джерел і налаштувань.",
+  "be": "Адзіны стыль каталога, картак, крыніц і налад.",
+  "zh": "目录、卡片、来源和设置采用统一风格。",
+  "pt": "Um estilo para o catálogo, cartões, fontes e definições.",
+  "bg": "Единен стил за каталога, картите, източниците и настройките.",
+  "he": "סגנון אחיד לקטלוג, לכרטיסים, למקורות ולהגדרות.",
+  "cs": "Jednotný styl katalogu, karet, zdrojů a nastavení.",
+  "ro": "Un stil unitar pentru catalog, carduri, surse și setări.",
+  "fr": "Un style commun au catalogue, aux fiches, aux sources et aux réglages.",
+  "pl": "Jednolity styl katalogu, kart, źródeł i ustawień."
  }
 }

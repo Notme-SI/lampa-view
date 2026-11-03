@@ -15,6 +15,7 @@ async function check(page,mobile){
  assert.ok(separate(data.title,data.detail),'title and file details do not overlap');
  assert.ok(separate(data.image,data.timeline),'watch progress stays off the thumbnail');
  assert.ok(data.timeline.left>=data.content.left && data.timeline.right<=data.content.right+1,'progress stays inside content');
+ assert.ok(Math.abs((data.image.top+data.image.bottom-data.row.top-data.row.bottom)/2)<2,'Preview is vertically centred');
  if(mobile){assert.ok(data.title.height<=44,'long title takes at most two lines');assert.ok(data.row.height<265,'mobile file row accommodates the synopsis without excessive height');}
  return data;
 }
@@ -40,7 +41,8 @@ async function check(page,mobile){
    await page.waitForSelector('.torrent-item.tc-item');await page.evaluate(()=>qaStartFiles());
    await page.waitForSelector('.torrent-files .torrent-serial',{timeout:7000});await page.waitForTimeout(150);
    await page.evaluate(()=>document.querySelectorAll('.torrent-serial').forEach(row=>jQuery(row).trigger('visible')));
-   await check(page,mobile);assert.equal(await page.locator('.minimal-episode-overview').count(),12);assert.equal(await page.locator('.minimal-episode-rating').first().textContent(),'8.4');
+   for(const theme of ['minimal','glass']){await page.evaluate(theme=>Lampa.Storage.set('lampa_view_theme',theme),theme);await page.waitForTimeout(180);await check(page,mobile);}
+   assert.equal(await page.locator('.minimal-episode-overview').count(),12);assert.equal(await page.locator('.minimal-episode-rating').first().textContent(),'8.4');
    if(output)await page.screenshot({path:path.join(output,name+(mobile?'-phone'+(virtual?'-virtual':''):'-desktop')+'-files.png')});
    if(mobile){
     await page.setViewportSize({width:320,height:640});await page.waitForTimeout(150);await check(page,true);

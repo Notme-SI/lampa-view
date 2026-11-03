@@ -249,9 +249,23 @@ if (!ROOT.LampaView) {
       const buttons=$('<div class="pt-hero__actions">').appendTo(body);
       const details=$('<div class="pt-hero__action selector" role="button" tabindex="0">').html(lampaViewText("{0}<span>Подробнее</span>", [icon('info')])).appendTo(buttons);
       const dots=$(lampaViewText("<div class=\"pt-hero__dots\" role=\"group\" aria-label=\"Переключить обложку\">")).appendTo(element);
-      let logoToken=0,upgradeTimer,rotation;
+      let logoToken=0,upgradeTimer,rotation,selectedStudio;
+      function studioLink(){
+        const enabled=selectedStudio && Number(selectedStudio.id)>0 && !document.body.classList.contains('pt-tv');
+        studio.toggleClass('selector',Boolean(enabled));
+        if(enabled)studio.attr({role:'button',tabindex:'0','aria-label':lampaViewText('Проекты {0}',[selectedStudio.name])});
+        else studio.removeAttr('role tabindex aria-label');
+      }
+      function openStudio(){
+        if(!selectedStudio || document.body.classList.contains('pt-tv'))return;
+        const value=selectedStudio;
+        L.Activity.push(value.kind==='network'?{component:'category_full',source:'tmdb',url:'discover/tv',networks:value.id,sort_by:'popularity.desc',title:value.name,page:1,minimal_studio:{...value}}:{component:'company',source:'tmdb',url:item.media_type,id:value.id,title:value.name,minimal_studio:{...value}});
+      }
+      studio.on('click',event=>{event.preventDefault();event.stopImmediatePropagation();openStudio();}).on('keydown',event=>{if(event.key==='Enter' || event.key===' '){event.preventDefault();event.stopImmediatePropagation();openStudio();}});
+      element.on('minimal:hero-layout',studioLink);
+      document.addEventListener('minimal:interface-size',studioLink);
       const assets=heroAssets(L,cards,loadLogo,element[0]);
-      if(activity.component && activity.component.use)activity.component.use({onDestroy:()=>{clearTimeout(upgradeTimer);assets.dispose();}});
+      if(activity.component && activity.component.use)activity.component.use({onDestroy:()=>{clearTimeout(upgradeTimer);assets.dispose();document.removeEventListener('minimal:interface-size',studioLink);}});
       const requestHeroLayout=()=>element[0].dispatchEvent(new Event('minimal:hero-layout',{bubbles:true}));
       function show(next){
         index=(next+cards.length)%cards.length;
@@ -261,7 +275,7 @@ if (!ROOT.LampaView) {
         item={...card,media_type:kind,source:card.source || 'tmdb'};
         title.text(card.title || card.name);
         const token=++logoToken;
-        studio.off('load error').addClass('pt-hidden').removeClass('selector').removeAttr('src alt title role tabindex');
+        selectedStudio=null;studio.off('load error').addClass('pt-hidden').removeClass('selector').removeAttr('src alt title role tabindex aria-label');
         logo.off('load error').addClass('pt-hidden').removeClass('pt-hero__logo--translated').removeAttr('src');title.removeClass('pt-hidden pt-hero__title--translation');
         let brandingStarted=false;
         function branding(){
@@ -276,6 +290,7 @@ if (!ROOT.LampaView) {
         });
          assets.studio(selected,value=>{
           if(token!==logoToken || !value)return;
+          selectedStudio=value;studioLink();
           studio.attr({alt:value.name,title:value.name}).on('load',()=>{if(token===logoToken){studio.removeClass('pt-hidden');}})
             .on('error',()=>{if(token===logoToken)studio.addClass('pt-hidden');}).attr('src',value.url);
         });
@@ -427,15 +442,15 @@ if (!ROOT.LampaView) {
     };
   }
   function settings() {
-    L.SettingsApi.addComponent({component:'lampa_view',name:'L A M P A',icon:icon('play')});
-    unifiedSettings(L.SettingsApi,L);
+    L.SettingsApi.addComponent({component:'lampa_view',name:'L A M P A',icon:icon('play'),before:'account'});
+    unifiedSettings(L.SettingsApi,L,version);
     const options=[
-      ['lampa_view_enabled',lampaViewText("Оформление интерфейса"),lampaViewText("Единый стиль каталога, карточек, источников и настроек. Версия {0}.", [version]),true],
+      ['lampa_view_enabled',lampaViewText("Оформление интерфейса"),lampaViewText("Единый стиль каталога, карточек, источников и настроек."),true],
       ['lampa_view_hero',lampaViewText("Обложка на главной"),lampaViewText("Карусель каждые 10 секунд, ручное переключение и жесты."),true]
     ];
     if(L.Platform && L.Platform.desktop && L.Platform.desktop() || ROOT.electronAPI && ROOT.electronAPI.lampa_view) options.push(['lampa_view_metadata',lampaViewText("Уточнять данные mpv+"),lampaViewText("Передавать сведения карточки для проверки названия, сезона и серии."),true]);
     options.forEach(([name,label,description,value]) => L.SettingsApi.addParam({component:'lampa_view',param:{name,type:'trigger',default:value},field:{name:label,description},onChange:setTheme}));
-    L.SettingsApi.addParam({component:'lampa_view',param:{name:'lampa_view_theme',type:'select',values:{minimal:lampaViewText("Минималистичная"),glass:lampaViewText('Стекло')},default:'minimal'},field:{name:lampaViewText("Тема интерфейса"),description:lampaViewText("Оформление всей Lampa. Переключается сразу, данные просмотра сохраняются.")},onChange:()=>{if(appearanceTheme)appearanceTheme.update();}});
+    L.SettingsApi.addParam({component:'lampa_view',param:{name:'lampa_view_theme',type:'select',values:{minimal:lampaViewText("Оригинал"),glass:lampaViewText('Стекло')},default:'minimal'},field:{name:lampaViewText("Тема интерфейса"),description:lampaViewText("Оформление всей Lampa. Переключается сразу, данные просмотра сохраняются.")},onChange:()=>{if(appearanceTheme)appearanceTheme.update();}});
     L.SettingsApi.addParam({component:'lampa_view',param:{name:'lampa_view_layout',type:'select',values:{auto:lampaViewText("Автоматически"),tv:lampaViewText("Телевизор"),mobile:lampaViewText("Телефон"),desktop:lampaViewText("Компьютер")},default:'auto'},field:{name:lampaViewText("Тип устройства"),description:lampaViewText("Авто использует режим экрана Lampa. Можно выбрать вручную.")},onChange:setTheme});
     L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_banner_quality',type:'select',values:{medium:lampaViewText("Среднее"),high:lampaViewText("Высокое")},default:'high'},field:{name:lampaViewText("Качество баннеров и обложек"),description:lampaViewText("Общее качество баннеров, фонов загрузки и карточек. Высокое подбирает чёткий размер под экран и использует общий кеш обложек.")},onChange:()=>artwork && artwork.choose()});
   }

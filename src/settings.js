@@ -15,7 +15,7 @@ function groupOf(d){
  if(/^mpv_plus_/.test(n))return 'parser';
  return 'playback';
 }
-export default function unifiedSettings(api,L){
+export default function unifiedSettings(api,L,version=''){
  if(!api || !api.getParam || !api.allComponents)return;
  const get=api.getParam,all=api.allComponents;
  const prefix='minimal_settings_',ids=GROUPS.map(g=>prefix+g[0]);
@@ -41,7 +41,7 @@ export default function unifiedSettings(api,L){
  }
  function open(id){if(L && L.Settings)L.Settings.create(id,{onBack:()=>L.Settings.create('lampa_view')});}
  api.getParam=function(name){
-  if(name==='lampa_view'){const available=params();return GROUPS.filter(([id])=>available.some(d=>groupOf(d)===id)).map(([id,title,description])=>({component:'lampa_view',param:{name:prefix+'open_'+id,type:'button'},field:{name:lampaViewText(title),description:lampaViewText(description)},onChange:()=>open(prefix+id)}));}
+  if(name==='lampa_view'){const available=params();const info={component:'lampa_view',param:{name:'lampa_view_version',type:'static'},field:{name:lampaViewText('Версия {0}',[version])},onRender:item=>item.removeClass('selector').attr('data-name','lampa_view_version')};return [info].concat(GROUPS.filter(([id])=>available.some(d=>groupOf(d)===id)).map(([id,title,description])=>({component:'lampa_view',param:{name:prefix+'open_'+id,type:'button'},field:{name:lampaViewText(title),description:lampaViewText(description)},onChange:()=>open(prefix+id)})));}
   if(ids.includes(name))return params().filter(d=>prefix+groupOf(d)===name).map(d=>({...d,component:name}));
   return get.apply(this,arguments);
  };

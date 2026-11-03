@@ -1,6 +1,6 @@
 const test=require('node:test'),assert=require('node:assert/strict'),native=require('./fixtures/native-lampa.cjs');
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
-test('home studio is decorative while the film details action stays available',async()=>{
+test('home studio opens on desktop/mobile and remains decorative on TV with details navigation intact',async()=>{
  const n=await native({built:true}),{w,L}=n,$=w.jQuery,images=[],requests=[];
  try{
   Object.defineProperty(w.HTMLElement.prototype,'offsetParent',{get(){return this.isConnected && !this.classList.contains('pt-hidden')?w.document.body:null;},configurable:true});
@@ -12,8 +12,11 @@ test('home studio is decorative while the film details action stays available',a
   const card={id:812,title:'Фильм',source:'tmdb',overview:'Описание',release_date:'2026-01-01',backdrop_path:'/cover.jpg'};
   L.Listener.send('line',{type:'append',line,params:{object:{component:'main',activity}},data:{results:[card]}});await wait(30);
   requests[0].ok({images:{logos:[]},production_companies:[{id:33,name:'Studio',logo_path:'/studio.png'}]});images.filter(i=>/studio.png/.test(i.url)).forEach(i=>i.onload());await wait(30);root.find('.pt-hero__studio').trigger('load');
-  const studio=root.find('.pt-hero__studio');assert.equal(studio.attr('role'),undefined);assert.equal(studio.attr('aria-label'),undefined);assert.equal(studio.hasClass('selector'),false);assert.equal(studio.attr('alt'),'Studio');let target;const push=L.Activity.push;L.Activity.push=p=>target=p;
-  studio[0].click();studio.trigger('hover:enter');assert.equal(target,undefined,'Decorative studio cannot navigate');
+  const studio=root.find('.pt-hero__studio');assert.equal(studio.attr('role'),'button');assert.equal(studio.hasClass('selector'),true);assert.equal(studio.attr('alt'),'Studio');let target;const push=L.Activity.push;L.Activity.push=p=>target=p;
+  studio[0].click();assert.equal(target.component,'company');assert.equal(target.id,33);assert.equal(target.minimal_studio.path,'/studio.png');
+  w.document.body.classList.add('pt-tv');root.find('.pt-hero').trigger('minimal:hero-layout');target=undefined;
+  assert.equal(studio.hasClass('selector'),false);studio[0].click();assert.equal(target,undefined,'TV studio cannot navigate');
+  w.document.body.classList.remove('pt-tv');root.find('.pt-hero').trigger('minimal:hero-layout');studio.trigger(w.jQuery.Event('keydown',{key:'Enter'}));assert.equal(target.component,'company');
   enter();assert.ok(root.find('.pt-hero__action').hasClass('focus'));L.Controller.enter();assert.equal(target.component,'full');assert.equal(target.id,812);L.Activity.push=push;assert.deepEqual(n.errors,[]);
 
  }finally{n.close();}

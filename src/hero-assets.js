@@ -84,7 +84,7 @@ export default function heroAssets(L,cards,loadLogo,element){
   i=wrap(i);metadata(i,value=>{
    const studio=value.studio;if(!studio || !studio.path)return callback(null);
    const url=L.TMDB.image('/t/p/w300'+studio.path);if(i===current)pin('studio',url);
-   fetchImage(url,src=>callback(src?{url:src,name:studio.name,id:studio.id,kind:studio.kind}:null),'studio');
+   fetchImage(url,src=>callback(src?{url:src,name:studio.name,id:studio.id,kind:studio.kind,path:studio.path}:null),'studio');
   });
  }
  function scheduleWarm(delay){
