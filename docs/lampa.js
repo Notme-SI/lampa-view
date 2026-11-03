@@ -1,4 +1,4 @@
-/*! Lampa View 0.5.3 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.5.4 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -10615,7 +10615,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // package.json
-  var version = "0.5.3";
+  var version = "0.5.4";
 
   // src/inputs.js
   function inputs(L) {
@@ -11028,10 +11028,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   var tv_layout_default = ["/* TV presentation: distance-readable type and artwork. No Android mode changes. */", "body.lampa_view.pt-tv {--pt-ui-font:calc(.703125vw * var(--pt-interface-scale,1));font-size:var(--pt-ui-font)!important;--pt-banner-unit:calc(.703125vw * 1.12)}", "body.lampa_view.pt-tv .pt-hero {max-width:90vw;margin:0 auto .9em}", "body.lampa_view.pt-tv .pt-hero__body {font-size:max(8px,1em);left:3em;bottom:3em;max-width:31em;padding-right:1em}", "body.lampa_view.pt-tv .pt-hero__title {font-size:2.55em;max-width:15em;margin-bottom:.65em}", "body.lampa_view.pt-tv .pt-hero__title--translation {font-size:1.05em;line-height:1.35;letter-spacing:0;max-width:100%;margin-bottom:1.1em}", "body.lampa_view.pt-tv .pt-hero__logo {max-height:7em;max-width:100%;margin-bottom:1.4em}", "body.lampa_view.pt-tv .pt-hero__overview {-webkit-line-clamp:2;line-height:1.65}", "body.lampa_view.pt-tv .pt-hero__actions {margin-top:1.6em}", "body.lampa_view.pt-tv .pt-hero__dots {left:45%;bottom:1.5em}", "body.lampa_view.pt-tv .items-line {margin-bottom:.8em;padding-bottom:.7em}", "body.lampa_view.pt-tv .items-line .card:not(.card--wide):not(.card--collection) {width:clamp(8.4em,calc((90vw - 10em / var(--pt-interface-scale,1)) / 10 * var(--pt-interface-scale,1)),11.1em)!important}", "body.lampa_view.pt-tv .items-line.minimal-posters-sized .card:not(.card--wide):not(.card--collection) {width:var(--minimal-poster-width)!important}", "body.lampa_view.pt-tv .items-line>.items-line__head {padding-left:1.1em}", "/* Android WebView clamps text below 8 CSS px. Declare that floor so em-based", "   height limits use the rendered font, including the real 960px TV viewport. */", "body.lampa_view.pt-tv .card__title {font-size:max(9px,.9em);line-height:1.4;max-height:2.85em;overflow-wrap:break-word}", "body.lampa_view.pt-tv .card__age {font-size:max(8px,.8em)}", "/* Flow uses the measured line height after the interface scale is applied. */", "body.lampa_view.pt-tv.pt-tv-caption-flow .card__title {display:block;height:auto;min-height:0;line-height:var(--pt-caption-line,1.4em);max-height:calc(var(--pt-caption-line,1.4em) * 2);-webkit-line-clamp:unset;line-clamp:unset;transform:none}", "body.lampa_view.pt-tv.pt-tv-caption-flow .card__age {position:static;clear:both;transform:none}", "body.lampa_view.pt-tv .mapping--grid>.card:not(.card--wide):not(.card--collection),body.lampa_view.pt-tv .category-full>.card:not(.card--wide):not(.card--collection) {width:calc(10% * var(--pt-interface-scale,1))!important}", "", "body.lampa_view.pt-tv .head__menu-icon,body.lampa_view.pt-tv .head__backward,body.lampa_view.pt-tv .head__action.open--search,body.lampa_view.pt-tv .head__action.open--profile,body.lampa_view.pt-tv .pt-holiday-icons>.head__action {border-width:2px!important}", "body.lampa_view.pt-tv .pt-series-status {font-size:max(8px,.7em);line-height:1.2;padding:.2em .4em;display:block;width:max-content;max-width:none;white-space:nowrap;transform:none}", "body.lampa_view.pt-tv .pt-series-status>span {white-space:pre}", "body.lampa_view.pt-tv .card__view .pt-quality,body.lampa_view.pt-tv .card__view .pt-kind,body.lampa_view.pt-tv .card__view .card__quality {font-size:max(8px,.7em);line-height:1.2;padding:.2em .4em;transform:none}", "body.lampa_view.pt-tv .card__img,body.lampa_view.pt-tv .nova-card__thumb img,body.lampa_view.pt-tv .minimal-torrent-banner__image {image-rendering:auto;transform:none}", "body.lampa_view.pt-tv .card .pt-card-watch {font-size:max(8px,.8em)}", "body.lampa_view.pt-tv .head {font-size:1.12em;height:3.6em}", "body.lampa_view.pt-tv .head__body {max-width:none;width:94%;padding:.5em 0}", "body.lampa_view.pt-tv .wrap__content {padding-top:4.032em!important}", "body.lampa_view.pt-tv .card__view .icon--history {font-size:.95em;width:2.1em;height:1.7em}", "body.lampa_view.pt-tv .card {-webkit-text-size-adjust:100%;text-size-adjust:100%}", "body.lampa_view.pt-tv .settings__content {font-size:calc(var(--pt-ui-font) * 1.1)!important;width:30em;max-width:38vw;box-sizing:border-box}", "body.lampa_view.pt-tv .selectbox__content {font-size:calc(var(--pt-ui-font) * 1.1)!important;box-sizing:border-box}", "", "/* Hero overview uses a compact preview. Entering collections restores the", "   shared profile immediately; only composited card transforms are animated. */", "body.lampa_view.pt-tv .items-line.minimal-hero-preview .card .pt-card-watch {height:0;margin:0;visibility:hidden!important;overflow:hidden}", "body.lampa_view.pt-tv .items-line.minimal-hero-preview .card__title {font-size:max(8px,.7em);line-height:1.4;max-height:2.85em}", "body.lampa_view.pt-tv .items-line.minimal-hero-preview .card__age {font-size:max(8px,.65em)}", ""].join("\n");
 
   // src/glass.css
-  var glass_default = ["/* Clear glass reveals a bounded, preblurred scene from decoded artwork.", "   Original posters remain sharp. Only navigation and open overlays blur live. */", "body.lampa_view.pt-theme-glass {", " --pt-bg:#101113;--pt-side:rgba(42,42,42,.22);--pt-panel:rgba(255,255,255,.06);--pt-high:rgba(255,255,255,.14);", " --pt-text:#f8f8fa;--pt-muted:#c2c1c6;--pt-line:#ffffff29;--pt-accent:#f4f4f6;--pt-dim:#ffffff13;", " --pt-glass-tone-a:94,78,68;--pt-glass-tone-b:69,73,80;--pt-glass-alpha:.30;--pt-glass-blur:12px;", " --pt-glass-border:#ffffff38;--pt-glass-surface:rgba(28,28,28,calc(var(--pt-glass-alpha)*.52));", " --pt-glass-button:linear-gradient(165deg,#ffffff21 0%,#ffffff05 30%,transparent 55%,#ffffff07 100%),rgba(18,18,18,.07);", " --pt-glass-edge:inset 0 1px 0 #ffffff70,inset 1px 0 0 #ffffff20,inset 0 -1px 0 #00000035;", " background:linear-gradient(180deg,#080808b3,#080808a8 55%,#080808d9),var(--pt-glass-scene,radial-gradient(ellipse at 15% 10%,rgba(var(--pt-glass-tone-a),.7),rgba(var(--pt-glass-tone-b),.5))) center/cover!important;", " background-attachment:fixed!important;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI Variable','Segoe UI',Roboto,sans-serif;letter-spacing:0;", "}", "/* The old opaque canvas hid the glass background even when the theme was active. */", "body.lampa_view.pt-theme-glass .app,body.lampa_view.pt-theme-glass .wrap,body.lampa_view.pt-theme-glass .explorer,body.lampa_view.pt-theme-glass .explorer__files,body.lampa_view.pt-theme-glass .explorer__files-body {background:transparent!important}", "/* Search is a reading surface: tint the whole overlay, not only the header icon. */", "body.lampa_view.pt-theme-glass .main-search .search {background:rgba(16,18,22,.82)!important;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}", "body.lampa_view.pt-theme-glass .main-search .simple-keyboard-input {background:rgba(30,32,36,.92);border:1px solid var(--pt-glass-border);border-radius:1.2em;color:var(--pt-text)}", "body.lampa_view.pt-theme-glass .head {height:4.5em!important;background:transparent!important;border:0;box-shadow:none}", "body.lampa_view.pt-theme-glass .head__body {", " width:94%;max-width:94vw;height:3.4em;box-sizing:border-box;margin:.45em auto;padding:.4em .7em;border-radius:2em;", " background:var(--pt-glass-button);border:1px solid var(--pt-glass-border);", " box-shadow:var(--pt-glass-edge),0 8px 24px #00000030;backdrop-filter:blur(var(--pt-glass-blur)) saturate(1.3);-webkit-backdrop-filter:blur(var(--pt-glass-blur)) saturate(1.3);", "}", "body.lampa_view.pt-theme-glass .wrap__content {padding-top:5.2em!important}", "body.lampa_view.pt-theme-glass .head__logo {font-weight:650;letter-spacing:.13em}", "body.lampa_view.pt-theme-glass .head__menu-icon,body.lampa_view.pt-theme-glass .head__backward,body.lampa_view.pt-theme-glass .head__action.open--settings {border-radius:50%;background:var(--pt-glass-button)!important;border:1px solid var(--pt-glass-border)!important;box-shadow:var(--pt-glass-edge)}", "body.lampa_view.pt-theme-glass .head__action.open--search {border-radius:2em;background:rgba(22,24,27,.72)!important;border:1px solid #ffffff38;box-shadow:inset 0 1px 0 #ffffff14}", "body.lampa_view.pt-theme-glass .head__menu-icon,body.lampa_view.pt-theme-glass .head__backward,body.lampa_view.pt-theme-glass .head .head__action {border-width:1px!important}", "body.lampa_view.pt-theme-glass .head__menu-icon.focus,body.lampa_view.pt-theme-glass .head__backward.focus,body.lampa_view.pt-theme-glass .head .head__action.focus,body.lampa_view.pt-theme-glass .head .head__action.hover {background:#ffffff25!important;color:white;border-color:#f4f4f6!important;box-shadow:none!important}", "", "/* One glass navigation layer, not a blur layer for every menu row. */", "body.lampa_view.pt-theme-glass .wrap__left,body.lampa_view.pt-theme-glass.menu--always.pt-menu-pinned .wrap__left,", "body.lampa_view.pt-theme-glass .settings__content,body.lampa_view.pt-theme-glass .selectbox__content,body.lampa_view.pt-theme-glass .settings-input__content,body.lampa_view.pt-theme-glass .modal__content {", " background-color:var(--pt-glass-surface)!important;background-image:linear-gradient(135deg,#ffffff12,transparent 50%,#ffffff06)!important;", " border:1px solid var(--pt-glass-border);border-radius:1.7em;box-shadow:var(--pt-glass-edge),0 24px 70px #00000060;", " backdrop-filter:blur(var(--pt-glass-blur)) saturate(1.4);-webkit-backdrop-filter:blur(var(--pt-glass-blur)) saturate(1.4);", "}", "body.lampa_view.pt-theme-glass .settings__layer,body.lampa_view.pt-theme-glass .selectbox__layer,body.lampa_view.pt-theme-glass .modal__layer {background:#00000052}", "/* A sidebar can cover bright artwork; its material carries a stronger tint. */", "body.lampa_view.pt-theme-glass .wrap__left {background-color:rgba(22,24,28,.34)!important}", "body.lampa_view.pt-theme-glass .menu__item {border-radius:1.05em;padding:.85em 1em;color:#e2e1e6}", "body.lampa_view.pt-theme-glass .menu__item.focus,body.lampa_view.pt-theme-glass .menu__item.hover,body.lampa_view.pt-theme-glass .menu__item.traverse {background:var(--pt-glass-button);color:white;box-shadow:inset 0 1px 0 #ffffff30}", "body.lampa_view.pt-theme-glass .menu__item.focus:before {background:#fff}", "body.lampa_view.pt-theme-glass .items-line__title,body.lampa_view.pt-theme-glass .category-full__title {font-weight:650;letter-spacing:-.025em}", "body.lampa_view.pt-theme-glass .card__title {font-weight:550;letter-spacing:-.015em;color:#eeeef1}", "body.lampa_view.pt-theme-glass .card__view,body.lampa_view.pt-theme-glass .card__img {border-radius:1.05em}", "body.lampa_view.pt-theme-glass .card.focus .card__view,body.lampa_view.pt-theme-glass .card.hover .card__view {box-shadow:0 0 .65em #ffffff3b,0 7px 20px #00000055!important}", "body.lampa_view.pt-theme-glass .card.focus .card__view:after,body.lampa_view.pt-theme-glass .card.hover .card__view:after {border-radius:1.05em!important;border-color:#f7f7fa!important}", "body.lampa_view.pt-theme-glass .pt-quality,body.lampa_view.pt-theme-glass .pt-kind,body.lampa_view.pt-theme-glass .pt-series-status,body.lampa_view.pt-theme-glass .card__vote {background:#18181c9c;border-radius:.6em;border-color:#ffffff45;color:#fff}", "", "/* Artwork sits behind a compact, readable glass information pane. */", "body.lampa_view.pt-theme-glass .pt-hero {display:flex;align-items:center;background:#101113f0!important;border-radius:1.8em;overflow:hidden;-webkit-clip-path:inset(0 round 1.8em);clip-path:inset(0 round 1.8em);box-shadow:0 18px 50px #00000024}", "body.lampa_view.pt-theme-glass .pt-hero:before {background:linear-gradient(90deg,#10111320,transparent 70%)}", "body.lampa_view.pt-theme-glass:not(.pt-mobile) .pt-hero__image {-webkit-mask-image:linear-gradient(90deg,transparent 0%,#0000000d 8%,#00000033 17%,#00000080 30%,#000000d1 43%,#000 55%);mask-image:linear-gradient(90deg,transparent 0%,#0000000d 8%,#00000033 17%,#00000080 30%,#000000d1 43%,#000 55%)}", "body.lampa_view.pt-theme-glass .pt-hero__body {", " position:relative;top:auto;bottom:auto;transform:none;padding:1em 1.3em;box-sizing:border-box;border:1px solid var(--pt-glass-border);border-radius:1.6em;", " background:linear-gradient(165deg,#ffffff18,transparent 45%,#ffffff05),rgba(18,18,18,.10);box-shadow:var(--pt-glass-edge),0 12px 38px #0000002e;", " backdrop-filter:blur(8px) saturate(1.35);-webkit-backdrop-filter:blur(8px) saturate(1.35);", "}", "body.lampa_view.pt-theme-glass .pt-hero__title {font-weight:700;letter-spacing:-.04em}", "body.lampa_view.pt-theme-glass .pt-hero__overview {color:#e1e0e6}", "body.lampa_view.pt-theme-glass .pt-hero__action,body.lampa_view.pt-theme-glass .full-start__button,body.lampa_view.pt-theme-glass .simple-button {", " border-radius:2em;background:var(--pt-glass-button)!important;border:1px solid var(--pt-glass-border);color:#fafaff!important;box-shadow:var(--pt-glass-edge),0 4px 12px #00000020;", "}", "body.lampa_view.pt-theme-glass .pt-hero__action.focus,body.lampa_view.pt-theme-glass .pt-hero__action.hover,body.lampa_view.pt-theme-glass .simple-button.focus {background:linear-gradient(160deg,#ffffff4d,#ffffff1f)!important;border-color:#ffffffb3!important;box-shadow:var(--pt-glass-edge)!important}", "body.lampa_view.pt-theme-glass .pt-hero__dots {gap:.55em}", "body.lampa_view.pt-theme-glass .pt-hero__dot {background:#ffffff50}", "body.lampa_view.pt-theme-glass .pt-hero__dot.active {background:#f5f5f7}", "body.lampa_view.pt-theme-glass .minimal-detail-header {border-radius:1.4em}", "body.lampa_view.pt-theme-glass .minimal-detail-facts,body.lampa_view.pt-theme-glass .minimal-detail-cast>.minimal-cast-native {background:linear-gradient(145deg,#ffffff08,transparent),#13151a24;border-color:var(--pt-glass-border);border-radius:1.5em;box-shadow:inset 0 1px 0 #ffffff15}", "body.lampa_view.pt-theme-glass .full-start-new__rate-line>div,body.lampa_view.pt-theme-glass .full-start__rate-line>div,body.lampa_view.pt-theme-glass .full-descr__tag {border-color:#ffffff30;border-radius:.9em;background:#ffffff10}", "/* Reuse the scene below; no live blur layer per comment or reaction. */", "body.lampa_view.pt-theme-glass .person-start {background:var(--pt-glass-button);border:1px solid var(--pt-glass-border);border-radius:1.5em;box-shadow:var(--pt-glass-edge);padding:1em;box-sizing:border-box}", "body.lampa_view.pt-theme-glass .full-review,body.lampa_view.pt-theme-glass .full-review-add,", "body.lampa_view.pt-theme-glass .minimal-detail-header .full-start-new__reactions .reaction {background:var(--pt-glass-button);border:1px solid var(--pt-glass-border);box-shadow:var(--pt-glass-edge);color:var(--pt-text)}", "body.lampa_view.pt-theme-glass .full-review.focus,body.lampa_view.pt-theme-glass .full-review-add.focus,", "body.lampa_view.pt-theme-glass .minimal-detail-header .full-start-new__reactions .reaction.focus {background:linear-gradient(165deg,#ffffff30,#ffffff0a);border-color:var(--pt-accent);color:var(--pt-text)}", "body.lampa_view.pt-theme-glass .minimal-torrent-banner__meta {background:var(--pt-glass-button);border:1px solid var(--pt-glass-border);box-shadow:var(--pt-glass-edge)}", "body.lampa_view.pt-theme-glass .settings-folder,body.lampa_view.pt-theme-glass .settings-param,body.lampa_view.pt-theme-glass .selectbox-item {border-radius:1.1em;border-color:transparent}", "body.lampa_view.pt-theme-glass .settings-folder.focus,body.lampa_view.pt-theme-glass .settings-param.focus,body.lampa_view.pt-theme-glass .selectbox-item.focus {background:var(--pt-glass-button)!important;color:white!important;box-shadow:inset 0 1px 0 #ffffff35!important}", "body.lampa_view.pt-theme-glass .settings-folder.focus .settings-folder__icon,body.lampa_view.pt-theme-glass .selectbox-item.focus .selectbox-item__checkbox,body.lampa_view.pt-theme-glass .settings-param.focus .selectbox-item__checkbox {filter:none;-webkit-filter:none}", "body.lampa_view.pt-theme-glass .selectbox-item.focus:after {border-color:#f5f5f7}", "body.lampa_view.pt-theme-glass .settings-param__value {color:#e2e1e6}", "body.lampa_view.pt-theme-glass .minimal-back--overlay {background:var(--pt-glass-button);border-color:#ffffff45;border-radius:50%}", "body.lampa_view.pt-theme-glass .input,body.lampa_view.pt-theme-glass .search-input,body.lampa_view.pt-theme-glass .search__input {background:rgba(22,24,27,.72);border-radius:1.5em;border-color:var(--pt-glass-border);color:var(--pt-text)}", "", "body.lampa_view.pt-theme-glass .minimal-torrent-banner,body.lampa_view.pt-theme-glass .nova-plus-root .nova-hero {border-radius:1.6em;-webkit-clip-path:inset(0 round 1.6em);clip-path:inset(0 round 1.6em)}", "body.lampa_view.pt-theme-glass .torrent-item,body.lampa_view.pt-theme-glass .torrent-serial,body.lampa_view.pt-theme-glass .torrent-file {background:linear-gradient(140deg,#ffffff0f,#ffffff03),#1b1b1b4d;border-color:#ffffff2b;border-radius:1.25em}", "body.lampa_view.pt-theme-glass .torrent-item.focus,body.lampa_view.pt-theme-glass .torrent-serial.focus {background-color:#ffffff18;border-color:#ffffff99}", "body.lampa_view.pt-theme-glass .tc-pill,body.lampa_view.pt-theme-glass .tc-quality,body.lampa_view.pt-theme-glass .torrent-filter .filter__item {background:#ffffff0d;border-color:#ffffff30;border-radius:.8em}", "body.lampa_view.pt-theme-glass .nova-plus-root {background:transparent}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-btn,body.lampa_view.pt-theme-glass .nova-plus-root .nova-chip,body.lampa_view.pt-theme-glass .nova-plus-root .nova-group {background:var(--pt-glass-button)!important;border:1px solid var(--pt-glass-border)!important;border-radius:1.3em!important;color:#f5f5f8!important;box-shadow:var(--pt-glass-edge)!important}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-plus__bar>.nova-chip,body.lampa_view.pt-theme-glass .nova-plus-root [data-nova-group=season] .nova-chip,body.lampa_view.pt-theme-glass .full-start__button,body.lampa_view.pt-theme-glass.pt-mobile .navigation-bar__body {backdrop-filter:blur(10px) saturate(1.45);-webkit-backdrop-filter:blur(10px) saturate(1.45)}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-chip--active,body.lampa_view.pt-theme-glass .nova-plus-root .nova-chip.focus,body.lampa_view.pt-theme-glass .nova-plus-root .nova-group.focus {background:linear-gradient(150deg,#ffffff26,#ffffff0a)!important;border-color:#ffffffa6!important}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-card__thumb,body.lampa_view.pt-theme-glass .nova-plus-root .nova-card__thumb img {border-radius:1.15em}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova__list--grid .nova-card.focus .nova-card__thumb,body.lampa_view.pt-theme-glass .nova-plus-root .nova__list--grid .nova-card.hover .nova-card__thumb {box-shadow:0 0 .7em #ffffff3b,0 8px 20px #00000044!important}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-card__overview {color:#d2d2d5}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-card--rowlist {background:#ffffff09;border:1px solid #ffffff25;border-radius:1.3em}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-hero .nova-btn {border-radius:2em!important;background:var(--pt-glass-button)!important;color:#f5f5f5!important}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-hero__shade {background:linear-gradient(0deg,#131316bf,transparent 78%)}", "body.lampa_view.pt-theme-glass .minimal-online-option {background:#ffffff0c;border-color:#ffffff30;border-radius:1em}", "body.lampa_view.pt-theme-glass .minimal-online-option--selected,body.lampa_view.pt-theme-glass .minimal-online-option.focus {background:var(--pt-glass-button);border-color:#ffffff99}", "body.lampa_view.pt-theme-glass .nova-source-option__quality {background:#ffffff13;border-color:#ffffff35;color:#f5f5f7}", "body.lampa_view.pt-theme-glass .player-panel,body.lampa_view.pt-theme-glass .player-info {background:#1c1c20b3;border-color:#ffffff40;border-radius:1.6em}", "body.lampa_view.pt-theme-glass .player-panel__button.focus {background:#ffffff25;color:#fff}", "body.lampa_view.pt-theme-glass .time-line>div {background:#ededf1!important}", 'body.lampa_view.pt-theme-glass .minimal-anime-tab[aria-selected="true"] {background:var(--pt-glass-button)!important;border-color:#ffffffb3!important;color:#fff!important;box-shadow:0 0 .4em #ffffff66,0 0 1.3em #ffffff30!important}', "", "body.lampa_view.pt-theme-glass.pt-mobile .head {height:4.8em!important}", "body.lampa_view.pt-theme-glass.pt-mobile .wrap__content {padding-top:5.4em!important}", "body.lampa_view.pt-theme-glass.pt-mobile .head__menu-icon,body.lampa_view.pt-theme-glass.pt-mobile .head__backward,body.lampa_view.pt-theme-glass.pt-mobile .head__action.open--settings,body.lampa_view.pt-theme-glass.pt-mobile .head__action.open--profile {min-width:44px;min-height:44px;flex-shrink:0}", "body.lampa_view.pt-theme-glass.pt-mobile .head__body {width:94%;height:3.8em;padding:.4em .5em}", "body.lampa_view.pt-theme-glass.pt-mobile .pt-hero {align-items:stretch}", "body.lampa_view.pt-theme-glass.pt-mobile .pt-hero__body {position:relative;left:auto;right:auto;padding:1.5em 1.1em 1.1em;bottom:auto;margin:.4em 1em 3.8em;max-width:none}", "body.lampa_view.pt-theme-glass.pt-mobile .navigation-bar__body {border:1px solid var(--pt-glass-border);border-radius:2.5em;background:var(--pt-glass-button);box-shadow:var(--pt-glass-edge),0 10px 28px #00000055;backdrop-filter:blur(var(--pt-glass-blur)) saturate(1.4);-webkit-backdrop-filter:blur(var(--pt-glass-blur)) saturate(1.4)}", "body.lampa_view.pt-theme-glass.pt-mobile .navigation-bar__item {border-radius:2em}", "body.lampa_view.pt-theme-glass.pt-mobile .navigation-bar__item.active {background:#ffffff15}", "body.lampa_view.pt-theme-glass.pt-tv {--pt-glass-blur:10px}", "body.lampa_view.pt-theme-glass.pt-tv .pt-hero__body {backdrop-filter:none;-webkit-backdrop-filter:none;background:linear-gradient(165deg,#ffffff18,transparent 45%,#ffffff05),#10121838}", "body.lampa_view.pt-theme-glass.pt-tv .nova-plus-root .nova-plus__bar>.nova-chip,body.lampa_view.pt-theme-glass.pt-tv .nova-plus-root [data-nova-group=season] .nova-chip,body.lampa_view.pt-theme-glass.pt-tv .full-start__button {backdrop-filter:none;-webkit-backdrop-filter:none}", "/* Reuse the cached, preblurred scene on TV instead of filtering a moving catalogue. */", "body.lampa_view.pt-theme-glass.pt-tv .head__body {", " backdrop-filter:none;-webkit-backdrop-filter:none;", " background-image:linear-gradient(165deg,#ffffff21,transparent 45%,#ffffff07),linear-gradient(#1012188a,#1012188a),var(--pt-glass-scene,none);", " background-size:auto,auto,cover;background-position:center;background-repeat:no-repeat;", "}", "body.lampa_view.pt-theme-glass.pt-tv .head__action,body.lampa_view.pt-theme-glass.pt-tv .card__icons-inner,body.lampa_view.pt-theme-glass.pt-tv .card__marker,body.lampa_view.pt-theme-glass.pt-tv .card__vote,body.lampa_view.pt-theme-glass.pt-tv .card-watched {backdrop-filter:none!important;-webkit-backdrop-filter:none!important}", "@media(prefers-reduced-motion:reduce){body.lampa_view.pt-theme-glass .minimal-anime-tab,body.lampa_view.pt-theme-glass .menu__item {transition:none!important}}", "@media(prefers-reduced-transparency:reduce){body.lampa_view.pt-theme-glass {--pt-glass-alpha:1;--pt-glass-blur:0px;--pt-glass-button:#24262b;--pt-glass-scene:none}body.lampa_view.pt-theme-glass .head__body {background:#242426}body.lampa_view.pt-theme-glass .pt-hero__body {background:#202023;backdrop-filter:none;-webkit-backdrop-filter:none}body.lampa_view.pt-theme-glass .nova-plus-root .nova-chip,body.lampa_view.pt-theme-glass .full-start__button,body.lampa_view.pt-theme-glass .navigation-bar__body {backdrop-filter:none!important;-webkit-backdrop-filter:none!important}}", "", "/* Mobile soft artwork edge belongs to Minimal; Glass keeps its existing pane overlap. */", "body.lampa_view.pt-theme-glass.pt-mobile .pt-hero__image {-webkit-mask-image:none;mask-image:none}", "body.lampa_view.pt-theme-glass.pt-mobile .pt-hero__branding {align-items:center}", "body.lampa_view.pt-theme-glass.pt-mobile .pt-hero__branding>.pt-hero__logo {object-position:center top}", "body.lampa_view.pt-theme-glass.pt-mobile .pt-hero__branding>.pt-hero__title {text-align:center}", "/* Match the settings highlight's transparency without changing the menu layout. */", "body.lampa_view.pt-theme-glass .menu__item.focus,body.lampa_view.pt-theme-glass .menu__item.hover {background:var(--pt-glass-button)!important}", "", "body.lampa_view.pt-theme-glass .person-start__left {min-width:0;overflow-wrap:break-word}", "body.lampa_view.pt-theme-glass.pt-mobile .person-start__body {flex-direction:column;align-items:center;gap:1em}", "body.lampa_view.pt-theme-glass.pt-mobile .person-start__left {width:100%;padding:0;box-sizing:border-box}", "body.lampa_view.pt-theme-glass.pt-mobile .person-start__name {font-size:2em}", "body.lampa_view.pt-theme-glass.pt-mobile .person-start__place {font-size:1.2em}", "body.lampa_view.pt-theme-glass.pt-mobile .person-start__bottom {flex-wrap:wrap;gap:.5em}", "", "/* A single static shade follows the existing detail backdrop, behind all text. */", "body.lampa_view.pt-theme-glass .minimal-detail-shade {position:absolute;top:0;left:0;width:100%;z-index:-1;pointer-events:none;background:linear-gradient(90deg,#080a0d94 0%,#080a0d8a 60%,#080a0d33 100%);-webkit-mask-image:linear-gradient(180deg,#000 0%,#000 70%,transparent 100%);mask-image:linear-gradient(180deg,#000 0%,#000 70%,transparent 100%)}", "body.lampa_view:not(.pt-theme-glass) .minimal-detail-shade {display:none}", ""].join("\n");
+  var glass_default = ["/* Clear glass reveals a bounded, preblurred scene from decoded artwork.", "   Original posters remain sharp. Only navigation and open overlays blur live. */", "body.lampa_view.pt-theme-glass {", " --pt-bg:#101113;--pt-side:rgba(42,42,42,.22);--pt-panel:rgba(255,255,255,.06);--pt-high:rgba(255,255,255,.14);", " --pt-text:#f8f8fa;--pt-muted:#c2c1c6;--pt-line:#ffffff29;--pt-accent:#f4f4f6;--pt-dim:#ffffff13;", " --pt-glass-tone-a:94,78,68;--pt-glass-tone-b:69,73,80;--pt-glass-alpha:.30;--pt-glass-blur:12px;", " --pt-glass-border:#ffffff38;--pt-glass-surface:rgba(28,28,28,calc(var(--pt-glass-alpha)*.52));", " --pt-glass-button:linear-gradient(165deg,#ffffff21 0%,#ffffff05 30%,transparent 55%,#ffffff07 100%),rgba(18,18,18,.07);", " --pt-glass-edge:inset 0 1px 0 #ffffff70,inset 1px 0 0 #ffffff20,inset 0 -1px 0 #00000035;", " background:var(--pt-chrome-edge,linear-gradient(transparent,transparent)),linear-gradient(180deg,#080808b3,#080808a8 55%,#080808d9),var(--pt-glass-scene,radial-gradient(ellipse at 15% 10%,rgba(var(--pt-glass-tone-a),.7),rgba(var(--pt-glass-tone-b),.5))) center/cover!important;", " background-attachment:fixed!important;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI Variable','Segoe UI',Roboto,sans-serif;letter-spacing:0;", "}", "/* The old opaque canvas hid the glass background even when the theme was active. */", "body.lampa_view.pt-theme-glass .app,body.lampa_view.pt-theme-glass .wrap,body.lampa_view.pt-theme-glass .explorer,body.lampa_view.pt-theme-glass .explorer__files,body.lampa_view.pt-theme-glass .explorer__files-body {background:transparent!important}", "/* Search is a reading surface: tint the whole overlay, not only the header icon. */", "body.lampa_view.pt-theme-glass .main-search .search {background:rgba(16,18,22,.82)!important;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}", "body.lampa_view.pt-theme-glass .main-search .simple-keyboard-input {background:rgba(30,32,36,.92);border:1px solid var(--pt-glass-border);border-radius:1.2em;color:var(--pt-text)}", "body.lampa_view.pt-theme-glass .head {height:4.5em!important;background:transparent!important;border:0;box-shadow:none}", "body.lampa_view.pt-theme-glass .head__body {", " width:94%;max-width:94vw;height:3.4em;box-sizing:border-box;margin:.45em auto;padding:.4em .7em;border-radius:2em;", " background:var(--pt-glass-button);border:1px solid var(--pt-glass-border);", " box-shadow:var(--pt-glass-edge),0 8px 24px #00000030;backdrop-filter:blur(var(--pt-glass-blur)) saturate(1.3);-webkit-backdrop-filter:blur(var(--pt-glass-blur)) saturate(1.3);", "}", "body.lampa_view.pt-theme-glass .wrap__content {padding-top:5.2em!important}", "body.lampa_view.pt-theme-glass .head__logo {font-weight:650;letter-spacing:.13em}", "body.lampa_view.pt-theme-glass .head__menu-icon,body.lampa_view.pt-theme-glass .head__backward,body.lampa_view.pt-theme-glass .head__action.open--settings {border-radius:50%;background:var(--pt-glass-button)!important;border:1px solid var(--pt-glass-border)!important;box-shadow:var(--pt-glass-edge)}", "body.lampa_view.pt-theme-glass .head__action.open--search {border-radius:2em;background:rgba(22,24,27,.72)!important;border:1px solid #ffffff38;box-shadow:inset 0 1px 0 #ffffff14}", "body.lampa_view.pt-theme-glass .head__menu-icon,body.lampa_view.pt-theme-glass .head__backward,body.lampa_view.pt-theme-glass .head .head__action {border-width:1px!important}", "body.lampa_view.pt-theme-glass .head__menu-icon.focus,body.lampa_view.pt-theme-glass .head__backward.focus,body.lampa_view.pt-theme-glass .head .head__action.focus,body.lampa_view.pt-theme-glass .head .head__action.hover {background:#ffffff25!important;color:white;border-color:#f4f4f6!important;box-shadow:none!important}", "", "/* One glass navigation layer, not a blur layer for every menu row. */", "body.lampa_view.pt-theme-glass .wrap__left,body.lampa_view.pt-theme-glass.menu--always.pt-menu-pinned .wrap__left,", "body.lampa_view.pt-theme-glass .settings__content,body.lampa_view.pt-theme-glass .selectbox__content,body.lampa_view.pt-theme-glass .settings-input__content,body.lampa_view.pt-theme-glass .modal__content {", " background-color:var(--pt-glass-surface)!important;background-image:linear-gradient(135deg,#ffffff12,transparent 50%,#ffffff06)!important;", " border:1px solid var(--pt-glass-border);border-radius:1.7em;box-shadow:var(--pt-glass-edge),0 24px 70px #00000060;", " backdrop-filter:blur(var(--pt-glass-blur)) saturate(1.4);-webkit-backdrop-filter:blur(var(--pt-glass-blur)) saturate(1.4);", "}", "body.lampa_view.pt-theme-glass .settings__layer,body.lampa_view.pt-theme-glass .selectbox__layer,body.lampa_view.pt-theme-glass .modal__layer {background:#00000052}", "/* A sidebar can cover bright artwork; its material carries a stronger tint. */", "body.lampa_view.pt-theme-glass .wrap__left {background-color:rgba(22,24,28,.34)!important}", "body.lampa_view.pt-theme-glass .menu__item {border-radius:1.05em;padding:.85em 1em;color:#e2e1e6}", "body.lampa_view.pt-theme-glass .menu__item.focus,body.lampa_view.pt-theme-glass .menu__item.hover,body.lampa_view.pt-theme-glass .menu__item.traverse {background:var(--pt-glass-button);color:white;box-shadow:inset 0 1px 0 #ffffff30}", "body.lampa_view.pt-theme-glass .menu__item.focus:before {background:#fff}", "body.lampa_view.pt-theme-glass .items-line__title,body.lampa_view.pt-theme-glass .category-full__title {font-weight:650;letter-spacing:-.025em}", "body.lampa_view.pt-theme-glass .card__title {font-weight:550;letter-spacing:-.015em;color:#eeeef1}", "body.lampa_view.pt-theme-glass .card__view,body.lampa_view.pt-theme-glass .card__img {border-radius:1.05em}", "body.lampa_view.pt-theme-glass .card.focus .card__view,body.lampa_view.pt-theme-glass .card.hover .card__view {box-shadow:0 0 .65em #ffffff3b,0 7px 20px #00000055!important}", "body.lampa_view.pt-theme-glass .card.focus .card__view:after,body.lampa_view.pt-theme-glass .card.hover .card__view:after {border-radius:1.05em!important;border-color:#f7f7fa!important}", "body.lampa_view.pt-theme-glass .pt-quality,body.lampa_view.pt-theme-glass .pt-kind,body.lampa_view.pt-theme-glass .pt-series-status,body.lampa_view.pt-theme-glass .card__vote {background:#18181c9c;border-radius:.6em;border-color:#ffffff45;color:#fff}", "", "/* Artwork sits behind a compact, readable glass information pane. */", "body.lampa_view.pt-theme-glass .pt-hero {display:flex;align-items:center;background:#101113f0!important;border-radius:1.8em;overflow:hidden;-webkit-clip-path:inset(0 round 1.8em);clip-path:inset(0 round 1.8em);box-shadow:0 18px 50px #00000024}", "body.lampa_view.pt-theme-glass .pt-hero:before {background:linear-gradient(90deg,#10111320,transparent 70%)}", "body.lampa_view.pt-theme-glass:not(.pt-mobile) .pt-hero__image {-webkit-mask-image:linear-gradient(90deg,transparent 0%,#0000000d 8%,#00000033 17%,#00000080 30%,#000000d1 43%,#000 55%);mask-image:linear-gradient(90deg,transparent 0%,#0000000d 8%,#00000033 17%,#00000080 30%,#000000d1 43%,#000 55%)}", "body.lampa_view.pt-theme-glass .pt-hero__body {", " position:relative;top:auto;bottom:auto;transform:none;padding:1em 1.3em;box-sizing:border-box;border:1px solid var(--pt-glass-border);border-radius:1.6em;", " background:linear-gradient(165deg,#ffffff18,transparent 45%,#ffffff05),rgba(18,18,18,.10);box-shadow:var(--pt-glass-edge),0 12px 38px #0000002e;", " backdrop-filter:blur(8px) saturate(1.35);-webkit-backdrop-filter:blur(8px) saturate(1.35);", "}", "body.lampa_view.pt-theme-glass .pt-hero__title {font-weight:700;letter-spacing:-.04em}", "body.lampa_view.pt-theme-glass .pt-hero__overview {color:#e1e0e6}", "body.lampa_view.pt-theme-glass .pt-hero__action,body.lampa_view.pt-theme-glass .full-start__button,body.lampa_view.pt-theme-glass .simple-button {", " border-radius:2em;background:var(--pt-glass-button)!important;border:1px solid var(--pt-glass-border);color:#fafaff!important;box-shadow:var(--pt-glass-edge),0 4px 12px #00000020;", "}", "body.lampa_view.pt-theme-glass .pt-hero__action.focus,body.lampa_view.pt-theme-glass .pt-hero__action.hover,body.lampa_view.pt-theme-glass .simple-button.focus {background:linear-gradient(160deg,#ffffff4d,#ffffff1f)!important;border-color:#ffffffb3!important;box-shadow:var(--pt-glass-edge)!important}", "body.lampa_view.pt-theme-glass .pt-hero__dots {gap:.55em}", "body.lampa_view.pt-theme-glass .pt-hero__dot {background:#ffffff50}", "body.lampa_view.pt-theme-glass .pt-hero__dot.active {background:#f5f5f7}", "body.lampa_view.pt-theme-glass .minimal-detail-header {border-radius:1.4em}", "body.lampa_view.pt-theme-glass .minimal-detail-facts,body.lampa_view.pt-theme-glass .minimal-detail-cast>.minimal-cast-native {background:linear-gradient(145deg,#ffffff08,transparent),#13151a24;border-color:var(--pt-glass-border);border-radius:1.5em;box-shadow:inset 0 1px 0 #ffffff15}", "body.lampa_view.pt-theme-glass .full-start-new__rate-line>div,body.lampa_view.pt-theme-glass .full-start__rate-line>div,body.lampa_view.pt-theme-glass .full-descr__tag {border-color:#ffffff30;border-radius:.9em;background:#ffffff10}", "/* Reuse the scene below; no live blur layer per comment or reaction. */", "body.lampa_view.pt-theme-glass .person-start {background:var(--pt-glass-button);border:1px solid var(--pt-glass-border);border-radius:1.5em;box-shadow:var(--pt-glass-edge);padding:1em;box-sizing:border-box}", "body.lampa_view.pt-theme-glass .full-review,body.lampa_view.pt-theme-glass .full-review-add,", "body.lampa_view.pt-theme-glass .minimal-detail-header .full-start-new__reactions .reaction {background:var(--pt-glass-button);border:1px solid var(--pt-glass-border);box-shadow:var(--pt-glass-edge);color:var(--pt-text)}", "body.lampa_view.pt-theme-glass .full-review.focus,body.lampa_view.pt-theme-glass .full-review-add.focus,", "body.lampa_view.pt-theme-glass .minimal-detail-header .full-start-new__reactions .reaction.focus {background:linear-gradient(165deg,#ffffff30,#ffffff0a);border-color:var(--pt-accent);color:var(--pt-text)}", "body.lampa_view.pt-theme-glass .minimal-torrent-banner__meta {background:var(--pt-glass-button);border:1px solid var(--pt-glass-border);box-shadow:var(--pt-glass-edge)}", "body.lampa_view.pt-theme-glass .settings-folder,body.lampa_view.pt-theme-glass .settings-param,body.lampa_view.pt-theme-glass .selectbox-item {border-radius:1.1em;border-color:transparent}", "body.lampa_view.pt-theme-glass .settings-folder.focus,body.lampa_view.pt-theme-glass .settings-param.focus,body.lampa_view.pt-theme-glass .selectbox-item.focus {background:var(--pt-glass-button)!important;color:white!important;box-shadow:inset 0 1px 0 #ffffff35!important}", "body.lampa_view.pt-theme-glass .settings-folder.focus .settings-folder__icon,body.lampa_view.pt-theme-glass .selectbox-item.focus .selectbox-item__checkbox,body.lampa_view.pt-theme-glass .settings-param.focus .selectbox-item__checkbox {filter:none;-webkit-filter:none}", "body.lampa_view.pt-theme-glass .selectbox-item.focus:after {border-color:#f5f5f7}", "body.lampa_view.pt-theme-glass .settings-param__value {color:#e2e1e6}", "body.lampa_view.pt-theme-glass .minimal-back--overlay {background:var(--pt-glass-button);border-color:#ffffff45;border-radius:50%}", "body.lampa_view.pt-theme-glass .input,body.lampa_view.pt-theme-glass .search-input,body.lampa_view.pt-theme-glass .search__input {background:rgba(22,24,27,.72);border-radius:1.5em;border-color:var(--pt-glass-border);color:var(--pt-text)}", "", "body.lampa_view.pt-theme-glass .minimal-torrent-banner,body.lampa_view.pt-theme-glass .nova-plus-root .nova-hero {border-radius:1.6em;-webkit-clip-path:inset(0 round 1.6em);clip-path:inset(0 round 1.6em)}", "body.lampa_view.pt-theme-glass .torrent-item,body.lampa_view.pt-theme-glass .torrent-serial,body.lampa_view.pt-theme-glass .torrent-file {background:linear-gradient(140deg,#ffffff0f,#ffffff03),#1b1b1b4d;border-color:#ffffff2b;border-radius:1.25em}", "body.lampa_view.pt-theme-glass .torrent-item.focus,body.lampa_view.pt-theme-glass .torrent-serial.focus {background-color:#ffffff18;border-color:#ffffff99}", "body.lampa_view.pt-theme-glass .tc-pill,body.lampa_view.pt-theme-glass .tc-quality,body.lampa_view.pt-theme-glass .torrent-filter .filter__item {background:#ffffff0d;border-color:#ffffff30;border-radius:.8em}", "body.lampa_view.pt-theme-glass .nova-plus-root {background:transparent}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-btn,body.lampa_view.pt-theme-glass .nova-plus-root .nova-chip,body.lampa_view.pt-theme-glass .nova-plus-root .nova-group {background:var(--pt-glass-button)!important;border:1px solid var(--pt-glass-border)!important;border-radius:1.3em!important;color:#f5f5f8!important;box-shadow:var(--pt-glass-edge)!important}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-plus__bar>.nova-chip,body.lampa_view.pt-theme-glass .nova-plus-root [data-nova-group=season] .nova-chip,body.lampa_view.pt-theme-glass .full-start__button,body.lampa_view.pt-theme-glass.pt-mobile .navigation-bar__body {backdrop-filter:blur(10px) saturate(1.45);-webkit-backdrop-filter:blur(10px) saturate(1.45)}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-chip--active,body.lampa_view.pt-theme-glass .nova-plus-root .nova-chip.focus,body.lampa_view.pt-theme-glass .nova-plus-root .nova-group.focus {background:linear-gradient(150deg,#ffffff26,#ffffff0a)!important;border-color:#ffffffa6!important}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-card__thumb,body.lampa_view.pt-theme-glass .nova-plus-root .nova-card__thumb img {border-radius:1.15em}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova__list--grid .nova-card.focus .nova-card__thumb,body.lampa_view.pt-theme-glass .nova-plus-root .nova__list--grid .nova-card.hover .nova-card__thumb {box-shadow:0 0 .7em #ffffff3b,0 8px 20px #00000044!important}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-card__overview {color:#d2d2d5}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-card--rowlist {background:#ffffff09;border:1px solid #ffffff25;border-radius:1.3em}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-hero .nova-btn {border-radius:2em!important;background:var(--pt-glass-button)!important;color:#f5f5f5!important}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-hero__shade {background:linear-gradient(0deg,#131316bf,transparent 78%)}", "body.lampa_view.pt-theme-glass .minimal-online-option {background:#ffffff0c;border-color:#ffffff30;border-radius:1em}", "body.lampa_view.pt-theme-glass .minimal-online-option--selected,body.lampa_view.pt-theme-glass .minimal-online-option.focus {background:var(--pt-glass-button);border-color:#ffffff99}", "body.lampa_view.pt-theme-glass .nova-source-option__quality {background:#ffffff13;border-color:#ffffff35;color:#f5f5f7}", "body.lampa_view.pt-theme-glass .player-panel,body.lampa_view.pt-theme-glass .player-info {background:#1c1c20b3;border-color:#ffffff40;border-radius:1.6em}", "body.lampa_view.pt-theme-glass .player-panel__button.focus {background:#ffffff25;color:#fff}", "body.lampa_view.pt-theme-glass .time-line>div {background:#ededf1!important}", 'body.lampa_view.pt-theme-glass .minimal-anime-tab[aria-selected="true"] {background:var(--pt-glass-button)!important;border-color:#ffffffb3!important;color:#fff!important;box-shadow:0 0 .4em #ffffff66,0 0 1.3em #ffffff30!important}', "", "body.lampa_view.pt-theme-glass.pt-mobile .head {height:4.8em!important}", "body.lampa_view.pt-theme-glass.pt-mobile .wrap__content {padding-top:5.4em!important}", "body.lampa_view.pt-theme-glass.pt-mobile .head__menu-icon,body.lampa_view.pt-theme-glass.pt-mobile .head__backward,body.lampa_view.pt-theme-glass.pt-mobile .head__action.open--settings,body.lampa_view.pt-theme-glass.pt-mobile .head__action.open--profile {min-width:44px;min-height:44px;flex-shrink:0}", "body.lampa_view.pt-theme-glass.pt-mobile .head__body {width:94%;height:3.8em;padding:.4em .5em}", "body.lampa_view.pt-theme-glass.pt-mobile .pt-hero {align-items:stretch}", "body.lampa_view.pt-theme-glass.pt-mobile .pt-hero__body {position:relative;left:auto;right:auto;padding:1.5em 1.1em 1.1em;bottom:auto;margin:.4em 1em 3.8em;max-width:none}", "body.lampa_view.pt-theme-glass.pt-mobile .navigation-bar__body {border:1px solid var(--pt-glass-border);border-radius:2.5em;background:var(--pt-glass-button);box-shadow:var(--pt-glass-edge),0 10px 28px #00000055;backdrop-filter:blur(var(--pt-glass-blur)) saturate(1.4);-webkit-backdrop-filter:blur(var(--pt-glass-blur)) saturate(1.4)}", "body.lampa_view.pt-theme-glass.pt-mobile .navigation-bar__item {border-radius:2em}", "body.lampa_view.pt-theme-glass.pt-mobile .navigation-bar__item.active {background:#ffffff15}", "body.lampa_view.pt-theme-glass.pt-tv {--pt-glass-blur:10px}", "body.lampa_view.pt-theme-glass.pt-tv .pt-hero__body {backdrop-filter:none;-webkit-backdrop-filter:none;background:linear-gradient(165deg,#ffffff18,transparent 45%,#ffffff05),#10121838}", "body.lampa_view.pt-theme-glass.pt-tv .nova-plus-root .nova-plus__bar>.nova-chip,body.lampa_view.pt-theme-glass.pt-tv .nova-plus-root [data-nova-group=season] .nova-chip,body.lampa_view.pt-theme-glass.pt-tv .full-start__button {backdrop-filter:none;-webkit-backdrop-filter:none}", "/* Reuse the cached, preblurred scene on TV instead of filtering a moving catalogue. */", "body.lampa_view.pt-theme-glass.pt-tv .head__body {", " backdrop-filter:none;-webkit-backdrop-filter:none;", " background-image:linear-gradient(165deg,#ffffff21,transparent 45%,#ffffff07),linear-gradient(#1012188a,#1012188a),var(--pt-glass-scene,none);", " background-size:auto,auto,cover;background-position:center;background-repeat:no-repeat;", "}", "body.lampa_view.pt-theme-glass.pt-tv .head__action,body.lampa_view.pt-theme-glass.pt-tv .card__icons-inner,body.lampa_view.pt-theme-glass.pt-tv .card__marker,body.lampa_view.pt-theme-glass.pt-tv .card__vote,body.lampa_view.pt-theme-glass.pt-tv .card-watched {backdrop-filter:none!important;-webkit-backdrop-filter:none!important}", "@media(prefers-reduced-motion:reduce){body.lampa_view.pt-theme-glass .minimal-anime-tab,body.lampa_view.pt-theme-glass .menu__item {transition:none!important}}", "@media(prefers-reduced-transparency:reduce){body.lampa_view.pt-theme-glass {--pt-glass-alpha:1;--pt-glass-blur:0px;--pt-glass-button:#24262b;--pt-glass-scene:none}body.lampa_view.pt-theme-glass .head__body {background:#242426}body.lampa_view.pt-theme-glass .pt-hero__body {background:#202023;backdrop-filter:none;-webkit-backdrop-filter:none}body.lampa_view.pt-theme-glass .nova-plus-root .nova-chip,body.lampa_view.pt-theme-glass .full-start__button,body.lampa_view.pt-theme-glass .navigation-bar__body {backdrop-filter:none!important;-webkit-backdrop-filter:none!important}}", "", "/* Mobile soft artwork edge belongs to Minimal; Glass keeps its existing pane overlap. */", "body.lampa_view.pt-theme-glass.pt-mobile .pt-hero__image {-webkit-mask-image:none;mask-image:none}", "body.lampa_view.pt-theme-glass.pt-mobile .pt-hero__branding {align-items:center}", "body.lampa_view.pt-theme-glass.pt-mobile .pt-hero__branding>.pt-hero__logo {object-position:center top}", "body.lampa_view.pt-theme-glass.pt-mobile .pt-hero__branding>.pt-hero__title {text-align:center}", "/* Match the settings highlight's transparency without changing the menu layout. */", "body.lampa_view.pt-theme-glass .menu__item.focus,body.lampa_view.pt-theme-glass .menu__item.hover {background:var(--pt-glass-button)!important}", "", "body.lampa_view.pt-theme-glass .person-start__left {min-width:0;overflow-wrap:break-word}", "body.lampa_view.pt-theme-glass.pt-mobile .person-start__body {flex-direction:column;align-items:center;gap:1em}", "body.lampa_view.pt-theme-glass.pt-mobile .person-start__left {width:100%;padding:0;box-sizing:border-box}", "body.lampa_view.pt-theme-glass.pt-mobile .person-start__name {font-size:2em}", "body.lampa_view.pt-theme-glass.pt-mobile .person-start__place {font-size:1.2em}", "body.lampa_view.pt-theme-glass.pt-mobile .person-start__bottom {flex-wrap:wrap;gap:.5em}", "", "/* A single static shade follows the existing detail backdrop, behind all text. */", "body.lampa_view.pt-theme-glass .minimal-detail-shade {position:absolute;top:0;left:0;width:100%;z-index:-1;pointer-events:none;background:linear-gradient(90deg,#080a0d94 0%,#080a0d8a 60%,#080a0d33 100%);-webkit-mask-image:linear-gradient(180deg,#000 0%,#000 70%,transparent 100%);mask-image:linear-gradient(180deg,#000 0%,#000 70%,transparent 100%)}", "body.lampa_view:not(.pt-theme-glass) .minimal-detail-shade {display:none}", ""].join("\n");
 
   // src/glass-ambient.js
-  function glassAmbient(active) {
+  function glassAmbient(active, onPalette) {
     var selector = ".pt-hero__image,.full-start__background,.nova-hero__bg img,.minimal-torrent-banner__image",
       cache = /* @__PURE__ */new Map();
     var pending, timer, canvas;
@@ -11047,6 +11047,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       colors.forEach(function (color, index) {
         return document.body.style.setProperty("--pt-glass-tone-" + (index ? "b" : "a"), color.join(","));
       });
+      if (onPalette) onPalette(colors);
     }
     function sample() {
       timer = null;
@@ -11169,6 +11170,88 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     };
   }
 
+  // src/ios-chrome.js
+  function iosChrome(L) {
+    var ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || /Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
+    if (!ios) return {
+      update: function update() {},
+      palette: function palette() {}
+    };
+    var root = document.documentElement,
+      properties = ["background-color", "--pt-chrome-edge"],
+      saved = properties.map(function (name) {
+        return [name, root.style.getPropertyValue(name), root.style.getPropertyPriority(name)];
+      });
+    var existing = document.querySelector('meta[name="theme-color"]'),
+      initial = existing && existing.content;
+    var background = L.Background,
+      original = background && background.theme;
+    var enabled = false,
+      suspended = false,
+      shade = "rgb(30,28,28)",
+      native = initial || "#000000",
+      created;
+    function normalize(color) {
+      return color === "black" ? "#000000" : color === "reset" ? "#1d1f20" : color;
+    }
+    function paint(color) {
+      root.style.setProperty("background-color", color, "important");
+      root.style.setProperty("--pt-chrome-edge", "linear-gradient(180deg," + color + ",transparent 5em)");
+      var node = existing || created || (created = document.createElement("meta"));
+      node.name = "theme-color";
+      node.content = color;
+      if (!node.isConnected) (document.head || root).appendChild(node);
+    }
+    function publish(color) {
+      if (original) original.call(background, color);
+      paint(color);
+    }
+    if (original) background.theme = function (color) {
+      native = color;
+      if (enabled) {
+        suspended = color !== "reset" && color !== "#1d1f20";
+        var value = suspended ? normalize(color) : shade;
+        var result = original.call(this, value);
+        paint(value);
+        return result;
+      }
+      return original.apply(this, arguments);
+    };
+    function update(active) {
+      if (active) {
+        if (!enabled) suspended = false;
+        enabled = true;
+        if (!suspended) publish(shade);
+        return;
+      }
+      if (!enabled) return;
+      enabled = false;
+      saved.forEach(function (_ref5) {
+        var _ref6 = _slicedToArray(_ref5, 3),
+          name = _ref6[0],
+          value = _ref6[1],
+          priority = _ref6[2];
+        if (value) root.style.setProperty(name, value, priority);else root.style.removeProperty(name);
+      });
+      if (original) original.call(background, native);
+      if (existing) existing.content = normalize(native);else if (created) {
+        created.remove();
+        created = null;
+      }
+    }
+    function palette(colors) {
+      if (!colors || colors.length !== 2) return;
+      shade = "rgb(" + colors[0].map(function (value, index) {
+        return Math.round(8 * 0.7 + (value + colors[1][index]) * 0.15);
+      }).join(",") + ")";
+      if (enabled && !suspended) publish(shade);
+    }
+    return {
+      update: update,
+      palette: palette
+    };
+  }
+
   // src/appearance.js
   function themeValue(value) {
     return value === "glass" || value === "apple" ? "glass" : "minimal";
@@ -11183,9 +11266,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       style.textContent = glass_default;
       (document.head || document.documentElement).appendChild(style);
     }
+    var chrome = iosChrome(L);
     var ambient = glassAmbient(function () {
       return document.body.classList.contains("pt-theme-glass") && yes(L.Storage.get("lampa_view_enabled", true));
-    });
+    }, chrome.palette);
     function nativeValue(name, fallback) {
       try {
         return L.Storage.field ? L.Storage.field(name) : L.Storage.get(name, fallback);
@@ -11212,6 +11296,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         medium: 0.3,
         blacked: 0.58
       }[opacity] || 0.32));
+      chrome.update(active);
       ambient.refresh();
       document.dispatchEvent(new Event("minimal:interface-size"));
       document.dispatchEvent(new Event("minimal:hero-layout"));
@@ -12320,9 +12405,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     function save() {
       clearTimeout(saveTimer);
       saveTimer = setTimeout(function () {
-        if (L.Storage && L.Storage.set) L.Storage.set(storage, Array.from(cache).filter(function (_ref5) {
-          var _ref6 = _slicedToArray(_ref5, 2),
-            entry = _ref6[1];
+        if (L.Storage && L.Storage.set) L.Storage.set(storage, Array.from(cache).filter(function (_ref7) {
+          var _ref8 = _slicedToArray(_ref7, 2),
+            entry = _ref8[1];
           return entry.details;
         }).slice(-80));
       }, 150);
@@ -13764,10 +13849,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       ids = GROUPS.map(function (g) {
         return prefix + g[0];
       });
-    GROUPS.forEach(function (_ref7) {
-      var _ref8 = _slicedToArray(_ref7, 2),
-        id = _ref8[0],
-        name = _ref8[1];
+    GROUPS.forEach(function (_ref9) {
+      var _ref0 = _slicedToArray(_ref9, 2),
+        id = _ref0[0],
+        name = _ref0[1];
       if (api.addComponent) api.addComponent({
         component: prefix + id,
         name: name,
@@ -13834,17 +13919,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             return item.removeClass("selector").attr("data-name", "lampa_view_version");
           }
         };
-        return GROUPS.filter(function (_ref9) {
-          var _ref0 = _slicedToArray(_ref9, 1),
-            id = _ref0[0];
+        return GROUPS.filter(function (_ref1) {
+          var _ref10 = _slicedToArray(_ref1, 1),
+            id = _ref10[0];
           return available.some(function (d) {
             return groupOf(d) === id;
           });
-        }).map(function (_ref1) {
-          var _ref10 = _slicedToArray(_ref1, 3),
-            id = _ref10[0],
-            title = _ref10[1],
-            description = _ref10[2];
+        }).map(function (_ref11) {
+          var _ref12 = _slicedToArray(_ref11, 3),
+            id = _ref12[0],
+            title = _ref12[1],
+            description = _ref12[2];
           return {
             component: "lampa_view",
             param: {
@@ -14019,10 +14104,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
           if (cache.size > 40) cache.delete(cache.keys().next().value);
         }
-        job.listeners.forEach(function (_ref11) {
-          var _ref12 = _slicedToArray(_ref11, 2),
-            ok = _ref12[0],
-            fail = _ref12[1];
+        job.listeners.forEach(function (_ref13) {
+          var _ref14 = _slicedToArray(_ref13, 2),
+            ok = _ref14[0],
+            fail = _ref14[1];
           return json ? deliver(json, ok) : fail();
         });
         pump();
@@ -14135,10 +14220,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         title: text("Сейчас смотрят"),
         media_type: "tv",
         tmdb: "discover/tv?include_adult=false&" + asian + "sort_by=popularity.desc&air_date.gte=" + day2(-7) + "&air_date.lte=" + day2(0)
-      }].concat(_toConsumableArray([[text("Популярное"), asian + "sort_by=popularity.desc"], [text("Новинки этого года"), asian + "sort_by=popularity.desc&first_air_date.gte=" + year + "-01-01"], [text("С высоким рейтингом"), asian + "sort_by=vote_average.desc&vote_count.gte=100"], [text("Корейские дорамы"), "with_origin_country=KR&without_genres=16,99,10764,10767&sort_by=popularity.desc"], [text("Японские дорамы"), "with_origin_country=JP&without_genres=16,99,10764,10767&sort_by=popularity.desc"], [text("Китайские дорамы"), "with_origin_country=CN|TW&without_genres=16,99,10764,10767&sort_by=popularity.desc"], [text("Тайские дорамы"), "with_origin_country=TH&without_genres=16,99,10764,10767&sort_by=popularity.desc"], [text("Драмы"), asian + "with_genres=18&sort_by=popularity.desc"], [text("Комедии"), asian + "with_genres=35&sort_by=popularity.desc"], [text("Детективы"), asian + "with_genres=9648&sort_by=popularity.desc"]].map(function (_ref13, index) {
-        var _ref14 = _slicedToArray(_ref13, 2),
-          title = _ref14[0],
-          query = _ref14[1];
+      }].concat(_toConsumableArray([[text("Популярное"), asian + "sort_by=popularity.desc"], [text("Новинки этого года"), asian + "sort_by=popularity.desc&first_air_date.gte=" + year + "-01-01"], [text("С высоким рейтингом"), asian + "sort_by=vote_average.desc&vote_count.gte=100"], [text("Корейские дорамы"), "with_origin_country=KR&without_genres=16,99,10764,10767&sort_by=popularity.desc"], [text("Японские дорамы"), "with_origin_country=JP&without_genres=16,99,10764,10767&sort_by=popularity.desc"], [text("Китайские дорамы"), "with_origin_country=CN|TW&without_genres=16,99,10764,10767&sort_by=popularity.desc"], [text("Тайские дорамы"), "with_origin_country=TH&without_genres=16,99,10764,10767&sort_by=popularity.desc"], [text("Драмы"), asian + "with_genres=18&sort_by=popularity.desc"], [text("Комедии"), asian + "with_genres=35&sort_by=popularity.desc"], [text("Детективы"), asian + "with_genres=9648&sort_by=popularity.desc"]].map(function (_ref15, index) {
+        var _ref16 = _slicedToArray(_ref15, 2),
+          title = _ref16[0],
+          query = _ref16[1];
         return {
           key: "dorama-" + index,
           title: title,
@@ -14149,11 +14234,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     }
     if (kind === "tvshow") {
       var shows = "without_genres=16&with_genres=10764|10767&with_original_language=ru&";
-      return [["watch", text("Сейчас смотрят"), shows + "sort_by=popularity.desc&air_date.gte=" + day2(-7) + "&air_date.lte=" + day2(0)], ["popular", text("Популярное"), shows + "sort_by=popularity.desc"], ["year", text("Новинки этого года"), shows + "sort_by=popularity.desc&first_air_date.gte=" + year + "-01-01&first_air_date.lte=" + day2(0)], ["rated", text("С высоким рейтингом"), shows + "sort_by=vote_average.desc&vote_count.gte=100"], ["reality", text("Российские реалити"), "without_genres=16&with_genres=10764&with_original_language=ru&sort_by=popularity.desc"], ["talk", text("Российские ток-шоу"), "without_genres=16&with_genres=10767&with_original_language=ru&sort_by=popularity.desc"], ["russian", text("Семейные и развлекательные"), "without_genres=16&with_genres=10764|10767|10751|35&with_original_language=ru&sort_by=popularity.desc"], ["last-year", text("Прошлый год"), shows + "sort_by=vote_average.desc&vote_count.gte=30&first_air_date.gte=" + (year - 1) + "-01-01&first_air_date.lte=" + (year - 1) + "-12-31"]].map(function (_ref15) {
-        var _ref16 = _slicedToArray(_ref15, 3),
-          key = _ref16[0],
-          title = _ref16[1],
-          query = _ref16[2];
+      return [["watch", text("Сейчас смотрят"), shows + "sort_by=popularity.desc&air_date.gte=" + day2(-7) + "&air_date.lte=" + day2(0)], ["popular", text("Популярное"), shows + "sort_by=popularity.desc"], ["year", text("Новинки этого года"), shows + "sort_by=popularity.desc&first_air_date.gte=" + year + "-01-01&first_air_date.lte=" + day2(0)], ["rated", text("С высоким рейтингом"), shows + "sort_by=vote_average.desc&vote_count.gte=100"], ["reality", text("Российские реалити"), "without_genres=16&with_genres=10764&with_original_language=ru&sort_by=popularity.desc"], ["talk", text("Российские ток-шоу"), "without_genres=16&with_genres=10767&with_original_language=ru&sort_by=popularity.desc"], ["russian", text("Семейные и развлекательные"), "without_genres=16&with_genres=10764|10767|10751|35&with_original_language=ru&sort_by=popularity.desc"], ["last-year", text("Прошлый год"), shows + "sort_by=vote_average.desc&vote_count.gte=30&first_air_date.gte=" + (year - 1) + "-01-01&first_air_date.lte=" + (year - 1) + "-12-31"]].map(function (_ref17) {
+        var _ref18 = _slicedToArray(_ref17, 3),
+          key = _ref18[0],
+          title = _ref18[1],
+          query = _ref18[2];
         return {
           key: key,
           title: title,
@@ -14166,21 +14251,21 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       key: "watch",
       title: text("Сейчас смотрят"),
       cub: "?sort=now_playing&genre=16"
-    }].concat(_toConsumableArray([[text("Популярные мультфильмы"), "movie", "sort_by=popularity.desc"], [text("Новые мультфильмы"), "movie", "sort_by=popularity.desc&primary_release_date.gte=" + year + "-01-01"], [text("Мультфильмы с высоким рейтингом"), "movie", "sort_by=vote_average.desc&vote_count.gte=200"], [text("Популярные мультсериалы"), "tv", "sort_by=popularity.desc"], [text("Мультсериалы с высоким рейтингом"), "tv", "sort_by=vote_average.desc&vote_count.gte=100"], [text("Мультсериалы этого года"), "tv", "sort_by=popularity.desc&first_air_date.gte=" + year + "-01-01"]].map(function (_ref17) {
-      var _ref18 = _slicedToArray(_ref17, 3),
-        title = _ref18[0],
-        media_type = _ref18[1],
-        query = _ref18[2];
+    }].concat(_toConsumableArray([[text("Популярные мультфильмы"), "movie", "sort_by=popularity.desc"], [text("Новые мультфильмы"), "movie", "sort_by=popularity.desc&primary_release_date.gte=" + year + "-01-01"], [text("Мультфильмы с высоким рейтингом"), "movie", "sort_by=vote_average.desc&vote_count.gte=200"], [text("Популярные мультсериалы"), "tv", "sort_by=popularity.desc"], [text("Мультсериалы с высоким рейтингом"), "tv", "sort_by=vote_average.desc&vote_count.gte=100"], [text("Мультсериалы этого года"), "tv", "sort_by=popularity.desc&first_air_date.gte=" + year + "-01-01"]].map(function (_ref19) {
+      var _ref20 = _slicedToArray(_ref19, 3),
+        title = _ref20[0],
+        media_type = _ref20[1],
+        query = _ref20[2];
       return {
         title: title,
         media_type: media_type,
         tmdb: "discover/" + media_type + "?include_adult=false&with_genres=16&without_keywords=210024&" + query
       };
     })));
-    if (kind === "anime" && mode === "shikimori") return [[text("Популярное"), "order=popularity"], [text("С высоким рейтингом"), "order=ranked"], [text("Сейчас выходит"), "order=popularity&status=ongoing"], [text("Ожидаемые"), "order=popularity&status=anons"], [text("Новинки этого года"), "order=popularity&season=" + year], [text("Прошлый год"), "order=ranked&season=" + (year - 1)], [text("Полнометражные"), "order=ranked&kind=movie"], [text("Боевики"), "order=popularity&genre=1"], [text("Приключения"), "order=popularity&genre=2"], [text("Детективы"), "order=popularity&genre=7"], [text("Все"), SHIKI_ALL]].map(function (_ref19) {
-      var _ref20 = _slicedToArray(_ref19, 2),
-        title = _ref20[0],
-        shiki = _ref20[1];
+    if (kind === "anime" && mode === "shikimori") return [[text("Популярное"), "order=popularity"], [text("С высоким рейтингом"), "order=ranked"], [text("Сейчас выходит"), "order=popularity&status=ongoing"], [text("Ожидаемые"), "order=popularity&status=anons"], [text("Новинки этого года"), "order=popularity&season=" + year], [text("Прошлый год"), "order=ranked&season=" + (year - 1)], [text("Полнометражные"), "order=ranked&kind=movie"], [text("Боевики"), "order=popularity&genre=1"], [text("Приключения"), "order=popularity&genre=2"], [text("Детективы"), "order=popularity&genre=7"], [text("Все"), SHIKI_ALL]].map(function (_ref21) {
+      var _ref22 = _slicedToArray(_ref21, 2),
+        title = _ref22[0],
+        shiki = _ref22[1];
       return {
         title: title,
         shiki: shiki
@@ -14226,10 +14311,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       add("rated", text("С высоким рейтингом"), "?cat=anime&sort=top&airdate=" + (year - 7) + "-" + (year - 2) + "&vote=8-10", "sort_by=vote_average.desc&vote_average.gte=8&vote_count.gte=200&first_air_date.lte=" + (year - 2) + "-12-31");
     }
     var genres = kind === "movie" ? [[28, text("Боевики")], [35, text("Комедии")], [18, text("Драмы")], [53, text("Триллеры")], [878, text("Фантастика")]] : kind === "anime" ? [[10765, text("Фэнтези")], [10759, text("Приключения")]] : [[18, text("Драмы")], [80, text("Криминал")], [10765, text("Фантастика и фэнтези")], [35, text("Комедии")]];
-    genres.forEach(function (_ref21) {
-      var _ref22 = _slicedToArray(_ref21, 2),
-        id = _ref22[0],
-        title = _ref22[1];
+    genres.forEach(function (_ref23) {
+      var _ref24 = _slicedToArray(_ref23, 2),
+        id = _ref24[0],
+        title = _ref24[1];
       return add("genre-" + id, title, "?cat=" + kind + "&sort=top&genre=" + id, "sort_by=popularity.desc&with_genres=" + id + (kind === "anime" ? ",16" : ""));
     });
     return defs.slice(0, 10);
@@ -14453,10 +14538,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       });
       L.Controller.toggle("minimal_anime_tabs");
     }
-    [["standard", text("Стандартные")], ["shikimori", "Shikimori"]].forEach(function (_ref23, i) {
-      var _ref24 = _slicedToArray(_ref23, 2),
-        value = _ref24[0],
-        title = _ref24[1];
+    [["standard", text("Стандартные")], ["shikimori", "Shikimori"]].forEach(function (_ref25, i) {
+      var _ref26 = _slicedToArray(_ref25, 2),
+        value = _ref26[0],
+        title = _ref26[1];
       var button = document.createElement("button");
       button.type = "button";
       button.className = "minimal-anime-tab pt-hero__action selector";
@@ -15262,10 +15347,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var pairs = Object.entries(options).sort(function (a, b) {
         return a[0] === "" ? -1 : b[0] === "" ? 1 : 0;
       });
-      show(title, pairs.map(function (_ref25) {
-        var _ref26 = _slicedToArray(_ref25, 2),
-          id = _ref26[0],
-          title2 = _ref26[1];
+      show(title, pairs.map(function (_ref27) {
+        var _ref28 = _slicedToArray(_ref27, 2),
+          id = _ref28[0],
+          title2 = _ref28[1];
         return {
           id: id,
           title: title2,
@@ -15328,10 +15413,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       if (L.Select.hide) L.Select.hide();else L.Select.close();
       if (state.kind === "anime") {
         var parts = ["order=" + encodeURIComponent(state.animeSort || "popularity")];
-        [["genre", "genre"], ["status", "status"], ["format", "kind"], ["score", "score"], ["query", "search"]].forEach(function (_ref27) {
-          var _ref28 = _slicedToArray(_ref27, 2),
-            key = _ref28[0],
-            param = _ref28[1];
+        [["genre", "genre"], ["status", "status"], ["format", "kind"], ["score", "score"], ["query", "search"]].forEach(function (_ref29) {
+          var _ref30 = _slicedToArray(_ref29, 2),
+            key = _ref30[0],
+            param = _ref30[1];
           if (state[key]) parts.push(param + "=" + encodeURIComponent(state[key]));
         });
         if (range.from || range.to) parts.push("season=" + encodeURIComponent((range.from || "1870") + "_" + (range.to || String((/* @__PURE__ */new Date()).getFullYear() + 5))));
@@ -16529,10 +16614,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       pushing = true;
       health.state = "syncing";
       request(ctx, "set", {
-        rows: batch.map(function (_ref29) {
-          var _ref30 = _slicedToArray(_ref29, 2),
-            hash = _ref30[0],
-            value = _ref30[1];
+        rows: batch.map(function (_ref31) {
+          var _ref32 = _slicedToArray(_ref31, 2),
+            hash = _ref32[0],
+            value = _ref32[1];
           return {
             hash: hash,
             card: namespace,
@@ -16800,10 +16885,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       if (["start", "destroy"].includes(event.type)) update();
     });
     if (L.Controller && L.Controller.listener) L.Controller.listener.follow("toggle", remoteHeading);
-    [[L.Settings, "open"], [L.Select, "open"], [L.Modal, "fullshow"], [L.Modal, "update"]].forEach(function (_ref31) {
-      var _ref32 = _slicedToArray(_ref31, 2),
-        api = _ref32[0],
-        event = _ref32[1];
+    [[L.Settings, "open"], [L.Select, "open"], [L.Modal, "fullshow"], [L.Modal, "update"]].forEach(function (_ref33) {
+      var _ref34 = _slicedToArray(_ref33, 2),
+        api = _ref34[0],
+        event = _ref34[1];
       if (api && api.listener) api.listener.follow(event, overlays);
     });
     update();
@@ -18021,10 +18106,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var bar = root.querySelector(".torrent-filter");
       if (!bar) return;
       bar.classList.add("minimal-torrent-toolbar");
-      [["search", text("Поиск")], ["sort", text("Сортировка")], ["filter", text("Фильтры")]].forEach(function (_ref33) {
-        var _ref34 = _slicedToArray(_ref33, 2),
-          key = _ref34[0],
-          label = _ref34[1];
+      [["search", text("Поиск")], ["sort", text("Сортировка")], ["filter", text("Фильтры")]].forEach(function (_ref35) {
+        var _ref36 = _slicedToArray(_ref35, 2),
+          key = _ref36[0],
+          label = _ref36[1];
         var button = bar.querySelector(".filter--" + key);
         if (!button) return;
         var text2 = button.querySelector(".minimal-toolbar-label");
@@ -18165,10 +18250,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       warm.set(lang, entry);
       var remaining = 3,
         answers = 0;
-      [["trending/all/day", ""], ["movie/popular", "movie"], ["tv/popular", "tv"]].forEach(function (_ref35) {
-        var _ref36 = _slicedToArray(_ref35, 2),
-          path = _ref36[0],
-          type = _ref36[1];
+      [["trending/all/day", ""], ["movie/popular", "movie"], ["tv/popular", "tv"]].forEach(function (_ref37) {
+        var _ref38 = _slicedToArray(_ref37, 2),
+          path = _ref38[0],
+          type = _ref38[1];
         return request(path, lang, function (json) {
           if (json && Array.isArray(json.results)) answers++;
           var _iterator61 = _createForOfIteratorHelper(json && json.results || []),
@@ -18272,28 +18357,28 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   };
   var FEEDS = [[text("Сейчас смотрят"), "trending"], [text("Популярное"), "popular"], [text("Самое просматриваемое за неделю"), "watched/weekly"], [text("В коллекциях за месяц"), "collected/monthly"], [text("Ожидаемые"), "anticipated"]];
   function traktPlan(kind) {
-    if (kind === "dorama") return FEEDS.map(function (_ref37) {
-      var _ref38 = _slicedToArray(_ref37, 2),
-        title = _ref38[0],
-        path = _ref38[1];
-      return {
-        title: title,
-        url: "shows/" + path + "?countries=kr,jp,cn,tw,th&genres=drama,romance,comedy,mystery"
-      };
-    });
-    if (kind === "tvshow") return FEEDS.map(function (_ref39) {
+    if (kind === "dorama") return FEEDS.map(function (_ref39) {
       var _ref40 = _slicedToArray(_ref39, 2),
         title = _ref40[0],
         path = _ref40[1];
       return {
         title: title,
-        url: "shows/" + path + "?genres=reality,talk-show,game-show&languages=ru"
+        url: "shows/" + path + "?countries=kr,jp,cn,tw,th&genres=drama,romance,comedy,mystery"
       };
     });
-    if (!kind) return FEEDS.map(function (_ref41, index) {
+    if (kind === "tvshow") return FEEDS.map(function (_ref41) {
       var _ref42 = _slicedToArray(_ref41, 2),
         title = _ref42[0],
         path = _ref42[1];
+      return {
+        title: title,
+        url: "shows/" + path + "?genres=reality,talk-show,game-show&languages=ru"
+      };
+    });
+    if (!kind) return FEEDS.map(function (_ref43, index) {
+      var _ref44 = _slicedToArray(_ref43, 2),
+        title = _ref44[0],
+        path = _ref44[1];
       return __spreadValues({
         title: title,
         url: "mixed/" + path
@@ -18306,10 +18391,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var types = TYPES[kind] ? [TYPES[kind]] : kind === "anime" ? ["shows"] : ["movies", "shows"];
     var filter = kind === "movie" || kind === "tv" ? "?without_genres=animation" : kind === "anime" ? "?genres=animation&languages=ja" : kind === "cartoon" ? "?genres=animation" : "";
     return types.flatMap(function (type) {
-      return FEEDS.map(function (_ref43, index) {
-        var _ref44 = _slicedToArray(_ref43, 2),
-          title = _ref44[0],
-          path = _ref44[1];
+      return FEEDS.map(function (_ref45, index) {
+        var _ref46 = _slicedToArray(_ref45, 2),
+          title = _ref46[0],
+          path = _ref46[1];
         return {
           title: kind === "cartoon" ? index === 1 ? type === "movies" ? text("Популярные мультфильмы") : text("Популярные мультсериалы") : (type === "movies" ? text("Мультфильмы") : text("Мультсериалы")) + " \xB7 " + title : title,
           url: type + "/" + path + filter
@@ -18408,10 +18493,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               });
               if (cache.size > 40) cache.delete(cache.keys().next().value);
             }
-            job.callbacks.forEach(function (_ref45) {
-              var _ref46 = _slicedToArray(_ref45, 2),
-                ok = _ref46[0],
-                fail = _ref46[1];
+            job.callbacks.forEach(function (_ref47) {
+              var _ref48 = _slicedToArray(_ref47, 2),
+                ok = _ref48[0],
+                fail = _ref48[1];
               return json ? ok(json) : error(fail, message);
             });
           }
@@ -19277,10 +19362,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       shell = function shell() {
         if (!_$(".pt-topnav").length) {
           var nav = _$(text("<div class=\"pt-topnav\" role=\"navigation\" aria-label=\"Каталог\">"));
-          [["home", text("Главная")], ["movie", text("Фильмы")], ["tv", text("Сериалы")], ["dorama", text("Дорамы")], ["tvshow", text("ТВ-шоу")], ["anime", text("Аниме")]].forEach(function (_ref47) {
-            var _ref48 = _slicedToArray(_ref47, 2),
-              key = _ref48[0],
-              label = _ref48[1];
+          [["home", text("Главная")], ["movie", text("Фильмы")], ["tv", text("Сериалы")], ["dorama", text("Дорамы")], ["tvshow", text("ТВ-шоу")], ["anime", text("Аниме")]].forEach(function (_ref49) {
+            var _ref50 = _slicedToArray(_ref49, 2),
+              key = _ref50[0],
+              label = _ref50[1];
             pointer(_$('<div class="pt-topnav__item selector" role="button" tabindex="0">').attr("data-section", key).text(label).on("hover:enter", function () {
               return navigate(key);
             })).appendTo(nav);
@@ -19289,11 +19374,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
         if (!_$(".pt-mobile-nav").length) {
           var _nav = _$(text("<nav class=\"pt-mobile-nav\" aria-label=\"Навигация\">"));
-          [["home", text("Главная"), "home"], ["search", text("Поиск"), "search"], ["calendar", text("Расписание"), "calendar"], ["library", text("Медиатека"), "library"], ["settings", text("Настройки"), "settings"]].forEach(function (_ref49) {
-            var _ref50 = _slicedToArray(_ref49, 3),
-              key = _ref50[0],
-              label = _ref50[1],
-              glyph = _ref50[2];
+          [["home", text("Главная"), "home"], ["search", text("Поиск"), "search"], ["calendar", text("Расписание"), "calendar"], ["library", text("Медиатека"), "library"], ["settings", text("Настройки"), "settings"]].forEach(function (_ref51) {
+            var _ref52 = _slicedToArray(_ref51, 3),
+              key = _ref52[0],
+              label = _ref52[1],
+              glyph = _ref52[2];
             _$('<div class="pt-mobile-nav__item" role="button" tabindex="0">').attr("data-section", key).html(icon(glyph) + "<span></span>").find("span").text(label).end().on("click", function () {
               return navigate(key);
             }).on("keydown", function (e) {
@@ -19857,12 +19942,12 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         unifiedSettings(L.SettingsApi, L, version);
         var options = [["lampa_view_enabled", text("Оформление интерфейса"), text("Единый стиль каталога, карточек, источников и настроек."), true], ["lampa_view_hero", text("Обложка на главной"), text("Карусель каждые 10 секунд, ручное переключение и жесты."), true]];
         if (L.Platform && L.Platform.desktop && L.Platform.desktop() || ROOT.electronAPI && ROOT.electronAPI.lampa_view) options.push(["lampa_view_metadata", text("Уточнять данные mpv+"), text("Передавать сведения карточки для проверки названия, сезона и серии."), true]);
-        options.forEach(function (_ref51) {
-          var _ref52 = _slicedToArray(_ref51, 4),
-            name = _ref52[0],
-            label = _ref52[1],
-            description = _ref52[2],
-            value = _ref52[3];
+        options.forEach(function (_ref53) {
+          var _ref54 = _slicedToArray(_ref53, 4),
+            name = _ref54[0],
+            label = _ref54[1],
+            description = _ref54[2],
+            value = _ref54[3];
           return L.SettingsApi.addParam({
             component: "lampa_view",
             param: {
@@ -20028,10 +20113,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (L.Settings && L.Settings.listener) L.Settings.listener.follow("open", function () {
           setTimeout(trimSections, 0);
         });
-        [[L.Settings, ["open", "close"]], [L.Select, ["fullshow", "close"]], [L.Modal, ["fullshow", "close"]], [L.Player, ["create", "destroy"]], [L.Controller, ["toggle"]]].forEach(function (_ref53) {
-          var _ref54 = _slicedToArray(_ref53, 2),
-            api = _ref54[0],
-            events = _ref54[1];
+        [[L.Settings, ["open", "close"]], [L.Select, ["fullshow", "close"]], [L.Modal, ["fullshow", "close"]], [L.Player, ["create", "destroy"]], [L.Controller, ["toggle"]]].forEach(function (_ref55) {
+          var _ref56 = _slicedToArray(_ref55, 2),
+            api = _ref56[0],
+            events = _ref56[1];
           if (api && api.listener) events.forEach(function (event) {
             return api.listener.follow(event, function () {
               if (carousels.size) setTimeout(refreshCarousels, 0);

@@ -1,10 +1,10 @@
 // Ambient color uses an already decoded image. It never downloads or replaces artwork.
-export default function glassAmbient(active){
+export default function glassAmbient(active,onPalette){
  const selector='.pt-hero__image,.full-start__background,.nova-hero__bg img,.minimal-torrent-banner__image',cache=new Map();
  let pending,timer,canvas;
  const moving=()=>document.hidden || document.body.matches('.pt-tv-busy,.pt-wheel-active');
  function current(image){const activity=image.closest('.activity');return image.isConnected && (!activity || activity.classList.contains('activity--active'));}
- function apply(colors,scene){if(scene)document.body.style.setProperty("--pt-glass-scene",'url("'+scene+'")');colors.forEach((color,index)=>document.body.style.setProperty('--pt-glass-tone-'+(index?'b':'a'),color.join(',')));}
+ function apply(colors,scene){if(scene)document.body.style.setProperty("--pt-glass-scene",'url("'+scene+'")');colors.forEach((color,index)=>document.body.style.setProperty('--pt-glass-tone-'+(index?'b':'a'),color.join(',')));if(onPalette)onPalette(colors);}
  function sample(){
   timer=null;if(!active() || moving() || !pending || !current(pending) || !pending.complete || !pending.naturalWidth)return;
   const image=pending,url=image.currentSrc || image.src;pending=null;

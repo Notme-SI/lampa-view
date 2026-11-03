@@ -2,7 +2,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {chromium,webkit}=require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const {setup}=require('../fixtures/native-browser.cjs'),{stage}=require('../fixtures/online-browser.cjs');
 (async()=>{for(const engine of [chromium,webkit]){const browser=await engine.launch({headless:true});try{for(const mode of ['desktop','tv','mobile']){
- const r=await setup(browser,{viewport:mode==='tv'?{width:960,height:540}:mode==='mobile'?{width:390,height:844}:{width:1440,height:900},deviceScaleFactor:mode==='tv'?2:1,mode}),{page}=r;
+ const r=await setup(browser,{viewport:mode==='tv'?{width:960,height:540}:mode==='mobile'?{width:390,height:844}:{width:1440,height:900},deviceScaleFactor:mode==='tv'?2:1,mode,userAgent:mode==='mobile'?'Mozilla/5.0 (iPhone; CPU iPhone OS 27_0 like Mac OS X) AppleWebKit/605.1.15 Version/27.0 Mobile/15E148 Safari/604.1':undefined}),{page}=r;
  try{
   assert.equal(await page.evaluate(()=>document.body.classList.contains('pt-theme-glass')),false,'Previous theme is the default');
   await page.evaluate(()=>Lampa.Storage.set('lampa_view_theme','apple'));assert.equal(await page.evaluate(()=>Lampa.Storage.get('lampa_view_theme')),'glass','Legacy Apple selection migrates to Glass');await page.evaluate(()=>Lampa.Storage.set('lampa_view_theme','minimal'));
@@ -13,6 +13,14 @@ const {setup}=require('../fixtures/native-browser.cjs'),{stage}=require('../fixt
   const before=await page.evaluate(()=>({history:JSON.stringify(Lampa.Storage.get('favorite',{})),timeline:JSON.stringify(Lampa.Storage.get('file_view',{}))}));
   for(const value of ['glass','minimal','glass']){await page.evaluate(value=>Lampa.Storage.set('lampa_view_theme',value),value);assert.equal(await page.evaluate(()=>document.body.dataset.lampaTheme),value);}
   assert.equal(await page.locator('#lampa-view-glass-style').count(),1);
+  if(mode==='mobile'){
+   const geometry=()=>page.evaluate(()=>({height:innerHeight,viewport:document.querySelector('meta[name=viewport]').content,nav:Array.from(document.querySelectorAll('.navigation-bar,.pt-mobile-nav')).map(n=>({top:n.getBoundingClientRect().top,bottom:n.getBoundingClientRect().bottom}))}));
+   const beforeColor=await geometry();await page.evaluate(()=>Lampa.Storage.set('lampa_view_theme','minimal'));assert.deepEqual(await geometry(),beforeColor,'Changing iPhone chrome color cannot move navigation or resize the viewport');
+   await page.evaluate(()=>Lampa.Storage.set('lampa_view_theme','glass'));
+   const chrome=await page.evaluate(()=>({meta:document.querySelector('meta[name="theme-color"]').content,canvas:getComputedStyle(document.documentElement).backgroundColor,edge:getComputedStyle(document.body).backgroundImage}));
+   assert.equal(chrome.meta.replace(/\s/g,''),chrome.canvas.replace(/\s/g,''));assert.match(chrome.edge,/linear-gradient/);assert.notEqual(chrome.canvas,'rgb(0, 0, 0)');assert.deepEqual(await geometry(),beforeColor);
+  }
+
   if(mode==='mobile'){assert.equal(await page.locator('.head .open--settings').evaluate(n=>getComputedStyle(n).display),'none');await page.evaluate(()=>jQuery('.pt-mobile-nav__item[data-section=settings]').trigger('click'));await page.waitForSelector('body.settings--open');await page.evaluate(()=>Lampa.Controller.back());}
 
   assert.equal(await page.locator('meta[name=apple-mobile-web-app-status-bar-style]').getAttribute('content'),'default','Safari keeps native status-bar geometry without forced translucency');
