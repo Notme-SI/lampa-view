@@ -754,6 +754,7 @@ body.lampa_view .nova-source-option__quality {display:inline-flex;align-items:ce
 body.lampa_view .minimal-torrent-banner__meta {width:max-content;max-width:calc(100% - 2em);margin-left:auto;padding:.4em .6em;border-radius:.55em;background:rgba(8,11,16,.78);color:#f5f7fa!important;text-shadow:0 1px 2px #000}
 body.lampa_view .nova-plus-root .nova-card--rowlist .nova-card__num {position:absolute;top:auto;right:auto;bottom:.3em;left:.3em;display:block;width:auto;height:auto;min-width:0;padding:0;border-radius:.35em;background:none!important;font-size:.8em;line-height:1.4;white-space:nowrap}
 body.lampa_view .nova-plus-root .nova-card--rowlist .nova-card__thumb--loaded img {opacity:1}
+body.lampa_view .nova-plus-root .nova-card--rowlist .nova-card__meta {display:flex;align-items:baseline;flex-wrap:wrap;gap:.5em}
 @media(max-width:767px){
  body.lampa_view .nova-plus-root .nova-plus__bar {display:flex;flex-wrap:wrap!important;gap:.45em;margin-bottom:.6em;padding:0}
  body.lampa_view .nova-plus-root .nova-plus__bar>.nova-toolbar__label {display:none}
@@ -762,7 +763,7 @@ body.lampa_view .nova-plus-root .nova-card--rowlist .nova-card__thumb--loaded im
  body.lampa_view .nova-plus-root .nova-plus__bar .nova-chip__label {min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
  body.lampa_view .nova-plus-root .nova-plus__bar .nova-chip>svg {flex-shrink:0}
  body.lampa_view .nova-plus-root .nova-hero__meta {top:.65em;right:.65em;font-size:.78em;max-width:calc(100% - 1.3em);gap:.4em}
- body.lampa_view .nova-plus-root .nova__list .nova-card.nova-card--rowlist {display:grid;grid-template-columns:clamp(calc(88px * var(--pt-interface-scale,1)),calc(28vw * var(--pt-interface-scale,1)),calc(120px * var(--pt-interface-scale,1))) minmax(0,1fr);gap:.25em .7em;padding:.6em;margin-bottom:.6em;box-sizing:border-box}
+ body.lampa_view .nova-plus-root .nova__list .nova-card.nova-card--rowlist {display:grid;grid-template-columns:clamp(calc(100px * var(--pt-interface-scale,1)),calc(30vw * var(--pt-interface-scale,1)),calc(136px * var(--pt-interface-scale,1))) minmax(0,1fr);gap:.25em .7em;padding:.4em;margin-bottom:.6em;box-sizing:border-box}
  body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__thumb {grid-column:1;grid-row:1 / span 2;align-self:center;width:100%;height:auto;aspect-ratio:16/9;margin:0;padding:0}
  body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__body {grid-column:2;grid-row:1;min-width:0;padding:0}
  body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__title {font-size:1em;line-height:1.3;margin-bottom:.3em;-webkit-line-clamp:2}

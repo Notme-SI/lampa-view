@@ -5697,7 +5697,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     if (picked.rate) bits.push('<span class="nova-card__rate">' + esc(picked.rate) + '</span>');
     if (picked.date) bits.push('<span class="nova-card__date">' + esc(picked.date) + '</span>');
     if (!serial && picked.rest.length) bits.push('<span>' + esc(picked.rest[0]) + '</span>');
-    card.find('.nova-card__meta').html(bits.join('<span class="nova-dot">\u25cf</span>'));
+    card.find('.nova-card__meta').html(bits.join(''));
 
     wideFillList(item, card, thumb);
     return card;
@@ -5721,7 +5721,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       var when=wideDate(episode.air_date) || meta.find('.nova-card__date').text();
       meta.empty();
       if(rating)meta.append($('<span class="nova-card__rate"></span>').text(rating));
-      if(when){if(rating)meta.append('<span class="nova-dot">\u25cf</span>');meta.append($('<span class="nova-card__date"></span>').text(when));}
+      if(when)meta.append($('<span class="nova-card__date"></span>').text(when));
       if (episode.still_path && !thumb.hasClass('nova-card__thumb--loaded')) paintThumb(thumb, image(episode.still_path, get('minimal_banner_quality', 'high') === 'medium' ? 'w500' : 'w780'), false);
     });
   }
@@ -6506,10 +6506,6 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     }
 
     if (groups.voice && groups.voice.items.length > 0) compactGroup('voice',groups.voice.title || label('nova_plus_voices'));
-    else if(serial && !nav && items.length){
-      // A provider without alternatives must not inherit another source's voices.
-      $('<span class="nova-chip nova-chip--unavailable" aria-disabled="true" data-nova-status="voice"><span class="nova-chip__label"></span></span>').attr({'aria-label':label('nova_plus_voices')+': '+lampaViewText('Озвучка источника'),title:lampaViewText('Источник не предлагает выбор озвучки.')}).find('.nova-chip__label').text(lampaViewText('Озвучка источника')).end().appendTo(bar);
-    }
 
     if (!serial && !nav && items.length > 1) {
       var selectedMovie = pickResume(items);
@@ -7132,7 +7128,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
 
   var ROWLIST_CSS = [
     '.nova-plus-root .nova__list .nova-card.nova-card--rowlist{display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-direction:row;-ms-flex-direction:row;flex-direction:row;-webkit-align-items:center;-ms-flex-align:center;align-items:center;width:100%;max-width:100%;padding:.7em;margin:0 0 .95em 0;background:rgba(255,255,255,.05)}',
-    '.nova-plus-root .nova__list .nova-card--rowlist .nova-card__thumb{width:10.5em;height:5.9em;padding-top:0;-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0}',
+    '.nova-plus-root .nova__list .nova-card--rowlist .nova-card__thumb{width:12em;height:6.75em;padding-top:0;-webkit-flex-shrink:0;-ms-flex-negative:0;flex-shrink:0}',
     '.nova-plus-root .nova__list .nova-card--rowlist .nova-card__num{-webkit-justify-content:flex-start;-ms-flex-pack:start;justify-content:flex-start;-webkit-align-items:flex-end;-ms-flex-align:end;align-items:flex-end;padding:0 0 .3em .55em;font-size:1.1em}',
     '.nova-plus-root .nova__list .nova-card--rowlist .nova-card__num>span{background:rgba(10,11,17,.62);-webkit-box-shadow:0 .12em .45em rgba(0,0,0,.4);box-shadow:0 .12em .45em rgba(0,0,0,.4);padding:.05em .35em;-webkit-border-radius:.3em;border-radius:.3em}',
     '.nova-plus-root .nova__list .nova-card--rowlist .nova-card__body{-webkit-flex:1 1 0%;-ms-flex:1 1 0%;flex:1 1 0%;padding:0 1.2em;min-width:0}',

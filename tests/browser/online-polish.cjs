@@ -85,9 +85,9 @@ async function holiday(page,name){
     const thumbnail=await page.locator('.nova-card__thumb').first().evaluate(node=>{const image=node.querySelector('img'),number=node.querySelector('.nova-card__num'),r=node.getBoundingClientRect(),n=number.getBoundingClientRect();return {opacity:getComputedStyle(image).opacity,width:r.width,numberHeight:n.height,height:r.height};});
     assert.equal(thumbnail.opacity,'1','list thumbnails keep original brightness');assert.ok(thumbnail.numberHeight<thumbnail.height*.6,'number does not shade the whole thumbnail');
     if(mode==='mobile'){
-     assert.ok(thumbnail.width<=120,'mobile preview leaves room for title');
+     assert.ok(thumbnail.width<=136,'larger mobile preview still leaves room for title');
      const body=await page.locator('.nova-card__body').first().evaluate(node=>{const r=node.getBoundingClientRect();return {width:r.width,meta:getComputedStyle(node.querySelector('.nova-card__meta')).display};});
-     assert.ok(body.width>=180);assert.equal(body.meta,'flex');
+     assert.ok(body.width>=180,'List title retains readable width: '+JSON.stringify({body,thumbnail}));assert.equal(body.meta,'flex');
     }
     if(output){await page.waitForTimeout(200);await page.screenshot({path:path.join(output,name+'-'+mode+'-online-list.png')});}
     assert.deepEqual(r.errors,[]);await r.context.close();console.log(name+' '+mode+': five seasonal layouts, readable bright banner, centered icon, online Back and episode list passed');

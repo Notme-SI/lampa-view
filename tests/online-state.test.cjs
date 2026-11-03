@@ -245,7 +245,7 @@ test('episode cards share canonical descriptions while hero facts and voice labe
   assert.equal(root.find('.nova-hero__year').text(),'2025, США');assert.equal(root.find('.nova-hero__season-label').text(),'Сезон 1');assert.equal(root.find('.nova-hero__runtime').length,0);assert.equal(root.find('.nova-hero__meta .nova-badge').text(),'HD');
   // Native metadata can arrive after the interface has already rendered.
   nativeRows.eq(0).find('.online-prestige__quality')[0].firstChild.nodeValue='1920x800';await wait(180);assert.equal(root.find('.nova-card__quality').first().text(),'FHD');assert.equal(root.find('.nova-hero__meta .nova-badge').text(),'FHD');
-  L.Storage.set('nova_plus_view','list');L.Listener.send('activity',{type:'start'});await wait(180);assert.equal(root.find('.nova-card__title').first().text(),'Пан или пропал');assert.doesNotMatch(root.find('.nova-card__meta').text(),/TVShows|Описание/);assert.equal(root.find('.nova-card__descr,.nova-card__voice').length,0);assert.equal(root.find('.nova-card__overview').first().text(),'Краткое описание серии');assert.deepEqual(n.errors,[]);
+  L.Storage.set('nova_plus_view','list');L.Listener.send('activity',{type:'start'});await wait(180);assert.equal(root.find('.nova-card__title').first().text(),'Пан или пропал');assert.doesNotMatch(root.find('.nova-card__meta').text(),/TVShows|Описание/);assert.equal(root.find('.nova-card__descr,.nova-card__voice').length,0);assert.equal(root.find('.nova-card__overview').first().text(),'Краткое описание серии');assert.doesNotMatch(root.find('.nova-card__meta').text(),/●/,'Rating and air date use spacing without a bullet');assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}
 });
 
@@ -384,7 +384,7 @@ test('exact catalogue aliases restore synced native records, manual marks keep u
 test('a single dubbing arriving after the initial empty filter appears without switching source',async()=>{
  const n=await native({built:true}),{w,L}=n;let s;try{
   s=screen(n,{voices:false});const season={stype:'season',title:'Сезон',items:[{title:'Сезон 2',selected:true}]};
-  s.filter.set('filter',[season]);await wait(240);assert.equal(s.root.find('[data-nova-focus=voice]').length,0);
+  s.filter.set('filter',[season]);await wait(240);assert.equal(s.root.find('[data-nova-focus=voice]').length,0);assert.equal(s.root.find('[data-nova-status=voice]').length,0,'No inert source-audio badge without a real choice');
   const original=s.body.find('.online-prestige')[0];let selected=-1,sourceChanges=0;
   s.filter.onSelect=(type,group,item)=>{if(type==='sort')sourceChanges++;else selected=item.index;};
   const voice={stype:'voice',title:'Перевод',items:[{title:'КОМНАТА ДИДИ',selected:true,index:0}]};
