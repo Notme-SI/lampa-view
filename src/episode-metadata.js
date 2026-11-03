@@ -17,12 +17,20 @@ export default function episodeMetadata(L){
   if(cache.has(path))return done(cache.get(path));
   if(pending.has(path))return pending.get(path).push(done);
   if(queue.length>=24)return done(null);
-  pending.set(path,[done]);queue.push(path);pump();
+  pending.set(path,[done]);queue.push({path,attempt:0});pump();
  }
  function pump(){
   while(running<2 && queue.length){
-   const path=queue.shift();running++;let finished=false;
-   const finish=value=>{if(finished)return;finished=true;running--;cache.set(path,value);if(cache.size>32)cache.delete(cache.keys().next().value);const callbacks=pending.get(path)||[];pending.delete(path);callbacks.forEach(fn=>fn(value));pump();};
+   const job=queue.shift(),path=job.path;running++;let finished=false;
+   const finish=value=>{
+    if(finished)return;finished=true;running--;
+    const valid=value && (path.includes('/episode_groups?')?Array.isArray(value.results):path.includes('/episode_group/')?Array.isArray(value.groups):Array.isArray(value.episodes));
+    // Keep concurrent readers coalesced during one bounded retry. A transport
+    // failure or malformed response must never become a permanent cache entry.
+    if(!valid && job.attempt===0){setTimeout(()=>{queue.push({path,attempt:1});pump();},400);pump();return;}
+    if(valid){cache.set(path,value);if(cache.size>32)cache.delete(cache.keys().next().value);}
+    const callbacks=pending.get(path)||[];pending.delete(path);callbacks.forEach(fn=>fn(valid?value:null));pump();
+   };
    const api=L.Api && L.Api.sources && L.Api.sources.tmdb;
    if(!api || !api.get){finish(null);continue;}
    try{api.get(path,{},finish,()=>finish(null));}catch(error){finish(null);}

@@ -3492,10 +3492,10 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     var id = tmdbId();
     if (!id || !season) return done(0);
 
-    if(alternateSeasons() && typeof wideBook==='function' && wideMeta())return wideBook(season,function(book){done(book?Object.keys(book).length:0);});
+    if(alternateSeasons() && typeof wideBook==='function' && wideMeta())return wideBook(season,function(book){done(book?Object.keys(book).length:0);},true);
     var known=movie && Array.isArray(movie.seasons) && movie.seasons.filter(function(row){return Number(row.season_number)===Number(season);})[0];
     if(known && Number(known.episode_count)>0)return done(Number(known.episode_count));
-    if(typeof wideBook==='function' && wideMeta())return wideBook(season,function(book){done(book?Object.keys(book).length:0);});
+    if(typeof wideBook==='function' && wideMeta())return wideBook(season,function(book){done(book?Object.keys(book).length:0);},true);
     var key = id + ':' + season;
     var box = cached('nova_plus_season_cache', 300, {});
     if (typeof box[key] === 'number') return done(box[key]);
@@ -5436,7 +5436,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
   var WIDE_TAG_FIND = /(HDR10\+|HDR10|HDR|DTS-HD|DTS|H\.?26[45]|x26[45]|HEVC|AVC|AV1|VP9|EAC3|AC3|DD\+|AAC|FLAC|OPUS|MP3|Atmos|SDR|10 ?bit)/gi;
   var WIDE_CHANNELS = /(\d)(?:\.0)?\s*(?:ch\b|канал[аов]*)/i;
 
-  var wide_counts = {};
+  var wide_counts = {},wide_file_counts={};
   var wide_book = {},wide_book_order=[];
   var wide_wait = {};
   var wide_sig = '';
@@ -5489,7 +5489,8 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     return count;
   }
 
-  function wideCountKey(number){return tmdbId()+':'+number+':'+providerSeasonNumbers().join(',');}
+  function wideCountKey(number){return [tmdbId(),number,get('language','ru'),sourceTitle(),providerSeasonNumbers().join(',')].join(':');}
+  function wideMetadataContext(){return wideCountKey(seasonNumber() || 1);}
   function wideSeasonCount(number, box) {
     var id = tmdbId();
     if (!id || !number) return 0;
@@ -5508,9 +5509,9 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
 
   function providerSeasonNumbers(){return (groups.season && groups.season.items || []).map(function(item){return Number(digits(item.title));});}
   function alternateSeasons(){var api=window.LampaView && window.LampaView.episodeMetadata;return api && api.alternate(movie,providerSeasonNumbers());}
-  function wideBook(number, done) {
+  function wideBook(number, done, countOnly) {
     var api=window.LampaView && window.LampaView.episodeMetadata;
-    if(api && movie && wideMeta() && api.book(movie,number,providerSeasonNumbers(),Number(number)===Number(seasonNumber())?wideFiles():0,done))return;
+    if(api && movie && wideMeta() && api.book(movie,number,providerSeasonNumbers(),!countOnly && Number(number)===Number(seasonNumber())?wideFiles():0,done))return;
     wideCanonicalBook(number,done);
   }
   function wideCanonicalBook(number, done) {
@@ -5755,9 +5756,9 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     var number = parseInt(episodeNumber(item.num), 10) || 0;
     if (!number) return;
     var season = seasonNumber() || 1;
-    var want = movie ? movie.id : 0;
+    var want = wideMetadataContext(),owner=root && root[0];
     wideBook(season, function (book, grouped) {
-      if (!book || !movie || movie.id !== want) return;
+      if (!book || !movie || wideMetadataContext() !== want || !root || root[0] !== owner) return;
       var episode = book[number];
       if (!episode){if(grouped && item.soon)card.remove();return;}
       var title = card.find('.nova-card__title');
@@ -5778,9 +5779,9 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     var number = parseInt(episodeNumber(item.num), 10) || 0;
     if (!number) return;
     var season = seasonNumber() || 1;
-    var want = movie ? movie.id : 0;
+    var want = wideMetadataContext(),owner=root && root[0];
     wideBook(season, function (book, grouped) {
-      if (!book || !movie || movie.id !== want) return;
+      if (!book || !movie || wideMetadataContext() !== want || !root || root[0] !== owner) return;
       var episode = book[number];
       if (!episode){if(grouped && item.soon)card.remove();return;}
       var head = card.find('.nova-card__head');
@@ -5896,7 +5897,9 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
         box.toggleClass('nova-chip--active', !!item.selected);
         if (name === 'season') {
           var number = parseInt(digits(item.title), 10) || 0;
-          var count = wideSeasonCount(number, box) || (item.selected ? wideFiles() : 0);
+          var key=wideCountKey(number),count=wideSeasonCount(number, box);
+          if(item.selected && wideFiles())wide_file_counts[key]=wideFiles();
+          count=count || wide_file_counts[key] || 0;
           if (count) box.find('.nova-chip__sub').text(wideCount(count));
           else box.find('.nova-chip__sub').text('\u00a0');
         } else {

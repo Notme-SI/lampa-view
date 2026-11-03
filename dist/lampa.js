@@ -1,4 +1,4 @@
-/*! Lampa View 0.5.6 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.5.7 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -8256,24 +8256,42 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       if (pending.has(path)) return pending.get(path).push(done);
       if (queue.length >= 24) return done(null);
       pending.set(path, [done]);
-      queue.push(path);
+      queue.push({
+        path: path,
+        attempt: 0
+      });
       pump();
     }
     function pump() {
       var _loop2 = function _loop2() {
-        var path = queue.shift();
+        var job = queue.shift(),
+          path = job.path;
         running++;
         var finished = false;
         var finish = function finish(value) {
           if (finished) return;
           finished = true;
           running--;
-          cache.set(path, value);
-          if (cache.size > 32) cache.delete(cache.keys().next().value);
+          var valid = value && (path.includes("/episode_groups?") ? Array.isArray(value.results) : path.includes("/episode_group/") ? Array.isArray(value.groups) : Array.isArray(value.episodes));
+          if (!valid && job.attempt === 0) {
+            setTimeout(function () {
+              queue.push({
+                path: path,
+                attempt: 1
+              });
+              pump();
+            }, 400);
+            pump();
+            return;
+          }
+          if (valid) {
+            cache.set(path, value);
+            if (cache.size > 32) cache.delete(cache.keys().next().value);
+          }
           var callbacks = pending.get(path) || [];
           pending.delete(path);
           callbacks.forEach(function (fn) {
-            return fn(value);
+            return fn(valid ? value : null);
           });
           pump();
         };
@@ -10615,7 +10633,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // package.json
-  var version = "0.5.6";
+  var version = "0.5.7";
 
   // src/inputs.js
   function inputs(L) {
@@ -40297,14 +40315,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (!id || !season) return done(0);
         if (alternateSeasons() && typeof wideBook === "function" && wideMeta()) return wideBook(season, function (book) {
           done(book ? Object.keys(book).length : 0);
-        });
+        }, true);
         var known = movie && Array.isArray(movie.seasons) && movie.seasons.filter(function (row) {
           return Number(row.season_number) === Number(season);
         })[0];
         if (known && Number(known.episode_count) > 0) return done(Number(known.episode_count));
         if (typeof wideBook === "function" && wideMeta()) return wideBook(season, function (book) {
           done(book ? Object.keys(book).length : 0);
-        });
+        }, true);
         var key = id + ":" + season;
         var box = cached("nova_plus_season_cache", 300, {});
         if (typeof box[key] === "number") return done(box[key]);
@@ -42250,7 +42268,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       };
       var WIDE_TAG_FIND = /(HDR10\+|HDR10|HDR|DTS-HD|DTS|H\.?26[45]|x26[45]|HEVC|AVC|AV1|VP9|EAC3|AC3|DD\+|AAC|FLAC|OPUS|MP3|Atmos|SDR|10 ?bit)/gi;
       var WIDE_CHANNELS = /(\d)(?:\.0)?\s*(?:ch\b|канал[аов]*)/i;
-      var wide_counts = {};
+      var wide_counts = {},
+        wide_file_counts = {};
       var wide_book = {},
         wide_book_order = [];
       var wide_wait = {};
@@ -42303,7 +42322,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         return count;
       }
       function wideCountKey(number) {
-        return tmdbId() + ":" + number + ":" + providerSeasonNumbers().join(",");
+        return [tmdbId(), number, get("language", "ru"), sourceTitle(), providerSeasonNumbers().join(",")].join(":");
+      }
+      function wideMetadataContext() {
+        return wideCountKey(seasonNumber() || 1);
       }
       function wideSeasonCount(number, box) {
         var id = tmdbId();
@@ -42328,9 +42350,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var api = window.LampaView && window.LampaView.episodeMetadata;
         return api && api.alternate(movie, providerSeasonNumbers());
       }
-      function wideBook(number, done) {
+      function wideBook(number, done, countOnly) {
         var api = window.LampaView && window.LampaView.episodeMetadata;
-        if (api && movie && wideMeta() && api.book(movie, number, providerSeasonNumbers(), Number(number) === Number(seasonNumber()) ? wideFiles() : 0, done)) return;
+        if (api && movie && wideMeta() && api.book(movie, number, providerSeasonNumbers(), !countOnly && Number(number) === Number(seasonNumber()) ? wideFiles() : 0, done)) return;
         wideCanonicalBook(number, done);
       }
       function wideCanonicalBook(number, done) {
@@ -42587,9 +42609,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var number = parseInt(episodeNumber(item.num), 10) || 0;
         if (!number) return;
         var season = seasonNumber() || 1;
-        var want = movie ? movie.id : 0;
+        var want = wideMetadataContext(),
+          owner = root && root[0];
         wideBook(season, function (book, grouped) {
-          if (!book || !movie || movie.id !== want) return;
+          if (!book || !movie || wideMetadataContext() !== want || !root || root[0] !== owner) return;
           var episode = book[number];
           if (!episode) {
             if (grouped && item.soon) card.remove();
@@ -42612,9 +42635,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var number = parseInt(episodeNumber(item.num), 10) || 0;
         if (!number) return;
         var season = seasonNumber() || 1;
-        var want = movie ? movie.id : 0;
+        var want = wideMetadataContext(),
+          owner = root && root[0];
         wideBook(season, function (book, grouped) {
-          if (!book || !movie || movie.id !== want) return;
+          if (!book || !movie || wideMetadataContext() !== want || !root || root[0] !== owner) return;
           var episode = book[number];
           if (!episode) {
             if (grouped && item.soon) card.remove();
@@ -42726,7 +42750,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             box.toggleClass("nova-chip--active", !!item.selected);
             if (name === "season") {
               var number = parseInt(digits(item.title), 10) || 0;
-              var count = wideSeasonCount(number, box) || (item.selected ? wideFiles() : 0);
+              var key = wideCountKey(number),
+                count = wideSeasonCount(number, box);
+              if (item.selected && wideFiles()) wide_file_counts[key] = wideFiles();
+              count = count || wide_file_counts[key] || 0;
               if (count) box.find(".nova-chip__sub").text(wideCount(count));else box.find(".nova-chip__sub").text("\xA0");
             } else {
               var own = wideVoiceCount(item);
