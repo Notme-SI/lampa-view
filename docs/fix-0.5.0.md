@@ -1,7 +1,7 @@
 # 0.5.0 — Follow-up acceptance criteria
 
 - Mobile hero: soften the lower artwork edge only in Minimal; centre Glass title/logo inside the fixed slot. Button, dots and first row must not jump between slides.
-- Settings: Lampa View precedes Account; a separate noninteractive version row at the bottom displays 0.5 and is localised in all 12 languages.
+- Settings: Lampa View precedes Account; a separate noninteractive version row at the bottom displays 0.5.0 and is localised in all 12 languages.
 - Home studios: pointer/touch/Enter open the native studio catalogue on desktop/mobile, with its heading logo; TV home studios stay decorative. Right/Down hero navigation remains unchanged.
 - Glass: person header, comments, reactions and torrent banner metadata use the shared translucent material. Minimal stays unchanged. No live blur per comment/reaction.
 - Torrent episode files: Online list proportions, vertically centred thumbnail, title, rating/date without separator dots, progress and synopsis; preserve size/extension, native actions, playback and playlist.
@@ -12,3 +12,5 @@
 - Glass search retains a stronger dark tint; only menu highlight transparency changes to match settings.
 
 - Rename the Minimal theme label to Original using the existing 12-language message. Preserve its stored key `minimal` and current selection.
+
+- Screenshot QA found scaled hero artwork painting below its overflow boundary in both themes. Add a static compositor clip to the existing hero container; keep geometry and top-anchored zoom unchanged.

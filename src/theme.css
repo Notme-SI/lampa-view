@@ -66,7 +66,7 @@ body.lampa_view .card.focus .card__view:after,body.lampa_view .card.hover .card_
 body.lampa_view .card.focus .card__title {color:var(--pt-accent)}
 body.lampa_view .card__quality {border-radius:.3em;background:#000000dc;font-size:.65em}
 body.lampa_view .scroll--mask:before,body.lampa_view .scroll--mask:after {display:none}
-body.lampa_view .pt-hero {position:relative;min-height:32em;height:min(67vh,43em);margin:0 0 2.2em;overflow:hidden;border:0;box-shadow:none;background:#000;isolation:isolate}
+body.lampa_view .pt-hero {position:relative;min-height:32em;height:min(67vh,43em);margin:0 0 2.2em;overflow:hidden;-webkit-clip-path:inset(0);clip-path:inset(0);border:0;box-shadow:none;background:#000;isolation:isolate}
 body.lampa_view .pt-hero__image {position:absolute;top:0;left:auto;right:0;width:auto;max-width:100%;height:100%;object-fit:contain;object-position:right center;z-index:-2;-webkit-mask-image:linear-gradient(90deg,transparent,#000 16%);mask-image:linear-gradient(90deg,transparent,#000 16%)}
 /* Minimal blends the artwork edge gradually without blurring the source. */
 body.lampa_view:not(.pt-theme-glass):not(.pt-mobile) .pt-hero__image {-webkit-mask-image:linear-gradient(90deg,transparent 0%,#0000000a 5%,#00000029 11%,#00000075 19%,#000000cc 27%,#000 35%);mask-image:linear-gradient(90deg,transparent 0%,#0000000a 5%,#00000029 11%,#00000075 19%,#000000cc 27%,#000 35%)}

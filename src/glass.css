@@ -46,7 +46,7 @@ body.lampa_view.pt-theme-glass .card.focus .card__view:after,body.lampa_view.pt-
 body.lampa_view.pt-theme-glass .pt-quality,body.lampa_view.pt-theme-glass .pt-kind,body.lampa_view.pt-theme-glass .pt-series-status,body.lampa_view.pt-theme-glass .card__vote {background:#18181c9c;border-radius:.6em;border-color:#ffffff45;color:#fff}
 
 /* Artwork sits behind a compact, readable glass information pane. */
-body.lampa_view.pt-theme-glass .pt-hero {display:flex;align-items:center;background:transparent!important;border-radius:1.8em;overflow:hidden;box-shadow:0 18px 50px #00000024}
+body.lampa_view.pt-theme-glass .pt-hero {display:flex;align-items:center;background:transparent!important;border-radius:1.8em;overflow:hidden;-webkit-clip-path:inset(0 round 1.8em);clip-path:inset(0 round 1.8em);box-shadow:0 18px 50px #00000024}
 body.lampa_view.pt-theme-glass .pt-hero:before {background:linear-gradient(90deg,#10111366,transparent 68%),linear-gradient(0deg,#10111399,transparent 65%)}
 body.lampa_view.pt-theme-glass .pt-hero__body {
  position:relative;top:auto;bottom:auto;transform:none;padding:1em 1.3em;box-sizing:border-box;border:1px solid var(--pt-glass-border);border-radius:1.6em;

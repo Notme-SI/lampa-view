@@ -64,6 +64,7 @@ const {chromium,webkit}=require(process.env.PLAYWRIGHT_MODULE || 'playwright'),{
    await page.setViewportSize(viewport);await page.waitForTimeout(160);
   }
   if(process.env.LAMPA_QA_OUTPUT){fs.mkdirSync(process.env.LAMPA_QA_OUTPUT,{recursive:true});await page.screenshot({path:path.join(process.env.LAMPA_QA_OUTPUT,'return-'+engine.name()+'-'+mode+'.png')});}
+  assert.match(await page.locator('.activity--active .pt-hero').evaluate(n=>getComputedStyle(n).clipPath),/inset\(/,'Scaled artwork is clipped at the compositor boundary');
   assert.deepEqual(r.errors,[]);console.log(engine.name()+' '+mode+' '+theme+': gently zoomed artwork, ancestor animation and main/full/Back/slide keep identical geometry');
  }finally{await r.context.close();}
 }}finally{await browser.close();}}})().catch(e=>{console.error(e);process.exitCode=1;});
