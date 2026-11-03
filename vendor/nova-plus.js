@@ -515,7 +515,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     Lampa.Component.create = function (object) {
       var comp = real.apply(Lampa.Component, arguments);
       try {
-        if (comp && typeof comp.changeBalanser === 'function') { restoreSource(object,comp);patchHost(comp,object); }
+        if (comp && typeof comp.changeBalanser === 'function') { patchHost(comp,object); }
       } catch (e) {}
       return comp;
     };
@@ -1138,29 +1138,6 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
   function focusKey(item) {
     var name = item ? String(item.source || item.title || '') : '';
     return 'src:' + name.replace(/["\\]/g, '');
-  }
-
-  function sourcePreferenceScope(card) {
-    var profile='default';try{if(Lampa.Timeline && Lampa.Timeline.filename)profile=Lampa.Timeline.filename();}catch(e){}
-    return profile+'|'+[card.source || 'tmdb',card.name || card.number_of_seasons?'tv':'movie',card.id].join(':');
-  }
-
-  function restoreSource(object,comp) {
-    // Native Lampac already remembers per-title choices and habits. Forcing a
-    // global auto choice bypasses its bounded fallback and waits for that host.
-    if(comp && typeof comp.createSource==='function' && typeof comp.startSource==='function' && typeof comp.parseJsonDate==='function')return;
-    if(!enabled() || !object || !object.movie || object.balanser || object.lampac_custom_select || object.lampac_auto_select)return;
-    var scope=sourcePreferenceScope(object.movie),choices=cached('lampa_view_source_choice',300,{}),key=choices[scope] || choices[scope.split('|')[0]+'|last'];
-    if(key)object.lampac_auto_select=key;
-  }
-
-  function rememberSource(item) {
-    var key=item && (item.source || item.title);if(!key || !movie)return;
-    var scope=sourcePreferenceScope(movie),choices=cached('lampa_view_source_choice',300,{});
-    delete choices[scope];choices[scope]=key;choices[scope.split('|')[0]+'|last']=key;
-    var keys=Object.keys(choices);while(keys.length>300)delete choices[keys.shift()];
-    save('lampa_view_source_choice',choices);
-    var owner=componentNow();if(owner && typeof owner.updateBalanser==='function')owner.updateBalanser(key);
   }
 
   function currentSourceKey() {
@@ -3932,7 +3909,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
         onlineChoiceDraw(node,entry);node.addClass('nova-source-option');if(entry.provider){node.attr({'data-nova-provider':entry.provider.source || entry.provider.title,'data-nova-source-scope':qualityScope()});sourceIndicator(node,entry.state);}
         if(entry.quality)node.find('.selectbox-item__title').prepend($('<span class="nova-source-option__quality"></span>').text(entry.quality));
       },
-      onSelect:function(entry){if(!entry.provider)return;rememberSource(entry.provider);Lampa.Select.hide();contentEnable();if(entry.provider.selected){ui_focus='source';restoreFocus(false);}else chooseSource(entry.provider);},
+      onSelect:function(entry){if(!entry.provider)return;Lampa.Select.hide();contentEnable();if(entry.provider.selected){ui_focus='source';restoreFocus(false);}else chooseSource(entry.provider);},
       onBack:function(){Lampa.Select.hide();ui_focus='source';contentEnable();restoreFocus(false);}});
   }
 
@@ -3962,7 +3939,6 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       box.attr('data-nova-src', key);
       if (probe_busy && probe_queue[key] && !state && !item.selected) box.addClass('nova-chip--checking');
       bind(box, function () {
-        rememberSource(item);
         if (item.selected) return uiToggle('source');
         chooseSource(item);
       });

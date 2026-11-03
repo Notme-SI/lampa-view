@@ -1,4 +1,4 @@
-/*! Lampa View 0.5.9 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.5.10 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -10633,7 +10633,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // package.json
-  var version = "0.5.9";
+  var version = "0.5.10";
 
   // src/inputs.js
   function inputs(L) {
@@ -37339,7 +37339,6 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           var comp = real.apply(Lampa.Component, arguments);
           try {
             if (comp && typeof comp.changeBalanser === "function") {
-              restoreSource(object, comp);
               patchHost(comp, object);
             }
           } catch (e) {}
@@ -37968,35 +37967,6 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       function focusKey(item) {
         var name = item ? String(item.source || item.title || "") : "";
         return "src:" + name.replace(/["\\]/g, "");
-      }
-      function sourcePreferenceScope(card) {
-        var profile = "default";
-        try {
-          if (Lampa.Timeline && Lampa.Timeline.filename) profile = Lampa.Timeline.filename();
-        } catch (e) {}
-        return profile + "|" + [card.source || "tmdb", card.name || card.number_of_seasons ? "tv" : "movie", card.id].join(":");
-      }
-      function restoreSource(object, comp) {
-        if (comp && typeof comp.createSource === "function" && typeof comp.startSource === "function" && typeof comp.parseJsonDate === "function") return;
-        if (!enabled() || !object || !object.movie || object.balanser || object.lampac_custom_select || object.lampac_auto_select) return;
-        var scope2 = sourcePreferenceScope(object.movie),
-          choices = cached("lampa_view_source_choice", 300, {}),
-          key = choices[scope2] || choices[scope2.split("|")[0] + "|last"];
-        if (key) object.lampac_auto_select = key;
-      }
-      function rememberSource(item) {
-        var key = item && (item.source || item.title);
-        if (!key || !movie) return;
-        var scope2 = sourcePreferenceScope(movie),
-          choices = cached("lampa_view_source_choice", 300, {});
-        delete choices[scope2];
-        choices[scope2] = key;
-        choices[scope2.split("|")[0] + "|last"] = key;
-        var keys = Object.keys(choices);
-        while (keys.length > 300) delete choices[keys.shift()];
-        save("lampa_view_source_choice", choices);
-        var owner = componentNow();
-        if (owner && typeof owner.updateBalanser === "function") owner.updateBalanser(key);
       }
       function currentSourceKey() {
         var sort = groups.sort || [];
@@ -40908,7 +40878,6 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           },
           onSelect: function onSelect(entry) {
             if (!entry.provider) return;
-            rememberSource(entry.provider);
             Lampa.Select.hide();
             contentEnable();
             if (entry.provider.selected) {
@@ -40948,7 +40917,6 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           box.attr("data-nova-src", key);
           if (probe_busy && probe_queue[key] && !state && !item.selected) box.addClass("nova-chip--checking");
           bind(box, function () {
-            rememberSource(item);
             if (item.selected) return uiToggle("source");
             chooseSource(item);
           });

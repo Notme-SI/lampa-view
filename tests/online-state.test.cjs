@@ -490,20 +490,17 @@ test('default background checks start before opening the source menu, share two 
  }finally{if(s)s.close();n.close();}
 });
 
-test('manual source selection persists before playback, restores natively and respects explicit choices and profiles',async()=>{
+test('source menu leaves the last playback source and native playback saving untouched, ignoring legacy manual preferences',async()=>{
  const n=await native({built:true}),{L}=n;let s;try{
-  const saved=[],selected=[],comp={changeBalanser(){},updateBalanser(key){saved.push(key);}};s=screen(n,{id:1703,component:comp});s.filter.onSelect=(type,item)=>selected.push(item.source);await wait(180);
+  L.Storage.set('online_last_balanser',{'1703':'watched'});L.Storage.set('lampa_view_source_choice',{'file_view|last':'old-manual'});
+  const legacy=JSON.stringify(L.Storage.get('lampa_view_source_choice',{})),saved=[],selected=[],update=key=>saved.push(key),comp={changeBalanser(){},updateBalanser:update};
+  s=screen(n,{id:1703,component:comp});s.filter.onSelect=(type,item)=>selected.push(item.source);await wait(180);
   s.root.find('[data-nova-focus=source]').trigger('hover:enter');L.Select.render().find('[data-nova-provider=other]').trigger('hover:enter');await wait(40);
-  assert.deepEqual(saved,['other']);assert.deepEqual(selected,['other']);assert.equal(s.played(),0);
+  assert.deepEqual(selected,['other']);assert.deepEqual(saved,[],'Choosing a source does not pretend playback occurred');assert.equal(comp.updateBalanser,update,'Native playback saving is preserved');assert.equal(L.Storage.get('online_last_balanser',{})['1703'],'watched');assert.equal(JSON.stringify(L.Storage.get('lampa_view_source_choice',{})),legacy);assert.equal(s.played(),0);
   const card=s.movie;s.close();L.Component.add('online_preference_qa',function(object){this.changeBalanser=function(){};this.object=object;});
   const create=(movie,extra={})=>L.Component.create({component:'online_preference_qa',movie,...extra}).object;
-  assert.equal(create(card).lampac_auto_select,'other','Same title restores through native Lampac selection');assert.equal(create({...card,id:1704}).lampac_auto_select,'other','A new title uses the last manual source');
-  assert.equal(create(card,{lampac_custom_select:'explicit'}).lampac_auto_select,undefined);assert.equal(create(card,{balanser:'direct'}).lampac_auto_select,undefined);assert.equal(create(card,{lampac_auto_select:'fallback'}).lampac_auto_select,'fallback');
-  L.Component.add('online_native_preference_qa',function(object){this.changeBalanser=function(){};this.createSource=function(){};this.startSource=function(){};this.parseJsonDate=function(){};this.object=object;});
-  const nativeChoice=L.Component.create({component:'online_native_preference_qa',movie:card}).object;
-  assert.equal(nativeChoice.lampac_auto_select,undefined,'Native Lampac keeps its bounded choice policy instead of waiting for a forced global source');
-  const explicit=L.Component.create({component:'online_native_preference_qa',movie:card,lampac_custom_select:'explicit'}).object;assert.equal(explicit.lampac_custom_select,'explicit');
-  L.Timeline.filename=()=> 'another-profile';assert.equal(create(card).lampac_auto_select,undefined);assert.deepEqual(n.errors,[]);
+  assert.equal(create(card).lampac_auto_select,undefined);assert.equal(create({...card,id:1704}).lampac_auto_select,undefined);
+  assert.equal(create(card,{lampac_custom_select:'explicit'}).lampac_custom_select,'explicit');assert.equal(create(card,{lampac_auto_select:'fallback'}).lampac_auto_select,'fallback');assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}
 });
 
