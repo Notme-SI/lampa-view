@@ -4,7 +4,7 @@ test('settings retain late adapter options and callbacks inside one visible fold
  const params={lampa_view:[{param:{name:'theme'}}]},components={lampa_view:{name:'Lampa Minimal'}};
  const api={getParam:k=>params[k],allComponents:()=>components};mod('settings').default(api);
  let called=0;params.mpv_plus=[{param:{name:'parser'},onChange:()=>called++}];params.snack=[{param:{name:'auto'}}];components.mpv_plus={};components.snack={};
- assert.deepEqual(Object.keys(api.allComponents()),['lampa_view']);const list=api.getParam('lampa_view');assert.equal(list.filter(p=>p.param.type==='button').length,1);assert.equal(list[0].param.type,'static');api.getParam('minimal_settings_playback').find(p=>p.param.name==='parser').onChange();assert.equal(called,1);assert.equal(api.getParam('snack'),params.snack);
+ assert.deepEqual(Object.keys(api.allComponents()),['lampa_view']);const list=api.getParam('lampa_view');assert.equal(list.filter(p=>p.param.type==='button').length,1);assert.equal(list.at(-1).param.type,'static');api.getParam('minimal_settings_playback').find(p=>p.param.name==='parser').onChange();assert.equal(called,1);assert.equal(api.getParam('snack'),params.snack);
 });
 test('grid cards get quality and type through native visibility lifecycle',async()=>{
  const dom=new JSDOM('<body></body>',{runScripts:'outside-only'}),w=dom.window;

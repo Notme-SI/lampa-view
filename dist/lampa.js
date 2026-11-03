@@ -1,4 +1,4 @@
-/*! Lampa View 0.4.116 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.5.0 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -10435,7 +10435,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // package.json
-  var version = "0.4.116";
+  var version = "0.5.0";
 
   // src/inputs.js
   function inputs(L) {
@@ -13612,13 +13612,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             type: "static"
           },
           field: {
-            name: text("Версия {0}", [version2])
+            name: text("Версия {0}", [version2.replace(/\.0$/, "")])
           },
           onRender: function onRender(item) {
             return item.removeClass("selector").attr("data-name", "lampa_view_version");
           }
         };
-        return [info].concat(GROUPS.filter(function (_ref9) {
+        return GROUPS.filter(function (_ref9) {
           var _ref0 = _slicedToArray(_ref9, 1),
             id = _ref0[0];
           return available.some(function (d) {
@@ -13643,7 +13643,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               return open(prefix + id);
             }
           };
-        }));
+        }).concat(info);
       }
       if (ids.includes(name)) return params().filter(function (d) {
         return prefix + groupOf(d) === name;
