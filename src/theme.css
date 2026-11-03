@@ -67,11 +67,11 @@ body.lampa_view .card.focus .card__title {color:var(--pt-accent)}
 body.lampa_view .card__quality {border-radius:.3em;background:#000000dc;font-size:.65em}
 body.lampa_view .scroll--mask:before,body.lampa_view .scroll--mask:after {display:none}
 body.lampa_view .pt-hero {position:relative;min-height:32em;height:min(67vh,43em);margin:0 0 2.2em;overflow:hidden;-webkit-clip-path:inset(0);clip-path:inset(0);border:0;box-shadow:none;background:#000;isolation:isolate}
-body.lampa_view .pt-hero__image {position:absolute;top:0;left:auto;right:0;width:auto;max-width:100%;height:100%;object-fit:contain;object-position:right center;z-index:-2;-webkit-mask-image:linear-gradient(90deg,transparent,#000 16%);mask-image:linear-gradient(90deg,transparent,#000 16%)}
+body.lampa_view .pt-hero__image {position:absolute;top:0;left:auto;right:0;width:auto;max-width:100%;height:100%;object-fit:contain;object-position:right center;z-index:0;-webkit-mask-image:linear-gradient(90deg,transparent,#000 16%);mask-image:linear-gradient(90deg,transparent,#000 16%)}
 /* Minimal blends the artwork edge gradually without blurring the source. */
 body.lampa_view:not(.pt-theme-glass):not(.pt-mobile) .pt-hero__image {-webkit-mask-image:linear-gradient(90deg,transparent 0%,#0000000a 5%,#00000029 11%,#00000075 19%,#000000cc 27%,#000 35%);mask-image:linear-gradient(90deg,transparent 0%,#0000000a 5%,#00000029 11%,#00000075 19%,#000000cc 27%,#000 35%)}
-body.lampa_view .pt-hero:before {content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#000000 0%,#000000ed 13%,#0000008c 40%,#00000000 76%),linear-gradient(0deg,#000000 0%,#000000 1em,#00000020 35%,#00000000 80%)}
-body.lampa_view .pt-hero__body {position:absolute;left:max(4.5em,calc((100% - 100em)/2));bottom:6.5em;max-width:34em;padding-right:1em}
+body.lampa_view .pt-hero:before {content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,#000000 0%,#000000ed 13%,#0000008c 40%,#00000000 76%),linear-gradient(0deg,#000000 0%,#000000 1em,#00000020 35%,#00000000 80%)}
+body.lampa_view .pt-hero__body {position:absolute;z-index:2;left:max(4.5em,calc((100% - 100em)/2));bottom:6.5em;max-width:34em;padding-right:1em}
 body.lampa_view .pt-hero__title {font-size:2.9em;line-height:1.08;font-weight:650;letter-spacing:-.045em;margin:0 0 .65em;text-wrap:balance;max-width:14em}
 body.lampa_view .pt-hero__meta {display:flex;align-items:center;gap:.75em;font-size:.8em;line-height:1.5;font-weight:500;color:#dbdde2;margin-bottom:1.25em}
 body.lampa_view .pt-hero__studio {width:auto;max-width:6em;height:1.5em;object-fit:contain;flex:none;filter:drop-shadow(0 0 .6px rgba(255,255,255,.7)) drop-shadow(0 1px 2px #000);opacity:.95}
@@ -81,7 +81,7 @@ body.lampa_view .pt-hero__action {display:flex;align-items:center;gap:.6em;borde
 body.lampa_view .pt-hero__action svg {width:1.15em;height:1.15em}
 body.lampa_view .pt-hero__action--secondary {background:#212a35dd;color:#d4dce3;border-color:#ffffff12}
 body.lampa_view .pt-hero__action.focus,body.lampa_view .pt-hero__action.hover,body.lampa_view .pt-hero__action:hover,body.lampa_view .pt-hero__action:focus-visible {outline:none!important;box-shadow:inset 0 0 0 2px #fff!important}
-body.lampa_view .pt-hero__dots {position:absolute;bottom:2.8em;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:.5em}
+body.lampa_view .pt-hero__dots {position:absolute;z-index:2;bottom:2.8em;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:.5em}
 body.lampa_view .pt-hero__dot {width:.5em;height:.5em;background:#ffffff50;border-radius:1em;cursor:pointer;position:relative}
 body.lampa_view .pt-hero__dot:after {content:'';position:absolute;inset:-.6em}
 body.lampa_view .pt-hero__dot.active {width:1.5em;background:var(--pt-accent)}

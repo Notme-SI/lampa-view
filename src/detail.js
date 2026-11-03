@@ -241,9 +241,11 @@ export default function detail(L,event,loadLogo){
  if(supplied){showLogo(supplied.file_path,null,supplied.iso_639_1);if(metaHead && !directStudio)loadLogo(movie,(path,studio)=>showStudio(studio));}else loadLogo(movie,showLogo);
  const background=body.querySelector('.full-start__background');
  if(background && start){
+  let shade=body.querySelector('.minimal-detail-shade');
+  if(!shade){shade=document.createElement('div');shade.className='minimal-detail-shade';shade.setAttribute('aria-hidden','true');background.after(shade);}
   // This image is a sibling of the header. Follow the complete header,
   // including asynchronously mounted cast, instead of a fixed 58vh cutoff.
-  const fit=()=>{if(!start.isConnected)return;const rect=background.getBoundingClientRect(),scale=rect.height/(background.offsetHeight || rect.height) || 1,height=(start.getBoundingClientRect().bottom-rect.top)/scale;if(height>0)background.style.setProperty('--pt-detail-backdrop-height',height+'px');};
+  const fit=()=>{if(!start.isConnected)return;const rect=background.getBoundingClientRect(),scale=rect.height/(background.offsetHeight || rect.height) || 1,height=(start.getBoundingClientRect().bottom-rect.top)/scale;if(height>0){background.style.setProperty('--pt-detail-backdrop-height',height+'px');shade.style.height=height+'px';}};
   fit();const resize=window.ResizeObserver?new ResizeObserver(fit):null;if(resize)resize.observe(start);
   if(event.link && event.link.use)event.link.use({onDestroy:()=>{if(resize)resize.disconnect();}});
  }

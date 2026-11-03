@@ -14,3 +14,5 @@
 - Rename the Minimal theme label to Original using the existing 12-language message. Preserve its stored key `minimal` and current selection.
 
 - Screenshot QA found scaled hero artwork painting below its overflow boundary in both themes. Add a static compositor clip to the existing hero container; keep geometry and top-anchored zoom unchanged.
+
+- Further live screenshots show uneven Glass hero blending and poor detail text contrast on bright art. Use one neutral hero base with an eased image alpha ramp and explicit nonnegative layer order; add one static detail shade sized with the existing backdrop observer. No per-frame image processing or extra requests.
