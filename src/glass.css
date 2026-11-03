@@ -13,8 +13,7 @@ body.lampa_view.pt-theme-glass {
 /* The old opaque canvas hid the glass background even when the theme was active. */
 body.lampa_view.pt-theme-glass .app,body.lampa_view.pt-theme-glass .wrap,body.lampa_view.pt-theme-glass .explorer,body.lampa_view.pt-theme-glass .explorer__files,body.lampa_view.pt-theme-glass .explorer__files-body {background:transparent!important}
 /* Search is a reading surface: tint the whole overlay, not only the header icon. */
-body.lampa_view.pt-theme-glass .main-search {background:rgba(16,18,22,.94)!important}
-body.lampa_view.pt-theme-glass .main-search .search {background:transparent!important}
+body.lampa_view.pt-theme-glass .main-search .search {background:rgba(16,18,22,.82)!important;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
 body.lampa_view.pt-theme-glass .main-search .simple-keyboard-input {background:rgba(30,32,36,.92);border:1px solid var(--pt-glass-border);border-radius:1.2em;color:var(--pt-text)}
 body.lampa_view.pt-theme-glass .head {height:4.5em!important;background:transparent!important;border:0;box-shadow:none}
 body.lampa_view.pt-theme-glass .head__body {
@@ -139,5 +138,5 @@ body.lampa_view.pt-theme-glass.pt-mobile .person-start__place {font-size:1.2em}
 body.lampa_view.pt-theme-glass.pt-mobile .person-start__bottom {flex-wrap:wrap;gap:.5em}
 
 /* A single static shade follows the existing detail backdrop, behind all text. */
-body.lampa_view.pt-theme-glass .minimal-detail-shade {position:absolute;top:0;left:0;width:100%;z-index:-1;pointer-events:none;background:linear-gradient(90deg,#080a0dcc 0%,#080a0dc2 60%,#080a0d66 100%);-webkit-mask-image:linear-gradient(180deg,#000 0%,#000 70%,transparent 100%);mask-image:linear-gradient(180deg,#000 0%,#000 70%,transparent 100%)}
+body.lampa_view.pt-theme-glass .minimal-detail-shade {position:absolute;top:0;left:0;width:100%;z-index:-1;pointer-events:none;background:linear-gradient(90deg,#080a0d94 0%,#080a0d8a 60%,#080a0d33 100%);-webkit-mask-image:linear-gradient(180deg,#000 0%,#000 70%,transparent 100%);mask-image:linear-gradient(180deg,#000 0%,#000 70%,transparent 100%)}
 body.lampa_view:not(.pt-theme-glass) .minimal-detail-shade {display:none}

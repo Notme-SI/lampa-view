@@ -316,7 +316,7 @@ body.lampa_view .full-start-new__right {min-width:0;max-width:58em}
 body.lampa_view .full-start-new__title {font-size:2em}
 body.lampa_view .minimal-detail-logo {display:none;width:auto;max-width:min(24em,75%);height:auto;max-height:5.5em;object-fit:contain;object-position:left center;margin:0 0 1em}
 body.lampa_view .minimal-detail-logo.loaded {display:block}
-body.lampa_view .minimal-detail-overview,body.lampa_view .full-start-new__description {color:var(--pt-muted);font-size:.9em;line-height:1.55;max-width:52em;margin:1em 0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+body.lampa_view .minimal-detail-overview,body.lampa_view .full-start-new__description {color:#fff;font-size:.9em;line-height:1.55;max-width:52em;margin:1em 0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 body.lampa_view.pt-mobile .full-start-new__left {width:6.5em;min-width:6.5em;margin:0 1.2em 0 0}
 body.lampa_view.pt-mobile .full-start-new__body {display:flex;align-items:flex-start}
 body.lampa_view.pt-mobile .full-start-new__right {margin:0;padding:0;background:none;overflow:visible}
