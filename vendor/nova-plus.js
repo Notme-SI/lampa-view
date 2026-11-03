@@ -515,7 +515,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     Lampa.Component.create = function (object) {
       var comp = real.apply(Lampa.Component, arguments);
       try {
-        if (comp && typeof comp.changeBalanser === 'function') patchHost(comp,object);
+        if (comp && typeof comp.changeBalanser === 'function') { restoreSource(object);patchHost(comp,object); }
       } catch (e) {}
       return comp;
     };
@@ -571,6 +571,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     if (!/\/lite\/[^\/?&]+/.test(value)) return;
     if (value.indexOf('lite/events') !== -1) return;
     probe_url = value;
+    probeSchedule();
   }
 
   function voiceParse(body) {
@@ -1139,6 +1140,26 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     return 'src:' + name.replace(/["\\]/g, '');
   }
 
+  function sourcePreferenceScope(card) {
+    var profile='default';try{if(Lampa.Timeline && Lampa.Timeline.filename)profile=Lampa.Timeline.filename();}catch(e){}
+    return profile+'|'+[card.source || 'tmdb',card.name || card.number_of_seasons?'tv':'movie',card.id].join(':');
+  }
+
+  function restoreSource(object) {
+    if(!enabled() || !object || !object.movie || object.balanser || object.lampac_custom_select || object.lampac_auto_select)return;
+    var scope=sourcePreferenceScope(object.movie),choices=cached('lampa_view_source_choice',300,{}),key=choices[scope] || choices[scope.split('|')[0]+'|last'];
+    if(key)object.lampac_auto_select=key;
+  }
+
+  function rememberSource(item) {
+    var key=item && (item.source || item.title);if(!key || !movie)return;
+    var scope=sourcePreferenceScope(movie),choices=cached('lampa_view_source_choice',300,{});
+    delete choices[scope];choices[scope]=key;choices[scope.split('|')[0]+'|last']=key;
+    var keys=Object.keys(choices);while(keys.length>300)delete choices[keys.shift()];
+    save('lampa_view_source_choice',choices);
+    var owner=componentNow();if(owner && typeof owner.updateBalanser==='function')owner.updateBalanser(key);
+  }
+
   function currentSourceKey() {
     var sort = groups.sort || [];
     for (var i = 0; i < sort.length; i++) {
@@ -1612,7 +1633,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
   }
 
   function probeOn() {
-    return get('nova_plus_probe', false) === true;
+    return get('nova_plus_probe', true) === true;
   }
 
   function probeCovered() {
@@ -1762,12 +1783,13 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
   }
 
   function probeRun() {
-    if (!probeAllowed() || !probe_url || !movie) return;
+    if (!probeAllowed() || !probe_url || !movie || probe_busy) return;
     var list = groups.sort || [];
     if (list.length < 2) return;
 
     probeStop();
     var generation = probe_generation, owner = componentNow(), scopeId = qualityScope();
+    probe_done_for = scopeId;
     probe_busy = true;
     probe_queue = {};
 
@@ -1799,10 +1821,11 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     });
 
     var deadline = Date.now() + PROBE_BUDGET;
-    var index = 0;
+    var index = 0, pendingCount = 0;
 
     var step = function () {
-      if (!probe_busy || generation !== probe_generation || owner !== componentNow() || scopeId !== qualityScope() || index >= queue.length) return;
+      if (!probe_busy || generation !== probe_generation || owner !== componentNow() || scopeId !== qualityScope()) return;
+      if(index >= queue.length){if(!pendingCount)probe_busy=false;return;}
       if (Date.now() > deadline) return probeStop();
 
       var entry = queue[index++];
@@ -1814,10 +1837,10 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       probe_nets.push(net);
       try { net.timeout(PROBE_TIMEOUT); } catch (e) {}
 
-      var answered = false;
+      var answered = false;pendingCount++;
       var done = function (answer) {
         if (answered || !probe_busy || generation !== probe_generation || owner !== componentNow() || scopeId !== qualityScope()) return;
-        answered = true;
+        answered = true;pendingCount--;
         probeAnswer(entry.key, answer);
         step();
       };
@@ -1835,13 +1858,12 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
   }
 
   function probeSchedule() {
-    if (!probeAllowed() || !movie) return;
-    if (probe_done_for === qualityScope()) return;
+    if (!probeAllowed() || !movie || !probe_url || probe_busy || (groups.sort || []).length<2) return;
+    if (probe_done_for === qualityScope() || probe_timer) return;
     clearTimeout(probe_timer);
     probe_timer = setTimeout(function () {
       probe_timer = null;
       if (!inSkin() || !movie) return;
-      probe_done_for = qualityScope();
       probeRun();
     }, PROBE_DELAY);
   }
@@ -3893,10 +3915,9 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
   function refreshSourceIndicators(key,state){
     var scope=qualityScope();
     $('.selectbox--open .nova-source-option').each(function(){var node=$(this);if(node.attr('data-nova-provider')===key && node.attr('data-nova-source-scope')===scope)sourceIndicator(node,state);});
-    if(ui && ui.rows && currentSourceKey()===key)sourceIndicator(ui.rows.find('.nova-plus__bar [data-nova-focus="source"]'),state);
   }
   function sourceMenu(){
-    ui_open='';
+    ui_open='';probeRun();
     var entries=(groups.sort || []).filter(function(item){var key=item.source || item.title;return sourceActive(item,sourceState(key));}).map(function(item){
       var parts=splitSourceName(item.title),quality=knownQuality(item.source || item.title) || parts.badge;
       return {title:parts.name,quality:quality || '',selected:!!item.selected,provider:item,state:sourceState(item.source || item.title)};
@@ -3906,7 +3927,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
         onlineChoiceDraw(node,entry);node.addClass('nova-source-option');if(entry.provider){node.attr({'data-nova-provider':entry.provider.source || entry.provider.title,'data-nova-source-scope':qualityScope()});sourceIndicator(node,entry.state);}
         if(entry.quality)node.find('.selectbox-item__title').prepend($('<span class="nova-source-option__quality"></span>').text(entry.quality));
       },
-      onSelect:function(entry){if(!entry.provider)return;Lampa.Select.hide();contentEnable();if(entry.provider.selected){ui_focus='source';restoreFocus(false);}else chooseSource(entry.provider);},
+      onSelect:function(entry){if(!entry.provider)return;rememberSource(entry.provider);Lampa.Select.hide();contentEnable();if(entry.provider.selected){ui_focus='source';restoreFocus(false);}else chooseSource(entry.provider);},
       onBack:function(){Lampa.Select.hide();ui_focus='source';contentEnable();restoreFocus(false);}});
   }
 
@@ -3936,6 +3957,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       box.attr('data-nova-src', key);
       if (probe_busy && probe_queue[key] && !state && !item.selected) box.addClass('nova-chip--checking');
       bind(box, function () {
+        rememberSource(item);
         if (item.selected) return uiToggle('source');
         chooseSource(item);
       });
@@ -4773,6 +4795,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     patchHost(componentNow());
     filter = activeFilter(root) || filter;
     groups = readGroups(filter);
+    probeSchedule();
     extras = readExtras();
 
     var native = nativeState();
@@ -5165,7 +5188,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
 
       Lampa.SettingsApi.addParam({
         component: 'nova_plus',
-        param: { name: 'nova_plus_probe', type: 'trigger', default: false },
+        param: { name: 'nova_plus_probe', type: 'trigger', default: true },
         field: {
           name: label('nova_plus_set_probe'),
           description: label('nova_plus_set_probe_descr')
@@ -5885,7 +5908,6 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
         if (badge.length) badge.text(value);
         else source.prepend($('<span class="nova-chip__badge"></span>').text(value));
       } else badge.remove();
-      sourceIndicator(source,sourceState(currentSourceKey()));
     }
 
     ui.rows.find('.nova-plus__bar .nova-chip').each(function () {
@@ -6503,10 +6525,9 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
         .addClass('nova-chip--view-icon').attr({'aria-label':directionLabel,title:directionLabel,'data-current-direction':wideRow()?'horizontal':'vertical'}).find('svg').attr('aria-hidden','true');
     }
     if(groups.sort && groups.sort.length){
-      var sourceControl=tool('source',text('nova_source','nova_plus_source'),'',{},function(){
+      tool('source',text('nova_source','nova_plus_source'),'',{},function(){
         sourceMenu();
       });
-      sourceIndicator(sourceControl,sourceState(currentSourceKey()));
     }
 
     if (groups.season && groups.season.items.length > 0) {

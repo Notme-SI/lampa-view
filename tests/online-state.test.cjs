@@ -460,7 +460,7 @@ test('source menu shows verified availability and follows later provider answers
  try{
   const comp={request(){},parse(){},changeBalanser(){}};s=screen(n,{id:1666,component:comp});await wait(180);
   s.root.find('[data-nova-focus=source]').trigger('hover:enter');
-  const menu=L.Select.render(),items=menu.find('.nova-source-option');assert.equal(items.length,2);assert.equal(s.root.find('.nova-plus__bar [data-nova-focus=source] .nova-source-option__status').length,1,'Current provider retains its verified marker');
+  const menu=L.Select.render(),items=menu.find('.nova-source-option');assert.equal(items.length,2);assert.equal(s.root.find('.nova-plus__bar [data-nova-focus=source] .nova-source-option__status').length,0,'Closed source control has no availability dot');
   assert.equal(items.filter('[data-nova-provider=test]').find('.nova-source-option__status').length,1);
   assert.equal(items.filter('[data-nova-provider=other]').find('.nova-source-option__status').length,0,'Untested source has no success marker');
   comp.request('https://online.example.test/lite/other?id=1666');comp.parse(tag({method:'play',url:'/file',name:'1080p'}));
@@ -468,5 +468,37 @@ test('source menu shows verified availability and follows later provider answers
   comp.request('https://online.example.test/lite/other?id=1666');comp.parse('<div class="videos__line"></div>');
   assert.equal(items.filter('[data-nova-provider=other]').find('.nova-source-option__status').length,0,'An empty result clears success');
   L.Select.hide();assert.deepEqual(n.errors,[]);
+ }finally{if(s)s.close();n.close();}
+});
+
+
+test('default background checks start before opening the source menu, share two slots and reuse successful cache',async()=>{
+ const n=await native({built:true}),{L,w}=n;let s;try{
+  const requests=[],Real=L.Reguest;let running=0,maximum=0;
+  L.Reguest=function(){const net=new Real(),nativeRequest=net.native;net.native=(url,ok,fail,...rest)=>{if(!/\/lite\/(one|two|three|other)\?/.test(url))return nativeRequest.call(net,url,ok,fail,...rest);running++;maximum=Math.max(maximum,running);let done=false;requests.push({url,ok(body){if(done)return;done=true;running--;ok(body);},fail(){if(done)return;done=true;running--;fail();}});};return net;};
+  const comp={request(){},parse(){},changeBalanser(){}};s=screen(n,{id:1701,component:comp});
+  const sources=[{title:'Test',source:'test',selected:true},...['one','two','three'].map(source=>({title:source,source}))];s.filter.set('sort',sources);
+  comp.request('https://online.example.test/lite/test?id=1701&s=2&voice=old');await wait(1800);
+  assert.equal(requests.length,2,'No menu or provider switch is needed to start checking');assert.equal(L.Select.opened(),false);assert.equal(s.played(),0);
+  s.root.find('[data-nova-focus=source]').trigger('hover:enter');assert.equal(requests.length,2,'Opening the menu does not restart active work');
+  requests[0].ok(tag({method:'play',url:'/file',name:'1080p'}));assert.equal(requests.length,3);requests[1].ok(tag({method:'play',url:'/file'}));requests[2].ok(tag({method:'play',url:'/file'}));
+  assert.equal(maximum,2);assert.equal(L.Select.render().find('.nova-source-option__status').length,4);L.Select.hide();
+  s.close();s=screen(n,{id:1701,component:{request(){},parse(){},changeBalanser(){}}});s.filter.set('sort',sources);s.component.request('https://online.example.test/lite/test?id=1701');await wait(1800);
+  assert.equal(requests.length,3,'Fresh successful results survive reopening without another probe');assert.equal(s.played(),0);
+  s.close();s=screen(n,{id:1702,component:{request(){},parse(){},changeBalanser(){}}});s.component.request('https://online.example.test/lite/test?id=1702');await wait(1800);assert.equal(requests.length,4);
+  s.close();requests[3].ok(tag({method:'play',url:'/late'}));assert.ok(!L.Storage.get('nova_probe',{})['tmdb:tv:1702']?.list.other,'A reply after leaving cannot populate the next card');assert.deepEqual(n.errors,[]);
+ }finally{if(s)s.close();n.close();}
+});
+
+test('manual source selection persists before playback, restores natively and respects explicit choices and profiles',async()=>{
+ const n=await native({built:true}),{L}=n;let s;try{
+  const saved=[],selected=[],comp={changeBalanser(){},updateBalanser(key){saved.push(key);}};s=screen(n,{id:1703,component:comp});s.filter.onSelect=(type,item)=>selected.push(item.source);await wait(180);
+  s.root.find('[data-nova-focus=source]').trigger('hover:enter');L.Select.render().find('[data-nova-provider=other]').trigger('hover:enter');await wait(40);
+  assert.deepEqual(saved,['other']);assert.deepEqual(selected,['other']);assert.equal(s.played(),0);
+  const card=s.movie;s.close();L.Component.add('online_preference_qa',function(object){this.changeBalanser=function(){};this.object=object;});
+  const create=(movie,extra={})=>L.Component.create({component:'online_preference_qa',movie,...extra}).object;
+  assert.equal(create(card).lampac_auto_select,'other','Same title restores through native Lampac selection');assert.equal(create({...card,id:1704}).lampac_auto_select,'other','A new title uses the last manual source');
+  assert.equal(create(card,{lampac_custom_select:'explicit'}).lampac_auto_select,undefined);assert.equal(create(card,{balanser:'direct'}).lampac_auto_select,undefined);assert.equal(create(card,{lampac_auto_select:'fallback'}).lampac_auto_select,'fallback');
+  L.Timeline.filename=()=> 'another-profile';assert.equal(create(card).lampac_auto_select,undefined);assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}
 });

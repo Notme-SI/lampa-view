@@ -17,8 +17,17 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
    const focus=await page.locator('.activity--active .minimal-detail-studio').evaluate(n=>({filter:getComputedStyle(n).filter,shadow:getComputedStyle(n).boxShadow}));assert.ok(focus.filter.includes('drop-shadow'));assert.equal(focus.shadow,'none');
    await page.keyboard.press('ArrowLeft');assert.equal(await page.locator('.activity--active .button--play.focus').count(),1);await page.keyboard.press('ArrowRight');await page.keyboard.press('Enter');await page.waitForTimeout(250);assert.equal(await page.evaluate(()=>Lampa.Activity.active().component),'company');assert.equal(String(await page.evaluate(()=>Lampa.Activity.active().id)),'7');await page.evaluate(()=>Lampa.Activity.backward());await page.waitForSelector('.activity--active .minimal-detail-studio.focus');
   }
-  await page.evaluate(()=>{Lampa.Api.person=(p,ok)=>ok({person:{id:p.id,name:'Native director',birthday:'1968-09-10',place_of_birth:'England',profile_path:'/director.jpg',biography:'Biography'},credits:{knownFor:[{name:'Directing',credits:[{id:91,title:'Film',release_date:'2025-01-01',poster_path:'/p.jpg'}]}]}});Lampa.Activity.push({component:'actor',id:90,source:'tmdb'});});
+  await page.evaluate(()=>{Lampa.Api.person=(p,ok)=>ok({person:{id:p.id,name:'Native director',birthday:'1968-09-10',place_of_birth:'England',profile_path:'/director.jpg',biography:'Biography'},credits:{knownFor:[{name:'Directing',credits:Array.from({length:27},(_,i)=>({id:91+i,title:'Film '+i,release_date:'2025-01-01',poster_path:'/p'+i+'.jpg'}))}]}});Lampa.Activity.push({component:'actor',id:90,source:'tmdb'});});
   await page.waitForSelector('.activity--active .person-start');
+  await page.waitForSelector('.activity--active .items-line .minimal-row-nav',{state:mode==='tv'?'attached':'visible'});
+  const actorLine=page.locator('.activity--active .items-line').filter({has:page.locator('.card')}).first();
+  if(mode!=='tv'){
+   const right=actorLine.locator('.minimal-row-arrow').last();await right.click();await page.waitForTimeout(400);const shifted=await page.evaluate(()=>Lampa.Activity.active().activity.component.items.find(line=>line.data.results.length===27).active);assert.ok(shifted>0,'Pointer can leave the first filmography page');
+  }
+  await page.evaluate(()=>{const line=Lampa.Activity.active().activity.component.items.find(line=>line.data.results.length===27);line.toggle();});
+  for(let i=0;i<30;i++)await page.keyboard.press('ArrowRight');await page.waitForTimeout(500);
+  const reached=await page.evaluate(()=>{const line=Lampa.Activity.active().activity.component.items.find(line=>line.data.results.length===27),last=line.items[26]?.render(true);return {index:line.active,count:line.items.length,text:last?.textContent,visible:last?.getBoundingClientRect().right<=innerWidth+2,rect:last?.getBoundingClientRect().toJSON(),screen:innerWidth};});assert.equal(reached.index,26);assert.equal(reached.count,27);assert.ok(reached.text.includes('Film 26'));assert.ok(reached.visible,JSON.stringify(reached));
+
   for(const theme of ['minimal','glass']){
    await page.evaluate(theme=>Lampa.Storage.set('lampa_view_theme',theme),theme);await page.waitForTimeout(120);
    const person=await page.locator('.activity--active .person-start').evaluate(n=>({bg:getComputedStyle(n).backgroundColor,image:getComputedStyle(n).backgroundImage,width:n.getBoundingClientRect().width,scroll:n.scrollWidth,name:n.textContent}));assert.ok(person.name.includes('Native director'));if(theme==='glass'){assert.ok(person.scroll<=person.width+2,JSON.stringify({mode,theme,person}));assert.ok(person.image.includes('gradient'));assert.ok(Number(person.bg.match(/[\d.]+/g)[3])<.5);}else assert.equal(person.bg,'rgb(0, 0, 0)');

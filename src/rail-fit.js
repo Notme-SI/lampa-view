@@ -42,7 +42,7 @@ export default function fitRail(line,root,card,state,enabled){
  root.style.setProperty('--minimal-poster-width',width+'px');
  root.classList.add('minimal-posters-sized');
  if(home)homeStage(hero,root);
- const previous=state.posterFitKey;state.posterFitKey=key;
+ state.posterFitKey=key;
  line.scroll.minimalPosterFit={count,width,gap,inset};
  if(!state.posterFitWrapped){
   state.posterFitWrapped=true;
@@ -58,7 +58,9 @@ export default function fitRail(line,root,card,state,enabled){
    };
   }
  }
- if(previous && line.last && line.scroll.immediate)line.scroll.immediate(line.last,true);
+ // The first fit may be deferred until TV navigation becomes idle. Preserve
+ // the focused card when replacing the native width, just as on later resizes.
+ if(line.last && line.scroll.immediate)line.scroll.immediate(line.last,true);
 }
 
 // Finish a pointer gesture on a complete slot, through the native bounds check.

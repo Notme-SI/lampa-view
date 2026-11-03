@@ -62,6 +62,18 @@ export default function fillRows(L,enabled){
     if(!tracked.has(line) && line.use){tracked.add(line);line.use({onAppend:()=>schedule(line,data),onVisible:()=>schedule(line,data),onDestroy:()=>event({type:'destroy',line})});}
     schedule(line,data);
   };
+  // Actor filmography disables native Line/Event and More modules. Attach
+  // the same bounded row navigation after each real line has been created.
+  if(L.Component && typeof L.Component.create==='function'){
+    const create=L.Component.create;
+    L.Component.create=function(object){
+      const component=create.apply(this,arguments);
+      if(object && object.component==='actor' && component && component.use)component.use({onAppend(line,data){
+        if(data && Array.isArray(data.results) && data.results.length)event.track(line,data);
+      }});
+      return component;
+    };
+  }
   let resize;
   window.addEventListener('resize',()=>{clearTimeout(resize);resize=setTimeout(()=>lines.forEach((state,line)=>schedule(line,state.data)),150);});
   document.addEventListener('minimal:hero-layout',()=>lines.forEach((state,line)=>schedule(line,state.data)));

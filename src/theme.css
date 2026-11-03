@@ -1011,5 +1011,6 @@ body.lampa_view.pt-mobile .torrent-files .torrent-serial__detail {grid-column:1;
 body.lampa_view.pt-mobile .torrent-files .torrent-serial__line {font-size:.72em}
 
 /* Availability follows confirmed provider results, independent of selection. */
-body.lampa_view .nova-source-option__status {display:inline-block;flex:0 0 auto;width:.55em;height:.55em;margin-inline-start:.65em;border-radius:50%;background:#39d878;box-shadow:0 0 .35em #39d87855;vertical-align:middle}
-body.lampa_view .nova-source-option .selectbox-item__title>.nova-source-option__status {margin-inline-start:auto}
+body.lampa_view .nova-source-option__status {display:inline-block;flex:0 0 auto;width:.55em;height:.55em;margin-inline-start:.65em;border-radius:50%;background:#fff;box-shadow:0 0 .3em #ffffffb3,0 0 .65em #ffffff66;vertical-align:middle}
+body.lampa_view .nova-source-option .selectbox-item__title>.nova-source-option__status {position:absolute;inset-inline-end:3.6em;top:50%;transform:translateY(-50%);margin:0}
+body.lampa_view .nova-source-option {padding-inline-end:5.2em!important}
