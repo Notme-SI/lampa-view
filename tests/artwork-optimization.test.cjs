@@ -101,8 +101,9 @@ for(const mode of ['tv','desktop'])test(mode+': next-screen posters preload duri
  try{
   const visible=make(201,30),near=make(202,w.innerHeight+300),distant=make(203,w.innerHeight+4000);
   w.document.body.classList.add('pt-tv-busy','pt-wheel-active');visible.visible();enter([{target:near.render(true),isIntersecting:true},{target:distant.render(true),isIntersecting:true}]);await wait(30);
-  assert.equal(loaders.length,1,'A neighbour does not consume the visible request slot');assert.match(loaders[0].url,/prefetch201/);
-  loaders[0].onload();await wait(30);assert.equal(loaders.length,2);assert.match(loaders[1].url,/prefetch202/,'Near-viewport preloading continues during remote navigation, one spare slot at a time');
+  assert.equal(loaders.length,2,'The visible poster starts first and its near neighbour uses a bounded spare slot');assert.match(loaders[0].url,/prefetch201/);
+  assert.match(loaders[1].url,/prefetch202/,'Near-viewport preloading continues without waiting for a stalled visible request');
+  loaders[0].onload();await wait(30);assert.equal(loaders.length,2,'Distant posters remain lazy');
   loaders[1].onload();const painted=near.img.src;assert.match(painted,/prefetch202/,'Paint the near viewport image before navigation');
   near.y=30;w.document.body.classList.add('pt-tv-busy');near.visible();await wait(30);
   assert.equal(near.img.src,painted);assert.equal(loaders.length,2,'No repeat download and no blanking during the next remote movement');assert.deepEqual(n.errors,[]);

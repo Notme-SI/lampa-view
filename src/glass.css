@@ -118,7 +118,13 @@ body.lampa_view.pt-theme-glass.pt-mobile .navigation-bar__item.active {backgroun
 body.lampa_view.pt-theme-glass.pt-tv {--pt-glass-blur:10px}
 body.lampa_view.pt-theme-glass.pt-tv .pt-hero__body {backdrop-filter:none;-webkit-backdrop-filter:none;background:linear-gradient(165deg,#ffffff18,transparent 45%,#ffffff05),#10121838}
 body.lampa_view.pt-theme-glass.pt-tv .nova-plus-root .nova-plus__bar>.nova-chip,body.lampa_view.pt-theme-glass.pt-tv .nova-plus-root [data-nova-group=season] .nova-chip,body.lampa_view.pt-theme-glass.pt-tv .full-start__button {backdrop-filter:none;-webkit-backdrop-filter:none}
-body.lampa_view.pt-theme-glass.pt-tv .head__body {backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+/* Reuse the cached, preblurred scene on TV instead of filtering a moving catalogue. */
+body.lampa_view.pt-theme-glass.pt-tv .head__body {
+ backdrop-filter:none;-webkit-backdrop-filter:none;
+ background-image:linear-gradient(165deg,#ffffff21,transparent 45%,#ffffff07),linear-gradient(#1012188a,#1012188a),var(--pt-glass-scene,none);
+ background-size:auto,auto,cover;background-position:center;background-repeat:no-repeat;
+}
+body.lampa_view.pt-theme-glass.pt-tv .head__action,body.lampa_view.pt-theme-glass.pt-tv .card__icons-inner,body.lampa_view.pt-theme-glass.pt-tv .card__marker,body.lampa_view.pt-theme-glass.pt-tv .card__vote,body.lampa_view.pt-theme-glass.pt-tv .card-watched {backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
 @media(prefers-reduced-motion:reduce){body.lampa_view.pt-theme-glass .minimal-anime-tab,body.lampa_view.pt-theme-glass .menu__item {transition:none!important}}
 @media(prefers-reduced-transparency:reduce){body.lampa_view.pt-theme-glass {--pt-glass-alpha:1;--pt-glass-blur:0px;--pt-glass-button:#24262b;--pt-glass-scene:none}body.lampa_view.pt-theme-glass .head__body {background:#242426}body.lampa_view.pt-theme-glass .pt-hero__body {background:#202023;backdrop-filter:none;-webkit-backdrop-filter:none}body.lampa_view.pt-theme-glass .nova-plus-root .nova-chip,body.lampa_view.pt-theme-glass .full-start__button,body.lampa_view.pt-theme-glass .navigation-bar__body {backdrop-filter:none!important;-webkit-backdrop-filter:none!important}}
 

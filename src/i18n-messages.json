@@ -7707,5 +7707,18 @@
   "ro": "Un stil unitar pentru catalog, carduri, surse și setări.",
   "fr": "Un style commun au catalogue, aux fiches, aux sources et aux réglages.",
   "pl": "Jednolity styl katalogu, kart, źródeł i ustawień."
+ },
+ "Видео найдено": {
+  "en": "Video found",
+  "uk": "Відео знайдено",
+  "be": "Відэа знойдзена",
+  "zh": "已找到视频",
+  "pt": "Vídeo encontrado",
+  "bg": "Видеото е намерено",
+  "he": "נמצא וידאו",
+  "cs": "Video nalezeno",
+  "ro": "Videoclip găsit",
+  "fr": "Vidéo trouvée",
+  "pl": "Znaleziono wideo"
  }
 }

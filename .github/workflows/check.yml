@@ -149,3 +149,8 @@ jobs:
         env:
           PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
         run: node tests/browser/catalogue-controls.cjs
+
+      - name: Posters prepare during fast scrolling
+        env:
+          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
+        run: node tests/browser/poster-prefetch.cjs

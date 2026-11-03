@@ -11,9 +11,8 @@ export default function posterCache(L,enabled,highQuality){
  let running=0,timer;
  const maximum=()=>enabled() && highQuality();
  const tv=()=>document.body.classList.contains('pt-tv');
- const aheadY=Math.min(800,Math.max(360,window.innerHeight || 540)),aheadX=Math.min(720,Math.max(360,(window.innerWidth || 960)/2));
+ const aheadY=Math.min(1600,Math.max(540,(window.innerHeight || 540)*(tv()?1.5:2))),aheadX=Math.min(720,Math.max(360,(window.innerWidth || 960)/2));
  const paused=()=>document.hidden;
- const moving=()=>document.body.classList.contains('pt-wheel-active') || document.body.classList.contains('pt-tv-busy');
  const observer=typeof window.IntersectionObserver==='function'?new window.IntersectionObserver(entries=>entries.forEach(entry=>{
   if(entry.isIntersecting){const callback=callbacks.get(entry.target);if(callback)callback();}
  }),{rootMargin:aheadY+'px '+aheadX+'px'}):null;
@@ -47,7 +46,8 @@ export default function posterCache(L,enabled,highQuality){
  function drain(){
   timer=null;
   // Cached covers paint immediately. Visible requests take priority over a
-  // bounded look-ahead: one request while moving, two when navigation is idle.
+  // bounded look-ahead. Movement must not serialize the next row behind one
+  // slow cover; visible work still owns the remaining network slots.
   const visibleJobs=new Map(queue.map(job=>[job,visible(job.image)]));
   queue.sort((a,b)=>Number(visibleJobs.get(b))-Number(visibleJobs.get(a)));
   // Cached and shared in-flight images do not consume another network slot.
@@ -61,7 +61,7 @@ export default function posterCache(L,enabled,highQuality){
     if(entry.done){paint(job);continue;}
     entry.jobs.add(job);job.entry=entry;continue;
    }
-   if(!visibleJobs.get(job) && paused() || running>=(tv()?4:6) || !visibleJobs.get(job) && running>=(moving()?1:2)){queue.push(job);continue;}
+   if(!visibleJobs.get(job) && paused() || running>=(tv()?4:document.body.classList.contains('pt-mobile')?6:8) || !visibleJobs.get(job) && running>=(tv() || document.body.classList.contains('pt-mobile')?2:4)){queue.push(job);continue;}
    const loader=new Image();loader.fetchPriority=visibleJobs.get(job)?'high':'low';loader.decoding='async';
    entry={loader,jobs:new Set([job]),done:false};job.entry=entry;cache.set(job.url,entry);running++;
    let finished=false;
@@ -77,6 +77,11 @@ export default function posterCache(L,enabled,highQuality){
    entry.timeout=setTimeout(()=>entry.abort && entry.abort(),12000);entry.release=files.load(job.url,src=>{loader.src=src;});
   }
  }
+ // Native rows scroll both with scroll offsets and translated content. Re-rank
+ // waiting covers during navigation, instead of waiting for another download.
+ window.addEventListener('scroll',()=>schedule(16),{capture:true,passive:true});
+ document.addEventListener('wheel',()=>schedule(16),{passive:true});
+ document.addEventListener('keydown',event=>{if(/^(Arrow|Page)/.test(event.key || ''))schedule(16);});
  document.addEventListener('minimal:tv-idle',schedule);
  document.addEventListener('minimal:wheel-idle',schedule);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)schedule();});

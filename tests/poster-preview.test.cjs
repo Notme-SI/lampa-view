@@ -38,3 +38,23 @@ test('a rejected high-quality placeholder never enters native mirror retries or 
   card.img.src='https://images.example.invalid/t/p/w780/failure.jpg';card.img.onerror(new w.Event('error'));assert.equal(card.img_errors,1,'Real image failures still reach the native handler');assert.deepEqual(n.errors,[]);
  }finally{if(card)card.destroy();n.close();}
 });
+
+
+test('a stalled look-ahead poster cannot block the next row while scrolling',async()=>{
+ for(const tv of [false,true]){
+  const n=await native({built:true,prepare(w,L){L.Platform.tv=()=>tv;}}),{w,L}=n,loaders=[],cards=[];
+  try{
+   w.document.body.classList.add('pt-wheel-active');if(tv)w.document.body.classList.add('pt-tv-busy');
+   w.Image=class{constructor(){loaders.push(this);}set src(value){this.url=value;}get src(){return this.url;}};
+   for(let i=0;i<4;i++){
+    const card=L.Utils.createInstance(L.Maker.get('Card',{}),{id:1900+i,title:'Next row',poster_path:'/ahead'+i+'.jpg',source:'tmdb'});
+    card.create();const node=card.render(true);w.document.body.appendChild(node);cards.push(card);
+    node.getBoundingClientRect=()=>({width:120,height:180,left:i*130,right:i*130+120,top:w.innerHeight+120,bottom:w.innerHeight+300});card.visible();
+   }
+   await wait(60);assert.ok(loaders.length>=2,'One slow upcoming image must not serialize the whole next row');assert.ok(loaders.length<=(tv?4:8));
+   for(let i=1;i<4;i++){if(loaders[i])loaders[i].onload();await wait(20);}
+   assert.ok(cards.slice(1).every(c=>/\/w780\//.test(c.img.src)),'Other upcoming covers paint before the first request completes');
+   assert.deepEqual(n.errors,[]);
+  }finally{cards.forEach(c=>c.destroy());n.close();}
+ }
+});

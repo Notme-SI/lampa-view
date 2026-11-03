@@ -453,3 +453,20 @@ test('both themes keep four seasons inline and five in a lower native menu with 
   }finally{if(s)s.close();n.close();}
  }
 });
+
+
+test('source menu shows verified availability and follows later provider answers without another probe',async()=>{
+ const now=Date.now(),n=await native({built:true,initialStorage:{nova_probe:{'tmdb:tv:1666':{time:now,list:{test:{s:'ok',c:3,t:now}}}}}}),{L}=n;let s;
+ try{
+  const comp={request(){},parse(){},changeBalanser(){}};s=screen(n,{id:1666,component:comp});await wait(180);
+  s.root.find('[data-nova-focus=source]').trigger('hover:enter');
+  const menu=L.Select.render(),items=menu.find('.nova-source-option');assert.equal(items.length,2);assert.equal(s.root.find('.nova-plus__bar [data-nova-focus=source] .nova-source-option__status').length,1,'Current provider retains its verified marker');
+  assert.equal(items.filter('[data-nova-provider=test]').find('.nova-source-option__status').length,1);
+  assert.equal(items.filter('[data-nova-provider=other]').find('.nova-source-option__status').length,0,'Untested source has no success marker');
+  comp.request('https://online.example.test/lite/other?id=1666');comp.parse(tag({method:'play',url:'/file',name:'1080p'}));
+  assert.equal(items.filter('[data-nova-provider=other]').find('.nova-source-option__status').length,1,'Open menu updates when a real provider answer confirms videos');
+  comp.request('https://online.example.test/lite/other?id=1666');comp.parse('<div class="videos__line"></div>');
+  assert.equal(items.filter('[data-nova-provider=other]').find('.nova-source-option__status').length,0,'An empty result clears success');
+  L.Select.hide();assert.deepEqual(n.errors,[]);
+ }finally{if(s)s.close();n.close();}
+});

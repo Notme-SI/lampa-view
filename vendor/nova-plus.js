@@ -357,6 +357,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     mine.list[name] = { s: state, c: count || 0, t: Date.now() };
     all[id] = mine;
     save('nova_probe', all);
+    refreshSourceIndicators(name,state);
   }
 
   var VOICE_TTL = 12 * 60 * 60 * 1000;
@@ -3881,15 +3882,28 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     node.addClass('minimal-online-option').toggleClass('minimal-online-option--selected',!!entry.selected);
     if(entry.selected && !node.find('.minimal-choice-check').length)node.append('<svg class="minimal-choice-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>');
   }
+  function sourceIndicator(node,state){
+    if(!node || !node.length)return;
+    var value=state || 'unknown',marker=node.find('.nova-source-option__status');
+    if(node.attr('data-nova-availability')!==value)node.attr('data-nova-availability',value);
+    if(state==='ok'){
+      if(!marker.length)node.append($('<span class="nova-source-option__status" role="img"></span>').attr({'aria-label':lampaViewText("Видео найдено"),title:lampaViewText("Видео найдено")}));
+    }else if(marker.length)marker.remove();
+  }
+  function refreshSourceIndicators(key,state){
+    var scope=qualityScope();
+    $('.selectbox--open .nova-source-option').each(function(){var node=$(this);if(node.attr('data-nova-provider')===key && node.attr('data-nova-source-scope')===scope)sourceIndicator(node,state);});
+    if(ui && ui.rows && currentSourceKey()===key)sourceIndicator(ui.rows.find('.nova-plus__bar [data-nova-focus="source"]'),state);
+  }
   function sourceMenu(){
     ui_open='';
     var entries=(groups.sort || []).filter(function(item){var key=item.source || item.title;return sourceActive(item,sourceState(key));}).map(function(item){
       var parts=splitSourceName(item.title),quality=knownQuality(item.source || item.title) || parts.badge;
-      return {title:parts.name,quality:quality || '',selected:!!item.selected,provider:item};
+      return {title:parts.name,quality:quality || '',selected:!!item.selected,provider:item,state:sourceState(item.source || item.title)};
     });
     Lampa.Select.show({title:text('nova_source','nova_plus_source'),items:entries.length?entries:[{title:lampaViewText("Нет доступных источников"),noenter:true}],
       onDraw:function(node,entry){
-        onlineChoiceDraw(node,entry);node.addClass('nova-source-option');
+        onlineChoiceDraw(node,entry);node.addClass('nova-source-option');if(entry.provider){node.attr({'data-nova-provider':entry.provider.source || entry.provider.title,'data-nova-source-scope':qualityScope()});sourceIndicator(node,entry.state);}
         if(entry.quality)node.find('.selectbox-item__title').prepend($('<span class="nova-source-option__quality"></span>').text(entry.quality));
       },
       onSelect:function(entry){if(!entry.provider)return;Lampa.Select.hide();contentEnable();if(entry.provider.selected){ui_focus='source';restoreFocus(false);}else chooseSource(entry.provider);},
@@ -5871,6 +5885,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
         if (badge.length) badge.text(value);
         else source.prepend($('<span class="nova-chip__badge"></span>').text(value));
       } else badge.remove();
+      sourceIndicator(source,sourceState(currentSourceKey()));
     }
 
     ui.rows.find('.nova-plus__bar .nova-chip').each(function () {
@@ -6488,9 +6503,10 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
         .addClass('nova-chip--view-icon').attr({'aria-label':directionLabel,title:directionLabel,'data-current-direction':wideRow()?'horizontal':'vertical'}).find('svg').attr('aria-hidden','true');
     }
     if(groups.sort && groups.sort.length){
-      tool('source',text('nova_source','nova_plus_source'),'',{},function(){
+      var sourceControl=tool('source',text('nova_source','nova_plus_source'),'',{},function(){
         sourceMenu();
       });
+      sourceIndicator(sourceControl,sourceState(currentSourceKey()));
     }
 
     if (groups.season && groups.season.items.length > 0) {
