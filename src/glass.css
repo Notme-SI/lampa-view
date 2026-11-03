@@ -11,7 +11,11 @@ body.lampa_view.pt-theme-glass {
  background-attachment:fixed!important;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI Variable','Segoe UI',Roboto,sans-serif;letter-spacing:0;
 }
 /* The old opaque canvas hid the glass background even when the theme was active. */
-body.lampa_view.pt-theme-glass .app,body.lampa_view.pt-theme-glass .wrap,body.lampa_view.pt-theme-glass .search,body.lampa_view.pt-theme-glass .explorer,body.lampa_view.pt-theme-glass .explorer__files,body.lampa_view.pt-theme-glass .explorer__files-body {background:transparent!important}
+body.lampa_view.pt-theme-glass .app,body.lampa_view.pt-theme-glass .wrap,body.lampa_view.pt-theme-glass .explorer,body.lampa_view.pt-theme-glass .explorer__files,body.lampa_view.pt-theme-glass .explorer__files-body {background:transparent!important}
+/* Search is a reading surface: tint the whole overlay, not only the header icon. */
+body.lampa_view.pt-theme-glass .main-search {background:rgba(16,18,22,.94)!important}
+body.lampa_view.pt-theme-glass .main-search .search {background:transparent!important}
+body.lampa_view.pt-theme-glass .main-search .simple-keyboard-input {background:rgba(30,32,36,.92);border:1px solid var(--pt-glass-border);border-radius:1.2em;color:var(--pt-text)}
 body.lampa_view.pt-theme-glass .head {height:4.5em!important;background:transparent!important;border:0;box-shadow:none}
 body.lampa_view.pt-theme-glass .head__body {
  width:94%;max-width:94vw;height:3.4em;box-sizing:border-box;margin:.45em auto;padding:.4em .7em;border-radius:2em;

@@ -10,17 +10,23 @@
 
 ## Скриншоты
 
-<a href="docs/screenshots/01-home.png"><img src="docs/screenshots/01-home.png" alt="Главная страница Lampa View" width="1200"></a>
+Версия **0.5.0**. Основные снимки — браузерный интерфейс при ширине 1440 пикселей. Тема выбирается в **Настройки → L A M P A → Оформление → Тема интерфейса**.
 
 <table>
-  <tr>
-    <td><a href="docs/screenshots/02-anime.png"><img src="docs/screenshots/02-anime.png" alt="Раздел аниме" width="600"></a><br>Аниме</td>
-    <td><a href="docs/screenshots/03-catalogue.png"><img src="docs/screenshots/03-catalogue.png" alt="Каталог и меню навигации" width="600"></a><br>Каталог и навигация</td>
-  </tr>
-  <tr>
-    <td><a href="docs/screenshots/04-movie.png"><img src="docs/screenshots/04-movie.png" alt="Карточка фильма, актёры и комментарии" width="600"></a><br>Карточка фильма</td>
-    <td><a href="docs/screenshots/05-anime-detail.png"><img src="docs/screenshots/05-anime-detail.png" alt="Карточка аниме и список серий" width="600"></a><br>Карточка аниме</td>
-  </tr>
+  <tr><th>Оригинал</th><th>Стекло</th></tr>
+  <tr><td><a href="docs/screenshots/original-home.jpg"><img src="docs/screenshots/original-home.jpg" alt="Главная — Оригинал" width="600"></a><br>Главная</td><td><a href="docs/screenshots/glass-home.jpg"><img src="docs/screenshots/glass-home.jpg" alt="Главная — Стекло" width="600"></a><br>Главная</td></tr>
+  <tr><td><a href="docs/screenshots/original-detail.jpg"><img src="docs/screenshots/original-detail.jpg" alt="Карточка сериала — Оригинал" width="600"></a><br>Карточка сериала</td><td><a href="docs/screenshots/glass-detail.jpg"><img src="docs/screenshots/glass-detail.jpg" alt="Карточка сериала — Стекло" width="600"></a><br>Карточка сериала</td></tr>
+  <tr><td><a href="docs/screenshots/original-online.jpg"><img src="docs/screenshots/original-online.jpg" alt="Онлайн: серии и описания — Оригинал" width="600"></a><br>Онлайн: серии и описания</td><td><a href="docs/screenshots/glass-online.jpg"><img src="docs/screenshots/glass-online.jpg" alt="Онлайн: серии и описания — Стекло" width="600"></a><br>Онлайн: серии и описания</td></tr>
+</table>
+
+### Дополнительно: телефонный вид
+
+Адаптивный интерфейс в браузере при ширине 390 пикселей. Это не фотографии физического iPhone или Android APK; системные панели зависят от устройства и приложения.
+
+<table>
+  <tr><th>Оригинал</th><th>Стекло</th></tr>
+  <tr><td><a href="docs/screenshots/original-mobile-home.jpg"><img src="docs/screenshots/original-mobile-home.jpg" alt="Главная на телефоне — Оригинал" width="260"></a><br>Главная</td><td><a href="docs/screenshots/glass-mobile-home.jpg"><img src="docs/screenshots/glass-mobile-home.jpg" alt="Главная на телефоне — Стекло" width="260"></a><br>Главная</td></tr>
+  <tr><td><a href="docs/screenshots/original-mobile-online.jpg"><img src="docs/screenshots/original-mobile-online.jpg" alt="Онлайн на телефоне — Оригинал" width="260"></a><br>Онлайн</td><td><a href="docs/screenshots/glass-mobile-online.jpg"><img src="docs/screenshots/glass-mobile-online.jpg" alt="Онлайн на телефоне — Стекло" width="260"></a><br>Онлайн</td></tr>
 </table>
 
 ## Установить плагин

@@ -15,6 +15,10 @@ const {setup}=require('../fixtures/native-browser.cjs'),{stage}=require('../fixt
   assert.equal(await page.locator('#lampa-view-glass-style').count(),1);
   if(mode==='mobile'){assert.equal(await page.locator('.head .open--settings').evaluate(n=>getComputedStyle(n).display),'none');await page.evaluate(()=>jQuery('.pt-mobile-nav__item[data-section=settings]').trigger('click'));await page.waitForSelector('body.settings--open');await page.evaluate(()=>Lampa.Controller.back());}
 
+  await page.evaluate(()=>{Lampa.Layer.init();Lampa.DeviceInput.init();Lampa.Controller.observe();Lampa.Keypad.init();Lampa.Keypad.enable();document.body.appendChild(Lampa.Search.render(true));Lampa.Search.open();});await page.waitForSelector('.main-search .search');
+  const searchMaterial=await page.locator('.main-search').evaluate(n=>({bg:getComputedStyle(n).backgroundColor,blur:getComputedStyle(n).backdropFilter}));
+  assert.ok(Number(searchMaterial.bg.match(/[\d.]+/g)[3])>=.9,'The entire search overlay is readable over artwork: '+JSON.stringify(searchMaterial));assert.equal(searchMaterial.blur,'none','Search uses one static tint');
+  await page.evaluate(()=>Lampa.Search.close());
   const after=await page.evaluate(()=>({history:JSON.stringify(Lampa.Storage.get('favorite',{})),timeline:JSON.stringify(Lampa.Storage.get('file_view',{}))}));assert.deepEqual(after,before,'Changing style preserves viewing data');
   await page.evaluate(()=>{const get=Lampa.Api.sources.tmdb.get;window.qaEpisodeRequests=0;Lampa.Api.sources.tmdb.get=(url,p,ok,fail)=>{if(/^tv\/799\/season\/1/.test(url)){qaEpisodeRequests++;return setTimeout(()=>ok({episodes:[1,2].map(n=>({episode_number:n,name:'Canonical episode '+n,overview:'Canonical description '+n+' from the shared season book.',air_date:'2020-01-01',vote_average:8}))}),0);}return get.call(Lampa.Api.sources.tmdb,url,p,ok,fail);};});
   await stage(page,true,2,true);await page.waitForSelector('.nova-card');await page.getByText('Canonical description 1 from the shared season book.',{exact:true}).waitFor();assert.equal(await page.evaluate(()=>qaEpisodeRequests),1,'One metadata request per season');
