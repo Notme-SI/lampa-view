@@ -13,8 +13,8 @@ class MobileBootstrap(unittest.TestCase):
         self.assertEqual(bootstrap.patch_html(patched, 'qa'), patched)
         self.assertEqual(patched.count('name="viewport"'), 1)
         self.assertIn('viewport-fit=cover', patched)
-        self.assertIn('black-translucent', patched)
-        self.assertLess(patched.index('black-translucent'), patched.index('<script'))
+        self.assertIn('content="default"', patched)
+        self.assertLess(patched.index('content="default"'), patched.index('<script'))
         self.assertEqual(bootstrap.remove_html(patched), original)
     def test_missing_viewport_and_legacy_block(self):
         original = '<html><head><!-- lampa-minimal:start --><script src="old.js"></script><!-- lampa-minimal:end --></head></html>'

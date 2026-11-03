@@ -15,12 +15,7 @@ const {setup}=require('../fixtures/native-browser.cjs'),{stage}=require('../fixt
   assert.equal(await page.locator('#lampa-view-glass-style').count(),1);
   if(mode==='mobile'){assert.equal(await page.locator('.head .open--settings').evaluate(n=>getComputedStyle(n).display),'none');await page.evaluate(()=>jQuery('.pt-mobile-nav__item[data-section=settings]').trigger('click'));await page.waitForSelector('body.settings--open');await page.evaluate(()=>Lampa.Controller.back());}
 
-  if(mode==='mobile'){
-   // Browser engines cannot emulate iOS Home Screen chrome; test safe control geometry separately.
-   await page.evaluate(()=>{document.documentElement.classList.add('pt-ios-standalone');document.body.style.setProperty('--pt-safe-top','59px');});
-   for(const theme of ['minimal','glass']){await page.evaluate(theme=>Lampa.Storage.set('lampa_view_theme',theme),theme);const safe=await page.locator('.head').evaluate(n=>({top:n.getBoundingClientRect().top,content:parseFloat(getComputedStyle(document.querySelector('.wrap__content')).paddingTop)}));assert.ok(safe.top>=58.5,'Header stays below the simulated status area: '+JSON.stringify(safe));assert.ok(safe.content>59,'Content includes a safe top inset');}
-   await page.evaluate(()=>{document.documentElement.classList.remove('pt-ios-standalone');document.body.style.removeProperty('--pt-safe-top');Lampa.Storage.set('lampa_view_theme','glass');});
-  }
+  assert.equal(await page.locator('meta[name=apple-mobile-web-app-status-bar-style]').getAttribute('content'),'default','Safari keeps native status-bar geometry without forced translucency');
   await page.evaluate(()=>{Lampa.Layer.init();Lampa.DeviceInput.init();Lampa.Controller.observe();Lampa.Keypad.init();Lampa.Keypad.enable();document.body.appendChild(Lampa.Search.render(true));Lampa.Search.open();});await page.waitForSelector('.main-search .search');
   const searchMaterial=await page.locator('.main-search .search').evaluate(n=>({bg:getComputedStyle(n).backgroundColor,blur:getComputedStyle(n).backdropFilter,height:n.getBoundingClientRect().height,viewport:innerHeight}));
   assert.ok(Number(searchMaterial.bg.match(/[\d.]+/g)[3])>=.8,'The entire search overlay is readable over artwork: '+JSON.stringify(searchMaterial));assert.match(searchMaterial.blur,/blur\(/,'The open search blurs the page behind it');assert.ok(searchMaterial.height>=searchMaterial.viewport-2,'The tinted surface covers the viewport');

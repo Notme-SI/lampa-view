@@ -35,7 +35,7 @@ def patch_html(text, revision):
     mobile = ('<!-- lampa-minimal:mobile ' + base64.b64encode(''.join(originals).encode('utf-8')).decode('ascii') + ' -->\n'
               '<meta name="viewport" content="' + options + '">\n'
               '<meta name="apple-mobile-web-app-capable" content="yes">\n'
-              '<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">\n')
+              '<meta name="apple-mobile-web-app-status-bar-style" content="default">\n')
     block = ('<!-- lampa-minimal:start -->\n' + mobile +
              '<link rel="icon" type="image/x-icon" href="/plugins/lampa.ico?v=' + revision + '">\n'
              '<link rel="icon" type="image/svg+xml" sizes="any" href="/plugins/lampa-minimal.svg?v=' + revision + '">\n'
