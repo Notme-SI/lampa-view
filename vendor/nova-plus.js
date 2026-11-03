@@ -2500,7 +2500,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
         // pending state must not inherit the preceding page's availability.
         if(responseGeneration===availabilityGeneration){
           comp.lampaViewAvailability=availability.state;comp.lampaViewAvailabilitySource=responseSource;
-          if (movie && componentNow() === comp && responseSource && availability.state !== 'unknown') probeSave(qualityScope(), responseSource, availability.state, availability.count);
+          if (movie && componentNow() === comp && responseSource && availability.state !== 'unknown' && (!comp.lampaViewManualNavigation || availability.state==='ok')) probeSave(qualityScope(), responseSource, availability.state, availability.count);
         }
         return result;
       };
@@ -2522,7 +2522,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
         var failedSource=requestSource || currentSourceKey();
         var result=noAnswer.apply(comp,arguments);
         comp.lampaViewAvailability='error';comp.lampaViewAvailabilitySource=failedSource;
-        if(movie && componentNow()===comp && failedSource)probeSave(qualityScope(),failedSource,'error',0);
+        if(movie && componentNow()===comp && failedSource && !comp.lampaViewManualNavigation)probeSave(qualityScope(),failedSource,'error',0);
         return result;
       };
     }
@@ -2547,6 +2547,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       if (reloadInPlace(comp)) return;
       if (typeof real_replace === 'function') real_replace.call(Lampa.Activity, {});
     };
+    if(window.LampaView && window.LampaView.onlineNavigation)window.LampaView.onlineNavigation(comp);
   }
 
   function inplaceStart() {
@@ -3814,9 +3815,8 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     focusChip(group.stype);
     switchStart(group.stype);
     voiceStop();
-    keepAlive(function () {
-      host_filter.onSelect('filter', { stype: group.stype }, { index: index });
-    });
+    var select=function(){if(componentNow()!==owner)return;keepAlive(function(){host_filter.onSelect('filter', { stype: group.stype }, { index: index });});};
+    if(owner && owner.lampaViewSelect)owner.lampaViewSelect(select);else select();
   }
 
   function openExtra(index) {
@@ -4678,7 +4678,8 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     if (dead) hop.tried[dead] = true;
 
     var next = (groups.sort || []).length > 1 ? nextSource() : null;
-    var auto = !!next && autoSwitchOn();
+    var owner=componentNow();
+    var auto = !!next && autoSwitchOn() && !(owner && owner.lampaViewManualNavigation);
 
     if (next) {
       addAction(text('nova_try_source', 'nova_plus_try_source')
@@ -4695,6 +4696,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
 
     addAction(text('nova_retry', 'nova_plus_retry'), ICON.refresh, function () {
       var comp = componentNow();
+      if(comp && comp.lampaViewRetry && comp.lampaViewRetry())return;
       if (reloadable(comp)) {
         signature = '';
         listHold().empty().append(skeleton(4));
@@ -5531,7 +5533,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     var base='tv/'+id+'/season/'+number;
     try{api.get(base+'?language='+encodeURIComponent(language),{},function(data){
       var book={};
-      ((data && data.episodes) || []).forEach(function(episode){var num=Number(episode && episode.episode_number);if(num)book[num]=episode;});
+      ((data && (data.episodes_original || data.episodes)) || []).forEach(function(episode){var num=Number(episode && episode.episode_number);if(num)book[num]=episode;});
       finish(book);
     },function(){finish(null);});}catch(error){finish(null);}
   }

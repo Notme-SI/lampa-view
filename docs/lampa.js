@@ -1,4 +1,4 @@
-/*! Lampa View 0.5.7 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.5.8 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -8359,7 +8359,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 if (--left) return;
                 var book = {};
                 rows.forEach(function (e, i) {
-                  var episode = (books[e.season_number] && books[e.season_number].episodes || []).find(function (v) {
+                  var episode = (books[e.season_number] && (books[e.season_number].episodes_original || books[e.season_number].episodes) || []).find(function (v) {
                     return Number(v.episode_number) === Number(e.episode_number);
                   });
                   if (episode) book[i + 1] = __spreadProps(__spreadValues({}, episode), {
@@ -10633,7 +10633,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // package.json
-  var version = "0.5.7";
+  var version = "0.5.8";
 
   // src/inputs.js
   function inputs(L) {
@@ -17950,6 +17950,121 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     };
   }
 
+  // src/online-navigation.js
+  function onlineNavigation(comp) {
+    if (!comp || comp.lampaViewSelect || !["parseJsonDate", "display", "filter", "request", "reset", "getEpisodes", "doesNotAnswer"].every(function (key) {
+      return typeof comp[key] === "function";
+    })) return;
+    var epoch = 0,
+      pending = false,
+      closed = false,
+      deadline = null,
+      selection = null,
+      queued = null,
+      lastSent = -Infinity,
+      lastRequest = -Infinity,
+      burst = 0,
+      lastUrl = "";
+    var reset = comp.reset,
+      request = comp.request,
+      getEpisodes = comp.getEpisodes;
+    function cancel() {
+      epoch++;
+      pending = false;
+      clearTimeout(deadline);
+      deadline = null;
+      clearTimeout(selection);
+      selection = null;
+      clearTimeout(queued);
+      queued = null;
+    }
+    function live(version2) {
+      return !closed && !comp.destroyed && version2 === epoch;
+    }
+    comp.reset = function () {
+      cancel();
+      return reset.apply(this, arguments);
+    };
+    comp.request = function (url) {
+      if (pending) comp.reset();
+      var version2 = ++epoch;
+      lastUrl = url;
+      pending = true;
+      var args = arguments;
+      function send() {
+        queued = null;
+        if (!live(version2)) return;
+        if (Date.now() - lastRequest >= 4100) burst = 0;
+        burst++;
+        lastRequest = Date.now();
+        var parse = comp.parse,
+          fail = comp.doesNotAnswer;
+        var success = function success() {
+          if (!live(version2)) return;
+          pending = false;
+          clearTimeout(deadline);
+          return parse.apply(comp, arguments);
+        };
+        var failure = function failure() {
+          if (!live(version2)) return;
+          pending = false;
+          clearTimeout(deadline);
+          return fail.apply(comp, arguments);
+        };
+        comp.parse = success;
+        comp.doesNotAnswer = failure;
+        deadline = setTimeout(function () {
+          if (!live(version2) || !pending) return;
+          pending = false;
+          fail.call(comp, {
+            timeout: true
+          });
+        }, 15e3);
+        try {
+          return request.apply(comp, args);
+        } finally {
+          comp.parse = parse;
+          comp.doesNotAnswer = fail;
+        }
+      }
+      var wait = burst >= 8 ? Math.max(0, 4100 - (Date.now() - lastRequest)) : 0;
+      if (wait) queued = setTimeout(send, wait);else return send();
+    };
+    comp.getEpisodes = function (season, done) {
+      var version2 = epoch;
+      return getEpisodes.call(this, season, function () {
+        if (live(version2)) return done.apply(this, arguments);
+      });
+    };
+    comp.lampaViewSelect = function (run) {
+      comp.lampaViewManualNavigation = true;
+      comp.reset();
+      var version2 = epoch,
+        delay = Math.max(160, 500 - (Date.now() - lastSent));
+      selection = setTimeout(function () {
+        selection = null;
+        if (!live(version2)) return;
+        lastSent = Date.now();
+        run();
+      }, delay);
+    };
+    comp.lampaViewRetry = function () {
+      if (!lastUrl) return false;
+      comp.reset();
+      comp.request(lastUrl);
+      return true;
+    };
+    ["pause", "stop", "destroy"].forEach(function (name) {
+      var native = comp[name];
+      if (typeof native !== "function") return;
+      comp[name] = function () {
+        cancel();
+        if (name === "destroy") closed = true;
+        return native.apply(this, arguments);
+      };
+    });
+  }
+
   // src/torrent-banner.js
   function bannerCountries(card) {
     var language = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "ru";
@@ -20072,6 +20187,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         installI18n(L, P);
         P.online = onlineState(L);
         P.episodeMetadata = episodeMetadata(L);
+        P.onlineNavigation = onlineNavigation;
         layout();
         interfaceLayout = interfaceSize(L);
         installTmdb(L);
@@ -39166,7 +39282,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             if (responseGeneration === availabilityGeneration) {
               comp.lampaViewAvailability = availability.state;
               comp.lampaViewAvailabilitySource = responseSource;
-              if (movie && componentNow() === comp && responseSource && availability.state !== "unknown") probeSave(qualityScope(), responseSource, availability.state, availability.count);
+              if (movie && componentNow() === comp && responseSource && availability.state !== "unknown" && (!comp.lampaViewManualNavigation || availability.state === "ok")) probeSave(qualityScope(), responseSource, availability.state, availability.count);
             }
             return result;
           };
@@ -39189,7 +39305,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             var result = noAnswer.apply(comp, arguments);
             comp.lampaViewAvailability = "error";
             comp.lampaViewAvailabilitySource = failedSource;
-            if (movie && componentNow() === comp && failedSource) probeSave(qualityScope(), failedSource, "error", 0);
+            if (movie && componentNow() === comp && failedSource && !comp.lampaViewManualNavigation) probeSave(qualityScope(), failedSource, "error", 0);
             return result;
           };
         }
@@ -39218,6 +39334,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           if (reloadInPlace(comp)) return;
           if (typeof real_replace === "function") real_replace.call(Lampa.Activity, {});
         };
+        if (window.LampaView && window.LampaView.onlineNavigation) window.LampaView.onlineNavigation(comp);
       }
       function inplaceStart() {
         inplace = true;
@@ -40596,13 +40713,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         focusChip(group.stype);
         switchStart(group.stype);
         voiceStop();
-        keepAlive(function () {
-          host_filter.onSelect("filter", {
-            stype: group.stype
-          }, {
-            index: index
+        var select = function select() {
+          if (componentNow() !== owner) return;
+          keepAlive(function () {
+            host_filter.onSelect("filter", {
+              stype: group.stype
+            }, {
+              index: index
+            });
           });
-        });
+        };
+        if (owner && owner.lampaViewSelect) owner.lampaViewSelect(select);else select();
       }
       function openExtra(index) {
         var entry = extras[index];
@@ -41407,7 +41528,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         hostTimerStop(native);
         if (dead) hop.tried[dead] = true;
         var next = (groups.sort || []).length > 1 ? nextSource() : null;
-        var auto = !!next && autoSwitchOn();
+        var owner = componentNow();
+        var auto = !!next && autoSwitchOn() && !(owner && owner.lampaViewManualNavigation);
         if (next) {
           addAction(text("nova_try_source", "nova_plus_try_source").replace("{name}", splitSourceName(next.title).name || next.title), ICON.play, function () {
             chooseSource(next);
@@ -41420,6 +41542,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
         addAction(text("nova_retry", "nova_plus_retry"), ICON.refresh, function () {
           var comp = componentNow();
+          if (comp && comp.lampaViewRetry && comp.lampaViewRetry()) return;
           if (reloadable(comp)) {
             signature = "";
             listHold().empty().append(skeleton(4));
@@ -42383,7 +42506,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         try {
           api.get(base + "?language=" + encodeURIComponent(language), {}, function (data) {
             var book = {};
-            (data && data.episodes || []).forEach(function (episode) {
+            (data && (data.episodes_original || data.episodes) || []).forEach(function (episode) {
               var num = Number(episode && episode.episode_number);
               if (num) book[num] = episode;
             });

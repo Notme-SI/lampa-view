@@ -550,3 +550,24 @@ test('known provider episode count remains visible after leaving a season while 
   assert.equal(caption(),'5 эпизодов');choose(4);await wait(180);assert.equal(caption(),'5 эпизодов');assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}
 });
+
+
+test('real native TMDB season splitting preserves canonical descriptions and counts of the second provider part',async()=>{
+ const n=await native({built:true}),{w,L}=n;let s;try{
+  w.testNetwork=(url,ok)=>{w.setTimeout(()=>{
+   if(url.includes('episode_groups'))return ok({results:[{id:'parts',group_count:4,episode_count:25,network:{id:213}}]});
+   if(url.includes('episode_group/'))return ok({groups:[5,5,7,8].map((count,i)=>({order:i+1,episodes:Array.from({length:count},(_,j)=>({order:j,season_number:i<2?1:i,episode_number:i===1?j+6:j+1}))}))});
+   const season=Number(url.match(/season\/(\d+)/)?.[1]);
+   if(season)return ok({episodes:Array.from({length:[0,10,7,8][season]},(_,i)=>({episode_number:i+1,season_number:season,name:'Глава '+(i+1),overview:'Русское описание '+season+':'+(i+1),vote_average:7.4,air_date:season===1?(i<5?'2021-01-08':'2021-06-11'):'2026-10-23',still_path:'/native'+season+'e'+(i+1)+'.jpg'}))});
+   ok({results:[]});
+  },10);};
+  const raw=await new Promise(resolve=>L.Api.sources.tmdb.get('tv/96677/season/1',{},resolve));
+  assert.equal(raw.episodes.length,5,'the actual native API truncates the first season after its 90-day gap');assert.equal(raw.episodes_original.length,10);
+  s=screen(n,{id:96677,season:2,episodes:[1,2,3,4,5]});Object.assign(s.movie,{number_of_seasons:3,number_of_episodes:25,networks:[{id:213}],seasons:[{season_number:1,episode_count:10},{season_number:2,episode_count:7},{season_number:3,episode_count:8}]});
+  const choose=season=>s.filter.set('filter',[{stype:'season',title:'Сезон',subtitle:'Сезон '+season,items:[1,2,3,4].map(i=>({title:'Сезон '+i,selected:i===season}))}]);choose(2);
+  const timeline=JSON.stringify(L.Storage.get('file_view',{}));await wait(350);
+  assert.deepEqual(Array.from(s.root.find('.nova-card__overview').map((i,node)=>node.textContent).get()),[6,7,8,9,10].map(i=>'Русское описание 1:'+i));
+  assert.equal(s.root.find('[data-nova-focus="season:1"] .nova-chip__sub').text(),'5 эпизодов');assert.match(s.root.find('.nova-card__date').first().text(),/11.*2021/);assert.match(s.root.find('.nova-card__thumb').first().html(),/native1e6/);
+  choose(4);await wait(120);assert.equal(s.root.find('[data-nova-focus="season:1"] .nova-chip__sub').text(),'5 эпизодов');assert.equal(JSON.stringify(L.Storage.get('file_view',{})),timeline);assert.deepEqual(n.errors,[]);
+ }finally{if(s)s.close();n.close();}
+});

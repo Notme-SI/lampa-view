@@ -51,7 +51,7 @@ export default function episodeMetadata(L){
     if(rows.some((e,i)=>Number(e.order)!==i || !(Number(e.season_number)>0 && Number(e.episode_number)>0) || seen.has(e.season_number+':'+e.episode_number) || !seen.add(e.season_number+':'+e.episode_number)))return done(null,true);
     const seasons=Array.from(new Set(rows.map(e=>Number(e.season_number))));let left=seasons.length;const books={};
     seasons.forEach(season=>request('tv/'+id+'/season/'+season+suffix,value=>{books[season]=value;if(--left)return;
-     const book={};rows.forEach((e,i)=>{const episode=((books[e.season_number] && books[e.season_number].episodes)||[]).find(v=>Number(v.episode_number)===Number(e.episode_number));if(episode)book[i+1]={...episode,lampa_grouped:true};});
+     const book={};rows.forEach((e,i)=>{const episode=((books[e.season_number] && (books[e.season_number].episodes_original || books[e.season_number].episodes))||[]).find(v=>Number(v.episode_number)===Number(e.episode_number));if(episode)book[i+1]={...episode,lampa_grouped:true};});
      done(Object.keys(book).length===rows.length?book:null,true);
     }));
    });
