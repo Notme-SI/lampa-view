@@ -515,7 +515,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     Lampa.Component.create = function (object) {
       var comp = real.apply(Lampa.Component, arguments);
       try {
-        if (comp && typeof comp.changeBalanser === 'function') { restoreSource(object);patchHost(comp,object); }
+        if (comp && typeof comp.changeBalanser === 'function') { restoreSource(object,comp);patchHost(comp,object); }
       } catch (e) {}
       return comp;
     };
@@ -1145,7 +1145,10 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     return profile+'|'+[card.source || 'tmdb',card.name || card.number_of_seasons?'tv':'movie',card.id].join(':');
   }
 
-  function restoreSource(object) {
+  function restoreSource(object,comp) {
+    // Native Lampac already remembers per-title choices and habits. Forcing a
+    // global auto choice bypasses its bounded fallback and waits for that host.
+    if(comp && typeof comp.createSource==='function' && typeof comp.startSource==='function' && typeof comp.parseJsonDate==='function')return;
     if(!enabled() || !object || !object.movie || object.balanser || object.lampac_custom_select || object.lampac_auto_select)return;
     var scope=sourcePreferenceScope(object.movie),choices=cached('lampa_view_source_choice',300,{}),key=choices[scope] || choices[scope.split('|')[0]+'|last'];
     if(key)object.lampac_auto_select=key;
@@ -2547,6 +2550,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       if (reloadInPlace(comp)) return;
       if (typeof real_replace === 'function') real_replace.call(Lampa.Activity, {});
     };
+    if(window.LampaView && window.LampaView.onlineSourceCache)window.LampaView.onlineSourceCache(comp,object);
     if(window.LampaView && window.LampaView.onlineNavigation)window.LampaView.onlineNavigation(comp);
   }
 

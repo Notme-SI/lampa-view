@@ -499,6 +499,10 @@ test('manual source selection persists before playback, restores natively and re
   const create=(movie,extra={})=>L.Component.create({component:'online_preference_qa',movie,...extra}).object;
   assert.equal(create(card).lampac_auto_select,'other','Same title restores through native Lampac selection');assert.equal(create({...card,id:1704}).lampac_auto_select,'other','A new title uses the last manual source');
   assert.equal(create(card,{lampac_custom_select:'explicit'}).lampac_auto_select,undefined);assert.equal(create(card,{balanser:'direct'}).lampac_auto_select,undefined);assert.equal(create(card,{lampac_auto_select:'fallback'}).lampac_auto_select,'fallback');
+  L.Component.add('online_native_preference_qa',function(object){this.changeBalanser=function(){};this.createSource=function(){};this.startSource=function(){};this.parseJsonDate=function(){};this.object=object;});
+  const nativeChoice=L.Component.create({component:'online_native_preference_qa',movie:card}).object;
+  assert.equal(nativeChoice.lampac_auto_select,undefined,'Native Lampac keeps its bounded choice policy instead of waiting for a forced global source');
+  const explicit=L.Component.create({component:'online_native_preference_qa',movie:card,lampac_custom_select:'explicit'}).object;assert.equal(explicit.lampac_custom_select,'explicit');
   L.Timeline.filename=()=> 'another-profile';assert.equal(create(card).lampac_auto_select,undefined);assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}
 });

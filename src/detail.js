@@ -42,7 +42,7 @@ function moveTechnicalDetails(L,card,right){
  let duration='',quality='';
  if(line){
   const parts=namedPartCount(card);
-  if(parts>Number(card.number_of_seasons)){const prefix=(L.Lang.translate('title_seasons') || '')+':',counter=Array.from(line.children).find(part=>part.textContent.trim().startsWith(prefix));if(counter)counter.textContent=lampaViewText('Части')+': '+parts;}
+  if(parts>Number(card.number_of_seasons)){const prefix=(L.Lang.translate('title_seasons') || '')+':',counter=Array.from(line.children).find(part=>part.textContent.trim().startsWith(prefix));if(counter)counter.textContent=prefix+' '+parts;}
   const retained=Array.from(line.children).filter(part=>{
    if(part.classList.contains('full-start-new__split'))return false;
    const text=(part.textContent || part.innerText || '').trim();
@@ -53,7 +53,7 @@ function moveTechnicalDetails(L,card,right){
    return true;
   });
   while(line.firstChild)line.removeChild(line.firstChild);
-  retained.forEach((part,index)=>{if(index){const split=document.createElement('span');split.className='full-start-new__split';split.textContent='●';line.appendChild(split);}line.appendChild(part);});
+  retained.forEach((part,index)=>{if(index){const split=document.createElement('span');split.className='full-start-new__split';split.textContent='·';line.appendChild(split);}line.appendChild(part);});
   line.classList.toggle('pt-hidden',!retained.length);
  }
  const minutes=Number(card.runtime) || Number((card.episode_run_time || [])[0]) || Number((card.last_episode_to_air || {}).runtime);

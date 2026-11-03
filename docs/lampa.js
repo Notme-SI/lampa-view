@@ -1,4 +1,4 @@
-/*! Lampa View 0.5.8 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.5.9 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -9998,7 +9998,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           counter = Array.from(line.children).find(function (part) {
             return part.textContent.trim().startsWith(prefix2);
           });
-        if (counter) counter.textContent = text("Части") + ": " + parts;
+        if (counter) counter.textContent = prefix2 + " " + parts;
       }
       var retained = Array.from(line.children).filter(function (part) {
         if (part.classList.contains("full-start-new__split")) return false;
@@ -10020,7 +10020,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (index) {
           var split = document.createElement("span");
           split.className = "full-start-new__split";
-          split.textContent = "●";
+          split.textContent = "\xB7";
           line.appendChild(split);
         }
         line.appendChild(part);
@@ -10633,7 +10633,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // package.json
-  var version = "0.5.8";
+  var version = "0.5.9";
 
   // src/inputs.js
   function inputs(L) {
@@ -18065,6 +18065,52 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     });
   }
 
+  // src/online-source-cache.js
+  function onlineSourceCache(L) {
+    var cache = /* @__PURE__ */new Map(),
+      ttl = 12e4;
+    return function install(comp, object) {
+      if (!comp || comp.lampaViewSourceCache || !object || object.balanser || !["parseJsonDate", "display", "filter", "createSource", "startSource", "requestParams", "render"].every(function (key2) {
+        return typeof comp[key2] === "function";
+      })) return;
+      comp.lampaViewSourceCache = true;
+      var native = comp.createSource;
+      function key() {
+        return JSON.stringify([L.Timeline && L.Timeline.filename ? L.Timeline.filename() : "default", L.Storage.get("account_email", ""), L.Storage.get("language", "ru"), comp.requestParams("")]);
+      }
+      function copy(rows) {
+        return rows.map(function (row) {
+          return __spreadValues({}, row);
+        });
+      }
+      comp.createSource = function () {
+        var scope = key(),
+          entry = cache.get(scope);
+        if (entry && Date.now() - entry.at < ttl) {
+          var explicit = object.lampac_custom_select;
+          if (!explicit || entry.rows.some(function (row) {
+            return String(row.balanser || row.name.split(" ")[0]).toLowerCase() === explicit;
+          })) return comp.startSource(copy(entry.rows));
+        }
+        cache.delete(scope);
+        return native.apply(this, arguments).then(function (rows) {
+          var root = comp.render(),
+            waiting = root && (root.find ? root.find(".lampac-balanser-loader").length : root.querySelector(".lampac-balanser-loader"));
+          if (!waiting && Array.isArray(rows) && rows.length && rows.every(function (row) {
+            return row && typeof row.name === "string" && row.name && typeof row.url === "string" && row.url;
+          })) {
+            cache.set(scope, {
+              at: Date.now(),
+              rows: copy(rows)
+            });
+            while (cache.size > 32) cache.delete(cache.keys().next().value);
+          }
+          return rows;
+        });
+      };
+    };
+  }
+
   // src/torrent-banner.js
   function bannerCountries(card) {
     var language = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "ru";
@@ -20188,6 +20234,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         P.online = onlineState(L);
         P.episodeMetadata = episodeMetadata(L);
         P.onlineNavigation = onlineNavigation;
+        P.onlineSourceCache = onlineSourceCache(L);
         layout();
         interfaceLayout = interfaceSize(L);
         installTmdb(L);
@@ -37292,7 +37339,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           var comp = real.apply(Lampa.Component, arguments);
           try {
             if (comp && typeof comp.changeBalanser === "function") {
-              restoreSource(object);
+              restoreSource(object, comp);
               patchHost(comp, object);
             }
           } catch (e) {}
@@ -37929,7 +37976,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         } catch (e) {}
         return profile + "|" + [card.source || "tmdb", card.name || card.number_of_seasons ? "tv" : "movie", card.id].join(":");
       }
-      function restoreSource(object) {
+      function restoreSource(object, comp) {
+        if (comp && typeof comp.createSource === "function" && typeof comp.startSource === "function" && typeof comp.parseJsonDate === "function") return;
         if (!enabled() || !object || !object.movie || object.balanser || object.lampac_custom_select || object.lampac_auto_select) return;
         var scope2 = sourcePreferenceScope(object.movie),
           choices = cached("lampa_view_source_choice", 300, {}),
@@ -39334,6 +39382,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           if (reloadInPlace(comp)) return;
           if (typeof real_replace === "function") real_replace.call(Lampa.Activity, {});
         };
+        if (window.LampaView && window.LampaView.onlineSourceCache) window.LampaView.onlineSourceCache(comp, object);
         if (window.LampaView && window.LampaView.onlineNavigation) window.LampaView.onlineNavigation(comp);
       }
       function inplaceStart() {
