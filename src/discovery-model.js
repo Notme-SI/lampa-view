@@ -57,7 +57,7 @@ export function discoveryQuery(spec,date=new Date()){
   p.set('without_genres','16,99,10762,10763,10764,10767');p.set('with_origin_country',spec.country && ASIAN.includes(spec.country)?spec.country:ASIAN.join('|'));
  }else if(spec.country && spec.country!=='foreign')p.set('with_origin_country',spec.country);
  if(spec.kind==='tvshow')p.set('without_genres','16,99,18,80,10766');
- if(['movie','tv'].includes(spec.kind) && !(descriptor && descriptor.genre===16))p.set('without_genres','16');
+ if(['movie','tv'].includes(spec.kind) && !(descriptor && descriptor.genre===16))p.set('without_genres',spec.kind==='tv'?'16,10764,10767':'16');
  if(spec.network && type==='tv')p.set('with_networks',String(spec.network));
  if(spec.company){const studio=DATA.studios.find(v=>v.id===Number(spec.company));if(type==='tv' && studio && studio.tv_network)p.set('with_networks',String(studio.tv_network));else p.set('with_companies',String(spec.company));}
  if(spec.period){const [from,to]=spec.period.split('-').map(Number);p.set(field+'.gte',from+'-01-01');p.set(field+'.lte',Math.min(to,date.getFullYear())===date.getFullYear()?today:to+'-12-31');}
@@ -87,7 +87,7 @@ export function discoveryAccepts(card,spec){
  if(spec.kind==='dorama')return !genres.some(g=>[16,99,10762,10763,10764,10767].includes(g)) && origin.some(c=>(spec.country?[spec.country]:ASIAN).includes(c));
  if(spec.kind==='tvshow')return genres.some(g=>[10764,10767].includes(g)) && !genres.some(g=>[16,99,18,80,10766].includes(g)) && (spec.country==='foreign'?origin.length>0 && !origin.includes('RU'):!spec.country || origin.includes(spec.country));
  if(spec.kind==='cartoon')return (!isAnime(card) || !!spec.hero || !!spec.company || !!spec.network) && (genres.some(g=>[16,10762].includes(g)) || !!spec.hero && genres.includes(10751));
- return !!(descriptor && descriptor.genre===16) || !genres.includes(16) && !isAnime(card);
+ return !!(descriptor && descriptor.genre===16) || !genres.includes(16) && !isAnime(card) && (spec.kind!=='tv' || !genres.some(g=>[10764,10767].includes(g)));
 }
 export function discoveryPlan(kind,value={},date=new Date()){
  const state=discoveryState(kind,value,date),options=discoveryOptions(kind,date),scope=discoveryScope(state),rows=[],types=kind==='movie'?['movie']:kind==='cartoon'?(state.format==='all'?['movie','tv']:[state.format]):['tv'];
@@ -130,7 +130,7 @@ export function discoveryPlan(kind,value={},date=new Date()){
  (kind==='movie'?['28','35','18','53','878']:['80','35','18','10765']).forEach(id=>{const g=options.genres.find(v=>v.id===id);add('genre-'+id,g.name,{genre:id});});if(kind==='movie')add('revenue','Кассовые сборы',{sort:'revenue'});
  add('trending','В тренде за неделю',{feed:'trending'});add('votes','Много оценок',{sort:'votes'});
  options.genres.filter(g=>![16,10762,10763,10764,10767].includes(g.genre)).forEach(g=>add('genre-'+g.id,g.name,{genre:g.id}));
- if(kind==='tv'){['TW','TH'].forEach(country=>add('country-'+country,countryTitle(country),{kind:'dorama',country}));DATA.networks.filter(n=>![13,44,281,56,2686].includes(n.id)).forEach(n=>add('network-'+n.id,n.name,{network:n.id}));}
+ if(kind==='tv'){['TW','TH'].forEach(country=>add('country-'+country,countryTitle(country),{kind:'dorama',country}));return rows.filter(r=>!['new','rated','votes'].includes(r.key)).map(r=>({...r,discovery:{...r.discovery,sort:'popular'}})).sort((a,b)=>(a.key==='popular'?-1:b.key==='popular'?1:a.key==='trending'?-1:b.key==='trending'?1:0));}
  options.periods.forEach(p=>add('period-'+p.start,p.start+'–'+p.end,{period:p.start+'-'+p.end,sort:'rated'}));
  return rows;
 }

@@ -114,6 +114,7 @@ export default function episodeMetadata(L,kino,anime){
   // Fewer source seasons can mean a missing arc, a merged arc or a missing tail.
   // A matching length of just the selected season cannot distinguish them.
   // Full absolute lists have a separately verified partition in groups()/groupBook().
+  if(!verifiedAbsolute && alternativeNumbering(card,numbers) && anime && anime.providerBook && files.length){anime.providerBook(card,number,numbers,files,book=>{if(book)return done(book,true);if(new Set(numbers.map(Number).filter(n=>n>0)).size<Number(card.number_of_seasons))return done(null,true);if(!legacyBook(card,number,numbers,actual,done,files))done(null,true);});return true;}
   if(!verifiedAbsolute && alternativeNumbering(card,numbers) && new Set(numbers.map(Number).filter(n=>n>0)).size<Number(card.number_of_seasons)){done(null,true);return true;}
   if(kino && kino.enabled() && files.length){kino.book(card,number,numbers,files,book=>{if(book)return done(book,true);if(!legacyBook(card,number,numbers,actual,done,files))done(null,false);});return true;}
   return legacyBook(card,number,numbers,actual,done,files);

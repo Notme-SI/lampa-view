@@ -25,7 +25,7 @@ export function catalogueResults(path,json){
    return !genres.some(g=>[99,10764,10767].includes(g)) && (origin.some(c=>countries.includes(c)) || !origin.length && (language?lang===language:countries.some(c=>({KR:'ko',JP:'ja',CN:'zh',TW:'zh',TH:'th'})[c]===lang)));
   })};
  }
- const liveAction=(/^discover\/(movie|tv)\?/.test(path) || /^\?/.test(path) && /(^|&)cat=(movie|tv)(&|$)/.test(query)) && /(^|&)without_genres=16(&|$)/.test(query);
+ const liveAction=(/^discover\/(movie|tv)\?/.test(path) || /^\?/.test(path) && /(^|&)cat=(movie|tv)(&|$)/.test(query)) && (scope.get('without_genres') || '').split(',').includes('16');
  if(liveAction)return {...json,results:json.results.filter(card=>!isAnime(card) && ![...(card.genre_ids || []),...(card.genres || [])].some(g=>Number(g.id || g)===16))};
  const cartoons=/^discover\/(movie|tv)\?/.test(path) && /(^|&)with_genres=16(&|$)/.test(query) && /(^|&)without_keywords=210024(&|$)/.test(query)
   || /^\?/.test(path) && /(^|&)sort=now_playing(&|$)/.test(query) && /(^|&)genre=16(&|$)/.test(query);

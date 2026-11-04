@@ -6604,8 +6604,8 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
 
     if(wideAnimeCurrent()){
       var animeSeasons=group('','season'),activeArc=wideAnimeCurrent();
-      var chooseArc=function(entry){wide_anime.selected=entry.number;wide_sig='';ui_focus=wide_anime.groups.length>4?'anime-season':'anime-season:'+entry.number;redraw();};
-      if(wide_anime.groups.length>4){
+      var chooseArc=function(entry){wide_anime.selected=entry.number;wide_sig='';ui_focus=wide_anime.groups.length>100?'anime-season':'anime-season:'+entry.number;redraw();};
+      if(wide_anime.groups.length>100){
         put(animeSeasons,'anime-season',lampaViewText("Сезон {0}",[activeArc.number])+' / '+wide_anime.groups.length,wideCount(activeArc.count),{},function(){
           Lampa.Select.show({title:label('nova_plus_seasons')+' · '+wide_anime.groups.length,items:wide_anime.groups.map(function(g){return {title:lampaViewText("Сезон {0}",[g.number]),subtitle:wideCount(g.count),number:g.number,selected:g.number===wide_anime.selected};}),onDraw:onlineChoiceDraw,
             onSelect:function(entry){Lampa.Select.hide();contentEnable();chooseArc(entry);},onBack:function(){Lampa.Select.hide();contentEnable();restoreFocus(false);}});

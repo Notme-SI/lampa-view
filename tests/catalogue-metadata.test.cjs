@@ -32,7 +32,7 @@ test('movies and series exclude animation on every CUB and TMDB row and subseque
  const check=result=>{assert.deepEqual(result.results.map(c=>c.id),[1,5]);assert.equal(result.page,3);assert.equal(result.total_pages,7);assert.equal(result.total_results,140);};
  for(const row of [...cataloguePlan('tv').filter(row=>row.discovery.kind!=='dorama'),...cataloguePlan('movie')]){
   if(row.discovery.feed==='trending'){const {discoveryAccepts}=mod('discovery-model');assert.deepEqual(json.results.filter(c=>discoveryAccepts(c,row.discovery)).map(c=>c.id),[1,5]);continue;}
-  assert.equal(new URLSearchParams(row.tmdb.split('?')[1]).get('without_genres'),'16');
+  assert.equal(new URLSearchParams(row.tmdb.split('?')[1]).get('without_genres'),row.discovery.kind==='tv'?'16,10764,10767':'16');
   tmdb.get(row.tmdb,{page:3},check);tmdb.list({url:row.tmdb,page:3},check);
  }
  for(const kind of ['tv','movie'])cub.list({url:'?cat='+kind+'&sort=top&without_genres=16',page:3},check);

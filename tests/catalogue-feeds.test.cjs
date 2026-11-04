@@ -4,13 +4,14 @@ const moduleValue={exports:{}};new Function('module','exports',code)(moduleValue
 const {cataloguePlan,uniquePreviews,default:catalogue}=moduleValue.exports;
 
 test('discovery separates recent airings, rating, popularity and years while preserving old row aliases',()=>{
- for(const kind of ['movie','tv']){
+ for(const kind of ['movie']){
   const plan=cataloguePlan(kind,'standard',new Date(2026,9,29)),by=key=>plan.find(row=>row.key===key),query=key=>new URLSearchParams(by(key).tmdb.split('?')[1]);
   assert.equal(query('watch').get(kind==='movie'?'primary_release_date.lte':'air_date.lte'),'2026-10-29');assert.equal(query('rated').get('sort_by'),'vote_average.desc');assert.equal(by('rated').title,'С высоким рейтингом');
   assert.equal(query('new').get('sort_by'),(kind==='movie'?'primary_release_date':'first_air_date')+'.desc');assert.equal(query('popular').get('sort_by'),'popularity.desc');
   assert.ok(by('rated').minimal_row_aliases.includes('minimal:tmdb:'+kind+':uhd'));assert.ok(by('new').minimal_row_aliases.includes('minimal:tmdb:'+kind+':year'));
   assert.ok(plan.every(row=>row.discovery));assert.equal(new Set(plan.map(row=>row.tmdb)).size,plan.length);
  }
+ const tv=cataloguePlan('tv');assert.ok(tv.every(row=>!row.discovery.network && !row.discovery.period && row.discovery.sort==='popular'));assert.equal(tv[0].key,'popular');assert.ok(tv.every(row=>!['rated','new','votes'].includes(row.key)));
 });
 
 test('preview deduplication keeps media identities, rank, full-feed URLs and native pagination without mutating cached data',()=>{

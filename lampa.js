@@ -1,4 +1,4 @@
-/*! Lampa View 0.5.24 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.5.25 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -9762,6 +9762,16 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       book: function book(card, number3, numbers, actual, done) {
         var files = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : [];
         var verifiedAbsolute = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : false;
+        if (!verifiedAbsolute && alternativeNumbering(card, numbers) && anime && anime.providerBook && files.length) {
+          anime.providerBook(card, number3, numbers, files, function (book) {
+            if (book) return done(book, true);
+            if (new Set(numbers.map(Number).filter(function (n) {
+              return n > 0;
+            })).size < Number(card.number_of_seasons)) return done(null, true);
+            if (!legacyBook(card, number3, numbers, actual, done, files)) done(null, true);
+          });
+          return true;
+        }
         if (!verifiedAbsolute && alternativeNumbering(card, numbers) && new Set(numbers.map(Number).filter(function (n) {
           return n > 0;
         })).size < Number(card.number_of_seasons)) {
@@ -9828,7 +9838,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         })
       });
     }
-    var liveAction = (/^discover\/(movie|tv)\?/.test(path) || /^\?/.test(path) && /(^|&)cat=(movie|tv)(&|$)/.test(query)) && /(^|&)without_genres=16(&|$)/.test(query);
+    var liveAction = (/^discover\/(movie|tv)\?/.test(path) || /^\?/.test(path) && /(^|&)cat=(movie|tv)(&|$)/.test(query)) && (scope.get("without_genres") || "").split(",").includes("16");
     if (liveAction) return __spreadProps(__spreadValues({}, json), {
       results: json.results.filter(function (card) {
         return !isAnime(card) && ![].concat(_toConsumableArray(card.genre_ids || []), _toConsumableArray(card.genres || [])).some(function (g) {
@@ -12007,7 +12017,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // package.json
-  var version = "0.5.24";
+  var version = "0.5.25";
 
   // src/inputs.js
   function inputs(L) {
@@ -17223,7 +17233,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       p.set("with_origin_country", spec.country && ASIAN.includes(spec.country) ? spec.country : ASIAN.join("|"));
     } else if (spec.country && spec.country !== "foreign") p.set("with_origin_country", spec.country);
     if (spec.kind === "tvshow") p.set("without_genres", "16,99,18,80,10766");
-    if (["movie", "tv"].includes(spec.kind) && !(descriptor && descriptor.genre === 16)) p.set("without_genres", "16");
+    if (["movie", "tv"].includes(spec.kind) && !(descriptor && descriptor.genre === 16)) p.set("without_genres", spec.kind === "tv" ? "16,10764,10767" : "16");
     if (spec.network && type === "tv") p.set("with_networks", String(spec.network));
     if (spec.company) {
       var studio = discovery_data_default.studios.find(function (v) {
@@ -17317,7 +17327,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     if (spec.kind === "cartoon") return (!isAnime(card) || !!spec.hero || !!spec.company || !!spec.network) && (genres.some(function (g) {
       return [16, 10762].includes(g);
     }) || !!spec.hero && genres.includes(10751));
-    return !!(descriptor && descriptor.genre === 16) || !genres.includes(16) && !isAnime(card);
+    return !!(descriptor && descriptor.genre === 16) || !genres.includes(16) && !isAnime(card) && (spec.kind !== "tv" || !genres.some(function (g) {
+      return [10764, 10767].includes(g);
+    }));
   }
   function discoveryPlan(kind) {
     var value = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
@@ -17644,12 +17656,16 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           country: country
         });
       });
-      discovery_data_default.networks.filter(function (n) {
-        return ![13, 44, 281, 56, 2686].includes(n.id);
-      }).forEach(function (n) {
-        return add("network-" + n.id, n.name, {
-          network: n.id
+      return rows.filter(function (r) {
+        return !["new", "rated", "votes"].includes(r.key);
+      }).map(function (r) {
+        return __spreadProps(__spreadValues({}, r), {
+          discovery: __spreadProps(__spreadValues({}, r.discovery), {
+            sort: "popular"
+          })
         });
+      }).sort(function (a, b) {
+        return a.key === "popular" ? -1 : b.key === "popular" ? 1 : a.key === "trending" ? -1 : b.key === "trending" ? 1 : 0;
       });
     }
     options.periods.forEach(function (p) {
@@ -17921,7 +17937,19 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           if (failed) return failPage();
           var accepted = available.map(function (stream, i) {
             var json = replies[i],
-              rows = presentableCards(json.results, locale() === "ru" && (cursor.spec.kind === "dorama" || cursor.spec.kind === "tvshow"));
+              strict = ["movie", "tv", "dorama", "tvshow"].includes(cursor.spec.kind),
+              rows = presentableCards(json.results.map(function (card) {
+                var name = [card.title, card.name].find(function (v) {
+                  return /[а-яё]/i.test(v || "");
+                });
+                return strict && name ? __spreadValues(__spreadProps(__spreadValues({}, card), {
+                  title: name
+                }), stream.type === "tv" ? {
+                  name: name
+                } : {}) : card;
+              }), strict).filter(function (card) {
+                return !strict || !!(card.poster_path || card.img) && (!Object.prototype.hasOwnProperty.call(card, "backdrop_path") || !!card.backdrop_path);
+              });
             stream.total = Math.min(500, Math.max(1, Number(json.total_pages) || 1));
             stream.next++;
             stream.finished = stream.next > stream.total || !json.results.length;
@@ -22546,6 +22574,101 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
       }, _defineProperty({}, number3, book));
     }
+    function providerBook(card, number3, numbers, files, done) {
+      if (!isAnime(card) || !files.length || files.length > 3e3 || !files.map(Number).sort(function (a, b) {
+        return a - b;
+      }).every(function (n, i) {
+        return n === i + 1;
+      })) return done(null);
+      var labels = _toConsumableArray(new Set(numbers.map(Number))).sort(function (a, b) {
+        return a - b;
+      });
+      if (!labels.every(function (n, i) {
+        return n === i + 1;
+      }) || labels.length > 60) return done(null);
+      canonical(card, function (value) {
+        if (!value) return done(null);
+        collection(__spreadProps(__spreadValues({}, value), {
+          source: "tmdb",
+          media_type: "tv",
+          minimal_anime: true
+        }), function (model) {
+          if (!model || !model.complete) return done(null);
+          var today = (/* @__PURE__ */new Date()).toISOString().slice(0, 10),
+            story = model.rows.find(function (r) {
+              return r.key === "story";
+            }),
+            ids = new Set(story && story.results.map(function (r) {
+              return r.id;
+            })),
+            eligible = function eligible(n) {
+              return n.record && Number(n.record.tv) === Number(value.id) && ["tv", "ona"].includes(n.kind) && n.episodes > 0 && n.status !== "anons" && n.aired && n.aired <= today;
+            };
+          var main = model.nodes.filter(function (n) {
+              return ids.has(n.id) && eligible(n);
+            }).sort(function (a, b) {
+              return a.aired.localeCompare(b.aired);
+            }),
+            all = model.nodes.filter(eligible).filter(function (n) {
+              return ids.has(n.id) || model.edges.some(function (e) {
+                return e.relation === "alternative_version" && (e.from === n.id || e.to === n.id);
+              });
+            }).sort(function (a, b) {
+              return a.aired.localeCompare(b.aired);
+            });
+          var schemes = [main, all].filter(function (rows, i, a) {
+            return rows.length === labels.length && !a.slice(0, i).some(function (old) {
+              return old.map(function (n) {
+                return n.id;
+              }).join() === rows.map(function (n) {
+                return n.id;
+              }).join();
+            });
+          });
+          if (schemes.length !== 1) return done(null);
+          var release = schemes[0][Number(number3) - 1];
+          if (!release || release.episodes !== files.length) return done(null);
+          var seasons = (value.seasons || []).filter(function (s) {
+              return s.season_number > 0;
+            }),
+            books = {};
+          if (!seasons.length || seasons.length > 100) return done(null);
+          var left = seasons.length;
+          seasons.forEach(function (s) {
+            return load("tv/" + value.id + "/season/" + s.season_number, function (response) {
+              books[s.season_number] = response;
+              if (--left) return;
+              var map = animeEpisodeMap(release.record, release.episodes, value, books);
+              if (map && map.some(function (e) {
+                return !e.metadata || !inRelease(e.metadata, release);
+              })) map = null;
+              if (!map) {
+                var rows = seasons.flatMap(function (s2) {
+                  return books[s2.season_number] && (books[s2.season_number].episodes_original || books[s2.season_number].episodes) || [];
+                }).filter(function (e) {
+                  return inRelease(e, release);
+                });
+                if (rows.length !== release.episodes) return done(null);
+                map = rows.map(function (metadata, i) {
+                  return {
+                    number: i + 1,
+                    metadata: metadata
+                  };
+                });
+              }
+              var book = {};
+              map.forEach(function (e) {
+                return book[e.number] = __spreadProps(__spreadValues({}, e.metadata), {
+                  lampa_grouped: true,
+                  lampa_season_name: release.name
+                });
+              });
+              done(Object.keys(book).length === files.length ? book : null);
+            });
+          });
+        });
+      });
+    }
     var api = {
       info: animeIndexInfo,
       records: animeRecords,
@@ -22554,6 +22677,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       canonical: canonical,
       collection: collection,
       groups: groups,
+      providerBook: providerBook,
       status: status,
       clear: clear
     };
@@ -49401,10 +49525,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           var chooseArc = function chooseArc(entry) {
             wide_anime.selected = entry.number;
             wide_sig = "";
-            ui_focus = wide_anime.groups.length > 4 ? "anime-season" : "anime-season:" + entry.number;
+            ui_focus = wide_anime.groups.length > 100 ? "anime-season" : "anime-season:" + entry.number;
             redraw();
           };
-          if (wide_anime.groups.length > 4) {
+          if (wide_anime.groups.length > 100) {
             put(animeSeasons, "anime-season", lampaViewText("Сезон {0}", [activeArc.number]) + " / " + wide_anime.groups.length, wideCount(activeArc.count), {}, function () {
               Lampa.Select.show({
                 title: label("nova_plus_seasons") + " \xB7 " + wide_anime.groups.length,

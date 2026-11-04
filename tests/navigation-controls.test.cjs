@@ -58,7 +58,7 @@ test('held TV navigation scrolls once per card, builds the next lazy batch and h
  try{
   Object.defineProperty(w.HTMLElement.prototype,'offsetParent',{get(){return this.isConnected && !this.classList.contains('card-more')?w.document.body:null;},configurable:true});
   w.Navigator.follow('focus',event=>L.Controller.focus(event.elem));
-  L.Api.sources.tmdb.get=(url,p,ok)=>w.setTimeout(()=>ok({results:Array.from({length:20},(_,i)=>({id:600+i,title:'Film '+i,source:'tmdb'})),page:1,total_pages:3}),0);
+  L.Api.sources.tmdb.get=(url,p,ok)=>w.setTimeout(()=>ok({results:Array.from({length:20},(_,i)=>({id:600+i,title:'Фильм '+i,poster_path:'/poster.jpg',source:'tmdb'})),page:1,total_pages:3}),0);
   L.Activity.push({component:'category',url:'movie',source:'tmdb',title:'Фильмы'});for(let tries=0;tries<100 && !L.Activity.active().activity.component.items.length;tries++)await wait(20);
   const row=L.Activity.active().activity.component.items[0],root=row.render(true);row.toggle();
   const update=row.scroll.update;let updates=0;row.scroll.update=function(){updates++;return update.apply(this,arguments);};

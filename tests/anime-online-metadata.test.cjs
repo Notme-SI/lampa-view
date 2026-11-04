@@ -2,7 +2,7 @@ const test=require('node:test'),assert=require('node:assert/strict');
 const native=require('./fixtures/native-lampa.cjs');
 test('native online metadata obeys the complete coordinate guard before constructing episode cards and preserves provider files',async()=>{
  const n=await native({built:true}),{w,L}=n,$=w.jQuery;try{
-  const root=$('<div><div class="filter-host"></div></div>').appendTo(w.document.body),filter=new L.Filter({filter:true});root.find('.filter-host').append(filter.render());
+  w.LampaView.animeBase.providerBook=(c,s,n,f,done)=>done(null);const root=$('<div><div class="filter-host"></div></div>').appendTo(w.document.body),filter=new L.Filter({filter:true});root.find('.filter-host').append(filter.render());
   const movie={id:85937,name:'Anime',minimal_anime:true,number_of_seasons:5,seasons:Array.from({length:5},(_,i)=>({season_number:i+1,episode_count:8}))},files=Array.from({length:8},(_,i)=>({episode:i+1,season:4,url:'original-'+i})),before=JSON.stringify(files);let nativeReads=0,result;
   const comp={render:()=>root,changeBalanser(){},getEpisodes(season,done){nativeReads++;done([{episode_number:1,name:'Wrong canonical season'}]);},draw(rows){this.getEpisodes(rows[0].season,rows=>result=rows);}};
   L.Component.add('anime_metadata_test',function(){return comp;});L.Component.create({component:'anime_metadata_test',movie});
