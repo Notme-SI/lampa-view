@@ -23,11 +23,11 @@ test('CUB and Trakt use the full TMDB TV-show catalogue without a sparse regiona
  const n=await native({built:true}),{L}=n;try{
   L.Storage.set('minimal_trakt_enabled',true);L.Storage.set('minimal_trakt_client_id','public-test-id');
   L.Api.sources.trakt.category=()=>assert.fail('Regional categories must use TMDB directly');
-  const requests=[];L.Api.sources.tmdb.get=(url,p,ok)=>{requests.push(url);ok({results:Array.from({length:20},(_,i)=>({id:100+i,name:'Русское шоу '+i,media_type:'tv',genre_ids:[10764],original_language:'ru'})),page:1,total_pages:7});};
+  const requests=[],response=require('./fixtures/discovery-response.cjs');L.Api.sources.tmdb.get=(url,p,ok)=>{requests.push(url);ok(response(url,p.page));};
   for(const source of ['cub','trakt']){
-   requests.length=0;const object={source,url:'tvshow'},rows=await new Promise((resolve,reject)=>L.Api.category(object,resolve,reject));
-   assert.equal(rows.length,8);assert.equal(requests.length,8);
-   assert.ok(rows.every(row=>row.source==='tmdb' && !row.title.endsWith(' · TMDB') && row.results.length===20 && row.total_pages===7 && row.url.startsWith('discover/tv?')));assert.equal(object.minimal_catalogue_status.state,'ready');
+   L.Api.sources.minimal_discovery.clear();requests.length=0;const object={source,url:'tvshow'},rows=await new Promise((resolve,reject)=>L.Api.category(object,resolve,reject));
+   assert.equal(rows.length,12);assert.equal(requests.length,12);
+   assert.ok(rows.every(row=>row.source==='minimal_discovery' && !row.title.endsWith(' · TMDB') && row.results.length===20 && row.total_pages===2 && JSON.parse(row.url).kind==='tvshow' && row.results.every(c=>c.source==='tmdb' && c.media_type==='tv')));assert.equal(object.minimal_catalogue_status.state,'ready');
   }
   assert.deepEqual(n.errors,[]);
  }finally{n.close();}

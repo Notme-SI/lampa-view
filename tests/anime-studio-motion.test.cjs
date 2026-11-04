@@ -1,12 +1,13 @@
 const test=require('node:test'),assert=require('node:assert/strict'),path=require('path'),esbuild=require('esbuild'),native=require('./fixtures/native-lampa.cjs');
 function mod(name){const code=esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/'+name+'.js')],bundle:true,write:false,format:'cjs',platform:'node'}).outputFiles[0].text,module={exports:{}};new Function('module','exports',code)(module,module.exports);return module.exports;}
-test('bounded categories run only the selected anime catalogue, use a fixed number of jobs and keep main unchanged',()=>{
+test('bounded categories run only the selected catalogue, use a fixed number of jobs and keep main unchanged',()=>{
+ const catalogueApi=mod('catalogue'),response=require('./fixtures/discovery-response.cjs');
  for(const kind of ['movie','tv','anime'])for(const source of ['cub','tmdb'])for(const mode of ['standard','shikimori']){
   const data={minimal_home_compact:false,minimal_anime_home:true,minimal_anime_shikimori:true,minimal_anime_catalogue:mode},pending=[],requests=[];let active=0,max=0,nativeCalls=0,answer,calls=0;
-  function request(url,ok){requests.push(url);const start=requests.length*100;active++;max=Math.max(max,active);pending.push(()=>{active--;ok({results:Array.from({length:30},(_,id)=>({id:start+id,title:'Title'}))});});}
+  function request(url,ok){requests.push(url);const start=requests.length*100;active++;max=Math.max(max,active);pending.push(()=>{active--;ok(kind!=='anime'?response(url,1):{results:Array.from({length:30},(_,id)=>({id:start+id,title:'Title'}))});});}
   const rows=[{title:'Сейчас смотрят',url:'watch',results:[{id:1}]},{title:'Другое',url:'other',results:[{id:2}]}],L={Storage:{get:(k,d)=>data[k]===undefined?d:data[k],set:(k,v)=>data[k]=v},Lang:{translate:()=> 'Сейчас смотрят'},SettingsApi:{addParam(){}},Api:{main:(p,ok)=>ok(rows),category(){nativeCalls++;},sources:{cub:{list:(p,ok)=>request(p.url,ok)},tmdb:{get:(url,p,ok)=>request(url,ok)}}},Utils:{createInstance(){}},Maker:{get(){}}};
   mod('collections').default(L,{list:(p,ok)=>request(p.url,ok)});L.Api.main({component:'main'},r=>answer=r);assert.deepEqual(answer,rows);assert.equal(requests.length,0);
-  const expected=kind==='anime' && mode==='shikimori'?11:10;const next=L.Api.category({component:'category',url:kind,source},r=>{answer=r;calls++;});assert.equal(next,undefined);assert.equal(pending.length,3);while(pending.length)pending.shift()();assert.equal(calls,1);assert.equal(nativeCalls,0);assert.equal(requests.length,expected);assert.ok(max<=3);assert.equal(answer.length,expected);assert.ok(answer.every(row=>row.results.length===20));assert.equal(data.minimal_collection_rows_v2['category:'+kind+(kind==='anime'?':'+mode:'')].length,expected);
+  const expected=kind==='anime'?(mode==='shikimori'?11:10):catalogueApi.cataloguePlan(kind).length;const next=L.Api.category({component:'category',url:kind,source},r=>{answer=r;calls++;});assert.equal(next,undefined);assert.equal(pending.length,3);while(pending.length)pending.shift()();assert.equal(calls,1);assert.equal(nativeCalls,0);assert.equal(requests.length,expected);assert.ok(max<=3);assert.equal(answer.length,expected);assert.ok(answer.every(row=>row.results.length===20));assert.equal(data.minimal_collection_rows_v2['category:'+kind+(kind==='anime'?':'+mode:'')].length,expected);
   assert.ok(answer.every(row=>(row.source==='minimal_shiki')===(kind==='anime' && mode==='shikimori')));
   if(kind==='anime'){if(mode==='standard')assert.equal(answer[0].title,'Сейчас смотрят');assert.ok(answer.every(row=>row.results.every(card=>card.minimal_anime)));}
  }
@@ -38,10 +39,10 @@ test('main settings replace stale historical rows with the actual current feed',
  rows.pop();rows.push({title:'Shots',url:'shots',results:[{id:90}]},{title:'Пустая',url:'empty',results:[]});L.Api.main({component:'main'},r=>answer=r);assert.equal(answer.length,5);api.menu();selected.onSelect(selected.items.find(i=>i.id==='main:'));assert.equal(selected.items.length,5);assert.ok(selected.items.every(i=>!i.title.includes('TV Series')));
 });
 
-test('disabled category rows make no request and stay available to reenable; failed and empty rows are omitted',()=>{
- const {cataloguePlan,default:catalogue}=mod('catalogue'),plan=cataloguePlan('movie'),hidden=[plan[1].cub],requests=[];let answer,calls=0;
- const L={Storage:{get:(k,d)=>d},Api:{sources:{cub:{list:(p,ok,fail)=>{requests.push(p.url);if(p.url===plan[2].cub)return fail();ok({results:p.url===plan[3].cub?[]:[{id:1}]});}}}}};
- catalogue(L,{}, {url:'movie',source:'cub'},hidden,r=>{answer=r;calls++;});assert.equal(calls,1);assert.equal(requests.length,9);assert.ok(!requests.includes(hidden[0]));assert.equal(answer.length,8);const skipped=answer.find(row=>row.url===hidden[0]);assert.equal(skipped.minimal_hidden,true);assert.deepEqual(skipped.results,[]);assert.ok(!answer.some(row=>[plan[2].cub,plan[3].cub].includes(row.url)));
+test('disabled discovery rows make no request and remain configurable; failed and empty feeds are omitted',()=>{
+ const {cataloguePlan,default:catalogue}=mod('catalogue'),plan=cataloguePlan('movie'),url=row=>JSON.stringify(row.discovery),hidden=[plan[1].minimal_row_id],requests=[];let answer,calls=0;
+ const L={Storage:{get:(k,d)=>d},Api:{sources:{minimal_discovery:{list:(p,ok,fail)=>{requests.push(p.url);if(p.url===url(plan[2]))return fail();ok({results:p.url===url(plan[3])?[]:[{id:1}]});}}}}};
+ catalogue(L,{}, {url:'movie',source:'cub'},hidden,r=>{answer=r;calls++;});assert.equal(calls,1);assert.equal(requests.length,plan.length-1);assert.ok(!requests.includes(url(plan[1])));assert.equal(answer.length,plan.length-2);const skipped=answer.find(row=>row.minimal_row_id===hidden[0]);assert.equal(skipped.minimal_hidden,true);assert.deepEqual(skipped.results,[]);assert.ok(!answer.some(row=>[url(plan[2]),url(plan[3])].includes(row.url)));
 });
 
 test('leaving an anime catalogue stops scheduling the remaining rows and discards its late result',()=>{

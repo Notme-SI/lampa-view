@@ -3,6 +3,9 @@ import {presentableCards} from './tmdb.js';
 import catalogue,{animeMode} from './catalogue.js';
 import animeTabs from './anime-tabs.js';
 import continueWatching,{CONTINUE,isWatching} from './continue-watching.js';
+import discoverySource from './discovery-source.js';
+import discoveryControls from './discovery-controls.js';
+import {DISCOVERY_KINDS,discoveryState,discoverySelected} from './discovery-model.js';
 export function rowKey(row){return String(row.minimal_row_id || row.url || row.title || lampaViewText("Без названия"));}
 function matchesRow(row,id){return rowKey(row)===id || row.url===id || (row.minimal_row_aliases || []).includes(id) || isWatching(row) && ['mixed/trending','movies/trending','shows/trending','?sort=now_playing','movie/now_playing'].includes(id);}
 export function arrange(rows,prefs){
@@ -15,6 +18,7 @@ export function arrange(rows,prefs){
  }).map(x=>x.row);
 }
 export default function collections(L,shiki,kino,kinoFeeds){
+ discoverySource(L);
  const key='minimal_collections',knownKey='minimal_collection_rows_v2';
  const read=()=>L.Storage.get(key,{}) || {},known=()=>L.Storage.get(knownKey,{}) || {};
  const captured=new Set(),homeRows=continueWatching(L);
@@ -77,17 +81,15 @@ export default function collections(L,shiki,kino,kinoFeeds){
  if(category)L.Api.category=function(object,ok,fail){
   const kind=object.url || object.cat,ctx=context({...object,component:'category'});
   if(!['movie','tv','cartoon','anime','dorama','tvshow'].includes(kind))return category.apply(this,arguments);
-  if((object.source || L.Storage.get('source','cub'))==='trakt' && !['dorama','tvshow'].includes(kind) && !(kind==='anime' && animeMode(L,object)==='shikimori')){
+  const selected=DISCOVERY_KINDS.includes(kind) && discoverySelected(discoveryState(kind,object.minimal_discovery || (L.Storage.get('minimal_discovery',{}) || {})[kind]));
+  if(!selected && (object.source || L.Storage.get('source','cub'))==='trakt' && !['dorama','tvshow'].includes(kind) && !(kind==='anime' && animeMode(L,object)==='shikimori')){
    const status=object.minimal_catalogue_status={state:'loading'};
    function accept(rows){status.state=rows.some(row=>row.results && row.results.length)?'ready':'empty';remember(ctx,rows);ok(arrange(rows,prefs(ctx)));}
    return category.call(this,{...object,source:'trakt'},accept,error=>{status.state='error';if(fail)fail(error);});
   }
   const accept=rows=>{remember(ctx,rows);ok(arrange(rows.filter(row=>!row.minimal_hidden),prefs(ctx)));};
   const fallback=()=>catalogue(L,shiki,object,prefs(ctx).hidden || [],accept);
-  if(['dorama','tvshow'].includes(kind) && kino && kino.enabled() && kinoFeeds){
-   const status=object.minimal_catalogue_status={state:'loading'};
-   kinoFeeds.load(kind,prefs(ctx).hidden || [],rows=>{status.state=rows.some(row=>row.results.length)?'ready':'empty';accept(rows);},fallback);
-  }else fallback();
+  fallback();
   // Only the selected catalogue runs, with a fixed plan and no next row loader.
  };
  // Register other catalogue rows and synchronize DOM order with remote navigation.
@@ -97,6 +99,7 @@ export default function collections(L,shiki,kino,kinoFeeds){
   if(Base===Main && item && item.use && (!object || !object.component || ['main','category','category_full','search','minimal_filtered'].includes(object.component))){
    const ctx=context(object);if(!ctx)return item;
    if((object.url || object.cat)==='anime')animeTabs(L,item,object);
+   if(object && object.component==='category' && DISCOVERY_KINDS.includes(object.url || object.cat))discoveryControls(L,item,object);
    item.use({onBuild:sort,onPushLoaded:sort});
    function sort(){
     if(!item.items || !item.items.length)return;

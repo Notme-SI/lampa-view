@@ -1,4 +1,5 @@
 import {isAnime} from './metadata.js';
+import {locale} from './i18n.js';
 
 // Explicitly missing artwork is not a useful catalogue preview. Unknown image
 // metadata may still be supplied by a provider, so do not discard it here.
@@ -13,7 +14,7 @@ export function catalogueResults(path,json){
  const query=String(path || '').split('?')[1] || '';
  if(!json || !Array.isArray(json.results))return json;
  const scope=new URLSearchParams(query),kind=scope.get('minimal_kind'),regional=/^discover\/tv\?/.test(path) && (scope.has('with_origin_country') || scope.get('with_original_language')==='ru' && /10764|10767/.test(scope.get('with_genres') || ''));
- const visible=presentableCards(json.results,regional || kind==='dorama' || kind==='tvshow');
+ const visible=presentableCards(json.results,locale()==='ru' && (regional || kind==='dorama' || kind==='tvshow'));
  if(visible.length!==json.results.length)json={...json,results:visible};
  if(kind==='tvshow' || kind==='dorama'){
   const countries=(scope.get('minimal_countries') || 'KR,JP,CN,TW,TH').split(','),language=scope.get('minimal_language');

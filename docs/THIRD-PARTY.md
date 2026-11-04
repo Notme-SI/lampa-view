@@ -8,10 +8,13 @@
 | AGNative — основа Автопилота | [Llowmikee](https://github.com/Llowmikee), [appletv_agnative.js](https://llowmikee.github.io/AppleTVAGNativeNG/appletv_agnative.js) |
 | Дизайн Potok | [potok.rip](https://potok.rip/), [potok-media](https://github.com/potok-media) |
 | Nova Plus | [amikdn](https://github.com/amikdn/amikdn.github.io), [nova_plus.js](https://amikdn.github.io/nova_plus.js), [card_overlay.js](https://amikdn.github.io/card_overlay.js) |
+| Структура подборок SURS | [aviamovie / surs.js](https://aviamovie.github.io/surs.js), [основной модуль](https://aviamovie.github.io/v3/surs.js), [выбор подборок](https://aviamovie.github.io/surs_select.js) |
 
 Праздничное оформление использует существующие значки и элементы загруженных штатных дополнений [Lampa](https://github.com/yumata/lampa-source/tree/main/plugins): Хэллоуина, Чёрной пятницы, Нового года, 8 Марта и зимнего оформления. Плагин перемещает исходные DOM-элементы и задаёт размеры; SVG не копируются и не перерисовываются.
 
 ## Состав и лицензии
+
+В 0.5.21 семейства подборок SURS реализованы заново в `src/discovery-*`: использованы названия групп, поисковые фразы и проверенные идентификаторы TMDB. Код SURS, его SVG и профили не включены; исходные неподходящие TV-параметры и неверные ID исправлены. Оформление и управление принадлежат существующему интерфейсу Lampa View. Сети и студии проверены через TMDB; API, карточки и метаданные предоставляются [The Movie Database](https://www.themoviedb.org/).
 
 Оригинальный интерфейс и новые модули передачи метаданных находятся в `src/` и `desktop/`.
 Сведения об источниках визуальных решений находятся в `licenses/NOTICE.txt`.

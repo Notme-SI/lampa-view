@@ -3,16 +3,13 @@ const code=esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/catalogue
 const moduleValue={exports:{}};new Function('module','exports',code)(moduleValue,moduleValue.exports);
 const {cataloguePlan,uniquePreviews,default:catalogue}=moduleValue.exports;
 
-test('TMDB feeds separate recent releases, rating, popularity and years; CUB routes remain compatible',()=>{
+test('discovery separates recent airings, rating, popularity and years while preserving old row aliases',()=>{
  for(const kind of ['movie','tv']){
   const plan=cataloguePlan(kind,'standard',new Date(2026,9,29)),by=key=>plan.find(row=>row.key===key),query=key=>new URLSearchParams(by(key).tmdb.split('?')[1]);
-  assert.equal(query('watch').get(kind==='movie'?'primary_release_date.lte':'air_date.lte'),'2026-10-29');
-  assert.equal(query('uhd').get('sort_by'),'vote_average.desc');assert.equal(by('uhd').tmdb_title,'С высоким рейтингом');assert.equal(by('uhd').title,'В высоком качестве');
-  assert.equal(query('year').get('sort_by'),(kind==='movie'?'primary_release_date':'first_air_date')+'.desc');
-  assert.equal(query('last-year').get('sort_by'),'vote_average.desc');
-  assert.equal(query('popular').get('sort_by'),'popularity.desc');assert.equal(query('popular').has('vote_count.gte'),false);
-  assert.ok(by('uhd').cub.includes('sort=latest&uhd=true'));assert.ok(by('uhd').minimal_row_aliases[0].includes('sort_by=popularity.desc'));
-  assert.equal(new Set(plan.map(row=>row.tmdb)).size,plan.length);
+  assert.equal(query('watch').get(kind==='movie'?'primary_release_date.lte':'air_date.lte'),'2026-10-29');assert.equal(query('rated').get('sort_by'),'vote_average.desc');assert.equal(by('rated').title,'С высоким рейтингом');
+  assert.equal(query('new').get('sort_by'),(kind==='movie'?'primary_release_date':'first_air_date')+'.desc');assert.equal(query('popular').get('sort_by'),'popularity.desc');
+  assert.ok(by('rated').minimal_row_aliases.includes('minimal:tmdb:'+kind+':uhd'));assert.ok(by('new').minimal_row_aliases.includes('minimal:tmdb:'+kind+':year'));
+  assert.ok(plan.every(row=>row.discovery));assert.equal(new Set(plan.map(row=>row.tmdb)).size,plan.length);
  }
 });
 
@@ -24,39 +21,29 @@ test('preview deduplication keeps media identities, rank, full-feed URLs and nat
  assert.equal(uniquePreviews([{...rows[0],minimal_hidden:true},rows[1]])[1].results.length,2,'Hidden rows must not consume preview titles');
 });
 
-test('TMDB preview deduplication follows plan order despite out-of-order replies and hidden legacy aliases avoid requests',()=>{
- const pending=[],object={source:'tmdb',url:'movie'},L={Storage:{get:(k,d)=>d},Api:{sources:{tmdb:{get(url,params,ok){pending.push({url,ok});}}}}};
- let output;catalogue(L,{},object,[],rows=>output=rows);assert.equal(pending.length,3);
- const reply=index=>pending[index].ok({page:1,total_pages:12,results:[{id:1,title:'Shared'},{id:100+index,title:'Unique '+index}]});
- reply(2);reply(1);reply(0);for(let i=3;i<pending.length;i++)reply(i);
- assert.equal(output.length,10);assert.equal(output[0].results[0].id,1);assert.ok(output.slice(1).every(row=>row.results.every(card=>card.id!==1)));assert.equal(pending.length,10,'No extra requests to fill previews');
- const legacy=cataloguePlan('movie').find(row=>row.key==='uhd').minimal_row_aliases[0];pending.length=0;
- catalogue(L,{}, {source:'tmdb',url:'movie'},[legacy],rows=>output=rows);for(let i=0;i<pending.length;i++)reply(i);
- assert.equal(pending.length,9);assert.ok(output.some(row=>row.minimal_hidden && row.title==='С высоким рейтингом'));
- pending.length=0;catalogue(L,{}, {source:'tmdb',url:'movie'},['minimal:tmdb:movie:watch'],rows=>output=rows);for(let i=0;i<pending.length;i++)reply(i);
- assert.equal(pending.length,9);assert.ok(output.some(row=>row.minimal_hidden && row.minimal_row_id==='minimal:tmdb:movie:watch'),'Daily date windows must not change a saved row identity');
+test('discovery plans keep deterministic row order and skip saved legacy IDs before requesting a feed',()=>{
+ const pending=[],object={source:'tmdb',url:'movie'},L={Storage:{get:(k,d)=>d},Api:{sources:{minimal_discovery:{list(p,ok){pending.push({url:p.url,ok});}}}}};
+ let output;const plan=cataloguePlan('movie');catalogue(L,{},object,[],rows=>output=rows);assert.equal(pending.length,3);
+ const reply=index=>pending[index].ok({page:1,total_pages:12,results:[{id:1,title:'Общий'},{id:100+index,title:'Свой '+index}]});reply(2);reply(1);reply(0);for(let i=3;i<pending.length;i++)reply(i);
+ assert.deepEqual(output.map(r=>r.title),plan.map(r=>r.title));assert.ok(output.every(r=>r.results.length===2),'Narrow named discovery rows retain their own full previews');
+ pending.length=0;catalogue(L,{}, {source:'tmdb',url:'movie'},['minimal:tmdb:movie:uhd'],rows=>output=rows);for(let i=0;i<pending.length;i++)reply(i);
+ assert.equal(pending.length,plan.length-1);assert.ok(output.some(row=>row.minimal_hidden && row.title==='С высоким рейтингом'));
+ pending.length=0;catalogue(L,{}, {source:'tmdb',url:'movie'},['minimal:tmdb:movie:watch'],rows=>output=rows);for(let i=0;i<pending.length;i++)reply(i);assert.ok(output.some(row=>row.minimal_hidden && row.minimal_row_aliases.includes('minimal:tmdb:movie:watch')));
 });
 
-
-test('dorama and TV show feeds start with recent airings and keep stable identities for existing collections',()=>{
+test('rebuilt dorama and TV shows separate countries, genres and programmes with stable migration aliases',()=>{
  const date=new Date(2026,9,30),dorama=cataloguePlan('dorama','standard',date),shows=cataloguePlan('tvshow','standard',date);
- for(const plan of [dorama,shows]){
-  assert.equal(plan[0].key,'watch');assert.equal(plan[0].title,'Сейчас смотрят');const q=new URLSearchParams(plan[0].tmdb.split('?')[1]);
-  assert.equal(q.get('air_date.gte'),'2026-10-23');assert.equal(q.get('air_date.lte'),'2026-10-30');assert.equal(new Set(plan.map(row=>row.tmdb)).size,plan.length);assert.ok(plan.every(row=>row.media_type==='tv'));
- }
- assert.equal(dorama[1].key,'dorama-0');assert.equal(dorama[1].title,'Популярное');assert.equal(dorama.length,11);assert.equal(shows.length,8);
- assert.ok(shows.every(row=>new URLSearchParams(row.tmdb.split('?')[1]).get('with_original_language')==='ru'));
+ for(const plan of [dorama,shows]){assert.equal(plan[0].key,'watch');assert.equal(plan[0].title,'Сейчас выходит');const q=new URLSearchParams(plan[0].tmdb.split('?')[1]);assert.equal(q.get('air_date.gte'),'2026-10-23');assert.equal(q.get('air_date.lte'),'2026-10-30');assert.equal(new Set(plan.map(row=>row.tmdb)).size,plan.length);assert.ok(plan.every(row=>row.media_type==='tv'));}
+ assert.equal(dorama.length,15);assert.equal(shows.length,12);assert.ok(dorama.find(r=>r.key==='country-KR').minimal_row_aliases.includes('minimal:kino:dorama:korea'));
+ assert.ok(shows.some(row=>row.discovery.country==='foreign'));assert.ok(shows.some(row=>row.discovery.country==='RU'));assert.ok(shows.every(row=>new URLSearchParams(row.tmdb.split('?')[1]).get('with_original_language')===null));
 });
 
-
-test('CUB regional sections request actual TMDB Discover feeds, preserving full-list routes and complete previews',()=>{
- const calls=[],cards=Array.from({length:20},(_,i)=>({id:i+1,name:'Программа '+i,original_language:'ru',genre_ids:[10764]}));
- const L={Storage:{get:(k,d)=>d},Api:{sources:{cub:{list(){assert.fail('Global CUB list cannot implement regional discovery');}},tmdb:{get(url,p,ok){calls.push(url);ok({results:cards,page:1,total_pages:12});}}}}};
- for(const kind of ['tvshow','dorama']){let output;catalogue(L,{}, {url:kind,source:'cub'},[],rows=>output=rows);
- assert.equal(output.length,kind==='tvshow'?8:11);assert.ok(output.every(row=>row.source==='tmdb' && row.total_pages===12 && row.results.length===20));assert.ok(output.every(row=>row.url.startsWith('discover/tv?')));}
- assert.equal(calls.length,19);
+test('CUB-selected regional sections use the same complete discovery source and keep exact IDs for details and More',()=>{
+ const code=esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/discovery-source.js')],bundle:true,write:false,format:'cjs',platform:'node'}).outputFiles[0].text,m={exports:{}};new Function('module','exports',code)(m,m.exports);
+ const response=require('./fixtures/discovery-response.cjs'),calls=[],L={Storage:{get:(k,d)=>d},Api:{sources:{cub:{list(){assert.fail('Global CUB list cannot implement discovery');}},tmdb:{get(url,p,ok){calls.push(url);ok(response(url,p.page));}}}}};m.exports.default(L);
+ for(const kind of ['tvshow','dorama']){let output;catalogue(L,{}, {url:kind,source:'cub'},[],rows=>output=rows);assert.equal(output.length,cataloguePlan(kind).length);assert.ok(output.every(row=>row.source==='minimal_discovery' && row.total_pages===2 && row.results.length===20));assert.ok(output.every(row=>JSON.parse(row.url).kind===kind));assert.ok(output.every(row=>row.results.every(c=>c.source==='tmdb' && c.media_type==='tv')));}
+ assert.ok(calls.length<=27);
 });
-
 
 test('catalogue previews hide explicitly missing posters and untranslated regional titles without inventing a dub',()=>{
  const bundle=esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/tmdb.js')],bundle:true,write:false,format:'cjs',platform:'node'}).outputFiles[0].text,m={exports:{}};new Function('module','exports',bundle)(m,m.exports);

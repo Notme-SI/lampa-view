@@ -89,7 +89,7 @@ export default function kinoapi(L){
  }
  function setting(item){if(!item.find('.settings-param__value').length)item.append('<div class="settings-param__value"></div>');item.find('.settings-param__value').text(key());}
  if(L.SettingsApi){
-  L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_kinoapi_enabled',type:'trigger',default:!!key()},field:{name:'KinoAPI',description:t('Метаданные аниме и подборки дорам и ТВ-шоу.')},onChange(){
+  L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_kinoapi_enabled',type:'trigger',default:!!key()},field:{name:'KinoAPI',description:t('Метаданные аниме.')},onChange(){
    refresh();if(!flag(L,'minimal_kinoapi_enabled',!!key()) || key())return;
    // Cancelling the first input must leave the integration disabled.
    L.Storage.set('minimal_kinoapi_enabled',false);input();

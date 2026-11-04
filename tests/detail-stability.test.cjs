@@ -1,9 +1,9 @@
 const test=require('node:test'),assert=require('node:assert/strict'),path=require('path'),esbuild=require('esbuild'),{JSDOM}=require('jsdom'),native=require('./fixtures/native-lampa.cjs');
-function mod(name){const code=esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/'+name+'.js')],bundle:true,write:false,format:'cjs',platform:'node'}).outputFiles[0].text,module={exports:{}};new Function('module','exports','window',code)(module,module.exports,{});return module.exports;}
+function mod(name,w={}){const code=esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/'+name+'.js')],bundle:true,write:false,format:'cjs',platform:'node'}).outputFiles[0].text,module={exports:{}};new Function('module','exports','window','document',code)(module,module.exports,w,w.document);return module.exports;}
 test('catalogue sorter never attaches to the shared Main class used by full and person screens',()=>{
  function Main(){}const registered=[];
  const L={Storage:{get:(k,d)=>d,set(){}},SettingsApi:{addParam(){}},Api:{main(){}},Maker:{get:()=>Main},Utils:{createInstance:(Base,object)=>({use:()=>registered.push(object.component)})}};
- mod('collections').default(L,{});for(const component of ['full','actor','main','category'])L.Utils.createInstance(Main,{component,url:'tv'});assert.deepEqual(registered,['main','category']);
+ const dom=new JSDOM('<body></body>');try{dom.window.jQuery=()=>({on(){return this;}});mod('collections',dom.window).default(L,{});for(const component of ['full','actor','main','category'])L.Utils.createInstance(Main,{component,url:'tv'});assert.deepEqual(registered,['main','category','category'],'Only category receives discovery controls; full/person receive no catalogue hooks');}finally{dom.window.close();}
 });
 test('series aggregate credits add directors without replacing the main cast with guests on both catalogues',()=>{
  const {installTmdb}=mod('tmdb');
