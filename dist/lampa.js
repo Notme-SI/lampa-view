@@ -1,4 +1,4 @@
-/*! Lampa View 0.5.19 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.5.20 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -8881,6 +8881,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       seasonName: seasonName,
       book: function book(card, number3, numbers, actual, done) {
         var files = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : [];
+        var verifiedAbsolute = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : false;
+        if (!verifiedAbsolute && alternativeNumbering(card, numbers) && new Set(numbers.map(Number).filter(function (n) {
+          return n > 0;
+        })).size < Number(card.number_of_seasons)) {
+          done(null, true);
+          return true;
+        }
         if (kino && kino.enabled() && files.length) {
           kino.book(card, number3, numbers, files, function (book) {
             if (book) return done(book, true);
@@ -11120,7 +11127,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // package.json
-  var version = "0.5.19";
+  var version = "0.5.20";
 
   // src/inputs.js
   function inputs(L) {
@@ -44373,7 +44380,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           return !item.folder && !item.soon;
         }).map(function (item) {
           return Number(episodeNumber(item.num));
-        }) : [])) return;
+        }) : [], !!arc)) return;
         wideCanonicalBook(number, done);
       }
       function wideCanonicalBook(number, done) {

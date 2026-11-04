@@ -5532,7 +5532,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
   function wideBook(number, done, countOnly) {
     var api=window.LampaView && window.LampaView.episodeMetadata,arc=wideAnimeCurrent();
     if(arc && arc.native && api && api.groupBook)return wideCanonicalBook(arc.number,function(book){done(api.groupBook(book,arc),true);});
-    if(api && movie && wideMeta() && api.book(movie,number,providerSeasonNumbers(),!countOnly && Number(number)===Number(seasonNumber())?wideFiles():0,function(book,grouped){if(book || grouped)return done(book,grouped);wideCanonicalBook(number,done);},!countOnly?items.filter(function(item){return !item.folder && !item.soon;}).map(function(item){return Number(episodeNumber(item.num));}):[]))return;
+    if(api && movie && wideMeta() && api.book(movie,number,providerSeasonNumbers(),!countOnly && Number(number)===Number(seasonNumber())?wideFiles():0,function(book,grouped){if(book || grouped)return done(book,grouped);wideCanonicalBook(number,done);},!countOnly?items.filter(function(item){return !item.folder && !item.soon;}).map(function(item){return Number(episodeNumber(item.num));}):[],!!arc))return;
     wideCanonicalBook(number,done);
   }
   function wideCanonicalBook(number, done) {

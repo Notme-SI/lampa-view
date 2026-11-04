@@ -79,11 +79,12 @@ test('anime provider with two labels and an absolute list exposes twenty catalog
  assert.equal(w.LampaView.kinoapi.enabled(),false);L.Activity.active=()=>({component:'online_test',movie,activity:{render:()=>root,component:{}}});L.Listener.send('activity',{type:'start'});await wait(500);
  assert.equal(root.find('.nova-card').length,2);assert.equal(root.find('.nova-hero__season-name').text(),'Арка 1');root.find('[data-nova-focus="anime-season"]').trigger('hover:enter');assert.equal(L.Select.render().find('.selectbox-item').length,20);
  L.Select.render().find('.selectbox-item').last().trigger('hover:enter');await wait(200);assert.equal(root.find('.nova-hero__season-name').text(),'Арка 20');assert.equal(root.find('.nova-card').length,2);assert.match(root.find('.nova-card__overview').first().text(),/Описание арки 20/);
+ assert.equal(root.find('.nova-hero__season-name').parent()[0],root.find('.nova-hero__season-label').parent()[0]);assert.equal(root.find('.nova-hero__season-label .nova-hero__season-name').length,0,'Confirmed arc names have their own badge');
  root.find('.nova-card').last().trigger('hover:enter');assert.equal(played,40);assert.ok(root.find('[data-hash="provider-2-40"]').length);assert.deepEqual(n.errors,[]);
  }finally{n.close();}
 });
 
-test('live anime 5/4 layout keeps four source seasons, honest counts, verified arc names and original Timeline handlers',async()=>{
+test('live anime 5/4 layout keeps four source seasons, honest counts and original Timeline handlers without guessing arc metadata',async()=>{
  const live=require('./fixtures/anime-season-layout.json');
  for(const selected of [2,4]){
   const n=await native({built:true}),{w,L}=n,$=w.jQuery;try{
@@ -94,7 +95,7 @@ test('live anime 5/4 layout keeps four source seasons, honest counts, verified a
    assert.equal(root.find('.nova-card').length,live.provider[selected-1].episodes.length);assert.equal(root.find('[data-nova-focus^="season:"]').length,4);assert.equal(root.find('[data-nova-focus^="anime-season"]').length,0);
    assert.match(root.find('.nova-hero__season-counts').text(),/4 у источника.*5 в каталоге/);
    if(selected===2){assert.equal(root.find('.nova-hero__season-name').length,0);assert.equal(root.find('.nova-card__overview').length,0,'No Mugen Train descriptions on an unmatched source list');assert.match(root.find('.nova-chip--active .nova-chip__sub').first().text(),/11/);}
-   else{assert.equal(root.find('.nova-hero__season-name').text(),'Тренировка столпов',JSON.stringify({requests:metadataRequests,meta:root.find('.nova-hero__meta').text(),overview:root.find('.nova-card__overview').first().text(),errors:n.errors}));assert.ok(root.find('.nova-card__overview').first().text().includes(live.seasons[5].episodes[0].overview.slice(0,20)));assert.equal(root.find('.nova-hero__season-name').parent()[0],root.find('.nova-hero__season-label').parent()[0]);assert.equal(root.find('.nova-hero__season-label .nova-hero__season-name').length,0,'The arc name has its own badge');}
+   else{assert.equal(root.find('.nova-hero__season-name').length,0);assert.equal(root.find('.nova-card__overview').length,0,'Do not treat the matching eight files as proof of another catalogue season');}
    root.find('.nova-card').last().trigger('hover:enter');assert.equal(played,live.provider[selected-1].episodes.at(-1));assert.ok(root.find('[data-hash="phantom-'+selected+'-'+played+'"]').length);assert.deepEqual(n.errors,[]);
   }finally{n.close();}
  }

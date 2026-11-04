@@ -58,13 +58,15 @@ test('complete absolute anime lists expose all confirmed named seasons without K
  assert.equal(api.seasonName(anime,2),'Арка 2');assert.equal(api.seasonName({seasons:[{season_number:1,name:'Season 1'}]},1),'');
 });
 
-test('fewer provider seasons use explicit catalogue coordinates; the live 5/4 mismatch never borrows another arc',async()=>{
+test('fewer provider seasons never infer a mapping from selected episode counts or a catalogue-only alternative',async()=>{
  const live=require('./fixtures/anime-season-layout.json'),api=fixture(),requests=[];
  const service=api.default({Storage:{get:()=> 'ru'},Api:{sources:{tmdb:{get(url,p,ok){requests.push(url);if(url.includes('episode_groups'))return ok(live.index);if(url.includes('episode_group/'))return ok(live.group);ok(live.seasons[Number(url.match(/season\/(\d+)/)[1])]);}}}}});
  const read=season=>new Promise(resolve=>{const files=live.provider[season-1].episodes;assert.equal(service.book(live.card,season,[1,2,3,4],files.length,(book,grouped)=>resolve({book,grouped}),files),true);});
- const second=await read(2);assert.equal(second.book,null,'11 source files cannot receive an 18-episode group or native season 2');assert.equal(second.grouped,true,'Suppress unsafe canonical fallback');assert.equal(requests.length,2);
+ const second=await read(2);assert.equal(second.book,null,'11 source files cannot receive an 18-episode group or native season 2');assert.equal(second.grouped,true,'Suppress unsafe canonical fallback');assert.equal(requests.length,0);
  const third=await read(3),fourth=await read(4);
- assert.equal(third.book[1].season_number,4);assert.equal(third.book[1].lampa_season_name,'Деревня кузнецов');assert.equal(fourth.book[1].season_number,5);assert.equal(fourth.book[8].episode_number,8);assert.equal(fourth.book[1].lampa_season_name,'Тренировка столпов');
+ assert.equal(third.book,null,'11 files could be native S3 or remapped S4');assert.equal(fourth.book,null,'A catalogue-only layout cannot prove the provider uses it');assert.equal(third.grouped,true);assert.equal(fourth.grouped,true);
+ let kinoCalls=0;const keyed=api.default({}, {enabled:()=>true,book(card,number,numbers,files,done){kinoCalls++;done({1:{name:'Verified absolute episode'}});}});let keyedAnswer;assert.equal(keyed.book(live.card,3,[1,2,3,4],11,(book,grouped)=>keyedAnswer={book,grouped},live.provider[2].episodes),true);assert.equal(keyedAnswer.book,null);assert.equal(keyedAnswer.grouped,true);assert.equal(kinoCalls,0,'A key does not prove which numbering the selected provider uses');
+ keyed.book(live.card,3,[1,2,3,4],11,(book,grouped)=>keyedAnswer={book,grouped},live.provider[2].episodes,true);assert.equal(kinoCalls,1);assert.equal(keyedAnswer.book[1].name,'Verified absolute episode','The separately verified full absolute-list path remains available');
  assert.equal(live.card.number_of_seasons,5);assert.deepEqual(live.provider[3].episodes,[1,2,3,4,5,6,7,8]);
  const gap=await new Promise(resolve=>service.book(live.card,4,[1,2,3,4],8,resolve,[1,2,3,4,5,6,7,9]));assert.equal(gap,null);
  assert.equal(api.alternativeNumbering(live.card,[0,1,2,3,4]),true,'Specials are not counted as an ordinary provider season');
