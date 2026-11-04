@@ -20,7 +20,6 @@ import fillRows from './rows.js';
 import unifiedSettings from './settings.js';
 import shikimori from './shikimori.js';
 import collections from './collections.js';
-import sections from './sections.js';
 import filters from './filters.js';
 import branding from './branding.js';
 import startup from './startup.js';
@@ -135,7 +134,7 @@ if (!ROOT.LampaView) {
     if(holidays)holidays.update();
   }
   function navigate(section) {
-    if(P.sections && ['sections','streams','kids','dorama'].includes(section))return P.sections.open(section==='sections'?'':section==='dorama'?'series/dorama':section);
+    if(section==='dorama')section='tv';
     if (section === 'search') return $('.head .open--search').trigger('hover:enter');
     if (section === 'settings') return $('.head .open--settings').trigger('hover:enter');
     if (section === 'home') return L.Activity.push({url:'', title:lampaViewText("Главная"), component:'main', source:'tmdb', page:1});
@@ -216,6 +215,7 @@ if (!ROOT.LampaView) {
   }
   function updateRoute() {
     const active = L.Activity.active() || {};
+    if(active.component==='minimal_sections' && L.Activity.replace){const root=String(active.url || '').split('/')[0],kind=root==='films'?'movie':root==='kids'?'cartoon':'tv';setTimeout(()=>L.Activity.replace({component:'category',url:kind,title:lampaViewText(kind==='movie'?'Фильмы':kind==='cartoon'?'Мультфильмы':'Сериалы'),source:'tmdb',minimal_discovery:{}}),0);return;}
     if(active.component==='category_full' && active.source && active.source!=='tmdb' && /^discover\/(movie|tv)\?/.test(active.url || '') && L.Activity.replace){
       setTimeout(()=>L.Activity.replace({source:'tmdb'}),0);
     }
@@ -469,7 +469,7 @@ if (!ROOT.LampaView) {
     initialized=true; L=ROOT.Lampa; $=ROOT.jQuery;loadLogo=logoLoader(L);
     P.bannerCountries=card=>bannerCountries(card,L.Storage.get('language','ru'),L);
     installI18n(L,P);
-    P.sections=sections(L);P.online=onlineState(L);P.kinoapi=kinoapi(L);P.animeBase=animeCatalogue(L,P.kinoapi);P.onlineSources=onlineSources(L);P.episodeMetadata=episodeMetadata(L,P.kinoapi,P.animeBase);P.onlineNavigation=onlineNavigation;P.onlineSourceCache=onlineSourceCache(L);
+    P.online=onlineState(L);P.kinoapi=kinoapi(L);P.animeBase=animeCatalogue(L,P.kinoapi);P.onlineSources=onlineSources(L);P.episodeMetadata=episodeMetadata(L,P.kinoapi,P.animeBase);P.onlineNavigation=onlineNavigation;P.onlineSourceCache=onlineSourceCache(L);
     layout();interfaceLayout=interfaceSize(L);installTmdb(L);installFullGuard(L);torrentEpisodes(L,ROOT);inputs(L);
     artwork=installArtwork(L,()=>yes('lampa_view_enabled'));
     P.sync=progressSync(L,()=>yes('lampa_view_enabled'));
@@ -534,7 +534,7 @@ if (!ROOT.LampaView) {
       refreshCarousels();
     });
     visibleDetail();visibleHero();studioCatalogue(L);
-    P.ready=true;startup(L,ROOT);
+    P.ready=true;updateRoute();startup(L,ROOT);
   }
   function ready() {
     if (!ROOT.Lampa) return false;

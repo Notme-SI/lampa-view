@@ -4,7 +4,6 @@ import catalogue,{animeMode} from './catalogue.js';
 import animeTabs from './anime-tabs.js';
 import continueWatching,{CONTINUE,isWatching} from './continue-watching.js';
 import discoverySource from './discovery-source.js';
-import discoveryControls from './discovery-controls.js';
 import {DISCOVERY_KINDS,discoveryState,discoverySelected} from './discovery-model.js';
 export function rowKey(row){return String(row.minimal_row_id || row.url || row.title || lampaViewText("Без названия"));}
 function matchesRow(row,id){return rowKey(row)===id || row.url===id || (row.minimal_row_aliases || []).includes(id) || isWatching(row) && ['mixed/trending','movies/trending','shows/trending','?sort=now_playing','movie/now_playing'].includes(id);}
@@ -87,10 +86,14 @@ export default function collections(L,shiki,kino,kinoFeeds){
    function accept(rows){status.state=rows.some(row=>row.results && row.results.length)?'ready':'empty';remember(ctx,rows);ok(arrange(rows,prefs(ctx)));}
    return category.call(this,{...object,source:'trakt'},accept,error=>{status.state='error';if(fail)fail(error);});
   }
-  const accept=rows=>{remember(ctx,rows);ok(arrange(rows.filter(row=>!row.minimal_hidden),prefs(ctx)));};
-  const fallback=()=>catalogue(L,shiki,object,prefs(ctx).hidden || [],accept);
-  fallback();
-  // Only the selected catalogue runs, with a fixed plan and no next row loader.
+  if(!['movie','tv','cartoon'].includes(kind)){catalogue(L,shiki,object,prefs(ctx).hidden || [],rows=>{remember(ctx,rows);ok(arrange(rows.filter(row=>!row.minimal_hidden),prefs(ctx)));});return;}
+  let cursor=0,busy=false,finished=false,remembered=false,waiters=[];
+  const load=(resolve,reject,append)=>{if(finished || object.minimal_catalogue_cancelled){if(reject)reject();return;}waiters.push({resolve,reject});if(busy)return;busy=true;
+   function batch(){object.minimal_catalogue_offset=cursor;object.minimal_catalogue_limit=12;object.minimal_catalogue_order=prefs(ctx).order || [];
+    catalogue(L,shiki,object,prefs(ctx).hidden || [],rows=>{if(object.minimal_catalogue_cancelled)return;cursor=object.minimal_catalogue_next;finished=cursor>=object.minimal_catalogue_total;remember(ctx,rows,remembered);remembered=true;const visible=arrange(rows.filter(row=>!row.minimal_hidden),prefs(ctx));if(!visible.length && !finished && object.minimal_catalogue_status.state!=='error')return batch();busy=false;const ready=waiters.splice(0);ready.forEach(w=>{if(visible.length || !append)w.resolve(visible);else if(w.reject)w.reject();});});
+   }batch();
+  };
+  load(ok,fail,false);return (resolve,reject)=>load(resolve,reject,true);
  };
  // Register other catalogue rows and synchronize DOM order with remote navigation.
  const create=L.Utils.createInstance,Main=L.Maker.get('Main',{});
@@ -99,7 +102,7 @@ export default function collections(L,shiki,kino,kinoFeeds){
   if(Base===Main && item && item.use && (!object || !object.component || ['main','category','category_full','search','minimal_filtered'].includes(object.component))){
    const ctx=context(object);if(!ctx)return item;
    if((object.url || object.cat)==='anime')animeTabs(L,item,object);
-   if(object && object.component==='category' && DISCOVERY_KINDS.includes(object.url || object.cat))discoveryControls(L,item,object);
+   if(object && object.component==='category' && ['movie','tv','cartoon'].includes(object.url || object.cat))item.use({onDestroy(){object.minimal_catalogue_cancelled=true;}});
    item.use({onBuild:sort,onPushLoaded:sort});
    function sort(){
     if(!item.items || !item.items.length)return;

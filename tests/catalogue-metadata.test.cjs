@@ -16,7 +16,7 @@ test('cartoon rows and native More pages exclude anime while other catalogues an
   {id:6,title:'French cartoon',genre_ids:[16],original_language:'fr'},
  ]};
  const source={get(path,params,ok){ok(json);},list(params,ok){ok(json);}},cub={list(params,ok){ok(json);}},L={Api:{sources:{tmdb:source,cub}}};installTmdb(L);
- for(const row of cataloguePlan('cartoon').filter(row=>!row.discovery.company && !row.discovery.family)){
+ for(const row of cataloguePlan('cartoon').filter(row=>!row.discovery.company && !row.discovery.family && !row.discovery.hero && !row.discovery.network && !row.discovery.genre)){
   const check=result=>{assert.deepEqual(result.results.map(c=>c.id),[1,6]);assert.equal(result.page,2);assert.equal(result.total_pages,5);assert.equal(result.total_results,90);};
   if(row.cub)cub.list({url:row.cub,page:2},check);
   else {source.get(row.tmdb,{page:2},check);source.list({url:row.tmdb,page:2},check);}
@@ -31,6 +31,7 @@ test('movies and series exclude animation on every CUB and TMDB row and subseque
  const tmdb={get(path,p,ok){ok(json);},list(p,ok){ok(json);}},cub={list(p,ok){ok(json);}},L={Storage:{get:(k,d)=>d},Api:{sources:{tmdb,cub}}};installTmdb(L);installTmdb(L);
  const check=result=>{assert.deepEqual(result.results.map(c=>c.id),[1,5]);assert.equal(result.page,3);assert.equal(result.total_pages,7);assert.equal(result.total_results,140);};
  for(const row of [...cataloguePlan('tv').filter(row=>row.discovery.kind!=='dorama'),...cataloguePlan('movie')]){
+  if(row.discovery.feed==='trending'){const {discoveryAccepts}=mod('discovery-model');assert.deepEqual(json.results.filter(c=>discoveryAccepts(c,row.discovery)).map(c=>c.id),[1,5]);continue;}
   assert.equal(new URLSearchParams(row.tmdb.split('?')[1]).get('without_genres'),'16');
   tmdb.get(row.tmdb,{page:3},check);tmdb.list({url:row.tmdb,page:3},check);
  }

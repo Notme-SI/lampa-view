@@ -55,7 +55,7 @@ test('complete absolute anime lists expose all confirmed named seasons without K
  let requests=0;const service=api.default({Storage:{get:()=> 'ru'},Api:{sources:{tmdb:{get(url,p,ok){requests++;ok({seasons:anime.seasons});}}}}});
  const result=await new Promise(resolve=>service.groups({...anime,seasons:undefined},files,resolve));assert.equal(result.length,20);assert.equal(requests,1);await new Promise(resolve=>service.groups({...anime,seasons:undefined},files,resolve));assert.equal(requests,1,'The complete catalogue is shared and cached, not fetched per episode');
  const local=Object.fromEntries(Array.from({length:21},(_,i)=>[i+1,{episode_number:i+1,name:'Episode '+(i+1)}])),book=api.groupBook(local,result[1]);assert.equal(book[33].name,'Episode 1');assert.equal(book[53].name,'Episode 21');assert.equal(api.groupBook({...local,22:{episode_number:22}},result[1]),null);assert.equal(local[1].episode_number,1,'Playback/native metadata is never mutated');
- assert.equal(api.seasonName(anime,2),'Арка 2');assert.equal(api.seasonName({seasons:[{season_number:1,name:'Season 1'}]},1),'');
+ assert.equal(api.seasonName(anime,2),'Арка 2');for(const name of ['Часть 4','Part 4','Parte 4'])assert.equal(api.seasonName({seasons:[{season_number:4,name}]},4),'');assert.equal(api.seasonName({seasons:[{season_number:1,name:'Season 1'}]},1),'');
 });
 
 test('fewer provider seasons never infer a mapping from selected episode counts or a catalogue-only alternative',async()=>{

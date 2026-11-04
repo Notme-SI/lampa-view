@@ -2411,6 +2411,41 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     }
     resetAvailability();
 
+    // The native online renderer asks for TMDB metadata before Nova sees the
+    // resulting DOM. Apply the same coordinate check at that boundary too.
+    // Provider files, handlers and Timeline coordinates remain native.
+    if(typeof comp.draw==='function' && typeof comp.getEpisodes==='function'){
+      var nativeDraw=comp.draw,nativeEpisodes=comp.getEpisodes,episodeContext=null;
+      comp.draw=function(files,params){
+        var card=object && (object.movie || object.card) || movie,ownFilter=activeFilter(typeof comp.render==='function'?comp.render():root),ownGroups=readGroups(ownFilter),seasons=ownGroups.season && ownGroups.season.items || [];
+        episodeContext={card:card,files:(files || []).map(function(file){return Number(file.episode);}),seasons:seasons.map(function(s){return Number(digits(s.title));}),similar:params && params.similars};
+        return nativeDraw.apply(comp,arguments);
+      };
+      comp.getEpisodes=function(season,done){
+        var context=episodeContext,api=window.LampaView && window.LampaView.episodeMetadata;
+        if(context && !context.similar && context.card && api){
+          // Native display() populates its season filter after draw() starts.
+          // Wait one turn so the first visit gets the same check as a revisit.
+          setTimeout(function(){
+            if(comp.destroyed || episodeContext!==context)return;
+            var own=readGroups(activeFilter(typeof comp.render==='function'?comp.render():root));
+            context.seasons=(own.season && own.season.items || []).map(function(s){return Number(digits(s.title));});
+            if(context.seasons.length && api.alternate(context.card,context.seasons)){
+              var handled=api.book(context.card,season,context.seasons,context.files.length,function(book,grouped){
+                if(comp.destroyed || episodeContext!==context)return;
+                if(book || grouped)done(book?Object.keys(book).map(function(key){return $.extend({},book[key],{episode_number:Number(key)});}):[]);
+                else nativeEpisodes.call(comp,season,done);
+              },context.files);
+              if(handled)return;
+            }
+            nativeEpisodes.call(comp,season,done);
+          },0);
+          return;
+        }
+        return nativeEpisodes.apply(comp,arguments);
+      };
+    }
+
     if (typeof comp.reset === 'function') {
       var reset=comp.reset;
       comp.reset=function(){resetAvailability();return reset.apply(comp,arguments);};
@@ -3589,6 +3624,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
           if(!grouped || !book || !root || root[0]!==owner || wideMetadataContext()!==context || !seasonBadges.closest('.nova-hero').length)return;
           var rows=Object.keys(book).map(function(key){return book[key];}),mapped=rows[0] && rows[0].lampa_season_name;
           if(mapped===undefined && rows.length && rows.every(function(e){return e.season_number===rows[0].season_number;}))mapped=api && api.seasonName?api.seasonName(movie,rows[0].season_number):'';
+          if(mapped && api && api.seasonName)mapped=api.seasonName({seasons:[{season_number:number,name:mapped}]},number);
           if(mapped)seasonBadges.find('.nova-hero__season-label').after($('<span class="nova-hero__season-name"></span>').text(mapped));
         });
       }
@@ -5911,7 +5947,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       if (!group || !group.items) return;
       var selected=group.items.filter(function(item){return item.selected;})[0] || group.items[0];
       var compact=ui.rows.find('[data-nova-focus="'+name+'"]').first();
-      if(compact.length && selected)compact.find('.nova-chip__label').text(selected.title);
+      if(compact.length && selected)compact.find('.nova-chip__label').text(selected.title+(name==='season'?' / '+group.items.length:''));
       group.items.forEach(function (item, seat) {
         var index = typeof item.index === 'number' ? item.index : seat;
         var box = ui.rows.find('[data-nova-focus="' + name + ':' + index + '"]').first();
@@ -6539,7 +6575,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     // provider and option count. Small season groups stay beside episodes.
     var compactGroup=function(name,title,row){
       var options=groups[name],selected=options.items.filter(function(item){return item.selected;})[0] || options.items[0];
-      var control=tool(name,name==='season'?'':title,selected.title,{},function(){
+      var control=tool(name,name==='season'?'':title,selected.title+(name==='season'?' / '+options.items.length:''),{},function(){
         Lampa.Select.show({title:title,items:options.items.map(function(item,seat){return {title:item.title,selected:!!item.selected,index:typeof item.index==='number'?item.index:seat};}),
           onDraw:onlineChoiceDraw,
           onSelect:function(item){Lampa.Select.hide();ui_focus=name;contentEnable();wideChooseOption(name,item.index,name);restoreFocus(false);},
@@ -6570,7 +6606,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       var animeSeasons=group('','season'),activeArc=wideAnimeCurrent();
       var chooseArc=function(entry){wide_anime.selected=entry.number;wide_sig='';ui_focus=wide_anime.groups.length>4?'anime-season':'anime-season:'+entry.number;redraw();};
       if(wide_anime.groups.length>4){
-        put(animeSeasons,'anime-season',lampaViewText("Сезон {0}",[activeArc.number]),wideCount(activeArc.count),{},function(){
+        put(animeSeasons,'anime-season',lampaViewText("Сезон {0}",[activeArc.number])+' / '+wide_anime.groups.length,wideCount(activeArc.count),{},function(){
           Lampa.Select.show({title:label('nova_plus_seasons')+' · '+wide_anime.groups.length,items:wide_anime.groups.map(function(g){return {title:lampaViewText("Сезон {0}",[g.number]),subtitle:wideCount(g.count),number:g.number,selected:g.number===wide_anime.selected};}),onDraw:onlineChoiceDraw,
             onSelect:function(entry){Lampa.Select.hide();contentEnable();chooseArc(entry);},onBack:function(){Lampa.Select.hide();contentEnable();restoreFocus(false);}});
         });

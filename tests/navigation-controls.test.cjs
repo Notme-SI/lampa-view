@@ -24,7 +24,7 @@ test('cartoons menu sits below series and opens bounded film/TV animation rows t
   const response=require('./fixtures/discovery-response.cjs');L.Api.sources.tmdb.get=(url,params,ok)=>{requests.push(url);w.setTimeout(()=>ok(response(url,params.page)),0);};
   w.jQuery(item).trigger('hover:enter');await wait(180);
   assert.equal(L.Activity.active().url,'cartoon');assert.equal(requests.length,12);
-  for(const path of requests){const query=new URLSearchParams(path.split('?')[1]);assert.ok(query.get('with_genres').split(',').includes('16'));if(!query.has('with_companies'))assert.equal(query.get('without_keywords'),'210024');assert.match(path,/^discover\/(?:movie|tv)\?/);}
+  for(const path of requests){const query=new URLSearchParams(path.split('?')[1]);assert.ok(query.get('with_genres').split(',').includes('16'));if(!query.has('with_companies') && !query.has('with_networks'))assert.equal(query.get('without_keywords'),'210024');assert.match(path,/^discover\/(?:movie|tv)\?/);}
   const root=L.Activity.active().activity.render(true),rows=L.Activity.active().activity.component;
   assert.match(root.textContent,/мультфильмы/i);assert.match(root.textContent,/мультсериалы/i);assert.ok(rows.items.length+rows.loaded.length<=12);
   assert.deepEqual(r.errors,[]);
@@ -72,9 +72,7 @@ test('held TV navigation scrolls once per card, builds the next lazy batch and h
 });
 
 
-test('dorama belongs to the series section and is absent from the visible main menu',async()=>{
- const r=await native({built:true}),{w,L}=r;try{const item=w.document.querySelector('.menu__item[data-action=dorama]');assert.ok(item.classList.contains('pt-removed-section'));w.LampaView.sections.open('series');await wait(40);const root=L.Activity.active().activity.render(true);assert.ok(root.querySelector('[data-section-id=turkish]'));root.querySelector('[data-section-id=dorama]').click();await wait(40);assert.equal(L.Activity.active().component,'minimal_sections');assert.equal(L.Activity.active().url,'series/dorama');assert.deepEqual(r.errors,[]);}finally{r.close();}
-});
+test('dorama is integrated as poster rows in series and has no visible separate menu',async()=>{const r=await native({built:true}),{w,L}=r;try{const item=w.document.querySelector('.menu__item[data-action=dorama]');assert.ok(item.classList.contains('pt-removed-section'));const response=require('./fixtures/discovery-response.cjs');L.Api.sources.tmdb.get=(url,p,ok)=>w.setTimeout(()=>ok(response(url,p.page)),0);item.click();await wait(250);assert.equal(L.Activity.active().url,'tv');assert.ok(L.Activity.active().activity.component.items.concat(L.Activity.active().activity.component.loaded.flat()).some(r=>(r.data||r).title==='Корейские дорамы'));assert.ok(!w.document.querySelector('.minimal-section-open,.minimal-section-tile'));assert.deepEqual(r.errors,[]);}finally{r.close();}});
 
 test('native menu_always switches a single native menu between dock and popover and restores the button',async()=>{
  const r=await native({built:true}),{w,L}=r;try{
