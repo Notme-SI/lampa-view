@@ -30,6 +30,12 @@ export default function shikimoriMatch(L,details){
    if(!query){if(expanded)return missing();expanded=true;return details(id,expand,()=>expand({}));}
    searches++;tmdbGet(L,'search/'+kind+'?language=ru&query='+encodeURIComponent(query.name),{},json=>{const results=(json && json.results || []).filter(c=>c.id && (!c.genre_ids || c.genre_ids.includes(16)));if(results.length)choose(results,query.base);else next();},()=>{networkError=true;failures++;next();});
   }
-  if(cache.has(key))return open(cache.get(key));add(original);add(local);next();
+  if(cache.has(key))return open(cache.get(key));add(original);add(local);
+  const kino=typeof window!=='undefined' && window.LampaView && window.LampaView.kinoapi;
+  if(kino && kino.enabled())return kino.title(card,result=>{
+   if(result && result.type===kind && Number(result.id && result.id.shikimori)===Number(id) && Number(result.id.tmdb)>0)return open({id:Number(result.id.tmdb),media_type:kind,...(kind==='tv'?{name:local}:{title:local})});
+   next();
+  });
+  next();
  };
 }

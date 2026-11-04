@@ -41,3 +41,19 @@ test('bundled Nova transforms online files and series, preserves original playba
   L.Activity.active=current;assert.deepEqual(n.errors,[]);
  }finally{n.close();}
 });
+
+test('complete absolute anime list navigates confirmed arcs locally and keeps original playback items',async()=>{
+ const n=await native({built:true}),{w,L}=n,$=w.jQuery;try{
+ const root=$('<div class="explorer"><div class="explorer__files"><div class="explorer__files-head"></div><div class="explorer__files-body"><div class="scroll"><div class="scroll__body"></div></div></div></div>').appendTo(w.document.body),filter=new L.Filter({search:false,sort:true,filter:true});root.find('.explorer__files-head').append(filter.render());filter.set('sort',[{title:'Kodik',source:'kodik',selected:true}]);filter.set('filter',[{stype:'season',title:'Сезон',items:[{title:'Сезон 2',selected:true}]}]);
+ let played=0,requests=0,done;w.LampaView.kinoapi={enabled:()=>true,groups(card,files,cb){requests++;assert.equal(files.length,5);done=cb;}};w.LampaView.episodeMetadata={alternate:()=>false,book:()=>false};
+ for(let i=1;i<=5;i++)$('<div class="online-prestige online-prestige--full selector"><div class="online-prestige__title">Серия '+i+'</div><div class="online-prestige__episode-number">'+i+'</div><div class="time-line" data-hash="physical-season2-episode'+i+'"><div style="width:0%"></div></div></div>').on('hover:enter',()=>played=i).appendTo(root.find('.scroll__body'));
+ const movie={id:31910,name:'Naruto',original_name:'Naruto',source:'tmdb',media_type:'tv',minimal_anime:true};L.Activity.active=()=>({component:'online_test',movie,activity:{render:()=>root,component:{}}});L.Listener.send('activity',{type:'start'});await wait(250);assert.equal(requests,1);done([{number:1,name:'Спасение Казекаге',count:2,episodes:[1,2]},{number:2,name:'Воссоединение',count:3,episodes:[3,4,5]}]);await wait(150);
+ assert.equal(root.find('.nova-card').length,2);root.find('[data-nova-focus="anime-season:2"]').trigger('hover:enter');await wait(100);assert.equal(root.find('.nova-card').length,3);root.find('.nova-card').last().trigger('hover:enter');assert.equal(played,5,'Provider handler retains the absolute file');assert.equal(requests,1,'Arc changes do not reload the provider');assert.ok(root.find('[data-hash="physical-season2-episode5"]').length,'Native Timeline identity is intact');assert.deepEqual(n.errors,[]);
+ }finally{n.close();}
+});
+
+test('KinoAPI key is discoverable in catalogue settings and masked by native rendering',async()=>{
+ const n=await native({built:true}),{w,L}=n;try{
+ const param=L.SettingsApi.getParam('minimal_settings_catalogue').find(p=>p.param.name==='minimal_kinoapi');assert.ok(param);const item=w.jQuery('<div><div class="settings-param__value"></div></div>');w.localStorage.setItem('lampa_view_kinoapi_key','local-fixture-key');param.onRender(item);assert.equal(item.text(),'••••••••');assert.equal(L.Storage.get('minimal_kinoapi',''),'', 'Personal key never goes into synced native storage');assert.deepEqual(n.errors,[]);
+ }finally{n.close();}
+});

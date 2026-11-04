@@ -895,7 +895,7 @@ body.lampa_view.pt-menu-pinned .menu__text {white-space:normal}
 body.lampa_view.pt-mobile.pt-menu-pinned {--pt-menu-width:min(14em,38vw)}
 body.lampa_view.pt-mobile.pt-menu-pinned .wrap__left {bottom:5.5em!important;height:calc(100% - 9.1em)!important}
 
-body.lampa_view .card:not(.focus):not(.hover):not(.pt-card-pointer) .pt-series-status {display:none}
+body.lampa_view .card:not(.focus):not(.hover):not(.pt-card-pointer):not(.pt-card-touch) .pt-series-status {display:none}
 
 /* Header controls keep their boxes when focused. Draw outside the avatar so
    its image cannot cover the remote/keyboard focus indicator. */

@@ -21,8 +21,10 @@ function canonicalReleaseStatus(data={},episodes=[],today=day(new Date().toISOSt
  if(last && Number(last.season_number)>0 && last.air_date && day(last.air_date)<=today)aired.push(last);
  if(!aired.length)return null;
  const season=Math.max(...aired.map(e=>Number(e.season_number))),rows=aired.filter(e=>Number(e.season_number)===season);
- const count=Math.max(...rows.map(e=>Number(e.episode_number))),detail=(Array.isArray(data.seasons)?data.seasons:[]).find(s=>Number(s.season_number)===season);
- return {season,count,total:Math.max(count,Number(detail && detail.episode_count)||0)};
+ let count=Math.max(...rows.map(e=>Number(e.episode_number)));const detail=(Array.isArray(data.seasons)?data.seasons:[]).find(s=>Number(s.season_number)===season);
+ const total=Number(detail && detail.episode_count)||0;
+ if(isAnime(data) && total>0 && count>total){const before=(data.seasons || []).filter(s=>Number(s.season_number)>0 && Number(s.season_number)<season),offset=before.reduce((sum,s)=>sum+(Number(s.episode_count)||0),0);if(before.length===season-1 && before.every(s=>Number(s.episode_count)>0) && count-offset>0 && count-offset<=total)count-=offset;}
+ return {season,count,total:Math.max(count,total)};
 }
 export function episodeLabel(text){
  const value=String(text || '').trim(),match=value.match(/^(\d+)\s*[-–]\s*|^(?:Эпизод|Серия|Episode)\s*(\d+)/i);

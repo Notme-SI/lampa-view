@@ -12,3 +12,10 @@ test('alternate metadata names and seasonless titles resolve, while unresolved a
  const missing=resolver(L,(id,ok)=>ok({}));missing({card:{id:2,name:'Нет карточки',original_name:'Missing',media_type:'tv'}},()=>{},()=>failed++);assert.equal(menu.items[0].id,'search');menu.onSelect(menu.items[0]);input('English Series');assert.equal(opened.id,41);
  L.Api.sources.tmdb.get=(p,args,ok,fail)=>fail();queryCount=0;const offline=resolver(L,()=>assert.fail('two transport errors should stop further requests'));offline({card:{id:3,name:'Русское',original_name:'English',media_type:'tv'}},()=>{},()=>failed++);assert.match(menu.title,/выполнить поиск/);menu.onBack();assert.equal(back,1);assert.equal(failed,1);
 });
+
+test('KinoAPI exact IDs resolve directly; mismatched identity falls back to native search',()=>{
+ for(const valid of [true,false]){
+  let opened,searches=0;const m={exports:{}};new Function('module','exports','window',code)(m,m.exports,{LampaView:{kinoapi:{enabled:()=>true,title:(c,done)=>done({id:{shikimori:valid?44511:99,tmdb:114410},type:'tv'})}}});
+  const L={Api:{sources:{tmdb:{full:p=>opened=p,get:(p,args,ok)=>{searches++;ok({results:[{id:77,name:'Chainsaw Man',genre_ids:[16]}]});}}}},Select:{hide(){}}};m.exports.default(L,()=>{})({card:{id:44511,shikimori_id:44511,source:'minimal_shiki',name:'Chainsaw Man',media_type:'tv'}},()=>{},()=>{});assert.equal(opened.id,valid?114410:77);assert.equal(searches,valid?0:1);
+ }
+});

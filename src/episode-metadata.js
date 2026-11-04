@@ -11,7 +11,7 @@ export function namedPartCount(card){
  const names=(Array.isArray(card && card.seasons)?card.seasons:[]).map(s=>namedSeason(card,s.season_number)).filter(Boolean),numbers=names.map(n=>Number((n.match(/\d+/)||[])[0])||0);
  return numbers.length?Math.max(...numbers):0;
 }
-export default function episodeMetadata(L){
+export default function episodeMetadata(L,kino){
  const cache=new Map(),pending=new Map(),queue=[];let running=0;
  function request(path,done){
   if(cache.has(path))return done(cache.get(path));
@@ -36,7 +36,7 @@ export default function episodeMetadata(L){
    try{api.get(path,{},finish,()=>finish(null));}catch(error){finish(null);}
   }
  }
- return {alternate:alternativeNumbering,book(card,number,numbers,actual,done){
+ function legacyBook(card,number,numbers,actual,done){
   if(!alternativeNumbering(card,numbers))return false;
   const id=Number(card.tmdb_id || card.id),language=String(L.Storage.get('language','ru')),suffix='?language='+encodeURIComponent(language),networks=(card.networks || []).map(n=>Number(n.id));
   request('tv/'+id+'/episode_groups'+suffix,index=>{
@@ -56,5 +56,9 @@ export default function episodeMetadata(L){
     }));
    });
   });return true;
+ };
+ return {alternate:alternativeNumbering,book(card,number,numbers,actual,done,files=[]){
+  if(kino && kino.enabled() && files.length){kino.book(card,number,numbers,files,book=>{if(book)return done(book,true);if(!legacyBook(card,number,numbers,actual,done))done(null,false);});return true;}
+  return legacyBook(card,number,numbers,actual,done);
  }};
 }

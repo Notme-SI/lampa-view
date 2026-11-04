@@ -82,3 +82,9 @@ test('Shikimori release counts use their own metadata endpoint and never treat i
  const release=w.SeriesStatus.shikiReleaseStatus;assert.equal(release({original_name:'Anime 2nd Season',episodes:12,status:'released'}).season,2);assert.equal(release({original_name:'Anime 86',episodes:12,status:'released'}).season,0);assert.equal(release({original_name:'Anime',episodes:12,status:'anons'}),null);assert.equal(node.querySelector('.pt-card-watch--has-progress'),null,'Release counts must never create viewing progress');
  }finally{w.close();}
 });
+
+test('absolute anime episode count is local to the latest complete arc',()=>{
+ const d=new JSDOM('',{runScripts:'outside-only'});try{d.window.eval(code);const counts=[32,21,18,17,24,31,8,24,21,25,21,33,20,25,28,13,11,21,20,87],data={minimal_anime:true,seasons:counts.map((n,i)=>({season_number:i+1,episode_count:n})),last_episode_to_air:{season_number:20,episode_number:500,air_date:'2017-03-23'}};
+ assert.deepEqual({...d.window.SeriesStatus.releaseStatus(data,[])},{season:20,count:87,total:87});assert.equal(data.last_episode_to_air.episode_number,500);
+ }finally{d.window.close();}
+});

@@ -7733,5 +7733,18 @@
   "ro": "Calitatea cunoscută pe această pagină; necunoscută la final",
   "fr": "Qualité connue sur cette page ; inconnue à la fin",
   "pl": "Znana jakość na tej stronie; nieznana na końcu"
+ },
+ "Личный ключ метаданных аниме. Хранится только на этом устройстве.": {
+  "en": "Personal anime metadata key. Stored only on this device.",
+  "uk": "Особистий ключ метаданих аніме. Зберігається лише на цьому пристрої.",
+  "be": "Асабісты ключ метаданых анімэ. Захоўваецца толькі на гэтай прыладзе.",
+  "zh": "个人动漫元数据密钥，仅保存在此设备上。",
+  "pt": "Chave pessoal de metadados de anime. Guardada apenas neste dispositivo.",
+  "bg": "Личен ключ за метаданни за аниме. Съхранява се само на това устройство.",
+  "he": "מפתח אישי למטא־נתונים של אנימה. נשמר רק במכשיר הזה.",
+  "cs": "Osobní klíč metadat anime. Ukládá se pouze v tomto zařízení.",
+  "ro": "Cheie personală pentru metadate anime. Stocată doar pe acest dispozitiv.",
+  "fr": "Clé personnelle des métadonnées anime. Stockée uniquement sur cet appareil.",
+  "pl": "Osobisty klucz metadanych anime. Przechowywany tylko na tym urządzeniu."
  }
 }
