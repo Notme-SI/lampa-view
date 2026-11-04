@@ -2,6 +2,7 @@ import {text as lampaViewText} from './i18n.js';
 import {locale} from './i18n.js';
 import tmdbGet from './tmdb.js';
 import {qualityLabel} from './online-quality.js';
+import {qualityCacheKey} from './anime-release.js';
 const animeTmdb=f=>['anime_tv','anime_movie'].includes(f.kind);
 export const filterKind=f=>f.kind==='tv' || f.kind==='anime_tv'?'tv':'movie';
 function entries(pairs){return pairs.reduce((out,pair)=>{out[pair[0]]=pair[1];return out;},{});}
@@ -29,10 +30,9 @@ export function discoverUrl(f,language=locale()){
  return 'discover/'+kind+'?'+p.join('&');
 }
 export function cachedQuality(L,card){
- const norm=value=>String(value || '').toLowerCase().replace(/ё/g,'е').replace(/[^a-zа-я0-9\u3040-\u30ff\u3400-\u9fff]/g,'');
  const direct=qualityLabel(card.quality || card.release_quality);if(direct)return direct;
  const tv=card.media_type==='movie'?false:card.media_type==='tv' || card.name || card.first_air_date;
- const rows=L.Storage.get('minimal_quality_v2',[]),key=(tv?'tv:':'movie:')+norm(card.title || card.name || card.original_title || card.original_name)+':'+String(card.first_air_date || card.release_date || '').slice(0,4);
+ const rows=L.Storage.get('minimal_quality_v2',[]),key=qualityCacheKey(card,tv);
  const pair=Array.isArray(rows)?rows.find(row=>Array.isArray(row) && row[0]===key):null,entry=pair && pair[1];
  return entry && Date.now()-entry.time<21600000?qualityLabel(entry.q):'';
 }

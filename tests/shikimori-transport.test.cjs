@@ -15,3 +15,12 @@ test('built plugin shows an actionable network error and retry restores Shikimor
   const retry=root.querySelector('.minimal-anime-retry');Object.defineProperty(retry,'offsetWidth',{value:180});Object.defineProperty(retry,'offsetHeight',{value:44});assert.equal(L.Controller.enabled().name,'minimal_anime_tabs');L.Controller.enabled().controller.down();assert.equal(w.Navigator.getFocusedElement(),retry);available=true;w.jQuery(retry).trigger('hover:enter');await wait(3650);link=L.Activity.active().activity.component;root=link.render(true);assert.equal(link.object.minimal_catalogue_status.state,'ready');assert.ok(link.items.length>0);assert.equal(root.querySelector('.minimal-anime-status').hidden,true);assert.ok(calls.slice(-10).every(url=>url.startsWith('https://shikimori.io')));assert.deepEqual(n.errors,[]);
  }finally{n.close();}
 });
+
+test('focused Shikimori release resolves its own TV season, shares metadata and related requests and caches the result',async()=>{
+ const calls=[],L={Api:{sources:{}},Reguest:function(){this.timeout=()=>{};this.silent=(url,ok)=>{calls.push(url);if(url.endsWith('/related'))ok([{relation:'Sequel',anime:{id:2,kind:'tv',name:'Next'}}]);else ok({id:16498,kind:'tv',name:'Shingeki no Kyojin',episodes:25,episodes_aired:25,status:'released'});};}};
+ adapter()(L);const source=L.Api.sources.minimal_shiki;
+ const results=await Promise.all([new Promise((ok,fail)=>source.release(16498,ok,fail)),new Promise((ok,fail)=>source.release(16498,ok,fail))]);
+ for(const result of results){assert.equal(result.minimal_release_season,1);assert.equal(result.episodes_aired,25);assert.equal(result.id,16498);}
+ assert.equal(calls.length,2);assert.ok(calls.every(url=>url.startsWith('https://shikimori.io/api/animes/16498')));
+ await new Promise((ok,fail)=>source.release(16498,ok,fail));assert.equal(calls.length,2);
+});

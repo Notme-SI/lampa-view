@@ -39,3 +39,10 @@ test('Shikimori quality uses English aliases without opening the interactive TMD
   assert.equal(new URL(requests[2].url).searchParams.get('title'),'English Verified Title');requests[2].ok({Results:[{Title:'English Verified Title (2023) BDRip 1080p'}]});assert.equal(node.querySelector('.pt-quality').textContent,'1080p');
  }finally{r.close();}
 });
+
+test('Shikimori parser cannot promote a film or an explicit upscale over the matching TV release',()=>{
+ const r=setup();try{
+  const node=r.card({id:1535,shikimori_id:1535,title:'Тетрадь смерти',original_name:'Death Note',first_air_date:'2006-10-04',source:'minimal_shiki',media_type:'tv'});
+  r.requests[0].ok({Results:[{Title:'Тетрадь смерти / Death Note (2017) 2160p'},{Title:'Death Note (2006) AI Upscale 2160p'},{Title:'Death Note (2006) BDRip 1080p'}]});assert.equal(node.querySelector('.pt-quality').textContent,'1080p');
+ }finally{r.close();}
+});

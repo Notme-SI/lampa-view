@@ -1,13 +1,15 @@
 import {text as lampaViewText} from './i18n.js';
 import tmdbGet from './tmdb.js';
 import {namedSeason} from './episode-metadata.js';
+import {animeSeasonTitle,groupedAnimeRelease} from './anime-release.js';
+import {isAnime} from './metadata.js';
 const day=value=>String(value || '').slice(0,10);
 export function shikiReleaseStatus(data={}){
  const total=Math.max(0,Number(data.episodes)||0),count=Math.max(0,Number(data.episodes_aired)||0) || (data.status==='released'?total:0);
  if(!count)return null;
  // Shikimori lists seasons as separate anime entries; never assume season 1.
- const title=data.original_name || data.original_title || data.name || data.title || '',match=title.match(/(?:season\s+(\d+)|(\d+)(?:st|nd|rd|th)?\s+season|(\d+)\s+сезон)\s*$/i);
- return {season:match?Number(match[1] || match[2] || match[3]):0,count,total:Math.max(total,count)};
+ const title=data.original_name || data.original_title || data.name || data.title || '';
+ return {season:Number(data.minimal_release_season)||animeSeasonTitle(title),count,total:Math.max(total,count)};
 }
 export function releaseStatus(data={},episodes=[],today=day(new Date().toISOString())){
  if(data.source==='minimal_shiki')return shikiReleaseStatus(data);
@@ -161,12 +163,12 @@ function watchFooter(L,node,data,series){
 // Native timetable data and native watch history remain authoritative.
 export default function seriesStatus(L,schedule){
  const cards=new WeakMap(),cache=new Map(),pending=new Map(),queue=[];let running=0,saveTimer;
- const storage='minimal_series_release_v2',lifetime=900000;
+ const storage='minimal_series_release_v3',lifetime=900000;
  const saved=L.Storage && L.Storage.get?L.Storage.get(storage,[]):[];
  if(Array.isArray(saved))for(const pair of saved.slice(-80))if(Array.isArray(pair) && typeof pair[0]==='string' && pair[1] && pair[1].details && Date.now()-pair[1].at<lifetime)cache.set(pair[0],pair[1]);
  const cacheKey=data=>(data.source==='minimal_shiki'?'shiki':'tmdb')+':'+data.id+':'+(L.Storage && L.Storage.get?L.Storage.get('language','ru'):'ru');
  function save(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{if(L.Storage && L.Storage.set)L.Storage.set(storage,Array.from(cache).filter(([,entry])=>entry.details).slice(-80));},150);}
- function detailsOnly(json){if(json.source==='minimal_shiki')return {id:json.id,source:json.source,episodes:json.episodes,episodes_aired:json.episodes_aired,status:json.status};return {id:json.id,number_of_seasons:json.number_of_seasons,seasons:(Array.isArray(json.seasons)?json.seasons:[]).map(s=>({season_number:s.season_number,name:s.name,episode_count:s.episode_count,air_date:s.air_date})),last_episode_to_air:json.last_episode_to_air,next_episode_to_air:json.next_episode_to_air,episode_run_time:json.episode_run_time};}
+ function detailsOnly(json){if(json.source==='minimal_shiki')return {id:json.id,source:json.source,episodes:json.episodes,episodes_aired:json.episodes_aired,status:json.status,minimal_release_season:json.minimal_release_season};return {id:json.id,number_of_seasons:json.number_of_seasons,seasons:(Array.isArray(json.seasons)?json.seasons:[]).map(s=>({season_number:s.season_number,name:s.name,episode_count:s.episode_count,air_date:s.air_date})),last_episode_to_air:json.last_episode_to_air,next_episode_to_air:json.next_episode_to_air,episode_run_time:json.episode_run_time};}
  function paint(node){
   const data=cards.get(node);if(!data || !node.matches('.focus,.hover,.pt-card-pointer,.pt-card-touch'))return;
   const view=node.querySelector('.card__view');if(!view)return;
@@ -204,9 +206,14 @@ export default function seriesStatus(L,schedule){
  }
  function pump(){
   while(running<(document.body.classList.contains('pt-tv')?1:2) && queue.length){const task=queue.shift();running++;let done=false;
-   const finish=json=>{if(done)return;done=true;running--;pending.delete(task.key);const table=L.TimeTable && L.TimeTable.get?L.TimeTable.get(task.data) || []:[];cache.set(task.key,{at:Date.now(),details:json && Number(json.id)===Number(task.data.id)?detailsOnly(json):null,value:releaseStatus(json && Number(json.id)===Number(task.data.id)?{...task.data,...json}:task.data,table)});if(cache.size>80)cache.delete(cache.keys().next().value);save();for(const node of task.nodes)if(node.isConnected && node.matches('.focus,.hover,.pt-card-pointer,.pt-card-touch'))schedule(node);pump();};
-   if(task.data.source==='minimal_shiki'){const api=L.Api && L.Api.sources && L.Api.sources.minimal_shiki;if(api && api.metadata)api.metadata(task.data.shikimori_id || task.data.id,json=>finish({...json,source:'minimal_shiki'}),()=>finish(null));else finish(null);continue;}
-   tmdbGet(L,'tv/'+task.data.id,{},finish,()=>finish(null),{life:60});
+   const finish=(json,display)=>{if(done)return;done=true;running--;pending.delete(task.key);const table=L.TimeTable && L.TimeTable.get?L.TimeTable.get(task.data) || []:[];cache.set(task.key,{at:Date.now(),details:json && Number(json.id)===Number(task.data.id)?detailsOnly(json):null,value:display || releaseStatus(json && Number(json.id)===Number(task.data.id)?{...task.data,...json}:task.data,table)});if(cache.size>80)cache.delete(cache.keys().next().value);save();for(const node of task.nodes)if(node.isConnected && node.matches('.focus,.hover,.pt-card-pointer,.pt-card-touch'))schedule(node);pump();};
+   if(task.data.source==='minimal_shiki'){const api=L.Api && L.Api.sources && L.Api.sources.minimal_shiki;if(api && api.release)api.release(task.data.shikimori_id || task.data.id,json=>finish({...json,source:'minimal_shiki'}),()=>finish(null));else if(api && api.metadata)api.metadata(task.data.shikimori_id || task.data.id,json=>finish({...json,source:'minimal_shiki'}),()=>finish(null));else finish(null);continue;}
+   tmdbGet(L,'tv/'+task.data.id,{},json=>{
+    const card={...task.data,...json};
+    if(json && Number(json.id)===Number(task.data.id) && isAnime(card) && Number(json.number_of_seasons)===1 && L.Utils && L.Utils.splitEpisodesIntoSeasons){
+     tmdbGet(L,'tv/'+task.data.id+'/season/1',{},season=>finish(json,groupedAnimeRelease(L,card,season)),()=>finish(json),{life:60});
+    }else finish(json);
+   },()=>finish(null),{life:60});
   }
  }
  // Native timeline writes update progress directly. Only the focused card

@@ -1,5 +1,6 @@
 import {locale} from './i18n.js';
 import shikimoriMatch from './shikimori-match.js';
+import shikiSeason from './shiki-season.js';
 const BASE='https://shikimori.io';
 export const SHIKI_ALL='minimal:shikimori:all';
 export function shikiCard(a,base=BASE){
@@ -55,6 +56,13 @@ export default function shikimori(L){
   const finish=json=>{const listeners=metadataPending.get(id) || [];metadataPending.delete(id);if(json){metadataCache.set(id,{at:Date.now(),json});if(metadataCache.size>80)metadataCache.delete(metadataCache.keys().next().value);}for(const [success,error] of listeners)if(json)success({...json});else error();};
   api('/api/animes/'+id,finish,()=>finish(null),null,json=>!!(json && Number(json.id)===Number(id)));
  };
- L.Api.sources.minimal_shiki={list,full,genres,posters,metadata,retry,clear(){}};
+ const relationQueue=[];let relationBusy=false,relationLast=0;
+ function relationPump(){
+  if(relationBusy || !relationQueue.length)return;relationBusy=true;
+  setTimeout(()=>{const [id,ok,fail]=relationQueue.shift();relationLast=Date.now();const done=(callback,value)=>{relationBusy=false;callback(value);relationPump();};api('/api/animes/'+id+'/related',rows=>done(ok,rows),()=>done(fail));},Math.max(0,350-(Date.now()-relationLast)));
+ }
+ const resolveSeason=shikiSeason((id,ok,fail)=>{if(relationQueue.length>=16)return fail();relationQueue.push([id,ok,fail]);relationPump();});
+ const release=(id,ok,fail)=>metadata(id,json=>resolveSeason(json,season=>ok({...json,minimal_release_season:season})),fail);
+ L.Api.sources.minimal_shiki={list,full,genres,posters,metadata,release,retry,clear(){}};
  return {list,genres,posters,retry};
 }

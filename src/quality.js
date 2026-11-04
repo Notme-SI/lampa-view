@@ -2,6 +2,7 @@ import {text as lampaViewText} from './i18n.js';
 import {isAnime} from './metadata.js';
 import cardInfo,{releaseYear} from './card-info.js';
 import {seriesName} from './shikimori-match.js';
+import {animeReleaseMatches,qualityCacheKey} from './anime-release.js';
 import onlineQuality,{qualityLabel} from './online-quality.js';
 import cacheControl from './cache-control.js';
 import badgeLayout from './badge-layout.js';
@@ -86,6 +87,7 @@ export default function quality(L,$){
         if(job.generation!==generation)return;const rank={'CAM':1,'TS':2,'SD':3,'WEBRip':4,'BDRip':5,'WEB-DL':6,'720p':7,'1080p':8,'4K':9};let best='';
         list.forEach(release=>{
           const title=release.Title || release.title || '',compact=norm(title);
+          if(isAnime(job.data) && !animeReleaseMatches(job.data,title,variants,job.tv))return;
           if(!names.some(name=>compact.indexOf(name)>=0))return;
           const years=title.match(/\b(?:19|20)\d{2}\b/g) || [];
           if(job.year && !job.tv && years.indexOf(job.year)<0)return;
@@ -128,7 +130,7 @@ export default function quality(L,$){
     const native=label(data.quality || data.release_quality);if(native){paint(node,native);return;}
     const nativeNode=node.querySelector('.card__quality'),nativeLabel=nativeNode && label(nativeNode.textContent);
     if(nativeLabel){paint(node,nativeLabel);return;}
-    const year=String(data.first_air_date || data.release_date || '').slice(0,4),key=(tv?'tv:':'movie:')+norm(data.title || data.name || data.original_title || data.original_name)+':'+year;
+    const year=String(data.first_air_date || data.release_date || '').slice(0,4),key=qualityCacheKey(data,tv);
     const saved=cache.get(key);if(valid(saved)){paint(node,saved.q);return;}
     if(pending.has(key)){const job=pending.get(key);if(job.nodes.indexOf(node)<0)job.nodes.push(node);return;}
     if(queue.length>=40 || !L.Reguest)return;
