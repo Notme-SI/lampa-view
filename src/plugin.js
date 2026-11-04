@@ -37,6 +37,8 @@ import {cacheSettings} from './cache-control.js';
 import onlineState from './online-state.js';
 import episodeMetadata from './episode-metadata.js';
 import kinoapi from './kinoapi.js';
+import kinoCatalogue from './kino-catalogue.js';
+import onlineSources from './online-sources.js';
 import onlineNavigation from './online-navigation.js';
 import onlineSourceCache from './online-source-cache.js';
 import torrentBanner,{bannerCountries} from './torrent-banner.js';
@@ -464,7 +466,7 @@ if (!ROOT.LampaView) {
     initialized=true; L=ROOT.Lampa; $=ROOT.jQuery;loadLogo=logoLoader(L);
     P.bannerCountries=card=>bannerCountries(card,L.Storage.get('language','ru'),L);
     installI18n(L,P);
-    P.online=onlineState(L);P.kinoapi=kinoapi(L);P.episodeMetadata=episodeMetadata(L,P.kinoapi);P.onlineNavigation=onlineNavigation;P.onlineSourceCache=onlineSourceCache(L);
+    P.online=onlineState(L);P.kinoapi=kinoapi(L);P.onlineSources=onlineSources(L);P.episodeMetadata=episodeMetadata(L,P.kinoapi);P.onlineNavigation=onlineNavigation;P.onlineSourceCache=onlineSourceCache(L);
     layout();interfaceLayout=interfaceSize(L);installTmdb(L);installFullGuard(L);torrentEpisodes(L,ROOT);inputs(L);
     artwork=installArtwork(L,()=>yes('lampa_view_enabled'));
     P.sync=progressSync(L,()=>yes('lampa_view_enabled'));
@@ -481,7 +483,7 @@ if (!ROOT.LampaView) {
     quality(L,$);cacheSettings(L);
     if(L.Api && L.Api.sources && L.Utils && L.Utils.createInstance && L.Maker){
       installTrakt(L);
-      const anime=shikimori(L);shikimoriPosters(L,anime);collections(L,anime);filters(L,anime);
+      P.kinoCatalogue=kinoCatalogue(L,P.kinoapi);const anime=shikimori(L);shikimoriPosters(L,anime);collections(L,anime,P.kinoapi,P.kinoCatalogue);filters(L,anime);
     }
     installWheel(L,()=>yes('lampa_view_enabled'));
     on('line',event=>{

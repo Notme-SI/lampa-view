@@ -1,0 +1,20 @@
+const test=require('node:test'),assert=require('node:assert/strict'),path=require('node:path'),esbuild=require('esbuild');
+const code=esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/kino-catalogue.js')],bundle:true,write:false,format:'cjs'}).outputFiles[0].text,m={exports:{}};new Function('module','exports',code)(m,m.exports);const {kinoPlan,cataloguePaths,catalogueCard,default:install}=m.exports;
+const item=(id=1)=>({id:{tmdb:id,kinopoisk:id+10,imdb:'tt'+id},type:'tv',title:{ru:'Дорама',en:'Drama',original:'Original'},description:{ru:'Описание',en:'Description'},release:{date:'2026-02-02',year:2026},genres:['драма'],countries:['Южная Корея'],images:{poster:'https://images.test/poster.jpg',backdrop:'https://images.test/back.jpg'},ratings:{tmdb:{value:8}}});
+test('KinoAPI plans use documented country and genre filters, include both Korean names, and never invent an airing feed',()=>{
+ for(const kind of ['dorama','tvshow']){const plan=kinoPlan(kind,new Date(2026,10,4));assert.ok(plan.length>=6);assert.ok(plan.every(row=>row.title!=='Сейчас смотрят'));for(const row of plan){for(const path of cataloguePaths(row.spec,2)){const q=new URLSearchParams(path.split('?')[1]);assert.equal(q.get('type'),'tv');assert.equal(q.get('page'),'2');assert.equal(q.get('limit'),'24');assert.ok(q.get('country'));assert.ok([...q.keys()].every(k=>['type','country','genre','sort','order','page','limit','year','minRating'].includes(k)));if(kind==='tvshow'){assert.equal(q.get('country'),'Россия');assert.ok(q.get('genre'));}}}}
+ assert.equal(cataloguePaths(kinoPlan('dorama')[0].spec,1).length,2);
+});
+test('catalogue cards keep exact TMDB identity for native detail/playback and reject cartoons, foreign countries and invented descriptions',()=>{
+ const spec=kinoPlan('dorama')[0].spec,v=item(),card=catalogueCard(v,spec,'ru');assert.equal(card.source,'tmdb');assert.equal(card.id,1);assert.equal(card.overview,'Описание');assert.equal(card.imdb_id,'tt1');assert.equal(card.poster_path,v.images.poster);assert.equal(catalogueCard({...v,anime:{mal:1}},spec),null);assert.equal(catalogueCard({...v,genres:['мультфильм']},spec),null);assert.equal(catalogueCard({...v,countries:['США']},spec),null);assert.equal(catalogueCard({...v,id:{kinopoisk:2}},spec),null);assert.equal(catalogueCard({...v,description:{en:'English only'}},spec,'ru').overview,'');
+});
+test('merged feeds preserve pagination and deterministic server order; an incomplete merge fails instead of skipping a source',()=>{
+ const pending=[],L={Api:{sources:{tmdb:{full(){}}}}},api=install(L,{catalogueRequest:(path,done)=>pending.push({path,done})}),spec=kinoPlan('dorama')[0].spec;let result,failed=false;
+ api.list({url:JSON.stringify(spec),page:2},value=>result=value,()=>failed=true);assert.equal(pending.length,2);pending[1].done({data:[item(2),item(1)],meta:{hasNext:false}});assert.equal(result,undefined);pending[0].done({data:[item(1),item(3)],meta:{hasNext:true}});assert.deepEqual(result.results.map(c=>c.id),[1,2,3]);assert.equal(result.page,2);assert.equal(result.total_pages,3);assert.equal(failed,false);
+ pending.length=0;result=null;api.list({url:JSON.stringify(spec),page:3},value=>result=value,()=>failed=true);pending[0].done(null);pending[1].done({data:[item(2)],meta:{hasNext:false}});assert.equal(result,null);assert.equal(failed,true);
+});
+test('cached synchronous row responses deliver once, hidden rows make no requests, all failed feeds use fallback',()=>{
+ let calls=0;const L={Api:{sources:{}}},api=install(L,{catalogueRequest:(path,done)=>{calls++;done({data:[item()],meta:{hasNext:false}});}});let delivered=0;api.load('dorama',[],()=>delivered++,()=>assert.fail('Unexpected fallback'));assert.equal(delivered,1);assert.equal(calls,10);
+ calls=0;const hidden=kinoPlan('dorama').map(row=>'minimal:kino:dorama:'+row.key);api.load('dorama',hidden,rows=>assert.ok(rows.every(row=>row.minimal_hidden)),()=>assert.fail());assert.equal(calls,0);
+ const bad=install(L,{catalogueRequest:(path,done)=>done(null)});bad.load('tvshow',[],()=>assert.fail(),()=>delivered++);assert.equal(delivered,2);
+});

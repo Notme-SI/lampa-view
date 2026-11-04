@@ -9,6 +9,7 @@ function groupOf(d){
  if(/^lampa_view_/.test(n))return 'appearance';
  if(/minimal_(banner)/.test(n))return 'appearance';
  if(/^nova_plus_(mode|hero|art|logo|focus|fade|fullscreen)/.test(n))return 'appearance';
+ if(n==='minimal_online_sources')return 'playback';
  if(/^kino_suggest_|minimal_|recent_rows/.test(n) || ['cards','feed','subs'].includes(g))return 'catalogue';
  if(g==='langs' || /langs|autosubs/.test(n))return 'languages';
  if(g==='server' || /server/.test(n))return 'server';
@@ -29,6 +30,7 @@ export default function unifiedSettings(api,L,version=''){
    if(n==='minimal_trakt_client_id' && !flag(L,'minimal_trakt_enabled',false))return false;
    if(d.param && d.param.type==='button' && typeof d.onChange!=='function')return false;
    if(['alc_auto_quick_movie','alc_auto_quick_series'].includes(n))return false;
+   if(n==='alc_auto_src_btn' && typeof window!=='undefined' && window.LampaView && window.LampaView.onlineSources)return false;
    if(/^alc_auto_(fav_btn|src_btn|studios_btn|langs|visible_languages|autosubs)$/.test(n) && typeof window!=='undefined' && window.lampac_plugin)return false;
    if(n.startsWith('nova_plus_') && n!=='nova_plus_enabled' && !online)return false;
    if(n==='nova_plus_layout' && L && L.Storage && L.Storage.get('nova_plus_view','list')!=='grid')return false;

@@ -4,7 +4,7 @@ export default function onlineSourceCache(L){
  return function install(comp,object){
   if(!comp || comp.lampaViewSourceCache || !object || object.balanser || !['parseJsonDate','display','filter','createSource','startSource','requestParams','render'].every(key=>typeof comp[key]==='function'))return;
   comp.lampaViewSourceCache=true;const native=comp.createSource;
-  function key(){return JSON.stringify([L.Timeline && L.Timeline.filename?L.Timeline.filename():'default',L.Storage.get('account_email',''),L.Storage.get('language','ru'),comp.requestParams('')]);}
+  function key(){return JSON.stringify([L.Timeline && L.Timeline.filename?L.Timeline.filename():'default',L.Storage.get('account_email',''),L.Storage.get('language','ru'),comp.requestParams(''),L.Storage.get('alc_auto_src_off',[])]);}
   function copy(rows){return rows.map(row=>({...row}));}
   comp.createSource=function(){
    const scope=key(),entry=cache.get(scope);

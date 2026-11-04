@@ -14,7 +14,7 @@ export function arrange(rows,prefs){
   return (ai<0?10000+a.i:ai)-(bi<0?10000+b.i:bi);
  }).map(x=>x.row);
 }
-export default function collections(L,shiki){
+export default function collections(L,shiki,kino,kinoFeeds){
  const key='minimal_collections',knownKey='minimal_collection_rows_v2';
  const read=()=>L.Storage.get(key,{}) || {},known=()=>L.Storage.get(knownKey,{}) || {};
  const captured=new Set(),homeRows=continueWatching(L);
@@ -82,7 +82,12 @@ export default function collections(L,shiki){
    function accept(rows){status.state=rows.some(row=>row.results && row.results.length)?'ready':'empty';remember(ctx,rows);ok(arrange(rows,prefs(ctx)));}
    return category.call(this,{...object,source:'trakt'},accept,error=>{status.state='error';if(fail)fail(error);});
   }
-  catalogue(L,shiki,object,prefs(ctx).hidden || [],rows=>{remember(ctx,rows);ok(arrange(rows.filter(row=>!row.minimal_hidden),prefs(ctx)));});
+  const accept=rows=>{remember(ctx,rows);ok(arrange(rows.filter(row=>!row.minimal_hidden),prefs(ctx)));};
+  const fallback=()=>catalogue(L,shiki,object,prefs(ctx).hidden || [],accept);
+  if(['dorama','tvshow'].includes(kind) && kino && kino.enabled() && kinoFeeds){
+   const status=object.minimal_catalogue_status={state:'loading'};
+   kinoFeeds.load(kind,prefs(ctx).hidden || [],rows=>{status.state=rows.some(row=>row.results.length)?'ready':'empty';accept(rows);},fallback);
+  }else fallback();
   // Only the selected catalogue runs, with a fixed plan and no next row loader.
  };
  // Register other catalogue rows and synchronize DOM order with remote navigation.

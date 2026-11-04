@@ -1,4 +1,4 @@
-/*! Lampa View 0.5.16 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.5.17 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -22,6 +22,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 */
+function _construct(t, e, r) { if (_isNativeReflectConstruct()) return Reflect.construct.apply(null, arguments); var o = [null]; o.push.apply(o, e); var p = new (t.bind.apply(t, o))(); return r && _setPrototypeOf(p, r.prototype), p; }
+function _setPrototypeOf(t, e) { return _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function (t, e) { return t.__proto__ = e, t; }, _setPrototypeOf(t, e); }
+function _isNativeReflectConstruct() { try { var t = !Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); } catch (t) {} return (_isNativeReflectConstruct = function _isNativeReflectConstruct() { return !!t; })(); }
 function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i.return) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
 function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
 function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
@@ -36,7 +39,7 @@ function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread n
 function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
 function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
-function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a, u = !0; return { s: function s() { t = t.call(r); }, n: function n() { u = !0; var r = t.next(); return r.done ? { done: !0 } : { value: r.value, done: u = !1 }; }, e: function e(r) { o = !0, a = r; }, f: function f() { try { u || null == t.return || t.return(); } finally { if (o) throw a; } } }; }
+function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n2 = 0, F = function F() {}; return { s: F, n: function n() { return _n2 >= r.length ? { done: !0 } : { done: !1, value: r[_n2++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a, u = !0; return { s: function s() { t = t.call(r); }, n: function n() { u = !0; var r = t.next(); return r.done ? { done: !0 } : { value: r.value, done: u = !1 }; }, e: function e(r) { o = !0, a = r; }, f: function f() { try { u || null == t.return || t.return(); } finally { if (o) throw a; } } }; }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
 function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
 (function () {
@@ -8150,6 +8153,214 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       ro: "Cheie personală pentru metadate anime. Stocată doar pe acest dispozitiv.",
       fr: "Cl\xE9 personnelle des m\xE9tadonn\xE9es anime. Stock\xE9e uniquement sur cet appareil.",
       pl: "Osobisty klucz metadanych anime. Przechowywany tylko na tym urządzeniu."
+    },
+    Украинский: {
+      en: "Ukrainian",
+      uk: "Українська",
+      be: "Украінская",
+      zh: "乌克兰语",
+      pt: "Ucraniano",
+      bg: "Украински",
+      he: "אוקראינית",
+      cs: "Ukrajinština",
+      ro: "Ucraineană",
+      fr: "Ukrainien",
+      pl: "Ukraiński"
+    },
+    Грузинский: {
+      en: "Georgian",
+      uk: "Грузинська",
+      be: "Грузінская",
+      zh: "格鲁吉亚语",
+      pt: "Georgiano",
+      bg: "Грузински",
+      he: "גאורגית",
+      cs: "Gruzínština",
+      ro: "Georgiană",
+      fr: "G\xE9orgien",
+      pl: "Gruziński"
+    },
+    Узбекский: {
+      en: "Uzbek",
+      uk: "Узбецька",
+      be: "Узбекская",
+      zh: "乌兹别克语",
+      pt: "Uzbeque",
+      bg: "Узбекски",
+      he: "אוזבקית",
+      cs: "Uzbečtina",
+      ro: "Uzbecă",
+      fr: "Ouzbek",
+      pl: "Uzbecki"
+    },
+    Итальянский: {
+      en: "Italian",
+      uk: "Італійська",
+      be: "Італьянская",
+      zh: "意大利语",
+      pt: "Italiano",
+      bg: "Италиански",
+      he: "איטלקית",
+      cs: "Italština",
+      ro: "Italiană",
+      fr: "Italien",
+      pl: "Włoski"
+    },
+    Французский: {
+      en: "French",
+      uk: "Французька",
+      be: "Французская",
+      zh: "法语",
+      pt: "Franc\xEAs",
+      bg: "Френски",
+      he: "צרפתית",
+      cs: "Francouzština",
+      ro: "Franceză",
+      fr: "Fran\xE7ais",
+      pl: "Francuski"
+    },
+    "Другие / язык не указан": {
+      en: "Other / unspecified language",
+      uk: "Інші / мову не вказано",
+      be: "Іншыя / мова не пазначана",
+      zh: "其他 / 未指定语言",
+      pt: "Outros / idioma n\xE3o especificado",
+      bg: "Други / неуказан език",
+      he: "אחרים / שפה לא צוינה",
+      cs: "Ostatn\xED / jazyk neuveden",
+      ro: "Altele / limbă nespecificată",
+      fr: "Autres / langue non pr\xE9cis\xE9e",
+      pl: "Inne / język nieokreślony"
+    },
+    "Источники онлайна": {
+      en: "Online sources",
+      uk: "Онлайн-джерела",
+      be: "Анлайн-крыніцы",
+      zh: "在线来源",
+      pt: "Fontes online",
+      bg: "Онлайн източници",
+      he: "מקורות מקוונים",
+      cs: "Online zdroje",
+      ro: "Surse online",
+      fr: "Sources en ligne",
+      pl: "Źródła online"
+    },
+    "Обновить список": {
+      en: "Refresh list",
+      uk: "Оновити список",
+      be: "Абнавіць спіс",
+      zh: "刷新列表",
+      pt: "Atualizar lista",
+      bg: "Обнови списъка",
+      he: "רענון הרשימה",
+      cs: "Obnovit seznam",
+      ro: "Actualizează lista",
+      fr: "Actualiser la liste",
+      pl: "Odśwież listę"
+    },
+    "Включение по языкам. Изменения при следующем открытии онлайн.": {
+      en: "Enable by language. Changes apply when Online is reopened.",
+      uk: "Увімкнення за мовами. Зміни після повторного відкриття онлайн.",
+      be: "Уключэнне паводле моў. Змены пасля паўторнага адкрыцця анлайн.",
+      zh: "按语言启用。重新打开在线页面后生效。",
+      pt: "Ativar por idioma. Altera\xE7\xF5es ao reabrir o online.",
+      bg: "Включване по езици. Промените важат при повторно отваряне онлайн.",
+      he: "הפעלה לפי שפה. השינויים יחולו בפתיחה הבאה של המקורות המקוונים.",
+      cs: "Zapnutí podle jazyka. Změny při dalším otevření online.",
+      ro: "Activare după limbă. Modificările se aplică la redeschiderea online.",
+      fr: "Activer par langue. Modifications \xE0 la r\xE9ouverture en ligne.",
+      pl: "Włączanie według języka. Zmiany po ponownym otwarciu online."
+    },
+    Тайвань: {
+      en: "Taiwan",
+      uk: "Тайвань",
+      be: "Тайвань",
+      zh: "台湾",
+      pt: "Taiwan",
+      bg: "Тайван",
+      he: "טאיוואן",
+      cs: "Tchaj-wan",
+      ro: "Taiwan",
+      fr: "Ta\xEFwan",
+      pl: "Tajwan"
+    },
+    "Новые реалити": {
+      en: "New reality shows",
+      uk: "Нові реаліті",
+      be: "Новыя рэаліці",
+      zh: "新真人秀",
+      pt: "Novos reality shows",
+      bg: "Нови риалити предавания",
+      he: "תוכניות מציאות חדשות",
+      cs: "Nov\xE9 reality show",
+      ro: "Reality-show noi",
+      fr: "Nouvelles \xE9missions de t\xE9l\xE9r\xE9alit\xE9",
+      pl: "Nowe reality show"
+    },
+    "Новые ток-шоу": {
+      en: "New talk shows",
+      uk: "Нові ток-шоу",
+      be: "Новыя ток-шоу",
+      zh: "新脱口秀",
+      pt: "Novos talk shows",
+      bg: "Нови токшоута",
+      he: "תוכניות אירוח חדשות",
+      cs: "Nov\xE9 talk show",
+      ro: "Talk-show noi",
+      fr: "Nouveaux talk-shows",
+      pl: "Nowe talk-show"
+    },
+    "Реалити с высоким рейтингом": {
+      en: "Top-rated reality shows",
+      uk: "Реаліті з високим рейтингом",
+      be: "Рэаліці з высокім рэйтынгам",
+      zh: "高评分真人秀",
+      pt: "Reality shows bem avaliados",
+      bg: "Високо оценени риалити предавания",
+      he: "תוכניות מציאות בדירוג גבוה",
+      cs: "Nejl\xE9pe hodnocen\xE9 reality show",
+      ro: "Reality-show bine cotate",
+      fr: "T\xE9l\xE9r\xE9alit\xE9 la mieux not\xE9e",
+      pl: "Wysoko oceniane reality show"
+    },
+    "Ток-шоу с высоким рейтингом": {
+      en: "Top-rated talk shows",
+      uk: "Ток-шоу з високим рейтингом",
+      be: "Ток-шоу з высокім рэйтынгам",
+      zh: "高评分脱口秀",
+      pt: "Talk shows bem avaliados",
+      bg: "Високо оценени токшоута",
+      he: "תוכניות אירוח בדירוג גבוה",
+      cs: "Nejl\xE9pe hodnocen\xE9 talk show",
+      ro: "Talk-show bine cotate",
+      fr: "Talk-shows les mieux not\xE9s",
+      pl: "Wysoko oceniane talk-show"
+    },
+    "Новые корейские дорамы": {
+      en: "New Korean dramas",
+      uk: "Нові корейські дорами",
+      be: "Новыя карэйскія дорамы",
+      zh: "新韩剧",
+      pt: "Novos dramas coreanos",
+      bg: "Нови корейски драми",
+      he: "דרמות קוריאניות חדשות",
+      cs: "Nov\xE9 korejsk\xE9 seri\xE1ly",
+      ro: "Drame coreene noi",
+      fr: "Nouveaux dramas cor\xE9ens",
+      pl: "Nowe seriale koreańskie"
+    },
+    "Корейские дорамы с высоким рейтингом": {
+      en: "Top-rated Korean dramas",
+      uk: "Корейські дорами з високим рейтингом",
+      be: "Карэйскія дорамы з высокім рэйтынгам",
+      zh: "高评分韩剧",
+      pt: "Dramas coreanos bem avaliados",
+      bg: "Високо оценени корейски драми",
+      he: "דרמות קוריאניות בדירוג גבוה",
+      cs: "Nejl\xE9pe hodnocen\xE9 korejsk\xE9 seri\xE1ly",
+      ro: "Drame coreene bine cotate",
+      fr: "Dramas cor\xE9ens les mieux not\xE9s",
+      pl: "Wysoko oceniane seriale koreańskie"
     }
   };
 
@@ -8446,10 +8657,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
 
   // src/tmdb.js
   function presentableCards(cards) {
-    var russian = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+    var russian2 = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
     return cards.filter(function (card) {
       if (Object.prototype.hasOwnProperty.call(card, "poster_path") && !card.poster_path && !card.img) return false;
-      return !russian || /[а-яё]/i.test(String(card.title || card.name || ""));
+      return !russian2 || /[а-яё]/i.test(String(card.title || card.name || ""));
     });
   }
   function catalogueResults(path, json) {
@@ -8970,8 +9181,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         try {
           var request = w.indexedDB.open("lampa-view-artwork", 1);
           request.onupgradeneeded = function () {
-            for (var _i = 0, _arr = ["files", "sizes"]; _i < _arr.length; _i++) {
-              var store = _arr[_i];
+            for (var _i2 = 0, _arr = ["files", "sizes"]; _i2 < _arr.length; _i2++) {
+              var store = _arr[_i2];
               if (!request.result.objectStoreNames.contains(store)) request.result.createObjectStore(store, {
                 keyPath: "url"
               });
@@ -9331,8 +9542,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       db().then(function (database2) {
         if (database2) try {
           var tx = database2.transaction(["files", "sizes"], "readwrite");
-          for (var _i2 = 0, _arr2 = ["files", "sizes"]; _i2 < _arr2.length; _i2++) {
-            var store = _arr2[_i2];
+          for (var _i3 = 0, _arr2 = ["files", "sizes"]; _i3 < _arr2.length; _i3++) {
+            var store = _arr2[_i3];
             tx.objectStore(store).delete(url);
           }
           tx.onerror = function (event) {
@@ -9972,8 +10183,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     overviewControls.add(control);
     if (overviewDocument !== document) {
       overviewDocument = document;
-      for (var _i3 = 0, _arr3 = ["hover:focus", "hover:hover", "focusin"]; _i3 < _arr3.length; _i3++) {
-        var name = _arr3[_i3];
+      for (var _i4 = 0, _arr3 = ["hover:focus", "hover:hover", "focusin"]; _i4 < _arr3.length; _i4++) {
+        var name = _arr3[_i4];
         document.addEventListener(name, function (event) {
           return overviewFocus(event.target);
         }, true);
@@ -10088,8 +10299,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var key = String(person.id || person.name || person.original_name),
           old = seen.get(key);
         if (old) {
-          for (var _i4 = 0, _arr4 = ["popularity", "episode_count", "total_episode_count"]; _i4 < _arr4.length; _i4++) {
-            var field = _arr4[_i4];
+          for (var _i5 = 0, _arr4 = ["popularity", "episode_count", "total_episode_count"]; _i5 < _arr4.length; _i5++) {
+            var field = _arr4[_i5];
             old[field] = Math.max(Number(old[field]) || 0, Number(person[field]) || 0);
           }
           if (!old.profile_path && person.profile_path) old.profile_path = person.profile_path;
@@ -10671,7 +10882,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // package.json
-  var version = "0.5.16";
+  var version = "0.5.17";
 
   // src/inputs.js
   function inputs(L) {
@@ -11138,10 +11349,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             var sum = [0, 0, 0];
             var count = 0;
             for (var _y = 0; _y < 6; _y++) for (var _x3 = half * 3; _x3 < half * 3 + 3; _x3++) {
-              var _i6 = (_y * 6 + _x3) * 4;
-              if (pixels[_i6 + 3] < 128) continue;
+              var _i7 = (_y * 6 + _x3) * 4;
+              if (pixels[_i7 + 3] < 128) continue;
               count++;
-              for (var _k = 0; _k < 3; _k++) sum[_k] += pixels[_i6 + _k];
+              for (var _k2 = 0; _k2 < 3; _k2++) sum[_k2] += pixels[_i7 + _k2];
             }
             if (!count) return {
               v: void 0
@@ -11184,7 +11395,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var light = 0;
         for (var i = 0; i < out.length; i += 4) light += out[i] + out[i + 1] + out[i + 2];
         var gain = Math.min(2.4, Math.max(0.7, 110 / Math.max(1, light / (64 * 36 * 3))));
-        for (var _i5 = 0; _i5 < out.length; _i5++) if (_i5 % 4 !== 3) out[_i5] = Math.min(255, out[_i5] * gain);
+        for (var _i6 = 0; _i6 < out.length; _i6++) if (_i6 % 4 !== 3) out[_i6] = Math.min(255, out[_i6] * gain);
         frame.data.set(out);
         ctx.putImageData(frame, 0, 0);
         var scene = canvas.toDataURL("image/png"),
@@ -11436,7 +11647,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }
     });
     var _loop6 = function _loop6() {
-      var _arr5$_i = _slicedToArray(_arr5[_i7], 3),
+      var _arr5$_i = _slicedToArray(_arr5[_i8], 3),
         type = _arr5$_i[0],
         name = _arr5$_i[1],
         description = _arr5$_i[2];
@@ -11456,7 +11667,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
       });
     };
-    for (var _i7 = 0, _arr5 = [["ratings", text("Очистить кеш рейтингов"), text("Удалить сохранённые оценки. История и закладки сохранятся.")], ["quality", text("Очистить кеш качества"), text("Удалить сохранённое качество карточек каталога и заново проверить видимые карточки.")]]; _i7 < _arr5.length; _i7++) {
+    for (var _i8 = 0, _arr5 = [["ratings", text("Очистить кеш рейтингов"), text("Удалить сохранённые оценки. История и закладки сохранятся.")], ["quality", text("Очистить кеш качества"), text("Удалить сохранённое качество карточек каталога и заново проверить видимые карточки.")]]; _i8 < _arr5.length; _i8++) {
       _loop6();
     }
   }
@@ -11538,8 +11749,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       if (ratings && Number.isFinite(vote) && vote > 0 && vote <= 10) entry.vote_average = vote;
       if (isAnime(c)) entry.minimal_anime = true;
       if (source(c) === "minimal_shiki") {
-        for (var _i8 = 0, _arr6 = ["episodes", "episodes_aired"]; _i8 < _arr6.length; _i8++) {
-          var field = _arr6[_i8];
+        for (var _i9 = 0, _arr6 = ["episodes", "episodes_aired"]; _i9 < _arr6.length; _i9++) {
+          var field = _arr6[_i9];
           if (Number(c[field]) >= 0) entry[field] = Number(c[field]);
         }
         if (c.status) entry.status = c.status;
@@ -11863,8 +12074,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }
       function expand(meta) {
         if (!alive()) return;
-        for (var _i9 = 0, _arr7 = ["english", "japanese", "synonyms"]; _i9 < _arr7.length; _i9++) {
-          var field = _arr7[_i9];
+        for (var _i0 = 0, _arr7 = ["english", "japanese", "synonyms"]; _i0 < _arr7.length; _i0++) {
+          var field = _arr7[_i0];
           var values = meta && meta[field];
           (Array.isArray(values) ? values : [values]).filter(Boolean).slice(0, 2).forEach(function (name) {
             return add(name);
@@ -12056,8 +12267,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     function walk(value, depth) {
       if (!value || _typeof(value) !== "object" || depth > 6 || ++visited > 250) return;
       if (value.uhd === true || value.uhd === 1) add("4K");
-      for (var _i0 = 0, _arr8 = ["quality", "qualitys", "resolution", "max_quality"]; _i0 < _arr8.length; _i0++) {
-        var key = _arr8[_i0];
+      for (var _i1 = 0, _arr8 = ["quality", "qualitys", "resolution", "max_quality"]; _i1 < _arr8.length; _i1++) {
+        var key = _arr8[_i1];
         var field = value[key];
         if (field && _typeof(field) === "object") Object.keys(field).forEach(add);else add(field);
       }
@@ -12067,8 +12278,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }
       if (Array.isArray(value)) value.forEach(function (entry) {
         return walk(entry, depth + 1);
-      });else for (var _i1 = 0, _arr9 = ["data", "results", "items", "list", "playlists"]; _i1 < _arr9.length; _i1++) {
-        var _key2 = _arr9[_i1];
+      });else for (var _i10 = 0, _arr9 = ["data", "results", "items", "list", "playlists"]; _i10 < _arr9.length; _i10++) {
+        var _key2 = _arr9[_i10];
         walk(value[_key2], depth + 1);
       }
     }
@@ -12163,8 +12374,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             _height = _view.clientHeight || rect.height,
             scale = rect.width / _width || 1,
             _entries = [];
-          for (var _i11 = 0, _arr0 = [[".card__vote", "br"], [".pt-quality,.card__quality", "tl"], [".pt-kind", "tr"], [".pt-series-status", "tr"], [".card__marker", "bl"], [".card__icon:not(.icon--history)", "tl"], [".card__new-episode", "bl"]]; _i11 < _arr0.length; _i11++) {
-            var _arr0$_i = _slicedToArray(_arr0[_i11], 2),
+          for (var _i12 = 0, _arr0 = [[".card__vote", "br"], [".pt-quality,.card__quality", "tl"], [".pt-kind", "tr"], [".pt-series-status", "tr"], [".card__marker", "bl"], [".card__icon:not(.icon--history)", "tl"], [".card__new-episode", "bl"]]; _i12 < _arr0.length; _i12++) {
+            var _arr0$_i = _slicedToArray(_arr0[_i12], 2),
               selector = _arr0$_i[0],
               corner = _arr0$_i[1];
             var _iterator20 = _createForOfIteratorHelper(_view.querySelectorAll(selector)),
@@ -12211,8 +12422,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       } finally {
         _iterator18.f();
       }
-      for (var _i10 = 0, _reads = reads; _i10 < _reads.length; _i10++) {
-        var _reads$_i = _reads[_i10],
+      for (var _i11 = 0, _reads = reads; _i11 < _reads.length; _i11++) {
+        var _reads$_i = _reads[_i11],
           view = _reads$_i.view,
           width = _reads$_i.width,
           height = _reads$_i.height,
@@ -12254,8 +12465,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       pending.add(node);
       if (!frame && !paused()) frame = requestAnimationFrame(flush);
     }
-    for (var _i12 = 0, _arr1 = ["minimal:tv-idle", "minimal:wheel-idle", "visibilitychange"]; _i12 < _arr1.length; _i12++) {
-      var event = _arr1[_i12];
+    for (var _i13 = 0, _arr1 = ["minimal:tv-idle", "minimal:wheel-idle", "visibilitychange"]; _i13 < _arr1.length; _i13++) {
+      var event = _arr1[_i13];
       document.addEventListener(event, function () {
         if (pending.size && !frame) frame = requestAnimationFrame(flush);
       });
@@ -13562,7 +13773,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     if (!state.posterFitWrapped) {
       state.posterFitWrapped = true;
       var _loop10 = function _loop10() {
-        var method = _arr10[_i13];
+        var method = _arr10[_i14];
         var original = line.scroll[method];
         if (!original) return 1; // continue
         line.scroll[method] = function (element, center) {
@@ -13576,7 +13787,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           return original.apply(this, arguments);
         };
       };
-      for (var _i13 = 0, _arr10 = ["update", "immediate"]; _i13 < _arr10.length; _i13++) {
+      for (var _i14 = 0, _arr10 = ["update", "immediate"]; _i14 < _arr10.length; _i14++) {
         if (_loop10()) continue;
       }
     }
@@ -14135,6 +14346,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     if (/^lampa_view_/.test(n)) return "appearance";
     if (/minimal_(banner)/.test(n)) return "appearance";
     if (/^nova_plus_(mode|hero|art|logo|focus|fade|fullscreen)/.test(n)) return "appearance";
+    if (n === "minimal_online_sources") return "playback";
     if (/^kino_suggest_|minimal_|recent_rows/.test(n) || ["cards", "feed", "subs"].includes(g)) return "catalogue";
     if (g === "langs" || /langs|autosubs/.test(n)) return "languages";
     if (g === "server" || /server/.test(n)) return "server";
@@ -14172,6 +14384,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (n === "minimal_trakt_client_id" && !flag(L, "minimal_trakt_enabled", false)) return false;
         if (d.param && d.param.type === "button" && typeof d.onChange !== "function") return false;
         if (["alc_auto_quick_movie", "alc_auto_quick_series"].includes(n)) return false;
+        if (n === "alc_auto_src_btn" && typeof window !== "undefined" && window.LampaView && window.LampaView.onlineSources) return false;
         if (/^alc_auto_(fav_btn|src_btn|studios_btn|langs|visible_languages|autosubs)$/.test(n) && typeof window !== "undefined" && window.lampac_plugin) return false;
         if (n.startsWith("nova_plus_") && n !== "nova_plus_enabled" && !online) return false;
         if (n === "nova_plus_layout" && L && L.Storage && L.Storage.get("nova_plus_view", "list") !== "grid") return false;
@@ -15283,7 +15496,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       return x.row;
     });
   }
-  function collections(L, shiki) {
+  function collections(L, shiki, kino, kinoFeeds) {
     var key = "minimal_collections",
       knownKey = "minimal_collection_rows_v2";
     var read = function read() {
@@ -15530,7 +15743,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }));
       if (!["movie", "tv", "cartoon", "anime", "dorama", "tvshow"].includes(kind)) return category.apply(this, arguments);
       if ((object.source || L.Storage.get("source", "cub")) === "trakt" && !["dorama", "tvshow"].includes(kind) && !(kind === "anime" && animeMode(L, object) === "shikimori")) {
-        var accept = function accept(rows) {
+        var accept2 = function accept2(rows) {
           status.state = rows.some(function (row) {
             return row.results && row.results.length;
           }) ? "ready" : "empty";
@@ -15542,17 +15755,31 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         };
         return category.call(this, __spreadProps(__spreadValues({}, object), {
           source: "trakt"
-        }), accept, function (error) {
+        }), accept2, function (error) {
           status.state = "error";
           if (fail) fail(error);
         });
       }
-      catalogue(L, shiki, object, prefs(ctx).hidden || [], function (rows) {
+      var accept = function accept(rows) {
         remember(ctx, rows);
         ok(arrange(rows.filter(function (row) {
           return !row.minimal_hidden;
         }), prefs(ctx)));
-      });
+      };
+      var fallback = function fallback() {
+        return catalogue(L, shiki, object, prefs(ctx).hidden || [], accept);
+      };
+      if (["dorama", "tvshow"].includes(kind) && kino && kino.enabled() && kinoFeeds) {
+        var _status = object.minimal_catalogue_status = {
+          state: "loading"
+        };
+        kinoFeeds.load(kind, prefs(ctx).hidden || [], function (rows) {
+          _status.state = rows.some(function (row) {
+            return row.results.length;
+          }) ? "ready" : "empty";
+          accept(rows);
+        }, fallback);
+      } else fallback();
     };
     var create = L.Utils.createInstance,
       Main = L.Maker.get("Main", {});
@@ -15635,8 +15862,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   function yearBounds(f) {
     var from = String(f.year_from || f.year || "").trim(),
       to = String(f.year_to || f.year || "").trim();
-    for (var _i14 = 0, _arr11 = [from, to]; _i14 < _arr11.length; _i14++) {
-      var value = _arr11[_i14];
+    for (var _i15 = 0, _arr11 = [from, to]; _i15 < _arr11.length; _i15++) {
+      var value = _arr11[_i15];
       if (value && (!/^\d{4}$/.test(value) || Number(value) < 1870 || Number(value) > 2100)) throw Error(text("Укажите год от 1870 до 2100"));
     }
     if (from && to && Number(from) > Number(to)) throw Error(text("Начальный год не может быть больше конечного"));
@@ -17748,8 +17975,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (typeof value.url === "string" && value.url.trim() && !value.similar && /^(play|call|link)$/.test(value.method)) count++;
         if (Array.isArray(value)) value.forEach(function (row) {
           return _walk(row, depth + 1);
-        });else for (var _i15 = 0, _arr12 = ["data", "results", "items", "list", "playlists"]; _i15 < _arr12.length; _i15++) {
-          var key = _arr12[_i15];
+        });else for (var _i16 = 0, _arr12 = ["data", "results", "items", "list", "playlists"]; _i16 < _arr12.length; _i16++) {
+          var key = _arr12[_i16];
           _walk(value[key], depth + 1);
         }
       };
@@ -17958,8 +18185,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }
       return value;
     }
-    if (L.Timeline && L.Timeline.listener) for (var _i16 = 0, _arr13 = ["update", "read"]; _i16 < _arr13.length; _i16++) {
-      var event = _arr13[_i16];
+    if (L.Timeline && L.Timeline.listener) for (var _i17 = 0, _arr13 = ["update", "read"]; _i17 < _arr13.length; _i17++) {
+      var event = _arr13[_i17];
       L.Timeline.listener.follow(event, function () {
         revision++;
         snapshots.clear();
@@ -18747,6 +18974,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       enabled: enabled,
       title: title,
       anime: anime,
+      catalogueRequest: function catalogueRequest(path, done) {
+        if (!/^titles\?/.test(path)) return done(null);
+        request(path, done);
+      },
       book: function book(card, season, numbers, files, done) {
         anime(card, function (model) {
           return done(metadataBook(model, season, numbers, files));
@@ -18758,6 +18989,475 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
       },
       clear: clear
+    };
+  }
+
+  // src/kino-catalogue.js
+  function kinoPlan(kind) {
+    var date = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : /* @__PURE__ */new Date();
+    var year = date.getFullYear(),
+      make = function make(key, title, countries) {
+        var genres = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : [];
+        var extra = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
+        return {
+          key: key,
+          title: text(title),
+          spec: __spreadValues({
+            kind: kind,
+            countries: countries,
+            genres: genres,
+            sort: "popularity"
+          }, extra)
+        };
+      };
+    if (kind === "dorama") return [make("korea", "Корейские дорамы", ["Южная Корея", "Корея Южная"]), make("japan", "Японские дорамы", ["Япония"]), make("china", "Китайские дорамы", ["Китай"]), make("taiwan", "Тайвань", ["Тайвань"]), make("thai", "Тайские дорамы", ["Таиланд"]), make("new", "Новые корейские дорамы", ["Южная Корея", "Корея Южная"], [], {
+      year: year
+    }), make("rated", "Корейские дорамы с высоким рейтингом", ["Южная Корея", "Корея Южная"], [], {
+      sort: "kinopoisk",
+      minRating: 8
+    })];
+    if (kind === "tvshow") return [make("reality", "Российские реалити", ["Россия"], ["Реалити-шоу", "реальное ТВ"]), make("talk", "Российские ток-шоу", ["Россия"], ["Ток-шоу"]), make("new-reality", "Новые реалити", ["Россия"], ["Реалити-шоу", "реальное ТВ"], {
+      year: year
+    }), make("new-talk", "Новые ток-шоу", ["Россия"], ["Ток-шоу"], {
+      year: year
+    }), make("rated-reality", "Реалити с высоким рейтингом", ["Россия"], ["Реалити-шоу", "реальное ТВ"], {
+      sort: "kinopoisk",
+      minRating: 7
+    }), make("rated-talk", "Ток-шоу с высоким рейтингом", ["Россия"], ["Ток-шоу"], {
+      sort: "kinopoisk",
+      minRating: 7
+    })];
+    return [];
+  }
+  function cataloguePaths(spec, page) {
+    var _a;
+    if (!spec || !["dorama", "tvshow"].includes(spec.kind) || !Array.isArray(spec.countries) || !spec.countries.length) return [];
+    var queries = [];
+    var _iterator69 = _createForOfIteratorHelper(spec.countries.slice(0, 2)),
+      _step69;
+    try {
+      for (_iterator69.s(); !(_step69 = _iterator69.n()).done;) {
+        var country = _step69.value;
+        var _iterator70 = _createForOfIteratorHelper((((_a = spec.genres) == null ? void 0 : _a.length) ? spec.genres : [""]).slice(0, 2)),
+          _step70;
+        try {
+          for (_iterator70.s(); !(_step70 = _iterator70.n()).done;) {
+            var genre = _step70.value;
+            var p = new URLSearchParams({
+              type: "tv",
+              country: country,
+              sort: ["popularity", "kinopoisk", "year"].includes(spec.sort) ? spec.sort : "popularity",
+              order: "desc",
+              page: String(Math.max(1, Number(page) || 1)),
+              limit: "24"
+            });
+            if (genre) p.set("genre", genre);
+            if (spec.year) p.set("year", String(spec.year));
+            if (spec.minRating) p.set("minRating", String(spec.minRating));
+            queries.push("titles?" + p);
+          }
+        } catch (err) {
+          _iterator70.e(err);
+        } finally {
+          _iterator70.f();
+        }
+      }
+    } catch (err) {
+      _iterator69.e(err);
+    } finally {
+      _iterator69.f();
+    }
+    return queries;
+  }
+  function catalogueCard(value, spec) {
+    var language = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "ru";
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n;
+    var id = Number((_a = value == null ? void 0 : value.id) == null ? void 0 : _a.tmdb),
+      genres = ((value == null ? void 0 : value.genres) || []).map(function (v) {
+        return String(v).toLowerCase();
+      }),
+      countries = (value == null ? void 0 : value.countries) || [];
+    if ((value == null ? void 0 : value.type) !== "tv" || !Number.isSafeInteger(id) || id <= 0 || !spec.countries.some(function (country) {
+      return countries.includes(country);
+    })) return null;
+    if (value.anime || genres.some(function (g) {
+      return /мульт|аниме|animation/.test(g);
+    })) return null;
+    if (spec.kind === "dorama" && genres.some(function (g) {
+      return /документ|реал|ток-шоу|talk|reality/.test(g);
+    })) return null;
+    if (spec.kind === "tvshow" && !genres.some(function (g) {
+      return spec.genres.some(function (w) {
+        return g === w.toLowerCase();
+      });
+    })) return null;
+    var name = String(((_b = value.title) == null ? void 0 : _b[language]) || ((_c = value.title) == null ? void 0 : _c.ru) || ((_d = value.title) == null ? void 0 : _d.en) || ((_e = value.title) == null ? void 0 : _e.original) || "");
+    if (!name) return null;
+    var image2 = value.images || {},
+      date = ((_f = value.release) == null ? void 0 : _f.date) || (((_g = value.release) == null ? void 0 : _g.year) ? value.release.year + "-01-01" : "");
+    return {
+      id: id,
+      tmdb_id: id,
+      media_type: "tv",
+      source: "tmdb",
+      name: name,
+      title: name,
+      original_name: ((_h = value.title) == null ? void 0 : _h.original) || name,
+      first_air_date: date,
+      overview: ((_i = value.description) == null ? void 0 : _i[language]) || "",
+      poster_path: image2.poster || ((_j = image2.posters) == null ? void 0 : _j[0]) || ((_k = image2.kinopoisk) == null ? void 0 : _k.poster) || "",
+      backdrop_path: image2.backdrop || ((_l = image2.backdrops) == null ? void 0 : _l[0]) || image2.cover || "",
+      vote_average: Number((_n = (_m = value.ratings) == null ? void 0 : _m.tmdb) == null ? void 0 : _n.value) || 0,
+      imdb_id: value.id.imdb || "",
+      kinopoisk_id: value.id.kinopoisk || null,
+      minimal_kinoapi: true
+    };
+  }
+  function kinoCatalogue(L, kino) {
+    var source = {
+      clear: function clear() {},
+      full: function full(p, ok, fail) {
+        return L.Api.sources.tmdb.full(__spreadProps(__spreadValues({}, p), {
+          source: "tmdb",
+          method: "tv"
+        }), ok, fail);
+      },
+      list: function list(params, ok) {
+        var fail = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : function () {};
+        var spec;
+        try {
+          spec = JSON.parse(params.url);
+        } catch (error) {
+          return fail();
+        }
+        var page = Math.max(1, Number(params.page) || 1),
+          paths2 = cataloguePaths(spec, page);
+        if (!paths2.length) return fail();
+        var replies = new Array(paths2.length);
+        var left = paths2.length;
+        paths2.forEach(function (path, index) {
+          return kino.catalogueRequest(path, function (value) {
+            replies[index] = value;
+            if (--left) return;
+            if (replies.some(function (row) {
+              return !Array.isArray(row == null ? void 0 : row.data);
+            })) return fail();
+            var seen = /* @__PURE__ */new Set(),
+              results = [];
+            for (var i = 0; i < 24; i++) for (var _i18 = 0, _replies = replies; _i18 < _replies.length; _i18++) {
+              var row = _replies[_i18];
+              var card = catalogueCard(row.data[i], spec, locale());
+              if (card && !seen.has(card.id)) {
+                seen.add(card.id);
+                results.push(card);
+              }
+            }
+            ok({
+              results: results,
+              page: page,
+              total_pages: replies.some(function (row) {
+                var _a;
+                return (_a = row.meta) == null ? void 0 : _a.hasNext;
+              }) ? page + 1 : page
+            });
+          });
+        });
+      }
+    };
+    L.Api.sources.minimal_kino = source;
+    function load(kind, hidden, ok, fail) {
+      var plan = kinoPlan(kind),
+        rows = new Array(plan.length);
+      var cursor = 0,
+        active = 0,
+        done = 0,
+        ended = false;
+      function pump() {
+        if (ended) return;
+        if (done === plan.length) {
+          ended = true;
+          var visible = rows.filter(Boolean);
+          return visible.length ? ok(visible) : fail();
+        }
+        var _loop15 = function _loop15() {
+          var index = cursor++,
+            job = plan[index],
+            url = JSON.stringify(job.spec),
+            id = "minimal:kino:" + kind + ":" + job.key,
+            row = {
+              title: job.title,
+              source: "minimal_kino",
+              url: url,
+              minimal_row_id: id,
+              results: []
+            };
+          if (hidden.includes(id) || hidden.includes(url)) {
+            rows[index] = __spreadProps(__spreadValues({}, row), {
+              minimal_hidden: true
+            });
+            done++;
+            return 1; // continue
+          }
+          active++;
+          source.list({
+            url: url,
+            page: 1
+          }, function (json) {
+            rows[index] = __spreadProps(__spreadValues(__spreadValues({}, row), json), {
+              results: json.results.slice(0, 20)
+            });
+            active--;
+            done++;
+            pump();
+          }, function () {
+            active--;
+            done++;
+            pump();
+          });
+        };
+        while (!ended && active < 2 && cursor < plan.length) {
+          if (_loop15()) continue;
+        }
+        if (done === plan.length) pump();
+      }
+      pump();
+    }
+    return __spreadProps(__spreadValues({}, source), {
+      load: load
+    });
+  }
+
+  // src/online-sources.js
+  var sourceKey = function sourceKey(row) {
+    return String(typeof row === "string" ? row : row && (row.balanser || row.source || row.name) || "").split(" ")[0].toLowerCase().replace(/_snack$/, "");
+  };
+  var russian = new Set("filmix pizdatoehd kinobase phantom aladin rudub kinogo leproduction veoveo collaps hdvb rutubemovie vkmovie kinoteatrkg lordfilm vibix kinotochka kodik ailiberty aniliberty animelib animedia animevost dreamerscast animebesst anidub zetflix alloha hdrezka".split(" "));
+  function sourceLanguage(row) {
+    var key = sourceKey(row),
+      label = String(row.name || row),
+      explicit = String(row.voice_lang || row.lang || "").toLowerCase();
+    if (/^(ru|en|uk|ka|uz|it|fr)$/.test(explicit)) return explicit;
+    if (/\beng\b|англий|english/i.test(label) || /^(videasy|movpi|vidsrc|vidlink|vidfast)$/.test(key)) return "en";
+    if (/укра|ukrain/i.test(label) || /^(uafilm|eneyida|uakino|uaserials|uaflix|kinoukr|franko|starlight|oneplusone|anitube|unimay|mikai|bamboo|animeon)$/.test(key)) return "uk";
+    if (/грузин|georg/i.test(label) || /^(geosaitebi|kinoflix)$/.test(key)) return "ka";
+    if (/узбек|uzbek/i.test(label)) return "uz";
+    if (/итальян|italian/i.test(label)) return "it";
+    if (/француз|french/i.test(label)) return "fr";
+    return russian.has(key) ? "ru" : "other";
+  }
+  function filterSources(value, off) {
+    var keep = function keep(row) {
+      return !off.includes(sourceKey(row));
+    };
+    if (Array.isArray(value)) return value.filter(keep);
+    if (value && Array.isArray(value.online)) return __spreadValues(__spreadProps(__spreadValues({}, value), {
+      online: value.online.filter(keep)
+    }), Array.isArray(value.pending) ? {
+      pending: value.pending.filter(keep)
+    } : {});
+    return value;
+  }
+  function onlineSources(L) {
+    var OFF = "alc_auto_src_off",
+      KNOWN = "minimal_online_sources_v1";
+    var _revision = 0,
+      loading = false,
+      waiters = [],
+      until = 0;
+    var off = function off() {
+      var value = L.Storage.get(OFF, []);
+      return Array.isArray(value) ? value.map(sourceKey) : [];
+    };
+    var known = function known() {
+      var value = L.Storage.get(KNOWN, []);
+      return Array.isArray(value) ? value : [];
+    };
+    function remember(value) {
+      var list = Array.isArray(value) ? value : value && value.online;
+      if (!Array.isArray(list)) return;
+      var entries2 = new Map(known().map(function (row) {
+        return [sourceKey(row), row];
+      }));
+      list.forEach(function (row) {
+        var id = sourceKey(row);
+        if (row && row.service !== true && row.url && /^[a-z0-9][a-z0-9_.-]{0,39}$/.test(id) && !/^(alc_?auto|auto|ossubs|kpid|animeid|subsx|alcmedia|alcstats)$/.test(id)) entries2.set(id, {
+          balanser: id,
+          name: String(row.name || id),
+          lang: row.voice_lang || row.lang || ""
+        });
+      });
+      var next = _toConsumableArray(entries2.values()).slice(0, 200);
+      if (JSON.stringify(next) !== JSON.stringify(known())) L.Storage.set(KNOWN, next);
+    }
+    if (L.Reguest && !L.Reguest.lampaViewSources) {
+      var Request = function Request() {
+        for (var _len2 = arguments.length, args = new Array(_len2), _key6 = 0; _key6 < _len2; _key6++) {
+          args[_key6] = arguments[_key6];
+        }
+        var request = _construct(Native, args);
+        var _loop16 = function _loop16() {
+          var method = _arr14[_i19];
+          var send = request[method];
+          if (typeof send !== "function") return 1; // continue
+          request[method] = function (url, ok) {
+            var discovery = false;
+            try {
+              discovery = /\/(?:lite\/events|lifeevents)\/?$/.test(new URL(String(url), typeof location === "undefined" ? void 0 : location.href).pathname);
+            } catch (error) {}
+            for (var _len3 = arguments.length, rest = new Array(_len3 > 2 ? _len3 - 2 : 0), _key7 = 2; _key7 < _len3; _key7++) {
+              rest[_key7 - 2] = arguments[_key7];
+            }
+            if (!discovery || typeof ok !== "function") return send.call.apply(send, [this, url, ok].concat(rest));
+            return send.call.apply(send, [this, url, function (value) {
+              remember(value);
+              for (var _len4 = arguments.length, extra = new Array(_len4 > 1 ? _len4 - 1 : 0), _key8 = 1; _key8 < _len4; _key8++) {
+                extra[_key8 - 1] = arguments[_key8];
+              }
+              return ok.call.apply(ok, [this, request.lampaViewInventory ? value : filterSources(value, off())].concat(extra));
+            }].concat(rest));
+          };
+        };
+        for (var _i19 = 0, _arr14 = ["silent", "native"]; _i19 < _arr14.length; _i19++) {
+          if (_loop16()) continue;
+        }
+        return request;
+      };
+      var Native = L.Reguest;
+      Object.setPrototypeOf(Request, Native);
+      Request.prototype = Native.prototype;
+      Request.lampaViewSources = true;
+      L.Reguest = Request;
+    }
+    function server() {
+      var api = typeof window !== "undefined" && window.alc_auto_debug;
+      var base = String(L.Storage.get("alc_auto_server", "") || api && api.base && api.base() || "");
+      if (!base && typeof location !== "undefined" && /^https?:$/.test(location.protocol)) base = location.origin;
+      try {
+        var url = new URL(/^https?:\/\//i.test(base) ? base : "http://" + base);
+        return /^https?:$/.test(url.protocol) ? url.origin : "";
+      } catch (error) {
+        return "";
+      }
+    }
+    function refresh(done) {
+      if (loading) {
+        waiters.push(done);
+        return;
+      }
+      if (until > Date.now()) return done();
+      var base = server();
+      if (!base || !L.Reguest) return done();
+      loading = true;
+      waiters = [done];
+      var left = 3;
+      var finish = function finish() {
+        if (--left) return;
+        loading = false;
+        until = Date.now() + 3e5;
+        var list = waiters.splice(0);
+        list.forEach(function (fn) {
+          return fn();
+        });
+      };
+      for (var _i20 = 0, _arr15 = ["serial=0", "serial=1", "serial=1&anime=1"]; _i20 < _arr15.length; _i20++) {
+        var query = _arr15[_i20];
+        var request = new L.Reguest();
+        request.lampaViewInventory = true;
+        request.timeout(4500);
+        request.silent(base + "/lite/events?rjson=true&" + query, function (value) {
+          remember(value);
+          finish();
+        }, finish);
+      }
+    }
+    var labels = {
+      ru: "Русский",
+      en: "Английский",
+      uk: "Украинский",
+      ka: "Грузинский",
+      uz: "Узбекский",
+      it: "Итальянский",
+      fr: "Французский",
+      other: "Другие / язык не указан"
+    };
+    var back = function back() {
+      return L.Controller.toggle("settings");
+    };
+    function group(language) {
+      var disabled = off();
+      L.Select.show({
+        title: text(labels[language]),
+        items: known().filter(function (row) {
+          return sourceLanguage(row) === language;
+        }).map(function (row) {
+          return {
+            title: row.name,
+            src: sourceKey(row),
+            checkbox: true,
+            checked: !disabled.includes(sourceKey(row))
+          };
+        }),
+        onCheck: function onCheck(item) {
+          var next = off().filter(function (id) {
+            return id !== item.src;
+          });
+          if (!item.checked) next.push(item.src);
+          L.Storage.set(OFF, next);
+          _revision++;
+        },
+        onBack: menu
+      });
+    }
+    function menu() {
+      var rows = known();
+      L.Select.show({
+        title: text("Источники онлайна"),
+        items: Object.keys(labels).filter(function (lang) {
+          return rows.some(function (row) {
+            return sourceLanguage(row) === lang;
+          });
+        }).map(function (lang) {
+          return {
+            title: text(labels[lang]),
+            subtitle: String(rows.filter(function (row) {
+              return sourceLanguage(row) === lang;
+            }).length),
+            lang: lang
+          };
+        }).concat([{
+          title: text("Обновить список"),
+          refresh: true
+        }]),
+        onSelect: function onSelect(item) {
+          if (item.refresh) {
+            until = 0;
+            refresh(menu);
+          } else group(item.lang);
+        },
+        onBack: back
+      });
+    }
+    if (L.SettingsApi) L.SettingsApi.addParam({
+      component: "lampa_view",
+      param: {
+        name: "minimal_online_sources",
+        type: "button"
+      },
+      field: {
+        name: text("Источники онлайна"),
+        description: text("Включение по языкам. Изменения при следующем открытии онлайн.")
+      },
+      onChange: function onChange() {
+        return refresh(menu);
+      }
+    });
+    return {
+      off: off,
+      remember: remember,
+      menu: menu,
+      revision: function revision() {
+        return _revision;
+      }
     };
   }
 
@@ -18887,7 +19587,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       comp.lampaViewSourceCache = true;
       var native = comp.createSource;
       function key() {
-        return JSON.stringify([L.Timeline && L.Timeline.filename ? L.Timeline.filename() : "default", L.Storage.get("account_email", ""), L.Storage.get("language", "ru"), comp.requestParams("")]);
+        return JSON.stringify([L.Timeline && L.Timeline.filename ? L.Timeline.filename() : "default", L.Storage.get("account_email", ""), L.Storage.get("language", "ru"), comp.requestParams(""), L.Storage.get("alc_auto_src_off", [])]);
       }
       function copy(rows) {
         return rows.map(function (row) {
@@ -19183,8 +19883,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     function fields(json, kind, id) {
       if (!json || Number(json.id) !== Number(id) || !(json.title || json.name)) return null;
       var value = {};
-      for (var _i17 = 0, _arr14 = ["title", "name", "original_title", "original_name", "overview", "poster_path", "backdrop_path", "release_date", "first_air_date", "original_language", "vote_average", "vote_count", "genre_ids", "genres", "origin_country", "production_companies", "networks"]; _i17 < _arr14.length; _i17++) {
-        var name = _arr14[_i17];
+      for (var _i21 = 0, _arr16 = ["title", "name", "original_title", "original_name", "overview", "poster_path", "backdrop_path", "release_date", "first_air_date", "original_language", "vote_average", "vote_count", "genre_ids", "genres", "origin_country", "production_companies", "networks"]; _i21 < _arr16.length; _i21++) {
+        var name = _arr16[_i21];
         if (json[name] != null) value[name] = json[name];
       }
       value.title = json.title || json.name;
@@ -19208,7 +19908,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       save();
     }
     function pump() {
-      var _loop15 = function _loop15() {
+      var _loop17 = function _loop17() {
         var task = queue.shift();
         if (task.generation !== generation) return 1; // continue
         running++;
@@ -19238,7 +19938,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
       };
       while (running < 2 && queue.length) {
-        if (_loop15()) continue;
+        if (_loop17()) continue;
       }
     }
     function request(path, lang, done) {
@@ -19268,18 +19968,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           type = _ref38[1];
         return request(path, lang, function (json) {
           if (json && Array.isArray(json.results)) answers++;
-          var _iterator69 = _createForOfIteratorHelper(json && json.results || []),
-            _step69;
+          var _iterator71 = _createForOfIteratorHelper(json && json.results || []),
+            _step71;
           try {
-            for (_iterator69.s(); !(_step69 = _iterator69.n()).done;) {
-              var row = _step69.value;
+            for (_iterator71.s(); !(_step71 = _iterator71.n()).done;) {
+              var row = _step71.value;
               var kind = type || row.media_type;
               if ((kind === "movie" || kind === "tv") && row.poster_path && row.backdrop_path) remember(lang, kind, row);
             }
           } catch (err) {
-            _iterator69.e(err);
+            _iterator71.e(err);
           } finally {
-            _iterator69.f();
+            _iterator71.f();
           }
           if (! --remaining) {
             if (!answers) unavailableUntil = Date.now() + 6e4;
@@ -19490,7 +20190,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       });
     };
     function pump() {
-      var _loop16 = function _loop16() {
+      var _loop18 = function _loop18() {
         var finish = function finish(json, message) {
           if (settled) return;
           settled = true;
@@ -19552,7 +20252,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
       };
       while (running < 2 && queue.length) {
-        if (_loop16()) continue;
+        if (_loop18()) continue;
       }
     }
     function clear() {
@@ -19560,8 +20260,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       queue.length = 0;
       pending.clear();
       metadata.clear();
-      for (var _i18 = 0, _Array$from = Array.from(live); _i18 < _Array$from.length; _i18++) {
-        var xhr = _Array$from[_i18];
+      for (var _i22 = 0, _Array$from = Array.from(live); _i22 < _Array$from.length; _i22++) {
+        var xhr = _Array$from[_i22];
         xhr.abort();
       }
     }
@@ -19583,11 +20283,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           var results = [],
             seen = /* @__PURE__ */new Set();
           for (var i = 0; i < 10; i++) {
-            var _iterator70 = _createForOfIteratorHelper(good),
-              _step70;
+            var _iterator72 = _createForOfIteratorHelper(good),
+              _step72;
             try {
-              for (_iterator70.s(); !(_step70 = _iterator70.n()).done;) {
-                var part = _step70.value;
+              for (_iterator72.s(); !(_step72 = _iterator72.n()).done;) {
+                var part = _step72.value;
                 var card = part.results[i];
                 if (card && !seen.has(card.media_type + ":" + card.id)) {
                   seen.add(card.media_type + ":" + card.id);
@@ -19595,9 +20295,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 }
               }
             } catch (err) {
-              _iterator70.e(err);
+              _iterator72.e(err);
             } finally {
-              _iterator70.f();
+              _iterator72.f();
             }
           }
           ok({
@@ -19697,22 +20397,22 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         pending.delete(queue[i].key);
         queue.splice(i, 1);
       }
-      var _iterator71 = _createForOfIteratorHelper(pending),
-        _step71;
+      var _iterator73 = _createForOfIteratorHelper(pending),
+        _step73;
       try {
-        for (_iterator71.s(); !(_step71 = _iterator71.n()).done;) {
-          var _step71$value = _slicedToArray(_step71.value, 2),
-            key = _step71$value[0],
-            job = _step71$value[1];
+        for (_iterator73.s(); !(_step73 = _iterator73.n()).done;) {
+          var _step73$value = _slicedToArray(_step73.value, 2),
+            key = _step73$value[0],
+            job = _step73$value[1];
           if (job.path.startsWith("search/")) job.callbacks = [];
         }
       } catch (err) {
-        _iterator71.e(err);
+        _iterator73.e(err);
       } finally {
-        _iterator71.f();
+        _iterator73.f();
       }
-      for (var _i19 = 0, _Array$from2 = Array.from(live); _i19 < _Array$from2.length; _i19++) {
-        var xhr = _Array$from2[_i19];
+      for (var _i23 = 0, _Array$from2 = Array.from(live); _i23 < _Array$from2.length; _i23++) {
+        var xhr = _Array$from2[_i23];
         if ((xhr.minimalTraktPath || "").startsWith("search/")) xhr.abort();
       }
     }
@@ -19852,14 +20552,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         list: list,
         clear: clear
       };
-    var _loop17 = function _loop17() {
-      var method = _arr15[_i20];
+    var _loop19 = function _loop19() {
+      var method = _arr17[_i24];
       if (tmdb[method]) adapter[method] = function () {
         return tmdb[method].apply(tmdb, arguments);
       };
     };
-    for (var _i20 = 0, _arr15 = ["full", "person", "seasons", "menu", "menuCategory", "genres", "collections"]; _i20 < _arr15.length; _i20++) {
-      _loop17();
+    for (var _i24 = 0, _arr17 = ["full", "person", "seasons", "menu", "menuCategory", "genres", "collections"]; _i24 < _arr17.length; _i24++) {
+      _loop19();
     }
     L.Api.sources.trakt = adapter;
     function sources() {
@@ -19971,18 +20671,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     };
     var group, winter;
     function update() {
-      var _iterator72 = _createForOfIteratorHelper(origins),
-        _step72;
+      var _iterator74 = _createForOfIteratorHelper(origins),
+        _step74;
       try {
-        for (_iterator72.s(); !(_step72 = _iterator72.n()).done;) {
-          var _step72$value = _slicedToArray(_step72.value, 1),
-            _button = _step72$value[0];
+        for (_iterator74.s(); !(_step74 = _iterator74.n()).done;) {
+          var _step74$value = _slicedToArray(_step74.value, 1),
+            _button = _step74$value[0];
           if (!_button.isConnected) origins.delete(_button);
         }
       } catch (err) {
-        _iterator72.e(err);
+        _iterator74.e(err);
       } finally {
-        _iterator72.f();
+        _iterator74.f();
       }
       var logo = head.querySelector(".head__logo-icon");
       if (!logo) return;
@@ -19993,8 +20693,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           if (!art) {
             art = document.createElement("span");
             art.className = "pt-holiday-art";
-            for (var _i21 = 0, _Array$from3 = Array.from(logo.children); _i21 < _Array$from3.length; _i21++) {
-              var node = _Array$from3[_i21];
+            for (var _i25 = 0, _Array$from3 = Array.from(logo.children); _i25 < _Array$from3.length; _i25++) {
+              var node = _Array$from3[_i25];
               if (node.classList.contains("head__logo-halloween-fire") || node.classList.contains("head__logo-halloween-svg")) art.appendChild(node);
             }
             logo.insertBefore(art, logo.firstChild);
@@ -20024,11 +20724,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             group.className = "pt-holiday-icons";
           }
           if (group.parentNode !== logo.parentNode || group.nextSibling !== logo) logo.before(group);
-          var _iterator73 = _createForOfIteratorHelper(buttons),
-            _step73;
+          var _iterator75 = _createForOfIteratorHelper(buttons),
+            _step75;
           try {
-            var _loop18 = function _loop18() {
-              var button = _step73.value;
+            var _loop20 = function _loop20() {
+              var button = _step75.value;
               if (!origins.has(button)) {
                 var native = document.createElement("span");
                 native.className = "pt-holiday-native";
@@ -20050,13 +20750,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               }
               if (button.parentNode !== group) group.appendChild(button);
             };
-            for (_iterator73.s(); !(_step73 = _iterator73.n()).done;) {
-              _loop18();
+            for (_iterator75.s(); !(_step75 = _iterator75.n()).done;) {
+              _loop20();
             }
           } catch (err) {
-            _iterator73.e(err);
+            _iterator75.e(err);
           } finally {
-            _iterator73.f();
+            _iterator75.f();
           }
           if (snow) {
             if (!winter) {
@@ -20069,18 +20769,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             if (winter.parentNode !== group) group.appendChild(winter);
           } else if (winter) winter.remove();
         } else if (group) group.remove();
-        for (var _i22 = 0, _Array$from4 = Array.from(head.children); _i22 < _Array$from4.length; _i22++) {
-          var _node5 = _Array$from4[_i22];
+        for (var _i26 = 0, _Array$from4 = Array.from(head.children); _i26 < _Array$from4.length; _i26++) {
+          var _node5 = _Array$from4[_i26];
           if (_node5.classList.contains("garland")) logo.appendChild(_node5);
         }
       } else {
-        var _iterator74 = _createForOfIteratorHelper(origins),
-          _step74;
+        var _iterator76 = _createForOfIteratorHelper(origins),
+          _step76;
         try {
-          for (_iterator74.s(); !(_step74 = _iterator74.n()).done;) {
-            var _step74$value = _slicedToArray(_step74.value, 2),
-              button = _step74$value[0],
-              origin = _step74$value[1];
+          for (_iterator76.s(); !(_step76 = _iterator76.n()).done;) {
+            var _step76$value = _slicedToArray(_step76.value, 2),
+              button = _step76$value[0],
+              origin = _step76$value[1];
             origin.icon.remove();
             while (origin.native.firstChild) button.insertBefore(origin.native.firstChild, origin.native);
             origin.native.remove();
@@ -20088,14 +20788,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             if (origin.parent.isConnected) origin.parent.insertBefore(button, origin.next && origin.next.parentNode === origin.parent ? origin.next : null);
           }
         } catch (err) {
-          _iterator74.e(err);
+          _iterator76.e(err);
         } finally {
-          _iterator74.f();
+          _iterator76.f();
         }
         origins.clear();
         if (group) group.remove();
-        for (var _i23 = 0, _Array$from5 = Array.from(logo.children); _i23 < _Array$from5.length; _i23++) {
-          var _node6 = _Array$from5[_i23];
+        for (var _i27 = 0, _Array$from5 = Array.from(logo.children); _i27 < _Array$from5.length; _i27++) {
+          var _node6 = _Array$from5[_i27];
           if (_node6.classList.contains("garland")) head.insertBefore(_node6, head.firstChild);
         }
       }
@@ -20457,8 +21157,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }));
         }
         var previous = series;
-        for (var _i24 = 0, _arr16 = [dorama, shows, cartoons]; _i24 < _arr16.length; _i24++) {
-          var node = _arr16[_i24];
+        for (var _i28 = 0, _arr18 = [dorama, shows, cartoons]; _i28 < _arr18.length; _i28++) {
+          var node = _arr18[_i28];
           if (previous && node) {
             if (previous.nextElementSibling !== node) previous.after(node);
             previous = node;
@@ -21044,6 +21744,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         installI18n(L, P);
         P.online = onlineState(L);
         P.kinoapi = kinoapi(L);
+        P.onlineSources = onlineSources(L);
         P.episodeMetadata = episodeMetadata(L, P.kinoapi);
         P.onlineNavigation = onlineNavigation;
         P.onlineSourceCache = onlineSourceCache(L);
@@ -21096,9 +21797,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         cacheSettings(L);
         if (L.Api && L.Api.sources && L.Utils && L.Utils.createInstance && L.Maker) {
           installTrakt(L);
+          P.kinoCatalogue = kinoCatalogue(L, P.kinoapi);
           var anime = shikimori(L);
           shikimoriPosters(L, anime);
-          collections(L, anime);
+          collections(L, anime, P.kinoapi, P.kinoCatalogue);
           filters(L, anime);
         }
         installWheel(L, function () {
@@ -39410,7 +40112,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var deadline = Date.now() + PROBE_BUDGET;
         var index = 0,
           pendingCount = 0;
-        var _step75 = function step() {
+        var _step77 = function step() {
           if (!probe_busy || generation !== probe_generation || owner !== componentNow() || scopeId !== qualityScope()) return;
           if (index >= queue.length) {
             if (!pendingCount) probe_busy = false;
@@ -39437,7 +40139,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             answered = true;
             pendingCount--;
             probeAnswer(entry.key, answer);
-            _step75();
+            _step77();
           };
           try {
             net["native"](probeUrlFor(entry.key), done, function () {
@@ -39449,7 +40151,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             done("");
           }
         };
-        for (var worker = 0; worker < PROBE_PARALLEL; worker++) _step75();
+        for (var worker = 0; worker < PROBE_PARALLEL; worker++) _step77();
       }
       function probeSchedule() {
         if (!probeAllowed() || !movie || !probe_url || probe_busy || (groups.sort || []).length < 2) return;
@@ -39630,7 +40332,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           voice_seed_net = null;
           if (typeof after === "function") after();
         };
-        var _step76 = function step() {
+        var _step78 = function step() {
           if (!voice_seed_busy) return;
           if (seat >= jobs.length || Date.now() > deadline || !inSkin() || !movie) return finish();
           var job = jobs[seat++];
@@ -39659,7 +40361,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               } catch (e) {}
             }
             if (voiceListFresh()) return finish();
-            _step76();
+            _step78();
           };
           var guard = setTimeout(function () {
             if (settled) return;
@@ -39680,7 +40382,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             done("");
           }
         };
-        _step76();
+        _step78();
       }
       function voiceLink(url) {
         var value = String(url || "").replace("rjson=", "nojson=");
@@ -39840,7 +40542,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         voice_busy = true;
         var deadline = Date.now() + VOICE_BUDGET;
         var index = 0;
-        var _step77 = function step() {
+        var _step79 = function step() {
           if (!voice_busy || index >= queue.length) return;
           if (Date.now() > deadline || !inSkin()) return voiceStop();
           var entry = queue[index++];
@@ -39879,7 +40581,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             clearTimeout(guard);
             var got = voiceAnswer(entry.name, answer);
             if (!got) retryAlt();
-            _step77();
+            _step79();
           };
           var guard = setTimeout(function () {
             if (settled) return;
@@ -39900,7 +40602,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             done("");
           }
         };
-        for (var worker = 0; worker < VOICE_PARALLEL; worker++) _step77();
+        for (var worker = 0; worker < VOICE_PARALLEL; worker++) _step79();
       }
       function voiceSchedule() {
         if (!voiceWanted()) return;
@@ -41099,7 +41801,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var direct = logoDirect(path);
         if (direct && urls.indexOf(direct) === -1) urls.push(direct);
         var at = 0;
-        var _step78 = function step() {
+        var _step80 = function step() {
           if (at >= urls.length) {
             LOGO_BLIND[src] = true;
             return done("blind");
@@ -41119,7 +41821,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             } catch (e) {
               tone = "";
             }
-            if (tone !== "invert" && tone !== "glow" && tone !== "ok") return _step78();
+            if (tone !== "invert" && tone !== "glow" && tone !== "ok") return _step80();
             var now = cached(LOGO_TONE_KEY, 500, {});
             if (now && _typeof(now) === "object") {
               now[src] = tone;
@@ -41127,10 +41829,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             }
             done(tone);
           };
-          probe.onerror = _step78;
+          probe.onerror = _step80;
           probe.src = url;
         };
-        _step78();
+        _step80();
       }
       function logoKey(target) {
         var card = target || movie;

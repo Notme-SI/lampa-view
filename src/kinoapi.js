@@ -87,5 +87,5 @@ export default function kinoapi(L){
    blocked=0;clear();if(L.Settings && L.Settings.update)L.Settings.update();
   });
  }});
- return {enabled,title,anime,book(card,season,numbers,files,done){anime(card,model=>done(metadataBook(model,season,numbers,files)));},groups(card,files,done){anime(card,model=>done(absoluteGroups(model,files)));},clear};
+ return {enabled,title,anime,catalogueRequest(path,done){if(!/^titles\?/.test(path))return done(null);request(path,done);},book(card,season,numbers,files,done){anime(card,model=>done(metadataBook(model,season,numbers,files)));},groups(card,files,done){anime(card,model=>done(absoluteGroups(model,files)));},clear};
 }
