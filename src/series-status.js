@@ -165,7 +165,7 @@ function watchFooter(L,node,data,series){
 // Native timetable data and native watch history remain authoritative.
 export default function seriesStatus(L,schedule){
  const cards=new WeakMap(),cache=new Map(),pending=new Map(),queue=[];let running=0,saveTimer;
- const storage='minimal_series_release_v3',lifetime=900000;
+ const storage='minimal_series_release_v4',lifetime=900000;
  const saved=L.Storage && L.Storage.get?L.Storage.get(storage,[]):[];
  if(Array.isArray(saved))for(const pair of saved.slice(-80))if(Array.isArray(pair) && typeof pair[0]==='string' && pair[1] && pair[1].details && Date.now()-pair[1].at<lifetime)cache.set(pair[0],pair[1]);
  const cacheKey=data=>(data.source==='minimal_shiki'?'shiki':'tmdb')+':'+data.id+':'+(L.Storage && L.Storage.get?L.Storage.get('language','ru'):'ru');
@@ -213,7 +213,7 @@ export default function seriesStatus(L,schedule){
    tmdbGet(L,'tv/'+task.data.id,{},json=>{
     const card={...task.data,...json};
     if(json && Number(json.id)===Number(task.data.id) && isAnime(card) && Number(json.number_of_seasons)===1 && L.Utils && L.Utils.splitEpisodesIntoSeasons){
-     tmdbGet(L,'tv/'+task.data.id+'/season/1',{},season=>finish(json,groupedAnimeRelease(L,card,season)),()=>finish(json),{life:60});
+     tmdbGet(L,'tv/'+task.data.id+'/season/1',{},season=>{const base=window.LampaView && window.LampaView.animeBase;if(base && base.status)base.status(card,season,status=>finish(json,status || groupedAnimeRelease(L,card,season)));else finish(json,groupedAnimeRelease(L,card,season));},()=>finish(json),{life:60});
     }else finish(json);
    },()=>finish(null),{life:60});
   }

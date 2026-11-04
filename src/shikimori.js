@@ -63,6 +63,24 @@ export default function shikimori(L){
  }
  const resolveSeason=shikiSeason((id,ok,fail)=>{if(relationQueue.length>=16)return fail();relationQueue.push([id,ok,fail]);relationPump();});
  const release=(id,ok,fail)=>metadata(id,json=>resolveSeason(json,season=>ok({...json,minimal_release_season:season})),fail);
- L.Api.sources.minimal_shiki={list,full,genres,posters,metadata,release,retry,clear(){}};
- return {list,genres,posters,retry};
+ const franchiseCache=new Map(),franchisePending=new Map(),franchiseQueue=[];let franchiseBusy=false,franchiseLast=0,franchiseRevision=0;
+ function franchisePump(){
+  if(franchiseBusy || !franchiseQueue.length)return;franchiseBusy=true;const job=franchiseQueue.shift();
+  setTimeout(()=>{if(job.revision!==franchiseRevision)return;franchiseLast=Date.now();const finish=value=>{if(job.revision!==franchiseRevision)return;franchiseBusy=false;job.done(value);franchisePump();};api(job.path,finish,()=>finish(null),null,job.valid);},Math.max(0,350-(Date.now()-franchiseLast)));
+ }
+ function franchiseRequest(path,valid,done){if(franchiseQueue.length>=16)return done(null);franchiseQueue.push({path,valid,done,revision:franchiseRevision});franchisePump();}
+ function franchise(id,ok,fail=()=>{}){
+  id=String(id);if(!/^[1-9]\d{0,8}$/.test(id))return fail();const hit=franchiseCache.get(id);if(hit && Date.now()-hit.at<900000)return ok(hit.value);
+  if(franchisePending.has(id)){franchisePending.get(id).push([ok,fail]);return;}franchisePending.set(id,[[ok,fail]]);const revision=franchiseRevision;
+  const finish=value=>{if(revision!==franchiseRevision)return;const callbacks=franchisePending.get(id)||[];franchisePending.delete(id);if(value){franchiseCache.set(id,{at:Date.now(),value});while(franchiseCache.size>24)franchiseCache.delete(franchiseCache.keys().next().value);}callbacks.forEach(([success,error])=>value?success(value):error());};
+  franchiseRequest('/api/animes/'+id+'/franchise',json=>!!(json && Number(json.current_id)===Number(id) && Array.isArray(json.nodes) && Array.isArray(json.links) && json.nodes.length<=240),graph=>{
+   if(!graph)return finish(null);const ids=[...new Set(graph.nodes.map(n=>Number(n.id)).filter(n=>Number.isSafeInteger(n) && n>0))],metadata=[];let cursor=0;
+   function next(){if(revision!==franchiseRevision)return;if(cursor>=ids.length)return finish({graph,metadata});const batch=ids.slice(cursor,cursor+50);cursor+=batch.length;
+    franchiseRequest('/api/animes?ids='+batch.join(',')+'&limit=50',Array.isArray,rows=>{if(!rows)return finish(null);metadata.push(...rows.filter(n=>batch.includes(Number(n.id))));next();});
+   }next();
+  });
+ }
+ function clear(){franchiseRevision++;franchiseBusy=false;franchiseLast=0;franchiseCache.clear();franchiseQueue.splice(0);const waiters=[...franchisePending.values()];franchisePending.clear();waiters.forEach(rows=>rows.forEach(([,fail])=>fail()));}
+ L.Api.sources.minimal_shiki={list,full,genres,posters,metadata,release,franchise,retry,clear};
+ return {list,genres,posters,metadata,franchise,retry,clear};
 }

@@ -4,6 +4,7 @@ export const animeSeasonTitle=value=>{
  return match?Number(match[1] || match[2] || match[3]):0;
 };
 export function qualityCacheKey(card,tv){
+ const release=card.minimal_anime_release;if(release && release.mal)card={...card,id:release.mal,shikimori_id:release.mal,source:'minimal_shiki',title:release.title || card.title,name:release.title || card.name,original_title:release.original || card.original_title,original_name:release.original || card.original_name,first_air_date:release.date || card.first_air_date,release_date:release.date || card.release_date};
  const norm=value=>String(value || '').toLowerCase().replace(/ё/g,'е').replace(/[^a-zа-я0-9\u3040-\u30ff\u3400-\u9fff]/g,'');
  const key=(tv?'tv:':'movie:')+norm(card.title || card.name || card.original_title || card.original_name)+':'+String(card.first_air_date || card.release_date || '').slice(0,4);
  return key+(isAnime(card)?':anime3:'+String(card.source==='minimal_shiki'?'shiki':'tmdb')+':'+(card.shikimori_id || card.tmdb_id || card.id || ''):'');
@@ -11,6 +12,7 @@ export function qualityCacheKey(card,tv){
 // The parser searches substrings across films, remasters and entire franchises.
 // An anime entry needs its own title/year evidence, not the largest resolution.
 export function animeReleaseMatches(card,title,names,tv){
+ const release=card.minimal_anime_release;if(release && release.mal){const aliases=[release.title,release.original].filter(Boolean);if(!aliases.length || !release.date)return false;return animeReleaseMatches({...card,minimal_anime_release:null,source:'minimal_shiki',original_name:release.original,original_title:release.original,name:release.title,title:release.title,first_air_date:release.date,release_date:release.date},title,aliases,tv);}
  const text=String(title || '').toLowerCase().replace(/ё/g,'е');
  if(/upscal|апск[еэ]йл|апскал|нейро|\b(?:ai[ ._-]*(?:enhanced|remaster|up)|topaz)\b/i.test(text))return false;
  if(tv && /\b(?:movie|film|gekijouban|gekijōban|live[ .-]?action)\b|полнометраж|фильм(?:\s|$|[.,:])/i.test(text))return false;

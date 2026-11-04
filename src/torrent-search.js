@@ -10,7 +10,7 @@ export default function torrentSearch(L){
   const page=active();
   if(!page || !document.body.classList.contains('lampa_view') || options.title!==L.Lang.translate('filter_clarify'))return show.apply(this,arguments);
   const aliases=window.TorrentCatalogue && window.TorrentCatalogue.searchAliases?window.TorrentCatalogue.searchAliases(page):[];
-  const movie=page.movie || {},names=[movie.name,movie.title,movie.original_name,movie.original_title,...aliases];
+  const movie=page.movie || {},release=movie.minimal_anime_release || {},names=[release.title,release.original,movie.name,movie.title,movie.original_name,movie.original_title,...aliases];
   const items=[],seen=new Set();let combinations=false;
   function add(item){
    const key=item.query && normal(item.query);if(key && seen.has(key))return;

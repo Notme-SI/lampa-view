@@ -8747,5 +8747,70 @@
   "ro": "Statele Unite ale Americii",
   "fr": "États-Unis",
   "pl": "Stany Zjednoczone"
+ },
+ "Основная история": {
+  "en": "Main story",
+  "uk": "Основна історія",
+  "be": "Асноўная гісторыя",
+  "zh": "主线故事",
+  "pt": "História principal",
+  "bg": "Основна история",
+  "he": "הסיפור הראשי",
+  "cs": "Hlavní příběh",
+  "ro": "Povestea principală",
+  "fr": "Histoire principale",
+  "pl": "Główna historia"
+ },
+ "Связанные релизы": {
+  "en": "Related releases",
+  "uk": "Пов’язані релізи",
+  "be": "Звязаныя рэлізы",
+  "zh": "关联作品",
+  "pt": "Lançamentos relacionados",
+  "bg": "Свързани заглавия",
+  "he": "כותרים קשורים",
+  "cs": "Související díla",
+  "ro": "Titluri asociate",
+  "fr": "Œuvres liées",
+  "pl": "Powiązane tytuły"
+ },
+ "Другие версии и пересказы": {
+  "en": "Other versions and recaps",
+  "uk": "Інші версії та перекази",
+  "be": "Іншыя версіі і пераказы",
+  "zh": "其他版本与总集篇",
+  "pt": "Outras versões e recapitulações",
+  "bg": "Други версии и обобщения",
+  "he": "גרסאות אחרות וסיכומים",
+  "cs": "Další verze a shrnutí",
+  "ro": "Alte versiuni și recapitulări",
+  "fr": "Autres versions et récapitulatifs",
+  "pl": "Inne wersje i podsumowania"
+ },
+ "Ответвления и спецвыпуски": {
+  "en": "Spin-offs and specials",
+  "uk": "Відгалуження та спецвипуски",
+  "be": "Адгалінаванні і спецвыпускі",
+  "zh": "外传与特别篇",
+  "pt": "Derivados e especiais",
+  "bg": "Разклонения и специални епизоди",
+  "he": "סדרות בת ופרקים מיוחדים",
+  "cs": "Odbočky a speciály",
+  "ro": "Povești secundare și episoade speciale",
+  "fr": "Histoires dérivées et épisodes spéciaux",
+  "pl": "Historie poboczne i odcinki specjalne"
+ },
+ "Продолжения и анонсы": {
+  "en": "Sequels and announcements",
+  "uk": "Продовження та анонси",
+  "be": "Працягi і анансы",
+  "zh": "续作与新作预告",
+  "pt": "Continuações e anúncios",
+  "bg": "Продължения и анонси",
+  "he": "המשכים והכרזות",
+  "cs": "Pokračování a oznámení",
+  "ro": "Continuări și anunțuri",
+  "fr": "Suites et annonces",
+  "pl": "Kontynuacje i zapowiedzi"
  }
 }

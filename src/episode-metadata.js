@@ -54,7 +54,7 @@ export function namedPartCount(card){
  const names=(Array.isArray(card && card.seasons)?card.seasons:[]).map(s=>namedSeason(card,s.season_number)).filter(Boolean),numbers=names.map(n=>Number((n.match(/\d+/)||[])[0])||0);
  return numbers.length?Math.max(...numbers):0;
 }
-export default function episodeMetadata(L,kino){
+export default function episodeMetadata(L,kino,anime){
  const cache=new Map(),pending=new Map(),queue=[];let running=0;
  function request(path,done){
   if(cache.has(path))return done(cache.get(path));
@@ -105,7 +105,7 @@ export default function episodeMetadata(L,kino){
   function fallback(){
    const ready=absoluteSeasons(card,files);if(ready)return done(ready);
    const id=Number(card && (card.tmdb_id || card.id));if(!Number.isSafeInteger(id) || id<=0 || card.source==='minimal_shiki' && !card.tmdb_id || files.length<2)return done(null);
-   request('tv/'+id+'?language='+encodeURIComponent(L.Storage.get('language','ru')),data=>done(data?absoluteSeasons({...card,seasons:data.seasons},files):null));
+   request('tv/'+id+'?language='+encodeURIComponent(L.Storage.get('language','ru')),data=>{const value=data?{...card,...data,source:'tmdb',minimal_anime:true}:card,ready=data && absoluteSeasons(value,files);if(ready)return done(ready);if(anime && anime.groups)return anime.groups(value,files,done);done(null);});
   }
   if(kino && kino.enabled())kino.groups(card,files,value=>value?done(value):fallback());else fallback();
  }

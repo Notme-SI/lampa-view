@@ -103,6 +103,8 @@
         var tv = card.media_type==='movie' || card.type==='movie'?false:!!(card.media_type==='tv' || card.type==='tv' || card.original_name || card.number_of_seasons || card.seasons);
         var aliases = [], seasonAliases = [], seasons = [];
         function add(v, priority, language) { if (text(v).trim()) aliases.push({ title: text(v).trim(), priority: priority, language: language }); }
+        var animeRelease=card.minimal_anime_release || {};
+        add(animeRelease.title,0,'ru');add(animeRelease.original,1,'original');
         add(card.name || card.title, 0, 'ru'); add(english.name || english.title, 1, 'en');
         if (card.name && card.title) add(card.title, 2, 'local');
         add(card.original_name || card.original_title, 4, card.original_language || 'original');

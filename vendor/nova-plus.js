@@ -5522,7 +5522,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     wide_anime={key:key,prefix:prefix,groups:null,selected:0};var owner=root && root[0];
     api.groups(movie,files,function(groups){
       if(!groups || !root || root[0]!==owner || wide_anime.key!==key || wideAnimePrefix()!==prefix)return;
-      wide_anime.groups=groups;var resume=pickResume(items),episode=resume && Number(resume.num),selected=groups.filter(function(g){return g.episodes.indexOf(episode)>=0;})[0];wide_anime.selected=(selected || groups[0]).number;
+      wide_anime.groups=groups;var resume=pickResume(items),episode=resume && Number(resume.num),release=movie && movie.minimal_anime_release,preferred=release && groups.filter(function(g){return g.mal_id===release.mal;})[0],selected=preferred || groups.filter(function(g){return g.episodes.indexOf(episode)>=0;})[0];wide_anime.selected=(selected || groups[0]).number;
       setTimeout(function(){if(root && root[0]===owner && wide_anime.key===key){wide_sig='';redraw();}},0);
     });
   }
@@ -5530,6 +5530,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
   function alternateSeasons(){var api=window.LampaView && window.LampaView.episodeMetadata;return api && api.alternate(movie,providerSeasonNumbers());}
   function wideBook(number, done, countOnly) {
     var api=window.LampaView && window.LampaView.episodeMetadata,arc=wideAnimeCurrent();
+    if(arc && arc.anime_release && arc.book)return done(arc.book,true);
     if(arc && arc.native && api && api.groupBook)return wideCanonicalBook(arc.number,function(book){done(api.groupBook(book,arc),true);});
     if(api && movie && wideMeta() && api.book(movie,number,providerSeasonNumbers(),!countOnly && Number(number)===Number(seasonNumber())?wideFiles():0,function(book,grouped){if(book || grouped)return done(book,grouped);wideCanonicalBook(number,done);},!countOnly?items.filter(function(item){return !item.folder && !item.soon;}).map(function(item){return Number(episodeNumber(item.num));}):[],!!arc))return;
     wideCanonicalBook(number,done);
