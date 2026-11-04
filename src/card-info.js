@@ -29,6 +29,7 @@ export default function cardInfo(L){
   const vote=Number(c.vote_average || (source(c)==='minimal_shiki' && c.score));
   if(ratings && Number.isFinite(vote) && vote>0 && vote<=10)entry.vote_average=vote;
   if(isAnime(c))entry.minimal_anime=true;
+  if(source(c)==='minimal_shiki'){for(const field of ['episodes','episodes_aired'])if(Number(c[field])>=0)entry[field]=Number(c[field]);if(c.status)entry.status=c.status;}
   entry.names=Array.from(new Set([...(entry.names || []),...names(c)])).slice(0,16);
   if(complete){entry.complete=true;delete entry.failed;}
   // Focus and visibility can report the same card many times. Do not serialize
@@ -54,7 +55,7 @@ export default function cardInfo(L){
    if(local)c={...c,title:local,...(kind(c)==='tv'?{name:local}:{})};
   }
   if(!fresh(entry))return c;
-  return {...c,...(!releaseYear(c)?{...(entry.release_date?{release_date:entry.release_date}:{}),...(entry.first_air_date?{first_air_date:entry.first_air_date}:{})}:{}),...(!c.genre_ids || !c.genre_ids.length?{genre_ids:entry.genre_ids}:{}),...(!c.original_language?{original_language:entry.original_language}:{}),...(!c.origin_country || !c.origin_country.length?{origin_country:entry.origin_country}:{}),...(!(Number(c.vote_average)>0) && entry.vote_average?{vote_average:entry.vote_average}:{}),...(entry.minimal_anime?{minimal_anime:true}:{})};
+  return {...c,...(source(c)==='minimal_shiki'?{episodes:entry.episodes,episodes_aired:entry.episodes_aired,status:entry.status}:{}),...(!releaseYear(c)?{...(entry.release_date?{release_date:entry.release_date}:{}),...(entry.first_air_date?{first_air_date:entry.first_air_date}:{})}:{}),...(!c.genre_ids || !c.genre_ids.length?{genre_ids:entry.genre_ids}:{}),...(!c.original_language?{original_language:entry.original_language}:{}),...(!c.origin_country || !c.origin_country.length?{origin_country:entry.origin_country}:{}),...(!(Number(c.vote_average)>0) && entry.vote_average?{vote_average:entry.vote_average}:{}),...(entry.minimal_anime?{minimal_anime:true}:{})};
  }
  const paused=()=>document.body.matches('.pt-wheel-active,.pt-tv-busy') || document.hidden;
  function pump(){

@@ -2,7 +2,18 @@ import {text as lampaViewText} from './i18n.js';
 import tmdbGet from './tmdb.js';
 import {namedSeason} from './episode-metadata.js';
 const day=value=>String(value || '').slice(0,10);
+export function shikiReleaseStatus(data={}){
+ const total=Math.max(0,Number(data.episodes)||0),count=Math.max(0,Number(data.episodes_aired)||0) || (data.status==='released'?total:0);
+ if(!count)return null;
+ // Shikimori lists seasons as separate anime entries; never assume season 1.
+ const title=data.original_name || data.original_title || data.name || data.title || '',match=title.match(/(?:season\s+(\d+)|(\d+)(?:st|nd|rd|th)?\s+season|(\d+)\s+сезон)\s*$/i);
+ return {season:match?Number(match[1] || match[2] || match[3]):0,count,total:Math.max(total,count)};
+}
 export function releaseStatus(data={},episodes=[],today=day(new Date().toISOString())){
+ if(data.source==='minimal_shiki')return shikiReleaseStatus(data);
+ return canonicalReleaseStatus(data,episodes,today);
+}
+function canonicalReleaseStatus(data={},episodes=[],today=day(new Date().toISOString())){
  const aired=episodes.filter(e=>Number(e.season_number)>0 && Number(e.episode_number)>0 && e.air_date && day(e.air_date)<=today);
  const last=data.last_episode_to_air;
  if(last && Number(last.season_number)>0 && last.air_date && day(last.air_date)<=today)aired.push(last);
@@ -115,7 +126,7 @@ function watchFooter(L,node,data,series){
  const seasonDetail=series && shared && (Array.isArray(data.seasons)?data.seasons:[]).find(season=>Number(season.season_number)===shared.season);
  const seasonTotal=Number(seasonDetail && seasonDetail.episode_count) || shared && shared.total || 0;
  const next=data.next_episode_to_air;
- const released=releaseStatus(data,L.TimeTable && L.TimeTable.get?L.TimeTable.get(data) || []:[]);
+ const released=canonicalReleaseStatus(data,L.TimeTable && L.TimeTable.get?L.TimeTable.get(data) || []:[]);
  const ended=shared && released && (released.season>shared.season || released.season===shared.season && released.count>=seasonTotal);
  const seasonComplete=series && shared && seasonTotal>0 && ended && !(next && Number(next.season_number)===shared.season) && state && state.seasonWatched && state.seasonWatched(data,shared.season,seasonTotal);
  const complete=series?seasonComplete:Number(timeline.percent)>=90;
@@ -155,21 +166,21 @@ export default function seriesStatus(L,schedule){
  if(Array.isArray(saved))for(const pair of saved.slice(-80))if(Array.isArray(pair) && typeof pair[0]==='string' && pair[1] && pair[1].details && Date.now()-pair[1].at<lifetime)cache.set(pair[0],pair[1]);
  const cacheKey=data=>(data.source==='minimal_shiki'?'shiki':'tmdb')+':'+data.id+':'+(L.Storage && L.Storage.get?L.Storage.get('language','ru'):'ru');
  function save(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{if(L.Storage && L.Storage.set)L.Storage.set(storage,Array.from(cache).filter(([,entry])=>entry.details).slice(-80));},150);}
- function detailsOnly(json){return {id:json.id,number_of_seasons:json.number_of_seasons,seasons:(Array.isArray(json.seasons)?json.seasons:[]).map(s=>({season_number:s.season_number,name:s.name,episode_count:s.episode_count,air_date:s.air_date})),last_episode_to_air:json.last_episode_to_air,next_episode_to_air:json.next_episode_to_air,episode_run_time:json.episode_run_time};}
+ function detailsOnly(json){if(json.source==='minimal_shiki')return {id:json.id,source:json.source,episodes:json.episodes,episodes_aired:json.episodes_aired,status:json.status};return {id:json.id,number_of_seasons:json.number_of_seasons,seasons:(Array.isArray(json.seasons)?json.seasons:[]).map(s=>({season_number:s.season_number,name:s.name,episode_count:s.episode_count,air_date:s.air_date})),last_episode_to_air:json.last_episode_to_air,next_episode_to_air:json.next_episode_to_air,episode_run_time:json.episode_run_time};}
  function paint(node){
-  const data=cards.get(node);if(!data || !node.matches('.focus,.hover,.pt-card-pointer'))return;
+  const data=cards.get(node);if(!data || !node.matches('.focus,.hover,.pt-card-pointer,.pt-card-touch'))return;
   const view=node.querySelector('.card__view');if(!view)return;
   const series=data.media_type!=='movie' && !!(data.name || data.original_name || data.first_air_date || data.media_type==='tv');
   const key=cacheKey(data),entry=cache.get(key),fresh=entry && Date.now()-entry.at<(entry.details?lifetime:60000),facts=fresh?entry.value:null;
   const details=fresh && entry.details,historyData=details?{...data,last_episode_to_air:details.last_episode_to_air || data.last_episode_to_air,next_episode_to_air:details.next_episode_to_air,episode_run_time:details.episode_run_time || data.episode_run_time,number_of_seasons:details.number_of_seasons || data.number_of_seasons,seasons:Array.from(new Map([...(Array.isArray(data.seasons)?data.seasons:[]),...(Array.isArray(details.seasons)?details.seasons:[])].map(season=>[Number(season.season_number),season])).values())}:data;
-  const fetchable=series && (!data.source || ['cub','tmdb','trakt'].includes(data.source)) && Number(data.id)>0;
+  const fetchable=series && (!data.source || ['cub','tmdb','trakt','minimal_shiki'].includes(data.source)) && Number(data.id)>0;
   const state=window.LampaView && window.LampaView.online,last=series && state && state.lastWatched?state.lastWatched(historyData):null;
   const season=last && (Array.isArray(historyData.seasons)?historyData.seasons:[]).find(s=>Number(s.season_number)===last.season);
   const known=Number(season && season.episode_count)>0 && releaseStatus(historyData,L.TimeTable && L.TimeTable.get?L.TimeTable.get(historyData) || []:[]);
   // A completed episode may become a completed season once metadata arrives.
   // Reserve the footer while that fact is unknown, instead of flashing a false
   // intermediate episode caption. Partial episodes are immediately usable.
-  if(fetchable && !fresh && last && last.percent>=95 && !known){
+  if(fetchable && data.source!=='minimal_shiki' && !fresh && last && last.percent>=95 && !known){
    const slot=node.querySelector('.pt-card-watch'),wrap=node.querySelector('.card-watched');
    if(slot){slot.classList.remove('pt-card-watch--has-progress');if(wrap && wrap.parentNode!==slot)slot.appendChild(wrap);}
   }else watchFooter(L,node,historyData,series);
@@ -182,10 +193,10 @@ export default function seriesStatus(L,schedule){
    const partial=available.total>available.count;
    const released=partial?available.count+'/'+available.total:String(available.count);
    const group=namedSeason(historyData,available.season),published=group?Number((group.match(/\d+/)||[])[0]):0;
-   const seasonName=lampaViewText("Сезон {0}",[published || available.season]);
-   const text=seasonName+" • "+(partial?lampaViewText("Серия "):lampaViewText("Серий "))+released;
-   if(box.textContent!==text){box.firstElementChild.textContent=seasonName+" • ";box.lastElementChild.textContent=(partial?lampaViewText("Серия "):lampaViewText("Серий "))+released;}
-   box.title=lampaViewText("Сезон {0}: вышло {1}. История просмотра — под обложкой.", [available.season,released]).replace(lampaViewText("Сезон {0}",[available.season]),seasonName);
+   const seasonName=available.season?lampaViewText("Сезон {0}",[published || available.season]):'',prefix=seasonName?seasonName+" • ":'';
+   const text=prefix+(partial?lampaViewText("Серия "):lampaViewText("Серий "))+released;
+   if(box.textContent!==text){box.firstElementChild.textContent=prefix;box.lastElementChild.textContent=(partial?lampaViewText("Серия "):lampaViewText("Серий "))+released;}
+   box.title=available.season?lampaViewText("Сезон {0}: вышло {1}. История просмотра — под обложкой.", [available.season,released]).replace(lampaViewText("Сезон {0}",[available.season]),seasonName):text;
   }else if(box)box.remove();
   // Release metadata stays independent of the native watch timeline below the cover.
   if(!fresh && !pending.has(key) && fetchable && queue.length<8){const task={key,data,nodes:new Set([node])};pending.set(key,task);queue.push(task);pump();}
@@ -193,14 +204,15 @@ export default function seriesStatus(L,schedule){
  }
  function pump(){
   while(running<(document.body.classList.contains('pt-tv')?1:2) && queue.length){const task=queue.shift();running++;let done=false;
-   const finish=json=>{if(done)return;done=true;running--;pending.delete(task.key);const table=L.TimeTable && L.TimeTable.get?L.TimeTable.get(task.data) || []:[];cache.set(task.key,{at:Date.now(),details:json && Number(json.id)===Number(task.data.id)?detailsOnly(json):null,value:releaseStatus(json && Number(json.id)===Number(task.data.id)?json:task.data,table)});if(cache.size>80)cache.delete(cache.keys().next().value);save();for(const node of task.nodes)if(node.isConnected && node.matches('.focus,.hover,.pt-card-pointer'))schedule(node);pump();};
+   const finish=json=>{if(done)return;done=true;running--;pending.delete(task.key);const table=L.TimeTable && L.TimeTable.get?L.TimeTable.get(task.data) || []:[];cache.set(task.key,{at:Date.now(),details:json && Number(json.id)===Number(task.data.id)?detailsOnly(json):null,value:releaseStatus(json && Number(json.id)===Number(task.data.id)?{...task.data,...json}:task.data,table)});if(cache.size>80)cache.delete(cache.keys().next().value);save();for(const node of task.nodes)if(node.isConnected && node.matches('.focus,.hover,.pt-card-pointer,.pt-card-touch'))schedule(node);pump();};
+   if(task.data.source==='minimal_shiki'){const api=L.Api && L.Api.sources && L.Api.sources.minimal_shiki;if(api && api.metadata)api.metadata(task.data.shikimori_id || task.data.id,json=>finish({...json,source:'minimal_shiki'}),()=>finish(null));else finish(null);continue;}
    tmdbGet(L,'tv/'+task.data.id,{},finish,()=>finish(null),{life:60});
   }
  }
  // Native timeline writes update progress directly. Only the focused card
  // needs its history caption refreshed by the batched badge queue.
  if(L.Listener && L.Listener.follow)L.Listener.follow('state:changed',event=>{
-  if(event.target==='timeline' || event.target==='favorite')for(const node of document.querySelectorAll('.card.focus,.card.hover,.card.pt-card-pointer'))if(cards.has(node))schedule(node);
+  if(event.target==='timeline' || event.target==='favorite')for(const node of document.querySelectorAll('.card.focus,.card.hover,.card.pt-card-pointer,.card.pt-card-touch'))if(cards.has(node))schedule(node);
  });
  return {track(node,data){
   cards.set(node,data);

@@ -590,7 +590,7 @@ body.lampa_view .card .pt-card-watch .time-line>div {display:block;height:3px;mi
 body.lampa_view .card .pt-card-watch--complete .time-line,body.lampa_view .card .pt-card-watch--complete .pt-card-watch__time {display:none!important}
 /* Reveal saved viewing history only for the card under pointer/remote focus.
    Reserved footer space prevents neighbouring rows from jumping on focus. */
-body.lampa_view .card.focus .pt-card-watch--has-progress,body.lampa_view .card.hover .pt-card-watch--has-progress,body.lampa_view .card.pt-card-pointer .pt-card-watch--has-progress {visibility:visible}
+body.lampa_view .card.focus .pt-card-watch--has-progress,body.lampa_view .card.hover .pt-card-watch--has-progress,body.lampa_view .card.pt-card-pointer .pt-card-watch--has-progress,body.lampa_view .card.pt-card-touch .pt-card-watch--has-progress {visibility:visible}
 body.lampa_view .card .pt-card-watch>.card-watched.pt-card-watch--empty {display:none!important}
 /* One compact release pill below Series, shared by desktop and TV. */
 body.lampa_view .pt-series-status {position:absolute;left:auto;right:4px;top:2.6em;z-index:4;display:block;width:auto;max-width:calc(100% - 8px);font-size:.55em;line-height:1;white-space:nowrap;padding:.3em .4em;border:1px solid #ffffff25;border-radius:.35em;background:#000b;color:#d4e2e6;pointer-events:none;box-sizing:border-box}
@@ -1024,3 +1024,12 @@ body.lampa_view .nova-source-option {padding-inline-end:5.2em!important}
 
 /* Native immediate/shift temporarily disables transitions; keep that contract on TV. */
 body.lampa_view.pt-tv .minimal-paged-row .scroll__body.notransition,body.lampa_view.pt-tv .minimal-paged-row .scroll__body.transition-reset {transition:none!important;-webkit-transition:none!important}
+
+/* Studio grids keep each complete row centered under their heading. */
+body.lampa_view .minimal-studio-catalogue .category-full,body.lampa_view .minimal-studio-catalogue .mapping--grid {justify-content:center}
+
+body.lampa_view .pt-card-info {display:none}
+body.lampa_view.pt-mobile .pt-card-info {display:flex;align-items:center;justify-content:center;position:absolute;left:4px;bottom:4px;z-index:6;box-sizing:border-box;width:44px;height:44px;padding:9px;border:1px solid #ffffff60;border-radius:50%;background:#181a1dd9;color:#fff;pointer-events:auto;cursor:pointer}
+body.lampa_view.pt-mobile .pt-card-info svg {width:100%;height:100%;pointer-events:none}
+body.lampa_view.pt-mobile .pt-card-info[aria-expanded=true] {border-color:var(--pt-accent);box-shadow:0 0 .4em #ffffff50}
+body.lampa_view.pt-mobile .card:not(.pt-card-touch) .pt-card-watch,body.lampa_view.pt-mobile .card:not(.pt-card-touch) .pt-series-status {visibility:hidden!important}

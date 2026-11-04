@@ -7,7 +7,7 @@ export function shikiCard(a,base=BASE){
  const tv=a.kind!=='movie',date=a.aired_on || '',img=a.image && a.image.original || '';
  const url=value=>value?(value.startsWith('http')?value:base+value):'';
  const posterSources={high:url(img),medium:url(img || a.image && a.image.preview)};
- return {id:a.id,shikimori_id:a.id,title,original_title:a.name,...(tv?{name:title,original_name:a.name,first_air_date:date}:{release_date:date}),media_type:tv?'tv':'movie',source:'minimal_shiki',img:url(img),minimalPosterSources:posterSources,vote_average:Number(a.score) || 0};
+ return {id:a.id,shikimori_id:a.id,episodes:Number(a.episodes)||0,episodes_aired:Number(a.episodes_aired)||0,status:a.status || '',title,original_title:a.name,...(tv?{name:title,original_name:a.name,first_air_date:date}:{release_date:date}),media_type:tv?'tv':'movie',source:'minimal_shiki',img:url(img),minimalPosterSources:posterSources,vote_average:Number(a.score) || 0};
 }
 export default function shikimori(L){
  const cache=new Map(),pending=new Map(),queue=[];let timer=null,running=0,lastStart=0;
@@ -46,7 +46,15 @@ export default function shikimori(L){
   const query='{ animes(ids: "'+clean.join(',')+'", limit: 12) { id poster { originalUrl mainUrl previewUrl } } }';
   api('/api/graphql',json=>ok(json.data.animes),fail,{query},json=>!!(json && json.data && Array.isArray(json.data.animes)));
  }
- const metadata=(id,ok,fail)=>/^\d+$/.test(String(id))?api('/api/animes/'+id,ok,fail,null,json=>!!(json && Number(json.id)===Number(id))):fail();
+ const metadataCache=new Map(),metadataPending=new Map();
+ const metadata=(id,ok,fail=()=>{})=>{
+  id=String(id);if(!/^\d+$/.test(id))return fail();const hit=metadataCache.get(id);
+  if(hit && Date.now()-hit.at<900000)return ok({...hit.json});
+  if(metadataPending.has(id)){metadataPending.get(id).push([ok,fail]);return;}
+  metadataPending.set(id,[[ok,fail]]);
+  const finish=json=>{const listeners=metadataPending.get(id) || [];metadataPending.delete(id);if(json){metadataCache.set(id,{at:Date.now(),json});if(metadataCache.size>80)metadataCache.delete(metadataCache.keys().next().value);}for(const [success,error] of listeners)if(json)success({...json});else error();};
+  api('/api/animes/'+id,finish,()=>finish(null),null,json=>!!(json && Number(json.id)===Number(id)));
+ };
  L.Api.sources.minimal_shiki={list,full,genres,posters,metadata,retry,clear(){}};
  return {list,genres,posters,retry};
 }

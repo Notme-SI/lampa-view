@@ -7720,5 +7720,31 @@
   "ro": "Videoclip găsit",
   "fr": "Vidéo trouvée",
   "pl": "Znaleziono wideo"
+ },
+ "Сведения о просмотре и сериях": {
+  "en": "Viewing and episode details",
+  "uk": "Відомості про перегляд і серії",
+  "be": "Звесткі пра прагляд і серыі",
+  "zh": "观看与剧集信息",
+  "pt": "Detalhes de reprodução e episódios",
+  "bg": "Информация за гледане и епизоди",
+  "he": "פרטי צפייה ופרקים",
+  "cs": "Podrobnosti sledování a epizod",
+  "ro": "Detalii despre vizionare și episoade",
+  "fr": "Détails du visionnage et des épisodes",
+  "pl": "Informacje o oglądaniu i odcinkach"
+ },
+ "Известное качество на текущей странице; неизвестное — в конце": {
+  "en": "Known quality on this page; unknown last",
+  "uk": "Відома якість на поточній сторінці; невідома — в кінці",
+  "be": "Вядомая якасць на бягучай старонцы; невядомая — ў канцы",
+  "zh": "按当前页面已知画质排序，未知画质在最后",
+  "pt": "Qualidade conhecida nesta página; desconhecida no fim",
+  "bg": "Известно качество на тази страница; неизвестното е накрая",
+  "he": "איכות ידועה בעמוד זה; לא ידועה בסוף",
+  "cs": "Známá kvalita na této stránce; neznámá nakonec",
+  "ro": "Calitatea cunoscută pe această pagină; necunoscută la final",
+  "fr": "Qualité connue sur cette page ; inconnue à la fin",
+  "pl": "Znana jakość na tej stronie; nieznana na końcu"
  }
 }

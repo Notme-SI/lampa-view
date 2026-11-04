@@ -108,6 +108,14 @@ export default function quality(L,$){
     if(!node || !node.classList.contains('card') || (!data.title && !data.original_title && !data.name && !data.original_name))return;
     node._minimalCardData=data;track(item,node);status.track(node,data);
     paintCaption(node,data);
+    if(document.body.classList.contains('pt-mobile') && !node.querySelector('.pt-card-info')){
+      const view=node.querySelector('.card__view');if(view){
+        const button=document.createElement('button');button.type='button';button.className='pt-card-info';button.setAttribute('aria-label',lampaViewText('Сведения о просмотре и сериях'));button.setAttribute('aria-expanded','false');
+        button.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v1"/></svg>';
+        for(const type of ['touchstart','touchend','pointerdown','pointerup'])button.addEventListener(type,event=>event.stopPropagation());
+        view.appendChild(button);
+      }
+    }
     const tv=data.media_type==='movie'?false:data.media_type==='tv' || !!data.original_name || !!data.first_air_date || node.classList.contains('card--tv');
     const anime=isAnime(data);
     // Some native history/continue cards omit the rating module even though
@@ -204,6 +212,15 @@ export default function quality(L,$){
   // Lampa sends these custom events through jQuery.trigger, not dispatchEvent.
   // Delegation also covers legacy/history cards without a Maker onFocus hook.
   if(typeof $==='function')$(document).on('hover:focus.lampaViewQuality hover:hover.lampaViewQuality hover:touch.lampaViewQuality','.card',function(){const item=tracked.get(this);if(item)schedule(item);});
+  // A dedicated touch target preserves native card opening, scrolling and hold actions.
+  document.addEventListener('click',event=>{
+    const button=event.target.closest && event.target.closest('.pt-card-info');
+    const selected=button && button.closest('.card'),open=selected && !selected.classList.contains('pt-card-touch');
+    for(const card of document.querySelectorAll('.card.pt-card-touch')){card.classList.remove('pt-card-touch');const control=card.querySelector('.pt-card-info');if(control)control.setAttribute('aria-expanded','false');}
+    if(!button)return;
+    event.preventDefault();event.stopImmediatePropagation();
+    if(open){selected.classList.add('pt-card-touch');button.setAttribute('aria-expanded','true');legacy(selected);const item=tracked.get(selected);if(item)schedule(item);}
+  },true);
   window.addEventListener('resize',revisit);
   document.addEventListener('minimal:interface-size',revisit);
   cacheControl(L).register('quality',()=>{generation++;clearTimeout(saveTimer);pending.forEach(job=>{if(job.cancel)job.cancel();if(job.request && job.request.clear)job.request.clear();});cache.clear();pending.clear();queue.length=0;retries.clear();running=0;if(L.Storage && L.Storage.set)L.Storage.set(storage,[]);for(const [node] of tracked){node.querySelectorAll('.pt-quality').forEach(b=>b.remove());node.classList.remove('pt-has-quality');}revisit();});
