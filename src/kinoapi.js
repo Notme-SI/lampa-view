@@ -82,19 +82,19 @@ export default function kinoapi(L){
  }
  function refresh(){blocked=0;clear();const controller=L.Controller && L.Controller.enabled && L.Controller.enabled();if(L.Settings && L.Settings.update && controller && /^settings/.test(controller.name))L.Settings.update();}
  function input(){
-  L.Input.edit({title:t('KinoAPI · Ключ API'),value:'',free:true,nosave:true,password:true},value=>{
+  L.Input.edit({title:t('KinoAPI · Ключ API'),value:key(),free:true,nosave:true,nomic:true},value=>{
    // Keep the existing key name so native settings backups restore older installations too.
    const clean=String(value||'').trim();L.Storage.set(KEY,clean);L.Storage.set('minimal_kinoapi_enabled',!!clean);refresh();
   });
  }
- function setting(item){if(!item.find('.settings-param__value').length)item.append('<div class="settings-param__value"></div>');item.find('.settings-param__value').text(key()?'••••••••':'');}
+ function setting(item){if(!item.find('.settings-param__value').length)item.append('<div class="settings-param__value"></div>');item.find('.settings-param__value').text(key());}
  if(L.SettingsApi){
-  L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_kinoapi_enabled',type:'trigger',default:!!key()},field:{name:'KinoAPI',description:t('Метаданные аниме и подборки дорам и ТВ-шоу.')+' '+t('Ключ входит в резервную копию настроек и переносится при восстановлении.')},onChange(){
+  L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_kinoapi_enabled',type:'trigger',default:!!key()},field:{name:'KinoAPI',description:t('Метаданные аниме и подборки дорам и ТВ-шоу.')},onChange(){
    refresh();if(!flag(L,'minimal_kinoapi_enabled',!!key()) || key())return;
    // Cancelling the first input must leave the integration disabled.
    L.Storage.set('minimal_kinoapi_enabled',false);input();
   }});
-  L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_kinoapi',type:'button'},field:{name:t('KinoAPI · Ключ API'),description:t('Получить ключ: {0}.',['https://kinoapi.lampac.dev/'])+' '+t('Ключ входит в резервную копию настроек и переносится при восстановлении.')},onRender:setting,onChange:input});
+  L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_kinoapi',type:'button'},field:{name:t('KinoAPI · Ключ API'),description:t('Получить ключ: {0}.',['https://kinoapi.lampac.dev/'])},onRender:setting,onChange:input});
  }
  return {enabled,title,anime,catalogueRequest(path,done){if(!/^titles\?/.test(path))return done(null);request(path,done);},book(card,season,numbers,files,done){anime(card,model=>done(metadataBook(model,season,numbers,files)));},groups(card,files,done){anime(card,model=>done(absoluteGroups(model,files)));},clear};
 }

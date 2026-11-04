@@ -751,8 +751,8 @@ body.lampa_view .nova-plus-root .nova-hero__meta {display:flex;align-items:flex-
 body.lampa_view .nova-plus-root .nova-hero__meta>* {margin:0;white-space:normal}
 body.lampa_view .nova-plus-root .nova-hero__date {display:flex;flex-direction:column;align-items:flex-end;min-width:0;text-align:right}
 body.lampa_view .nova-plus-root .nova-hero__runtime {color:inherit;font-size:.9em;line-height:1.5}
-body.lampa_view .nova-plus-root .nova-hero__season-name {display:block;max-width:24em;white-space:normal;text-align:right;font-size:.9em}
-body.lampa_view .nova-plus-root .nova-hero__season-label {position:absolute;top:calc(100% + .35em);right:0;padding:.15em .5em;border-radius:.4em;background:rgba(8,11,16,.78)!important;font-size:.9em;line-height:1.5}
+body.lampa_view .nova-plus-root .nova-hero__seasons {position:absolute;top:calc(100% + .35em);right:0;display:flex;flex-direction:column;align-items:flex-end;gap:.25em;font-size:.9em;line-height:1.5}
+body.lampa_view .nova-plus-root .nova-hero__season-label,body.lampa_view .nova-plus-root .nova-hero__season-name,body.lampa_view .nova-plus-root .nova-hero__season-counts {display:block;max-width:24em;padding:.15em .5em;border-radius:.4em;background:rgba(8,11,16,.78)!important;white-space:normal;text-align:right}
 body.lampa_view .nova-plus-root .nova-badge,body.lampa_view .nova-plus-root .nova-chip__badge {display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;flex:0 0 auto;min-width:2.3em;height:1.5em;padding:0 .35em;font-size:.78em;line-height:1;font-weight:600;vertical-align:middle}
 body.lampa_view .nova-plus-root .nova-hero__meta>.nova-badge {font-size:.85em;margin-top:.12em;background:#ffffff1a!important;text-shadow:none}
 body.lampa_view .nova-plus-root .nova-card__head .nova-card__quality {display:inline-flex;align-items:center;justify-content:center;min-width:2.3em;height:1.5em;padding:0 .35em;font-size:.85em;line-height:1}

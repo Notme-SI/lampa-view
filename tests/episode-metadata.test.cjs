@@ -57,3 +57,26 @@ test('complete absolute anime lists expose all confirmed named seasons without K
  const local=Object.fromEntries(Array.from({length:21},(_,i)=>[i+1,{episode_number:i+1,name:'Episode '+(i+1)}])),book=api.groupBook(local,result[1]);assert.equal(book[33].name,'Episode 1');assert.equal(book[53].name,'Episode 21');assert.equal(api.groupBook({...local,22:{episode_number:22}},result[1]),null);assert.equal(local[1].episode_number,1,'Playback/native metadata is never mutated');
  assert.equal(api.seasonName(anime,2),'Арка 2');assert.equal(api.seasonName({seasons:[{season_number:1,name:'Season 1'}]},1),'');
 });
+
+test('fewer provider seasons use explicit catalogue coordinates; the live 5/4 mismatch never borrows another arc',async()=>{
+ const live=require('./fixtures/anime-season-layout.json'),api=fixture(),requests=[];
+ const service=api.default({Storage:{get:()=> 'ru'},Api:{sources:{tmdb:{get(url,p,ok){requests.push(url);if(url.includes('episode_groups'))return ok(live.index);if(url.includes('episode_group/'))return ok(live.group);ok(live.seasons[Number(url.match(/season\/(\d+)/)[1])]);}}}}});
+ const read=season=>new Promise(resolve=>{const files=live.provider[season-1].episodes;assert.equal(service.book(live.card,season,[1,2,3,4],files.length,(book,grouped)=>resolve({book,grouped}),files),true);});
+ const second=await read(2);assert.equal(second.book,null,'11 source files cannot receive an 18-episode group or native season 2');assert.equal(second.grouped,true,'Suppress unsafe canonical fallback');assert.equal(requests.length,2);
+ const third=await read(3),fourth=await read(4);
+ assert.equal(third.book[1].season_number,4);assert.equal(third.book[1].lampa_season_name,'Деревня кузнецов');assert.equal(fourth.book[1].season_number,5);assert.equal(fourth.book[8].episode_number,8);assert.equal(fourth.book[1].lampa_season_name,'Тренировка столпов');
+ assert.equal(live.card.number_of_seasons,5);assert.deepEqual(live.provider[3].episodes,[1,2,3,4,5,6,7,8]);
+ const gap=await new Promise(resolve=>service.book(live.card,4,[1,2,3,4],8,resolve,[1,2,3,4,5,6,7,9]));assert.equal(gap,null);
+ assert.equal(api.alternativeNumbering(live.card,[0,1,2,3,4]),true,'Specials are not counted as an ordinary provider season');
+ assert.equal(api.alternativeNumbering({...live.card,minimal_anime:false},[1]),false,'An ordinary series with one exposed source season keeps native metadata');
+});
+
+test('the entire episode-group model rejects specials, cross-group duplicates, incomplete maps and fractional coordinates',()=>{
+ const api=fixture(),live=require('./fixtures/anime-season-layout.json'),model=data=>api.episodeGroupModel(live.card,data,4,63);
+ assert.equal(model(live.group).groups.length,4);
+ for(const mutate of [g=>g.groups[0].episodes[0].season_number=0,g=>g.groups[1].episodes[0]={...g.groups[0].episodes[0]},g=>g.groups[0].episodes.pop(),g=>g.groups[3].episodes[0].episode_number=1.5,g=>g.groups[3].episodes[0].episode_number=99,g=>g.groups[1].order=4]){
+  const bad=JSON.parse(JSON.stringify(live.group));mutate(bad);assert.equal(model(bad),null,'Invalid rows outside the selected season must also invalidate the map');
+ }
+ const ambiguous=api.default({Storage:{get:()=> 'ru'},Api:{sources:{tmdb:{get(url,p,ok){ok({results:[live.index.results.at(-1),{...live.index.results.at(-1),id:'another'}]});}}}}});
+ let answer;ambiguous.book(live.card,4,[1,2,3,4],8,(book,grouped)=>answer={book,grouped});assert.equal(answer.book,null);assert.equal(answer.grouped,true);
+});

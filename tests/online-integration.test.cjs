@@ -57,10 +57,10 @@ test('KinoAPI and Trakt settings transfer through native backup/restore with sep
  const n=await native({built:true}),{w,L}=n;let restored;try{
  const params=()=>L.SettingsApi.getParam('minimal_settings_catalogue');
  const toggle=params().find(p=>p.param.name==='minimal_kinoapi_enabled');assert.ok(toggle);assert.equal(toggle.param.type,'trigger');assert.ok(!params().some(p=>p.param.name==='minimal_kinoapi'));
- let submit;L.Input.edit=(options,fn)=>{assert.equal(options.password,true);assert.equal(options.nosave,true);assert.equal(options.value,'');submit=fn;};
+ let submit;L.Input.edit=(options,fn)=>{assert.notEqual(options.password,true);assert.equal(options.nosave,true);assert.equal(options.value,'');submit=fn;};
  L.Storage.set('minimal_kinoapi_enabled',true);toggle.onChange();assert.equal(w.LampaView.kinoapi.enabled(),false,'Cancelling first entry leaves no enabled integration');submit('backup-fixture-key');
- const param=params().find(p=>p.param.name==='minimal_kinoapi');assert.ok(param);assert.match(param.field.description,/https:\/\/kinoapi\.lampac\.dev\//);assert.match(param.field.description,/резервную копию/);
- const item=w.jQuery('<div></div>');param.onRender(item);assert.equal(item.text(),'••••••••');assert.equal(L.Storage.get('lampa_view_kinoapi_key'),'backup-fixture-key');
+ const param=params().find(p=>p.param.name==='minimal_kinoapi');assert.ok(param);assert.match(param.field.description,/https:\/\/kinoapi\.lampac\.dev\//);for(const p of params().filter(p=>/minimal_(kinoapi|trakt)/.test(p.param.name))){assert.doesNotMatch(p.field.description,/резерв|восстановлен/);assert.ok(p.field.description.length<100);}
+ const item=w.jQuery('<div></div>');param.onRender(item);assert.equal(item.text(),'backup-fixture-key');assert.equal(L.Storage.get('lampa_view_kinoapi_key'),'backup-fixture-key');
  L.Storage.set('minimal_trakt_enabled',true);L.Storage.set('minimal_trakt_client_id','backup-public-id');assert.match(params().find(p=>p.param.name==='minimal_trakt_client_id').field.description,/https:\/\/trakt\.tv\/oauth\/applications/);
  // Native Settings.backup serializes localStorage, excluding app.js; restore writes it before reload.
  const backup=JSON.stringify(w.localStorage,(key,value)=>key==='app.js'?undefined:value);
@@ -81,4 +81,21 @@ test('anime provider with two labels and an absolute list exposes twenty catalog
  L.Select.render().find('.selectbox-item').last().trigger('hover:enter');await wait(200);assert.equal(root.find('.nova-hero__season-name').text(),'Арка 20');assert.equal(root.find('.nova-card').length,2);assert.match(root.find('.nova-card__overview').first().text(),/Описание арки 20/);
  root.find('.nova-card').last().trigger('hover:enter');assert.equal(played,40);assert.ok(root.find('[data-hash="provider-2-40"]').length);assert.deepEqual(n.errors,[]);
  }finally{n.close();}
+});
+
+test('live anime 5/4 layout keeps four source seasons, honest counts, verified arc names and original Timeline handlers',async()=>{
+ const live=require('./fixtures/anime-season-layout.json');
+ for(const selected of [2,4]){
+  const n=await native({built:true}),{w,L}=n,$=w.jQuery;try{
+   const root=$('<div class="explorer"><div class="explorer__files"><div class="explorer__files-head"></div><div class="explorer__files-body"><div class="scroll"><div class="scroll__body"></div></div></div></div>').appendTo(w.document.body),filter=new L.Filter({search:false,sort:true,filter:true});root.find('.explorer__files-head').append(filter.render());filter.set('sort',[{title:'Phantom',source:'phantom',selected:true}]);filter.set('filter',[{stype:'season',title:'Сезон',subtitle:'Сезон '+selected,items:live.provider.map(s=>({title:'Сезон '+s.number,selected:s.number===selected}))}]);
+   let played=0;for(const i of live.provider[selected-1].episodes)$('<div class="online-prestige online-prestige--full selector"><div class="online-prestige__title">Серия '+i+'</div><div class="online-prestige__episode-number">'+i+'</div><div class="time-line" data-hash="phantom-'+selected+'-'+i+'"><div style="width:0%"></div></div></div>').on('hover:enter',()=>played=i).appendTo(root.find('.scroll__body'));
+   const metadataRequests=[];L.Api.sources.tmdb.get=(url,p,ok)=>{metadataRequests.push(url);if(url.includes('episode_groups'))return ok(live.index);if(url.includes('episode_group/'))return ok(live.group);const match=url.match(/season\/(\d+)/);ok(match?live.seasons[Number(match[1])]:live.card);};
+   const movie={...live.card,source:'tmdb',media_type:'tv'};L.Activity.active=()=>({component:'online_test',movie,activity:{render:()=>root,component:{}}});L.Listener.send('activity',{type:'start'});await wait(650);
+   assert.equal(root.find('.nova-card').length,live.provider[selected-1].episodes.length);assert.equal(root.find('[data-nova-focus^="season:"]').length,4);assert.equal(root.find('[data-nova-focus^="anime-season"]').length,0);
+   assert.match(root.find('.nova-hero__season-counts').text(),/4 у источника.*5 в каталоге/);
+   if(selected===2){assert.equal(root.find('.nova-hero__season-name').length,0);assert.equal(root.find('.nova-card__overview').length,0,'No Mugen Train descriptions on an unmatched source list');assert.match(root.find('.nova-chip--active .nova-chip__sub').first().text(),/11/);}
+   else{assert.equal(root.find('.nova-hero__season-name').text(),'Тренировка столпов',JSON.stringify({requests:metadataRequests,meta:root.find('.nova-hero__meta').text(),overview:root.find('.nova-card__overview').first().text(),errors:n.errors}));assert.ok(root.find('.nova-card__overview').first().text().includes(live.seasons[5].episodes[0].overview.slice(0,20)));assert.equal(root.find('.nova-hero__season-name').parent()[0],root.find('.nova-hero__season-label').parent()[0]);assert.equal(root.find('.nova-hero__season-label .nova-hero__season-name').length,0,'The arc name has its own badge');}
+   root.find('.nova-card').last().trigger('hover:enter');assert.equal(played,live.provider[selected-1].episodes.at(-1));assert.ok(root.find('[data-hash="phantom-'+selected+'-'+played+'"]').length);assert.deepEqual(n.errors,[]);
+  }finally{n.close();}
+ }
 });

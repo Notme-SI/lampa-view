@@ -8006,5 +8006,31 @@
   "ro": "Metadate anime și colecții de drame asiatice și emisiuni TV.",
   "fr": "Métadonnées d’anime et sélections de dramas et d’émissions TV.",
   "pl": "Metadane anime oraz kolekcje dram i programów TV."
+ },
+ "Сезоны: {0} у источника • {1} в каталоге": {
+  "en": "Seasons: {0} from source • {1} in catalogue",
+  "uk": "Сезони: {0} у джерела • {1} у каталозі",
+  "be": "Сезоны: {0} у крыніцы • {1} у каталогу",
+  "zh": "季数：片源 {0} • 目录 {1}",
+  "pt": "Temporadas: {0} na fonte • {1} no catálogo",
+  "bg": "Сезони: {0} в източника • {1} в каталога",
+  "he": "עונות: {0} במקור • {1} בקטלוג",
+  "cs": "Řady: {0} ve zdroji • {1} v katalogu",
+  "ro": "Sezoane: {0} în sursă • {1} în catalog",
+  "fr": "Saisons : {0} dans la source • {1} dans le catalogue",
+  "pl": "Sezony: {0} w źródle • {1} w katalogu"
+ },
+ "Каталог: Настройки → Остальное → Основной источник.": {
+  "en": "Catalogue: Settings → Other → Main source.",
+  "uk": "Каталог: Налаштування → Інше → Основне джерело.",
+  "be": "Каталог: Налады → Іншае → Асноўная крыніца.",
+  "zh": "目录：设置 → 其他 → 主要来源。",
+  "pt": "Catálogo: Configurações → Outros → Fonte principal.",
+  "bg": "Каталог: Настройки → Други → Основен източник.",
+  "he": "קטלוג: הגדרות → אחר → מקור ראשי.",
+  "cs": "Katalog: Nastavení → Ostatní → Hlavní zdroj.",
+  "ro": "Catalog: Setări → Altele → Sursă principală.",
+  "fr": "Catalogue : Paramètres → Autres → Source principale.",
+  "pl": "Katalog: Ustawienia → Inne → Główne źródło."
  }
 }

@@ -3578,9 +3578,21 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       if (duration) meta.append($('<span class="nova-hero__runtime"></span>').text(duration));
     } else {
       var arc=wideAnimeCurrent(),number=arc?arc.number:(seasonNumber() || 1),api=window.LampaView && window.LampaView.episodeMetadata;
-      var seasonLabel=$('<span class="nova-hero__season-label"></span>').append($('<span></span>').text(text('torrent_serial_season','nova_plus_season')+' '+number));
-      var name=api && api.seasonName?api.seasonName(arc?{seasons:[{season_number:number,name:arc.name}]}:movie,number):'';
-      if(name)seasonLabel.append($('<span class="nova-hero__season-name"></span>').text(name));meta.append(seasonLabel);
+      var seasonBadges=$('<span class="nova-hero__seasons"></span>').appendTo(meta);
+      $('<span class="nova-hero__season-label"></span>').text(text('torrent_serial_season','nova_plus_season')+' '+number).appendTo(seasonBadges);
+      var alternate=!arc && alternateSeasons();
+      var name=!alternate && api && api.seasonName?api.seasonName(arc?{seasons:[{season_number:number,name:arc.name}]}:movie,number):'';
+      if(name)seasonBadges.append($('<span class="nova-hero__season-name"></span>').text(name));
+      if(alternate){
+        seasonBadges.append($('<span class="nova-hero__season-counts"></span>').text(lampaViewText("Сезоны: {0} у источника • {1} в каталоге",[providerSeasonNumbers().filter(function(n){return n>0;}).length,movie.number_of_seasons])));
+        var context=wideMetadataContext(),owner=root && root[0];
+        wideBook(number,function(book,grouped){
+          if(!grouped || !book || !root || root[0]!==owner || wideMetadataContext()!==context || !seasonBadges.closest('.nova-hero').length)return;
+          var rows=Object.keys(book).map(function(key){return book[key];}),mapped=rows[0] && rows[0].lampa_season_name;
+          if(mapped===undefined && rows.length && rows.every(function(e){return e.season_number===rows[0].season_number;}))mapped=api && api.seasonName?api.seasonName(movie,rows[0].season_number):'';
+          if(mapped)seasonBadges.find('.nova-hero__season-label').after($('<span class="nova-hero__season-name"></span>').text(mapped));
+        });
+      }
     }
     if (date.children().length) meta.append(date);
   }
@@ -5480,11 +5492,15 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
   }
 
   function wideCountKey(number){return [tmdbId(),number,get('language','ru'),sourceTitle(),providerSeasonNumbers().join(',')].join(':');}
-  function wideMetadataContext(){var arc=wideAnimeCurrent();return wideCountKey(seasonNumber() || 1)+(arc?'|arc:'+arc.number:'');}
+  function wideMetadataContext(){var arc=wideAnimeCurrent();return wideCountKey(seasonNumber() || 1)+(arc?'|arc:'+arc.number:'')+'|voice:'+wideVoiceName()+'|files:'+wideFiles();}
   function wideSeasonCount(number, box) {
     var id = tmdbId();
     if (!id || !number) return 0;
     var key = wideCountKey(number);
+    if(alternateSeasons() && providerSeasonNumbers().filter(function(n){return n>0;}).length<Number(movie.number_of_seasons)){
+      if(Number(number)===Number(seasonNumber()) && wideFiles())wide_file_counts[key]=wideFiles();
+      return wide_file_counts[key] || 0;
+    }
     if (typeof wide_counts[key] === 'number') return wide_counts[key];
     seasonPlanned(number, function (count) {
       if (!count) return;

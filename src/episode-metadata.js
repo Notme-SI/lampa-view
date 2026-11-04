@@ -17,8 +17,34 @@ export function seasonName(card,number){
 }
 // Alternative episode groups change metadata coordinates, never playback hashes.
 export function alternativeNumbering(card,numbers){
- const count=Number(card && card.number_of_seasons),rows=Array.from(new Set(numbers.map(Number))).sort((a,b)=>a-b);
- return count>0 && rows.length>count && rows.length<=30 && rows.every((n,i)=>n===i+1);
+ const count=Number(card && card.number_of_seasons),rows=Array.from(new Set(numbers.map(Number))).filter(n=>n!==0).sort((a,b)=>a-b);
+ return count>0 && rows.length>0 && (rows.length>count || isAnime(card) && rows.length<count) && rows.length<=30 && rows.every((n,i)=>n===i+1);
+}
+// Validate the complete published coordinate map before using any of its groups.
+// Equal episode counts by themselves are never evidence of a season mapping.
+export function episodeGroupModel(card,data,groupCount,episodeCount){
+ if(!Number.isSafeInteger(groupCount) || groupCount<1 || groupCount>30 || !Number.isSafeInteger(episodeCount) || episodeCount<1 || episodeCount>3000)return null;
+ const groups=(data && Array.isArray(data.groups)?data.groups:[]).slice().sort((a,b)=>Number(a.order)-Number(b.order)),start=groups.length?Number(groups[0].order):-1;
+ if(groups.length!==groupCount || ![0,1].includes(start))return null;
+ const known=new Map(),seen=new Set(),result=[];
+ for(const s of card.seasons || []){
+  const number=Number(s.season_number),count=Number(s.episode_count || 0);if(number===0)continue;
+  if(!Number.isSafeInteger(number) || number<1 || known.has(number) || !Number.isSafeInteger(count) || count<0 || count>3000)return null;
+  known.set(number,count);
+ }
+ for(let i=0;i<groups.length;i++){
+  const group=groups[i],rows=(Array.isArray(group.episodes)?group.episodes:[]).slice().sort((a,b)=>Number(a.order)-Number(b.order));
+  if(Number(group.order)!==start+i || !rows.length || rows.length>3000)return null;
+  for(let j=0;j<rows.length;j++){
+   const e=rows[j],s=Number(e.season_number),n=Number(e.episode_number),key=s+':'+n;
+   if(Number(e.order)!==j || !Number.isSafeInteger(s) || s<=0 || !Number.isSafeInteger(n) || n<=0 || known.size && (!known.has(s) || known.get(s)>0 && n>known.get(s)) || seen.has(key))return null;
+   seen.add(key);
+  }
+  result.push({number:i+1,name:String(group.name || ''),rows});
+ }
+ if(seen.size!==episodeCount || Number(card.number_of_episodes)>0 && seen.size!==Number(card.number_of_episodes))return null;
+ for(const [s,count] of known)if(count>0 && Array.from({length:count},(_,i)=>s+':'+(i+1)).some(key=>!seen.has(key)))return null;
+ return {groups:result};
 }
 export function namedSeason(card,number){
  const row=(Array.isArray(card && card.seasons)?card.seasons:[]).find(s=>Number(s.season_number)===Number(number)),name=String(row && row.name || '').trim();
@@ -53,22 +79,22 @@ export default function episodeMetadata(L,kino){
    try{api.get(path,{},finish,()=>finish(null));}catch(error){finish(null);}
   }
  }
- function legacyBook(card,number,numbers,actual,done){
+ function legacyBook(card,number,numbers,actual,done,files=[]){
   if(!alternativeNumbering(card,numbers))return false;
+  const seasonNumbers=[...new Set(numbers.map(Number))].filter(n=>n>0);
   const id=Number(card.tmdb_id || card.id),language=String(L.Storage.get('language','ru')),suffix='?language='+encodeURIComponent(language),networks=(card.networks || []).map(n=>Number(n.id));
   request('tv/'+id+'/episode_groups'+suffix,index=>{
-   let candidates=((index && index.results)||[]).filter(g=>Number(g.group_count)===numbers.length && Number(g.episode_count)>0 && (!Number(card.number_of_episodes) || Number(g.episode_count)===Number(card.number_of_episodes)));
+   let candidates=((index && index.results)||[]).filter(g=>Number(g.group_count)===seasonNumbers.length && Number(g.episode_count)>0 && (!Number(card.number_of_episodes) || Number(g.episode_count)===Number(card.number_of_episodes)));
    const network=candidates.filter(g=>g.network && (!networks.length || networks.includes(Number(g.network.id))));
    if(network.length)candidates=network;
    if(candidates.length!==1)return done(null,true);
    request('tv/episode_group/'+encodeURIComponent(candidates[0].id)+suffix,data=>{
-    const groups=(data && Array.isArray(data.groups)?data.groups:[]).slice().sort((a,b)=>Number(a.order)-Number(b.order)),start=groups.length?Number(groups[0].order):0,group=groups[Number(number)-1],episodes=group && group.episodes;
-    if(groups.length!==numbers.length || ![0,1].includes(start) || groups.some((g,i)=>Number(g.order)!==start+i) || !Array.isArray(episodes) || !episodes.length || actual>0 && episodes.length!==actual)return done(null,true);
-    const seen=new Set(),rows=episodes.slice().sort((a,b)=>Number(a.order)-Number(b.order));
-    if(rows.some((e,i)=>Number(e.order)!==i || !(Number(e.season_number)>0 && Number(e.episode_number)>0) || seen.has(e.season_number+':'+e.episode_number) || !seen.add(e.season_number+':'+e.episode_number)))return done(null,true);
+    const model=episodeGroupModel(card,data,seasonNumbers.length,Number(candidates[0].episode_count)),group=model && model.groups.find(g=>g.number===Number(number)),rows=group && group.rows;
+    if(!rows || actual>0 && rows.length!==actual || files.length && (files.length!==rows.length || !files.map(Number).sort((a,b)=>a-b).every((n,i)=>n===i+1)))return done(null,true);
     const seasons=Array.from(new Set(rows.map(e=>Number(e.season_number))));let left=seasons.length;const books={};
     seasons.forEach(season=>request('tv/'+id+'/season/'+season+suffix,value=>{books[season]=value;if(--left)return;
-     const book={};rows.forEach((e,i)=>{const episode=((books[e.season_number] && (books[e.season_number].episodes_original || books[e.season_number].episodes))||[]).find(v=>Number(v.episode_number)===Number(e.episode_number));if(episode)book[i+1]={...episode,lampa_grouped:true};});
+     const name=seasons.length===1?seasonName(card,seasons[0]):seasonName({seasons:[{season_number:number,name:group.name}]},number);
+     const book={};rows.forEach((e,i)=>{const episode=((books[e.season_number] && (books[e.season_number].episodes_original || books[e.season_number].episodes))||[]).find(v=>Number(v.episode_number)===Number(e.episode_number));if(episode)book[i+1]={...episode,lampa_grouped:true,lampa_season_name:name};});
      done(Object.keys(book).length===rows.length?book:null,true);
     }));
    });
@@ -84,7 +110,7 @@ export default function episodeMetadata(L,kino){
   if(kino && kino.enabled())kino.groups(card,files,value=>value?done(value):fallback());else fallback();
  }
  return {alternate:alternativeNumbering,groups,groupBook,seasonName,book(card,number,numbers,actual,done,files=[]){
-  if(kino && kino.enabled() && files.length){kino.book(card,number,numbers,files,book=>{if(book)return done(book,true);if(!legacyBook(card,number,numbers,actual,done))done(null,false);});return true;}
-  return legacyBook(card,number,numbers,actual,done);
+  if(kino && kino.enabled() && files.length){kino.book(card,number,numbers,files,book=>{if(book)return done(book,true);if(!legacyBook(card,number,numbers,actual,done,files))done(null,false);});return true;}
+  return legacyBook(card,number,numbers,actual,done,files);
  }};
 }
