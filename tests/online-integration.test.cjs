@@ -52,8 +52,33 @@ test('complete absolute anime list navigates confirmed arcs locally and keeps or
  }finally{n.close();}
 });
 
-test('KinoAPI key is discoverable in catalogue settings and masked by native rendering',async()=>{
- const n=await native({built:true}),{w,L}=n;try{
- const param=L.SettingsApi.getParam('minimal_settings_catalogue').find(p=>p.param.name==='minimal_kinoapi');assert.ok(param);const item=w.jQuery('<div><div class="settings-param__value"></div></div>');w.localStorage.setItem('lampa_view_kinoapi_key','local-fixture-key');param.onRender(item);assert.equal(item.text(),'••••••••');assert.equal(L.Storage.get('minimal_kinoapi',''),'', 'Personal key never goes into synced native storage');assert.deepEqual(n.errors,[]);
+
+test('KinoAPI and Trakt settings transfer through native backup/restore with separate toggle and key fields',async()=>{
+ const n=await native({built:true}),{w,L}=n;let restored;try{
+ const params=()=>L.SettingsApi.getParam('minimal_settings_catalogue');
+ const toggle=params().find(p=>p.param.name==='minimal_kinoapi_enabled');assert.ok(toggle);assert.equal(toggle.param.type,'trigger');assert.ok(!params().some(p=>p.param.name==='minimal_kinoapi'));
+ let submit;L.Input.edit=(options,fn)=>{assert.equal(options.password,true);assert.equal(options.nosave,true);assert.equal(options.value,'');submit=fn;};
+ L.Storage.set('minimal_kinoapi_enabled',true);toggle.onChange();assert.equal(w.LampaView.kinoapi.enabled(),false,'Cancelling first entry leaves no enabled integration');submit('backup-fixture-key');
+ const param=params().find(p=>p.param.name==='minimal_kinoapi');assert.ok(param);assert.match(param.field.description,/https:\/\/kinoapi\.lampac\.dev\//);assert.match(param.field.description,/резервную копию/);
+ const item=w.jQuery('<div></div>');param.onRender(item);assert.equal(item.text(),'••••••••');assert.equal(L.Storage.get('lampa_view_kinoapi_key'),'backup-fixture-key');
+ L.Storage.set('minimal_trakt_enabled',true);L.Storage.set('minimal_trakt_client_id','backup-public-id');assert.match(params().find(p=>p.param.name==='minimal_trakt_client_id').field.description,/https:\/\/trakt\.tv\/oauth\/applications/);
+ // Native Settings.backup serializes localStorage, excluding app.js; restore writes it before reload.
+ const backup=JSON.stringify(w.localStorage,(key,value)=>key==='app.js'?undefined:value);
+ restored=await native({built:true,prepare(win){Object.entries(JSON.parse(backup)).forEach(([key,value])=>win.localStorage.setItem(key,value));}});
+ assert.equal(restored.w.LampaView.kinoapi.enabled(),true);assert.equal(restored.L.Storage.get('lampa_view_kinoapi_key'),'backup-fixture-key');assert.equal(restored.L.Storage.get('minimal_trakt_client_id'),'backup-public-id');assert.equal(restored.L.Storage.get('minimal_trakt_enabled'),true);
+ assert.ok(restored.L.SettingsApi.getParam('minimal_settings_catalogue').some(p=>p.param.name==='minimal_kinoapi'));assert.deepEqual(n.errors,[]);assert.deepEqual(restored.errors,[]);
+ }finally{n.close();if(restored)restored.close();}
+});
+
+test('anime provider with two labels and an absolute list exposes twenty catalogue arcs without a key',async()=>{
+ const n=await native({built:true}),{w,L}=n,$=w.jQuery;try{
+ const root=$('<div class="explorer"><div class="explorer__files"><div class="explorer__files-head"></div><div class="explorer__files-body"><div class="scroll"><div class="scroll__body"></div></div></div></div>').appendTo(w.document.body),filter=new L.Filter({search:false,sort:true,filter:true});root.find('.explorer__files-head').append(filter.render());filter.set('sort',[{title:'Kodik',source:'kodik',selected:true}]);filter.set('filter',[{stype:'season',title:'Сезон',items:[{title:'Сезон 1'},{title:'Сезон 2',selected:true}]}]);
+ let played=0;for(let i=1;i<=40;i++)$('<div class="online-prestige online-prestige--full selector"><div class="online-prestige__title">Серия '+i+'</div><div class="online-prestige__episode-number">'+i+'</div><div class="time-line" data-hash="provider-2-'+i+'"><div style="width:0%"></div></div></div>').on('hover:enter',()=>played=i).appendTo(root.find('.scroll__body'));
+ const movie={id:31910,name:'Anime',original_name:'Anime',source:'tmdb',media_type:'tv',minimal_anime:true,seasons:Array.from({length:20},(_,i)=>({season_number:i+1,episode_count:2,name:'Арка '+(i+1)}))};
+ L.Api.sources.tmdb.get=(url,p,ok)=>{const number=Number((url.match(/season\/(\d+)/)||[])[1]);ok({episodes:[1,2].map(i=>({episode_number:i,season_number:number,name:'Арка '+number+' серия '+i,overview:'Описание арки '+number}))});};
+ assert.equal(w.LampaView.kinoapi.enabled(),false);L.Activity.active=()=>({component:'online_test',movie,activity:{render:()=>root,component:{}}});L.Listener.send('activity',{type:'start'});await wait(500);
+ assert.equal(root.find('.nova-card').length,2);assert.equal(root.find('.nova-hero__season-name').text(),'Арка 1');root.find('[data-nova-focus="anime-season"]').trigger('hover:enter');assert.equal(L.Select.render().find('.selectbox-item').length,20);
+ L.Select.render().find('.selectbox-item').last().trigger('hover:enter');await wait(200);assert.equal(root.find('.nova-hero__season-name').text(),'Арка 20');assert.equal(root.find('.nova-card').length,2);assert.match(root.find('.nova-card__overview').first().text(),/Описание арки 20/);
+ root.find('.nova-card').last().trigger('hover:enter');assert.equal(played,40);assert.ok(root.find('[data-hash="provider-2-40"]').length);assert.deepEqual(n.errors,[]);
  }finally{n.close();}
 });

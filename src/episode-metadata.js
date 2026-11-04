@@ -1,3 +1,20 @@
+import {isAnime} from './metadata.js';
+// Only partition a complete absolute provider list using confirmed catalogue counts.
+export function absoluteSeasons(card,files){
+ const numbers=[...new Set(files.map(Number))].sort((a,b)=>a-b),seasons=(Array.isArray(card && card.seasons)?card.seasons:[]).filter(s=>Number(s.season_number)>0).slice().sort((a,b)=>Number(a.season_number)-Number(b.season_number));
+ if(!isAnime(card) || seasons.length<2 || seasons.length>100 || !numbers.length || numbers.length>3000 || !numbers.every((n,i)=>n===i+1) || seasons.some((s,i)=>!Number.isSafeInteger(Number(s.season_number)) || !Number.isSafeInteger(Number(s.episode_count)) || Number(s.episode_count)<=0 || i && Number(s.season_number)===Number(seasons[i-1].season_number)) || seasons.reduce((n,s)=>n+Number(s.episode_count),0)!==numbers.length)return null;
+ let offset=0;return seasons.map(s=>{const count=Number(s.episode_count),episodes=numbers.slice(offset,offset+count);offset+=count;return {number:Number(s.season_number),name:String(s.name || ''),count,episodes,native:true};});
+}
+export function groupBook(book,group){
+ if(!book || !group)return null;
+ const rows=Object.values(book).sort((a,b)=>Number(a.episode_number)-Number(b.episode_number));
+ if(rows.length!==group.count || !rows.every((e,i)=>Number(e.episode_number)===group.episodes[i]) && !rows.every((e,i)=>Number(e.episode_number)===i+1))return null;
+ const result={};rows.forEach((e,i)=>result[group.episodes[i]]={...e,lampa_grouped:true});return result;
+}
+export function seasonName(card,number){
+ const row=(Array.isArray(card && card.seasons)?card.seasons:[]).find(s=>Number(s.season_number)===Number(number)),name=String(row && row.name || '').trim();
+ return /^(?:(?:season|сезон|сезонът|temporada|saison|sezon|série|עונה|季|第)\s*\d+|\d+\s*(?:season|сезон|temporada|saison|sezon|季))$/i.test(name)?'':name;
+}
 // Alternative episode groups change metadata coordinates, never playback hashes.
 export function alternativeNumbering(card,numbers){
  const count=Number(card && card.number_of_seasons),rows=Array.from(new Set(numbers.map(Number))).sort((a,b)=>a-b);
@@ -24,7 +41,7 @@ export default function episodeMetadata(L,kino){
    const job=queue.shift(),path=job.path;running++;let finished=false;
    const finish=value=>{
     if(finished)return;finished=true;running--;
-    const valid=value && (path.includes('/episode_groups?')?Array.isArray(value.results):path.includes('/episode_group/')?Array.isArray(value.groups):Array.isArray(value.episodes));
+    const valid=value && (path.includes('/episode_groups?')?Array.isArray(value.results):path.includes('/episode_group/')?Array.isArray(value.groups):Array.isArray(value.episodes) || Array.isArray(value.seasons));
     // Keep concurrent readers coalesced during one bounded retry. A transport
     // failure or malformed response must never become a permanent cache entry.
     if(!valid && job.attempt===0){setTimeout(()=>{queue.push({path,attempt:1});pump();},400);pump();return;}
@@ -57,7 +74,16 @@ export default function episodeMetadata(L,kino){
    });
   });return true;
  };
- return {alternate:alternativeNumbering,book(card,number,numbers,actual,done,files=[]){
+ function groups(card,files,done){
+  if(!isAnime(card))return done(null);
+  function fallback(){
+   const ready=absoluteSeasons(card,files);if(ready)return done(ready);
+   const id=Number(card && (card.tmdb_id || card.id));if(!Number.isSafeInteger(id) || id<=0 || card.source==='minimal_shiki' && !card.tmdb_id || files.length<2)return done(null);
+   request('tv/'+id+'?language='+encodeURIComponent(L.Storage.get('language','ru')),data=>done(data?absoluteSeasons({...card,seasons:data.seasons},files):null));
+  }
+  if(kino && kino.enabled())kino.groups(card,files,value=>value?done(value):fallback());else fallback();
+ }
+ return {alternate:alternativeNumbering,groups,groupBook,seasonName,book(card,number,numbers,actual,done,files=[]){
   if(kino && kino.enabled() && files.length){kino.book(card,number,numbers,files,book=>{if(book)return done(book,true);if(!legacyBook(card,number,numbers,actual,done))done(null,false);});return true;}
   return legacyBook(card,number,numbers,actual,done);
  }};

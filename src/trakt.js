@@ -160,7 +160,7 @@ export default function installTrakt(L){
   sources();const controller=L.Controller && L.Controller.enabled && L.Controller.enabled();
   if(L.Settings && L.Settings.update && controller && /^settings/.test(controller.name))L.Settings.update();
  }
- L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_trakt_enabled',type:'trigger',default:false},field:{name:'Trakt',description:lampaViewText("Добавить в Настройки → Остальное → Основной источник. При первом включении потребуется Client ID.")},onChange(){
+ L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_trakt_enabled',type:'trigger',default:false},field:{name:'Trakt',description:lampaViewText("Добавить в Настройки → Остальное → Основной источник. При первом включении потребуется Client ID.")+' '+lampaViewText("Ключ входит в резервную копию настроек и переносится при восстановлении.")},onChange(){
   clear();cache.clear();
   if(!enabled() || client())return refresh();
   // Do not leave an unusable source enabled if the empty input is cancelled.
@@ -170,7 +170,7 @@ export default function installTrakt(L){
    L.Storage.set('minimal_trakt_client_id',id);L.Storage.set('minimal_trakt_enabled',!!id);refresh();
   });
  }});
- L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_trakt_client_id',type:'input',values:'',default:''},field:{name:'Trakt · Client ID',description:lampaViewText("Публичный Client ID собственного приложения Trakt. Выбор каталога: Настройки → Остальное → Основной источник. Client Secret не нужен.")},onChange(){clear();cache.clear();if(!client())L.Storage.set('minimal_trakt_enabled',false);refresh();}});
+ L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_trakt_client_id',type:'input',values:'',default:''},field:{name:'Trakt · Client ID',description:lampaViewText("Публичный Client ID собственного приложения Trakt. Выбор каталога: Настройки → Остальное → Основной источник. Client Secret не нужен.")+' '+lampaViewText("Получить ключ: {0}.",["https://trakt.tv/oauth/applications"])+' '+lampaViewText("Ключ входит в резервную копию настроек и переносится при восстановлении.")},onChange(){clear();cache.clear();if(!client())L.Storage.set('minimal_trakt_enabled',false);refresh();}});
  sources();
  return adapter;
 }

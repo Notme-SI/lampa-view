@@ -7954,5 +7954,57 @@
   "ro": "Drame coreene bine cotate",
   "fr": "Dramas coréens les mieux notés",
   "pl": "Wysoko oceniane seriale koreańskie"
+ },
+ "Ключ входит в резервную копию настроек и переносится при восстановлении.": {
+  "en": "The key is included in settings backups and transferred when settings are restored.",
+  "uk": "Ключ входить до резервної копії налаштувань і переноситься під час відновлення.",
+  "be": "Ключ уваходзіць у рэзервовую копію налад і пераносіцца пры аднаўленні.",
+  "zh": "密钥包含在设置备份中，并会在恢复设置时一并转移。",
+  "pt": "A chave é incluída no backup das configurações e transferida ao restaurá-las.",
+  "bg": "Ключът се включва в резервното копие на настройките и се прехвърля при възстановяване.",
+  "he": "המפתח נכלל בגיבוי ההגדרות ומועבר בעת שחזורן.",
+  "cs": "Klíč je součástí zálohy nastavení a přenese se při obnovení.",
+  "ro": "Cheia este inclusă în copia de siguranță a setărilor și transferată la restaurare.",
+  "fr": "La clé est incluse dans la sauvegarde des paramètres et transférée lors de leur restauration.",
+  "pl": "Klucz jest uwzględniany w kopii ustawień i przenoszony przy ich przywracaniu."
+ },
+ "Получить ключ: {0}.": {
+  "en": "Get a key: {0}.",
+  "uk": "Отримати ключ: {0}.",
+  "be": "Атрымаць ключ: {0}.",
+  "zh": "获取密钥：{0}。",
+  "pt": "Obter uma chave: {0}.",
+  "bg": "Получаване на ключ: {0}.",
+  "he": "קבלת מפתח: {0}.",
+  "cs": "Získat klíč: {0}.",
+  "ro": "Obține o cheie: {0}.",
+  "fr": "Obtenir une clé : {0}.",
+  "pl": "Uzyskaj klucz: {0}."
+ },
+ "KinoAPI · Ключ API": {
+  "en": "KinoAPI · API key",
+  "uk": "KinoAPI · Ключ API",
+  "be": "KinoAPI · Ключ API",
+  "zh": "KinoAPI · API 密钥",
+  "pt": "KinoAPI · Chave de API",
+  "bg": "KinoAPI · API ключ",
+  "he": "KinoAPI · מפתח API",
+  "cs": "KinoAPI · Klíč API",
+  "ro": "KinoAPI · Cheie API",
+  "fr": "KinoAPI · Clé API",
+  "pl": "KinoAPI · Klucz API"
+ },
+ "Метаданные аниме и подборки дорам и ТВ-шоу.": {
+  "en": "Anime metadata and drama and TV show collections.",
+  "uk": "Метадані аніме та добірки дорам і ТВ-шоу.",
+  "be": "Метаданыя анімэ і падборкі дорам і ТВ-шоу.",
+  "zh": "动漫元数据以及亚洲电视剧和电视节目合集。",
+  "pt": "Metadados de anime e coleções de doramas e programas de TV.",
+  "bg": "Метаданни за аниме и подборки с дорами и ТВ предавания.",
+  "he": "מטא־נתונים של אנימה ואוספי דרמות ותוכניות טלוויזיה.",
+  "cs": "Metadata anime a kolekce asijských dramat a TV pořadů.",
+  "ro": "Metadate anime și colecții de drame asiatice și emisiuni TV.",
+  "fr": "Métadonnées d’anime et sélections de dramas et d’émissions TV.",
+  "pl": "Metadane anime oraz kolekcje dram i programów TV."
  }
 }

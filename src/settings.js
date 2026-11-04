@@ -27,6 +27,7 @@ export default function unifiedSettings(api,L,version=''){
   return source.filter(d=>{
    const n=d.param && d.param.name || '',text=String(d.field && d.field.name || '');
    if(seen.has(n))return false;seen.add(n);
+   if(n==='minimal_kinoapi' && !flag(L,'minimal_kinoapi_enabled',!!L.Storage.get('lampa_view_kinoapi_key','')))return false;
    if(n==='minimal_trakt_client_id' && !flag(L,'minimal_trakt_enabled',false))return false;
    if(d.param && d.param.type==='button' && typeof d.onChange!=='function')return false;
    if(['alc_auto_quick_movie','alc_auto_quick_series'].includes(n))return false;

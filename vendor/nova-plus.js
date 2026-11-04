@@ -3576,7 +3576,12 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     if (tmdbKind(movie) === 'movie') {
       var duration = fallbackTime() || (target && target.time) || '';
       if (duration) meta.append($('<span class="nova-hero__runtime"></span>').text(duration));
-    } else meta.append($('<span class="nova-hero__season-label"></span>').text(text('torrent_serial_season', 'nova_plus_season') + ' ' + (wideAnimeCurrent()?wideAnimeCurrent().number:(seasonNumber() || 1))));
+    } else {
+      var arc=wideAnimeCurrent(),number=arc?arc.number:(seasonNumber() || 1),api=window.LampaView && window.LampaView.episodeMetadata;
+      var seasonLabel=$('<span class="nova-hero__season-label"></span>').append($('<span></span>').text(text('torrent_serial_season','nova_plus_season')+' '+number));
+      var name=api && api.seasonName?api.seasonName(arc?{seasons:[{season_number:number,name:arc.name}]}:movie,number):'';
+      if(name)seasonLabel.append($('<span class="nova-hero__season-name"></span>').text(name));meta.append(seasonLabel);
+    }
     if (date.children().length) meta.append(date);
   }
 
@@ -5475,7 +5480,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
   }
 
   function wideCountKey(number){return [tmdbId(),number,get('language','ru'),sourceTitle(),providerSeasonNumbers().join(',')].join(':');}
-  function wideMetadataContext(){return wideCountKey(seasonNumber() || 1);}
+  function wideMetadataContext(){var arc=wideAnimeCurrent();return wideCountKey(seasonNumber() || 1)+(arc?'|arc:'+arc.number:'');}
   function wideSeasonCount(number, box) {
     var id = tmdbId();
     if (!id || !number) return 0;
@@ -5496,7 +5501,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
   function wideAnimeCurrent(){return wide_anime.groups && wide_anime.prefix===wideAnimePrefix()?wide_anime.groups.filter(function(g){return g.number===wide_anime.selected;})[0]:null;}
   function wideAnimeFilter(list){var group=wideAnimeCurrent();return group?list.filter(function(item){return !item.folder && group.episodes.indexOf(Number(episodeNumber(item.num)))>=0;}):list;}
   function wideAnimePrepare(list){
-    var api=window.LampaView && window.LampaView.kinoapi;if(!serial || nav || !wideMeta() || !api || !api.enabled())return;
+    var view=window.LampaView,api=view && view.episodeMetadata && view.episodeMetadata.groups?view.episodeMetadata:view && view.kinoapi;if(!serial || nav || !wideMeta() || !api || !api.groups || api.enabled && !api.enabled())return;
     var files=list.filter(function(item){return !item.folder && !item.soon;}).map(function(item){return Number(episodeNumber(item.num));});
     var prefix=wideAnimePrefix(),key=prefix+'|'+files.join(',');if(wide_anime.key===key)return;
     wide_anime={key:key,prefix:prefix,groups:null,selected:0};var owner=root && root[0];
@@ -5509,7 +5514,8 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
   function providerSeasonNumbers(){return (groups.season && groups.season.items || []).map(function(item){return Number(digits(item.title));});}
   function alternateSeasons(){var api=window.LampaView && window.LampaView.episodeMetadata;return api && api.alternate(movie,providerSeasonNumbers());}
   function wideBook(number, done, countOnly) {
-    var api=window.LampaView && window.LampaView.episodeMetadata;
+    var api=window.LampaView && window.LampaView.episodeMetadata,arc=wideAnimeCurrent();
+    if(arc && arc.native && api && api.groupBook)return wideCanonicalBook(arc.number,function(book){done(api.groupBook(book,arc),true);});
     if(api && movie && wideMeta() && api.book(movie,number,providerSeasonNumbers(),!countOnly && Number(number)===Number(seasonNumber())?wideFiles():0,function(book,grouped){if(book || grouped)return done(book,grouped);wideCanonicalBook(number,done);},!countOnly?items.filter(function(item){return !item.folder && !item.soon;}).map(function(item){return Number(episodeNumber(item.num));}):[]))return;
     wideCanonicalBook(number,done);
   }

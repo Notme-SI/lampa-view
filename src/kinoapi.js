@@ -1,5 +1,6 @@
 import {text as t,locale} from './i18n.js';
 import {isAnime} from './metadata.js';
+import flag from './storage-flag.js';
 const BASE='https://kinoapi.lampac.dev/api/v1/',KEY='lampa_view_kinoapi_key';
 const positive=n=>Number.isSafeInteger(Number(n)) && Number(n)>0;
 // Coordinates belong to the metadata service. Playback hashes stay with the provider.
@@ -41,8 +42,8 @@ export function absoluteGroups(model,fileNumbers){
 }
 export default function kinoapi(L){
  const cache=new Map(),pending=new Map(),queue=[],models=new Map(),loading=new Map();let active=0,next=0,timer,revision=0,blocked=0;
- const key=()=>{try{return String(localStorage.getItem(KEY)||'').trim();}catch(error){return '';}};
- const enabled=()=>!!key();
+ const key=()=>String(L.Storage.value?L.Storage.value(KEY,''):L.Storage.get(KEY,'')).trim();
+ const enabled=()=>flag(L,'minimal_kinoapi_enabled',!!key()) && !!key();
  function clear(){revision++;cache.clear();models.clear();const waiting=queue.splice(0);waiting.forEach(job=>settle(job,null));}
  function settle(job,value){const listeners=pending.get(job.path);if(listeners===job.listeners)pending.delete(job.path);job.listeners.splice(0).forEach(fn=>{try{fn(value);}catch(error){}});}
  function request(path,done){
@@ -79,13 +80,21 @@ export default function kinoapi(L){
    models.set(stamp,{value:model,until:Date.now()+(model?900000:30000)});while(models.size>12)models.delete(models.keys().next().value);finish(model);
   });});
  }
- function setting(item){item.find('.settings-param__value').text(enabled()?'••••••••':'');}
- if(L.SettingsApi)L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_kinoapi',type:'button'},field:{name:'KinoAPI',description:t('Личный ключ метаданных аниме. Хранится только на этом устройстве.')},onRender:setting,onChange:()=>{
-  L.Input.edit({title:'KinoAPI API key',value:'',free:true,nosave:true,password:true},value=>{
-   // Empty input intentionally removes the key; it never enters native Storage/CUB sync.
-   try{const clean=String(value||'').trim();if(clean)localStorage.setItem(KEY,clean);else localStorage.removeItem(KEY);}catch(error){}
-   blocked=0;clear();if(L.Settings && L.Settings.update)L.Settings.update();
+ function refresh(){blocked=0;clear();const controller=L.Controller && L.Controller.enabled && L.Controller.enabled();if(L.Settings && L.Settings.update && controller && /^settings/.test(controller.name))L.Settings.update();}
+ function input(){
+  L.Input.edit({title:t('KinoAPI · Ключ API'),value:'',free:true,nosave:true,password:true},value=>{
+   // Keep the existing key name so native settings backups restore older installations too.
+   const clean=String(value||'').trim();L.Storage.set(KEY,clean);L.Storage.set('minimal_kinoapi_enabled',!!clean);refresh();
   });
- }});
+ }
+ function setting(item){if(!item.find('.settings-param__value').length)item.append('<div class="settings-param__value"></div>');item.find('.settings-param__value').text(key()?'••••••••':'');}
+ if(L.SettingsApi){
+  L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_kinoapi_enabled',type:'trigger',default:!!key()},field:{name:'KinoAPI',description:t('Метаданные аниме и подборки дорам и ТВ-шоу.')+' '+t('Ключ входит в резервную копию настроек и переносится при восстановлении.')},onChange(){
+   refresh();if(!flag(L,'minimal_kinoapi_enabled',!!key()) || key())return;
+   // Cancelling the first input must leave the integration disabled.
+   L.Storage.set('minimal_kinoapi_enabled',false);input();
+  }});
+  L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_kinoapi',type:'button'},field:{name:t('KinoAPI · Ключ API'),description:t('Получить ключ: {0}.',['https://kinoapi.lampac.dev/'])+' '+t('Ключ входит в резервную копию настроек и переносится при восстановлении.')},onRender:setting,onChange:input});
+ }
  return {enabled,title,anime,catalogueRequest(path,done){if(!/^titles\?/.test(path))return done(null);request(path,done);},book(card,season,numbers,files,done){anime(card,model=>done(metadataBook(model,season,numbers,files)));},groups(card,files,done){anime(card,model=>done(absoluteGroups(model,files)));},clear};
 }
