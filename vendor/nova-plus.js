@@ -5554,13 +5554,13 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
   function wideAnimePrepare(list){
     var view=window.LampaView,api=view && view.episodeMetadata && view.episodeMetadata.groups?view.episodeMetadata:view && view.kinoapi;if(!serial || nav || !wideMeta() || !api || !api.groups || api.enabled && !api.enabled())return;
     var files=list.filter(function(item){return !item.folder && !item.soon;}).map(function(item){return Number(episodeNumber(item.num));});
-    var prefix=wideAnimePrefix(),key=prefix+'|'+files.join(',');if(wide_anime.key===key)return;
+    var prefix=wideAnimePrefix(),labels=providerSeasonNumbers(),key=prefix+'|'+labels.join(',')+'|'+files.join(',');if(wide_anime.key===key)return;
     wide_anime={key:key,prefix:prefix,groups:null,selected:0};var owner=root && root[0];
     api.groups(movie,files,function(groups){
       if(!groups || !root || root[0]!==owner || wide_anime.key!==key || wideAnimePrefix()!==prefix)return;
       wide_anime.groups=groups;var resume=pickResume(items),episode=resume && Number(resume.num),release=movie && movie.minimal_anime_release,preferred=release && groups.filter(function(g){return g.mal_id===release.mal;})[0],selected=preferred || groups.filter(function(g){return g.episodes.indexOf(episode)>=0;})[0];wide_anime.selected=(selected || groups[0]).number;
       setTimeout(function(){if(root && root[0]===owner && wide_anime.key===key){wide_sig='';redraw();}},0);
-    });
+    },{number:seasonNumber(),numbers:labels});
   }
   function providerSeasonNumbers(){return (groups.season && groups.season.items || []).map(function(item){return Number(digits(item.title));});}
   function alternateSeasons(){var api=window.LampaView && window.LampaView.episodeMetadata;return api && api.alternate(movie,providerSeasonNumbers());}
@@ -6604,8 +6604,8 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
 
     if(wideAnimeCurrent()){
       var animeSeasons=group('','season'),activeArc=wideAnimeCurrent();
-      var chooseArc=function(entry){wide_anime.selected=entry.number;wide_sig='';ui_focus=wide_anime.groups.length>100?'anime-season':'anime-season:'+entry.number;redraw();};
-      if(wide_anime.groups.length>100){
+      var chooseArc=function(entry){wide_anime.selected=entry.number;wide_sig='';ui_focus=wide_anime.groups.length>4?'anime-season':'anime-season:'+entry.number;redraw();};
+      if(wide_anime.groups.length>4){
         put(animeSeasons,'anime-season',lampaViewText("Сезон {0}",[activeArc.number]),wideCount(activeArc.count),{},function(){
           Lampa.Select.show({title:label('nova_plus_seasons')+' · '+wide_anime.groups.length,items:wide_anime.groups.map(function(g){return {title:lampaViewText("Сезон {0}",[g.number]),subtitle:wideCount(g.count),number:g.number,selected:g.number===wide_anime.selected};}),onDraw:onlineChoiceDraw,
             onSelect:function(entry){Lampa.Select.hide();contentEnable();chooseArc(entry);},onBack:function(){Lampa.Select.hide();contentEnable();restoreFocus(false);}});

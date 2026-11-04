@@ -7,9 +7,17 @@ export function absoluteSeasons(card,files){
 }
 export function groupBook(book,group){
  if(!book || !group)return null;
+ if(group.coordinates){const keys=Object.keys(book).map(Number).sort((a,b)=>a-b),offset=group.coordinates[0].number-group.coordinates[0].episode,count=group.canonical_count,local=keys.length===count && keys.every((n,i)=>n===i+1),absolute=keys.length===count && keys.every((n,i)=>n===offset+i+1);if(!local && !absolute)return null;const result={};for(const row of group.coordinates){const episode=book[local?row.episode:row.number];if(!episode)return null;result[row.number]={...episode,lampa_grouped:true};}return result;}
  const rows=Object.values(book).sort((a,b)=>Number(a.episode_number)-Number(b.episode_number));
  if(rows.length!==group.count || !rows.every((e,i)=>Number(e.episode_number)===group.episodes[i]) && !rows.every((e,i)=>Number(e.episode_number)===i+1))return null;
  const result={};rows.forEach((e,i)=>result[group.episodes[i]]={...e,lampa_grouped:true});return result;
+}
+// Some dubs expose only an absolute tail or have gaps. Require numbers beyond
+// the first canonical season, so an ordinary local 1..N list is not reassigned.
+export function absoluteRangeSeasons(card,files){
+ const seasons=(Array.isArray(card && card.seasons)?card.seasons:[]).filter(s=>Number(s.season_number)>0).slice().sort((a,b)=>a.season_number-b.season_number),numbers=files.map(Number).sort((a,b)=>a-b),total=seasons.reduce((n,s)=>n+Number(s.episode_count||0),0);
+ if(!isAnime(card) || seasons.length<2 || seasons.length>100 || numbers.length<2 || numbers.length>3000 || !seasons.every((s,i)=>Number(s.season_number)===i+1 && Number.isSafeInteger(Number(s.episode_count)) && s.episode_count>0) || numbers[numbers.length-1]<=Number(seasons[0].episode_count) || !numbers.every((n,i)=>Number.isSafeInteger(n) && n>0 && n<=total && (!i || n>numbers[i-1])))return null;
+ let offset=0;const groups=[];for(const s of seasons){const selected=numbers.filter(n=>n>offset && n<=offset+Number(s.episode_count)),coordinates=selected.map(number=>({number,episode:number-offset}));offset+=Number(s.episode_count);if(selected.length)groups.push({number:Number(s.season_number),name:String(s.name || ''),count:selected.length,episodes:selected,coordinates,canonical_count:Number(s.episode_count),native:true});}return groups.length?groups:null;
 }
 export function seasonName(card,number){
  const row=(Array.isArray(card && card.seasons)?card.seasons:[]).find(s=>Number(s.season_number)===Number(number)),name=String(row && row.name || '').trim();
@@ -115,12 +123,12 @@ export default function episodeMetadata(L,kino,anime){
    });
   });
  }
- function groups(card,files,done){
+ function groups(card,files,done,context){
   if(!isAnime(card))return done(null);
   function fallback(){
    const ready=absoluteSeasons(card,files);if(ready)return done(ready);
    const id=Number(card && (card.tmdb_id || card.id));if(!Number.isSafeInteger(id) || id<=0 || card.source==='minimal_shiki' && !card.tmdb_id || files.length<2)return done(null);
-   request('tv/'+id+'?language='+encodeURIComponent(L.Storage.get('language','ru')),data=>{const value=data?{...card,...data,source:'tmdb',minimal_anime:true}:card,ready=data && absoluteSeasons(value,files);if(ready)return done(ready);if(anime && anime.groups)return anime.groups(value,files,groups=>groups?done(groups):catalogueGroups(value,files,done));catalogueGroups(value,files,done);});
+   request('tv/'+id+'?language='+encodeURIComponent(L.Storage.get('language','ru')),data=>{const value=data?{...card,...data,source:'tmdb',minimal_anime:true}:card,ready=data && absoluteSeasons(value,files);if(ready)return done(ready);const single=!context || (context.numbers || []).length===1,finish=groups=>done(groups || single && absoluteRangeSeasons(value,files) || null);if(anime && anime.groups)return anime.groups(value,files,groups=>groups?done(groups):catalogueGroups(value,files,finish));catalogueGroups(value,files,finish);});
   }
   if(kino && kino.enabled())kino.groups(card,files,value=>value?done(value):fallback());else fallback();
  }

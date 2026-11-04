@@ -1,6 +1,6 @@
 import {text as lampaViewText} from './i18n.js';
 import {presentableCards} from './tmdb.js';
-import catalogue,{animeMode} from './catalogue.js';
+import catalogue,{animeMode,cataloguePlan} from './catalogue.js';
 import animeTabs from './anime-tabs.js';
 import continueWatching,{CONTINUE,isWatching} from './continue-watching.js';
 import discoverySource from './discovery-source.js';
@@ -34,15 +34,17 @@ export default function collections(L,shiki,kino,kinoFeeds){
  function select(title,items,onSelect,onBack){L.Select.show({title,items,onSelect,onBack:onBack || (()=>L.Controller.toggle('settings'))});}
  function contextName(ctx){return labels[ctx] || (ctx==='category:anime:shikimori'?lampaViewText("Аниме · Shikimori"):lampaViewText("Аниме · Стандартные"));}
  function edit(ctx){
-  const p=prefs(ctx),rows=(known()[ctx] || []).slice(),order=p.order || [];
-  rows.sort((a,b)=>(order.includes(a.id)?order.indexOf(a.id):10000)-(order.includes(b.id)?order.indexOf(b.id):10000));
-  const items=rows.length?rows.map(r=>({...r,title:((p.hidden || []).includes(r.id)?'○ ':'● ')+r.title})).concat([{id:'reset',title:lampaViewText("Сбросить порядок и видимость")}]):[{title:lampaViewText("Список пока не загружен"),subtitle:lampaViewText("Откройте раздел, чтобы получить актуальные подборки."),noenter:true}];
+  const kind=String(ctx).replace('category:',''),definitions=['movie','tv','cartoon','tvshow'].includes(kind)?cataloguePlan(kind).map(row=>({id:row.minimal_row_id,title:row.title,aliases:row.minimal_row_aliases || []})):null;
+  const p=prefs(ctx),rows=definitions || (known()[ctx] || []).slice(),order=p.order || [];
+  const ids=r=>[r.id,...(r.aliases || [])],hidden=r=>(p.hidden || []).some(id=>ids(r).includes(id)),position=r=>{const index=order.findIndex(id=>ids(r).includes(id));return index<0?10000:index;};
+  rows.sort((a,b)=>position(a)-position(b));
+  const items=rows.length?rows.map(r=>({...r,title:(hidden(r)?'○ ':'● ')+r.title})).concat([{id:'reset',title:lampaViewText("Сбросить порядок и видимость")}]):[{title:lampaViewText("Список пока не загружен"),subtitle:lampaViewText("Откройте раздел, чтобы получить актуальные подборки."),noenter:true}];
   select(lampaViewText("Подборки: {0}", [contextName(ctx)]),items,r=>{
    if(r.noenter)return;
    if(r.id==='reset'){save(ctx,{});return edit(ctx);}
-   select(r.title,[{id:'toggle',title:(p.hidden || []).includes(r.id)?lampaViewText("Показать"):lampaViewText("Скрыть")},{id:'up',title:lampaViewText("Выше")},{id:'down',title:lampaViewText("Ниже")},{id:'first',title:lampaViewText("В начало")}],action=>{
+   select(r.title,[{id:'toggle',title:hidden(r)?lampaViewText("Показать"):lampaViewText("Скрыть")},{id:'up',title:lampaViewText("Выше")},{id:'down',title:lampaViewText("Ниже")},{id:'first',title:lampaViewText("В начало")}],action=>{
     p.hidden=p.hidden || [];p.order=rows.map(x=>x.id);
-    if(action.id==='toggle')p.hidden=p.hidden.includes(r.id)?p.hidden.filter(id=>id!==r.id):p.hidden.concat(r.id);
+    if(action.id==='toggle')p.hidden=hidden(r)?p.hidden.filter(id=>!ids(r).includes(id)):p.hidden.concat(r.id);
     else {const i=p.order.indexOf(r.id),to=action.id==='first'?0:Math.max(0,Math.min(rows.length-1,i+(action.id==='up'?-1:1)));p.order.splice(i,1);p.order.splice(to,0,r.id);}
     save(ctx,p);edit(ctx);
    },()=>edit(ctx));

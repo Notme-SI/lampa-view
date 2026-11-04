@@ -11,7 +11,7 @@ test('discovery separates recent airings, rating, popularity and years while pre
   assert.ok(by('rated').minimal_row_aliases.includes('minimal:tmdb:'+kind+':uhd'));assert.ok(by('new').minimal_row_aliases.includes('minimal:tmdb:'+kind+':year'));
   assert.ok(plan.every(row=>row.discovery));assert.equal(new Set(plan.map(row=>row.tmdb)).size,plan.length);
  }
- const tv=cataloguePlan('tv');assert.ok(tv.every(row=>!row.discovery.network && !row.discovery.period && row.discovery.sort==='popular'));assert.equal(tv[0].key,'popular');assert.ok(tv.every(row=>!['rated','new','votes'].includes(row.key)));
+ const tv=cataloguePlan('tv');assert.ok(tv.every(row=>!row.discovery.network && (!row.discovery.period || row.key==='premieres') && row.discovery.sort==='popular'));assert.equal(tv[0].key,'popular');assert.ok(tv.every(row=>!['rated','new','votes'].includes(row.key)));
 });
 
 test('preview deduplication keeps media identities, rank, full-feed URLs and native pagination without mutating cached data',()=>{
@@ -34,8 +34,8 @@ test('discovery plans keep deterministic row order and skip saved legacy IDs bef
 
 test('rebuilt dorama and TV shows separate countries, genres and programmes with stable migration aliases',()=>{
  const date=new Date(2026,9,30),dorama=cataloguePlan('dorama','standard',date),shows=cataloguePlan('tvshow','standard',date);
- for(const plan of [dorama,shows]){assert.equal(plan[0].key,'watch');assert.equal(plan[0].title,plan===shows?'Популярные шоу':'Сейчас выходит');const q=new URLSearchParams(plan[0].tmdb.split('?')[1]);assert.equal(q.get('air_date.gte'),plan===shows?null:'2026-10-23');assert.equal(q.get('air_date.lte'),plan===shows?null:'2026-10-30');assert.equal(new Set(plan.map(row=>row.tmdb)).size,plan.length);assert.ok(plan.every(row=>row.media_type==='tv'));}
- assert.equal(dorama.length,15);assert.equal(shows.length,7);assert.ok(dorama.find(r=>r.key==='country-KR').minimal_row_aliases.includes('minimal:kino:dorama:korea'));
+ for(const plan of [dorama,shows]){assert.equal(plan[0].key,'watch');assert.equal(plan[0].title,plan===shows?'Популярное':'Сейчас выходит');const q=new URLSearchParams(plan[0].tmdb.split('?')[1]);assert.equal(q.get('air_date.gte'),plan===shows?null:'2026-10-23');assert.equal(q.get('air_date.lte'),plan===shows?null:'2026-10-30');assert.equal(new Set(plan.map(row=>row.tmdb)).size,plan.length);assert.ok(plan.every(row=>row.media_type==='tv'));}
+ assert.equal(dorama.length,15);assert.equal(shows.length,5);assert.ok(dorama.find(r=>r.key==='country-KR').minimal_row_aliases.includes('minimal:kino:dorama:korea'));
  assert.ok(shows.every(row=>row.discovery.country==='RU')); assert.ok(shows.some(row=>row.discovery.country==='RU'));assert.ok(shows.every(row=>new URLSearchParams(row.tmdb.split('?')[1]).get('with_original_language')===null));
 });
 

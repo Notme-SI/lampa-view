@@ -91,7 +91,7 @@ export function cataloguePlan(kind,mode='standard',date=new Date(),selection={})
  if(!base)return plan;
  const legacy=legacyCataloguePlan(kind,mode,date),keys={new:['year',...(kind==='dorama'?['dorama-1']:[])],rated:['uhd','rated',...(kind==='dorama'?['dorama-2']:[])],popular:['popular',...(kind==='dorama'?['dorama-0']:[])],watch:['watch','ongoing'],'russian-reality':['reality'],'russian-talk':['talk'],'country-KR':['dorama-3'],'country-JP':['dorama-4'],'country-CN':['dorama-5'],'country-TH':['dorama-6']};
  const kino={'country-KR':'korea','country-JP':'japan','country-CN':'china','country-TW':'taiwan','country-TH':'thai','russian-reality':'reality','russian-talk':'talk'};
- return plan.map(row=>{const matches=legacy.filter(old=>(keys[row.key] || [row.key]).includes(old.key));return {...row,minimal_row_aliases:matches.flatMap(old=>['minimal:tmdb:'+kind+':'+old.key,old.tmdb,old.cub,...(old.minimal_row_aliases || [])]).filter(Boolean).concat(kino[row.key]?['minimal:kino:'+kind+':'+kino[row.key]]:[])};});
+ return plan.map(row=>{const matches=legacy.filter(old=>(keys[row.key] || [row.key]).includes(old.key));return {...row,minimal_row_aliases:(row.minimal_row_aliases || []).concat(matches.flatMap(old=>['minimal:tmdb:'+kind+':'+old.key,old.tmdb,old.cub,...(old.minimal_row_aliases || [])]).filter(Boolean)).concat(kino[row.key]?['minimal:kino:'+kind+':'+kino[row.key]]:[])};});
 }
 function cubScoped(job,kind){
  const p=new URLSearchParams(job.tmdb.split('?')[1]),q=new URLSearchParams({cat:'tv',sort:job.key==='watch'?'now_playing':job.key==='year'?'now':'top',minimal_kind:kind});

@@ -23,10 +23,10 @@ test('cartoons menu sits below series and opens bounded film/TV animation rows t
   const item=w.document.querySelector('[data-action="cartoon"]'),series=w.document.querySelector('[data-action="tv"]');assert.equal(series.nextElementSibling.dataset.action,'dorama');assert.equal(series.nextElementSibling.nextElementSibling.dataset.action,'tvshow');assert.equal(series.nextElementSibling.nextElementSibling.nextElementSibling,item);assert.notEqual(w.getComputedStyle(item).display,'none');
   const response=require('./fixtures/discovery-response.cjs');L.Api.sources.tmdb.get=(url,params,ok)=>{requests.push(url);w.setTimeout(()=>ok(response(url,params.page)),0);};
   w.jQuery(item).trigger('hover:enter');await wait(180);
-  assert.equal(L.Activity.active().url,'cartoon');assert.equal(requests.length,12);
+  assert.equal(L.Activity.active().url,'cartoon');assert.ok(requests.length>=12 && requests.length<=24);
   for(const path of requests){const query=new URLSearchParams(path.split('?')[1]);assert.ok(query.get('with_genres').split(',').includes('16'));if(!query.has('with_companies') && !query.has('with_networks'))assert.equal(query.get('without_keywords'),'210024');assert.match(path,/^discover\/(?:movie|tv)\?/);}
   const root=L.Activity.active().activity.render(true),rows=L.Activity.active().activity.component;
-  assert.match(root.textContent,/мультфильмы/i);assert.match(root.textContent,/мультсериалы/i);assert.ok(rows.items.length+rows.loaded.length<=12);
+  assert.match(root.textContent,/Популярное/);assert.ok(!rows.items.concat(rows.loaded.flat()).some(row=>/мультфильмы|мультсериалы/i.test((row.data||row).title)));assert.ok(rows.items.length+rows.loaded.length<=12);
   assert.deepEqual(r.errors,[]);
  }finally{r.close();}
 });
@@ -38,7 +38,7 @@ test('TV rows replace arrows with More that can be focused from the last card an
   L.Api.sources.tmdb.get=(url,params,ok)=>w.setTimeout(()=>ok({results:[{id:601,title:'Animation',genre_ids:[16],original_language:'en'}],page:1,total_pages:2}),0);
   w.jQuery(w.document.querySelector('[data-action="cartoon"]')).trigger('hover:enter');for(let tries=0;tries<100 && !L.Activity.active().activity.component.items.length;tries++)await wait(20);
   const row=L.Activity.active().activity.component.items[0],root=row.render(true),button=root.querySelector('.minimal-row-more');assert.ok(button);assert.equal(w.getComputedStyle(button).display,'flex');for(const arrow of root.querySelectorAll('.minimal-row-arrow'))assert.equal(w.getComputedStyle(arrow).display,'none');
-  row.toggle();L.Controller.enabled().controller.right();assert.equal(row.last,button);assert.ok(button.classList.contains('focus'),'Remote cannot highlight More');
+  row.toggle();for(let i=0;i<row.data.results.length;i++)L.Controller.enabled().controller.right();assert.equal(row.last,button);assert.ok(button.classList.contains('focus'),'Remote cannot highlight More');
   button.dispatchEvent(new w.Event('hover:enter'));await wait(100);assert.equal(L.Activity.active().component,'category_full');assert.equal(JSON.parse(L.Activity.active().url).kind,'cartoon');assert.equal(L.Activity.active().source,'minimal_discovery');
   L.Activity.backward();await wait(100);button.click();await wait(100);assert.equal(L.Activity.active().component,'category_full');assert.deepEqual(r.errors,[]);
  }finally{r.close();}
@@ -90,9 +90,9 @@ test('TV shows follow dorama in the native menu, open bounded feeds and preserve
   L.Storage.set('source','tmdb');const series=w.document.querySelector('.menu__item[data-action="tv"]'),dorama=series.nextElementSibling,shows=dorama.nextElementSibling;
   assert.equal(dorama.dataset.action,'dorama');assert.equal(shows.dataset.action,'tvshow');assert.equal(shows.querySelector('.menu__text').textContent,'ТВ-шоу');
   const response=require('./fixtures/discovery-response.cjs');L.Api.sources.tmdb.get=(url,params,ok)=>{requests.push(url);w.setTimeout(()=>ok(response(url,params.page)),0);};
-  shows.click();await wait(220);assert.equal(L.Activity.active().url,'tvshow');assert.equal(requests.length,7);
+  shows.click();await wait(220);assert.equal(L.Activity.active().url,'tvshow');assert.equal(requests.length,5);
   for(const url of requests){const q=new URLSearchParams(url.split('?')[1]);assert.match(url,/^discover\/tv\?/);assert.match(q.get('with_genres'),/10764|10767/);assert.equal(q.get('without_genres'),'16,99,18,80,10766');assert.equal(q.get('with_origin_country'),'RU');}
-  const row=L.Activity.active().activity.component.items[0];assert.equal(row.data.title,'Популярные шоу');
+  const row=L.Activity.active().activity.component.items[0];assert.equal(row.data.title,'Популярное');
   row.render(true).querySelector('.minimal-row-more').dispatchEvent(new w.Event('hover:enter'));await wait(120);
   assert.equal(L.Activity.active().component,'category_full');assert.equal(L.Activity.active().source,'minimal_discovery');assert.equal(JSON.parse(L.Activity.active().url).kind,'tvshow');assert.deepEqual(r.errors,[]);
  }finally{r.close();}

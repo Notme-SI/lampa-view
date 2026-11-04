@@ -26,7 +26,7 @@ test('CUB and Trakt use the full TMDB TV-show catalogue without a sparse regiona
   const requests=[],response=require('./fixtures/discovery-response.cjs');L.Api.sources.tmdb.get=(url,p,ok)=>{requests.push(url);ok(response(url,p.page));};
   for(const source of ['cub','trakt']){
    L.Api.sources.minimal_discovery.clear();requests.length=0;const object={source,url:'tvshow'},rows=await new Promise((resolve,reject)=>L.Api.category(object,resolve,reject));
-   assert.equal(rows.length,7);assert.equal(requests.length,7);
+   assert.equal(rows.length,5);assert.equal(requests.length,5);
    assert.ok(rows.every(row=>row.source==='minimal_discovery' && !row.title.endsWith(' · TMDB') && row.results.length===20 && row.total_pages===2 && JSON.parse(row.url).kind==='tvshow' && row.results.every(c=>c.source==='tmdb' && c.media_type==='tv')));assert.equal(object.minimal_catalogue_status.state,'ready');
   }
   assert.deepEqual(n.errors,[]);
