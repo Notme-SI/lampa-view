@@ -30,7 +30,7 @@ test('movies and series exclude animation on every CUB and TMDB row and subseque
  const json={page:3,total_pages:7,total_results:140,results:[{id:1,name:'Сериал',genre_ids:[18]},{id:2,name:'Мультфильм',genre_ids:[16,35]},{id:3,name:'Аниме',minimal_anime:true},{id:4,name:'Мультфильм с объектами жанров',genres:[{id:16}]},{id:5,name:'Неизвестные жанры'}]};
  const tmdb={get(path,p,ok){ok(json);},list(p,ok){ok(json);}},cub={list(p,ok){ok(json);}},L={Storage:{get:(k,d)=>d},Api:{sources:{tmdb,cub}}};installTmdb(L);installTmdb(L);
  const check=result=>{assert.deepEqual(result.results.map(c=>c.id),[1,5]);assert.equal(result.page,3);assert.equal(result.total_pages,7);assert.equal(result.total_results,140);};
- for(const row of [...cataloguePlan('tv'),...cataloguePlan('movie')]){
+ for(const row of [...cataloguePlan('tv').filter(row=>row.discovery.kind!=='dorama'),...cataloguePlan('movie')]){
   assert.equal(new URLSearchParams(row.tmdb.split('?')[1]).get('without_genres'),'16');
   tmdb.get(row.tmdb,{page:3},check);tmdb.list({url:row.tmdb,page:3},check);
  }

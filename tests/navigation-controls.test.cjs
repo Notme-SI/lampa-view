@@ -72,14 +72,8 @@ test('held TV navigation scrolls once per card, builds the next lazy batch and h
 });
 
 
-test('dorama opens the same native category rows and More pages using live-action Asian TV filters',async()=>{
- const r=await native({built:true}),{w,L}=r,requests=[];try{
-  L.Storage.set('source','tmdb');const item=w.document.querySelector('.menu__item[data-action="dorama"]');assert.equal(item.querySelector('.menu__text').textContent,'Дорамы');assert.equal(w.document.querySelectorAll('.menu__item[data-action="dorama"]').length,1);
-  const response=require('./fixtures/discovery-response.cjs');L.Api.sources.tmdb.get=(url,params,ok)=>{requests.push(url);w.setTimeout(()=>ok(response(url,params.page)),0);};
-  w.jQuery(item).trigger('hover:enter');await wait(230);assert.equal(L.Activity.active().url,'dorama');assert.equal(requests.length,15);
-  for(const path of requests){assert.match(path,/^discover\/tv\?/);const q=new URLSearchParams(path.split('?')[1]);assert.ok(q.get('with_origin_country'));assert.match(q.get('without_genres'),/16/);}
-  const rows=L.Activity.active().activity.component;assert.ok(rows.items.length+rows.loaded.length<=15);assert.ok(w.document.querySelector('.minimal-discovery-controls'));assert.deepEqual(r.errors,[]);
- }finally{r.close();}
+test('dorama belongs to the series section and is absent from the visible main menu',async()=>{
+ const r=await native({built:true}),{w,L}=r;try{const item=w.document.querySelector('.menu__item[data-action=dorama]');assert.ok(item.classList.contains('pt-removed-section'));w.LampaView.sections.open('series');await wait(40);const root=L.Activity.active().activity.render(true);assert.ok(root.querySelector('[data-section-id=turkish]'));root.querySelector('[data-section-id=dorama]').click();await wait(40);assert.equal(L.Activity.active().component,'minimal_sections');assert.equal(L.Activity.active().url,'series/dorama');assert.deepEqual(r.errors,[]);}finally{r.close();}
 });
 
 test('native menu_always switches a single native menu between dock and popover and restores the button',async()=>{
@@ -99,8 +93,8 @@ test('TV shows follow dorama in the native menu, open bounded feeds and preserve
   assert.equal(dorama.dataset.action,'dorama');assert.equal(shows.dataset.action,'tvshow');assert.equal(shows.querySelector('.menu__text').textContent,'ТВ-шоу');
   const response=require('./fixtures/discovery-response.cjs');L.Api.sources.tmdb.get=(url,params,ok)=>{requests.push(url);w.setTimeout(()=>ok(response(url,params.page)),0);};
   shows.click();await wait(220);assert.equal(L.Activity.active().url,'tvshow');assert.equal(requests.length,12);
-  for(const url of requests){const q=new URLSearchParams(url.split('?')[1]);assert.match(url,/^discover\/tv\?/);assert.match(q.get('with_genres'),/10764|10767/);assert.equal(q.get('without_genres'),'16,99');}
-  const row=L.Activity.active().activity.component.items[0];assert.equal(row.data.title,'Сейчас выходит');
+  for(const url of requests){const q=new URLSearchParams(url.split('?')[1]);assert.match(url,/^discover\/tv\?/);assert.match(q.get('with_genres'),/10764|10767/);assert.equal(q.get('without_genres'),'16,99,18,80,10766');assert.equal(q.get('with_origin_country'),'RU');}
+  const row=L.Activity.active().activity.component.items[0];assert.equal(row.data.title,'Популярные шоу');
   row.render(true).querySelector('.minimal-row-more').dispatchEvent(new w.Event('hover:enter'));await wait(120);
   assert.equal(L.Activity.active().component,'category_full');assert.equal(L.Activity.active().source,'minimal_discovery');assert.equal(JSON.parse(L.Activity.active().url).kind,'tvshow');assert.deepEqual(r.errors,[]);
  }finally{r.close();}

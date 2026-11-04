@@ -81,7 +81,7 @@ export default function collections(L,shiki,kino,kinoFeeds){
  if(category)L.Api.category=function(object,ok,fail){
   const kind=object.url || object.cat,ctx=context({...object,component:'category'});
   if(!['movie','tv','cartoon','anime','dorama','tvshow'].includes(kind))return category.apply(this,arguments);
-  const selected=DISCOVERY_KINDS.includes(kind) && discoverySelected(discoveryState(kind,object.minimal_discovery || (L.Storage.get('minimal_discovery',{}) || {})[kind]));
+  const selected=DISCOVERY_KINDS.includes(kind) && discoverySelected(discoveryState(kind,object.minimal_discovery || {}));
   if(!selected && (object.source || L.Storage.get('source','cub'))==='trakt' && !['dorama','tvshow'].includes(kind) && !(kind==='anime' && animeMode(L,object)==='shikimori')){
    const status=object.minimal_catalogue_status={state:'loading'};
    function accept(rows){status.state=rows.some(row=>row.results && row.results.length)?'ready':'empty';remember(ctx,rows);ok(arrange(rows,prefs(ctx)));}

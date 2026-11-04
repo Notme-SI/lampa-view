@@ -20,6 +20,7 @@ import fillRows from './rows.js';
 import unifiedSettings from './settings.js';
 import shikimori from './shikimori.js';
 import collections from './collections.js';
+import sections from './sections.js';
 import filters from './filters.js';
 import branding from './branding.js';
 import startup from './startup.js';
@@ -134,6 +135,7 @@ if (!ROOT.LampaView) {
     if(holidays)holidays.update();
   }
   function navigate(section) {
+    if(P.sections && ['sections','streams','kids','dorama'].includes(section))return P.sections.open(section==='sections'?'':section==='dorama'?'series/dorama':section);
     if (section === 'search') return $('.head .open--search').trigger('hover:enter');
     if (section === 'settings') return $('.head .open--settings').trigger('hover:enter');
     if (section === 'home') return L.Activity.push({url:'', title:lampaViewText("Главная"), component:'main', source:'tmdb', page:1});
@@ -155,7 +157,7 @@ if (!ROOT.LampaView) {
   function shell() {
     if (!$('.pt-topnav').length) {
       const nav = $(lampaViewText("<div class=\"pt-topnav\" role=\"navigation\" aria-label=\"Каталог\">"));
-      [['home',lampaViewText("Главная")],['movie',lampaViewText("Фильмы")],['tv',lampaViewText("Сериалы")],['dorama',lampaViewText("Дорамы")],['tvshow',lampaViewText("ТВ-шоу")],['anime',lampaViewText("Аниме")]].forEach(([key,label]) => {
+      [['home',lampaViewText("Главная")],['movie',lampaViewText("Фильмы")],['tv',lampaViewText("Сериалы")],['cartoon',lampaViewText("Мультфильмы")],['tvshow',lampaViewText("ТВ-шоу")],['anime',lampaViewText("Аниме")]].forEach(([key,label]) => {
         pointer($('<div class="pt-topnav__item selector" role="button" tabindex="0">').attr('data-section',key).text(label)
           .on('hover:enter', () => navigate(key))).appendTo(nav);
       });
@@ -203,7 +205,7 @@ if (!ROOT.LampaView) {
     for(const node of [dorama,shows,cartoons])if(previous && node){if(previous.nextElementSibling!==node)previous.after(node);previous=node;}
     document.querySelectorAll('.menu__item,.settings-folder').forEach(node=>{
       const label=(node.querySelector('.menu__text,.settings-folder__name') || node).textContent.trim();
-      node.classList.toggle('pt-removed-section',/^(shots|спорт|расписание)$/i.test(label));
+      node.classList.toggle('pt-removed-section',node.dataset.action==='dorama' || /^(shots|спорт|расписание)$/i.test(label));
     });
     if(L.SettingsApi.allComponents && L.SettingsApi.removeComponent){
       const components=L.SettingsApi.allComponents();
@@ -467,7 +469,7 @@ if (!ROOT.LampaView) {
     initialized=true; L=ROOT.Lampa; $=ROOT.jQuery;loadLogo=logoLoader(L);
     P.bannerCountries=card=>bannerCountries(card,L.Storage.get('language','ru'),L);
     installI18n(L,P);
-    P.online=onlineState(L);P.kinoapi=kinoapi(L);P.animeBase=animeCatalogue(L,P.kinoapi);P.onlineSources=onlineSources(L);P.episodeMetadata=episodeMetadata(L,P.kinoapi,P.animeBase);P.onlineNavigation=onlineNavigation;P.onlineSourceCache=onlineSourceCache(L);
+    P.sections=sections(L);P.online=onlineState(L);P.kinoapi=kinoapi(L);P.animeBase=animeCatalogue(L,P.kinoapi);P.onlineSources=onlineSources(L);P.episodeMetadata=episodeMetadata(L,P.kinoapi,P.animeBase);P.onlineNavigation=onlineNavigation;P.onlineSourceCache=onlineSourceCache(L);
     layout();interfaceLayout=interfaceSize(L);installTmdb(L);installFullGuard(L);torrentEpisodes(L,ROOT);inputs(L);
     artwork=installArtwork(L,()=>yes('lampa_view_enabled'));
     P.sync=progressSync(L,()=>yes('lampa_view_enabled'));

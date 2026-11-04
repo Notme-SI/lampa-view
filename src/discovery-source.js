@@ -5,12 +5,12 @@ export const DISCOVERY_SOURCE='minimal_discovery';
 export function discoverySpec(value){
  if(!value || !DISCOVERY_KINDS.includes(value.kind) || !['movie','tv',''].includes(value.type))return null;
  const state=discoveryState(value.kind,{...value,section:'overview'});
- if(value.genre && state.genre!==String(value.genre) || value.network && state.network!==Number(value.network) || value.company && state.company!==Number(value.company) || value.hero && state.hero!==String(value.hero) || value.country && state.country!==value.country || value.sort && (value.hero?value.sort!=='popular':state.sort!==value.sort) || value.feed && !['airing','trending','recent'].includes(value.feed))return null;
+ if(value.genre && state.genre!==String(value.genre) || value.network && state.network!==Number(value.network) || value.company && state.company!==Number(value.company) || value.hero && state.hero!==String(value.hero) || value.country && state.country!==value.country || value.sort && (value.hero?value.sort!=='popular':state.sort!==value.sort) || value.feed && !['airing','current','trending','recent'].includes(value.feed))return null;
  if(value.kind!=='cartoon' && value.type!==(value.kind==='movie'?'movie':'tv') || !value.type && !value.hero)return null;
  if(value.sort==='revenue' && value.type!=='movie')return null;
  let period=state.period;
  if(value.period){const match=String(value.period).match(/^(\d{4})-(\d{4})$/);if(!match || Number(match[1])<1870 || Number(match[2])<Number(match[1]) || Number(match[2])>new Date().getFullYear())return null;period=value.period;}
- return {kind:value.kind,type:value.type,country:state.country,genre:state.genre,network:state.network,company:state.company,period,sort:state.sort || 'popular',hero:state.hero,...(['airing','trending','recent'].includes(value.feed)?{feed:value.feed}:{}),...(value.kind==='cartoon' && value.family?{family:true}:{})};
+ return {kind:value.kind,type:value.type,country:state.country,genre:state.genre,network:state.network,company:state.company,period,sort:state.sort || 'popular',hero:state.hero,...(['airing','current','trending','recent'].includes(value.feed)?{feed:value.feed}:{}),...(value.kind==='cartoon' && value.family?{family:true}:{})};
 }
 export default function discoverySource(L){
  const cache=new Map(),pending=new Map(),queue=[],cursors=new Map(),live=new Set();let active=0,generation=0;

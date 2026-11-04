@@ -753,11 +753,16 @@ body.lampa_view .nova-plus-root .nova-hero__date {display:flex;flex-direction:co
 body.lampa_view .nova-plus-root .nova-hero__runtime {color:inherit;font-size:.9em;line-height:1.5}
 body.lampa_view .nova-plus-root .nova-hero__seasons {position:absolute;top:calc(100% + .35em);right:0;display:flex;flex-direction:column;align-items:flex-end;gap:.25em;font-size:.9em;line-height:1.5}
 body.lampa_view .nova-plus-root .nova-hero__season-label,body.lampa_view .nova-plus-root .nova-hero__season-name {display:block;max-width:24em;padding:.15em .5em;border-radius:.4em;background:rgba(8,11,16,.78)!important;white-space:normal;text-align:right}
-body.lampa_view .minimal-discovery-controls {max-width:100%;min-width:0;margin:.3em 0 1.2em}
-body.lampa_view .minimal-discovery-bar {display:flex;align-items:center;gap:.5em;max-width:100%;overflow-x:auto;padding:.2em .15em .6em;scrollbar-width:thin;touch-action:pan-x}
-body.lampa_view .minimal-discovery-control {flex:0 0 auto;max-width:22em;min-height:2.6em;padding:.5em .9em;font-size:.85em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-body.lampa_view .minimal-discovery-status {display:flex;align-items:center;gap:.7em;padding:.6em 0;color:inherit}
-body.lampa_view .minimal-discovery-status[hidden] {display:none}
+body.lampa_view .minimal-section-shortcuts {margin:.4em 1.5em 1.4em}
+body.lampa_view .minimal-section-shortcuts h2 {font-size:1.15em;margin:0 0 .7em}
+body.lampa_view .minimal-section-grid {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.8em}
+body.lampa_view .minimal-section-tile {display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:1.25em;min-width:0;min-height:6.4em;padding:1.05em 1.2em;border:1px solid var(--pt-line);border-radius:1em;background:var(--pt-panel,#ffffff08);color:inherit;text-align:start;font:inherit;cursor:pointer}
+body.lampa_view .minimal-section-tile>span:last-child {font-size:1.1em;font-weight:600;line-height:1.25}
+body.lampa_view .minimal-section-mark {font-size:.85em;color:var(--pt-muted);letter-spacing:.1em}
+body.lampa_view .minimal-section-tile.focus,body.lampa_view .minimal-section-tile:hover {border-color:var(--pt-accent,#add9e5);background:#add9e51c;box-shadow:inset 0 0 0 1px var(--pt-accent,#add9e5)}
+body.lampa_view .minimal-sections-content {padding:1.3em 1.5em 4em}
+body.lampa_view .minimal-sections-content h1 {font-size:1.8em;margin:0 0 1.1em}
+@media(max-width:600px){body.lampa_view .minimal-section-grid{grid-template-columns:repeat(2,minmax(0,1fr))}body.lampa_view .minimal-section-shortcuts{margin:.5em 1em 1.1em}body.lampa_view .minimal-section-tile{min-height:5.5em;padding:.85em}body.lampa_view .minimal-sections-content{padding:1em 1em 6em}}
 body.lampa_view .nova-plus-root .nova-badge,body.lampa_view .nova-plus-root .nova-chip__badge {display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;flex:0 0 auto;min-width:2.3em;height:1.5em;padding:0 .35em;font-size:.78em;line-height:1;font-weight:600;vertical-align:middle}
 body.lampa_view .nova-plus-root .nova-hero__meta>.nova-badge {font-size:.85em;margin-top:.12em;background:#ffffff1a!important;text-shadow:none}
 body.lampa_view .nova-plus-root .nova-card__head .nova-card__quality {display:inline-flex;align-items:center;justify-content:center;min-width:2.3em;height:1.5em;padding:0 .35em;font-size:.85em;line-height:1}

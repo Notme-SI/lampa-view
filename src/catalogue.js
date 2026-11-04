@@ -103,7 +103,7 @@ function cubScoped(job,kind){
 }
 export default function catalogue(L,shiki,object,hidden,ok){
  const kind=object.url || object.cat;
- const selection=DISCOVERY_KINDS.includes(kind)?discoveryState(kind,object.minimal_discovery || (L.Storage.get('minimal_discovery',{}) || {})[kind]):{};
+ const selection=DISCOVERY_KINDS.includes(kind)?discoveryState(kind,object.minimal_discovery || {}):{};
  if(DISCOVERY_KINDS.includes(kind))object.minimal_discovery=selection;
  const source=object.source || L.Storage.get('source','cub'),cub=L.Api.sources && L.Api.sources.cub && L.Api.sources.cub.list,plan=cataloguePlan(kind,animeMode(L,object),new Date(),selection).map(job=>!job.discovery && ['dorama','tvshow'].includes(kind)?cubScoped(job,kind):job),rows=new Array(plan.length);let cursor=0,running=0,done=0,ended=false,failures=0;
  const status=object.minimal_catalogue_status={state:'loading'};
