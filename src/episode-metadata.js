@@ -68,7 +68,7 @@ export default function episodeMetadata(L,kino,anime){
    const job=queue.shift(),path=job.path;running++;let finished=false;
    const finish=value=>{
     if(finished)return;finished=true;running--;
-    const valid=value && (path.includes('/episode_groups?')?Array.isArray(value.results):path.includes('/episode_group/')?Array.isArray(value.groups):Array.isArray(value.episodes) || Array.isArray(value.seasons));
+    const valid=value && (path.includes('/episode_groups')?Array.isArray(value.results):path.includes('/episode_group/')?Array.isArray(value.groups):Array.isArray(value.episodes) || Array.isArray(value.seasons));
     // Keep concurrent readers coalesced during one bounded retry. A transport
     // failure or malformed response must never become a permanent cache entry.
     if(!valid && job.attempt===0){setTimeout(()=>{queue.push({path,attempt:1});pump();},400);pump();return;}
@@ -101,12 +101,26 @@ export default function episodeMetadata(L,kino,anime){
    });
   });return true;
  };
+ function catalogueGroups(card,files,done){
+  const seasons=(card.seasons || []).filter(s=>s.season_number>0),total=seasons.reduce((n,s)=>n+Number(s.episode_count||0),0),numbers=files.map(Number).sort((a,b)=>a-b);
+  if(!seasons.length || numbers.length<2 || numbers.length>total || numbers[0]!==1 || !numbers.every((n,i)=>Number.isSafeInteger(n) && n>0 && n<=total && (!i || n>numbers[i-1])))return done(null);
+  request('tv/'+(card.tmdb_id || card.id)+'/episode_groups',index=>{
+   const candidates=((index && index.results)||[]).filter(g=>g.type===1 && g.episode_count===total && g.group_count>seasons.length && g.group_count<=30);if(candidates.length!==1)return done(null);
+   request('tv/episode_group/'+candidates[0].id,data=>{const model=episodeGroupModel(card,data,candidates[0].group_count,total);if(!model)return done(null);
+    const canonical=seasons.slice().sort((a,b)=>a.season_number-b.season_number).flatMap(s=>Array.from({length:s.episode_count},(_,i)=>s.season_number+':'+(i+1))),published=model.groups.flatMap(g=>g.rows.map(e=>e.season_number+':'+e.episode_number));if(canonical.join('|')!==published.join('|'))return done(null);
+    const books={};let left=seasons.length;seasons.forEach(s=>request('tv/'+(card.tmdb_id || card.id)+'/season/'+s.season_number,value=>{books[s.season_number]=value;if(--left)return;let offset=0;const groups=[];
+     for(const g of model.groups){const book={},episodes=[];for(const e of g.rows){const number=++offset;if(!numbers.includes(number))continue;const metadata=((books[e.season_number] && (books[e.season_number].episodes_original || books[e.season_number].episodes))||[]).find(v=>v.episode_number===e.episode_number);if(!metadata)return done(null);episodes.push(number);book[number]={...metadata,lampa_grouped:true};}if(episodes.length)groups.push({number:g.number,name:seasonName({seasons:[{season_number:g.number,name:g.name}]},g.number),count:episodes.length,episodes,book,anime_release:true});}
+     done(groups.length?groups:null);
+    }));
+   });
+  });
+ }
  function groups(card,files,done){
   if(!isAnime(card))return done(null);
   function fallback(){
    const ready=absoluteSeasons(card,files);if(ready)return done(ready);
    const id=Number(card && (card.tmdb_id || card.id));if(!Number.isSafeInteger(id) || id<=0 || card.source==='minimal_shiki' && !card.tmdb_id || files.length<2)return done(null);
-   request('tv/'+id+'?language='+encodeURIComponent(L.Storage.get('language','ru')),data=>{const value=data?{...card,...data,source:'tmdb',minimal_anime:true}:card,ready=data && absoluteSeasons(value,files);if(ready)return done(ready);if(anime && anime.groups)return anime.groups(value,files,done);done(null);});
+   request('tv/'+id+'?language='+encodeURIComponent(L.Storage.get('language','ru')),data=>{const value=data?{...card,...data,source:'tmdb',minimal_anime:true}:card,ready=data && absoluteSeasons(value,files);if(ready)return done(ready);if(anime && anime.groups)return anime.groups(value,files,groups=>groups?done(groups):catalogueGroups(value,files,done));catalogueGroups(value,files,done);});
   }
   if(kino && kino.enabled())kino.groups(card,files,value=>value?done(value):fallback());else fallback();
  }

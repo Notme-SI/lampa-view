@@ -13,7 +13,7 @@ test('SURS families are accessible with verified networks, corrected NTV and Dis
  for(const id of [49,77,2552,453,1024,213,3186,2076,4330,3353,2739,2,6,16,318,174,19,64,493,88,67,2493,2859,4085,3923,412,558,3871,3827,5806,806,1191,1199,3031,3882,44,281,56,2686,13])assert.ok(options.networks.some(n=>n.id===id),String(id));
  assert.ok(!options.networks.some(n=>[1778,1119].includes(n.id)));assert.equal(options.networks.find(n=>n.id===174).name,'AMC');assert.equal(options.networks.find(n=>n.id===281).name,'Disney Junior');assert.ok(options.heroes.find(h=>h.id==='1').queries.includes('SpongeBob'));
  for(const kind of model.DISCOVERY_KINDS){const sections=model.discoveryOptions(kind).sections.map(v=>v[0]);for(const section of ['overview','trending','new','rated','votes','genres','countries','periods'])assert.ok(sections.includes(section));}
- const tv=model.discoveryPlan('tv'),kids=model.discoveryPlan('cartoon');assert.equal(kids.filter(r=>r.discovery.hero).length,51);assert.ok(kids.every(r=>!r.discovery.company));assert.ok(tv.every(r=>!r.discovery.network && !r.discovery.period));assert.equal(tv[0].key,'popular');assert.ok(tv.every(r=>r.discovery.sort==='popular'));
+ const tv=model.discoveryPlan('tv'),kids=model.discoveryPlan('cartoon');assert.equal(kids.filter(r=>r.discovery.hero || r.discovery.company || r.discovery.network).length,0);assert.ok(kids.every(r=>!r.discovery.company));assert.ok(tv.every(r=>!r.discovery.network && !r.discovery.period));assert.equal(tv[0].key,'popular');assert.ok(tv.every(r=>r.discovery.sort==='popular'));
 });
 
 test('movie and TV queries use supported type-specific genres, sorts, country filters and dates; romance is a verified keyword',()=>{

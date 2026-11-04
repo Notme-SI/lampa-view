@@ -21,7 +21,7 @@ export default function collections(L,shiki,kino,kinoFeeds){
  const key='minimal_collections',knownKey='minimal_collection_rows_v2';
  const read=()=>L.Storage.get(key,{}) || {},known=()=>L.Storage.get(knownKey,{}) || {};
  const captured=new Set(),homeRows=continueWatching(L);
- const labels={'main:':lampaViewText("Главная"),'category:movie':lampaViewText("Фильмы"),'category:tv':lampaViewText("Сериалы"),'category:dorama':lampaViewText("Дорамы"),'category:tvshow':lampaViewText("ТВ-шоу"),'category:cartoon':lampaViewText("Мультфильмы"),'category:anime':lampaViewText("Аниме")};
+ const labels={'main:':lampaViewText("Главная"),'category:movie':lampaViewText("Фильмы"),'category:tv':lampaViewText("Сериалы"),'category:tvshow':lampaViewText("ТВ-шоу"),'category:cartoon':lampaViewText("Мультфильмы"),'category:anime':lampaViewText("Аниме")};
  const animeContext=o=>'category:anime:'+animeMode(L,o);
  const context=o=>{o=o || {};const component=o.component || 'main';if(component==='main')return 'main:';const kind=o.url || o.cat;return component==='category' && ['movie','tv','cartoon','anime','dorama','tvshow'].includes(kind)?kind==='anime'?animeContext(o):'category:'+kind:null;};
  function remember(ctx,rows,append=false){

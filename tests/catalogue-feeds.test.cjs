@@ -35,7 +35,7 @@ test('discovery plans keep deterministic row order and skip saved legacy IDs bef
 test('rebuilt dorama and TV shows separate countries, genres and programmes with stable migration aliases',()=>{
  const date=new Date(2026,9,30),dorama=cataloguePlan('dorama','standard',date),shows=cataloguePlan('tvshow','standard',date);
  for(const plan of [dorama,shows]){assert.equal(plan[0].key,'watch');assert.equal(plan[0].title,plan===shows?'Популярные шоу':'Сейчас выходит');const q=new URLSearchParams(plan[0].tmdb.split('?')[1]);assert.equal(q.get('air_date.gte'),plan===shows?null:'2026-10-23');assert.equal(q.get('air_date.lte'),plan===shows?null:'2026-10-30');assert.equal(new Set(plan.map(row=>row.tmdb)).size,plan.length);assert.ok(plan.every(row=>row.media_type==='tv'));}
- assert.equal(dorama.length,15);assert.equal(shows.length,12);assert.ok(dorama.find(r=>r.key==='country-KR').minimal_row_aliases.includes('minimal:kino:dorama:korea'));
+ assert.equal(dorama.length,15);assert.equal(shows.length,7);assert.ok(dorama.find(r=>r.key==='country-KR').minimal_row_aliases.includes('minimal:kino:dorama:korea'));
  assert.ok(shows.every(row=>row.discovery.country==='RU')); assert.ok(shows.some(row=>row.discovery.country==='RU'));assert.ok(shows.every(row=>new URLSearchParams(row.tmdb.split('?')[1]).get('with_original_language')===null));
 });
 

@@ -90,7 +90,7 @@ test('TV shows follow dorama in the native menu, open bounded feeds and preserve
   L.Storage.set('source','tmdb');const series=w.document.querySelector('.menu__item[data-action="tv"]'),dorama=series.nextElementSibling,shows=dorama.nextElementSibling;
   assert.equal(dorama.dataset.action,'dorama');assert.equal(shows.dataset.action,'tvshow');assert.equal(shows.querySelector('.menu__text').textContent,'ТВ-шоу');
   const response=require('./fixtures/discovery-response.cjs');L.Api.sources.tmdb.get=(url,params,ok)=>{requests.push(url);w.setTimeout(()=>ok(response(url,params.page)),0);};
-  shows.click();await wait(220);assert.equal(L.Activity.active().url,'tvshow');assert.equal(requests.length,12);
+  shows.click();await wait(220);assert.equal(L.Activity.active().url,'tvshow');assert.equal(requests.length,7);
   for(const url of requests){const q=new URLSearchParams(url.split('?')[1]);assert.match(url,/^discover\/tv\?/);assert.match(q.get('with_genres'),/10764|10767/);assert.equal(q.get('without_genres'),'16,99,18,80,10766');assert.equal(q.get('with_origin_country'),'RU');}
   const row=L.Activity.active().activity.component.items[0];assert.equal(row.data.title,'Популярные шоу');
   row.render(true).querySelector('.minimal-row-more').dispatchEvent(new w.Event('hover:enter'));await wait(120);

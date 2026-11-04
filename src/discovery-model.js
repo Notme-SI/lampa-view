@@ -110,7 +110,7 @@ export function discoveryPlan(kind,value={},date=new Date()){
  if(kind==='tvshow'){
   add('watch','Популярные шоу',{country:'RU'});add('russian-reality','Российские реалити',{country:'RU',genre:'10764'});add('russian-talk','Российские ток-шоу',{country:'RU',genre:'10767'});
   add('new-reality','Новые реалити',{country:'RU',genre:'10764',sort:'new'});add('new-talk','Новые ток-шоу',{country:'RU',genre:'10767',sort:'new'});add('new','Новинки',{country:'RU',sort:'new'});add('rated','С высоким рейтингом',{country:'RU',sort:'rated'});
-  [1191,3031,806,558,2859].forEach(id=>{const n=DATA.networks.find(v=>v.id===id);add('network-'+id,n.name,{country:'RU',network:id});});return rows;
+  return rows;
  }
  if(kind==='dorama'){
   add('watch','Сейчас выходит',{feed:'airing'});add('new','Новинки',{sort:'new'});add('popular','Популярное');add('rated','С высоким рейтингом',{sort:'rated'});
@@ -118,11 +118,11 @@ export function discoveryPlan(kind,value={},date=new Date()){
   ['k9840','k316362','k192772','35','9648','10765'].forEach(id=>{const g=options.genres.find(v=>v.id===id);if(g)add('genre-'+id,g.name,{genre:id});});return rows;
  }
  if(kind==='cartoon'){
-  types.forEach(type=>['popular','new','rated'].forEach(sort=>add(type+'-'+sort,t(type==='movie'?'Мультфильмы':'Мультсериалы')+' · '+t(options.sorts.find(v=>v[0]===sort)[1]),{sort},type)));
-  add('family','Семейные',{family:true});
-  DATA.networks.filter(n=>[13,44,281,56,2686].includes(n.id)).forEach(n=>add('network-'+n.id,n.name,{network:n.id},'tv'));
-  options.genres.forEach(g=>g.formats.forEach(type=>add('genre-'+g.id+'-'+type,g.name+' · '+t(type==='movie'?'Мультфильмы':'Мультсериалы'),{genre:g.id},type)));
-  DATA.heroes.forEach(h=>add('hero-'+h.id,h.name,{hero:h.id,type:''}));return rows;
+  types.forEach(type=>['popular','new','rated'].forEach(sort=>add(type+'-'+sort,t(({movie:{popular:'Популярные мультфильмы',new:'Новые мультфильмы',rated:'Мультфильмы с высоким рейтингом'},tv:{popular:'Популярные мультсериалы',new:'Новые мультсериалы',rated:'Мультсериалы с высоким рейтингом'}})[type][sort]),{sort},type)));
+  add('family','Для всей семьи',{family:true});
+
+  options.genres.forEach(g=>g.formats.forEach(type=>add('genre-'+g.id+'-'+type,t(type==='movie'?'Мультфильмы':'Мультсериалы')+' · '+g.name,{genre:g.id},type)));
+  return rows;
  }
  add('watch',kind==='tv'?'Сейчас выходит':'Свежие релизы',{feed:kind==='tv'?'airing':'recent',sort:'popular'});add('popular','Популярное');add('rated','С высоким рейтингом',{sort:'rated'});add('new','Новинки этого года',{sort:'new',period:date.getFullYear()+'-'+date.getFullYear()});
  [['RU',kind==='tv'?'Российские сериалы':'Российские фильмы'],['UA',kind==='tv'?'Украинские сериалы':'Украинские фильмы'],...(kind==='tv'?[['TR','Турецкие сериалы'],['GB','Британские сериалы']]:[])].forEach(([code,title])=>add('country-'+code,title,{country:code}));
