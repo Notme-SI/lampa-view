@@ -12,7 +12,7 @@ test('real native Lampa launches mpv once through unmodified Desktop APIs and ke
      card:{id:1396,name:'Во все тяжкие',original_name:'Breaking Bad',first_air_date:'2008-01-20',source:'tmdb'}};
    f.L.Player.play(video);await new Promise(r=>setTimeout(r,20));
    assert.equal(launches.length,1);const [exe,args,opts]=launches[0];assert.equal(exe,'C:\\Players\\mpv.exe');assert.equal(opts,undefined);
-   assert.equal(args[1],video.url);const ctx=JSON.parse(Buffer.from(args[0].split('=')[2],'hex').toString('utf8'));
+   assert.equal(args.at(-1),video.url);const ctx=JSON.parse(Buffer.from(args[0].split('=')[2],'hex').toString('utf8'));
    assert.equal(ctx.entries[0].identity.tmdb_id,1396);assert.equal(ctx.entries[0].identity.season,3);assert.equal(ctx.entries[0].identity.episode,2);
    assert.equal(f.w.electronAPI,undefined,'No patched Desktop API is present');
    assert.deepEqual(f.errors,[]);

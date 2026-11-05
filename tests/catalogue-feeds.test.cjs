@@ -3,6 +3,37 @@ const code=esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/catalogue
 const moduleValue={exports:{}};new Function('module','exports',code)(moduleValue,moduleValue.exports);
 const {cataloguePlan,uniquePreviews,default:catalogue}=moduleValue.exports;
 
+test('watching rows use category-filtered weekly trends and merge both cartoon formats',()=>{
+ const code=esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/discovery-model.js')],bundle:true,write:false,format:'cjs',platform:'node'}).outputFiles[0].text,m={exports:{}};new Function('module','exports',code)(m,m.exports);
+ for(const kind of ['movie','tv','cartoon']){
+  const plan=cataloguePlan(kind),rows=plan.filter(row=>row.title==='Сейчас смотрят');
+  assert.equal(rows.length,1);assert.equal(plan[0],rows[0]);
+  const spec=rows[0].discovery;assert.equal(spec.feed,'trending');
+  assert.deepEqual(m.exports.discoverySpecs(spec).map(row=>row.path),kind==='cartoon'?['trending/movie/week','trending/tv/week']:['trending/'+kind+'/week']);
+  const accepts=card=>m.exports.discoveryAccepts(card,{...spec,type:kind==='movie'?'movie':'tv'});
+  if(kind==='tv')assert.equal(accepts({genre_ids:[10764],origin_country:['RU']}),false);
+  assert.equal(accepts({genre_ids:[16],original_language:'ja'}),false);
+  if(kind==='cartoon')assert.equal(accepts({genre_ids:[16],original_language:'en'}),true);
+ }
+});
+
+test('watching More pages apply filters through the actual discovery source and retain cartoon movie/TV identities',()=>{
+ const code=esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/discovery-source.js')],bundle:true,write:false,format:'cjs',platform:'node'}).outputFiles[0].text,m={exports:{}};new Function('module','exports',code)(m,m.exports);
+ const L={Api:{sources:{tmdb:{get(path,p,ok){ok({page:p.page,total_pages:2,results:[
+  {id:1,title:'Игровой проект',name:'Игровой проект',genre_ids:[18],first_air_date:'2026-01-01',poster_path:'/p.jpg',backdrop_path:'/b.jpg'},
+  {id:2,title:'Аниме',name:'Аниме',genre_ids:[16],original_language:'ja',poster_path:'/p.jpg'},
+  {id:4,title:'Мультфильм',name:'Мультсериал',genre_ids:[16],original_language:'en',poster_path:'/p.jpg'}
+ ]});}}}}},api=m.exports.default(L);
+ for(const kind of ['movie','tv','cartoon']){
+  const row=cataloguePlan(kind).find(row=>row.key==='now-watching');let first,second;
+  api.list({url:JSON.stringify(row.discovery),page:1},result=>first=result,assert.fail);
+  assert.deepEqual(first.results.map(card=>card.id),kind==='cartoon'?[4,4]:[1]);
+  if(kind==='cartoon')assert.deepEqual(first.results.map(card=>card.media_type),['movie','tv']);
+  api.list({url:JSON.stringify(row.discovery),page:2},result=>second=result,assert.fail);
+  assert.ok(second.results.every(card=>kind==='cartoon'?card.id===4:card.id===1));
+ }
+});
+
 test('discovery separates recent airings, rating, popularity and years while preserving old row aliases',()=>{
  for(const kind of ['movie']){
   const plan=cataloguePlan(kind,'standard',new Date(2026,9,29)),by=key=>plan.find(row=>row.key===key),query=key=>new URLSearchParams(by(key).tmdb.split('?')[1]);
@@ -12,11 +43,11 @@ test('discovery separates recent airings, rating, popularity and years while pre
   assert.ok(plan.every(row=>row.discovery));assert.equal(new Set(plan.map(row=>row.tmdb)).size,plan.length);
  }
  const lead=['Новинки','Высокий рейтинг','Популярные','Много голосов'];
- for(const kind of ['movie','tv','cartoon'])assert.deepEqual(cataloguePlan(kind).slice(0,4).map(row=>row.title),lead);
+ for(const kind of ['movie','tv','cartoon'])assert.deepEqual(cataloguePlan(kind).slice(1,5).map(row=>row.title),lead);
  const tv=cataloguePlan('tv');
  assert.ok(tv.every(row=>!row.discovery.network && (!row.discovery.period || row.key==='new')));
- assert.deepEqual(tv.slice(4,8).map(row=>row.title),['Российские сериалы','Корейские дорамы','Турецкие сериалы','Китайские дорамы']);
- assert.deepEqual(tv.slice(0,4).map(row=>row.discovery.sort),['new','rated','popular','votes']);
+ assert.deepEqual(tv.slice(5,9).map(row=>row.title),['Российские сериалы','Корейские дорамы','Турецкие сериалы','Китайские дорамы']);
+ assert.deepEqual(tv.slice(1,5).map(row=>row.discovery.sort),['new','rated','popular','votes']);
 });
 
 test('preview deduplication keeps media identities, rank, full-feed URLs and native pagination without mutating cached data',()=>{

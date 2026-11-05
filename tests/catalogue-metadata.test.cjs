@@ -1,5 +1,14 @@
 const test=require('node:test'),assert=require('node:assert/strict'),path=require('path'),esbuild=require('esbuild');
 function mod(name){const code=esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/'+name+'.js')],bundle:true,write:false,format:'cjs',platform:'node'}).outputFiles[0].text;const module={exports:{}};new Function('module','exports',code)(module,module.exports);return module.exports;}
+
+test('watching moves first once in saved category orders while preserving hidden rows and later manual ordering',()=>{
+ const plan=mod('catalogue').cataloguePlan('movie'),watch=plan[0].minimal_row_id,old=plan[1].minimal_row_id;
+ const prefs={order:[old],hidden:[old]},data={minimal_collections:{'category:movie':prefs}};let definition,select;
+ const L={Storage:{get:(k,d)=>data[k] ?? d,set:(k,v)=>data[k]=v},SettingsApi:{addParam:p=>definition=p},Select:{show:s=>select=s},Api:{main(){}},Utils:{createInstance(){}},Maker:{get(){}}};
+ mod('collections').default(L,{});const open=()=>{definition.onChange();select.onSelect({id:'category:movie'});};open();
+ assert.equal(prefs.order[0],watch);assert.equal(select.items[0].id,watch);assert.deepEqual(prefs.hidden,[old]);
+ prefs.order=[old,watch];open();assert.deepEqual(prefs.order,[old,watch],'The one-time migration does not lock the user\'s later order');
+});
 test('Russian alternative titles exclude season aliases; English-language anime uses metadata',()=>{
  const {localizedTitle,isAnime}=mod('metadata'),card={name:'Cyberpunk: Edgerunners',original_name:'Cyberpunk: Edgerunners',original_language:'en',origin_country:['JP','PL','US'],genres:[{id:16}],alternative_titles:{results:[{iso_3166_1:'RU',title:'Киберпанк: Бегущие по краю 2',type:'season 2'},{iso_3166_1:'RU',title:'Киберпанк: Бегущие по краю',type:''}]}};
  assert.equal(localizedTitle(card),'Киберпанк: Бегущие по краю');assert.equal(localizedTitle(card,'en'),card.name);assert.equal(isAnime(card),true);assert.equal(isAnime({...card,genres:[{id:18}]}),false);assert.equal(isAnime({...card,origin_country:[],keywords:{results:[{id:210024,name:'anime'}]}}),true);assert.equal(card.original_name,'Cyberpunk: Edgerunners');
@@ -16,7 +25,9 @@ test('cartoon rows and native More pages exclude anime while other catalogues an
   {id:6,title:'Французский мультфильм',genre_ids:[16],original_language:'fr'},
  ]};
  const source={get(path,params,ok){ok(json);},list(params,ok){ok(json);}},cub={list(params,ok){ok(json);}},L={Api:{sources:{tmdb:source,cub}}};installTmdb(L);
- for(const row of cataloguePlan('cartoon').filter(row=>!row.discovery.company && !row.discovery.family && !row.discovery.hero && !row.discovery.network && !row.discovery.genre)){
+ // Trending has no genre parameters: its native More target is the discovery
+ // source, tested with both formats and pagination in catalogue-feeds.
+ for(const row of cataloguePlan('cartoon').filter(row=>row.discovery.feed!=='trending' && !row.discovery.company && !row.discovery.family && !row.discovery.hero && !row.discovery.network && !row.discovery.genre)){
   const check=result=>{assert.deepEqual(result.results.map(c=>c.id),[1,6]);assert.equal(result.page,2);assert.equal(result.total_pages,5);assert.equal(result.total_results,90);};
   if(row.cub)cub.list({url:row.cub,page:2},check);
   else {source.get(row.tmdb,{page:2},check);source.list({url:row.tmdb,page:2},check);}
@@ -47,8 +58,8 @@ test('cartoon discovery separates film and TV identity, preserves full rows and 
  const before=calls.length;let hidden;catalogue(L,{}, {url:'cartoon'},[plan[0].minimal_row_id],rows=>hidden=rows);assert.equal(calls.length-before,plan.length-1);assert.equal(hidden[0].minimal_hidden,true);
 });
 
-test('collection menu keeps all seven sections before their first visit, without fetching or inventing rows',()=>{
+test('collection menu keeps current sections and watching rows before their first visit',()=>{
  const names={'main:':[{id:'A',title:'A'}],'search:':[{id:'B'}],'category_full:':[{id:'C'}],'category:tv':[{id:'D',title:'D'}],'category:anime':[{id:'E',title:'E'}]};let definition,select,writes=0;
  const data={minimal_collection_rows_v2:names,minimal_collection_names:{'main:':[{id:'obsolete',title:'TV Series I Have Seen'}]}},L={Storage:{get:(k,d)=>data[k]===undefined?d:data[k],set(){writes++;}},SettingsApi:{addParam(p){if(p.param.name==='minimal_rows')definition=p;}},Select:{show:v=>select=v},Api:{main(){}},Utils:{createInstance(){}},Maker:{get(){}}};
- mod('collections').default(L,{});definition.onChange();assert.deepEqual(select.items.map(i=>i.title),['Главная','Фильмы','Сериалы','ТВ-шоу','Мультфильмы','Аниме']);assert.ok(!/[—–]/.test(select.title));select.onSelect({id:'category:movie'});assert.ok(select.items.length>1);assert.match(select.items[0].title,/Новинки/);delete names['category:tv'];definition.onChange();assert.ok(select.items.some(row=>row.title==='Сериалы'));select.onSelect({id:'category:tv'});assert.ok(select.items.length>1);assert.match(select.items[0].title,/Новинки/);assert.ok(!select.items.some(i=>i.title==='D'));assert.equal(writes,0);
+ mod('collections').default(L,{});definition.onChange();assert.deepEqual(select.items.map(i=>i.title),['Главная','Фильмы','Сериалы','ТВ-шоу','Мультфильмы','Аниме']);assert.ok(!/[—–]/.test(select.title));select.onSelect({id:'category:movie'});assert.ok(select.items.length>1);assert.match(select.items[0].title,/Сейчас смотрят/);delete names['category:tv'];definition.onChange();assert.ok(select.items.some(row=>row.title==='Сериалы'));select.onSelect({id:'category:tv'});assert.ok(select.items.length>1);assert.match(select.items[0].title,/Сейчас смотрят/);assert.ok(!select.items.some(i=>i.title==='D'));for(const kind of ['movie','tv','cartoon']){definition.onChange();select.onSelect({id:'category:'+kind});assert.equal(select.items.filter(row=>/Сейчас смотрят/.test(row.title)).length,1);}assert.equal(writes,0);
 });

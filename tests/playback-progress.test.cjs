@@ -3,6 +3,37 @@ const {progressChannel}=require('../src/mpv-progress.cjs');
 function bundle(name){return esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/'+name+'.js')],bundle:true,write:false,format:'iife',globalName:'TestModule'}).outputFiles[0].text;}
 function events(){const hooks={};return {follow(name,fn){(hooks[name] ||= []).push(fn);},send(name,event){for(const fn of hooks[name] || [])fn(event);}};}
 
+test('torrent auto-next callback keeps episode identity through an old native host and page restart',async()=>{
+ const native=require('./fixtures/native-lampa.cjs');
+ const card={id:95403,name:'Периферийные устройства',original_name:'The Peripheral',source:'tmdb',media_type:'tv'};
+ let cache;
+ const first=await native({deferPlugin:true});
+ try{
+  const {L,w}=first;w.eval(bundle('playback-progress'));w.TestModule.default(L,()=>true);
+  const playlist=Array.from({length:110},(_,i)=>({card,season:1,episode:i+1,url:'http://server/stream?index='+(i+1),torrent_hash:'torrent',timeline:L.Timeline.view('torrent-file-'+(i+1))}));
+  let payload;L.Platform.is=name=>name==='android';L.Platform.desktop=()=>false;L.Storage.set('player_torrent','android');
+  w.AndroidJS={appVersion:()=> 'test-999',openPlayer(url,json){payload=JSON.parse(json);}};
+  L.Player.play({...playlist[5],playlist});
+  assert.ok(payload,'The real native Player → Android.openPlayer serializes this torrent');
+  assert.equal(payload.playlist[109].timeline.card,'tv_95403','All serialized files are bound before native Android launch, including auto-next beyond item 100');
+  assert.equal(Object.keys(L.Storage.get(L.Timeline.filename(),{})).length,0,'Binding a playlist never marks it watched');
+  L.Timeline.update({hash:'torrent-file-6',percent:50,time:1200,duration:2400});
+  assert.equal(L.Storage.get(L.Timeline.filename(),{})['torrent-file-6'].episode,6,'Old native update must not discard episode metadata');
+  cache=JSON.parse(JSON.stringify(L.Storage.get('minimal_playback_links_v1',[])));
+ }finally{first.close();}
+ const second=await native({deferPlugin:true,initialStorage:{minimal_playback_links_v1:cache}});
+ try{
+  const {L,w}=second;w.eval(bundle('playback-progress'));w.TestModule.default(L,()=>true);
+  let observed;L.Timeline.listener.follow('update',event=>observed={...event.data.road});
+  // This is the native Android report shape: it carries only the file hash.
+  L.Timeline.update({hash:'torrent-file-7',percent:25,time:600,duration:2400});
+  assert.equal(observed.card,'tv_95403');assert.equal(observed.episode,7,'Sync subscribers receive linked metadata in the original native event');
+  w.eval(bundle('online-state'));const online=w.TestModule.default(L);
+  assert.equal(online.lastWatched(card).episode,7);assert.equal(online.lastWatched(card).time,600);
+  assert.deepEqual(second.errors,[]);
+ }finally{second.close();}
+});
+
 test('TV playback saves measured episode progress before close and keeps profile/card coordinates',()=>{
  const dom=new JSDOM('',{runScripts:'outside-only'}),w=dom.window;
  try{

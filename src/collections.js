@@ -29,7 +29,17 @@ export default function collections(L,shiki,kino,kinoFeeds){
   rows.filter(row=>row && row.title && !/^(shots|спорт|расписание)$/i.test(String(row.title).trim()) && ((row.results || []).length || row.minimal_hidden || row.minimal_configurable)).forEach(row=>{const id=rowKey(row),entry={id,title:row.title,...(row.minimal_row_aliases?{aliases:row.minimal_row_aliases}:{}),...(row.minimal_empty?{subtitle:lampaViewText("Появится после добавления в историю")}:{})};const index=next.findIndex(old=>old.id===id);if(index<0)next.push(entry);else next[index]=entry;});
   captured.add(ctx);if(JSON.stringify(names[ctx] || [])!==JSON.stringify(next)){names[ctx]=next;L.Storage.set(knownKey,names);}
  }
- function prefs(ctx){const all=read(),p=all[ctx] || (ctx==='category:anime:standard'?all['category:anime']:null) || {};if(ctx!=='main:' || !(p.order || []).length || p.order.includes(CONTINUE))return p;const rows=known()[ctx] || [],watch=rows.find(isWatching),order=p.order.slice(),index=watch?order.findIndex(id=>matchesRow({url:watch.id,title:watch.title,minimal_row_aliases:watch.aliases},id)):-1;order.splice(index+1,0,CONTINUE);return {...p,order};}
+ function prefs(ctx){
+  const all=read(),p=all[ctx] || (ctx==='category:anime:standard'?all['category:anime']:null) || {};
+  const kind=String(ctx).replace('category:','');
+  if(['movie','tv','cartoon'].includes(kind) && (p.order || []).length && p.watching_first_revision!==1){
+   const watch=cataloguePlan(kind).find(row=>row.key==='now-watching');
+   if(watch){p.order=[rowKey(watch),...p.order.filter(id=>!matchesRow(watch,id))];p.watching_first_revision=1;save(ctx,p);}
+  }
+  if(ctx!=='main:' || !(p.order || []).length || p.order.includes(CONTINUE))return p;
+  const rows=known()[ctx] || [],watch=rows.find(isWatching),order=p.order.slice(),index=watch?order.findIndex(id=>matchesRow({url:watch.id,title:watch.title,minimal_row_aliases:watch.aliases},id)):-1;
+  order.splice(index+1,0,CONTINUE);return {...p,order};
+ }
  function save(ctx,p){const all=read();all[ctx]=p;L.Storage.set(key,all);}
  function select(title,items,onSelect,onBack){L.Select.show({title,items,onSelect,onBack:onBack || (()=>L.Controller.toggle('settings'))});}
  function contextName(ctx){return labels[ctx] || (ctx==='category:anime:shikimori'?lampaViewText("Аниме · Shikimori"):lampaViewText("Аниме · Стандартные"));}

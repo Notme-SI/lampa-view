@@ -120,6 +120,7 @@ export function discoveryPlan(kind,value={},date=new Date()){
   const titles={KR:'Корейские дорамы',JP:'Японские дорамы',CN:'Китайские дорамы',TW:'Тайвань',TH:'Тайские дорамы'};ASIAN.forEach(code=>add('country-'+code,titles[code],{country:code}));
   ['k9840','k316362','k192772','35','9648','10765'].forEach(id=>{const g=options.genres.find(v=>v.id===id);if(g)add('genre-'+id,g.name,{genre:id});});return rows;
  }
+ add('now-watching','Сейчас смотрят',{feed:'trending'},kind==='cartoon'?'':types[0]);
  const lead=[['new','Новинки'],['rated','Высокий рейтинг'],['popular','Популярные'],['votes','Много голосов']];
  const premierePeriod=date.getFullYear()+'-'+date.getFullYear();
  lead.forEach(([sort,title])=>{

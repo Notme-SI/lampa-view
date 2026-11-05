@@ -5,9 +5,27 @@ import {linkFor,profileScope} from './timeline-meta.cjs';
 // two-minute save interval can leave another screen/device on the last manual
 // mark. Never create progress merely because a file was opened.
 export default function playbackProgress(L,enabled){
- const bindings=new Map(),wrapped=new WeakSet();
+ const bindings=new Map(),wrapped=new WeakSet(),bindingKey='minimal_playback_links_v1',limit=2000;
  let current=null,stopped=false;
  const active=()=>!stopped && enabled();
+ const cached=L.Storage && L.Storage.get?L.Storage.get(bindingKey,[]):[];
+ if(Array.isArray(cached))for(const row of cached.slice(-limit)){
+  if(row && /^[a-zA-Z0-9_.:-]{1,128}$/.test(String(row.hash)) && typeof row.scope==='string' && row.meta && /^[a-z0-9_]{1,64}$/.test(row.meta.card || '') && Date.now()-row.at<7*86400000)bindings.set(String(row.hash),row);
+ }
+ function persist(){
+  if(L.Storage && L.Storage.set)L.Storage.set(bindingKey,Array.from(bindings,([hash,row])=>({hash,...row})));
+ }
+ function bindingFor(hash){const row=bindings.get(String(hash));return row && row.scope===profileScope(L)?row:null;}
+ // Older host builds drop card/episode fields inside Timeline.update(). Enrich
+ // the actual persisted road before sync/UI listeners read the native event.
+ if(L.Timeline && L.Timeline.listener && L.Timeline.listener.follow)L.Timeline.listener.follow('update',event=>{
+  if(!active() || !event || !event.data)return;
+  const {hash,road}=event.data,binding=bindingFor(hash);
+  if(!binding || !road || road.card===binding.meta.card && road.season===binding.meta.season && road.episode===binding.meta.episode)return;
+  Object.assign(road,binding.meta);
+  const file=L.Timeline.filename && L.Timeline.filename(),records=file && L.Storage && L.Storage.get?L.Storage.get(file,{}):null;
+  if(records && records[hash] && L.Storage.set){Object.assign(records[hash],binding.meta);L.Storage.set(file,records);}
+ });
  function track(video){
   if(!active() || !video || !video.timeline || !video.timeline.hash)return null;
   const activity=L.Activity && L.Activity.active && L.Activity.active() || {};
@@ -15,8 +33,9 @@ export default function playbackProgress(L,enabled){
   const coordinates=identity(card || {},video),meta=linkFor(L,card,coordinates.season,coordinates.episode);
   const timeline=video.timeline,scope=profileScope(L);
   if(meta){
-   bindings.set(String(timeline.hash),{scope,meta});
-   if(bindings.size>100)bindings.delete(bindings.keys().next().value);
+   Object.assign(timeline,meta);
+   bindings.delete(String(timeline.hash));bindings.set(String(timeline.hash),{scope,meta,at:Date.now()});
+   if(bindings.size>limit)bindings.delete(bindings.keys().next().value);
   }
   if(!wrapped.has(timeline) && typeof timeline.handler==='function'){
    const handler=timeline.handler;
@@ -41,7 +60,10 @@ export default function playbackProgress(L,enabled){
   const update=L.Timeline.update;
   L.Timeline.update=function(params){
    const binding=params && bindings.get(String(params.hash));
-   if(active() && binding && binding.scope===profileScope(L) && !params.received)params={...params,...binding.meta};
+   if(active() && binding && !params.received){
+    if(binding.scope!==profileScope(L))return;
+    params={...params,...binding.meta};
+   }
    return update.apply(this,[params,...Array.prototype.slice.call(arguments,1)]);
   };
  }
@@ -56,7 +78,13 @@ export default function playbackProgress(L,enabled){
  }
  const listener=L.Player && L.Player.listener;
  if(listener && listener.follow){
-  listener.follow('create',event=>track(event && event.data));
+  listener.follow('create',event=>{
+   const data=event && event.data;if(!data)return;
+   // Android serializes the complete playlist inside play(), before the host
+   // calls Player.playlist(). Bind auto-next files before that serialization.
+   if(Array.isArray(data.playlist))data.playlist.slice(0,limit).forEach(track);
+   track(data);if(active())persist();
+  });
   listener.follow('start',video=>{save();current=track(video);});
   listener.follow('external',()=>{save();current=null;});
   for(const event of ['close','destroy'])listener.follow(event,()=>{save();current=null;});
@@ -64,7 +92,7 @@ export default function playbackProgress(L,enabled){
  if(L.Player && typeof L.Player.playlist==='function'){
   const playlist=L.Player.playlist;
   L.Player.playlist=function(items){
-   if(Array.isArray(items))items.slice(0,100).forEach(track);
+   if(Array.isArray(items)){items.slice(0,limit).forEach(track);if(active())persist();}
    return playlist.apply(this,arguments);
   };
  }
