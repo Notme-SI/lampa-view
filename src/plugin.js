@@ -47,6 +47,7 @@ import torrentSearch from './torrent-search.js';
 import installTrakt from './trakt.js';
 import holidayLayout from './holidays.js';
 import interfaceSize from './interface-size.js';
+import personalScale from './personal-scale.js';
 import menuLayout from './menu-layout.js';
 
 const ROOT = window;
@@ -113,6 +114,11 @@ if (!ROOT.LampaView) {
     if (!document.getElementById('lampa_view-lampa-style')) $('<style id="lampa_view-lampa-style">').text(CSS).appendTo('head');
     if(!appearanceTheme)appearanceTheme=appearance(L);
     const enabled = yes('lampa_view_enabled');
+    const headActions=document.querySelector('.head__actions');
+    if(headActions && !headActions.querySelector('.open--profile') && L.Account && L.Account.Profile){
+      const profile=document.createElement('div');profile.className='head__action selector open--profile';profile.innerHTML=icon('profile');profile.setAttribute('aria-label',lampaViewText('Профиль'));
+      pointer($(profile).on('hover:enter',()=>L.Account.Profile.select(()=>L.Controller.toggle('head'))));headActions.appendChild(profile);
+    }
     document.querySelectorAll('.head__action.open--search').forEach(node=>node.setAttribute('data-pt-placeholder',lampaViewText('Поиск…')));
     document.querySelectorAll('.head__actions .open--settings').forEach(node=>{node.setAttribute('aria-label',lampaViewText('Настройки'));if(!node.querySelector('[data-pt-settings]')){node.innerHTML=icon('settings');node.firstElementChild.setAttribute('data-pt-settings','');}if(!node._minimalSettingsPointer){pointer($(node));node._minimalSettingsPointer=true;}const search=node.parentElement.querySelector('.open--search');if(search && search.nextElementSibling!==node)search.after(node);const profile=node.parentElement.querySelector('.open--profile');if(profile && node.nextElementSibling!==profile)profile.before(node);});
     $('.minimal-detail-logo.loaded').each(function(){
@@ -484,6 +490,7 @@ if (!ROOT.LampaView) {
     options.forEach(([name,label,description,value]) => L.SettingsApi.addParam({component:'lampa_view',param:{name,type:'trigger',default:value},field:{name:label,description},onChange:setTheme}));
     L.SettingsApi.addParam({component:'lampa_view',param:{name:'lampa_view_theme',type:'select',values:{minimal:lampaViewText("Оригинал"),glass:lampaViewText('Стекло')},default:'minimal'},field:{name:lampaViewText("Тема интерфейса"),description:lampaViewText("Оформление всей Lampa. Переключается сразу, данные просмотра сохраняются.")},onChange:()=>{if(appearanceTheme)appearanceTheme.update();}});
     L.SettingsApi.addParam({component:'lampa_view',param:{name:'lampa_view_layout',type:'select',values:{auto:lampaViewText("Автоматически"),tv:lampaViewText("Телевизор"),mobile:lampaViewText("Телефон"),desktop:lampaViewText("Компьютер")},default:'auto'},field:{name:lampaViewText("Тип устройства"),description:lampaViewText("Авто использует режим экрана Lampa. Можно выбрать вручную.")},onChange:setTheme});
+    personalScale(L);
     L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_banner_quality',type:'select',values:{medium:lampaViewText("Среднее"),high:lampaViewText("Высокое")},default:'high'},field:{name:lampaViewText("Качество баннеров и обложек"),description:lampaViewText("Общее качество баннеров, фонов загрузки и карточек. Высокое подбирает чёткий размер под экран и использует общий кеш обложек.")},onChange:()=>artwork && artwork.choose()});
   }
   function start() {

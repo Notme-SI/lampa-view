@@ -28,7 +28,7 @@ body.lampa_view .head__actions {margin-left:auto;display:flex;align-items:center
 body.lampa_view .head__action {width:2.2em;height:2.2em;border-radius:.55em;margin:0;color:var(--pt-muted)}
 body.lampa_view .head__action svg {width:1.15em;height:1.15em}
 body.lampa_view .head__action.open--settings {display:flex!important;align-items:center;justify-content:center;box-sizing:border-box;flex:0 0 2.2em;padding:0}
-body.lampa_view.pt-mobile .head__action.open--settings {display:none!important}
+body.lampa_view.pt-mobile .head__action.open--settings {display:flex!important}
 body.lampa_view .head__action.focus,body.lampa_view .head__action.hover {background:var(--pt-high);color:white}
 body.lampa_view .head__action.open--search {width:18em;background:#ffffff04;border:1px solid var(--pt-line);justify-content:flex-start;padding:0 .8em;gap:.65em}
 body.lampa_view .head__action.open--search:after {content:attr(data-pt-placeholder);font-size:.8em;color:var(--pt-muted)}
@@ -1036,3 +1036,16 @@ body.lampa_view .minimal-studio-catalogue .category-full,body.lampa_view .minima
 body.lampa_view.pt-mobile .card:not(.pt-card-touch) .pt-card-watch,body.lampa_view.pt-mobile .card:not(.pt-card-touch) .pt-series-status {visibility:hidden!important}
 
 body.lampa_view.pt-mobile .card__title,body.lampa_view.pt-mobile .card__age {cursor:pointer;pointer-events:auto}
+/* Touch layouts retain account controls and fit panels to the visual viewport. */
+body.lampa_view .head__action.open--profile {display:flex!important;align-items:center;justify-content:center}
+body.lampa_view .head__action.open--settings {border:1px solid var(--pt-line);border-radius:50%;background:var(--pt-panel)}
+body.lampa_view.pt-mobile .head__body {gap:.4em;padding-left:.65em;padding-right:.65em}
+body.lampa_view.pt-mobile .head__actions {display:flex!important;gap:.35em;flex-shrink:0}
+body.lampa_view.pt-mobile .head__logo-icon {margin-right:.4em!important}
+body.lampa_view .settings__content,body.lampa_view .selectbox__content {max-height:calc(100vh - 1em)!important;max-height:calc(100dvh - 1em)!important;box-sizing:border-box}
+body.lampa_view .settings__body,body.lampa_view .selectbox__body {min-height:0;overflow:hidden;flex:1 1 auto}
+body.lampa_view .settings__body>.scroll,body.lampa_view .selectbox__body>.scroll {min-height:0;max-height:100%;touch-action:pan-y}
+@media (pointer:coarse) {
+ body.lampa_view:not(.pt-menu-pinned) .head__body {max-width:100%;padding-left:.65em;padding-right:.65em}
+ body.lampa_view .minimal-detail-header,body.lampa_view .minimal-detail-columns {width:calc(100% - 2em);max-width:calc(100% - 2em)}
+}
