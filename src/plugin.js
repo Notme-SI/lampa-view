@@ -186,6 +186,8 @@ if (!ROOT.LampaView) {
     const source=L.Storage.get('source','cub') || 'cub',sourceName={cub:'CUB',tmdb:'TMDB',trakt:'Trakt'}[source] || String(source);
     const homeLabel=lampaViewText("Главная")+' - '+sourceName;
     if(home && home.textContent!==homeLabel)home.textContent=homeLabel;
+    const homeItem=home && home.closest('.menu__item'),movies=document.querySelector('.menu__item[data-action="movie"]');
+    if(homeItem && movies && movies.previousElementSibling!==homeItem)movies.before(homeItem);
     const torrents=document.querySelector('.menu__item[data-action="mytorrents"] .menu__ico');
     if(torrents && !torrents.querySelector('[data-minimal-magnet]')){torrents.innerHTML=icon('magnet');torrents.querySelector('svg').setAttribute('data-minimal-magnet','');}
     const settings=document.querySelector('.menu__item[data-action="settings"]');
@@ -199,7 +201,7 @@ if (!ROOT.LampaView) {
         else $('.head .open--profile').trigger('hover:enter');
       }));
     }
-    if(settings && profile && settings.nextElementSibling!==profile)settings.after(profile);
+    if(settings && profile && settings.previousElementSibling!==profile)settings.before(profile);
     const series=document.querySelector('.menu__item[data-action="tv"]');
     let cartoons=document.querySelector('.menu__item[data-action="cartoon"]');
     if(!cartoons && series){

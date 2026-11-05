@@ -51,7 +51,7 @@ body.lampa_view .menu__ico {width:1.15em;height:1.15em;min-width:1.15em;margin-r
 body.lampa_view .menu__ico svg {width:100%;height:100%}
 body.lampa_view .menu__item.focus,body.lampa_view .menu__item.hover,body.lampa_view .menu__item.traverse {background:var(--pt-high);color:#fff;box-shadow:none}
 body.lampa_view .menu__split {display:none!important}
-body.lampa_view .menu__item[data-action="console"],body.lampa_view .menu__item[data-action="edit"],body.lampa_view .menu__item[data-action="feed"],body.lampa_view .menu__item[data-action="relise"],body.lampa_view .menu__item[data-action="myperson"],body.lampa_view .menu__item[data-action="subscribes"],body.lampa_view .menu__item[data-action="catalog"],body.lampa_view .menu__item[data-action="filter"],body.lampa_view .menu__item[data-action="about"] {display:none}
+body.lampa_view .menu__item[data-action="edit"],body.lampa_view .menu__item[data-action="feed"],body.lampa_view .menu__item[data-action="relise"],body.lampa_view .menu__item[data-action="myperson"],body.lampa_view .menu__item[data-action="subscribes"],body.lampa_view .menu__item[data-action="catalog"],body.lampa_view .menu__item[data-action="filter"] {display:none}
 body.lampa_view .items-line {margin-bottom:.8em;padding-bottom:.7em}
 body.lampa_view .items-line__head {margin-bottom:1em}
 body.lampa_view .items-line__title {font-size:1.12em;font-weight:600;letter-spacing:-.02em}
