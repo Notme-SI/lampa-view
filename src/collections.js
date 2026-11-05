@@ -14,8 +14,9 @@ export function removedHomeRow(row){
  return /^\?/.test(route) && query.get('sort')==='latest' && !query.has('cat') && !query.has('uhd')
   || /^(?:Последнее добавление|Последние добавления|Last addition|Latest additions)$/i.test(String(row.title || '').trim());
 }
+const isMyShowsUnwatched=row=>row.url==='myshows://unwatched' || row.line_type==='myshows_unwatched';
 export function homeOrder(rows){
- const rank=row=>isWatching(row)?0:row.url===CONTINUE?1:({'minimal:annual:new_movies':2,'minimal:annual:popular_series':3,'minimal:annual:popular_movies':4}[rowKey(row)] ?? 6);
+ const rank=row=>isMyShowsUnwatched(row)?-1:isWatching(row)?0:row.url===CONTINUE?1:({'minimal:annual:new_movies':2,'minimal:annual:popular_series':3,'minimal:annual:popular_movies':4}[rowKey(row)] ?? 6);
  return rows.filter(row=>!removedHomeRow(row)).map((row,i)=>({row,i})).sort((a,b)=>rank(a.row)-rank(b.row) || a.i-b.i).map(entry=>entry.row);
 }
 function annualKey(id){
@@ -94,7 +95,7 @@ export default function collections(L,shiki,kino,kinoFeeds){
  L.Api.main=function(object,ok,fail){
   const ctx=context(object),compact=(!object.component || object.component==='main');
   function process(rows){if(compact)return homeRows.ready(()=>render(rows));render(rows);}
-  function render(rows){if(compact){mainSource=object.source || L.Storage.get('source','cub');rows=rows.filter(row=>!/недавние.*(?:эпизод|сери)|recent.*episode/i.test(String(row.title || '')));}rows=rows.map(row=>({...row,results:presentableCards(row.results || [])}));const selected=compact?homeOrder(homeRows(homeOrder(rows))):rows;remember(ctx,selected);ok(arrange(selected,prefs(ctx)).filter(row=>!row.minimal_empty));}
+  function render(rows){if(compact){mainSource=object.source || L.Storage.get('source','cub');rows=rows.filter(row=>!/недавние.*(?:эпизод|сери)|recent.*episode/i.test(String(row.title || '')));}rows=rows.map(row=>({...row,results:isMyShowsUnwatched(row)?(row.results || []):presentableCards(row.results || [])}));const selected=compact?homeOrder(homeRows(homeOrder(rows))):rows;remember(ctx,selected);ok(arrange(selected,prefs(ctx)).filter(row=>!row.minimal_empty));}
   const next=main.call(this,object,process,fail);
   return !compact && typeof next==='function'?function(resolve,reject){return next(rows=>{remember(ctx,rows,true);resolve(arrange(rows,prefs(ctx)));},reject);}:undefined;
  };

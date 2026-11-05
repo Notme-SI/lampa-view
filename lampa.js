@@ -1,4 +1,4 @@
-/*! Lampa View 0.5.40 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.5.41 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -12579,7 +12579,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // package.json
-  var version = "0.5.40";
+  var version = "0.5.41";
 
   // src/inputs.js
   function inputs(L) {
@@ -20195,10 +20195,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       query = new URLSearchParams(route.split("?")[1] || "");
     return /^\?/.test(route) && query.get("sort") === "latest" && !query.has("cat") && !query.has("uhd") || /^(?:Последнее добавление|Последние добавления|Last addition|Latest additions)$/i.test(String(row.title || "").trim());
   }
+  var isMyShowsUnwatched = function isMyShowsUnwatched(row) {
+    return row.url === "myshows://unwatched" || row.line_type === "myshows_unwatched";
+  };
   function homeOrder(rows) {
     var rank2 = function rank2(row) {
       var _a;
-      return isWatching(row) ? 0 : row.url === CONTINUE ? 1 : (_a = {
+      return isMyShowsUnwatched(row) ? -1 : isWatching(row) ? 0 : row.url === CONTINUE ? 1 : (_a = {
         "minimal:annual:new_movies": 2,
         "minimal:annual:popular_series": 3,
         "minimal:annual:popular_movies": 4
@@ -20541,7 +20544,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
         rows = rows.map(function (row) {
           return __spreadProps(__spreadValues({}, row), {
-            results: presentableCards(row.results || [])
+            results: isMyShowsUnwatched(row) ? row.results || [] : presentableCards(row.results || [])
           });
         });
         var selected = compact ? homeOrder(homeRows(homeOrder(rows))) : rows;
