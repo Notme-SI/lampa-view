@@ -138,7 +138,8 @@ export function discoveryPlan(kind,value={},date=new Date()){
   add((kind==='cartoon'?'mixed-':'')+sort,title,extra,kind==='cartoon'?'':types[0]);
  });
  if(kind==='cartoon'){
-  [['RU','Россия'],['US','США']].forEach(([country,title])=>add('country-'+country,title,{country},''));
+  add('country-RU','Российские мультфильмы',{country:'RU'},'');
+  add('series','Мультсериалы',{},'tv');
   options.genres.filter(g=>[35,12,878,14].includes(g.genre)).forEach(g=>add('genre-'+g.id,g.name,{genre:g.id},g.formats.length>1?'':g.formats[0]));
   return rows;
  }

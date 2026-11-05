@@ -1,4 +1,4 @@
-/*! Lampa View 0.5.35 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.5.36 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -9518,6 +9518,19 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       cs: "Pořadí a viditelnost kolekcí vybraného katalogu.",
       ro: "Ordinea și vizibilitatea colecțiilor din catalogul selectat.",
       pl: "Kolejność i widoczność kolekcji wybranego katalogu."
+    },
+    "Российские мультфильмы": {
+      en: "Russian animation",
+      uk: "Російські мультфільми",
+      be: "Расійскія мультфільмы",
+      fr: "Animation russe",
+      zh: "俄罗斯动画",
+      pt: "Anima\xE7\xE3o russa",
+      bg: "Руски анимационни филми",
+      he: "אנימציה רוסית",
+      cs: "Rusk\xE9 animovan\xE9 filmy",
+      ro: "Animație rusească",
+      pl: "Rosyjskie animacje"
     }
   };
 
@@ -12510,7 +12523,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // package.json
-  var version = "0.5.35";
+  var version = "0.5.36";
 
   // src/inputs.js
   function inputs(L) {
@@ -18102,14 +18115,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       add((kind === "cartoon" ? "mixed-" : "") + sort, title, extra, kind === "cartoon" ? "" : types[0]);
     });
     if (kind === "cartoon") {
-      [["RU", "Россия"], ["US", "США"]].forEach(function (_ref35) {
-        var _ref36 = _slicedToArray(_ref35, 2),
-          country = _ref36[0],
-          title = _ref36[1];
-        return add("country-" + country, title, {
-          country: country
-        }, "");
-      });
+      add("country-RU", "Российские мультфильмы", {
+        country: "RU"
+      }, "");
+      add("series", "Мультсериалы", {}, "tv");
       options.genres.filter(function (g) {
         return [35, 12, 878, 14].includes(g.genre);
       }).forEach(function (g) {
@@ -18140,10 +18149,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       add("watch", "Сейчас выходят", {
         feed: "airing"
       });
-      [["80", "Детективы и криминал"], ["10765", "Фантастика и фэнтези"], ["35", "Комедии"], ["18", "Драмы"]].forEach(function (_ref37) {
-        var _ref38 = _slicedToArray(_ref37, 2),
-          genre = _ref38[0],
-          title = _ref38[1];
+      [["80", "Детективы и криминал"], ["10765", "Фантастика и фэнтези"], ["35", "Комедии"], ["18", "Драмы"]].forEach(function (_ref35) {
+        var _ref36 = _slicedToArray(_ref35, 2),
+          genre = _ref36[0],
+          title = _ref36[1];
         return add("genre-" + genre, title, {
           genre: genre
         });
@@ -18513,10 +18522,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         title: text("Сейчас смотрят"),
         media_type: "tv",
         tmdb: "discover/tv?include_adult=false&" + asian + "sort_by=popularity.desc&air_date.gte=" + day4(-7) + "&air_date.lte=" + day4(0)
-      }].concat(_toConsumableArray([[text("Популярное"), asian + "sort_by=popularity.desc"], [text("Новинки этого года"), asian + "sort_by=popularity.desc&first_air_date.gte=" + year + "-01-01"], [text("С высоким рейтингом"), asian + "sort_by=vote_average.desc&vote_count.gte=100"], [text("Корейские дорамы"), "with_origin_country=KR&without_genres=16,99,10764,10767&sort_by=popularity.desc"], [text("Японские дорамы"), "with_origin_country=JP&without_genres=16,99,10764,10767&sort_by=popularity.desc"], [text("Китайские дорамы"), "with_origin_country=CN|TW&without_genres=16,99,10764,10767&sort_by=popularity.desc"], [text("Тайские дорамы"), "with_origin_country=TH&without_genres=16,99,10764,10767&sort_by=popularity.desc"], [text("Драмы"), asian + "with_genres=18&sort_by=popularity.desc"], [text("Комедии"), asian + "with_genres=35&sort_by=popularity.desc"], [text("Детективы"), asian + "with_genres=9648&sort_by=popularity.desc"]].map(function (_ref39, index2) {
-        var _ref40 = _slicedToArray(_ref39, 2),
-          title = _ref40[0],
-          query = _ref40[1];
+      }].concat(_toConsumableArray([[text("Популярное"), asian + "sort_by=popularity.desc"], [text("Новинки этого года"), asian + "sort_by=popularity.desc&first_air_date.gte=" + year + "-01-01"], [text("С высоким рейтингом"), asian + "sort_by=vote_average.desc&vote_count.gte=100"], [text("Корейские дорамы"), "with_origin_country=KR&without_genres=16,99,10764,10767&sort_by=popularity.desc"], [text("Японские дорамы"), "with_origin_country=JP&without_genres=16,99,10764,10767&sort_by=popularity.desc"], [text("Китайские дорамы"), "with_origin_country=CN|TW&without_genres=16,99,10764,10767&sort_by=popularity.desc"], [text("Тайские дорамы"), "with_origin_country=TH&without_genres=16,99,10764,10767&sort_by=popularity.desc"], [text("Драмы"), asian + "with_genres=18&sort_by=popularity.desc"], [text("Комедии"), asian + "with_genres=35&sort_by=popularity.desc"], [text("Детективы"), asian + "with_genres=9648&sort_by=popularity.desc"]].map(function (_ref37, index2) {
+        var _ref38 = _slicedToArray(_ref37, 2),
+          title = _ref38[0],
+          query = _ref38[1];
         return {
           key: "dorama-" + index2,
           title: title,
@@ -18527,11 +18536,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     }
     if (kind === "tvshow") {
       var shows = "without_genres=16&with_genres=10764|10767&with_original_language=ru&";
-      return [["watch", text("Сейчас смотрят"), shows + "sort_by=popularity.desc&air_date.gte=" + day4(-7) + "&air_date.lte=" + day4(0)], ["popular", text("Популярное"), shows + "sort_by=popularity.desc"], ["year", text("Новинки этого года"), shows + "sort_by=popularity.desc&first_air_date.gte=" + year + "-01-01&first_air_date.lte=" + day4(0)], ["rated", text("С высоким рейтингом"), shows + "sort_by=vote_average.desc&vote_count.gte=100"], ["reality", text("Российские реалити"), "without_genres=16&with_genres=10764&with_original_language=ru&sort_by=popularity.desc"], ["talk", text("Российские ток-шоу"), "without_genres=16&with_genres=10767&with_original_language=ru&sort_by=popularity.desc"], ["russian", text("Семейные и развлекательные"), "without_genres=16&with_genres=10764|10767|10751|35&with_original_language=ru&sort_by=popularity.desc"], ["last-year", text("Прошлый год"), shows + "sort_by=vote_average.desc&vote_count.gte=30&first_air_date.gte=" + (year - 1) + "-01-01&first_air_date.lte=" + (year - 1) + "-12-31"]].map(function (_ref41) {
-        var _ref42 = _slicedToArray(_ref41, 3),
-          key = _ref42[0],
-          title = _ref42[1],
-          query = _ref42[2];
+      return [["watch", text("Сейчас смотрят"), shows + "sort_by=popularity.desc&air_date.gte=" + day4(-7) + "&air_date.lte=" + day4(0)], ["popular", text("Популярное"), shows + "sort_by=popularity.desc"], ["year", text("Новинки этого года"), shows + "sort_by=popularity.desc&first_air_date.gte=" + year + "-01-01&first_air_date.lte=" + day4(0)], ["rated", text("С высоким рейтингом"), shows + "sort_by=vote_average.desc&vote_count.gte=100"], ["reality", text("Российские реалити"), "without_genres=16&with_genres=10764&with_original_language=ru&sort_by=popularity.desc"], ["talk", text("Российские ток-шоу"), "without_genres=16&with_genres=10767&with_original_language=ru&sort_by=popularity.desc"], ["russian", text("Семейные и развлекательные"), "without_genres=16&with_genres=10764|10767|10751|35&with_original_language=ru&sort_by=popularity.desc"], ["last-year", text("Прошлый год"), shows + "sort_by=vote_average.desc&vote_count.gte=30&first_air_date.gte=" + (year - 1) + "-01-01&first_air_date.lte=" + (year - 1) + "-12-31"]].map(function (_ref39) {
+        var _ref40 = _slicedToArray(_ref39, 3),
+          key = _ref40[0],
+          title = _ref40[1],
+          query = _ref40[2];
         return {
           key: key,
           title: title,
@@ -18544,21 +18553,21 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       key: "watch",
       title: text("Сейчас смотрят"),
       cub: "?sort=now_playing&genre=16"
-    }].concat(_toConsumableArray([[text("Популярные мультфильмы"), "movie", "sort_by=popularity.desc"], [text("Новые мультфильмы"), "movie", "sort_by=popularity.desc&primary_release_date.gte=" + year + "-01-01"], [text("Мультфильмы с высоким рейтингом"), "movie", "sort_by=vote_average.desc&vote_count.gte=200"], [text("Популярные мультсериалы"), "tv", "sort_by=popularity.desc"], [text("Мультсериалы с высоким рейтингом"), "tv", "sort_by=vote_average.desc&vote_count.gte=100"], [text("Мультсериалы этого года"), "tv", "sort_by=popularity.desc&first_air_date.gte=" + year + "-01-01"]].map(function (_ref43) {
-      var _ref44 = _slicedToArray(_ref43, 3),
-        title = _ref44[0],
-        media_type = _ref44[1],
-        query = _ref44[2];
+    }].concat(_toConsumableArray([[text("Популярные мультфильмы"), "movie", "sort_by=popularity.desc"], [text("Новые мультфильмы"), "movie", "sort_by=popularity.desc&primary_release_date.gte=" + year + "-01-01"], [text("Мультфильмы с высоким рейтингом"), "movie", "sort_by=vote_average.desc&vote_count.gte=200"], [text("Популярные мультсериалы"), "tv", "sort_by=popularity.desc"], [text("Мультсериалы с высоким рейтингом"), "tv", "sort_by=vote_average.desc&vote_count.gte=100"], [text("Мультсериалы этого года"), "tv", "sort_by=popularity.desc&first_air_date.gte=" + year + "-01-01"]].map(function (_ref41) {
+      var _ref42 = _slicedToArray(_ref41, 3),
+        title = _ref42[0],
+        media_type = _ref42[1],
+        query = _ref42[2];
       return {
         title: title,
         media_type: media_type,
         tmdb: "discover/" + media_type + "?include_adult=false&with_genres=16&without_keywords=210024&" + query
       };
     })));
-    if (kind === "anime" && mode === "shikimori") return [[text("Популярное"), "order=popularity"], [text("С высоким рейтингом"), "order=ranked"], [text("Сейчас выходит"), "order=popularity&status=ongoing"], [text("Ожидаемые"), "order=popularity&status=anons"], [text("Новинки этого года"), "order=popularity&season=" + year], [text("Прошлый год"), "order=ranked&season=" + (year - 1)], [text("Полнометражные"), "order=ranked&kind=movie"], [text("Боевики"), "order=popularity&genre=1"], [text("Приключения"), "order=popularity&genre=2"], [text("Детективы"), "order=popularity&genre=7"], [text("Все"), SHIKI_ALL]].map(function (_ref45) {
-      var _ref46 = _slicedToArray(_ref45, 2),
-        title = _ref46[0],
-        shiki = _ref46[1];
+    if (kind === "anime" && mode === "shikimori") return [[text("Популярное"), "order=popularity"], [text("С высоким рейтингом"), "order=ranked"], [text("Сейчас выходит"), "order=popularity&status=ongoing"], [text("Ожидаемые"), "order=popularity&status=anons"], [text("Новинки этого года"), "order=popularity&season=" + year], [text("Прошлый год"), "order=ranked&season=" + (year - 1)], [text("Полнометражные"), "order=ranked&kind=movie"], [text("Боевики"), "order=popularity&genre=1"], [text("Приключения"), "order=popularity&genre=2"], [text("Детективы"), "order=popularity&genre=7"], [text("Все"), SHIKI_ALL]].map(function (_ref43) {
+      var _ref44 = _slicedToArray(_ref43, 2),
+        title = _ref44[0],
+        shiki = _ref44[1];
       return {
         title: title,
         shiki: shiki
@@ -18604,10 +18613,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       add("rated", text("С высоким рейтингом"), "?cat=anime&sort=top&airdate=" + (year - 7) + "-" + (year - 2) + "&vote=8-10", "sort_by=vote_average.desc&vote_average.gte=8&vote_count.gte=200&first_air_date.lte=" + (year - 2) + "-12-31");
     }
     var genres = kind === "movie" ? [[28, text("Боевики")], [35, text("Комедии")], [18, text("Драмы")], [53, text("Триллеры")], [878, text("Фантастика")]] : kind === "anime" ? [[10765, text("Фэнтези")], [10759, text("Приключения")]] : [[18, text("Драмы")], [80, text("Криминал")], [10765, text("Фантастика и фэнтези")], [35, text("Комедии")]];
-    genres.forEach(function (_ref47) {
-      var _ref48 = _slicedToArray(_ref47, 2),
-        id = _ref48[0],
-        title = _ref48[1];
+    genres.forEach(function (_ref45) {
+      var _ref46 = _slicedToArray(_ref45, 2),
+        id = _ref46[0],
+        title = _ref46[1];
       return add("genre-" + id, title, "?cat=" + kind + "&sort=top&genre=" + id, "sort_by=popularity.desc&with_genres=" + id + (kind === "anime" ? ",16" : ""));
     });
     return defs.slice(0, 10);
@@ -18955,10 +18964,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       warm.set(lang, entry);
       var remaining = 3,
         answers = 0;
-      [["trending/all/day", ""], ["movie/popular", "movie"], ["tv/popular", "tv"]].forEach(function (_ref49) {
-        var _ref50 = _slicedToArray(_ref49, 2),
-          path = _ref50[0],
-          type = _ref50[1];
+      [["trending/all/day", ""], ["movie/popular", "movie"], ["tv/popular", "tv"]].forEach(function (_ref47) {
+        var _ref48 = _slicedToArray(_ref47, 2),
+          path = _ref48[0],
+          type = _ref48[1];
         return request(path, lang, function (json) {
           if (json && Array.isArray(json.results)) answers++;
           var _iterator47 = _createForOfIteratorHelper(json && json.results || []),
@@ -19062,28 +19071,28 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   };
   var FEEDS = [[text("Сейчас смотрят"), "trending"], [text("Популярное"), "popular"], [text("Самое просматриваемое за неделю"), "watched/weekly"], [text("В коллекциях за месяц"), "collected/monthly"], [text("Ожидаемые"), "anticipated"]];
   function traktPlan(kind) {
-    if (kind === "dorama") return FEEDS.map(function (_ref51) {
-      var _ref52 = _slicedToArray(_ref51, 2),
-        title = _ref52[0],
-        path = _ref52[1];
+    if (kind === "dorama") return FEEDS.map(function (_ref49) {
+      var _ref50 = _slicedToArray(_ref49, 2),
+        title = _ref50[0],
+        path = _ref50[1];
       return {
         title: title,
         url: "shows/" + path + "?countries=kr,jp,cn,tw,th&genres=drama,romance,comedy,mystery"
       };
     });
-    if (kind === "tvshow") return FEEDS.map(function (_ref53) {
-      var _ref54 = _slicedToArray(_ref53, 2),
-        title = _ref54[0],
-        path = _ref54[1];
+    if (kind === "tvshow") return FEEDS.map(function (_ref51) {
+      var _ref52 = _slicedToArray(_ref51, 2),
+        title = _ref52[0],
+        path = _ref52[1];
       return {
         title: title,
         url: "shows/" + path + "?genres=reality,talk-show,game-show&languages=ru"
       };
     });
-    if (!kind) return FEEDS.map(function (_ref55, index2) {
-      var _ref56 = _slicedToArray(_ref55, 2),
-        title = _ref56[0],
-        path = _ref56[1];
+    if (!kind) return FEEDS.map(function (_ref53, index2) {
+      var _ref54 = _slicedToArray(_ref53, 2),
+        title = _ref54[0],
+        path = _ref54[1];
       return __spreadValues({
         title: title,
         url: "mixed/" + path
@@ -19096,10 +19105,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var types = TYPES[kind] ? [TYPES[kind]] : kind === "anime" ? ["shows"] : ["movies", "shows"];
     var filter = kind === "movie" || kind === "tv" ? "?without_genres=animation" : kind === "anime" ? "?genres=animation&languages=ja" : kind === "cartoon" ? "?genres=animation" : "";
     return types.flatMap(function (type) {
-      return FEEDS.map(function (_ref57) {
-        var _ref58 = _slicedToArray(_ref57, 2),
-          title = _ref58[0],
-          path = _ref58[1];
+      return FEEDS.map(function (_ref55) {
+        var _ref56 = _slicedToArray(_ref55, 2),
+          title = _ref56[0],
+          path = _ref56[1];
         return {
           title: kind === "cartoon" && type === "shows" ? text("Мультсериалы") + " \xB7 " + title : title,
           url: type + "/" + path + filter
@@ -19198,10 +19207,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               });
               if (cache.size > 40) cache.delete(cache.keys().next().value);
             }
-            job.callbacks.forEach(function (_ref59) {
-              var _ref60 = _slicedToArray(_ref59, 2),
-                ok = _ref60[0],
-                fail = _ref60[1];
+            job.callbacks.forEach(function (_ref57) {
+              var _ref58 = _slicedToArray(_ref57, 2),
+                ok = _ref58[0],
+                fail = _ref58[1];
               return json ? ok(json) : error(fail, message);
             });
           }
@@ -19704,10 +19713,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       });
       L.Controller.toggle("minimal_anime_tabs");
     }
-    [["standard", text("Стандартные")], ["shikimori", "Shikimori"]].forEach(function (_ref61, i) {
-      var _ref62 = _slicedToArray(_ref61, 2),
-        value = _ref62[0],
-        title = _ref62[1];
+    [["standard", text("Стандартные")], ["shikimori", "Shikimori"]].forEach(function (_ref59, i) {
+      var _ref60 = _slicedToArray(_ref59, 2),
+        value = _ref60[0],
+        title = _ref60[1];
       var button = document.createElement("button");
       button.type = "button";
       button.className = "minimal-anime-tab pt-hero__action selector";
@@ -20694,10 +20703,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var pairs = Object.entries(options).sort(function (a, b) {
         return a[0] === "" ? -1 : b[0] === "" ? 1 : 0;
       });
-      show(title, pairs.map(function (_ref63) {
-        var _ref64 = _slicedToArray(_ref63, 2),
-          id = _ref64[0],
-          title2 = _ref64[1];
+      show(title, pairs.map(function (_ref61) {
+        var _ref62 = _slicedToArray(_ref61, 2),
+          id = _ref62[0],
+          title2 = _ref62[1];
         return {
           id: id,
           title: title2,
@@ -20786,10 +20795,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       if (L.Select.hide) L.Select.hide();else L.Select.close();
       if (state.kind === "anime") {
         var parts = ["order=" + encodeURIComponent(state.animeSort || "popularity")];
-        [["genre", "genre"], ["status", "status"], ["format", "kind"], ["score", "score"], ["query", "search"]].forEach(function (_ref65) {
-          var _ref66 = _slicedToArray(_ref65, 2),
-            key = _ref66[0],
-            param = _ref66[1];
+        [["genre", "genre"], ["status", "status"], ["format", "kind"], ["score", "score"], ["query", "search"]].forEach(function (_ref63) {
+          var _ref64 = _slicedToArray(_ref63, 2),
+            key = _ref64[0],
+            param = _ref64[1];
           if (state[key]) parts.push(param + "=" + encodeURIComponent(state[key]));
         });
         if (range.from || range.to) parts.push("season=" + encodeURIComponent((range.from || "1870") + "_" + (range.to || String((/* @__PURE__ */new Date()).getFullYear() + 5))));
@@ -22162,10 +22171,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       pushing = true;
       health.state = "syncing";
       request(ctx, "set", {
-        rows: batch.map(function (_ref67) {
-          var _ref68 = _slicedToArray(_ref67, 2),
-            hash = _ref68[0],
-            value = _ref68[1];
+        rows: batch.map(function (_ref65) {
+          var _ref66 = _slicedToArray(_ref65, 2),
+            hash = _ref66[0],
+            value = _ref66[1];
           return {
             hash: hash,
             card: remoteCard(value),
@@ -22304,10 +22313,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }
     }
     function persist() {
-      if (L.Storage && L.Storage.set) L.Storage.set(bindingKey, Array.from(bindings, function (_ref69) {
-        var _ref70 = _slicedToArray(_ref69, 2),
-          hash = _ref70[0],
-          row = _ref70[1];
+      if (L.Storage && L.Storage.set) L.Storage.set(bindingKey, Array.from(bindings, function (_ref67) {
+        var _ref68 = _slicedToArray(_ref67, 2),
+          hash = _ref68[0],
+          row = _ref68[1];
         return __spreadValues({
           hash: hash
         }, row);
@@ -22630,10 +22639,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       if (["start", "destroy"].includes(event.type)) update();
     });
     if (L.Controller && L.Controller.listener) L.Controller.listener.follow("toggle", remoteHeading);
-    [[L.Settings, "open"], [L.Select, "open"], [L.Modal, "fullshow"], [L.Modal, "update"]].forEach(function (_ref71) {
-      var _ref72 = _slicedToArray(_ref71, 2),
-        api = _ref72[0],
-        event = _ref72[1];
+    [[L.Settings, "open"], [L.Select, "open"], [L.Modal, "fullshow"], [L.Modal, "update"]].forEach(function (_ref69) {
+      var _ref70 = _slicedToArray(_ref69, 2),
+        api = _ref70[0],
+        event = _ref70[1];
       if (api && api.listener) api.listener.follow(event, overlays);
     });
     update();
@@ -23076,9 +23085,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     function linkedRecords(card, records) {
       var identity2 = (0, import_timeline_meta2.linkFor)(L, card, 1, 1);
       if (!identity2) return [];
-      return Object.entries(records).filter(function (_ref73) {
-        var _ref74 = _slicedToArray(_ref73, 2),
-          value = _ref74[1];
+      return Object.entries(records).filter(function (_ref71) {
+        var _ref72 = _slicedToArray(_ref71, 2),
+          value = _ref72[1];
         return value && _typeof(value) === "object" && value.card === identity2.card;
       });
     }
@@ -25926,10 +25935,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var bar = root.querySelector(".torrent-filter");
       if (!bar) return;
       bar.classList.add("minimal-torrent-toolbar");
-      [["search", text("Поиск")], ["sort", text("Сортировка")], ["filter", text("Фильтры")]].forEach(function (_ref75) {
-        var _ref76 = _slicedToArray(_ref75, 2),
-          key = _ref76[0],
-          label = _ref76[1];
+      [["search", text("Поиск")], ["sort", text("Сортировка")], ["filter", text("Фильтры")]].forEach(function (_ref73) {
+        var _ref74 = _slicedToArray(_ref73, 2),
+          key = _ref74[0],
+          label = _ref74[1];
         var button = bar.querySelector(".filter--" + key);
         if (!button) return;
         var text2 = button.querySelector(".minimal-toolbar-label");
@@ -26389,10 +26398,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       shell = function shell() {
         if (!_$(".pt-topnav").length) {
           var nav = _$(text("<div class=\"pt-topnav\" role=\"navigation\" aria-label=\"Каталог\">"));
-          [["home", text("Главная")], ["movie", text("Фильмы")], ["tv", text("Сериалы")], ["cartoon", text("Мультфильмы")], ["tvshow", text("ТВ-шоу")], ["anime", text("Аниме")]].forEach(function (_ref77) {
-            var _ref78 = _slicedToArray(_ref77, 2),
-              key = _ref78[0],
-              label = _ref78[1];
+          [["home", text("Главная")], ["movie", text("Фильмы")], ["tv", text("Сериалы")], ["cartoon", text("Мультфильмы")], ["tvshow", text("ТВ-шоу")], ["anime", text("Аниме")]].forEach(function (_ref75) {
+            var _ref76 = _slicedToArray(_ref75, 2),
+              key = _ref76[0],
+              label = _ref76[1];
             pointer(_$('<div class="pt-topnav__item selector" role="button" tabindex="0">').attr("data-section", key).text(label).on("hover:enter", function () {
               return navigate(key);
             })).appendTo(nav);
@@ -26401,11 +26410,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
         if (!_$(".pt-mobile-nav").length) {
           var _nav = _$(text("<nav class=\"pt-mobile-nav\" aria-label=\"Навигация\">"));
-          [["home", text("Главная"), "home"], ["search", text("Поиск"), "search"], ["calendar", text("Расписание"), "calendar"], ["library", text("Медиатека"), "library"], ["settings", text("Настройки"), "settings"]].forEach(function (_ref79) {
-            var _ref80 = _slicedToArray(_ref79, 3),
-              key = _ref80[0],
-              label = _ref80[1],
-              glyph = _ref80[2];
+          [["home", text("Главная"), "home"], ["search", text("Поиск"), "search"], ["calendar", text("Расписание"), "calendar"], ["library", text("Медиатека"), "library"], ["settings", text("Настройки"), "settings"]].forEach(function (_ref77) {
+            var _ref78 = _slicedToArray(_ref77, 3),
+              key = _ref78[0],
+              label = _ref78[1],
+              glyph = _ref78[2];
             _$('<div class="pt-mobile-nav__item" role="button" tabindex="0">').attr("data-section", key).html(icon(glyph) + "<span></span>").find("span").text(label).end().on("click", function () {
               return navigate(key);
             }).on("keydown", function (e) {
@@ -26983,12 +26992,12 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         unifiedSettings(L.SettingsApi, L, version);
         var options = [["lampa_view_enabled", text("Оформление интерфейса"), text("Единый стиль каталога, карточек, источников и настроек."), true], ["lampa_view_hero", text("Обложка на главной"), text("Карусель каждые 10 секунд, ручное переключение и жесты."), true]];
         if (L.Platform && L.Platform.desktop && L.Platform.desktop() || ROOT.electronAPI && ROOT.electronAPI.lampa_view) options.push(["lampa_view_metadata", text("Уточнять данные mpv+"), text("Передавать сведения карточки для проверки названия, сезона и серии."), true]);
-        options.forEach(function (_ref81) {
-          var _ref82 = _slicedToArray(_ref81, 4),
-            name = _ref82[0],
-            label = _ref82[1],
-            description = _ref82[2],
-            value = _ref82[3];
+        options.forEach(function (_ref79) {
+          var _ref80 = _slicedToArray(_ref79, 4),
+            name = _ref80[0],
+            label = _ref80[1],
+            description = _ref80[2],
+            value = _ref80[3];
           return L.SettingsApi.addParam({
             component: "lampa_view",
             param: {
@@ -27160,10 +27169,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (L.Settings && L.Settings.listener) L.Settings.listener.follow("open", function () {
           setTimeout(trimSections, 0);
         });
-        [[L.Settings, ["open", "close"]], [L.Select, ["fullshow", "close"]], [L.Modal, ["fullshow", "close"]], [L.Player, ["create", "destroy"]], [L.Controller, ["toggle"]]].forEach(function (_ref83) {
-          var _ref84 = _slicedToArray(_ref83, 2),
-            api = _ref84[0],
-            events = _ref84[1];
+        [[L.Settings, ["open", "close"]], [L.Select, ["fullshow", "close"]], [L.Modal, ["fullshow", "close"]], [L.Player, ["create", "destroy"]], [L.Controller, ["toggle"]]].forEach(function (_ref81) {
+          var _ref82 = _slicedToArray(_ref81, 2),
+            api = _ref82[0],
+            events = _ref82[1];
           if (api && api.listener) events.forEach(function (event) {
             return api.listener.follow(event, function () {
               if (carousels.size) setTimeout(refreshCarousels, 0);

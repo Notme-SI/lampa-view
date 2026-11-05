@@ -8942,5 +8942,18 @@
   "cs": "Pořadí a viditelnost kolekcí vybraného katalogu.",
   "ro": "Ordinea și vizibilitatea colecțiilor din catalogul selectat.",
   "pl": "Kolejność i widoczność kolekcji wybranego katalogu."
+ },
+ "Российские мультфильмы": {
+  "en": "Russian animation",
+  "uk": "Російські мультфільми",
+  "be": "Расійскія мультфільмы",
+  "fr": "Animation russe",
+  "zh": "俄罗斯动画",
+  "pt": "Animação russa",
+  "bg": "Руски анимационни филми",
+  "he": "אנימציה רוסית",
+  "cs": "Ruské animované filmy",
+  "ro": "Animație rusească",
+  "pl": "Rosyjskie animacje"
  }
 }
