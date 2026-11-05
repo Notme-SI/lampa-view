@@ -1,4 +1,4 @@
-/*! Lampa View 0.5.42 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.5.43 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -12579,7 +12579,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // package.json
-  var version = "0.5.42";
+  var version = "0.5.43";
 
   // src/inputs.js
   function inputs(L) {
@@ -26708,6 +26708,35 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         updateRoute();
       },
       trimSections = function trimSections() {
+        var home = document.querySelector('.menu__item[data-action="main"] .menu__text');
+        var source = L.Storage.get("source", "cub") || "cub",
+          sourceName = {
+            cub: "CUB",
+            tmdb: "TMDB",
+            trakt: "Trakt"
+          }[source] || String(source);
+        var homeLabel = text("Главная") + " - " + sourceName;
+        if (home && home.textContent !== homeLabel) home.textContent = homeLabel;
+        var torrents = document.querySelector('.menu__item[data-action="mytorrents"] .menu__ico');
+        if (torrents && !torrents.querySelector("[data-minimal-magnet]")) {
+          torrents.innerHTML = icon("magnet");
+          torrents.querySelector("svg").setAttribute("data-minimal-magnet", "");
+        }
+        var settings2 = document.querySelector('.menu__item[data-action="settings"]');
+        var profile = document.querySelector('.menu__item[data-action="minimal_profile"]');
+        if (settings2 && !profile) {
+          profile = document.createElement("li");
+          profile.className = "menu__item selector";
+          profile.dataset.action = "minimal_profile";
+          profile.innerHTML = '<div class="menu__ico">' + icon("profile") + '</div><div class="menu__text"></div>';
+          profile.querySelector(".menu__text").textContent = text("Профиль");
+          pointer(_$(profile).on("hover:enter.minimalProfile", function () {
+            if (L.Account && L.Account.Profile && L.Account.Profile.select) L.Account.Profile.select(function () {
+              return L.Controller.toggle("menu");
+            });else _$(".head .open--profile").trigger("hover:enter");
+          }));
+        }
+        if (settings2 && profile && settings2.nextElementSibling !== profile) settings2.after(profile);
         var series = document.querySelector('.menu__item[data-action="tv"]');
         var cartoons = document.querySelector('.menu__item[data-action="cartoon"]');
         if (!cartoons && series) {
@@ -27399,6 +27428,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }
         });
         trimSections();
+        if (L.Storage.listener) L.Storage.listener.follow("change", function (event) {
+          if (event.name === "source" || event.name === "language") trimSections();
+        });
         var menu = document.querySelector(".menu");
         if (menu && ROOT.MutationObserver) new ROOT.MutationObserver(trimSections).observe(menu, {
           childList: true,
@@ -27588,6 +27620,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var heroes = /* @__PURE__ */new WeakSet();
     var carousels = /* @__PURE__ */new Set();
     var icons = {
+      magnet: '<path d="M5 4h4v9a3 3 0 0 0 6 0V4h4v9a7 7 0 0 1-14 0V4ZM5 8h4m6 0h4"/>',
+      profile: '<circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/>',
       menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
       home: '<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-8H9v8H4a1 1 0 0 1-1-1Z"/>',
       search: '<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/>',

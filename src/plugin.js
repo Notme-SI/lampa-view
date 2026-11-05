@@ -64,6 +64,8 @@ if (!ROOT.LampaView) {
   const carousels = new Set();
   function refreshCarousels(){carousels.forEach(value=>value.refresh());}
   const icons = {
+    magnet: '<path d="M5 4h4v9a3 3 0 0 0 6 0V4h4v9a7 7 0 0 1-14 0V4ZM5 8h4m6 0h4"/>',
+    profile: '<circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/>',
     menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
     home: '<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-8H9v8H4a1 1 0 0 1-1-1Z"/>',
     search: '<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/>',
@@ -180,6 +182,24 @@ if (!ROOT.LampaView) {
     updateRoute();
   }
   function trimSections(){
+    const home=document.querySelector('.menu__item[data-action="main"] .menu__text');
+    const source=L.Storage.get('source','cub') || 'cub',sourceName={cub:'CUB',tmdb:'TMDB',trakt:'Trakt'}[source] || String(source);
+    const homeLabel=lampaViewText("Главная")+' - '+sourceName;
+    if(home && home.textContent!==homeLabel)home.textContent=homeLabel;
+    const torrents=document.querySelector('.menu__item[data-action="mytorrents"] .menu__ico');
+    if(torrents && !torrents.querySelector('[data-minimal-magnet]')){torrents.innerHTML=icon('magnet');torrents.querySelector('svg').setAttribute('data-minimal-magnet','');}
+    const settings=document.querySelector('.menu__item[data-action="settings"]');
+    let profile=document.querySelector('.menu__item[data-action="minimal_profile"]');
+    if(settings && !profile){
+      profile=document.createElement('li');profile.className='menu__item selector';profile.dataset.action='minimal_profile';
+      profile.innerHTML='<div class="menu__ico">'+icon('profile')+'</div><div class="menu__text"></div>';
+      profile.querySelector('.menu__text').textContent=lampaViewText("Профиль");
+      pointer($(profile).on('hover:enter.minimalProfile',()=>{
+        if(L.Account && L.Account.Profile && L.Account.Profile.select)L.Account.Profile.select(()=>L.Controller.toggle('menu'));
+        else $('.head .open--profile').trigger('hover:enter');
+      }));
+    }
+    if(settings && profile && settings.nextElementSibling!==profile)settings.after(profile);
     const series=document.querySelector('.menu__item[data-action="tv"]');
     let cartoons=document.querySelector('.menu__item[data-action="cartoon"]');
     if(!cartoons && series){
@@ -481,6 +501,7 @@ if (!ROOT.LampaView) {
     pinnedMenu=menuLayout(L,()=>yes('lampa_view_enabled'));
     on('menu',event=>{if(yes('lampa_view_enabled') && event.type==='action' && ['cartoon','dorama','tvshow'].includes(event.action)){if(event.abort)event.abort();navigate(event.action);}});
     trimSections();
+    if(L.Storage.listener)L.Storage.listener.follow('change',event=>{if(event.name==='source' || event.name==='language')trimSections();});
     const menu=document.querySelector('.menu');
     if(menu && ROOT.MutationObserver)new ROOT.MutationObserver(trimSections).observe(menu,{childList:true,subtree:true});
     quality(L,$);cacheSettings(L);
