@@ -152,6 +152,5 @@ export default function filters(L,shiki){
   window.jQuery(li).on('hover:enter',e=>{e.stopImmediatePropagation();menu();});const list=document.querySelector('.menu__list');if(list)list.appendChild(li);
  }
  addMenu();
- L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_search_filters',type:'button'},field:{name:lampaViewText("Поиск по фильтрам"),description:lampaViewText("Фильмы, сериалы и аниме: жанр, диапазон годов, рейтинг и другие параметры.")},onChange:menu});
  return {menu,addMenu};
 }

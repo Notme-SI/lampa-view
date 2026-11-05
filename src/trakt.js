@@ -19,7 +19,7 @@ export function traktPlan(kind){
  if(!kind)return FEEDS.map(([title,path],index)=>({title,url:'mixed/'+path,...(index===0?{minimal_row_aliases:['?sort=now_playing','movie/now_playing','movies/trending','shows/trending']}:index===1?{minimal_row_aliases:['movie/popular','tv/popular','movies/popular','shows/popular']}:{})}));
  const types=TYPES[kind]?[TYPES[kind]]:kind==='anime'?['shows']:['movies','shows'];
  const filter=kind==='movie' || kind==='tv'?'?without_genres=animation':kind==='anime'?'?genres=animation&languages=ja':kind==='cartoon'?'?genres=animation':'';
- return types.flatMap(type=>FEEDS.map(([title,path],index)=>({title:kind==='cartoon'?(index===1?(type==='movies'?lampaViewText("Популярные мультфильмы"):lampaViewText("Популярные мультсериалы")):(type==='movies'?lampaViewText("Мультфильмы"):lampaViewText("Мультсериалы"))+' · '+title):title,url:type+'/'+path+filter})));
+ return types.flatMap(type=>FEEDS.map(([title,path])=>({title:kind==='cartoon' && type==='shows'?lampaViewText("Мультсериалы")+' · '+title:title,url:type+'/'+path+filter})));
 }
 function image(value){
  const url=Array.isArray(value)?value[0]:'';

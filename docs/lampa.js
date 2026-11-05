@@ -1,4 +1,4 @@
-/*! Lampa View 0.5.34 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.5.35 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -9479,6 +9479,45 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       ro: "Emisiuni TV populare",
       fr: "\xC9missions TV populaires",
       pl: "Popularne programy telewizyjne"
+    },
+    "Популярные сериалы за год": {
+      en: "Popular series over the past year",
+      uk: "Популярні серіали за рік",
+      fr: "Séries populaires de l’année",
+      be: "Папулярныя серыялы за год",
+      zh: "过去一年的热门剧集",
+      pt: "S\xE9ries populares do \xFAltimo ano",
+      bg: "Популярни сериали за годината",
+      he: "סדרות פופולריות בשנה האחרונה",
+      cs: "Popul\xE1rn\xED seri\xE1ly za posledn\xED rok",
+      ro: "Seriale populare din ultimul an",
+      pl: "Popularne seriale z ostatniego roku"
+    },
+    "Сервер не вернул источники на этом языке.": {
+      en: "The server returned no sources in this language.",
+      uk: "Сервер не повернув джерел цією мовою.",
+      be: "Сервер не вярнуў крыніц на гэтай мове.",
+      fr: "Le serveur n’a renvoyé aucune source dans cette langue.",
+      zh: "服务器未返回此语言的播放源。",
+      pt: "O servidor n\xE3o retornou fontes neste idioma.",
+      bg: "Сървърът не върна източници на този език.",
+      he: "השרת לא החזיר מקורות בשפה זו.",
+      cs: "Server nevrátil žádné zdroje v tomto jazyce.",
+      ro: "Serverul nu a returnat surse în această limbă.",
+      pl: "Serwer nie zwrócił źródeł w tym języku."
+    },
+    "Порядок и видимость подборок выбранного каталога.": {
+      en: "Collection order and visibility for the selected catalogue.",
+      uk: "Порядок і видимість добірок вибраного каталогу.",
+      be: "Парадак і бачнасць падборак выбранага каталога.",
+      fr: "Ordre et visibilit\xE9 des collections du catalogue s\xE9lectionn\xE9.",
+      zh: "所选目录中合集的顺序和可见性。",
+      pt: "Ordem e visibilidade das cole\xE7\xF5es do cat\xE1logo selecionado.",
+      bg: "Ред и видимост на колекциите в избрания каталог.",
+      he: "הסדר והנראות של האוספים בקטלוג שנבחר.",
+      cs: "Pořadí a viditelnost kolekcí vybraného katalogu.",
+      ro: "Ordinea și vizibilitatea colecțiilor din catalogul selectat.",
+      pl: "Kolejność i widoczność kolekcji wybranego katalogu."
     }
   };
 
@@ -10386,15 +10425,24 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       return callback(catalogueResults(path, json));
     };
     var source = L.Api && L.Api.sources && L.Api.sources.tmdb;
-    if (source && typeof source.get === "function") {
+    var announced = options && options.unreleased && L.Reguest && L.TMDB && L.TMDB.api && L.TMDB.key;
+    if (!announced && source && typeof source.get === "function") {
       var clean = normalizeTmdb(path, params);
       return source.get(clean.path, clean.params, ok, fail, options);
     }
-    if (L.TMDB && typeof L.TMDB.get === "function") return L.TMDB.get(path, params || {}, ok, fail, options);
+    if (!announced && L.TMDB && typeof L.TMDB.get === "function") return L.TMDB.get(path, params || {}, ok, fail, options);
     if (!L.Reguest || !L.TMDB || !L.TMDB.api || !L.TMDB.key) return fail();
     var request = new L.Reguest();
     request.timeout(1e4);
     var url = path + (/[?&]api_key=/.test(path) ? "" : (path.includes("?") ? "&" : "?") + "api_key=" + encodeURIComponent(L.TMDB.key()));
+    if (announced) {
+      var _clean = normalizeTmdb(path, params),
+        query = new URLSearchParams(_clean.path.split("?")[1] || "");
+      if (_clean.params && _clean.params.page) query.set("page", _clean.params.page);
+      if (!query.has("language")) query.set("language", L.Storage && L.Storage.get ? L.Storage.get("tmdb_lang", L.Storage.get("language", "ru")) : "ru");
+      query.set("api_key", L.TMDB.key());
+      url = _clean.path.split("?")[0] + "?" + query;
+    }
     request.silent(L.TMDB.api(url), function (data) {
       return data && data.success === false ? fail(data) : ok(data);
     }, fail);
@@ -12462,7 +12510,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // package.json
-  var version = "0.5.34";
+  var version = "0.5.35";
 
   // src/inputs.js
   function inputs(L) {
@@ -16308,6 +16356,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           text2 = String(d.field && d.field.name || "");
         if (seen.has(n)) return false;
         seen.add(n);
+        if (["nova_plus_view", "nova_plus_layout", "nova_plus_order", "minimal_search_filters", "mpv_plus_recent_rows"].includes(n)) return false;
         if (n === "minimal_kinoapi" && !flag(L, "minimal_kinoapi_enabled", !!L.Storage.get("lampa_view_kinoapi_key", ""))) return false;
         if (n === "minimal_trakt_client_id" && !flag(L, "minimal_trakt_enabled", false)) return false;
         if (d.param && d.param.type === "button" && typeof d.onChange !== "function") return false;
@@ -16315,7 +16364,6 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (n === "alc_auto_src_btn" && typeof window !== "undefined" && window.LampaView && window.LampaView.onlineSources) return false;
         if (/^alc_auto_(fav_btn|src_btn|studios_btn|langs|visible_languages|autosubs)$/.test(n) && typeof window !== "undefined" && window.lampac_plugin) return false;
         if (n.startsWith("nova_plus_") && n !== "nova_plus_enabled" && !online) return false;
-        if (n === "nova_plus_layout" && L && L.Storage && L.Storage.get("nova_plus_view", "list") !== "grid") return false;
         if (n === "nova_plus_probe" && typeof window !== "undefined" && typeof window.nova_skin_probe_mode === "function") {
           try {
             if (["external", "disabled"].includes(window.nova_skin_probe_mode())) return false;
@@ -17729,6 +17777,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     });
     p.set("vote_count.gte", String(spec.kind === "tvshow" ? sort === "rated" ? 2 : 0 : sort === "rated" ? local ? 10 : type === "movie" ? 500 : 100 : sort === "new" ? 2 : sort === "votes" ? 10 : spec.kind === "dorama" ? 10 : 0));
     if (sort === "votes") p.set("vote_average.gte", "5");
+    if (spec.feed === "upcoming") {
+      var tomorrow = new Date(date2);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      p.set(field + ".gte", day2(tomorrow));
+      p.delete(field + ".lte");
+      p.set("sort_by", "popularity.desc");
+      p.set("vote_count.gte", "0");
+    }
     return "discover/" + type + "?" + p.toString();
   }
   function discoverySpecs(spec) {
@@ -17772,6 +17828,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }),
       origin = card.origin_country || [],
       descriptor = genreDescriptor(spec.type === "movie" ? "movie" : "tv", spec.genre, spec.kind);
+    if (spec.feed === "upcoming") {
+      var release = String(card[spec.type === "movie" ? "release_date" : "first_air_date"] || "").slice(0, 10);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(release) || release <= day2(/* @__PURE__ */new Date())) return false;
+    }
     if (spec.kind === "tv") {
       var year2 = Number(String(card.first_air_date || "").slice(0, 4));
       if (!spec.period && year2 > 0 && year2 < (/* @__PURE__ */new Date()).getFullYear() - 4) return false;
@@ -18050,11 +18110,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           country: country
         }, "");
       });
-      add("family", "Для всей семьи", {
-        family: true
-      }, "");
       options.genres.filter(function (g) {
-        return g.genre !== 16 && ![281358, 293198].includes(g.keyword);
+        return [35, 12, 878, 14].includes(g.genre);
       }).forEach(function (g) {
         return add("genre-" + g.id, g.name, {
           genre: g.id
@@ -18062,6 +18119,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       });
       return rows;
     }
+    add("upcoming", "Ожидаемые", {
+      feed: "upcoming"
+    });
     if (kind === "tv") {
       add("country-RU", "Российские сериалы", {
         country: "RU"
@@ -18077,13 +18137,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         kind: "dorama",
         country: "CN"
       });
-      add("country-GB", "Британские сериалы", {
-        country: "GB"
-      });
       add("watch", "Сейчас выходят", {
         feed: "airing"
       });
-      [["80", "Детективы и криминал"], ["10765", "Фантастика и фэнтези"], ["35", "Комедии"], ["18", "Драмы"], ["10759", "Приключения"], ["9648", "Загадки и тайны"]].forEach(function (_ref37) {
+      [["80", "Детективы и криминал"], ["10765", "Фантастика и фэнтези"], ["35", "Комедии"], ["18", "Драмы"]].forEach(function (_ref37) {
         var _ref38 = _slicedToArray(_ref37, 2),
           genre = _ref38[0],
           title = _ref38[1];
@@ -18096,28 +18153,12 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     add("country-RU", "Российские фильмы", {
       country: "RU"
     });
-    add("watch", "Свежие релизы", {
-      feed: "recent"
-    });
-    ["28", "35", "18", "53", "878"].forEach(function (id) {
+    ["28", "35", "18", "53", "878", "27", "9648"].forEach(function (id) {
       var genre = options.genres.find(function (g) {
         return g.id === id;
       });
       add("genre-" + id, genre.name, {
         genre: id
-      });
-    });
-    add("revenue", "Кассовые сборы", {
-      sort: "revenue"
-    });
-    add("trending", "В тренде за неделю", {
-      feed: "trending"
-    });
-    options.genres.filter(function (g) {
-      return ![16, 10762, 10763, 10764, 10767].includes(g.genre);
-    }).forEach(function (g) {
-      return add("genre-" + g.id, g.name, {
-        genre: g.id
       });
     });
     return rows;
@@ -18130,7 +18171,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var state = discoveryState(value.kind, __spreadProps(__spreadValues({}, value), {
       section: "overview"
     }));
-    if (value.genre && state.genre !== String(value.genre) || value.network && state.network !== Number(value.network) || value.company && state.company !== Number(value.company) || value.hero && state.hero !== String(value.hero) || value.country && state.country !== value.country || value.sort && (value.hero ? value.sort !== "popular" : state.sort !== value.sort) || value.feed && !["airing", "current", "trending", "recent"].includes(value.feed)) return null;
+    if (value.genre && state.genre !== String(value.genre) || value.network && state.network !== Number(value.network) || value.company && state.company !== Number(value.company) || value.hero && state.hero !== String(value.hero) || value.country && state.country !== value.country || value.sort && (value.hero ? value.sort !== "popular" : state.sort !== value.sort) || value.feed && !["airing", "current", "trending", "recent", "upcoming"].includes(value.feed)) return null;
     if (value.kind !== "cartoon" && value.type !== (value.kind === "movie" ? "movie" : "tv") || !value.type && value.kind !== "cartoon") return null;
     if (value.sort === "revenue" && value.type !== "movie") return null;
     var period = state.period;
@@ -18149,7 +18190,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       period: period,
       sort: state.sort || "popular",
       hero: state.hero
-    }, ["airing", "current", "trending", "recent"].includes(value.feed) ? {
+    }, ["airing", "current", "trending", "recent", "upcoming"].includes(value.feed) ? {
       feed: value.feed
     } : {}), value.kind === "cartoon" && value.family ? {
       family: true
@@ -18169,7 +18210,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       };
     };
     function request(path, page, ok, fail) {
-      var key = locale() + "|" + path + "|" + page,
+      var unreleased = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
+      var key = locale() + "|" + path + "|" + page + "|" + unreleased,
         old = cache.get(key);
       if (old && Date.now() - old.at < 3e5) return ok(old.value);
       if (pending.has(key)) {
@@ -18184,6 +18226,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         key: key,
         path: path,
         page: page,
+        unreleased: unreleased,
         listeners: [{
           ok: ok,
           fail: fail
@@ -18234,6 +18277,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             page: job.page
           }, finish, function () {
             return finish(null);
+          }, {
+            unreleased: job.unreleased
           });
         } catch (e) {
           finish(null);
@@ -18375,7 +18420,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }, function () {
             failed = true;
             complete();
-          });
+          }, cursor.spec.feed === "upcoming");
         });
         function complete() {
           if (--left) return;
@@ -18581,7 +18626,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         new: ["year"].concat(_toConsumableArray(kind === "dorama" ? ["dorama-1"] : [])),
         rated: ["uhd", "rated"].concat(_toConsumableArray(kind === "dorama" ? ["dorama-2"] : [])),
         popular: ["popular"].concat(_toConsumableArray(kind === "dorama" ? ["dorama-0"] : [])),
-        "now-watching": ["trending"],
+        "now-watching": ["trending"].concat(_toConsumableArray(kind === "movie" ? ["watch"] : [])),
         watch: ["watch", "ongoing"],
         "russian-reality": ["reality"],
         "russian-talk": ["talk"],
@@ -18626,6 +18671,25 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       cub: "?" + q.toString()
     });
   }
+  var usesCub = function usesCub(job, kind, source, hasCub) {
+    return !!(!job.discovery && !["dorama", "tvshow"].includes(kind) && hasCub && job.cub && (source === "cub" || kind === "cartoon"));
+  };
+  function catalogueRow(job, kind) {
+    var source = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "tmdb";
+    var hasCub = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
+    var cub = usesCub(job, kind, source, hasCub),
+      scoped = ["dorama", "tvshow"].includes(kind);
+    return __spreadProps(__spreadValues({
+      title: cub ? job.title : job.tmdb_title || job.title,
+      url: job.discovery ? JSON.stringify(job.discovery) : job.shiki || (cub ? job.cub : job.tmdb || job.cub),
+      source: job.discovery ? DISCOVERY_SOURCE : job.shiki ? "minimal_shiki" : cub || !job.tmdb ? "cub" : "tmdb"
+    }, !cub && job.tmdb && job.key ? {
+      minimal_row_id: job.minimal_row_id || "minimal:tmdb:" + kind + ":" + job.key,
+      minimal_row_aliases: [job.tmdb].concat(_toConsumableArray(scoped && job.cub ? [job.cub] : []), _toConsumableArray(job.minimal_row_aliases || []))
+    } : {}), {
+      results: []
+    });
+  }
   function catalogue(L, shiki, object, hidden, ok) {
     var kind = object.url || object.cat;
     var selection = DISCOVERY_KINDS.includes(kind) ? discoveryState(kind, object.minimal_discovery || {}) : {};
@@ -18665,19 +18729,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     };
     var scoped = ["dorama", "tvshow"].includes(kind);
     var useCub = function useCub(job) {
-      return !!(!job.discovery && !scoped && cub && job.cub && (source === "cub" || kind === "cartoon"));
+      return usesCub(job, kind, source, !!cub);
     };
     var rowFor = function rowFor(job) {
-      return __spreadProps(__spreadValues({
-        title: useCub(job) ? job.title : job.tmdb_title || job.title,
-        url: job.discovery ? JSON.stringify(job.discovery) : job.shiki || (useCub(job) ? job.cub : job.tmdb || job.cub),
-        source: job.discovery ? DISCOVERY_SOURCE : job.shiki ? "minimal_shiki" : useCub(job) || !job.tmdb ? "cub" : "tmdb"
-      }, !useCub(job) && job.tmdb && job.key ? {
-        minimal_row_id: job.minimal_row_id || "minimal:tmdb:" + kind + ":" + job.key,
-        minimal_row_aliases: [job.tmdb].concat(_toConsumableArray(scoped && job.cub ? [job.cub] : []), _toConsumableArray(job.minimal_row_aliases || []))
-      } : {}), {
-        results: []
-      });
+      return catalogueRow(job, kind, source, !!cub);
     };
     function complete() {
       if (done === plan.length && !ended) {
@@ -18784,6 +18839,800 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     });
   }
 
+  // src/trakt-metadata.js
+  function traktMetadata(L) {
+    var store = "minimal_trakt_metadata_v1",
+      cache = /* @__PURE__ */new Map(),
+      pending = /* @__PURE__ */new Map(),
+      warm = /* @__PURE__ */new Map(),
+      queue = [],
+      deadlines = /* @__PURE__ */new Set();
+    var running = 0,
+      generation = 0,
+      saveTimer,
+      unavailableUntil = 0;
+    var language = function language() {
+      return String(L.Storage.get("tmdb_lang", L.Storage.get("language", "ru")) || "ru").slice(0, 5);
+    };
+    var key = function key(lang, kind, id) {
+      return lang + ":" + kind + ":" + id;
+    };
+    var fresh = function fresh(entry) {
+      return entry && Date.now() - entry.at < 864e5;
+    };
+    var available = function available() {
+      return !!(L.Api.sources.tmdb && L.Api.sources.tmdb.get || L.TMDB && L.TMDB.get);
+    };
+    var saved = L.Storage.get(store, []);
+    if (Array.isArray(saved)) saved.slice(-160).forEach(function (pair) {
+      if (Array.isArray(pair) && fresh(pair[1])) cache.set(pair[0], pair[1]);
+    });
+    function save() {
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(function () {
+        return L.Storage.set(store, Array.from(cache.entries()).slice(-160));
+      }, 250);
+    }
+    function fields(json, kind, id) {
+      if (!json || Number(json.id) !== Number(id) || !(json.title || json.name)) return null;
+      var value = {};
+      for (var _i19 = 0, _arr14 = ["title", "name", "original_title", "original_name", "overview", "poster_path", "backdrop_path", "release_date", "first_air_date", "original_language", "vote_average", "vote_count", "genre_ids", "genres", "origin_country", "production_companies", "networks"]; _i19 < _arr14.length; _i19++) {
+        var name = _arr14[_i19];
+        if (json[name] != null) value[name] = json[name];
+      }
+      value.title = json.title || json.name;
+      if (kind === "tv") {
+        value.name = json.name || json.title;
+        value.original_title = json.original_name || json.original_title || value.title;
+      }
+      if (!value.genre_ids && value.genres) value.genre_ids = value.genres.map(function (g) {
+        return g.id;
+      });
+      return value;
+    }
+    function remember(lang, kind, json) {
+      var value = fields(json, kind, json && json.id);
+      if (!value) return;
+      cache.set(key(lang, kind, json.id), {
+        at: Date.now(),
+        value: value
+      });
+      if (cache.size > 160) cache.delete(cache.keys().next().value);
+      save();
+    }
+    function pump() {
+      var _loop20 = function _loop20() {
+        var task = queue.shift();
+        if (task.generation !== generation) return 1; // continue
+        running++;
+        var settled = false,
+          timer;
+        var finish = function finish(json) {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
+          running--;
+          if (task.generation === generation) task.done(json);
+          pump();
+        };
+        timer = setTimeout(function () {
+          return finish(null);
+        }, 5e3);
+        try {
+          tmdbGet(L, task.path, {
+            langs: task.lang
+          }, finish, function () {
+            return finish(null);
+          }, {
+            life: 60 * 24
+          });
+        } catch (error) {
+          finish(null);
+        }
+      };
+      while (running < 2 && queue.length) {
+        if (_loop20()) continue;
+      }
+    }
+    function request(path, lang, done) {
+      queue.push({
+        path: path,
+        lang: lang,
+        done: done,
+        generation: generation
+      });
+      pump();
+    }
+    function prime(lang, done) {
+      var old = warm.get(lang);
+      if (old) {
+        if (old.waiting) old.waiting.push(done);else done();
+        return;
+      }
+      var entry = {
+        waiting: [done]
+      };
+      warm.set(lang, entry);
+      var remaining = 3,
+        answers = 0;
+      [["trending/all/day", ""], ["movie/popular", "movie"], ["tv/popular", "tv"]].forEach(function (_ref49) {
+        var _ref50 = _slicedToArray(_ref49, 2),
+          path = _ref50[0],
+          type = _ref50[1];
+        return request(path, lang, function (json) {
+          if (json && Array.isArray(json.results)) answers++;
+          var _iterator47 = _createForOfIteratorHelper(json && json.results || []),
+            _step47;
+          try {
+            for (_iterator47.s(); !(_step47 = _iterator47.n()).done;) {
+              var row = _step47.value;
+              var kind = type || row.media_type;
+              if ((kind === "movie" || kind === "tv") && row.poster_path && row.backdrop_path) remember(lang, kind, row);
+            }
+          } catch (err) {
+            _iterator47.e(err);
+          } finally {
+            _iterator47.f();
+          }
+          if (! --remaining) {
+            if (!answers) unavailableUntil = Date.now() + 6e4;
+            var callbacks = entry.waiting;
+            delete entry.waiting;
+            callbacks.forEach(function (fn) {
+              return fn();
+            });
+          }
+        });
+      });
+    }
+    function localize(card, lang, done) {
+      var kind = card.media_type,
+        id = card.id,
+        k = key(lang, kind, id),
+        old = cache.get(k);
+      if (fresh(old)) return done(__spreadValues(__spreadValues({}, card), old.value));
+      if (Date.now() < unavailableUntil) return done(card);
+      if (pending.has(k)) {
+        pending.get(k).push(done);
+        return;
+      }
+      pending.set(k, [done]);
+      request(kind + "/" + id, lang, function (json) {
+        var value = fields(json, kind, id);
+        if (value) remember(lang, kind, json);
+        var callbacks = pending.get(k) || [];
+        pending.delete(k);
+        callbacks.forEach(function (fn) {
+          return fn(value ? __spreadValues(__spreadValues({}, card), value) : card);
+        });
+      });
+    }
+    function enrich(cards, done) {
+      if (!cards.length || !available()) return done(cards);
+      var lang = language(),
+        own = generation;
+      if (cards.every(function (card) {
+        return fresh(cache.get(key(lang, card.media_type, card.id)));
+      })) return done(cards.map(function (card) {
+        return __spreadValues(__spreadValues({}, card), cache.get(key(lang, card.media_type, card.id)).value);
+      }));
+      var output = cards.slice();
+      var finished = false,
+        left = cards.length,
+        timer;
+      var publish = function publish() {
+        if (finished || own !== generation) return;
+        finished = true;
+        clearTimeout(timer);
+        deadlines.delete(timer);
+        done(output.slice());
+      };
+      timer = setTimeout(publish, 2500);
+      deadlines.add(timer);
+      prime(lang, function () {
+        if (own !== generation) return;
+        cards.forEach(function (card, index2) {
+          return localize(card, lang, function (value) {
+            if (own !== generation) return;
+            output[index2] = value;
+            if (! --left) publish();
+          });
+        });
+      });
+    }
+    function clear() {
+      generation++;
+      queue.length = 0;
+      pending.clear();
+      warm.clear();
+      deadlines.forEach(clearTimeout);
+      deadlines.clear();
+    }
+    return {
+      enrich: enrich,
+      clear: clear
+    };
+  }
+
+  // src/trakt.js
+  var BASE2 = "https://api.trakt.tv/";
+  var TYPES = {
+    movie: "movies",
+    tv: "shows"
+  };
+  var FEEDS = [[text("Сейчас смотрят"), "trending"], [text("Популярное"), "popular"], [text("Самое просматриваемое за неделю"), "watched/weekly"], [text("В коллекциях за месяц"), "collected/monthly"], [text("Ожидаемые"), "anticipated"]];
+  function traktPlan(kind) {
+    if (kind === "dorama") return FEEDS.map(function (_ref51) {
+      var _ref52 = _slicedToArray(_ref51, 2),
+        title = _ref52[0],
+        path = _ref52[1];
+      return {
+        title: title,
+        url: "shows/" + path + "?countries=kr,jp,cn,tw,th&genres=drama,romance,comedy,mystery"
+      };
+    });
+    if (kind === "tvshow") return FEEDS.map(function (_ref53) {
+      var _ref54 = _slicedToArray(_ref53, 2),
+        title = _ref54[0],
+        path = _ref54[1];
+      return {
+        title: title,
+        url: "shows/" + path + "?genres=reality,talk-show,game-show&languages=ru"
+      };
+    });
+    if (!kind) return FEEDS.map(function (_ref55, index2) {
+      var _ref56 = _slicedToArray(_ref55, 2),
+        title = _ref56[0],
+        path = _ref56[1];
+      return __spreadValues({
+        title: title,
+        url: "mixed/" + path
+      }, index2 === 0 ? {
+        minimal_row_aliases: ["?sort=now_playing", "movie/now_playing", "movies/trending", "shows/trending"]
+      } : index2 === 1 ? {
+        minimal_row_aliases: ["movie/popular", "tv/popular", "movies/popular", "shows/popular"]
+      } : {});
+    });
+    var types = TYPES[kind] ? [TYPES[kind]] : kind === "anime" ? ["shows"] : ["movies", "shows"];
+    var filter = kind === "movie" || kind === "tv" ? "?without_genres=animation" : kind === "anime" ? "?genres=animation&languages=ja" : kind === "cartoon" ? "?genres=animation" : "";
+    return types.flatMap(function (type) {
+      return FEEDS.map(function (_ref57) {
+        var _ref58 = _slicedToArray(_ref57, 2),
+          title = _ref58[0],
+          path = _ref58[1];
+        return {
+          title: kind === "cartoon" && type === "shows" ? text("Мультсериалы") + " \xB7 " + title : title,
+          url: type + "/" + path + filter
+        };
+      });
+    });
+  }
+  function image(value) {
+    var url = Array.isArray(value) ? value[0] : "";
+    if (typeof url !== "string") return "";
+    var full = /^https:\/\//i.test(url) ? url : "https://" + url;
+    return /^https:\/\/media\.trakt\.tv\//i.test(full) ? full : "";
+  }
+  function traktCards(json, type) {
+    var seen = /* @__PURE__ */new Set();
+    return (Array.isArray(json) ? json : []).map(function (entry) {
+      var data = entry.movie || entry.show || entry,
+        kind = entry.show ? "tv" : entry.movie ? "movie" : type;
+      var id = Number(data.ids && data.ids.tmdb);
+      if (!Number.isSafeInteger(id) || id <= 0 || seen.has(kind + id)) return null;
+      seen.add(kind + id);
+      var date2 = data.released || data.first_aired || (data.year ? data.year + "-01-01" : "");
+      return __spreadProps(__spreadValues({
+        id: id,
+        source: "tmdb",
+        media_type: kind,
+        title: data.title,
+        original_title: data.original_title || data.title
+      }, kind === "tv" ? {
+        name: data.title,
+        original_name: data.original_title || data.title,
+        first_air_date: date2
+      } : {
+        release_date: date2
+      }), {
+        overview: data.overview || "",
+        vote_average: Number(data.rating) || 0,
+        vote_count: Number(data.votes) || 0,
+        original_language: data.language || "",
+        origin_country: data.country ? [String(data.country).toUpperCase()] : [],
+        genre_ids: (data.genres || []).map(function (g) {
+          return {
+            animation: 16,
+            documentary: 99,
+            reality: 10764,
+            "talk-show": 10767,
+            "game-show": 10764,
+            drama: 18,
+            romance: 10749,
+            comedy: 35,
+            mystery: 9648
+          }[g];
+        }).filter(Boolean),
+        trakt_genres: data.genres || [],
+        trakt_id: data.ids.trakt,
+        img: image(data.images && data.images.poster),
+        minimal_trakt: true
+      });
+    }).filter(Boolean);
+  }
+  function installTrakt(L) {
+    if (!L.Api || !L.Api.sources || L.Api.sources.trakt) return;
+    var cache = /* @__PURE__ */new Map(),
+      pending = /* @__PURE__ */new Map(),
+      queue = [],
+      live = /* @__PURE__ */new Set(),
+      metadata2 = traktMetadata(L);
+    var running = 0,
+      generation = 0,
+      lastKey = "",
+      searchRevision = 0;
+    var client = function client() {
+      return String(L.Storage.get("minimal_trakt_client_id", "") || "").trim();
+    };
+    var enabled = function enabled() {
+      return flag(L, "minimal_trakt_enabled", false);
+    };
+    var error = function error(fail, message) {
+      if (fail) fail({
+        status_message: message
+      });
+    };
+    function pump() {
+      var _loop21 = function _loop21() {
+        var finish = function finish(json, message) {
+          if (settled) return;
+          settled = true;
+          live.delete(xhr);
+          running--;
+          if (job.generation === generation) {
+            pending.delete(job.key);
+            if (json) {
+              cache.set(job.key, {
+                at: Date.now(),
+                value: json
+              });
+              if (cache.size > 40) cache.delete(cache.keys().next().value);
+            }
+            job.callbacks.forEach(function (_ref59) {
+              var _ref60 = _slicedToArray(_ref59, 2),
+                ok = _ref60[0],
+                fail = _ref60[1];
+              return json ? ok(json) : error(fail, message);
+            });
+          }
+          pump();
+        };
+        var job = queue.shift();
+        if (job.generation !== generation) return 1; // continue
+        running++;
+        var xhr = new XMLHttpRequest();
+        live.add(xhr);
+        var settled = false;
+        xhr.minimalTraktPath = job.path;
+        xhr.open("GET", BASE2 + job.path, true);
+        xhr.timeout = 1e4;
+        xhr.setRequestHeader("trakt-api-key", job.client);
+        xhr.setRequestHeader("trakt-api-version", "2");
+        xhr.setRequestHeader("Accept", "application/json");
+        xhr.onload = function () {
+          if (xhr.status < 200 || xhr.status >= 300) return finish(null, xhr.status === 401 || xhr.status === 403 ? text("Trakt: проверьте Client ID") : xhr.status === 429 ? text("Trakt: слишком много запросов, повторите позже") : text("Trakt недоступен ({0})", [xhr.status]));
+          try {
+            var rows2 = JSON.parse(xhr.responseText);
+            if (!Array.isArray(rows2)) throw new Error();
+            finish({
+              rows: rows2,
+              pages: Math.max(1, Number(xhr.getResponseHeader("X-Pagination-Page-Count")) || 1)
+            });
+          } catch (e) {
+            finish(null, text("Trakt вернул некорректный ответ"));
+          }
+        };
+        xhr.onerror = xhr.ontimeout = function () {
+          return finish(null, text("Не удалось подключиться к Trakt"));
+        };
+        xhr.onabort = function () {
+          return finish(null, text("Запрос Trakt отменён"));
+        };
+        try {
+          xhr.send();
+        } catch (e) {
+          finish(null, text("Не удалось подключиться к Trakt"));
+        }
+      };
+      while (running < 2 && queue.length) {
+        if (_loop21()) continue;
+      }
+    }
+    function clear() {
+      generation++;
+      queue.length = 0;
+      pending.clear();
+      metadata2.clear();
+      for (var _i20 = 0, _Array$from = Array.from(live); _i20 < _Array$from.length; _i20++) {
+        var xhr = _Array$from[_i20];
+        xhr.abort();
+      }
+    }
+    function list(params, ok, fail) {
+      if (!enabled()) return error(fail, text("Включите Trakt в настройках каталога L A M P A"));
+      var id = client();
+      if (!id) return error(fail, text("Добавьте Client ID в Настройки → L A M P A → Каталог и поиск → Trakt"));
+      if (id !== lastKey) {
+        clear();
+        cache.clear();
+        lastKey = id;
+      }
+      var mixed = String(params.url || "").match(/^mixed\/(trending|popular|watched\/weekly|collected\/monthly|anticipated)$/);
+      if (mixed) {
+        var finish = function finish() {
+          if (--left) return;
+          var good = parts.filter(Boolean);
+          if (!good.length) return error(fail, reason && reason.status_message || text("Trakt недоступен"));
+          var results = [],
+            seen = /* @__PURE__ */new Set();
+          for (var i = 0; i < 10; i++) {
+            var _iterator48 = _createForOfIteratorHelper(good),
+              _step48;
+            try {
+              for (_iterator48.s(); !(_step48 = _iterator48.n()).done;) {
+                var part = _step48.value;
+                var card = part.results[i];
+                if (card && !seen.has(card.media_type + ":" + card.id)) {
+                  seen.add(card.media_type + ":" + card.id);
+                  results.push(card);
+                }
+              }
+            } catch (err) {
+              _iterator48.e(err);
+            } finally {
+              _iterator48.f();
+            }
+          }
+          ok({
+            results: results,
+            page: good[0].page,
+            total_pages: Math.max.apply(Math, _toConsumableArray(good.map(function (part) {
+              return part.total_pages;
+            })))
+          });
+        };
+        var parts = new Array(2);
+        var left = 2,
+          reason;
+        ["movies", "shows"].forEach(function (type, index2) {
+          return list(__spreadProps(__spreadValues({}, params), {
+            url: type + "/" + mixed[1],
+            minimal_limit: 10
+          }), function (json) {
+            parts[index2] = json;
+            finish();
+          }, function (e) {
+            reason = e;
+            finish();
+          });
+        });
+        return;
+      }
+      var path = String(params.url || "movies/trending"),
+        search = path.match(/^search\/(movie|show)\?query=([^&]+)$/);
+      if (search) return searchPage({
+        type: search[1],
+        query: decodeQuery(search[2]),
+        page: params.page
+      }, ok, fail);
+      var match = path.match(/^(movies|shows)\/(trending|popular|watched\/weekly|collected\/monthly|anticipated)(\?.*)?$/);
+      var allowed = /* @__PURE__ */new Set(["", "?without_genres=animation", "?genres=animation", "?genres=animation&languages=ja"].concat(_toConsumableArray(["dorama", "tvshow"].flatMap(function (kind) {
+        return traktPlan(kind).map(function (row) {
+          return row.url.slice(row.url.indexOf("?"));
+        });
+      }))));
+      if (!match || !allowed.has(match[3] || "")) return error(fail, text("Неизвестная подборка Trakt"));
+      var page = Math.max(1, Math.min(1e3, Number(params.page) || 1));
+      var limit = params.minimal_limit === 10 ? 10 : 20;
+      var requestPath = path.replace("?without_genres=animation", "");
+      var route = requestPath + (requestPath.includes("?") ? "&" : "?") + "extended=full&limit=" + limit + "&page=" + page,
+        key = route;
+      var own = generation,
+        done = function done(json) {
+          var rows2 = json.rows.filter(function (entry) {
+            var data = entry.show || entry.movie || entry;
+            if (path.includes("languages=ru")) return data.language === "ru" || !data.language && data.country === "ru";
+            if (path.includes("countries=kr,jp,cn,tw,th")) return ["kr", "jp", "cn", "tw", "th"].includes(String(data.country || "").toLowerCase()) && !(data.genres || []).some(function (g) {
+              return ["animation", "reality", "talk-show", "game-show", "documentary"].includes(g);
+            });
+            if (path.includes("without_genres=animation")) return !(data.genres || []).includes("animation");
+            return true;
+          });
+          metadata2.enrich(traktCards(rows2, match[1] === "movies" ? "movie" : "tv"), function (results) {
+            if (own === generation) ok({
+              results: presentableCards(results, path.includes("countries=kr,jp,cn,tw,th") || path.includes("languages=ru")).filter(function (card) {
+                var genres = [].concat(_toConsumableArray(card.genre_ids || []), _toConsumableArray(card.genres || [])).map(function (g) {
+                  return Number(g.id || g);
+                });
+                if (path.includes("without_genres=animation")) return !genres.includes(16);
+                if (path.includes("countries=kr,jp,cn,tw,th")) return !genres.some(function (g) {
+                  return [16, 99, 10764, 10767].includes(g);
+                }) && (card.origin_country || []).some(function (country) {
+                  return ["KR", "JP", "CN", "TW", "TH"].includes(country);
+                });
+                return true;
+              }),
+              page: page,
+              total_pages: json.pages
+            });
+          });
+        };
+      var saved = cache.get(key);
+      if (saved && Date.now() - saved.at < 6e5) return done(saved.value);
+      if (pending.has(key)) {
+        pending.get(key).callbacks.push([done, fail]);
+        return;
+      }
+      var job = {
+        key: key,
+        path: route,
+        client: id,
+        generation: generation,
+        callbacks: [[done, fail]]
+      };
+      pending.set(key, job);
+      queue.push(job);
+      pump();
+    }
+    function cancelSearch() {
+      searchRevision++;
+      for (var i = queue.length - 1; i >= 0; i--) if (queue[i].path.startsWith("search/")) {
+        pending.delete(queue[i].key);
+        queue.splice(i, 1);
+      }
+      var _iterator49 = _createForOfIteratorHelper(pending),
+        _step49;
+      try {
+        for (_iterator49.s(); !(_step49 = _iterator49.n()).done;) {
+          var _step49$value = _slicedToArray(_step49.value, 2),
+            key = _step49$value[0],
+            job = _step49$value[1];
+          if (job.path.startsWith("search/")) job.callbacks = [];
+        }
+      } catch (err) {
+        _iterator49.e(err);
+      } finally {
+        _iterator49.f();
+      }
+      for (var _i21 = 0, _Array$from2 = Array.from(live); _i21 < _Array$from2.length; _i21++) {
+        var xhr = _Array$from2[_i21];
+        if ((xhr.minimalTraktPath || "").startsWith("search/")) xhr.abort();
+      }
+    }
+    function decodeQuery(value) {
+      try {
+        return decodeURIComponent(String(value || ""));
+      } catch (e) {
+        return String(value || "");
+      }
+    }
+    function searchPage(params, ok, fail) {
+      if (!enabled() || !client()) return error(fail, text("Включите Trakt и добавьте Client ID"));
+      var id = client();
+      if (id !== lastKey) {
+        clear();
+        cache.clear();
+        lastKey = id;
+      }
+      var type = params.type === "show" ? "show" : "movie",
+        query = String(params.query || "").trim().slice(0, 200),
+        page = Math.max(1, Math.min(1e3, Number(params.page) || 1));
+      if (!query) return ok({
+        results: [],
+        page: page,
+        total_pages: 1
+      });
+      var path = "search/" + type + "?query=" + encodeURIComponent(query) + "&extended=full&limit=20&page=" + page,
+        key = path,
+        own = generation;
+      var done = function done(json) {
+        return metadata2.enrich(traktCards(json.rows, type === "show" ? "tv" : "movie"), function (results) {
+          if (own === generation) ok({
+            results: results,
+            page: page,
+            total_pages: json.pages
+          });
+        });
+      };
+      var saved = cache.get(key);
+      if (saved && Date.now() - saved.at < 6e5) return done(saved.value);
+      if (pending.has(key)) {
+        pending.get(key).callbacks.push([done, fail]);
+        return;
+      }
+      var job = {
+        key: key,
+        path: path,
+        client: id,
+        generation: generation,
+        callbacks: [[done, fail]]
+      };
+      pending.set(key, job);
+      queue.push(job);
+      pump();
+    }
+    function discovery() {
+      return {
+        title: "Trakt",
+        params: {
+          save: true
+        },
+        onCancel: cancelSearch,
+        search: function search(params, ok) {
+          cancelSearch();
+          var token = searchRevision,
+            query = decodeQuery(params.query),
+            rows2 = new Array(2);
+          var left = 2;
+          ["movie", "show"].forEach(function (type, index2) {
+            var finish = function finish(json) {
+              rows2[index2] = __spreadProps(__spreadValues({
+                title: index2 ? text("Сериалы") : text("Фильмы"),
+                type: type
+              }, json), {
+                source: "trakt",
+                url: "search/" + type + "?query=" + encodeURIComponent(query)
+              });
+              if (! --left && token === searchRevision) ok(rows2);
+            };
+            searchPage({
+              type: type,
+              query: query,
+              page: 1
+            }, finish, function () {
+              return finish({
+                results: [],
+                page: 1,
+                total_pages: 1
+              });
+            });
+          });
+        },
+        onMore: function onMore(params, close) {
+          close();
+          L.Activity.push({
+            component: "category_full",
+            source: "trakt",
+            url: "search/" + (params.data.type === "show" ? "show" : "movie") + "?query=" + encodeURIComponent(params.query),
+            title: "Trakt \xB7 " + params.query,
+            page: 2
+          });
+        }
+      };
+    }
+    function rows(object, ok, fail) {
+      var plan = traktPlan(object.url || object.cat),
+        output = new Array(plan.length);
+      var left = plan.length,
+        failures = 0,
+        reason;
+      function finish() {
+        if (--left) return;
+        var result = output.filter(Boolean);
+        if (!result.length && failures) return error(fail, reason || text("Trakt недоступен"));
+        ok(result);
+      }
+      plan.forEach(function (row, index2) {
+        return list({
+          url: row.url,
+          page: 1
+        }, function (json) {
+          output[index2] = __spreadProps(__spreadValues(__spreadValues({}, json), row), {
+            source: "trakt"
+          });
+          finish();
+        }, function (e) {
+          failures++;
+          reason = e.status_message;
+          finish();
+        });
+      });
+    }
+    var tmdb = L.Api.sources.tmdb,
+      adapter = {
+        main: rows,
+        category: rows,
+        list: list,
+        clear: clear
+      };
+    var _loop22 = function _loop22() {
+      var method = _arr15[_i22];
+      if (tmdb[method]) adapter[method] = function () {
+        return tmdb[method].apply(tmdb, arguments);
+      };
+    };
+    for (var _i22 = 0, _arr15 = ["full", "person", "seasons", "menu", "menuCategory", "genres", "collections"]; _i22 < _arr15.length; _i22++) {
+      _loop22();
+    }
+    L.Api.sources.trakt = adapter;
+    function sources() {
+      if (!L.Params || !L.Params.select) return;
+      var options = __spreadValues({}, L.Params.values.source || {
+        tmdb: "TMDB",
+        cub: "CUB"
+      });
+      delete options.trakt;
+      if (enabled() && client()) {
+        options.trakt = "Trakt";
+        adapter.discovery = discovery;
+      } else delete adapter.discovery;
+      var selected = L.Storage.get("source", "tmdb");
+      if (selected !== "trakt" && L.Storage.get("minimal_trakt_previous_source", "") !== selected) L.Storage.set("minimal_trakt_previous_source", selected);
+      if (selected === "trakt" && !options.trakt) {
+        var previous = L.Storage.get("minimal_trakt_previous_source", "tmdb");
+        L.Storage.set("source", previous !== "trakt" && options[previous] ? previous : "tmdb");
+      }
+      L.Params.select("source", options, "tmdb");
+    }
+    function refresh() {
+      sources();
+      var controller = L.Controller && L.Controller.enabled && L.Controller.enabled();
+      if (L.Settings && L.Settings.update && controller && /^settings/.test(controller.name)) L.Settings.update();
+    }
+    L.SettingsApi.addParam({
+      component: "lampa_view",
+      param: {
+        name: "minimal_trakt_enabled",
+        type: "trigger",
+        default: false
+      },
+      field: {
+        name: "Trakt",
+        description: text("Каталог: Настройки → Остальное → Основной источник.")
+      },
+      onChange: function onChange() {
+        clear();
+        cache.clear();
+        if (!enabled() || client()) return refresh();
+        L.Storage.set("minimal_trakt_enabled", false);
+        sources();
+        L.Input.edit({
+          title: "Trakt \xB7 Client ID",
+          value: "",
+          free: true,
+          nosave: true,
+          nomic: true
+        }, function (value) {
+          var id = String(value || "").trim();
+          L.Storage.set("minimal_trakt_client_id", id);
+          L.Storage.set("minimal_trakt_enabled", !!id);
+          refresh();
+        });
+      }
+    });
+    L.SettingsApi.addParam({
+      component: "lampa_view",
+      param: {
+        name: "minimal_trakt_client_id",
+        type: "input",
+        values: "",
+        default: ""
+      },
+      field: {
+        name: "Trakt \xB7 Client ID",
+        description: text("Получить ключ: {0}.", ["https://trakt.tv/oauth/applications"])
+      },
+      onChange: function onChange() {
+        clear();
+        cache.clear();
+        if (!client()) L.Storage.set("minimal_trakt_enabled", false);
+        refresh();
+      }
+    });
+    sources();
+    return adapter;
+  }
+
   // src/anime-tabs.js
   function animeTabs(L, item, object) {
     var mode = animeMode(L, object),
@@ -18855,10 +19704,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       });
       L.Controller.toggle("minimal_anime_tabs");
     }
-    [["standard", text("Стандартные")], ["shikimori", "Shikimori"]].forEach(function (_ref49, i) {
-      var _ref50 = _slicedToArray(_ref49, 2),
-        value = _ref50[0],
-        title = _ref50[1];
+    [["standard", text("Стандартные")], ["shikimori", "Shikimori"]].forEach(function (_ref61, i) {
+      var _ref62 = _slicedToArray(_ref61, 2),
+        value = _ref62[0],
+        title = _ref62[1];
       var button = document.createElement("button");
       button.type = "button";
       button.className = "minimal-anime-tab pt-hero__action selector";
@@ -19133,8 +19982,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   function rowKey(row) {
     return String(row.minimal_row_id || row.url || row.title || text("Без названия"));
   }
+  function annualKey(id) {
+    var match = String(id).match(/^discover\/(movie|tv)\?(.+)$/);
+    if (!match) return "";
+    var q = new URLSearchParams(match[2]),
+      field = match[1] === "movie" ? "primary_release_date" : "first_air_date";
+    if (!q.has(field + ".gte") || !q.has(field + ".lte")) return "";
+    var key = match[1] === "tv" && q.get("sort_by") === "popularity.desc" && q.get("vote_count.gte") === "20" ? "popular_series" : match[1] === "movie" && q.get("sort_by") === "popularity.desc" && q.get("vote_count.gte") === "50" ? "popular_movies" : match[1] === "movie" && q.get("sort_by") === "primary_release_date.desc" && q.get("vote_count.gte") === "20" ? "new_movies" : "";
+    return key ? "minimal:annual:" + key : "";
+  }
   function matchesRow(row, id) {
-    return rowKey(row) === id || row.url === id || (row.minimal_row_aliases || []).includes(id) || isWatching(row) && ["mixed/trending", "movies/trending", "shows/trending", "?sort=now_playing", "movie/now_playing"].includes(id);
+    return rowKey(row) === id || row.url === id || (row.minimal_row_aliases || []).includes(id) || String(row.minimal_row_id || row.id || "").startsWith("minimal:annual:") && annualKey(id) === rowKey(row) || isWatching(row) && ["mixed/trending", "movies/trending", "shows/trending", "?sort=now_playing", "movie/now_playing"].includes(id);
   }
   function arrange(rows, prefs) {
     var order = prefs.order || [],
@@ -19174,6 +20032,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       };
     var captured = /* @__PURE__ */new Set(),
       homeRows = continueWatching(L);
+    var mainSource = null;
     var labels = {
       "main:": text("Главная"),
       "category:movie": text("Фильмы"),
@@ -19196,6 +20055,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var append = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
       if (!ctx) return;
       var names = known(),
+        before = JSON.stringify(names),
         previous = append ? names[ctx] || [] : [],
         next = previous.slice();
       rows.filter(function (row) {
@@ -19216,7 +20076,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (index2 < 0) next.push(entry);else next[index2] = entry;
       });
       captured.add(ctx);
-      if (JSON.stringify(names[ctx] || []) !== JSON.stringify(next)) {
+      if (ctx === "main:" && mainSource) names[ctx + mainSource] = next;
+      if (before !== JSON.stringify(__spreadProps(__spreadValues({}, names), _defineProperty({}, ctx, next)))) {
         names[ctx] = next;
         L.Storage.set(knownKey, names);
       }
@@ -19225,7 +20086,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var all = read(),
         p = all[ctx] || (ctx === "category:anime:standard" ? all["category:anime"] : null) || {};
       var kind = String(ctx).replace("category:", "");
-      if (["movie", "tv", "cartoon", "tvshow"].includes(kind) && (p.order || []).length && p.watching_first_revision !== 1) {
+      if (L.Storage.get("source", "cub") !== "trakt" && ["movie", "tv", "cartoon", "tvshow"].includes(kind) && (p.order || []).length && p.watching_first_revision !== 1) {
         var watch2 = cataloguePlan(kind).find(function (row) {
           return row.key === "now-watching";
         });
@@ -19272,28 +20133,43 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       return labels[ctx] || (ctx === "category:anime:shikimori" ? text("Аниме · Shikimori") : text("Аниме · Стандартные"));
     }
     function edit(ctx) {
-      var kind = String(ctx).replace("category:", ""),
-        definitions = ["movie", "tv", "cartoon", "tvshow"].includes(kind) ? cataloguePlan(kind).map(function (row) {
-          return {
-            id: row.minimal_row_id,
-            title: row.title,
-            aliases: row.minimal_row_aliases || []
-          };
-        }) : null;
+      var kind = String(ctx).replace("category:", "").split(":")[0],
+        selected = L.Storage.get("source", "cub"),
+        source = ctx === "main:" ? mainSource || selected : kind === "anime" ? "cub" : selected;
+      var mode = animeMode(L),
+        trakt = source === "trakt" && (ctx === "main:" || ["movie", "tv", "cartoon"].includes(kind));
+      var plan = trakt ? traktPlan(ctx === "main:" ? void 0 : kind) : ["movie", "tv", "cartoon", "tvshow", "anime"].includes(kind) ? cataloguePlan(kind, mode).map(function (job) {
+        return catalogueRow(job, kind, source, !!(L.Api.sources && L.Api.sources.cub));
+      }) : null;
+      var definitions = plan && plan.map(function (row) {
+        return {
+          id: rowKey(row),
+          title: row.title,
+          aliases: row.minimal_row_aliases || []
+        };
+      });
+      if (ctx === "main:" && definitions) definitions.splice(1, 0, {
+        id: CONTINUE,
+        title: text("История просмотра")
+      });
       var p = prefs(ctx),
-        rows = definitions || (known()[ctx] || []).slice(),
+        rows = definitions || (known()[ctx === "main:" ? ctx + source : ctx] || []).slice(),
         order = p.order || [];
-      var ids = function ids(r) {
-          return [r.id].concat(_toConsumableArray(r.aliases || []));
+      var matches = function matches(r, id) {
+          return matchesRow({
+            minimal_row_id: r.id,
+            minimal_row_aliases: r.aliases,
+            title: r.title
+          }, id);
         },
         hidden = function hidden(r) {
           return (p.hidden || []).some(function (id) {
-            return ids(r).includes(id);
+            return matches(r, id);
           });
         },
         position = function position(r) {
           var index2 = order.findIndex(function (id) {
-            return ids(r).includes(id);
+            return matches(r, id);
           });
           return index2 < 0 ? 1e4 : index2;
         };
@@ -19336,7 +20212,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             return x.id;
           });
           if (action.id === "toggle") p.hidden = hidden(r) ? p.hidden.filter(function (id) {
-            return !ids(r).includes(id);
+            return !matches(r, id);
           }) : p.hidden.concat(r.id);else {
             var i = p.order.indexOf(r.id),
               to = action.id === "first" ? 0 : Math.max(0, Math.min(rows.length - 1, i + (action.id === "up" ? -1 : 1)));
@@ -19368,7 +20244,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       },
       field: {
         name: text("Управление подборками"),
-        description: text("Текущие подборки последнего открытого экрана. Старые и недоступные строки не показываются.")
+        description: text("Порядок и видимость подборок выбранного каталога.")
       },
       onChange: menu
     });
@@ -19383,9 +20259,12 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         render(rows);
       }
       function render(rows) {
-        if (compact) rows = rows.filter(function (row) {
-          return !/недавние.*(?:эпизод|сери)|recent.*episode/i.test(String(row.title || ""));
-        });
+        if (compact) {
+          mainSource = object.source || L.Storage.get("source", "cub");
+          rows = rows.filter(function (row) {
+            return !/недавние.*(?:эпизод|сери)|recent.*episode/i.test(String(row.title || ""));
+          });
+        }
         rows = rows.map(function (row) {
           return __spreadProps(__spreadValues({}, row), {
             results: presentableCards(row.results || [])
@@ -19604,8 +20483,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   function yearBounds(f) {
     var from = String(f.year_from || f.year || "").trim(),
       to = String(f.year_to || f.year || "").trim();
-    for (var _i19 = 0, _arr14 = [from, to]; _i19 < _arr14.length; _i19++) {
-      var value = _arr14[_i19];
+    for (var _i23 = 0, _arr16 = [from, to]; _i23 < _arr16.length; _i23++) {
+      var value = _arr16[_i23];
       if (value && (!/^\d{4}$/.test(value) || Number(value) < 1870 || Number(value) > 2100)) throw Error(text("Укажите год от 1870 до 2100"));
     }
     if (from && to && Number(from) > Number(to)) throw Error(text("Начальный год не может быть больше конечного"));
@@ -19739,11 +20618,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       UA: text("Украина")
     };
     if (locale() !== "ru") {
-      var _iterator47 = _createForOfIteratorHelper(Object.keys(countries).filter(Boolean)),
-        _step47;
+      var _iterator50 = _createForOfIteratorHelper(Object.keys(countries).filter(Boolean)),
+        _step50;
       try {
-        for (_iterator47.s(); !(_step47 = _iterator47.n()).done;) {
-          var code = _step47.value;
+        for (_iterator50.s(); !(_step50 = _iterator50.n()).done;) {
+          var code = _step50.value;
           try {
             countries[code] = new Intl.DisplayNames([locale()], {
               type: "region"
@@ -19759,9 +20638,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }
         }
       } catch (err) {
-        _iterator47.e(err);
+        _iterator50.e(err);
       } finally {
-        _iterator47.f();
+        _iterator50.f();
       }
     }
     var values = {
@@ -19815,10 +20694,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var pairs = Object.entries(options).sort(function (a, b) {
         return a[0] === "" ? -1 : b[0] === "" ? 1 : 0;
       });
-      show(title, pairs.map(function (_ref51) {
-        var _ref52 = _slicedToArray(_ref51, 2),
-          id = _ref52[0],
-          title2 = _ref52[1];
+      show(title, pairs.map(function (_ref63) {
+        var _ref64 = _slicedToArray(_ref63, 2),
+          id = _ref64[0],
+          title2 = _ref64[1];
         return {
           id: id,
           title: title2,
@@ -19907,10 +20786,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       if (L.Select.hide) L.Select.hide();else L.Select.close();
       if (state.kind === "anime") {
         var parts = ["order=" + encodeURIComponent(state.animeSort || "popularity")];
-        [["genre", "genre"], ["status", "status"], ["format", "kind"], ["score", "score"], ["query", "search"]].forEach(function (_ref53) {
-          var _ref54 = _slicedToArray(_ref53, 2),
-            key = _ref54[0],
-            param = _ref54[1];
+        [["genre", "genre"], ["status", "status"], ["format", "kind"], ["score", "score"], ["query", "search"]].forEach(function (_ref65) {
+          var _ref66 = _slicedToArray(_ref65, 2),
+            key = _ref66[0],
+            param = _ref66[1];
           if (state[key]) parts.push(param + "=" + encodeURIComponent(state[key]));
         });
         if (range.from || range.to) parts.push("season=" + encodeURIComponent((range.from || "1870") + "_" + (range.to || String((/* @__PURE__ */new Date()).getFullYear() + 5))));
@@ -20066,17 +20945,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                     return s.length;
                   })));
                 for (var i = 0; i < length; i++) {
-                  var _iterator48 = _createForOfIteratorHelper(streams2),
-                    _step48;
+                  var _iterator51 = _createForOfIteratorHelper(streams2),
+                    _step51;
                   try {
-                    for (_iterator48.s(); !(_step48 = _iterator48.n()).done;) {
-                      var rows = _step48.value;
+                    for (_iterator51.s(); !(_step51 = _iterator51.n()).done;) {
+                      var rows = _step51.value;
                       if (rows[i]) cursor.results.push(rows[i]);
                     }
                   } catch (err) {
-                    _iterator48.e(err);
+                    _iterator51.e(err);
                   } finally {
-                    _iterator48.f();
+                    _iterator51.f();
                   }
                 }
               }
@@ -20096,7 +20975,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             function pump() {
               if (cursor.cancelled) return;
               if (done === matches.length) return accept(results.filter(Boolean));
-              var _loop20 = function _loop20() {
+              var _loop23 = function _loop23() {
                 var index2 = at++,
                   card = matches[index2],
                   known = card.origin_country;
@@ -20120,7 +20999,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 });
               };
               while (running < 3 && at < matches.length) {
-                if (_loop20()) continue;
+                if (_loop23()) continue;
               }
               if (done === matches.length) accept(results.filter(Boolean));
             }
@@ -20295,18 +21174,6 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       if (list) list.appendChild(li);
     }
     addMenu();
-    L.SettingsApi.addParam({
-      component: "lampa_view",
-      param: {
-        name: "minimal_search_filters",
-        type: "button"
-      },
-      field: {
-        name: text("Поиск по фильтрам"),
-        description: text("Фильмы, сериалы и аниме: жанр, диапазон годов, рейтинг и другие параметры.")
-      },
-      onChange: menu
-    });
     return {
       menu: menu,
       addMenu: addMenu
@@ -20594,11 +21461,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (options.onBack) options.onBack();
       };
       function refresh() {
-        var _iterator49 = _createForOfIteratorHelper(rendered.get(event.items) || []),
-          _step49;
+        var _iterator52 = _createForOfIteratorHelper(rendered.get(event.items) || []),
+          _step52;
         try {
-          for (_iterator49.s(); !(_step49 = _iterator49.n()).done;) {
-            var row = _step49.value;
+          for (_iterator52.s(); !(_step52 = _iterator52.n()).done;) {
+            var row = _step52.value;
             var view = state.reader(movie)(Number(row.element.season) || 0, Number(row.element.episode) || 0, row.element.timeline && row.element.timeline.hash || row.element.hash);
             if (row.element.timeline) Object.assign(row.element.timeline, {
               percent: view.percent || 0,
@@ -20607,9 +21474,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             });
           }
         } catch (err) {
-          _iterator49.e(err);
+          _iterator52.e(err);
         } finally {
-          _iterator49.f();
+          _iterator52.f();
         }
         if (L.Timeline.read) L.Timeline.read();
       }
@@ -20629,19 +21496,19 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (entry.action === "season") state.setWatchedRows(movie, rows.map(coordinates));
         if (entry.action === "all") state.setAllWatched(movie, refresh);
         if (entry.action === "seasonclear") {
-          var _iterator50 = _createForOfIteratorHelper(rows),
-            _step50;
+          var _iterator53 = _createForOfIteratorHelper(rows),
+            _step53;
           try {
-            for (_iterator50.s(); !(_step50 = _iterator50.n()).done;) {
-              var row = _step50.value;
+            for (_iterator53.s(); !(_step53 = _iterator53.n()).done;) {
+              var row = _step53.value;
               var c = coordinates(row);
               if (row.element.viewed) row.element.viewed(0);
               state.clearProgress(movie, c.season, c.episode, c.hash);
             }
           } catch (err) {
-            _iterator50.e(err);
+            _iterator53.e(err);
           } finally {
-            _iterator50.f();
+            _iterator53.f();
           }
         }
         if (entry.action === "titleclear") state.clearTitleProgress(movie, (rendered.get(event.items) || []).map(function (row) {
@@ -20745,30 +21612,30 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   // src/torrent-episodes.js
   function explicitSeason(path) {
     var expressions = [/\bs(\d{1,2})(?=\b|\.?ep?\d)/i, /\b(\d{1,2})[x-]\d{1,4}\b/i, /(?:season|сезон)\s*(\d{1,2})\b/i, /\b(\d{1,2})\s*(?:season|сезон)\b/i, /(?:^|[^a-zа-я])(?:tv|тв)\s*-\s*(\d{1,2})\b/i];
-    var _iterator51 = _createForOfIteratorHelper(String(path || "").replace(/_/g, " ").split(/[\\/]/).reverse()),
-      _step51;
+    var _iterator54 = _createForOfIteratorHelper(String(path || "").replace(/_/g, " ").split(/[\\/]/).reverse()),
+      _step54;
     try {
-      for (_iterator51.s(); !(_step51 = _iterator51.n()).done;) {
-        var value = _step51.value;
+      for (_iterator54.s(); !(_step54 = _iterator54.n()).done;) {
+        var value = _step54.value;
         if (/\bs\d+\s*-\s*s?\d+\b|(?:season|сезон)\s*\d+\s*-\s*\d+|\d+\s*-\s*\d+\s*(?:season|сезон)/i.test(value)) continue;
-        var _iterator52 = _createForOfIteratorHelper(expressions),
-          _step52;
+        var _iterator55 = _createForOfIteratorHelper(expressions),
+          _step55;
         try {
-          for (_iterator52.s(); !(_step52 = _iterator52.n()).done;) {
-            var expression = _step52.value;
+          for (_iterator55.s(); !(_step55 = _iterator55.n()).done;) {
+            var expression = _step55.value;
             var m = value.match(expression);
             if (m) return Number(m[1]);
           }
         } catch (err) {
-          _iterator52.e(err);
+          _iterator55.e(err);
         } finally {
-          _iterator52.f();
+          _iterator55.f();
         }
       }
     } catch (err) {
-      _iterator51.e(err);
+      _iterator54.e(err);
     } finally {
-      _iterator51.f();
+      _iterator54.f();
     }
     return null;
   }
@@ -20794,18 +21661,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }).map(clean));
       folderFamilies.set(files, anchors);
     }
-    var _iterator53 = _createForOfIteratorHelper(own.reverse()),
-      _step53;
+    var _iterator56 = _createForOfIteratorHelper(own.reverse()),
+      _step56;
     try {
-      for (_iterator53.s(); !(_step53 = _iterator53.n()).done;) {
-        var part = _step53.value;
+      for (_iterator56.s(); !(_step56 = _iterator56.n()).done;) {
+        var part = _step56.value;
         var match = clean(part).match(/^(.+?)\s+([1-9]\d?)(?:-\d{1,2})?$/);
         if (match && Number(match[2]) <= 60 && anchors.has(match[1])) return Number(match[2]);
       }
     } catch (err) {
-      _iterator53.e(err);
+      _iterator56.e(err);
     } finally {
-      _iterator53.f();
+      _iterator56.f();
     }
     return null;
   }
@@ -20993,11 +21860,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         };
       });
       var endpoint = null;
-      var _iterator54 = _createForOfIteratorHelper(plugins.concat(scripts)),
-        _step54;
+      var _iterator57 = _createForOfIteratorHelper(plugins.concat(scripts)),
+        _step57;
       try {
-        for (_iterator54.s(); !(_step54 = _iterator54.n()).done;) {
-          var item = _step54.value;
+        for (_iterator57.s(); !(_step57 = _iterator57.n()).done;) {
+          var item = _step57.value;
           if (item && (item.status === 0 || item.status === "0" || item.status === false)) continue;
           var value = typeof item === "string" ? item : item && item.url;
           if (!value) continue;
@@ -21013,9 +21880,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           } catch (error) {}
         }
       } catch (err) {
-        _iterator54.e(err);
+        _iterator57.e(err);
       } finally {
-        _iterator54.f();
+        _iterator57.f();
       }
       if (!endpoint || !$ || typeof $.ajax !== "function") return null;
       var id = String(profile.id),
@@ -21034,17 +21901,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     }
     function reset(ctx) {
       generation++;
-      var _iterator55 = _createForOfIteratorHelper(requests),
-        _step55;
+      var _iterator58 = _createForOfIteratorHelper(requests),
+        _step58;
       try {
-        for (_iterator55.s(); !(_step55 = _iterator55.n()).done;) {
-          var xhr = _step55.value;
+        for (_iterator58.s(); !(_step58 = _iterator58.n()).done;) {
+          var xhr = _step58.value;
           if (xhr && xhr.abort) xhr.abort();
         }
       } catch (err) {
-        _iterator55.e(err);
+        _iterator58.e(err);
       } finally {
-        _iterator55.f();
+        _iterator58.f();
       }
       requests.clear();
       clearTimeout(timer);
@@ -21062,19 +21929,19 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       health.pending = 0;
       health.received = 0;
       if (ctx) {
-        var _iterator56 = _createForOfIteratorHelper(Object.entries(L.Storage.get(ctx.file, {}) || {}).slice(-1e4)),
-          _step56;
+        var _iterator59 = _createForOfIteratorHelper(Object.entries(L.Storage.get(ctx.file, {}) || {}).slice(-1e4)),
+          _step59;
         try {
-          for (_iterator56.s(); !(_step56 = _iterator56.n()).done;) {
-            var _step56$value = _slicedToArray(_step56.value, 2),
-              hash = _step56$value[0],
-              value = _step56$value[1];
+          for (_iterator59.s(); !(_step59 = _iterator59.n()).done;) {
+            var _step59$value = _slicedToArray(_step59.value, 2),
+              hash = _step59$value[0],
+              value = _step59$value[1];
             if (validHash(hash) && road(value).updated > 0) queue(hash, value);
           }
         } catch (err) {
-          _iterator56.e(err);
+          _iterator59.e(err);
         } finally {
-          _iterator56.f();
+          _iterator59.f();
         }
       }
     }
@@ -21160,13 +22027,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     function merge(ctx, rows) {
       var records = __spreadValues({}, L.Storage.get(ctx.file, {}) || {});
       var changed = false;
-      var _iterator57 = _createForOfIteratorHelper(pending),
-        _step57;
+      var _iterator60 = _createForOfIteratorHelper(pending),
+        _step60;
       try {
-        for (_iterator57.s(); !(_step57 = _iterator57.n()).done;) {
-          var _step57$value = _slicedToArray(_step57.value, 2),
-            hash = _step57$value[0],
-            value = _step57$value[1];
+        for (_iterator60.s(); !(_step60 = _iterator60.n()).done;) {
+          var _step60$value = _slicedToArray(_step60.value, 2),
+            hash = _step60$value[0],
+            value = _step60$value[1];
           if (value.updated > road(records[hash]).updated) {
             records[hash] = __spreadProps(__spreadValues(__spreadValues({}, records[hash]), value), {
               profile: number(ctx.id)
@@ -21175,15 +22042,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }
         }
       } catch (err) {
-        _iterator57.e(err);
+        _iterator60.e(err);
       } finally {
-        _iterator57.f();
+        _iterator60.f();
       }
-      var _iterator58 = _createForOfIteratorHelper(rows),
-        _step58;
+      var _iterator61 = _createForOfIteratorHelper(rows),
+        _step61;
       try {
-        for (_iterator58.s(); !(_step58 = _iterator58.n()).done;) {
-          var row = _step58.value;
+        for (_iterator61.s(); !(_step61 = _iterator61.n()).done;) {
+          var row = _step61.value;
           if (!row || !validHash(row.hash)) continue;
           var _hash = String(row.hash),
             _value4 = road(__spreadValues({
@@ -21202,17 +22069,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           if (remote.size > 1e4) remote.delete(remote.keys().next().value);
         }
       } catch (err) {
-        _iterator58.e(err);
+        _iterator61.e(err);
       } finally {
-        _iterator58.f();
+        _iterator61.f();
       }
-      var _iterator59 = _createForOfIteratorHelper(remote),
-        _step59;
+      var _iterator62 = _createForOfIteratorHelper(remote),
+        _step62;
       try {
-        for (_iterator59.s(); !(_step59 = _iterator59.n()).done;) {
-          var _step59$value = _slicedToArray(_step59.value, 2),
-            _hash2 = _step59$value[0],
-            entry = _step59$value[1];
+        for (_iterator62.s(); !(_step62 = _iterator62.n()).done;) {
+          var _step62$value = _slicedToArray(_step62.value, 2),
+            _hash2 = _step62$value[0],
+            entry = _step62$value[1];
           var local = road(records[_hash2]);
           if (records[_hash2] && local.updated > entry.value.updated) {
             queue(_hash2, local);
@@ -21230,24 +22097,24 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           if (waiting && waiting.updated <= entry.value.updated) pending.delete(_hash2);
         }
       } catch (err) {
-        _iterator59.e(err);
+        _iterator62.e(err);
       } finally {
-        _iterator59.f();
+        _iterator62.f();
       }
-      var _iterator60 = _createForOfIteratorHelper(Object.keys(records).slice(-1e4)),
-        _step60;
+      var _iterator63 = _createForOfIteratorHelper(Object.keys(records).slice(-1e4)),
+        _step63;
       try {
-        for (_iterator60.s(); !(_step60 = _iterator60.n()).done;) {
-          var _hash3 = _step60.value;
+        for (_iterator63.s(); !(_step63 = _iterator63.n()).done;) {
+          var _hash3 = _step63.value;
           if (!validHash(_hash3)) continue;
           var _value5 = road(records[_hash3]),
             known = remote.get(_hash3);
           if (!known && (_value5.percent || _value5.time || _value5.updated) || known && _value5.updated > known.value.updated) queue(_hash3, _value5);
         }
       } catch (err) {
-        _iterator60.e(err);
+        _iterator63.e(err);
       } finally {
-        _iterator60.f();
+        _iterator63.f();
       }
       health.pending = pending.size;
       if (changed) store(ctx, records);
@@ -21295,10 +22162,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       pushing = true;
       health.state = "syncing";
       request(ctx, "set", {
-        rows: batch.map(function (_ref55) {
-          var _ref56 = _slicedToArray(_ref55, 2),
-            hash = _ref56[0],
-            value = _ref56[1];
+        rows: batch.map(function (_ref67) {
+          var _ref68 = _slicedToArray(_ref67, 2),
+            hash = _ref68[0],
+            value = _ref68[1];
           return {
             hash: hash,
             card: remoteCard(value),
@@ -21316,13 +22183,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           failed();
           return;
         }
-        var _iterator61 = _createForOfIteratorHelper(batch),
-          _step61;
+        var _iterator64 = _createForOfIteratorHelper(batch),
+          _step64;
         try {
-          for (_iterator61.s(); !(_step61 = _iterator61.n()).done;) {
-            var _step61$value = _slicedToArray(_step61.value, 2),
-              hash = _step61$value[0],
-              sent = _step61$value[1];
+          for (_iterator64.s(); !(_step64 = _iterator64.n()).done;) {
+            var _step64$value = _slicedToArray(_step64.value, 2),
+              hash = _step64$value[0],
+              sent = _step64$value[1];
             var waiting = pending.get(hash);
             if (waiting && fingerprint(waiting) === fingerprint(sent)) pending.delete(hash);
             var known = remote.get(hash);
@@ -21332,9 +22199,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             });
           }
         } catch (err) {
-          _iterator61.e(err);
+          _iterator64.e(err);
         } finally {
-          _iterator61.f();
+          _iterator64.f();
         }
         failures = 0;
         retryAt = 0;
@@ -21423,24 +22290,24 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     };
     var cached = L.Storage && L.Storage.get ? L.Storage.get(bindingKey, []) : [];
     if (Array.isArray(cached)) {
-      var _iterator62 = _createForOfIteratorHelper(cached.slice(-limit)),
-        _step62;
+      var _iterator65 = _createForOfIteratorHelper(cached.slice(-limit)),
+        _step65;
       try {
-        for (_iterator62.s(); !(_step62 = _iterator62.n()).done;) {
-          var row = _step62.value;
+        for (_iterator65.s(); !(_step65 = _iterator65.n()).done;) {
+          var row = _step65.value;
           if (row && /^[a-zA-Z0-9_.:-]{1,128}$/.test(String(row.hash)) && typeof row.scope === "string" && row.meta && /^[a-z0-9_]{1,64}$/.test(row.meta.card || "") && Date.now() - row.at < 7 * 864e5) bindings.set(String(row.hash), row);
         }
       } catch (err) {
-        _iterator62.e(err);
+        _iterator65.e(err);
       } finally {
-        _iterator62.f();
+        _iterator65.f();
       }
     }
     function persist() {
-      if (L.Storage && L.Storage.set) L.Storage.set(bindingKey, Array.from(bindings, function (_ref57) {
-        var _ref58 = _slicedToArray(_ref57, 2),
-          hash = _ref58[0],
-          row = _ref58[1];
+      if (L.Storage && L.Storage.set) L.Storage.set(bindingKey, Array.from(bindings, function (_ref69) {
+        var _ref70 = _slicedToArray(_ref69, 2),
+          hash = _ref70[0],
+          row = _ref70[1];
         return __spreadValues({
           hash: hash
         }, row);
@@ -21550,8 +22417,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         save();
         current = null;
       });
-      for (var _i20 = 0, _arr15 = ["close", "destroy"]; _i20 < _arr15.length; _i20++) {
-        var event = _arr15[_i20];
+      for (var _i24 = 0, _arr17 = ["close", "destroy"]; _i24 < _arr17.length; _i24++) {
+        var event = _arr17[_i24];
         listener.follow(event, function () {
           save();
           current = null;
@@ -21763,10 +22630,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       if (["start", "destroy"].includes(event.type)) update();
     });
     if (L.Controller && L.Controller.listener) L.Controller.listener.follow("toggle", remoteHeading);
-    [[L.Settings, "open"], [L.Select, "open"], [L.Modal, "fullshow"], [L.Modal, "update"]].forEach(function (_ref59) {
-      var _ref60 = _slicedToArray(_ref59, 2),
-        api = _ref60[0],
-        event = _ref60[1];
+    [[L.Settings, "open"], [L.Select, "open"], [L.Modal, "fullshow"], [L.Modal, "update"]].forEach(function (_ref71) {
+      var _ref72 = _slicedToArray(_ref71, 2),
+        api = _ref72[0],
+        event = _ref72[1];
       if (api && api.listener) api.listener.follow(event, overlays);
     });
     update();
@@ -22009,11 +22876,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         return Number(row.season_number) || 0;
       }) : []))),
       found = [];
-    var _iterator63 = _createForOfIteratorHelper(rows),
-      _step63;
+    var _iterator66 = _createForOfIteratorHelper(rows),
+      _step66;
     try {
-      var _loop21 = function _loop21() {
-          var row = _step63.value;
+      var _loop24 = function _loop24() {
+          var row = _step66.value;
           if (!row.similar || row.method !== "link" || !/^(?:https?:\/\/|\/)/i.test(row.url || "")) return 0; // continue
           var title = String(row.title || row.name || row.text || ""),
             match = title.match(/(?:сезон|season)\s*(\d+)|(\d+)\s*(?:сезон|season)|\bs(\d+)\b/i);
@@ -22049,15 +22916,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
         },
         _ret8;
-      for (_iterator63.s(); !(_step63 = _iterator63.n()).done;) {
-        _ret8 = _loop21();
+      for (_iterator66.s(); !(_step66 = _iterator66.n()).done;) {
+        _ret8 = _loop24();
         if (_ret8 === 0) continue;
         if (_ret8) return _ret8.v;
       }
     } catch (err) {
-      _iterator63.e(err);
+      _iterator66.e(err);
     } finally {
-      _iterator63.f();
+      _iterator66.f();
     }
     return found.length > 1 ? found.sort(function (a, b) {
       return a.season - b.season;
@@ -22119,11 +22986,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       tags = clean.match(/<(?:div|span|a)\b[^>]*>/gi) || [],
       decoder = document.createElement("textarea"),
       rows = [];
-    var _iterator64 = _createForOfIteratorHelper(tags),
-      _step64;
+    var _iterator67 = _createForOfIteratorHelper(tags),
+      _step67;
     try {
-      for (_iterator64.s(); !(_step64 = _iterator64.n()).done;) {
-        var tag = _step64.value;
+      for (_iterator67.s(); !(_step67 = _iterator67.n()).done;) {
+        var tag = _step67.value;
         var cls = tag.match(/\bclass\s*=\s*(["'])([\s\S]*?)\1/i),
           data = tag.match(/\bdata-json\s*=\s*(["'])([\s\S]*?)\1/i);
         if (!cls || !/(^|\s)videos__item(\s|$)/.test(cls[2]) || !data) continue;
@@ -22134,9 +23001,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         } catch (error) {}
       }
     } catch (err) {
-      _iterator64.e(err);
+      _iterator67.e(err);
     } finally {
-      _iterator64.f();
+      _iterator67.f();
     }
     return rows;
   }
@@ -22162,8 +23029,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (typeof value.url === "string" && value.url.trim() && !value.similar && /^(play|call|link)$/.test(value.method)) count++;
         if (Array.isArray(value)) value.forEach(function (row) {
           return _walk(row, depth + 1);
-        });else for (var _i21 = 0, _arr16 = ["data", "results", "items", "list", "playlists"]; _i21 < _arr16.length; _i21++) {
-          var key = _arr16[_i21];
+        });else for (var _i25 = 0, _arr18 = ["data", "results", "items", "list", "playlists"]; _i25 < _arr18.length; _i25++) {
+          var key = _arr18[_i25];
           _walk(value[key], depth + 1);
         }
       };
@@ -22209,9 +23076,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     function linkedRecords(card, records) {
       var identity2 = (0, import_timeline_meta2.linkFor)(L, card, 1, 1);
       if (!identity2) return [];
-      return Object.entries(records).filter(function (_ref61) {
-        var _ref62 = _slicedToArray(_ref61, 2),
-          value = _ref62[1];
+      return Object.entries(records).filter(function (_ref73) {
+        var _ref74 = _slicedToArray(_ref73, 2),
+          value = _ref74[1];
         return value && _typeof(value) === "object" && value.card === identity2.card;
       });
     }
@@ -22219,13 +23086,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var records = L.Storage.get(file(), {}) || {},
         titles = names(card);
       var linked = /* @__PURE__ */new Map();
-      var _iterator65 = _createForOfIteratorHelper(linkedRecords(card, records)),
-        _step65;
+      var _iterator68 = _createForOfIteratorHelper(linkedRecords(card, records)),
+        _step68;
       try {
-        for (_iterator65.s(); !(_step65 = _iterator65.n()).done;) {
-          var _step65$value = _slicedToArray(_step65.value, 2),
-            key = _step65$value[0],
-            value = _step65$value[1];
+        for (_iterator68.s(); !(_step68 = _iterator68.n()).done;) {
+          var _step68$value = _slicedToArray(_step68.value, 2),
+            key = _step68$value[0],
+            value = _step68$value[1];
           var coordinate = number2(value.season) + ":" + number2(value.episode),
             old = linked.get(coordinate);
           if (!old || stamp2(value.updated) > stamp2(old.value.updated)) linked.set(coordinate, {
@@ -22234,9 +23101,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
         }
       } catch (err) {
-        _iterator65.e(err);
+        _iterator68.e(err);
       } finally {
-        _iterator65.f();
+        _iterator68.f();
       }
       return function () {
         var season = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
@@ -22249,11 +23116,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (match) keys.push(match.key);
         if (explicit) keys.push(explicit);
         var best = null;
-        var _iterator66 = _createForOfIteratorHelper(new Set(keys)),
-          _step66;
+        var _iterator69 = _createForOfIteratorHelper(new Set(keys)),
+          _step69;
         try {
-          for (_iterator66.s(); !(_step66 = _iterator66.n()).done;) {
-            var key = _step66.value;
+          for (_iterator69.s(); !(_step69 = _iterator69.n()).done;) {
+            var key = _step69.value;
             var value = records[key],
               raw = typeof value === "number" ? {
                 percent: value
@@ -22270,9 +23137,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             if (!best || row.updated > best.updated || row.updated === best.updated && row.percent > best.percent) best = row;
           }
         } catch (err) {
-          _iterator66.e(err);
+          _iterator69.e(err);
         } finally {
-          _iterator66.f();
+          _iterator69.f();
         }
         return best || {
           found: false,
@@ -22298,13 +23165,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         seasons = Array.isArray(card.seasons) ? card.seasons : [],
         max = 60;
       var latest = null;
-      var _iterator67 = _createForOfIteratorHelper(linkedRecords(card, records)),
-        _step67;
+      var _iterator70 = _createForOfIteratorHelper(linkedRecords(card, records)),
+        _step70;
       try {
-        var _loop23 = function _loop23() {
-          var _step67$value = _slicedToArray(_step67.value, 2),
-            key2 = _step67$value[0],
-            raw = _step67$value[1];
+        var _loop26 = function _loop26() {
+          var _step70$value = _slicedToArray(_step70.value, 2),
+            key2 = _step70$value[0],
+            raw = _step70$value[1];
           var season = Number(raw.season),
             episode = Number(raw.episode),
             percent = Math.min(100, number2(raw.percent)),
@@ -22328,27 +23195,27 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             }
           };
         };
-        for (_iterator67.s(); !(_step67 = _iterator67.n()).done;) {
-          if (_loop23()) continue;
+        for (_iterator70.s(); !(_step70 = _iterator70.n()).done;) {
+          if (_loop26()) continue;
         }
       } catch (err) {
-        _iterator67.e(err);
+        _iterator70.e(err);
       } finally {
-        _iterator67.f();
+        _iterator70.f();
       }
       if (Object.keys(records).length) {
-        var _loop22 = function _loop22(s) {
+        var _loop25 = function _loop25(s) {
           var detail2 = seasons.find(function (row) {
               return Number(row.season_number) === s;
             }),
             total = number2(detail2 && detail2.episode_count),
             limit = Math.min(500, Math.max(100, total));
           for (var e = 1; e <= limit; e++) {
-            var _iterator68 = _createForOfIteratorHelper(titles),
-              _step68;
+            var _iterator71 = _createForOfIteratorHelper(titles),
+              _step71;
             try {
-              for (_iterator68.s(); !(_step68 = _iterator68.n()).done;) {
-                var title = _step68.value;
+              for (_iterator71.s(); !(_step71 = _iterator71.n()).done;) {
+                var title = _step71.value;
                 var key2 = hash(title, s, e),
                   raw = records[key2];
                 if (!raw) continue;
@@ -22370,14 +23237,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 };
               }
             } catch (err) {
-              _iterator68.e(err);
+              _iterator71.e(err);
             } finally {
-              _iterator68.f();
+              _iterator71.f();
             }
           }
         };
         for (var s = 1; s <= max; s++) {
-          _loop22(s);
+          _loop25(s);
         }
       }
       var value = latest ? {
@@ -22441,8 +23308,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }
       return value;
     }
-    if (L.Timeline && L.Timeline.listener) for (var _i22 = 0, _arr17 = ["update", "read"]; _i22 < _arr17.length; _i22++) {
-      var event = _arr17[_i22];
+    if (L.Timeline && L.Timeline.listener) for (var _i26 = 0, _arr19 = ["update", "read"]; _i26 < _arr19.length; _i26++) {
+      var event = _arr19[_i26];
       L.Timeline.listener.follow(event, function () {
         revision++;
         snapshots.clear();
@@ -22487,11 +23354,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var saved = L.Storage.get("online_watched_last", {}) || {},
         next = __spreadValues({}, saved);
       var changed = false;
-      var _iterator69 = _createForOfIteratorHelper(names(card)),
-        _step69;
+      var _iterator72 = _createForOfIteratorHelper(names(card)),
+        _step72;
       try {
-        for (_iterator69.s(); !(_step69 = _iterator69.n()).done;) {
-          var title = _step69.value;
+        for (_iterator72.s(); !(_step72 = _iterator72.n()).done;) {
+          var title = _step72.value;
           var key = L.Utils.hash(title),
             row = saved[key];
           if (row && (season === void 0 || Number(row.season) === Number(season) && Number(row.episode) === Number(episode))) {
@@ -22500,9 +23367,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }
         }
       } catch (err) {
-        _iterator69.e(err);
+        _iterator72.e(err);
       } finally {
-        _iterator69.f();
+        _iterator72.f();
       }
       if (changed) L.Storage.set("online_watched_last", next);
     }
@@ -22517,11 +23384,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
       if (explicit) keys.push(explicit);
       clearLast(card, season, episode);
-      var _iterator70 = _createForOfIteratorHelper(new Set(keys)),
-        _step70;
+      var _iterator73 = _createForOfIteratorHelper(new Set(keys)),
+        _step73;
       try {
-        for (_iterator70.s(); !(_step70 = _iterator70.n()).done;) {
-          var key = _step70.value;
+        for (_iterator73.s(); !(_step73 = _iterator73.n()).done;) {
+          var key = _step73.value;
           if (records[key] || key === explicit) writeTimeline({
             hash: key,
             percent: 0,
@@ -22530,9 +23397,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
         }
       } catch (err) {
-        _iterator70.e(err);
+        _iterator73.e(err);
       } finally {
-        _iterator70.f();
+        _iterator73.f();
       }
       revision++;
       snapshots.clear();
@@ -22545,26 +23412,26 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         keys = /* @__PURE__ */new Set();
       if (titles.length) keys.add(hash(titles[0], season, episode));
       if (explicit) keys.add(explicit);
-      var _iterator71 = _createForOfIteratorHelper(titles),
-        _step71;
+      var _iterator74 = _createForOfIteratorHelper(titles),
+        _step74;
       try {
-        for (_iterator71.s(); !(_step71 = _iterator71.n()).done;) {
-          var _title = _step71.value;
+        for (_iterator74.s(); !(_step74 = _iterator74.n()).done;) {
+          var _title = _step74.value;
           var _key4 = hash(_title, season, episode);
           if (records[_key4]) keys.add(_key4);
         }
       } catch (err) {
-        _iterator71.e(err);
+        _iterator74.e(err);
       } finally {
-        _iterator71.f();
+        _iterator74.f();
       }
       if (watched && season && !batching) {
         var saved = __spreadValues({}, L.Storage.get("online_watched_last", {}) || {});
-        var _iterator72 = _createForOfIteratorHelper(titles.slice(0, 2)),
-          _step72;
+        var _iterator75 = _createForOfIteratorHelper(titles.slice(0, 2)),
+          _step75;
         try {
-          for (_iterator72.s(); !(_step72 = _iterator72.n()).done;) {
-            var title = _step72.value;
+          for (_iterator75.s(); !(_step75 = _iterator75.n()).done;) {
+            var title = _step75.value;
             var key = L.Utils.hash(title);
             saved[key] = __spreadProps(__spreadValues({}, saved[key]), {
               season: season,
@@ -22572,17 +23439,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             });
           }
         } catch (err) {
-          _iterator72.e(err);
+          _iterator75.e(err);
         } finally {
-          _iterator72.f();
+          _iterator75.f();
         }
         L.Storage.set("online_watched_last", saved);
       } else if (!watched) clearLast(card, season, episode);
-      var _iterator73 = _createForOfIteratorHelper(keys),
-        _step73;
+      var _iterator76 = _createForOfIteratorHelper(keys),
+        _step76;
       try {
-        for (_iterator73.s(); !(_step73 = _iterator73.n()).done;) {
-          var _key5 = _step73.value;
+        for (_iterator76.s(); !(_step76 = _iterator76.n()).done;) {
+          var _key5 = _step76.value;
           var raw = records[_key5],
             percent = typeof raw === "number" ? raw : number2(raw && raw.percent);
           if (watched || percent >= 90) {
@@ -22596,9 +23463,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }
         }
       } catch (err) {
-        _iterator73.e(err);
+        _iterator76.e(err);
       } finally {
-        _iterator73.f();
+        _iterator76.f();
       }
       revision++;
       snapshots.clear();
@@ -22607,17 +23474,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     function markRows(card, rows) {
       batching++;
       try {
-        var _iterator74 = _createForOfIteratorHelper(rows),
-          _step74;
+        var _iterator77 = _createForOfIteratorHelper(rows),
+          _step77;
         try {
-          for (_iterator74.s(); !(_step74 = _iterator74.n()).done;) {
-            var row = _step74.value;
+          for (_iterator77.s(); !(_step77 = _iterator77.n()).done;) {
+            var row = _step77.value;
             setWatched(card, row.season, row.episode, true, row.hash);
           }
         } catch (err) {
-          _iterator74.e(err);
+          _iterator77.e(err);
         } finally {
-          _iterator74.f();
+          _iterator77.f();
         }
       } finally {
         batching--;
@@ -22625,11 +23492,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var last = rows[rows.length - 1];
       if (last) {
         var saved = __spreadValues({}, L.Storage.get("online_watched_last", {}) || {});
-        var _iterator75 = _createForOfIteratorHelper(names(card).slice(0, 2)),
-          _step75;
+        var _iterator78 = _createForOfIteratorHelper(names(card).slice(0, 2)),
+          _step78;
         try {
-          for (_iterator75.s(); !(_step75 = _iterator75.n()).done;) {
-            var title = _step75.value;
+          for (_iterator78.s(); !(_step78 = _iterator78.n()).done;) {
+            var title = _step78.value;
             var key = L.Utils.hash(title);
             saved[key] = __spreadProps(__spreadValues({}, saved[key]), {
               season: last.season,
@@ -22637,9 +23504,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             });
           }
         } catch (err) {
-          _iterator75.e(err);
+          _iterator78.e(err);
         } finally {
-          _iterator75.f();
+          _iterator78.f();
         }
         L.Storage.set("online_watched_last", saved);
       }
@@ -22683,24 +23550,24 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           last = full.last_episode_to_air;
         var aired = last && last.air_date && String(last.air_date).slice(0, 10) <= today ? last : null;
         var episodes = /* @__PURE__ */new Map();
-        var _iterator76 = _createForOfIteratorHelper(table),
-          _step76;
+        var _iterator79 = _createForOfIteratorHelper(table),
+          _step79;
         try {
-          for (_iterator76.s(); !(_step76 = _iterator76.n()).done;) {
-            var row = _step76.value;
+          for (_iterator79.s(); !(_step79 = _iterator79.n()).done;) {
+            var row = _step79.value;
             if (row.air_date && String(row.air_date).slice(0, 10) <= today && Number(row.season_number) > 0) episodes.set(row.season_number + ":" + row.episode_number, row);
           }
         } catch (err) {
-          _iterator76.e(err);
+          _iterator79.e(err);
         } finally {
-          _iterator76.f();
+          _iterator79.f();
         }
         if (aired) {
-          var _iterator77 = _createForOfIteratorHelper(Array.isArray(full.seasons) ? full.seasons : []),
-            _step77;
+          var _iterator80 = _createForOfIteratorHelper(Array.isArray(full.seasons) ? full.seasons : []),
+            _step80;
           try {
-            for (_iterator77.s(); !(_step77 = _iterator77.n()).done;) {
-              var season = _step77.value;
+            for (_iterator80.s(); !(_step80 = _iterator80.n()).done;) {
+              var season = _step80.value;
               var n = Number(season.season_number);
               if (n <= 0 || n > Number(aired.season_number)) continue;
               var count = n === Number(aired.season_number) ? Number(aired.episode_number) : Number(season.episode_count);
@@ -22710,9 +23577,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               });
             }
           } catch (err) {
-            _iterator77.e(err);
+            _iterator80.e(err);
           } finally {
-            _iterator77.f();
+            _iterator80.f();
           }
         }
         markRows(full, Array.from(episodes.values()).map(function (row) {
@@ -22747,80 +23614,80 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           season = number2(season);
           if (season > 0 && season <= 100) limits.set(season, Math.min(5e3, Math.max(100, limits.get(season) || 0, number2(total))));
         };
-        var _iterator78 = _createForOfIteratorHelper(seasons),
-          _step78;
+        var _iterator81 = _createForOfIteratorHelper(seasons),
+          _step81;
         try {
-          for (_iterator78.s(); !(_step78 = _iterator78.n()).done;) {
-            var row = _step78.value;
+          for (_iterator81.s(); !(_step81 = _iterator81.n()).done;) {
+            var row = _step81.value;
             remember(row.season_number, row.episode_count);
           }
         } catch (err) {
-          _iterator78.e(err);
+          _iterator81.e(err);
         } finally {
-          _iterator78.f();
+          _iterator81.f();
         }
         var table = L.TimeTable && L.TimeTable.get ? L.TimeTable.get(card) || [] : [];
-        var _iterator79 = _createForOfIteratorHelper(table),
-          _step79;
-        try {
-          for (_iterator79.s(); !(_step79 = _iterator79.n()).done;) {
-            var _row = _step79.value;
-            remember(_row.season_number, _row.episode_number);
-          }
-        } catch (err) {
-          _iterator79.e(err);
-        } finally {
-          _iterator79.f();
-        }
-        var last = L.Storage.get("online_watched_last", {}) || {};
-        var _iterator80 = _createForOfIteratorHelper(titles),
-          _step80;
-        try {
-          for (_iterator80.s(); !(_step80 = _iterator80.n()).done;) {
-            var _title2 = _step80.value;
-            var _row2 = last[L.Utils.hash(_title2)];
-            if (_row2) remember(_row2.season, _row2.episode);
-          }
-        } catch (err) {
-          _iterator80.e(err);
-        } finally {
-          _iterator80.f();
-        }
-        var max = Math.min(100, Math.max.apply(Math, [1, number2(card.number_of_seasons)].concat(_toConsumableArray(limits.keys()))));
-        for (var season = 1; season <= max; season++) for (var episode = 1; episode <= (limits.get(season) || 100); episode++) {
-          var _iterator81 = _createForOfIteratorHelper(titles),
-            _step81;
-          try {
-            for (_iterator81.s(); !(_step81 = _iterator81.n()).done;) {
-              var title = _step81.value;
-              keys.add(hash(title, season, episode));
-            }
-          } catch (err) {
-            _iterator81.e(err);
-          } finally {
-            _iterator81.f();
-          }
-        }
-      } else {
-        var _iterator82 = _createForOfIteratorHelper(titles),
+        var _iterator82 = _createForOfIteratorHelper(table),
           _step82;
         try {
           for (_iterator82.s(); !(_step82 = _iterator82.n()).done;) {
-            var _title3 = _step82.value;
-            keys.add(hash(_title3));
+            var _row = _step82.value;
+            remember(_row.season_number, _row.episode_number);
           }
         } catch (err) {
           _iterator82.e(err);
         } finally {
           _iterator82.f();
         }
+        var last = L.Storage.get("online_watched_last", {}) || {};
+        var _iterator83 = _createForOfIteratorHelper(titles),
+          _step83;
+        try {
+          for (_iterator83.s(); !(_step83 = _iterator83.n()).done;) {
+            var _title2 = _step83.value;
+            var _row2 = last[L.Utils.hash(_title2)];
+            if (_row2) remember(_row2.season, _row2.episode);
+          }
+        } catch (err) {
+          _iterator83.e(err);
+        } finally {
+          _iterator83.f();
+        }
+        var max = Math.min(100, Math.max.apply(Math, [1, number2(card.number_of_seasons)].concat(_toConsumableArray(limits.keys()))));
+        for (var season = 1; season <= max; season++) for (var episode = 1; episode <= (limits.get(season) || 100); episode++) {
+          var _iterator84 = _createForOfIteratorHelper(titles),
+            _step84;
+          try {
+            for (_iterator84.s(); !(_step84 = _iterator84.n()).done;) {
+              var title = _step84.value;
+              keys.add(hash(title, season, episode));
+            }
+          } catch (err) {
+            _iterator84.e(err);
+          } finally {
+            _iterator84.f();
+          }
+        }
+      } else {
+        var _iterator85 = _createForOfIteratorHelper(titles),
+          _step85;
+        try {
+          for (_iterator85.s(); !(_step85 = _iterator85.n()).done;) {
+            var _title3 = _step85.value;
+            keys.add(hash(_title3));
+          }
+        } catch (err) {
+          _iterator85.e(err);
+        } finally {
+          _iterator85.f();
+        }
       }
       clearLast(card);
-      var _iterator83 = _createForOfIteratorHelper(keys),
-        _step83;
+      var _iterator86 = _createForOfIteratorHelper(keys),
+        _step86;
       try {
-        for (_iterator83.s(); !(_step83 = _iterator83.n()).done;) {
-          var key = _step83.value;
+        for (_iterator86.s(); !(_step86 = _iterator86.n()).done;) {
+          var key = _step86.value;
           var _row3 = records[key];
           if (_row3 && (typeof _row3 === "number" ? _row3 : _row3.percent || _row3.time)) writeTimeline({
             hash: key,
@@ -22830,9 +23697,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
         }
       } catch (err) {
-        _iterator83.e(err);
+        _iterator86.e(err);
       } finally {
-        _iterator83.f();
+        _iterator86.f();
       }
       revision++;
       snapshots.clear();
@@ -22886,11 +23753,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       nodes = /* @__PURE__ */new Map(),
       edges = [],
       seen = /* @__PURE__ */new Set();
-    var _iterator84 = _createForOfIteratorHelper(graph.nodes),
-      _step84;
+    var _iterator87 = _createForOfIteratorHelper(graph.nodes),
+      _step87;
     try {
-      for (_iterator84.s(); !(_step84 = _iterator84.n()).done;) {
-        var node = _step84.value;
+      for (_iterator87.s(); !(_step87 = _iterator87.n()).done;) {
+        var node = _step87.value;
         var _id = Number(node.id);
         if (!positive2(_id) || nodes.has(_id) || typeof node.name !== "string" || !node.name.trim()) return null;
         var meta = details.get(_id) || {},
@@ -22918,16 +23785,16 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
       }
     } catch (err) {
-      _iterator84.e(err);
+      _iterator87.e(err);
     } finally {
-      _iterator84.f();
+      _iterator87.f();
     }
     if (!nodes.has(Number(seed))) return null;
-    var _iterator85 = _createForOfIteratorHelper(graph.links),
-      _step85;
+    var _iterator88 = _createForOfIteratorHelper(graph.links),
+      _step88;
     try {
-      for (_iterator85.s(); !(_step85 = _iterator85.n()).done;) {
-        var link = _step85.value;
+      for (_iterator88.s(); !(_step88 = _iterator88.n()).done;) {
+        var link = _step88.value;
         var _from = Number(link.source_id),
           _to = Number(link.target_id),
           relation = String(link.relation || "").toLowerCase();
@@ -22943,19 +23810,19 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
       }
     } catch (err) {
-      _iterator85.e(err);
+      _iterator88.e(err);
     } finally {
-      _iterator85.f();
+      _iterator88.f();
     }
     var connected = function connected(ids, relations) {
       var change = true;
       while (change) {
         change = false;
-        for (var _i23 = 0, _edges = edges; _i23 < _edges.length; _i23++) {
-          var edge = _edges[_i23];
+        for (var _i27 = 0, _edges = edges; _i27 < _edges.length; _i27++) {
+          var edge = _edges[_i27];
           if (relations.includes(edge.relation) && (ids.has(edge.from) || ids.has(edge.to))) {
-            for (var _i24 = 0, _arr18 = [edge.from, edge.to]; _i24 < _arr18.length; _i24++) {
-              var id = _arr18[_i24];
+            for (var _i28 = 0, _arr20 = [edge.from, edge.to]; _i28 < _arr20.length; _i28++) {
+              var id = _arr20[_i28];
               if (!ids.has(id)) {
                 ids.add(id);
                 change = true;
@@ -22975,25 +23842,25 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         while (parents.get(id) !== id) id = parents.get(id);
         return id;
       };
-    for (var _i25 = 0, _edges2 = edges; _i25 < _edges2.length; _i25++) {
-      var edge = _edges2[_i25];
+    for (var _i29 = 0, _edges2 = edges; _i29 < _edges2.length; _i29++) {
+      var edge = _edges2[_i29];
       if (edge.relation === "alternative_version" && relevant.has(edge.from) && relevant.has(edge.to)) parents.set(root(edge.to), root(edge.from));
     }
     var variants = /* @__PURE__ */new Map();
-    var _iterator86 = _createForOfIteratorHelper(relevant),
-      _step86;
+    var _iterator89 = _createForOfIteratorHelper(relevant),
+      _step89;
     try {
-      for (_iterator86.s(); !(_step86 = _iterator86.n()).done;) {
-        var _id2 = _step86.value;
+      for (_iterator89.s(); !(_step89 = _iterator89.n()).done;) {
+        var _id2 = _step89.value;
         var r = root(_id2),
           group = variants.get(r) || [];
         group.push(_id2);
         variants.set(r, group);
       }
     } catch (err) {
-      _iterator86.e(err);
+      _iterator89.e(err);
     } finally {
-      _iterator86.f();
+      _iterator89.f();
     }
     var compare = function compare(a, b) {
       var x = nodes.get(a),
@@ -23002,31 +23869,31 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     };
     var representative = /* @__PURE__ */new Map(),
       alternatives = /* @__PURE__ */new Set();
-    var _iterator87 = _createForOfIteratorHelper(variants.values()),
-      _step87;
+    var _iterator90 = _createForOfIteratorHelper(variants.values()),
+      _step90;
     try {
-      for (_iterator87.s(); !(_step87 = _iterator87.n()).done;) {
-        var _group = _step87.value;
+      for (_iterator90.s(); !(_step90 = _iterator90.n()).done;) {
+        var _group = _step90.value;
         _group.sort(compare);
         var selected = _group.includes(Number(seed)) ? Number(seed) : _group[0];
-        var _iterator90 = _createForOfIteratorHelper(_group),
-          _step90;
+        var _iterator93 = _createForOfIteratorHelper(_group),
+          _step93;
         try {
-          for (_iterator90.s(); !(_step90 = _iterator90.n()).done;) {
-            var _id3 = _step90.value;
+          for (_iterator93.s(); !(_step93 = _iterator93.n()).done;) {
+            var _id3 = _step93.value;
             representative.set(_id3, selected);
             if (_id3 !== selected) alternatives.add(_id3);
           }
         } catch (err) {
-          _iterator90.e(err);
+          _iterator93.e(err);
         } finally {
-          _iterator90.f();
+          _iterator93.f();
         }
       }
     } catch (err) {
-      _iterator87.e(err);
+      _iterator90.e(err);
     } finally {
-      _iterator87.f();
+      _iterator90.f();
     }
     var main = new Set(_toConsumableArray(story).map(function (id) {
         return representative.get(id) || id;
@@ -23034,8 +23901,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       directed = new Map(_toConsumableArray(main).map(function (id) {
         return [id, /* @__PURE__ */new Set()];
       }));
-    for (var _i26 = 0, _edges3 = edges; _i26 < _edges3.length; _i26++) {
-      var _edge = _edges3[_i26];
+    for (var _i30 = 0, _edges3 = edges; _i30 < _edges3.length; _i30++) {
+      var _edge = _edges3[_i30];
       if (["prequel", "sequel"].includes(_edge.relation)) {
         var from = _edge.relation === "sequel" ? _edge.from : _edge.to,
           to = _edge.relation === "sequel" ? _edge.to : _edge.from;
@@ -23047,28 +23914,28 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var degrees = new Map(_toConsumableArray(main).map(function (id) {
       return [id, 0];
     }));
-    var _iterator88 = _createForOfIteratorHelper(directed.values()),
-      _step88;
+    var _iterator91 = _createForOfIteratorHelper(directed.values()),
+      _step91;
     try {
-      for (_iterator88.s(); !(_step88 = _iterator88.n()).done;) {
-        var values = _step88.value;
-        var _iterator91 = _createForOfIteratorHelper(values),
-          _step91;
+      for (_iterator91.s(); !(_step91 = _iterator91.n()).done;) {
+        var values = _step91.value;
+        var _iterator94 = _createForOfIteratorHelper(values),
+          _step94;
         try {
-          for (_iterator91.s(); !(_step91 = _iterator91.n()).done;) {
-            var _id4 = _step91.value;
+          for (_iterator94.s(); !(_step94 = _iterator94.n()).done;) {
+            var _id4 = _step94.value;
             degrees.set(_id4, degrees.get(_id4) + 1);
           }
         } catch (err) {
-          _iterator91.e(err);
+          _iterator94.e(err);
         } finally {
-          _iterator91.f();
+          _iterator94.f();
         }
       }
     } catch (err) {
-      _iterator88.e(err);
+      _iterator91.e(err);
     } finally {
-      _iterator88.f();
+      _iterator91.f();
     }
     var ready = _toConsumableArray(main).filter(function (id) {
         return degrees.get(id) === 0;
@@ -23077,11 +23944,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     while (ready.length) {
       var id = ready.shift();
       ordered.push(id);
-      var _iterator89 = _createForOfIteratorHelper(directed.get(id)),
-        _step89;
+      var _iterator92 = _createForOfIteratorHelper(directed.get(id)),
+        _step92;
       try {
-        for (_iterator89.s(); !(_step89 = _iterator89.n()).done;) {
-          var next = _step89.value;
+        for (_iterator92.s(); !(_step92 = _iterator92.n()).done;) {
+          var next = _step92.value;
           degrees.set(next, degrees.get(next) - 1);
           if (!degrees.get(next)) {
             ready.push(next);
@@ -23089,9 +23956,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }
         }
       } catch (err) {
-        _iterator89.e(err);
+        _iterator92.e(err);
       } finally {
-        _iterator89.f();
+        _iterator92.f();
       }
     }
     var complete = ordered.length === main.size;
@@ -23107,8 +23974,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       return alternatives.add(id);
     });
     var related = connected(new Set(relevant), ["prequel", "sequel", "side_story", "parent_story", "spin_off", "alternative_version", "summary", "full_story"]);
-    for (var _i27 = 0, _edges4 = edges; _i27 < _edges4.length; _i27++) {
-      var _edge2 = _edges4[_i27];
+    for (var _i31 = 0, _edges4 = edges; _i31 < _edges4.length; _i31++) {
+      var _edge2 = _edges4[_i31];
       if (_edge2.relation === "other" && (related.has(_edge2.from) || related.has(_edge2.to))) {
         if (relevant.has(_edge2.from)) related.add(_edge2.to);
         if (relevant.has(_edge2.to)) related.add(_edge2.from);
@@ -23217,11 +24084,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     }) || seasons.reduce(function (n, s) {
       return n + Number(s.episode_count || 0);
     }, 0) !== numbers.length) return null;
-    var _iterator92 = _createForOfIteratorHelper(seasons),
-      _step92;
+    var _iterator95 = _createForOfIteratorHelper(seasons),
+      _step95;
     try {
-      var _loop24 = function _loop24() {
-          var season = _step92.value;
+      var _loop27 = function _loop27() {
+          var season = _step95.value;
           var book = books[season.season_number],
             rows = book && (book.episodes_original || book.episodes);
           if (!Array.isArray(rows) || rows.length !== Number(season.episode_count)) return {
@@ -23238,14 +24105,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           episodes.push.apply(episodes, _toConsumableArray(sorted));
         },
         _ret9;
-      for (_iterator92.s(); !(_step92 = _iterator92.n()).done;) {
-        _ret9 = _loop24();
+      for (_iterator95.s(); !(_step95 = _iterator95.n()).done;) {
+        _ret9 = _loop27();
         if (_ret9) return _ret9.v;
       }
     } catch (err) {
-      _iterator92.e(err);
+      _iterator95.e(err);
     } finally {
-      _iterator92.f();
+      _iterator95.f();
     }
     var releases = model.nodes.filter(function (n) {
       return n.record && Number(n.record.tv) === Number(card.tmdb_id || card.id) && ["tv", "ona"].includes(n.kind) && Number.isSafeInteger(n.episodes) && n.episodes > 0 && n.status !== "anons";
@@ -23258,11 +24125,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       })),
       used = /* @__PURE__ */new Set(),
       groups = [];
-    var _iterator93 = _createForOfIteratorHelper(releases),
-      _step93;
+    var _iterator96 = _createForOfIteratorHelper(releases),
+      _step96;
     try {
-      var _loop25 = function _loop25() {
-          var release = _step93.value;
+      var _loop28 = function _loop28() {
+          var release = _step96.value;
           var map = animeEpisodeMap(release.record, release.episodes, card, books);
           if (map && release.aired && release.released && map.some(function (e) {
             return !e.metadata || !inRelease(e.metadata, release);
@@ -23325,14 +24192,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
         },
         _ret0;
-      for (_iterator93.s(); !(_step93 = _iterator93.n()).done;) {
-        _ret0 = _loop25();
+      for (_iterator96.s(); !(_step96 = _iterator96.n()).done;) {
+        _ret0 = _loop28();
         if (_ret0) return _ret0.v;
       }
     } catch (err) {
-      _iterator93.e(err);
+      _iterator96.e(err);
     } finally {
-      _iterator93.f();
+      _iterator96.f();
     }
     if (used.size !== episodes.length) return null;
     groups.sort(function (a, b) {
@@ -23372,7 +24239,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       pump();
     }
     function pump() {
-      var _loop26 = function _loop26() {
+      var _loop29 = function _loop29() {
         var finish = function finish(value) {
           if (settled) return;
           settled = true;
@@ -23413,7 +24280,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
       };
       while (active < 2 && queue.length) {
-        _loop26();
+        _loop29();
       }
     }
     function canonical(card, done) {
@@ -23810,7 +24677,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // src/kinoapi.js
-  var BASE2 = "https://kinoapi.lampac.dev/api/v1/";
+  var BASE3 = "https://kinoapi.lampac.dev/api/v1/";
   var KEY = "lampa_view_kinoapi_key";
   var positive4 = function positive4(n) {
     return Number.isSafeInteger(Number(n)) && Number(n) > 0;
@@ -23821,11 +24688,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var known = /* @__PURE__ */new Map(),
       seen = /* @__PURE__ */new Set(),
       rows = [];
-    var _iterator94 = _createForOfIteratorHelper(seasons),
-      _step94;
+    var _iterator97 = _createForOfIteratorHelper(seasons),
+      _step97;
     try {
-      for (_iterator94.s(); !(_step94 = _iterator94.n()).done;) {
-        var s = _step94.value;
+      for (_iterator97.s(); !(_step97 = _iterator97.n()).done;) {
+        var s = _step97.value;
         if (!positive4(s.season_number) || !positive4(s.episode_count)) continue;
         var n = Number(s.season_number);
         if (known.has(n)) return null;
@@ -23836,15 +24703,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
       }
     } catch (err) {
-      _iterator94.e(err);
+      _iterator97.e(err);
     } finally {
-      _iterator94.f();
+      _iterator97.f();
     }
-    var _iterator95 = _createForOfIteratorHelper(episodes),
-      _step95;
+    var _iterator98 = _createForOfIteratorHelper(episodes),
+      _step98;
     try {
-      for (_iterator95.s(); !(_step95 = _iterator95.n()).done;) {
-        var e = _step95.value;
+      for (_iterator98.s(); !(_step98 = _iterator98.n()).done;) {
+        var e = _step98.value;
         var season = Number(e.season_number),
           number3 = Number(e.tmdb_episode_number),
           key = season + ":" + number3;
@@ -23870,18 +24737,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
       }
     } catch (err) {
-      _iterator95.e(err);
+      _iterator98.e(err);
     } finally {
-      _iterator95.f();
+      _iterator98.f();
     }
     rows.sort(function (a, b) {
       return a.season - b.season || a.number - b.number;
     });
-    var _iterator96 = _createForOfIteratorHelper(known.values()),
-      _step96;
+    var _iterator99 = _createForOfIteratorHelper(known.values()),
+      _step99;
     try {
-      var _loop27 = function _loop27() {
-          var s = _step96.value;
+      var _loop30 = function _loop30() {
+          var s = _step99.value;
           if (rows.filter(function (e) {
             return e.season === s.number;
           }).length !== s.count) return {
@@ -23889,14 +24756,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           };
         },
         _ret1;
-      for (_iterator96.s(); !(_step96 = _iterator96.n()).done;) {
-        _ret1 = _loop27();
+      for (_iterator99.s(); !(_step99 = _iterator99.n()).done;) {
+        _ret1 = _loop30();
         if (_ret1) return _ret1.v;
       }
     } catch (err) {
-      _iterator96.e(err);
+      _iterator99.e(err);
     } finally {
-      _iterator96.f();
+      _iterator99.f();
     }
     var groups = _toConsumableArray(known.values()).sort(function (a, b) {
       return a.number - b.number;
@@ -24065,7 +24932,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         pump();
       };
       try {
-        xhr.open("GET", BASE2 + job.path, true);
+        xhr.open("GET", BASE3 + job.path, true);
         xhr.timeout = 8e3;
         xhr.setRequestHeader("X-API-Key", key());
         xhr.onload = function () {
@@ -24261,16 +25128,16 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var _a;
     if (!spec || !["dorama", "tvshow"].includes(spec.kind) || !Array.isArray(spec.countries) || !spec.countries.length) return [];
     var queries = [];
-    var _iterator97 = _createForOfIteratorHelper(spec.countries.slice(0, 2)),
-      _step97;
+    var _iterator100 = _createForOfIteratorHelper(spec.countries.slice(0, 2)),
+      _step100;
     try {
-      for (_iterator97.s(); !(_step97 = _iterator97.n()).done;) {
-        var country = _step97.value;
-        var _iterator98 = _createForOfIteratorHelper((((_a = spec.genres) == null ? void 0 : _a.length) ? spec.genres : [""]).slice(0, 2)),
-          _step98;
+      for (_iterator100.s(); !(_step100 = _iterator100.n()).done;) {
+        var country = _step100.value;
+        var _iterator101 = _createForOfIteratorHelper((((_a = spec.genres) == null ? void 0 : _a.length) ? spec.genres : [""]).slice(0, 2)),
+          _step101;
         try {
-          for (_iterator98.s(); !(_step98 = _iterator98.n()).done;) {
-            var genre = _step98.value;
+          for (_iterator101.s(); !(_step101 = _iterator101.n()).done;) {
+            var genre = _step101.value;
             var p = new URLSearchParams({
               type: "tv",
               country: country,
@@ -24285,15 +25152,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             queries.push("titles?" + p);
           }
         } catch (err) {
-          _iterator98.e(err);
+          _iterator101.e(err);
         } finally {
-          _iterator98.f();
+          _iterator101.f();
         }
       }
     } catch (err) {
-      _iterator97.e(err);
+      _iterator100.e(err);
     } finally {
-      _iterator97.f();
+      _iterator100.f();
     }
     return queries;
   }
@@ -24372,8 +25239,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             })) return fail();
             var seen = /* @__PURE__ */new Set(),
               results = [];
-            for (var i = 0; i < 24; i++) for (var _i28 = 0, _replies = replies; _i28 < _replies.length; _i28++) {
-              var row = _replies[_i28];
+            for (var i = 0; i < 24; i++) for (var _i32 = 0, _replies = replies; _i32 < _replies.length; _i32++) {
+              var row = _replies[_i32];
               var card = catalogueCard(row.data[i], spec, locale());
               if (card && !seen.has(card.id)) {
                 seen.add(card.id);
@@ -24407,7 +25274,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           var visible = rows.filter(Boolean);
           return visible.length ? ok(visible) : fail();
         }
-        var _loop28 = function _loop28() {
+        var _loop31 = function _loop31() {
           var index2 = cursor++,
             job = plan[index2],
             url = JSON.stringify(job.spec),
@@ -24444,7 +25311,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
         };
         while (!ended && active < 2 && cursor < plan.length) {
-          if (_loop28()) continue;
+          if (_loop31()) continue;
         }
         if (done === plan.length) pump();
       }
@@ -24463,9 +25330,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   function sourceLanguage(row) {
     var key = sourceKey(row),
       label = String(row.name || row),
-      explicit = String(row.voice_lang || row.lang || "").toLowerCase();
+      raw = String(row.voice_lang || row.lang || "").toLowerCase(),
+      explicit = {
+        eng: "en",
+        rus: "ru",
+        ukr: "uk",
+        english: "en"
+      }[raw] || raw.split(/[-_]/)[0];
     if (/^(ru|en|uk|ka|uz|it|fr)$/.test(explicit)) return explicit;
-    if (/\beng\b|англий|english/i.test(label) || /^(videasy|movpi|vidsrc|vidlink|vidfast)$/.test(key)) return "en";
+    if (/\beng\b|англий|english/i.test(label) || /^(videasy|movpi|vidsrc(?:[._-]?(?:to|me|cc|xyz|vip))?|vidlink|vidfast)$/.test(key)) return "en";
     if (/укра|ukrain/i.test(label) || /^(uafilm|eneyida|uakino|uaserials|uaflix|kinoukr|franko|starlight|oneplusone|anitube|unimay|mikai|bamboo|animeon)$/.test(key)) return "uk";
     if (/грузин|georg/i.test(label) || /^(geosaitebi|kinoflix)$/.test(key)) return "ka";
     if (/узбек|uzbek/i.test(label)) return "uz";
@@ -24523,8 +25396,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           args[_key6] = arguments[_key6];
         }
         var request = _construct(Native, args);
-        var _loop29 = function _loop29() {
-          var method = _arr19[_i29];
+        var _loop32 = function _loop32() {
+          var method = _arr21[_i33];
           var send = request[method];
           if (typeof send !== "function") return 1; // continue
           request[method] = function (url, ok) {
@@ -24545,8 +25418,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             }].concat(rest));
           };
         };
-        for (var _i29 = 0, _arr19 = ["silent", "native"]; _i29 < _arr19.length; _i29++) {
-          if (_loop29()) continue;
+        for (var _i33 = 0, _arr21 = ["silent", "native"]; _i33 < _arr21.length; _i33++) {
+          if (_loop32()) continue;
         }
         return request;
       };
@@ -24587,8 +25460,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           return fn();
         });
       };
-      for (var _i30 = 0, _arr20 = ["serial=0", "serial=1", "serial=1&anime=1"]; _i30 < _arr20.length; _i30++) {
-        var query = _arr20[_i30];
+      for (var _i34 = 0, _arr22 = ["serial=0", "serial=1", "serial=1&anime=1"]; _i34 < _arr22.length; _i34++) {
+        var query = _arr22[_i34];
         var request = new L.Reguest();
         request.lampaViewInventory = true;
         request.timeout(4500);
@@ -24612,10 +25485,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       return L.Controller.toggle("settings");
     };
     function group(language) {
-      var disabled = off();
-      L.Select.show({
-        title: text(labels[language]),
-        items: known().filter(function (row) {
+      var disabled = off(),
+        items = known().filter(function (row) {
           return sourceLanguage(row) === language;
         }).map(function (row) {
           return {
@@ -24624,8 +25495,16 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             checkbox: true,
             checked: !disabled.includes(sourceKey(row))
           };
-        }),
+        });
+      L.Select.show({
+        title: text(labels[language]),
+        items: items.length ? items : [{
+          title: text("Нет доступных источников"),
+          subtitle: text("Сервер не вернул источники на этом языке."),
+          noenter: true
+        }],
         onCheck: function onCheck(item) {
+          if (!item.src) return;
           var next = off().filter(function (id) {
             return id !== item.src;
           });
@@ -24641,7 +25520,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       L.Select.show({
         title: text("Источники онлайна"),
         items: Object.keys(labels).filter(function (lang) {
-          return rows.some(function (row) {
+          return lang === "en" || rows.some(function (row) {
             return sourceLanguage(row) === lang;
           });
         }).map(function (lang) {
@@ -25047,10 +25926,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var bar = root.querySelector(".torrent-filter");
       if (!bar) return;
       bar.classList.add("minimal-torrent-toolbar");
-      [["search", text("Поиск")], ["sort", text("Сортировка")], ["filter", text("Фильтры")]].forEach(function (_ref63) {
-        var _ref64 = _slicedToArray(_ref63, 2),
-          key = _ref64[0],
-          label = _ref64[1];
+      [["search", text("Поиск")], ["sort", text("Сортировка")], ["filter", text("Фильтры")]].forEach(function (_ref75) {
+        var _ref76 = _slicedToArray(_ref75, 2),
+          key = _ref76[0],
+          label = _ref76[1];
         var button = bar.querySelector(".filter--" + key);
         if (!button) return;
         var text2 = button.querySelector(".minimal-toolbar-label");
@@ -25073,800 +25952,6 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     });
     L.Listener.follow("torrent", schedule);
     schedule();
-  }
-
-  // src/trakt-metadata.js
-  function traktMetadata(L) {
-    var store = "minimal_trakt_metadata_v1",
-      cache = /* @__PURE__ */new Map(),
-      pending = /* @__PURE__ */new Map(),
-      warm = /* @__PURE__ */new Map(),
-      queue = [],
-      deadlines = /* @__PURE__ */new Set();
-    var running = 0,
-      generation = 0,
-      saveTimer,
-      unavailableUntil = 0;
-    var language = function language() {
-      return String(L.Storage.get("tmdb_lang", L.Storage.get("language", "ru")) || "ru").slice(0, 5);
-    };
-    var key = function key(lang, kind, id) {
-      return lang + ":" + kind + ":" + id;
-    };
-    var fresh = function fresh(entry) {
-      return entry && Date.now() - entry.at < 864e5;
-    };
-    var available = function available() {
-      return !!(L.Api.sources.tmdb && L.Api.sources.tmdb.get || L.TMDB && L.TMDB.get);
-    };
-    var saved = L.Storage.get(store, []);
-    if (Array.isArray(saved)) saved.slice(-160).forEach(function (pair) {
-      if (Array.isArray(pair) && fresh(pair[1])) cache.set(pair[0], pair[1]);
-    });
-    function save() {
-      clearTimeout(saveTimer);
-      saveTimer = setTimeout(function () {
-        return L.Storage.set(store, Array.from(cache.entries()).slice(-160));
-      }, 250);
-    }
-    function fields(json, kind, id) {
-      if (!json || Number(json.id) !== Number(id) || !(json.title || json.name)) return null;
-      var value = {};
-      for (var _i31 = 0, _arr21 = ["title", "name", "original_title", "original_name", "overview", "poster_path", "backdrop_path", "release_date", "first_air_date", "original_language", "vote_average", "vote_count", "genre_ids", "genres", "origin_country", "production_companies", "networks"]; _i31 < _arr21.length; _i31++) {
-        var name = _arr21[_i31];
-        if (json[name] != null) value[name] = json[name];
-      }
-      value.title = json.title || json.name;
-      if (kind === "tv") {
-        value.name = json.name || json.title;
-        value.original_title = json.original_name || json.original_title || value.title;
-      }
-      if (!value.genre_ids && value.genres) value.genre_ids = value.genres.map(function (g) {
-        return g.id;
-      });
-      return value;
-    }
-    function remember(lang, kind, json) {
-      var value = fields(json, kind, json && json.id);
-      if (!value) return;
-      cache.set(key(lang, kind, json.id), {
-        at: Date.now(),
-        value: value
-      });
-      if (cache.size > 160) cache.delete(cache.keys().next().value);
-      save();
-    }
-    function pump() {
-      var _loop30 = function _loop30() {
-        var task = queue.shift();
-        if (task.generation !== generation) return 1; // continue
-        running++;
-        var settled = false,
-          timer;
-        var finish = function finish(json) {
-          if (settled) return;
-          settled = true;
-          clearTimeout(timer);
-          running--;
-          if (task.generation === generation) task.done(json);
-          pump();
-        };
-        timer = setTimeout(function () {
-          return finish(null);
-        }, 5e3);
-        try {
-          tmdbGet(L, task.path, {
-            langs: task.lang
-          }, finish, function () {
-            return finish(null);
-          }, {
-            life: 60 * 24
-          });
-        } catch (error) {
-          finish(null);
-        }
-      };
-      while (running < 2 && queue.length) {
-        if (_loop30()) continue;
-      }
-    }
-    function request(path, lang, done) {
-      queue.push({
-        path: path,
-        lang: lang,
-        done: done,
-        generation: generation
-      });
-      pump();
-    }
-    function prime(lang, done) {
-      var old = warm.get(lang);
-      if (old) {
-        if (old.waiting) old.waiting.push(done);else done();
-        return;
-      }
-      var entry = {
-        waiting: [done]
-      };
-      warm.set(lang, entry);
-      var remaining = 3,
-        answers = 0;
-      [["trending/all/day", ""], ["movie/popular", "movie"], ["tv/popular", "tv"]].forEach(function (_ref65) {
-        var _ref66 = _slicedToArray(_ref65, 2),
-          path = _ref66[0],
-          type = _ref66[1];
-        return request(path, lang, function (json) {
-          if (json && Array.isArray(json.results)) answers++;
-          var _iterator99 = _createForOfIteratorHelper(json && json.results || []),
-            _step99;
-          try {
-            for (_iterator99.s(); !(_step99 = _iterator99.n()).done;) {
-              var row = _step99.value;
-              var kind = type || row.media_type;
-              if ((kind === "movie" || kind === "tv") && row.poster_path && row.backdrop_path) remember(lang, kind, row);
-            }
-          } catch (err) {
-            _iterator99.e(err);
-          } finally {
-            _iterator99.f();
-          }
-          if (! --remaining) {
-            if (!answers) unavailableUntil = Date.now() + 6e4;
-            var callbacks = entry.waiting;
-            delete entry.waiting;
-            callbacks.forEach(function (fn) {
-              return fn();
-            });
-          }
-        });
-      });
-    }
-    function localize(card, lang, done) {
-      var kind = card.media_type,
-        id = card.id,
-        k = key(lang, kind, id),
-        old = cache.get(k);
-      if (fresh(old)) return done(__spreadValues(__spreadValues({}, card), old.value));
-      if (Date.now() < unavailableUntil) return done(card);
-      if (pending.has(k)) {
-        pending.get(k).push(done);
-        return;
-      }
-      pending.set(k, [done]);
-      request(kind + "/" + id, lang, function (json) {
-        var value = fields(json, kind, id);
-        if (value) remember(lang, kind, json);
-        var callbacks = pending.get(k) || [];
-        pending.delete(k);
-        callbacks.forEach(function (fn) {
-          return fn(value ? __spreadValues(__spreadValues({}, card), value) : card);
-        });
-      });
-    }
-    function enrich(cards, done) {
-      if (!cards.length || !available()) return done(cards);
-      var lang = language(),
-        own = generation;
-      if (cards.every(function (card) {
-        return fresh(cache.get(key(lang, card.media_type, card.id)));
-      })) return done(cards.map(function (card) {
-        return __spreadValues(__spreadValues({}, card), cache.get(key(lang, card.media_type, card.id)).value);
-      }));
-      var output = cards.slice();
-      var finished = false,
-        left = cards.length,
-        timer;
-      var publish = function publish() {
-        if (finished || own !== generation) return;
-        finished = true;
-        clearTimeout(timer);
-        deadlines.delete(timer);
-        done(output.slice());
-      };
-      timer = setTimeout(publish, 2500);
-      deadlines.add(timer);
-      prime(lang, function () {
-        if (own !== generation) return;
-        cards.forEach(function (card, index2) {
-          return localize(card, lang, function (value) {
-            if (own !== generation) return;
-            output[index2] = value;
-            if (! --left) publish();
-          });
-        });
-      });
-    }
-    function clear() {
-      generation++;
-      queue.length = 0;
-      pending.clear();
-      warm.clear();
-      deadlines.forEach(clearTimeout);
-      deadlines.clear();
-    }
-    return {
-      enrich: enrich,
-      clear: clear
-    };
-  }
-
-  // src/trakt.js
-  var BASE3 = "https://api.trakt.tv/";
-  var TYPES = {
-    movie: "movies",
-    tv: "shows"
-  };
-  var FEEDS = [[text("Сейчас смотрят"), "trending"], [text("Популярное"), "popular"], [text("Самое просматриваемое за неделю"), "watched/weekly"], [text("В коллекциях за месяц"), "collected/monthly"], [text("Ожидаемые"), "anticipated"]];
-  function traktPlan(kind) {
-    if (kind === "dorama") return FEEDS.map(function (_ref67) {
-      var _ref68 = _slicedToArray(_ref67, 2),
-        title = _ref68[0],
-        path = _ref68[1];
-      return {
-        title: title,
-        url: "shows/" + path + "?countries=kr,jp,cn,tw,th&genres=drama,romance,comedy,mystery"
-      };
-    });
-    if (kind === "tvshow") return FEEDS.map(function (_ref69) {
-      var _ref70 = _slicedToArray(_ref69, 2),
-        title = _ref70[0],
-        path = _ref70[1];
-      return {
-        title: title,
-        url: "shows/" + path + "?genres=reality,talk-show,game-show&languages=ru"
-      };
-    });
-    if (!kind) return FEEDS.map(function (_ref71, index2) {
-      var _ref72 = _slicedToArray(_ref71, 2),
-        title = _ref72[0],
-        path = _ref72[1];
-      return __spreadValues({
-        title: title,
-        url: "mixed/" + path
-      }, index2 === 0 ? {
-        minimal_row_aliases: ["?sort=now_playing", "movie/now_playing", "movies/trending", "shows/trending"]
-      } : index2 === 1 ? {
-        minimal_row_aliases: ["movie/popular", "tv/popular", "movies/popular", "shows/popular"]
-      } : {});
-    });
-    var types = TYPES[kind] ? [TYPES[kind]] : kind === "anime" ? ["shows"] : ["movies", "shows"];
-    var filter = kind === "movie" || kind === "tv" ? "?without_genres=animation" : kind === "anime" ? "?genres=animation&languages=ja" : kind === "cartoon" ? "?genres=animation" : "";
-    return types.flatMap(function (type) {
-      return FEEDS.map(function (_ref73, index2) {
-        var _ref74 = _slicedToArray(_ref73, 2),
-          title = _ref74[0],
-          path = _ref74[1];
-        return {
-          title: kind === "cartoon" ? index2 === 1 ? type === "movies" ? text("Популярные мультфильмы") : text("Популярные мультсериалы") : (type === "movies" ? text("Мультфильмы") : text("Мультсериалы")) + " \xB7 " + title : title,
-          url: type + "/" + path + filter
-        };
-      });
-    });
-  }
-  function image(value) {
-    var url = Array.isArray(value) ? value[0] : "";
-    if (typeof url !== "string") return "";
-    var full = /^https:\/\//i.test(url) ? url : "https://" + url;
-    return /^https:\/\/media\.trakt\.tv\//i.test(full) ? full : "";
-  }
-  function traktCards(json, type) {
-    var seen = /* @__PURE__ */new Set();
-    return (Array.isArray(json) ? json : []).map(function (entry) {
-      var data = entry.movie || entry.show || entry,
-        kind = entry.show ? "tv" : entry.movie ? "movie" : type;
-      var id = Number(data.ids && data.ids.tmdb);
-      if (!Number.isSafeInteger(id) || id <= 0 || seen.has(kind + id)) return null;
-      seen.add(kind + id);
-      var date2 = data.released || data.first_aired || (data.year ? data.year + "-01-01" : "");
-      return __spreadProps(__spreadValues({
-        id: id,
-        source: "tmdb",
-        media_type: kind,
-        title: data.title,
-        original_title: data.original_title || data.title
-      }, kind === "tv" ? {
-        name: data.title,
-        original_name: data.original_title || data.title,
-        first_air_date: date2
-      } : {
-        release_date: date2
-      }), {
-        overview: data.overview || "",
-        vote_average: Number(data.rating) || 0,
-        vote_count: Number(data.votes) || 0,
-        original_language: data.language || "",
-        origin_country: data.country ? [String(data.country).toUpperCase()] : [],
-        genre_ids: (data.genres || []).map(function (g) {
-          return {
-            animation: 16,
-            documentary: 99,
-            reality: 10764,
-            "talk-show": 10767,
-            "game-show": 10764,
-            drama: 18,
-            romance: 10749,
-            comedy: 35,
-            mystery: 9648
-          }[g];
-        }).filter(Boolean),
-        trakt_genres: data.genres || [],
-        trakt_id: data.ids.trakt,
-        img: image(data.images && data.images.poster),
-        minimal_trakt: true
-      });
-    }).filter(Boolean);
-  }
-  function installTrakt(L) {
-    if (!L.Api || !L.Api.sources || L.Api.sources.trakt) return;
-    var cache = /* @__PURE__ */new Map(),
-      pending = /* @__PURE__ */new Map(),
-      queue = [],
-      live = /* @__PURE__ */new Set(),
-      metadata2 = traktMetadata(L);
-    var running = 0,
-      generation = 0,
-      lastKey = "",
-      searchRevision = 0;
-    var client = function client() {
-      return String(L.Storage.get("minimal_trakt_client_id", "") || "").trim();
-    };
-    var enabled = function enabled() {
-      return flag(L, "minimal_trakt_enabled", false);
-    };
-    var error = function error(fail, message) {
-      if (fail) fail({
-        status_message: message
-      });
-    };
-    function pump() {
-      var _loop31 = function _loop31() {
-        var finish = function finish(json, message) {
-          if (settled) return;
-          settled = true;
-          live.delete(xhr);
-          running--;
-          if (job.generation === generation) {
-            pending.delete(job.key);
-            if (json) {
-              cache.set(job.key, {
-                at: Date.now(),
-                value: json
-              });
-              if (cache.size > 40) cache.delete(cache.keys().next().value);
-            }
-            job.callbacks.forEach(function (_ref75) {
-              var _ref76 = _slicedToArray(_ref75, 2),
-                ok = _ref76[0],
-                fail = _ref76[1];
-              return json ? ok(json) : error(fail, message);
-            });
-          }
-          pump();
-        };
-        var job = queue.shift();
-        if (job.generation !== generation) return 1; // continue
-        running++;
-        var xhr = new XMLHttpRequest();
-        live.add(xhr);
-        var settled = false;
-        xhr.minimalTraktPath = job.path;
-        xhr.open("GET", BASE3 + job.path, true);
-        xhr.timeout = 1e4;
-        xhr.setRequestHeader("trakt-api-key", job.client);
-        xhr.setRequestHeader("trakt-api-version", "2");
-        xhr.setRequestHeader("Accept", "application/json");
-        xhr.onload = function () {
-          if (xhr.status < 200 || xhr.status >= 300) return finish(null, xhr.status === 401 || xhr.status === 403 ? text("Trakt: проверьте Client ID") : xhr.status === 429 ? text("Trakt: слишком много запросов, повторите позже") : text("Trakt недоступен ({0})", [xhr.status]));
-          try {
-            var rows2 = JSON.parse(xhr.responseText);
-            if (!Array.isArray(rows2)) throw new Error();
-            finish({
-              rows: rows2,
-              pages: Math.max(1, Number(xhr.getResponseHeader("X-Pagination-Page-Count")) || 1)
-            });
-          } catch (e) {
-            finish(null, text("Trakt вернул некорректный ответ"));
-          }
-        };
-        xhr.onerror = xhr.ontimeout = function () {
-          return finish(null, text("Не удалось подключиться к Trakt"));
-        };
-        xhr.onabort = function () {
-          return finish(null, text("Запрос Trakt отменён"));
-        };
-        try {
-          xhr.send();
-        } catch (e) {
-          finish(null, text("Не удалось подключиться к Trakt"));
-        }
-      };
-      while (running < 2 && queue.length) {
-        if (_loop31()) continue;
-      }
-    }
-    function clear() {
-      generation++;
-      queue.length = 0;
-      pending.clear();
-      metadata2.clear();
-      for (var _i32 = 0, _Array$from = Array.from(live); _i32 < _Array$from.length; _i32++) {
-        var xhr = _Array$from[_i32];
-        xhr.abort();
-      }
-    }
-    function list(params, ok, fail) {
-      if (!enabled()) return error(fail, text("Включите Trakt в настройках каталога L A M P A"));
-      var id = client();
-      if (!id) return error(fail, text("Добавьте Client ID в Настройки → L A M P A → Каталог и поиск → Trakt"));
-      if (id !== lastKey) {
-        clear();
-        cache.clear();
-        lastKey = id;
-      }
-      var mixed = String(params.url || "").match(/^mixed\/(trending|popular|watched\/weekly|collected\/monthly|anticipated)$/);
-      if (mixed) {
-        var finish = function finish() {
-          if (--left) return;
-          var good = parts.filter(Boolean);
-          if (!good.length) return error(fail, reason && reason.status_message || text("Trakt недоступен"));
-          var results = [],
-            seen = /* @__PURE__ */new Set();
-          for (var i = 0; i < 10; i++) {
-            var _iterator100 = _createForOfIteratorHelper(good),
-              _step100;
-            try {
-              for (_iterator100.s(); !(_step100 = _iterator100.n()).done;) {
-                var part = _step100.value;
-                var card = part.results[i];
-                if (card && !seen.has(card.media_type + ":" + card.id)) {
-                  seen.add(card.media_type + ":" + card.id);
-                  results.push(card);
-                }
-              }
-            } catch (err) {
-              _iterator100.e(err);
-            } finally {
-              _iterator100.f();
-            }
-          }
-          ok({
-            results: results,
-            page: good[0].page,
-            total_pages: Math.max.apply(Math, _toConsumableArray(good.map(function (part) {
-              return part.total_pages;
-            })))
-          });
-        };
-        var parts = new Array(2);
-        var left = 2,
-          reason;
-        ["movies", "shows"].forEach(function (type, index2) {
-          return list(__spreadProps(__spreadValues({}, params), {
-            url: type + "/" + mixed[1],
-            minimal_limit: 10
-          }), function (json) {
-            parts[index2] = json;
-            finish();
-          }, function (e) {
-            reason = e;
-            finish();
-          });
-        });
-        return;
-      }
-      var path = String(params.url || "movies/trending"),
-        search = path.match(/^search\/(movie|show)\?query=([^&]+)$/);
-      if (search) return searchPage({
-        type: search[1],
-        query: decodeQuery(search[2]),
-        page: params.page
-      }, ok, fail);
-      var match = path.match(/^(movies|shows)\/(trending|popular|watched\/weekly|collected\/monthly|anticipated)(\?.*)?$/);
-      var allowed = /* @__PURE__ */new Set(["", "?without_genres=animation", "?genres=animation", "?genres=animation&languages=ja"].concat(_toConsumableArray(["dorama", "tvshow"].flatMap(function (kind) {
-        return traktPlan(kind).map(function (row) {
-          return row.url.slice(row.url.indexOf("?"));
-        });
-      }))));
-      if (!match || !allowed.has(match[3] || "")) return error(fail, text("Неизвестная подборка Trakt"));
-      var page = Math.max(1, Math.min(1e3, Number(params.page) || 1));
-      var limit = params.minimal_limit === 10 ? 10 : 20;
-      var requestPath = path.replace("?without_genres=animation", "");
-      var route = requestPath + (requestPath.includes("?") ? "&" : "?") + "extended=full&limit=" + limit + "&page=" + page,
-        key = route;
-      var own = generation,
-        done = function done(json) {
-          var rows2 = json.rows.filter(function (entry) {
-            var data = entry.show || entry.movie || entry;
-            if (path.includes("languages=ru")) return data.language === "ru" || !data.language && data.country === "ru";
-            if (path.includes("countries=kr,jp,cn,tw,th")) return ["kr", "jp", "cn", "tw", "th"].includes(String(data.country || "").toLowerCase()) && !(data.genres || []).some(function (g) {
-              return ["animation", "reality", "talk-show", "game-show", "documentary"].includes(g);
-            });
-            if (path.includes("without_genres=animation")) return !(data.genres || []).includes("animation");
-            return true;
-          });
-          metadata2.enrich(traktCards(rows2, match[1] === "movies" ? "movie" : "tv"), function (results) {
-            if (own === generation) ok({
-              results: presentableCards(results, path.includes("countries=kr,jp,cn,tw,th") || path.includes("languages=ru")).filter(function (card) {
-                var genres = [].concat(_toConsumableArray(card.genre_ids || []), _toConsumableArray(card.genres || [])).map(function (g) {
-                  return Number(g.id || g);
-                });
-                if (path.includes("without_genres=animation")) return !genres.includes(16);
-                if (path.includes("countries=kr,jp,cn,tw,th")) return !genres.some(function (g) {
-                  return [16, 99, 10764, 10767].includes(g);
-                }) && (card.origin_country || []).some(function (country) {
-                  return ["KR", "JP", "CN", "TW", "TH"].includes(country);
-                });
-                return true;
-              }),
-              page: page,
-              total_pages: json.pages
-            });
-          });
-        };
-      var saved = cache.get(key);
-      if (saved && Date.now() - saved.at < 6e5) return done(saved.value);
-      if (pending.has(key)) {
-        pending.get(key).callbacks.push([done, fail]);
-        return;
-      }
-      var job = {
-        key: key,
-        path: route,
-        client: id,
-        generation: generation,
-        callbacks: [[done, fail]]
-      };
-      pending.set(key, job);
-      queue.push(job);
-      pump();
-    }
-    function cancelSearch() {
-      searchRevision++;
-      for (var i = queue.length - 1; i >= 0; i--) if (queue[i].path.startsWith("search/")) {
-        pending.delete(queue[i].key);
-        queue.splice(i, 1);
-      }
-      var _iterator101 = _createForOfIteratorHelper(pending),
-        _step101;
-      try {
-        for (_iterator101.s(); !(_step101 = _iterator101.n()).done;) {
-          var _step101$value = _slicedToArray(_step101.value, 2),
-            key = _step101$value[0],
-            job = _step101$value[1];
-          if (job.path.startsWith("search/")) job.callbacks = [];
-        }
-      } catch (err) {
-        _iterator101.e(err);
-      } finally {
-        _iterator101.f();
-      }
-      for (var _i33 = 0, _Array$from2 = Array.from(live); _i33 < _Array$from2.length; _i33++) {
-        var xhr = _Array$from2[_i33];
-        if ((xhr.minimalTraktPath || "").startsWith("search/")) xhr.abort();
-      }
-    }
-    function decodeQuery(value) {
-      try {
-        return decodeURIComponent(String(value || ""));
-      } catch (e) {
-        return String(value || "");
-      }
-    }
-    function searchPage(params, ok, fail) {
-      if (!enabled() || !client()) return error(fail, text("Включите Trakt и добавьте Client ID"));
-      var id = client();
-      if (id !== lastKey) {
-        clear();
-        cache.clear();
-        lastKey = id;
-      }
-      var type = params.type === "show" ? "show" : "movie",
-        query = String(params.query || "").trim().slice(0, 200),
-        page = Math.max(1, Math.min(1e3, Number(params.page) || 1));
-      if (!query) return ok({
-        results: [],
-        page: page,
-        total_pages: 1
-      });
-      var path = "search/" + type + "?query=" + encodeURIComponent(query) + "&extended=full&limit=20&page=" + page,
-        key = path,
-        own = generation;
-      var done = function done(json) {
-        return metadata2.enrich(traktCards(json.rows, type === "show" ? "tv" : "movie"), function (results) {
-          if (own === generation) ok({
-            results: results,
-            page: page,
-            total_pages: json.pages
-          });
-        });
-      };
-      var saved = cache.get(key);
-      if (saved && Date.now() - saved.at < 6e5) return done(saved.value);
-      if (pending.has(key)) {
-        pending.get(key).callbacks.push([done, fail]);
-        return;
-      }
-      var job = {
-        key: key,
-        path: path,
-        client: id,
-        generation: generation,
-        callbacks: [[done, fail]]
-      };
-      pending.set(key, job);
-      queue.push(job);
-      pump();
-    }
-    function discovery() {
-      return {
-        title: "Trakt",
-        params: {
-          save: true
-        },
-        onCancel: cancelSearch,
-        search: function search(params, ok) {
-          cancelSearch();
-          var token = searchRevision,
-            query = decodeQuery(params.query),
-            rows2 = new Array(2);
-          var left = 2;
-          ["movie", "show"].forEach(function (type, index2) {
-            var finish = function finish(json) {
-              rows2[index2] = __spreadProps(__spreadValues({
-                title: index2 ? text("Сериалы") : text("Фильмы"),
-                type: type
-              }, json), {
-                source: "trakt",
-                url: "search/" + type + "?query=" + encodeURIComponent(query)
-              });
-              if (! --left && token === searchRevision) ok(rows2);
-            };
-            searchPage({
-              type: type,
-              query: query,
-              page: 1
-            }, finish, function () {
-              return finish({
-                results: [],
-                page: 1,
-                total_pages: 1
-              });
-            });
-          });
-        },
-        onMore: function onMore(params, close) {
-          close();
-          L.Activity.push({
-            component: "category_full",
-            source: "trakt",
-            url: "search/" + (params.data.type === "show" ? "show" : "movie") + "?query=" + encodeURIComponent(params.query),
-            title: "Trakt \xB7 " + params.query,
-            page: 2
-          });
-        }
-      };
-    }
-    function rows(object, ok, fail) {
-      var plan = traktPlan(object.url || object.cat),
-        output = new Array(plan.length);
-      var left = plan.length,
-        failures = 0,
-        reason;
-      function finish() {
-        if (--left) return;
-        var result = output.filter(Boolean);
-        if (!result.length && failures) return error(fail, reason || text("Trakt недоступен"));
-        ok(result);
-      }
-      plan.forEach(function (row, index2) {
-        return list({
-          url: row.url,
-          page: 1
-        }, function (json) {
-          output[index2] = __spreadProps(__spreadValues(__spreadValues({}, json), row), {
-            source: "trakt"
-          });
-          finish();
-        }, function (e) {
-          failures++;
-          reason = e.status_message;
-          finish();
-        });
-      });
-    }
-    var tmdb = L.Api.sources.tmdb,
-      adapter = {
-        main: rows,
-        category: rows,
-        list: list,
-        clear: clear
-      };
-    var _loop32 = function _loop32() {
-      var method = _arr22[_i34];
-      if (tmdb[method]) adapter[method] = function () {
-        return tmdb[method].apply(tmdb, arguments);
-      };
-    };
-    for (var _i34 = 0, _arr22 = ["full", "person", "seasons", "menu", "menuCategory", "genres", "collections"]; _i34 < _arr22.length; _i34++) {
-      _loop32();
-    }
-    L.Api.sources.trakt = adapter;
-    function sources() {
-      if (!L.Params || !L.Params.select) return;
-      var options = __spreadValues({}, L.Params.values.source || {
-        tmdb: "TMDB",
-        cub: "CUB"
-      });
-      delete options.trakt;
-      if (enabled() && client()) {
-        options.trakt = "Trakt";
-        adapter.discovery = discovery;
-      } else delete adapter.discovery;
-      var selected = L.Storage.get("source", "tmdb");
-      if (selected !== "trakt" && L.Storage.get("minimal_trakt_previous_source", "") !== selected) L.Storage.set("minimal_trakt_previous_source", selected);
-      if (selected === "trakt" && !options.trakt) {
-        var previous = L.Storage.get("minimal_trakt_previous_source", "tmdb");
-        L.Storage.set("source", previous !== "trakt" && options[previous] ? previous : "tmdb");
-      }
-      L.Params.select("source", options, "tmdb");
-    }
-    function refresh() {
-      sources();
-      var controller = L.Controller && L.Controller.enabled && L.Controller.enabled();
-      if (L.Settings && L.Settings.update && controller && /^settings/.test(controller.name)) L.Settings.update();
-    }
-    L.SettingsApi.addParam({
-      component: "lampa_view",
-      param: {
-        name: "minimal_trakt_enabled",
-        type: "trigger",
-        default: false
-      },
-      field: {
-        name: "Trakt",
-        description: text("Каталог: Настройки → Остальное → Основной источник.")
-      },
-      onChange: function onChange() {
-        clear();
-        cache.clear();
-        if (!enabled() || client()) return refresh();
-        L.Storage.set("minimal_trakt_enabled", false);
-        sources();
-        L.Input.edit({
-          title: "Trakt \xB7 Client ID",
-          value: "",
-          free: true,
-          nosave: true,
-          nomic: true
-        }, function (value) {
-          var id = String(value || "").trim();
-          L.Storage.set("minimal_trakt_client_id", id);
-          L.Storage.set("minimal_trakt_enabled", !!id);
-          refresh();
-        });
-      }
-    });
-    L.SettingsApi.addParam({
-      component: "lampa_view",
-      param: {
-        name: "minimal_trakt_client_id",
-        type: "input",
-        values: "",
-        default: ""
-      },
-      field: {
-        name: "Trakt \xB7 Client ID",
-        description: text("Получить ключ: {0}.", ["https://trakt.tv/oauth/applications"])
-      },
-      onChange: function onChange() {
-        clear();
-        cache.clear();
-        if (!client()) L.Storage.set("minimal_trakt_enabled", false);
-        refresh();
-      }
-    });
-    sources();
-    return adapter;
   }
 
   // src/holiday-icons.js
@@ -32681,7 +32766,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           votes: 50
         }, {
           name: "popular_series",
-          title: lampaViewText("Новые популярные сериалы"),
+          title: lampaViewText("Популярные сериалы за год"),
           type: "tv",
           sort: "popularity.desc",
           votes: 20
@@ -32692,7 +32777,6 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             index: index + 1,
             screen: ["main"],
             call: function call() {
-              if (!enabled("recent_rows")) return null;
               return function (done) {
                 var range = yearWindow(),
                   field = row.type === "movie" ? "primary_release_date" : "first_air_date";
@@ -32709,6 +32793,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                   data.title = row.title;
                   data.url = path;
                   data.source = "tmdb";
+                  data.minimal_row_id = "minimal:annual:" + row.name;
+                  data.minimal_row_aliases = [path];
                   done(data);
                 }, function () {
                   done({
@@ -32737,7 +32823,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             name: lampaViewText("Парс"),
             icon: '<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="9" width="38" height="30" rx="6" fill="none" stroke="currentColor" stroke-width="3"/><path d="m20 17 11 7-11 7z" fill="currentColor"/><path d="M8 5h22M12 43h22" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>'
           });
-          [["anime_search", lampaViewText("Названия аниме для поиска"), lampaViewText("Использовать альтернативное название из каталога, если поиск не дал результатов. Категории раздач остаются штатными.")], ["recent_rows", lampaViewText("Новинки и популярное за год"), lampaViewText("Три подборки в начале главной страницы. Изменение применяется при её следующем открытии.")]].forEach(function (option) {
+          [["anime_search", lampaViewText("Названия аниме для поиска"), lampaViewText("Использовать альтернативное название из каталога, если поиск не дал результатов. Категории раздач остаются штатными.")]].forEach(function (option) {
             Lampa.SettingsApi.addParam({
               component: "mpv_plus",
               param: {

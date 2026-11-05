@@ -64,7 +64,7 @@ test('Trakt categories expose five genuine public feeds, retain animation filter
    const plan=r.w.Trakt.traktPlan(kind);assert.equal(plan.length,kind==='cartoon'?10:5);
    assert.ok(plan.some(row=>row.url.includes('/watched/weekly')));assert.ok(plan.some(row=>row.url.includes('/collected/monthly')));assert.ok(plan.some(row=>row.url.includes('/anticipated')));
    if(kind==='anime')assert.ok(plan.every(row=>row.url.endsWith('?genres=animation&languages=ja')));
-   if(kind==='cartoon')assert.ok(plan.every(row=>row.url.endsWith('?genres=animation')));
+   if(kind==='cartoon'){assert.ok(plan.every(row=>row.url.endsWith('?genres=animation')));assert.ok(plan.filter(row=>row.url.startsWith('movies/')).every(row=>!/мультфильм/i.test(row.title)));assert.ok(plan.filter(row=>row.url.startsWith('shows/')).every(row=>row.title.startsWith('Мультсериалы · ')));}
   }
   let answer;r.api.category({url:'movie'},rows=>answer=rows,assert.fail);
   for(let i=0;i<r.sent.length;i++)r.sent[i].reply([{movie:movie(i+1,'Ranked '+i)}]);

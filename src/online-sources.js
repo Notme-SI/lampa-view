@@ -2,9 +2,9 @@ import {text as t} from './i18n.js';
 export const sourceKey=row=>String(typeof row==='string'?row:row && (row.balanser || row.source || row.name) || '').split(' ')[0].toLowerCase().replace(/_snack$/,'');
 const russian=new Set('filmix pizdatoehd kinobase phantom aladin rudub kinogo leproduction veoveo collaps hdvb rutubemovie vkmovie kinoteatrkg lordfilm vibix kinotochka kodik ailiberty aniliberty animelib animedia animevost dreamerscast animebesst anidub zetflix alloha hdrezka'.split(' '));
 export function sourceLanguage(row){
- const key=sourceKey(row),label=String(row.name || row),explicit=String(row.voice_lang || row.lang || '').toLowerCase();
+ const key=sourceKey(row),label=String(row.name || row),raw=String(row.voice_lang || row.lang || '').toLowerCase(),explicit=({eng:'en',rus:'ru',ukr:'uk',english:'en'})[raw] || raw.split(/[-_]/)[0];
  if(/^(ru|en|uk|ka|uz|it|fr)$/.test(explicit))return explicit;
- if(/\beng\b|англий|english/i.test(label) || /^(videasy|movpi|vidsrc|vidlink|vidfast)$/.test(key))return 'en';
+ if(/\beng\b|англий|english/i.test(label) || /^(videasy|movpi|vidsrc(?:[._-]?(?:to|me|cc|xyz|vip))?|vidlink|vidfast)$/.test(key))return 'en';
  if(/укра|ukrain/i.test(label) || /^(uafilm|eneyida|uakino|uaserials|uaflix|kinoukr|franko|starlight|oneplusone|anitube|unimay|mikai|bamboo|animeon)$/.test(key))return 'uk';
  if(/грузин|georg/i.test(label) || /^(geosaitebi|kinoflix)$/.test(key))return 'ka';
  if(/узбек|uzbek/i.test(label))return 'uz';if(/итальян|italian/i.test(label))return 'it';if(/француз|french/i.test(label))return 'fr';
@@ -45,8 +45,8 @@ export default function onlineSources(L){
  }
  const labels={ru:'Русский',en:'Английский',uk:'Украинский',ka:'Грузинский',uz:'Узбекский',it:'Итальянский',fr:'Французский',other:'Другие / язык не указан'};
  const back=()=>L.Controller.toggle('settings');
- function group(language){const disabled=off();L.Select.show({title:t(labels[language]),items:known().filter(row=>sourceLanguage(row)===language).map(row=>({title:row.name,src:sourceKey(row),checkbox:true,checked:!disabled.includes(sourceKey(row))})),onCheck:item=>{const next=off().filter(id=>id!==item.src);if(!item.checked)next.push(item.src);L.Storage.set(OFF,next);revision++;},onBack:menu});}
- function menu(){const rows=known();L.Select.show({title:t('Источники онлайна'),items:Object.keys(labels).filter(lang=>rows.some(row=>sourceLanguage(row)===lang)).map(lang=>({title:t(labels[lang]),subtitle:String(rows.filter(row=>sourceLanguage(row)===lang).length),lang})).concat([{title:t('Обновить список'),refresh:true}]),onSelect:item=>{if(item.refresh){until=0;refresh(menu);}else group(item.lang);},onBack:back});}
+ function group(language){const disabled=off(),items=known().filter(row=>sourceLanguage(row)===language).map(row=>({title:row.name,src:sourceKey(row),checkbox:true,checked:!disabled.includes(sourceKey(row))}));L.Select.show({title:t(labels[language]),items:items.length?items:[{title:t('Нет доступных источников'),subtitle:t('Сервер не вернул источники на этом языке.'),noenter:true}],onCheck:item=>{if(!item.src)return;const next=off().filter(id=>id!==item.src);if(!item.checked)next.push(item.src);L.Storage.set(OFF,next);revision++;},onBack:menu});}
+ function menu(){const rows=known();L.Select.show({title:t('Источники онлайна'),items:Object.keys(labels).filter(lang=>lang==='en' || rows.some(row=>sourceLanguage(row)===lang)).map(lang=>({title:t(labels[lang]),subtitle:String(rows.filter(row=>sourceLanguage(row)===lang).length),lang})).concat([{title:t('Обновить список'),refresh:true}]),onSelect:item=>{if(item.refresh){until=0;refresh(menu);}else group(item.lang);},onBack:back});}
  if(L.SettingsApi)L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_online_sources',type:'button'},field:{name:t('Источники онлайна'),description:t('Включение по языкам. Изменения при следующем открытии онлайн.')},onChange:()=>refresh(menu)});
  return {off,remember,menu,revision:()=>revision};
 }

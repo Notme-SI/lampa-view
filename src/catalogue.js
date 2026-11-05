@@ -89,7 +89,7 @@ export function cataloguePlan(kind,mode='standard',date=new Date(),selection={})
  const state=discoveryState(kind,selection,date),plan=discoveryPlan(kind,state,date);
  const base=state.section==='overview' && !state.country && !state.genre && !state.network && !state.company && !state.period && !state.sort && !state.hero && state.format==='all';
  if(!base)return plan;
- const legacy=legacyCataloguePlan(kind,mode,date),keys={new:['year',...(kind==='dorama'?['dorama-1']:[])],rated:['uhd','rated',...(kind==='dorama'?['dorama-2']:[])],popular:['popular',...(kind==='dorama'?['dorama-0']:[])],'now-watching':['trending'],watch:['watch','ongoing'],'russian-reality':['reality'],'russian-talk':['talk'],'country-KR':['dorama-3'],'country-JP':['dorama-4'],'country-CN':['dorama-5'],'country-TH':['dorama-6']};
+ const legacy=legacyCataloguePlan(kind,mode,date),keys={new:['year',...(kind==='dorama'?['dorama-1']:[])],rated:['uhd','rated',...(kind==='dorama'?['dorama-2']:[])],popular:['popular',...(kind==='dorama'?['dorama-0']:[])],'now-watching':['trending',...(kind==='movie'?['watch']:[])],watch:['watch','ongoing'],'russian-reality':['reality'],'russian-talk':['talk'],'country-KR':['dorama-3'],'country-JP':['dorama-4'],'country-CN':['dorama-5'],'country-TH':['dorama-6']};
  const kino={'country-KR':'korea','country-JP':'japan','country-CN':'china','country-TW':'taiwan','country-TH':'thai','russian-reality':'reality','russian-talk':'talk'};
  return plan.map(row=>{const matches=legacy.filter(old=>(keys[row.key] || [row.key]).includes(old.key));return {...row,minimal_row_aliases:(row.minimal_row_aliases || []).concat(kind==='tv' && row.key==='new'?[row.minimal_row_id.replace(/:new$/,':premieres')]:[]).concat(matches.flatMap(old=>['minimal:tmdb:'+kind+':'+old.key,old.tmdb,old.cub,...(old.minimal_row_aliases || [])]).filter(Boolean)).concat(kino[row.key]?['minimal:kino:'+kind+':'+kino[row.key]]:[])};});
 }
@@ -100,6 +100,12 @@ function cubScoped(job,kind){
  if(p.get('with_original_language'))q.set('minimal_language',p.get('with_original_language'));
  const year=(p.get('first_air_date.gte') || '').slice(0,4);if(year)q.set('airdate',year);
  return {...job,cub:'?'+q.toString()};
+}
+const usesCub=(job,kind,source,hasCub)=>!!(!job.discovery && !['dorama','tvshow'].includes(kind) && hasCub && job.cub && (source==='cub' || kind==='cartoon'));
+// Settings and loading share the same IDs, aliases, titles and source routes.
+export function catalogueRow(job,kind,source='tmdb',hasCub=true){
+ const cub=usesCub(job,kind,source,hasCub),scoped=['dorama','tvshow'].includes(kind);
+ return {title:cub?job.title:job.tmdb_title || job.title,url:job.discovery?JSON.stringify(job.discovery):job.shiki || (cub?job.cub:job.tmdb || job.cub),source:job.discovery?DISCOVERY_SOURCE:job.shiki?'minimal_shiki':cub || !job.tmdb?'cub':'tmdb',...(!cub && job.tmdb && job.key?{minimal_row_id:job.minimal_row_id || 'minimal:tmdb:'+kind+':'+job.key,minimal_row_aliases:[job.tmdb,...(scoped && job.cub?[job.cub]:[]),...(job.minimal_row_aliases || [])]}:{}),results:[]};
 }
 export default function catalogue(L,shiki,object,hidden,ok){
  const kind=object.url || object.cat;
@@ -112,8 +118,8 @@ export default function catalogue(L,shiki,object,hidden,ok){
  // CUB does not implement the country/language filters needed by these two
  // sections. Use real TMDB Discover feeds, not a filtered global CUB top-20.
  const scoped=['dorama','tvshow'].includes(kind);
- const useCub=job=>!!(!job.discovery && !scoped && cub && job.cub && (source==='cub' || kind==='cartoon'));
- const rowFor=job=>({title:useCub(job)?job.title:job.tmdb_title || job.title,url:job.discovery?JSON.stringify(job.discovery):job.shiki || (useCub(job)?job.cub:job.tmdb || job.cub),source:job.discovery?DISCOVERY_SOURCE:job.shiki?'minimal_shiki':useCub(job) || !job.tmdb?'cub':'tmdb',...(!useCub(job) && job.tmdb && job.key?{minimal_row_id:job.minimal_row_id || 'minimal:tmdb:'+kind+':'+job.key,minimal_row_aliases:[job.tmdb,...(scoped && job.cub?[job.cub]:[]),...(job.minimal_row_aliases || [])]}:{}),results:[]});
+ const useCub=job=>usesCub(job,kind,source,!!cub);
+ const rowFor=job=>catalogueRow(job,kind,source,!!cub);
  function complete(){if(done===plan.length && !ended){ended=true;const result=uniquePreviews(rows.filter(Boolean));status.state=result.some(row=>row.results.length)?'ready':failures?'error':result.length===plan.length?'hidden':'empty';ok(result);}}
  function pump(){
   if(ended)return;if(object.minimal_catalogue_cancelled || object.activity && object.activity.component && object.activity.component.destroyed){ended=true;return;}if(done===plan.length){complete();return;}

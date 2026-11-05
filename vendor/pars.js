@@ -96,11 +96,10 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
         [
             {name: 'new_movies', title: lampaViewText("Новинки кино"), type: 'movie', sort: 'primary_release_date.desc', votes: 20},
             {name: 'popular_movies', title: lampaViewText("Популярные фильмы за год"), type: 'movie', sort: 'popularity.desc', votes: 50},
-            {name: 'popular_series', title: lampaViewText("Новые популярные сериалы"), type: 'tv', sort: 'popularity.desc', votes: 20}
+            {name: 'popular_series', title: lampaViewText("Популярные сериалы за год"), type: 'tv', sort: 'popularity.desc', votes: 20}
         ].forEach(function (row, index) {
             Lampa.ContentRows.add({name: 'mpv_plus_' + row.name, title: row.title, index: index + 1, screen: ['main'],
                 call: function () {
-                    if (!enabled('recent_rows')) return null;
                     return function (done) {
                         var range = yearWindow(), field = row.type === 'movie' ? 'primary_release_date' : 'first_air_date';
                         var path = 'discover/' + row.type + '?language=' + (Lampa.Storage.get('tmdb_lang', 'ru') || 'ru') +
@@ -111,6 +110,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
                             data = data || {}; data.results = data.results || [];
                             data.results.forEach(function (card) { card.source = 'tmdb'; card.media_type = row.type; });
                             data.title = row.title; data.url = path; data.source = 'tmdb';
+                            data.minimal_row_id = 'minimal:annual:' + row.name; data.minimal_row_aliases = [path];
                             done(data);
                         }, function () { done({title: row.title, results: []}); });
                     };
@@ -129,8 +129,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
         if (Lampa.SettingsApi) {
             Lampa.SettingsApi.addComponent({component: 'mpv_plus', name: lampaViewText("Парс"), icon: '<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="9" width="38" height="30" rx="6" fill="none" stroke="currentColor" stroke-width="3"/><path d="m20 17 11 7-11 7z" fill="currentColor"/><path d="M8 5h22M12 43h22" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>'});
             [
-                ['anime_search', lampaViewText("Названия аниме для поиска"), lampaViewText("Использовать альтернативное название из каталога, если поиск не дал результатов. Категории раздач остаются штатными.")],
-                ['recent_rows', lampaViewText("Новинки и популярное за год"), lampaViewText("Три подборки в начале главной страницы. Изменение применяется при её следующем открытии.")]
+                ['anime_search', lampaViewText("Названия аниме для поиска"), lampaViewText("Использовать альтернативное название из каталога, если поиск не дал результатов. Категории раздач остаются штатными.")]
             ].forEach(function (option) {
                 Lampa.SettingsApi.addParam({component: 'mpv_plus', param: {name: 'mpv_plus_' + option[0], type: 'trigger', default: true},
                     field: {name: option[1], description: option[2]}, onChange: function () {}});

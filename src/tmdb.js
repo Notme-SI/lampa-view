@@ -86,11 +86,20 @@ export function installFullGuard(L){
 export default function tmdbGet(L,path,params,ok,fail=()=>{},options){
  const callback=ok;ok=json=>callback(catalogueResults(path,json));
  const source=L.Api && L.Api.sources && L.Api.sources.tmdb;
- if(source && typeof source.get==='function'){const clean=normalizeTmdb(path,params);return source.get(clean.path,clean.params,ok,fail,options);}
- if(L.TMDB && typeof L.TMDB.get==='function')return L.TMDB.get(path,params || {},ok,fail,options);
+ // Host "released only" filters discard announced titles even for Discover.
+ // Fetch this explicit feed through the same configured TMDB proxy/transport.
+ const announced=options && options.unreleased && L.Reguest && L.TMDB && L.TMDB.api && L.TMDB.key;
+ if(!announced && source && typeof source.get==='function'){const clean=normalizeTmdb(path,params);return source.get(clean.path,clean.params,ok,fail,options);}
+ if(!announced && L.TMDB && typeof L.TMDB.get==='function')return L.TMDB.get(path,params || {},ok,fail,options);
  if(!L.Reguest || !L.TMDB || !L.TMDB.api || !L.TMDB.key)return fail();
  const request=new L.Reguest();request.timeout(10000);
- const url=path+(/[?&]api_key=/.test(path)?'':(path.includes('?')?'&':'?')+'api_key='+encodeURIComponent(L.TMDB.key()));
+ let url=path+(/[?&]api_key=/.test(path)?'':(path.includes('?')?'&':'?')+'api_key='+encodeURIComponent(L.TMDB.key()));
+ if(announced){
+  const clean=normalizeTmdb(path,params),query=new URLSearchParams(clean.path.split('?')[1] || '');
+  if(clean.params && clean.params.page)query.set('page',clean.params.page);
+  if(!query.has('language'))query.set('language',L.Storage && L.Storage.get?L.Storage.get('tmdb_lang',L.Storage.get('language','ru')):'ru');
+  query.set('api_key',L.TMDB.key());url=clean.path.split('?')[0]+'?'+query;
+ }
  request.silent(L.TMDB.api(url),data=>data && data.success===false?fail(data):ok(data),fail);
  return request;
 }

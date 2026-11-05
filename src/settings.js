@@ -27,6 +27,7 @@ export default function unifiedSettings(api,L,version=''){
   return source.filter(d=>{
    const n=d.param && d.param.name || '',text=String(d.field && d.field.name || '');
    if(seen.has(n))return false;seen.add(n);
+   if(['nova_plus_view','nova_plus_layout','nova_plus_order','minimal_search_filters','mpv_plus_recent_rows'].includes(n))return false;
    if(n==='minimal_kinoapi' && !flag(L,'minimal_kinoapi_enabled',!!L.Storage.get('lampa_view_kinoapi_key','')))return false;
    if(n==='minimal_trakt_client_id' && !flag(L,'minimal_trakt_enabled',false))return false;
    if(d.param && d.param.type==='button' && typeof d.onChange!=='function')return false;
@@ -34,7 +35,6 @@ export default function unifiedSettings(api,L,version=''){
    if(n==='alc_auto_src_btn' && typeof window!=='undefined' && window.LampaView && window.LampaView.onlineSources)return false;
    if(/^alc_auto_(fav_btn|src_btn|studios_btn|langs|visible_languages|autosubs)$/.test(n) && typeof window!=='undefined' && window.lampac_plugin)return false;
    if(n.startsWith('nova_plus_') && n!=='nova_plus_enabled' && !online)return false;
-   if(n==='nova_plus_layout' && L && L.Storage && L.Storage.get('nova_plus_view','list')!=='grid')return false;
    if(n==='nova_plus_probe' && typeof window!=='undefined' && typeof window.nova_skin_probe_mode==='function'){
     try{if(['external','disabled'].includes(window.nova_skin_probe_mode()))return false;}catch(error){}
    }

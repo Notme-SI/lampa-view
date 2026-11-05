@@ -8903,5 +8903,44 @@
   "ro": "Emisiuni TV populare",
   "fr": "Émissions TV populaires",
   "pl": "Popularne programy telewizyjne"
+ },
+ "Популярные сериалы за год": {
+  "en": "Popular series over the past year",
+  "uk": "Популярні серіали за рік",
+  "fr": "Séries populaires de l’année",
+  "be": "Папулярныя серыялы за год",
+  "zh": "过去一年的热门剧集",
+  "pt": "Séries populares do último ano",
+  "bg": "Популярни сериали за годината",
+  "he": "סדרות פופולריות בשנה האחרונה",
+  "cs": "Populární seriály za poslední rok",
+  "ro": "Seriale populare din ultimul an",
+  "pl": "Popularne seriale z ostatniego roku"
+ },
+ "Сервер не вернул источники на этом языке.": {
+  "en": "The server returned no sources in this language.",
+  "uk": "Сервер не повернув джерел цією мовою.",
+  "be": "Сервер не вярнуў крыніц на гэтай мове.",
+  "fr": "Le serveur n’a renvoyé aucune source dans cette langue.",
+  "zh": "服务器未返回此语言的播放源。",
+  "pt": "O servidor não retornou fontes neste idioma.",
+  "bg": "Сървърът не върна източници на този език.",
+  "he": "השרת לא החזיר מקורות בשפה זו.",
+  "cs": "Server nevrátil žádné zdroje v tomto jazyce.",
+  "ro": "Serverul nu a returnat surse în această limbă.",
+  "pl": "Serwer nie zwrócił źródeł w tym języku."
+ },
+ "Порядок и видимость подборок выбранного каталога.": {
+  "en": "Collection order and visibility for the selected catalogue.",
+  "uk": "Порядок і видимість добірок вибраного каталогу.",
+  "be": "Парадак і бачнасць падборак выбранага каталога.",
+  "fr": "Ordre et visibilité des collections du catalogue sélectionné.",
+  "zh": "所选目录中合集的顺序和可见性。",
+  "pt": "Ordem e visibilidade das coleções do catálogo selecionado.",
+  "bg": "Ред и видимост на колекциите в избрания каталог.",
+  "he": "הסדר והנראות של האוספים בקטלוג שנבחר.",
+  "cs": "Pořadí a viditelnost kolekcí vybraného katalogu.",
+  "ro": "Ordinea și vizibilitatea colecțiilor din catalogul selectat.",
+  "pl": "Kolejność i widoczność kolekcji wybranego katalogu."
  }
 }

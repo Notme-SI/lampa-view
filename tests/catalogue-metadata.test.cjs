@@ -53,8 +53,8 @@ test('movies and series exclude animation on every CUB and TMDB row and subseque
 
 test('cartoon discovery separates film and TV identity, preserves full rows and supports hidden stable IDs independently of CUB',()=>{
  const {cataloguePlan,default:catalogue}=mod('catalogue'),plan=cataloguePlan('cartoon'),calls=[];
- const L={Storage:{get:(k,d)=>d},Api:{sources:{minimal_discovery:{list(p,ok){calls.push(p.url);const spec=JSON.parse(p.url);ok({page:1,total_pages:2,results:[{id:55,title:'Мультфильм',name:'Мультсериал',source:'tmdb',media_type:spec.type,genre_ids:[16],original_language:'en'}]});}},cub:{list(){assert.fail('The new catalogue cannot depend on CUB');}}}}};
- for(const source of ['cub','tmdb']){let answer;catalogue(L,{}, {url:'cartoon',source},[],rows=>answer=rows);assert.equal(answer.length,plan.length);assert.ok(answer.some(row=>row.results[0].media_type==='movie'));assert.ok(answer.some(row=>row.results[0].media_type==='tv'));assert.ok(answer.every(row=>row.source==='minimal_discovery'));}
+ const L={Storage:{get:(k,d)=>d},Api:{sources:{minimal_discovery:{list(p,ok){calls.push(p.url);const spec=JSON.parse(p.url);ok({page:1,total_pages:2,results:(spec.type?[spec.type]:['movie','tv']).map(type=>({id:55,title:'Мультфильм',name:'Мультсериал',source:'tmdb',media_type:type,genre_ids:[16],original_language:'en'}))});}},cub:{list(){assert.fail('The new catalogue cannot depend on CUB');}}}}};
+ for(const source of ['cub','tmdb']){let answer;catalogue(L,{}, {url:'cartoon',source},[],rows=>answer=rows);assert.equal(answer.length,plan.length);assert.ok(answer.some(row=>row.results.some(card=>card.media_type==='movie')));assert.ok(answer.some(row=>row.results.some(card=>card.media_type==='tv')));assert.ok(answer.every(row=>row.source==='minimal_discovery'));}
  const before=calls.length;let hidden;catalogue(L,{}, {url:'cartoon'},[plan[0].minimal_row_id],rows=>hidden=rows);assert.equal(calls.length-before,plan.length-1);assert.equal(hidden[0].minimal_hidden,true);
 });
 

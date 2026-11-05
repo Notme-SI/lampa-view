@@ -37,7 +37,7 @@ test('watching More pages apply filters through the actual discovery source and 
 test('discovery separates recent airings, rating, popularity and years while preserving old row aliases',()=>{
  for(const kind of ['movie']){
   const plan=cataloguePlan(kind,'standard',new Date(2026,9,29)),by=key=>plan.find(row=>row.key===key),query=key=>new URLSearchParams(by(key).tmdb.split('?')[1]);
-  assert.equal(query('watch').get(kind==='movie'?'primary_release_date.lte':'air_date.lte'),'2026-10-29');assert.equal(query('rated').get('sort_by'),'vote_average.desc');assert.equal(by('rated').title,'Высокий рейтинг');
+  assert.equal(query('new').get('primary_release_date.lte'),'2026-10-29');assert.equal(query('rated').get('sort_by'),'vote_average.desc');assert.equal(by('rated').title,'Высокий рейтинг');
   assert.equal(query('new').get('sort_by'),(kind==='movie'?'primary_release_date':'first_air_date')+'.desc');assert.equal(query('popular').get('sort_by'),'popularity.desc');
   assert.ok(by('rated').minimal_row_aliases.includes('minimal:tmdb:'+kind+':uhd'));assert.ok(by('new').minimal_row_aliases.includes('minimal:tmdb:'+kind+':year'));
   assert.ok(plan.every(row=>row.discovery));assert.equal(new Set(plan.map(row=>row.tmdb)).size,plan.length);
@@ -46,7 +46,7 @@ test('discovery separates recent airings, rating, popularity and years while pre
  for(const kind of ['movie','tv','cartoon'])assert.deepEqual(cataloguePlan(kind).slice(1,5).map(row=>row.title),lead);
  const tv=cataloguePlan('tv');
  assert.ok(tv.every(row=>!row.discovery.network && (!row.discovery.period || row.key==='new')));
- assert.deepEqual(tv.slice(5,9).map(row=>row.title),['Российские сериалы','Корейские дорамы','Турецкие сериалы','Китайские дорамы']);
+ assert.deepEqual(tv.slice(6,10).map(row=>row.title),['Российские сериалы','Корейские дорамы','Турецкие сериалы','Китайские дорамы']);
  assert.deepEqual(tv.slice(1,5).map(row=>row.discovery.sort),['new','rated','popular','votes']);
 });
 
