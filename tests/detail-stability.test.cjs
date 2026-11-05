@@ -31,13 +31,19 @@ test('keyword-restricted full cards restore supplied cast/comments and omit dupl
  try{
   L.Storage.set('adult_content_view',false);
   const card={id:91,name:'Сериал',original_name:'Show',first_air_date:'2021-01-01',production_countries:[],production_companies:[],spoken_languages:[],genres:[],source:'tmdb',keywords:{results:[{id:1,name:'nudity'}]}};
-  L.Api.full=(p,ok)=>ok({movie:card,persons:{crew:[],cast:[{id:100,name:'Актёр',profile_path:'/person.jpg',character:'Role'}]},discuss:{result:[]},images:{logos:[]},videos:{results:[]},simular:{results:[]},recomend:{results:[]}});
+  L.Api.full=(p,ok)=>ok({movie:card,persons:{crew:[],cast:[{id:100,name:'Актёр',profile_path:'/person.jpg',character:'Role'}]},discuss:{result:[]},images:{logos:[]},videos:{results:[]},collection:{results:[{id:401,title:'Коллекция',poster_path:'/poster.jpg'}]},simular:{results:[{id:402,title:'Похожий сериал',poster_path:'/poster.jpg'}]},recomend:{results:[{id:403,title:'Рекомендация',poster_path:'/poster.jpg'}]}});
   L.Activity.push({component:'full',id:91,method:'tv',source:'tmdb',card});await new Promise(resolve=>setTimeout(resolve,120));
   const link=L.Activity.active().activity.component,root=link.render(true);
   assert.equal(card.adult,true,'Exercise the native keyword classification');
   assert.ok(root.querySelector('.minimal-cast-native'));assert.ok(root.querySelector('.minimal-comments-native'));
+  for(const title of ['title_collection','title_recomendations','title_similar'])assert.equal(link.rows.filter(row=>Array.isArray(row) && row[0]==='cards' && row[1].title===L.Lang.translate(title)).length,1);
+  assert.ok(link.items.length>=5,'Poster rows stay reachable below the restored cast/comments');
   assert.ok(!link.rows.some(row=>(Array.isArray(row)?row[0]:row)==='description'));
   assert.equal(root.querySelectorAll('.minimal-detail-facts').length,1);assert.notEqual(L.Storage.get('adult_content_view'),true);
+  delete card.keywords;delete card.adult;
+  L.Activity.push({component:'full',id:91,method:'tv',source:'tmdb',card});await new Promise(resolve=>setTimeout(resolve,120));
+  const normal=L.Activity.active().activity.component;
+  for(const title of ['title_collection','title_recomendations','title_similar'])assert.equal(normal.rows.filter(row=>Array.isArray(row) && row[0]==='cards' && row[1].title===L.Lang.translate(title)).length,1,'Existing native poster rows must not be duplicated');
  }finally{r.close();}
 });
 

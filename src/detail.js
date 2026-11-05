@@ -134,6 +134,12 @@ function restoreDetailRows(L,link,data){
   const results=data.discuss.result || [];
   missing.push(['discuss',{...data.discuss,movie:data.movie,title:L.Lang.translate('title_comments'),results}]);
  }
+ for(const [key,label] of [['collection','title_collection'],['recomend','title_recomendations'],['simular','title_similar']]){
+  const supplied=data[key],title=L.Lang.translate(label);
+  if(!supplied || !Array.isArray(supplied.results) || !supplied.results.length)continue;
+  const exists=link.rows.some(row=>Array.isArray(row) && row[0]==='cards' && (row[1]===supplied || row[1].title===title));
+  if(!exists)missing.push(['cards',{...supplied,title}]);
+ }
  // Insert after the built prefix. The existing cast/comment placement below
  // moves both rows and controller items together once they are constructed.
  if(missing.length)link.rows.splice(link.items.length,0,...missing);
