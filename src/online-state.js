@@ -1,5 +1,6 @@
 import tmdbGet from './tmdb.js';
 import cardInfo from './card-info.js';
+import {linkFor} from './timeline-meta.cjs';
 // Selected metadata/progress fixes adapted from the user-provided community interface.
 // Read the host's timeline; opening the online screen never rewrites watch history.
 const number=value=>Number.isFinite(Number(value))?Math.max(0,Number(value)):0;
@@ -115,10 +116,20 @@ export default function onlineState(L){
  const info=L.Storage && L.Storage.get?cardInfo(L):null;
  const names=card=>Array.from(new Set([card.original_title,card.original_name,card.title,card.name,...(info?info.names(card):[])].filter(value=>typeof value==='string' && value.trim()).map(value=>value.trim())));
  const hash=(title,season,episode)=>L.Utils.hash(season?[season,season>10?':':'',episode,title].join(''):title);
+ function linkedRecords(card,records){
+  const identity=linkFor(L,card,1,1);
+  if(!identity)return [];
+  return Object.entries(records).filter(([,value])=>value && typeof value==='object' && value.card===identity.card);
+ }
  function reader(card){
   const records=L.Storage.get(file(),{}) || {},titles=names(card);
+  const linked=new Map();
+  for(const [key,value] of linkedRecords(card,records)){
+   const coordinate=number(value.season)+':'+number(value.episode),old=linked.get(coordinate);
+   if(!old || stamp(value.updated)>stamp(old.value.updated))linked.set(coordinate,{key,value});
+  }
   return (season=0,episode=0,explicit)=>{
-   const keys=titles.map(title=>hash(title,season,episode));if(explicit)keys.push(explicit);let best=null;
+   const keys=titles.map(title=>hash(title,season,episode)),match=linked.get(season+':'+episode);if(match)keys.push(match.key);if(explicit)keys.push(explicit);let best=null;
    for(const key of new Set(keys)){
     const value=records[key],raw=typeof value==='number'?{percent:value}:value;
     if(!raw || typeof raw!=='object')continue;
@@ -136,6 +147,12 @@ export default function onlineState(L){
   // Search the supported season range in the shared records, not just seasons
   // that this particular card/device happened to cache. Focus snapshots bound it.
   const records=L.Storage.get(file(),{}) || {},seasons=Array.isArray(card.seasons)?card.seasons:[],max=60;let latest=null;
+  for(const [key,raw] of linkedRecords(card,records)){
+   const season=Number(raw.season),episode=Number(raw.episode),percent=Math.min(100,number(raw.percent)),time=number(raw.time),updated=stamp(raw.updated);
+   if(!Number.isInteger(season) || season<1 || !Number.isInteger(episode) || episode<1 || !percent && !time)continue;
+   const detail=seasons.find(row=>Number(row.season_number)===season),total=number(detail && detail.episode_count);
+   if(!latest || updated>latest.record.updated || updated===latest.record.updated && (season>latest.season || season===latest.season && episode>latest.episode))latest={season,episode,total,record:{hash:key,percent,time,duration:number(raw.duration),updated}};
+  }
   // Most candidates have no record. Do not allocate an array, Set and empty
   // result object for every episode while a TV is moving through its cards.
   if(Object.keys(records).length)for(let s=1;s<=max;s++){

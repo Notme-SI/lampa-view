@@ -6,7 +6,7 @@ function fixture(options={}){
  const root={setTimeout:fn=>timers.push(fn),encodeURIComponent,unescape,require:name=>{
    if(options.denied)throw Error('not available');
    if(name==='fs' && options.noSyncFs)throw Error('synchronous filesystem IPC must not delay launch');
-   return name==='fs'?{existsSync:()=>!options.missing}:{spawn:(...args)=>{if(options.spawnError)throw Error('not started');calls.push(args);return {on:(name,fn)=>{calls.at(-1).error=fn;}};}};
+   return name==='fs'?{existsSync:()=>!options.missing}:{spawn:(...args)=>{if(options.spawnError)throw Error('not started');calls.push(args);return {on:(name,fn)=>{calls.at(-1)[name]=fn;}};}};
  }};
  if(options.microtasks)root.queueMicrotask=queueMicrotask;
  const values={player:'other',player_torrent:'other',player_nw_path:'C:\\Players\\mpv.exe',...options.values};
@@ -24,14 +24,14 @@ test('unmodified Desktop launch passes Unicode card data without an environment 
  assert.equal(f.play(video),true);assert.equal(f.calls.length,0);
  f.L.Player.playlist([video,{...video,url:'http://server/stream?link=abc&index=3&preload',episode:3}]);f.tick();
  assert.equal(f.calls.length,1);const [exe,args,opts]=f.calls[0];assert.equal(exe,'C:\\Players\\mpv.exe');assert.equal(opts,undefined);
- assert.equal(args[1],'http://server/stream?link=abc&index=2&play');
+ assert.equal(args.at(-1),'http://server/stream?link=abc&index=2&play');
  const data=context(args);assert.equal(data.entries[0].identity.title,'Во все тяжкие');assert.equal(data.entries[0].identity.season,3);
  assert.equal(data.entries[1].identity.episode,3);assert.equal(f.external.length,1);
  assert.equal(video.url,'http://server/stream?link=abc&index=2&preload');
 });
 test('the chosen quality, rather than the old video URL, is scoped to its card',()=>{
  const f=fixture({quality:'https://host/high.mkv'});f.play({url:'https://host/low.mkv',quality:{low:'low',high:'high'},season:2,episode:4});f.tick();
- assert.equal(context(f.calls[0][1]).entries[0].url,'https://host/high.mkv');assert.equal(f.calls[0][1][1],'https://host/high.mkv');
+ assert.equal(context(f.calls[0][1]).entries[0].url,'https://host/high.mkv');assert.equal(f.calls[0][1].at(-1),'https://host/high.mkv');
 });
 test('TV, other players, inner mode, disabled transport and unavailable spawn keep the native route',()=>{
  for(const options of [{tv:true},{disabled:true},{denied:true},{values:{player:'inner'}},{values:{player_nw_path:'C:\\vlc.exe'}}]){
@@ -52,7 +52,7 @@ test('launch does not wait for filesystem IPC or timer tasks and retains the syn
 });
 test('spawn failure returns to native playback once; a superseded pending launch never starts',()=>{
  const failed=fixture({spawnError:true});failed.play({url:'https://host/a.mkv'});failed.tick();assert.equal(failed.fallback.length,1);
- const f=fixture();f.play({url:'https://host/old.mkv'});f.play({url:'https://host/new.mkv'});f.tick();assert.equal(f.calls.length,1);assert.equal(f.calls[0][1][1],'https://host/new.mkv');
+ const f=fixture();f.play({url:'https://host/old.mkv'});f.play({url:'https://host/new.mkv'});f.tick();assert.equal(f.calls.length,1);assert.equal(f.calls[0][1].at(-1),'https://host/new.mkv');
  f.calls[0].error();f.calls[0].error();assert.equal(f.fallback.length,1);
 });
 test('oversized optional metadata is dropped without blocking playback',()=>{

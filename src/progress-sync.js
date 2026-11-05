@@ -1,8 +1,9 @@
 import sharedTimeline from './shared-timeline.js';
 import watchHistory from './watch-history.js';
+import playbackProgress from './playback-progress.js';
 // CUB owns bookmarks and history. Lampac shares the actual native Timeline.
 export default function progressSync(L,enabled){
- const shared=sharedTimeline(L,enabled),history=watchHistory(L);
+ const shared=sharedTimeline(L,enabled),history=watchHistory(L),playback=playbackProgress(L,enabled);
  let refreshed=0,timer,bookmarkBusy=false;
  function refresh(){
   if(!enabled() || document.hidden || document.body.matches('.pt-tv-busy,.pt-wheel-active') || !L.Account || !L.Account.Permit || !L.Account.Permit.sync)return;
@@ -32,5 +33,5 @@ export default function progressSync(L,enabled){
  // Long-open TV home screens need updates even when no focus/visibility changes.
  const interval=setInterval(refresh,30000);
  schedule();
- return {refresh,status:shared.status,stop(){clearInterval(interval);clearTimeout(timer);shared.stop();}};
+ return {refresh,status:shared.status,stop(){playback.stop();clearInterval(interval);clearTimeout(timer);shared.stop();}};
 }

@@ -11,6 +11,21 @@ test('provider folders resolve only a unique matching title and requested season
  assert.equal(pick([row('Обсессия 2025')],{title:'Обсессия',release_date:'2026-01-01'}),'/lite/source/season');assert.equal(pick([row('Обсессия 1990')],{title:'Обсессия',release_date:'2026-01-01'}),'');
  }finally{w.close();}
 });
+
+test('linked native timelines identify opaque hashes and newer active episodes without relying on a title hash',()=>{
+ const dom=new JSDOM('',{runScripts:'outside-only'}),w=dom.window;
+ try{
+  w.eval(code);const records={
+   '15Original':{percent:95,time:0,updated:10},
+   opaque:{card:'tv_91',season:1,episode:6,percent:20,time:240,duration:1200,updated:20},
+   foreign:{card:'tv_92',season:1,episode:7,percent:30,time:360,updated:30}
+  };
+  const L={Storage:{get:(key,fallback)=>key==='file_view'?records:fallback},Utils:{hash:v=>v},Timeline:{filename:()=> 'file_view'}};
+  const state=w.OnlineState.default(L),card={id:91,source:'tmdb',name:'Сериал',original_name:'Original'};
+  assert.equal(state.lastWatched(card).episode,6);assert.equal(state.reader(card)(1,6).hash,'opaque');
+  assert.equal(state.reader(card)(1,6).time,240);assert.equal(state.resume(card).episode,6);
+ }finally{w.close();}
+});
 test('source availability checks real entries, excludes similar titles and distinguishes access failures from empty catalogues',()=>{
  const dom=new JSDOM('',{runScripts:'outside-only'}),w=dom.window;try{w.eval(code);const state=w.OnlineState.availability;
  assert.equal(state(tag({method:'play',url:'/file'})).state,'ok');assert.equal(state(tag({method:'call',url:'/call',similar:true})).state,'empty');assert.equal(state('<div class="videos__line"></div>').state,'empty');assert.equal(state('<html><h1>Access denied</h1></html>').state,'unknown');assert.equal(state('').state,'unknown');assert.equal(state(JSON.stringify({accsdb:true})).state,'unknown');assert.equal(state({data:[{method:'call',url:'/film'}]}).state,'ok');assert.equal(state({data:[]}).state,'empty');assert.equal(state('<script>'+tag({method:'play',url:'/fake'})+'</script>').state,'unknown');assert.equal(state('<div class="videos__item">No valid data</div>').state,'empty');

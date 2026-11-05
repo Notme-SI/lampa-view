@@ -4,16 +4,31 @@ const namespace='lampa_view_timeline_v1';
 const number=value=>Number.isFinite(Number(value))?Math.max(0,Number(value)):0;
 const stamp=value=>typeof value==='string' && !/^\d+$/.test(value)?Date.parse(value) || 0:number(value);
 const validHash=value=>/^[a-zA-Z0-9_.:-]{1,128}$/.test(String(value)) && !['__proto__','constructor','prototype'].includes(String(value));
-const road=value=>typeof value==='number'?{percent:Math.min(100,number(value)),time:0,duration:0,updated:0}:{percent:Math.min(100,number(value && value.percent)),time:number(value && value.time),duration:number(value && value.duration),updated:stamp(value && value.updated)};
-const fingerprint=value=>[value.percent,value.time,value.duration,value.updated].join('|');
+function metadata(value){
+ if(!value || !/^[a-z0-9_]{1,64}$/.test(value.card || ''))return {};
+ if(value.season===undefined && value.episode===undefined)return {card:value.card};
+ const season=Number(value.season),episode=Number(value.episode);
+ return Number.isInteger(season) && season>=0 && season<=999 && Number.isInteger(episode) && episode>0 && episode<=9999?{card:value.card,season,episode}:{};
+}
+function remoteMetadata(value){
+ if(typeof value!=='string' || !value.startsWith(namespace+':'))return {};
+ const [card,season,episode]=value.slice(namespace.length+1).split(':');
+ return metadata(season==='' && episode===''?{card}:{card,season,episode});
+}
+function remoteCard(value){
+ const meta=metadata(value);
+ return meta.card?[namespace,meta.card,meta.season===undefined?'':meta.season,meta.episode===undefined?'':meta.episode].join(':'):namespace;
+}
+const road=value=>typeof value==='number'?{percent:Math.min(100,number(value)),time:0,duration:0,updated:0}:{percent:Math.min(100,number(value && value.percent)),time:number(value && value.time),duration:number(value && value.duration),updated:stamp(value && value.updated),...metadata(value)};
+const fingerprint=value=>[value.percent,value.time,value.duration,value.updated,value.card || '',value.season,value.episode].join('|');
 export default function sharedTimeline(L,enabled){
  const $=window.jQuery,remote=new Map(),pending=new Map(),requests=new Set();
  let context=null,generation=0,cursor=0,loaded=false,pulling=false,pushing=false,timer=null,retryAt=0,failures=0,receiving=0,applying=false;
  const health={state:'idle',lastSuccess:0,pending:0,received:0};
- function available(){
+ function available(writing=false){
   if(!enabled() || document.hidden || document.body.matches('.pt-tv-busy,.pt-wheel-active'))return false;
   const controller=L.Controller && L.Controller.enabled && L.Controller.enabled();
-  return !/player/.test(controller && controller.name || '');
+  return writing || !/player/.test(controller && controller.name || '');
  }
  function resolve(){
   const permit=L.Account && L.Account.Permit;if(!permit || !permit.sync || !L.Storage || !L.Timeline)return null;
@@ -81,11 +96,11 @@ export default function sharedTimeline(L,enabled){
  function merge(ctx,rows){
   const records={...(L.Storage.get(ctx.file,{}) || {})};let changed=false;
   for(const [hash,value] of pending){
-   if(value.updated>road(records[hash]).updated){records[hash]={...value,profile:number(ctx.id)};changed=true;}
+   if(value.updated>road(records[hash]).updated){records[hash]={...records[hash],...value,profile:number(ctx.id)};changed=true;}
   }
   for(const row of rows){
    if(!row || !validHash(row.hash))continue;
-   const hash=String(row.hash),value=road({percent:row.deleted?0:row.percent,time:row.deleted?0:row.position,duration:row.duration,updated:row.watched_at});
+   const hash=String(row.hash),value=road({percent:row.deleted?0:row.percent,time:row.deleted?0:row.position,duration:row.duration,updated:row.watched_at,...remoteMetadata(row.card)});
    const old=remote.get(hash),server=number(row.updated_at);
    if(old && (old.value.updated>value.updated || old.value.updated===value.updated && old.server>server))continue;
    remote.set(hash,{value,server});
@@ -94,8 +109,9 @@ export default function sharedTimeline(L,enabled){
   for(const [hash,entry] of remote){
    const local=road(records[hash]);
    if(records[hash] && local.updated>entry.value.updated){queue(hash,local);continue;}
-   if(!records[hash] || fingerprint(local)!==fingerprint(entry.value)){
-    records[hash]={...entry.value,profile:number(ctx.id)};changed=true;health.received++;
+   const merged={...records[hash],...entry.value,profile:number(ctx.id)};
+   if(!records[hash] || fingerprint(local)!==fingerprint(merged)){
+    records[hash]=merged;changed=true;health.received++;
    }
    const waiting=pending.get(hash);if(waiting && waiting.updated<=entry.value.updated)pending.delete(hash);
   }
@@ -106,8 +122,8 @@ export default function sharedTimeline(L,enabled){
   }
   health.pending=pending.size;if(changed)store(ctx,records);
  }
- function refresh(){
-  const ctx=ensure();if(!ctx || !available() || pulling || Date.now()<retryAt)return;
+ function refresh(writing=false){
+  const ctx=ensure();if(!ctx || !available(writing) || pulling || Date.now()<retryAt)return;
   pulling=true;health.state='pulling';
   const method=loaded?'changelog?since='+cursor+'&limit=1000':'dump';
   request(ctx,method,null,value=>{
@@ -122,11 +138,11 @@ export default function sharedTimeline(L,enabled){
   },()=>{pulling=false;failed();});
  }
  function pump(){
-  const ctx=ensure();if(!ctx || !available() || pulling || pushing || Date.now()<retryAt)return;
-  if(!loaded)return refresh();
+  const ctx=ensure();if(!ctx || !available(true) || pulling || pushing || Date.now()<retryAt)return;
+  if(!loaded)return refresh(true);
   const batch=Array.from(pending.entries()).slice(0,100);if(!batch.length){health.state='ready';return;}
   pushing=true;health.state='syncing';
-  request(ctx,'set',{rows:batch.map(([hash,value])=>({hash,card:namespace,position:value.time,duration:value.duration,percent:value.percent,watched_at:value.updated,profile:number(ctx.id),deleted:!value.percent && !value.time}))},value=>{
+  request(ctx,'set',{rows:batch.map(([hash,value])=>({hash,card:remoteCard(value),position:value.time,duration:value.duration,percent:value.percent,watched_at:value.updated,profile:number(ctx.id),deleted:!value.percent && !value.time}))},value=>{
    pushing=false;
    if(!value || !value.success){failed();return;}
    for(const [hash,sent] of batch){

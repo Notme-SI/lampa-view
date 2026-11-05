@@ -84,3 +84,26 @@ test('a nonempty dump without a version remains an error and never uploads over 
  server.ajax=function(params){const success=params.success;return ajax.call(this,{...params,success:value=>{if(value && value.rows && value.rows.length){value={rows:value.rows};}success(value);}});};
  const a=client(server);try{a.sync.refresh();await wait(30);assert.equal(a.sync.status().state,'offline');assert.equal(a.records().episode,undefined);assert.equal(server.requests.filter(r=>r.method.endsWith('/set')).length,0);}finally{a.close();}
 });
+
+test('device synchronization preserves stable episode links alongside opaque native hashes',async()=>{
+ const server=backend(),a=client(server),b=client(server);
+ try{
+  a.sync.refresh();b.sync.refresh();await wait(30);
+  a.L.Timeline.update({hash:'opaque-file',card:'tv_95403',season:1,episode:6,percent:20,time:240,duration:1200});await wait(400);
+  b.sync.refresh();await wait(30);
+  assert.equal(b.records()['opaque-file'].card,'tv_95403');assert.equal(b.records()['opaque-file'].episode,6);assert.equal(b.records()['opaque-file'].time,240);
+  server.inject('viewer@example.test',7,'opaque-file',{percent:40,position:480,duration:1200,watched_at:Date.now()+1,card:'lampa_view_timeline_v1'});
+  b.sync.refresh();await wait(30);assert.equal(b.records()['opaque-file'].card,'tv_95403','Legacy imports must retain a known local card link');
+ }finally{a.close();b.close();}
+});
+
+test('measured playback writes can reach another device while general refresh stays deferred',async()=>{
+ const server=backend(),a=client(server),b=client(server);
+ try{
+  a.sync.refresh();b.sync.refresh();await wait(30);
+  a.L.Controller={enabled:()=>({name:'player'})};
+  const before=server.requests.length;a.sync.refresh();assert.equal(server.requests.length,before);
+  a.L.Timeline.update({hash:'episode-6',card:'tv_95403',season:1,episode:6,percent:20,time:240,duration:1200});await wait(400);
+  b.sync.refresh();await wait(30);assert.equal(b.records()['episode-6'].time,240);assert.equal(b.records()['episode-6'].episode,6);
+ }finally{a.close();b.close();}
+});

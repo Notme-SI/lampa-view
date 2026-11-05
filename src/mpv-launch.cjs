@@ -1,6 +1,7 @@
 'use strict';
 
 const C = require('./identity.cjs');
+const {progressChannel} = require('./mpv-progress.cjs');
 // The native Desktop preload already supports child_process.spawn. Pass a small
 // opaque script option through it; no app patch, server or altered video URL.
 function option(context, encode) {
@@ -31,7 +32,7 @@ function install(L, root, cardFor, enabled) {
     if (video.iptv || video.iptv_player || ['lampa', 'inner'].includes(video.launch_player)) return '';
     if (L.Storage.field(video.torrent_hash ? 'player_torrent' : 'player') !== 'other') return '';
     const path = L.Storage.field('player_nw_path');
-    return typeof path === 'string' && /(?:^|[\\/])mpv\.exe$/i.test(path) ? path : '';
+    return typeof path === 'string' && /(?:^|[\\/])mpv(?:\+)?\.exe$/i.test(path) ? path : '';
   }
   function create(event) {
     const video = event.data,
@@ -93,8 +94,10 @@ function install(L, root, cardFor, enabled) {
         let metadata = option(context, encode);
         const url = encodeURI(selected.url);
         if (path.length + url.length + metadata.length > 28000) metadata = '';
-        const args = metadata ? [metadata, url] : [url];
+        const progress = progressChannel(L, root, [selected, ...playlist.map(prepare)], enabled);
+        const args = [...(metadata ? [metadata] : []), ...progress.args, url];
         const child = spawn(path, args);
+        progress.attach(child);
         started = true;
         if (child && typeof child.on === 'function') child.on('error', fallback);
         L.Player.listener.send('external', video);

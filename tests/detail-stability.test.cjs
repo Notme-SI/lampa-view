@@ -26,6 +26,21 @@ test('cast roster is finite and deduplicated; a different title cannot replace i
  assert.equal(normalizeCredits({id:12,cast:actors},{cast:actors.slice(0,1)},13),null);
 });
 
+test('keyword-restricted full cards restore supplied cast/comments and omit duplicate description rows',async()=>{
+ const r=await native({built:true}),{w,L}=r;
+ try{
+  L.Storage.set('adult_content_view',false);
+  const card={id:91,name:'Сериал',original_name:'Show',first_air_date:'2021-01-01',production_countries:[],production_companies:[],spoken_languages:[],genres:[],source:'tmdb',keywords:{results:[{id:1,name:'nudity'}]}};
+  L.Api.full=(p,ok)=>ok({movie:card,persons:{crew:[],cast:[{id:100,name:'Актёр',profile_path:'/person.jpg',character:'Role'}]},discuss:{result:[]},images:{logos:[]},videos:{results:[]},simular:{results:[]},recomend:{results:[]}});
+  L.Activity.push({component:'full',id:91,method:'tv',source:'tmdb',card});await new Promise(resolve=>setTimeout(resolve,120));
+  const link=L.Activity.active().activity.component,root=link.render(true);
+  assert.equal(card.adult,true,'Exercise the native keyword classification');
+  assert.ok(root.querySelector('.minimal-cast-native'));assert.ok(root.querySelector('.minimal-comments-native'));
+  assert.ok(!link.rows.some(row=>(Array.isArray(row)?row[0]:row)==='description'));
+  assert.equal(root.querySelectorAll('.minimal-detail-facts').length,1);assert.notEqual(L.Storage.get('adult_content_view'),true);
+ }finally{r.close();}
+});
+
 test('credits retain native director and cast order regardless of popularity or episode counts',()=>{
  const {prepareDetail}=mod('detail'),cast=Array.from({length:12},(_,i)=>({id:i+1,name:'Actor '+i,order:i,profile_path:'/person.jpg',character:'Role '+i,popularity:1}));
  cast.push({id:40,name:'Supporting',order:22,profile_path:'/person.jpg',character:'Professor',popularity:20},{id:41,name:'Recurring',order:25,profile_path:'/person.jpg',character:'Neighbour',total_episode_count:8},{id:42,name:'Extra',order:23,profile_path:'/person.jpg',character:'Crowd (uncredited)',popularity:100},{id:43,name:'Unspecified',order:24,profile_path:'/person.jpg'});

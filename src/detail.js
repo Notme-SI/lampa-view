@@ -120,6 +120,24 @@ function removeDescription(link){
  if(index<link.items.length){const item=link.items.splice(index,1)[0];if(item && item.destroy)item.destroy();}
  link.active=Math.max(0,link.items.indexOf(active));
 }
+function restoreDetailRows(L,link,data){
+ if(!link || !Array.isArray(link.rows) || !Array.isArray(link.items))return;
+ // Keyword-based restrictions can omit these informational rows even though
+ // the full response already contains them. Use the native components so their
+ // controllers, discussion actions and destroy handlers stay intact.
+ const missing=[],cast=data.persons && data.persons.cast || [];
+ const actorsTitle=L.Lang.translate('title_actors');
+ const hasCast=link.rows.some(row=>Array.isArray(row) && row[0]==='persons' && (row[1].title===actorsTitle || (row[1].results || []).some(person=>cast.some(actor=>actor.id===person.id))));
+ if(cast.length && !hasCast)missing.push(['persons',{results:cast,title:actorsTitle}]);
+ const disabled=window.lampa_settings && window.lampa_settings.disable_features || {};
+ if(!disabled.discuss && data.discuss && !link.rows.some(row=>Array.isArray(row) && row[0]==='discuss')){
+  const results=data.discuss.result || [];
+  missing.push(['discuss',{...data.discuss,movie:data.movie,title:L.Lang.translate('title_comments'),results}]);
+ }
+ // Insert after the built prefix. The existing cast/comment placement below
+ // moves both rows and controller items together once they are constructed.
+ if(missing.length)link.rows.splice(link.items.length,0,...missing);
+}
 export default function detail(L,event,loadLogo){
  if(event && event.type==='options' && event.link && event.options){
   const render=event.link.render(true),root=render && (render.nodeType?render:render[0]);
@@ -145,9 +163,8 @@ export default function detail(L,event,loadLogo){
  // Keep native description/genres as a fallback until the replacement header
  // exists; other Lampa templates must never lose their only description row.
  readableOverview(L,card,right,event.link);
- // Lampa places its age confirmation in the native description component.
- const needsAgeConfirmation=card.adult && !(L.Storage.field && L.Storage.field('adult_content_view'));
- if(!needsAgeConfirmation)removeDescription(event.link);
+ removeDescription(event.link);
+ restoreDetailRows(L,event.link,event.data);
  const technical=moveTechnicalDetails(L,card,right);
  const animeBase=window.LampaView && window.LampaView.animeBase;
  if(isAnime(card) && Number(card.number_of_seasons)===1 && animeBase && animeBase.groups){const season=(card.seasons || []).find(s=>s.season_number>0),count=Number(season && season.episode_count || card.number_of_episodes);if(count>1 && count<=3000)animeBase.groups(card,Array.from({length:count},(_,i)=>i+1),groups=>{if(!right.isConnected || !groups || groups.length<2)return;const prefix=L.Lang.translate('title_seasons')+':',counter=Array.from(right.querySelectorAll('.full-start-new__details>*')).find(n=>n.textContent.trim().startsWith(prefix));if(counter)counter.textContent=prefix+' '+groups.length;});}
