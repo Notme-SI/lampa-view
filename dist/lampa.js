@@ -1,4 +1,4 @@
-/*! Lampa View 0.5.32 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.5.33 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -12462,7 +12462,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // package.json
-  var version = "0.5.32";
+  var version = "0.5.33";
 
   // src/inputs.js
   function inputs(L) {
@@ -17963,6 +17963,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       return rows;
     }
     if (kind === "tvshow") {
+      add("now-watching", "Сейчас смотрят", {
+        country: "RU",
+        feed: "current"
+      });
       add("watch", "Популярное", {
         country: "RU"
       });
@@ -19228,7 +19232,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var all = read(),
         p = all[ctx] || (ctx === "category:anime:standard" ? all["category:anime"] : null) || {};
       var kind = String(ctx).replace("category:", "");
-      if (["movie", "tv", "cartoon"].includes(kind) && (p.order || []).length && p.watching_first_revision !== 1) {
+      if (["movie", "tv", "cartoon", "tvshow"].includes(kind) && (p.order || []).length && p.watching_first_revision !== 1) {
         var watch2 = cataloguePlan(kind).find(function (row) {
           return row.key === "now-watching";
         });

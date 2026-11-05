@@ -112,6 +112,7 @@ export function discoveryPlan(kind,value={},date=new Date()){
  if(['new','rated','votes'].includes(state.section)){types.forEach(type=>add(type+'-'+state.section,options.sorts.find(v=>v[0]===state.section)[1],{sort:state.section},type));return rows;}
  if(state.country || state.genre || state.network || state.company || state.period || state.sort || state.format!=='all'){sortRows({});return rows;}
  if(kind==='tvshow'){
+  add('now-watching','Сейчас смотрят',{country:'RU',feed:'current'});
   add('watch','Популярное',{country:'RU'});add('new','Премьеры '+date.getFullYear(),{country:'RU',sort:'popular',period:date.getFullYear()+'-'+date.getFullYear()});add('russian-reality','Реалити и соревнования',{country:'RU',genre:'10764'});add('russian-talk','Разговорные и развлекательные шоу',{country:'RU',genre:'10767'});add('rated','Высокий рейтинг',{country:'RU',sort:'rated'});
   return rows;
  }

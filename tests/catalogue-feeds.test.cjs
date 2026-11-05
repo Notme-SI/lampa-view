@@ -70,8 +70,12 @@ test('discovery plans keep deterministic row order and skip saved legacy IDs bef
 
 test('rebuilt dorama and TV shows separate countries, genres and programmes with stable migration aliases',()=>{
  const date=new Date(2026,9,30),dorama=cataloguePlan('dorama','standard',date),shows=cataloguePlan('tvshow','standard',date);
- for(const plan of [dorama,shows]){assert.equal(plan[0].key,'watch');assert.equal(plan[0].title,plan===shows?'Популярное':'Сейчас выходит');const q=new URLSearchParams(plan[0].tmdb.split('?')[1]);assert.equal(q.get('air_date.gte'),plan===shows?null:'2026-10-23');assert.equal(q.get('air_date.lte'),plan===shows?null:'2026-10-30');assert.equal(new Set(plan.map(row=>row.tmdb)).size,plan.length);assert.ok(plan.every(row=>row.media_type==='tv'));}
- assert.equal(dorama.length,15);assert.equal(shows.length,5);assert.ok(dorama.find(r=>r.key==='country-KR').minimal_row_aliases.includes('minimal:kino:dorama:korea'));
+ const watching=shows[0],watchQuery=new URLSearchParams(watching.tmdb.split('?')[1]);
+ assert.equal(watching.title,'Сейчас смотрят');assert.equal(watching.key,'now-watching');
+ assert.equal(watchQuery.get('with_origin_country'),'RU');assert.equal(watchQuery.get('with_genres'),'10764|10767');
+ assert.equal(watchQuery.get('sort_by'),'popularity.desc');assert.equal(watchQuery.get('air_date.gte'),'2025-10-30');assert.equal(watchQuery.get('air_date.lte'),'2026-10-30');
+ for(const plan of [dorama,shows]){const first=plan===shows?plan[1]:plan[0];assert.equal(first.key,'watch');assert.equal(first.title,plan===shows?'Популярное':'Сейчас выходит');const q=new URLSearchParams(first.tmdb.split('?')[1]);assert.equal(q.get('air_date.gte'),plan===shows?null:'2026-10-23');assert.equal(q.get('air_date.lte'),plan===shows?null:'2026-10-30');assert.equal(new Set(plan.map(row=>row.tmdb)).size,plan.length);assert.ok(plan.every(row=>row.media_type==='tv'));}
+ assert.equal(dorama.length,15);assert.equal(shows.length,6);assert.ok(dorama.find(r=>r.key==='country-KR').minimal_row_aliases.includes('minimal:kino:dorama:korea'));
  assert.ok(shows.every(row=>row.discovery.country==='RU')); assert.ok(shows.some(row=>row.discovery.country==='RU'));assert.ok(shows.every(row=>new URLSearchParams(row.tmdb.split('?')[1]).get('with_original_language')===null));
 });
 
@@ -79,7 +83,7 @@ test('CUB-selected regional sections use the same complete discovery source and 
  const code=esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/discovery-source.js')],bundle:true,write:false,format:'cjs',platform:'node'}).outputFiles[0].text,m={exports:{}};new Function('module','exports',code)(m,m.exports);
  const response=require('./fixtures/discovery-response.cjs'),calls=[],L={Storage:{get:(k,d)=>d},Api:{sources:{cub:{list(){assert.fail('Global CUB list cannot implement discovery');}},tmdb:{get(url,p,ok){calls.push(url);ok(response(url,p.page));}}}}};m.exports.default(L);
  for(const kind of ['tvshow','dorama']){let output;catalogue(L,{}, {url:kind,source:'cub'},[],rows=>output=rows);assert.equal(output.length,cataloguePlan(kind).length);assert.ok(output.every(row=>row.source==='minimal_discovery' && row.total_pages===2 && row.results.length===20));assert.ok(output.every(row=>JSON.parse(row.url).kind===kind));assert.ok(output.every(row=>row.results.every(c=>c.source==='tmdb' && c.media_type==='tv')));}
- assert.ok(calls.length<=27);
+ assert.ok(calls.length<=28);
 });
 
 test('catalogue previews hide explicitly missing posters and untranslated regional titles without inventing a dub',()=>{

@@ -32,7 +32,7 @@ export default function collections(L,shiki,kino,kinoFeeds){
  function prefs(ctx){
   const all=read(),p=all[ctx] || (ctx==='category:anime:standard'?all['category:anime']:null) || {};
   const kind=String(ctx).replace('category:','');
-  if(['movie','tv','cartoon'].includes(kind) && (p.order || []).length && p.watching_first_revision!==1){
+  if(['movie','tv','cartoon','tvshow'].includes(kind) && (p.order || []).length && p.watching_first_revision!==1){
    const watch=cataloguePlan(kind).find(row=>row.key==='now-watching');
    if(watch){p.order=[rowKey(watch),...p.order.filter(id=>!matchesRow(watch,id))];p.watching_first_revision=1;save(ctx,p);}
   }
