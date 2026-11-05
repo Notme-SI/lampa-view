@@ -3,9 +3,9 @@ function load(w,file,name){w.eval(esbuild.buildSync({entryPoints:[path.join(__di
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 test('CUB refresh uses the native account transport on foreground and coalesces duplicate lifecycle events',async()=>{
  const d=new JSDOM('',{runScripts:'outside-only',pretendToBeVisual:true}),w=d.window;
- try{let calls=0;const hooks={},L={Account:{Permit:{sync:true},Timeline:{update(){calls++;}}},Listener:{follow:(name,fn)=>hooks[name]=fn}};
+ try{let calls=0,bookmarkReads=0;const hooks={},L={Account:{Bookmarks:{update(){bookmarkReads++;}},Permit:{sync:true},Timeline:{update(){calls++;}}},Listener:{follow:(name,fn)=>hooks[name]=fn}};
   load(w,'progress-sync','Sync').default(L,()=>true);w.dispatchEvent(new w.Event('focus'));hooks.activity({type:'start'});await wait(400);assert.equal(calls,1);
-  w.dispatchEvent(new w.Event('focus'));await wait(400);assert.equal(calls,1,'Foreground events are bounded, not a polling loop');
+  w.dispatchEvent(new w.Event('focus'));await wait(400);assert.equal(calls,1,'Foreground events are bounded, not a polling loop');assert.equal(bookmarkReads,0,'The plugin must not launch competing native bookmark refreshes');
   L.Account.Permit.sync=false;w.dispatchEvent(new w.Event('focus'));await wait(400);assert.equal(calls,1);
  }finally{w.close();}
 });

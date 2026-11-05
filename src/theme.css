@@ -603,9 +603,9 @@ body.lampa_view .pt-series-status>span {white-space:pre}
 /* Badges keep their own corners and wrap to another line when space is short. */
 body.lampa_view .card__view .pt-quality,body.lampa_view .card__view .pt-kind {max-width:calc(100% - 8px);box-sizing:border-box;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* Native history/play marker, in the same understated pill as metadata.
-   Put it above the artwork title, leaving faces and top metadata uncovered. */
+   Favorites sit along the lower edge, leaving faces and top metadata uncovered. */
 body.lampa_view .card__view .card__icons {inset:0!important;display:block!important;width:auto;max-width:none;pointer-events:none}
-body.lampa_view .card__view .card__icons-inner {position:static;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:.2em;padding:2em .45em .45em;background:none!important;border-radius:0;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+body.lampa_view .card__view .card__icons-inner {position:static;display:flex;flex-direction:row;align-items:flex-end;justify-content:flex-start;gap:.2em;height:100%;box-sizing:border-box;padding:0 .3em .3em;background:none!important;border-radius:0;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
 body.lampa_view .card__view .card__icon {position:relative}
 body.lampa_view .card__view .card__icon[style*="left:"] {position:absolute}
 body.lampa_view .card__view .card__icon:not(.icon--history) {box-sizing:border-box;width:1.9em;height:1.9em;font-size:.65em;border:1px solid #ffffff25;border-radius:.35em;background-color:#000b;background-size:72% 72%;background-position:center;background-repeat:no-repeat;box-shadow:none}

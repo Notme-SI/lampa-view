@@ -5,10 +5,15 @@ export function placeBadges(width,height,badges,padding=4,gap=3){
   const w=Math.min(badge.width,Math.max(0,width-padding*2)),h=badge.height;
   if(w<=0 || h<=0)continue;
   const bottom=badge.corner[0]==='b',right=badge.corner[1]==='r';
-  const x=right?width-padding-w:padding;let y=bottom?height-padding-h:padding;
-  for(let i=0;i<=placed.length;i++){
+  let x=right?width-padding-w:padding,y=bottom?height-padding-h:padding;
+  for(let i=0;i<=placed.length*2;i++){
    const conflict=placed.find(p=>x<p.x+p.width+gap && x+w+gap>p.x && y<p.y+p.height+gap && y+h+gap>p.y);
    if(!conflict)break;
+   if(badge.flow==='row' && bottom && !right){
+    const next=conflict.x+conflict.width+gap;
+    if(next+w<=width-padding){x=next;continue;}
+    x=padding;
+   }
    y=bottom?conflict.y-gap-h:conflict.y+conflict.height+gap;
   }
   // Very short thumbnails keep their scores/quality; secondary markers can wait.
@@ -30,7 +35,7 @@ export default function badgeLayout(status){
    const view=node.querySelector('.card__view');if(!view)continue;const rect=view.getBoundingClientRect();
    if(!rect.width || !rect.height || rect.bottom<0 || rect.top>window.innerHeight || rect.right<0 || rect.left>window.innerWidth)continue;
    const width=view.clientWidth || rect.width,height=view.clientHeight || rect.height,scale=rect.width/width || 1,entries=[];
-   for(const [selector,corner] of [['.card__vote','br'],['.pt-quality,.card__quality','tl'],['.pt-kind','tr'],['.pt-series-status','tr'],['.card__marker','bl'],['.card__icon:not(.icon--history)','tl'],['.card__new-episode','bl']])for(const el of view.querySelectorAll(selector)){
+   for(const [selector,corner] of [['.card__vote','br'],['.pt-quality,.card__quality','tl'],['.pt-kind','tr'],['.pt-series-status','tr'],['.card__marker','bl'],['.card__icon:not(.icon--history)','bl'],['.card__new-episode','bl']])for(const el of view.querySelectorAll(selector)){
     if(el.hidden || el.classList.contains('hide') || getComputedStyle(el).display==='none')continue;
     if(el.classList.contains('pt-series-status')){
      el.style.fontSize='';el.style.transform='none';
@@ -40,7 +45,7 @@ export default function badgeLayout(status){
      const available=Math.max(1,Math.min(width-8,parseFloat(style.maxWidth)||width)-border);
      if(natural>available)el.style.fontSize=(parseFloat(style.fontSize)*Math.max(1,available-1)/natural).toFixed(2)+'px';
     }
-    const r=el.getBoundingClientRect();if(r.width && r.height)entries.push({el,corner,width:r.width/scale,height:r.height/scale});
+    const r=el.getBoundingClientRect();if(r.width && r.height)entries.push({el,corner,flow:el.classList.contains('card__icon')?'row':undefined,width:r.width/scale,height:r.height/scale});
    }
    reads.push({view,width,height,entries,places:placeBadges(width,height,entries)});
   }
