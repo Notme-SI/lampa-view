@@ -616,10 +616,6 @@ body.lampa_view .card__view .card__icon.icon--like {background-image:url("data:i
 body.lampa_view .card__view .icon--history {position:absolute;top:62%!important;left:50%!important;right:auto!important;bottom:auto!important;transform:translate(-50%,-50%);box-sizing:border-box;width:2.2em;height:1.8em;font-size:.65em;background:#000b!important;border:1px solid #ffffff25;border-radius:.35em;color:#d4e2e6;box-shadow:none!important}
 body.lampa_view .card__view .icon--history:before {content:'';position:absolute;top:50%;left:53%;transform:translate(-50%,-50%);width:0;height:0;border-top:.38em solid transparent;border-bottom:.38em solid transparent;border-left:.58em solid currentColor}
 body.lampa_view .card__view.minimal-badge-layout>.card__vote,body.lampa_view .card__view.minimal-badge-layout>.card__icons {z-index:4}
-body.lampa_view .settings .minimal-settings .settings-param {padding:.7em 1em;font-size:.95em}
-body.lampa_view .settings .minimal-settings .settings-param__name {font-size:1em;line-height:1.35;margin-bottom:.3em}
-body.lampa_view .settings .minimal-settings .settings-param__descr {font-size:.78em;line-height:1.4;margin-top:.45em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-body.lampa_view .settings .minimal-settings .settings-param__value {font-size:.9em;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 /* Shared controls for both online layouts. */
 body.lampa_view .nova-plus-root .nova-btn,body.lampa_view .nova-plus-root .nova-chip,body.lampa_view .nova-plus-root .nova-group {background:#171717!important;color:var(--pt-text)!important;border:1px solid var(--pt-line)!important;border-radius:.625em!important;box-shadow:none!important;outline:none!important}
 body.lampa_view .nova-plus-root .nova-btn {padding:.75em 1.15em;font-weight:600}
@@ -1049,3 +1045,7 @@ body.lampa_view .settings__body>.scroll,body.lampa_view .selectbox__body>.scroll
  body.lampa_view:not(.pt-menu-pinned) .head__body {max-width:100%;padding-left:.65em;padding-right:.65em}
  body.lampa_view .minimal-detail-header,body.lampa_view .minimal-detail-columns {width:calc(100% - 2em);max-width:calc(100% - 2em)}
 }
+/* Scaled action labels may wrap; the hit area follows the enlarged controls. */
+body.lampa_view .minimal-detail-identity .full-start__button {height:auto;flex-shrink:0}
+body.lampa_view .minimal-detail-identity .full-start__button>span {white-space:normal;overflow-wrap:anywhere;text-align:center}
+body.lampa_view .minimal-detail-header .full-start-new__right {min-width:0}
