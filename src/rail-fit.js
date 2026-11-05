@@ -21,7 +21,8 @@ export default function fitRail(line,root,card,state,enabled){
  if(!viewWidth)return;
  const hero=root.previousElementSibling,home=hero && hero.matches('.pt-hero') && !document.body.classList.contains('pt-mobile');
  const preview=root.classList.contains('minimal-hero-preview');
- const key=columns+':'+scale+':'+Boolean(preview)+':'+innerWidth+':'+innerHeight+':'+Boolean(home)+':'+viewWidth.toFixed(3)+':'+font.toFixed(3)+':'+(document.body.classList.contains('pt-tv')?'tv':document.body.classList.contains('pt-mobile')?'mobile':'desktop');
+ const cards=Math.max(.8,Math.min(2,parseFloat(profile.getPropertyValue('--pt-card-scale'))||1));
+ const key=cards+':'+columns+':'+scale+':'+Boolean(preview)+':'+innerWidth+':'+innerHeight+':'+Boolean(home)+':'+viewWidth.toFixed(3)+':'+font.toFixed(3)+':'+(document.body.classList.contains('pt-tv')?'tv':document.body.classList.contains('pt-mobile')?'mobile':'desktop');
  // Lazy append can change native scroll bounds without changing poster dimensions.
  // Reconcile the focused card after TV navigation is idle as well as after resize.
  function revealFocus(){
@@ -50,6 +51,7 @@ export default function fitRail(line,root,card,state,enabled){
   // Explicit slots prevent round-to-nearest from making adjacent TV sizes equal.
   count=(parseInt(columns,10) || count)+(preview?2:0);
  }else if(scale>1){const normal=normalSlots(root,font,viewWidth,scale);if(normal>2)count=document.body.classList.contains('pt-mobile')?Math.min(count,normal-1):Math.max(2,Math.round(normal/scale));}
+ count=Math.max(1,Math.round(count/cards));
  const width=Math.floor((available-(count-1)*gap)/count*64)/64;
  if(width<=0)return;
  root.style.setProperty('--minimal-poster-width',width+'px');

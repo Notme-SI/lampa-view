@@ -1,3 +1,8 @@
+## 0.5.47
+
+- Independent card size (80–200%) for poster rows, grids and episode previews.
+- Reset text, controls and cards to 100% without changing native interface size.
+
 # Изменения
 
 ## 0.5.46 — 2026-11-05

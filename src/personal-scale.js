@@ -6,16 +6,19 @@ export default function personalScale(L){
  const values={};for(let n=80;n<=200;n+=10)values[n]=n+'%';
  for(const [name,label,description]of [
   ['lampa_view_text_scale','Размер текста','Подписи, описания и названия. Не меняет размер постеров.'],
+  ['lampa_view_cards_scale','Размер карточек','Постеры в подборках и превью серий. От 80 до 200%.'],
   ['lampa_view_controls_scale','Размер кнопок и меню','Размер значков и отступы элементов управления. Размер текста настраивается отдельно.']
  ])L.SettingsApi.addParam({component:'lampa_view',param:{name,type:'select',values,default:'100'},field:{name:t(label),description:t(description)}});
+ L.SettingsApi.addParam({component:'lampa_view',param:{name:'lampa_view_scale_reset',type:'button'},field:{name:t('Сброс масштаба'),description:t('Вернуть текст, кнопки и карточки к 100%.')},onChange:()=>{for(const key of ['text','controls','cards'])L.Storage.set('lampa_view_'+key+'_scale','100');update();document.dispatchEvent(new Event('minimal:interface-size'));document.dispatchEvent(new Event('minimal:hero-layout'));}});
  let timer,applied=[];
  const factor=key=>{const n=Number(L.Storage.get(key,'100'));return Number.isFinite(n)?Math.max(.8,Math.min(2,n/100)):1;};
  function restore(){for(const {el,prop,old,priority,value}of applied)if(el.style.getPropertyValue(prop)===value){if(old)el.style.setProperty(prop,old,priority);else el.style.removeProperty(prop);}applied=[];}
  function update(){
   clearTimeout(timer);restore();
   if(!document.body.classList.contains('lampa_view'))return;
-  const text=factor('lampa_view_text_scale'),controls=factor('lampa_view_controls_scale');
-  if(text===1 && controls===1)return;
+  const text=factor('lampa_view_text_scale'),controls=factor('lampa_view_controls_scale'),cards=factor('lampa_view_cards_scale');
+  document.body.style.setProperty('--pt-card-scale',String(cards));
+  if(text===1 && controls===1 && cards===1)return;
   const changes=[];
   function set(el,prop,value){changes.push({el,prop,value,old:el.style.getPropertyValue(prop),priority:el.style.getPropertyPriority(prop)});}
   function measure(el,props,scale){const css=getComputedStyle(el);for(const prop of props){const base=css.getPropertyValue(prop);if(!/^\d+(?:\.\d+)?px$/.test(base))continue;const value=(parseFloat(base)*scale).toFixed(2)+'px';changes.push({el,prop,value,old:el.style.getPropertyValue(prop),priority:el.style.getPropertyPriority(prop)});}}
@@ -32,15 +35,24 @@ export default function personalScale(L){
     if(width){set(el,'width',width.toFixed(2)+'px');set(el,'min-width',width.toFixed(2)+'px');}
    }
   }
+  if(cards!==1){
+   // Fit rails calculate complete slots themselves. Other grids retain native wrapping.
+   for(const el of document.querySelectorAll('.card,.nova__list--grid .nova-card,.nova__list--row .nova-card')){
+    if(el.closest('.minimal-fit-posters') || el.closest('.pt-hero') || el.classList.contains('card--collection'))continue;
+    const width=el.getBoundingClientRect().width,parent=el.parentElement.getBoundingClientRect().width;
+    if(width && parent){const size=Math.min(width*cards,parent)+'px';set(el,'width',size);set(el,'max-width',size);set(el,'flex-basis',size);}
+   }
+   for(const el of document.querySelectorAll('.nova__list:not(.nova__list--grid):not(.nova__list--row) .nova-card__thumb'))measure(el,['width','height','min-width'],cards);
+  }
   for(const change of changes){change.el.style.setProperty(change.prop,change.value,'important');change.value=change.el.style.getPropertyValue(change.prop);}applied=changes;
   if(L.Layer && L.Layer.update)L.Layer.update();
  }
  function schedule(){clearTimeout(timer);timer=setTimeout(update,100);}
- if(L.Storage.listener)L.Storage.listener.follow('change',e=>{if(['lampa_view_text_scale','lampa_view_controls_scale','lampa_view_enabled','lampa_view_layout'].includes(e.name))schedule();});
+ if(L.Storage.listener)L.Storage.listener.follow('change',e=>{if(['lampa_view_text_scale','lampa_view_controls_scale','lampa_view_cards_scale','lampa_view_enabled','lampa_view_layout'].includes(e.name)){schedule();if(e.name==='lampa_view_cards_scale'){document.body.style.setProperty('--pt-card-scale',String(factor(e.name)));document.dispatchEvent(new Event('minimal:interface-size'));document.dispatchEvent(new Event('minimal:hero-layout'));}}});
  document.addEventListener('minimal:interface-size',schedule);
  window.addEventListener('resize',schedule);
  // Observe inserted rows only; our style writes cannot trigger a feedback loop.
- const observer=new MutationObserver(()=>{if(factor('lampa_view_text_scale')!==1 || factor('lampa_view_controls_scale')!==1)schedule();});
+ const observer=new MutationObserver(()=>{if(factor('lampa_view_text_scale')!==1 || factor('lampa_view_controls_scale')!==1 || factor('lampa_view_cards_scale')!==1)schedule();});
  observer.observe(document.body,{childList:true,subtree:true});update();
- return {update,stop(){clearTimeout(timer);observer.disconnect();restore();}};
+ return {update,stop(){clearTimeout(timer);observer.disconnect();restore();document.body.style.removeProperty('--pt-card-scale');}};
 }

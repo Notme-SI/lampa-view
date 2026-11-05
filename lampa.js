@@ -1,4 +1,4 @@
-/*! Lampa View 0.5.46 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.5.47 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -12579,7 +12579,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // package.json
-  var version = "0.5.46";
+  var version = "0.5.47";
 
   // src/inputs.js
   function inputs(L) {
@@ -15770,7 +15770,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var hero = root.previousElementSibling,
       home = hero && hero.matches(".pt-hero") && !document.body.classList.contains("pt-mobile");
     var preview = root.classList.contains("minimal-hero-preview");
-    var key = columns + ":" + scale + ":" + Boolean(preview) + ":" + innerWidth + ":" + innerHeight + ":" + Boolean(home) + ":" + viewWidth.toFixed(3) + ":" + font.toFixed(3) + ":" + (document.body.classList.contains("pt-tv") ? "tv" : document.body.classList.contains("pt-mobile") ? "mobile" : "desktop");
+    var cards = Math.max(0.8, Math.min(2, parseFloat(profile.getPropertyValue("--pt-card-scale")) || 1));
+    var key = cards + ":" + columns + ":" + scale + ":" + Boolean(preview) + ":" + innerWidth + ":" + innerHeight + ":" + Boolean(home) + ":" + viewWidth.toFixed(3) + ":" + font.toFixed(3) + ":" + (document.body.classList.contains("pt-tv") ? "tv" : document.body.classList.contains("pt-mobile") ? "mobile" : "desktop");
     function revealFocus() {
       if (!document.body.classList.contains("pt-tv")) return;
       var last = line.last,
@@ -15811,6 +15812,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var normal3 = normalSlots(root, font, viewWidth, scale);
       if (normal3 > 2) count = document.body.classList.contains("pt-mobile") ? Math.min(count, normal3 - 1) : Math.max(2, Math.round(normal3 / scale));
     }
+    count = Math.max(1, Math.round(count / cards));
     var width = Math.floor((available - (count - 1) * gap) / count * 64) / 64;
     if (width <= 0) return;
     root.style.setProperty("--minimal-poster-width", width + "px");
@@ -26500,7 +26502,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   function personalScale(L) {
     var values = {};
     for (var n = 80; n <= 200; n += 10) values[n] = n + "%";
-    for (var _i38 = 0, _arr23 = [["lampa_view_text_scale", "Размер текста", "Подписи, описания и названия. Не меняет размер постеров."], ["lampa_view_controls_scale", "Размер кнопок и меню", "Размер значков и отступы элементов управления. Размер текста настраивается отдельно."]]; _i38 < _arr23.length; _i38++) {
+    for (var _i38 = 0, _arr23 = [["lampa_view_text_scale", "Размер текста", "Подписи, описания и названия. Не меняет размер постеров."], ["lampa_view_cards_scale", "Размер карточек", "Постеры в подборках и превью серий. От 80 до 200%."], ["lampa_view_controls_scale", "Размер кнопок и меню", "Размер значков и отступы элементов управления. Размер текста настраивается отдельно."]]; _i38 < _arr23.length; _i38++) {
       var _arr23$_i = _slicedToArray(_arr23[_i38], 3),
         name = _arr23$_i[0],
         label = _arr23$_i[1],
@@ -26519,6 +26521,26 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
       });
     }
+    L.SettingsApi.addParam({
+      component: "lampa_view",
+      param: {
+        name: "lampa_view_scale_reset",
+        type: "button"
+      },
+      field: {
+        name: text("Сброс масштаба"),
+        description: text("Вернуть текст, кнопки и карточки к 100%.")
+      },
+      onChange: function onChange() {
+        for (var _i39 = 0, _arr24 = ["text", "controls", "cards"]; _i39 < _arr24.length; _i39++) {
+          var key = _arr24[_i39];
+          L.Storage.set("lampa_view_" + key + "_scale", "100");
+        }
+        update();
+        document.dispatchEvent(new Event("minimal:interface-size"));
+        document.dispatchEvent(new Event("minimal:hero-layout"));
+      }
+    });
     var timer,
       applied = [];
     var factor = function factor(key) {
@@ -26552,8 +26574,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       restore();
       if (!document.body.classList.contains("lampa_view")) return;
       var text2 = factor("lampa_view_text_scale"),
-        controls = factor("lampa_view_controls_scale");
-      if (text2 === 1 && controls === 1) return;
+        controls = factor("lampa_view_controls_scale"),
+        cards = factor("lampa_view_cards_scale");
+      document.body.style.setProperty("--pt-card-scale", String(cards));
+      if (text2 === 1 && controls === 1 && cards === 1) return;
       var changes = [];
       function set(el, prop, value) {
         changes.push({
@@ -26668,8 +26692,42 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }
         }
       }
-      for (var _i39 = 0, _changes = changes; _i39 < _changes.length; _i39++) {
-        var change = _changes[_i39];
+      if (cards !== 1) {
+        var _iterator112 = _createForOfIteratorHelper(document.querySelectorAll(".card,.nova__list--grid .nova-card,.nova__list--row .nova-card")),
+          _step112;
+        try {
+          for (_iterator112.s(); !(_step112 = _iterator112.n()).done;) {
+            var _el4 = _step112.value;
+            if (_el4.closest(".minimal-fit-posters") || _el4.closest(".pt-hero") || _el4.classList.contains("card--collection")) continue;
+            var _width2 = _el4.getBoundingClientRect().width,
+              parent = _el4.parentElement.getBoundingClientRect().width;
+            if (_width2 && parent) {
+              var size = Math.min(_width2 * cards, parent) + "px";
+              set(_el4, "width", size);
+              set(_el4, "max-width", size);
+              set(_el4, "flex-basis", size);
+            }
+          }
+        } catch (err) {
+          _iterator112.e(err);
+        } finally {
+          _iterator112.f();
+        }
+        var _iterator113 = _createForOfIteratorHelper(document.querySelectorAll(".nova__list:not(.nova__list--grid):not(.nova__list--row) .nova-card__thumb")),
+          _step113;
+        try {
+          for (_iterator113.s(); !(_step113 = _iterator113.n()).done;) {
+            var _el5 = _step113.value;
+            measure(_el5, ["width", "height", "min-width"], cards);
+          }
+        } catch (err) {
+          _iterator113.e(err);
+        } finally {
+          _iterator113.f();
+        }
+      }
+      for (var _i40 = 0, _changes = changes; _i40 < _changes.length; _i40++) {
+        var change = _changes[_i40];
         change.el.style.setProperty(change.prop, change.value, "important");
         change.value = change.el.style.getPropertyValue(change.prop);
       }
@@ -26681,12 +26739,19 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       timer = setTimeout(update, 100);
     }
     if (L.Storage.listener) L.Storage.listener.follow("change", function (e) {
-      if (["lampa_view_text_scale", "lampa_view_controls_scale", "lampa_view_enabled", "lampa_view_layout"].includes(e.name)) schedule();
+      if (["lampa_view_text_scale", "lampa_view_controls_scale", "lampa_view_cards_scale", "lampa_view_enabled", "lampa_view_layout"].includes(e.name)) {
+        schedule();
+        if (e.name === "lampa_view_cards_scale") {
+          document.body.style.setProperty("--pt-card-scale", String(factor(e.name)));
+          document.dispatchEvent(new Event("minimal:interface-size"));
+          document.dispatchEvent(new Event("minimal:hero-layout"));
+        }
+      }
     });
     document.addEventListener("minimal:interface-size", schedule);
     window.addEventListener("resize", schedule);
     var observer = new MutationObserver(function () {
-      if (factor("lampa_view_text_scale") !== 1 || factor("lampa_view_controls_scale") !== 1) schedule();
+      if (factor("lampa_view_text_scale") !== 1 || factor("lampa_view_controls_scale") !== 1 || factor("lampa_view_cards_scale") !== 1) schedule();
     });
     observer.observe(document.body, {
       childList: true,
@@ -26699,6 +26764,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         clearTimeout(timer);
         observer.disconnect();
         restore();
+        document.body.style.removeProperty("--pt-card-scale");
       }
     };
   }
@@ -27008,8 +27074,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }));
         }
         var previous = series;
-        for (var _i40 = 0, _arr24 = [dorama, shows, cartoons]; _i40 < _arr24.length; _i40++) {
-          var node = _arr24[_i40];
+        for (var _i41 = 0, _arr25 = [dorama, shows, cartoons]; _i41 < _arr25.length; _i41++) {
+          var node = _arr25[_i41];
           if (previous && node) {
             if (previous.nextElementSibling !== node) previous.after(node);
             previous = node;
@@ -45991,7 +46057,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var deadline = Date.now() + PROBE_BUDGET;
         var index = 0,
           pendingCount = 0;
-        var _step112 = function step() {
+        var _step114 = function step() {
           if (!probe_busy || generation !== probe_generation || owner !== componentNow() || scopeId !== qualityScope()) return;
           if (index >= queue.length) {
             if (!pendingCount) probe_busy = false;
@@ -46018,7 +46084,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             answered = true;
             pendingCount--;
             probeAnswer(entry.key, answer);
-            _step112();
+            _step114();
           };
           try {
             net["native"](probeUrlFor(entry.key), done, function () {
@@ -46030,7 +46096,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             done("");
           }
         };
-        for (var worker = 0; worker < PROBE_PARALLEL; worker++) _step112();
+        for (var worker = 0; worker < PROBE_PARALLEL; worker++) _step114();
       }
       function probeSchedule() {
         if (!probeAllowed() || !movie || !probe_url || probe_busy || (groups.sort || []).length < 2) return;
@@ -46211,7 +46277,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           voice_seed_net = null;
           if (typeof after === "function") after();
         };
-        var _step113 = function step() {
+        var _step115 = function step() {
           if (!voice_seed_busy) return;
           if (seat >= jobs.length || Date.now() > deadline || !inSkin() || !movie) return finish();
           var job = jobs[seat++];
@@ -46240,7 +46306,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               } catch (e) {}
             }
             if (voiceListFresh()) return finish();
-            _step113();
+            _step115();
           };
           var guard = setTimeout(function () {
             if (settled) return;
@@ -46261,7 +46327,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             done("");
           }
         };
-        _step113();
+        _step115();
       }
       function voiceLink(url) {
         var value = String(url || "").replace("rjson=", "nojson=");
@@ -46421,7 +46487,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         voice_busy = true;
         var deadline = Date.now() + VOICE_BUDGET;
         var index = 0;
-        var _step114 = function step() {
+        var _step116 = function step() {
           if (!voice_busy || index >= queue.length) return;
           if (Date.now() > deadline || !inSkin()) return voiceStop();
           var entry = queue[index++];
@@ -46460,7 +46526,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             clearTimeout(guard);
             var got = voiceAnswer(entry.name, answer);
             if (!got) retryAlt();
-            _step114();
+            _step116();
           };
           var guard = setTimeout(function () {
             if (settled) return;
@@ -46481,7 +46547,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             done("");
           }
         };
-        for (var worker = 0; worker < VOICE_PARALLEL; worker++) _step114();
+        for (var worker = 0; worker < VOICE_PARALLEL; worker++) _step116();
       }
       function voiceSchedule() {
         if (!voiceWanted()) return;
@@ -47736,7 +47802,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var direct = logoDirect(path);
         if (direct && urls.indexOf(direct) === -1) urls.push(direct);
         var at = 0;
-        var _step115 = function step() {
+        var _step117 = function step() {
           if (at >= urls.length) {
             LOGO_BLIND[src] = true;
             return done("blind");
@@ -47756,7 +47822,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             } catch (e) {
               tone = "";
             }
-            if (tone !== "invert" && tone !== "glow" && tone !== "ok") return _step115();
+            if (tone !== "invert" && tone !== "glow" && tone !== "ok") return _step117();
             var now = cached(LOGO_TONE_KEY, 500, {});
             if (now && _typeof(now) === "object") {
               now[src] = tone;
@@ -47764,10 +47830,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             }
             done(tone);
           };
-          probe.onerror = _step115;
+          probe.onerror = _step117;
           probe.src = url;
         };
-        _step115();
+        _step117();
       }
       function logoKey(target) {
         var card = target || movie;
