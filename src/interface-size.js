@@ -4,7 +4,7 @@ import {layoutProfile} from './layout-profile.js';
 export default function interfaceSize(L){
  function update(){
   const mode=L.Storage.get('lampa_view_layout','auto'),tv=mode==='tv' || mode==='auto' && document.body.classList.contains('pt-tv');
-  const value=L.Storage.get('interface_size','normal'),profile=layoutProfile(tv,value,mode==='mobile' || mode==='auto' && document.body.classList.contains('pt-mobile'));
+  const value=L.Storage.get('interface_size','normal'),profile=layoutProfile(tv,value,mode==='mobile' || (mode==='auto' || mode==='tablet') && document.body.classList.contains('pt-mobile'));
   document.body.style.setProperty('--pt-interface-scale',String(profile.scale));
   document.body.style.setProperty('--pt-poster-columns',String(profile.posters || 0));
   if(tv)document.body.style.setProperty('--pt-episode-columns',String(profile.episodes));

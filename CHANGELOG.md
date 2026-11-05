@@ -1,3 +1,7 @@
+## 0.5.48
+
+- Add explicit Tablet device mode: wide layout with touch controls, compact layout on narrow windows, and resize support.
+
 ## 0.5.47
 
 - Independent card size (80–200%) for poster rows, grids and episode previews.

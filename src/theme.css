@@ -1049,3 +1049,12 @@ body.lampa_view .settings__body>.scroll,body.lampa_view .selectbox__body>.scroll
 body.lampa_view .minimal-detail-identity .full-start__button {height:auto;flex-shrink:0}
 body.lampa_view .minimal-detail-identity .full-start__button>span {white-space:normal;overflow-wrap:anywhere;text-align:center}
 body.lampa_view .minimal-detail-header .full-start-new__right {min-width:0}
+
+/* Explicit tablet profile keeps a wide card layout while retaining touch targets. */
+body.lampa_view.pt-tablet .head__actions {display:flex!important;gap:.35em;flex-shrink:0}
+body.lampa_view.pt-tablet .head__action {min-width:44px;min-height:44px}
+body.lampa_view.pt-tablet .head__action.open--settings {display:flex!important;align-items:center;justify-content:center}
+body.lampa_view.pt-tablet:not(.pt-menu-pinned) .head__body {max-width:100%;padding-left:.65em;padding-right:.65em}
+body.lampa_view.pt-tablet .minimal-detail-header,body.lampa_view.pt-tablet .minimal-detail-columns {width:calc(100% - 2em);max-width:calc(100% - 2em)}
+body.lampa_view.pt-tablet .card__title,body.lampa_view.pt-tablet .card__age {cursor:pointer;pointer-events:auto}
+body.lampa_view.pt-tablet .card:not(.pt-card-touch) .pt-card-watch,body.lampa_view.pt-tablet .card:not(.pt-card-touch) .pt-series-status {visibility:hidden!important}

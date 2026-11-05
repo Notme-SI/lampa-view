@@ -208,7 +208,7 @@ export default function quality(L,$){
   if(typeof $==='function')$(document).on('hover:focus.lampaViewQuality hover:hover.lampaViewQuality hover:touch.lampaViewQuality','.card',function(){const item=tracked.get(this);if(item)schedule(item);});
   // Touching the caption reveals details; the poster retains native opening and hold actions.
   document.addEventListener('click',event=>{
-    const caption=document.body.classList.contains('pt-mobile') && event.target.closest && event.target.closest('.card__title,.card__age');
+    const caption=document.body.matches('.pt-mobile,.pt-tablet') && event.target.closest && event.target.closest('.card__title,.card__age');
     const selected=caption && caption.closest('.card'),open=selected && !selected.classList.contains('pt-card-touch');
     for(const card of document.querySelectorAll('.card.pt-card-touch'))card.classList.remove('pt-card-touch');
     if(!selected)return;
