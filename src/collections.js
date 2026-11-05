@@ -7,7 +7,13 @@ import continueWatching,{CONTINUE,isWatching} from './continue-watching.js';
 import discoverySource from './discovery-source.js';
 import {DISCOVERY_KINDS,discoveryState,discoverySelected} from './discovery-model.js';
 export function rowKey(row){return String(row.minimal_row_id || row.url || row.title || lampaViewText("Без названия"));}
-const removedHomeRow=row=>[row.minimal_row_id,row.id,row.url].includes('minimal:annual:current_anime') || row.name==='mpv_plus_current_anime';
+export function removedHomeRow(row){
+ if([row.minimal_row_id,row.id,row.url].includes('minimal:annual:current_anime') || row.name==='mpv_plus_current_anime')return true;
+ const route=String(row.url || row.id || ''),query=new URLSearchParams(route.split('?')[1] || '');
+ // Only the general CUB latest row, never UHD releases or category feeds.
+ return /^\?/.test(route) && query.get('sort')==='latest' && !query.has('cat') && !query.has('uhd')
+  || /^(?:Последнее добавление|Последние добавления|Last addition|Latest additions)$/i.test(String(row.title || '').trim());
+}
 export function homeOrder(rows){
  const rank=row=>isWatching(row)?0:row.url===CONTINUE?1:({'minimal:annual:new_movies':2,'minimal:annual:popular_series':3,'minimal:annual:popular_movies':4}[rowKey(row)] ?? 6);
  return rows.filter(row=>!removedHomeRow(row)).map((row,i)=>({row,i})).sort((a,b)=>rank(a.row)-rank(b.row) || a.i-b.i).map(entry=>entry.row);
@@ -40,8 +46,8 @@ export default function collections(L,shiki,kino,kinoFeeds){
  const animeContext=o=>'category:anime:'+animeMode(L,o);
  const context=o=>{o=o || {};const component=o.component || 'main';if(component==='main')return 'main:';const kind=o.url || o.cat;return component==='category' && ['movie','tv','cartoon','anime','dorama','tvshow'].includes(kind)?kind==='anime'?animeContext(o):'category:'+kind:null;};
  function remember(ctx,rows,append=false){
-  if(!ctx)return;const names=known(),before=JSON.stringify(names),previous=append?(names[ctx] || []):[],next=previous.slice();
-  rows.filter(row=>row && row.title && !/^(shots|спорт|расписание)$/i.test(String(row.title).trim()) && ((row.results || []).length || row.minimal_hidden || row.minimal_configurable)).forEach(row=>{const id=rowKey(row),entry={id,title:row.title,...(row.minimal_row_aliases?{aliases:row.minimal_row_aliases}:{}),...(row.minimal_empty?{subtitle:lampaViewText("Появится после добавления в историю")}:{})};const index=next.findIndex(old=>old.id===id);if(index<0)next.push(entry);else next[index]=entry;});
+  if(!ctx)return;const names=known(),before=JSON.stringify(names),previous=append?(names[ctx] || []).filter(row=>ctx!=='main:' || !removedHomeRow(row)):[],next=previous.slice();
+  rows.filter(row=>row && row.title && (ctx!=='main:' || !removedHomeRow(row)) && !/^(shots|спорт|расписание)$/i.test(String(row.title).trim()) && ((row.results || []).length || row.minimal_hidden || row.minimal_configurable)).forEach(row=>{const id=rowKey(row),entry={id,title:row.title,...(row.minimal_row_aliases?{aliases:row.minimal_row_aliases}:{}),...(row.minimal_empty?{subtitle:lampaViewText("Появится после добавления в историю")}:{})};const index=next.findIndex(old=>old.id===id);if(index<0)next.push(entry);else next[index]=entry;});
   captured.add(ctx);if(ctx==='main:' && mainSource)names[ctx+mainSource]=next;
   if(before!==JSON.stringify({...names,[ctx]:next})){names[ctx]=next;L.Storage.set(knownKey,names);}
  }
@@ -129,18 +135,22 @@ export default function collections(L,shiki,kino,kinoFeeds){
   load(ok,fail,false);return (resolve,reject)=>load(resolve,reject,true);
  };
  // Register other catalogue rows and synchronize DOM order with remote navigation.
- const create=L.Utils.createInstance,Main=L.Maker.get('Main',{});
+ const create=L.Utils.createInstance,Main=L.Maker.get('Main',{}),attached=new WeakSet();
  L.Utils.createInstance=function(Base,object){
   const item=create.apply(this,arguments);
-  if(Base===Main && item && item.use && (!object || !object.component || ['main','category','category_full','search','minimal_filtered'].includes(object.component))){
-   const ctx=context(object);if(!ctx)return item;
+  if(Base===Main)attach(item,object);return item;
+ };
+ function attach(item,object={}){
+  if(item && item.use && !attached.has(item) && (!object || !object.component || ['main','category','category_full','search','minimal_filtered'].includes(object.component))){
+   const ctx=context(object);if(!ctx)return item;attached.add(item);if(ctx==='main:')mainSource=object.source || L.Storage.get('source','cub');
    if((object.url || object.cat)==='anime')animeTabs(L,item,object);
    if(object && object.component==='category' && ['movie','tv','cartoon','tvshow','anime','dorama'].includes(object.url || object.cat))item.use({onDestroy(){object.minimal_catalogue_cancelled=true;}});
    item.use({onBuild:sort,onPushLoaded:sort});
    function sort(){
+    if(ctx==='main:' && item.loaded)item.loaded=item.loaded.map(rows=>homeOrder(rows).filter(row=>!/(?:недавние.*(?:эпизод|сери)|recent.*episode)/i.test(String(row.title || ''))));
     if(!item.items || !item.items.length)return;
     if(ctx==='main:'){
-     const recent=item.items.filter(line=>line.data && (line.data.name==='timetable_recently' || /недавние.*(?:эпизод|сери)|recent.*episode/i.test(String(line.data.title || ''))));
+     const recent=item.items.filter(line=>line.data && (removedHomeRow(line.data) || line.data.name==='timetable_recently' || /недавние.*(?:эпизод|сери)|recent.*episode/i.test(String(line.data.title || ''))));
      if(recent.length){item.items=item.items.filter(line=>!recent.includes(line));recent.forEach(line=>line.destroy && line.destroy());item.active=Math.min(item.active || 0,Math.max(0,item.items.length-1));}
     }
     if(ctx==='main:' || !captured.has(ctx))remember(ctx,item.items.map(i=>i.data || {}),ctx==='main:');
@@ -152,8 +162,11 @@ export default function collections(L,shiki,kino,kinoFeeds){
     if(all.length!==item.items.length || all.some((value,index)=>item.items[index]!==value))item.items.forEach(i=>{const node=i.render(true),el=node && (node.nodeType?node:node[0]);if(el && el.parentNode)el.parentNode.appendChild(el);});
     item.active=Math.max(0,item.items.indexOf(active));
    }
+   sort();
   }
   return item;
- };
+ }
+ const active=L.Activity && L.Activity.active && L.Activity.active();
+ if(active && active.component==='main' && active.activity)attach(active.activity.component,active);
  return {menu};
 }

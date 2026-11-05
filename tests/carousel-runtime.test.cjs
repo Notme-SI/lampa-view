@@ -26,9 +26,15 @@ test('native home rotates cards, pauses behind settings and cleans up with its a
 test('late plugin startup decorates the already built native home without another catalogue request',async()=>{
  const r=await native({deferPlugin:true}),{w,L}=r;let calls=0;
  try{
-  L.Params.init();L.Layer.init();L.Api.main=(o,ok)=>{calls++;ok([{title:'Now watching',results:[{id:1,title:'Film',overview:'Overview',poster_path:'/p.jpg',backdrop_path:'/b.jpg',source:'tmdb'}]}]);};
+  L.Params.init();L.Layer.init();const card={id:1,title:'Film',overview:'Overview',poster_path:'/p.jpg',backdrop_path:'/b.jpg',source:'tmdb'};
+  L.Api.main=(o,ok)=>{calls++;ok([{title:'Последнее добавление',url:'?sort=latest',results:[card]},{title:'Новинки кино',minimal_row_id:'minimal:annual:new_movies',results:[card]},{title:'Сейчас смотрят',url:'movie/now_playing',results:[card]}]);};
   L.Activity.push({component:'main',source:'tmdb'});await new Promise(resolve=>setTimeout(resolve,40));assert.equal(w.document.querySelectorAll('.activity--active .pt-hero').length,0);
   w.eval(require('node:fs').readFileSync(require('node:path').join(__dirname,'../dist/lampa.js'),'utf8'));await new Promise(resolve=>setTimeout(resolve,100));
   assert.equal(w.document.querySelectorAll('.activity--active .pt-hero').length,1);assert.equal(calls,1,'No catalogue reload or repeated spinner');assert.deepEqual(r.errors,[]);
+  const initial=L.Activity.active().activity.component,keys=()=>Array.from(L.Activity.active().activity.component.items,row=>row.data.title);
+  assert.deepEqual(keys(),['Сейчас смотрят','Новинки кино']);const first=keys();
+  initial.loaded.push([{title:'Последнее добавление',url:'?sort=latest',results:[card]}]);initial.emit('pushLoaded');assert.deepEqual(keys(),first,'Deferred native rows cannot restore Latest');
+  const known=L.Storage.get('minimal_collection_rows_v2',{})['main:tmdb'];assert.ok(!known.some(row=>row.title==='Последнее добавление'));
+  L.Activity.push({component:'main',source:'tmdb',url:''});await new Promise(resolve=>setTimeout(resolve,60));assert.deepEqual(keys(),first,'Initial and menu home use the same order and exclusions');assert.equal(calls,2);assert.deepEqual(r.errors,[]);
  }finally{r.close();}
 });

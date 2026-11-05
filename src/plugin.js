@@ -137,7 +137,7 @@ if (!ROOT.LampaView) {
     if(section==='dorama')section='tv';
     if (section === 'search') return $('.head .open--search').trigger('hover:enter');
     if (section === 'settings') return $('.head .open--settings').trigger('hover:enter');
-    if (section === 'home') return L.Activity.push({url:'', title:lampaViewText("Главная"), component:'main', source:L.Storage.get('source','tmdb') || 'tmdb', page:1});
+    if (section === 'home') return L.Activity.push({url:'', title:lampaViewText("Главная"), component:'main', source:L.Storage.get('source','cub') || 'cub', page:1});
     if (section === 'library') {
       const native = $('.menu__item[data-action="favorite"]');
       if (native.length) native.trigger('hover:enter');

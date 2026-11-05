@@ -1,4 +1,4 @@
-/*! Lampa View 0.5.38 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.5.39 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -12579,7 +12579,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // package.json
-  var version = "0.5.38";
+  var version = "0.5.39";
 
   // src/inputs.js
   function inputs(L) {
@@ -20189,9 +20189,12 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   function rowKey(row) {
     return String(row.minimal_row_id || row.url || row.title || text("Без названия"));
   }
-  var removedHomeRow = function removedHomeRow(row) {
-    return [row.minimal_row_id, row.id, row.url].includes("minimal:annual:current_anime") || row.name === "mpv_plus_current_anime";
-  };
+  function removedHomeRow(row) {
+    if ([row.minimal_row_id, row.id, row.url].includes("minimal:annual:current_anime") || row.name === "mpv_plus_current_anime") return true;
+    var route = String(row.url || row.id || ""),
+      query = new URLSearchParams(route.split("?")[1] || "");
+    return /^\?/.test(route) && query.get("sort") === "latest" && !query.has("cat") && !query.has("uhd") || /^(?:Последнее добавление|Последние добавления|Last addition|Latest additions)$/i.test(String(row.title || "").trim());
+  }
   function homeOrder(rows) {
     var rank2 = function rank2(row) {
       var _a;
@@ -20295,10 +20298,12 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       if (!ctx) return;
       var names = known(),
         before = JSON.stringify(names),
-        previous = append ? names[ctx] || [] : [],
+        previous = append ? (names[ctx] || []).filter(function (row) {
+          return ctx !== "main:" || !removedHomeRow(row);
+        }) : [],
         next = previous.slice();
       rows.filter(function (row) {
-        return row && row.title && !/^(shots|спорт|расписание)$/i.test(String(row.title).trim()) && ((row.results || []).length || row.minimal_hidden || row.minimal_configurable);
+        return row && row.title && (ctx !== "main:" || !removedHomeRow(row)) && !/^(shots|спорт|расписание)$/i.test(String(row.title).trim()) && ((row.results || []).length || row.minimal_hidden || row.minimal_configurable);
       }).forEach(function (row) {
         var id = rowKey(row),
           entry = __spreadValues(__spreadValues({
@@ -20558,13 +20563,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       if (event.target !== "favorite" || event.reason === "sync") return;
       clearTimeout(historyTimer);
       var _refresh = function refresh() {
-        var active = L.Activity && L.Activity.active && L.Activity.active();
-        if (!active || active.component !== "main") return;
+        var active2 = L.Activity && L.Activity.active && L.Activity.active();
+        if (!active2 || active2.component !== "main") return;
         if (L.Select && L.Select.opened && L.Select.opened()) {
           historyTimer = setTimeout(_refresh, 500);
           return;
         }
-        var component = active.activity && active.activity.component,
+        var component = active2.activity && active2.activity.component,
           items = component && component.items;
         if (!items) return;
         var row = items.find(function (item) {
@@ -20577,8 +20582,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         };
         if (signature(row && row.data.results) !== signature(homeRows.cards().slice(0, 20)) && L.Activity.replace) L.Activity.replace({
           component: "main",
-          source: active.source,
-          url: active.url || "",
+          source: active2.source,
+          url: active2.url || "",
           page: 1
         });
       };
@@ -20655,15 +20660,26 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       };
     };
     var create = L.Utils.createInstance,
-      Main = L.Maker.get("Main", {});
+      Main = L.Maker.get("Main", {}),
+      attached = /* @__PURE__ */new WeakSet();
     L.Utils.createInstance = function (Base, object) {
       var item = create.apply(this, arguments);
-      if (Base === Main && item && item.use && (!object || !object.component || ["main", "category", "category_full", "search", "minimal_filtered"].includes(object.component))) {
+      if (Base === Main) attach(item, object);
+      return item;
+    };
+    function attach(item) {
+      var object = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      if (item && item.use && !attached.has(item) && (!object || !object.component || ["main", "category", "category_full", "search", "minimal_filtered"].includes(object.component))) {
         var sort = function sort() {
+          if (ctx === "main:" && item.loaded) item.loaded = item.loaded.map(function (rows) {
+            return homeOrder(rows).filter(function (row) {
+              return !/(?:недавние.*(?:эпизод|сери)|recent.*episode)/i.test(String(row.title || ""));
+            });
+          });
           if (!item.items || !item.items.length) return;
           if (ctx === "main:") {
             var recent = item.items.filter(function (line) {
-              return line.data && (line.data.name === "timetable_recently" || /недавние.*(?:эпизод|сери)|recent.*episode/i.test(String(line.data.title || "")));
+              return line.data && (removedHomeRow(line.data) || line.data.name === "timetable_recently" || /недавние.*(?:эпизод|сери)|recent.*episode/i.test(String(line.data.title || "")));
             });
             if (recent.length) {
               item.items = item.items.filter(function (line) {
@@ -20678,7 +20694,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           if (ctx === "main:" || !captured.has(ctx)) remember(ctx, item.items.map(function (i) {
             return i.data || {};
           }), ctx === "main:");
-          var active = item.items[item.active],
+          var active2 = item.items[item.active],
             p = prefs(ctx),
             all = item.items.slice();
           if (ctx !== "main:" && !(p.order || []).length && !(p.hidden || []).length) return;
@@ -20703,10 +20719,12 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               el = node && (node.nodeType ? node : node[0]);
             if (el && el.parentNode) el.parentNode.appendChild(el);
           });
-          item.active = Math.max(0, item.items.indexOf(active));
+          item.active = Math.max(0, item.items.indexOf(active2));
         };
         var ctx = context(object);
         if (!ctx) return item;
+        attached.add(item);
+        if (ctx === "main:") mainSource = object.source || L.Storage.get("source", "cub");
         if ((object.url || object.cat) === "anime") animeTabs(L, item, object);
         if (object && object.component === "category" && ["movie", "tv", "cartoon", "tvshow", "anime", "dorama"].includes(object.url || object.cat)) item.use({
           onDestroy: function onDestroy() {
@@ -20717,9 +20735,12 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           onBuild: sort,
           onPushLoaded: sort
         });
+        sort();
       }
       return item;
-    };
+    }
+    var active = L.Activity && L.Activity.active && L.Activity.active();
+    if (active && active.component === "main" && active.activity) attach(active.activity.component, active);
     return {
       menu: menu
     };
@@ -26613,7 +26634,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           url: "",
           title: text("Главная"),
           component: "main",
-          source: L.Storage.get("source", "tmdb") || "tmdb",
+          source: L.Storage.get("source", "cub") || "cub",
           page: 1
         });
         if (section === "library") {
