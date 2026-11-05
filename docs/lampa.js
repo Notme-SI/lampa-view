@@ -1,4 +1,4 @@
-/*! Lampa View 0.5.28 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.5.29 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -9854,11 +9854,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               });
             });
           if (canonical.join("|") !== published.join("|")) return done(null);
+          var selected = new Set(numbers);
+          var needed = Array.from(new Set(numbers.map(function (number3) {
+            return published[number3 - 1].split(":")[0];
+          })));
           var books = {};
-          var left = seasons.length;
-          seasons.forEach(function (s) {
-            return request("tv/" + (card.tmdb_id || card.id) + "/season/" + s.season_number, function (value) {
-              books[s.season_number] = value;
+          var left = needed.length;
+          needed.forEach(function (season) {
+            return request("tv/" + (card.tmdb_id || card.id) + "/season/" + season, function (value) {
+              books[season] = value;
               if (--left) return;
               var offset = 0;
               var groups2 = [];
@@ -9875,7 +9879,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                     var _loop5 = function _loop5() {
                         var e = _step9.value;
                         var number3 = ++offset;
-                        if (!numbers.includes(number3)) return 0; // continue
+                        if (!selected.has(number3)) return 0; // continue
                         var metadata = (books[e.season_number] && (books[e.season_number].episodes_original || books[e.season_number].episodes) || []).find(function (v) {
                           return v.episode_number === e.episode_number;
                         });
@@ -9925,29 +9929,35 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     }
     function groups(card, files, done, context) {
       if (!isAnime(card)) return done(null);
+      var nativeSeasons = (context && context.numbers || []).filter(function (number3) {
+        return number3 > 0;
+      });
+      var partialAllowed = nativeSeasons.length <= 1 && !(context && context.number > 1);
       function fallback() {
         var ready = absoluteSeasons(card, files);
         if (ready) return done(ready);
-        var id = Number(card && (card.tmdb_id || card.id));
+        if (!partialAllowed && (card.seasons || []).some(function (season) {
+          return season.season_number > 0;
+        })) return done(null);
+        var id = Number(card.tmdb_id || card.id);
         if (!Number.isSafeInteger(id) || id <= 0 || card.source === "minimal_shiki" && !card.tmdb_id || files.length < 2) return done(null);
         request("tv/" + id + "?language=" + encodeURIComponent(L.Storage.get("language", "ru")), function (data) {
           var value = data ? __spreadProps(__spreadValues(__spreadValues({}, card), data), {
-              source: "tmdb",
-              minimal_anime: true
-            }) : card,
-            ready2 = data && absoluteSeasons(value, files);
-          if (ready2) return done(ready2);
-          var single = !context || (context.numbers || []).length === 1,
-            finish = function finish(groups2) {
-              return done(groups2 || single && absoluteRangeSeasons(value, files) || null);
-            };
-          if (anime && anime.groups) return anime.groups(value, files, function (groups2) {
+            source: "tmdb",
+            minimal_anime: true
+          }) : card;
+          var complete = data && absoluteSeasons(value, files);
+          if (complete || !partialAllowed) return done(complete || null);
+          var finish = function finish(groups2) {
+            return done(groups2 || absoluteRangeSeasons(value, files) || null);
+          };
+          var readCatalogue = function readCatalogue(groups2) {
             return groups2 ? done(groups2) : catalogueGroups(value, files, finish);
-          });
-          catalogueGroups(value, files, finish);
+          };
+          if (anime && anime.groups) anime.groups(value, files, readCatalogue);else readCatalogue(null);
         });
       }
-      if (kino && kino.enabled()) kino.groups(card, files, function (value) {
+      if (partialAllowed && kino && kino.enabled()) kino.groups(card, files, function (value) {
         return value ? done(value) : fallback();
       });else fallback();
     }
@@ -11309,9 +11319,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     function wrapImage(api) {
       if (!api || typeof api.image !== "function" || imageWrappers.has(api.image)) return;
       var image2 = api.image;
-      api.image = function () {
+      api.image = function (url, options) {
         var value = image2.apply(this, arguments);
         if (!enabled()) return value;
+        if (options && options.preserveSize) return canonical(value);
         return typeof value === "string" ? canonical(value).replace(/(\/t\/p\/)w(\d+)(?:_and_h\d+_face)?(\/)/, function (all, prefix, size, suffix) {
           return prefix + (/_face\//.test(all) ? portraitSize(L) : Number(size) <= 500 ? artworkSize(L, "poster") : "w" + size) + suffix;
         }) : value;
@@ -11819,7 +11830,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     if (!title || !right || right.dataset.minimalDetail) return;
     right.dataset.minimalDetail = "1";
     readableOverview(L, card, right, event.link);
-    removeDescription(event.link);
+    var needsAgeConfirmation = card.adult && !(L.Storage.field && L.Storage.field("adult_content_view"));
+    if (!needsAgeConfirmation) removeDescription(event.link);
     var technical = moveTechnicalDetails(L, card, right);
     var animeBase = window.LampaView && window.LampaView.animeBase;
     if (isAnime(card) && Number(card.number_of_seasons) === 1 && animeBase && animeBase.groups) {
@@ -12149,11 +12161,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     }
     if (background && card.backdrop_path) {
       var size = artworkSize(L, "backdrop");
-      var preload = new Image();
-      preload.onload = function () {
-        if (background.isConnected && artworkSize(L, "backdrop") === size) background.src = preload.src;
-      };
-      preload.src = L.TMDB.image("/t/p/" + size + card.backdrop_path);
+      var url = L.TMDB.image("/t/p/" + size + card.backdrop_path);
+      var variant = "/t/p/" + size + card.backdrop_path;
+      if (background.src !== url && !background.src.includes(variant)) {
+        var preload = new Image();
+        preload.onload = function () {
+          if (background.isConnected && artworkSize(L, "backdrop") === size && background.src !== preload.src) background.src = preload.src;
+        };
+        preload.src = url;
+      }
     }
   }
 
@@ -12233,7 +12249,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // package.json
-  var version = "0.5.28";
+  var version = "0.5.29";
 
   // src/inputs.js
   function inputs(L) {
@@ -17789,14 +17805,25 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       });
       return rows;
     }
+    var lead = [["new", "Новинки"], ["rated", "Высокий рейтинг"], ["popular", "Популярные"], ["votes", "Много голосов"]];
+    var premierePeriod = date2.getFullYear() + "-" + date2.getFullYear();
+    lead.forEach(function (_ref31) {
+      var _ref32 = _slicedToArray(_ref31, 2),
+        sort = _ref32[0],
+        title = _ref32[1];
+      var extra = {
+        sort: sort
+      };
+      if (sort === "new" && kind !== "cartoon") extra.period = premierePeriod;
+      add((kind === "cartoon" ? "mixed-" : "") + sort, title, extra, kind === "cartoon" ? "" : types[0]);
+    });
     if (kind === "cartoon") {
-      ["popular", "new", "rated"].forEach(function (sort) {
-        return add("mixed-" + sort, {
-          popular: "Популярное",
-          new: "Новинки",
-          rated: "Высокий рейтинг"
-        }[sort], {
-          sort: sort
+      [["RU", "Россия"], ["US", "США"]].forEach(function (_ref33) {
+        var _ref34 = _slicedToArray(_ref33, 2),
+          country = _ref34[0],
+          title = _ref34[1];
+        return add("country-" + country, title, {
+          country: country
         }, "");
       });
       add("family", "Для всей семьи", {
@@ -17812,32 +17839,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       return rows;
     }
     if (kind === "tv") {
-      add("popular", "Популярные сейчас", {
-        sort: "popular"
-      });
-      add("watch", "Сейчас выходят", {
-        feed: "airing"
-      });
-      add("premieres", "Премьеры " + date2.getFullYear(), {
-        period: date2.getFullYear() + "-" + date2.getFullYear()
-      });
       add("country-RU", "Российские сериалы", {
         country: "RU"
-      });
-      add("country-TR", "Турецкие сериалы", {
-        country: "TR"
       });
       add("country-KR", "Корейские дорамы", {
         kind: "dorama",
         country: "KR"
       });
-      [["80", "Детективы и криминал"], ["10765", "Фантастика и фэнтези"], ["35", "Комедии"], ["18", "Драмы"], ["10759", "Приключения"], ["9648", "Загадки и тайны"]].forEach(function (_ref31) {
-        var _ref32 = _slicedToArray(_ref31, 2),
-          genre = _ref32[0],
-          title = _ref32[1];
-        return add("genre-" + genre, title, {
-          genre: genre
-        });
+      add("country-TR", "Турецкие сериалы", {
+        country: "TR"
       });
       add("country-CN", "Китайские дорамы", {
         kind: "dorama",
@@ -17846,53 +17856,43 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       add("country-GB", "Британские сериалы", {
         country: "GB"
       });
+      add("watch", "Сейчас выходят", {
+        feed: "airing"
+      });
+      [["80", "Детективы и криминал"], ["10765", "Фантастика и фэнтези"], ["35", "Комедии"], ["18", "Драмы"], ["10759", "Приключения"], ["9648", "Загадки и тайны"]].forEach(function (_ref35) {
+        var _ref36 = _slicedToArray(_ref35, 2),
+          genre = _ref36[0],
+          title = _ref36[1];
+        return add("genre-" + genre, title, {
+          genre: genre
+        });
+      });
       return rows;
     }
-    add("watch", kind === "tv" ? "Сейчас выходит" : "Свежие релизы", {
-      feed: kind === "tv" ? "airing" : "recent",
-      sort: "popular"
-    });
-    add("popular", "Популярное");
-    add("rated", "С высоким рейтингом", {
-      sort: "rated"
-    });
-    add("new", "Новинки этого года", {
-      sort: "new",
-      period: date2.getFullYear() + "-" + date2.getFullYear()
-    });
-    [["RU", kind === "tv" ? "Российские сериалы" : "Российские фильмы"], ["UA", kind === "tv" ? "Украинские сериалы" : "Украинские фильмы"]].concat(_toConsumableArray(kind === "tv" ? [["TR", "Турецкие сериалы"], ["GB", "Британские сериалы"]] : [])).forEach(function (_ref33) {
-      var _ref34 = _slicedToArray(_ref33, 2),
-        code = _ref34[0],
-        title = _ref34[1];
-      return add("country-" + code, title, {
-        country: code
-      });
-    });
-    if (kind === "tv") [["KR", "Корейские дорамы"], ["CN", "Китайские дорамы"], ["JP", "Японские дорамы"]].forEach(function (_ref35) {
-      var _ref36 = _slicedToArray(_ref35, 2),
-        country = _ref36[0],
-        title = _ref36[1];
+    [["RU", "Российские фильмы"], ["UA", "Украинские фильмы"]].forEach(function (_ref37) {
+      var _ref38 = _slicedToArray(_ref37, 2),
+        country = _ref38[0],
+        title = _ref38[1];
       return add("country-" + country, title, {
-        kind: "dorama",
         country: country
       });
     });
-    (kind === "movie" ? ["28", "35", "18", "53", "878"] : ["80", "35", "18", "10765"]).forEach(function (id) {
-      var g = options.genres.find(function (v) {
-        return v.id === id;
+    add("watch", "Свежие релизы", {
+      feed: "recent"
+    });
+    ["28", "35", "18", "53", "878"].forEach(function (id) {
+      var genre = options.genres.find(function (g) {
+        return g.id === id;
       });
-      add("genre-" + id, g.name, {
+      add("genre-" + id, genre.name, {
         genre: id
       });
     });
-    if (kind === "movie") add("revenue", "Кассовые сборы", {
+    add("revenue", "Кассовые сборы", {
       sort: "revenue"
     });
     add("trending", "В тренде за неделю", {
       feed: "trending"
-    });
-    add("votes", "Много оценок", {
-      sort: "votes"
     });
     options.genres.filter(function (g) {
       return ![16, 10762, 10763, 10764, 10767].includes(g.genre);
@@ -17901,25 +17901,6 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         genre: g.id
       });
     });
-    if (kind === "tv") {
-      ["TW", "TH"].forEach(function (country) {
-        return add("country-" + country, countryTitle(country), {
-          kind: "dorama",
-          country: country
-        });
-      });
-      return rows.filter(function (r) {
-        return !["new", "rated", "votes"].includes(r.key);
-      }).map(function (r) {
-        return __spreadProps(__spreadValues({}, r), {
-          discovery: __spreadProps(__spreadValues({}, r.discovery), {
-            sort: "popular"
-          })
-        });
-      }).sort(function (a, b) {
-        return a.key === "popular" ? -1 : b.key === "popular" ? 1 : a.key === "trending" ? -1 : b.key === "trending" ? 1 : 0;
-      });
-    }
     options.periods.forEach(function (p) {
       return add("period-" + p.start, p.start + "–" + p.end, {
         period: p.start + "-" + p.end,
@@ -18274,10 +18255,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         title: text("Сейчас смотрят"),
         media_type: "tv",
         tmdb: "discover/tv?include_adult=false&" + asian + "sort_by=popularity.desc&air_date.gte=" + day4(-7) + "&air_date.lte=" + day4(0)
-      }].concat(_toConsumableArray([[text("Популярное"), asian + "sort_by=popularity.desc"], [text("Новинки этого года"), asian + "sort_by=popularity.desc&first_air_date.gte=" + year + "-01-01"], [text("С высоким рейтингом"), asian + "sort_by=vote_average.desc&vote_count.gte=100"], [text("Корейские дорамы"), "with_origin_country=KR&without_genres=16,99,10764,10767&sort_by=popularity.desc"], [text("Японские дорамы"), "with_origin_country=JP&without_genres=16,99,10764,10767&sort_by=popularity.desc"], [text("Китайские дорамы"), "with_origin_country=CN|TW&without_genres=16,99,10764,10767&sort_by=popularity.desc"], [text("Тайские дорамы"), "with_origin_country=TH&without_genres=16,99,10764,10767&sort_by=popularity.desc"], [text("Драмы"), asian + "with_genres=18&sort_by=popularity.desc"], [text("Комедии"), asian + "with_genres=35&sort_by=popularity.desc"], [text("Детективы"), asian + "with_genres=9648&sort_by=popularity.desc"]].map(function (_ref37, index2) {
-        var _ref38 = _slicedToArray(_ref37, 2),
-          title = _ref38[0],
-          query = _ref38[1];
+      }].concat(_toConsumableArray([[text("Популярное"), asian + "sort_by=popularity.desc"], [text("Новинки этого года"), asian + "sort_by=popularity.desc&first_air_date.gte=" + year + "-01-01"], [text("С высоким рейтингом"), asian + "sort_by=vote_average.desc&vote_count.gte=100"], [text("Корейские дорамы"), "with_origin_country=KR&without_genres=16,99,10764,10767&sort_by=popularity.desc"], [text("Японские дорамы"), "with_origin_country=JP&without_genres=16,99,10764,10767&sort_by=popularity.desc"], [text("Китайские дорамы"), "with_origin_country=CN|TW&without_genres=16,99,10764,10767&sort_by=popularity.desc"], [text("Тайские дорамы"), "with_origin_country=TH&without_genres=16,99,10764,10767&sort_by=popularity.desc"], [text("Драмы"), asian + "with_genres=18&sort_by=popularity.desc"], [text("Комедии"), asian + "with_genres=35&sort_by=popularity.desc"], [text("Детективы"), asian + "with_genres=9648&sort_by=popularity.desc"]].map(function (_ref39, index2) {
+        var _ref40 = _slicedToArray(_ref39, 2),
+          title = _ref40[0],
+          query = _ref40[1];
         return {
           key: "dorama-" + index2,
           title: title,
@@ -18288,11 +18269,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     }
     if (kind === "tvshow") {
       var shows = "without_genres=16&with_genres=10764|10767&with_original_language=ru&";
-      return [["watch", text("Сейчас смотрят"), shows + "sort_by=popularity.desc&air_date.gte=" + day4(-7) + "&air_date.lte=" + day4(0)], ["popular", text("Популярное"), shows + "sort_by=popularity.desc"], ["year", text("Новинки этого года"), shows + "sort_by=popularity.desc&first_air_date.gte=" + year + "-01-01&first_air_date.lte=" + day4(0)], ["rated", text("С высоким рейтингом"), shows + "sort_by=vote_average.desc&vote_count.gte=100"], ["reality", text("Российские реалити"), "without_genres=16&with_genres=10764&with_original_language=ru&sort_by=popularity.desc"], ["talk", text("Российские ток-шоу"), "without_genres=16&with_genres=10767&with_original_language=ru&sort_by=popularity.desc"], ["russian", text("Семейные и развлекательные"), "without_genres=16&with_genres=10764|10767|10751|35&with_original_language=ru&sort_by=popularity.desc"], ["last-year", text("Прошлый год"), shows + "sort_by=vote_average.desc&vote_count.gte=30&first_air_date.gte=" + (year - 1) + "-01-01&first_air_date.lte=" + (year - 1) + "-12-31"]].map(function (_ref39) {
-        var _ref40 = _slicedToArray(_ref39, 3),
-          key = _ref40[0],
-          title = _ref40[1],
-          query = _ref40[2];
+      return [["watch", text("Сейчас смотрят"), shows + "sort_by=popularity.desc&air_date.gte=" + day4(-7) + "&air_date.lte=" + day4(0)], ["popular", text("Популярное"), shows + "sort_by=popularity.desc"], ["year", text("Новинки этого года"), shows + "sort_by=popularity.desc&first_air_date.gte=" + year + "-01-01&first_air_date.lte=" + day4(0)], ["rated", text("С высоким рейтингом"), shows + "sort_by=vote_average.desc&vote_count.gte=100"], ["reality", text("Российские реалити"), "without_genres=16&with_genres=10764&with_original_language=ru&sort_by=popularity.desc"], ["talk", text("Российские ток-шоу"), "without_genres=16&with_genres=10767&with_original_language=ru&sort_by=popularity.desc"], ["russian", text("Семейные и развлекательные"), "without_genres=16&with_genres=10764|10767|10751|35&with_original_language=ru&sort_by=popularity.desc"], ["last-year", text("Прошлый год"), shows + "sort_by=vote_average.desc&vote_count.gte=30&first_air_date.gte=" + (year - 1) + "-01-01&first_air_date.lte=" + (year - 1) + "-12-31"]].map(function (_ref41) {
+        var _ref42 = _slicedToArray(_ref41, 3),
+          key = _ref42[0],
+          title = _ref42[1],
+          query = _ref42[2];
         return {
           key: key,
           title: title,
@@ -18305,21 +18286,21 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       key: "watch",
       title: text("Сейчас смотрят"),
       cub: "?sort=now_playing&genre=16"
-    }].concat(_toConsumableArray([[text("Популярные мультфильмы"), "movie", "sort_by=popularity.desc"], [text("Новые мультфильмы"), "movie", "sort_by=popularity.desc&primary_release_date.gte=" + year + "-01-01"], [text("Мультфильмы с высоким рейтингом"), "movie", "sort_by=vote_average.desc&vote_count.gte=200"], [text("Популярные мультсериалы"), "tv", "sort_by=popularity.desc"], [text("Мультсериалы с высоким рейтингом"), "tv", "sort_by=vote_average.desc&vote_count.gte=100"], [text("Мультсериалы этого года"), "tv", "sort_by=popularity.desc&first_air_date.gte=" + year + "-01-01"]].map(function (_ref41) {
-      var _ref42 = _slicedToArray(_ref41, 3),
-        title = _ref42[0],
-        media_type = _ref42[1],
-        query = _ref42[2];
+    }].concat(_toConsumableArray([[text("Популярные мультфильмы"), "movie", "sort_by=popularity.desc"], [text("Новые мультфильмы"), "movie", "sort_by=popularity.desc&primary_release_date.gte=" + year + "-01-01"], [text("Мультфильмы с высоким рейтингом"), "movie", "sort_by=vote_average.desc&vote_count.gte=200"], [text("Популярные мультсериалы"), "tv", "sort_by=popularity.desc"], [text("Мультсериалы с высоким рейтингом"), "tv", "sort_by=vote_average.desc&vote_count.gte=100"], [text("Мультсериалы этого года"), "tv", "sort_by=popularity.desc&first_air_date.gte=" + year + "-01-01"]].map(function (_ref43) {
+      var _ref44 = _slicedToArray(_ref43, 3),
+        title = _ref44[0],
+        media_type = _ref44[1],
+        query = _ref44[2];
       return {
         title: title,
         media_type: media_type,
         tmdb: "discover/" + media_type + "?include_adult=false&with_genres=16&without_keywords=210024&" + query
       };
     })));
-    if (kind === "anime" && mode === "shikimori") return [[text("Популярное"), "order=popularity"], [text("С высоким рейтингом"), "order=ranked"], [text("Сейчас выходит"), "order=popularity&status=ongoing"], [text("Ожидаемые"), "order=popularity&status=anons"], [text("Новинки этого года"), "order=popularity&season=" + year], [text("Прошлый год"), "order=ranked&season=" + (year - 1)], [text("Полнометражные"), "order=ranked&kind=movie"], [text("Боевики"), "order=popularity&genre=1"], [text("Приключения"), "order=popularity&genre=2"], [text("Детективы"), "order=popularity&genre=7"], [text("Все"), SHIKI_ALL]].map(function (_ref43) {
-      var _ref44 = _slicedToArray(_ref43, 2),
-        title = _ref44[0],
-        shiki = _ref44[1];
+    if (kind === "anime" && mode === "shikimori") return [[text("Популярное"), "order=popularity"], [text("С высоким рейтингом"), "order=ranked"], [text("Сейчас выходит"), "order=popularity&status=ongoing"], [text("Ожидаемые"), "order=popularity&status=anons"], [text("Новинки этого года"), "order=popularity&season=" + year], [text("Прошлый год"), "order=ranked&season=" + (year - 1)], [text("Полнометражные"), "order=ranked&kind=movie"], [text("Боевики"), "order=popularity&genre=1"], [text("Приключения"), "order=popularity&genre=2"], [text("Детективы"), "order=popularity&genre=7"], [text("Все"), SHIKI_ALL]].map(function (_ref45) {
+      var _ref46 = _slicedToArray(_ref45, 2),
+        title = _ref46[0],
+        shiki = _ref46[1];
       return {
         title: title,
         shiki: shiki
@@ -18365,10 +18346,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       add("rated", text("С высоким рейтингом"), "?cat=anime&sort=top&airdate=" + (year - 7) + "-" + (year - 2) + "&vote=8-10", "sort_by=vote_average.desc&vote_average.gte=8&vote_count.gte=200&first_air_date.lte=" + (year - 2) + "-12-31");
     }
     var genres = kind === "movie" ? [[28, text("Боевики")], [35, text("Комедии")], [18, text("Драмы")], [53, text("Триллеры")], [878, text("Фантастика")]] : kind === "anime" ? [[10765, text("Фэнтези")], [10759, text("Приключения")]] : [[18, text("Драмы")], [80, text("Криминал")], [10765, text("Фантастика и фэнтези")], [35, text("Комедии")]];
-    genres.forEach(function (_ref45) {
-      var _ref46 = _slicedToArray(_ref45, 2),
-        id = _ref46[0],
-        title = _ref46[1];
+    genres.forEach(function (_ref47) {
+      var _ref48 = _slicedToArray(_ref47, 2),
+        id = _ref48[0],
+        title = _ref48[1];
       return add("genre-" + id, title, "?cat=" + kind + "&sort=top&genre=" + id, "sort_by=popularity.desc&with_genres=" + id + (kind === "anime" ? ",16" : ""));
     });
     return defs.slice(0, 10);
@@ -18409,7 +18390,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         return (keys[row.key] || [row.key]).includes(old.key);
       });
       return __spreadProps(__spreadValues({}, row), {
-        minimal_row_aliases: (row.minimal_row_aliases || []).concat(matches.flatMap(function (old) {
+        minimal_row_aliases: (row.minimal_row_aliases || []).concat(kind === "tv" && row.key === "new" ? [row.minimal_row_id.replace(/:new$/, ":premieres")] : []).concat(matches.flatMap(function (old) {
           return ["minimal:tmdb:" + kind + ":" + old.key, old.tmdb, old.cub].concat(_toConsumableArray(old.minimal_row_aliases || []));
         }).filter(Boolean)).concat(kino[row.key] ? ["minimal:kino:" + kind + ":" + kino[row.key]] : [])
       });
@@ -18660,10 +18641,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       });
       L.Controller.toggle("minimal_anime_tabs");
     }
-    [["standard", text("Стандартные")], ["shikimori", "Shikimori"]].forEach(function (_ref47, i) {
-      var _ref48 = _slicedToArray(_ref47, 2),
-        value = _ref48[0],
-        title = _ref48[1];
+    [["standard", text("Стандартные")], ["shikimori", "Shikimori"]].forEach(function (_ref49, i) {
+      var _ref50 = _slicedToArray(_ref49, 2),
+        value = _ref50[0],
+        title = _ref50[1];
       var button = document.createElement("button");
       button.type = "button";
       button.className = "minimal-anime-tab pt-hero__action selector";
@@ -19607,10 +19588,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var pairs = Object.entries(options).sort(function (a, b) {
         return a[0] === "" ? -1 : b[0] === "" ? 1 : 0;
       });
-      show(title, pairs.map(function (_ref49) {
-        var _ref50 = _slicedToArray(_ref49, 2),
-          id = _ref50[0],
-          title2 = _ref50[1];
+      show(title, pairs.map(function (_ref51) {
+        var _ref52 = _slicedToArray(_ref51, 2),
+          id = _ref52[0],
+          title2 = _ref52[1];
         return {
           id: id,
           title: title2,
@@ -19699,10 +19680,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       if (L.Select.hide) L.Select.hide();else L.Select.close();
       if (state.kind === "anime") {
         var parts = ["order=" + encodeURIComponent(state.animeSort || "popularity")];
-        [["genre", "genre"], ["status", "status"], ["format", "kind"], ["score", "score"], ["query", "search"]].forEach(function (_ref51) {
-          var _ref52 = _slicedToArray(_ref51, 2),
-            key = _ref52[0],
-            param = _ref52[1];
+        [["genre", "genre"], ["status", "status"], ["format", "kind"], ["score", "score"], ["query", "search"]].forEach(function (_ref53) {
+          var _ref54 = _slicedToArray(_ref53, 2),
+            key = _ref54[0],
+            param = _ref54[1];
           if (state[key]) parts.push(param + "=" + encodeURIComponent(state[key]));
         });
         if (range.from || range.to) parts.push("season=" + encodeURIComponent((range.from || "1870") + "_" + (range.to || String((/* @__PURE__ */new Date()).getFullYear() + 5))));
@@ -21052,10 +21033,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       pushing = true;
       health.state = "syncing";
       request(ctx, "set", {
-        rows: batch.map(function (_ref53) {
-          var _ref54 = _slicedToArray(_ref53, 2),
-            hash = _ref54[0],
-            value = _ref54[1];
+        rows: batch.map(function (_ref55) {
+          var _ref56 = _slicedToArray(_ref55, 2),
+            hash = _ref56[0],
+            value = _ref56[1];
           return {
             hash: hash,
             card: namespace,
@@ -21323,10 +21304,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       if (["start", "destroy"].includes(event.type)) update();
     });
     if (L.Controller && L.Controller.listener) L.Controller.listener.follow("toggle", remoteHeading);
-    [[L.Settings, "open"], [L.Select, "open"], [L.Modal, "fullshow"], [L.Modal, "update"]].forEach(function (_ref55) {
-      var _ref56 = _slicedToArray(_ref55, 2),
-        api = _ref56[0],
-        event = _ref56[1];
+    [[L.Settings, "open"], [L.Select, "open"], [L.Modal, "fullshow"], [L.Modal, "update"]].forEach(function (_ref57) {
+      var _ref58 = _slicedToArray(_ref57, 2),
+        api = _ref58[0],
+        event = _ref58[1];
       if (api && api.listener) api.listener.follow(event, overlays);
     });
     update();
@@ -24537,10 +24518,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var bar = root.querySelector(".torrent-filter");
       if (!bar) return;
       bar.classList.add("minimal-torrent-toolbar");
-      [["search", text("Поиск")], ["sort", text("Сортировка")], ["filter", text("Фильтры")]].forEach(function (_ref57) {
-        var _ref58 = _slicedToArray(_ref57, 2),
-          key = _ref58[0],
-          label = _ref58[1];
+      [["search", text("Поиск")], ["sort", text("Сортировка")], ["filter", text("Фильтры")]].forEach(function (_ref59) {
+        var _ref60 = _slicedToArray(_ref59, 2),
+          key = _ref60[0],
+          label = _ref60[1];
         var button = bar.querySelector(".filter--" + key);
         if (!button) return;
         var text2 = button.querySelector(".minimal-toolbar-label");
@@ -24681,10 +24662,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       warm.set(lang, entry);
       var remaining = 3,
         answers = 0;
-      [["trending/all/day", ""], ["movie/popular", "movie"], ["tv/popular", "tv"]].forEach(function (_ref59) {
-        var _ref60 = _slicedToArray(_ref59, 2),
-          path = _ref60[0],
-          type = _ref60[1];
+      [["trending/all/day", ""], ["movie/popular", "movie"], ["tv/popular", "tv"]].forEach(function (_ref61) {
+        var _ref62 = _slicedToArray(_ref61, 2),
+          path = _ref62[0],
+          type = _ref62[1];
         return request(path, lang, function (json) {
           if (json && Array.isArray(json.results)) answers++;
           var _iterator95 = _createForOfIteratorHelper(json && json.results || []),
@@ -24788,28 +24769,28 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   };
   var FEEDS = [[text("Сейчас смотрят"), "trending"], [text("Популярное"), "popular"], [text("Самое просматриваемое за неделю"), "watched/weekly"], [text("В коллекциях за месяц"), "collected/monthly"], [text("Ожидаемые"), "anticipated"]];
   function traktPlan(kind) {
-    if (kind === "dorama") return FEEDS.map(function (_ref61) {
-      var _ref62 = _slicedToArray(_ref61, 2),
-        title = _ref62[0],
-        path = _ref62[1];
-      return {
-        title: title,
-        url: "shows/" + path + "?countries=kr,jp,cn,tw,th&genres=drama,romance,comedy,mystery"
-      };
-    });
-    if (kind === "tvshow") return FEEDS.map(function (_ref63) {
+    if (kind === "dorama") return FEEDS.map(function (_ref63) {
       var _ref64 = _slicedToArray(_ref63, 2),
         title = _ref64[0],
         path = _ref64[1];
       return {
         title: title,
-        url: "shows/" + path + "?genres=reality,talk-show,game-show&languages=ru"
+        url: "shows/" + path + "?countries=kr,jp,cn,tw,th&genres=drama,romance,comedy,mystery"
       };
     });
-    if (!kind) return FEEDS.map(function (_ref65, index2) {
+    if (kind === "tvshow") return FEEDS.map(function (_ref65) {
       var _ref66 = _slicedToArray(_ref65, 2),
         title = _ref66[0],
         path = _ref66[1];
+      return {
+        title: title,
+        url: "shows/" + path + "?genres=reality,talk-show,game-show&languages=ru"
+      };
+    });
+    if (!kind) return FEEDS.map(function (_ref67, index2) {
+      var _ref68 = _slicedToArray(_ref67, 2),
+        title = _ref68[0],
+        path = _ref68[1];
       return __spreadValues({
         title: title,
         url: "mixed/" + path
@@ -24822,10 +24803,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var types = TYPES[kind] ? [TYPES[kind]] : kind === "anime" ? ["shows"] : ["movies", "shows"];
     var filter = kind === "movie" || kind === "tv" ? "?without_genres=animation" : kind === "anime" ? "?genres=animation&languages=ja" : kind === "cartoon" ? "?genres=animation" : "";
     return types.flatMap(function (type) {
-      return FEEDS.map(function (_ref67, index2) {
-        var _ref68 = _slicedToArray(_ref67, 2),
-          title = _ref68[0],
-          path = _ref68[1];
+      return FEEDS.map(function (_ref69, index2) {
+        var _ref70 = _slicedToArray(_ref69, 2),
+          title = _ref70[0],
+          path = _ref70[1];
         return {
           title: kind === "cartoon" ? index2 === 1 ? type === "movies" ? text("Популярные мультфильмы") : text("Популярные мультсериалы") : (type === "movies" ? text("Мультфильмы") : text("Мультсериалы")) + " \xB7 " + title : title,
           url: type + "/" + path + filter
@@ -24924,10 +24905,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               });
               if (cache.size > 40) cache.delete(cache.keys().next().value);
             }
-            job.callbacks.forEach(function (_ref69) {
-              var _ref70 = _slicedToArray(_ref69, 2),
-                ok = _ref70[0],
-                fail = _ref70[1];
+            job.callbacks.forEach(function (_ref71) {
+              var _ref72 = _slicedToArray(_ref71, 2),
+                ok = _ref72[0],
+                fail = _ref72[1];
               return json ? ok(json) : error(fail, message);
             });
           }
@@ -25794,10 +25775,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       shell = function shell() {
         if (!_$(".pt-topnav").length) {
           var nav = _$(text("<div class=\"pt-topnav\" role=\"navigation\" aria-label=\"Каталог\">"));
-          [["home", text("Главная")], ["movie", text("Фильмы")], ["tv", text("Сериалы")], ["cartoon", text("Мультфильмы")], ["tvshow", text("ТВ-шоу")], ["anime", text("Аниме")]].forEach(function (_ref71) {
-            var _ref72 = _slicedToArray(_ref71, 2),
-              key = _ref72[0],
-              label = _ref72[1];
+          [["home", text("Главная")], ["movie", text("Фильмы")], ["tv", text("Сериалы")], ["cartoon", text("Мультфильмы")], ["tvshow", text("ТВ-шоу")], ["anime", text("Аниме")]].forEach(function (_ref73) {
+            var _ref74 = _slicedToArray(_ref73, 2),
+              key = _ref74[0],
+              label = _ref74[1];
             pointer(_$('<div class="pt-topnav__item selector" role="button" tabindex="0">').attr("data-section", key).text(label).on("hover:enter", function () {
               return navigate(key);
             })).appendTo(nav);
@@ -25806,11 +25787,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
         if (!_$(".pt-mobile-nav").length) {
           var _nav = _$(text("<nav class=\"pt-mobile-nav\" aria-label=\"Навигация\">"));
-          [["home", text("Главная"), "home"], ["search", text("Поиск"), "search"], ["calendar", text("Расписание"), "calendar"], ["library", text("Медиатека"), "library"], ["settings", text("Настройки"), "settings"]].forEach(function (_ref73) {
-            var _ref74 = _slicedToArray(_ref73, 3),
-              key = _ref74[0],
-              label = _ref74[1],
-              glyph = _ref74[2];
+          [["home", text("Главная"), "home"], ["search", text("Поиск"), "search"], ["calendar", text("Расписание"), "calendar"], ["library", text("Медиатека"), "library"], ["settings", text("Настройки"), "settings"]].forEach(function (_ref75) {
+            var _ref76 = _slicedToArray(_ref75, 3),
+              key = _ref76[0],
+              label = _ref76[1],
+              glyph = _ref76[2];
             _$('<div class="pt-mobile-nav__item" role="button" tabindex="0">').attr("data-section", key).html(icon(glyph) + "<span></span>").find("span").text(label).end().on("click", function () {
               return navigate(key);
             }).on("keydown", function (e) {
@@ -26388,12 +26369,12 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         unifiedSettings(L.SettingsApi, L, version);
         var options = [["lampa_view_enabled", text("Оформление интерфейса"), text("Единый стиль каталога, карточек, источников и настроек."), true], ["lampa_view_hero", text("Обложка на главной"), text("Карусель каждые 10 секунд, ручное переключение и жесты."), true]];
         if (L.Platform && L.Platform.desktop && L.Platform.desktop() || ROOT.electronAPI && ROOT.electronAPI.lampa_view) options.push(["lampa_view_metadata", text("Уточнять данные mpv+"), text("Передавать сведения карточки для проверки названия, сезона и серии."), true]);
-        options.forEach(function (_ref75) {
-          var _ref76 = _slicedToArray(_ref75, 4),
-            name = _ref76[0],
-            label = _ref76[1],
-            description = _ref76[2],
-            value = _ref76[3];
+        options.forEach(function (_ref77) {
+          var _ref78 = _slicedToArray(_ref77, 4),
+            name = _ref78[0],
+            label = _ref78[1],
+            description = _ref78[2],
+            value = _ref78[3];
           return L.SettingsApi.addParam({
             component: "lampa_view",
             param: {
@@ -26565,10 +26546,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (L.Settings && L.Settings.listener) L.Settings.listener.follow("open", function () {
           setTimeout(trimSections, 0);
         });
-        [[L.Settings, ["open", "close"]], [L.Select, ["fullshow", "close"]], [L.Modal, ["fullshow", "close"]], [L.Player, ["create", "destroy"]], [L.Controller, ["toggle"]]].forEach(function (_ref77) {
-          var _ref78 = _slicedToArray(_ref77, 2),
-            api = _ref78[0],
-            events = _ref78[1];
+        [[L.Settings, ["open", "close"]], [L.Select, ["fullshow", "close"]], [L.Modal, ["fullshow", "close"]], [L.Player, ["create", "destroy"]], [L.Controller, ["toggle"]]].forEach(function (_ref79) {
+          var _ref80 = _slicedToArray(_ref79, 2),
+            api = _ref80[0],
+            events = _ref80[1];
           if (api && api.listener) events.forEach(function (event) {
             return api.listener.follow(event, function () {
               if (carousels.size) setTimeout(refreshCarousels, 0);
@@ -43279,7 +43260,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
         if (!TMDB_PATH.test(path)) return path.charAt(0) === "/" ? hostPath(path) : "";
         try {
-          return Lampa.TMDB.image("t/p/" + (size || "w780") + path);
+          return Lampa.TMDB.image("t/p/" + (size || "w780") + path, {
+            preserveSize: true
+          });
         } catch (e) {
           return "";
         }
@@ -44284,7 +44267,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var main = heroArt();
         var spare = fallbackArt();
         var list = [];
-        [main, bustArt(main), spare, bustArt(spare)].forEach(function (url) {
+        [main, spare, bustArt(main), bustArt(spare)].forEach(function (url) {
           if (url && list.indexOf(url) === -1) list.push(url);
         });
         return list;
@@ -46158,19 +46141,22 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
         return src === "undefined" ? "" : src;
       }
-      function paintThumb(thumb, art, fallback) {
+      function paintThumb(thumb, art, fallback, onError) {
         if (!thumb || !thumb.length) return;
         var img = thumb.find("img")[0];
         if (!art || !img) return;
-        if (fallback) thumb.addClass("nova-card__thumb--fallback");else thumb.removeClass("nova-card__thumb--fallback");
+        thumb.toggleClass("nova-card__thumb--fallback", !!fallback);
+        if (img.getAttribute("src") === art) return;
+        thumb.removeClass("nova-card__thumb--loaded");
         img.onload = function () {
           thumb.addClass("nova-card__thumb--loaded");
         };
         img.onerror = function () {
-          thumb.removeClass("nova-card__thumb--fallback");
+          thumb.removeClass("nova-card__thumb--loaded");
+          if (onError) onError();
         };
         img.src = art;
-        if (img.complete) thumb.addClass("nova-card__thumb--loaded");
+        if (img.complete && img.naturalWidth) thumb.addClass("nova-card__thumb--loaded");
       }
       function watchThumb(item, thumb) {
         if (!item || !item.picture || !item.picture.length || !thumb || !thumb.length) return;
@@ -46194,6 +46180,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
         function take() {
           if (done) return true;
+          if (thumb.attr("data-nova-episode-art")) {
+            stop();
+            return true;
+          }
           var src = "";
           try {
             src = node.getAttribute("src") || "";
@@ -46306,7 +46296,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         line.removeClass("hide").children("div").first().css("width", percent + "%");
         return line;
       }
-      function buildCard(item, compact, grid) {
+      function buildCard(item, compact, grid, readEpisodeBook) {
         var card = $('<div class="nova-card selector"><div class="nova-card__thumb"><img alt="" loading="lazy" decoding="async"><div class="nova-card__num"><span></span></div><div class="nova-card__line"></div></div><div class="nova-card__body"><div class="nova-card__title"></div><div class="nova-card__meta"></div></div><div class="nova-card__side"><div class="nova-card__quality"></div><div class="nova-card__time"></div></div></div>');
         card.attr("data-nova-focus", "item:" + item.index);
         if (!serial) card.addClass("nova-card--file");
@@ -46375,7 +46365,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
         }
         item.card = card;
-        wideDress(card, item);
+        wideDress(card, item, readEpisodeBook);
         if (!serial && !nav && !item.folder) {
           card.addClass("nova-card--movie");
           card.find(".nova-card__title").text(movie.title || movie.name || item.title);
@@ -46930,7 +46920,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
         if (!ui.hero) {
           ui.hero_kind = kind;
-          ui.hero = $('<div class="nova-hero">' + (withArt ? '<div class="nova-hero__bg"><img alt=""></div><div class="nova-hero__shade"></div>' : "") + '<div class="nova-hero__voice" style="display:none"></div><div class="nova-hero__body">' + (withArt ? '<div class="nova-hero__title"></div><div class="nova-hero__meta"></div><div class="nova-hero__descr"></div>' : "") + '<div class="nova-hero__actions">' + (withArt ? "" : '<div class="nova-hero__mark"></div>') + '<div class="nova-hero__hint"></div></div></div><div class="nova-hero__progress" style="display:none"></div></div>');
+          ui.hero = $('<div class="nova-hero">' + (withArt ? '<div class="nova-hero__bg"><img alt="" fetchpriority="high" decoding="async"></div><div class="nova-hero__shade"></div>' : "") + '<div class="nova-hero__voice" style="display:none"></div><div class="nova-hero__body">' + (withArt ? '<div class="nova-hero__title"></div><div class="nova-hero__meta"></div><div class="nova-hero__descr"></div>' : "") + '<div class="nova-hero__actions">' + (withArt ? "" : '<div class="nova-hero__mark"></div>') + '<div class="nova-hero__hint"></div></div></div><div class="nova-hero__progress" style="display:none"></div></div>');
           if (!withArt) ui.hero.addClass("nova-hero--compact");
           if (withArt) {
             ui.hero.find(".nova-hero__title").text(movie.title || movie.name || "");
@@ -48072,11 +48062,12 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         list.forEach(function (item) {
           item.card = null;
         });
+        var button = buildHero();
+        var readEpisodeBook = wideEpisodeReader();
         displayList.forEach(function (item) {
-          ui.list.append(buildCard(item, compact && !grid, grid));
+          ui.list.append(buildCard(item, compact && !grid, grid, readEpisodeBook));
         });
         listFree();
-        var button = buildHero();
         buildRows();
         var locked = lockActive();
         var fallback = false;
@@ -48866,6 +48857,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           selected: 0
         };
         var owner = root && root[0];
+        var preparing = true;
         api.groups(movie, files, function (groups2) {
           if (!groups2 || !root || root[0] !== owner || wide_anime.key !== key || wideAnimePrefix() !== prefix) return;
           wide_anime.groups = groups2;
@@ -48879,7 +48871,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               return g.episodes.indexOf(episode) >= 0;
             })[0];
           wide_anime.selected = (selected || groups2[0]).number;
-          setTimeout(function () {
+          if (!preparing) setTimeout(function () {
             if (root && root[0] === owner && wide_anime.key === key) {
               wide_sig = "";
               redraw();
@@ -48889,6 +48881,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           number: seasonNumber(),
           numbers: labels
         });
+        preparing = false;
       }
       function providerSeasonNumbers() {
         return (groups.season && groups.season.items || []).map(function (item) {
@@ -49102,14 +49095,55 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           filter.onSelect("sort", item);
         });
       }
-      function wideDress(card, item) {
+      function wideEpisodeReader() {
+        var callbacks = [],
+          started = false,
+          ready = false,
+          result,
+          verified;
+        return function (callback) {
+          if (ready) return callback(result, verified);
+          callbacks.push(callback);
+          if (started) return;
+          started = true;
+          var context = wideMetadataContext(),
+            owner = root && root[0];
+          wideBook(seasonNumber() || 1, function (book, grouped) {
+            if (!root || root[0] !== owner || wideMetadataContext() !== context) {
+              callbacks = [];
+              return;
+            }
+            result = book;
+            verified = grouped;
+            ready = true;
+            callbacks.forEach(function (fn) {
+              fn(book, grouped);
+            });
+            callbacks = [];
+          });
+        };
+      }
+      function paintEpisodeThumb(thumb, episode) {
+        if (!episode.still_path) return;
+        if (!episode.lampa_grouped && thumb.hasClass("nova-card__thumb--loaded") && !thumb.hasClass("nova-card__thumb--fallback")) return;
+        var art = image(episode.still_path, get("minimal_banner_quality", "high") === "medium" ? "w500" : "w780");
+        if (!art) return;
+        var previous = thumb.find("img").attr("src");
+        var fallback = thumb.hasClass("nova-card__thumb--fallback");
+        thumb.attr("data-nova-episode-art", "1");
+        paintThumb(thumb, art, false, function () {
+          thumb.removeAttr("data-nova-episode-art");
+          if (previous && previous !== art) paintThumb(thumb, previous, fallback);
+        });
+      }
+      function wideDress(card, item, readEpisodeBook) {
         if (!modeWide()) return card;
         if (item.folder) {
           card.addClass("nova-card--wide-nav");
           return card;
         }
         if (!serial) return card;
-        if (viewMode() === "list") return wideDressList(card, item);
+        if (viewMode() === "list") return wideDressList(card, item, readEpisodeBook);
         card.addClass("nova-card--wide");
         var thumb = card.find(".nova-card__thumb");
         var body = card.find(".nova-card__body");
@@ -49141,10 +49175,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         body.prepend(head);
         card.find(".nova-card__side").remove();
         card.find(".nova-card__meta").remove();
-        wideFill(item, card, thumb);
+        wideFill(item, card, thumb, readEpisodeBook);
         return card;
       }
-      function wideDressList(card, item) {
+      function wideDressList(card, item, readEpisodeBook) {
         card.addClass("nova-card--rowlist");
         var thumb = card.find(".nova-card__thumb");
         var picked = widePick(item);
@@ -49162,18 +49196,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (picked.date) bits.push('<span class="nova-card__date">' + esc(picked.date) + "</span>");
         if (!serial && picked.rest.length) bits.push("<span>" + esc(picked.rest[0]) + "</span>");
         card.find(".nova-card__meta").html(bits.join(""));
-        wideFillList(item, card, thumb);
+        wideFillList(item, card, thumb, readEpisodeBook);
         return card;
       }
-      function wideFillList(item, card, thumb) {
+      function wideFillList(item, card, thumb, readEpisodeBook) {
         if (!serial || !wideMeta()) return;
         var number = parseInt(episodeNumber(item.num), 10) || 0;
         if (!number) return;
-        var season = seasonNumber() || 1;
-        var want = wideMetadataContext(),
-          owner = root && root[0];
-        wideBook(season, function (book, grouped) {
-          if (!book || !movie || wideMetadataContext() !== want || !root || root[0] !== owner) return;
+        readEpisodeBook(function (book, grouped) {
+          if (!book) return;
           var episode = book[number];
           if (!episode) {
             if (grouped && item.soon) card.remove();
@@ -49188,18 +49219,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           meta.empty();
           if (rating) meta.append($('<span class="nova-card__rate"></span>').text(rating));
           if (when) meta.append($('<span class="nova-card__date"></span>').text(when));
-          if (episode.still_path && (episode.lampa_grouped || !thumb.hasClass("nova-card__thumb--loaded"))) paintThumb(thumb, image(episode.still_path, get("minimal_banner_quality", "high") === "medium" ? "w500" : "w780"), false);
+          paintEpisodeThumb(thumb, episode);
         });
       }
-      function wideFill(item, card, thumb) {
+      function wideFill(item, card, thumb, readEpisodeBook) {
         if (!serial || item.folder || !wideMeta()) return;
         var number = parseInt(episodeNumber(item.num), 10) || 0;
         if (!number) return;
-        var season = seasonNumber() || 1;
-        var want = wideMetadataContext(),
-          owner = root && root[0];
-        wideBook(season, function (book, grouped) {
-          if (!book || !movie || wideMetadataContext() !== want || !root || root[0] !== owner) return;
+        readEpisodeBook(function (book, grouped) {
+          if (!book) return;
           var episode = book[number];
           if (!episode) {
             if (grouped && item.soon) card.remove();
@@ -49217,7 +49245,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           var title = card.find(".nova-card__title");
           if (episode.name) title.text(episodeTitle(item, episode.name));
           episodeOverview(card, episode);
-          if (episode.still_path && (episode.lampa_grouped || !thumb.hasClass("nova-card__thumb--loaded"))) paintThumb(thumb, image(episode.still_path, get("minimal_banner_quality", "high") === "medium" ? "w500" : "w780"), false);
+          paintEpisodeThumb(thumb, episode);
         });
       }
       function wideOrderList(list) {

@@ -26,7 +26,7 @@ test('cartoons menu sits below series and opens bounded film/TV animation rows t
   assert.equal(L.Activity.active().url,'cartoon');assert.ok(requests.length>=12 && requests.length<=24);
   for(const path of requests){const query=new URLSearchParams(path.split('?')[1]);assert.ok(query.get('with_genres').split(',').includes('16'));if(!query.has('with_companies') && !query.has('with_networks'))assert.equal(query.get('without_keywords'),'210024');assert.match(path,/^discover\/(?:movie|tv)\?/);}
   const root=L.Activity.active().activity.render(true),rows=L.Activity.active().activity.component;
-  assert.match(root.textContent,/Популярное/);assert.ok(!rows.items.concat(rows.loaded.flat()).some(row=>/мультфильмы|мультсериалы/i.test((row.data||row).title)));assert.ok(rows.items.length+rows.loaded.length<=12);
+  assert.match(root.textContent,/Новинки/);assert.ok(!rows.items.concat(rows.loaded.flat()).some(row=>/мультфильмы|мультсериалы/i.test((row.data||row).title)));assert.ok(rows.items.length+rows.loaded.length<=12);
   assert.deepEqual(r.errors,[]);
  }finally{r.close();}
 });

@@ -144,7 +144,10 @@ export default function detail(L,event,loadLogo){
  right.dataset.minimalDetail='1';
  // Keep native description/genres as a fallback until the replacement header
  // exists; other Lampa templates must never lose their only description row.
- readableOverview(L,card,right,event.link);removeDescription(event.link);
+ readableOverview(L,card,right,event.link);
+ // Lampa places its age confirmation in the native description component.
+ const needsAgeConfirmation=card.adult && !(L.Storage.field && L.Storage.field('adult_content_view'));
+ if(!needsAgeConfirmation)removeDescription(event.link);
  const technical=moveTechnicalDetails(L,card,right);
  const animeBase=window.LampaView && window.LampaView.animeBase;
  if(isAnime(card) && Number(card.number_of_seasons)===1 && animeBase && animeBase.groups){const season=(card.seasons || []).find(s=>s.season_number>0),count=Number(season && season.episode_count || card.number_of_episodes);if(count>1 && count<=3000)animeBase.groups(card,Array.from({length:count},(_,i)=>i+1),groups=>{if(!right.isConnected || !groups || groups.length<2)return;const prefix=L.Lang.translate('title_seasons')+':',counter=Array.from(right.querySelectorAll('.full-start-new__details>*')).find(n=>n.textContent.trim().startsWith(prefix));if(counter)counter.textContent=prefix+' '+groups.length;});}
@@ -256,6 +259,12 @@ export default function detail(L,event,loadLogo){
  }
  if(background && card.backdrop_path){
   const size=artworkSize(L,'backdrop');
-  const preload=new Image();preload.onload=()=>{if(background.isConnected && artworkSize(L,'backdrop')===size)background.src=preload.src;};preload.src=L.TMDB.image('/t/p/'+size+card.backdrop_path);
+  const url=L.TMDB.image('/t/p/'+size+card.backdrop_path);
+  const variant='/t/p/'+size+card.backdrop_path;
+  if(background.src!==url && !background.src.includes(variant)){
+   const preload=new Image();
+   preload.onload=()=>{if(background.isConnected && artworkSize(L,'backdrop')===size && background.src!==preload.src)background.src=preload.src;};
+   preload.src=url;
+  }
  }
 }

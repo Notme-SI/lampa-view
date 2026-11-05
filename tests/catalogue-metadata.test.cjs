@@ -8,12 +8,12 @@ test('Russian alternative titles exclude season aliases; English-language anime 
 test('cartoon rows and native More pages exclude anime while other catalogues and server pagination stay intact',()=>{
  const {cataloguePlan}=mod('catalogue'),{installTmdb}=mod('tmdb');
  const json={page:2,total_pages:5,total_results:90,results:[
-  {id:1,title:'Cartoon',genre_ids:[16],original_language:'en',origin_country:['US']},
+  {id:1,title:'Мультфильм',genre_ids:[16],original_language:'en',origin_country:['US']},
   {id:2,title:'Anime movie',genre_ids:[16],original_language:'ja'},
   {id:3,name:'English dub anime',genre_ids:[16],original_language:'en',origin_country:['JP']},
   {id:4,name:'Donghua',genre_ids:[16],original_language:'zh'},
   {id:5,title:'Known anime',minimal_anime:true},
-  {id:6,title:'French cartoon',genre_ids:[16],original_language:'fr'},
+  {id:6,title:'Французский мультфильм',genre_ids:[16],original_language:'fr'},
  ]};
  const source={get(path,params,ok){ok(json);},list(params,ok){ok(json);}},cub={list(params,ok){ok(json);}},L={Api:{sources:{tmdb:source,cub}}};installTmdb(L);
  for(const row of cataloguePlan('cartoon').filter(row=>!row.discovery.company && !row.discovery.family && !row.discovery.hero && !row.discovery.network && !row.discovery.genre)){
@@ -50,5 +50,5 @@ test('cartoon discovery separates film and TV identity, preserves full rows and 
 test('collection menu keeps all seven sections before their first visit, without fetching or inventing rows',()=>{
  const names={'main:':[{id:'A',title:'A'}],'search:':[{id:'B'}],'category_full:':[{id:'C'}],'category:tv':[{id:'D',title:'D'}],'category:anime':[{id:'E',title:'E'}]};let definition,select,writes=0;
  const data={minimal_collection_rows_v2:names,minimal_collection_names:{'main:':[{id:'obsolete',title:'TV Series I Have Seen'}]}},L={Storage:{get:(k,d)=>data[k]===undefined?d:data[k],set(){writes++;}},SettingsApi:{addParam(p){if(p.param.name==='minimal_rows')definition=p;}},Select:{show:v=>select=v},Api:{main(){}},Utils:{createInstance(){}},Maker:{get(){}}};
- mod('collections').default(L,{});definition.onChange();assert.deepEqual(select.items.map(i=>i.title),['Главная','Фильмы','Сериалы','ТВ-шоу','Мультфильмы','Аниме']);assert.ok(!/[—–]/.test(select.title));select.onSelect({id:'category:movie'});assert.ok(select.items.length>1);assert.match(select.items[0].title,/Свежие релизы/);delete names['category:tv'];definition.onChange();assert.ok(select.items.some(row=>row.title==='Сериалы'));select.onSelect({id:'category:tv'});assert.ok(select.items.length>1);assert.match(select.items[0].title,/Популярные сейчас/);assert.ok(!select.items.some(i=>i.title==='D'));assert.equal(writes,0);
+ mod('collections').default(L,{});definition.onChange();assert.deepEqual(select.items.map(i=>i.title),['Главная','Фильмы','Сериалы','ТВ-шоу','Мультфильмы','Аниме']);assert.ok(!/[—–]/.test(select.title));select.onSelect({id:'category:movie'});assert.ok(select.items.length>1);assert.match(select.items[0].title,/Новинки/);delete names['category:tv'];definition.onChange();assert.ok(select.items.some(row=>row.title==='Сериалы'));select.onSelect({id:'category:tv'});assert.ok(select.items.length>1);assert.match(select.items[0].title,/Новинки/);assert.ok(!select.items.some(i=>i.title==='D'));assert.equal(writes,0);
 });

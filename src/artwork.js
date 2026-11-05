@@ -29,8 +29,9 @@ export default function installArtwork(L,enabled){
  function wrapImage(api){
   if(!api || typeof api.image!=='function' || imageWrappers.has(api.image))return;
   const image=api.image;
-  api.image=function(){
+  api.image=function(url,options){
    const value=image.apply(this,arguments);if(!enabled())return value;
+   if(options && options.preserveSize)return canonical(value);
    return typeof value==='string'?canonical(value).replace(/(\/t\/p\/)w(\d+)(?:_and_h\d+_face)?(\/)/,(all,prefix,size,suffix)=>prefix+(/_face\//.test(all)?portraitSize(L):Number(size)<=500?artworkSize(L,'poster'):'w'+size)+suffix):value;
   };
   imageWrappers.add(api.image);

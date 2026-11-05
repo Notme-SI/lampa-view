@@ -65,6 +65,15 @@ test('published full episode maps partition a contiguous provider prefix and nev
  const result=await new Promise(done=>service.groups(card,[1,2,3],done));assert.deepEqual(Array.from(result,g=>g.count),[2,1]);assert.equal(result[1].book[3].episode_number,3);assert.equal(result[1].book[4],undefined);assert.equal(result[1].book[3].still_path,'/frame.jpg');const sparse=await new Promise(done=>service.groups(card,[1,3,4],done));assert.deepEqual(Array.from(sparse,g=>Array.from(g.episodes)),[[1],[3,4]]);assert.equal(sparse[1].book[3].episode_number,3);assert.equal(sparse[0].book[2],undefined);
 });
 
+test('partial lists from a native season cannot replace the other provider seasons',()=>{
+ const api=fixture(),card={id:88,minimal_anime:true,seasons:[{season_number:1,episode_count:26},{season_number:2,episode_count:48},{season_number:3,episode_count:7}]};
+ const service=api.default({Api:{sources:{tmdb:{get(){assert.fail('A native season should not need a franchise lookup');}}}}});
+ for(const context of [{number:1,numbers:[1,2,3]},{number:3,numbers:[3]}]){
+  let result;service.groups(card,[1,2,3,4,5,6,7],groups=>result=groups,context);
+  assert.equal(result,null);
+ }
+});
+
 test('fewer provider seasons never infer a mapping from selected episode counts or a catalogue-only alternative',async()=>{
  const live=require('./fixtures/anime-season-layout.json'),api=fixture(),requests=[];
  const service=api.default({Storage:{get:()=> 'ru'},Api:{sources:{tmdb:{get(url,p,ok){requests.push(url);if(url.includes('episode_groups'))return ok(live.index);if(url.includes('episode_group/'))return ok(live.group);ok(live.seasons[Number(url.match(/season\/(\d+)/)[1])]);}}}}});

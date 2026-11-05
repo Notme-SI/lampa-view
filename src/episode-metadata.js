@@ -116,8 +116,11 @@ export default function episodeMetadata(L,kino,anime){
    const candidates=((index && index.results)||[]).filter(g=>g.type===1 && g.episode_count===total && g.group_count>seasons.length && g.group_count<=30);if(candidates.length!==1)return done(null);
    request('tv/episode_group/'+candidates[0].id,data=>{const model=episodeGroupModel(card,data,candidates[0].group_count,total);if(!model)return done(null);
     const canonical=seasons.slice().sort((a,b)=>a.season_number-b.season_number).flatMap(s=>Array.from({length:s.episode_count},(_,i)=>s.season_number+':'+(i+1))),published=model.groups.flatMap(g=>g.rows.map(e=>e.season_number+':'+e.episode_number));if(canonical.join('|')!==published.join('|'))return done(null);
-    const books={};let left=seasons.length;seasons.forEach(s=>request('tv/'+(card.tmdb_id || card.id)+'/season/'+s.season_number,value=>{books[s.season_number]=value;if(--left)return;let offset=0;const groups=[];
-     for(const g of model.groups){const book={},episodes=[];for(const e of g.rows){const number=++offset;if(!numbers.includes(number))continue;const metadata=((books[e.season_number] && (books[e.season_number].episodes_original || books[e.season_number].episodes))||[]).find(v=>v.episode_number===e.episode_number);if(!metadata)return done(null);episodes.push(number);book[number]={...metadata,lampa_grouped:true};}if(episodes.length)groups.push({number:g.number,name:seasonName({seasons:[{season_number:g.number,name:g.name}]},g.number),count:episodes.length,episodes,book,anime_release:true});}
+    const selected=new Set(numbers);
+    const needed=Array.from(new Set(numbers.map(number=>published[number-1].split(':')[0])));
+    const books={};let left=needed.length;
+    needed.forEach(season=>request('tv/'+(card.tmdb_id || card.id)+'/season/'+season,value=>{books[season]=value;if(--left)return;let offset=0;const groups=[];
+     for(const g of model.groups){const book={},episodes=[];for(const e of g.rows){const number=++offset;if(!selected.has(number))continue;const metadata=((books[e.season_number] && (books[e.season_number].episodes_original || books[e.season_number].episodes))||[]).find(v=>v.episode_number===e.episode_number);if(!metadata)return done(null);episodes.push(number);book[number]={...metadata,lampa_grouped:true};}if(episodes.length)groups.push({number:g.number,name:seasonName({seasons:[{season_number:g.number,name:g.name}]},g.number),count:episodes.length,episodes,book,anime_release:true});}
      done(groups.length?groups:null);
     }));
    });
@@ -125,12 +128,25 @@ export default function episodeMetadata(L,kino,anime){
  }
  function groups(card,files,done,context){
   if(!isAnime(card))return done(null);
+  const nativeSeasons=(context && context.numbers || []).filter(number=>number>0);
+  const partialAllowed=nativeSeasons.length<=1 && !(context && context.number>1);
   function fallback(){
    const ready=absoluteSeasons(card,files);if(ready)return done(ready);
-   const id=Number(card && (card.tmdb_id || card.id));if(!Number.isSafeInteger(id) || id<=0 || card.source==='minimal_shiki' && !card.tmdb_id || files.length<2)return done(null);
-   request('tv/'+id+'?language='+encodeURIComponent(L.Storage.get('language','ru')),data=>{const value=data?{...card,...data,source:'tmdb',minimal_anime:true}:card,ready=data && absoluteSeasons(value,files);if(ready)return done(ready);const single=!context || (context.numbers || []).length===1,finish=groups=>done(groups || single && absoluteRangeSeasons(value,files) || null);if(anime && anime.groups)return anime.groups(value,files,groups=>groups?done(groups):catalogueGroups(value,files,finish));catalogueGroups(value,files,finish);});
+   if(!partialAllowed && (card.seasons || []).some(season=>season.season_number>0))return done(null);
+   const id=Number(card.tmdb_id || card.id);
+   if(!Number.isSafeInteger(id) || id<=0 || card.source==='minimal_shiki' && !card.tmdb_id || files.length<2)return done(null);
+   request('tv/'+id+'?language='+encodeURIComponent(L.Storage.get('language','ru')),data=>{
+    const value=data?{...card,...data,source:'tmdb',minimal_anime:true}:card;
+    const complete=data && absoluteSeasons(value,files);
+    if(complete || !partialAllowed)return done(complete || null);
+    const finish=groups=>done(groups || absoluteRangeSeasons(value,files) || null);
+    const readCatalogue=groups=>groups?done(groups):catalogueGroups(value,files,finish);
+    if(anime && anime.groups)anime.groups(value,files,readCatalogue);else readCatalogue(null);
+   });
   }
-  if(kino && kino.enabled())kino.groups(card,files,value=>value?done(value):fallback());else fallback();
+  // The current episode list may contain only one of several native seasons.
+  // Preserve the provider's menu unless these files cover a verified full list.
+  if(partialAllowed && kino && kino.enabled())kino.groups(card,files,value=>value?done(value):fallback());else fallback();
  }
  return {alternate:alternativeNumbering,groups,groupBook,seasonName,book(card,number,numbers,actual,done,files=[],verifiedAbsolute=false){
   // Fewer source seasons can mean a missing arc, a merged arc or a missing tail.

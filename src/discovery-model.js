@@ -120,26 +120,35 @@ export function discoveryPlan(kind,value={},date=new Date()){
   const titles={KR:'Корейские дорамы',JP:'Японские дорамы',CN:'Китайские дорамы',TW:'Тайвань',TH:'Тайские дорамы'};ASIAN.forEach(code=>add('country-'+code,titles[code],{country:code}));
   ['k9840','k316362','k192772','35','9648','10765'].forEach(id=>{const g=options.genres.find(v=>v.id===id);if(g)add('genre-'+id,g.name,{genre:id});});return rows;
  }
+ const lead=[['new','Новинки'],['rated','Высокий рейтинг'],['popular','Популярные'],['votes','Много голосов']];
+ const premierePeriod=date.getFullYear()+'-'+date.getFullYear();
+ lead.forEach(([sort,title])=>{
+  const extra={sort};
+  if(sort==='new' && kind!=='cartoon')extra.period=premierePeriod;
+  add((kind==='cartoon'?'mixed-':'')+sort,title,extra,kind==='cartoon'?'':types[0]);
+ });
  if(kind==='cartoon'){
-  ['popular','new','rated'].forEach(sort=>add('mixed-'+sort,({popular:'Популярное',new:'Новинки',rated:'Высокий рейтинг'})[sort],{sort},''));
+  [['RU','Россия'],['US','США']].forEach(([country,title])=>add('country-'+country,title,{country},''));
   add('family','Для всей семьи',{family:true},'');
-
   options.genres.filter(g=>g.genre!==16 && ![281358,293198].includes(g.keyword)).forEach(g=>add('genre-'+g.id,g.name,{genre:g.id},g.formats.length>1?'':g.formats[0]));
   return rows;
  }
  if(kind==='tv'){
-  add('popular','Популярные сейчас',{sort:'popular'});add('watch','Сейчас выходят',{feed:'airing'});add('premieres','Премьеры '+date.getFullYear(),{period:date.getFullYear()+'-'+date.getFullYear()});
-  add('country-RU','Российские сериалы',{country:'RU'});add('country-TR','Турецкие сериалы',{country:'TR'});add('country-KR','Корейские дорамы',{kind:'dorama',country:'KR'});
+  add('country-RU','Российские сериалы',{country:'RU'});
+  add('country-KR','Корейские дорамы',{kind:'dorama',country:'KR'});
+  add('country-TR','Турецкие сериалы',{country:'TR'});
+  add('country-CN','Китайские дорамы',{kind:'dorama',country:'CN'});
+  add('country-GB','Британские сериалы',{country:'GB'});
+  add('watch','Сейчас выходят',{feed:'airing'});
   [['80','Детективы и криминал'],['10765','Фантастика и фэнтези'],['35','Комедии'],['18','Драмы'],['10759','Приключения'],['9648','Загадки и тайны']].forEach(([genre,title])=>add('genre-'+genre,title,{genre}));
-  add('country-CN','Китайские дорамы',{kind:'dorama',country:'CN'});add('country-GB','Британские сериалы',{country:'GB'});return rows;
+  return rows;
  }
- add('watch',kind==='tv'?'Сейчас выходит':'Свежие релизы',{feed:kind==='tv'?'airing':'recent',sort:'popular'});add('popular','Популярное');add('rated','С высоким рейтингом',{sort:'rated'});add('new','Новинки этого года',{sort:'new',period:date.getFullYear()+'-'+date.getFullYear()});
- [['RU',kind==='tv'?'Российские сериалы':'Российские фильмы'],['UA',kind==='tv'?'Украинские сериалы':'Украинские фильмы'],...(kind==='tv'?[['TR','Турецкие сериалы'],['GB','Британские сериалы']]:[])].forEach(([code,title])=>add('country-'+code,title,{country:code}));
- if(kind==='tv')[['KR','Корейские дорамы'],['CN','Китайские дорамы'],['JP','Японские дорамы']].forEach(([country,title])=>add('country-'+country,title,{kind:'dorama',country}));
- (kind==='movie'?['28','35','18','53','878']:['80','35','18','10765']).forEach(id=>{const g=options.genres.find(v=>v.id===id);add('genre-'+id,g.name,{genre:id});});if(kind==='movie')add('revenue','Кассовые сборы',{sort:'revenue'});
- add('trending','В тренде за неделю',{feed:'trending'});add('votes','Много оценок',{sort:'votes'});
+ [['RU','Российские фильмы'],['UA','Украинские фильмы']].forEach(([country,title])=>add('country-'+country,title,{country}));
+ add('watch','Свежие релизы',{feed:'recent'});
+ ['28','35','18','53','878'].forEach(id=>{const genre=options.genres.find(g=>g.id===id);add('genre-'+id,genre.name,{genre:id});});
+ add('revenue','Кассовые сборы',{sort:'revenue'});
+ add('trending','В тренде за неделю',{feed:'trending'});
  options.genres.filter(g=>![16,10762,10763,10764,10767].includes(g.genre)).forEach(g=>add('genre-'+g.id,g.name,{genre:g.id}));
- if(kind==='tv'){['TW','TH'].forEach(country=>add('country-'+country,countryTitle(country),{kind:'dorama',country}));return rows.filter(r=>!['new','rated','votes'].includes(r.key)).map(r=>({...r,discovery:{...r.discovery,sort:'popular'}})).sort((a,b)=>(a.key==='popular'?-1:b.key==='popular'?1:a.key==='trending'?-1:b.key==='trending'?1:0));}
  options.periods.forEach(p=>add('period-'+p.start,p.start+'–'+p.end,{period:p.start+'-'+p.end,sort:'rated'}));
  return rows;
 }

@@ -233,7 +233,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       return proto + path;
     }
     if (!TMDB_PATH.test(path)) return path.charAt(0) === '/' ? hostPath(path) : '';
-    try { return Lampa.TMDB.image('t/p/' + (size || 'w780') + path); } catch (e) { return ''; }
+    try { return Lampa.TMDB.image('t/p/' + (size || 'w780') + path, { preserveSize: true }); } catch (e) { return ''; }
   }
 
   function episodeNumber(value) {
@@ -1208,7 +1208,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     var main = heroArt();
     var spare = fallbackArt();
     var list = [];
-    [main, bustArt(main), spare, bustArt(spare)].forEach(function (url) {
+    [main, spare, bustArt(main), bustArt(spare)].forEach(function (url) {
       if (url && list.indexOf(url) === -1) list.push(url);
     });
     return list;
@@ -2948,16 +2948,20 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     return src === 'undefined' ? '' : src;
   }
 
-  function paintThumb(thumb, art, fallback) {
+  function paintThumb(thumb, art, fallback, onError) {
     if (!thumb || !thumb.length) return;
     var img = thumb.find('img')[0];
     if (!art || !img) return;
-    if (fallback) thumb.addClass('nova-card__thumb--fallback');
-    else thumb.removeClass('nova-card__thumb--fallback');
+    thumb.toggleClass('nova-card__thumb--fallback', !!fallback);
+    if (img.getAttribute('src') === art) return;
+    thumb.removeClass('nova-card__thumb--loaded');
     img.onload = function () { thumb.addClass('nova-card__thumb--loaded'); };
-    img.onerror = function () { thumb.removeClass('nova-card__thumb--fallback'); };
+    img.onerror = function () {
+      thumb.removeClass('nova-card__thumb--loaded');
+      if (onError) onError();
+    };
     img.src = art;
-    if (img.complete) thumb.addClass('nova-card__thumb--loaded');
+    if (img.complete && img.naturalWidth) thumb.addClass('nova-card__thumb--loaded');
   }
 
   function watchThumb(item, thumb) {
@@ -2982,6 +2986,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
 
     function take() {
       if (done) return true;
+      if (thumb.attr('data-nova-episode-art')) { stop(); return true; }
       var src = '';
       try { src = node.getAttribute('src') || ''; } catch (e) { src = ''; }
       if (!src || src === 'undefined') return false;
@@ -3086,7 +3091,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     return line;
   }
 
-  function buildCard(item, compact, grid) {
+  function buildCard(item, compact, grid, readEpisodeBook) {
     var card = $('<div class="nova-card selector">' +
       '<div class="nova-card__thumb"><img alt="" loading="lazy" decoding="async"><div class="nova-card__num"><span></span></div><div class="nova-card__line"></div></div>' +
       '<div class="nova-card__body"><div class="nova-card__title"></div><div class="nova-card__meta"></div></div>' +
@@ -3167,7 +3172,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     }
 
     item.card = card;
-    wideDress(card, item);
+    wideDress(card, item, readEpisodeBook);
     if (!serial && !nav && !item.folder) {
       card.addClass('nova-card--movie');
       card.find('.nova-card__title').text(movie.title || movie.name || item.title);
@@ -3679,7 +3684,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     if (!ui.hero) {
       ui.hero_kind = kind;
       ui.hero = $('<div class="nova-hero">' +
-        (withArt ? '<div class="nova-hero__bg"><img alt=""></div><div class="nova-hero__shade"></div>' : '') +
+        (withArt ? '<div class="nova-hero__bg"><img alt="" fetchpriority="high" decoding="async"></div><div class="nova-hero__shade"></div>' : '') +
         '<div class="nova-hero__voice" style="display:none"></div>' +
         '<div class="nova-hero__body">' +
         (withArt ? '<div class="nova-hero__title"></div><div class="nova-hero__meta"></div><div class="nova-hero__descr"></div>' : '') +
@@ -4922,12 +4927,12 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     var displayList = !serial && !nav ? list.filter(function (item) { return item.folder; }) : wideOrderList(list);
     if (ui.strip) ui.strip.toggle(displayList.length > 0);
     list.forEach(function (item) { item.card = null; });
+    var button = buildHero();
+    var readEpisodeBook = wideEpisodeReader();
     displayList.forEach(function (item) {
-      ui.list.append(buildCard(item, compact && !grid, grid));
+      ui.list.append(buildCard(item, compact && !grid, grid, readEpisodeBook));
     });
     listFree();
-
-    var button = buildHero();
     buildRows();
 
     var locked = lockActive();
@@ -5556,11 +5561,13 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     var files=list.filter(function(item){return !item.folder && !item.soon;}).map(function(item){return Number(episodeNumber(item.num));});
     var prefix=wideAnimePrefix(),labels=providerSeasonNumbers(),key=prefix+'|'+labels.join(',')+'|'+files.join(',');if(wide_anime.key===key)return;
     wide_anime={key:key,prefix:prefix,groups:null,selected:0};var owner=root && root[0];
+    var preparing = true;
     api.groups(movie,files,function(groups){
       if(!groups || !root || root[0]!==owner || wide_anime.key!==key || wideAnimePrefix()!==prefix)return;
       wide_anime.groups=groups;var resume=pickResume(items),episode=resume && Number(resume.num),release=movie && movie.minimal_anime_release,preferred=release && groups.filter(function(g){return g.mal_id===release.mal;})[0],selected=preferred || groups.filter(function(g){return g.episodes.indexOf(episode)>=0;})[0];wide_anime.selected=(selected || groups[0]).number;
-      setTimeout(function(){if(root && root[0]===owner && wide_anime.key===key){wide_sig='';redraw();}},0);
+      if (!preparing) setTimeout(function(){if(root && root[0]===owner && wide_anime.key===key){wide_sig='';redraw();}},0);
     },{number:seasonNumber(),numbers:labels});
+    preparing = false;
   }
   function providerSeasonNumbers(){return (groups.season && groups.season.items || []).map(function(item){return Number(digits(item.title));});}
   function alternateSeasons(){var api=window.LampaView && window.LampaView.episodeMetadata;return api && api.alternate(movie,providerSeasonNumbers());}
@@ -5728,7 +5735,43 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     keepAlive(function () { filter.onSelect('sort', item); });
   }
 
-  function wideDress(card, item) {
+  function wideEpisodeReader() {
+    var callbacks = [], started = false, ready = false, result, verified;
+    return function (callback) {
+      if (ready) return callback(result, verified);
+      callbacks.push(callback);
+      if (started) return;
+      started = true;
+      var context = wideMetadataContext(), owner = root && root[0];
+      wideBook(seasonNumber() || 1, function (book, grouped) {
+        if (!root || root[0] !== owner || wideMetadataContext() !== context) {
+          callbacks = [];
+          return;
+        }
+        result = book;
+        verified = grouped;
+        ready = true;
+        callbacks.forEach(function (fn) { fn(book, grouped); });
+        callbacks = [];
+      });
+    };
+  }
+
+  function paintEpisodeThumb(thumb, episode) {
+    if (!episode.still_path) return;
+    if (!episode.lampa_grouped && thumb.hasClass('nova-card__thumb--loaded') && !thumb.hasClass('nova-card__thumb--fallback')) return;
+    var art = image(episode.still_path, get('minimal_banner_quality', 'high') === 'medium' ? 'w500' : 'w780');
+    if (!art) return;
+    var previous = thumb.find('img').attr('src');
+    var fallback = thumb.hasClass('nova-card__thumb--fallback');
+    thumb.attr('data-nova-episode-art', '1');
+    paintThumb(thumb, art, false, function () {
+      thumb.removeAttr('data-nova-episode-art');
+      if (previous && previous !== art) paintThumb(thumb, previous, fallback);
+    });
+  }
+
+  function wideDress(card, item, readEpisodeBook) {
     if (!modeWide()) return card;
 
     if (item.folder) {
@@ -5738,7 +5781,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
 
     if (!serial) return card;
 
-    if (viewMode() === 'list') return wideDressList(card, item);
+    if (viewMode() === 'list') return wideDressList(card, item, readEpisodeBook);
 
     card.addClass('nova-card--wide');
 
@@ -5777,11 +5820,11 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     card.find('.nova-card__side').remove();
     card.find('.nova-card__meta').remove();
 
-    wideFill(item, card, thumb);
+    wideFill(item, card, thumb, readEpisodeBook);
     return card;
   }
 
-  function wideDressList(card, item) {
+  function wideDressList(card, item, readEpisodeBook) {
     card.addClass('nova-card--rowlist');
 
     var thumb = card.find('.nova-card__thumb');
@@ -5804,18 +5847,16 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     if (!serial && picked.rest.length) bits.push('<span>' + esc(picked.rest[0]) + '</span>');
     card.find('.nova-card__meta').html(bits.join(''));
 
-    wideFillList(item, card, thumb);
+    wideFillList(item, card, thumb, readEpisodeBook);
     return card;
   }
 
-  function wideFillList(item, card, thumb) {
+  function wideFillList(item, card, thumb, readEpisodeBook) {
     if (!serial || !wideMeta()) return;
     var number = parseInt(episodeNumber(item.num), 10) || 0;
     if (!number) return;
-    var season = seasonNumber() || 1;
-    var want = wideMetadataContext(),owner=root && root[0];
-    wideBook(season, function (book, grouped) {
-      if (!book || !movie || wideMetadataContext() !== want || !root || root[0] !== owner) return;
+    readEpisodeBook(function (book, grouped) {
+      if (!book) return;
       var episode = book[number];
       if (!episode){if(grouped && item.soon)card.remove();return;}
       var title = card.find('.nova-card__title');
@@ -5827,18 +5868,16 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       meta.empty();
       if(rating)meta.append($('<span class="nova-card__rate"></span>').text(rating));
       if(when)meta.append($('<span class="nova-card__date"></span>').text(when));
-      if (episode.still_path && (episode.lampa_grouped || !thumb.hasClass('nova-card__thumb--loaded'))) paintThumb(thumb, image(episode.still_path, get('minimal_banner_quality', 'high') === 'medium' ? 'w500' : 'w780'), false);
+      paintEpisodeThumb(thumb, episode);
     });
   }
 
-  function wideFill(item, card, thumb) {
+  function wideFill(item, card, thumb, readEpisodeBook) {
     if (!serial || item.folder || !wideMeta()) return;
     var number = parseInt(episodeNumber(item.num), 10) || 0;
     if (!number) return;
-    var season = seasonNumber() || 1;
-    var want = wideMetadataContext(),owner=root && root[0];
-    wideBook(season, function (book, grouped) {
-      if (!book || !movie || wideMetadataContext() !== want || !root || root[0] !== owner) return;
+    readEpisodeBook(function (book, grouped) {
+      if (!book) return;
       var episode = book[number];
       if (!episode){if(grouped && item.soon)card.remove();return;}
       var head = card.find('.nova-card__head');
@@ -5853,7 +5892,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       var title = card.find('.nova-card__title');
       if (episode.name) title.text(episodeTitle(item, episode.name));
       episodeOverview(card,episode);
-      if (episode.still_path && (episode.lampa_grouped || !thumb.hasClass('nova-card__thumb--loaded'))) paintThumb(thumb, image(episode.still_path, get('minimal_banner_quality', 'high') === 'medium' ? 'w500' : 'w780'), false);
+      paintEpisodeThumb(thumb, episode);
     });
   }
 
