@@ -7,9 +7,10 @@ import continueWatching,{CONTINUE,isWatching} from './continue-watching.js';
 import discoverySource from './discovery-source.js';
 import {DISCOVERY_KINDS,discoveryState,discoverySelected} from './discovery-model.js';
 export function rowKey(row){return String(row.minimal_row_id || row.url || row.title || lampaViewText("Без названия"));}
+const removedHomeRow=row=>[row.minimal_row_id,row.id,row.url].includes('minimal:annual:current_anime') || row.name==='mpv_plus_current_anime';
 export function homeOrder(rows){
- const rank=row=>isWatching(row)?0:row.url===CONTINUE?1:({'minimal:annual:new_movies':2,'minimal:annual:popular_series':3,'minimal:annual:current_anime':4,'minimal:annual:popular_movies':5}[rowKey(row)] ?? 6);
- return rows.map((row,i)=>({row,i})).sort((a,b)=>rank(a.row)-rank(b.row) || a.i-b.i).map(entry=>entry.row);
+ const rank=row=>isWatching(row)?0:row.url===CONTINUE?1:({'minimal:annual:new_movies':2,'minimal:annual:popular_series':3,'minimal:annual:popular_movies':4}[rowKey(row)] ?? 6);
+ return rows.filter(row=>!removedHomeRow(row)).map((row,i)=>({row,i})).sort((a,b)=>rank(a.row)-rank(b.row) || a.i-b.i).map(entry=>entry.row);
 }
 function annualKey(id){
  const match=String(id).match(/^discover\/(movie|tv)\?(.+)$/);if(!match)return '';
@@ -66,7 +67,7 @@ export default function collections(L,shiki,kino,kinoFeeds){
   let definitions=plan && plan.map(row=>({id:rowKey(row),title:row.title,aliases:row.minimal_row_aliases || [],minimal_default_hidden:row.minimal_default_hidden}));
   if(ctx==='main:' && definitions)definitions.splice(1,0,{id:CONTINUE,title:lampaViewText('История просмотра')});
   if(ctx==='main:' && (known()[ctx+source] || []).length)definitions=known()[ctx+source].slice();
-  const p=prefs(ctx),rows=definitions || (known()[ctx==='main:'?ctx+source:ctx] || []).slice(),order=p.order || [];
+  const p=prefs(ctx),rows=(definitions || (known()[ctx==='main:'?ctx+source:ctx] || []).slice()).filter(row=>ctx!=='main:' || !removedHomeRow(row)),order=p.order || [];
   const matches=(r,id)=>matchesRow({minimal_row_id:r.id,minimal_row_aliases:r.aliases,title:r.title},id),hidden=r=>(p.hidden || []).some(id=>matches(r,id)) || defaultHidden({minimal_row_id:r.id,minimal_row_aliases:r.aliases,minimal_default_hidden:r.minimal_default_hidden},p),position=r=>{const index=order.findIndex(id=>matches(r,id));return index<0?10000:index;};
   rows.sort((a,b)=>position(a)-position(b));
   const items=rows.length?rows.map(r=>({...r,title:(hidden(r)?'○ ':'● ')+r.title})).concat([{id:'reset',title:lampaViewText("Сбросить порядок и видимость")}]):[{title:lampaViewText("Список пока не загружен"),subtitle:lampaViewText("Откройте раздел, чтобы получить актуальные подборки."),noenter:true}];

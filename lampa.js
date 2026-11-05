@@ -1,4 +1,4 @@
-/*! Lampa View 0.5.37 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.5.38 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -12579,7 +12579,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // package.json
-  var version = "0.5.37";
+  var version = "0.5.38";
 
   // src/inputs.js
   function inputs(L) {
@@ -20189,17 +20189,21 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   function rowKey(row) {
     return String(row.minimal_row_id || row.url || row.title || text("Без названия"));
   }
+  var removedHomeRow = function removedHomeRow(row) {
+    return [row.minimal_row_id, row.id, row.url].includes("minimal:annual:current_anime") || row.name === "mpv_plus_current_anime";
+  };
   function homeOrder(rows) {
     var rank2 = function rank2(row) {
       var _a;
       return isWatching(row) ? 0 : row.url === CONTINUE ? 1 : (_a = {
         "minimal:annual:new_movies": 2,
         "minimal:annual:popular_series": 3,
-        "minimal:annual:current_anime": 4,
-        "minimal:annual:popular_movies": 5
+        "minimal:annual:popular_movies": 4
       }[rowKey(row)]) != null ? _a : 6;
     };
-    return rows.map(function (row, i) {
+    return rows.filter(function (row) {
+      return !removedHomeRow(row);
+    }).map(function (row, i) {
       return {
         row: row,
         i: i
@@ -20399,7 +20403,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       });
       if (ctx === "main:" && (known()[ctx + source] || []).length) definitions = known()[ctx + source].slice();
       var p = prefs(ctx),
-        rows = definitions || (known()[ctx === "main:" ? ctx + source : ctx] || []).slice(),
+        rows = (definitions || (known()[ctx === "main:" ? ctx + source : ctx] || []).slice()).filter(function (row) {
+          return ctx !== "main:" || !removedHomeRow(row);
+        }),
         order = p.order || [];
       var matches = function matches(r, id) {
           return matchesRow({
@@ -33025,13 +33031,6 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           type: "tv",
           sort: "popularity.desc",
           votes: 20
-        }, {
-          name: "current_anime",
-          title: lampaViewText("Аниме сезона"),
-          type: "tv",
-          sort: "popularity.desc",
-          votes: 10,
-          anime: true
         }].forEach(function (row, index) {
           Lampa.ContentRows.add({
             name: "mpv_plus_" + row.name,
@@ -33042,12 +33041,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               return function (done) {
                 var range = yearWindow(),
                   field = row.type === "movie" ? "primary_release_date" : "first_air_date";
-                if (row.anime) {
-                  var now = /* @__PURE__ */new Date();
-                  range.start = date(new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 1, 12));
-                  field = "air_date";
-                }
-                var path = "discover/" + row.type + "?language=" + (Lampa.Storage.get("tmdb_lang", "ru") || "ru") + "&sort_by=" + row.sort + "&" + field + ".gte=" + range.start + "&" + field + ".lte=" + range.end + "&vote_count.gte=" + row.votes + "&include_adult=false" + (row.anime ? "&with_genres=16&with_original_language=ja" : row.type === "tv" ? "&with_type=2|4&without_genres=16,99,10762,10763,10764,10767" : "&without_genres=16");
+                var path = "discover/" + row.type + "?language=" + (Lampa.Storage.get("tmdb_lang", "ru") || "ru") + "&sort_by=" + row.sort + "&" + field + ".gte=" + range.start + "&" + field + ".lte=" + range.end + "&vote_count.gte=" + row.votes + "&include_adult=false" + (row.type === "tv" ? "&with_type=2|4&without_genres=16,99,10762,10763,10764,10767" : "&without_genres=16");
                 var network = new Lampa.Reguest();
                 network.timeout(1e4);
                 network.silent(Lampa.TMDB.api(path + "&api_key=" + Lampa.TMDB.key()), function (data) {

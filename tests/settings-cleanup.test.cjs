@@ -4,11 +4,11 @@ function mod(name){const code=esbuild.buildSync({entryPoints:[path.join(__dirnam
 test('annual rows ignore the removed switch and expose stable IDs without losing movie/TV coordinates',()=>{
  const rows=[],settings=[],L={Storage:{get:(key,fallback)=>key==='mpv_plus_recent_rows'?false:fallback,value:()=>false},Listener:{follow(){}},ContentRows:{add:row=>rows.push(row)},SettingsApi:{addComponent(){},addParam:row=>settings.push(row)},TMDB:{api:path=>'http://example/'+path,key:()=> 'test'},Reguest:function(){this.timeout=()=>{};this.silent=(url,ok)=>ok({results:[{id:1,title:'Название'}]});}},context={Lampa:L,appready:true};context.window=context;
  vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../vendor/pars.js'),'utf8'),context);
- assert.equal(rows.length,4);assert.ok(!settings.some(row=>row.param.name==='mpv_plus_recent_rows'));
+ assert.equal(rows.length,3);assert.ok(!settings.some(row=>row.param.name==='mpv_plus_recent_rows'));
  const output=[];for(const row of rows){const load=row.call();assert.equal(typeof load,'function');load(data=>output.push(data));}
  assert.equal(output[2].title,'Популярные сериалы за год');assert.equal(output[2].minimal_row_id,'minimal:annual:popular_series');assert.equal(output[2].results[0].media_type,'tv');
  const old='discover/tv?language=ru&sort_by=popularity.desc&first_air_date.gte=2025-01-01&first_air_date.lte=2026-01-01&vote_count.gte=20&include_adult=false';
- assert.equal(mod('collections').arrange(output,{hidden:[old]}).length,3,'Old dated preferences still match the stable annual row');
+ assert.equal(mod('collections').arrange(output,{hidden:[old]}).length,2,'Old dated preferences still match the stable annual row');
 });
 
 test('collection settings follow Trakt versus discovery and both anime tabs, replacing stale cached definitions',()=>{

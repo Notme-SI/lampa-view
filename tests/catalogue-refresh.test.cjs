@@ -30,7 +30,7 @@ test('leaving a sparse feed stops additional page scans and a later reader can r
 test('default-hidden collections remain configurable and home priorities preserve explicit user order',()=>{
  const {arrange,homeOrder}=mod('collections'),optional={minimal_row_id:'votes',minimal_default_hidden:true,results:[]},regular={minimal_row_id:'new',results:[]};
  assert.deepEqual(arrange([regular,optional],{}),[regular]);assert.deepEqual(arrange([regular,optional],{shown:['votes']}),[regular,optional]);assert.deepEqual(arrange([regular,optional],{order:['votes','new']}),[optional,regular]);assert.deepEqual(arrange([regular,optional],{order:['votes','new'],hidden:['votes']}),[regular]);
- const rows=[{url:'other'},{minimal_row_id:'minimal:annual:current_anime'},{url:'minimal:continue'},{title:'Сейчас смотрят'},{minimal_row_id:'minimal:annual:popular_series'},{minimal_row_id:'minimal:annual:new_movies'}];assert.deepEqual(homeOrder(rows).map(r=>rows.indexOf(r)),[3,2,5,4,1,0]);assert.equal(arrange(homeOrder(rows),{order:['other']})[0],rows[0]);
+ const rows=[{url:'other'},{minimal_row_id:'minimal:annual:current_anime'},{url:'minimal:continue'},{title:'Сейчас смотрят'},{minimal_row_id:'minimal:annual:popular_series'},{minimal_row_id:'minimal:annual:new_movies'}];assert.deepEqual(homeOrder(rows).map(r=>rows.indexOf(r)),[3,2,5,4,0]);assert.equal(arrange(homeOrder(rows),{order:['other']})[0],rows[0]);
 });
 
 test('key acquisition links are visible before either integration has a key',async()=>{

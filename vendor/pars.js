@@ -96,17 +96,15 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
         [
             {name: 'new_movies', title: lampaViewText("Новинки кино"), type: 'movie', sort: 'primary_release_date.desc', votes: 20},
             {name: 'popular_movies', title: lampaViewText("Популярные фильмы за год"), type: 'movie', sort: 'popularity.desc', votes: 50},
-            {name: 'popular_series', title: lampaViewText("Популярные сериалы за год"), type: 'tv', sort: 'popularity.desc', votes: 20},
-            {name: 'current_anime', title: lampaViewText("Аниме сезона"), type: 'tv', sort: 'popularity.desc', votes: 10, anime: true}
+            {name: 'popular_series', title: lampaViewText("Популярные сериалы за год"), type: 'tv', sort: 'popularity.desc', votes: 20}
         ].forEach(function (row, index) {
             Lampa.ContentRows.add({name: 'mpv_plus_' + row.name, title: row.title, index: index + 1, screen: ['main'],
                 call: function () {
                     return function (done) {
                         var range = yearWindow(), field = row.type === 'movie' ? 'primary_release_date' : 'first_air_date';
-                        if(row.anime){var now=new Date();range.start=date(new Date(now.getFullYear(),Math.floor(now.getMonth()/3)*3,1,12));field='air_date';}
                         var path = 'discover/' + row.type + '?language=' + (Lampa.Storage.get('tmdb_lang', 'ru') || 'ru') +
                             '&sort_by=' + row.sort + '&' + field + '.gte=' + range.start + '&' + field + '.lte=' + range.end +
-                            '&vote_count.gte=' + row.votes + '&include_adult=false'+(row.anime?'&with_genres=16&with_original_language=ja':row.type==='tv'?'&with_type=2|4&without_genres=16,99,10762,10763,10764,10767':'&without_genres=16');
+                            '&vote_count.gte=' + row.votes + '&include_adult=false'+(row.type==='tv'?'&with_type=2|4&without_genres=16,99,10762,10763,10764,10767':'&without_genres=16');
                         var network = new Lampa.Reguest(); network.timeout(10000);
                         network.silent(Lampa.TMDB.api(path + '&api_key=' + Lampa.TMDB.key()), function (data) {
                             data = data || {}; data.results = data.results || [];
