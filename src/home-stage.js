@@ -27,7 +27,7 @@ export default function homeStage(hero,root){
    previewRoom=Math.max(0,Math.min(innerHeight*.08,root.offsetHeight-captionBottom-clearance));
   }
  }
- const height=Math.max(100,Math.floor(innerHeight-top-gap-root.offsetHeight-clearance+previewRoom));
+ let height=Math.max(100,Math.floor(innerHeight-top-gap-root.offsetHeight-clearance+previewRoom));
  if(hero.style.height!==height+'px')hero.style.height=height+'px';
  // Keep branding and controls inside short viewports as well as large ones.
  const body=hero.querySelector('.pt-hero__body');
@@ -36,6 +36,12 @@ export default function homeStage(hero,root){
   const style=getComputedStyle(body),font=parseFloat(style.fontSize)||16;
   const glass=document.body.classList.contains('pt-theme-glass');
   const minBottom=font*(glass?2:tv?1.5:3),topInset=font*(tv?1:1.25);
+  if(document.body.classList.contains('pt-personal-enlarged')){
+   height=Math.max(height,Math.ceil(body.offsetHeight+minBottom+topInset));
+   hero.style.height=height+'px';
+   if(!glass)body.style.bottom=minBottom+'px';
+   root.classList.add('minimal-home-first-row');return;
+  }
   const room=Math.max(1,height-minBottom-topInset),natural=body.offsetHeight;
   if((glass || !tv) && natural>room)body.style.fontSize=(font*Math.max(.65,room/natural))+'px';
   // Glass uses normal flex centering; a relative bottom offset would move it

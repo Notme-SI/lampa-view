@@ -1058,3 +1058,10 @@ body.lampa_view.pt-tablet:not(.pt-menu-pinned) .head__body {max-width:100%;paddi
 body.lampa_view.pt-tablet .minimal-detail-header,body.lampa_view.pt-tablet .minimal-detail-columns {width:calc(100% - 2em);max-width:calc(100% - 2em)}
 body.lampa_view.pt-tablet .card__title,body.lampa_view.pt-tablet .card__age {cursor:pointer;pointer-events:auto}
 body.lampa_view.pt-tablet .card:not(.pt-card-touch) .pt-card-watch,body.lampa_view.pt-tablet .card:not(.pt-card-touch) .pt-series-status {visibility:hidden!important}
+
+/* Personal sizing must grow the content pane instead of clipping its controls. */
+body.lampa_view.pt-personal-enlarged .pt-hero__body {flex-shrink:0;max-height:none!important}
+body.lampa_view.pt-personal-enlarged .pt-hero__actions {flex-wrap:wrap}
+body.lampa_view.pt-personal-enlarged .head__body {min-height:100%}
+body.lampa_view .full-start-new__buttons>.selector {box-sizing:border-box;align-items:center;justify-content:center}
+body.lampa_view.pt-personal-enlarged .minimal-detail-identity .full-start-new__buttons {grid-template-columns:repeat(auto-fit,minmax(3.5em,1fr))}

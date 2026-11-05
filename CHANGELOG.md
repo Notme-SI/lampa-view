@@ -1,3 +1,9 @@
+## 0.5.49
+
+- Apply personal scaling only to newly inserted elements during background updates; preserve open settings scroll.
+- Grow home banners to fit enlarged text and controls.
+- Scale header and third-party card actions with the control size.
+
 ## 0.5.48
 
 - Add explicit Tablet device mode: wide layout with touch controls, compact layout on narrow windows, and resize support.
