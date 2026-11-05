@@ -9,14 +9,22 @@ test('an unrecognized host header retains its native description instead of dele
  }finally{w.close();}
 });
 test('a plugin loaded after the full page decorates its existing description, actions, cast and facts without fetching the page again',async()=>{
- const r=await native({deferPlugin:true}),{w,L}=r;
+ const r=await native({deferPlugin:true,prepare(w){
+   w.document.body.classList.add('no--poster');
+   // JSDOM does not evaluate viewport media queries. Activate the host's
+   // min-width:767px rule verbatim to cover poster-disabled tablets/desktops.
+   const css=require('fs').readFileSync(path.join(__dirname,'fixtures/lampa-runtime/app.css'),'utf8');
+   const rule=css.match(/body\.no--poster \.full-start-new__left\s*\{[^}]+\}/)[0];
+   const style=w.document.createElement('style');style.textContent=rule;w.document.head.appendChild(style);
+  }}),{w,L}=r;
  try{
   let calls=0;L.Api.full=(p,ok)=>{calls++;ok({movie:{id:912,title:'Поздняя загрузка',original_title:'Late load',overview:'Описание из уже открытой карточки',release_date:'2026-01-01',vote_average:8,production_countries:[],production_companies:[],spoken_languages:[],genres:[],source:'tmdb'},persons:{cast:[{id:99,name:'Актёр',profile_path:'/person.jpg',character:'Роль'}],crew:[]},discuss:{result:[]},images:{logos:[]},videos:{results:[]},simular:{results:[]},recomend:{results:[]}});};
   L.Activity.push({component:'full',id:912,method:'movie',source:'tmdb',card:{id:912,title:'Поздняя загрузка',source:'tmdb'}});await new Promise(resolve=>setTimeout(resolve,150));
-  const root=L.Activity.active().activity.render(true);assert.equal(root.querySelector('.minimal-detail-header'),null);assert.ok(root.querySelector('.full-descr'));
+  const root=L.Activity.active().activity.render(true);assert.equal(w.getComputedStyle(root.querySelector('.full-start-new__left')).display,'none');assert.equal(root.querySelector('.minimal-detail-header'),null);assert.ok(root.querySelector('.full-descr'));
   // Isolate decoration from the independently tested startup redirect home.
   const replace=L.Activity.replace;L.Activity.replace=()=>{};
   const code=require('fs').readFileSync(path.join(__dirname,'../dist/lampa.js'),'utf8');w.eval(code);L.Activity.replace=replace;await new Promise(resolve=>setTimeout(resolve,150));
+  const identity=root.querySelector('.minimal-detail-identity');assert.equal(w.getComputedStyle(identity).display,'block');assert.ok(identity.querySelector('.full-start-new__title'));assert.ok(identity.querySelector('.full-start-new__buttons .full-start__button'));assert.equal(w.getComputedStyle(identity.querySelector('.full-start-new__poster')).display,'none');
   assert.equal(root.querySelector('.minimal-detail-overview').textContent,'Описание из уже открытой карточки');assert.ok(root.querySelector('.minimal-detail-facts'));assert.ok(root.querySelector('.minimal-detail-cast .minimal-cast-native'));assert.equal(root.querySelector('.full-descr'),null);assert.equal(calls,1);
   L.Listener.send('activity',{type:'start'});assert.equal(root.querySelectorAll('.minimal-detail-columns').length,1);assert.equal(root.querySelectorAll('.minimal-detail-overview').length,1);assert.deepEqual(r.errors,[]);
  }finally{r.close();}

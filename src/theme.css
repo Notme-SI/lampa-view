@@ -334,6 +334,8 @@ body.lampa_view .settings-input {z-index:90!important}
 body.lampa_view .settings-input__content {background:#101010}
 body.lampa_view .minimal-detail-header {max-width:90%;margin:0 auto;padding:3em 0 1.5em;min-height:23em;display:flex;align-items:flex-end}
 body.lampa_view .minimal-detail-header .full-start-new__body {width:100%;align-items:flex-end;gap:2em}
+/* Native no--poster hides this column, but it now contains essential actions. */
+body.lampa_view .minimal-detail-header .full-start-new__left.minimal-detail-identity {display:block}
 body.lampa_view .minimal-detail-identity {width:15em;min-width:15em;margin:0}
 body.lampa_view .minimal-detail-identity .full-start-new__poster {display:none}
 body.lampa_view .minimal-detail-identity .full-start-new__title {margin-bottom:1em;font-size:1.7em}
