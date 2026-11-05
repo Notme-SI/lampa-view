@@ -25,8 +25,8 @@ test('CUB and Trakt use the full TMDB TV-show catalogue without a sparse regiona
   L.Api.sources.trakt.category=()=>assert.fail('Regional categories must use TMDB directly');
   const requests=[],response=require('./fixtures/discovery-response.cjs');L.Api.sources.tmdb.get=(url,p,ok)=>{requests.push(url);ok(response(url,p.page));};
   for(const source of ['cub','trakt']){
-   L.Api.sources.minimal_discovery.clear();requests.length=0;const object={source,url:'tvshow'},rows=await new Promise((resolve,reject)=>L.Api.category(object,resolve,reject));
-   assert.equal(rows.length,5);assert.equal(requests.length,5);
+   L.Storage.set('minimal_catalogue_cache_v1',[]);L.Api.sources.minimal_discovery.clear();requests.length=0;const object={source,url:'tvshow'},rows=[];let more;await new Promise((resolve,reject)=>{more=L.Api.category(object,first=>{rows.push(...first);resolve();},reject);});assert.equal(rows.length,3);await new Promise((resolve,reject)=>more(next=>{rows.push(...next);resolve();},reject));
+   assert.equal(rows.length,5);assert.equal(requests.length,source==='cub'?5:0,'The second source reuses public TMDB cache');
    assert.ok(rows.every(row=>row.source==='minimal_discovery' && !row.title.endsWith(' · TMDB') && row.results.length===20 && row.total_pages===2 && JSON.parse(row.url).kind==='tvshow' && row.results.every(c=>c.source==='tmdb' && c.media_type==='tv')));assert.equal(object.minimal_catalogue_status.state,'ready');
   }
   assert.deepEqual(n.errors,[]);

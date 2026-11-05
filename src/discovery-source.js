@@ -1,23 +1,29 @@
 import tmdbGet,{presentableCards} from './tmdb.js';
+import catalogueCache from './catalogue-cache.js';
 import {locale,text as t} from './i18n.js';
 import {DISCOVERY_KINDS,discoveryState,discoverySpecs,discoveryAccepts} from './discovery-model.js';
 export const DISCOVERY_SOURCE='minimal_discovery';
 export function discoverySpec(value){
  if(!value || !DISCOVERY_KINDS.includes(value.kind) || !['movie','tv',''].includes(value.type))return null;
  const state=discoveryState(value.kind,{...value,section:'overview'});
- if(value.genre && state.genre!==String(value.genre) || value.network && state.network!==Number(value.network) || value.company && state.company!==Number(value.company) || value.hero && state.hero!==String(value.hero) || value.country && state.country!==value.country || value.sort && (value.hero?value.sort!=='popular':state.sort!==value.sort) || value.feed && !['airing','current','trending','recent','upcoming'].includes(value.feed))return null;
+ if(value.genre && state.genre!==String(value.genre) || value.network && state.network!==Number(value.network) || value.company && state.company!==Number(value.company) || value.hero && state.hero!==String(value.hero) || value.country && state.country!==value.country || value.sort && (value.hero?value.sort!=='popular':state.sort!==value.sort) || value.feed && !['airing','current','active','completed','trending','recent','upcoming'].includes(value.feed))return null;
  if(value.kind!=='cartoon' && value.type!==(value.kind==='movie'?'movie':'tv') || !value.type && value.kind!=='cartoon')return null;
  if(value.sort==='revenue' && value.type!=='movie')return null;
  let period=state.period;
  if(value.period){const match=String(value.period).match(/^(\d{4})-(\d{4})$/);if(!match || Number(match[1])<1870 || Number(match[2])<Number(match[1]) || Number(match[2])>new Date().getFullYear())return null;period=value.period;}
- return {kind:value.kind,type:value.type,country:state.country,genre:state.genre,network:state.network,company:state.company,period,sort:state.sort || 'popular',hero:state.hero,...(['airing','current','trending','recent','upcoming'].includes(value.feed)?{feed:value.feed}:{}),...(value.kind==='cartoon' && value.family?{family:true}:{})};
+ return {kind:value.kind,type:value.type,country:state.country,genre:state.genre,network:state.network,company:state.company,period,sort:state.sort || 'popular',hero:state.hero,...(['airing','current','active','completed','trending','recent','upcoming'].includes(value.feed)?{feed:value.feed}:{}),...(value.kind==='cartoon' && value.family?{family:true}:{})};
 }
 export default function discoverySource(L){
  const cache=new Map(),pending=new Map(),queue=[],cursors=new Map(),live=new Set();let active=0,generation=0;
+ const disk=catalogueCache(L);
+ const endpoint=()=>{try{const u=new URL(L.TMDB.api(''));return u.origin+u.pathname;}catch(error){return 'tmdb';}};
  const error=()=>({status_message:t('Не удалось загрузить {0}. Попробуйте ещё раз.',[t('подборки')])});
  function request(path,page,ok,fail,unreleased=false){
-  const key=locale()+'|'+path+'|'+page+'|'+unreleased,old=cache.get(key);
+  const key=endpoint()+'|'+locale()+'|'+path+'|'+page+'|'+unreleased,old=cache.get(key) || (page===1?disk.get(key):null);
   if(old && Date.now()-old.at<300000)return ok(old.value);
+  // Deliver a recent saved page once. Refresh only the cache, never replace
+  // focused rows or change the pagination of an already displayed cursor.
+  if(old && Date.now()-old.at<86400000){ok(old.value);ok=()=>{};fail=()=>{};}
   if(pending.has(key)){pending.get(key).listeners.push({ok,fail});return;}
   if(queue.length>=64)return fail(error());
   const job={key,path,page,unreleased,listeners:[{ok,fail}],generation};pending.set(key,job);queue.push(job);pump();
@@ -26,7 +32,7 @@ export default function discoverySource(L){
   const job=queue.shift();if(job.generation!==generation){pending.delete(job.key);continue;}active++;live.add(job);let settled=false,timer;
   const finish=json=>{if(settled)return;settled=true;clearTimeout(timer);active--;live.delete(job);if(pending.get(job.key)===job)pending.delete(job.key);
    const valid=job.generation===generation && json && Array.isArray(json.results);
-   if(valid){cache.set(job.key,{value:json,at:Date.now()});while(cache.size>96)cache.delete(cache.keys().next().value);}
+   if(valid){const at=Date.now();cache.set(job.key,{value:json,at});if(job.page===1)disk.put(job.key,json,at);while(cache.size>96)cache.delete(cache.keys().next().value);}
    if(job.generation===generation)job.listeners.forEach(cb=>{if(valid)cb.ok(json);else cb.fail(error());});pump();
   };
   job.finish=finish;timer=setTimeout(()=>finish(null),15000);
@@ -35,12 +41,12 @@ export default function discoverySource(L){
  function clear(){generation++;cache.clear();queue.splice(0);pending.clear();cursors.forEach(c=>{c.cancelled=true;});cursors.clear();Array.from(live).forEach(job=>job.finish(null));}
  const source={clear,full(params,ok,fail){return L.Api.sources.tmdb.full({...params,source:'tmdb',method:params.card && params.card.media_type || params.method || 'tv'},ok,fail);},list(params,ok,fail=()=>{}){
   let parsed;try{parsed=JSON.parse(params.url);}catch(e){return fail(error());}const spec=discoverySpec(parsed);if(!spec)return fail(error());
-  const page=Math.max(1,Math.min(500,Number(params.page)||1)),key=locale()+'|'+JSON.stringify(spec);let cursor=cursors.get(key);
+  const page=Math.max(1,Math.min(500,Number(params.page)||1)),key=endpoint()+'|'+locale()+'|'+JSON.stringify(spec);let cursor=cursors.get(key);
   if(!cursor || Date.now()-cursor.at>300000){if(cursor)cursor.cancelled=true;cursor={at:Date.now(),spec,streams:discoverySpecs(spec).map(s=>({...s,next:1,total:1,finished:false})),pages:[],buffer:[],seen:new Set(),waiters:[],busy:false,cancelled:false};cursors.set(key,cursor);while(cursors.size>32){const first=cursors.keys().next().value;cursors.get(first).cancelled=true;cursors.delete(first);}}
   if(!cursor.streams.length || page>cursor.pages.length+2)return fail(error());
   if(cursor.pages[page-1])return ok(cursor.pages[page-1]);
   if(cursor.pages.length && cursor.streams.every(s=>s.finished) && !cursor.buffer.length)return ok({results:[],page,total_pages:cursor.pages.length});
-  cursor.waiters.push({page,ok,fail});load(cursor);
+  cursor.waiters.push({page,ok,fail,cancelled:params.minimal_cancelled || (()=>false)});load(cursor);
  }};
  function load(cursor){
   if(cursor.busy || cursor.cancelled || !cursor.waiters.length)return;cursor.busy=true;
@@ -54,6 +60,8 @@ export default function discoverySource(L){
   function failPage(){cursor.busy=false;const waiters=cursor.waiters.splice(0);waiters.forEach(w=>w.fail(error()));}
   function next(){
    if(cursor.cancelled)return;
+   cursor.waiters=cursor.waiters.filter(w=>!w.cancelled());
+   if(!cursor.waiters.length){cursor.busy=false;return;}
    const available=cursor.streams.filter(s=>!s.finished);
    // A display page owns its accepted rows. Partial pages never make the next
    // page skip accepted cards, and sparse foreign feeds have a bounded scan.

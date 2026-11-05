@@ -89,12 +89,12 @@ export default function kinoapi(L){
  }
  function setting(item){if(!item.find('.settings-param__value').length)item.append('<div class="settings-param__value"></div>');item.find('.settings-param__value').text(key());}
  if(L.SettingsApi){
-  L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_kinoapi_enabled',type:'trigger',default:!!key()},field:{name:'KinoAPI',description:t('Метаданные аниме.')},onChange(){
+  L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_kinoapi_enabled',type:'trigger',default:!!key()},field:{name:'KinoAPI',description:t('Метаданные аниме.')+' '+t('Получить ключ: {0}.',['https://kinoapi.lampac.dev/'])},onChange(){
    refresh();if(!flag(L,'minimal_kinoapi_enabled',!!key()) || key())return;
    // Cancelling the first input must leave the integration disabled.
    L.Storage.set('minimal_kinoapi_enabled',false);input();
   }});
-  L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_kinoapi',type:'button'},field:{name:t('KinoAPI · Ключ API'),description:t('Получить ключ: {0}.',['https://kinoapi.lampac.dev/'])},onRender:setting,onChange:input});
+  L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_kinoapi',type:'button'},field:{name:t('KinoAPI · Ключ API'),description:''},onRender:setting,onChange:input});
  }
  return {enabled,title,anime,catalogueRequest(path,done){if(!/^titles\?/.test(path))return done(null);request(path,done);},book(card,season,numbers,files,done){anime(card,model=>done(metadataBook(model,season,numbers,files)));},groups(card,files,done){anime(card,model=>done(absoluteGroups(model,files)));},clear};
 }

@@ -1,4 +1,4 @@
-/*! Lampa View 0.5.36 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.5.37 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -9531,6 +9531,58 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       cs: "Rusk\xE9 animovan\xE9 filmy",
       ro: "Animație rusească",
       pl: "Rosyjskie animacje"
+    },
+    Завершённые: {
+      en: "Completed",
+      uk: "Завершені",
+      be: "Завершаныя",
+      fr: "Termin\xE9es",
+      zh: "已完结",
+      pt: "Conclu\xEDdas",
+      bg: "Завършени",
+      he: "הסתיימו",
+      cs: "Dokončené",
+      ro: "\xCEncheiate",
+      pl: "Zakończone"
+    },
+    "Новинки сезона": {
+      en: "New this season",
+      uk: "Новинки сезону",
+      be: "Навінкі сезона",
+      fr: "Nouveaut\xE9s de la saison",
+      zh: "本季新作",
+      pt: "Novidades da temporada",
+      bg: "Нови за сезона",
+      he: "חדשות העונה",
+      cs: "Novinky sez\xF3ny",
+      ro: "Noutățile sezonului",
+      pl: "Nowości sezonu"
+    },
+    "Новые шоу": {
+      en: "New shows",
+      uk: "Нові шоу",
+      be: "Новыя шоу",
+      fr: "Nouvelles \xE9missions",
+      zh: "新节目",
+      pt: "Novos programas",
+      bg: "Нови предавания",
+      he: "תוכניות חדשות",
+      cs: "Nové pořady",
+      ro: "Emisiuni noi",
+      pl: "Nowe programy"
+    },
+    "Аниме сезона": {
+      en: "Anime this season",
+      uk: "Аніме сезону",
+      be: "Анімэ сезона",
+      fr: "Anime de la saison",
+      zh: "本季动画",
+      pt: "Anime da temporada",
+      bg: "Аниме за сезона",
+      he: "אנימה העונה",
+      cs: "Anime sez\xF3ny",
+      ro: "Anime de sezon",
+      pl: "Anime sezonu"
     }
   };
 
@@ -10334,7 +10386,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     if (source.list) {
       var _list = source.list;
       source.list = function (params, ok, fail) {
-        var clean = normalizeTmdb(params.url, params);
+        var clean = normalizeTmdb(params.url, params),
+          q = new URLSearchParams(clean.path.split("?")[1] || "");
+        if (/^discover\/(tv|movie)\?/.test(clean.path) && q.get("with_original_language") === "ja" && (q.get("first_air_date.gte") || q.get("primary_release_date.gte") || "") > (/* @__PURE__ */new Date()).toISOString().slice(0, 10)) return tmdbGet(L, clean.path, clean.params, ok, fail, {
+          unreleased: true
+        });
         return _list.call(this, __spreadProps(__spreadValues({}, clean.params), {
           url: clean.path
         }), function (json) {
@@ -12523,7 +12579,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // package.json
-  var version = "0.5.36";
+  var version = "0.5.37";
 
   // src/inputs.js
   function inputs(L) {
@@ -17720,6 +17776,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       });
       return hero ? "search/" + type + "?query=" + encodeURIComponent(hero.queries[0]) + "&include_adult=false" : "";
     }
+    var active = spec.feed === "active" || spec.feed === "airing" || spec.feed === "current",
+      completed = spec.feed === "completed";
     var sort = spec.sort || "popular",
       sorts = {
         popular: "popularity.desc",
@@ -17747,7 +17805,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     if (["tv", "dorama"].includes(spec.kind)) {
       p.set("with_type", "2|4");
       p.set("without_genres", "16,99,10762,10763,10764,10767");
-      if (!spec.period) p.set("first_air_date.gte", date2.getFullYear() - 4 + "-01-01");
+      if (!spec.period && !active && !completed) p.set("first_air_date.gte", date2.getFullYear() - 4 + "-01-01");
     }
     if (["movie", "tv"].includes(spec.kind) && !(descriptor && descriptor.genre === 16)) p.set("without_genres", spec.kind === "tv" ? "16,99,10762,10763,10764,10767" : "16");
     if (spec.network && type === "tv") p.set("with_networks", String(spec.network));
@@ -17767,23 +17825,26 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     } else if (sort === "new") {
       p.set(field + ".gte", date2.getFullYear() - 3 + "-01-01");
     }
-    if (["airing", "current"].includes(spec.feed) && type === "tv") {
+    if (active && type === "tv") {
       var start = new Date(date2);
-      start.setDate(start.getDate() - (spec.feed === "current" ? 365 : 7));
+      start.setDate(start.getDate() - (spec.feed === "airing" ? 7 : spec.feed === "current" ? 90 : 365));
       p.set("air_date.gte", day2(start));
       p.set("air_date.lte", today);
       p.set("sort_by", "popularity.desc");
     }
-    if (spec.kind === "dorama" && !spec.period) p.set("first_air_date.gte", date2.getFullYear() - 3 + "-01-01");
-    if (spec.kind === "tvshow" && !spec.period) {
+    if (spec.kind === "dorama" && !spec.period && !active && !completed) p.set("first_air_date.gte", date2.getFullYear() - 3 + "-01-01");
+    if (spec.kind === "tvshow" && !spec.period && !active) {
       var floor = date2.getFullYear() - 8 + "-01-01";
       if (!p.get("first_air_date.gte") || p.get("first_air_date.gte") < floor) p.set("first_air_date.gte", floor);
     }
-    if (spec.feed === "recent" && type === "movie") {
+    if (spec.feed === "recent") {
       var _start = new Date(date2);
-      _start.setDate(_start.getDate() - 90);
+      _start.setDate(_start.getDate() - 180);
       p.set(field + ".gte", day2(_start));
-      p.set("sort_by", "popularity.desc");
+    }
+    if (completed && type === "tv") {
+      p.set("with_status", "3");
+      p.delete("first_air_date.gte");
     }
     var local = spec.country === "RU" || spec.country === "UA" || discovery_data_default.networks.some(function (v) {
       return v.id === spec.network && v.country === "RU";
@@ -17793,8 +17854,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     if (spec.feed === "upcoming") {
       var tomorrow = new Date(date2);
       tomorrow.setDate(tomorrow.getDate() + 1);
+      var horizon = new Date(date2);
+      horizon.setDate(horizon.getDate() + 365);
       p.set(field + ".gte", day2(tomorrow));
-      p.delete(field + ".lte");
+      p.set(field + ".lte", day2(horizon));
       p.set("sort_by", "popularity.desc");
       p.set("vote_count.gte", "0");
     }
@@ -17843,18 +17906,22 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       descriptor = genreDescriptor(spec.type === "movie" ? "movie" : "tv", spec.genre, spec.kind);
     if (spec.feed === "upcoming") {
       var release = String(card[spec.type === "movie" ? "release_date" : "first_air_date"] || "").slice(0, 10);
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(release) || release <= day2(/* @__PURE__ */new Date())) return false;
+      var horizon = /* @__PURE__ */new Date();
+      horizon.setDate(horizon.getDate() + 365);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(release) || release <= day2(/* @__PURE__ */new Date()) || release > day2(horizon)) return false;
     }
+    var active = ["active", "airing", "current", "completed", "trending"].includes(spec.feed);
+    if (spec.feed === "completed" && card.status != null && !["Ended", 3, "3"].includes(card.status)) return false;
     if (spec.kind === "tv") {
       var year2 = Number(String(card.first_air_date || "").slice(0, 4));
-      if (!spec.period && year2 > 0 && year2 < (/* @__PURE__ */new Date()).getFullYear() - 4) return false;
+      if (!spec.period && !active && year2 > 0 && year2 < (/* @__PURE__ */new Date()).getFullYear() - 4) return false;
       if (card.type && !["Scripted", "Miniseries", 2, 4].includes(card.type)) return false;
       if (genres.some(function (g) {
         return [99, 10762, 10763, 10764, 10767].includes(g);
       })) return false;
     }
     var year = Number(String(card.first_air_date || "").slice(0, 4));
-    if (!spec.period && year > 0 && ["dorama", "tvshow"].includes(spec.kind) && year < (/* @__PURE__ */new Date()).getFullYear() - (spec.kind === "dorama" ? 3 : 8)) return false;
+    if (!spec.period && !active && year > 0 && ["dorama", "tvshow"].includes(spec.kind) && year < (/* @__PURE__ */new Date()).getFullYear() - (spec.kind === "dorama" ? 3 : 8)) return false;
     if (descriptor && descriptor.genre && genres.length && !genres.includes(descriptor.genre)) return false;
     if (spec.family && (spec.type === "movie" ? !genres.includes(16) || !genres.includes(10751) : !genres.includes(10762))) return false;
     if (spec.country && spec.country !== "foreign" && origin.length && !origin.includes(spec.country)) return false;
@@ -18044,26 +18111,30 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         country: "RU",
         feed: "current"
       });
-      add("watch", "Популярное", {
-        country: "RU"
-      });
-      add("new", "Премьеры " + date2.getFullYear(), {
+      add("new", "Новые шоу", {
         country: "RU",
-        sort: "popular",
-        period: date2.getFullYear() + "-" + date2.getFullYear()
+        sort: "new",
+        feed: "recent"
       });
       add("russian-reality", "Реалити и соревнования", {
         country: "RU",
-        genre: "10764"
+        genre: "10764",
+        feed: "active"
       });
-      add("russian-talk", "Разговорные и развлекательные шоу", {
+      add("russian-talk", "Ток-шоу", {
         country: "RU",
-        genre: "10767"
+        genre: "10767",
+        feed: "active"
+      });
+      add("watch", "Популярное", {
+        country: "RU",
+        feed: "active"
       });
       add("rated", "Высокий рейтинг", {
         country: "RU",
         sort: "rated"
       });
+      rows[rows.length - 1].minimal_default_hidden = true;
       return rows;
     }
     if (kind === "dorama") {
@@ -18103,7 +18174,6 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       feed: "trending"
     }, kind === "cartoon" ? "" : types[0]);
     var lead = [["new", "Новинки"], ["rated", "Высокий рейтинг"], ["popular", "Популярные"], ["votes", "Много голосов"]];
-    var premierePeriod = date2.getFullYear() + "-" + date2.getFullYear();
     lead.forEach(function (_ref33) {
       var _ref34 = _slicedToArray(_ref33, 2),
         sort = _ref34[0],
@@ -18111,14 +18181,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var extra = {
         sort: sort
       };
-      if (sort === "new" && kind !== "cartoon") extra.period = premierePeriod;
+      if (sort === "new") extra.feed = "recent";
+      if (kind === "tv" && sort === "popular") extra.feed = "active";
       add((kind === "cartoon" ? "mixed-" : "") + sort, title, extra, kind === "cartoon" ? "" : types[0]);
+      if (sort === "votes") rows[rows.length - 1].minimal_default_hidden = true;
     });
     if (kind === "cartoon") {
       add("country-RU", "Российские мультфильмы", {
         country: "RU"
       }, "");
       add("series", "Мультсериалы", {}, "tv");
+      add("features", "Полнометражные", {}, "movie");
       options.genres.filter(function (g) {
         return [35, 12, 878, 14].includes(g.genre);
       }).forEach(function (g) {
@@ -18132,29 +18205,39 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       feed: "upcoming"
     });
     if (kind === "tv") {
+      add("watch", "Сейчас выходят", {
+        feed: "airing"
+      });
+      var airing = rows.pop();
+      rows.splice(2, 0, airing);
+      add("completed", "Завершённые", {
+        feed: "completed"
+      });
       add("country-RU", "Российские сериалы", {
-        country: "RU"
+        country: "RU",
+        feed: "active"
       });
       add("country-KR", "Корейские дорамы", {
         kind: "dorama",
-        country: "KR"
+        country: "KR",
+        feed: "active"
       });
       add("country-TR", "Турецкие сериалы", {
-        country: "TR"
+        country: "TR",
+        feed: "active"
       });
       add("country-CN", "Китайские дорамы", {
         kind: "dorama",
-        country: "CN"
-      });
-      add("watch", "Сейчас выходят", {
-        feed: "airing"
+        country: "CN",
+        feed: "active"
       });
       [["80", "Детективы и криминал"], ["10765", "Фантастика и фэнтези"], ["35", "Комедии"], ["18", "Драмы"]].forEach(function (_ref35) {
         var _ref36 = _slicedToArray(_ref35, 2),
           genre = _ref36[0],
           title = _ref36[1];
         return add("genre-" + genre, title, {
-          genre: genre
+          genre: genre,
+          feed: "active"
         });
       });
       return rows;
@@ -18173,6 +18256,59 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     return rows;
   }
 
+  // src/catalogue-cache.js
+  var KEY = "minimal_catalogue_cache_v1";
+  var MAX_AGE = 864e5;
+  var MAX_BYTES = 384 * 1024;
+  var fields = ["id", "title", "name", "original_title", "original_name", "original_language", "release_date", "first_air_date", "poster_path", "backdrop_path", "genre_ids", "origin_country", "vote_average", "vote_count", "popularity", "overview", "media_type", "status", "type"];
+  function catalogueCache(L) {
+    var entries2 = [],
+      timer;
+    try {
+      var stored = L.Storage && L.Storage.get(KEY, []);
+      if (Array.isArray(stored)) entries2 = stored.filter(function (entry) {
+        return entry && typeof entry.key === "string" && entry.at <= Date.now() && Date.now() - entry.at < MAX_AGE && entry.value && Array.isArray(entry.value.results);
+      }).slice(-16);
+    } catch (error) {}
+    function put(key, value, at) {
+      if (!value.results.length) return;
+      var results = value.results.slice(0, 20).map(function (card) {
+        var out = {};
+        fields.forEach(function (field) {
+          if (card[field] !== void 0) out[field] = field === "overview" ? String(card[field]).slice(0, 1200) : card[field];
+        });
+        return out;
+      });
+      entries2 = entries2.filter(function (entry) {
+        return entry.key !== key && Date.now() - entry.at < MAX_AGE;
+      });
+      entries2.push({
+        key: key,
+        at: at,
+        value: {
+          page: 1,
+          total_pages: value.total_pages || 1,
+          results: results
+        }
+      });
+      while (entries2.length > 16 || JSON.stringify(entries2).length * 2 > MAX_BYTES) entries2.shift();
+      if (!timer && L.Storage && L.Storage.set) timer = setTimeout(function () {
+        timer = null;
+        try {
+          L.Storage.set(KEY, entries2);
+        } catch (error) {}
+      }, 200);
+    }
+    return {
+      get: function get(key) {
+        return entries2.find(function (entry) {
+          return entry.key === key && Date.now() - entry.at < MAX_AGE;
+        });
+      },
+      put: put
+    };
+  }
+
   // src/discovery-source.js
   var DISCOVERY_SOURCE = "minimal_discovery";
   function discoverySpec(value) {
@@ -18180,7 +18316,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var state = discoveryState(value.kind, __spreadProps(__spreadValues({}, value), {
       section: "overview"
     }));
-    if (value.genre && state.genre !== String(value.genre) || value.network && state.network !== Number(value.network) || value.company && state.company !== Number(value.company) || value.hero && state.hero !== String(value.hero) || value.country && state.country !== value.country || value.sort && (value.hero ? value.sort !== "popular" : state.sort !== value.sort) || value.feed && !["airing", "current", "trending", "recent", "upcoming"].includes(value.feed)) return null;
+    if (value.genre && state.genre !== String(value.genre) || value.network && state.network !== Number(value.network) || value.company && state.company !== Number(value.company) || value.hero && state.hero !== String(value.hero) || value.country && state.country !== value.country || value.sort && (value.hero ? value.sort !== "popular" : state.sort !== value.sort) || value.feed && !["airing", "current", "active", "completed", "trending", "recent", "upcoming"].includes(value.feed)) return null;
     if (value.kind !== "cartoon" && value.type !== (value.kind === "movie" ? "movie" : "tv") || !value.type && value.kind !== "cartoon") return null;
     if (value.sort === "revenue" && value.type !== "movie") return null;
     var period = state.period;
@@ -18199,7 +18335,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       period: period,
       sort: state.sort || "popular",
       hero: state.hero
-    }, ["airing", "current", "trending", "recent", "upcoming"].includes(value.feed) ? {
+    }, ["airing", "current", "active", "completed", "trending", "recent", "upcoming"].includes(value.feed) ? {
       feed: value.feed
     } : {}), value.kind === "cartoon" && value.family ? {
       family: true
@@ -18213,6 +18349,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       live = /* @__PURE__ */new Set();
     var active = 0,
       generation = 0;
+    var disk = catalogueCache(L);
+    var endpoint = function endpoint() {
+      try {
+        var u = new URL(L.TMDB.api(""));
+        return u.origin + u.pathname;
+      } catch (error2) {
+        return "tmdb";
+      }
+    };
     var error = function error() {
       return {
         status_message: text("Не удалось загрузить {0}. Попробуйте ещё раз.", [text("подборки")])
@@ -18220,9 +18365,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     };
     function request(path, page, ok, fail) {
       var unreleased = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
-      var key = locale() + "|" + path + "|" + page + "|" + unreleased,
-        old = cache.get(key);
+      var key = endpoint() + "|" + locale() + "|" + path + "|" + page + "|" + unreleased,
+        old = cache.get(key) || (page === 1 ? disk.get(key) : null);
       if (old && Date.now() - old.at < 3e5) return ok(old.value);
+      if (old && Date.now() - old.at < 864e5) {
+        ok(old.value);
+        ok = function ok() {};
+        fail = function fail() {};
+      }
       if (pending.has(key)) {
         pending.get(key).listeners.push({
           ok: ok,
@@ -18266,10 +18416,12 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           if (pending.get(job.key) === job) pending.delete(job.key);
           var valid = job.generation === generation && json && Array.isArray(json.results);
           if (valid) {
+            var at = Date.now();
             cache.set(job.key, {
               value: json,
-              at: Date.now()
+              at: at
             });
+            if (job.page === 1) disk.put(job.key, json, at);
             while (cache.size > 96) cache.delete(cache.keys().next().value);
           }
           if (job.generation === generation) job.listeners.forEach(function (cb) {
@@ -18329,7 +18481,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var spec = discoverySpec(parsed);
         if (!spec) return fail(error());
         var page = Math.max(1, Math.min(500, Number(params.page) || 1)),
-          key = locale() + "|" + JSON.stringify(spec);
+          key = endpoint() + "|" + locale() + "|" + JSON.stringify(spec);
         var cursor = cursors.get(key);
         if (!cursor || Date.now() - cursor.at > 3e5) {
           if (cursor) cursor.cancelled = true;
@@ -18369,7 +18521,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         cursor.waiters.push({
           page: page,
           ok: ok,
-          fail: fail
+          fail: fail,
+          cancelled: params.minimal_cancelled || function () {
+            return false;
+          }
         });
         load(cursor);
       }
@@ -18413,6 +18568,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }
       function next() {
         if (cursor.cancelled) return;
+        cursor.waiters = cursor.waiters.filter(function (w) {
+          return !w.cancelled();
+        });
+        if (!cursor.waiters.length) {
+          cursor.busy = false;
+          return;
+        }
         var available = cursor.streams.filter(function (s) {
           return !s.finished;
         });
@@ -18564,15 +18726,45 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         tmdb: "discover/" + media_type + "?include_adult=false&with_genres=16&without_keywords=210024&" + query
       };
     })));
-    if (kind === "anime" && mode === "shikimori") return [[text("Популярное"), "order=popularity"], [text("С высоким рейтингом"), "order=ranked"], [text("Сейчас выходит"), "order=popularity&status=ongoing"], [text("Ожидаемые"), "order=popularity&status=anons"], [text("Новинки этого года"), "order=popularity&season=" + year], [text("Прошлый год"), "order=ranked&season=" + (year - 1)], [text("Полнометражные"), "order=ranked&kind=movie"], [text("Боевики"), "order=popularity&genre=1"], [text("Приключения"), "order=popularity&genre=2"], [text("Детективы"), "order=popularity&genre=7"], [text("Все"), SHIKI_ALL]].map(function (_ref43) {
-      var _ref44 = _slicedToArray(_ref43, 2),
-        title = _ref44[0],
-        shiki = _ref44[1];
-      return {
-        title: title,
-        shiki: shiki
-      };
-    });
+    if (kind === "anime") {
+      var quarter = Math.floor(date2.getMonth() / 3),
+        season = ["winter", "spring", "summer", "fall"][quarter],
+        start = day4(0).slice(0, 4) + "-" + String(quarter * 3 + 1).padStart(2, "0") + "-01";
+      var base2 = "include_adult=false&with_genres=16&with_original_language=ja&sort_by=popularity.desc";
+      var definitions = [["watch", "Сейчас смотрят", "?cat=anime&sort=now_playing" + ("&airdate=" + year), "tv", base2 + "&air_date.gte=" + day4(-90) + "&air_date.lte=" + day4(0), "order=popularity&status=ongoing"], ["ongoing", "Сейчас выходит", "?cat=anime&sort=airing&airdate=" + year, "tv", base2 + "&air_date.gte=" + day4(-7) + "&air_date.lte=" + day4(0), "order=popularity&status=ongoing"], ["season", "Новинки сезона", null, "tv", base2 + "&first_air_date.gte=" + start + "&first_air_date.lte=" + day4(0), "order=popularity&season=" + season + "_" + year], ["popular", "Популярные", "?cat=anime&sort=top&airdate=" + year, "tv", base2 + "&first_air_date.gte=" + (year - 1) + "-01-01", "order=popularity"], ["rated", "Высокий рейтинг", "?cat=anime&sort=top", "tv", base2.replace("popularity.desc", "vote_average.desc") + "&vote_count.gte=200", "order=ranked"], ["completed", "Завершённые", null, "tv", base2 + "&with_status=3", "order=popularity&status=released&kind=tv"], ["features", "Полнометражные", null, "movie", base2 + "&primary_release_date.lte=" + day4(0), "order=popularity&kind=movie"], ["upcoming", "Ожидаемые", null, "tv", base2 + "&first_air_date.gte=" + day4(1) + "&first_air_date.lte=" + day4(365), "order=popularity&status=anons"]];
+      var plan = definitions.filter(function (row) {
+        return mode !== "shikimori" || row[0] !== "watch";
+      }).map(function (_ref43) {
+        var _ref44 = _slicedToArray(_ref43, 6),
+          key = _ref44[0],
+          title = _ref44[1],
+          cub = _ref44[2],
+          media_type = _ref44[3],
+          query = _ref44[4],
+          shiki = _ref44[5];
+        return __spreadValues({
+          key: key,
+          title: text(title),
+          media_type: media_type
+        }, mode === "shikimori" ? {
+          shiki: shiki
+        } : {
+          cub: cub,
+          tmdb: "discover/" + media_type + "?" + query
+        });
+      });
+      if (mode === "shikimori") {
+        var popular = plan.splice(plan.findIndex(function (row) {
+          return row.key === "popular";
+        }), 1)[0];
+        plan.unshift(popular);
+        plan.push({
+          title: text("Все"),
+          shiki: SHIKI_ALL
+        });
+      }
+      return plan;
+    }
     function add(key, title, cub, query) {
       var prefix = "discover/" + type + "?include_adult=false&" + (kind === "tv" || kind === "movie" ? "without_genres=16&" : "") + (kind === "anime" && /with_genres=/.test(query || "") ? "with_original_language=ja&" : base);
       var previous = prefix + (query || "sort_by=popularity.desc");
@@ -18689,6 +18881,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var cub = usesCub(job, kind, source, hasCub),
       scoped = ["dorama", "tvshow"].includes(kind);
     return __spreadProps(__spreadValues({
+      minimal_default_hidden: !!job.minimal_default_hidden,
       title: cub ? job.title : job.tmdb_title || job.title,
       url: job.discovery ? JSON.stringify(job.discovery) : job.shiki || (cub ? job.cub : job.tmdb || job.cub),
       source: job.discovery ? DISCOVERY_SOURCE : job.shiki ? "minimal_shiki" : cub || !job.tmdb ? "cub" : "tmdb"
@@ -18800,7 +18993,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var settled = false;
         if (job.discovery && L.Api.sources[DISCOVERY_SOURCE]) L.Api.sources[DISCOVERY_SOURCE].list({
           url: row.url,
-          page: 1
+          page: 1,
+          minimal_cancelled: function minimal_cancelled() {
+            return !!object.minimal_catalogue_cancelled;
+          }
         }, finish, function () {
           return finish(null);
         });else if (job.discovery) finish(null);else if (job.shiki) shiki.list({
@@ -18817,6 +19013,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           page: 1
         }, finish, function () {
           return finish(null);
+        }, {
+          unreleased: job.key === "upcoming"
         });else finish(null);
       };
       while (!ended && running < 3 && cursor < plan.length) {
@@ -18882,7 +19080,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         return L.Storage.set(store, Array.from(cache.entries()).slice(-160));
       }, 250);
     }
-    function fields(json, kind, id) {
+    function fields2(json, kind, id) {
       if (!json || Number(json.id) !== Number(id) || !(json.title || json.name)) return null;
       var value = {};
       for (var _i19 = 0, _arr14 = ["title", "name", "original_title", "original_name", "overview", "poster_path", "backdrop_path", "release_date", "first_air_date", "original_language", "vote_average", "vote_count", "genre_ids", "genres", "origin_country", "production_companies", "networks"]; _i19 < _arr14.length; _i19++) {
@@ -18900,7 +19098,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       return value;
     }
     function remember(lang, kind, json) {
-      var value = fields(json, kind, json && json.id);
+      var value = fields2(json, kind, json && json.id);
       if (!value) return;
       cache.set(key(lang, kind, json.id), {
         at: Date.now(),
@@ -19007,7 +19205,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }
       pending.set(k, [done]);
       request(kind + "/" + id, lang, function (json) {
-        var value = fields(json, kind, id);
+        var value = fields2(json, kind, id);
         if (value) remember(lang, kind, json);
         var callbacks = pending.get(k) || [];
         pending.delete(k);
@@ -19597,7 +19795,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       },
       field: {
         name: "Trakt",
-        description: text("Каталог: Настройки → Остальное → Основной источник.")
+        description: text("Получить ключ: {0}.", ["https://trakt.tv/oauth/applications"]) + " " + text("Каталог: Настройки → Остальное → Основной источник.")
       },
       onChange: function onChange() {
         clear();
@@ -19629,7 +19827,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       },
       field: {
         name: "Trakt \xB7 Client ID",
-        description: text("Получить ключ: {0}.", ["https://trakt.tv/oauth/applications"])
+        description: ""
       },
       onChange: function onChange() {
         clear();
@@ -19991,6 +20189,27 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   function rowKey(row) {
     return String(row.minimal_row_id || row.url || row.title || text("Без названия"));
   }
+  function homeOrder(rows) {
+    var rank2 = function rank2(row) {
+      var _a;
+      return isWatching(row) ? 0 : row.url === CONTINUE ? 1 : (_a = {
+        "minimal:annual:new_movies": 2,
+        "minimal:annual:popular_series": 3,
+        "minimal:annual:current_anime": 4,
+        "minimal:annual:popular_movies": 5
+      }[rowKey(row)]) != null ? _a : 6;
+    };
+    return rows.map(function (row, i) {
+      return {
+        row: row,
+        i: i
+      };
+    }).sort(function (a, b) {
+      return rank2(a.row) - rank2(b.row) || a.i - b.i;
+    }).map(function (entry) {
+      return entry.row;
+    });
+  }
   function annualKey(id) {
     var match = String(id).match(/^discover\/(movie|tv)\?(.+)$/);
     if (!match) return "";
@@ -19999,6 +20218,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     if (!q.has(field + ".gte") || !q.has(field + ".lte")) return "";
     var key = match[1] === "tv" && q.get("sort_by") === "popularity.desc" && q.get("vote_count.gte") === "20" ? "popular_series" : match[1] === "movie" && q.get("sort_by") === "popularity.desc" && q.get("vote_count.gte") === "50" ? "popular_movies" : match[1] === "movie" && q.get("sort_by") === "primary_release_date.desc" && q.get("vote_count.gte") === "20" ? "new_movies" : "";
     return key ? "minimal:annual:" + key : "";
+  }
+  function defaultHidden(row, p) {
+    return !!row.minimal_default_hidden && !(p.shown || []).some(function (id) {
+      return matchesRow(row, id);
+    }) && !(p.order || []).some(function (id) {
+      return matchesRow(row, id);
+    });
   }
   function matchesRow(row, id) {
     return rowKey(row) === id || row.url === id || (row.minimal_row_aliases || []).includes(id) || String(row.minimal_row_id || row.id || "").startsWith("minimal:annual:") && annualKey(id) === rowKey(row) || isWatching(row) && ["mixed/trending", "movies/trending", "shows/trending", "?sort=now_playing", "movie/now_playing"].includes(id);
@@ -20015,7 +20241,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     return rows.filter(function (row) {
       return !hidden.some(function (id) {
         return matches(row, id);
-      });
+      }) && !defaultHidden(row, prefs);
     }).map(function (row, i) {
       return {
         row: row,
@@ -20141,6 +20367,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     function contextName(ctx) {
       return labels[ctx] || (ctx === "category:anime:shikimori" ? text("Аниме · Shikimori") : text("Аниме · Стандартные"));
     }
+    function hiddenIds(ctx, object) {
+      var p = prefs(ctx),
+        kind = object.url || object.cat;
+      return [].concat(_toConsumableArray(p.hidden || []), _toConsumableArray(cataloguePlan(kind, animeMode(L, object), /* @__PURE__ */new Date(), object.minimal_discovery || {}).map(function (job) {
+        return catalogueRow(job, kind, object.source || L.Storage.get("source", "cub"), !!(L.Api.sources && L.Api.sources.cub));
+      }).filter(function (row) {
+        return defaultHidden(row, p);
+      }).map(rowKey)));
+    }
     function edit(ctx) {
       var kind = String(ctx).replace("category:", "").split(":")[0],
         selected = L.Storage.get("source", "cub"),
@@ -20154,13 +20389,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         return {
           id: rowKey(row),
           title: row.title,
-          aliases: row.minimal_row_aliases || []
+          aliases: row.minimal_row_aliases || [],
+          minimal_default_hidden: row.minimal_default_hidden
         };
       });
       if (ctx === "main:" && definitions) definitions.splice(1, 0, {
         id: CONTINUE,
         title: text("История просмотра")
       });
+      if (ctx === "main:" && (known()[ctx + source] || []).length) definitions = known()[ctx + source].slice();
       var p = prefs(ctx),
         rows = definitions || (known()[ctx === "main:" ? ctx + source : ctx] || []).slice(),
         order = p.order || [];
@@ -20174,7 +20411,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         hidden = function hidden(r) {
           return (p.hidden || []).some(function (id) {
             return matches(r, id);
-          });
+          }) || defaultHidden({
+            minimal_row_id: r.id,
+            minimal_row_aliases: r.aliases,
+            minimal_default_hidden: r.minimal_default_hidden
+          }, p);
         },
         position = function position(r) {
           var index2 = order.findIndex(function (id) {
@@ -20216,13 +20457,26 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           id: "first",
           title: text("В начало")
         }], function (action) {
-          p.hidden = p.hidden || [];
+          var wasHidden = hidden(r);
+          p.hidden = rows.filter(hidden).map(function (x) {
+            return x.id;
+          });
+          p.shown = rows.filter(function (x) {
+            return !hidden(x);
+          }).map(function (x) {
+            return x.id;
+          });
           p.order = rows.map(function (x) {
             return x.id;
           });
-          if (action.id === "toggle") p.hidden = hidden(r) ? p.hidden.filter(function (id) {
-            return !matches(r, id);
-          }) : p.hidden.concat(r.id);else {
+          if (action.id === "toggle") {
+            p.hidden = wasHidden ? p.hidden.filter(function (id) {
+              return !matches(r, id);
+            }) : p.hidden.concat(r.id);
+            p.shown = wasHidden ? p.shown.concat(r.id) : p.shown.filter(function (id) {
+              return !matches(r, id);
+            });
+          } else {
             var i = p.order.indexOf(r.id),
               to = action.id === "first" ? 0 : Math.max(0, Math.min(rows.length - 1, i + (action.id === "up" ? -1 : 1)));
             p.order.splice(i, 1);
@@ -20279,7 +20533,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             results: presentableCards(row.results || [])
           });
         });
-        var selected = compact ? homeRows(rows) : rows;
+        var selected = compact ? homeOrder(homeRows(homeOrder(rows))) : rows;
         remember(ctx, selected);
         ok(arrange(selected, prefs(ctx)).filter(function (row) {
           return !row.minimal_empty;
@@ -20350,15 +20604,6 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           if (fail) fail(error);
         });
       }
-      if (!["movie", "tv", "cartoon"].includes(kind)) {
-        catalogue(L, shiki, object, prefs(ctx).hidden || [], function (rows) {
-          remember(ctx, rows);
-          ok(arrange(rows.filter(function (row) {
-            return !row.minimal_hidden;
-          }), prefs(ctx)));
-        });
-        return;
-      }
       var cursor = 0,
         busy = false,
         finished = false,
@@ -20377,9 +20622,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         busy = true;
         function batch() {
           object.minimal_catalogue_offset = cursor;
-          object.minimal_catalogue_limit = 12;
+          object.minimal_catalogue_limit = 3;
           object.minimal_catalogue_order = prefs(ctx).order || [];
-          catalogue(L, shiki, object, prefs(ctx).hidden || [], function (rows) {
+          catalogue(L, shiki, object, hiddenIds(ctx, object), function (rows) {
             if (object.minimal_catalogue_cancelled) return;
             cursor = object.minimal_catalogue_next;
             finished = cursor >= object.minimal_catalogue_total;
@@ -20424,19 +20669,20 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               item.active = Math.min(item.active || 0, Math.max(0, item.items.length - 1));
             }
           }
-          if (!captured.has(ctx)) remember(ctx, item.items.map(function (i) {
+          if (ctx === "main:" || !captured.has(ctx)) remember(ctx, item.items.map(function (i) {
             return i.data || {};
-          }));
+          }), ctx === "main:");
           var active = item.items[item.active],
             p = prefs(ctx),
             all = item.items.slice();
-          if (!(p.order || []).length && !(p.hidden || []).length) return;
-          var arranged = arrange(all.map(function (i) {
-            return i.data || {};
-          }), p);
-          item.items = arranged.map(function (data) {
+          if (ctx !== "main:" && !(p.order || []).length && !(p.hidden || []).length) return;
+          var data = all.map(function (i) {
+              return i.data || {};
+            }),
+            arranged = arrange(ctx === "main:" ? homeOrder(data) : data, p);
+          item.items = arranged.map(function (data2) {
             return all.find(function (i) {
-              return i.data === data;
+              return i.data === data2;
             });
           });
           all.filter(function (i) {
@@ -20456,7 +20702,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var ctx = context(object);
         if (!ctx) return item;
         if ((object.url || object.cat) === "anime") animeTabs(L, item, object);
-        if (object && object.component === "category" && ["movie", "tv", "cartoon"].includes(object.url || object.cat)) item.use({
+        if (object && object.component === "category" && ["movie", "tv", "cartoon", "tvshow", "anime", "dorama"].includes(object.url || object.cat)) item.use({
           onDestroy: function onDestroy() {
             object.minimal_catalogue_cancelled = true;
           }
@@ -24687,7 +24933,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
 
   // src/kinoapi.js
   var BASE3 = "https://kinoapi.lampac.dev/api/v1/";
-  var KEY = "lampa_view_kinoapi_key";
+  var KEY2 = "lampa_view_kinoapi_key";
   var positive4 = function positive4(n) {
     return Number.isSafeInteger(Number(n)) && Number(n) > 0;
   };
@@ -24870,7 +25116,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       revision = 0,
       blocked = 0;
     var key = function key() {
-      return String(L.Storage.value ? L.Storage.value(KEY, "") : L.Storage.get(KEY, "")).trim();
+      return String(L.Storage.value ? L.Storage.value(KEY2, "") : L.Storage.get(KEY2, "")).trim();
     };
     var enabled = function enabled() {
       return flag(L, "minimal_kinoapi_enabled", !!key()) && !!key();
@@ -25032,7 +25278,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         nomic: true
       }, function (value) {
         var clean = String(value || "").trim();
-        L.Storage.set(KEY, clean);
+        L.Storage.set(KEY2, clean);
         L.Storage.set("minimal_kinoapi_enabled", !!clean);
         refresh();
       });
@@ -25051,7 +25297,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         },
         field: {
           name: "KinoAPI",
-          description: text("Метаданные аниме.")
+          description: text("Метаданные аниме.") + " " + text("Получить ключ: {0}.", ["https://kinoapi.lampac.dev/"])
         },
         onChange: function onChange() {
           refresh();
@@ -25068,7 +25314,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         },
         field: {
           name: text("KinoAPI · Ключ API"),
-          description: text("Получить ключ: {0}.", ["https://kinoapi.lampac.dev/"])
+          description: ""
         },
         onRender: setting,
         onChange: input
@@ -26361,7 +26607,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           url: "",
           title: text("Главная"),
           component: "main",
-          source: "tmdb",
+          source: L.Storage.get("source", "tmdb") || "tmdb",
           page: 1
         });
         if (section === "library") {
@@ -32779,6 +33025,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           type: "tv",
           sort: "popularity.desc",
           votes: 20
+        }, {
+          name: "current_anime",
+          title: lampaViewText("Аниме сезона"),
+          type: "tv",
+          sort: "popularity.desc",
+          votes: 10,
+          anime: true
         }].forEach(function (row, index) {
           Lampa.ContentRows.add({
             name: "mpv_plus_" + row.name,
@@ -32789,7 +33042,12 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               return function (done) {
                 var range = yearWindow(),
                   field = row.type === "movie" ? "primary_release_date" : "first_air_date";
-                var path = "discover/" + row.type + "?language=" + (Lampa.Storage.get("tmdb_lang", "ru") || "ru") + "&sort_by=" + row.sort + "&" + field + ".gte=" + range.start + "&" + field + ".lte=" + range.end + "&vote_count.gte=" + row.votes + "&include_adult=false";
+                if (row.anime) {
+                  var now = /* @__PURE__ */new Date();
+                  range.start = date(new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 1, 12));
+                  field = "air_date";
+                }
+                var path = "discover/" + row.type + "?language=" + (Lampa.Storage.get("tmdb_lang", "ru") || "ru") + "&sort_by=" + row.sort + "&" + field + ".gte=" + range.start + "&" + field + ".lte=" + range.end + "&vote_count.gte=" + row.votes + "&include_adult=false" + (row.anime ? "&with_genres=16&with_original_language=ja" : row.type === "tv" ? "&with_type=2|4&without_genres=16,99,10762,10763,10764,10767" : "&without_genres=16");
                 var network = new Lampa.Reguest();
                 network.timeout(1e4);
                 network.silent(Lampa.TMDB.api(path + "&api_key=" + Lampa.TMDB.key()), function (data) {

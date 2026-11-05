@@ -43,6 +43,7 @@ export function discoveryQuery(spec,date=new Date()){
  const type=spec.type==='movie'?'movie':'tv',p=new URLSearchParams({include_adult:'false'}),field=type==='movie'?'primary_release_date':'first_air_date',today=day(date);
  if(spec.feed==='trending')return 'trending/'+type+'/week';
  if(spec.hero){const hero=DATA.heroes.find(v=>v.id===String(spec.hero));return hero?'search/'+type+'?query='+encodeURIComponent(hero.queries[0])+'&include_adult=false':'';}
+ const active=spec.feed==='active' || spec.feed==='airing' || spec.feed==='current',completed=spec.feed==='completed';
  const sort=spec.sort || 'popular',sorts={popular:'popularity.desc',rated:'vote_average.desc',votes:'vote_count.desc',new:field+'.desc',revenue:'revenue.desc'};
  p.set('sort_by',sorts[sort] || sorts.popular);p.set(field+'.lte',today);
  const descriptor=genreDescriptor(type,spec.genre,spec.kind);
@@ -58,22 +59,24 @@ export function discoveryQuery(spec,date=new Date()){
   p.set('without_genres','16,99,10762,10763,10764,10767');p.set('with_origin_country',spec.country && ASIAN.includes(spec.country)?spec.country:ASIAN.join('|'));
  }else if(spec.country && spec.country!=='foreign')p.set('with_origin_country',spec.country);
  if(spec.kind==='tvshow')p.set('without_genres','16,99,18,80,10766');
- if(['tv','dorama'].includes(spec.kind)){p.set('with_type','2|4');p.set('without_genres','16,99,10762,10763,10764,10767');if(!spec.period)p.set('first_air_date.gte',(date.getFullYear()-4)+'-01-01');}
+ if(['tv','dorama'].includes(spec.kind)){p.set('with_type','2|4');p.set('without_genres','16,99,10762,10763,10764,10767');if(!spec.period && !active && !completed)p.set('first_air_date.gte',(date.getFullYear()-4)+'-01-01');}
  if(['movie','tv'].includes(spec.kind) && !(descriptor && descriptor.genre===16))p.set('without_genres',spec.kind==='tv'?'16,99,10762,10763,10764,10767':'16');
  if(spec.network && type==='tv')p.set('with_networks',String(spec.network));
  if(spec.company){const studio=DATA.studios.find(v=>v.id===Number(spec.company));if(type==='tv' && studio && studio.tv_network)p.set('with_networks',String(studio.tv_network));else p.set('with_companies',String(spec.company));}
  if(spec.period){const [from,to]=spec.period.split('-').map(Number);p.set(field+'.gte',from+'-01-01');p.set(field+'.lte',Math.min(to,date.getFullYear())===date.getFullYear()?today:to+'-12-31');}
  else if(sort==='new'){p.set(field+'.gte',(date.getFullYear()-3)+'-01-01');}
- if(['airing','current'].includes(spec.feed) && type==='tv'){const start=new Date(date);start.setDate(start.getDate()-(spec.feed==='current'?365:7));p.set('air_date.gte',day(start));p.set('air_date.lte',today);p.set('sort_by','popularity.desc');}
- if(spec.kind==='dorama' && !spec.period)p.set('first_air_date.gte',(date.getFullYear()-3)+'-01-01');
- if(spec.kind==='tvshow' && !spec.period){const floor=(date.getFullYear()-8)+'-01-01';if(!p.get('first_air_date.gte') || p.get('first_air_date.gte')<floor)p.set('first_air_date.gte',floor);}
- if(spec.feed==='recent' && type==='movie'){const start=new Date(date);start.setDate(start.getDate()-90);p.set(field+'.gte',day(start));p.set('sort_by','popularity.desc');}
+ if(active && type==='tv'){const start=new Date(date);start.setDate(start.getDate()-(spec.feed==='airing'?7:spec.feed==='current'?90:365));p.set('air_date.gte',day(start));p.set('air_date.lte',today);p.set('sort_by','popularity.desc');}
+ if(spec.kind==='dorama' && !spec.period && !active && !completed)p.set('first_air_date.gte',(date.getFullYear()-3)+'-01-01');
+ if(spec.kind==='tvshow' && !spec.period && !active){const floor=(date.getFullYear()-8)+'-01-01';if(!p.get('first_air_date.gte') || p.get('first_air_date.gte')<floor)p.set('first_air_date.gte',floor);}
+ if(spec.feed==='recent'){const start=new Date(date);start.setDate(start.getDate()-180);p.set(field+'.gte',day(start));}
+ if(completed && type==='tv'){p.set('with_status','3');p.delete('first_air_date.gte');}
  const local=spec.country==='RU' || spec.country==='UA' || DATA.networks.some(v=>v.id===spec.network && v.country==='RU');
  p.set('vote_count.gte',String(spec.kind==='tvshow'?(sort==='rated'?2:0):sort==='rated'?(local?10:type==='movie'?500:100):sort==='new'?2:sort==='votes'?10:spec.kind==='dorama'?10:0));
  if(sort==='votes')p.set('vote_average.gte','5');
  if(spec.feed==='upcoming'){
   const tomorrow=new Date(date);tomorrow.setDate(tomorrow.getDate()+1);
-  p.set(field+'.gte',day(tomorrow));p.delete(field+'.lte');p.set('sort_by','popularity.desc');p.set('vote_count.gte','0');
+  const horizon=new Date(date);horizon.setDate(horizon.getDate()+365);
+  p.set(field+'.gte',day(tomorrow));p.set(field+'.lte',day(horizon));p.set('sort_by','popularity.desc');p.set('vote_count.gte','0');
  }
  return 'discover/'+type+'?'+p.toString();
 }
@@ -89,10 +92,13 @@ export function discoveryAccepts(card,spec){
  const genres=[...(card.genre_ids || []),...(card.genres || [])].map(g=>Number(g.id || g)),origin=card.origin_country || [],descriptor=genreDescriptor(spec.type==='movie'?'movie':'tv',spec.genre,spec.kind);
  if(spec.feed==='upcoming'){
   const release=String(card[spec.type==='movie'?'release_date':'first_air_date'] || '').slice(0,10);
-  if(!/^\d{4}-\d{2}-\d{2}$/.test(release) || release<=day(new Date()))return false;
+  const horizon=new Date();horizon.setDate(horizon.getDate()+365);
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(release) || release<=day(new Date()) || release>day(horizon))return false;
  }
- if(spec.kind==='tv'){const year=Number(String(card.first_air_date || '').slice(0,4));if(!spec.period && year>0 && year<new Date().getFullYear()-4)return false;if(card.type && !['Scripted','Miniseries',2,4].includes(card.type))return false;if(genres.some(g=>[99,10762,10763,10764,10767].includes(g)))return false;}
- const year=Number(String(card.first_air_date || '').slice(0,4));if(!spec.period && year>0 && ['dorama','tvshow'].includes(spec.kind) && year<new Date().getFullYear()-(spec.kind==='dorama'?3:8))return false;
+ const active=['active','airing','current','completed','trending'].includes(spec.feed);
+ if(spec.feed==='completed' && card.status!=null && !['Ended',3,'3'].includes(card.status))return false;
+ if(spec.kind==='tv'){const year=Number(String(card.first_air_date || '').slice(0,4));if(!spec.period && !active && year>0 && year<new Date().getFullYear()-4)return false;if(card.type && !['Scripted','Miniseries',2,4].includes(card.type))return false;if(genres.some(g=>[99,10762,10763,10764,10767].includes(g)))return false;}
+ const year=Number(String(card.first_air_date || '').slice(0,4));if(!spec.period && !active && year>0 && ['dorama','tvshow'].includes(spec.kind) && year<new Date().getFullYear()-(spec.kind==='dorama'?3:8))return false;
  if(descriptor && descriptor.genre && genres.length && !genres.includes(descriptor.genre))return false;
  if(spec.family && (spec.type==='movie'?!genres.includes(16) || !genres.includes(10751):!genres.includes(10762)))return false;
  if(spec.country && spec.country!=='foreign' && origin.length && !origin.includes(spec.country))return false;
@@ -121,7 +127,7 @@ export function discoveryPlan(kind,value={},date=new Date()){
  if(state.country || state.genre || state.network || state.company || state.period || state.sort || state.format!=='all'){sortRows({});return rows;}
  if(kind==='tvshow'){
   add('now-watching','Сейчас смотрят',{country:'RU',feed:'current'});
-  add('watch','Популярное',{country:'RU'});add('new','Премьеры '+date.getFullYear(),{country:'RU',sort:'popular',period:date.getFullYear()+'-'+date.getFullYear()});add('russian-reality','Реалити и соревнования',{country:'RU',genre:'10764'});add('russian-talk','Разговорные и развлекательные шоу',{country:'RU',genre:'10767'});add('rated','Высокий рейтинг',{country:'RU',sort:'rated'});
+  add('new','Новые шоу',{country:'RU',sort:'new',feed:'recent'});add('russian-reality','Реалити и соревнования',{country:'RU',genre:'10764',feed:'active'});add('russian-talk','Ток-шоу',{country:'RU',genre:'10767',feed:'active'});add('watch','Популярное',{country:'RU',feed:'active'});add('rated','Высокий рейтинг',{country:'RU',sort:'rated'});rows[rows.length-1].minimal_default_hidden=true;
   return rows;
  }
  if(kind==='dorama'){
@@ -131,26 +137,31 @@ export function discoveryPlan(kind,value={},date=new Date()){
  }
  add('now-watching','Сейчас смотрят',{feed:'trending'},kind==='cartoon'?'':types[0]);
  const lead=[['new','Новинки'],['rated','Высокий рейтинг'],['popular','Популярные'],['votes','Много голосов']];
- const premierePeriod=date.getFullYear()+'-'+date.getFullYear();
+ // Recent releases cross the year boundary; active series may have premiered years ago.
  lead.forEach(([sort,title])=>{
   const extra={sort};
-  if(sort==='new' && kind!=='cartoon')extra.period=premierePeriod;
+  if(sort==='new')extra.feed='recent';
+  if(kind==='tv' && sort==='popular')extra.feed='active';
   add((kind==='cartoon'?'mixed-':'')+sort,title,extra,kind==='cartoon'?'':types[0]);
+  if(sort==='votes')rows[rows.length-1].minimal_default_hidden=true;
  });
  if(kind==='cartoon'){
   add('country-RU','Российские мультфильмы',{country:'RU'},'');
   add('series','Мультсериалы',{},'tv');
+  add('features','Полнометражные',{},'movie');
   options.genres.filter(g=>[35,12,878,14].includes(g.genre)).forEach(g=>add('genre-'+g.id,g.name,{genre:g.id},g.formats.length>1?'':g.formats[0]));
   return rows;
  }
  add('upcoming','Ожидаемые',{feed:'upcoming'});
  if(kind==='tv'){
-  add('country-RU','Российские сериалы',{country:'RU'});
-  add('country-KR','Корейские дорамы',{kind:'dorama',country:'KR'});
-  add('country-TR','Турецкие сериалы',{country:'TR'});
-  add('country-CN','Китайские дорамы',{kind:'dorama',country:'CN'});
   add('watch','Сейчас выходят',{feed:'airing'});
-  [['80','Детективы и криминал'],['10765','Фантастика и фэнтези'],['35','Комедии'],['18','Драмы']].forEach(([genre,title])=>add('genre-'+genre,title,{genre}));
+  const airing=rows.pop();rows.splice(2,0,airing);
+  add('completed','Завершённые',{feed:'completed'});
+  add('country-RU','Российские сериалы',{country:'RU',feed:'active'});
+  add('country-KR','Корейские дорамы',{kind:'dorama',country:'KR',feed:'active'});
+  add('country-TR','Турецкие сериалы',{country:'TR',feed:'active'});
+  add('country-CN','Китайские дорамы',{kind:'dorama',country:'CN',feed:'active'});
+  [['80','Детективы и криминал'],['10765','Фантастика и фэнтези'],['35','Комедии'],['18','Драмы']].forEach(([genre,title])=>add('genre-'+genre,title,{genre,feed:'active'}));
   return rows;
  }
  add('country-RU','Российские фильмы',{country:'RU'});

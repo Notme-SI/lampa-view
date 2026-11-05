@@ -160,7 +160,7 @@ export default function installTrakt(L){
   sources();const controller=L.Controller && L.Controller.enabled && L.Controller.enabled();
   if(L.Settings && L.Settings.update && controller && /^settings/.test(controller.name))L.Settings.update();
  }
- L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_trakt_enabled',type:'trigger',default:false},field:{name:'Trakt',description:lampaViewText("Каталог: Настройки → Остальное → Основной источник.")},onChange(){
+ L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_trakt_enabled',type:'trigger',default:false},field:{name:'Trakt',description:lampaViewText("Получить ключ: {0}.",["https://trakt.tv/oauth/applications"])+" "+lampaViewText("Каталог: Настройки → Остальное → Основной источник.")},onChange(){
   clear();cache.clear();
   if(!enabled() || client())return refresh();
   // Do not leave an unusable source enabled if the empty input is cancelled.
@@ -170,7 +170,7 @@ export default function installTrakt(L){
    L.Storage.set('minimal_trakt_client_id',id);L.Storage.set('minimal_trakt_enabled',!!id);refresh();
   });
  }});
- L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_trakt_client_id',type:'input',values:'',default:''},field:{name:'Trakt · Client ID',description:lampaViewText("Получить ключ: {0}.",["https://trakt.tv/oauth/applications"])},onChange(){clear();cache.clear();if(!client())L.Storage.set('minimal_trakt_enabled',false);refresh();}});
+ L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_trakt_client_id',type:'input',values:'',default:''},field:{name:'Trakt · Client ID',description:""},onChange(){clear();cache.clear();if(!client())L.Storage.set('minimal_trakt_enabled',false);refresh();}});
  sources();
  return adapter;
 }

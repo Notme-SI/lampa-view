@@ -46,10 +46,23 @@ function legacyCataloguePlan(kind,mode='standard',date=new Date()){
   [lampaViewText("Мультсериалы с высоким рейтингом"),'tv','sort_by=vote_average.desc&vote_count.gte=100'],
   [lampaViewText("Мультсериалы этого года"),'tv','sort_by=popularity.desc&first_air_date.gte='+year+'-01-01']
  ].map(([title,media_type,query])=>({title,media_type,tmdb:'discover/'+media_type+'?include_adult=false&with_genres=16&without_keywords=210024&'+query}))];
- if(kind==='anime' && mode==='shikimori')return [
-  [lampaViewText("Популярное"),'order=popularity'],[lampaViewText("С высоким рейтингом"),'order=ranked'],[lampaViewText("Сейчас выходит"),'order=popularity&status=ongoing'],[lampaViewText("Ожидаемые"),'order=popularity&status=anons'],
-  [lampaViewText("Новинки этого года"),'order=popularity&season='+year],[lampaViewText("Прошлый год"),'order=ranked&season='+(year-1)],[lampaViewText("Полнометражные"),'order=ranked&kind=movie'],[lampaViewText("Боевики"),'order=popularity&genre=1'],[lampaViewText("Приключения"),'order=popularity&genre=2'],[lampaViewText("Детективы"),'order=popularity&genre=7'],[lampaViewText("Все"),SHIKI_ALL]
- ].map(([title,shiki])=>({title,shiki}));
+ if(kind==='anime'){
+  const quarter=Math.floor(date.getMonth()/3),season=['winter','spring','summer','fall'][quarter],start=day(0).slice(0,4)+'-'+String(quarter*3+1).padStart(2,'0')+'-01';
+  const base='include_adult=false&with_genres=16&with_original_language=ja&sort_by=popularity.desc';
+  const definitions=[
+   ['watch','Сейчас смотрят','?cat=anime&sort=now_playing'+('&airdate='+year),'tv',base+'&air_date.gte='+day(-90)+'&air_date.lte='+day(0),'order=popularity&status=ongoing'],
+   ['ongoing','Сейчас выходит','?cat=anime&sort=airing&airdate='+year,'tv',base+'&air_date.gte='+day(-7)+'&air_date.lte='+day(0),'order=popularity&status=ongoing'],
+   ['season','Новинки сезона',null,'tv',base+'&first_air_date.gte='+start+'&first_air_date.lte='+day(0),'order=popularity&season='+season+'_'+year],
+   ['popular','Популярные','?cat=anime&sort=top&airdate='+year,'tv',base+'&first_air_date.gte='+(year-1)+'-01-01','order=popularity'],
+   ['rated','Высокий рейтинг','?cat=anime&sort=top','tv',base.replace('popularity.desc','vote_average.desc')+'&vote_count.gte=200','order=ranked'],
+   ['completed','Завершённые',null,'tv',base+'&with_status=3','order=popularity&status=released&kind=tv'],
+   ['features','Полнометражные',null,'movie',base+'&primary_release_date.lte='+day(0),'order=popularity&kind=movie'],
+   ['upcoming','Ожидаемые',null,'tv',base+'&first_air_date.gte='+day(1)+'&first_air_date.lte='+day(365),'order=popularity&status=anons']
+  ];
+  const plan=definitions.filter(row=>mode!=='shikimori' || row[0]!=='watch').map(([key,title,cub,media_type,query,shiki])=>({key,title:lampaViewText(title),media_type,...(mode==='shikimori'?{shiki}:{cub,tmdb:'discover/'+media_type+'?'+query})}));
+  if(mode==='shikimori'){const popular=plan.splice(plan.findIndex(row=>row.key==='popular'),1)[0];plan.unshift(popular);plan.push({title:lampaViewText('Все'),shiki:SHIKI_ALL});}
+  return plan;
+ }
  function add(key,title,cub,query){
   const prefix='discover/'+type+'?include_adult=false&'+(kind==='tv' || kind==='movie'?'without_genres=16&':'')+(kind==='anime' && /with_genres=/.test(query || '')?'with_original_language=ja&':base);
   const previous=prefix+(query || 'sort_by=popularity.desc');
@@ -105,7 +118,7 @@ const usesCub=(job,kind,source,hasCub)=>!!(!job.discovery && !['dorama','tvshow'
 // Settings and loading share the same IDs, aliases, titles and source routes.
 export function catalogueRow(job,kind,source='tmdb',hasCub=true){
  const cub=usesCub(job,kind,source,hasCub),scoped=['dorama','tvshow'].includes(kind);
- return {title:cub?job.title:job.tmdb_title || job.title,url:job.discovery?JSON.stringify(job.discovery):job.shiki || (cub?job.cub:job.tmdb || job.cub),source:job.discovery?DISCOVERY_SOURCE:job.shiki?'minimal_shiki':cub || !job.tmdb?'cub':'tmdb',...(!cub && job.tmdb && job.key?{minimal_row_id:job.minimal_row_id || 'minimal:tmdb:'+kind+':'+job.key,minimal_row_aliases:[job.tmdb,...(scoped && job.cub?[job.cub]:[]),...(job.minimal_row_aliases || [])]}:{}),results:[]};
+ return {minimal_default_hidden:!!job.minimal_default_hidden,title:cub?job.title:job.tmdb_title || job.title,url:job.discovery?JSON.stringify(job.discovery):job.shiki || (cub?job.cub:job.tmdb || job.cub),source:job.discovery?DISCOVERY_SOURCE:job.shiki?'minimal_shiki':cub || !job.tmdb?'cub':'tmdb',...(!cub && job.tmdb && job.key?{minimal_row_id:job.minimal_row_id || 'minimal:tmdb:'+kind+':'+job.key,minimal_row_aliases:[job.tmdb,...(scoped && job.cub?[job.cub]:[]),...(job.minimal_row_aliases || [])]}:{}),results:[]};
 }
 export default function catalogue(L,shiki,object,hidden,ok){
  const kind=object.url || object.cat;
@@ -126,11 +139,11 @@ export default function catalogue(L,shiki,object,hidden,ok){
   while(!ended && running<3 && cursor<plan.length){const index=cursor++,job=plan[index],row=rowFor(job);if([row.minimal_row_id,row.url,...(row.minimal_row_aliases || [])].some(url=>hidden.includes(url))){row.minimal_hidden=true;rows[index]=row;done++;continue;}
    running++;let settled=false;
    function finish(json){if(settled)return;settled=true;running--;done++;if(!json)failures++;json=catalogueResults(row.url,json);if(json && Array.isArray(json.results) && json.results.length)rows[index]={...row,page:Number(json.page)||1,total_pages:Math.max(Number(json.total_pages)||1,json.results.length>20?2:1),results:json.results.slice(0,20).map(card=>kind==='anime'?{...card,minimal_anime:true}:job.media_type?{...card,source:job.discovery?card.source || 'tmdb':row.source,media_type:card.media_type || job.media_type}:card)};pump();}
-   if(job.discovery && L.Api.sources[DISCOVERY_SOURCE])L.Api.sources[DISCOVERY_SOURCE].list({url:row.url,page:1},finish,()=>finish(null));
+   if(job.discovery && L.Api.sources[DISCOVERY_SOURCE])L.Api.sources[DISCOVERY_SOURCE].list({url:row.url,page:1,minimal_cancelled:()=>!!object.minimal_catalogue_cancelled},finish,()=>finish(null));
    else if(job.discovery)finish(null);
    else if(job.shiki)shiki.list({url:job.shiki,page:1},finish,()=>finish(null));
    else if(useCub(job))cub.call(L.Api.sources.cub,{...object,url:job.cub,page:1},finish,()=>finish(null));
-   else if(job.tmdb)tmdbGet(L,job.tmdb,{page:1},finish,()=>finish(null));
+   else if(job.tmdb)tmdbGet(L,job.tmdb,{page:1},finish,()=>finish(null),{unreleased:job.key==='upcoming'});
    else finish(null);
   }
   complete();

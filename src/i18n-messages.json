@@ -8955,5 +8955,57 @@
   "cs": "Ruské animované filmy",
   "ro": "Animație rusească",
   "pl": "Rosyjskie animacje"
+ },
+ "Завершённые": {
+  "en": "Completed",
+  "uk": "Завершені",
+  "be": "Завершаныя",
+  "fr": "Terminées",
+  "zh": "已完结",
+  "pt": "Concluídas",
+  "bg": "Завършени",
+  "he": "הסתיימו",
+  "cs": "Dokončené",
+  "ro": "Încheiate",
+  "pl": "Zakończone"
+ },
+ "Новинки сезона": {
+  "en": "New this season",
+  "uk": "Новинки сезону",
+  "be": "Навінкі сезона",
+  "fr": "Nouveautés de la saison",
+  "zh": "本季新作",
+  "pt": "Novidades da temporada",
+  "bg": "Нови за сезона",
+  "he": "חדשות העונה",
+  "cs": "Novinky sezóny",
+  "ro": "Noutățile sezonului",
+  "pl": "Nowości sezonu"
+ },
+ "Новые шоу": {
+  "en": "New shows",
+  "uk": "Нові шоу",
+  "be": "Новыя шоу",
+  "fr": "Nouvelles émissions",
+  "zh": "新节目",
+  "pt": "Novos programas",
+  "bg": "Нови предавания",
+  "he": "תוכניות חדשות",
+  "cs": "Nové pořady",
+  "ro": "Emisiuni noi",
+  "pl": "Nowe programy"
+ },
+ "Аниме сезона": {
+  "en": "Anime this season",
+  "uk": "Аніме сезону",
+  "be": "Анімэ сезона",
+  "fr": "Anime de la saison",
+  "zh": "本季动画",
+  "pt": "Anime da temporada",
+  "bg": "Аниме за сезона",
+  "he": "אנימה העונה",
+  "cs": "Anime sezóny",
+  "ro": "Anime de sezon",
+  "pl": "Anime sezonu"
  }
 }

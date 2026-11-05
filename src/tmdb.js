@@ -51,7 +51,9 @@ export function installTmdb(L){
  const source=L.Api && L.Api.sources && L.Api.sources.tmdb;if(!source || source._minimalNormalized)return;
  source._minimalNormalized=true;
  if(source.get){const get=source.get;source.get=function(path,params,ok,fail,options){const clean=normalizeTmdb(path,params);return get.call(this,clean.path,clean.params,json=>ok(catalogueResults(clean.path,json)),fail,options);};}
- if(source.list){const list=source.list;source.list=function(params,ok,fail){const clean=normalizeTmdb(params.url,params);return list.call(this,{...clean.params,url:clean.path},json=>ok(catalogueResults(clean.path,json)),fail);};}
+ if(source.list){const list=source.list;source.list=function(params,ok,fail){const clean=normalizeTmdb(params.url,params),q=new URLSearchParams(clean.path.split('?')[1] || '');
+  if(/^discover\/(tv|movie)\?/.test(clean.path) && q.get('with_original_language')==='ja' && (q.get('first_air_date.gte') || q.get('primary_release_date.gte') || '')>new Date().toISOString().slice(0,10))return tmdbGet(L,clean.path,clean.params,ok,fail,{unreleased:true});
+  return list.call(this,{...clean.params,url:clean.path},json=>ok(catalogueResults(clean.path,json)),fail);};}
  // Aggregate credits supplement missing directors, never replace the main cast
  // with every guest performer across all seasons.
  ['tmdb','cub'].forEach(name=>{
