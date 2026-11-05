@@ -1,4 +1,4 @@
-/*! Lampa View 0.5.33 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.5.34 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -12462,7 +12462,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // package.json
-  var version = "0.5.33";
+  var version = "0.5.34";
 
   // src/inputs.js
   function inputs(L) {
@@ -17927,9 +17927,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       return rows;
     }
     if (state.section === "countries" && !state.country) {
-      options.countries.forEach(function (_ref29) {
+      options.countries.filter(function (_ref29) {
         var _ref30 = _slicedToArray(_ref29, 1),
           code = _ref30[0];
+        return code !== "UA" || !["movie", "tv"].includes(kind);
+      }).forEach(function (_ref31) {
+        var _ref32 = _slicedToArray(_ref31, 1),
+          code = _ref32[0];
         return add("country-" + code, countryTitle(code), {
           country: code
         });
@@ -18027,10 +18031,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     }, kind === "cartoon" ? "" : types[0]);
     var lead = [["new", "Новинки"], ["rated", "Высокий рейтинг"], ["popular", "Популярные"], ["votes", "Много голосов"]];
     var premierePeriod = date2.getFullYear() + "-" + date2.getFullYear();
-    lead.forEach(function (_ref31) {
-      var _ref32 = _slicedToArray(_ref31, 2),
-        sort = _ref32[0],
-        title = _ref32[1];
+    lead.forEach(function (_ref33) {
+      var _ref34 = _slicedToArray(_ref33, 2),
+        sort = _ref34[0],
+        title = _ref34[1];
       var extra = {
         sort: sort
       };
@@ -18038,10 +18042,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       add((kind === "cartoon" ? "mixed-" : "") + sort, title, extra, kind === "cartoon" ? "" : types[0]);
     });
     if (kind === "cartoon") {
-      [["RU", "Россия"], ["US", "США"]].forEach(function (_ref33) {
-        var _ref34 = _slicedToArray(_ref33, 2),
-          country = _ref34[0],
-          title = _ref34[1];
+      [["RU", "Россия"], ["US", "США"]].forEach(function (_ref35) {
+        var _ref36 = _slicedToArray(_ref35, 2),
+          country = _ref36[0],
+          title = _ref36[1];
         return add("country-" + country, title, {
           country: country
         }, "");
@@ -18079,23 +18083,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       add("watch", "Сейчас выходят", {
         feed: "airing"
       });
-      [["80", "Детективы и криминал"], ["10765", "Фантастика и фэнтези"], ["35", "Комедии"], ["18", "Драмы"], ["10759", "Приключения"], ["9648", "Загадки и тайны"]].forEach(function (_ref35) {
-        var _ref36 = _slicedToArray(_ref35, 2),
-          genre = _ref36[0],
-          title = _ref36[1];
+      [["80", "Детективы и криминал"], ["10765", "Фантастика и фэнтези"], ["35", "Комедии"], ["18", "Драмы"], ["10759", "Приключения"], ["9648", "Загадки и тайны"]].forEach(function (_ref37) {
+        var _ref38 = _slicedToArray(_ref37, 2),
+          genre = _ref38[0],
+          title = _ref38[1];
         return add("genre-" + genre, title, {
           genre: genre
         });
       });
       return rows;
     }
-    [["RU", "Российские фильмы"], ["UA", "Украинские фильмы"]].forEach(function (_ref37) {
-      var _ref38 = _slicedToArray(_ref37, 2),
-        country = _ref38[0],
-        title = _ref38[1];
-      return add("country-" + country, title, {
-        country: country
-      });
+    add("country-RU", "Российские фильмы", {
+      country: "RU"
     });
     add("watch", "Свежие релизы", {
       feed: "recent"
@@ -18119,12 +18118,6 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     }).forEach(function (g) {
       return add("genre-" + g.id, g.name, {
         genre: g.id
-      });
-    });
-    options.periods.forEach(function (p) {
-      return add("period-" + p.start, p.start + "–" + p.end, {
-        period: p.start + "-" + p.end,
-        sort: "rated"
       });
     });
     return rows;

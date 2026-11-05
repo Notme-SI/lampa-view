@@ -107,7 +107,7 @@ export function discoveryPlan(kind,value={},date=new Date()){
  if(state.section==='platforms' && !state.network){const networks=kind==='tvshow'?options.networks.filter(n=>n.country==='RU').concat(options.networks.filter(n=>n.country!=='RU')):options.networks;
   networks.slice(0,12).forEach(n=>add('network-'+n.id,n.name,{network:n.id,type:'tv'}));return rows;}
  if(state.section==='genres' && !state.genre){options.genres.forEach(g=>types.filter(type=>DATA.genres[type].some(v=>v.id===g.id)).forEach(type=>add('genre-'+g.id+'-'+type,g.name+(types.length>1?' · '+t(type==='movie'?'Мультфильмы':'Мультсериалы'):''),{genre:g.id},type)));return rows;}
- if(state.section==='countries' && !state.country){options.countries.forEach(([code])=>add('country-'+code,countryTitle(code),{country:code}));if(kind==='tvshow')add('foreign','Зарубежные ТВ-шоу',{country:'foreign'});return rows;}
+ if(state.section==='countries' && !state.country){options.countries.filter(([code])=>code!=='UA' || !['movie','tv'].includes(kind)).forEach(([code])=>add('country-'+code,countryTitle(code),{country:code}));if(kind==='tvshow')add('foreign','Зарубежные ТВ-шоу',{country:'foreign'});return rows;}
  if(state.section==='periods' && !state.period){options.periods.forEach(p=>add('period-'+p.start,p.start+'–'+p.end,{period:p.start+'-'+p.end,sort:'rated'}));return rows;}
  if(['new','rated','votes'].includes(state.section)){types.forEach(type=>add(type+'-'+state.section,options.sorts.find(v=>v[0]===state.section)[1],{sort:state.section},type));return rows;}
  if(state.country || state.genre || state.network || state.company || state.period || state.sort || state.format!=='all'){sortRows({});return rows;}
@@ -145,12 +145,11 @@ export function discoveryPlan(kind,value={},date=new Date()){
   [['80','Детективы и криминал'],['10765','Фантастика и фэнтези'],['35','Комедии'],['18','Драмы'],['10759','Приключения'],['9648','Загадки и тайны']].forEach(([genre,title])=>add('genre-'+genre,title,{genre}));
   return rows;
  }
- [['RU','Российские фильмы'],['UA','Украинские фильмы']].forEach(([country,title])=>add('country-'+country,title,{country}));
+ add('country-RU','Российские фильмы',{country:'RU'});
  add('watch','Свежие релизы',{feed:'recent'});
  ['28','35','18','53','878'].forEach(id=>{const genre=options.genres.find(g=>g.id===id);add('genre-'+id,genre.name,{genre:id});});
  add('revenue','Кассовые сборы',{sort:'revenue'});
  add('trending','В тренде за неделю',{feed:'trending'});
  options.genres.filter(g=>![16,10762,10763,10764,10767].includes(g.genre)).forEach(g=>add('genre-'+g.id,g.name,{genre:g.id}));
- options.periods.forEach(p=>add('period-'+p.start,p.start+'–'+p.end,{period:p.start+'-'+p.end,sort:'rated'}));
  return rows;
 }
