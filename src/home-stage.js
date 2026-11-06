@@ -28,6 +28,13 @@ export default function homeStage(hero,root){
   }
  }
  let height=Math.max(100,Math.floor(innerHeight-top-gap-root.offsetHeight-clearance+previewRoom));
+ // A tall, narrow window must not reserve more height than its artwork can fill.
+ // Cap the inline layout calculation itself; CSS height is overridden below.
+ if(!tv){
+  const image=hero.querySelector('.pt-hero__image');
+  const ratio=image && image.naturalWidth && image.naturalHeight?image.naturalWidth/image.naturalHeight:16/9;
+  height=Math.min(height,Math.max(100,Math.floor(hero.clientWidth/ratio)));
+ }
  if(hero.style.height!==height+'px')hero.style.height=height+'px';
  // Keep branding and controls inside short viewports as well as large ones.
  const body=hero.querySelector('.pt-hero__body');

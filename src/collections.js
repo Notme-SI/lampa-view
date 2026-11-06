@@ -80,7 +80,7 @@ export default function collections(L,shiki,kino,kinoFeeds){
   const p=prefs(ctx),rows=(definitions || (known()[ctx==='main:'?ctx+source:ctx] || []).slice()).filter(row=>ctx!=='main:' || !removedHomeRow(row)),order=p.order || [];
   const matches=(r,id)=>matchesRow({minimal_row_id:r.id,minimal_row_aliases:r.aliases,title:r.title},id),hidden=r=>(p.hidden || []).some(id=>matches(r,id)) || defaultHidden({minimal_row_id:r.id,minimal_row_aliases:r.aliases,minimal_default_hidden:r.minimal_default_hidden},p),position=r=>{const index=order.findIndex(id=>matches(r,id));return index<0?10000:index;};
   rows.sort((a,b)=>position(a)-position(b));
-  const items=rows.length?rows.map(r=>({...r,title:(hidden(r)?'○ ':'● ')+r.title})).concat([{id:'reset',title:lampaViewText("Сбросить порядок и видимость")}]):[{title:lampaViewText("Список пока не загружен"),subtitle:lampaViewText("Откройте раздел, чтобы получить актуальные подборки."),noenter:true}];
+  const items=rows.length?rows.map(r=>({...r,title:(hidden(r)?'○ ':'● ')+lampaViewText(r.title)})).concat([{id:'reset',title:lampaViewText("Сбросить порядок и видимость")}]):[{title:lampaViewText("Список пока не загружен"),subtitle:lampaViewText("Откройте раздел, чтобы получить актуальные подборки."),noenter:true}];
   select(lampaViewText("Подборки: {0}", [contextName(ctx)]),items,r=>{
    if(r.noenter)return;
    if(r.id==='reset'){save(ctx,{});return edit(ctx);}

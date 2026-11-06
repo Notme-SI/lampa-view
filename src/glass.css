@@ -149,3 +149,10 @@ body.lampa_view:not(.pt-theme-glass) .minimal-detail-shade {display:none}
 
 body.lampa_view.pt-theme-glass .extensions {background:var(--pt-bg)!important}
 body.lampa_view.pt-theme-glass .extensions__item,body.lampa_view.pt-theme-glass .extensions__block-add {background:#24262b;border:1px solid var(--pt-line)}
+
+/* Compact search uses the same surface as the adjacent settings button. */
+@media(max-width:900px){
+ body.lampa_view.pt-theme-glass .head__action.open--search {background:var(--pt-glass-button)!important;border-radius:50%;box-shadow:var(--pt-glass-edge)}
+ body.lampa_view.pt-theme-glass .head__action.open--search.focus,
+ body.lampa_view.pt-theme-glass .head__action.open--search.hover {background:#ffffff25!important}
+}

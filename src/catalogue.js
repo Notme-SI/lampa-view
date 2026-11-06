@@ -1,4 +1,4 @@
-import {text as lampaViewText} from './i18n.js';
+import {text as lampaViewText,locale} from './i18n.js';
 import tmdbGet,{catalogueResults} from './tmdb.js';
 import {SHIKI_ALL} from './shikimori.js';
 import {DISCOVERY_KINDS,discoveryPlan,discoveryState} from './discovery-model.js';
@@ -114,7 +114,7 @@ function cubScoped(job,kind){
  const year=(p.get('first_air_date.gte') || '').slice(0,4);if(year)q.set('airdate',year);
  return {...job,cub:'?'+q.toString()};
 }
-const usesCub=(job,kind,source,hasCub)=>!!(!job.discovery && !['dorama','tvshow'].includes(kind) && hasCub && job.cub && (source==='cub' || kind==='cartoon'));
+const usesCub=(job,kind,source,hasCub)=>!!(!(kind==='anime' && locale()!=='ru') && !job.discovery && !['dorama','tvshow'].includes(kind) && hasCub && job.cub && (source==='cub' || kind==='cartoon'));
 // Settings and loading share the same IDs, aliases, titles and source routes.
 export function catalogueRow(job,kind,source='tmdb',hasCub=true){
  const cub=usesCub(job,kind,source,hasCub),scoped=['dorama','tvshow'].includes(kind);
