@@ -39,7 +39,7 @@ export function normalizeTmdb(path,params={}){
  pairs.forEach(pair=>{
   const [raw,...rest]=pair.split('='),key=decodeURIComponent(raw),value=rest.join('=');
   if(key==='api_key')return;
-  if(key==='language'){if(!copy.langs)copy.langs=decodeURIComponent(value);return;}
+  if(key==='language'){if(!copy.langs)copy.langs=locale();return;}
   if(key==='page' && copy.page)return;
   keep.push(pair);
  });
@@ -76,6 +76,21 @@ export function normalizeCredits(json,original={},id){
  const cast=primary.map(person=>{const detail=aggregate.get(String(person.id)) || {};return {...person,total_episode_count:Math.max(Number(person.total_episode_count)||0,Number(detail.total_episode_count)||0),character:person.character || Array.from(new Set((detail.roles || person.roles || []).map(role=>role.character).filter(Boolean))).join(' / ')};});
  const directors=(json.crew || []).reduce((all,person)=>all.concat((person.jobs || [person]).filter(job=>job.job==='Director').map(job=>({...person,job:'Director',episode_count:job.episode_count || person.total_episode_count || 0}))),[]);
  return {...original,cast,crew:[...(original.crew || []),...directors]};
+}
+// Keep page boundaries stable while excluding repeated identities in a list.
+export function installListGuard(L){
+ if(!L.Api || !L.Api.list || L.Api._minimalListGuard)return;
+ L.Api._minimalListGuard=true;const list=L.Api.list,pages=new Map();
+ L.Api.list=function(params,ok,fail){
+  const key=locale()+'|'+(params.source || '')+'|'+(params.url || ''),page=Math.max(1,Number(params.page)||1);
+  let entry=pages.get(key);if(!entry || page===1){entry=new Map();pages.set(key,entry);while(pages.size>32)pages.delete(pages.keys().next().value);}
+  return list.call(this,params,json=>{
+   if(!json || !Array.isArray(json.results))return ok(json);
+   const seen=new Set();for(const [p,ids] of entry)if(p<page)ids.forEach(id=>seen.add(id));const ids=[];
+   const results=json.results.filter(card=>{if(card.id==null)return true;const type=card.media_type || (card.name || card.first_air_date?'tv':'movie'),id=type+':'+card.id;if(seen.has(id))return false;seen.add(id);ids.push(id);return true;});
+   entry.set(page,ids);ok({...json,results});
+  },fail);
+ };
 }
 export function installFullGuard(L){
  if(!L.Api || !L.Api.full || L.Api._minimalFullGuard)return;

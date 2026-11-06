@@ -1,5 +1,7 @@
 import {text as lampaViewText} from './i18n.js';
 import {presentableCards} from './tmdb.js';
+import traktMetadata from './trakt-metadata.js';
+import {locale} from './i18n.js';
 import catalogue,{animeMode,cataloguePlan,catalogueRow} from './catalogue.js';
 import {traktPlan} from './trakt.js';
 import animeTabs from './anime-tabs.js';
@@ -39,6 +41,7 @@ export function arrange(rows,prefs){
 }
 export default function collections(L,shiki,kino,kinoFeeds){
  discoverySource(L);
+ const localized=traktMetadata(L);
  const key='minimal_collections',knownKey='minimal_collection_rows_v2';
  const read=()=>L.Storage.get(key,{}) || {},known=()=>L.Storage.get(knownKey,{}) || {};
  const captured=new Set(),homeRows=continueWatching(L);
@@ -95,7 +98,10 @@ export default function collections(L,shiki,kino,kinoFeeds){
  L.Api.main=function(object,ok,fail){
   const ctx=context(object),compact=(!object.component || object.component==='main');
   function process(rows){if(compact)return homeRows.ready(()=>render(rows));render(rows);}
-  function render(rows){if(compact){mainSource=object.source || L.Storage.get('source','cub');rows=rows.filter(row=>!/недавние.*(?:эпизод|сери)|recent.*episode/i.test(String(row.title || '')));}rows=rows.map(row=>({...row,results:isMyShowsUnwatched(row)?(row.results || []):presentableCards(row.results || [])}));const selected=compact?homeOrder(homeRows(homeOrder(rows))):rows;remember(ctx,selected);ok(arrange(selected,prefs(ctx)).filter(row=>!row.minimal_empty));}
+  function render(rows){if(compact){mainSource=object.source || L.Storage.get('source','cub');rows=rows.filter(row=>!/недавние.*(?:эпизод|сери)|recent.*episode/i.test(String(row.title || '')));}rows=rows.map(row=>({...row,results:isMyShowsUnwatched(row)?(row.results || []):presentableCards(row.results || [])}));const selected=compact?homeOrder(homeRows(homeOrder(rows))):rows;remember(ctx,selected);const visible=arrange(selected,prefs(ctx)).filter(row=>!row.minimal_empty);
+   if(locale()==='ru')return ok(visible);
+   const cards=visible.flatMap(row=>isMyShowsUnwatched(row)?[]:(row.results || []).filter(card=>!card.source || ['cub','tmdb','trakt','minimal_continue'].includes(card.source)).map(card=>({...card,media_type:card.media_type || (card.name || card.first_air_date?'tv':'movie')})));
+   localized.enrich(cards,translated=>{const byId=new Map(translated.map(card=>[card.media_type+':'+card.id,card]));ok(visible.map(row=>isMyShowsUnwatched(row)?row:{...row,results:(row.results || []).map(card=>{const value=byId.get((card.media_type || (card.name || card.first_air_date?'tv':'movie'))+':'+card.id);return value?{...card,...value}:card;})}));});}
   const next=main.call(this,object,process,fail);
   return !compact && typeof next==='function'?function(resolve,reject){return next(rows=>{remember(ctx,rows,true);resolve(arrange(rows,prefs(ctx)));},reject);}:undefined;
  };

@@ -34,6 +34,7 @@ export default function installI18n(L,P){
  };}
  function update(){
   const code=locale();document.documentElement.lang=code;
+  if(L.Storage.get('tmdb_lang','')!==code)L.Storage.set('tmdb_lang',code);
   document.body.classList.toggle('pt-rtl',code==='he');
   document.querySelectorAll('.head__action.open--search').forEach(node=>node.setAttribute('data-pt-placeholder',text('Поиск…')));
  }

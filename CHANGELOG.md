@@ -1,3 +1,9 @@
+## 0.5.55
+
+- Separate mobile detail cover from title/actions. Switch carousel slides directly with arrow keys.
+- Keep anime and profile navigation localized, apply Russian title filtering only in Russian, and follow UI language for metadata. Localize home/history previews without altering saved progress.
+- Bound history waiting and remove repeated content identities from paginated lists.
+
 ## 0.5.54
 
 - Preserve hover and focus glow on white studio logos.

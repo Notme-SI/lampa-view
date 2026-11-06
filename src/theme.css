@@ -1086,3 +1086,8 @@ body.lampa_view .nova-initial-loading .nova__hero {display:none!important}
 /* Keep the mobile detail artwork at banner proportions, independent of content height. */
 body.lampa_view.pt-mobile .full-start__background {height:auto!important;aspect-ratio:16/9;object-fit:contain;object-position:center top;transform:none!important}
 body.lampa_view.pt-mobile .minimal-detail-shade {height:auto!important;aspect-ratio:16/9;bottom:auto}
+
+/* Mobile cover is a separate image above the identity and actions. */
+body.lampa_view.pt-mobile .minimal-detail-header>.full-start__background {position:relative!important;z-index:0;left:auto!important;top:auto!important;margin:0 0 1em;opacity:1!important;-webkit-mask-image:none!important;mask-image:none!important}
+body.lampa_view.pt-mobile .minimal-detail-header>.minimal-detail-shade {display:none}
+body.lampa_view.pt-mobile .minimal-detail-header {padding-top:0}

@@ -36,7 +36,8 @@ export default function watchHistory(L){
  function finish(){settled=true;const callbacks=waiters;waiters=[];callbacks.forEach(callback=>callback());}
  function ready(callback){
   ensure();if(settled || !enabled() || !scope || !nativeHistory())return callback();
-  waiters.push(callback);refresh();
+  let delivered=false;const done=()=>{if(delivered)return;delivered=true;clearTimeout(timer);callback();};
+  const timer=setTimeout(done,5000);waiters.push(done);refresh();
  }
  function refresh(){
   ensure();if(busy || !enabled() || !scope || !nativeHistory())return;

@@ -70,7 +70,7 @@ export default function discoverySource(L){
    available.forEach((stream,index)=>request(stream.path,stream.next,json=>{if(cursor.cancelled)return;replies[index]=json;complete();},()=>{failed=true;complete();},cursor.spec.feed==='upcoming'));
    function complete(){if(--left)return;if(cursor.cancelled)return;if(failed)return failPage();
     const accepted=available.map((stream,i)=>{
-     const json=replies[i],strict=['movie','tv','dorama','tvshow'].includes(cursor.spec.kind),rows=presentableCards(json.results.map(card=>{const name=[card.title,card.name].find(v=>/[а-яё]/i.test(v || ''));return strict && name?{...card,title:name,...(stream.type==='tv'?{name}:{})}:card;}),strict).filter(card=>!strict || !!(card.poster_path || card.img) && (!Object.prototype.hasOwnProperty.call(card,'backdrop_path') || !!card.backdrop_path));
+     const json=replies[i],strict=['movie','tv','dorama','tvshow'].includes(cursor.spec.kind),russian=strict && locale()==='ru',rows=presentableCards(json.results.map(card=>{const name=[card.title,card.name].find(v=>/[а-яё]/i.test(v || ''));return russian && name?{...card,title:name,...(stream.type==='tv'?{name}:{})}:card;}),russian).filter(card=>!strict || !!(card.poster_path || card.img) && (!Object.prototype.hasOwnProperty.call(card,'backdrop_path') || !!card.backdrop_path));
      stream.total=Math.min(500,Math.max(1,Number(json.total_pages)||1));stream.next++;stream.finished=stream.next>stream.total || !json.results.length;
      return rows.filter(card=>Number.isSafeInteger(Number(card.id)) && Number(card.id)>0 && discoveryAccepts(card,{...cursor.spec,type:stream.type})).map(card=>({...card,source:'tmdb',media_type:stream.type}));
     });

@@ -5,7 +5,7 @@ import studioCatalogue from './studio-catalogue.js';
 import installI18n from './i18n.js';
 import {version} from '../package.json';
 import inputs from './inputs.js';
-import {installTmdb,installFullGuard} from './tmdb.js';
+import {installTmdb,installFullGuard,installListGuard} from './tmdb.js';
 import heroAssets from './hero-assets.js';
 import BASE_CSS from './theme.css';
 import ONLINE_CSS from './online-layout.css';
@@ -218,7 +218,17 @@ if (!ROOT.LampaView) {
       cartoons=document.createElement('li');cartoons.className='menu__item selector';cartoons.dataset.action='cartoon';cartoons.innerHTML=lampaViewText("<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\"><path d=\"m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z\"/></svg></div><div class=\"menu__text\">Мультфильмы</div>");
     }
     if(cartoons && !cartoons.dataset.minimalCartoons){cartoons.dataset.minimalCartoons='1';pointer($(cartoons).off('hover:enter').on('hover:enter.minimalCartoons',event=>{event.stopImmediatePropagation();navigate('cartoon');}));}
-    const anime=document.querySelector('.menu__item[data-action="anime"]');
+    let anime=document.querySelector('.menu__item[data-action="anime"]');
+    if(!anime && (cartoons || series)){
+      anime=document.createElement('li');anime.className='menu__item selector';anime.dataset.action='anime';
+      anime.innerHTML='<div class="menu__ico"><svg><use xlink:href="#sprite-anime"></use></svg></div><div class="menu__text"></div>';
+      pointer($(anime).on('hover:enter.minimalAnime',()=>navigate('anime')));
+      (cartoons || series).after(anime);
+    }
+    for(const [node,label] of [[anime,'Аниме'],[profile,'Профиль'],[cartoons,'Мультфильмы']]){
+      const text=node && node.querySelector('.menu__text'),translated=lampaViewText(label);
+      if(text && text.textContent!==translated)text.textContent=translated;
+    }
     let dorama=document.querySelector('.menu__item[data-action="dorama"]');
     if(!dorama && (anime || cartoons || series)){
       dorama=document.createElement('li');dorama.className='menu__item selector';dorama.dataset.action='dorama';
@@ -414,8 +424,8 @@ if (!ROOT.LampaView) {
               if(component && component.scroll && component.scroll.update)component.scroll.update(element[0]);
               L.Controller.collectionSet(element);focusControl();
             },
-            left:()=>{focus=Math.max(0,focus-1);focusControl();},
-            right:()=>{focus=Math.min(controls.length-1,focus+1);focusControl();},
+            left:()=>{show(index-1);focus=controls.index(details);focusControl();},
+            right:()=>{show(index+1);focus=controls.index(details);focusControl();},
             up:()=>{if(focus>0){focus=0;focusControl();}else L.Controller.toggle('head');},
             down:()=>nativeLine.toggle(),
             back:()=>L.Controller.toggle('head')
@@ -507,7 +517,7 @@ if (!ROOT.LampaView) {
     P.bannerCountries=card=>bannerCountries(card,L.Storage.get('language','ru'),L);
     installI18n(L,P);
     P.online=onlineState(L);P.kinoapi=kinoapi(L);P.animeBase=animeCatalogue(L,P.kinoapi);P.onlineSources=onlineSources(L);P.episodeMetadata=episodeMetadata(L,P.kinoapi,P.animeBase);P.onlineNavigation=onlineNavigation;P.onlineSourceCache=onlineSourceCache(L);
-    layout();interfaceLayout=interfaceSize(L);installTmdb(L);installFullGuard(L);torrentEpisodes(L,ROOT);inputs(L);
+    layout();interfaceLayout=interfaceSize(L);installTmdb(L);installFullGuard(L);installListGuard(L);torrentEpisodes(L,ROOT);inputs(L);
     artwork=installArtwork(L,()=>yes('lampa_view_enabled'));
     P.sync=progressSync(L,()=>yes('lampa_view_enabled'));
     historyCards(L,()=>yes('lampa_view_enabled'));
