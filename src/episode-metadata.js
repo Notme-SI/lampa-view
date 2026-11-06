@@ -25,7 +25,8 @@ export function seasonName(card,number,series=card){
  const clean=value=>String(value || '').normalize('NFKC').toLowerCase().replace(/[\s.,:;!?'’"«»()[\]…—–_-]+/g,'');
  const title=name.replace(/(?:season|сезон)\s*\d+|\d+\s*(?:season|сезон)/gi,'');
  const aliases=[series.name,series.title,series.original_name,series.original_title].map(clean).filter(Boolean);
- if(aliases.includes(clean(name)) || aliases.includes(clean(title)))return '';
+ const unnumbered=name.replace(/(?:[\s:._–—-]+|\s*\()(?:s(?:eason)?\s*|сезон\s*|part\s*|часть\s*|cour\s*)?\d+(?:st|nd|rd|th)?(?:\s*(?:season|сезон|part|часть|cour))?\)?$/i,'');
+ if([name,title,unnumbered].some(value=>aliases.includes(clean(value))))return '';
  if(/^(?:part|часть|частина|частка|parte|partie|teil|część|část|חלק|部分|部)\s*\d+$/i.test(name))return '';
  return /^(?:(?:season|сезон|сезонът|temporada|saison|sezon|série|עונה|季|第)\s*\d+|\d+\s*(?:season|сезон|temporada|saison|sezon|季))$/i.test(name)?'':name.replace(/^(?:season|сезон)\s*\d+\s*[:–—.-]\s*/i,'');
 }

@@ -8,6 +8,38 @@ test('all media types omit missing portraits and retain shared actor/director po
   assert.equal(cast.some(p=>p.id===1),false);assert.equal(cast.some(p=>p.id===4),false);assert.ok(cast.some(p=>p.id===2));assert.equal(cast.filter(p=>p.id===3).length,1);assert.equal(cast.find(p=>p.id===3).profile_path,'/shared.jpg');
  }
 });
+test('anime cards render with a Node-only append and recover when season grouping is unavailable',async()=>{
+ const n=await native({built:true}),{w,L}=n;
+ try{
+  const append=w.Element.prototype.append;
+  w.Element.prototype.append=function(...nodes){
+   if(!this.closest('.full-start-new__details'))return append.apply(this,nodes);
+   nodes.forEach(node=>this.appendChild(node));
+  };
+  let reply;
+  w.LampaView.animeBase.groups=(card,files,done)=>{reply=done;};
+  for(const seasons of [2,1]){
+   const card={id:4000+seasons,source:'cub',name:'Аниме',original_name:'Anime',original_language:'ja',first_air_date:'2022-01-01',number_of_seasons:seasons,number_of_episodes:12,genres:[{id:16,name:'мультфильм'}],networks:[],production_companies:[],production_countries:[],spoken_languages:[]};
+   card.seasons=Array.from({length:seasons},(_,i)=>({season_number:i+1,episode_count:12/seasons}));
+   L.Api.full=(p,ok)=>ok({movie:card,persons:{cast:[],crew:[]},discuss:{result:[]},images:{logos:[]},videos:{results:[]},simular:{results:[]},recomend:{results:[]}});
+   L.Activity.push({component:'full',id:card.id,source:'cub',method:'tv',card});
+   await wait(150);
+   const root=L.Activity.active().activity.render(true);
+   assert.ok(root.querySelector('.minimal-detail-header'),JSON.stringify(n.errors));
+   assert.ok(root.querySelector('.minimal-detail-identity .full-start-new__buttons'));
+   assert.ok(root.querySelector('.minimal-detail-facts'));
+   const counter=Array.from(root.querySelectorAll('.full-start-new__details > span')).find(span=>span.textContent.startsWith(L.Lang.translate('title_seasons')+':'));
+   assert.ok(counter);
+   if(seasons===1){
+    assert.equal(counter.hidden,true);
+    reply(null);
+   }
+   assert.equal(counter.hidden,false);
+   assert.equal(counter.textContent,L.Lang.translate('title_seasons')+': '+seasons+' · TMDB');
+  }
+  assert.deepEqual(n.errors,[]);
+ }finally{n.close();}
+});
 test('studio activation opens the native company page; TV networks use a network filter even with CUB selected',async()=>{
  const n=await native({built:true}),{w,L}=n;
  try{

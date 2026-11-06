@@ -177,7 +177,7 @@ export default function detail(L,event,loadLogo){
  if(isAnime(card)){
   const prefix=L.Lang.translate('title_seasons')+':';
   const counter=Array.from(right.querySelectorAll('.full-start-new__details>*')).find(node=>node.textContent.trim().startsWith(prefix));
-  const season=(card.seasons || []).find(row=>Number(row.season_number)===1);
+  const season=Array.isArray(card.seasons)?card.seasons.find(row=>row && Number(row.season_number)===1):null;
   const count=Number(season && season.episode_count || card.number_of_episodes);
   if(counter && Number(card.number_of_seasons)===1 && count>1 && count<=3000 && animeBase && animeBase.groups){
    let settled=false;
@@ -186,14 +186,14 @@ export default function detail(L,event,loadLogo){
     settled=true;
     clearTimeout(timeout);
     if(groups && groups.length>1)counter.textContent=prefix+' '+groups.length;
-    else counter.append(' · TMDB');
+    else counter.textContent += ' · TMDB';
     counter.hidden=false;
    };
    counter.hidden=true;
    const timeout=setTimeout(()=>show(null),3500);
    animeBase.groups(card,Array.from({length:count},(_,i)=>i+1),show);
   }else if(counter && card.source!=='minimal_shiki'){
-   counter.append(' · TMDB');
+   counter.textContent += ' · TMDB';
   }
  }
  const episodes=right.querySelector('.full-start-new__details'),ratings=right.querySelector('.full-start-new__rate-line');if(episodes && ratings)right.insertBefore(episodes,ratings);

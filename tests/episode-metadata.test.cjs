@@ -109,5 +109,10 @@ test('season badge hides a repeated show title and keeps a named arc',()=>{
  assert.equal(seasonName(card,1),'');
  assert.equal(seasonName(card,2),'');
  assert.equal(seasonName(card,3),'Смертельная миграция');
+ const dan={name:'Дандадан',original_name:'DAN DA DAN'};
+ for(const name of ['Дандадан 2','DAN DA DAN 2nd Season','Дандадан (2)','Дандадан: часть 2']){
+  assert.equal(seasonName({seasons:[{season_number:2,name}]},2,dan),'',name);
+ }
+ assert.equal(seasonName({seasons:[{season_number:2,name:'Путь 2'}]},2,dan),'Путь 2');
  assert.equal(seasonName({seasons:[{season_number:1,name:'JUJUTSU KAISEN'}]},1,card),'');
 });

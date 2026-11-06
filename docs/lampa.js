@@ -1,4 +1,4 @@
-/*! Lampa View 0.5.60 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.5.61 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -10125,7 +10125,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     };
     var title = name.replace(/(?:season|сезон)\s*\d+|\d+\s*(?:season|сезон)/gi, "");
     var aliases = [series.name, series.title, series.original_name, series.original_title].map(clean).filter(Boolean);
-    if (aliases.includes(clean(name)) || aliases.includes(clean(title))) return "";
+    var unnumbered = name.replace(/(?:[\s:._–—-]+|\s*\()(?:s(?:eason)?\s*|сезон\s*|part\s*|часть\s*|cour\s*)?\d+(?:st|nd|rd|th)?(?:\s*(?:season|сезон|part|часть|cour))?\)?$/i, "");
+    if ([name, title, unnumbered].some(function (value) {
+      return aliases.includes(clean(value));
+    })) return "";
     if (/^(?:part|часть|частина|частка|parte|partie|teil|część|část|חלק|部分|部)\s*\d+$/i.test(name)) return "";
     return /^(?:(?:season|сезон|сезонът|temporada|saison|sezon|série|עונה|季|第)\s*\d+|\d+\s*(?:season|сезон|temporada|saison|sezon|季))$/i.test(name) ? "" : name.replace(/^(?:season|сезон)\s*\d+\s*[:–—.-]\s*/i, "");
   }
@@ -12497,9 +12500,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var counter = Array.from(right.querySelectorAll(".full-start-new__details>*")).find(function (node) {
         return node.textContent.trim().startsWith(prefix);
       });
-      var season = (card.seasons || []).find(function (row) {
-        return Number(row.season_number) === 1;
-      });
+      var season = Array.isArray(card.seasons) ? card.seasons.find(function (row) {
+        return row && Number(row.season_number) === 1;
+      }) : null;
       var _count = Number(season && season.episode_count || card.number_of_episodes);
       if (counter && Number(card.number_of_seasons) === 1 && _count > 1 && _count <= 3e3 && animeBase && animeBase.groups) {
         var settled = false;
@@ -12507,7 +12510,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           if (settled) return;
           settled = true;
           clearTimeout(timeout);
-          if (groups && groups.length > 1) counter.textContent = prefix + " " + groups.length;else counter.append(" \xB7 TMDB");
+          if (groups && groups.length > 1) counter.textContent = prefix + " " + groups.length;else counter.textContent += " \xB7 TMDB";
           counter.hidden = false;
         };
         counter.hidden = true;
@@ -12520,7 +12523,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           return i + 1;
         }), show);
       } else if (counter && card.source !== "minimal_shiki") {
-        counter.append(" \xB7 TMDB");
+        counter.textContent += " \xB7 TMDB";
       }
     }
     var episodes = right.querySelector(".full-start-new__details"),
@@ -12954,7 +12957,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // package.json
-  var version = "0.5.60";
+  var version = "0.5.61";
 
   // src/inputs.js
   function inputs(L) {
