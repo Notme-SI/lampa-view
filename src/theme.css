@@ -1069,7 +1069,6 @@ body.lampa_view.pt-personal-enlarged .minimal-detail-identity .full-start-new__b
 /* Native windows stay slightly smaller than Lampa at the same screen size. */
 body.lampa_view {--pt-native-window-font:max(10px,calc(1.117vw * var(--pt-native-interface-scale,1)))}
 body.lampa_view .extensions,
-body.lampa_view .settings .settings__content,
 body.lampa_view .selectbox:not(.minimal-filter-panel) .selectbox__content,
 body.lampa_view .modal:not(.minimal-torrent-files) .modal__content {font-size:min(1em,var(--pt-native-window-font))!important}
 body.lampa_view .selectbox__content,body.lampa_view .modal__content {font-size:1em}
