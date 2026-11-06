@@ -9222,5 +9222,22 @@
   "fr": "Épisodes spéciaux",
   "pl": "Odcinki specjalne",
   "es": "Especiales"
+ },
+ "Часть {0}": {
+  "ru": "Часть {0}",
+  "en": "Part {0}",
+  "uk": "Частина {0}",
+  "be": "Частка {0}",
+  "bg": "Част {0}",
+  "cs": "Část {0}",
+  "de": "Teil {0}",
+  "es": "Parte {0}",
+  "fr": "Partie {0}",
+  "he": "חלק {0}",
+  "it": "Parte {0}",
+  "pl": "Część {0}",
+  "pt": "Parte {0}",
+  "tr": "Bölüm {0}",
+  "zh": "第 {0} 部分"
  }
 }

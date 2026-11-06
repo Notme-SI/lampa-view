@@ -3,6 +3,7 @@ import {locale} from './i18n.js';
 import {isAnime} from './metadata.js';
 import {animeRecords,animeTarget,animeSeed,animeEpisodeMap,animeIndexInfo} from './anime-index.js';
 import {franchiseModel} from './anime-franchise.js';
+import {seasonName} from './episode-metadata.js';
 const positive=n=>Number.isSafeInteger(Number(n)) && Number(n)>0;
 const day=value=>String(value || '').slice(0,10),time=value=>Date.parse(day(value)+'T00:00:00Z');
 function inRelease(episode,release){const aired=time(episode.air_date),from=time(release.aired),until=time(release.released || (release.status==='ongoing'?new Date().toISOString().slice(0,10):''));return Number.isFinite(aired) && Number.isFinite(from) && Number.isFinite(until) && aired>=from-86400000 && aired<=until+86400000;}
@@ -48,7 +49,7 @@ export default function animeCatalogue(L,kino){
  function status(card,book,done){const number=Number((card.seasons || []).find(s=>s.season_number>0)?.season_number),rows=book && (book.episodes_original || book.episodes);if(!rows || !number)return done(null);groups(card,Array.from({length:rows.length},(_,i)=>i+1),values=>{if(!values)return done(null);const today=new Date().toISOString().slice(0,10),available=values.map(g=>({group:g,aired:Object.values(g.book).filter(e=>e.air_date && day(e.air_date)<=today)})).filter(v=>v.aired.length);if(!available.length)return done(null);const last=available[available.length-1];done({season:last.group.number,count:last.aired.length,total:last.group.count});},{[number]:book});}
  function providerBook(card,number,numbers,files,done){
   if(!isAnime(card) || !files.length || files.length>3000 || !files.map(Number).sort((a,b)=>a-b).every((n,i)=>n===i+1))return done(null);
-  const labels=[...new Set(numbers.map(Number))].sort((a,b)=>a-b);if(!labels.every((n,i)=>n===i+1) || labels.length>60)return done(null);
+  const labels=[...new Set(numbers.map(Number))].filter(n=>n>0).sort((a,b)=>a-b);if(!labels.every((n,i)=>n===i+1) || labels.length>60)return done(null);
   canonical(card,value=>{if(!value)return done(null);collection({...value,source:'tmdb',media_type:'tv',minimal_anime:true},model=>{
    if(!model || !model.complete)return done(null);const today=new Date().toISOString().slice(0,10),story=model.rows.find(r=>r.key==='story'),ids=new Set(story && story.results.map(r=>r.id)),eligible=n=>n.record && Number(n.record.tv)===Number(value.id) && ['tv','ona'].includes(n.kind) && n.episodes>0 && n.status!=='anons' && n.aired && n.aired<=today;
    const main=model.nodes.filter(n=>ids.has(n.id) && eligible(n)).sort((a,b)=>a.aired.localeCompare(b.aired)),all=model.nodes.filter(eligible).filter(n=>ids.has(n.id) || model.edges.some(e=>e.relation==='alternative_version' && (e.from===n.id || e.to===n.id))).sort((a,b)=>a.aired.localeCompare(b.aired));
@@ -58,7 +59,7 @@ export default function animeCatalogue(L,kino){
     let map=animeEpisodeMap(release.record,files.length,value,books);
     if(map && map.some(e=>!e.metadata || !inRelease(e.metadata,release)))map=null;
     if(!map){const rows=seasons.flatMap(s=>books[s.season_number] && (books[s.season_number].episodes_original || books[s.season_number].episodes) || []).filter(e=>inRelease(e,release));if(files.length!==release.episodes || rows.length!==release.episodes)return done(null);map=rows.map((metadata,i)=>({number:i+1,metadata}));}
-    const book={};map.forEach(e=>book[e.number]={...e.metadata,lampa_grouped:true,lampa_season_name:release.name});done(Object.keys(book).length===files.length?book:null);
+    const book={};map.forEach(e=>book[e.number]={...e.metadata,lampa_grouped:true,lampa_season_name:seasonName({seasons:[{season_number:number,name:release.name}]},number,{...card,lampa_series_names:[main[0]?.name,main[0]?.original]})});done(Object.keys(book).length===files.length?book:null);
    }));
   });});
  }

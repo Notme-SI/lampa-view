@@ -178,6 +178,7 @@ test('specials keep season zero metadata and show a named menu entry while group
   filter.set('filter',[{stype:'season',title:'Сезон',subtitle:'0 сезон',items:[{title:'0 сезон',selected:true},{title:'1 сезон'},{title:'2 сезон'},{title:'3 сезон'},{title:'4 сезон'}]}]);
   for(let i=1;i<=7;i++)$('<div class="online-prestige online-prestige--full selector"><div class="online-prestige__title">Серия '+i+'</div><div class="online-prestige__episode-number">'+i+'</div></div>').appendTo(root.find('.scroll__body'));
   const movie={id:1429,name:'Атака титанов',source:'tmdb',minimal_anime:true,number_of_seasons:4,seasons:[{season_number:0,episode_count:7},{season_number:1,episode_count:25}]};
+  L.Lang.add({nova_plus_ep_many:{ru:'~{count} эпизодов'}});
   const requests=[];const completions={};
   L.Api.sources.tmdb.get=(url,p,ok)=>{requests.push(url);const number=Number(url.match(/season\/(\d+)/)[1]);completions[number]=()=>ok({season_number:number,episodes:Array.from({length:number===0?7:12},(_,i)=>({episode_number:i+1,season_number:number,name:'Спецвыпуск '+(i+1),overview:'Отдельная история '+(i+1)}))});};
   L.Activity.active=()=>({component:'online_test',movie,activity:{render:()=>root,component:{}}});

@@ -88,7 +88,7 @@ function htmlRows(body){
  for(const tag of tags){
   const cls=tag.match(/\bclass\s*=\s*(["'])([\s\S]*?)\1/i),data=tag.match(/\bdata-json\s*=\s*(["'])([\s\S]*?)\1/i);
   if(!cls || !/(^|\s)videos__item(\s|$)/.test(cls[2]) || !data)continue;
-  try{decoder.innerHTML=data[2].replace(/</g,'&lt;');const row=JSON.parse(decoder.value);if(row && typeof row.url==='string' && row.url.trim() && /^(play|call|link)$/.test(row.method))rows.push(row);}catch(error){}
+  try{decoder.innerHTML=data[2].replace(/</g,'&lt;');const row=JSON.parse(decoder.value);if(row && /^(play|call)$/.test(row.method)){for(const [attribute,field] of [['s','season'],['e','episode']]){const value=tag.match(new RegExp('\\s'+attribute+'\\s*=\\s*([\"\'])([0-9]+)\\1','i'));if(value)row[field]=Number(value[2]);else if(row[field]===undefined && row[attribute]!==undefined)row[field]=Number(row[attribute]);}}if(row && typeof row.url==='string' && row.url.trim() && /^(play|call|link)$/.test(row.method))rows.push(row);}catch(error){}
  }
  return rows;
 }
