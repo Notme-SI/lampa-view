@@ -97,7 +97,29 @@ export function installFullGuard(L){
  L.Api._minimalFullGuard=true;const full=L.Api.full;
  L.Api.full=function(params,ok,fail){
   const error=status=>{if(fail)fail(status && typeof status==='object'?status:{empty:true});};
-  return full.call(this,params,data=>data && data.movie?ok(data):error(),error);
+  return full.call(this,params,data=>{
+   if(!data || !data.movie)return error();
+   const anime=typeof window!=='undefined' && window.LampaView && window.LampaView.animeBase;
+   if(!anime || !isAnime(data.movie) || !anime.collection || !anime.canonical)return ok(data);
+   let complete=false;
+   const finish=count=>{
+    if(complete)return;complete=true;clearTimeout(timer);
+    data.movie={...data.movie,minimal_detail_ready:true,...(count>1?{minimal_detail_seasons:count}:{})};
+    ok(data);
+   };
+   const timer=setTimeout(()=>finish(0),6500);
+   anime.canonical(data.movie,card=>{
+    if(complete || !card)return finish(0);
+    anime.collection(card,model=>{
+     if(complete)return;
+     const story=model && model.complete && model.rows.find(row=>row.key==='story');
+     const ids=new Set(story && story.results.map(row=>row.id));
+     const date=new Date().toISOString().slice(0,10);
+     const releases=model && model.nodes.filter(node=>ids.has(node.id) && node.record && Number(node.record.tv)===Number(card.id) && ['tv','ona'].includes(node.kind) && node.status!=='anons' && node.aired && node.aired<=date);
+     finish(Number(card.number_of_seasons)===1 && releases && releases.length>1?releases.length:0);
+    });
+   });
+  },error);
  };
 }
 export default function tmdbGet(L,path,params,ok,fail=()=>{},options){

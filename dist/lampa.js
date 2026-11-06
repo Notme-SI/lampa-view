@@ -1,4 +1,4 @@
-/*! Lampa View 0.5.63 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.5.64 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -9880,6 +9880,20 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       fr: "Suite",
       pl: "Kontynuacja",
       es: "Continuaci\xF3n"
+    },
+    Спецвыпуски: {
+      en: "Specials",
+      uk: "Спецвипуски",
+      be: "Спецвыпускі",
+      zh: "特别篇",
+      pt: "Especiais",
+      bg: "Специални епизоди",
+      he: "פרקים מיוחדים",
+      cs: "Speci\xE1ly",
+      ro: "Episoade speciale",
+      fr: "\xC9pisodes sp\xE9ciaux",
+      pl: "Odcinki specjalne",
+      es: "Especiales"
     }
   };
 
@@ -10841,7 +10855,41 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
       };
       return full.call(this, params, function (data) {
-        return data && data.movie ? ok(data) : error();
+        if (!data || !data.movie) return error();
+        var anime = typeof window !== "undefined" && window.LampaView && window.LampaView.animeBase;
+        if (!anime || !isAnime(data.movie) || !anime.collection || !anime.canonical) return ok(data);
+        var complete = false;
+        var finish = function finish(count) {
+          if (complete) return;
+          complete = true;
+          clearTimeout(timer);
+          data.movie = __spreadValues(__spreadProps(__spreadValues({}, data.movie), {
+            minimal_detail_ready: true
+          }), count > 1 ? {
+            minimal_detail_seasons: count
+          } : {});
+          ok(data);
+        };
+        var timer = setTimeout(function () {
+          return finish(0);
+        }, 6500);
+        anime.canonical(data.movie, function (card) {
+          if (complete || !card) return finish(0);
+          anime.collection(card, function (model) {
+            if (complete) return;
+            var story = model && model.complete && model.rows.find(function (row) {
+              return row.key === "story";
+            });
+            var ids = new Set(story && story.results.map(function (row) {
+              return row.id;
+            }));
+            var date2 = (/* @__PURE__ */new Date()).toISOString().slice(0, 10);
+            var releases = model && model.nodes.filter(function (node) {
+              return ids.has(node.id) && node.record && Number(node.record.tv) === Number(card.id) && ["tv", "ona"].includes(node.kind) && node.status !== "anons" && node.aired && node.aired <= date2;
+            });
+            finish(Number(card.number_of_seasons) === 1 && releases && releases.length > 1 ? releases.length : 0);
+          });
+        });
       }, error);
     };
   }
@@ -12532,13 +12580,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         return row && Number(row.season_number) === 1;
       }) : null;
       var _count = Number(season && season.episode_count || card.number_of_episodes);
-      if (counter && Number(card.number_of_seasons) === 1 && _count > 1 && _count <= 3e3 && animeBase && animeBase.groups) {
+      if (counter && card.minimal_detail_seasons > 1) counter.textContent = prefix + " " + card.minimal_detail_seasons;
+      if (counter && !card.minimal_detail_ready && Number(card.number_of_seasons) === 1 && _count > 1 && _count <= 3e3 && animeBase && animeBase.groups) {
         var settled = false;
         var show = function show(groups) {
           if (settled) return;
           settled = true;
           clearTimeout(timeout);
-          if (groups && groups.length > 1) counter.textContent = prefix + " " + groups.length;else counter.textContent += " \xB7 TMDB";
+          if (groups && groups.length > 1) counter.textContent = prefix + " " + groups.length;
           counter.hidden = false;
         };
         counter.hidden = true;
@@ -12550,8 +12599,6 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }, function (_, i) {
           return i + 1;
         }), show);
-      } else if (counter && card.source !== "minimal_shiki") {
-        counter.textContent += " \xB7 TMDB";
       }
     }
     var episodes = right.querySelector(".full-start-new__details"),
@@ -12985,7 +13032,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // package.json
-  var version = "0.5.63";
+  var version = "0.5.64";
 
   // src/inputs.js
   function inputs(L) {
@@ -25250,7 +25297,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   function inRelease(episode, release) {
     var aired = time(episode.air_date),
       from = time(release.aired),
-      until = time(release.released);
+      until = time(release.released || (release.status === "ongoing" ? (/* @__PURE__ */new Date()).toISOString().slice(0, 10) : ""));
     return Number.isFinite(aired) && Number.isFinite(from) && Number.isFinite(until) && aired >= from - 864e5 && aired <= until + 864e5;
   }
   function releaseGroups(card, files, model, books) {
@@ -25676,7 +25723,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
           if (schemes.length !== 1) return done(null);
           var release = schemes[0][Number(number3) - 1];
-          if (!release || release.episodes !== files.length) return done(null);
+          if (!release || files.length > release.episodes || release.episodes !== files.length && release.status !== "ongoing") return done(null);
           var seasons = (value.seasons || []).filter(function (s) {
               return s.season_number > 0;
             }),
@@ -25687,7 +25734,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             return load("tv/" + value.id + "/season/" + s.season_number, function (response) {
               books[s.season_number] = response;
               if (--left) return;
-              var map = animeEpisodeMap(release.record, release.episodes, value, books);
+              var map = animeEpisodeMap(release.record, files.length, value, books);
               if (map && map.some(function (e) {
                 return !e.metadata || !inRelease(e.metadata, release);
               })) map = null;
@@ -25697,7 +25744,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 }).filter(function (e) {
                   return inRelease(e, release);
                 });
-                if (rows.length !== release.episodes) return done(null);
+                if (files.length !== release.episodes || rows.length !== release.episodes) return done(null);
                 map = rows.map(function (metadata2, i) {
                   return {
                     number: i + 1,
@@ -46339,6 +46386,12 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         groups: null,
         selected: 0
       };
+      var wide_metadata_gate = {
+        key: "",
+        ready: false,
+        book: null,
+        grouped: false
+      };
       var serial = false;
       var nav = false;
       var last = null;
@@ -46439,14 +46492,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           if (!group || !group.items || !group.items.length) return;
           if (group.stype === "season") {
             var seasons = group.items.map(function (item, seat) {
+              var number = digits(item.title);
               return $.extend({}, item, {
-                index: typeof item.index === "number" ? item.index : seat
+                index: typeof item.index === "number" ? item.index : seat,
+                seasonNumber: number,
+                title: seasonTitle(number)
               });
             });
             seasons.sort(function (a, b) {
-              var av = digits(a.title),
-                bv = digits(b.title);
-              return av && bv ? av - bv : a.index - b.index;
+              var av = sourceSeason(a),
+                bv = sourceSeason(b);
+              return av - bv;
             });
             out.season = $.extend({}, group, {
               items: seasons
@@ -46559,9 +46615,20 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var state = kodikSeasons();
         return state && state.selected ? continuationArc(state, state.selected) : null;
       }
+      function sourceSeason(item) {
+        return item && item.seasonNumber !== void 0 ? Number(item.seasonNumber) : digits(item && item.title);
+      }
+      function seasonTitle(number) {
+        return Number(number) === 0 ? lampaViewText("Спецвыпуски") : lampaViewText("Сезон {0}", [number]);
+      }
       function seasonNumber() {
         var part = currentContinuation();
-        return part ? part.part.season : groups.season ? digits(groups.season.subtitle) : 0;
+        if (part) return part.part.season;
+        if (!groups.season) return 1;
+        var selected = groups.season.items.filter(function (item) {
+          return item.selected;
+        })[0];
+        return selected ? sourceSeason(selected) : digits(groups.season.subtitle);
       }
       function partTitle(value) {
         var raw = String(value == null ? "" : value).trim();
@@ -47813,9 +47880,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             return Number(row.season) === 1 && Number(row.episode) > 0;
           })) return;
           continuation.started = true;
+          continuation.ready = false;
           continuation.count = files.length;
+          var deadline = setTimeout(function () {
+            if (continuation.ready) return;
+            continuation.ready = true;
+            if (componentNow() === comp && !comp.destroyed) redraw();
+          }, 6500);
           continuationApi.find(card, continuation.base, files, function (parts) {
-            if (!parts.length || comp.destroyed || componentNow() !== comp) return;
+            if (continuation.ready) return;
+            continuation.ready = true;
+            clearTimeout(deadline);
+            if (comp.destroyed || componentNow() !== comp) return;
             continuation.parts = parts;
             wide_sig = "";
             setTimeout(function () {
@@ -47860,7 +47936,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 return Number(file.episode);
               }),
               seasons: seasons.map(function (s) {
-                return Number(digits(s.title));
+                return sourceSeason(s);
               }),
               similar: params && params.similars,
               part: providerPart
@@ -47875,13 +47951,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 if (comp.destroyed || episodeContext !== context) return;
                 var own = readGroups(activeFilter(typeof comp.render === "function" ? comp.render() : root));
                 context.seasons = (own.season && own.season.items || []).map(function (s) {
-                  return Number(digits(s.title));
+                  return sourceSeason(s);
                 });
                 function current() {
                   return !comp.destroyed && episodeContext === context;
                 }
                 function canonical() {
-                  if (api.isAnime(context.card) && tmdbId(context.card) && Number(season) > 0) {
+                  if (api.isAnime(context.card) && tmdbId(context.card) && Number(season) >= 0) {
                     var part = context.part;
                     return wideCanonicalBook(season, function (book) {
                       if (!current()) return;
@@ -47895,7 +47971,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                     if (current()) done.apply(this, arguments);
                   });
                 }
-                if (!context.part && context.seasons.length && api.alternate(context.card, context.seasons)) {
+                if (Number(season) !== 0 && !context.part && context.seasons.length && api.alternate(context.card, context.seasons)) {
                   var handled = api.book(context.card, season, context.seasons, context.files.length, function (book, grouped) {
                     if (!current()) return;
                     if (book || grouped) done(metadataRows(book));else canonical();
@@ -47999,13 +48075,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           comp.parseJsonDate = function (body, selector) {
             var rows = parseRows.apply(this, arguments);
             if (providerPart && selector === ".videos__item" && rows && rows.length) return continuationApi.files(providerPart, rows);
-            if (selector === ".videos__item" && rows && rows.length > 1 && rows.length <= 4 && rows.every(function (row) {
+            if (selector === ".videos__item" && rows && rows.length > 1 && rows.length <= 100 && rows.every(function (row) {
               return row.method === "link" && !row.similar;
             })) {
               var links = {};
               rows.forEach(function (row) {
-                var number = Number(row.season || digits(row.text || row.title));
-                if (number > 0) links[number] = row.url;
+                var number = row.season !== void 0 ? Number(row.season) : digits(row.text || row.title);
+                if (number >= 0) links[number] = row.url;
               });
               if (Object.keys(links).length === rows.length) seasonLinks = {
                 source: requestSource,
@@ -48075,8 +48151,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 }
               }
               var seasons = card && folderState && folderState.folderSeasons(folders, card);
-              var desiredSeason = comp.lampaViewManualSeason || folders && folders.length && folderState.resume(card || {}),
-                seasonNumberWanted = desiredSeason && _typeof(desiredSeason) === "object" ? desiredSeason.season : desiredSeason || 1;
+              var desiredSeason = comp.lampaViewManualSeason !== void 0 ? comp.lampaViewManualSeason : folders && folders.length && folderState.resume(card || {}),
+                seasonNumberWanted = desiredSeason && _typeof(desiredSeason) === "object" ? desiredSeason.season : desiredSeason !== false && desiredSeason !== null && desiredSeason !== void 0 ? desiredSeason : 1;
               var seasonTarget = seasons && seasons.find(function (row) {
                 return row.season === seasonNumberWanted;
               }) || seasons && seasons[0];
@@ -48089,7 +48165,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 folders = [];
               }
               var resume = folders && folders.length && folderState.resume(card || {});
-              var folder = card && folders && folders.length && folderState.folderTarget(folders, card, comp.lampaViewManualSeason || resume && resume.season || 1);
+              var folder = card && folders && folders.length && folderState.folderTarget(folders, card, comp.lampaViewManualSeason !== void 0 ? comp.lampaViewManualSeason : resume ? resume.season : 1);
               if (folder && folderChain.length < 6 && folderChain.indexOf(folder) < 0) {
                 parsing = true;
                 try {
@@ -48103,7 +48179,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             if (card && !comp.destroyed && tmdbKind(card) === "tv" && typeof comp.getChoice === "function" && typeof comp.saveChoice === "function") {
               try {
                 var state = onlineState(),
-                  saved = comp.lampaViewManualSeason ? {
+                  saved = comp.lampaViewManualSeason !== void 0 ? {
                     season: comp.lampaViewManualSeason
                   } : state && state.resume(card),
                   index = saved && state ? state.seasonIndex(str, saved.season) : -1;
@@ -48337,7 +48413,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           nativeEpisode = Number(nativeAction && nativeAction.element && nativeAction.element.episode);
         var episodeNum = nativeEpisode > 0 ? nativeEpisode : digits(origin.find("." + px + "online-prestige__episode-number").text()) || index + 1;
         var isSeries = !!(movie && (movie.name || movie.original_name || movie.number_of_seasons || movie.media_type === "tv"));
-        var progress = progressReader()(isSeries ? seasonNumber() || 1 : 0, isSeries ? episodeNum : 0, hash);
+        var progress = progressReader()(isSeries ? seasonNumber() : 0, isSeries ? episodeNum : 0, hash);
         if (progress.found) percent = progress.percent;
         return {
           origin: origin,
@@ -48400,7 +48476,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           max = 0,
           unique = {},
           read = progressReader(),
-          season = seasonNumber() || 1;
+          season = seasonNumber();
         list.forEach(function (item) {
           max = Math.max(max, item.num || 0);
           if (item.soon || unique[item.num]) return;
@@ -48445,7 +48521,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
         var state = onlineState(),
           saved = state && movie ? state.resume(movie) : null;
-        if (saved && saved.season === (seasonNumber() || 1)) {
+        if (saved && saved.season === seasonNumber()) {
           var exact = list.filter(function (item) {
             return item.num === saved.episode;
           })[0];
@@ -48497,7 +48573,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (Lampa.Select.opened && Lampa.Select.opened()) return;
         var key = "item:" + item.index,
           element = params.element,
-          season = serial ? seasonNumber() || 1 : 0;
+          season = serial ? seasonNumber() : 0;
         var state = onlineState(),
           record = state && state.reader ? state.reader(movie)(season, serial ? item.num : 0, item.hash) : {},
           seen = record.found ? record.percent >= SEEN_PERCENT : isSeen(item);
@@ -49387,10 +49463,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           if (duration) meta.append($('<span class="nova-hero__runtime"></span>').text(duration));
         } else if (!wideAnimePending()) {
           var arc = currentContinuation() || wideAnimeCurrent(),
-            number = arc ? arc.number : seasonNumber() || 1,
+            number = arc ? arc.number : seasonNumber(),
             api = window.LampaView && window.LampaView.episodeMetadata;
           var seasonBadges = $('<span class="nova-hero__seasons"></span>').appendTo(meta);
-          $('<span class="nova-hero__season-label"></span>').text(text("torrent_serial_season", "nova_plus_season") + " " + number).appendTo(seasonBadges);
+          $('<span class="nova-hero__season-label"></span>').text(seasonTitle(number)).appendTo(seasonBadges);
           var alternate = !arc && alternateSeasons();
           var name = !alternate && api && api.seasonName ? api.seasonName(arc ? {
             seasons: [{
@@ -49597,7 +49673,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             return (typeof item.index === "number" ? item.index : seat) === index;
           })[0],
           owner = componentNow();
-        if (group.stype === "season" && owner && selectedItem) owner.lampaViewManualSeason = digits(selectedItem.title);
+        if (group.stype === "season" && owner && selectedItem) owner.lampaViewManualSeason = sourceSeason(selectedItem);
         var host_filter = filter;
         ui_open = "";
         buildRows();
@@ -50553,6 +50629,82 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         serial = !!(movie.name || movie.number_of_seasons) && !nav;
         items = list;
         wideAnimePrepare(list);
+        var currentComp = componentNow(),
+          continuations = currentComp && currentComp.lampaViewContinuations;
+        if (wideAnimePending() || continuations && continuations.started && !continuations.ready) {
+          hideHost();
+          if (!ui.root || !ui.root.hasClass("nova-initial-loading")) loadingPanel();
+          return;
+        }
+        if (serial && wideMeta()) {
+          var metadataKey = wideMetadataContext();
+          if (wide_metadata_gate.key !== metadataKey) {
+            var resolved = function resolved() {
+                if (--pending2 === 0) finishMetadata(gate.book, gate.grouped);
+              },
+              _readCounts = function readCounts() {
+                while (!gate.ready && wide_metadata_gate === gate && countRunning < 3 && countIndex < counts.length) {
+                  var number = counts[countIndex++];
+                  countRunning++;
+                  (function (number2, key2) {
+                    seasonPlanned(number2, function (value) {
+                      countRunning--;
+                      if (gate.ready || wide_metadata_gate !== gate) return;
+                      if (value) wide_counts[key2] = value;
+                      resolved();
+                      _readCounts();
+                    });
+                  })(number, wideCountKey(number));
+                }
+              };
+            var gate = {
+                key: metadataKey,
+                ready: false,
+                book: null,
+                grouped: false
+              },
+              waiting = false;
+            wide_metadata_gate = gate;
+            var finishMetadata = function finishMetadata(book, grouped) {
+              if (gate.ready || wide_metadata_gate !== gate) return;
+              gate.ready = true;
+              gate.book = book;
+              gate.grouped = !!grouped;
+              clearTimeout(gate.timer);
+              if (waiting && root && root[0] === found.root[0]) redraw();
+            };
+            var activeSeason = seasonNumber(),
+              numbers = providerSeasonNumbers(),
+              moreParts = alternateSeasons() && numbers.filter(function (n) {
+                return n > 0;
+              }).length > Number(movie.number_of_seasons);
+            var counts = (wideAnimeCurrent() || currentContinuation() ? [] : numbers).filter(function (number) {
+                if (number === activeSeason || wide_counts[wideCountKey(number)] || currentComp && currentComp.lampaViewSeasonCount && currentComp.lampaViewSeasonCount(number, wideVoiceName())) return false;
+                return moreParts || !(movie.seasons || []).some(function (row) {
+                  return Number(row.season_number) === number && Number(row.episode_count) > 0;
+                });
+              }),
+              pending2 = counts.length + 1;
+            gate.timer = setTimeout(function () {
+              finishMetadata(gate.book, gate.grouped);
+            }, 6500);
+            wideBook(activeSeason, function (book, grouped) {
+              if (gate.ready || wide_metadata_gate !== gate) return;
+              gate.book = book;
+              gate.grouped = !!grouped;
+              resolved();
+            });
+            var countIndex = 0,
+              countRunning = 0;
+            _readCounts();
+            waiting = true;
+          }
+          if (!wide_metadata_gate.ready) {
+            hideHost();
+            if (!ui.root || !ui.root.hasClass("nova-initial-loading")) loadingPanel();
+            return;
+          }
+        }
         var mark = stamp();
         if (signature === mark && ui.list && ui.list.children().length) return;
         busy = true;
@@ -50739,7 +50891,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             var raw = (item.line.children("div").first().attr("style") || "").match(/([\d.]+)%/);
             if (raw) percent = parseFloat(raw[1]) || 0;
           }
-          var record = read(serial ? seasonNumber() || 1 : 0, serial ? item.num : 0, item.hash);
+          var record = read(serial ? seasonNumber() : 0, serial ? item.num : 0, item.hash);
           if (record.found) {
             percent = record.percent;
             item.position = record.time;
@@ -51345,12 +51497,12 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }
       function wideMetadataContext() {
         var arc = currentContinuation() || wideAnimeCurrent();
-        return wideCountKey(seasonNumber() || 1) + (arc ? "|arc:" + arc.number : "") + "|voice:" + wideVoiceName() + "|files:" + items.map(function (item) {
+        return wideCountKey(seasonNumber()) + (arc ? "|arc:" + arc.number : "") + "|voice:" + wideVoiceName() + "|files:" + items.map(function (item) {
           return [item.num, item.hash, item.soon];
         }).join(";");
       }
       function wideSeasonCaption(number, box) {
-        if (!number) return "";
+        if (number === void 0 || number === null) return "";
         var key = wideCountKey(number),
           fileKey = wideFileCountKey(number);
         var active = Number(seasonNumber()),
@@ -51364,7 +51516,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var changed = wideObserved.owner !== owner || nodes.length !== wideObserved.nodes.length || nodes.some(function (node, index) {
           return node !== wideObserved.nodes[index];
         });
-        if (active && (changed || !wideObserved.key)) wideObserved = {
+        if (active >= 0 && (changed || !wideObserved.key)) wideObserved = {
           owner: owner,
           key: activeKey,
           nodes: nodes
@@ -51381,7 +51533,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var moreParts = alternateSeasons() && providerSeasonNumbers().filter(function (n) {
           return n > 0;
         }).length > Number(movie.number_of_seasons);
-        if (box && !wide_count_wait[key] && !wide_counts[key] && (!count || moreParts)) {
+        if (box && !(wide_metadata_gate.ready && wide_metadata_gate.key === wideMetadataContext()) && !wide_count_wait[key] && !wide_counts[key] && (!count || moreParts)) {
           wide_count_wait[key] = true;
           seasonPlanned(number, function (value) {
             delete wide_count_wait[key];
@@ -51391,7 +51543,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
           count = wide_counts[key] || count;
         }
-        return count ? "~" + wideCount(count) : "";
+        return count ? wideCount(count) : "";
       }
       function wideAnimePrefix() {
         return [movie && (movie.tmdb_id || movie.id), currentSourceKey(), seasonNumber() || 0].join("|");
@@ -51413,7 +51565,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       function wideAnimePrepare(list) {
         var view = window.LampaView,
           api = view && view.episodeMetadata && view.episodeMetadata.groups ? view.episodeMetadata : view && view.kinoapi;
-        if (currentContinuation() || !serial || nav || !wideMeta() || !api || !api.groups || api.enabled && !api.enabled()) return;
+        if (seasonNumber() === 0 || currentContinuation() || !serial || nav || !wideMeta() || !api || !api.groups || api.enabled && !api.enabled()) return;
         var files = list.filter(function (item) {
           return !item.folder && !item.soon;
         }).map(function (item) {
@@ -51431,8 +51583,20 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           pending: true
         };
         var owner = root && root[0];
-        var preparing = true;
+        var preparing = true,
+          finished = false;
+        var deadline = setTimeout(function () {
+          if (finished) return;
+          finished = true;
+          if (!root || root[0] !== owner || wide_anime.key !== key) return;
+          wide_anime.pending = false;
+          wide_sig = "";
+          redraw();
+        }, 6500);
         api.groups(movie, files, function (groups2) {
+          if (finished) return;
+          finished = true;
+          clearTimeout(deadline);
           if (!root || root[0] !== owner || wide_anime.key !== key || wideAnimePrefix() !== prefix) return;
           wide_anime.pending = false;
           if (groups2 && groups2.length) {
@@ -51465,7 +51629,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }
       function providerSeasonNumbers() {
         return (groups.season && groups.season.items || []).map(function (item) {
-          return Number(digits(item.title));
+          return sourceSeason(item);
         });
       }
       function alternateSeasons() {
@@ -51479,6 +51643,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (continuation) return wideCanonicalBook(continuation.part.season, function (book) {
           done(book, true);
         });
+        if (number === 0) return wideCanonicalBook(0, done);
         if (arc && arc.anime_release && arc.book) return done(arc.book, true);
         if (arc && arc.native && api && api.groupBook) return wideCanonicalBook(arc.number, function (book) {
           done(api.groupBook(book, arc), true);
@@ -51497,7 +51662,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         number = Number(number);
         var id = tmdbId(target),
           language = window.LampaView && window.LampaView.locale ? window.LampaView.locale() : get("language", "ru");
-        if (!id || !number || !target && !wideMeta()) return done(null);
+        if (!id || !Number.isInteger(number) || number < 0 || !target && !wideMeta()) return done(null);
         var key = id + ":" + number + ":" + language;
         if (wide_book[key]) return done(wide_book[key]);
         if (wide_wait[key]) return wide_wait[key].push(done);
@@ -51651,7 +51816,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         })[0];
         if (current && current.selected) return;
         var owner = componentNow();
-        if (stype === "season" && owner && current) owner.lampaViewManualSeason = digits(current.title);
+        if (stype === "season" && owner && current) owner.lampaViewManualSeason = sourceSeason(current);
         ui_focus = key;
         wideMark(key);
         refreshCollection();
@@ -51698,7 +51863,21 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           started = true;
           var context = wideMetadataContext(),
             owner = root && root[0];
-          wideBook(seasonNumber() || 1, function (book, grouped) {
+          function complete(book, grouped) {
+            if (!root || root[0] !== owner || wideMetadataContext() !== context) {
+              callbacks = [];
+              return;
+            }
+            result = book;
+            verified = grouped;
+            ready = true;
+            callbacks.forEach(function (fn) {
+              fn(book, grouped);
+            });
+            callbacks = [];
+          }
+          if (wide_metadata_gate.key === context && wide_metadata_gate.ready) return complete(wide_metadata_gate.book, wide_metadata_gate.grouped);
+          wideBook(seasonNumber(), function (book, grouped) {
             if (!root || root[0] !== owner || wideMetadataContext() !== context) {
               callbacks = [];
               return;
@@ -51927,7 +52106,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           if (compact.length && selected) {
             compact.find(".nova-chip__label").text(selected.title);
             if (name === "season") {
-              compact.find(".nova-chip__sub").text(wideSeasonCaption(Number(digits(selected.title)), compact));
+              compact.find(".nova-chip__sub").text(wideSeasonCaption(sourceSeason(selected), compact));
             }
           }
           group.items.forEach(function (item, seat) {
@@ -51936,7 +52115,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             if (!box.length) return;
             box.toggleClass("nova-chip--active", !!item.selected);
             if (name === "season") {
-              var number = parseInt(digits(item.title), 10) || 0;
+              var number = sourceSeason(item);
               box.find(".nova-chip__sub").text(wideSeasonCaption(number, box) || "\xA0");
             } else {
               var own = wideVoiceCount(item);
@@ -52574,7 +52753,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               items: options.items.map(function (item, seat) {
                 return {
                   title: item.title,
-                  subtitle: name === "season" ? wideSeasonCaption(Number(digits(item.title))) : "",
+                  subtitle: name === "season" ? wideSeasonCaption(sourceSeason(item)) : "",
                   selected: !!item.selected,
                   index: typeof item.index === "number" ? item.index : seat
                 };

@@ -9208,5 +9208,19 @@
   "fr": "Suite",
   "pl": "Kontynuacja",
   "es": "Continuación"
+ },
+ "Спецвыпуски": {
+  "en": "Specials",
+  "uk": "Спецвипуски",
+  "be": "Спецвыпускі",
+  "zh": "特别篇",
+  "pt": "Especiais",
+  "bg": "Специални епизоди",
+  "he": "פרקים מיוחדים",
+  "cs": "Speciály",
+  "ro": "Episoade speciale",
+  "fr": "Épisodes spéciaux",
+  "pl": "Odcinki specjalne",
+  "es": "Especiales"
  }
 }

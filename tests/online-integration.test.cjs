@@ -35,7 +35,7 @@ test('anime cards render with a Node-only append and recover when season groupin
     reply(null);
    }
    assert.equal(counter.hidden,false);
-   assert.equal(counter.textContent,L.Lang.translate('title_seasons')+': '+seasons+' · TMDB');
+   assert.equal(counter.textContent,L.Lang.translate('title_seasons')+': '+seasons);
   }
   assert.deepEqual(n.errors,[]);
  }finally{n.close();}
@@ -163,6 +163,41 @@ test('late Kodik continuations retain the original arc count and show separate m
   assert.equal(sections.filter('.selector').length,0);
   options.eq(16).trigger('hover:enter');
   assert.equal(chosen.order,1);
+  assert.deepEqual(n.errors,[]);
+ }finally{n.close();}
+});
+
+
+test('specials keep season zero metadata and show a named menu entry while grouping loads before display',async()=>{
+ const n=await native({built:true}),{w,L}=n,$=w.jQuery;
+ try{
+  const root=$('<div class="explorer"><div class="explorer__files"><div class="explorer__files-head"></div><div class="explorer__files-body"><div class="scroll"><div class="scroll__body"></div></div></div></div>').appendTo(w.document.body);
+  const filter=new L.Filter({search:false,sort:true,filter:true});
+  root.find('.explorer__files-head').append(filter.render());
+  filter.set('sort',[{title:'Kodik',source:'kodik',selected:true}]);
+  filter.set('filter',[{stype:'season',title:'Сезон',subtitle:'0 сезон',items:[{title:'0 сезон',selected:true},{title:'1 сезон'},{title:'2 сезон'},{title:'3 сезон'},{title:'4 сезон'}]}]);
+  for(let i=1;i<=7;i++)$('<div class="online-prestige online-prestige--full selector"><div class="online-prestige__title">Серия '+i+'</div><div class="online-prestige__episode-number">'+i+'</div></div>').appendTo(root.find('.scroll__body'));
+  const movie={id:1429,name:'Атака титанов',source:'tmdb',minimal_anime:true,number_of_seasons:4,seasons:[{season_number:0,episode_count:7},{season_number:1,episode_count:25}]};
+  const requests=[];const completions={};
+  L.Api.sources.tmdb.get=(url,p,ok)=>{requests.push(url);const number=Number(url.match(/season\/(\d+)/)[1]);completions[number]=()=>ok({season_number:number,episodes:Array.from({length:number===0?7:12},(_,i)=>({episode_number:i+1,season_number:number,name:'Спецвыпуск '+(i+1),overview:'Отдельная история '+(i+1)}))});};
+  L.Activity.active=()=>({component:'online_test',movie,activity:{render:()=>root,component:{}}});
+  L.Listener.send('activity',{type:'start'});
+  await wait(180);
+  assert.equal(root.find('.nova-card').length,0,'Wait for metadata before showing series');
+  assert.ok(root.find('.nova-loading').length);
+  completions[0]();await wait(50);
+  assert.equal(root.find('.nova-card').length,0,'Wait for the other season counters too');
+  [2,3,4].forEach(number=>completions[number]());await wait(180);
+  assert.equal(root.find('.nova-hero__season-label').text(),'Спецвыпуски');
+  assert.equal(root.find('[data-nova-focus="season"] .nova-chip__label').text(),'Спецвыпуски');
+  assert.equal(root.find('[data-nova-focus="season"] .nova-chip__sub').text(),'7 эпизодов');
+  assert.equal(root.find('.nova-card').length,7);
+  assert.match(root.find('.nova-card__overview').first().text(),/Отдельная история 1/);
+  assert.ok(requests.some(url=>url.includes('/season/0')));
+  root.find('[data-nova-focus="season"]').trigger('hover:enter');
+  assert.equal(L.Select.render().find('.selectbox-item__title').first().text(),'Спецвыпуски');
+  assert.ok(!L.Select.render().text().includes('~'));
+  assert.match(L.Select.render().find('.selectbox-item').eq(2).text(),/12 эпизодов/);
   assert.deepEqual(n.errors,[]);
  }finally{n.close();}
 });

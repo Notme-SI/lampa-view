@@ -98,3 +98,41 @@ test('Kodik joins verified TV continuations without importing recaps or sharing 
  assert.deepEqual(continuationFiles(releases[3],[{...file,episode:51}]),[]);
  assert.equal(continuationFiles(releases[3],[{...file,episode:41}])[0].episode,41);
 });
+
+
+test('ongoing provider seasons map a released prefix through the explicit release offset',async()=>{
+ const card={id:220542,name:'Монолог фармацевта',source:'tmdb',minimal_anime:true,number_of_seasons:1,seasons:[{season_number:1,episode_count:60}]};
+ const meta=[
+  {id:54492,name:'Kusuriya no Hitorigoto',kind:'tv',status:'released',episodes:24,aired_on:'2023-10-22',released_on:'2024-03-24'},
+  {id:58514,name:'Kusuriya no Hitorigoto 2nd Season',kind:'tv',status:'released',episodes:24,aired_on:'2025-01-10',released_on:'2025-07-04'},
+  {id:61987,name:'Kusuriya no Hitorigoto 3rd Season',kind:'tv',status:'ongoing',episodes:12,aired_on:'2026-10-02',released_on:null}
+ ];
+ const graph={current_id:54492,nodes:meta.map(row=>({id:row.id,name:row.name,kind:'TV Сериал'})),links:[{source_id:54492,target_id:58514,relation:'sequel'},{source_id:58514,target_id:61987,relation:'sequel'}]};
+ const episodes=Array.from({length:60},(_,i)=>({season_number:1,episode_number:i+1,air_date:i<24?'2023-10-22':i<48?'2025-01-10':'2026-10-02',name:'Эпизод '+(i+1),overview:'Описание '+(i+1),still_path:'/frame-'+(i+1)+'.jpg'}));
+ const L={Api:{sources:{tmdb:{get(path,p,ok){ok({episodes});}},minimal_shiki:{franchise(seed,ok){ok({graph,metadata:meta});}}}}};
+ const api=install(L),book=await new Promise(done=>api.providerBook(card,3,[1,2,3],[1,2,3,4,5],done));
+ assert.equal(book[1].name,'Эпизод 49');
+ assert.equal(book[5].overview,'Описание 53');
+ assert.equal(book[1].still_path,'/frame-49.jpg');
+ assert.equal(Object.keys(book).length,5);
+ assert.equal(await new Promise(done=>api.providerBook(card,2,[1,2,3],[1,2,3,4,5],done)),null,'A short completed release stays unverified');
+});
+
+
+test('anime full responses wait for the catalogue before exposing a resolved season count',()=>{
+ const {installFullGuard}=mod('tmdb');
+ const previous=global.window;let canonical,collection,answer;
+ const data={movie:{id:220542,name:'Anime',minimal_anime:true,number_of_seasons:1}};
+ const L={Api:{full(params,ok){ok(data);return 'native-request';}}};
+ global.window={LampaView:{animeBase:{canonical(card,done){canonical=done;},collection(card,done){collection=done;}}}};
+ try{
+  installFullGuard(L);
+  assert.equal(L.Api.full({},value=>{answer=value;}),'native-request');
+  assert.equal(answer,undefined);
+  canonical(data.movie);
+  assert.equal(answer,undefined);
+  collection({complete:true,rows:[{key:'story',results:[{id:1},{id:2},{id:3}]}],nodes:[1,2,3].map(id=>({id,record:{tv:220542},kind:'tv',status:'released',aired:'2020-01-01'}))});
+  assert.equal(answer.movie.minimal_detail_seasons,3);
+  assert.equal(answer.movie.minimal_detail_ready,true);
+ }finally{global.window=previous;}
+});
