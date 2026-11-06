@@ -1,3 +1,7 @@
+## 0.5.52
+
+- Use the existing 90% resume threshold consistently for episode completion, season completion and torrent watch actions. All episodes are required; actual saved timecodes remain unchanged.
+
 ## 0.5.51
 
 - Read saved TorrServer timecodes for recently launched torrent files, including auto-next entries, after reload and on return from playback.

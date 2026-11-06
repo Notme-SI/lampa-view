@@ -1,4 +1,4 @@
-/*! Lampa View 0.5.51 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.5.52 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -12608,7 +12608,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // package.json
-  var version = "0.5.51";
+  var version = "0.5.52";
 
   // src/inputs.js
   function inputs(L) {
@@ -14576,6 +14576,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     return value === "" || value == null ? fallback : ![false, "false", 0, "0", "no"].includes(value);
   }
 
+  // src/watch-threshold.js
+  var WATCHED_PERCENT = 90;
+
   // src/series-status.js
   var day = function day(value) {
     return String(value || "").slice(0, 10);
@@ -14851,12 +14854,12 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var released = canonicalReleaseStatus(data, L.TimeTable && L.TimeTable.get ? L.TimeTable.get(data) || [] : []);
     var ended = shared && released && (released.season > shared.season || released.season === shared.season && released.count >= seasonTotal);
     var seasonComplete = series && shared && seasonTotal > 0 && ended && !(next && Number(next.season_number) === shared.season) && state && state.seasonWatched && state.seasonWatched(data, shared.season, seasonTotal);
-    var complete = series ? seasonComplete : Number(timeline.percent) >= 90;
-    var episodeComplete = series && Number(timeline.percent) >= 95;
+    var complete = series ? seasonComplete : Number(timeline.percent) >= WATCHED_PERCENT;
+    var episodeComplete = series && Number(timeline.percent) >= WATCHED_PERCENT;
     var hideProgress = complete || episodeComplete;
     slot.classList.toggle("pt-card-watch--complete", hideProgress);
     var shown = __spreadValues({}, target || timeline);
-    if (Number(shown.percent) >= (series ? 95 : 90)) shown.percent = 100;
+    if (Number(shown.percent) >= WATCHED_PERCENT) shown.percent = 100;
     if (complete) {
       watchEpisode = 0;
       label = series ? text("Сезон {0} просмотрен", [shared.season]) : text("Фильм просмотрен");
@@ -14989,7 +14992,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         return Number(s.season_number) === last.season;
       });
       var known = Number(season && season.episode_count) > 0 && releaseStatus(historyData, L.TimeTable && L.TimeTable.get ? L.TimeTable.get(historyData) || [] : []);
-      if (fetchable && data.source !== "minimal_shiki" && !fresh && last && last.percent >= 95 && !known) {
+      if (fetchable && data.source !== "minimal_shiki" && !fresh && last && last.percent >= WATCHED_PERCENT && !known) {
         var slot = node.querySelector(".pt-card-watch"),
           wrap = node.querySelector(".card-watched");
         if (slot) {
@@ -21777,7 +21780,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         hash = element.timeline && element.timeline.hash || element.hash;
       var serial = season > 0 && episode > 0,
         record = state.reader(movie)(season, episode, hash),
-        seen = record.percent >= 95;
+        seen = record.percent >= WATCHED_PERCENT;
       var rows = (rendered.get(event.items) || []).filter(function (row) {
         return Number(row.element.season) === season && Number(row.element.episode) > 0;
       });
@@ -23733,7 +23736,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     function seasonWatched(card, season, total) {
       if (!Number.isInteger(total) || total < 1 || total > 500) return false;
       var read = reader(card);
-      for (var episode = 1; episode <= total; episode++) if (read(season, episode).percent < 95) return false;
+      for (var episode = 1; episode <= total; episode++) if (read(season, episode).percent < WATCHED_PERCENT) return false;
       return true;
     }
     function resume(card) {
@@ -23745,7 +23748,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         time: last.time,
         percent: last.percent
       };
-      if (value.percent >= 90) {
+      if (value.percent >= WATCHED_PERCENT) {
         var aired = card.last_episode_to_air,
           seasons = Array.isArray(card.seasons) ? card.seasons : [];
         var released = function released(date2) {
@@ -23917,7 +23920,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           var _key5 = _step78.value;
           var raw = records[_key5],
             percent = typeof raw === "number" ? raw : number2(raw && raw.percent);
-          if (watched || percent >= 90) {
+          if (watched || percent >= WATCHED_PERCENT) {
             var duration = number2(raw && raw.duration);
             writeTimeline({
               hash: _key5,

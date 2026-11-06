@@ -1,3 +1,4 @@
+import {WATCHED_PERCENT} from './watch-threshold.js';
 import tmdbGet from './tmdb.js';
 import cardInfo from './card-info.js';
 import {linkFor} from './timeline-meta.cjs';
@@ -170,14 +171,14 @@ export default function onlineState(L){
  function seasonWatched(card,season,total){
   if(!Number.isInteger(total) || total<1 || total>500)return false;
   const read=reader(card);
-  // Native FullEpisode.Mark stores a completed manual mark as 95%, not 100%.
-  for(let episode=1;episode<=total;episode++)if(read(season,episode).percent<95)return false;
+  // Credits may be skipped: use the same threshold as resume, for every episode.
+  for(let episode=1;episode<=total;episode++)if(read(season,episode).percent<WATCHED_PERCENT)return false;
   return true;
  }
  function resume(card){
   const last=lastWatched(card);if(!last)return null;
   const value={season:last.season,episode:last.episode,time:last.time,percent:last.percent};
-  if(value.percent>=90){
+  if(value.percent>=WATCHED_PERCENT){
    const aired=card.last_episode_to_air,seasons=Array.isArray(card.seasons)?card.seasons:[];
    const released=date=>!!date && Number.isFinite(Date.parse(date)) && Date.parse(date)<=Date.now();
    const bound=aired && Number(aired.season_number)>0 && Number(aired.episode_number)>0 && released(aired.air_date)?aired:null;
@@ -239,7 +240,7 @@ export default function onlineState(L){
   }else if(!watched)clearLast(card,season,episode);
   for(const key of keys){
    const raw=records[key],percent=typeof raw==='number'?raw:number(raw && raw.percent);
-   if(watched || percent>=90){const duration=number(raw && raw.duration);writeTimeline({hash:key,percent:watched?100:0,time:watched?number(raw && raw.time):0,duration});}
+   if(watched || percent>=WATCHED_PERCENT){const duration=number(raw && raw.duration);writeTimeline({hash:key,percent:watched?100:0,time:watched?number(raw && raw.time):0,duration});}
   }
   revision++;snapshots.clear();
   if(!batching && L.Timeline.read)L.Timeline.read();

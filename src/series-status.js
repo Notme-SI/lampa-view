@@ -1,3 +1,4 @@
+import {WATCHED_PERCENT} from './watch-threshold.js';
 import {text as lampaViewText} from './i18n.js';
 import tmdbGet from './tmdb.js';
 import {namedSeason} from './episode-metadata.js';
@@ -133,12 +134,12 @@ function watchFooter(L,node,data,series){
  const released=canonicalReleaseStatus(data,L.TimeTable && L.TimeTable.get?L.TimeTable.get(data) || []:[]);
  const ended=shared && released && (released.season>shared.season || released.season===shared.season && released.count>=seasonTotal);
  const seasonComplete=series && shared && seasonTotal>0 && ended && !(next && Number(next.season_number)===shared.season) && state && state.seasonWatched && state.seasonWatched(data,shared.season,seasonTotal);
- const complete=series?seasonComplete:Number(timeline.percent)>=90;
- const episodeComplete=series && Number(timeline.percent)>=95;
+ const complete=series?seasonComplete:Number(timeline.percent)>=WATCHED_PERCENT;
+ const episodeComplete=series && Number(timeline.percent)>=WATCHED_PERCENT;
  const hideProgress=complete || episodeComplete;
  slot.classList.toggle('pt-card-watch--complete',hideProgress);
  const shown={...(target || timeline)};
- if(Number(shown.percent)>=(series?95:90))shown.percent=100;
+ if(Number(shown.percent)>=WATCHED_PERCENT)shown.percent=100;
  if(complete){watchEpisode=0;label=series?lampaViewText("Сезон {0} просмотрен", [shared.season]):lampaViewText("Фильм просмотрен");}
  // Keep the native timeline node (and data-hash) in an explicit flex progress row.
  const line=row.querySelector('.time-line');let meter=row.querySelector('.pt-card-watch__meter');
@@ -184,7 +185,7 @@ export default function seriesStatus(L,schedule){
   // A completed episode may become a completed season once metadata arrives.
   // Reserve the footer while that fact is unknown, instead of flashing a false
   // intermediate episode caption. Partial episodes are immediately usable.
-  if(fetchable && data.source!=='minimal_shiki' && !fresh && last && last.percent>=95 && !known){
+  if(fetchable && data.source!=='minimal_shiki' && !fresh && last && last.percent>=WATCHED_PERCENT && !known){
    const slot=node.querySelector('.pt-card-watch'),wrap=node.querySelector('.card-watched');
    if(slot){slot.classList.remove('pt-card-watch--has-progress');if(wrap && wrap.parentNode!==slot)slot.appendChild(wrap);}
   }else watchFooter(L,node,historyData,series);

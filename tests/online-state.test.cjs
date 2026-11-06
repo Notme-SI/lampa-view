@@ -389,7 +389,8 @@ test('exact catalogue aliases restore synced native records, manual marks keep u
   api.setWatched(card,1,1,true);assert.equal(api.reader(card)(1,1).time,0,'A manual mark must not invent runtime');
   assert.equal(api.reader(card)(1,1).percent,100);assert.equal(api.seasonWatched(card,1,3),false);
   records.file_view_7['12Cyberpunk: Edgerunners']={percent:40,time:915};assert.equal(api.seasonWatched(card,1,3),false);
-  records.file_view_7['12Cyberpunk: Edgerunners']={percent:100,time:2832};assert.equal(api.seasonWatched(card,1,3),true);
+  records.file_view_7['12Cyberpunk: Edgerunners']={percent:89,time:2520};assert.equal(api.seasonWatched(card,1,3),false);
+  records.file_view_7['12Cyberpunk: Edgerunners']={percent:90,time:2550};assert.equal(api.seasonWatched(card,1,3),true,'Skipped credits use the same completion threshold as resume');assert.equal(records.file_view_7['12Cyberpunk: Edgerunners'].time,2550,'Status must not invent a later timecode');
   records.file_view_7={'12Cyberpunk: Edgerunners':{percent:30,time:720,updated:100}};listeners['state:changed']({target:'timeline',reason:'read'});
   assert.equal(api.lastWatched(card).episode,2);assert.equal(api.lastWatched(card).time,720,'Sync invalidates the focused snapshot');
   api.setWatched({title:'Вышка 2',runtime:100},0,0,true);assert.equal(api.reader({title:'Вышка 2'})(0,0).time,0);

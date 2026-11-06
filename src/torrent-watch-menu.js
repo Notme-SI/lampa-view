@@ -1,3 +1,4 @@
+import {WATCHED_PERCENT} from './watch-threshold.js';
 import {text as lampaViewText} from './i18n.js';
 // Native torrent file coordinates and provider hashes share the same Timeline
 // writer as online. Keep playback/link handlers native; never synthesize time.
@@ -17,7 +18,7 @@ export default function torrentWatchMenu(L,root){
   const movie=event.params && event.params.movie,element=event.element || {};
   if(!movie)return show.apply(this,arguments);
   const season=Number(element.season)||0,episode=Number(element.episode)||0,hash=element.timeline && element.timeline.hash || element.hash;
-  const serial=season>0 && episode>0,record=state.reader(movie)(season,episode,hash),seen=record.percent>=95;
+  const serial=season>0 && episode>0,record=state.reader(movie)(season,episode,hash),seen=record.percent>=WATCHED_PERCENT;
   const rows=(rendered.get(event.items) || []).filter(row=>Number(row.element.season)===season && Number(row.element.episode)>0);
   const coordinates=row=>({season:Number(row.element.season),episode:Number(row.element.episode),hash:row.element.timeline && row.element.timeline.hash || row.element.hash});
   const restore=()=>{L.Select.hide();if(options.onBack)options.onBack();};
