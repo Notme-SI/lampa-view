@@ -1103,3 +1103,10 @@ body.lampa_view.pt-desktop .pt-hero {height:min(56vh,calc(34 * var(--pt-banner-u
 body.lampa_view.pt-mobile .minimal-detail-header>.full-start__background {margin:0; border-radius:1em 1em 0 0;-webkit-mask-image:linear-gradient(#000 0%,#000 55%,transparent 100%)!important;mask-image:linear-gradient(#000 0%,#000 55%,transparent 100%)!important}
 body.lampa_view.pt-mobile:not(.card--no-cover):not(.pt-detail-poster) .minimal-detail-header>.full-start__background.loaded~.full-start-new__body {position:relative;margin-top:-3.5em}
 body.lampa_view.pt-mobile .minimal-detail-identity .minimal-detail-logo {width:auto;max-width:82%;height:4em;max-height:4em;margin:0 auto 1.2em;object-fit:contain;filter:drop-shadow(0 2px 5px #000)}
+
+/* Progress is text over the page, not a separate glass surface on phones. */
+body.lampa_view.pt-mobile .card .pt-card-watch,
+body.lampa_view.pt-mobile .card .pt-card-watch .card-watched,
+body.lampa_view.pt-mobile .card .pt-card-watch .card-watched__inner,
+body.lampa_view.pt-mobile .card .pt-card-watch .card-watched__body,
+body.lampa_view.pt-mobile .card .pt-card-watch .card-watched__item {background:transparent!important;border:0!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}

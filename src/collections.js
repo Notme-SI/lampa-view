@@ -42,6 +42,16 @@ export function arrange(rows,prefs){
 export default function collections(L,shiki,kino,kinoFeeds){
  discoverySource(L);
  const localized=traktMetadata(L);
+ const cubSource=L.Api.sources && L.Api.sources.cub;
+ if(cubSource && cubSource.list && !cubSource._minimalLocalized){
+  const list=cubSource.list;cubSource._minimalLocalized=true;
+  cubSource.list=function(params,ok,fail){return list.call(this,params,json=>{
+   if(locale()==='ru' || !json || !Array.isArray(json.results))return ok(json);
+   const lang=locale(),cards=json.results.map(card=>({...card,media_type:card.media_type || (card.name || card.first_air_date?'tv':'movie')}));
+   localized.enrich(cards,results=>ok({...json,results}),{language:lang,prime:false,timeout:8000});
+  },fail);};
+ }
+
  const key='minimal_collections',knownKey='minimal_collection_rows_v2';
  const read=()=>L.Storage.get(key,{}) || {},known=()=>L.Storage.get(knownKey,{}) || {};
  const captured=new Set(),homeRows=continueWatching(L);
@@ -71,8 +81,8 @@ export default function collections(L,shiki,kino,kinoFeeds){
  function contextName(ctx){return labels[ctx] || (ctx==='category:anime:shikimori'?lampaViewText("Аниме · Shikimori"):lampaViewText("Аниме · Стандартные"));}
  function hiddenIds(ctx,object){const p=prefs(ctx),kind=object.url || object.cat;return [...(p.hidden || []),...cataloguePlan(kind,animeMode(L,object),new Date(),object.minimal_discovery || {}).map(job=>catalogueRow(job,kind,object.source || L.Storage.get('source','cub'),!!(L.Api.sources && L.Api.sources.cub))).filter(row=>defaultHidden(row,p)).map(rowKey)];}
  function edit(ctx){
-  const kind=String(ctx).replace('category:','').split(':')[0],selected=L.Storage.get('source','cub'),source=ctx==='main:'?mainSource || selected:kind==='anime'?'cub':selected;
-  const mode=animeMode(L),trakt=source==='trakt' && (ctx==='main:' || ['movie','tv','cartoon'].includes(kind));
+  const kind=String(ctx).replace('category:','').split(':')[0],selected=L.Storage.get('source','cub'),source=ctx==='main:'?mainSource || selected:selected;
+  const mode=animeMode(L),trakt=source==='trakt' && (ctx==='main:' || ['movie','tv','cartoon','anime'].includes(kind) && !(kind==='anime' && mode==='shikimori'));
   const plan=trakt?traktPlan(ctx==='main:'?undefined:kind):['movie','tv','cartoon','tvshow','anime'].includes(kind)?cataloguePlan(kind,mode).map(job=>catalogueRow(job,kind,source,!!(L.Api.sources && L.Api.sources.cub))):null;
   let definitions=plan && plan.map(row=>({id:rowKey(row),title:row.title,aliases:row.minimal_row_aliases || [],minimal_default_hidden:row.minimal_default_hidden}));
   if(ctx==='main:' && definitions)definitions.splice(1,0,{id:CONTINUE,title:lampaViewText('История просмотра')});

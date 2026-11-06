@@ -27,3 +27,11 @@ test('localized cache survives reopening, is scoped by language and skips stale 
   r.store.tmdb_lang='ja';next.enrich([raw(10)],()=>count++);assert.equal(r.sent.length,5);next.clear();r.sent[3].ok({results:[translated(10)]});r.sent[4].ok({results:[]});assert.equal(count,1);assert.equal(r.sent.length,5,'Queued localization is cancelled on navigation');
  }finally{r.close();}
 });
+
+test('CUB localization reads the same IDs in requested language and preserves membership on failure',()=>{
+ const r=setup();try{let out;r.api.enrich([{...raw(21,'tv'),source:'cub'},{...raw(9,'tv'),source:'cub'}],v=>out=v,{language:'en',prime:false,timeout:8000});
+ assert.deepEqual(r.sent.map(v=>v.path),['tv/21','tv/9']);assert.ok(r.sent.every(v=>v.params.langs==='en'));
+ r.sent[1].fail();r.sent[0].ok({id:21,name:'Localized anime',poster_path:'/english.jpg'});
+ assert.deepEqual(Array.from(out,v=>v.id),[21,9]);assert.equal(out[0].name,'Localized anime');assert.equal(out[0].source,'cub');assert.equal(out[1].name,'English 9');
+ }finally{r.close();}
+});

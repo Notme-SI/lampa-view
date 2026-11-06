@@ -163,7 +163,7 @@ if (!ROOT.LampaView) {
       return;
     }
     const titles = {movie:lampaViewText("Фильмы"),tv:lampaViewText("Сериалы"),cartoon:lampaViewText("Мультфильмы"),anime:lampaViewText("Аниме"),dorama:lampaViewText("Дорамы"),tvshow:lampaViewText("ТВ-шоу")};
-    L.Activity.push({url:section, title:titles[section], component:'category', source:section === 'anime' ? 'cub' : (L.Storage.get('source','tmdb') || 'tmdb'), page:1});
+    L.Activity.push({url:section, title:titles[section], component:'category', source:(L.Storage.get('source','tmdb') || 'tmdb'), page:1});
   }
   function shell() {
     if (!$('.pt-topnav').length) {

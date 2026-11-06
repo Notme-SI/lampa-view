@@ -54,18 +54,19 @@ export default function traktMetadata(L){
    const callbacks=pending.get(k) || [];pending.delete(k);callbacks.forEach(fn=>fn(value?{...card,...value}:card));
   });
  }
- function enrich(cards,done){
+ function enrich(cards,done,options={}){
   if(!cards.length || !available())return done(cards);
-  const lang=language(),own=generation;
+  const lang=options.language || language(),own=generation;
   if(cards.every(card=>fresh(cache.get(key(lang,card.media_type,card.id)))))return done(cards.map(card=>({...card,...cache.get(key(lang,card.media_type,card.id)).value})));
   const output=cards.slice();let finished=false,left=cards.length,timer;
   const publish=()=>{if(finished || own!==generation)return;finished=true;clearTimeout(timer);deadlines.delete(timer);done(output.slice());};
   // Slow artwork/localization must not hold the catalogue behind every detail request.
-  timer=setTimeout(publish,2500);deadlines.add(timer);
-  prime(lang,()=>{
+  timer=setTimeout(publish,options.timeout || 2500);deadlines.add(timer);
+  const start=()=>{
    if(own!==generation)return;
    cards.forEach((card,index)=>localize(card,lang,value=>{if(own!==generation)return;output[index]=value;if(!--left)publish();}));
-  });
+  };
+  if(options.prime===false)start();else prime(lang,start);
  }
  function clear(){generation++;queue.length=0;pending.clear();warm.clear();deadlines.forEach(clearTimeout);deadlines.clear();}
  return {enrich,clear};

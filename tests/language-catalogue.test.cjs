@@ -17,3 +17,13 @@ test('unanswered cloud history releases initial screen once and accepts a late r
  const L={Storage:{get:(k,f)=>f},Favorite:{get:()=>[]},Account:{Permit:{sync:true,account:{profile:{id:1}}},Api:{watchHistory:(p,ok)=>reply=ok}}};const h=w.HistoryModule.default(L);h.ready(()=>rendered++);assert.equal(rendered,0);timeout();assert.equal(rendered,1);reply({results:[{id:3,title:'Movie'}]});assert.equal(rendered,1);assert.equal(h.cards()[0].id,3);
  }finally{w.close();}
 });
+
+test('anime source follows selection, never interface language; shared Discover stays shared',()=>{
+ const {cataloguePlan,catalogueRow}=mod('catalogue');let language='ru';global.window={Lampa:{Storage:{get:()=>language}}};
+ try{const snapshots={};for(const lang of ['ru','en','fr','uk']){language=lang;for(const source of ['cub','tmdb']){
+  const rows=cataloguePlan('anime','standard',new Date(2026,10,6)).map(job=>catalogueRow(job,'anime',source,true));
+  assert.equal(rows[0].source,source);assert.equal(rows[1].source,source);
+  const routes=rows.map(row=>[row.source,row.url]);if(snapshots[source])assert.deepEqual(routes,snapshots[source]);else snapshots[source]=routes;
+ }for(const kind of ['movie','tv','cartoon']){const job=cataloguePlan(kind)[0];assert.deepEqual(catalogueRow(job,kind,'cub'),catalogueRow(job,kind,'tmdb'));}}
+ }finally{delete global.window;}
+});
