@@ -1,8 +1,10 @@
+import torrserverProgress from './torrserver-progress.js';
 import sharedTimeline from './shared-timeline.js';
 import watchHistory from './watch-history.js';
 import playbackProgress from './playback-progress.js';
 // CUB owns bookmarks and history. Lampac shares the actual native Timeline.
 export default function progressSync(L,enabled){
+ const torrents=torrserverProgress(L,enabled);
  const playback=playbackProgress(L,enabled),shared=sharedTimeline(L,enabled),history=watchHistory(L);
  let refreshed=0,timer;
  function refresh(){
@@ -25,5 +27,5 @@ export default function progressSync(L,enabled){
  // Long-open TV home screens need updates even when no focus/visibility changes.
  const interval=setInterval(refresh,30000);
  schedule();
- return {refresh,status:shared.status,stop(){playback.stop();clearInterval(interval);clearTimeout(timer);shared.stop();}};
+ return {refresh,status:shared.status,stop(){torrents.stop();playback.stop();clearInterval(interval);clearTimeout(timer);shared.stop();}};
 }

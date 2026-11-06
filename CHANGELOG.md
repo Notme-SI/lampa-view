@@ -1,3 +1,8 @@
+## 0.5.51
+
+- Read saved TorrServer timecodes for recently launched torrent files, including auto-next entries, after reload and on return from playback.
+- Use native timeline updates, server authentication and profile-scoped bindings; never infer progress from downloaded bytes.
+
 ## 0.5.50
 
 - Match mpv auto-next TorrServer progress by server, torrent hash and file index instead of the cosmetic filename in the stream URL. Ambiguous and unrelated streams are rejected.
