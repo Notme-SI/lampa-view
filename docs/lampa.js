@@ -1,4 +1,4 @@
-/*! Lampa View 0.5.61 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.5.62 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -12957,7 +12957,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // package.json
-  var version = "0.5.61";
+  var version = "0.5.62";
 
   // src/inputs.js
   function inputs(L) {
@@ -14619,7 +14619,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     return true;
   }
   function groupedAnimeRelease(L, card, json) {
-    var today = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : (/* @__PURE__ */new Date()).toISOString().slice(0, 10);
+    var today2 = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : (/* @__PURE__ */new Date()).toISOString().slice(0, 10);
     if (!isAnime(card) || Number(card.number_of_seasons) !== 1 || !L.Utils || typeof L.Utils.splitEpisodesIntoSeasons !== "function") return null;
     var episodes = json && (json.episodes_original || json.episodes);
     if (!Array.isArray(episodes)) return null;
@@ -14637,7 +14637,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var season = _step30.value;
         var rows = groups[season],
           aired = rows.filter(function (e) {
-            return Number(e.episode_number) > 0 && e.air_date && String(e.air_date).slice(0, 10) <= today;
+            return Number(e.episode_number) > 0 && e.air_date && String(e.air_date).slice(0, 10) <= today2;
           });
         if (aired.length) return {
           season: season,
@@ -14951,19 +14951,19 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   function releaseStatus() {
     var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     var episodes = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
-    var today = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : day((/* @__PURE__ */new Date()).toISOString());
+    var today2 = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : day((/* @__PURE__ */new Date()).toISOString());
     if (data.source === "minimal_shiki") return shikiReleaseStatus(data);
-    return canonicalReleaseStatus(data, episodes, today);
+    return canonicalReleaseStatus(data, episodes, today2);
   }
   function canonicalReleaseStatus() {
     var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     var episodes = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
-    var today = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : day((/* @__PURE__ */new Date()).toISOString());
+    var today2 = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : day((/* @__PURE__ */new Date()).toISOString());
     var aired = episodes.filter(function (e) {
-      return Number(e.season_number) > 0 && Number(e.episode_number) > 0 && e.air_date && day(e.air_date) <= today;
+      return Number(e.season_number) > 0 && Number(e.episode_number) > 0 && e.air_date && day(e.air_date) <= today2;
     });
     var last = data.last_episode_to_air;
-    if (last && Number(last.season_number) > 0 && last.air_date && day(last.air_date) <= today) aired.push(last);
+    if (last && Number(last.season_number) > 0 && last.air_date && day(last.air_date) <= today2) aired.push(last);
     if (!aired.length) return null;
     var season = Math.max.apply(Math, _toConsumableArray(aired.map(function (e) {
         return Number(e.season_number);
@@ -18440,7 +18440,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         include_adult: "false"
       }),
       field = type === "movie" ? "primary_release_date" : "first_air_date",
-      today = day2(date2);
+      today2 = day2(date2);
     if (spec.feed === "trending") return "trending/" + type + "/week";
     if (spec.hero) {
       var hero = discovery_data_default.heroes.find(function (v) {
@@ -18459,7 +18459,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         revenue: "revenue.desc"
       };
     p.set("sort_by", sorts[sort] || sorts.popular);
-    p.set(field + ".lte", today);
+    p.set(field + ".lte", today2);
     var descriptor = genreDescriptor(type, spec.genre, spec.kind);
     if (spec.genre && !descriptor) return "";
     var genres = descriptor && descriptor.genre ? String(descriptor.genre) : "";
@@ -18493,7 +18493,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         from = _spec$period$split$ma2[0],
         to = _spec$period$split$ma2[1];
       p.set(field + ".gte", from + "-01-01");
-      p.set(field + ".lte", Math.min(to, date2.getFullYear()) === date2.getFullYear() ? today : to + "-12-31");
+      p.set(field + ".lte", Math.min(to, date2.getFullYear()) === date2.getFullYear() ? today2 : to + "-12-31");
     } else if (sort === "new") {
       p.set(field + ".gte", date2.getFullYear() - 3 + "-01-01");
     }
@@ -18501,7 +18501,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var start = new Date(date2);
       start.setDate(start.getDate() - (spec.feed === "airing" ? 7 : spec.feed === "current" ? 90 : 365));
       p.set("air_date.gte", day2(start));
-      p.set("air_date.lte", today);
+      p.set("air_date.lte", today2);
       p.set("sort_by", "popularity.desc");
     }
     if (spec.kind === "dorama" && !spec.period && !active && !completed) p.set("first_air_date.gte", date2.getFullYear() - 3 + "-01-01");
@@ -24479,16 +24479,16 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
         var full = __spreadValues(__spreadValues({}, card), details),
           table = L.TimeTable && L.TimeTable.get ? L.TimeTable.get(full) || [] : [];
-        var today = (/* @__PURE__ */new Date()).toISOString().slice(0, 10),
+        var today2 = (/* @__PURE__ */new Date()).toISOString().slice(0, 10),
           last = full.last_episode_to_air;
-        var aired = last && last.air_date && String(last.air_date).slice(0, 10) <= today ? last : null;
+        var aired = last && last.air_date && String(last.air_date).slice(0, 10) <= today2 ? last : null;
         var episodes = /* @__PURE__ */new Map();
         var _iterator82 = _createForOfIteratorHelper(table),
           _step82;
         try {
           for (_iterator82.s(); !(_step82 = _iterator82.n()).done;) {
             var row = _step82.value;
-            if (row.air_date && String(row.air_date).slice(0, 10) <= today && Number(row.season_number) > 0) episodes.set(row.season_number + ":" + row.episode_number, row);
+            if (row.air_date && String(row.air_date).slice(0, 10) <= today2 && Number(row.season_number) > 0) episodes.set(row.season_number + ":" + row.episode_number, row);
           }
         } catch (err) {
           _iterator82.e(err);
@@ -24658,8 +24658,222 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     };
   }
 
+  // src/anime-continuations.js
+  var positive2 = function positive2(value) {
+    return Number.isSafeInteger(Number(value)) && Number(value) > 0;
+  };
+  var today = function today() {
+    return (/* @__PURE__ */new Date()).toISOString().slice(0, 10);
+  };
+  var titleKey = function titleKey(value) {
+    return String(value || "").normalize("NFKC").toLowerCase().replace(/ё/g, "е").replace(/[\s.,:;!?'’"«»()[\]…—–_-]+/g, "");
+  };
+  var playable = function playable(row) {
+    return row.method === "play" || row.method === "call";
+  };
+  function continuationPlan(card, model, files) {
+    var story = model && model.complete && model.rows.find(function (row) {
+      return row.key === "story";
+    });
+    var nodes = model && model.nodes;
+    if (!story || !Array.isArray(nodes) || !files.length) return [];
+    var byId = new Map(nodes.map(function (node) {
+      return [node.id, node];
+    }));
+    var releases = story.results.map(function (row) {
+      return byId.get(row.id);
+    }).filter(function (node) {
+      return node && ["tv", "ona"].includes(node.kind) && node.record && Number(node.record.tv) === Number(card.tmdb_id || card.id);
+    });
+    var first = releases[0],
+      season = (card.seasons || []).find(function (row) {
+        return Number(row.season_number) === 1;
+      });
+    if (!first || !season || first.episodes !== Number(season.episode_count) || first.record.season !== 1 || first.record.offset || !files.every(function (row) {
+      return Number(row.season) === 1 && positive2(row.episode) && Number(row.episode) <= first.episodes;
+    })) return [];
+    var output = [];
+    var _iterator90 = _createForOfIteratorHelper(releases.slice(1)),
+      _step90;
+    try {
+      var _loop28 = function _loop28() {
+          var release = _step90.value;
+          if (!release.aired || release.aired > today() || release.status === "anons" || !release.original) return 0; // continue
+          var map = animeEpisodeMap(release.record, release.episodes, card),
+            start = map && map[0];
+          if (!start || start.season <= 1 || !map.every(function (row, index2) {
+            return row.season === start.season && row.episode === start.episode + index2;
+          })) return 0; // continue
+          var offset = start.episode - 1,
+            count = map.length;
+          if (output.some(function (part) {
+            return part.season === start.season && offset < part.offset + part.count && part.offset < offset + count;
+          })) return {
+            v: []
+          };
+          output.push({
+            order: output.length + 1,
+            name: release.name,
+            original: release.original,
+            year: release.year,
+            season: start.season,
+            offset: offset,
+            count: count
+          });
+        },
+        _ret0;
+      for (_iterator90.s(); !(_step90 = _iterator90.n()).done;) {
+        _ret0 = _loop28();
+        if (_ret0 === 0) continue;
+        if (_ret0) return _ret0.v;
+      }
+    } catch (err) {
+      _iterator90.e(err);
+    } finally {
+      _iterator90.f();
+    }
+    return output.length <= 8 ? output : [];
+  }
+  function kodikRoute(value, base) {
+    try {
+      var page = typeof location === "undefined" ? void 0 : location.href,
+        url = new URL(value, base || page);
+      if (!/^https?:$/.test(url.protocol) || url.username || url.password || !/\/lite\/kodik(?:_snack)?\/?$/i.test(url.pathname)) return null;
+      if (base) {
+        var origin = new URL(base, page);
+        if (url.origin !== origin.origin || url.pathname !== origin.pathname) return null;
+      }
+      return url;
+    } catch (error) {
+      return null;
+    }
+  }
+  function matchContinuations(parts, rows, base) {
+    var entries2 = [];
+    var _iterator91 = _createForOfIteratorHelper(parts),
+      _step91;
+    try {
+      var _loop29 = function _loop29() {
+        var part = _step91.value;
+        var names = [part.name, part.original].map(titleKey).filter(Boolean);
+        var urls = /* @__PURE__ */new Set();
+        var _iterator92 = _createForOfIteratorHelper(rows),
+          _step92;
+        try {
+          for (_iterator92.s(); !(_step92 = _iterator92.n()).done;) {
+            var row = _step92.value;
+            if (!row.similar || row.method !== "link" || String(row.year || row.start_date || "").slice(0, 4) !== part.year) continue;
+            if (!String(row.title || row.name || row.text || "").split(/\s+[\/|]\s+/).some(function (name) {
+              return names.includes(titleKey(name));
+            })) continue;
+            var url = kodikRoute(row.url, base);
+            if (url && url.searchParams.get("pick") && !url.searchParams.has("s")) urls.add(url.href);
+          }
+        } catch (err) {
+          _iterator92.e(err);
+        } finally {
+          _iterator92.f();
+        }
+        if (urls.size === 1) entries2.push(__spreadProps(__spreadValues({}, part), {
+          url: _toConsumableArray(urls)[0]
+        }));
+      };
+      for (_iterator91.s(); !(_step91 = _iterator91.n()).done;) {
+        _loop29();
+      }
+    } catch (err) {
+      _iterator91.e(err);
+    } finally {
+      _iterator91.f();
+    }
+    return entries2;
+  }
+  function continuationFiles(part, rows) {
+    var files = rows.filter(playable);
+    if (!files.length) return rows;
+    var numbers = files.map(function (file) {
+      return Number(file.episode);
+    });
+    if (!numbers.every(positive2)) return [];
+    var local = numbers.every(function (number3) {
+      return number3 <= part.count;
+    });
+    var absolute = numbers.every(function (number3) {
+      return number3 > part.offset && number3 <= part.offset + part.count;
+    });
+    if (!local && !absolute || local && absolute && part.offset > 0) return [];
+    return rows.map(function (row) {
+      return playable(row) ? __spreadProps(__spreadValues({}, row), {
+        season: part.season,
+        episode: Number(row.episode) + (local ? part.offset : 0)
+      }) : row;
+    });
+  }
+  function animeContinuations(L, anime, online) {
+    var cache2 = /* @__PURE__ */new Map();
+    return function find(card, base, files, done) {
+      if (!card || !isAnime(card) || !kodikRoute(base)) return done([]);
+      var original = String(card.original_name || card.original_title || card.name || "");
+      if (!original) return done([]);
+      anime.canonical(card, function (value) {
+        if (!value || (value.seasons || []).filter(function (row) {
+          return Number(row.season_number) > 0;
+        }).length < 2) return done([]);
+        anime.collection(value, function (model) {
+          var parts = continuationPlan(value, model, files);
+          if (!parts.length) return done([]);
+          var url = kodikRoute(base),
+            query = url.searchParams;
+          for (var _i27 = 0, _arr20 = ["id", "imdb_id", "kinopoisk_id", "tmdb_id", "mal_id", "shikimori_id", "kid", "pick", "s", "t", "e", "rjson", "nojson"]; _i27 < _arr20.length; _i27++) {
+            var key2 = _arr20[_i27];
+            query.delete(key2);
+          }
+          query.set("title", original);
+          query.set("original_title", original);
+          query.set("clarification", "0");
+          query.set("similar", "false");
+          var account = {
+            account_email: "account_email",
+            uid: "lampac_unic_id",
+            nws_id: "lampac_nws_id"
+          };
+          for (var _i28 = 0, _Object$keys = Object.keys(account); _i28 < _Object$keys.length; _i28++) {
+            var name = _Object$keys[_i28];
+            var value2 = L.Storage.get(account[name], "");
+            if (value2 && !query.has(name)) query.set(name, value2);
+          }
+          var kit = L.Storage.get("kit_aesgcmkey", ""),
+            headers = kit ? {
+              "X-Kit-AesGcm": kit
+            } : {};
+          var key = url.href,
+            hit = cache2.get(key);
+          if (hit && Date.now() - hit.at < 12e4) return done(matchContinuations(parts, hit.rows, base));
+          var network = new L.Reguest();
+          network.timeout(4500);
+          network.native(url.href, function (body) {
+            var rows = online.folderRows(body);
+            if (rows.length) {
+              cache2.set(key, {
+                rows: rows,
+                at: Date.now()
+              });
+              if (cache2.size > 16) cache2.delete(cache2.keys().next().value);
+            }
+            done(matchContinuations(parts, rows, base));
+          }, function () {
+            return done([]);
+          }, false, {
+            dataType: "text",
+            headers: headers
+          });
+        });
+      });
+    };
+  }
+
   // src/anime-franchise.js
-  var positive2 = function positive2(n) {
+  var positive3 = function positive3(n) {
     return Number.isSafeInteger(Number(n)) && Number(n) > 0;
   };
   var kindNames = {
@@ -24679,20 +24893,20 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var metadata2 = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
     if (!graph || Number(graph.current_id) !== Number(seed) || !Array.isArray(graph.nodes) || !Array.isArray(graph.links) || graph.nodes.length < 2 || graph.nodes.length > 240 || graph.links.length > 1800) return null;
     var details = new Map(metadata2.filter(function (v) {
-        return v && positive2(v.id);
+        return v && positive3(v.id);
       }).map(function (v) {
         return [Number(v.id), v];
       })),
       nodes = /* @__PURE__ */new Map(),
       edges = [],
       seen = /* @__PURE__ */new Set();
-    var _iterator90 = _createForOfIteratorHelper(graph.nodes),
-      _step90;
+    var _iterator93 = _createForOfIteratorHelper(graph.nodes),
+      _step93;
     try {
-      for (_iterator90.s(); !(_step90 = _iterator90.n()).done;) {
-        var node = _step90.value;
+      for (_iterator93.s(); !(_step93 = _iterator93.n()).done;) {
+        var node = _step93.value;
         var _id = Number(node.id);
-        if (!positive2(_id) || nodes.has(_id) || typeof node.name !== "string" || !node.name.trim()) return null;
+        if (!positive3(_id) || nodes.has(_id) || typeof node.name !== "string" || !node.name.trim()) return null;
         var meta = details.get(_id) || {},
           records = animeRecords({
             source: "minimal_shiki",
@@ -24718,16 +24932,16 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
       }
     } catch (err) {
-      _iterator90.e(err);
+      _iterator93.e(err);
     } finally {
-      _iterator90.f();
+      _iterator93.f();
     }
     if (!nodes.has(Number(seed))) return null;
-    var _iterator91 = _createForOfIteratorHelper(graph.links),
-      _step91;
+    var _iterator94 = _createForOfIteratorHelper(graph.links),
+      _step94;
     try {
-      for (_iterator91.s(); !(_step91 = _iterator91.n()).done;) {
-        var link = _step91.value;
+      for (_iterator94.s(); !(_step94 = _iterator94.n()).done;) {
+        var link = _step94.value;
         var _from = Number(link.source_id),
           _to = Number(link.target_id),
           relation = String(link.relation || "").toLowerCase();
@@ -24743,19 +24957,19 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
       }
     } catch (err) {
-      _iterator91.e(err);
+      _iterator94.e(err);
     } finally {
-      _iterator91.f();
+      _iterator94.f();
     }
     var connected = function connected(ids, relations) {
       var change = true;
       while (change) {
         change = false;
-        for (var _i27 = 0, _edges = edges; _i27 < _edges.length; _i27++) {
-          var edge = _edges[_i27];
+        for (var _i29 = 0, _edges = edges; _i29 < _edges.length; _i29++) {
+          var edge = _edges[_i29];
           if (relations.includes(edge.relation) && (ids.has(edge.from) || ids.has(edge.to))) {
-            for (var _i28 = 0, _arr20 = [edge.from, edge.to]; _i28 < _arr20.length; _i28++) {
-              var id = _arr20[_i28];
+            for (var _i30 = 0, _arr21 = [edge.from, edge.to]; _i30 < _arr21.length; _i30++) {
+              var id = _arr21[_i30];
               if (!ids.has(id)) {
                 ids.add(id);
                 change = true;
@@ -24775,25 +24989,25 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         while (parents.get(id) !== id) id = parents.get(id);
         return id;
       };
-    for (var _i29 = 0, _edges2 = edges; _i29 < _edges2.length; _i29++) {
-      var edge = _edges2[_i29];
+    for (var _i31 = 0, _edges2 = edges; _i31 < _edges2.length; _i31++) {
+      var edge = _edges2[_i31];
       if (edge.relation === "alternative_version" && relevant.has(edge.from) && relevant.has(edge.to)) parents.set(root(edge.to), root(edge.from));
     }
     var variants = /* @__PURE__ */new Map();
-    var _iterator92 = _createForOfIteratorHelper(relevant),
-      _step92;
+    var _iterator95 = _createForOfIteratorHelper(relevant),
+      _step95;
     try {
-      for (_iterator92.s(); !(_step92 = _iterator92.n()).done;) {
-        var _id2 = _step92.value;
+      for (_iterator95.s(); !(_step95 = _iterator95.n()).done;) {
+        var _id2 = _step95.value;
         var r = root(_id2),
           group = variants.get(r) || [];
         group.push(_id2);
         variants.set(r, group);
       }
     } catch (err) {
-      _iterator92.e(err);
+      _iterator95.e(err);
     } finally {
-      _iterator92.f();
+      _iterator95.f();
     }
     var compare = function compare(a, b) {
       var x = nodes.get(a),
@@ -24802,31 +25016,31 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     };
     var representative = /* @__PURE__ */new Map(),
       alternatives = /* @__PURE__ */new Set();
-    var _iterator93 = _createForOfIteratorHelper(variants.values()),
-      _step93;
+    var _iterator96 = _createForOfIteratorHelper(variants.values()),
+      _step96;
     try {
-      for (_iterator93.s(); !(_step93 = _iterator93.n()).done;) {
-        var _group = _step93.value;
+      for (_iterator96.s(); !(_step96 = _iterator96.n()).done;) {
+        var _group = _step96.value;
         _group.sort(compare);
         var selected = _group.includes(Number(seed)) ? Number(seed) : _group[0];
-        var _iterator96 = _createForOfIteratorHelper(_group),
-          _step96;
+        var _iterator99 = _createForOfIteratorHelper(_group),
+          _step99;
         try {
-          for (_iterator96.s(); !(_step96 = _iterator96.n()).done;) {
-            var _id3 = _step96.value;
+          for (_iterator99.s(); !(_step99 = _iterator99.n()).done;) {
+            var _id3 = _step99.value;
             representative.set(_id3, selected);
             if (_id3 !== selected) alternatives.add(_id3);
           }
         } catch (err) {
-          _iterator96.e(err);
+          _iterator99.e(err);
         } finally {
-          _iterator96.f();
+          _iterator99.f();
         }
       }
     } catch (err) {
-      _iterator93.e(err);
+      _iterator96.e(err);
     } finally {
-      _iterator93.f();
+      _iterator96.f();
     }
     var main = new Set(_toConsumableArray(story).map(function (id) {
         return representative.get(id) || id;
@@ -24834,8 +25048,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       directed = new Map(_toConsumableArray(main).map(function (id) {
         return [id, /* @__PURE__ */new Set()];
       }));
-    for (var _i30 = 0, _edges3 = edges; _i30 < _edges3.length; _i30++) {
-      var _edge = _edges3[_i30];
+    for (var _i32 = 0, _edges3 = edges; _i32 < _edges3.length; _i32++) {
+      var _edge = _edges3[_i32];
       if (["prequel", "sequel"].includes(_edge.relation)) {
         var from = _edge.relation === "sequel" ? _edge.from : _edge.to,
           to = _edge.relation === "sequel" ? _edge.to : _edge.from;
@@ -24847,28 +25061,28 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var degrees = new Map(_toConsumableArray(main).map(function (id) {
       return [id, 0];
     }));
-    var _iterator94 = _createForOfIteratorHelper(directed.values()),
-      _step94;
+    var _iterator97 = _createForOfIteratorHelper(directed.values()),
+      _step97;
     try {
-      for (_iterator94.s(); !(_step94 = _iterator94.n()).done;) {
-        var values = _step94.value;
-        var _iterator97 = _createForOfIteratorHelper(values),
-          _step97;
+      for (_iterator97.s(); !(_step97 = _iterator97.n()).done;) {
+        var values = _step97.value;
+        var _iterator100 = _createForOfIteratorHelper(values),
+          _step100;
         try {
-          for (_iterator97.s(); !(_step97 = _iterator97.n()).done;) {
-            var _id4 = _step97.value;
+          for (_iterator100.s(); !(_step100 = _iterator100.n()).done;) {
+            var _id4 = _step100.value;
             degrees.set(_id4, degrees.get(_id4) + 1);
           }
         } catch (err) {
-          _iterator97.e(err);
+          _iterator100.e(err);
         } finally {
-          _iterator97.f();
+          _iterator100.f();
         }
       }
     } catch (err) {
-      _iterator94.e(err);
+      _iterator97.e(err);
     } finally {
-      _iterator94.f();
+      _iterator97.f();
     }
     var ready = _toConsumableArray(main).filter(function (id) {
         return degrees.get(id) === 0;
@@ -24877,11 +25091,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     while (ready.length) {
       var id = ready.shift();
       ordered.push(id);
-      var _iterator95 = _createForOfIteratorHelper(directed.get(id)),
-        _step95;
+      var _iterator98 = _createForOfIteratorHelper(directed.get(id)),
+        _step98;
       try {
-        for (_iterator95.s(); !(_step95 = _iterator95.n()).done;) {
-          var next = _step95.value;
+        for (_iterator98.s(); !(_step98 = _iterator98.n()).done;) {
+          var next = _step98.value;
           degrees.set(next, degrees.get(next) - 1);
           if (!degrees.get(next)) {
             ready.push(next);
@@ -24889,9 +25103,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }
         }
       } catch (err) {
-        _iterator95.e(err);
+        _iterator98.e(err);
       } finally {
-        _iterator95.f();
+        _iterator98.f();
       }
     }
     var complete = ordered.length === main.size;
@@ -24907,8 +25121,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       return alternatives.add(id);
     });
     var related = connected(new Set(relevant), ["prequel", "sequel", "side_story", "parent_story", "spin_off", "alternative_version", "summary", "full_story"]);
-    for (var _i31 = 0, _edges4 = edges; _i31 < _edges4.length; _i31++) {
-      var _edge2 = _edges4[_i31];
+    for (var _i33 = 0, _edges4 = edges; _i33 < _edges4.length; _i33++) {
+      var _edge2 = _edges4[_i33];
       if (_edge2.relation === "other" && (related.has(_edge2.from) || related.has(_edge2.to))) {
         if (relevant.has(_edge2.from)) related.add(_edge2.to);
         if (relevant.has(_edge2.to)) related.add(_edge2.from);
@@ -24917,9 +25131,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var rest = _toConsumableArray(related).filter(function (id) {
       return !main.has(id) && !alternatives.has(id) && !["music", "pv", "cm"].includes(nodes.get(id).kind);
     });
-    var today = (/* @__PURE__ */new Date()).toISOString().slice(0, 10),
+    var today2 = (/* @__PURE__ */new Date()).toISOString().slice(0, 10),
       future = function future(n) {
-        return n.status === "anons" || !!n.aired && n.aired > today;
+        return n.status === "anons" || !!n.aired && n.aired > today2;
       };
     function card(id) {
       var node = nodes.get(id),
@@ -24987,7 +25201,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // src/anime-catalogue.js
-  var positive3 = function positive3(n) {
+  var positive4 = function positive4(n) {
     return Number.isSafeInteger(Number(n)) && Number(n) > 0;
   };
   var day3 = function day3(value) {
@@ -25017,11 +25231,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     }) || seasons.reduce(function (n, s) {
       return n + Number(s.episode_count || 0);
     }, 0) !== numbers.length) return null;
-    var _iterator98 = _createForOfIteratorHelper(seasons),
-      _step98;
+    var _iterator101 = _createForOfIteratorHelper(seasons),
+      _step101;
     try {
-      var _loop28 = function _loop28() {
-          var season = _step98.value;
+      var _loop30 = function _loop30() {
+          var season = _step101.value;
           var book = books[season.season_number],
             rows = book && (book.episodes_original || book.episodes);
           if (!Array.isArray(rows) || rows.length !== Number(season.episode_count)) return {
@@ -25037,15 +25251,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           };
           episodes.push.apply(episodes, _toConsumableArray(sorted));
         },
-        _ret0;
-      for (_iterator98.s(); !(_step98 = _iterator98.n()).done;) {
-        _ret0 = _loop28();
-        if (_ret0) return _ret0.v;
+        _ret1;
+      for (_iterator101.s(); !(_step101 = _iterator101.n()).done;) {
+        _ret1 = _loop30();
+        if (_ret1) return _ret1.v;
       }
     } catch (err) {
-      _iterator98.e(err);
+      _iterator101.e(err);
     } finally {
-      _iterator98.f();
+      _iterator101.f();
     }
     var releases = model.nodes.filter(function (n) {
       return n.record && Number(n.record.tv) === Number(card.tmdb_id || card.id) && ["tv", "ona"].includes(n.kind) && Number.isSafeInteger(n.episodes) && n.episodes > 0 && n.status !== "anons";
@@ -25058,11 +25272,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       })),
       used = /* @__PURE__ */new Set(),
       groups = [];
-    var _iterator99 = _createForOfIteratorHelper(releases),
-      _step99;
+    var _iterator102 = _createForOfIteratorHelper(releases),
+      _step102;
     try {
-      var _loop29 = function _loop29() {
-          var release = _step99.value;
+      var _loop31 = function _loop31() {
+          var release = _step102.value;
           var map = animeEpisodeMap(release.record, release.episodes, card, books);
           if (map && release.aired && release.released && map.some(function (e) {
             return !e.metadata || !inRelease(e.metadata, release);
@@ -25124,15 +25338,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             anime_release: true
           });
         },
-        _ret1;
-      for (_iterator99.s(); !(_step99 = _iterator99.n()).done;) {
-        _ret1 = _loop29();
-        if (_ret1) return _ret1.v;
+        _ret10;
+      for (_iterator102.s(); !(_step102 = _iterator102.n()).done;) {
+        _ret10 = _loop31();
+        if (_ret10) return _ret10.v;
       }
     } catch (err) {
-      _iterator99.e(err);
+      _iterator102.e(err);
     } finally {
-      _iterator99.f();
+      _iterator102.f();
     }
     if (used.size !== episodes.length) return null;
     groups.sort(function (a, b) {
@@ -25172,7 +25386,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       pump();
     }
     function pump() {
-      var _loop30 = function _loop30() {
+      var _loop32 = function _loop32() {
         var finish = function finish(value) {
           if (settled) return;
           settled = true;
@@ -25213,13 +25427,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
       };
       while (active < 2 && queue.length) {
-        _loop30();
+        _loop32();
       }
     }
     function canonical(card, done) {
       var mapped = card.source === "minimal_shiki" ? animeTarget(card) : null,
         id = Number(card.tmdb_id || mapped && mapped.type === "tv" && mapped.id || card.id);
-      if (!positive3(id) || card.media_type === "movie" || card.source === "minimal_shiki" && (!mapped || mapped.type !== "tv")) return done(null);
+      if (!positive4(id) || card.media_type === "movie" || card.source === "minimal_shiki" && (!mapped || mapped.type !== "tv")) return done(null);
       if (Array.isArray(card.seasons) && Number(card.id) === id) return done(card);
       load("tv/" + id, function (value) {
         return done(value && Number(value.id) === id ? __spreadProps(__spreadValues({}, value), {
@@ -25232,7 +25446,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     function collection(card, done) {
       if (!isAnime(card)) return done(null);
       var seed = Number(card.shikimori_id || card.mal_id || card.source === "minimal_shiki" && card.id || (animeSeed(card) || {}).mal);
-      if (!positive3(seed)) return done(null);
+      if (!positive4(seed)) return done(null);
       var key = locale() + "|" + seed,
         hit = models.get(key);
       if (hit && Date.now() - hit.at < 9e5) return done(hit.model);
@@ -25274,7 +25488,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         type = card.media_type || (card.name ? "tv" : "movie");
       load("find/" + record.imdb[0] + "?external_source=imdb_id", function (json) {
         var results = json && json[type === "movie" ? "movie_results" : "tv_results"] || [];
-        done(results.length === 1 && positive3(results[0].id) ? {
+        done(results.length === 1 && positive4(results[0].id) ? {
           id: Number(results[0].id),
           type: type,
           release: record
@@ -25352,12 +25566,12 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         return i + 1;
       }), function (values) {
         if (!values) return done(null);
-        var today = (/* @__PURE__ */new Date()).toISOString().slice(0, 10),
+        var today2 = (/* @__PURE__ */new Date()).toISOString().slice(0, 10),
           available = values.map(function (g) {
             return {
               group: g,
               aired: Object.values(g.book).filter(function (e) {
-                return e.air_date && day3(e.air_date) <= today;
+                return e.air_date && day3(e.air_date) <= today2;
               })
             };
           }).filter(function (v) {
@@ -25392,7 +25606,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           minimal_anime: true
         }), function (model) {
           if (!model || !model.complete) return done(null);
-          var today = (/* @__PURE__ */new Date()).toISOString().slice(0, 10),
+          var today2 = (/* @__PURE__ */new Date()).toISOString().slice(0, 10),
             story = model.rows.find(function (r) {
               return r.key === "story";
             }),
@@ -25400,7 +25614,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               return r.id;
             })),
             eligible = function eligible(n) {
-              return n.record && Number(n.record.tv) === Number(value.id) && ["tv", "ona"].includes(n.kind) && n.episodes > 0 && n.status !== "anons" && n.aired && n.aired <= today;
+              return n.record && Number(n.record.tv) === Number(value.id) && ["tv", "ona"].includes(n.kind) && n.episodes > 0 && n.status !== "anons" && n.aired && n.aired <= today2;
             };
           var main = model.nodes.filter(function (n) {
               return ids.has(n.id) && eligible(n);
@@ -25491,7 +25705,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           } catch (error) {
             return fail();
           }
-          if (!positive3(query.seed) || !["story", "alternatives", "related", "announced"].includes(query.row)) return fail();
+          if (!positive4(query.seed) || !["story", "alternatives", "related", "announced"].includes(query.row)) return fail();
           collection({
             source: "minimal_shiki",
             id: Number(query.seed)
@@ -25612,7 +25826,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   // src/kinoapi.js
   var BASE3 = "https://kinoapi.lampac.dev/api/v1/";
   var KEY2 = "lampa_view_kinoapi_key";
-  var positive4 = function positive4(n) {
+  var positive5 = function positive5(n) {
     return Number.isSafeInteger(Number(n)) && Number(n) > 0;
   };
   function animeModel(seasons, episodes) {
@@ -25621,12 +25835,12 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var known = /* @__PURE__ */new Map(),
       seen = /* @__PURE__ */new Set(),
       rows = [];
-    var _iterator100 = _createForOfIteratorHelper(seasons),
-      _step100;
+    var _iterator103 = _createForOfIteratorHelper(seasons),
+      _step103;
     try {
-      for (_iterator100.s(); !(_step100 = _iterator100.n()).done;) {
-        var s = _step100.value;
-        if (!positive4(s.season_number) || !positive4(s.episode_count)) continue;
+      for (_iterator103.s(); !(_step103 = _iterator103.n()).done;) {
+        var s = _step103.value;
+        if (!positive5(s.season_number) || !positive5(s.episode_count)) continue;
         var n = Number(s.season_number);
         if (known.has(n)) return null;
         known.set(n, {
@@ -25636,19 +25850,19 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
       }
     } catch (err) {
-      _iterator100.e(err);
+      _iterator103.e(err);
     } finally {
-      _iterator100.f();
+      _iterator103.f();
     }
-    var _iterator101 = _createForOfIteratorHelper(episodes),
-      _step101;
+    var _iterator104 = _createForOfIteratorHelper(episodes),
+      _step104;
     try {
-      for (_iterator101.s(); !(_step101 = _iterator101.n()).done;) {
-        var e = _step101.value;
+      for (_iterator104.s(); !(_step104 = _iterator104.n()).done;) {
+        var e = _step104.value;
         var season = Number(e.season_number),
           number3 = Number(e.tmdb_episode_number),
           key = season + ":" + number3;
-        if (!known.has(season) || !positive4(number3) || seen.has(key)) return null;
+        if (!known.has(season) || !positive5(number3) || seen.has(key)) return null;
         seen.add(key);
         rows.push({
           season: season,
@@ -25670,33 +25884,33 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
       }
     } catch (err) {
-      _iterator101.e(err);
+      _iterator104.e(err);
     } finally {
-      _iterator101.f();
+      _iterator104.f();
     }
     rows.sort(function (a, b) {
       return a.season - b.season || a.number - b.number;
     });
-    var _iterator102 = _createForOfIteratorHelper(known.values()),
-      _step102;
+    var _iterator105 = _createForOfIteratorHelper(known.values()),
+      _step105;
     try {
-      var _loop31 = function _loop31() {
-          var s = _step102.value;
+      var _loop33 = function _loop33() {
+          var s = _step105.value;
           if (rows.filter(function (e) {
             return e.season === s.number;
           }).length !== s.count) return {
             v: null
           };
         },
-        _ret10;
-      for (_iterator102.s(); !(_step102 = _iterator102.n()).done;) {
-        _ret10 = _loop31();
-        if (_ret10) return _ret10.v;
+        _ret11;
+      for (_iterator105.s(); !(_step105 = _iterator105.n()).done;) {
+        _ret11 = _loop33();
+        if (_ret11) return _ret11.v;
       }
     } catch (err) {
-      _iterator102.e(err);
+      _iterator105.e(err);
     } finally {
-      _iterator102.f();
+      _iterator105.f();
     }
     var groups = _toConsumableArray(known.values()).sort(function (a, b) {
       return a.number - b.number;
@@ -25905,7 +26119,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       if (!card) return done(null);
       var ref = identity2(card),
         type = card.media_type === "movie" || !card.name && !card.first_air_date ? "movie" : "tv";
-      if (!positive4(ref.id)) return done(null);
+      if (!positive5(ref.id)) return done(null);
       request("titles/by/" + ref.source + "/" + ref.id + (ref.source === "tmdb" ? "?type=" + type : ""), function (value) {
         return done(value && value.data || null);
       });
@@ -25917,7 +26131,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         stamp3 = id + ":" + language,
         existing = models.get(stamp3);
       if (existing && existing.until > Date.now()) return done(existing.value);
-      if (!positive4(id) || card.source === "minimal_shiki") return done(null);
+      if (!positive5(id) || card.source === "minimal_shiki") return done(null);
       var generation = revision,
         pendingKey = generation + ":" + stamp3;
       if (loading.has(pendingKey)) return loading.get(pendingKey).push(done);
@@ -26063,16 +26277,16 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var _a;
     if (!spec || !["dorama", "tvshow"].includes(spec.kind) || !Array.isArray(spec.countries) || !spec.countries.length) return [];
     var queries = [];
-    var _iterator103 = _createForOfIteratorHelper(spec.countries.slice(0, 2)),
-      _step103;
+    var _iterator106 = _createForOfIteratorHelper(spec.countries.slice(0, 2)),
+      _step106;
     try {
-      for (_iterator103.s(); !(_step103 = _iterator103.n()).done;) {
-        var country = _step103.value;
-        var _iterator104 = _createForOfIteratorHelper((((_a = spec.genres) == null ? void 0 : _a.length) ? spec.genres : [""]).slice(0, 2)),
-          _step104;
+      for (_iterator106.s(); !(_step106 = _iterator106.n()).done;) {
+        var country = _step106.value;
+        var _iterator107 = _createForOfIteratorHelper((((_a = spec.genres) == null ? void 0 : _a.length) ? spec.genres : [""]).slice(0, 2)),
+          _step107;
         try {
-          for (_iterator104.s(); !(_step104 = _iterator104.n()).done;) {
-            var genre = _step104.value;
+          for (_iterator107.s(); !(_step107 = _iterator107.n()).done;) {
+            var genre = _step107.value;
             var p = new URLSearchParams({
               type: "tv",
               country: country,
@@ -26087,15 +26301,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             queries.push("titles?" + p);
           }
         } catch (err) {
-          _iterator104.e(err);
+          _iterator107.e(err);
         } finally {
-          _iterator104.f();
+          _iterator107.f();
         }
       }
     } catch (err) {
-      _iterator103.e(err);
+      _iterator106.e(err);
     } finally {
-      _iterator103.f();
+      _iterator106.f();
     }
     return queries;
   }
@@ -26174,8 +26388,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             })) return fail();
             var seen = /* @__PURE__ */new Set(),
               results = [];
-            for (var i = 0; i < 24; i++) for (var _i32 = 0, _replies = replies; _i32 < _replies.length; _i32++) {
-              var row = _replies[_i32];
+            for (var i = 0; i < 24; i++) for (var _i34 = 0, _replies = replies; _i34 < _replies.length; _i34++) {
+              var row = _replies[_i34];
               var card = catalogueCard(row.data[i], spec, locale());
               if (card && !seen.has(card.id)) {
                 seen.add(card.id);
@@ -26209,7 +26423,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           var visible = rows.filter(Boolean);
           return visible.length ? ok(visible) : fail();
         }
-        var _loop32 = function _loop32() {
+        var _loop34 = function _loop34() {
           var index2 = cursor++,
             job = plan[index2],
             url = JSON.stringify(job.spec),
@@ -26246,7 +26460,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
         };
         while (!ended && active < 2 && cursor < plan.length) {
-          if (_loop32()) continue;
+          if (_loop34()) continue;
         }
         if (done === plan.length) pump();
       }
@@ -26331,8 +26545,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           args[_key6] = arguments[_key6];
         }
         var request = _construct(Native, args);
-        var _loop33 = function _loop33() {
-          var method = _arr21[_i33];
+        var _loop35 = function _loop35() {
+          var method = _arr22[_i35];
           var send = request[method];
           if (typeof send !== "function") return 1; // continue
           request[method] = function (url, ok) {
@@ -26353,8 +26567,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             }].concat(rest));
           };
         };
-        for (var _i33 = 0, _arr21 = ["silent", "native"]; _i33 < _arr21.length; _i33++) {
-          if (_loop33()) continue;
+        for (var _i35 = 0, _arr22 = ["silent", "native"]; _i35 < _arr22.length; _i35++) {
+          if (_loop35()) continue;
         }
         return request;
       };
@@ -26395,8 +26609,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           return fn();
         });
       };
-      for (var _i34 = 0, _arr22 = ["serial=0", "serial=1", "serial=1&anime=1"]; _i34 < _arr22.length; _i34++) {
-        var query = _arr22[_i34];
+      for (var _i36 = 0, _arr23 = ["serial=0", "serial=1", "serial=1&anime=1"]; _i36 < _arr23.length; _i36++) {
+        var query = _arr23[_i36];
         var request = new L.Reguest();
         request.lampaViewInventory = true;
         request.timeout(4500);
@@ -26920,18 +27134,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     };
     var group, winter;
     function update() {
-      var _iterator105 = _createForOfIteratorHelper(origins),
-        _step105;
+      var _iterator108 = _createForOfIteratorHelper(origins),
+        _step108;
       try {
-        for (_iterator105.s(); !(_step105 = _iterator105.n()).done;) {
-          var _step105$value = _slicedToArray(_step105.value, 1),
-            _button = _step105$value[0];
+        for (_iterator108.s(); !(_step108 = _iterator108.n()).done;) {
+          var _step108$value = _slicedToArray(_step108.value, 1),
+            _button = _step108$value[0];
           if (!_button.isConnected) origins.delete(_button);
         }
       } catch (err) {
-        _iterator105.e(err);
+        _iterator108.e(err);
       } finally {
-        _iterator105.f();
+        _iterator108.f();
       }
       var logo = head.querySelector(".head__logo-icon");
       if (!logo) return;
@@ -26942,8 +27156,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           if (!art) {
             art = document.createElement("span");
             art.className = "pt-holiday-art";
-            for (var _i35 = 0, _Array$from3 = Array.from(logo.children); _i35 < _Array$from3.length; _i35++) {
-              var node = _Array$from3[_i35];
+            for (var _i37 = 0, _Array$from3 = Array.from(logo.children); _i37 < _Array$from3.length; _i37++) {
+              var node = _Array$from3[_i37];
               if (node.classList.contains("head__logo-halloween-fire") || node.classList.contains("head__logo-halloween-svg")) art.appendChild(node);
             }
             logo.insertBefore(art, logo.firstChild);
@@ -26973,11 +27187,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             group.className = "pt-holiday-icons";
           }
           if (group.parentNode !== logo.parentNode || group.nextSibling !== logo) logo.before(group);
-          var _iterator106 = _createForOfIteratorHelper(buttons),
-            _step106;
+          var _iterator109 = _createForOfIteratorHelper(buttons),
+            _step109;
           try {
-            var _loop34 = function _loop34() {
-              var button = _step106.value;
+            var _loop36 = function _loop36() {
+              var button = _step109.value;
               if (!origins.has(button)) {
                 var native = document.createElement("span");
                 native.className = "pt-holiday-native";
@@ -26999,13 +27213,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               }
               if (button.parentNode !== group) group.appendChild(button);
             };
-            for (_iterator106.s(); !(_step106 = _iterator106.n()).done;) {
-              _loop34();
+            for (_iterator109.s(); !(_step109 = _iterator109.n()).done;) {
+              _loop36();
             }
           } catch (err) {
-            _iterator106.e(err);
+            _iterator109.e(err);
           } finally {
-            _iterator106.f();
+            _iterator109.f();
           }
           if (snow) {
             if (!winter) {
@@ -27018,18 +27232,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             if (winter.parentNode !== group) group.appendChild(winter);
           } else if (winter) winter.remove();
         } else if (group) group.remove();
-        for (var _i36 = 0, _Array$from4 = Array.from(head.children); _i36 < _Array$from4.length; _i36++) {
-          var _node5 = _Array$from4[_i36];
+        for (var _i38 = 0, _Array$from4 = Array.from(head.children); _i38 < _Array$from4.length; _i38++) {
+          var _node5 = _Array$from4[_i38];
           if (_node5.classList.contains("garland")) logo.appendChild(_node5);
         }
       } else {
-        var _iterator107 = _createForOfIteratorHelper(origins),
-          _step107;
+        var _iterator110 = _createForOfIteratorHelper(origins),
+          _step110;
         try {
-          for (_iterator107.s(); !(_step107 = _iterator107.n()).done;) {
-            var _step107$value = _slicedToArray(_step107.value, 2),
-              button = _step107$value[0],
-              origin = _step107$value[1];
+          for (_iterator110.s(); !(_step110 = _iterator110.n()).done;) {
+            var _step110$value = _slicedToArray(_step110.value, 2),
+              button = _step110$value[0],
+              origin = _step110$value[1];
             origin.icon.remove();
             while (origin.native.firstChild) button.insertBefore(origin.native.firstChild, origin.native);
             origin.native.remove();
@@ -27037,14 +27251,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             if (origin.parent.isConnected) origin.parent.insertBefore(button, origin.next && origin.next.parentNode === origin.parent ? origin.next : null);
           }
         } catch (err) {
-          _iterator107.e(err);
+          _iterator110.e(err);
         } finally {
-          _iterator107.f();
+          _iterator110.f();
         }
         origins.clear();
         if (group) group.remove();
-        for (var _i37 = 0, _Array$from5 = Array.from(logo.children); _i37 < _Array$from5.length; _i37++) {
-          var _node6 = _Array$from5[_i37];
+        for (var _i39 = 0, _Array$from5 = Array.from(logo.children); _i39 < _Array$from5.length; _i39++) {
+          var _node6 = _Array$from5[_i39];
           if (_node6.classList.contains("garland")) head.insertBefore(_node6, head.firstChild);
         }
       }
@@ -27156,11 +27370,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   function personalScale(L) {
     var values = {};
     for (var n = 80; n <= 200; n += 10) values[n] = n + "%";
-    for (var _i38 = 0, _arr23 = [["lampa_view_text_scale", "Размер текста", "Названия, описания и подписи. 100% — обычный размер."], ["lampa_view_cards_scale", "Размер карточек", "Постеры в подборках и превью серий. От 80 до 200%."], ["lampa_view_controls_scale", "Размер кнопок", "Размер значков и отступы элементов управления. Размер текста настраивается отдельно."]]; _i38 < _arr23.length; _i38++) {
-      var _arr23$_i = _slicedToArray(_arr23[_i38], 3),
-        name = _arr23$_i[0],
-        label = _arr23$_i[1],
-        description = _arr23$_i[2];
+    for (var _i40 = 0, _arr24 = [["lampa_view_text_scale", "Размер текста", "Названия, описания и подписи. 100% — обычный размер."], ["lampa_view_cards_scale", "Размер карточек", "Постеры в подборках и превью серий. От 80 до 200%."], ["lampa_view_controls_scale", "Размер кнопок", "Размер значков и отступы элементов управления. Размер текста настраивается отдельно."]]; _i40 < _arr24.length; _i40++) {
+      var _arr24$_i = _slicedToArray(_arr24[_i40], 3),
+        name = _arr24$_i[0],
+        label = _arr24$_i[1],
+        description = _arr24$_i[2];
       L.SettingsApi.addParam({
         component: "lampa_view",
         param: {
@@ -27186,8 +27400,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         description: text("Вернуть текст, кнопки и карточки к 100%.")
       },
       onChange: function onChange() {
-        for (var _i39 = 0, _arr24 = ["text", "controls", "cards"]; _i39 < _arr24.length; _i39++) {
-          var key = _arr24[_i39];
+        for (var _i41 = 0, _arr25 = ["text", "controls", "cards"]; _i41 < _arr25.length; _i41++) {
+          var key = _arr25[_i41];
           L.Storage.set("lampa_view_" + key + "_scale", "100");
         }
         update();
@@ -27204,24 +27418,24 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       return Number.isFinite(n) ? Math.max(0.8, Math.min(2, n / 100)) : 1;
     };
     function restore() {
-      var _iterator108 = _createForOfIteratorHelper(applied),
-        _step108;
+      var _iterator111 = _createForOfIteratorHelper(applied),
+        _step111;
       try {
-        for (_iterator108.s(); !(_step108 = _iterator108.n()).done;) {
-          var _step108$value = _step108.value,
-            el = _step108$value.el,
-            prop = _step108$value.prop,
-            old = _step108$value.old,
-            priority = _step108$value.priority,
-            value = _step108$value.value;
+        for (_iterator111.s(); !(_step111 = _iterator111.n()).done;) {
+          var _step111$value = _step111.value,
+            el = _step111$value.el,
+            prop = _step111$value.prop,
+            old = _step111$value.old,
+            priority = _step111$value.priority,
+            value = _step111$value.value;
           if (el.style.getPropertyValue(prop) === value) {
             if (old) el.style.setProperty(prop, old, priority);else el.style.removeProperty(prop);
           }
         }
       } catch (err) {
-        _iterator108.e(err);
+        _iterator111.e(err);
       } finally {
-        _iterator108.f();
+        _iterator111.f();
       }
       applied = [];
     }
@@ -27262,11 +27476,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }
       function measure(el, props, scale) {
         var css = getComputedStyle(el);
-        var _iterator109 = _createForOfIteratorHelper(props),
-          _step109;
+        var _iterator112 = _createForOfIteratorHelper(props),
+          _step112;
         try {
-          for (_iterator109.s(); !(_step109 = _iterator109.n()).done;) {
-            var prop = _step109.value;
+          for (_iterator112.s(); !(_step112 = _iterator112.n()).done;) {
+            var prop = _step112.value;
             var base = css.getPropertyValue(prop);
             if (!/^\d+(?:\.\d+)?px$/.test(base)) continue;
             var value = (parseFloat(base) * scale).toFixed(2) + "px";
@@ -27279,55 +27493,55 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             });
           }
         } catch (err) {
-          _iterator109.e(err);
-        } finally {
-          _iterator109.f();
-        }
-      }
-      if (text2 !== 1) {
-        var _iterator110 = _createForOfIteratorHelper(select(TEXT)),
-          _step110;
-        try {
-          for (_iterator110.s(); !(_step110 = _iterator110.n()).done;) {
-            var el = _step110.value;
-            if (!el.querySelector(TEXT)) measure(el, ["font-size"], text2);
-          }
-        } catch (err) {
-          _iterator110.e(err);
-        } finally {
-          _iterator110.f();
-        }
-      }
-      if (controls !== 1) {
-        var _iterator111 = _createForOfIteratorHelper(select(CONTROLS)),
-          _step111;
-        try {
-          for (_iterator111.s(); !(_step111 = _iterator111.n()).done;) {
-            var _el2 = _step111.value;
-            measure(_el2, ["padding-top", "padding-bottom", "padding-left", "padding-right", "min-height"], controls);
-          }
-        } catch (err) {
-          _iterator111.e(err);
-        } finally {
-          _iterator111.f();
-        }
-        var _iterator112 = _createForOfIteratorHelper(select(ICONS)),
-          _step112;
-        try {
-          for (_iterator112.s(); !(_step112 = _iterator112.n()).done;) {
-            var _el3 = _step112.value;
-            measure(_el3, ["width", "height", "min-width"], controls);
-          }
-        } catch (err) {
           _iterator112.e(err);
         } finally {
           _iterator112.f();
         }
-        var _iterator113 = _createForOfIteratorHelper(select(ACTIONS + ",.head__action,.head__menu-icon,.nova-chip,.nova-btn,.alc-chip,.alc-ap__play")),
+      }
+      if (text2 !== 1) {
+        var _iterator113 = _createForOfIteratorHelper(select(TEXT)),
           _step113;
         try {
-          var _loop35 = function _loop35() {
+          for (_iterator113.s(); !(_step113 = _iterator113.n()).done;) {
             var el = _step113.value;
+            if (!el.querySelector(TEXT)) measure(el, ["font-size"], text2);
+          }
+        } catch (err) {
+          _iterator113.e(err);
+        } finally {
+          _iterator113.f();
+        }
+      }
+      if (controls !== 1) {
+        var _iterator114 = _createForOfIteratorHelper(select(CONTROLS)),
+          _step114;
+        try {
+          for (_iterator114.s(); !(_step114 = _iterator114.n()).done;) {
+            var _el2 = _step114.value;
+            measure(_el2, ["padding-top", "padding-bottom", "padding-left", "padding-right", "min-height"], controls);
+          }
+        } catch (err) {
+          _iterator114.e(err);
+        } finally {
+          _iterator114.f();
+        }
+        var _iterator115 = _createForOfIteratorHelper(select(ICONS)),
+          _step115;
+        try {
+          for (_iterator115.s(); !(_step115 = _iterator115.n()).done;) {
+            var _el3 = _step115.value;
+            measure(_el3, ["width", "height", "min-width"], controls);
+          }
+        } catch (err) {
+          _iterator115.e(err);
+        } finally {
+          _iterator115.f();
+        }
+        var _iterator116 = _createForOfIteratorHelper(select(ACTIONS + ",.head__action,.head__menu-icon,.nova-chip,.nova-btn,.alc-chip,.alc-ap__play")),
+          _step116;
+        try {
+          var _loop37 = function _loop37() {
+            var el = _step116.value;
             var height = el.getBoundingClientRect().height;
             if (height) {
               var old = changes.findIndex(function (c) {
@@ -27337,43 +27551,43 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               set(el, "min-height", (height * controls).toFixed(2) + "px");
             }
           };
-          for (_iterator113.s(); !(_step113 = _iterator113.n()).done;) {
-            _loop35();
+          for (_iterator116.s(); !(_step116 = _iterator116.n()).done;) {
+            _loop37();
           }
         } catch (err) {
-          _iterator113.e(err);
+          _iterator116.e(err);
         } finally {
-          _iterator113.f();
+          _iterator116.f();
         }
-        var _iterator114 = _createForOfIteratorHelper(select(".head,.head__body")),
-          _step114;
+        var _iterator117 = _createForOfIteratorHelper(select(".head,.head__body")),
+          _step117;
         try {
-          for (_iterator114.s(); !(_step114 = _iterator114.n()).done;) {
-            var _el4 = _step114.value;
+          for (_iterator117.s(); !(_step117 = _iterator117.n()).done;) {
+            var _el4 = _step117.value;
             measure(_el4, ["height"], controls);
           }
         } catch (err) {
-          _iterator114.e(err);
+          _iterator117.e(err);
         } finally {
-          _iterator114.f();
+          _iterator117.f();
         }
-        var _iterator115 = _createForOfIteratorHelper(select(".head__action:not(.open--search),.head__menu-icon")),
-          _step115;
+        var _iterator118 = _createForOfIteratorHelper(select(".head__action:not(.open--search),.head__menu-icon")),
+          _step118;
         try {
-          for (_iterator115.s(); !(_step115 = _iterator115.n()).done;) {
-            var _el5 = _step115.value;
+          for (_iterator118.s(); !(_step118 = _iterator118.n()).done;) {
+            var _el5 = _step118.value;
             measure(_el5, ["width", "flex-basis"], controls);
           }
         } catch (err) {
-          _iterator115.e(err);
+          _iterator118.e(err);
         } finally {
-          _iterator115.f();
+          _iterator118.f();
         }
-        var _iterator116 = _createForOfIteratorHelper(select(ACTIONS)),
-          _step116;
+        var _iterator119 = _createForOfIteratorHelper(select(ACTIONS)),
+          _step119;
         try {
-          for (_iterator116.s(); !(_step116 = _iterator116.n()).done;) {
-            var _el6 = _step116.value;
+          for (_iterator119.s(); !(_step119 = _iterator119.n()).done;) {
+            var _el6 = _step119.value;
             var size = getComputedStyle(_el6),
               _width2 = _el6.getBoundingClientRect().width;
             if (_width2 && _width2 < _el6.parentElement.clientWidth * 0.5) set(_el6, "min-width", (_width2 * controls).toFixed(2) + "px");
@@ -27381,16 +27595,16 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             set(_el6, "flex-shrink", "0");
           }
         } catch (err) {
-          _iterator116.e(err);
+          _iterator119.e(err);
         } finally {
-          _iterator116.f();
+          _iterator119.f();
         }
         if (!document.body.classList.contains("pt-mobile")) {
-          var _iterator117 = _createForOfIteratorHelper(select(".minimal-detail-identity")),
-            _step117;
+          var _iterator120 = _createForOfIteratorHelper(select(".minimal-detail-identity")),
+            _step120;
           try {
-            for (_iterator117.s(); !(_step117 = _iterator117.n()).done;) {
-              var _el = _step117.value;
+            for (_iterator120.s(); !(_step120 = _iterator120.n()).done;) {
+              var _el = _step120.value;
               var width = Math.min(_el.getBoundingClientRect().width * controls, window.innerWidth * 0.45);
               if (width) {
                 set(_el, "width", width.toFixed(2) + "px");
@@ -27398,18 +27612,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               }
             }
           } catch (err) {
-            _iterator117.e(err);
+            _iterator120.e(err);
           } finally {
-            _iterator117.f();
+            _iterator120.f();
           }
         }
       }
       if (cards !== 1) {
-        var _iterator118 = _createForOfIteratorHelper(select(".card,.nova__list--grid .nova-card,.nova__list--row .nova-card")),
-          _step118;
+        var _iterator121 = _createForOfIteratorHelper(select(".card,.nova__list--grid .nova-card,.nova__list--row .nova-card")),
+          _step121;
         try {
-          for (_iterator118.s(); !(_step118 = _iterator118.n()).done;) {
-            var _el7 = _step118.value;
+          for (_iterator121.s(); !(_step121 = _iterator121.n()).done;) {
+            var _el7 = _step121.value;
             if (_el7.closest(".extensions") || _el7.closest(".minimal-fit-posters") || _el7.closest(".pt-hero") || _el7.classList.contains("card--collection")) continue;
             var _width3 = _el7.getBoundingClientRect().width,
               parent = _el7.parentElement.getBoundingClientRect().width;
@@ -27421,34 +27635,34 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             }
           }
         } catch (err) {
-          _iterator118.e(err);
+          _iterator121.e(err);
         } finally {
-          _iterator118.f();
+          _iterator121.f();
         }
-        var _iterator119 = _createForOfIteratorHelper(select(".nova__list:not(.nova__list--grid):not(.nova__list--row) .nova-card__thumb")),
-          _step119;
+        var _iterator122 = _createForOfIteratorHelper(select(".nova__list:not(.nova__list--grid):not(.nova__list--row) .nova-card__thumb")),
+          _step122;
         try {
-          for (_iterator119.s(); !(_step119 = _iterator119.n()).done;) {
-            var _el8 = _step119.value;
+          for (_iterator122.s(); !(_step122 = _iterator122.n()).done;) {
+            var _el8 = _step122.value;
             measure(_el8, ["width", "height", "min-width"], cards);
           }
         } catch (err) {
-          _iterator119.e(err);
+          _iterator122.e(err);
         } finally {
-          _iterator119.f();
+          _iterator122.f();
         }
       }
-      for (var _i40 = 0, _changes = changes; _i40 < _changes.length; _i40++) {
-        var change = _changes[_i40];
+      for (var _i42 = 0, _changes = changes; _i42 < _changes.length; _i42++) {
+        var change = _changes[_i42];
         change.el.style.setProperty(change.prop, change.value, "important");
         change.value = change.el.style.getPropertyValue(change.prop);
       }
       if (text2 > 1 || controls > 1) {
-        var _iterator120 = _createForOfIteratorHelper(select(".pt-hero")),
-          _step120;
+        var _iterator123 = _createForOfIteratorHelper(select(".pt-hero")),
+          _step123;
         try {
-          for (_iterator120.s(); !(_step120 = _iterator120.n()).done;) {
-            var hero = _step120.value;
+          for (_iterator123.s(); !(_step123 = _iterator123.n()).done;) {
+            var hero = _step123.value;
             var body = hero.querySelector(".pt-hero__body");
             if (!body) continue;
             var css = getComputedStyle(body),
@@ -27466,9 +27680,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             changes.push(_change);
           }
         } catch (err) {
-          _iterator120.e(err);
+          _iterator123.e(err);
         } finally {
-          _iterator120.f();
+          _iterator123.f();
         }
       }
       applied = applied.concat(changes);
@@ -27501,28 +27715,28 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var observer = new MutationObserver(function (records) {
       if (factor("lampa_view_text_scale") === 1 && factor("lampa_view_controls_scale") === 1 && factor("lampa_view_cards_scale") === 1) return;
       var targets = TEXT + "," + CONTROLS + "," + ICONS + ",.card,.nova-card,.nova-card__thumb,.minimal-detail-identity,.head,.head__body,.pt-hero";
-      var _iterator121 = _createForOfIteratorHelper(records),
-        _step121;
+      var _iterator124 = _createForOfIteratorHelper(records),
+        _step124;
       try {
-        for (_iterator121.s(); !(_step121 = _iterator121.n()).done;) {
-          var record = _step121.value;
-          var _iterator122 = _createForOfIteratorHelper(record.addedNodes),
-            _step122;
+        for (_iterator124.s(); !(_step124 = _iterator124.n()).done;) {
+          var record = _step124.value;
+          var _iterator125 = _createForOfIteratorHelper(record.addedNodes),
+            _step125;
           try {
-            for (_iterator122.s(); !(_step122 = _iterator122.n()).done;) {
-              var node = _step122.value;
+            for (_iterator125.s(); !(_step125 = _iterator125.n()).done;) {
+              var node = _step125.value;
               if (node.nodeType === 1 && node.isConnected && (node.matches(targets) || node.querySelector(targets))) inserted.add(node);
             }
           } catch (err) {
-            _iterator122.e(err);
+            _iterator125.e(err);
           } finally {
-            _iterator122.f();
+            _iterator125.f();
           }
         }
       } catch (err) {
-        _iterator121.e(err);
+        _iterator124.e(err);
       } finally {
-        _iterator121.f();
+        _iterator124.f();
       }
       if (inserted.size) schedule(false);
     });
@@ -27832,10 +28046,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }));
           (cartoons || series).after(anime);
         }
-        for (var _i41 = 0, _arr25 = [[anime, "Аниме"], [profile, "Профиль"], [cartoons, "Мультфильмы"]]; _i41 < _arr25.length; _i41++) {
-          var _arr25$_i = _slicedToArray(_arr25[_i41], 2),
-            node = _arr25$_i[0],
-            label = _arr25$_i[1];
+        for (var _i43 = 0, _arr26 = [[anime, "Аниме"], [profile, "Профиль"], [cartoons, "Мультфильмы"]]; _i43 < _arr26.length; _i43++) {
+          var _arr26$_i = _slicedToArray(_arr26[_i43], 2),
+            node = _arr26$_i[0],
+            label = _arr26$_i[1];
           var text2 = node && node.querySelector(".menu__text"),
             translated = text(label);
           if (text2 && text2.textContent !== translated) text2.textContent = translated;
@@ -27869,8 +28083,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }));
         }
         var previous = series;
-        for (var _i42 = 0, _arr26 = [dorama, shows, cartoons, anime]; _i42 < _arr26.length; _i42++) {
-          var _node7 = _arr26[_i42];
+        for (var _i44 = 0, _arr27 = [dorama, shows, cartoons, anime]; _i44 < _arr27.length; _i44++) {
+          var _node7 = _arr27[_i44];
           if (previous && _node7) {
             if (previous.nextElementSibling !== _node7) previous.after(_node7);
             previous = _node7;
@@ -28518,6 +28732,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         P.online = onlineState(L);
         P.kinoapi = kinoapi(L);
         P.animeBase = animeCatalogue(L, P.kinoapi);
+        P.animeContinuations = {
+          find: animeContinuations(L, P.animeBase, P.online),
+          route: kodikRoute,
+          files: continuationFiles
+        };
         P.onlineSources = onlineSources(L);
         P.episodeMetadata = episodeMetadata(L, P.kinoapi, P.animeBase);
         P.onlineNavigation = onlineNavigation;
@@ -46282,8 +46501,28 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
         return "";
       }
+      function kodikSeasons() {
+        var comp = componentNow(),
+          state = comp && comp.lampaViewContinuations;
+        return state && state.parts.length && /^kodik(?:_snack)?$/i.test(currentSourceKey()) ? state : null;
+      }
+      function continuationArc(state, part) {
+        var base = state.groups || [],
+          last2 = base.length ? base[base.length - 1].number : 1;
+        return {
+          number: last2 + part.order,
+          name: part.name,
+          count: part.count,
+          part: part
+        };
+      }
+      function currentContinuation() {
+        var state = kodikSeasons();
+        return state && state.selected ? continuationArc(state, state.selected) : null;
+      }
       function seasonNumber() {
-        return groups.season ? digits(groups.season.subtitle) : 0;
+        var part = currentContinuation();
+        return part ? part.part.season : groups.season ? digits(groups.season.subtitle) : 0;
       }
       function partTitle(value) {
         var raw = String(value == null ? "" : value).trim();
@@ -46900,7 +47139,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var deadline = Date.now() + PROBE_BUDGET;
         var index = 0,
           pendingCount = 0;
-        var _step123 = function step() {
+        var _step126 = function step() {
           if (!probe_busy || generation !== probe_generation || owner !== componentNow() || scopeId !== qualityScope()) return;
           if (index >= queue.length) {
             if (!pendingCount) probe_busy = false;
@@ -46927,7 +47166,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             answered = true;
             pendingCount--;
             probeAnswer(entry.key, answer);
-            _step123();
+            _step126();
           };
           try {
             net["native"](probeUrlFor(entry.key), done, function () {
@@ -46939,7 +47178,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             done("");
           }
         };
-        for (var worker = 0; worker < PROBE_PARALLEL; worker++) _step123();
+        for (var worker = 0; worker < PROBE_PARALLEL; worker++) _step126();
       }
       function probeSchedule() {
         if (!probeAllowed() || !movie || !probe_url || probe_busy || (groups.sort || []).length < 2) return;
@@ -47120,7 +47359,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           voice_seed_net = null;
           if (typeof after === "function") after();
         };
-        var _step124 = function step() {
+        var _step127 = function step() {
           if (!voice_seed_busy) return;
           if (seat >= jobs.length || Date.now() > deadline || !inSkin() || !movie) return finish();
           var job = jobs[seat++];
@@ -47149,7 +47388,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               } catch (e) {}
             }
             if (voiceListFresh()) return finish();
-            _step124();
+            _step127();
           };
           var guard = setTimeout(function () {
             if (settled) return;
@@ -47170,7 +47409,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             done("");
           }
         };
-        _step124();
+        _step127();
       }
       function voiceLink(url) {
         var value = String(url || "").replace("rjson=", "nojson=");
@@ -47330,7 +47569,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         voice_busy = true;
         var deadline = Date.now() + VOICE_BUDGET;
         var index = 0;
-        var _step125 = function step() {
+        var _step128 = function step() {
           if (!voice_busy || index >= queue.length) return;
           if (Date.now() > deadline || !inSkin()) return voiceStop();
           var entry = queue[index++];
@@ -47369,7 +47608,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             clearTimeout(guard);
             var got = voiceAnswer(entry.name, answer);
             if (!got) retryAlt();
-            _step125();
+            _step128();
           };
           var guard = setTimeout(function () {
             if (settled) return;
@@ -47390,7 +47629,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             done("");
           }
         };
-        for (var worker = 0; worker < VOICE_PARALLEL; worker++) _step125();
+        for (var worker = 0; worker < VOICE_PARALLEL; worker++) _step128();
       }
       function voiceSchedule() {
         if (!voiceWanted()) return;
@@ -47505,6 +47744,54 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           requestSource = "",
           folderChain = [],
           parsing = false;
+        var continuationApi = window.LampaView && window.LampaView.animeContinuations;
+        var continuation = {
+          base: "",
+          parts: [],
+          selected: null,
+          groups: null,
+          baseSelection: 0,
+          count: 0,
+          started: false
+        };
+        var providerUrl = "",
+          providerPart = null;
+        if (continuationApi) comp.lampaViewContinuations = continuation;
+        function readContinuations(str, card, folders) {
+          if (!continuationApi || !card || !continuationApi.route(providerUrl) || providerPart || continuation.started) return;
+          var links = folders && folders.filter(function (row) {
+            return !row.similar;
+          }) || [];
+          if (links.length === 1) {
+            var next = continuationApi.route(links[0].url, providerUrl);
+            if (next && next.searchParams.get("s") === "1") continuation.base = next.href;
+          }
+          if (!continuation.base || folders && folders.length || !/\bvideos__item\b/.test(str)) return;
+          var files = comp.parseJsonDate(str, ".videos__item").filter(function (row) {
+            return row.method === "play" || row.method === "call";
+          });
+          if (!files.length || !files.every(function (row) {
+            return Number(row.season) === 1 && Number(row.episode) > 0;
+          })) return;
+          continuation.started = true;
+          continuation.count = files.length;
+          continuationApi.find(card, continuation.base, files, function (parts) {
+            if (!parts.length || comp.destroyed || componentNow() !== comp) return;
+            continuation.parts = parts;
+            wide_sig = "";
+            setTimeout(function () {
+              if (componentNow() === comp && !comp.destroyed) redraw();
+            }, 0);
+          });
+        }
+        continuation.select = function (part) {
+          var url = part ? part.url : continuation.base;
+          if (!url || comp.destroyed) return;
+          continuation.selected = part || null;
+          comp.lampaViewManualNavigation = true;
+          if (comp.reset) comp.reset();
+          comp.request(url);
+        };
         function resetAvailability(source) {
           availabilityGeneration++;
           requestSource = source || "";
@@ -47536,7 +47823,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               seasons: seasons.map(function (s) {
                 return Number(digits(s.title));
               }),
-              similar: params && params.similars
+              similar: params && params.similars,
+              part: providerPart
             };
             return nativeDraw.apply(comp, arguments);
           };
@@ -47555,15 +47843,20 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 }
                 function canonical() {
                   if (api.isAnime(context.card) && tmdbId(context.card) && Number(season) > 0) {
+                    var part = context.part;
                     return wideCanonicalBook(season, function (book) {
-                      if (current()) done(metadataRows(book));
+                      if (!current()) return;
+                      var rows = metadataRows(book);
+                      done(part ? rows.filter(function (row) {
+                        return context.files.indexOf(row.episode_number) >= 0;
+                      }) : rows);
                     }, context.card);
                   }
                   return nativeEpisodes.call(comp, season, function () {
                     if (current()) done.apply(this, arguments);
                   });
                 }
-                if (context.seasons.length && api.alternate(context.card, context.seasons)) {
+                if (!context.part && context.seasons.length && api.alternate(context.card, context.seasons)) {
                   var handled = api.book(context.card, season, context.seasons, context.files.length, function (book, grouped) {
                     if (!current()) return;
                     if (book || grouped) done(metadataRows(book));else canonical();
@@ -47591,6 +47884,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             folderChain.push(String(url || ""));
             var source = String(url || "").match(/\/lite\/([^\/?#]+)/i);
             resetAvailability(source ? source[1] : currentSourceKey());
+            providerUrl = String(url || "");
+            var target = continuationApi && continuation.base && continuationApi.route(providerUrl, continuation.base);
+            providerPart = continuation.selected && target && target.searchParams.get("pick") === new URL(continuation.selected.url).searchParams.get("pick") ? continuation.selected : null;
             try {
               learnUrl(url);
             } catch (e) {}
@@ -47663,6 +47959,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             countBusy = false;
           comp.parseJsonDate = function (body, selector) {
             var rows = parseRows.apply(this, arguments);
+            if (providerPart && selector === ".videos__item" && rows && rows.length) return continuationApi.files(providerPart, rows);
             if (selector === ".videos__item" && rows && rows.length > 1 && rows.length <= 4 && rows.every(function (row) {
               return row.method === "link" && !row.similar;
             })) {
@@ -47712,6 +48009,22 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             try {
               var folderState = onlineState(),
                 folders = folderState && folderState.folderRows(str);
+              if (providerPart && folders && folders.length) {
+                var own = folders.length === 1 && !folders[0].similar && continuationApi.route(folders[0].url, providerUrl);
+                var route = continuationApi.route(providerUrl);
+                if (own && !route.searchParams.has("s") && own.searchParams.get("pick") === route.searchParams.get("pick") && Number(own.searchParams.get("s")) > 0) {
+                  parsing = true;
+                  try {
+                    return comp.request(own.href);
+                  } finally {
+                    parsing = false;
+                  }
+                }
+                str = '<div class="videos__line"></div>';
+                arguments[0] = str;
+                folders = [];
+              }
+              readContinuations(str, card, folders);
               if (card && folders && folders.length && folderState.relevantFolders) {
                 var relevant = folderState.relevantFolders(folders, card);
                 if (relevant.length !== folders.length) {
@@ -47805,6 +48118,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
         var real = comp.changeBalanser;
         comp.changeBalanser = function () {
+          continuation.selected = null;
           resetAvailability(typeof arguments[0] === "string" ? arguments[0] : "");
           probeStop();
           probe_done_for = 0;
@@ -47980,7 +48294,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           if (plain) meta.push(plain);
         }
         var soon = soonCard(origin);
-        var episodeNum = digits(origin.find("." + px + "online-prestige__episode-number").text()) || index + 1;
+        var nativeAction = origin.data("nova-native-actions"),
+          nativeEpisode = Number(nativeAction && nativeAction.element && nativeAction.element.episode);
+        var episodeNum = nativeEpisode > 0 ? nativeEpisode : digits(origin.find("." + px + "online-prestige__episode-number").text()) || index + 1;
         var isSeries = !!(movie && (movie.name || movie.original_name || movie.number_of_seasons || movie.media_type === "tv"));
         var progress = progressReader()(isSeries ? seasonNumber() || 1 : 0, isSeries ? episodeNum : 0, hash);
         if (progress.found) percent = progress.percent;
@@ -48765,7 +49081,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var direct = logoDirect(path);
         if (direct && urls.indexOf(direct) === -1) urls.push(direct);
         var at = 0;
-        var _step126 = function step() {
+        var _step129 = function step() {
           if (at >= urls.length) {
             LOGO_BLIND[src] = true;
             return done("blind");
@@ -48785,7 +49101,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             } catch (e) {
               tone = "";
             }
-            if (tone !== "invert" && tone !== "glow" && tone !== "ok") return _step126();
+            if (tone !== "invert" && tone !== "glow" && tone !== "ok") return _step129();
             var now = cached(LOGO_TONE_KEY, 500, {});
             if (now && _typeof(now) === "object") {
               now[src] = tone;
@@ -48793,10 +49109,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             }
             done(tone);
           };
-          probe.onerror = _step126;
+          probe.onerror = _step129;
           probe.src = url;
         };
-        _step126();
+        _step129();
       }
       function logoKey(target) {
         var card = target || movie;
@@ -49031,7 +49347,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           var duration = fallbackTime() || target && target.time || "";
           if (duration) meta.append($('<span class="nova-hero__runtime"></span>').text(duration));
         } else if (!wideAnimePending()) {
-          var arc = wideAnimeCurrent(),
+          var arc = currentContinuation() || wideAnimeCurrent(),
             number = arc ? arc.number : seasonNumber() || 1,
             api = window.LampaView && window.LampaView.episodeMetadata;
           var seasonBadges = $('<span class="nova-hero__seasons"></span>').appendTo(meta);
@@ -50989,7 +51305,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         return [tmdbId(), number, currentSourceKey(), wideVoiceName()].join("|");
       }
       function wideMetadataContext() {
-        var arc = wideAnimeCurrent();
+        var arc = currentContinuation() || wideAnimeCurrent();
         return wideCountKey(seasonNumber() || 1) + (arc ? "|arc:" + arc.number : "") + "|voice:" + wideVoiceName() + "|files:" + items.map(function (item) {
           return [item.num, item.hash, item.soon];
         }).join(";");
@@ -51058,7 +51374,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       function wideAnimePrepare(list) {
         var view = window.LampaView,
           api = view && view.episodeMetadata && view.episodeMetadata.groups ? view.episodeMetadata : view && view.kinoapi;
-        if (!serial || nav || !wideMeta() || !api || !api.groups || api.enabled && !api.enabled()) return;
+        if (currentContinuation() || !serial || nav || !wideMeta() || !api || !api.groups || api.enabled && !api.enabled()) return;
         var files = list.filter(function (item) {
           return !item.folder && !item.soon;
         }).map(function (item) {
@@ -51082,16 +51398,19 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           wide_anime.pending = false;
           if (groups2 && groups2.length) {
             wide_anime.groups = groups2;
+            var comp = componentNow(),
+              state = comp && comp.lampaViewContinuations;
             var resume = pickResume(items),
               episode = resume && Number(resume.num),
-              release = movie && movie.minimal_anime_release,
-              preferred = release && groups2.filter(function (g) {
-                return g.mal_id === release.mal;
-              })[0],
-              selected = preferred || groups2.filter(function (g) {
-                return g.episodes.indexOf(episode) >= 0;
-              })[0];
+              release = movie && movie.minimal_anime_release;
+            var preferred = groups2.filter(function (g) {
+              return state && g.number === state.baseSelection || release && g.mal_id === release.mal;
+            })[0];
+            var selected = preferred || groups2.filter(function (g) {
+              return g.episodes.indexOf(episode) >= 0;
+            })[0];
             wide_anime.selected = (selected || groups2[0]).number;
+            if (state) state.groups = groups2;
           }
           if (!preparing) setTimeout(function () {
             if (root && root[0] === owner && wide_anime.key === key) {
@@ -51117,6 +51436,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       function wideBook(number, done, countOnly) {
         var api = window.LampaView && window.LampaView.episodeMetadata,
           arc = wideAnimeCurrent();
+        var continuation = currentContinuation();
+        if (continuation) return wideCanonicalBook(continuation.part.season, function (book) {
+          done(book, true);
+        });
         if (arc && arc.anime_release && arc.book) return done(arc.book, true);
         if (arc && arc.native && api && api.groupBook) return wideCanonicalBook(arc.number, function (book) {
           done(api.groupBook(book, arc), true);
@@ -51528,7 +51851,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (hint.length && actions.length && !hint.parent().is(actions)) actions.append(hint);
       }
       function wideSign() {
-        var parts = ["anime:" + (wideAnimeCurrent() ? wide_anime.key + ":" + wide_anime.selected : wideAnimePending() ? "pending" : "")];
+        var continuations = kodikSeasons(),
+          part = currentContinuation();
+        var parts = ["anime:" + (wideAnimeCurrent() ? wide_anime.key + ":" + wide_anime.selected : wideAnimePending() ? "pending" : ""), "continuations:" + (continuations ? continuations.parts.length + ":" + (part ? part.number : 0) : "")];
         ["season", "voice"].forEach(function (name) {
           var group = groups[name];
           if (!group || !group.items || !group.items.length) return parts.push(name + ":-");
@@ -52276,32 +52601,57 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             sourceMenu();
           });
         }
-        if (wideAnimeCurrent()) {
+        var continuations = kodikSeasons(),
+          part = currentContinuation();
+        if (wideAnimeCurrent() || continuations && !wideAnimePending()) {
           var animeSeasons = group("", "season"),
-            activeArc = wideAnimeCurrent();
+            activeArc = part || wideAnimeCurrent() || {
+              number: 1,
+              count: continuations.count
+            };
+          var seasonOptions = wideAnimeCurrent() ? wide_anime.groups : continuations.groups || [{
+            number: 1,
+            count: continuations.count
+          }];
+          if (continuations) seasonOptions = seasonOptions.concat(continuations.parts.map(function (entry) {
+            return continuationArc(continuations, entry);
+          }));
           var chooseArc = function chooseArc(entry) {
+            if (entry.number === activeArc.number) return;
+            if (continuations && (entry.part || part)) {
+              if (!entry.part) {
+                continuations.baseSelection = entry.number;
+                wide_anime.selected = entry.number;
+              }
+              ui_focus = "anime-season";
+              switchStart("season");
+              lockFocus(ui_focus);
+              continuations.select(entry.part);
+              return;
+            }
             wide_anime.selected = entry.number;
+            if (continuations) continuations.baseSelection = entry.number;
             wide_sig = "";
-            ui_focus = wide_anime.groups.length > 4 ? "anime-season" : "anime-season:" + entry.number;
+            ui_focus = seasonOptions.length > 4 ? "anime-season" : "anime-season:" + entry.number;
             redraw();
           };
-          if (wide_anime.groups.length > 4) {
-            put(animeSeasons, "anime-season", lampaViewText("Сезон {0}", [activeArc.number]), wideCount(activeArc.count), {}, function () {
+          if (seasonOptions.length > 4) {
+            put(animeSeasons, "anime-season", lampaViewText("Сезон {0}", [activeArc.number]), (part && !wideFiles() ? "~" : "") + wideCount(part ? wideFiles() || activeArc.count : activeArc.count), {}, function () {
               Lampa.Select.show({
-                title: label("nova_plus_seasons") + " \xB7 " + wide_anime.groups.length,
-                items: wide_anime.groups.map(function (g) {
+                title: label("nova_plus_seasons") + " \xB7 " + seasonOptions.length,
+                items: seasonOptions.map(function (g) {
                   return {
                     title: lampaViewText("Сезон {0}", [g.number]),
-                    subtitle: wideCount(g.count),
-                    number: g.number,
-                    selected: g.number === wide_anime.selected
+                    subtitle: (g.part ? "~" : "") + wideCount(g.count),
+                    arc: g,
+                    selected: g.number === activeArc.number
                   };
                 }),
                 onDraw: onlineChoiceDraw,
                 onSelect: function onSelect(entry) {
                   Lampa.Select.hide();
                   contentEnable();
-                  chooseArc(entry);
+                  chooseArc(entry.arc);
                 },
                 onBack: function onBack() {
                   Lampa.Select.hide();
@@ -52310,10 +52660,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 }
               });
             });
-          } else wide_anime.groups.forEach(function (g) {
-            put(animeSeasons, "anime-season:" + g.number, lampaViewText("Сезон {0}", [g.number]), wideCount(g.count), {
+          } else seasonOptions.forEach(function (g) {
+            put(animeSeasons, "anime-season:" + g.number, lampaViewText("Сезон {0}", [g.number]), (g.part ? "~" : "") + wideCount(g.count), {
               plain: true,
-              active: g.number === wide_anime.selected
+              active: g.number === activeArc.number
             }, function () {
               chooseArc(g);
             });

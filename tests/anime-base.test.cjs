@@ -69,3 +69,32 @@ test('native online selects the requested release from a confirmed merged list a
   L.Activity.active=()=>({component:'online_test',movie,activity:{render:()=>root,component:{}}});L.Listener.send('activity',{type:'start'});await new Promise(r=>setTimeout(r,500));assert.equal(root.find('.nova-hero__season-label').text(),'Сезон 2');assert.equal(root.find('.nova-hero__season-name').text(),'Second');assert.equal(root.find('.nova-card').length,2);assert.match(root.find('.nova-card__overview').first().text(),/C/);root.find('.nova-card').last().trigger('hover:enter');assert.equal(played,4);assert.ok(root.find('[data-hash="original-4"]').length);assert.deepEqual(n.errors,[]);
  }finally{n.close();}
 });
+
+test('Kodik joins verified TV continuations without importing recaps or sharing episode coordinates',()=>{
+ const {continuationPlan,matchContinuations,continuationFiles}=mod('anime-continuations');
+ const tv=30984,base='https://lampac.example/lite/kodik?s=1';
+ const card={id:tv,seasons:[{season_number:1,episode_count:366},{season_number:2,episode_count:50}]};
+ const metadata=[
+  [269,'Bleach',2004,366],
+  [41467,'Bleach: Sennen Kessen-hen',2022,13],
+  [53998,'Bleach: Sennen Kessen-hen - Ketsubetsu-tan',2023,13],
+  [56784,'Bleach: Sennen Kessen-hen - Soukoku-tan',2024,14],
+  [60636,'Bleach: Sennen Kessen-hen - Kashin-tan',2026,10]
+ ].map(([id,name,year,episodes])=>({id,name,kind:'tv',episodes,aired_on:year+'-01-01'}));
+ const nodes=metadata.map(node=>({id:node.id,name:node.name,kind:'TV Сериал'}));
+ const links=nodes.slice(1).map((node,i)=>({source_id:nodes[i].id,target_id:node.id,relation:'sequel'}));
+ const model=franchiseModel({current_id:269,nodes,links},269,metadata);
+ const playable={method:'play',season:1,episode:366};
+ const plan=continuationPlan(card,model,[playable]);
+ assert.deepEqual(plan.map(p=>[p.season,p.offset,p.count]),[[2,0,13],[2,13,13],[2,26,14],[2,40,10]]);
+ assert.deepEqual(continuationPlan(card,model,[{...playable,episode:367}]),[]);
+ const linksFor=plan.map((part,i)=>({method:'link',similar:true,title:'Блич [ТВ-2] / '+part.original.replaceAll('-',' '),year:part.year,url:'https://lampac.example/lite/kodik?pick='+i}));
+ const recap={...linksFor[1],title:linksFor[1].title+' Recap',url:'https://lampac.example/lite/kodik?pick=recap'};
+ const otherHost={...linksFor[0],url:'https://other.example/lite/kodik?pick=0'};
+ const releases=matchContinuations(plan,[recap,otherHost,...linksFor],base);
+ assert.deepEqual(releases.map(row=>new URL(row.url).searchParams.get('pick')),['0','1','2','3']);
+ const file={method:'call',season:4,episode:1,url:'https://lampac.example/video?id=original'};
+ assert.deepEqual(continuationFiles(releases[3],[file]),[{...file,season:2,episode:41}]);
+ assert.deepEqual(continuationFiles(releases[3],[{...file,episode:51}]),[]);
+ assert.equal(continuationFiles(releases[3],[{...file,episode:41}])[0].episode,41);
+});
