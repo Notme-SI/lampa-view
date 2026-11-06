@@ -1,3 +1,4 @@
+import studioContrast from './studio-contrast.js';
 import {text as lampaViewText} from './i18n.js';
 import detail from './detail.js';
 import studioCatalogue from './studio-catalogue.js';
@@ -107,7 +108,9 @@ if (!ROOT.LampaView) {
   }
   function setTheme() {
     layout();
-    document.body.classList.toggle('lampa_view', yes('lampa_view_enabled'));
+    document.body.classList.add('lampa_view');
+    document.body.classList.toggle('pt-detail-poster',L.Storage.get('lampa_view_detail_art','logo')==='poster');
+    document.dispatchEvent(new Event('minimal:detail-layout'));
     if(pinnedMenu)pinnedMenu.update();
     if(back)back.update();
 
@@ -330,7 +333,7 @@ if (!ROOT.LampaView) {
          assets.studio(selected,value=>{
           if(token!==logoToken || !value)return;
           selectedStudio=value;studioLink();
-          studio.attr({alt:value.name,title:value.name}).on('load',()=>{if(token===logoToken){studio.removeClass('pt-hidden');}})
+          studio.attr({alt:value.name,title:value.name}).on('load',()=>{if(token===logoToken){studio.removeClass('pt-hidden');studioContrast(studio[0]);}})
             .on('error',()=>{if(token===logoToken)studio.addClass('pt-hidden');}).attr('src',value.url);
         });
         }
@@ -365,9 +368,11 @@ if (!ROOT.LampaView) {
       pointer(controls);
       controls.on('hover:focus',event=>{focus=controls.index(event.currentTarget);});
       // A swipe changes only the cover; vertical page scrolling remains native.
-      let touch;
+      let touch,suppressTapUntil=0;
+      artworkFrame.removeAttr('aria-hidden');
+      artworkFrame.add(brandingSlot).on('click',e=>{if(Date.now()<suppressTapUntil)return;e.preventDefault();e.stopImmediatePropagation();openCard(item);});
       element.on('touchstart',e=>{const t=e.originalEvent.touches[0];touch={x:t.clientX,y:t.clientY};});
-      element.on('touchend',e=>{if(!touch)return;const t=e.originalEvent.changedTouches[0],dx=t.clientX-touch.x,dy=t.clientY-touch.y;if(Math.abs(dx)>55 && Math.abs(dx)>Math.abs(dy)*1.4)show(index+(dx<0?1:-1));touch=null;});
+      element.on('touchend',e=>{if(!touch)return;const t=e.originalEvent.changedTouches[0],dx=t.clientX-touch.x,dy=t.clientY-touch.y;if(Math.abs(dx)>12 || Math.abs(dy)>12)suppressTapUntil=Date.now()+500;if(Math.abs(dx)>55 && Math.abs(dx)>Math.abs(dy)*1.4)show(index+(dx<0?1:-1));touch=null;});
       line.before(element);show(0);
       // Native fonts and lazy row contents can settle after the initial Line
       // event. Observe their geometry directly; a slide change is not a clock.
@@ -484,19 +489,21 @@ if (!ROOT.LampaView) {
     L.SettingsApi.addComponent({component:'lampa_view',name:'L A M P A',icon:icon('play'),before:'account'});
     unifiedSettings(L.SettingsApi,L,version);
     const options=[
-      ['lampa_view_enabled',lampaViewText("Оформление интерфейса"),lampaViewText("Единый стиль каталога, карточек, источников и настроек."),true],
       ['lampa_view_hero',lampaViewText("Обложка на главной"),lampaViewText("Карусель каждые 10 секунд, ручное переключение и жесты."),true]
     ];
     if(L.Platform && L.Platform.desktop && L.Platform.desktop() || ROOT.electronAPI && ROOT.electronAPI.lampa_view) options.push(['lampa_view_metadata',lampaViewText("Уточнять данные mpv+"),lampaViewText("Передавать сведения карточки для проверки названия, сезона и серии."),true]);
     options.forEach(([name,label,description,value]) => L.SettingsApi.addParam({component:'lampa_view',param:{name,type:'trigger',default:value},field:{name:label,description},onChange:setTheme}));
     L.SettingsApi.addParam({component:'lampa_view',param:{name:'lampa_view_theme',type:'select',values:{minimal:lampaViewText("Оригинал"),glass:lampaViewText('Стекло')},default:'minimal'},field:{name:lampaViewText("Тема интерфейса"),description:lampaViewText("Оформление всей Lampa. Переключается сразу, данные просмотра сохраняются.")},onChange:()=>{if(appearanceTheme)appearanceTheme.update();}});
     L.SettingsApi.addParam({component:'lampa_view',param:{name:'lampa_view_layout',type:'select',values:{auto:lampaViewText("Автоматически"),tv:lampaViewText("Телевизор"),mobile:lampaViewText("Телефон"),tablet:lampaViewText("Планшет"),desktop:lampaViewText("Компьютер")},default:'auto'},field:{name:lampaViewText("Тип устройства"),description:lampaViewText("Авто использует режим экрана Lampa. Планшет — сенсорное управление и адаптация к ширине окна.")},onChange:setTheme});
+    L.SettingsApi.addParam({component:'lampa_view',param:{name:'lampa_view_detail_art',type:'select',values:{logo:'Логотип названия',poster:'Постер'},default:'logo'},field:{name:'Карточка фильма: изображение',description:'Что показывать над кнопками «Смотреть» и «Торренты».'},onChange:setTheme});
+    L.SettingsApi.addParam({component:'lampa_view',param:{name:'card_interfice_cover',type:'trigger',default:true},field:{name:'Карточка фильма: фон',description:'Баннер фильма за названием, описанием и кнопками.'},onChange:()=>document.body.classList.toggle('card--no-cover',!yes('card_interfice_cover'))});
     personalScale(L);
     L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_banner_quality',type:'select',values:{medium:lampaViewText("Среднее"),high:lampaViewText("Высокое")},default:'high'},field:{name:lampaViewText("Качество баннеров и обложек"),description:lampaViewText("Общее качество баннеров, фонов загрузки и карточек. Высокое подбирает чёткий размер под экран и использует общий кеш обложек.")},onChange:()=>artwork && artwork.choose()});
   }
   function start() {
     if (initialized || !ROOT.Lampa || !ROOT.jQuery) return;
-    initialized=true; L=ROOT.Lampa; $=ROOT.jQuery;loadLogo=logoLoader(L);
+    initialized=true; L=ROOT.Lampa; $=ROOT.jQuery;
+    L.Storage.set('lampa_view_enabled',true);loadLogo=logoLoader(L);
     P.bannerCountries=card=>bannerCountries(card,L.Storage.get('language','ru'),L);
     installI18n(L,P);
     P.online=onlineState(L);P.kinoapi=kinoapi(L);P.animeBase=animeCatalogue(L,P.kinoapi);P.onlineSources=onlineSources(L);P.episodeMetadata=episodeMetadata(L,P.kinoapi,P.animeBase);P.onlineNavigation=onlineNavigation;P.onlineSourceCache=onlineSourceCache(L);

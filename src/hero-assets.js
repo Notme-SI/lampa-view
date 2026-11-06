@@ -76,14 +76,14 @@ export default function heroAssets(L,cards,loadLogo,element){
  function logo(i,callback){
   i=wrap(i);metadata(i,value=>{
    if(!value.path)return callback('',value.language);
-   const url=L.TMDB.image('/t/p/'+logoSize()+value.path);if(i===current)pin('logo',url);
+   const url=L.TMDB.image('/t/p/'+(/\.svg$/i.test(value.path)?'original':logoSize())+value.path,{preserveSize:true});if(i===current)pin('logo',url);
    fetchImage(url,src=>callback(src,value.language),'logo');
   });
  }
  function studio(i,callback){
   i=wrap(i);metadata(i,value=>{
    const studio=value.studio;if(!studio || !studio.path)return callback(null);
-   const url=L.TMDB.image('/t/p/w300'+studio.path);if(i===current)pin('studio',url);
+   const url=L.TMDB.image('/t/p/w300'+studio.path,{preserveSize:true});if(i===current)pin('studio',url);
    fetchImage(url,src=>callback(src?{url:src,name:studio.name,id:studio.id,kind:studio.kind,path:studio.path}:null),'studio');
   });
  }

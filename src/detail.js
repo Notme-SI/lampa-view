@@ -1,3 +1,4 @@
+import studioContrast from './studio-contrast.js';
 import {text as lampaViewText} from './i18n.js';
 import {namedPartCount} from './episode-metadata.js';
 import {localizedTitle,isAnime} from './metadata.js';
@@ -179,6 +180,14 @@ export default function detail(L,event,loadLogo){
  const reaction=body.querySelector('.button--reaction');if(reaction){reaction.title=lampaViewText("Оставить реакцию");reaction.setAttribute('aria-label',lampaViewText("Оставить реакцию"));}
  if(left){
   left.classList.add('minimal-detail-identity');left.appendChild(title);if(buttons)left.appendChild(buttons);
+  const syncPoster=()=>{
+   const image=left.querySelector('.full-start-new__img');
+   if(image && card.poster_path && document.body.classList.contains('pt-detail-poster') && !image.dataset.minimalPoster){
+    image.dataset.minimalPoster='1';image.src=L.TMDB.image('/t/p/'+artworkSize(L,'poster')+card.poster_path);
+   }
+  };
+  syncPoster();document.addEventListener('minimal:detail-layout',syncPoster);
+  if(event.link && event.link.use)event.link.use({onDestroy:()=>document.removeEventListener('minimal:detail-layout',syncPoster)});
   const heading=document.createElement('h2');heading.className='minimal-detail-heading';heading.textContent=localizedTitle(card,L.Storage.get('language','ru'));title.textContent=heading.textContent;right.prepend(heading);
   if(buttons){
    const update=()=>{const subscribed=Array.from(buttons.querySelectorAll('.button--subscribe')).some(bell=>!bell.classList.contains('hide') && !bell.classList.contains('pt-hidden') && !bell.hidden && bell.style.display!=='none');buttons.classList.remove('minimal-actions--auto');buttons.classList.toggle('minimal-actions--no-bell',!subscribed);};
@@ -245,8 +254,8 @@ export default function detail(L,event,loadLogo){
   const existing=metaHead.querySelector('.minimal-detail-studio');if(existing){linkStudio(existing);return;}
   const icon=document.createElement('img');icon.className='minimal-detail-studio';icon.alt=studio.name || '';icon.title=studio.name || '';icon.decoding='async';icon.hidden=true;
   linkStudio(icon);
-  icon.onload=()=>{if(icon.isConnected){icon.hidden=false;metaHead.classList.remove('hide');if(icon.dataset.studioId && L.Controller && L.Controller.enabled().name==='full_start')L.Controller.collectionAppend(window.jQuery(icon));}};
-  icon.onerror=()=>icon.remove();metaHead.prepend(icon);icon.src=L.TMDB.image('/t/p/w300'+studio.path);
+  icon.onload=()=>{if(icon.isConnected){icon.hidden=false;studioContrast(icon);metaHead.classList.remove('hide');if(icon.dataset.studioId && L.Controller && L.Controller.enabled().name==='full_start')L.Controller.collectionAppend(window.jQuery(icon));}};
+  icon.onerror=()=>icon.remove();metaHead.prepend(icon);icon.src=L.TMDB.image('/t/p/w300'+studio.path,{preserveSize:true});
  }
  // Give the studio an explicit path from the action column. Spatial
  // navigation otherwise prefers a nearer bookmark/reaction button.
@@ -263,14 +272,19 @@ export default function detail(L,event,loadLogo){
  function showLogo(path,studio,language){
   showStudio(studio);
   if(!path || !title.isConnected)return;
-  const image=document.createElement('img');image.className='minimal-detail-logo';image.alt=card.title || card.name || '';image.decoding='async';
+  const image=document.createElement('img');image.className='minimal-detail-logo';image.alt=card.title || card.name || '';image.decoding='async';image.fetchPriority='high';
   image.onload=()=>{if(title.isConnected){const translated=language!==String(L.Storage.get('language','ru') || 'ru').slice(0,2);title.classList.toggle('pt-hidden',!!(left || !translated) && document.body.classList.contains('lampa_view'));title.classList.toggle('minimal-detail-translation',translated && !left);image.classList.toggle('minimal-detail-logo--translated',translated && !left);image.classList.add('loaded');}};
   image.onerror=()=>{image.remove();title.classList.remove('pt-hidden','minimal-detail-translation');};
-  title.before(image);image.src=L.TMDB.image('/t/p/'+logoSize()+path);
+  title.before(image);image.src=L.TMDB.image('/t/p/'+(/\.svg$/i.test(path)?'original':logoSize())+path,{preserveSize:true});
  }
  const supplied=chooseLogo((event.data.images || card.images || {}).logos,L.Storage.get('language','ru'));
  if(supplied){showLogo(supplied.file_path,null,supplied.iso_639_1);if(metaHead && !directStudio)loadLogo(movie,(path,studio)=>showStudio(studio));}else loadLogo(movie,showLogo);
- const background=body.querySelector('.full-start__background');
+ let background=body.querySelector('.full-start__background');
+ // The native mobile template omits the backdrop entirely, even when enabled.
+ if(!background && start && card.backdrop_path){
+  background=document.createElement('img');background.className='full-start__background';background.alt='';background.decoding='async';
+  background.onload=()=>background.classList.add('loaded');start.prepend(background);
+ }
  if(background && start){
   let shade=body.querySelector('.minimal-detail-shade');
   if(!shade){shade=document.createElement('div');shade.className='minimal-detail-shade';shade.setAttribute('aria-hidden','true');background.after(shade);}
@@ -286,7 +300,7 @@ export default function detail(L,event,loadLogo){
   const variant='/t/p/'+size+card.backdrop_path;
   if(background.src!==url && !background.src.includes(variant)){
    const preload=new Image();
-   preload.onload=()=>{if(background.isConnected && artworkSize(L,'backdrop')===size && background.src!==preload.src)background.src=preload.src;};
+   preload.onload=()=>{if(background.isConnected && artworkSize(L,'backdrop')===size){background.src=preload.src;background.classList.add('loaded');}};
    preload.src=url;
   }
  }

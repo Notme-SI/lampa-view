@@ -1,3 +1,10 @@
+## 0.5.53
+
+- Group personal scaling under Appearance / Scale and keep the installed interface enabled. Clarify home, detail and online settings.
+- Normalize mobile system dialogs and extensions; preserve explicit control/text scaling without scaling unrelated extension cards.
+- Make home artwork/title tappable without opening after a swipe. Keep detail artwork and layout settings consistent.
+- Improve dark monochrome studio contrast and use bounded title-logo sizes. Hide online hero while initial source search is pending and normalize disabled flags.
+
 ## 0.5.52
 
 - Use the existing 90% resume threshold consistently for episode completion, season completion and torrent watch actions. All episodes are required; actual saved timecodes remain unchanged.

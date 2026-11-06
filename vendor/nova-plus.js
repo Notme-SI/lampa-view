@@ -49,7 +49,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     try { Lampa.Storage.set(key, value); } catch (e) {}
   }
 
-  function enabled() { return get(ENABLED_KEY, true) !== false && get('lampa_view_enabled', true) !== false; }
+  function enabled() { return [false,'false',0,'0','no'].indexOf(get(ENABLED_KEY, true)) < 0; }
   function modeWide() { return true; }
   function heroEnabled() { return true; }
   function artEnabled() { return true; }
@@ -4607,16 +4607,8 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
 
   function loadingPanel() {
     uiFrame();
+    ui.root && ui.root.addClass('nova-initial-loading');
     note_sig = '';
-
-    if (ui.hero && ui.hero.parent().length) {
-      loadingStop();
-      listHold().empty().append(skeleton(4));
-      refreshCollection();
-      var keep = (lockActive() && seek(ui_lock)) || seek(ui_focus);
-      if (keep) focusNode(keep, true);
-      return;
-    }
 
     ui.hero_box.empty();
     ui.hero = null;
@@ -4650,6 +4642,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
   }
 
   function loadingStop() {
+    if(ui.root)ui.root.removeClass('nova-initial-loading');
     clearInterval(loading_timer);
     loading_timer = null;
     ui.load = null;
@@ -5221,8 +5214,8 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
         component: 'nova_plus',
         param: { name: ENABLED_KEY, type: 'trigger', default: true },
         field: {
-          name: label('nova_plus_set_enable'),
-          description: label('nova_plus_set_enable_descr')
+          name: lampaViewText('Вид экрана онлайн-просмотра'),
+          description: lampaViewText('Включён — интерфейс Lampa View. Выключен — стандартный интерфейс источника. Сам просмотр остаётся доступен.')
         },
         onChange: function () { try { Lampa.Activity.replace(); } catch (e) {} }
       });

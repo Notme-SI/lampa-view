@@ -6,9 +6,9 @@ const ICONS='.head__action svg,.head__menu-icon svg,.full-start-new__buttons>.se
 export default function personalScale(L){
  const values={};for(let n=80;n<=200;n+=10)values[n]=n+'%';
  for(const [name,label,description]of [
-  ['lampa_view_text_scale','Размер текста','Подписи, описания и названия. Не меняет размер постеров.'],
+  ['lampa_view_text_scale','Размер текста','Названия, описания и подписи. 100% — обычный размер.'],
   ['lampa_view_cards_scale','Размер карточек','Постеры в подборках и превью серий. От 80 до 200%.'],
-  ['lampa_view_controls_scale','Размер кнопок и меню','Размер значков и отступы элементов управления. Размер текста настраивается отдельно.']
+  ['lampa_view_controls_scale','Размер кнопок','Размер значков и отступы элементов управления. Размер текста настраивается отдельно.']
  ])L.SettingsApi.addParam({component:'lampa_view',param:{name,type:'select',values,default:'100'},field:{name:t(label),description:t(description)}});
  L.SettingsApi.addParam({component:'lampa_view',param:{name:'lampa_view_scale_reset',type:'button'},field:{name:t('Сброс масштаба'),description:t('Вернуть текст, кнопки и карточки к 100%.')},onChange:()=>{for(const key of ['text','controls','cards'])L.Storage.set('lampa_view_'+key+'_scale','100');update();document.dispatchEvent(new Event('minimal:interface-size'));document.dispatchEvent(new Event('minimal:hero-layout'));}});
  let timer,applied=[],pendingFull=false;const inserted=new Set();
@@ -50,7 +50,7 @@ export default function personalScale(L){
   if(cards!==1){
    // Fit rails calculate complete slots themselves. Other grids retain native wrapping.
    for(const el of select('.card,.nova__list--grid .nova-card,.nova__list--row .nova-card')){
-    if(el.closest('.minimal-fit-posters') || el.closest('.pt-hero') || el.classList.contains('card--collection'))continue;
+    if(el.closest('.extensions') || el.closest('.minimal-fit-posters') || el.closest('.pt-hero') || el.classList.contains('card--collection'))continue;
     const width=el.getBoundingClientRect().width,parent=el.parentElement.getBoundingClientRect().width;
     if(width && parent){const size=Math.min(width*cards,parent)+'px';set(el,'width',size);set(el,'max-width',size);set(el,'flex-basis',size);}
    }

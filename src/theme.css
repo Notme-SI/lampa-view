@@ -296,8 +296,8 @@ body.lampa_view .pt-hero__dots {left:0!important;right:0!important;justify-conte
 body.lampa_view .pt-hero__logo {display:block;width:auto;max-width:100%;height:auto;max-height:7em;object-fit:contain;object-position:left center;margin:0 0 1.4em}
 body.lampa_view .pt-hero__logo.pt-hidden {display:none!important}
 /* A stable mobile brand slot covers logos, plain titles and translated logos. */
-body.lampa_view.pt-mobile .pt-hero__branding {box-sizing:border-box;display:flex;flex-direction:column;align-items:flex-start;height:5.5em;min-height:5.5em;margin:0 0 1em;overflow:hidden}
-body.lampa_view.pt-mobile .pt-hero__branding>.pt-hero__logo {flex:0 0 auto;width:100%;max-width:100%;height:5.5em;max-height:5.5em;margin:0;object-fit:contain;object-position:left top}
+body.lampa_view.pt-mobile .pt-hero__branding {box-sizing:border-box;display:flex;flex-direction:column;align-items:center;height:auto;min-height:5.5em;margin:0 0 1em;overflow:hidden}
+body.lampa_view.pt-mobile .pt-hero__branding>.pt-hero__logo {flex:0 0 auto;width:100%;max-width:100%;height:5.5em;max-height:5.5em;margin:0;object-fit:contain;object-position:center}
 body.lampa_view.pt-mobile .pt-hero__branding>.pt-hero__title {width:100%;margin:0;font-size:2.05em;line-height:1.08;max-height:2.16em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 body.lampa_view.pt-mobile .pt-hero__branding>.pt-hero__logo--translated {height:3em;max-height:3em}
 body.lampa_view.pt-mobile .pt-hero__branding>.pt-hero__title--translation {font-size:.9em;line-height:1.35;max-height:2.7em}
@@ -337,9 +337,9 @@ body.lampa_view .minimal-detail-header .full-start-new__body {width:100%;align-i
 /* Native no--poster hides this column, but it now contains essential actions. */
 body.lampa_view .minimal-detail-header .full-start-new__left.minimal-detail-identity {display:block}
 body.lampa_view .minimal-detail-identity {width:15em;min-width:15em;margin:0}
-body.lampa_view .minimal-detail-identity .full-start-new__poster {display:none}
+body.lampa_view:not(.pt-detail-poster) .minimal-detail-identity .full-start-new__poster {display:none}
 body.lampa_view .minimal-detail-identity .full-start-new__title {margin-bottom:1em;font-size:1.7em}
-body.lampa_view .minimal-detail-identity .minimal-detail-logo {max-width:100%;max-height:5em;margin:0 0 1.5em}
+body.lampa_view .minimal-detail-identity .minimal-detail-logo {width:100%;max-width:100%;max-height:5em;object-position:center;margin:0 auto 1.5em}
 body.lampa_view .minimal-detail-identity .full-start-new__buttons {display:flex;gap:.45em;flex-wrap:wrap}
 body.lampa_view .minimal-detail-identity .button--alc-auto {width:100%;justify-content:center;gap:.5em}
 body.lampa_view .minimal-detail-heading {overflow-wrap:anywhere;word-break:normal;min-width:0;font-size:1.15em;font-weight:600;line-height:1.35;margin:0 0 .7em}
@@ -545,9 +545,9 @@ body.lampa_view.pt-tv .card__view {transition:none!important;-webkit-transition:
 
 /* TV drawers use the same compact rows as phones, with readable TV text. */
 body.lampa_view.pt-tv .settings .minimal-back--overlay {font-size:1em}
-body.lampa_view.pt-tv .selectbox__head {padding:1em 1.1em .8em}
-body.lampa_view.pt-tv .selectbox__title {font-size:1.4em;line-height:1.3}
-body.lampa_view.pt-tv .selectbox-item {padding:.85em 1.1em;font-size:1em;min-height:3.2em;box-sizing:border-box}
+body.lampa_view .selectbox__head {padding:1em 1.1em .8em}
+body.lampa_view .selectbox__title {font-size:1.4em;line-height:1.3}
+body.lampa_view .selectbox-item {padding:.85em 1.1em;font-size:1em;min-height:3.2em;box-sizing:border-box}
 body.lampa_view.pt-tv .selectbox-item__title {font-size:1em;line-height:1.35}
 body.lampa_view.pt-tv .selectbox-item__subtitle {font-size:.85em;line-height:1.4}
 body.lampa_view.pt-tv .settings-folder,body.lampa_view.pt-tv .settings-param {will-change:auto}
@@ -1065,3 +1065,20 @@ body.lampa_view.pt-personal-enlarged .pt-hero__actions {flex-wrap:wrap}
 body.lampa_view.pt-personal-enlarged .head__body {min-height:100%}
 body.lampa_view .full-start-new__buttons>.selector {box-sizing:border-box;align-items:center;justify-content:center}
 body.lampa_view.pt-personal-enlarged .minimal-detail-identity .full-start-new__buttons {grid-template-columns:repeat(auto-fit,minmax(3.5em,1fr))}
+
+/* Shared dialog baseline: no native oversized heading inside a compact drawer. */
+body.lampa_view .selectbox__content,body.lampa_view .modal__content {font-size:1em}
+body.lampa_view .modal__title {font-size:1.4em;line-height:1.3}
+body.lampa_view.pt-mobile .selectbox__content,body.lampa_view.pt-mobile .modal__content,body.lampa_view.pt-mobile .extensions {font-size:calc(14px * var(--pt-interface-scale,1))}
+body.lampa_view .extensions {background:var(--pt-bg);color:var(--pt-text)}
+body.lampa_view .extensions__item,body.lampa_view .extensions__block-add {background:var(--pt-panel);border:1px solid var(--pt-line);box-sizing:border-box}
+body.lampa_view.pt-mobile .extensions__item,body.lampa_view.pt-mobile .extensions__block-add {width:min(20em,80vw);max-width:80vw}
+body.lampa_view.pt-mobile .extensions__head-title {font-size:1.4em}
+body.lampa_view .pt-hero__artwork,body.lampa_view .pt-hero__branding {cursor:pointer}
+body.lampa_view.pt-detail-poster .minimal-detail-identity .full-start-new__poster {display:block;width:min(100%,15em);margin:0 auto 1em}
+body.lampa_view.pt-detail-poster .minimal-detail-identity .minimal-detail-logo,body.lampa_view.pt-detail-poster .minimal-detail-identity>.full-start-new__title {display:none!important}
+body.lampa_view.card--no-cover .minimal-detail-shade {display:none}
+body.lampa_view .pt-studio-white {filter:brightness(0) invert(1)!important}
+/* A proxy without CORS cannot be classified safely; retain its colours. */
+body.lampa_view .pt-studio-unreadable {background:rgba(255,255,255,.7);border-radius:.15em}
+body.lampa_view .nova-initial-loading .nova__hero {display:none!important}

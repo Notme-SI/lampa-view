@@ -19,7 +19,7 @@ export function artworkSize(L,kind){
  const width=(window.innerWidth || 1920)*Math.min(2,window.devicePixelRatio || 1);
  return width>1440?'original':'w1280';
 }
-export function logoSize(){return 'original';}
+export function logoSize(){return typeof window!=='undefined' && window.innerWidth<=700?'w500':'original';}
 export function portraitSize(L){return artworkQuality(L)==='high'?'w600_and_h600_face':'w300_and_h300_face';}
 export default function installArtwork(L,enabled){
  const quality=artworkQuality(L);
