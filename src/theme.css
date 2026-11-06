@@ -1091,3 +1091,15 @@ body.lampa_view.pt-mobile .minimal-detail-shade {height:auto!important;aspect-ra
 body.lampa_view.pt-mobile .minimal-detail-header>.full-start__background {position:relative!important;z-index:0;left:auto!important;top:auto!important;margin:0 0 1em;opacity:1!important;-webkit-mask-image:none!important;mask-image:none!important}
 body.lampa_view.pt-mobile .minimal-detail-header>.minimal-detail-shade {display:none}
 body.lampa_view.pt-mobile .minimal-detail-header {padding-top:0}
+
+/* Selected sources remain legible independently of the native active colour. */
+body.lampa_view .search-source.active {background:#555b64!important;color:#f5f5f7!important;border-color:#ffffff45}
+body.lampa_view .search-source.active .search-source__name {color:inherit!important}
+body.lampa_view .extensions {background:var(--pt-bg)!important;min-height:100vh;isolation:isolate}
+/* Contained landscape artwork starts at the top when the window narrows. */
+body.lampa_view:not(.pt-mobile) .pt-hero__image {object-position:right top}
+body.lampa_view.pt-desktop .pt-hero {height:min(56vh,calc(34 * var(--pt-banner-unit)),calc((100vw - 6em) * .5625))}
+/* Mobile identity overlaps the soft cover edge, without enlarging the artwork. */
+body.lampa_view.pt-mobile .minimal-detail-header>.full-start__background {margin:0; border-radius:1em 1em 0 0;-webkit-mask-image:linear-gradient(#000 0%,#000 55%,transparent 100%)!important;mask-image:linear-gradient(#000 0%,#000 55%,transparent 100%)!important}
+body.lampa_view.pt-mobile:not(.card--no-cover):not(.pt-detail-poster) .minimal-detail-header>.full-start__background.loaded~.full-start-new__body {position:relative;margin-top:-3.5em}
+body.lampa_view.pt-mobile .minimal-detail-identity .minimal-detail-logo {width:auto;max-width:82%;height:4em;max-height:4em;margin:0 auto 1.2em;object-fit:contain;filter:drop-shadow(0 2px 5px #000)}

@@ -3260,7 +3260,8 @@
   "cs": "Nyní sledují",
   "ro": "Se vizionează acum",
   "fr": "En cours",
-  "pl": "Obecnie oglądają"
+  "pl": "Obecnie oglądają",
+  "es": "Viendo ahora"
  },
  "Популярное": {
   "en": "Popular",
@@ -3273,7 +3274,8 @@
   "cs": "Populární",
   "ro": "Populare",
   "fr": "Populaire",
-  "pl": "Popularne"
+  "pl": "Popularne",
+  "es": "Popular"
  },
  "Новинки этого года": {
   "en": "New this year",
@@ -3312,7 +3314,8 @@
   "he": "דרמות קוריאניות",
   "cs": "Korejská dramata",
   "ro": "Drame coreene",
-  "pl": "Dramy koreańskie"
+  "pl": "Dramy koreańskie",
+  "es": "Dramas coreanos"
  },
  "Японские дорамы": {
   "en": "Japanese dramas",
@@ -3338,7 +3341,8 @@
   "he": "דרמות סיניות",
   "cs": "Čínská dramata",
   "ro": "Drame chinezești",
-  "pl": "Dramy chińskie"
+  "pl": "Dramy chińskie",
+  "es": "Dramas chinos"
  },
  "Тайские дорамы": {
   "en": "Thai dramas",
@@ -3364,7 +3368,8 @@
   "cs": "Drama",
   "ro": "Dramă",
   "fr": "Drame",
-  "pl": "Dramat"
+  "pl": "Dramat",
+  "es": "Dramas"
  },
  "Комедии": {
   "en": "Comedy",
@@ -3377,7 +3382,8 @@
   "cs": "Komedie",
   "ro": "Comedie",
   "fr": "Comédie",
-  "pl": "Komedia"
+  "pl": "Komedia",
+  "es": "Comedias"
  },
  "Детективы": {
   "en": "Mystery",
@@ -3390,7 +3396,8 @@
   "he": "מסתורין",
   "cs": "Mysteriózní",
   "ro": "Mister",
-  "pl": "Tajemnica"
+  "pl": "Tajemnica",
+  "es": "Misterio"
  },
  "Российские реалити": {
   "en": "Russian reality shows",
@@ -3546,7 +3553,8 @@
   "he": "בקרוב",
   "cs": "Připravované",
   "ro": "În curând",
-  "pl": "Nadchodzące"
+  "pl": "Nadchodzące",
+  "es": "Próximamente"
  },
  "Полнометражные": {
   "en": "Feature films",
@@ -3555,11 +3563,12 @@
   "be": "Поўнаметражныя",
   "zh": "长篇电影",
   "pt": "Longas-metragens",
-  "bg": "Пълнометражни филми",
+  "bg": "Пълнометражни",
   "he": "סרטים באורך מלא",
   "cs": "Celovečerní filmy",
   "ro": "Lungmetraje",
-  "pl": "Filmy pełnometrażowe"
+  "pl": "Pełnometrażowe",
+  "es": "Largometrajes"
  },
  "Боевики": {
   "en": "Action",
@@ -3572,7 +3581,8 @@
   "cs": "Akční",
   "ro": "Acțiune",
   "fr": "Action",
-  "pl": "Akcja"
+  "pl": "Akcja",
+  "es": "Acción"
  },
  "Приключения": {
   "en": "Adventures",
@@ -3585,7 +3595,8 @@
   "cs": "Dobrodružný",
   "ro": "Aventură",
   "fr": "Aventure",
-  "pl": "Przygodowy"
+  "pl": "Przygodowy",
+  "es": "Aventura"
  },
  "Все": {
   "en": "All",
@@ -3650,7 +3661,8 @@
   "cs": "Thriller",
   "ro": "Thriller",
   "fr": "Thriller",
-  "pl": "Thriller"
+  "pl": "Thriller",
+  "es": "Suspense"
  },
  "Фантастика": {
   "en": "Fiction",
@@ -3663,7 +3675,8 @@
   "cs": "Sci-Fi",
   "ro": "SF",
   "fr": "Science-Fiction",
-  "pl": "Sci-Fi"
+  "pl": "Sci-Fi",
+  "es": "Ciencia ficción"
  },
  "Фэнтези": {
   "en": "Fantasy",
@@ -3676,7 +3689,8 @@
   "cs": "Fantasy",
   "ro": "Fantezie",
   "fr": "Fantastique",
-  "pl": "Fantasy"
+  "pl": "Fantasy",
+  "es": "Fantasía"
  },
  "Криминал": {
   "en": "Crime",
@@ -3702,7 +3716,8 @@
   "he": "מדע בדיוני ופנטזיה",
   "cs": "Sci-fi a fantasy",
   "ro": "SF și fantezie",
-  "pl": "Science fiction i fantasy"
+  "pl": "Science fiction i fantasy",
+  "es": "Ciencia ficción y fantasía"
  },
  "Без названия": {
   "en": "Untitled",
@@ -3728,7 +3743,8 @@
   "cs": "Hlavní",
   "ro": "Acasă",
   "fr": "Accueil",
-  "pl": "Strona główna"
+  "pl": "Strona główna",
+  "es": "Inicio"
  },
  "Фильмы": {
   "en": "Movies",
@@ -3741,7 +3757,8 @@
   "cs": "Filmy",
   "ro": "Filme",
   "fr": "Films",
-  "pl": "Filmy"
+  "pl": "Filmy",
+  "es": "Películas"
  },
  "Сериалы": {
   "en": "Series",
@@ -3754,7 +3771,8 @@
   "cs": "Seriály",
   "ro": "Seriale",
   "fr": "Séries",
-  "pl": "Seriale"
+  "pl": "Seriale",
+  "es": "Series"
  },
  "Дорамы": {
   "en": "Asian dramas",
@@ -3780,7 +3798,8 @@
   "he": "תוכניות טלוויזיה",
   "cs": "TV pořady",
   "ro": "Emisiuni TV",
-  "pl": "Programy TV"
+  "pl": "Programy TV",
+  "es": "Programas de TV"
  },
  "Мультфильмы": {
   "en": "Cartoons",
@@ -3793,7 +3812,8 @@
   "cs": "Animované filmy",
   "ro": "Desene animate",
   "fr": "Dessins animés",
-  "pl": "Filmy animowane"
+  "pl": "Filmy animowane",
+  "es": "Animación"
  },
  "Аниме": {
   "en": "Anime",
@@ -3806,7 +3826,8 @@
   "cs": "Anime",
   "ro": "Anime",
   "fr": "Anime",
-  "pl": "Anime"
+  "pl": "Anime",
+  "es": "Anime"
  },
  "Появится после добавления в историю": {
   "en": "Appears after adding to history",
@@ -4066,7 +4087,8 @@
   "he": "היסטוריית צפייה",
   "cs": "Historie sledování",
   "ro": "Istoric de vizionare",
-  "pl": "Historia oglądania"
+  "pl": "Historia oglądania",
+  "es": "Historial de visualización"
  },
  "января": {
   "en": "January",
@@ -6419,7 +6441,8 @@
   "cs": "Animované seriály",
   "ro": "Seriale animate",
   "fr": "Séries animées",
-  "pl": "Seriale animowane"
+  "pl": "Seriale animowane",
+  "es": "Series animadas"
  },
  "Trakt: проверьте Client ID": {
   "en": "Trakt: check the Client ID",
@@ -7082,7 +7105,8 @@
   "he": "סרטים חדשים",
   "cs": "Nové filmy",
   "ro": "Filme noi",
-  "pl": "Nowe filmy"
+  "pl": "Nowe filmy",
+  "es": "Estrenos de cine"
  },
  "Популярные фильмы за год": {
   "en": "Popular movies this year",
@@ -7095,7 +7119,8 @@
   "he": "סרטים פופולריים השנה",
   "cs": "Populární filmy tohoto roku",
   "ro": "Filme populare din acest an",
-  "pl": "Popularne filmy tego roku"
+  "pl": "Popularne filmy tego roku",
+  "es": "Películas populares del último año"
  },
  "Новые популярные сериалы": {
   "en": "New popular series",
@@ -7329,7 +7354,8 @@
   "cs": "Hledat…",
   "ro": "Caută…",
   "fr": "Rechercher…",
-  "pl": "Szukaj…"
+  "pl": "Szukaj…",
+  "es": "Buscar…"
  },
  "%s сезон": {
   "en": "%s season",
@@ -8343,7 +8369,8 @@
   "cs": "Ruské filmy",
   "ro": "Filme rusești",
   "fr": "Films russes",
-  "pl": "Filmy rosyjskie"
+  "pl": "Filmy rosyjskie",
+  "es": "Películas rusas"
  },
  "Украинские фильмы": {
   "en": "Ukrainian films",
@@ -8668,7 +8695,8 @@
   "cs": "Talk show",
   "ro": "Talk-show-uri",
   "fr": "Émissions de débat",
-  "pl": "Talk-show"
+  "pl": "Talk-show",
+  "es": "Programas de entrevistas"
  },
  "Ужасы": {
   "en": "Horror",
@@ -8681,7 +8709,8 @@
   "cs": "Hororové",
   "ro": "Groază",
   "fr": "Horreur",
-  "pl": "Horrory"
+  "pl": "Horrory",
+  "es": "Terror"
  },
  "Украина": {
   "en": "Ukraine",
@@ -8915,7 +8944,8 @@
   "he": "סדרות פופולריות בשנה האחרונה",
   "cs": "Populární seriály za poslední rok",
   "ro": "Seriale populare din ultimul an",
-  "pl": "Popularne seriale z ostatniego roku"
+  "pl": "Popularne seriale z ostatniego roku",
+  "es": "Series populares del último año"
  },
  "Сервер не вернул источники на этом языке.": {
   "en": "The server returned no sources in this language.",
@@ -8945,16 +8975,17 @@
  },
  "Российские мультфильмы": {
   "en": "Russian animation",
-  "uk": "Російські мультфільми",
-  "be": "Расійскія мультфільмы",
+  "uk": "Російська анімація",
+  "be": "Расійская анімацыя",
   "fr": "Animation russe",
   "zh": "俄罗斯动画",
   "pt": "Animação russa",
-  "bg": "Руски анимационни филми",
+  "bg": "Руска анимация",
   "he": "אנימציה רוסית",
-  "cs": "Ruské animované filmy",
-  "ro": "Animație rusească",
-  "pl": "Rosyjskie animacje"
+  "cs": "Ruská animace",
+  "ro": "Animație rusă",
+  "pl": "Rosyjska animacja",
+  "es": "Animación rusa"
  },
  "Завершённые": {
   "en": "Completed",
@@ -8967,7 +8998,8 @@
   "he": "הסתיימו",
   "cs": "Dokončené",
   "ro": "Încheiate",
-  "pl": "Zakończone"
+  "pl": "Zakończone",
+  "es": "Finalizadas"
  },
  "Новинки сезона": {
   "en": "New this season",
@@ -8993,7 +9025,8 @@
   "he": "תוכניות חדשות",
   "cs": "Nové pořady",
   "ro": "Emisiuni noi",
-  "pl": "Nowe programy"
+  "pl": "Nowe programy",
+  "es": "Nuevos programas"
  },
  "Аниме сезона": {
   "en": "Anime this season",
@@ -9019,6 +9052,133 @@
   "cs": "Profil",
   "ro": "Profil",
   "fr": "Profil",
-  "pl": "Profil"
+  "pl": "Profil",
+  "es": "Perfil"
+ },
+ "Новинки": {
+  "en": "New releases",
+  "uk": "Новинки",
+  "be": "Навінкі",
+  "zh": "最新作品",
+  "pt": "Novidades",
+  "bg": "Новости",
+  "he": "חדש",
+  "cs": "Novinky",
+  "ro": "Noutăți",
+  "fr": "Nouveautés",
+  "pl": "Nowości",
+  "es": "Novedades"
+ },
+ "Высокий рейтинг": {
+  "en": "Top rated",
+  "uk": "Високий рейтинг",
+  "be": "Высокі рэйтынг",
+  "zh": "高分作品",
+  "pt": "Mais bem avaliados",
+  "bg": "Висок рейтинг",
+  "he": "דירוג גבוה",
+  "cs": "Nejlépe hodnocené",
+  "ro": "Cele mai apreciate",
+  "fr": "Les mieux notés",
+  "pl": "Najwyżej oceniane",
+  "es": "Mejor valorados"
+ },
+ "Популярные": {
+  "en": "Popular",
+  "uk": "Популярні",
+  "be": "Папулярныя",
+  "zh": "热门",
+  "pt": "Populares",
+  "bg": "Популярни",
+  "he": "פופולרי",
+  "cs": "Populární",
+  "ro": "Populare",
+  "fr": "Populaires",
+  "pl": "Popularne",
+  "es": "Populares"
+ },
+ "Много голосов": {
+  "en": "Most voted",
+  "uk": "Найбільше голосів",
+  "be": "Найбольш галасоў",
+  "zh": "最多评价",
+  "pt": "Mais votados",
+  "bg": "Най-много гласове",
+  "he": "הכי הרבה הצבעות",
+  "cs": "Nejvíce hlasů",
+  "ro": "Cele mai votate",
+  "fr": "Les plus votés",
+  "pl": "Najwięcej głosów",
+  "es": "Más votados"
+ },
+ "Реалити и соревнования": {
+  "en": "Reality and competitions",
+  "uk": "Реаліті та змагання",
+  "be": "Рэаліці і спаборніцтвы",
+  "zh": "真人秀与竞赛",
+  "pt": "Reality shows e competições",
+  "bg": "Риалити и състезания",
+  "he": "ריאליטי ותחרויות",
+  "cs": "Reality show a soutěže",
+  "ro": "Reality-show și competiții",
+  "fr": "Téléréalité et compétitions",
+  "pl": "Reality show i konkursy",
+  "es": "Reality y concursos"
+ },
+ "Сейчас выходят": {
+  "en": "Currently airing",
+  "uk": "Зараз виходять",
+  "be": "Цяпер выходзяць",
+  "zh": "正在播出",
+  "pt": "Em exibição",
+  "bg": "В момента се излъчват",
+  "he": "משודרים כעת",
+  "cs": "Právě vysílané",
+  "ro": "În curs de difuzare",
+  "fr": "En cours de diffusion",
+  "pl": "Obecnie emitowane",
+  "es": "En emisión"
+ },
+ "Детективы и криминал": {
+  "en": "Mystery and crime",
+  "uk": "Детективи та кримінал",
+  "be": "Дэтэктывы і крымінал",
+  "zh": "悬疑与犯罪",
+  "pt": "Mistério e crime",
+  "bg": "Мистерии и криминални",
+  "he": "מסתורין ופשע",
+  "cs": "Detektivky a krimi",
+  "ro": "Mister și crimă",
+  "fr": "Mystère et crime",
+  "pl": "Kryminały i zagadki",
+  "es": "Misterio y crimen"
+ },
+ "Российские сериалы": {
+  "es": "Series rusas",
+  "en": "Russian series",
+  "uk": "Російські серіали",
+  "be": "Расійскія серыялы",
+  "zh": "俄罗斯剧集",
+  "pt": "Séries russas",
+  "bg": "Руски сериали",
+  "he": "סדרות רוסיות",
+  "cs": "Ruské seriály",
+  "ro": "Seriale rusești",
+  "fr": "Séries russes",
+  "pl": "Rosyjskie seriale"
+ },
+ "Турецкие сериалы": {
+  "es": "Series turcas",
+  "en": "Turkish series",
+  "uk": "Турецькі серіали",
+  "be": "Турэцкія серыялы",
+  "zh": "土耳其剧集",
+  "pt": "Séries turcas",
+  "bg": "Турски сериали",
+  "he": "סדרות טורקיות",
+  "cs": "Turecké seriály",
+  "ro": "Seriale turcești",
+  "fr": "Séries turques",
+  "pl": "Tureckie seriale"
  }
 }

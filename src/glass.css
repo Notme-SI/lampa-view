@@ -147,5 +147,5 @@ body.lampa_view.pt-theme-glass.pt-mobile .person-start__bottom {flex-wrap:wrap;g
 body.lampa_view.pt-theme-glass .minimal-detail-shade {position:absolute;top:0;left:0;width:100%;z-index:-1;pointer-events:none;background:linear-gradient(90deg,#080a0d94 0%,#080a0d8a 60%,#080a0d33 100%);-webkit-mask-image:linear-gradient(180deg,#000 0%,#000 70%,transparent 100%);mask-image:linear-gradient(180deg,#000 0%,#000 70%,transparent 100%)}
 body.lampa_view:not(.pt-theme-glass) .minimal-detail-shade {display:none}
 
-body.lampa_view.pt-theme-glass .extensions {background:var(--pt-glass-panel,var(--pt-panel))}
-body.lampa_view.pt-theme-glass .extensions__item,body.lampa_view.pt-theme-glass .extensions__block-add {background:var(--pt-glass-button,var(--pt-panel));border:1px solid var(--pt-line)}
+body.lampa_view.pt-theme-glass .extensions {background:var(--pt-bg)!important}
+body.lampa_view.pt-theme-glass .extensions__item,body.lampa_view.pt-theme-glass .extensions__block-add {background:#24262b;border:1px solid var(--pt-line)}

@@ -1,5 +1,5 @@
 import MESSAGES from './i18n-messages.json';
-export const languages=['ru','en','uk','be','zh','pt','bg','he','cs','ro','fr','pl'];
+export const languages=['ru','en','uk','be','zh','pt','bg','he','cs','ro','fr','pl','es'];
 let host;
 export function locale(value){
  if(value===undefined){try{const L=host || (typeof window!=='undefined' && window.Lampa);value=L && L.Storage.get('language','ru');}catch(error){}}

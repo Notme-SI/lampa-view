@@ -1,3 +1,9 @@
+## 0.5.56
+
+- Keep Anime after Cartoons across interface languages; complete collection heading translations and recognize Spanish metadata requests.
+- Make active search sources readable and extension panels opaque.
+- Blend mobile detail branding into the cover edge and remove the upper artwork gap in narrow desktop windows.
+
 ## 0.5.55
 
 - Separate mobile detail cover from title/actions. Switch carousel slides directly with arrow keys.

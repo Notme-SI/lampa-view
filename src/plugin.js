@@ -243,7 +243,7 @@ if (!ROOT.LampaView) {
     if(shows && !shows.dataset.minimalShows){shows.dataset.minimalShows='1';pointer($(shows).off('hover:enter').on('hover:enter.minimalShows',event=>{event.stopImmediatePropagation();navigate('tvshow');}));}
     // Move only out-of-order nodes: the native menu observer must settle.
     let previous=series;
-    for(const node of [dorama,shows,cartoons])if(previous && node){if(previous.nextElementSibling!==node)previous.after(node);previous=node;}
+    for(const node of [dorama,shows,cartoons,anime])if(previous && node){if(previous.nextElementSibling!==node)previous.after(node);previous=node;}
     document.querySelectorAll('.menu__item,.settings-folder').forEach(node=>{
       const label=(node.querySelector('.menu__text,.settings-folder__name') || node).textContent.trim();
       node.classList.toggle('pt-removed-section',node.dataset.action==='dorama' || /^(shots|спорт|расписание)$/i.test(label));
