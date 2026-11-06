@@ -1,3 +1,8 @@
+## 0.5.54
+
+- Preserve hover and focus glow on white studio logos.
+- Keep mobile detail banners at 16:9 without cropping or stretching; desktop and TV remain unchanged.
+
 ## 0.5.53
 
 - Group personal scaling under Appearance / Scale and keep the installed interface enabled. Clarify home, detail and online settings.
