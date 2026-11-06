@@ -1,3 +1,7 @@
+## 0.5.50
+
+- Match mpv auto-next TorrServer progress by server, torrent hash and file index instead of the cosmetic filename in the stream URL. Ambiguous and unrelated streams are rejected.
+
 ## 0.5.49
 
 - Apply personal scaling only to newly inserted elements during background updates; preserve open settings scroll.

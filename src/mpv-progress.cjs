@@ -6,6 +6,15 @@ function normalizeURL(value) {
   try { return decodeURI(decodeURI(value)); } catch (error) { return value; }
 }
 
+function torrentKey(value) {
+  try {
+    const url = new URL(value), match = url.pathname.match(/^(.*\/stream)(?:\/[^/]*)?$/);
+    const hash = url.searchParams.get('link'), index = url.searchParams.get('index');
+    if (!/^https?:$/.test(url.protocol) || !match || !/^[a-f0-9]{40}$/i.test(hash || '') || !/^[1-9]\d*$/.test(index || '') || url.searchParams.getAll('link').length!==1 || url.searchParams.getAll('index').length!==1) return '';
+    return [url.origin,match[1],hash.toLowerCase(),Number(index)].join('|');
+  } catch (error) { return ''; }
+}
+
 // Desktop already forwards the launched child's stdout/stderr. MPV expands the
 // measured position and current path in its status message, including file
 // switches. Only entries from this exact launch may update their own timeline.
@@ -15,6 +24,13 @@ function progressChannel(L, root, entries, enabled) {
   const scope = profileScope(L);
   const videos = new Map();
   for (const item of entries) if (item && item.url && item.timeline && !videos.has(normalizeURL(item.url))) videos.set(normalizeURL(item.url), item);
+  const torrents = new Map();
+  for (const item of videos.values()) {
+    const key = torrentKey(item.url); if (!key) continue;
+    const previous = torrents.get(key);
+    if (torrents.has(key) && (!previous || previous.timeline.hash !== item.timeline.hash)) torrents.set(key,null);
+    else torrents.set(key,item);
+  }
   const buffers = {stdout:'', stderr:''};
   const decoder = typeof root.TextDecoder === 'function' ? new root.TextDecoder() : null;
   let latest = null, savedAt = 0, savedPosition = '', ended = false;
@@ -40,7 +56,7 @@ function progressChannel(L, root, entries, enabled) {
     const match = value.slice(start + marker.length).match(/^(\d+(?:\.\d+)?)\|(\d+(?:\.\d+)?)\|(.+)$/);
     if (!match) return;
     const time = Number(match[1]), duration = Number(match[2]);
-    const video = videos.get(normalizeURL(match[3]));
+    const video = videos.get(normalizeURL(match[3])) || torrents.get(torrentKey(match[3]));
     if (!video || !Number.isFinite(time) || time <= 0 || !Number.isFinite(duration) || duration <= 0 || time > duration + 2) return;
     if (latest && latest.video !== video) { save(); savedAt = 0; }
     latest = {video, time:Math.min(time, duration), duration};
@@ -63,7 +79,7 @@ function progressChannel(L, root, entries, enabled) {
     Object.values(buffers).forEach(line);
     save();
     ended = true;
-    videos.clear();
+    videos.clear();torrents.clear();
   }
 
   return {

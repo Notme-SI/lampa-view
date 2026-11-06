@@ -73,3 +73,14 @@ test('mpv reports persist exact files, handle split streams and flush on exit wi
  profile=8;const otherMarker=other.args.find(arg=>arg.startsWith('--term-status-msg=')).split('=')[1].split('${')[0],before=writes.length;
  callbacks.data(otherMarker+'500|2400|http://example/episode-6\n');other.finish();assert.equal(writes.length,before);
 });
+
+test('mpv auto-next recognizes renamed TorrServer stream paths without accepting another torrent or server',()=>{
+ const writes=[],hash='a'.repeat(40),url='http://localhost:8090/proxy/stream/Episode%208.mkv?link='+hash+'&index=8&play';
+ const channel=progressChannel({Timeline:{filename:()=> 'file_view_1'}},{TextDecoder},[{url,timeline:{hash:'eight',handler:(percent,time)=>writes.push({percent,time})}}],()=>true);
+ let receive;channel.attach({stdout:{on:(name,fn)=>receive=fn}});
+ const marker=channel.args.find(a=>a.startsWith('--term-status-msg=')).split('=')[1].split('$'+'{')[0];
+ for(const other of ['http://other:8090/proxy/stream?link='+hash+'&index=8&play','http://localhost:8090/proxy/stream?link='+'b'.repeat(40)+'&index=8&play','http://localhost:8090/proxy/stream?link='+hash+'&index=7&play'])receive(marker+'1500|3000|'+other+'\n');
+ assert.equal(writes.length,0);
+ receive(marker+'1500|3000|http://localhost:8090/proxy/stream?index=8&link='+hash+'&play\n');
+ assert.deepEqual(writes,[{percent:50,time:1500}]);channel.finish();
+});
