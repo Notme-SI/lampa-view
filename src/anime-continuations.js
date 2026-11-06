@@ -23,7 +23,13 @@ export function continuationPlan(card,model,files){
   if(!start || start.season<=1 || !map.every((row,index)=>row.season===start.season && row.episode===start.episode+index))continue;
   const offset=start.episode-1,count=map.length;
   if(output.some(part=>part.season===start.season && offset<part.offset+part.count && part.offset<offset+count))return [];
-  output.push({order:output.length+1,name:release.name,original:release.original,year:release.year,season:start.season,offset,count});
+  const leader=output.find(part=>part.season===start.season);
+  let section=leader?leader.section:release.name;
+  if(!leader){
+   const prefix=String(first.name || '');
+   if(section.toLowerCase().startsWith(prefix.toLowerCase()+':'))section=section.slice(prefix.length+1).trim();
+  }
+  output.push({order:output.length+1,name:release.name,original:release.original,year:release.year,season:start.season,offset,count,section});
  }
  return output.length<=8?output:[];
 }

@@ -1155,7 +1155,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
   }
 
   function continuationArc(state,part){
-    var base=state.groups || [],last=base.length?base[base.length-1].number:1;
+    var base=state.groups || wide_anime.groups || [],last=base.reduce(function(value,group){return Math.max(value,Number(group.number)||0);},1);
     return {number:last+part.order,name:part.name,count:part.count,part:part};
   }
 
@@ -6825,7 +6825,12 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     if(wideAnimeCurrent() || continuations && !wideAnimePending()){
       var animeSeasons=group('','season'),activeArc=part || wideAnimeCurrent() || {number:1,count:continuations.count};
       var seasonOptions=wideAnimeCurrent()?wide_anime.groups:continuations.groups || [{number:1,count:continuations.count}];
-      if(continuations)seasonOptions=seasonOptions.concat(continuations.parts.map(function(entry){return continuationArc(continuations,entry);}));
+      if(continuations){
+        // Metadata may settle before this provider component is patched.
+        // Capture the visible base groups before assigning continuation labels.
+        if(wideAnimeCurrent())continuations.groups=wide_anime.groups;
+        seasonOptions=seasonOptions.concat(continuations.parts.map(function(entry){return continuationArc(continuations,entry);}));
+      }
       var chooseArc=function(entry){
         if(entry.number===activeArc.number)return;
         if(continuations && (entry.part || part)){
@@ -6840,11 +6845,24 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
         wide_sig='';ui_focus=seasonOptions.length>4?'anime-season':'anime-season:'+entry.number;redraw();
       };
       if(seasonOptions.length>4){
-        put(animeSeasons,'anime-season',lampaViewText("Сезон {0}",[activeArc.number]),(part && !wideFiles()?'~':'')+wideCount(part?wideFiles() || activeArc.count:activeArc.count),{},function(){
-          Lampa.Select.show({title:label('nova_plus_seasons')+' · '+seasonOptions.length,items:seasonOptions.map(function(g){return {title:lampaViewText("Сезон {0}",[g.number]),subtitle:(g.part?'~':'')+wideCount(g.count),arc:g,selected:g.number===activeArc.number};}),onDraw:onlineChoiceDraw,
+        put(animeSeasons,'anime-season',lampaViewText("Сезон {0}",[activeArc.number]),wideCount(part?wideFiles() || activeArc.count:activeArc.count),{},function(){
+          Lampa.Select.show({title:label('nova_plus_seasons')+' · '+seasonOptions.length,items:seasonOptions.reduce(function(options,g,index){
+            var previous=index?seasonOptions[index-1]:null;
+            if(continuations && (!previous || !!previous.part!==!!g.part || g.part && previous.part && previous.part.season!==g.part.season)){
+              var heading=g.part?(g.part.section || lampaViewText("Продолжение")):lampaViewText("Основной сериал");
+              var header=$('<div class="settings-param-title minimal-season-section"><span></span></div>');
+              header.find('span').text(heading);
+              options.push({title:header.find('span').html(),separator:true});
+            }
+            options.push({title:lampaViewText("Сезон {0}",[g.number]),subtitle:wideCount(g.count),arc:g,selected:g.number===activeArc.number});
+            return options;
+          },[]),onFullDraw:function(scroll){
+            var entries=scroll.body().find('.settings-param-title');
+            entries.addClass('minimal-season-section');
+          },onDraw:onlineChoiceDraw,
             onSelect:function(entry){Lampa.Select.hide();contentEnable();chooseArc(entry.arc);},onBack:function(){Lampa.Select.hide();contentEnable();restoreFocus(false);}});
         });
-      }else seasonOptions.forEach(function(g){put(animeSeasons,'anime-season:'+g.number,lampaViewText("Сезон {0}",[g.number]),(g.part?'~':'')+wideCount(g.count),{plain:true,active:g.number===activeArc.number},function(){chooseArc(g);});});
+      }else seasonOptions.forEach(function(g){put(animeSeasons,'anime-season:'+g.number,lampaViewText("Сезон {0}",[g.number]),wideCount(g.count),{plain:true,active:g.number===activeArc.number},function(){chooseArc(g);});});
     }else if (!wideAnimePending() && groups.season && groups.season.items.length > 0) {
       var seasons = group('', 'season');
       if(groups.season.items.length > 4)compactGroup('season',groups.season.title || label('nova_plus_seasons'),seasons);

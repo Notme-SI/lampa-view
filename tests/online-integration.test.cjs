@@ -131,3 +131,38 @@ test('live anime 5/4 layout keeps four source seasons, honest counts and origina
   }finally{n.close();}
  }
 });
+
+
+test('late Kodik continuations retain the original arc count and show separate menu sections',async()=>{
+ const n=await native({built:true}),{w,L}=n,$=w.jQuery;
+ try{
+  const root=$('<div class="explorer"><div class="explorer__files"><div class="explorer__files-head"></div><div class="explorer__files-body"><div class="scroll"><div class="scroll__body"></div></div></div></div>').appendTo(w.document.body);
+  const filter=new L.Filter({search:false,sort:true,filter:true});
+  root.find('.explorer__files-head').append(filter.render());
+  const sort=[{title:'Kodik',source:'kodik',selected:true}];
+  filter.set('sort',sort);
+  filter.set('filter',[{stype:'season',title:'Сезон',subtitle:'Сезон 1',items:[{title:'Сезон 1',selected:true}]}]);
+  for(let i=1;i<=32;i++)$('<div class="online-prestige online-prestige--full selector"><div class="online-prestige__title">Серия '+i+'</div><div class="online-prestige__episode-number">'+i+'</div><div class="time-line"><div style="width:0%"></div></div></div>').appendTo(root.find('.scroll__body'));
+  const movie={id:30984,name:'Блич',original_name:'Bleach',source:'tmdb',minimal_anime:true,media_type:'tv'},comp={};
+  w.LampaView.episodeMetadata={isAnime:()=>true,alternate:()=>false,book:()=>false,groups(card,files,done){done(Array.from({length:16},(_,i)=>({number:i+1,count:2,episodes:[i*2+1,i*2+2]})));}};
+  L.Activity.active=()=>({component:'online_test',movie,activity:{render:()=>root,component:comp}});
+  L.Listener.send('activity',{type:'start'});
+  await wait(300);
+  let chosen;
+  comp.lampaViewContinuations={groups:null,selected:null,parts:[{order:1,season:2,count:13,section:'Тысячелетняя кровавая война',name:'Тысячелетняя кровавая война'},{order:2,season:2,count:13,section:'Тысячелетняя кровавая война',name:'Прощание'}],select(part){chosen=part;}};
+  root.find('[data-nova-focus="anime-season"]').trigger('hover:enter');
+  L.Select.render().find('.selectbox-item').eq(12).trigger('hover:enter');
+  await wait(200);
+  root.find('[data-nova-focus="anime-season"]').trigger('hover:enter');
+  const menu=L.Select.render(),options=menu.find('.selectbox-item'),sections=menu.find('.minimal-season-section');
+  assert.equal(options.length,18);
+  assert.equal(sections.map((_,node)=>node.textContent).get().join('|'),'Основной сериал|Тысячелетняя кровавая война');
+  assert.equal(options.eq(16).find('.selectbox-item__title').text(),'Сезон 17');
+  assert.equal(options.eq(17).find('.selectbox-item__title').text(),'Сезон 18');
+  assert.ok(!menu.text().includes('~'));
+  assert.equal(sections.filter('.selector').length,0);
+  options.eq(16).trigger('hover:enter');
+  assert.equal(chosen.order,1);
+  assert.deepEqual(n.errors,[]);
+ }finally{n.close();}
+});

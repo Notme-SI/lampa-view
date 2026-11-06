@@ -9180,5 +9180,33 @@
   "ro": "Seriale turcești",
   "fr": "Séries turques",
   "pl": "Tureckie seriale"
+ },
+ "Основной сериал": {
+  "en": "Original series",
+  "uk": "Основний серіал",
+  "be": "Асноўны серыял",
+  "zh": "原作动画",
+  "pt": "Série original",
+  "bg": "Основен сериал",
+  "he": "הסדרה המקורית",
+  "cs": "Původní seriál",
+  "ro": "Serialul original",
+  "fr": "Série originale",
+  "pl": "Serial oryginalny",
+  "es": "Serie original"
+ },
+ "Продолжение": {
+  "en": "Continuation",
+  "uk": "Продовження",
+  "be": "Працяг",
+  "zh": "续作",
+  "pt": "Continuação",
+  "bg": "Продължение",
+  "he": "המשך",
+  "cs": "Pokračování",
+  "ro": "Continuare",
+  "fr": "Suite",
+  "pl": "Kontynuacja",
+  "es": "Continuación"
  }
 }

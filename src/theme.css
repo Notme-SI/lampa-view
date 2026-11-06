@@ -1115,3 +1115,9 @@ body.lampa_view.pt-mobile .card .pt-card-watch .card-watched__item {background:t
 
 body.lampa_view .full-start-new__details>[hidden],
 body.lampa_view .full-start-new__details>[hidden]+.full-start-new__split {display:none!important}
+
+
+body.lampa_view .nova-plus-root .nova-chip__stack+svg {margin-inline-start:.75em;align-self:center}
+body.lampa_view .nova-plus-root .nova-chip__stack {min-width:0}
+body.lampa_view .minimal-season-section {margin:1.1em 1.2em .55em;padding-top:.8em;border-top:1px solid var(--pt-line);font-size:.85em;line-height:1.4;color:var(--pt-muted);white-space:normal;overflow-wrap:anywhere}
+body.lampa_view .minimal-season-section:first-child {margin-top:.4em;padding-top:0;border-top:0}
