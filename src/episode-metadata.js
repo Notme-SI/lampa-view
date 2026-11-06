@@ -19,10 +19,15 @@ export function absoluteRangeSeasons(card,files){
  if(!isAnime(card) || seasons.length<2 || seasons.length>100 || numbers.length<2 || numbers.length>3000 || !seasons.every((s,i)=>Number(s.season_number)===i+1 && Number.isSafeInteger(Number(s.episode_count)) && s.episode_count>0) || numbers[numbers.length-1]<=Number(seasons[0].episode_count) || !numbers.every((n,i)=>Number.isSafeInteger(n) && n>0 && n<=total && (!i || n>numbers[i-1])))return null;
  let offset=0;const groups=[];for(const s of seasons){const selected=numbers.filter(n=>n>offset && n<=offset+Number(s.episode_count)),coordinates=selected.map(number=>({number,episode:number-offset}));offset+=Number(s.episode_count);if(selected.length)groups.push({number:Number(s.season_number),name:String(s.name || ''),count:selected.length,episodes:selected,coordinates,canonical_count:Number(s.episode_count),native:true});}return groups.length?groups:null;
 }
-export function seasonName(card,number){
+export function seasonName(card,number,series=card){
  const row=(Array.isArray(card && card.seasons)?card.seasons:[]).find(s=>Number(s.season_number)===Number(number)),name=String(row && row.name || '').trim();
+ // Series titles are sometimes reused as the first season's name.
+ const clean=value=>String(value || '').normalize('NFKC').toLowerCase().replace(/[\s.,:;!?'’"«»()[\]…—–_-]+/g,'');
+ const title=name.replace(/(?:season|сезон)\s*\d+|\d+\s*(?:season|сезон)/gi,'');
+ const aliases=[series.name,series.title,series.original_name,series.original_title].map(clean).filter(Boolean);
+ if(aliases.includes(clean(name)) || aliases.includes(clean(title)))return '';
  if(/^(?:part|часть|частина|частка|parte|partie|teil|część|část|חלק|部分|部)\s*\d+$/i.test(name))return '';
- return /^(?:(?:season|сезон|сезонът|temporada|saison|sezon|série|עונה|季|第)\s*\d+|\d+\s*(?:season|сезон|temporada|saison|sezon|季))$/i.test(name)?'':name;
+ return /^(?:(?:season|сезон|сезонът|temporada|saison|sezon|série|עונה|季|第)\s*\d+|\d+\s*(?:season|сезон|temporada|saison|sezon|季))$/i.test(name)?'':name.replace(/^(?:season|сезон)\s*\d+\s*[:–—.-]\s*/i,'');
 }
 // Alternative episode groups change metadata coordinates, never playback hashes.
 export function alternativeNumbering(card,numbers){
@@ -148,7 +153,7 @@ export default function episodeMetadata(L,kino,anime){
   // Preserve the provider's menu unless these files cover a verified full list.
   if(partialAllowed && kino && kino.enabled())kino.groups(card,files,value=>value?done(value):fallback());else fallback();
  }
- return {alternate:alternativeNumbering,groups,groupBook,seasonName,book(card,number,numbers,actual,done,files=[],verifiedAbsolute=false){
+ return {isAnime,alternate:alternativeNumbering,groups,groupBook,seasonName,book(card,number,numbers,actual,done,files=[],verifiedAbsolute=false){
   // Fewer source seasons can mean a missing arc, a merged arc or a missing tail.
   // A matching length of just the selected season cannot distinguish them.
   // Full absolute lists have a separately verified partition in groups()/groupBook().

@@ -524,10 +524,10 @@ test('source menu leaves the last playback source and native playback saving unt
 test('split provider parts use localized canonical episodes, counts and pictures while native playback hashes stay unchanged',async()=>{
  const n=await native({built:true}),{L}=n;let s;try{
   L.Api.sources.tmdb.get=(url,p,ok)=>{if(url.includes('episode_groups'))return ok({results:[{id:'parts',group_count:4,episode_count:25,network:{id:213}}]});if(url.includes('episode_group/'))return ok({groups:[5,5,7,8].map((count,i)=>({order:i+1,episodes:Array.from({length:count},(_,j)=>({order:j,season_number:i<2?1:i,episode_number:i===1?j+6:j+1}))}))});const season=Number(url.match(/season\/(\d+)/)?.[1]);ok({episodes:Array.from({length:[0,10,7,8][season]||0},(_,i)=>({episode_number:i+1,season_number:season,name:'Correct '+season+':'+(i+1),overview:'Localized description '+season+':'+(i+1),vote_average:7.4,air_date:'2020-01-01',still_path:'/correct'+season+'e'+(i+1)+'.jpg'}))});};
-  s=screen(n,{id:1799,season:2,episodes:[1,2,3,4,5]});Object.assign(s.movie,{number_of_seasons:3,number_of_episodes:25,networks:[{id:213}],seasons:[{season_number:1,episode_count:10},{season_number:2,episode_count:7,name:'Часть 3'},{season_number:3,episode_count:8,name:'Часть 4'}]});s.filter.set('filter',[{stype:'season',title:'Сезон',subtitle:'Сезон 2',items:[1,2,3,4].map(i=>({title:'Сезон '+i,selected:i===2}))}]);
+  s=screen(n,{id:1799,season:2,episodes:[1,2,3,4,5]});Object.assign(s.movie,{number_of_seasons:3,number_of_episodes:25,networks:[{id:213}],seasons:[{season_number:1,episode_count:10},{season_number:2,episode_count:7,name:'Часть 3'},{season_number:3,episode_count:8,name:'Часть 4'}]});s.filter.set('filter',[{stype:'season',title:'Сезон',subtitle:'Сезон 2',items:[1,2,3,4].map(i=>({title:'Сезон '+i,selected:i===2}))},{stype:'voice',title:'Озвучка',items:[{title:'TVShows',selected:true}]}]);
   const timeline=JSON.stringify(L.Storage.get('file_view',{}));await wait(300);
   assert.match(s.root.find('.nova-card').first().find('.nova-card__title').text(),/Correct 1:6/);assert.equal(s.root.find('.nova-card__overview').first().text(),'Localized description 1:6');assert.equal(s.root.find('[data-nova-focus="season:1"] .nova-chip__sub').text(),'5 эпизодов');assert.match(s.root.find('.nova-card__thumb').first().html(),/correct1e6/);
-  const counts=()=>Array.from(s.root.find('[data-nova-group=season] .nova-chip__sub').map((i,n)=>n.textContent).get());assert.deepEqual(counts(),['5 эпизодов','5 эпизодов','7 эпизодов','8 эпизодов'],'Synchronous cached metadata cannot erase any season caption');s.filter.set('filter',[{stype:'season',title:'Сезон',subtitle:'Сезон 4',items:[1,2,3,4].map(i=>({title:'Сезон '+i,selected:i===4}))}]);await wait(180);assert.deepEqual(counts(),['5 эпизодов','5 эпизодов','7 эпизодов','8 эпизодов'],'Switching selection retains all known counts');
+  const counts=()=>Array.from(s.root.find('[data-nova-group=season] .nova-chip__sub').map((i,n)=>n.textContent).get());assert.deepEqual(counts(),['~5 эпизодов','5 эпизодов','~7 эпизодов','~8 эпизодов'],'Synchronous cached metadata cannot erase any season caption');s.filter.set('filter',[{stype:'season',title:'Сезон',subtitle:'Сезон 4',items:[1,2,3,4].map(i=>({title:'Сезон '+i,selected:i===4}))},{stype:'voice',title:'Озвучка',items:[{title:'TVShows',selected:true}]}]);await wait(180);assert.deepEqual(counts(),['~5 эпизодов','5 эпизодов','~7 эпизодов','~8 эпизодов'],'Switching selection retains all known counts');
   assert.equal(JSON.stringify(L.Storage.get('file_view',{})),timeline);assert.equal(s.played(),0);assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}
 });
@@ -544,14 +544,14 @@ test('split-season captions survive conflicting current files and delayed metada
    ok({episodes:Array.from({length:[0,10,7,8][season]||0},(_,i)=>({episode_number:i+1,season_number:season,name:'Верная серия '+season+':'+(i+1),overview:'Русское описание '+season+':'+(i+1),vote_average:7.4,air_date:season===1?'2021-06-11':'2026-10-23',still_path:'/right'+season+'e'+(i+1)+'.jpg'}))});
   },25);};
   s=screen(n,{id:1800,season:2,episodes:[1,2,3,4,5,6,7]});Object.assign(s.movie,{number_of_seasons:3,number_of_episodes:25,networks:[{id:213}],seasons:[{season_number:1,episode_count:10},{season_number:2,episode_count:7},{season_number:3,episode_count:8}]});
-  const choose=season=>s.filter.set('filter',[{stype:'season',title:'Сезон',subtitle:'Сезон '+season,items:[1,2,3,4].map(i=>({title:'Сезон '+i,selected:i===season}))}]);choose(2);
+  const choose=season=>s.filter.set('filter',[{stype:'season',title:'Сезон',subtitle:'Сезон '+season,items:[1,2,3,4].map(i=>({title:'Сезон '+i,selected:i===season}))},{stype:'voice',title:'Озвучка',items:[{title:'TVShows',selected:true}]}]);choose(2);
   const timeline=JSON.stringify(L.Storage.get('file_view',{}));await wait(850);
   const captions=()=>Array.from(s.root.find('[data-nova-group=season] .nova-chip__sub').map((i,n)=>n.textContent).get());
-  assert.deepEqual(captions(),['5 эпизодов','5 эпизодов','7 эпизодов','8 эпизодов'],'catalog counts do not disappear when the current provider list conflicts with the group');
+  assert.deepEqual(captions(),['~5 эпизодов','7 эпизодов','~7 эпизодов','~8 эпизодов'],'catalog counts do not disappear when the current provider list conflicts with the group');
   // The host completes replacing its previous list after updating the filter.
   s.body.find('.online-prestige').slice(5).remove();await wait(220);
   assert.equal(s.root.find('.nova-card__overview').first().text(),'Русское описание 1:6');assert.match(s.root.find('.nova-card__date').first().text(),/11.*2021/);
-  choose(4);await wait(160);assert.deepEqual(captions(),['5 эпизодов','5 эпизодов','7 эпизодов','8 эпизодов']);
+  choose(4);await wait(160);assert.deepEqual(captions(),['~5 эпизодов','5 эпизодов','~7 эпизодов','~8 эпизодов']);
   choose(2);await wait(160);assert.equal(s.root.find('.nova-card__overview').first().text(),'Русское описание 1:6');
   assert.equal(calls.filter(url=>/season\/1/.test(url)).length,2,'one retry is shared by all episode and caption readers');assert.equal(JSON.stringify(L.Storage.get('file_view',{})),timeline);assert.equal(s.played(),0);assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}
@@ -562,7 +562,7 @@ test('known provider episode count remains visible after leaving a season while 
  const n=await native({built:true}),{L}=n;let s;try{
   L.Api.sources.tmdb.get=(url,p,ok,fail)=>fail();
   s=screen(n,{id:1801,season:2,episodes:[1,2,3,4,5]});Object.assign(s.movie,{number_of_seasons:3,number_of_episodes:25});
-  const choose=season=>s.filter.set('filter',[{stype:'season',title:'Сезон',subtitle:'Сезон '+season,items:[1,2,3,4].map(i=>({title:'Сезон '+i,selected:i===season}))}]);choose(2);await wait(160);
+  const choose=season=>s.filter.set('filter',[{stype:'season',title:'Сезон',subtitle:'Сезон '+season,items:[1,2,3,4].map(i=>({title:'Сезон '+i,selected:i===season}))},{stype:'voice',title:'Озвучка',items:[{title:'TVShows',selected:true}]}]);choose(2);await wait(160);
   const caption=()=>s.root.find('[data-nova-focus="season:1"] .nova-chip__sub').text();
   assert.equal(caption(),'5 эпизодов');choose(4);await wait(180);assert.equal(caption(),'5 эпизодов');assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}
@@ -581,7 +581,7 @@ test('real native TMDB season splitting preserves canonical descriptions and cou
   const raw=await new Promise(resolve=>L.Api.sources.tmdb.get('tv/96677/season/1',{},resolve));
   assert.equal(raw.episodes.length,5,'the actual native API truncates the first season after its 90-day gap');assert.equal(raw.episodes_original.length,10);
   s=screen(n,{id:96677,season:2,episodes:[1,2,3,4,5]});Object.assign(s.movie,{number_of_seasons:3,number_of_episodes:25,networks:[{id:213}],seasons:[{season_number:1,episode_count:10},{season_number:2,episode_count:7},{season_number:3,episode_count:8}]});
-  const choose=season=>s.filter.set('filter',[{stype:'season',title:'Сезон',subtitle:'Сезон '+season,items:[1,2,3,4].map(i=>({title:'Сезон '+i,selected:i===season}))}]);choose(2);
+  const choose=season=>s.filter.set('filter',[{stype:'season',title:'Сезон',subtitle:'Сезон '+season,items:[1,2,3,4].map(i=>({title:'Сезон '+i,selected:i===season}))},{stype:'voice',title:'Озвучка',items:[{title:'TVShows',selected:true}]}]);choose(2);
   const timeline=JSON.stringify(L.Storage.get('file_view',{}));await wait(350);
   assert.deepEqual(Array.from(s.root.find('.nova-card__overview').map((i,node)=>node.textContent).get()),[6,7,8,9,10].map(i=>'Русское описание 1:'+i));
   assert.equal(s.root.find('[data-nova-focus="season:1"] .nova-chip__sub').text(),'5 эпизодов');assert.match(s.root.find('.nova-card__date').first().text(),/11.*2021/);assert.match(s.root.find('.nova-card__thumb').first().html(),/native1e6/);
@@ -596,5 +596,42 @@ test('an empty manually chosen season neither hides the entire source nor starts
   comp.request('/lite/test?s=4');comp.parse('<div class="videos__line"></div>');
   s.body.empty().append('<div class="online-empty"><div class="online-empty__title">Здесь пусто</div><div class="online-empty__time"></div></div>');await wait(200);
   assert.equal(s.root.find('.nova-note').length,1);assert.ok(!L.Storage.get('nova_probe',{})['tmdb:tv:1802']?.list.test,'A missing season is not a failed provider');assert.doesNotMatch(s.root.find('.nova-note').text(),/Через .*сек/);assert.deepEqual(n.errors,[]);
+ }finally{if(s)s.close();n.close();}
+});
+
+test('season captions read the selected dub before opening a season',async()=>{
+ const n=await native({built:true}),{L}=n;let s;
+ try{
+  const base='http://lampa.example.invalid/lite/test';
+  const lists={
+   root:{items:[1,2].map(season=>({season,method:'link',url:base+'?s='+season}))},
+   default:{voices:[{text:'Other',active:true},{text:'TVShows',url:base+'?s=2&t=5'}]},
+   selected:{items:[1,2,3].map(episode=>({season:2,episode,method:'call'}))}
+  };
+  const comp={changeBalanser(){},request(){},parse(){},parseJsonDate(name,selector){
+   const value=lists[name] || {};return selector==='.videos__item'?value.items || []:value.voices || [];
+  }};
+  s=screen(n,{id:1910,episodes:[1],component:comp});
+  L.Component.add('lampa_view_count_fixture',function(){return comp;});
+  L.Component.create({component:'lampa_view_count_fixture',movie:s.movie});
+  comp.request(base);
+  comp.parseJsonDate('root','.videos__item');
+  const calls=[],Request=L.Reguest;
+  L.Reguest=function(){
+   const net=new Request();
+   net.native=(url,ok,fail)=>{
+    if(!url.startsWith(base+'?s=2'))return fail();
+    calls.push(url);
+    setTimeout(()=>ok(url.includes('&t=5')?'selected':'default'),10);
+   };
+   return net;
+  };
+  s.filter.set('filter',[{stype:'season',title:'Сезон',subtitle:'Сезон 1',items:[1,2].map(season=>({title:'Сезон '+season,selected:season===1}))},
+   {stype:'voice',title:'Озвучка',subtitle:'TVShows',items:[{title:'TVShows',selected:true}]}]);
+  await wait(300);
+  assert.deepEqual(calls,[base+'?s=2',base+'?s=2&t=5']);
+  assert.equal(s.root.find('[data-nova-focus="season:1"] .nova-chip__sub').text(),'3 эпизода');
+  assert.equal(s.played(),0);
+  assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}
 });

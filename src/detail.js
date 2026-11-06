@@ -174,7 +174,28 @@ export default function detail(L,event,loadLogo){
  restoreDetailRows(L,event.link,event.data);
  const technical=moveTechnicalDetails(L,card,right);
  const animeBase=window.LampaView && window.LampaView.animeBase;
- if(isAnime(card) && Number(card.number_of_seasons)===1 && animeBase && animeBase.groups){const season=(card.seasons || []).find(s=>s.season_number>0),count=Number(season && season.episode_count || card.number_of_episodes);if(count>1 && count<=3000)animeBase.groups(card,Array.from({length:count},(_,i)=>i+1),groups=>{if(!right.isConnected || !groups || groups.length<2)return;const prefix=L.Lang.translate('title_seasons')+':',counter=Array.from(right.querySelectorAll('.full-start-new__details>*')).find(n=>n.textContent.trim().startsWith(prefix));if(counter)counter.textContent=prefix+' '+groups.length;});}
+ if(isAnime(card)){
+  const prefix=L.Lang.translate('title_seasons')+':';
+  const counter=Array.from(right.querySelectorAll('.full-start-new__details>*')).find(node=>node.textContent.trim().startsWith(prefix));
+  const season=(card.seasons || []).find(row=>Number(row.season_number)===1);
+  const count=Number(season && season.episode_count || card.number_of_episodes);
+  if(counter && Number(card.number_of_seasons)===1 && count>1 && count<=3000 && animeBase && animeBase.groups){
+   let settled=false;
+   const show=groups=>{
+    if(settled)return;
+    settled=true;
+    clearTimeout(timeout);
+    if(groups && groups.length>1)counter.textContent=prefix+' '+groups.length;
+    else counter.append(' · TMDB');
+    counter.hidden=false;
+   };
+   counter.hidden=true;
+   const timeout=setTimeout(()=>show(null),3500);
+   animeBase.groups(card,Array.from({length:count},(_,i)=>i+1),show);
+  }else if(counter && card.source!=='minimal_shiki'){
+   counter.append(' · TMDB');
+  }
+ }
  const episodes=right.querySelector('.full-start-new__details'),ratings=right.querySelector('.full-start-new__rate-line');if(episodes && ratings)right.insertBefore(episodes,ratings);
  const start=right.closest('.full-start-new'),left=start && start.querySelector('.full-start-new__left'),buttons=right.querySelector('.full-start-new__buttons');
  const reaction=body.querySelector('.button--reaction');if(reaction){reaction.title=lampaViewText("Оставить реакцию");reaction.setAttribute('aria-label',lampaViewText("Оставить реакцию"));}

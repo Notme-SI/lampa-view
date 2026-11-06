@@ -98,3 +98,16 @@ test('the entire episode-group model rejects specials, cross-group duplicates, i
  const ambiguous=api.default({Storage:{get:()=> 'ru'},Api:{sources:{tmdb:{get(url,p,ok){ok({results:[live.index.results.at(-1),{...live.index.results.at(-1),id:'another'}]});}}}}});
  let answer;ambiguous.book(live.card,4,[1,2,3,4],8,(book,grouped)=>answer={book,grouped});assert.equal(answer.book,null);assert.equal(answer.grouped,true);
 });
+
+test('season badge hides a repeated show title and keeps a named arc',()=>{
+ const {seasonName}=fixture();
+ const card={name:'Магическая битва',original_name:'JUJUTSU KAISEN',seasons:[
+  {season_number:1,name:'Магическая битва'},
+  {season_number:2,name:'JUJUTSU KAISEN: Season 2'},
+  {season_number:3,name:'Смертельная миграция'}
+ ]};
+ assert.equal(seasonName(card,1),'');
+ assert.equal(seasonName(card,2),'');
+ assert.equal(seasonName(card,3),'Смертельная миграция');
+ assert.equal(seasonName({seasons:[{season_number:1,name:'JUJUTSU KAISEN'}]},1,card),'');
+});

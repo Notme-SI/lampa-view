@@ -66,7 +66,7 @@ if (!ROOT.LampaView) {
   const carousels = new Set();
   function refreshCarousels(){carousels.forEach(value=>value.refresh());}
   const icons = {
-    magnet: '<path d="M5 4h4v9a3 3 0 0 0 6 0V4h4v9a7 7 0 0 1-14 0V4ZM5 8h4m6 0h4"/>',
+    magnet: '<path d="m12 15 4 4"/><path d="M2.352 10.648a1.205 1.205 0 0 0 0 1.704l2.296 2.296a1.205 1.205 0 0 0 1.704 0l6.029-6.029a1 1 0 1 1 3 3l-6.029 6.029a1.205 1.205 0 0 0 0 1.704l2.296 2.296a1.205 1.205 0 0 0 1.704 0l6.365-6.367A1 1 0 0 0 8.716 4.282z"/><path d="m5 8 4 4"/>',
     profile: '<circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/>',
     menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
     home: '<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-8H9v8H4a1 1 0 0 1-1-1Z"/>',
@@ -79,6 +79,7 @@ if (!ROOT.LampaView) {
     info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v2"/>'
   };
   function icon(name) { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + icons[name] + '</svg>'; }
+  P.torrentIcon = icon('magnet');
   function on(name, callback) { L.Listener.follow(name, callback); }
   function pointer(element) {
     // Register before insertion: stop Lampa's later click adapter from invoking it twice.

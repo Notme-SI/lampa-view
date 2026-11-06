@@ -47,7 +47,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
         native.appendTo(holder);
       }
 
-      var btn = $('<div class="full-start__button selector button--alc-torrent">' + ICON + '<span>' + label() + '</span></div>');
+      var btn = $('<div class="full-start__button selector button--alc-torrent">' + (window.LampaView && window.LampaView.torrentIcon || ICON) + '<span>' + label() + '</span></div>');
       btn.on('hover:enter', function () {
         if (native.length) native.trigger('hover:enter');
         else openTorrents(movie);

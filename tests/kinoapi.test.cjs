@@ -30,3 +30,11 @@ test('native settings restore preserves key and toggle; disabling keeps the key 
  restored.L.Storage.set('minimal_kinoapi_enabled',true);restored.params.find(p=>p.param.name==='minimal_kinoapi_enabled').onChange();assert.equal(other.enabled(),true);assert.equal(restored.input,undefined,'The restored key is reused without a prompt');
  const legacy=fixture(()=>{});legacy.store.set('lampa_view_kinoapi_key','legacy-test-key');assert.equal(legacy.api.default(legacy.L).enabled(),true,'Existing key remains enabled without reentry');
 });
+
+test('identical local episode counts never map a missing second season to the first',()=>{
+ const {api}=fixture(()=>{}),files=Array.from({length:10},(_,i)=>i+1);
+ const episodes=files.map(n=>({season_number:1,tmdb_episode_number:n,name_ru:'Season one '+n}));
+ const model=api.animeModel([{season_number:1,episode_count:10}],episodes);
+ assert.equal(api.metadataBook(model,2,[1,2],files),null);
+ assert.equal(api.metadataBook(model,1,[1,2],files)[1].season_number,1);
+});

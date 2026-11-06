@@ -1066,14 +1066,17 @@ body.lampa_view.pt-personal-enlarged .head__body {min-height:100%}
 body.lampa_view .full-start-new__buttons>.selector {box-sizing:border-box;align-items:center;justify-content:center}
 body.lampa_view.pt-personal-enlarged .minimal-detail-identity .full-start-new__buttons {grid-template-columns:repeat(auto-fit,minmax(3.5em,1fr))}
 
-/* Shared dialog baseline: no native oversized heading inside a compact drawer. */
+/* Native windows stay slightly smaller than Lampa at the same screen size. */
+body.lampa_view {--pt-native-window-font:max(10px,calc(1.117vw * var(--pt-native-interface-scale,1)))}
+body.lampa_view .extensions,
+body.lampa_view .settings .settings__content,
+body.lampa_view .selectbox:not(.minimal-filter-panel) .selectbox__content,
+body.lampa_view .modal:not(.minimal-torrent-files) .modal__content {font-size:min(1em,var(--pt-native-window-font))!important}
 body.lampa_view .selectbox__content,body.lampa_view .modal__content {font-size:1em}
 body.lampa_view .modal__title {font-size:1.4em;line-height:1.3}
-body.lampa_view.pt-mobile .selectbox__content,body.lampa_view.pt-mobile .modal__content,body.lampa_view.pt-mobile .extensions {font-size:calc(14px * var(--pt-interface-scale,1))}
+body.lampa_view.pt-mobile .minimal-filter-panel .selectbox__content,body.lampa_view.pt-mobile .minimal-torrent-files .modal__content {font-size:calc(14px * var(--pt-interface-scale,1))}
 body.lampa_view .extensions {background:var(--pt-bg);color:var(--pt-text)}
 body.lampa_view .extensions__item,body.lampa_view .extensions__block-add {background:var(--pt-panel);border:1px solid var(--pt-line);box-sizing:border-box}
-body.lampa_view.pt-mobile .extensions__item,body.lampa_view.pt-mobile .extensions__block-add {width:min(20em,80vw);max-width:80vw}
-body.lampa_view.pt-mobile .extensions__head-title {font-size:1.4em}
 body.lampa_view .pt-hero__artwork,body.lampa_view .pt-hero__branding {cursor:pointer}
 body.lampa_view.pt-detail-poster .minimal-detail-identity .full-start-new__poster {display:block;width:min(100%,15em);margin:0 auto 1em}
 body.lampa_view.pt-detail-poster .minimal-detail-identity .minimal-detail-logo,body.lampa_view.pt-detail-poster .minimal-detail-identity>.full-start-new__title {display:none!important}
@@ -1110,3 +1113,6 @@ body.lampa_view.pt-mobile .card .pt-card-watch .card-watched,
 body.lampa_view.pt-mobile .card .pt-card-watch .card-watched__inner,
 body.lampa_view.pt-mobile .card .pt-card-watch .card-watched__body,
 body.lampa_view.pt-mobile .card .pt-card-watch .card-watched__item {background:transparent!important;border:0!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+
+body.lampa_view .full-start-new__details>[hidden],
+body.lampa_view .full-start-new__details>[hidden]+.full-start-new__split {display:none!important}

@@ -25,7 +25,7 @@ export function metadataBook(model,season,numbers,fileNumbers=[]){
  const rows=model.rows,files=[...new Set(fileNumbers.map(Number))].sort((a,b)=>a-b),group=model.groups.find(s=>s.number===Number(season));
  let chosen=group && group.rows,keys=chosen && chosen.map(e=>e.number);
  // Full absolute provider lists (e.g. 1..500) must use all metadata seasons.
- if(files.length===rows.length && files.every((n,i)=>n===i+1) && rows.every((e,i)=>e.number===i+1)){chosen=rows;keys=files;}
+ if(model.groups.length>1 && new Set(numbers.map(Number).filter(n=>n>0)).size===1 && files.length===rows.length && files.every((n,i)=>n===i+1) && rows.every((e,i)=>e.number===i+1)){chosen=rows;keys=files;}
  else if(chosen && files.length===chosen.length && files.every((n,i)=>n===i+1) && chosen.every((e,i)=>e.number===chosen[0].number+i)){keys=files;}
  else if(!group || files.length && !files.every(n=>keys.includes(n))){
   const scene=rows.filter(e=>e.scene && Number(e.scene.season)===Number(season));
