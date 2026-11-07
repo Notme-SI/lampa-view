@@ -10629,7 +10629,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       });
     return count > 0 && rows.length > 0 && rows.length <= 30 && ((rows.length > count || isAnime(card) && rows.length < count) && rows.every(function (n, i) {
       return n === i + 1;
-    }) || isAnime(card) && rows.length === 1 && rows[0] > 1);
+    }) || isAnime(card) && count === 1 && rows.length === 1 && rows[0] > 1);
   }
   function episodeGroupModel(card, data, groupCount, episodeCount) {
     if (!Number.isSafeInteger(groupCount) || groupCount < 1 || groupCount > 30 || !Number.isSafeInteger(episodeCount) || episodeCount < 1 || episodeCount > 3e3) return null;

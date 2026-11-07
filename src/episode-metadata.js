@@ -57,7 +57,7 @@ export function availableMetadata(rows,files,season,allowFuture=true){
 // Alternative episode groups change metadata coordinates, never playback hashes.
 export function alternativeNumbering(card,numbers){
  const count=Number(card && card.number_of_seasons),rows=Array.from(new Set(numbers.map(Number))).filter(n=>n!==0).sort((a,b)=>a-b);
- return count>0 && rows.length>0 && rows.length<=30 && ((rows.length>count || isAnime(card) && rows.length<count) && rows.every((n,i)=>n===i+1) || isAnime(card) && rows.length===1 && rows[0]>1);
+ return count>0 && rows.length>0 && rows.length<=30 && ((rows.length>count || isAnime(card) && rows.length<count) && rows.every((n,i)=>n===i+1) || isAnime(card) && count===1 && rows.length===1 && rows[0]>1);
 }
 // Validate the complete published coordinate map before using any of its groups.
 // Equal episode counts by themselves are never evidence of a season mapping.
