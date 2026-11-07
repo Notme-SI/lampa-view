@@ -5,6 +5,20 @@ const cache=new Map();
 const https=url=>typeof url==='string' && /^https:\/\//i.test(url);
 const galleryRows=urls=>[...new Set(urls)].slice(0,frameLimit).map(url=>({img:url,minimal_still_url:url}));
 const filmGrab='https://film-grab.com/wp-json/wp/v2/';
+// Each archive is tied to an exact TMDB movie, including films with similar titles.
+const wikiMovies=new Map([
+ [315635,['marvelcinematicuniverse','Spider-Man: Homecoming']],
+ [429617,['marvelcinematicuniverse','Spider-Man: Far From Home']],
+ [634649,['marvelcinematicuniverse','Spider-Man: No Way Home']],
+ [969681,['marvelcinematicuniverse','Spider-Man: Brand New Day']]
+]);
+// Movie Screencaps publishes frame sequences separate from its promotional images.
+const screencapMovies=new Map([
+ [559,'/200/7-spider-man-3/full/spiderman-3-movie-screencaps.com-'],
+ [1930,'/201/4k-2-amazingspiderman/full/amazingspiderman-movie-screencaps.com-'],
+ [102382,'/201/4k-4-amazingspiderman2/full/amazingspider2-4k-movie-screencaps.com-']
+]);
+const screencapNumbers=[916,959,1004,1051,2716,2759,2804,2851,4516,4559,4604,4651,6316,6359,6404,6451,8116,8159,8204,8251];
 // Full-resolution captures from the second episode of the third season.
 const jungleScenes=[
  ['/3d/c1/93/3dc1936a4c0c30826dbb0b1557e2ff9c/1920x1080_0x1aQRnm3W_2325295043365059235.png',
@@ -79,18 +93,77 @@ async function filmGrabFrames(title,year,signal){
 }
 
 async function movieArchive(card,id,readTmdb){
+ const captures=screencapMovies.get(id);
+ if(captures)return screencapNumbers.map(number=>{
+  const url='https://i0.wp.com/imgs.screencaps.us'+captures+number+'.jpg?ssl=1';
+  return {img:url+'&w=780',minimal_still_url:url};
+ });
  const studio=ghibliFrames(card);
  if(studio.length || typeof fetch!=='function' || typeof AbortController!=='function')return studio;
  const year=String(card.release_date || '').slice(0,4),controller=new AbortController();
- const timer=setTimeout(()=>controller.abort(),2800);
+ const timer=setTimeout(()=>controller.abort(),4000);
  try{
   const title=card.original_title || card.title;
   const english=card.original_language && card.original_language!=='en' && id>0?
    await readGalleryData(readTmdb,'movie/'+id+'?language=en-US',1000):null;
   const titles=[...new Set([title,Number(english?.id)===id && english.title].filter(Boolean))];
-  const results=await Promise.all(titles.map(name=>filmGrabFrames(name,year,controller.signal)));
-  return results.find(rows=>rows.length) || [];
- }finally{clearTimeout(timer);}
+  const film=Promise.all(titles.map(name=>filmGrabFrames(name,year,controller.signal)))
+   .then(results=>results.find(rows=>rows.length) || []);
+  const wiki=wikiMovies.get(id);
+  if(!wiki)return await film;
+  const sources=[film,wikiFrames(wiki,controller.signal)];
+  return await new Promise(resolve=>{
+   for(const source of sources)source.then(frames=>{if(frames.length===frameLimit)resolve(frames);});
+   Promise.all(sources).then(([filmRows,wikiRows])=>resolve(filmRows.length>=wikiRows.length?filmRows:wikiRows));
+  });
+ }finally{clearTimeout(timer);controller.abort();}
+}
+
+async function wikiFrames([site,title],signal){
+ const identity='wiki:'+site+':'+title,saved=cache.get(identity);
+ if(saved?.until>Date.now())return saved.frames;
+ async function get(params){
+  const query=new URLSearchParams({...params,format:'json',formatversion:'2',origin:'*'});
+  const response=await fetch('https://'+site+'.fandom.com/api.php?'+query,{signal,credentials:'omit'});
+  if(!response.ok)throw new Error('Frame archive unavailable');
+  return response.json();
+ }
+ const imageUrl=url=>typeof url==='string' && url.startsWith('https://static.wikia.nocookie.net/'+site+'/images/');
+ const filename=name=>name.replace(/^(?:file|image):\s*/i,'').replace(/_/g,' ').normalize('NFC').trim();
+ try{
+  const page=title+'/Gallery';
+  const data=await get({action:'parse',page,prop:'wikitext',redirects:'1'});
+  if(data.parse?.title!==page || typeof data.parse.wikitext!=='string')return [];
+  const sections=data.parse.wikitext.split(/^==[ \t]*([^=\r\n]+?)[ \t]*==[ \t]*$/m);
+  const heading=sections.findIndex((section,i)=>i%2===1 && section.toLowerCase()==='screenshots');
+  if(heading<0)return [];
+  const excluded=/(?:trailer|teaser|tv[ _-]*spot|featurette|promo(?:tional)?|deleted[ _-]*scene|behind[ _-]*the[ _-]*scenes|credits?|title[ _-]*card|studio(?:s)?[ _-]*logo)/i;
+  const names=new Set();
+  for(const [,block] of sections[heading+1].matchAll(/<gallery\b[^>]*>([\s\S]*?)<\/gallery>/gi)){
+   for(const line of block.split(/\r?\n/)){
+    const name=filename(line.split('|')[0]);
+    if(/\.(?:png|jpe?g|webp)$/i.test(name) && !excluded.test(line))names.add(name);
+   }
+  }
+  if(!names.size)return [];
+  const files=[...names];
+  // Space out the selections so adjacent captures of one shot do not dominate the row.
+  const sampleCount=Math.min(40,files.length);
+  const sample=Array.from({length:sampleCount},(_,i)=>files[Math.floor(i*files.length/sampleCount)]);
+  const images=await get({action:'query',titles:sample.map(name=>'File:'+name).join('|'),prop:'imageinfo',iiprop:'url|size',iiurlwidth:'780'});
+  const indexed=new Map();
+  for(const row of images.query?.pages || []){
+   const item=row.imageinfo?.[0];
+   if(row.imagerepository!=='local' || !item || !(item.width>=1280 && item.height>=540 && item.width/item.height>=1.35) || !imageUrl(item.url))continue;
+   indexed.set(filename(row.title),{img:imageUrl(item.thumburl)?item.thumburl:item.url,minimal_still_url:item.url});
+  }
+  const frames=sample.map(name=>indexed.get(name)).filter(Boolean).slice(0,frameLimit);
+  if(frames.length){
+   if(cache.size>=80)cache.delete(cache.keys().next().value);
+   cache.set(identity,{frames,until:Date.now()+1800000});
+  }
+  return frames;
+ }catch(error){return [];}
 }
 
 function readGalleryData(read,path,timeout){
@@ -112,10 +185,10 @@ async function episodeGallery(data,id,readTmdb){
      /^\d{4}-\d{2}-\d{2}$/.test(date || '') && date<=today && !row.comeing)known.set(season+':'+episode,{season,episode});
  }
  const ordered=[...known.values()].sort((a,b)=>b.season-a.season || b.episode-a.episode);
- const first=ordered.at(-1),recent=ordered.slice(0,5).filter(row=>row!==first);
+ const first=ordered.at(-1),recent=ordered.slice(0,8).filter(row=>row!==first);
  const candidates=recent.slice(0,2).concat(first || [],recent.slice(2));
  const paths=new Map(),started=Date.now();
- for(let i=0;i<candidates.length && paths.size<8;i+=3){
+ for(let i=0;i<candidates.length && paths.size<frameLimit;i+=3){
   const time=2600-(Date.now()-started);
   if(time<=0)break;
   await Promise.all(candidates.slice(i,i+3).map(async ({season,episode})=>{
