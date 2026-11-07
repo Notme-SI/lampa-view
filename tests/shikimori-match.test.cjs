@@ -19,3 +19,10 @@ test('KinoAPI exact IDs resolve directly; mismatched identity falls back to nati
   const L={Api:{sources:{tmdb:{full:p=>opened=p,get:(p,args,ok)=>{searches++;ok({results:[{id:77,name:'Fixture anime',genre_ids:[16]}]});}}}},Select:{hide(){}}};m.exports.default(L,()=>{})({card:{id:90044511,shikimori_id:90044511,source:'minimal_shiki',name:'Fixture anime',media_type:'tv'}},()=>{},()=>{});assert.equal(opened.id,valid?114410:77);assert.equal(searches,valid?0:1);
  }
 });
+
+test('a single same-franchise search hit with a different title never opens automatically',()=>{
+ let menu,opened;
+ const L={Select:{show:o=>menu=o,hide(){}},Api:{sources:{tmdb:{get(p,args,ok){ok({results:[{id:195675,name:'Снег Хисуи',original_name:'Pokémon: Hisuian Snow',first_air_date:'2022-05-18',genre_ids:[16]}]});},full:p=>opened=p}}}};
+ resolver(L,(id,ok)=>ok({}))({card:{id:90053874,name:'Покемон: Стремление стать мастером покемонов',original_name:'Pokemon: Mezase Pokemon Master',first_air_date:'2023-01-13',media_type:'tv',source:'minimal_shiki'}},()=>{},()=>{});
+ assert.equal(opened,undefined);assert.ok(menu,'An ambiguous hit remains an explicit user choice');
+});
