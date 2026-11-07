@@ -20,7 +20,8 @@ export function franchiseModel(graph,seed,metadata=[]){
  const compare=(a,b)=>{const x=nodes.get(a),y=nodes.get(b);return (!!y.year-!!x.year) || (x.aired || x.year || '9999').localeCompare(y.aired || y.year || '9999') || a-b;};
  const representative=new Map(),alternatives=new Set();
  for(const group of variants.values()){group.sort(compare);const television=group.filter(id=>['tv','ona'].includes(nodes.get(id).kind)),choices=television.length && group.some(id=>['ova','special','tv_special'].includes(nodes.get(id).kind))?television:group;const selected=choices.includes(Number(seed))?Number(seed):choices[0];for(const id of group){representative.set(id,selected);if(id!==selected)alternatives.add(id);}}
- const main=new Set([...story].map(id=>representative.get(id)||id)),directed=new Map([...main].map(id=>[id,new Set()]));
+ const recaps=new Set(edges.filter(e=>e.relation==='summary').map(e=>e.to));for(const id of recaps)alternatives.add(id);
+ const main=new Set([...story].map(id=>representative.get(id)||id).filter(id=>!recaps.has(id))),directed=new Map([...main].map(id=>[id,new Set()]));
  for(const edge of edges)if(['prequel','sequel'].includes(edge.relation)){let from=edge.relation==='sequel'?edge.from:edge.to,to=edge.relation==='sequel'?edge.to:edge.from;from=representative.get(from)||from;to=representative.get(to)||to;if(main.has(from) && main.has(to) && from!==to)directed.get(from).add(to);}
  const degrees=new Map([...main].map(id=>[id,0]));for(const values of directed.values())for(const id of values)degrees.set(id,degrees.get(id)+1);
  const ready=[...main].filter(id=>degrees.get(id)===0).sort(compare),ordered=[];while(ready.length){const id=ready.shift();ordered.push(id);for(const next of directed.get(id)){degrees.set(next,degrees.get(next)-1);if(!degrees.get(next)){ready.push(next);ready.sort(compare);}}}
@@ -58,6 +59,7 @@ export function franchiseCatalogueRows(model){
 
 // Display seasons follow adjacent TV releases, independently of metadata numbering.
 // A remapped later season must never become a part of a non-adjacent first season.
+const releaseStem=node=>String(node.original || node.name || '').toLowerCase().replace(/\s+(?:\d+(?:st|nd|rd|th)?\s+season|season\s+\d+|part\s*\d+|часть\s*\d+)\s*$/i,'').replace(/[^\p{L}\p{N}]/gu,'');
 export function franchiseViewingOrder(model){
  if(!model.complete)return [];
  const story=model.rows.find(row=>row.key==='story');if(!story)return [];
@@ -66,7 +68,7 @@ export function franchiseViewingOrder(model){
  for(const node of nodes){
   let number=0,part=0;
   if(['tv','ona'].includes(node.kind)){
-   const gap=previous && Date.parse(node.aired)-Date.parse(previous.node.released || previous.node.aired),split=previous && node.record?.tv && node.record.tv===previous.node.record?.tv && node.record.season===previous.node.record.season && Number(node.record.offset || 0)>Number(previous.node.record.offset || 0) && (/(?:part|часть|cour)\s*\d+/i.test(node.name+' '+node.original) || Number(node.record.season)>1 && gap>=0 && gap<366*86400000);
+   const split=previous && node.record?.tv && node.record.tv===previous.node.record?.tv && node.record.season===previous.node.record.season && Number(node.record.offset || 0)===Number(previous.node.record.offset || 0)+previous.node.episodes && (/(?:part|часть|cour)\s*[2-9]\d*$/i.test(node.name) || /(?:part|cour)\s*[2-9]\d*$/i.test(node.original) || !!String(node.original || '').match(/\bPart (\d+):/) && String(node.original || '').match(/\bPart (\d+):/)[1]===previous.node.original?.match(/\bPart (\d+):/)?.[1] || Number(node.record.season)>1 && releaseStem(node)===releaseStem(previous.node));
    if(split){part=(previous.step.part || 1)+1;previous.step.part=part-1;}else season++;
    number=season;
   }
@@ -75,18 +77,24 @@ export function franchiseViewingOrder(model){
  }
  return steps;
 }
-export function franchiseMenuGroups(model){
- const order=franchiseViewingOrder(model),steps=new Map(order.map(step=>[step.id,step])),seen=new Set();
+export function franchiseMenuGroups(model,canonical={}){
+ const order=franchiseViewingOrder(model),steps=new Map(order.map(step=>[step.id,step])),seen=new Set(),base=String(model.rows.find(r=>r.key==='story')?.results[0]?.title || '').replace(/[\u2013\u2014]/g,'-').trim();
  return model.rows.map(row=>{
-  const source=row.key==='story' && order.length?order.map(step=>row.results.find(card=>card.id===step.id)).filter(Boolean):row.results;
+  let source=row.key==='story' && order.length?order.map(step=>row.results.find(card=>card.id===step.id)).filter(Boolean):row.results;
+  const television=source.filter(c=>['tv','ona'].includes(c.minimal_anime_kind)),seasons=(canonical.seasons || []).filter(s=>s.season_number>0 && s.episode_count>0 && s.air_date && s.air_date<=new Date().toISOString().slice(0,10));
+  if(row.key==='story' && television.length===1 && seasons.length>1 && seasons.reduce((sum,s)=>sum+s.episode_count,0)===television[0].episodes)source=source.flatMap(c=>c===television[0]?seasons.map(s=>({...c,minimal_franchise_season:s.season_number})):c);
   const entries=source.filter(card=>{
    const node=model.nodes.find(n=>n.id===card.id),name=(node?.original || '')+' '+(node?.url || '')+' '+(card.title || '');
-   if(seen.has(card.id) || ['music','pv','cm'].includes(node?.kind) || row.key==='related' && /manner[- _]eizou|урок хороших манер|(?:\s+x\s+|×)/i.test(name))return false;
-   seen.add(card.id);return true;
+   const identity=card.id+':'+(card.minimal_franchise_season || 0);if(seen.has(identity) || ['music','pv','cm'].includes(node?.kind) || row.key==='related' && /manner[- _]eizou|урок хороших манер|(?:\s+x\s+|×)/i.test(name))return false;
+   seen.add(identity);return true;
   }).map(card=>{
-   const step=steps.get(card.id),kind=card.minimal_anime_kind,type=kind==='movie'?t('Фильм'):step?.season?t('Сезон {0}',[step.season]):kind==='ova'?'OVA':['special','tv_special'].includes(kind)?t('Спецвыпуски'):t('Сериал');
-   const subtitle=[type+(step?.part?' · '+t('Часть {0}',[step.part]):''),String(card.release_date || card.first_air_date || '').slice(0,4)].filter(Boolean).join(' · ');
-   return {card,title:(step?step.number+'. ':'')+String(card.title || card.name || '').replace(/[\u2013\u2014]/g,'-'),subtitle};
+   const originalStep=steps.get(card.id),step=card.minimal_franchise_season?{...originalStep,season:card.minimal_franchise_season}:originalStep,kind=card.minimal_anime_kind,type=kind==='movie'?t('Фильм'):step?.season?t('Сезон {0}',[step.season]):kind==='ova'?'OVA':['special','tv_special'].includes(kind)?t('Спецвыпуски'):t('Сериал');
+      const full=String(card.title || card.name || '').replace(/[\u2013\u2014]/g,'-');
+   let short=base && full.toLowerCase().startsWith(base.toLowerCase())?full.slice(base.length).replace(/^[\s:.-]+/,''):full;
+   if(step?.part)short=short.replace(/(?:[.\s:-]+)?(?:часть|part|cour)\s*\d+$/i,'').replace(/\s+\d+$/,'').trim();
+   if(!short || /^(?:\d+|[ivx]+|(?:часть|part|season|сезон)\s*\d+|\d+\s*(?:сезон|season))$/i.test(short))short='';
+   const label=type+(step?.part?' · '+t('Часть {0}',[step.part]):'');
+   return {card,title:label+(short?' : '+short:''),subtitle:[step?String(step.number).padStart(2,'0'):'',String(card.release_date || card.first_air_date || '').slice(0,4)].filter(Boolean).join(' · '),icon:kind==='movie'?'▷':kind==='ova'?'◇':['special','tv_special'].includes(kind)?'✦':'▤'};
   });
   return {title:row.key==='story'?t('Порядок просмотра'):row.title,entries};
  }).filter(group=>group.entries.length);

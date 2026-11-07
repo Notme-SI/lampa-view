@@ -9330,5 +9330,20 @@
   "tr": "TV sürümü: {0}. sezon",
   "zh": "电视版：第{0}季",
   "ro": "Versiune TV: sezonul {0}"
+ },
+ "Сезоны и фильмы": {
+  "ru": "Сезоны и фильмы",
+  "en": "Seasons and films",
+  "uk": "Сезони та фільми",
+  "be": "Сезоны і фільмы",
+  "zh": "季与电影",
+  "pt": "Temporadas e filmes",
+  "bg": "Сезони и филми",
+  "he": "עונות וסרטים",
+  "cs": "Řady a filmy",
+  "ro": "Sezoane și filme",
+  "fr": "Saisons et films",
+  "pl": "Sezony i filmy",
+  "es": "Temporadas y películas"
  }
 }

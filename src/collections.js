@@ -82,7 +82,7 @@ export default function collections(L,shiki,kino,kinoFeeds){
  function hiddenIds(ctx,object){const p=prefs(ctx),kind=object.url || object.cat;return [...(p.hidden || []),...cataloguePlan(kind,animeMode(L,object),new Date(),object.minimal_discovery || {}).map(job=>catalogueRow(job,kind,object.source || L.Storage.get('source','cub'),!!(L.Api.sources && L.Api.sources.cub))).filter(row=>defaultHidden(row,p)).map(rowKey)];}
  function edit(ctx){
   const kind=String(ctx).replace('category:','').split(':')[0],selected=L.Storage.get('source','cub'),source=ctx==='main:'?mainSource || selected:selected;
-  const mode=animeMode(L),trakt=source==='trakt' && (ctx==='main:' || ['movie','tv','cartoon','anime'].includes(kind) && !(kind==='anime' && mode==='shikimori'));
+  const mode=ctx==='category:anime:shikimori'?'shikimori':ctx==='category:anime:standard'?'standard':animeMode(L),trakt=source==='trakt' && (ctx==='main:' || ['movie','tv','cartoon','anime'].includes(kind) && !(kind==='anime' && mode==='shikimori'));
   const plan=trakt?traktPlan(ctx==='main:'?undefined:kind):['movie','tv','cartoon','tvshow','anime'].includes(kind)?cataloguePlan(kind,mode).map(job=>catalogueRow(job,kind,source,!!(L.Api.sources && L.Api.sources.cub))):null;
   let definitions=plan && plan.map(row=>({id:rowKey(row),title:row.title,aliases:row.minimal_row_aliases || [],minimal_default_hidden:row.minimal_default_hidden}));
   if(ctx==='main:' && definitions)definitions.splice(1,0,{id:CONTINUE,title:lampaViewText('История просмотра')});
@@ -145,7 +145,7 @@ export default function collections(L,shiki,kino,kinoFeeds){
   }
   let cursor=0,busy=false,finished=false,remembered=false,waiters=[];
   const load=(resolve,reject,append)=>{if(finished || object.minimal_catalogue_cancelled){if(reject)reject();return;}waiters.push({resolve,reject});if(busy)return;busy=true;
-   function batch(){object.minimal_catalogue_offset=cursor;object.minimal_catalogue_limit=3;object.minimal_catalogue_order=prefs(ctx).order || [];
+   function batch(){object.minimal_catalogue_offset=cursor;object.minimal_catalogue_limit=kind==='anime' && animeMode(L,object)==='shikimori'?7:3;object.minimal_catalogue_order=prefs(ctx).order || [];
     catalogue(L,shiki,object,hiddenIds(ctx,object),rows=>{if(object.minimal_catalogue_cancelled)return;cursor=object.minimal_catalogue_next;finished=cursor>=object.minimal_catalogue_total;remember(ctx,rows,remembered);remembered=true;const visible=arrange(rows.filter(row=>!row.minimal_hidden),prefs(ctx));if(!visible.length && !finished && object.minimal_catalogue_status.state!=='error')return batch();busy=false;const ready=waiters.splice(0);ready.forEach(w=>{if(visible.length || !append)w.resolve(visible);else if(w.reject)w.reject();});});
    }batch();
   };

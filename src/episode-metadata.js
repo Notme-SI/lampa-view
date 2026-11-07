@@ -6,7 +6,7 @@ export function metadataText(value,language=locale()){
 }
 export function localizedEpisodeBook(book,language=locale()){
  if(!book)return book;const result={};
- Object.keys(book).forEach(key=>{const row=book[key];result[key]={...row,name:metadataText(row.name,language) || t('Серия {0}',[key],language),overview:metadataText(row.overview,language),...(row.lampa_season_name!==undefined?{lampa_season_name:metadataText(row.lampa_season_name,language)}:{})};});return result;
+ Object.keys(book).forEach(key=>{const row=book[key];result[key]={...row,name:(language==='ru' && /^(?:episode|эпизод|серия)\s*\d+$/i.test(String(row.name || '').trim())?'':metadataText(row.name,language)) || t('Серия {0}',[key],language),overview:metadataText(row.overview,language),...(row.lampa_season_name!==undefined?{lampa_season_name:metadataText(row.lampa_season_name,language)}:{})};});return result;
 }
 function plannedSeason(card,season,today){
  const valid=d=>/^\d{4}-\d{2}-\d{2}$/.test(String(d || ''));
@@ -105,6 +105,7 @@ export function namedPartCount(card){
 export default function episodeMetadata(L,kino,anime){
  const cache=new Map(),pending=new Map(),queue=[];let running=0;
  function request(path,done){
+  if(!/[?&]language=/.test(path))path+=(path.includes('?')?'&':'?')+'language='+encodeURIComponent(locale());
   if(cache.has(path))return done(cache.get(path));
   if(pending.has(path))return pending.get(path).push(done);
   if(queue.length>=24)return done(null);

@@ -41,10 +41,11 @@ export function normalizeTmdb(path,params={}){
  pairs.forEach(pair=>{
   const [raw,...rest]=pair.split('='),key=decodeURIComponent(raw),value=rest.join('=');
   if(key==='api_key')return;
-  if(key==='language'){if(!copy.langs)copy.langs=locale();return;}
+  if(key==='language'){if(!copy.langs)copy.langs=decodeURIComponent(value) || locale();return;}
   if(key==='page' && copy.page)return;
   keep.push(pair);
  });
+ if(!copy.langs)copy.langs=locale();
  return {path:base+(keep.length?'?'+keep.join('&'):''),params:copy};
 }
 export function installTmdb(L){
