@@ -3231,7 +3231,11 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     var node = item.picture[0];
     var src = '';
     try { src = node.getAttribute('src') || ''; } catch (e) { src = ''; }
-    return src === 'undefined' ? '' : src;
+    return usableThumb(src) ? src : '';
+  }
+
+  function usableThumb(src) {
+    return !!src && src !== 'undefined' && !/(?:^|\/)(?:img_broken|img_placeholder)\.svg(?:$|[?#])/i.test(src);
   }
 
   function paintThumb(thumb, art, fallback, onError) {
@@ -3275,7 +3279,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       if (thumb.attr('data-nova-episode-art')) { stop(); return true; }
       var src = '';
       try { src = node.getAttribute('src') || ''; } catch (e) { src = ''; }
-      if (!src || src === 'undefined') return false;
+      if (!usableThumb(src)) return false;
       stop();
       paintThumb(thumb, src, false);
       return true;
@@ -6151,9 +6155,18 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     };
   }
 
-  function paintEpisodeThumb(thumb, episode) {
-    if (!episode.still_path) return;
+  function paintEpisodeThumb(thumb, episode, item) {
     if (!episode.lampa_grouped && thumb.hasClass('nova-card__thumb--loaded') && !thumb.hasClass('nova-card__thumb--fallback')) return;
+    if (!episode.still_path) {
+      var service = window.LampaView && window.LampaView.kinoapi;
+      var card = movie, season = seasonNumber();
+      if (!service || !service.episodeStill || item.soon || episode.lampa_grouped ||
+          Number(episode.episode_number) !== Number(item.num) || Number(episode.season_number || season) !== Number(season)) return;
+      if (window.LampaView.officialEpisodePreview && window.LampaView.officialEpisodePreview(card, season, item.num)) return;
+      return service.episodeStill(card, season, episode, function (url) {
+        if (url && movie === card && seasonNumber() === season) paintEpisodeThumb(thumb, {still_path:url}, item);
+      });
+    }
     var art = image(episode.still_path, get('minimal_banner_quality', 'high') === 'medium' ? 'w500' : 'w780');
     if (!art) return;
     var previous = thumb.find('img').attr('src');
@@ -6263,7 +6276,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       meta.empty();
       if(rating)meta.append($('<span class="nova-card__rate"></span>').text(rating));
       if(when)meta.append($('<span class="nova-card__date"></span>').text(when));
-      paintEpisodeThumb(thumb, episode);
+      paintEpisodeThumb(thumb, episode, item);
     });
   }
 
@@ -6293,7 +6306,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       var title = card.find('.nova-card__title');
       if (episode.name) title.text(episodeTitle(item, episode.name));
       episodeOverview(card,episode);
-      paintEpisodeThumb(thumb, episode);
+      paintEpisodeThumb(thumb, episode, item);
     });
   }
 
