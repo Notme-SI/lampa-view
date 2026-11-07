@@ -2,11 +2,11 @@ import tmdbGet from './tmdb.js';
 import {locale,text as t} from './i18n.js';
 import {isAnime} from './metadata.js';
 import {animeRecords,animeTarget,animeSeed,animeEpisodeMap,animeIndexInfo} from './anime-index.js';
-import {franchiseModel,franchiseCatalogueRows,franchiseViewingOrder} from './anime-franchise.js';
+import {franchiseModel,franchiseCatalogueRows,franchiseMenuGroups} from './anime-franchise.js';
 import {seasonName} from './episode-metadata.js';
 const positive=n=>Number.isSafeInteger(Number(n)) && Number(n)>0;
 const day=value=>String(value || '').slice(0,10),time=value=>Date.parse(day(value)+'T00:00:00Z');
-function inRelease(episode,release){const aired=time(episode.air_date),from=time(release.aired),until=time(release.released || (release.status==='ongoing'?new Date().toISOString().slice(0,10):''));return Number.isFinite(aired) && Number.isFinite(from) && Number.isFinite(until) && aired>=from-86400000 && aired<=until+86400000;}
+function inRelease(episode,release){const aired=time(episode.air_date),from=time(release.aired),until=time(release.released || (['ongoing','released'].includes(release.status)?new Date().toISOString().slice(0,10):''));return Number.isFinite(aired) && Number.isFinite(from) && Number.isFinite(until) && aired>=from-86400000 && aired<=until+86400000;}
 export function releaseGroups(card,files,model,books){
  const numbers=files.map(Number).slice().sort((a,b)=>a-b),seasons=(card.seasons || []).filter(s=>Number(s.season_number)>0).slice().sort((a,b)=>a.season_number-b.season_number),episodes=[];
  if(!model || numbers.length<2 || numbers.length>3000 || !numbers.every((n,i)=>n===i+1) || seasons.reduce((n,s)=>n+Number(s.episode_count||0),0)!==numbers.length)return null;
@@ -76,13 +76,19 @@ export default function animeCatalogue(L,kino){
    const main=model.nodes.filter(n=>ids.has(n.id) && eligible(n)).sort((a,b)=>a.aired.localeCompare(b.aired)),all=model.nodes.filter(eligible).filter(n=>ids.has(n.id) || model.edges.some(e=>e.relation==='alternative_version' && (e.from===n.id || e.to===n.id))).sort((a,b)=>a.aired.localeCompare(b.aired));
    const specified=layout && layout[number] && model.nodes.find(n=>Number(n.id)===Number(layout[number].mal) && eligible(n));
    const schemes=[main,all].filter((rows,i,a)=>rows.length===labels.length && !a.slice(0,i).some(old=>old.map(n=>n.id).join()===rows.map(n=>n.id).join()));if(!specified && schemes.length!==1)return done(null);const release=specified || schemes[0][labels.length===1?0:Number(number)-1];if(!release || files.length>release.episodes || release.episodes!==files.length && release.status!=='ongoing')return done(null);
-   const seasons=(value.seasons || []).filter(s=>s.season_number>0),books={};if(!seasons.length || seasons.length>100)return done(null);let left=seasons.length;
-   seasons.forEach(s=>load('tv/'+value.id+'/season/'+s.season_number,response=>{books[s.season_number]=response;if(--left)return;
-    let map=animeEpisodeMap(release.record,files.length,value,books);
-    if(map && map.some(e=>!e.metadata || !inRelease(e.metadata,release)))map=null;
-    if(!map){const rows=seasons.flatMap(s=>books[s.season_number] && (books[s.season_number].episodes_original || books[s.season_number].episodes) || []).filter(e=>inRelease(e,release));if(files.length!==release.episodes || rows.length!==release.episodes)return done(null);map=rows.map((metadata,i)=>({number:i+1,metadata}));}
-    const book={};map.forEach(e=>book[e.number]={...e.metadata,lampa_grouped:true,lampa_season_name:seasonName({seasons:[{season_number:number,name:release.name}]},number,{...card,lampa_series_names:[main[0]?.name,main[0]?.original]})});done(Object.keys(book).length===files.length?book:null);
-   }));
+   const seasons=(value.seasons || []).filter(s=>s.season_number>0),books={};if(!seasons.length || seasons.length>100)return done(null);
+   function loadSeasons(numbers,next){const unread=numbers.filter(n=>!Object.prototype.hasOwnProperty.call(books,n));let left=unread.length;if(!left)return next();unread.forEach(n=>load('tv/'+value.id+'/season/'+n,response=>{books[n]=response;if(!--left)next();}));}
+   function finish(map){const book={};map.forEach(e=>book[e.number]={...e.metadata,lampa_grouped:true,lampa_season_name:seasonName({seasons:[{season_number:number,name:release.name}]},number,{...card,lampa_series_names:[main[0]?.name,main[0]?.original]})});done(Object.keys(book).length===files.length?book:null);}
+   const mapped=animeEpisodeMap(release.record,files.length,value);
+   loadSeasons(mapped?[...new Set(mapped.map(e=>e.season))]:[],()=>{
+    const map=mapped && animeEpisodeMap(release.record,files.length,value,books);
+    if(map && map.every(e=>e.metadata && inRelease(e.metadata,release)))return finish(map);
+    if(files.length!==release.episodes)return done(null);
+    const sorted=seasons.slice().sort((a,b)=>a.season_number-b.season_number),from=time(release.aired),until=time(release.released);
+    const fallback=sorted.filter((s,i)=>{const start=time(s.air_date),next=time(sorted[i+1]?.air_date);return !(Number.isFinite(start) && Number.isFinite(until) && start>until+86400000 || Number.isFinite(next) && next<from-86400000);});
+    if(!fallback.length || fallback.length>12)return done(null);
+    loadSeasons(fallback.map(s=>s.season_number),()=>{const rows=fallback.flatMap(s=>books[s.season_number] && (books[s.season_number].episodes_original || books[s.season_number].episodes) || []).filter(e=>inRelease(e,release));if(rows.length!==release.episodes)return done(null);finish(rows.map((metadata,i)=>({number:i+1,metadata})));});
+   });
   });});
  }
  function partsBook(card,parts,done){canonical(card,value=>{if(!value || !parts?.length)return done(null);const numbers=[...new Set(parts.map(p=>p.season).concat(parts.some(p=>['special','tv_special'].includes(p.kind))?[0]:[]))],books={};let left=numbers.length;numbers.forEach(number=>load('tv/'+value.id+'/season/'+number,book=>{books[number]=book;if(!--left)done(joinedPartsBook(parts,books));}));});}
@@ -92,22 +98,27 @@ export default function animeCatalogue(L,kino){
   link._minimalAnimePending=true;let disposed=false;if(link.use)link.use({onDestroy(){disposed=true;}});
   collection(card,model=>{link._minimalAnimePending=false;if(disposed || !model || !model.rows.some(r=>r.results.some(c=>Number(c.id)!==Number(card.shikimori_id || card.mal_id))))return;
    const current=L.Activity && L.Activity.active && L.Activity.active();if(!current || !current.activity || current.activity.component!==link)return;
-   link._minimalAnimeMounted=true;const rows=franchiseCatalogueRows(model).map(row=>['cards',{title:row.title,source:'minimal_anime_collection',url:JSON.stringify({seed:model.seed,row:row.key}),results:row.results.slice(0,20),total_pages:Math.max(1,Math.ceil(row.results.length/20)),minimal_anime_collection:true}]);
-   const first=link.rows.findIndex(row=>Array.isArray(row) && row[0]==='cards');let index=first<0?link.rows.length:first;const focused=link.items[link.active];if(link.active>=index)index=link.items.length;
-   if(index<link.items.length){const length=link.items.length,previous=link.fragment;link.fragment=document.createDocumentFragment();rows.forEach(row=>link.emit('createAndAppend',row));const added=link.items.splice(length);link.items.splice(index,0,...added);const before=link.items[index+added.length],render=before && before.render(true),node=render && (render.nodeType?render:render[0]);if(node && node.parentNode)node.parentNode.insertBefore(link.fragment,node);else link.scroll.append(link.fragment);link.fragment=previous;}
-   link.rows.splice(index,0,...rows);
-   const order=franchiseViewingOrder(model);if(order.length>1){
-    const guide=document.createElement('section');guide.className='minimal-anime-order';
-    const heading=document.createElement('h2');heading.textContent=t('Порядок просмотра');guide.appendChild(heading);
-    const note=document.createElement('p');note.textContent=t('По порядку выхода. Пересказы и ответвления показаны отдельно.');guide.appendChild(note);
-    const list=document.createElement('ol');guide.appendChild(list);
-    order.forEach(step=>{const item=document.createElement('li'),label=document.createElement('strong'),name=document.createElement('span'),detail=document.createElement('small');
-     const film=step.kind==='movie',type=film?t('Фильм'):step.season?t('Сезон {0}',[step.season]):['special','tv_special','ova'].includes(step.kind)?t('Спецвыпуски'):t('Сериал');
-     label.textContent=step.number+'. '+type+(step.part?' · '+t('Часть {0}',[step.part]):'');name.textContent=step.name;detail.textContent=[step.year,...(step.episodes>1?[t('Эпизодов в релизе: {0}',[step.episodes])]:[]),...step.alternatives.filter(a=>a.season>0).map(a=>t('ТВ-версия: сезон {0}',[a.season]))].filter(Boolean).join(' · ');[label,name,detail].forEach(node=>item.appendChild(node));list.appendChild(item);
-    });
-    const first=link.items[index],render=first && first.render(true),node=render && (render.nodeType?render:render[0]);if(node?.parentNode)node.parentNode.insertBefore(guide,node);else link.scroll.append(guide);
+   const header=link.items[0],render=header && header.render(true),root=render && (render.nodeType?render:render[0]),right=root && root.querySelector('.full-start-new__right');if(!right)return;
+   link._minimalAnimeMounted=true;
+   const wrap=document.createElement('div');wrap.className='minimal-anime-franchise';
+   const control=document.createElement('button');control.type='button';control.className='minimal-anime-franchise__button selector';control.textContent=t('Порядок просмотра');control.setAttribute('aria-haspopup','listbox');wrap.appendChild(control);right.appendChild(wrap);
+   const arrow=document.createElement('span');arrow.textContent='⌄';arrow.setAttribute('aria-hidden','true');control.appendChild(arrow);
+   const remember=()=>{header.last=control;},back=()=>{L.Select.hide();if(control.isConnected){remember();L.Controller.toggle('full_start');}};
+   const escape=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+   function open(){
+    if(disposed || !control.isConnected)return;remember();
+    const groups=franchiseMenuGroups(model),items=[];
+    groups.forEach(group=>{items.push({title:escape(group.title),separator:true});group.entries.forEach(entry=>items.push({title:escape(entry.title),subtitle:escape(entry.subtitle),card:entry.card,selected:Number(entry.card.id)===Number(card.shikimori_id || card.mal_id || model.seed)}));});
+    L.Select.show({title:t('Порядок просмотра'),items,onFullDraw(scroll){scroll.body().find('.settings-param-title').addClass('minimal-season-section');scroll.body().find('.selectbox-item').addClass('minimal-anime-franchise__item');},onSelect(entry){
+     L.Select.hide();const selected=entry.card;if(!selected)return back();
+     if(Number(selected.id)===Number(card.shikimori_id || card.mal_id))return back();
+     L.Activity.push({component:'full',source:selected.source,id:selected.id,method:selected.media_type,card:selected});
+    },onBack:back});
    }
-   link.active=Math.max(0,link.items.indexOf(focused));if(link.emit)link.emit('scroll',0);
+   control.addEventListener('hover:focus',remember);control.addEventListener('hover:enter',open);
+   control.addEventListener('click',event=>{event.preventDefault();event.stopImmediatePropagation();open();});
+   control.addEventListener('keydown',event=>{if(event.key==='Enter' || event.key===' '){event.preventDefault();event.stopImmediatePropagation();open();}});
+
   });
  }
  if(L.Listener && L.Listener.follow){L.Listener.follow('full',event=>{if(event.type==='complite')mount(event);if(event.type==='build' && event.data && event.data.minimal_anime_collection && event.item && event.item.use){const row=event.data;event.item.use({onlyMore:()=>L.Activity.push({component:'category_full',source:row.source,url:row.url,title:row.title,page:1})});}});L.Listener.follow('activity',event=>{if(event.type!=='start')return;const current=L.Activity && L.Activity.active && L.Activity.active(),link=current && current.component==='full' && current.activity && current.activity.component;if(link && link.props && link.props.all)mount({link,data:link.props.all()});});}

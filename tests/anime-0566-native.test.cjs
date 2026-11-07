@@ -7,15 +7,36 @@ async function scene(n,movie,labels,values,comp={}){
 }
 test('native episode zero stays an extra instead of becoming a second episode one',async()=>{
  const n=await native({built:true}),{w,L}=n;try{
-  w.LampaView.episodeMetadata.groups=(c,f,done)=>done(null);L.Api.sources.tmdb.get=(url,p,ok)=>ok({season_number:3,episodes:[{season_number:3,episode_number:1,name:'Actual first episode',still_path:'/first.jpg'}]});
+  w.LampaView.episodeMetadata.groups=(c,f,done)=>done(null);L.Api.sources.tmdb.get=(url,p,ok)=>ok({season_number:3,episodes:[{season_number:3,episode_number:1,name:'Первая серия: начало',still_path:'/first.jpg'}]});
   const view=await scene(n,{id:63926,name:'One Punch Man',minimal_anime:true,source:'tmdb',number_of_seasons:3,seasons:[{season_number:3,episode_count:1}]},[3],[0,1]);
-  const cards=view.root.find('.nova-card');assert.equal(cards.length,2);assert.equal(cards.eq(0).find('.nova-card__title').text(),'Дополнительный выпуск');assert.equal(cards.eq(0).find('.nova-card__num').text(),'Дополнительный выпуск');assert.equal(cards.eq(1).find('.nova-card__title').text(),'Actual first episode');cards.eq(0).trigger('hover:enter');assert.equal(view.played(),0);assert.ok(view.root.find('[data-hash="physical-0"]').length);assert.deepEqual(n.errors,[]);
+  const cards=view.root.find('.nova-card');assert.equal(cards.length,2);assert.equal(cards.eq(0).find('.nova-card__title').text(),'Дополнительный выпуск');assert.equal(cards.eq(0).find('.nova-card__num').text(),'Дополнительный выпуск');assert.equal(cards.eq(1).find('.nova-card__title').text(),'Первая серия: начало');cards.eq(0).trigger('hover:enter');assert.equal(view.played(),0);assert.ok(view.root.find('[data-hash="physical-0"]').length);assert.deepEqual(n.errors,[]);
  }finally{n.close();}
 });
 test('native UI displays the canonical season and metadata while retaining a provider folder numbered two',async()=>{
  const n=await native({built:true}),{w}=n;try{
-  w.LampaView.episodeMetadata.groups=(c,f,done)=>done(null);w.LampaView.animeBase.providerBook=(c,s,n,f,done)=>done({1:{season_number:1,episode_number:1,name:'Real first episode',overview:'Actual synopsis',still_path:'/frame.jpg'}});
+  w.LampaView.episodeMetadata.groups=(c,f,done)=>done(null);w.LampaView.animeBase.providerBook=(c,s,n,f,done)=>done({1:{season_number:1,episode_number:1,name:'Первая серия: начало',overview:'Описание первой серии',still_path:'/frame.jpg'}});
   const view=await scene(n,{id:31911,name:'Brotherhood',minimal_anime:true,source:'tmdb',number_of_seasons:1,seasons:[{season_number:1,episode_count:1}]},[2],[1],{lampaViewProviderSeasons:{2:{number:1,mal:5114}}});
-  assert.equal(view.root.find('.nova-hero__season-label').text(),'Сезон 1');assert.equal(view.root.find('.nova-card__title').text(),'Real first episode');assert.equal(view.root.find('.nova-card__overview').text(),'Actual synopsis');assert.equal(view.root.find('[data-nova-focus="season:0"] .nova-chip__label').text(),'Сезон 1');assert.deepEqual(n.errors,[]);
+  assert.equal(view.root.find('.nova-hero__season-label').text(),'Сезон 1');assert.equal(view.root.find('.nova-card__title').text(),'Первая серия: начало');assert.equal(view.root.find('.nova-card__overview').text(),'Описание первой серии');assert.equal(view.root.find('[data-nova-focus="season:0"] .nova-chip__label').text(),'Сезон 1');assert.deepEqual(n.errors,[]);
+ }finally{n.close();}
+});
+
+test('native Kodik picker keeps separate TV release coordinates through nested season and dub lists',async()=>{
+ const n=await native({built:true}),{w,L}=n,base='http://lampa.example.invalid/lite/kodik';try{
+  const requested=[],rendered=[],tag=(data,cls='videos__item')=>'<div class="'+cls+'" data-json=\''+JSON.stringify(data)+'\'></div>';
+  const comp={changeBalanser(){},reset(){},request:url=>requested.push(url),parseJsonDate(body,selector){return Array.from(w.jQuery('<div>').html(body).find(selector),node=>JSON.parse(node.getAttribute('data-json')));},parse(body){rendered.push(this.parseJsonDate(body,'.videos__item'));}};
+  const movie={id:67075,name:'Моб Психо 100',original_name:'Mob Psycho 100',first_air_date:'2016-07-12',minimal_anime:true,source:'tmdb',number_of_seasons:3};
+  w.LampaView.animeProviderParts=(card,url,body,number,numbers,done)=>done(body,[]);
+  w.LampaView.animeProviderParts.folders=(card,url,body,done)=>done(body,null);
+  await scene(n,movie,[1,2,3],[1],comp);
+  comp.request(base+'?title=Mob');
+  comp.parse([1,2,3].map((s,i)=>tag({title:'Моб Психо 100 [ТВ-'+s+']',year:[2016,2019,2022][i],method:'link',similar:true,url:base+'?pick='+s})).join(''));
+  assert.deepEqual(Array.from(rendered.at(-1),r=>r.season),[1,2,3]);
+  comp.request(base+'?pick=2');
+  comp.parse(tag({title:'1 сезон',method:'link',season:1,url:base+'?pick=2&s=1'},'videos__item videos__season'));
+  assert.equal(requested.at(-1),base+'?pick=2&s=1');
+  comp.request(base+'?pick=2&s=1&t=voice');
+  comp.parse(tag({method:'call',season:1,episode:1,url:base+'?play=one'})+tag({method:'call',title:'Dub option',url:base+'?dub=two'}));
+  assert.deepEqual(Array.from(rendered.at(-1),r=>[r.season,r.episode,r.url]),[[2,1,base+'?play=one']]);
+  assert.deepEqual(n.errors,[]);
  }finally{n.close();}
 });

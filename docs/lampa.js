@@ -1,4 +1,4 @@
-/*! Lampa View 0.5.66 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.5.67 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -10420,6 +10420,26 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // src/episode-metadata.js
+  function metadataText(value) {
+    var language = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : locale();
+    var text2 = String(value || "").trim().replace(/[\u2013\u2014]/g, "-");
+    return language === "ru" && /[a-z]/i.test(text2) && !/[а-яё]/i.test(text2) && text2.length > 1 ? "" : text2;
+  }
+  function localizedEpisodeBook(book) {
+    var language = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : locale();
+    if (!book) return book;
+    var result = {};
+    Object.keys(book).forEach(function (key2) {
+      var row = book[key2];
+      result[key2] = __spreadValues(__spreadProps(__spreadValues({}, row), {
+        name: metadataText(row.name, language) || text("Серия {0}", [key2], language),
+        overview: metadataText(row.overview, language)
+      }), row.lampa_season_name !== void 0 ? {
+        lampa_season_name: metadataText(row.lampa_season_name, language)
+      } : {});
+    });
+    return result;
+  }
   function plannedSeason(card, season, today2) {
     var valid = function valid(d) {
       return /^\d{4}-\d{2}-\d{2}$/.test(String(d || ""));
@@ -10597,14 +10617,16 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var row = (Array.isArray(card && card.seasons) ? card.seasons : []).find(function (s) {
       return Number(s.season_number) === Number(number3);
     });
-    var name = String(row && row.name || "").trim();
+    var name = metadataText(row && row.name);
     var clean = function clean(value) {
       return String(value || "").normalize("NFKC").toLowerCase().replace(/[\s.,:;!?'’"«»()[\]…—–_-]+/g, "");
     };
     var title = name.replace(/(?:season|сезон)\s*\d+|\d+\s*(?:season|сезон)/gi, "");
     var aliases = [series.name, series.title, series.original_name, series.original_title].concat(_toConsumableArray(series.lampa_series_names || [])).map(clean).filter(Boolean);
     var split = name.match(/^(.+?)\s*:\s*(.+)$/);
-    if (split && aliases.includes(clean(split[1]))) name = split[2].trim();
+    if (split && aliases.some(function (alias) {
+      return alias === clean(split[1]) || alias === clean(split[1].replace(/\s+(?:(?:season|сезон)\s*)?\d+$/i, ""));
+    })) name = split[2].trim();
     var unnumbered = name.replace(/(?:[\s:._–—-]+|\s*\()(?:s(?:eason)?\s*|сезон\s*|part\s*|часть\s*|cour\s*)?\d+(?:st|nd|rd|th)?(?:\s*(?:season|сезон|part|часть|cour))?\)?$/i, "");
     if ([name, title, unnumbered].some(function (value) {
       return aliases.includes(clean(value));
@@ -11002,6 +11024,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     return {
       isAnime: isAnime,
       availableMetadata: availableMetadata,
+      localizeBook: localizedEpisodeBook,
       alternate: alternativeNumbering,
       groups: groups,
       groupBook: groupBook,
@@ -11041,6 +11064,496 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         return legacyBook(card, number3, numbers, actual, done, files);
       }
     };
+  }
+
+  // src/anime-franchise.js
+  var positive2 = function positive2(n) {
+    return Number.isSafeInteger(Number(n)) && Number(n) > 0;
+  };
+  var kindNames = {
+    "TV Сериал": "tv",
+    "Фильм": "movie",
+    "Спецвыпуск": "special",
+    "TV Спецвыпуск": "tv_special",
+    "Музыка": "music",
+    "Клип": "music",
+    "OVA": "ova",
+    "ONA": "ona"
+  };
+  var date = function date(value) {
+    return /^\d{4}-\d{2}-\d{2}$/.test(String(value || "")) ? String(value) : "";
+  };
+  function franchiseModel(graph, seed) {
+    var metadata2 = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
+    if (!graph || Number(graph.current_id) !== Number(seed) || !Array.isArray(graph.nodes) || !Array.isArray(graph.links) || graph.nodes.length < 2 || graph.nodes.length > 240 || graph.links.length > 1800) return null;
+    var details = new Map(metadata2.filter(function (v) {
+        return v && positive2(v.id);
+      }).map(function (v) {
+        return [Number(v.id), v];
+      })),
+      nodes = /* @__PURE__ */new Map(),
+      edges = [],
+      seen = /* @__PURE__ */new Set();
+    var _iterator16 = _createForOfIteratorHelper(graph.nodes),
+      _step16;
+    try {
+      for (_iterator16.s(); !(_step16 = _iterator16.n()).done;) {
+        var node = _step16.value;
+        var _id = Number(node.id);
+        if (!positive2(_id) || nodes.has(_id) || typeof node.name !== "string" || !node.name.trim()) return null;
+        var meta = details.get(_id) || {},
+          records = animeRecords({
+            source: "minimal_shiki",
+            id: _id
+          }),
+          record = records.length === 1 ? records[0] : null,
+          kind = meta.kind || record && record.kind || kindNames[node.kind] || String(node.kind || "").toLowerCase(),
+          aired = date(meta.aired_on),
+          year = aired.slice(0, 4) || (Number(node.year) >= 1900 && Number(node.year) <= 2200 ? String(node.year) : "");
+        nodes.set(_id, {
+          id: _id,
+          url: node.url || "",
+          name: locale() === "ru" ? meta.russian || node.name || meta.name : meta.name || node.name,
+          original: meta.name || "",
+          kind: kind,
+          aired: aired,
+          released: date(meta.released_on),
+          year: year,
+          status: meta.status || "",
+          episodes: Number(meta.episodes) || 0,
+          airedCount: Number(meta.episodes_aired) || 0,
+          poster: meta.image && meta.image.original || node.image_url || "",
+          record: record
+        });
+      }
+    } catch (err) {
+      _iterator16.e(err);
+    } finally {
+      _iterator16.f();
+    }
+    if (!nodes.has(Number(seed))) return null;
+    var _iterator17 = _createForOfIteratorHelper(graph.links),
+      _step17;
+    try {
+      for (_iterator17.s(); !(_step17 = _iterator17.n()).done;) {
+        var link = _step17.value;
+        var _from = Number(link.source_id),
+          _to = Number(link.target_id),
+          relation = String(link.relation || "").toLowerCase();
+        if (!nodes.has(_from) || !nodes.has(_to) || _from === _to) return null;
+        var key2 = _from + ":" + _to + ":" + relation;
+        if (!seen.has(key2)) {
+          seen.add(key2);
+          edges.push({
+            from: _from,
+            to: _to,
+            relation: relation
+          });
+        }
+      }
+    } catch (err) {
+      _iterator17.e(err);
+    } finally {
+      _iterator17.f();
+    }
+    var connected = function connected(ids, relations) {
+      var change = true;
+      while (change) {
+        change = false;
+        for (var _i5 = 0, _edges = edges; _i5 < _edges.length; _i5++) {
+          var edge = _edges[_i5];
+          if (relations.includes(edge.relation) && (ids.has(edge.from) || ids.has(edge.to))) {
+            for (var _i6 = 0, _arr3 = [edge.from, edge.to]; _i6 < _arr3.length; _i6++) {
+              var id = _arr3[_i6];
+              if (!ids.has(id)) {
+                ids.add(id);
+                change = true;
+              }
+            }
+          }
+        }
+      }
+      return ids;
+    };
+    var story = connected(/* @__PURE__ */new Set([Number(seed)]), ["prequel", "sequel"]),
+      relevant = connected(new Set(story), ["alternative_version", "summary", "full_story"]);
+    var parents = new Map(_toConsumableArray(nodes.keys()).map(function (id) {
+        return [id, id];
+      })),
+      root = function root(id) {
+        while (parents.get(id) !== id) id = parents.get(id);
+        return id;
+      };
+    for (var _i7 = 0, _edges2 = edges; _i7 < _edges2.length; _i7++) {
+      var edge = _edges2[_i7];
+      if (edge.relation === "alternative_version" && relevant.has(edge.from) && relevant.has(edge.to)) parents.set(root(edge.to), root(edge.from));
+    }
+    var variants = /* @__PURE__ */new Map();
+    var _iterator18 = _createForOfIteratorHelper(relevant),
+      _step18;
+    try {
+      for (_iterator18.s(); !(_step18 = _iterator18.n()).done;) {
+        var _id2 = _step18.value;
+        var r = root(_id2),
+          group = variants.get(r) || [];
+        group.push(_id2);
+        variants.set(r, group);
+      }
+    } catch (err) {
+      _iterator18.e(err);
+    } finally {
+      _iterator18.f();
+    }
+    var compare = function compare(a, b) {
+      var x = nodes.get(a),
+        y = nodes.get(b);
+      return !!y.year - !!x.year || (x.aired || x.year || "9999").localeCompare(y.aired || y.year || "9999") || a - b;
+    };
+    var representative = /* @__PURE__ */new Map(),
+      alternatives = /* @__PURE__ */new Set();
+    var _iterator19 = _createForOfIteratorHelper(variants.values()),
+      _step19;
+    try {
+      for (_iterator19.s(); !(_step19 = _iterator19.n()).done;) {
+        var _group = _step19.value;
+        _group.sort(compare);
+        var television = _group.filter(function (id) {
+            return ["tv", "ona"].includes(nodes.get(id).kind);
+          }),
+          choices = television.length && _group.some(function (id) {
+            return ["ova", "special", "tv_special"].includes(nodes.get(id).kind);
+          }) ? television : _group;
+        var selected = choices.includes(Number(seed)) ? Number(seed) : choices[0];
+        var _iterator22 = _createForOfIteratorHelper(_group),
+          _step22;
+        try {
+          for (_iterator22.s(); !(_step22 = _iterator22.n()).done;) {
+            var _id3 = _step22.value;
+            representative.set(_id3, selected);
+            if (_id3 !== selected) alternatives.add(_id3);
+          }
+        } catch (err) {
+          _iterator22.e(err);
+        } finally {
+          _iterator22.f();
+        }
+      }
+    } catch (err) {
+      _iterator19.e(err);
+    } finally {
+      _iterator19.f();
+    }
+    var main = new Set(_toConsumableArray(story).map(function (id) {
+        return representative.get(id) || id;
+      })),
+      directed = new Map(_toConsumableArray(main).map(function (id) {
+        return [id, /* @__PURE__ */new Set()];
+      }));
+    for (var _i8 = 0, _edges3 = edges; _i8 < _edges3.length; _i8++) {
+      var _edge = _edges3[_i8];
+      if (["prequel", "sequel"].includes(_edge.relation)) {
+        var from = _edge.relation === "sequel" ? _edge.from : _edge.to,
+          to = _edge.relation === "sequel" ? _edge.to : _edge.from;
+        from = representative.get(from) || from;
+        to = representative.get(to) || to;
+        if (main.has(from) && main.has(to) && from !== to) directed.get(from).add(to);
+      }
+    }
+    var degrees = new Map(_toConsumableArray(main).map(function (id) {
+      return [id, 0];
+    }));
+    var _iterator20 = _createForOfIteratorHelper(directed.values()),
+      _step20;
+    try {
+      for (_iterator20.s(); !(_step20 = _iterator20.n()).done;) {
+        var values = _step20.value;
+        var _iterator23 = _createForOfIteratorHelper(values),
+          _step23;
+        try {
+          for (_iterator23.s(); !(_step23 = _iterator23.n()).done;) {
+            var _id4 = _step23.value;
+            degrees.set(_id4, degrees.get(_id4) + 1);
+          }
+        } catch (err) {
+          _iterator23.e(err);
+        } finally {
+          _iterator23.f();
+        }
+      }
+    } catch (err) {
+      _iterator20.e(err);
+    } finally {
+      _iterator20.f();
+    }
+    var ready = _toConsumableArray(main).filter(function (id) {
+        return degrees.get(id) === 0;
+      }).sort(compare),
+      ordered = [];
+    while (ready.length) {
+      var id = ready.shift();
+      ordered.push(id);
+      var _iterator21 = _createForOfIteratorHelper(directed.get(id)),
+        _step21;
+      try {
+        for (_iterator21.s(); !(_step21 = _iterator21.n()).done;) {
+          var next = _step21.value;
+          degrees.set(next, degrees.get(next) - 1);
+          if (!degrees.get(next)) {
+            ready.push(next);
+            ready.sort(compare);
+          }
+        }
+      } catch (err) {
+        _iterator21.e(err);
+      } finally {
+        _iterator21.f();
+      }
+    }
+    var complete = ordered.length === main.size;
+    if (!complete) ordered.splice.apply(ordered, [0, ordered.length].concat(_toConsumableArray(_toConsumableArray(main).sort(compare))));
+    var summary = new Set(edges.filter(function (e) {
+      return e.relation === "summary" && (story.has(e.from) || story.has(e.to));
+    }).flatMap(function (e) {
+      return [e.from, e.to];
+    }).filter(function (id) {
+      return !story.has(id);
+    }));
+    summary.forEach(function (id) {
+      return alternatives.add(id);
+    });
+    var related = connected(new Set(relevant), ["prequel", "sequel", "side_story", "parent_story", "spin_off", "alternative_version", "summary", "full_story"]);
+    for (var _i9 = 0, _edges4 = edges; _i9 < _edges4.length; _i9++) {
+      var _edge2 = _edges4[_i9];
+      if (_edge2.relation === "other" && (related.has(_edge2.from) || related.has(_edge2.to))) {
+        if (relevant.has(_edge2.from)) related.add(_edge2.to);
+        if (relevant.has(_edge2.to)) related.add(_edge2.from);
+      }
+    }
+    var rest = _toConsumableArray(related).filter(function (id) {
+      return !main.has(id) && !alternatives.has(id) && !["music", "pv", "cm"].includes(nodes.get(id).kind);
+    });
+    var today2 = (/* @__PURE__ */new Date()).toISOString().slice(0, 10),
+      future = function future(n) {
+        return n.status === "anons" || !!n.aired && n.aired > today2;
+      };
+    function card(id) {
+      var node = nodes.get(id),
+        movie = node.kind === "movie",
+        image2 = /^https:\/\/shikimori\.(?:io|one)\//.test(node.poster) ? node.poster : node.poster.startsWith("/") ? "https://shikimori.io" + node.poster : "";
+      return __spreadProps(__spreadValues({
+        id: id,
+        shikimori_id: id,
+        mal_id: id,
+        source: "minimal_shiki",
+        media_type: movie ? "movie" : "tv",
+        minimal_anime: true,
+        title: node.name,
+        original_title: node.original
+      }, movie ? {
+        release_date: node.aired || node.year
+      } : {
+        name: node.name,
+        original_name: node.original,
+        first_air_date: node.aired || node.year
+      }), {
+        img: image2,
+        episodes: node.episodes,
+        episodes_aired: node.airedCount,
+        status: node.status,
+        minimal_anime_kind: node.kind,
+        minimal_anime_targets: animeTargets(node.record)
+      });
+    }
+    var announced = new Set([].concat(_toConsumableArray(main), _toConsumableArray(alternatives), _toConsumableArray(rest)).filter(function (id) {
+      return future(nodes.get(id));
+    }));
+    var rows = [{
+      key: "story",
+      title: text(complete ? "Основная история" : "Связанные релизы"),
+      ids: ordered
+    }, {
+      key: "alternatives",
+      title: text("Другие версии и пересказы"),
+      ids: _toConsumableArray(alternatives).sort(compare)
+    }, {
+      key: "related",
+      title: text("Ответвления и спецвыпуски"),
+      ids: rest.sort(compare)
+    }, {
+      key: "announced",
+      title: text("Продолжения и анонсы"),
+      ids: _toConsumableArray(announced).sort(compare)
+    }].map(function (row) {
+      return __spreadProps(__spreadValues({}, row), {
+        results: row.ids.filter(function (id) {
+          return row.key === "announced" || !announced.has(id);
+        }).map(card)
+      });
+    }).filter(function (row) {
+      return row.results.length;
+    });
+    return {
+      seed: Number(seed),
+      complete: complete,
+      rows: rows,
+      nodes: _toConsumableArray(nodes.values()),
+      edges: edges
+    };
+  }
+  function franchiseCatalogueRows(model) {
+    var _a;
+    var seen = /* @__PURE__ */new Set(),
+      nodes = new Map(model.nodes.map(function (n) {
+        return [Number(n.id), n];
+      })),
+      first = (_a = model.rows.find(function (r) {
+        return r.key === "story";
+      })) == null ? void 0 : _a.results[0],
+      prefix = String((first == null ? void 0 : first.title) || (first == null ? void 0 : first.name) || "").trim();
+    return model.rows.map(function (row) {
+      return __spreadProps(__spreadValues({}, row), {
+        results: row.results.filter(function (card) {
+          var node = nodes.get(Number(card.id)),
+            name = String((node == null ? void 0 : node.original) || "") + " " + String(card.title || "") + " " + String((node == null ? void 0 : node.url) || "");
+          if (["music", "pv", "cm"].includes(node == null ? void 0 : node.kind) || row.key === "related" && /manner[- _]eizou|урок хороших манер|(?:\s+x\s+|×)/i.test(name)) return false;
+          var type = card.media_type,
+            targets = (card.minimal_anime_targets || []).filter(function (t) {
+              return t.type === type;
+            }),
+            key2 = targets.length === 1 ? type + ":" + targets[0].id : "mal:" + card.id;
+          if (seen.has(key2)) return false;
+          seen.add(key2);
+          return true;
+        }).map(function (card) {
+          var name = String(card.title || card.name || ""),
+            short = prefix && name.toLowerCase().startsWith(prefix.toLowerCase() + ":") ? name.slice(prefix.length + 1).trim() : name;
+          return short !== name ? __spreadProps(__spreadValues(__spreadProps(__spreadValues({}, card), {
+            title: short
+          }), card.name ? {
+            name: short
+          } : {}), {
+            minimal_franchise_full_title: name
+          }) : card;
+        })
+      });
+    }).filter(function (row) {
+      return row.results.length;
+    });
+  }
+  function franchiseViewingOrder(model) {
+    var _a, _b;
+    if (!model.complete) return [];
+    var story = model.rows.find(function (row) {
+      return row.key === "story";
+    });
+    if (!story) return [];
+    var ids = new Set(story.results.map(function (c) {
+        return Number(c.id);
+      })),
+      nodes = model.nodes.filter(function (n) {
+        return ids.has(n.id) && n.status !== "anons" && (!n.aired || n.aired <= (/* @__PURE__ */new Date()).toISOString().slice(0, 10));
+      }).sort(function (a, b) {
+        return (a.aired || a.year || "9999").localeCompare(b.aired || b.year || "9999") || story.results.findIndex(function (c) {
+          return c.id === a.id;
+        }) - story.results.findIndex(function (c) {
+          return c.id === b.id;
+        });
+      });
+    var season = 0,
+      previous = null;
+    var steps = [];
+    var _iterator24 = _createForOfIteratorHelper(nodes),
+      _step24;
+    try {
+      var _loop9 = function _loop9() {
+        var node = _step24.value;
+        var number3 = 0,
+          part = 0;
+        if (["tv", "ona"].includes(node.kind)) {
+          var gap = previous && Date.parse(node.aired) - Date.parse(previous.node.released || previous.node.aired),
+            split = previous && ((_a = node.record) == null ? void 0 : _a.tv) && node.record.tv === ((_b = previous.node.record) == null ? void 0 : _b.tv) && node.record.season === previous.node.record.season && Number(node.record.offset || 0) > Number(previous.node.record.offset || 0) && (/(?:part|часть|cour)\s*\d+/i.test(node.name + " " + node.original) || Number(node.record.season) > 1 && gap >= 0 && gap < 366 * 864e5);
+          if (split) {
+            part = (previous.step.part || 1) + 1;
+            previous.step.part = part - 1;
+          } else season++;
+          number3 = season;
+        }
+        var step = {
+          id: node.id,
+          number: steps.length + 1,
+          name: node.name,
+          year: node.year,
+          kind: node.kind,
+          season: number3,
+          part: part,
+          episodes: node.episodes,
+          alternatives: model.nodes.filter(function (n) {
+            return (model.edges || []).some(function (e) {
+              return e.relation === "alternative_version" && (e.from === node.id && e.to === n.id || e.to === node.id && e.from === n.id);
+            });
+          }).map(function (n) {
+            var _a2;
+            return {
+              id: n.id,
+              kind: n.kind,
+              season: Number((_a2 = n.record) == null ? void 0 : _a2.season) || 0
+            };
+          })
+        };
+        steps.push(step);
+        if (number3) previous = {
+          node: node,
+          step: step
+        };
+      };
+      for (_iterator24.s(); !(_step24 = _iterator24.n()).done;) {
+        _loop9();
+      }
+    } catch (err) {
+      _iterator24.e(err);
+    } finally {
+      _iterator24.f();
+    }
+    return steps;
+  }
+  function franchiseMenuGroups(model) {
+    var order = franchiseViewingOrder(model),
+      steps = new Map(order.map(function (step) {
+        return [step.id, step];
+      })),
+      seen = /* @__PURE__ */new Set();
+    return model.rows.map(function (row) {
+      var source = row.key === "story" && order.length ? order.map(function (step) {
+        return row.results.find(function (card) {
+          return card.id === step.id;
+        });
+      }).filter(Boolean) : row.results;
+      var entries2 = source.filter(function (card) {
+        var node = model.nodes.find(function (n) {
+            return n.id === card.id;
+          }),
+          name = ((node == null ? void 0 : node.original) || "") + " " + ((node == null ? void 0 : node.url) || "") + " " + (card.title || "");
+        if (seen.has(card.id) || ["music", "pv", "cm"].includes(node == null ? void 0 : node.kind) || row.key === "related" && /manner[- _]eizou|урок хороших манер|(?:\s+x\s+|×)/i.test(name)) return false;
+        seen.add(card.id);
+        return true;
+      }).map(function (card) {
+        var step = steps.get(card.id),
+          kind = card.minimal_anime_kind,
+          type = kind === "movie" ? text("Фильм") : (step == null ? void 0 : step.season) ? text("Сезон {0}", [step.season]) : kind === "ova" ? "OVA" : ["special", "tv_special"].includes(kind) ? text("Спецвыпуски") : text("Сериал");
+        var subtitle = [type + ((step == null ? void 0 : step.part) ? " \xB7 " + text("Часть {0}", [step.part]) : ""), String(card.release_date || card.first_air_date || "").slice(0, 4)].filter(Boolean).join(" \xB7 ");
+        return {
+          card: card,
+          title: (step ? step.number + ". " : "") + String(card.title || card.name || "").replace(/[\u2013\u2014]/g, "-"),
+          subtitle: subtitle
+        };
+      });
+      return {
+        title: row.key === "story" ? text("Порядок просмотра") : row.title,
+        entries: entries2
+      };
+    }).filter(function (group) {
+      return group.entries.length;
+    });
   }
 
   // src/tmdb.js
@@ -11264,21 +11777,21 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       return list.call(this, params, function (json) {
         if (!json || !Array.isArray(json.results)) return ok(json);
         var seen = /* @__PURE__ */new Set();
-        var _iterator16 = _createForOfIteratorHelper(entry),
-          _step16;
+        var _iterator25 = _createForOfIteratorHelper(entry),
+          _step25;
         try {
-          for (_iterator16.s(); !(_step16 = _iterator16.n()).done;) {
-            var _step16$value = _slicedToArray(_step16.value, 2),
-              p = _step16$value[0],
-              ids2 = _step16$value[1];
+          for (_iterator25.s(); !(_step25 = _iterator25.n()).done;) {
+            var _step25$value = _slicedToArray(_step25.value, 2),
+              p = _step25$value[0],
+              ids2 = _step25$value[1];
             if (p < page) ids2.forEach(function (id) {
               return seen.add(id);
             });
           }
         } catch (err) {
-          _iterator16.e(err);
+          _iterator25.e(err);
         } finally {
-          _iterator16.f();
+          _iterator25.f();
         }
         var ids = [];
         var results = json.results.filter(function (card) {
@@ -11326,7 +11839,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         };
         var timer = setTimeout(function () {
           return finish(0);
-        }, 6500);
+        }, 18e3);
         anime.canonical(data.movie, function (card) {
           if (complete || !card) return finish(0);
           resolved = card;
@@ -11355,7 +11868,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             resolved = __spreadProps(__spreadValues({}, card), {
               minimal_unreleased_seasons: announced
             });
-            finish(Number(card.number_of_seasons) === 1 && releases && releases.length > 1 ? releases.length : publishedSeasonCount(resolved));
+            var guide = model && model.complete ? franchiseViewingOrder(model).filter(function (row) {
+              return ["tv", "ona"].includes(row.kind) && row.season;
+            }) : [];
+            var seasonCount = new Set(guide.filter(function (row) {
+              var _a, _b;
+              return Number((_b = (_a = model.nodes.find(function (n) {
+                return n.id === row.id;
+              })) == null ? void 0 : _a.record) == null ? void 0 : _b.tv) === Number(card.id);
+            }).map(function (row) {
+              return row.season;
+            })).size;
+            finish(Math.max(seasonCount, publishedSeasonCount(resolved)));
           });
         });
       }, error);
@@ -11496,22 +12020,22 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             return fn(path, studio, logoLanguage);
           });
           if (cache2.size > 64) {
-            var _iterator17 = _createForOfIteratorHelper(cache2),
-              _step17;
+            var _iterator26 = _createForOfIteratorHelper(cache2),
+              _step26;
             try {
-              for (_iterator17.s(); !(_step17 = _iterator17.n()).done;) {
-                var _step17$value = _slicedToArray(_step17.value, 2),
-                  old = _step17$value[0],
-                  _value2 = _step17$value[1];
+              for (_iterator26.s(); !(_step26 = _iterator26.n()).done;) {
+                var _step26$value = _slicedToArray(_step26.value, 2),
+                  old = _step26$value[0],
+                  _value2 = _step26$value[1];
                 if (!_value2.callbacks) {
                   cache2.delete(old);
                   break;
                 }
               }
             } catch (err) {
-              _iterator17.e(err);
+              _iterator26.e(err);
             } finally {
-              _iterator17.f();
+              _iterator26.f();
             }
           }
           done();
@@ -11681,8 +12205,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         try {
           var request = w.indexedDB.open("lampa-view-artwork", 1);
           request.onupgradeneeded = function () {
-            for (var _i5 = 0, _arr3 = ["files", "sizes"]; _i5 < _arr3.length; _i5++) {
-              var store = _arr3[_i5];
+            for (var _i0 = 0, _arr4 = ["files", "sizes"]; _i0 < _arr4.length; _i0++) {
+              var store = _arr4[_i0];
               if (!request.result.objectStoreNames.contains(store)) request.result.createObjectStore(store, {
                 keyPath: "url"
               });
@@ -11767,7 +12291,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     }
     function _flush() {
       _flush = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4() {
-        var database2, pending, rows, tx, store, sizes, _iterator21, _step21, row, request, _t6;
+        var database2, pending, rows, tx, store, sizes, _iterator30, _step30, row, request, _t6;
         return _regenerator().w(function (_context4) {
           while (1) switch (_context4.p = _context4.n) {
             case 0:
@@ -11825,10 +12349,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               tx.onerror = function (event) {
                 return event.preventDefault();
               };
-              _iterator21 = _createForOfIteratorHelper(rows);
+              _iterator30 = _createForOfIteratorHelper(rows);
               try {
-                for (_iterator21.s(); !(_step21 = _iterator21.n()).done;) {
-                  row = _step21.value;
+                for (_iterator30.s(); !(_step30 = _iterator30.n()).done;) {
+                  row = _step30.value;
                   store.put(row);
                   sizes.put({
                     url: row.url,
@@ -11837,9 +12361,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                   });
                 }
               } catch (err) {
-                _iterator21.e(err);
+                _iterator30.e(err);
               } finally {
-                _iterator21.f();
+                _iterator30.f();
               }
               request = sizes.getAll();
               request.onsuccess = function () {
@@ -11848,11 +12372,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 });
                 var total = 0,
                   count = 0;
-                var _iterator22 = _createForOfIteratorHelper(values),
-                  _step22;
+                var _iterator31 = _createForOfIteratorHelper(values),
+                  _step31;
                 try {
-                  for (_iterator22.s(); !(_step22 = _iterator22.n()).done;) {
-                    var row = _step22.value;
+                  for (_iterator31.s(); !(_step31 = _iterator31.n()).done;) {
+                    var row = _step31.value;
                     total += row.size;
                     count++;
                     if (total > disk || count > max || Date.now() - row.at >= life) {
@@ -11862,9 +12386,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                     } else stored.add(row.url);
                   }
                 } catch (err) {
-                  _iterator22.e(err);
+                  _iterator31.e(err);
                 } finally {
-                  _iterator22.f();
+                  _iterator31.f();
                 }
               };
               _context4.n = 6;
@@ -11892,13 +12416,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       files.forEach(function (row) {
         return bytes += row.bytes || 0;
       });
-      var _iterator18 = _createForOfIteratorHelper(files),
-        _step18;
+      var _iterator27 = _createForOfIteratorHelper(files),
+        _step27;
       try {
-        for (_iterator18.s(); !(_step18 = _iterator18.n()).done;) {
-          var _step18$value = _slicedToArray(_step18.value, 2),
-            url = _step18$value[0],
-            row = _step18$value[1];
+        for (_iterator27.s(); !(_step27 = _iterator27.n()).done;) {
+          var _step27$value = _slicedToArray(_step27.value, 2),
+            url = _step27$value[0],
+            row = _step27$value[1];
           if (bytes <= memory && files.size <= 120) break;
           if (row.done && !row.users.size) {
             files.delete(url);
@@ -11907,9 +12431,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }
         }
       } catch (err) {
-        _iterator18.e(err);
+        _iterator27.e(err);
       } finally {
-        _iterator18.f();
+        _iterator27.f();
       }
     }
     function load(url, notify) {
@@ -11938,7 +12462,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           if (row.controller) row.controller.abort();
         }, 1e4);
         _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
-          var blob, response, candidate, _iterator19, _step19, token, _t;
+          var blob, response, candidate, _iterator28, _step28, token, _t;
           return _regenerator().w(function (_context) {
             while (1) switch (_context.p = _context.n) {
               case 0:
@@ -11994,16 +12518,16 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 row.bytes = blob ? blob.size : 0;
                 row.done = true;
                 if (!blob) files.delete(url);
-                _iterator19 = _createForOfIteratorHelper(row.users);
+                _iterator28 = _createForOfIteratorHelper(row.users);
                 try {
-                  for (_iterator19.s(); !(_step19 = _iterator19.n()).done;) {
-                    token = _step19.value;
+                  for (_iterator28.s(); !(_step28 = _iterator28.n()).done;) {
+                    token = _step28.value;
                     token.notify(row.src);
                   }
                 } catch (err) {
-                  _iterator19.e(err);
+                  _iterator28.e(err);
                 } finally {
-                  _iterator19.f();
+                  _iterator28.f();
                 }
                 trim();
               case 10:
@@ -12042,8 +12566,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       db().then(function (database2) {
         if (database2) try {
           var tx = database2.transaction(["files", "sizes"], "readwrite");
-          for (var _i6 = 0, _arr4 = ["files", "sizes"]; _i6 < _arr4.length; _i6++) {
-            var store = _arr4[_i6];
+          for (var _i1 = 0, _arr5 = ["files", "sizes"]; _i1 < _arr5.length; _i1++) {
+            var store = _arr5[_i1];
             tx.objectStore(store).delete(url);
           }
           tx.onerror = function (event) {
@@ -12056,17 +12580,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       if (database2) try {
         var request = database2.transaction("sizes").objectStore("sizes").getAll();
         request.onsuccess = function () {
-          var _iterator20 = _createForOfIteratorHelper(request.result || []),
-            _step20;
+          var _iterator29 = _createForOfIteratorHelper(request.result || []),
+            _step29;
           try {
-            for (_iterator20.s(); !(_step20 = _iterator20.n()).done;) {
-              var row = _step20.value;
+            for (_iterator29.s(); !(_step29 = _iterator29.n()).done;) {
+              var row = _step29.value;
               if (Date.now() - row.at < life) stored.add(row.url);
             }
           } catch (err) {
-            _iterator20.e(err);
+            _iterator29.e(err);
           } finally {
-            _iterator20.f();
+            _iterator29.f();
           }
         };
       } catch (_) {}
@@ -12154,13 +12678,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       cache2.forEach(function (entry) {
         return bytes += entry.bytes || 0;
       });
-      var _iterator23 = _createForOfIteratorHelper(cache2),
-        _step23;
+      var _iterator32 = _createForOfIteratorHelper(cache2),
+        _step32;
       try {
-        for (_iterator23.s(); !(_step23 = _iterator23.n()).done;) {
-          var _step23$value = _slicedToArray(_step23.value, 2),
-            url = _step23$value[0],
-            entry = _step23$value[1];
+        for (_iterator32.s(); !(_step32 = _iterator32.n()).done;) {
+          var _step32$value = _slicedToArray(_step32.value, 2),
+            url = _step32$value[0],
+            entry = _step32$value[1];
           if (cache2.size <= 40 && bytes <= 64 * 1048576) break;
           if (entry.done) {
             cache2.delete(url);
@@ -12170,9 +12694,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }
         }
       } catch (err) {
-        _iterator23.e(err);
+        _iterator32.e(err);
       } finally {
-        _iterator23.f();
+        _iterator32.f();
       }
     }
     function schedule(delay) {
@@ -12191,7 +12715,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       queue.sort(function (a, b) {
         return Number(visibleJobs.get(b)) - Number(visibleJobs.get(a));
       });
-      var _loop9 = function _loop9() {
+      var _loop0 = function _loop0() {
           var job = queue.shift();
           if (!job.alive()) {
             job.finished = true;
@@ -12280,7 +12804,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         },
         _ret4;
       for (var remaining = queue.length; remaining > 0; remaining--) {
-        _ret4 = _loop9();
+        _ret4 = _loop0();
         if (_ret4 === 0) continue;
       }
     }
@@ -12451,6 +12975,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     return ["medium", "w1280"].includes(value) ? "medium" : "high";
   }
   function artworkSize(L, kind) {
+    if (kind === "detail-backdrop") return artworkQuality(L) === "high" ? "original" : "w1280";
     if (artworkQuality(L) === "medium") return kind === "backdrop" ? "w1280" : "w500";
     if (kind !== "backdrop") return "w780";
     if (document.body.classList.contains("pt-tv")) return "original";
@@ -12485,7 +13010,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (!enabled()) return value;
         if (options && options.preserveSize) return canonical(value);
         return typeof value === "string" ? canonical(value).replace(/(\/t\/p\/)w(\d+)(?:_and_h\d+_face)?(\/)/, function (all, prefix, size, suffix) {
-          return prefix + (/_face\//.test(all) ? portraitSize(L) : Number(size) <= 500 ? artworkSize(L, "poster") : "w" + size) + suffix;
+          return prefix + (/_face\//.test(all) ? portraitSize(L) : Number(size) <= 500 ? artworkSize(L, "poster") : Number(size) === 1280 ? artworkSize(L, "backdrop") : "w" + size) + suffix;
         }) : value;
       };
       imageWrappers.add(api.image);
@@ -12529,7 +13054,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (!/\/t\/p\/(?:w\d+(?:_and_h\d+_face)?|original)\//.test(url)) return;
         var backdrop = image2.matches(".full-start__background,.pt-hero__image,.media-loading__backdrop") || image2.closest(".card--wide,.card--collection");
         var portrait = image2.matches(".full-person img,.person-start__img");
-        var next = url.replace(/(\/t\/p\/)(?:w\d+(?:_and_h\d+_face)?|original)(\/)/, "$1" + (portrait ? portraitSize(L) : artworkSize(L, backdrop ? "backdrop" : "poster")) + "$2");
+        var next = url.replace(/(\/t\/p\/)(?:w\d+(?:_and_h\d+_face)?|original)(\/)/, "$1" + (portrait ? portraitSize(L) : artworkSize(L, image2.matches(".full-start__background") ? "detail-backdrop" : backdrop ? "backdrop" : "poster")) + "$2");
         if (next !== url) image2.src = next;
       });
       document.dispatchEvent(new Event("minimal:artwork-quality"));
@@ -12646,11 +13171,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   function overviewFocus(target) {
     var active = document.activeElement;
     if (active && active.matches(".minimal-overview-action,.minimal-detail-studio") && active !== target && !active.contains(target)) active.blur();
-    var _iterator24 = _createForOfIteratorHelper(overviewControls),
-      _step24;
+    var _iterator33 = _createForOfIteratorHelper(overviewControls),
+      _step33;
     try {
-      for (_iterator24.s(); !(_step24 = _iterator24.n()).done;) {
-        var control = _step24.value;
+      for (_iterator33.s(); !(_step33 = _iterator33.n()).done;) {
+        var control = _step33.value;
         if (!control.isConnected) {
           overviewControls.delete(control);
           continue;
@@ -12659,9 +13184,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (ring) ring.hidden = !(target === control || control.contains(target));
       }
     } catch (err) {
-      _iterator24.e(err);
+      _iterator33.e(err);
     } finally {
-      _iterator24.f();
+      _iterator33.f();
     }
   }
   function readableOverview(L, card, right, link) {
@@ -12687,8 +13212,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     overviewControls.add(control);
     if (overviewDocument !== document) {
       overviewDocument = document;
-      for (var _i7 = 0, _arr5 = ["hover:focus", "hover:hover", "focusin"]; _i7 < _arr5.length; _i7++) {
-        var name = _arr5[_i7];
+      for (var _i10 = 0, _arr6 = ["hover:focus", "hover:hover", "focusin"]; _i10 < _arr6.length; _i10++) {
+        var name = _arr6[_i10];
         document.addEventListener(name, function (event) {
           return overviewFocus(event.target);
         }, true);
@@ -12803,8 +13328,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var key2 = String(person.id || person.name || person.original_name),
           old = seen.get(key2);
         if (old) {
-          for (var _i8 = 0, _arr6 = ["popularity", "episode_count", "total_episode_count"]; _i8 < _arr6.length; _i8++) {
-            var field = _arr6[_i8];
+          for (var _i11 = 0, _arr7 = ["popularity", "episode_count", "total_episode_count"]; _i11 < _arr7.length; _i11++) {
+            var field = _arr7[_i11];
             old[field] = Math.max(Number(old[field]) || 0, Number(person[field]) || 0);
           }
           if (!old.profile_path && person.profile_path) old.profile_path = person.profile_path;
@@ -12958,10 +13483,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         results: results
       })]);
     }
-    var _loop0 = function _loop0() {
-      var _arr7$_i = _slicedToArray(_arr7[_i9], 2),
-        key2 = _arr7$_i[0],
-        label = _arr7$_i[1];
+    var _loop1 = function _loop1() {
+      var _arr8$_i = _slicedToArray(_arr8[_i12], 2),
+        key2 = _arr8$_i[0],
+        label = _arr8$_i[1];
       var supplied = data[key2],
         title = L.Lang.translate(label);
       if (!supplied || !Array.isArray(supplied.results) || !supplied.results.length) return 1; // continue
@@ -12972,8 +13497,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         title: title
       })]);
     };
-    for (var _i9 = 0, _arr7 = [["collection", "title_collection"], ["recomend", "title_recomendations"], ["simular", "title_similar"]]; _i9 < _arr7.length; _i9++) {
-      if (_loop0()) continue;
+    for (var _i12 = 0, _arr8 = [["collection", "title_collection"], ["recomend", "title_recomendations"], ["simular", "title_similar"]]; _i12 < _arr8.length; _i12++) {
+      if (_loop1()) continue;
     }
     if (missing.length) (_link$rows = link.rows).splice.apply(_link$rows, [link.items.length, 0].concat(missing));
   }
@@ -13428,13 +13953,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         return Number(b.width) - Number(a.width);
       })[0];
       var backdrop = better ? better.file_path : card.backdrop_path;
-      var size = artworkSize(L, "backdrop");
-      var url = L.TMDB.image("/t/p/" + size + backdrop);
+      var size = artworkSize(L, "detail-backdrop");
+      var url = L.TMDB.image("/t/p/" + size + backdrop, {
+        preserveSize: true
+      });
       var variant = "/t/p/" + size + backdrop;
       if (background.src !== url && !background.src.includes(variant)) {
         var preload = new Image();
         preload.onload = function () {
-          if (background.isConnected && artworkSize(L, "backdrop") === size) {
+          if (background.isConnected && artworkSize(L, "detail-backdrop") === size) {
             background.src = preload.src;
             background.classList.add("loaded");
           }
@@ -13521,7 +14048,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // package.json
-  var version = "0.5.66";
+  var version = "0.5.67";
 
   // src/inputs.js
   function inputs(L) {
@@ -13590,13 +14117,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var originals = _toConsumableArray(images.values()).filter(function (e) {
         return e.original && e.done;
       }).length;
-      var _iterator25 = _createForOfIteratorHelper(images),
-        _step25;
+      var _iterator34 = _createForOfIteratorHelper(images),
+        _step34;
       try {
-        var _loop1 = function _loop1() {
-            var _step25$value = _slicedToArray(_step25.value, 2),
-              url = _step25$value[0],
-              entry = _step25$value[1];
+        var _loop10 = function _loop10() {
+            var _step34$value = _slicedToArray(_step34.value, 2),
+              url = _step34$value[0],
+              entry = _step34$value[1];
             var crowded = images.size > 24 || bytes > budget;
             if (!crowded && originals <= maximumOriginals) return 0; // break
             if (!crowded && !entry.original) return 1; // continue
@@ -13609,15 +14136,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             }
           },
           _ret5;
-        for (_iterator25.s(); !(_step25 = _iterator25.n()).done;) {
-          _ret5 = _loop1();
+        for (_iterator34.s(); !(_step34 = _iterator34.n()).done;) {
+          _ret5 = _loop10();
           if (_ret5 === 0) break;
           if (_ret5 === 1) continue;
         }
       } catch (err) {
-        _iterator25.e(err);
+        _iterator34.e(err);
       } finally {
-        _iterator25.f();
+        _iterator34.f();
       }
     }
     function fetchImage(url, callback, type, priority, coverPath) {
@@ -13698,21 +14225,21 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }
       current = wrap(i);
       var path = cards[current].backdrop_path;
-      var _iterator26 = _createForOfIteratorHelper(images),
-        _step26;
+      var _iterator35 = _createForOfIteratorHelper(images),
+        _step35;
       try {
-        for (_iterator26.s(); !(_step26 = _iterator26.n()).done;) {
-          var _step26$value = _slicedToArray(_step26.value, 2),
-            url = _step26$value[0],
-            entry = _step26$value[1];
+        for (_iterator35.s(); !(_step35 = _iterator35.n()).done;) {
+          var _step35$value = _slicedToArray(_step35.value, 2),
+            url = _step35$value[0],
+            entry = _step35$value[1];
           if (entry.owner === owner && entry.cover && !entry.background && !entry.done && entry.coverPath !== path && entry.callbacks.every(function (fn) {
             return fn.owner === owner;
           })) remove(url, entry);
         }
       } catch (err) {
-        _iterator26.e(err);
+        _iterator35.e(err);
       } finally {
-        _iterator26.f();
+        _iterator35.f();
       }
     }
     function cover(i, size, callback, background) {
@@ -13825,21 +14352,21 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       clearTimeout(upgradeTimer);
       upgradeWanted = null;
       if (cancelPendingOriginal) {
-        var _iterator27 = _createForOfIteratorHelper(images),
-          _step27;
+        var _iterator36 = _createForOfIteratorHelper(images),
+          _step36;
         try {
-          for (_iterator27.s(); !(_step27 = _iterator27.n()).done;) {
-            var _step27$value = _slicedToArray(_step27.value, 2),
-              url = _step27$value[0],
-              entry = _step27$value[1];
+          for (_iterator36.s(); !(_step36 = _iterator36.n()).done;) {
+            var _step36$value = _slicedToArray(_step36.value, 2),
+              url = _step36$value[0],
+              entry = _step36$value[1];
             if (entry.owner === owner && entry.original && !entry.done && entry.callbacks.every(function (fn) {
               return fn.owner === owner;
             })) remove(url, entry);
           }
         } catch (err) {
-          _iterator27.e(err);
+          _iterator36.e(err);
         } finally {
-          _iterator27.f();
+          _iterator36.f();
         }
       }
     }
@@ -13893,13 +14420,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       document.removeEventListener("minimal:tv-idle", resume);
       document.removeEventListener("visibilitychange", resume);
       pool.active.delete(owner);
-      var _iterator28 = _createForOfIteratorHelper(images),
-        _step28;
+      var _iterator37 = _createForOfIteratorHelper(images),
+        _step37;
       try {
-        for (_iterator28.s(); !(_step28 = _iterator28.n()).done;) {
-          var _step28$value = _slicedToArray(_step28.value, 2),
-            url = _step28$value[0],
-            entry = _step28$value[1];
+        for (_iterator37.s(); !(_step37 = _iterator37.n()).done;) {
+          var _step37$value = _slicedToArray(_step37.value, 2),
+            url = _step37$value[0],
+            entry = _step37$value[1];
           if (!entry.done) {
             entry.callbacks = entry.callbacks.filter(function (fn) {
               return fn.owner !== owner;
@@ -13908,9 +14435,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }
         }
       } catch (err) {
-        _iterator28.e(err);
+        _iterator37.e(err);
       } finally {
-        _iterator28.f();
+        _iterator37.f();
       }
       trim();
       branding2.clear();
@@ -13929,7 +14456,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // src/theme.css
-  var theme_default = ["/* Minimal presentation for native Lampa. No application replacement. */", ".pt-hidden {display:none!important}", "body.lampa_view {", " --pt-bg:#000000;--pt-side:#14161b;--pt-panel:#191d24;--pt-high:#252c34;", " --pt-line:#ffffff12;--pt-text:#eeeff2;--pt-muted:#9299a3;--pt-accent:#add9e5;--pt-dim:#add9e514;", ' background:var(--pt-bg)!important;color:var(--pt-text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;', " font-size:calc(clamp(14px,.94vw,18px) * var(--pt-interface-scale,1))!important;", "}", "body.lampa_view .background {opacity:.08!important}", "body.lampa_view .background__fade {background:linear-gradient(0deg,var(--pt-bg),transparent)!important}", "body.lampa_view .head {height:3.6em;background:#000000f5;border-bottom:1px solid var(--pt-line);z-index:30}", "body.lampa_view .head__body {height:100%;max-width:112em;margin:auto;padding:.5em 2.5em;gap:.65em;display:flex;align-items:center}", "body.lampa_view .head__menu-icon {display:flex!important;order:-2;align-items:center;justify-content:center;width:2.2em;height:2.2em;flex:0 0 2.2em;box-sizing:border-box;padding:0;border:1px solid var(--pt-line);border-radius:.6em;margin:0!important;background:#ffffff04;color:var(--pt-muted);cursor:pointer}", "body.lampa_view .head__menu-icon svg {width:1.1em;height:1.1em}", "body.lampa_view .head__logo-icon {display:flex!important;width:auto!important;margin:0 2em 0 0!important;flex-shrink:0;cursor:pointer}", "body.lampa_view .pt-brand {font-size:.92em;font-weight:700;letter-spacing:.13em;color:var(--pt-text)}", "body.lampa_view .head__split,body.lampa_view .head__time,body.lampa_view .head__markers,body.lampa_view .head__title,body.lampa_view .head__logo-local {display:none!important}", "body.lampa_view .head__backward {display:none!important}", "body.lampa_view .head__backward.pt-back-visible {display:flex!important;order:-3;align-items:center;justify-content:center;width:2.2em;height:2.2em;flex:0 0 2.2em;box-sizing:border-box;margin:0!important;padding:0;border:1px solid var(--pt-line);border-radius:.6em;background:#ffffff04;color:var(--pt-muted);cursor:pointer}", "body.lampa_view.pt-home .head__backward {display:none!important}", "body.lampa_view .minimal-back svg {width:1.1em;height:1.1em}", ".minimal-back--overlay {display:none}", "body.lampa_view .minimal-back-heading {display:flex;align-items:center;gap:.7em}", "body.lampa_view .minimal-back--overlay {display:flex;align-items:center;justify-content:center;flex:0 0 2em;width:2em;height:2em;border:1px solid var(--pt-line);border-radius:.6em;background:#ffffff04;color:var(--pt-muted);cursor:pointer;font-size:1em}", "body.lampa_view .minimal-back-heading>.selectbox__title,body.lampa_view .minimal-back-heading>.settings__title {flex:1;min-width:0}", "body.lampa_view .head .open--broadcast,body.lampa_view .head .notice--icon,body.lampa_view .head .full--screen,body.lampa_view .head .open--notice,body.lampa_view .head .open--split {display:none!important}", "body.lampa_view .head__actions {margin-left:auto;display:flex;align-items:center;gap:.5em}", "body.lampa_view .head__action {width:2.2em;height:2.2em;border-radius:.55em;margin:0;color:var(--pt-muted)}", "body.lampa_view .head__action svg {width:1.15em;height:1.15em}", "body.lampa_view .head__action.open--settings {display:flex!important;align-items:center;justify-content:center;box-sizing:border-box;flex:0 0 2.2em;padding:0}", "body.lampa_view.pt-mobile .head__action.open--settings {display:flex!important}", "body.lampa_view .head__action.focus,body.lampa_view .head__action.hover {background:var(--pt-high);color:white}", "body.lampa_view .head__action.open--search {width:18em;background:#ffffff04;border:1px solid var(--pt-line);justify-content:flex-start;padding:0 .8em;gap:.65em}", "body.lampa_view .head__action.open--search:after {content:attr(data-pt-placeholder);font-size:.8em;color:var(--pt-muted)}", "body.lampa_view .pt-topnav {display:flex;align-items:center;gap:1.5em}", "body.lampa_view .pt-topnav__item {font-size:.81em;color:var(--pt-muted);padding:.55em 0;cursor:pointer;border-bottom:1px solid transparent}", "body.lampa_view .pt-topnav__item.active {color:var(--pt-text);border-bottom-color:var(--pt-accent)}", "body.lampa_view .pt-topnav__item.focus,body.lampa_view .pt-topnav__item.hover {color:var(--pt-accent);outline:0;border-bottom-color:var(--pt-accent)}", "body.lampa_view .wrap {display:block!important}", "body.lampa_view .wrap__content,body.lampa_view.menu--always .wrap__content,body.lampa_view.menu--open .wrap__content {width:100%!important;max-width:100%;margin-left:0!important;transform:none!important;padding-top:3.6em!important}", "body.lampa_view .activitys,body.lampa_view .activity {width:100%!important;max-width:100%}", "body.lampa_view .wrap__left,body.lampa_view.menu--always:not(.light--version) .wrap__left {position:fixed!important;top:4.1em!important;bottom:auto!important;left:2.5em!important;width:19em!important;height:auto!important;max-height:calc(100% - 5em)!important;padding:.65em 0!important;margin:0!important;border:1px solid #ffffff19;border-radius:.9em;background:#121419;box-shadow:0 18px 60px #0008;z-index:40;transform:none!important;transition:opacity .12s;visibility:hidden!important;opacity:0;pointer-events:none}", "body.lampa_view.menu--open .wrap__left,body.lampa_view.menu--always.menu--open .wrap__left {visibility:visible!important;opacity:1;pointer-events:auto}", "body.lampa_view .wrap__left>.scroll {width:100%!important;max-height:75vh!important}", "body.lampa_view .menu {padding:0 .6em!important}", "body.lampa_view .menu__case {padding:0!important}", "body.lampa_view .menu__list {display:block!important}", "body.lampa_view .menu__item {font-size:.86em;padding:.85em .8em;margin:.12em 0;border-radius:.5em;color:#a9afb8}", "body.lampa_view .menu__text,body.lampa_view.menu--always .menu__text {display:block!important;font-size:1em;font-weight:450}", "body.lampa_view .menu__ico {width:1.15em;height:1.15em;min-width:1.15em;margin-right:1em;opacity:.8}", "body.lampa_view .menu__ico svg {width:100%;height:100%}", "body.lampa_view .menu__item.focus,body.lampa_view .menu__item.hover,body.lampa_view .menu__item.traverse {background:var(--pt-high);color:#fff;box-shadow:none}", "body.lampa_view .menu__split {display:none!important}", 'body.lampa_view .menu__item[data-action="edit"],body.lampa_view .menu__item[data-action="feed"],body.lampa_view .menu__item[data-action="relise"],body.lampa_view .menu__item[data-action="myperson"],body.lampa_view .menu__item[data-action="subscribes"],body.lampa_view .menu__item[data-action="catalog"],body.lampa_view .menu__item[data-action="filter"] {display:none}', "body.lampa_view .items-line {margin-bottom:.8em;padding-bottom:.7em}", "body.lampa_view .items-line__head {margin-bottom:1em}", "body.lampa_view .items-line__title {font-size:1.12em;font-weight:600;letter-spacing:-.02em}", "body.lampa_view .items-line__more {font-size:.8em;background:transparent;color:var(--pt-muted)}", "/* The desktop profile owns scale; native Bigger adds another 14% otherwise. */", "body.lampa_view.pt-desktop .card {font-size:1em}", "body.lampa_view .card__view,body.lampa_view .card__img {border-radius:.5em;background:var(--pt-panel);box-shadow:none;overflow:hidden}", "body.lampa_view .card__title {font-size:.83em;font-weight:500;line-height:1.4;margin-top:.65em;height:auto;min-height:0;max-height:2.85em;display:-webkit-box;-webkit-box-orient:vertical;white-space:normal;overflow:hidden;transform:none;-webkit-transform:none;-webkit-line-clamp:2;line-clamp:2;text-overflow:ellipsis}", "body.lampa_view .card__age {font-size:.73em;color:var(--pt-muted);margin-top:.2em}", "body.lampa_view .card__vote {background:#000000dc;color:#eee;border:0;font-size:.65em;border-radius:.3em;padding:.2em .4em}", "body.lampa_view .card.focus .card__view:after,body.lampa_view .card.hover .card__view:after {border:2px solid var(--pt-accent);border-radius:.5em;inset:0;box-shadow:none;z-index:5;box-sizing:border-box}", "body.lampa_view .card.focus .card__title {color:var(--pt-accent)}", "body.lampa_view .card__quality {border-radius:.3em;background:#000000dc;font-size:.65em}", "body.lampa_view .scroll--mask:before,body.lampa_view .scroll--mask:after {display:none}", "body.lampa_view .pt-hero {position:relative;min-height:32em;height:min(67vh,43em);margin:0 0 2.2em;overflow:hidden;-webkit-clip-path:inset(0);clip-path:inset(0);border:0;box-shadow:none;background:#000;isolation:isolate}", "/* The bottom fade belongs to the unscaled frame, not the enlarged bitmap. */", "body.lampa_view .pt-hero__artwork {position:absolute;inset:0;z-index:0;overflow:hidden;-webkit-mask-image:linear-gradient(180deg,#000 0%,#000 65%,#000000c7 80%,#0000004d 92%,transparent 100%);mask-image:linear-gradient(180deg,#000 0%,#000 65%,#000000c7 80%,#0000004d 92%,transparent 100%)}", "body.lampa_view.pt-mobile .pt-hero__artwork {position:relative;inset:auto;width:100%;height:auto;flex:none;-webkit-mask-image:none;mask-image:none}", "body.lampa_view .pt-hero__image {display:block;position:absolute;top:0;left:auto;right:0;width:auto;max-width:100%;height:100%;object-fit:contain;object-position:right center;z-index:0;-webkit-mask-image:linear-gradient(90deg,transparent,#000 16%);mask-image:linear-gradient(90deg,transparent,#000 16%)}", "/* Minimal blends the artwork edge gradually without blurring the source. */", "body.lampa_view:not(.pt-theme-glass):not(.pt-mobile) .pt-hero__image {-webkit-mask-image:linear-gradient(90deg,transparent 0%,#0000000a 5%,#00000029 11%,#00000075 19%,#000000cc 27%,#000 35%);mask-image:linear-gradient(90deg,transparent 0%,#0000000a 5%,#00000029 11%,#00000075 19%,#000000cc 27%,#000 35%)}", "body.lampa_view .pt-hero:before {content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,#000000 0%,#000000ed 13%,#0000008c 40%,#00000000 76%)}", "body.lampa_view .pt-hero__body {position:absolute;z-index:2;left:max(4.5em,calc((100% - 100em)/2));bottom:6.5em;max-width:34em;padding-right:1em}", "body.lampa_view .pt-hero__title {font-size:2.9em;line-height:1.08;font-weight:650;letter-spacing:-.045em;margin:0 0 .65em;text-wrap:balance;max-width:14em}", "body.lampa_view .pt-hero__meta {display:flex;align-items:center;gap:.75em;font-size:.8em;line-height:1.5;font-weight:500;color:#dbdde2;margin-bottom:1.25em}", "body.lampa_view .pt-hero__studio {width:auto;max-width:6em;height:1.5em;object-fit:contain;flex:none;filter:var(--pt-studio-tone,brightness(1)) drop-shadow(0 0 .6px rgba(255,255,255,.7)) drop-shadow(0 1px 2px #000);opacity:.95}", "body.lampa_view .pt-hero__overview {font-size:.85em;line-height:1.65;color:#a3a8b1;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;max-width:34em}", "body.lampa_view .pt-hero__actions {display:flex;gap:.8em;margin-top:1.6em}", "body.lampa_view .pt-hero__action {display:flex;align-items:center;gap:.6em;border-radius:.6em;font-size:.82em;font-weight:600;padding:.85em 1.15em;background:var(--pt-accent);color:#13232c;cursor:pointer;border:1px solid transparent}", "body.lampa_view .pt-hero__action svg {width:1.15em;height:1.15em}", "body.lampa_view .pt-hero__action--secondary {background:#212a35dd;color:#d4dce3;border-color:#ffffff12}", "body.lampa_view .pt-hero__action.focus,body.lampa_view .pt-hero__action.hover,body.lampa_view .pt-hero__action:hover,body.lampa_view .pt-hero__action:focus-visible {outline:none!important;box-shadow:inset 0 0 0 2px #fff!important}", "body.lampa_view .pt-hero__dots {position:absolute;z-index:2;bottom:2.8em;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:.5em}", "body.lampa_view .pt-hero__dot {width:.5em;height:.5em;background:#ffffff50;border-radius:1em;cursor:pointer;position:relative}", "body.lampa_view .pt-hero__dot:after {content:'';position:absolute;inset:-.6em}", "body.lampa_view .pt-hero__dot.active {width:1.5em;background:var(--pt-accent)}", "body.lampa_view .pt-hero__dot {box-sizing:border-box;border:1.5px solid transparent;outline:none!important;box-shadow:none!important;transition:none!important}", "body.lampa_view .pt-hero__dot.focus,body.lampa_view .pt-hero__dot:focus-visible {border-color:#fff}", "body.lampa_view .pt-mobile-nav {display:none!important}", "body.lampa_view.pt-reduce-motion *,body.lampa_view.pt-reduce-motion *:before,body.lampa_view.pt-reduce-motion *:after {animation-duration:0s!important;transition-duration:0s!important;scroll-behavior:auto!important}", "body.lampa_view .full-start-new {padding-top:1.5em}", "body.lampa_view .full-start-new__left {width:15em;min-width:15em}", "body.lampa_view .full-start-new__poster {border-radius:.8em;overflow:hidden;box-shadow:0 16px 48px #0007}", "body.lampa_view .full-start-new__title {font-size:2.45em;letter-spacing:-.04em;font-weight:750;line-height:1.08;max-width:22em}", "body.lampa_view .full-start-new__tagline {font-size:.92em;color:var(--pt-muted);font-weight:400;line-height:1.6}", "body.lampa_view .full-start-new__rate-line {gap:.7em;margin-top:1em}", "body.lampa_view .full-start__rate {border:1px solid var(--pt-line);border-radius:.45em;padding:.4em .65em;font-size:.85em;background:var(--pt-panel)}", "body.lampa_view .full-start__rate .source--name {color:var(--pt-muted);font-size:.65em;font-weight:500}", "body.lampa_view .full-start-new__details {font-size:.82em;color:#bdbdc5;line-height:1.6}", "body.lampa_view .full-start-new__head {font-size:.82em;color:#bdbdc5;margin-bottom:.75em}", "body.lampa_view .full-start-new__reactions {display:none}", "body.lampa_view .full-start__status,body.lampa_view .full-start__pg {font-size:.7em;border:1px solid var(--pt-line);border-radius:.4em;padding:.45em .7em;color:var(--pt-muted)}", "body.lampa_view .full-start-new__buttons {display:flex;align-items:center;gap:.7em;flex-wrap:wrap}", "body.lampa_view .button--alc-torrent span {display:inline!important;max-width:none!important;font-size:1em!important}", "body.lampa_view .full-start__button,body.lampa_view .full-descr__tag {background:var(--pt-high);border:1px solid var(--pt-line);color:white;border-radius:.625em;font-size:.85em;padding:.8em 1.15em;box-shadow:none}", "body.lampa_view .full-start__button.focus,body.lampa_view .full-start__button.hover {border-color:var(--pt-accent);background:var(--pt-high);color:white;box-shadow:0 0 0 1px var(--pt-accent)}", "body.lampa_view .full-start__button.button--alc-auto {background:var(--pt-accent);border-color:var(--pt-accent);color:#07151c}", "body.lampa_view .full-start__button.button--alc-auto.focus {background:#65c9f3;color:#07151c;box-shadow:0 0 0 3px #2bb4ed55}", "body.lampa_view .full-start__button svg {width:1.1em;height:1.1em}", "body.lampa_view .full-descr__text {color:#bfbfc6;font-size:.9em;line-height:1.75;max-width:65em}", "body.lampa_view .full-descr__title,body.lampa_view .full-persons__title {font-size:1.2em;font-weight:650}", "body.lampa_view .pt-context-badge {font-size:.62em;line-height:1.5;color:#98989f;margin-top:1.3em}", "body.lampa_view .pt-context-badge span {color:var(--pt-accent)}", "body.lampa_view .torrent-item,body.lampa_view .torrent-item.tc-item {background:var(--pt-panel)!important;border:1px solid var(--pt-line)!important;border-radius:.625em!important;padding:1em!important;margin-bottom:.55em!important;color:var(--pt-text)!important}", "body.lampa_view .torrent-item.focus,body.lampa_view .torrent-item.hover,body.lampa_view .torrent-list .torrent-item.tc-item.focus {background:var(--pt-high)!important;border-color:var(--pt-accent)!important;box-shadow:inset 0 0 0 2px var(--pt-accent)!important;color:white!important}", "body.lampa_view .torrent-item__title {font-size:.95em;font-weight:600;line-height:1.45}", "body.lampa_view .torrent-item__details {font-size:.72em;color:var(--pt-muted)}", "body.lampa_view .tc-title {font-size:1em;font-weight:600;letter-spacing:-.015em}", "body.lampa_view .tc-tag {border-radius:.35em;font-size:.68em;padding:.2em .5em;border-color:#ffffff14}", "body.lampa_view .tc-tag--voice {background:#ffffff08}", "body.lampa_view .tc-tag--complete {color:#7ed0a7;border-color:#7ed0a72c}", "body.lampa_view .tc-tag--partial {color:#d6b777;border-color:#d6b7772c}", "body.lampa_view .tc-original,body.lampa_view .tc-foot {font-size:.68em;color:var(--pt-muted)}", "body.lampa_view .tc-size {font-size:1em;font-weight:600}", "body.lampa_view .tc-seeds {font-size:.8em;font-weight:500;color:#7ed0a7}", "body.lampa_view .tc-summary {display:flex;align-items:center;flex-wrap:wrap;gap:.5em .8em;min-width:0}", "body.lampa_view .tc-season {font-size:1.06em;font-weight:650;line-height:1.35;color:var(--pt-accent)}", "body.lampa_view .tc-episodes {font-size:.88em;color:#c4c8cf;line-height:1.4}", "body.lampa_view .tc-summary .tc-tag--quality {font-size:.86em;color:var(--pt-accent);background:#add9e50c;border-color:#add9e52e}", "body.lampa_view .tc-head {gap:1em;align-items:flex-start}", "body.lampa_view .tc-right {flex:none;gap:.4em}", "body.lampa_view .tc-tags {gap:.5em 1.2em;margin:.65em 0}", "body.lampa_view .tc-tags .tc-tag {font-size:.8em;line-height:1.3;color:#c4c8cf;background:transparent}", "body.lampa_view .tc-voices {display:flex;align-items:baseline;flex-wrap:wrap;gap:.4em .8em;font-size:.86em;line-height:1.5}", "body.lampa_view .tc-voice-names {display:inline-flex;align-items:center;flex-wrap:wrap;gap:.35em;min-width:0;max-width:100%;color:#e2e5eb;white-space:normal;overflow:visible;overflow-wrap:anywhere}", "body.lampa_view .tc-languages {font-size:.88em;color:var(--pt-accent)}", "body.lampa_view .tc-language-tags .tc-voices {font-size:inherit;line-height:inherit;align-items:center;gap:.35em}", "body.lampa_view .tc-language-tags .tc-voices .tc-group-label {font-size:.72em}", "body.lampa_view .tc-bitrate {font-size:.8em;color:var(--pt-muted)}", "body.lampa_view .tc-warning {font-size:.8em;line-height:1.4;margin-top:.5em;color:#d6b777}", "body.lampa_view .tc-foot {display:flex;align-items:center;justify-content:space-between;gap:1em;margin-top:.7em;font-size:.8em}", "body.lampa_view .tc-source {min-width:0;overflow-wrap:anywhere}", "body.lampa_view .tc-info {flex:none;cursor:pointer;font:inherit;color:#c4c8cf;padding:.3em .6em;border:1px solid var(--pt-line);border-radius:.4em;background:transparent}", "body.lampa_view .tc-info:hover,body.lampa_view .tc-info:focus-visible {color:white;border-color:var(--pt-accent);outline:none}", "body.lampa_view .tc-info.focus {color:white;border-color:white;box-shadow:0 0 0 1px white,0 0 .6em #add9e540;outline:none}", "body.lampa_view .tc-release-name {font-size:.9em;font-weight:500;line-height:1.45;color:var(--pt-text);margin:.65em 0;white-space:normal;overflow-wrap:anywhere}", "body.lampa_view .tc-full-details {font-size:.95em;line-height:1.6}", "body.lampa_view .tc-full-details dl {margin:0}", "body.lampa_view .tc-full-details dt {color:var(--pt-muted);font-size:.85em;margin-top:1em}", "body.lampa_view .tc-full-details dt:first-child {margin-top:0}", "body.lampa_view .tc-full-details dd {margin:0;white-space:pre-wrap;overflow-wrap:anywhere}", "body.lampa_view .tc-item .tc-title,body.lampa_view .tc-item .tc-original {display:none!important}", "@media(max-width:650px){body.lampa_view .tc-head{display:flex;flex-wrap:wrap}body.lampa_view .tc-right{margin-left:auto}body.lampa_view .tc-seeds{white-space:normal;text-align:right}body.lampa_view .tc-summary{flex:1 1 12em}body.lampa_view .tc-foot{align-items:flex-end}}", "body.lampa_view .filter__item,body.lampa_view .selector--filter {border-radius:.5em;background:var(--pt-panel);border:1px solid var(--pt-line);color:#c4c4ca}", "body.lampa_view .filter__item.focus,body.lampa_view .filter__item.hover {background:var(--pt-high);border-color:var(--pt-accent);color:white}", "body.lampa_view .modal__content,body.lampa_view .selectbox__content,body.lampa_view .settings__content {background:var(--pt-panel)!important;color:var(--pt-text);border:1px solid var(--pt-line);border-radius:.85em;box-shadow:0 20px 80px #0008}", "body.lampa_view .modal__title,body.lampa_view .selectbox__title,body.lampa_view .settings__title {font-weight:650;letter-spacing:-.025em}", "body.lampa_view .settings-param {border-radius:.5em;border-bottom:1px solid var(--pt-line);font-size:.9em}", "body.lampa_view .settings-param__descr {color:var(--pt-muted);opacity:1;font-size:.8em;line-height:1.5}", "body.lampa_view .settings-param.focus,body.lampa_view .selectbox-item.focus,body.lampa_view .settings-folder.focus {background:var(--pt-high)!important;color:white;box-shadow:inset 3px 0 var(--pt-accent)}", "body.lampa_view .settings-param__value {color:var(--pt-accent)}", "body.lampa_view .selectbox-item {border-radius:.45em;font-size:.9em}", "body.lampa_view .settings-folder {border:1px solid var(--pt-line);border-radius:.7em;background:var(--pt-panel)}", "body.lampa_view .wrap__left {background:var(--pt-panel)!important;color:var(--pt-text)}", "body.lampa_view .menu__item,body.lampa_view .settings-folder,body.lampa_view .settings-param,body.lampa_view .selectbox-item {color:var(--pt-text)}", "body.lampa_view .settings-folder__name,body.lampa_view .settings-param__name,body.lampa_view .selectbox-item__title {color:inherit}", "body.lampa_view .menu__ico,body.lampa_view .settings-folder__icon {color:inherit;opacity:1}", "body.lampa_view .settings-param__descr,body.lampa_view .selectbox-item__subtitle {color:#a2aab4;opacity:1}", "body.lampa_view .settings-folder.focus,body.lampa_view .settings-param.focus,body.lampa_view .selectbox-item.focus,body.lampa_view .menu__item.focus,body.lampa_view .menu__item.traverse {background:#20272e!important;color:var(--pt-text);box-shadow:inset 2px 0 var(--pt-accent)}", "body.lampa_view .simple-button {background:var(--pt-high);border-radius:.5em;color:white;border:1px solid var(--pt-line)}", "body.lampa_view .simple-button.focus {border-color:var(--pt-accent);background:var(--pt-dim);color:white}", "body.lampa_view .search {background:var(--pt-bg)}", "body.lampa_view .search .simple-keyboard-input,body.lampa_view .search-box .simple-keyboard-input {box-sizing:border-box;padding:0 .8em;line-height:normal;vertical-align:middle}", "body.lampa_view .search .search__input {box-sizing:border-box;padding-inline:.8em;display:flex;align-items:center;min-height:2.1em}", "body.lampa_view .search-source {background:var(--pt-panel);border:1px solid var(--pt-line);border-radius:.625em}", "body.lampa_view .search-source.focus {border-color:var(--pt-accent);color:white}", "body.lampa_view .alc-ap {background:var(--pt-bg)!important}", "body.lampa_view .alc-ap__head {border-radius:.8em;overflow:hidden}", "body.lampa_view .alc-ap__play {background:var(--pt-accent)!important;color:#07151c!important;border-radius:.6em!important}", "body.lampa_view .alc-chip,body.lampa_view .alc-ap-voice,body.lampa_view .alc-ep,body.lampa_view .alc-ap-season__head {background:var(--pt-panel)!important;border:1px solid var(--pt-line)!important;border-radius:.6em!important;color:var(--pt-text)!important;box-shadow:none!important}", "body.lampa_view .alc-chip--on,body.lampa_view .alc-chip.focus,body.lampa_view .alc-ap-voice.focus,body.lampa_view .alc-ep.focus {border-color:var(--pt-accent)!important;background:var(--pt-dim)!important;color:white!important;box-shadow:0 0 0 1px var(--pt-accent)!important}", "body.lampa_view input {accent-color:var(--pt-accent)}", "body.lampa_view .empty__title {font-size:1.4em;font-weight:650}", "body.lampa_view .empty__descr {color:var(--pt-muted);font-size:.85em;line-height:1.6}", "", "body.lampa_view .full-start-new__reactions,body.lampa_view .full-start-new__tagline {display:none}", "body.lampa_view .full-start-new__title {font-weight:600;font-size:2.4em}", "body.lampa_view .full-start__button.button--alc-auto,body.lampa_view .alc-ap__play {background:var(--pt-accent)!important;color:#13232c!important}", "body.lampa_view .full-start__button.button--alc-auto.focus {background:#d0eaf1;color:#13232c;box-shadow:0 0 0 2px #fff}", "body.lampa_view .simple-button,body.lampa_view .selectbox-item,body.lampa_view .settings-param {font-weight:450}", "@media(min-width:1100px) {", " body.lampa_view .items-line .card:not(.card--wide):not(.card--collection) {width:11.1em!important}", " body.lampa_view .items-line>.items-line__head {padding-left:1.1em}", "}", "@media(max-width:900px) {", " body.lampa_view .head__body {padding:.5em 1.2em}", " body.lampa_view .head__action.open--search {width:2.2em;padding:0;justify-content:center;border:0;background:transparent}", " body.lampa_view .head__action.open--search:after {display:none}", " body.lampa_view .head__logo-icon {margin-right:1em!important}", " body.lampa_view .pt-topnav {gap:1.2em;margin-left:auto}", " body.lampa_view .pt-hero__body {left:2em;max-width:29em;bottom:5.5em}", " body.lampa_view .pt-hero__title {font-size:2.5em}", " body.lampa_view .wrap__left {left:1.2em!important}", "}", "body.lampa_view.pt-mobile {font-size:calc(16px * var(--pt-interface-scale,1))!important}", "body.lampa_view.pt-mobile .head {height:6.5em}", "body.lampa_view.pt-mobile .head__body {height:3.5em;padding:.5em 1em;position:relative}", "body.lampa_view.pt-mobile .head__logo-icon {margin-right:auto!important}", "body.lampa_view.pt-mobile .pt-topnav {position:absolute;top:3.5em;left:1em;right:1em;height:3em;justify-content:space-around;gap:.5em;border-top:1px solid var(--pt-line);margin:0}", "body.lampa_view.pt-mobile .pt-topnav__item {font-size:.8em;padding:.6em .4em}", "body.lampa_view.pt-mobile .wrap__content {padding-top:6.5em!important;padding-bottom:1em!important}", "body.lampa_view.pt-mobile .wrap__left {top:3.8em!important;left:1em!important;width:18em!important}", "body.lampa_view.pt-mobile .pt-hero {display:flex;flex-direction:column;align-items:stretch;height:auto;min-height:0;max-height:none;margin-bottom:1.2em}", "body.lampa_view.pt-mobile .pt-hero__image {position:relative;top:auto;right:auto;left:auto;width:100%;height:auto;aspect-ratio:16/9;flex:none;object-position:center top;transform-origin:center top;-webkit-mask-image:linear-gradient(180deg,#000 0%,#000 75%,#000000f7 82%,#000000c7 89%,#0000004d 96%,transparent 100%);mask-image:linear-gradient(180deg,#000 0%,#000 75%,#000000f7 82%,#000000c7 89%,#0000004d 96%,transparent 100%)}", "body.lampa_view.pt-mobile .pt-hero:before {background:linear-gradient(0deg,#000000 8%,#000000f0 24%,#00000040 61%,#00000000 100%)}", "body.lampa_view.pt-mobile .pt-hero__body {position:relative;left:auto;right:auto;bottom:auto;max-width:none;padding:1.5em 1.3em 4.5em}", "body.lampa_view.pt-mobile .pt-hero__title {font-size:2.05em;max-width:15em;margin-bottom:.6em}", "body.lampa_view.pt-mobile .pt-hero__meta {box-sizing:border-box;height:3em;min-height:3em;font-size:.74em;line-height:1.5;margin-bottom:.85em;overflow:hidden}", "body.lampa_view.pt-mobile .pt-hero__meta>span {min-width:0;max-height:3em;overflow:hidden}", "body.lampa_view.pt-mobile .pt-hero__overview {box-sizing:border-box;height:4.95em;min-height:4.95em;line-height:1.65;font-size:.8em;-webkit-line-clamp:3;margin:0}", "body.lampa_view.pt-mobile .pt-hero__actions {gap:.6em;margin-top:1.2em}", "body.lampa_view.pt-mobile .pt-hero__action {font-size:.76em;padding:.95em .9em}", "body.lampa_view.pt-mobile .pt-hero__dots {bottom:2.2em;gap:.7em}", "body.lampa_view.pt-mobile .items-line .card:not(.card--wide):not(.card--collection) {width:9.1em!important}", "body.lampa_view.pt-mobile .items-line__title {font-size:1.08em}", "body.lampa_view.pt-mobile .full-start-new__left {width:7em;min-width:7em}", "body.lampa_view.pt-mobile .full-start-new__title {font-size:1.65em}", "@media(max-width:600px) {", " body.lampa_view:not(.pt-tv) .head__action.open--search {width:2.2em;padding:0;justify-content:center;border:0;background:transparent}", " body.lampa_view:not(.pt-tv) .head__action.open--search:after {display:none}", "}", "", "body.lampa_view .head__menu-icon svg {width:1.1em!important;height:1.1em!important}", "body.lampa_view.pt-home .activity--active>.activity__body>.scroll>.scroll__content {padding-top:0!important}", "body.lampa_view .app,body.lampa_view .wrap {background:var(--pt-bg)!important}", "body.lampa_view .scroll--mask {mask-image:none!important;-webkit-mask-image:none!important}", "", "body.lampa_view.pt-home .activity--active>.activity__body>div>.scroll>.scroll__content {padding-top:0!important}", "body.lampa_view .wrap__left>.scroll,body.lampa_view .wrap__left>.scroll>.scroll__content {height:auto!important;min-height:0!important;padding:0!important}", "", "body.lampa_view .wrap__left .menu__split:last-child {display:none}", "", "/* 0.3.1: all catalogue routes live in the menu. */", "body.lampa_view .pt-topnav,body.lampa_view .pt-mobile-nav {display:none!important}", "body.lampa_view .head__actions>.head__action:not(.open--search):not(.open--settings):not(.open--profile) {display:none!important}", "body.lampa_view .head__action.open--profile {width:2.4em!important;height:2.4em!important;min-width:2.4em;flex:0 0 2.4em;padding:0!important;border-radius:50%!important;overflow:hidden}", "body.lampa_view .head__action.open--profile img,body.lampa_view .head__action.open--profile svg {width:100%!important;height:100%!important;display:block;max-width:none;max-height:none;flex:1 0 auto;object-fit:cover;border-radius:50%!important;aspect-ratio:1}", 'body.lampa_view .menu__item[data-action="movie"],body.lampa_view .menu__item[data-action="tv"],body.lampa_view .menu__item[data-action="anime"],body.lampa_view .menu__item[data-action="main"] {display:flex!important}', 'body.lampa_view .menu__item[data-action="timetable"],body.lampa_view .menu__item[data-action*="sport"],body.lampa_view .menu__item[data-action*="shot"],body.lampa_view .pt-removed-section {display:none!important}', "body.lampa_view .settings {z-index:60!important}", "body.lampa_view .settings__head {padding:1.4em 1.5em 1em;flex-shrink:0}", "body.lampa_view .card__type {display:none!important}", "body.lampa_view .card--wide {width:26em!important}", "body.lampa_view .card--wide .card__title {font-size:1em;line-height:1.35;max-height:2.7em}", "body.lampa_view .card--wide .card__description,body.lampa_view .card--wide .card__descr {font-size:.85em;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}", "body.lampa_view .pt-quality {position:absolute;top:.6em;left:.6em;z-index:4;background:#000000e8;color:#d5e9ee;border:1px solid #ffffff25;border-radius:.35em;padding:.3em .5em;font-size:.65em;line-height:1;font-weight:600;pointer-events:none}", "", "body.lampa_view .card__quality {display:block!important;z-index:4}", "body.lampa_view.pt-mobile .head {height:3.5em!important}", "body.lampa_view.pt-mobile .wrap__content {padding-top:3.5em!important}", "body.lampa_view.pt-mobile .card--wide {width:20em!important}", "", "body.lampa_view .card--wide .card__textbox {font-size:.8em;line-height:1.4;padding:1.2em;overflow:hidden}", "body.lampa_view .card--wide .card__textbox>* {display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;max-height:2.8em}", "body.lampa_view .card__quality {top:.6em;left:.6em;bottom:auto;background:#000000e8;color:#d5e9ee;border:1px solid #ffffff25}", "", "/* Frame animation owns transforms while the pointer is moving. */", "body.lampa_view .pt-wheel-moving>.scroll__content>.scroll__body {transition:none!important;-webkit-transition:none!important}", "body.lampa_view.pt-wheel-active .card {transition:none!important}", "@media(min-width:1100px) {", " body.lampa_view .pt-hero {height:min(56vh,34em);min-height:27em;max-width:100em;margin:0 auto 2em}", " body.lampa_view .pt-hero__body {left:3em;bottom:7em;max-width:31em}", " body.lampa_view .pt-hero__title {font-size:2.55em;max-width:15em}", " body.lampa_view .pt-hero__dots {left:45%;bottom:1.5em}", " body.lampa_view .items-line {max-width:100em;margin-left:auto;margin-right:auto;margin-bottom:.8em;padding-bottom:.7em}", " body.lampa_view .items-line .card:not(.card--wide):not(.card--collection) {width:9.2em!important}", " body.lampa_view .card__title {font-size:.79em}", " body.lampa_view .head__body {max-width:100em;padding-left:1.5em;padding-right:1.5em}", "}", "", "@media(min-width:1100px) {", " body.lampa_view .pt-hero,body.lampa_view .items-line {max-width:90vw}", " body.lampa_view .head__body {max-width:90vw;padding-left:0;padding-right:0}", " body.lampa_view .items-line .card:not(.card--wide):not(.card--collection) {width:clamp(8.4em,calc((90vw - 10em / var(--pt-interface-scale,1)) / 10 * var(--pt-interface-scale,1)),11.1em)!important}", "}", "", "/* OLED: true black canvas; poster artwork retains its own colors. */", "body.lampa_view {--pt-bg:#000000;--pt-side:#080808;--pt-panel:#0b0b0b;--pt-high:#171717;background:#000000!important}", "body.lampa_view .background {display:none!important}", "body.lampa_view .head,body.lampa_view .app,body.lampa_view .wrap,body.lampa_view .search {background:#000000!important}", "body.lampa_view .pt-hero__dots {left:0!important;right:0!important;justify-content:center}", "body.lampa_view .pt-hero__logo {display:block;width:auto;max-width:100%;height:auto;max-height:7em;object-fit:contain;object-position:left center;margin:0 0 1.4em}", "body.lampa_view .pt-hero__logo.pt-hidden {display:none!important}", "/* A stable mobile brand slot covers logos, plain titles and translated logos. */", "body.lampa_view.pt-mobile .pt-hero__branding {box-sizing:border-box;display:flex;flex-direction:column;align-items:center;height:auto;min-height:5.5em;margin:0 0 1em;overflow:hidden}", "body.lampa_view.pt-mobile .pt-hero__branding>.pt-hero__logo {flex:0 0 auto;width:100%;max-width:100%;height:5.5em;max-height:5.5em;margin:0;object-fit:contain;object-position:center}", "body.lampa_view.pt-mobile .pt-hero__branding>.pt-hero__title {width:100%;margin:0;font-size:2.05em;line-height:1.08;max-height:2.16em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}", "body.lampa_view.pt-mobile .pt-hero__branding>.pt-hero__logo--translated {height:3em;max-height:3em}", "body.lampa_view.pt-mobile .pt-hero__branding>.pt-hero__title--translation {font-size:.9em;line-height:1.35;max-height:2.7em}", "", "", "body.lampa_view .pt-kind {position:absolute;top:.6em;right:.6em;z-index:4;pointer-events:none;font-size:.6em;line-height:1;padding:.35em .5em;background:#000b;color:#d4e2e6;border:1px solid #ffffff25;border-radius:.35em}", "body.lampa_view .card.pt-has-quality .card__quality {display:none!important}", "/* Search and circular profile share the same outer height. */", "body.lampa_view .head__action.open--search {box-sizing:border-box;height:2.2em}", "body.lampa_view .head__action.open--profile {box-sizing:border-box;width:2.2em!important;height:2.2em!important;min-width:2.2em;flex:0 0 2.2em}", "body.lampa_view .pt-hero__image {image-rendering:auto;filter:none!important;transform:scale(1.06);transform-origin:right top}", "/* Compact detail cover, fading to OLED black before the following rows. */", "body.lampa_view .full-start__background {left:0!important;top:0!important;width:100%!important;height:var(--pt-detail-backdrop-height,30em)!important;max-height:none;object-fit:cover;object-position:center 30%;-webkit-mask-image:linear-gradient(to bottom,#000 30%,#0008 78%,transparent 100%)!important;mask-image:linear-gradient(to bottom,#000 30%,#0008 78%,transparent 100%)!important}", "body.lampa_view .full-start-new {padding-top:2em;padding-bottom:1em}", "body.lampa_view .full-start-new__left {width:10em;min-width:10em;margin-right:2em}", "body.lampa_view .full-start-new__body {align-items:center}", "body.lampa_view .full-start-new__right {min-width:0;max-width:58em}", "body.lampa_view .full-start-new__title {font-size:2em}", "body.lampa_view .minimal-detail-logo {display:none;width:auto;max-width:min(24em,75%);height:auto;max-height:5.5em;object-fit:contain;object-position:left center;margin:0 0 1em}", "body.lampa_view .minimal-detail-logo.loaded {display:block}", "body.lampa_view .minimal-detail-overview,body.lampa_view .full-start-new__description {color:#fff;font-size:.9em;line-height:1.55;max-width:52em;margin:1em 0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}", "body.lampa_view.pt-mobile .full-start-new__left {width:6.5em;min-width:6.5em;margin:0 1.2em 0 0}", "body.lampa_view.pt-mobile .full-start-new__body {display:flex;align-items:flex-start}", "body.lampa_view.pt-mobile .full-start-new__right {margin:0;padding:0;background:none;overflow:visible}", "body.lampa_view.pt-mobile .full-start-new__title {font-size:1.4em}", "body.lampa_view.pt-mobile .minimal-detail-logo {max-width:100%;max-height:4em}", "body.lampa_view.pt-mobile .full-start-new__buttons {gap:.4em}", ".minimal-detail-logo {display:none}", "/* Keep native modal/player order; file actions must stay above their dialog. */", "body.lampa_view .settings {z-index:40!important}", "body.lampa_view .selectbox {z-index:70!important}", "body.lampa_view .modal {z-index:50!important}", "body.lampa_view .settings-input {z-index:90!important}", "body.lampa_view .settings-input__content {background:#101010}", "body.lampa_view .minimal-detail-header {max-width:90%;margin:0 auto;padding:3em 0 1.5em;min-height:23em;display:flex;align-items:flex-end}", "body.lampa_view .minimal-detail-header .full-start-new__body {width:100%;align-items:flex-end;gap:2em}", "/* Native no--poster hides this column, but it now contains essential actions. */", "body.lampa_view .minimal-detail-header .full-start-new__left.minimal-detail-identity {display:block}", "body.lampa_view .minimal-detail-identity {width:15em;min-width:15em;margin:0}", "body.lampa_view:not(.pt-detail-poster) .minimal-detail-identity .full-start-new__poster {display:none}", "body.lampa_view .minimal-detail-identity .full-start-new__title {margin-bottom:1em;font-size:1.7em}", "body.lampa_view .minimal-detail-identity .minimal-detail-logo {width:100%;max-width:100%;max-height:5em;object-position:center;margin:0 auto 1.5em}", "body.lampa_view .minimal-detail-identity .full-start-new__buttons {display:flex;gap:.45em;flex-wrap:wrap}", "body.lampa_view .minimal-detail-identity .button--alc-auto {width:100%;justify-content:center;gap:.5em}", "body.lampa_view .minimal-detail-heading {overflow-wrap:anywhere;word-break:normal;min-width:0;font-size:1.15em;font-weight:600;line-height:1.35;margin:0 0 .7em}", "body.lampa_view .minimal-detail-header .full-start-new__right {max-width:60em}", "body.lampa_view .minimal-detail-header .full-start-new__rate-line {margin-top:.6em;font-size:.8em}", "body.lampa_view .minimal-detail-header .full-start-new__details {margin:.7em 0}", "body.lampa_view .minimal-detail-columns {max-width:90%;margin:1em auto 2em;display:flex;gap:1.25em;align-items:stretch}", "body.lampa_view .minimal-detail-cast>.minimal-cast-native {order:0;grid-column:1;grid-row:1;min-width:0;width:100%!important;max-width:100%;box-sizing:border-box;overflow:hidden;flex:1;background:#0b0b0b;border:1px solid var(--pt-line);border-radius:.8em;padding:1em;margin:0}", "body.lampa_view .minimal-detail-facts {order:1;width:22%;min-width:15em;flex-shrink:0;padding:1.2em;background:#0b0b0b;border:1px solid var(--pt-line);border-radius:.8em;margin:0}", "body.lampa_view .minimal-detail-facts h3 {font-size:1em;margin:0 0 1em}", "body.lampa_view .minimal-detail-facts>div {display:grid;grid-template-columns:minmax(7.5em,.9fr) minmax(0,1.1fr);gap:.75em;font-size:.78em;margin:.8em 0;line-height:1.5}", "body.lampa_view .minimal-detail-facts>div>span:first-child {color:var(--pt-muted)}", "body.lampa_view .minimal-detail-facts>div>span:last-child {text-align:right}", "body.lampa_view.pt-mobile .minimal-detail-header {min-height:18em;padding-top:2em}", "body.lampa_view.pt-mobile .minimal-detail-header .full-start-new__body {flex-direction:column;gap:1em}", "body.lampa_view.pt-mobile .minimal-detail-identity {width:100%;min-width:0}", "body.lampa_view.pt-mobile .minimal-detail-columns {display:block}", "body.lampa_view.pt-mobile .minimal-detail-facts {width:100%;min-width:0;box-sizing:border-box;margin:1em 0}", "body.lampa_view .minimal-cast-native .full-person {width:7em;box-sizing:border-box;flex-direction:column;align-items:center;padding:.4em;gap:.65em;font-size:.85em;text-align:center}", "body.lampa_view .minimal-cast-native .full-person__photo {width:5em;height:5em;border-radius:50%;margin:0;background:#151515}", "body.lampa_view .minimal-cast-native .full-person__photo>img {height:100%;object-fit:cover}", "body.lampa_view .minimal-cast-native .full-person__name {font-size:.95em;line-height:1.3}", "body.lampa_view .minimal-cast-native .full-person__role {font-size:.8em;color:var(--pt-muted);line-height:1.3}", "body.lampa_view .person-start__img {border-radius:50%;width:10em;height:10em;object-fit:cover}", "body.lampa_view .person-start {background:#000}", "/* The complete card is one vertical native row, including its lower columns. */", "body.lampa_view .minimal-detail-header {display:block;box-sizing:border-box;width:90%;max-width:90%;min-height:0;padding:0 0 1.5em}", "body.lampa_view .minimal-detail-header>.full-start-new__body {box-sizing:border-box;min-height:0;padding:1.5em 0 .4em;display:flex;-webkit-box-align:start;-webkit-align-items:flex-start;align-items:flex-start}", "body.lampa_view .minimal-detail-header>.minimal-detail-columns {position:relative;inset:auto;clear:both;float:none;width:100%;max-width:none;margin:.7em 0 0;min-height:0;box-sizing:border-box;display:grid;grid-template-columns:minmax(0,1fr) minmax(15em,22%);gap:1.25em;align-items:stretch}", "body.lampa_view.pt-desktop:not(.pt-safari) .minimal-detail-header>.full-start-new__body {min-height:24em;padding:3em 0 1em}", "body.lampa_view.pt-desktop:not(.pt-safari) .minimal-detail-header>.minimal-detail-columns {margin-top:1.5em}", "body.lampa_view .minimal-detail-columns>.minimal-detail-facts {grid-column:2;grid-row:1;position:relative;inset:auto;float:none;width:auto;min-width:0;box-sizing:border-box;align-self:stretch;overflow-wrap:anywhere}", "body.lampa_view .minimal-overview-action {cursor:pointer;border-radius:.3em;outline:none!important;border:0!important;box-shadow:none!important;position:relative;max-width:52em;margin:1em 0}", "body.lampa_view .minimal-overview-action>.full-start-new__description,body.lampa_view .minimal-overview-action>.minimal-detail-overview {width:100%;max-width:none;margin:0;outline:none!important;border:0!important;box-shadow:none!important}", "body.lampa_view .minimal-overview-focus {display:none;position:absolute;inset:0;border:2px solid var(--pt-accent);border-radius:.3em;pointer-events:none}", "body.lampa_view .minimal-overview-action.focus>.minimal-overview-focus:not([hidden]),body.lampa_view .minimal-overview-action:focus-visible>.minimal-overview-focus:not([hidden]) {display:block!important}", "body.lampa_view .minimal-overview-action {transition:none!important;transform:none!important}", "body.lampa_view .minimal-overview-action>.minimal-overview-focus[hidden] {display:none!important}", "body.lampa_view .minimal-overview-action::before,body.lampa_view .minimal-overview-action::after {display:none!important}", "body.lampa_view .minimal-detail-studio.selector {cursor:pointer;border-radius:.2em;outline:none;transition:none!important}", "body.lampa_view .minimal-detail-studio.selector.focus,body.lampa_view .minimal-detail-studio.selector:focus-visible {outline:none!important;border:0!important;box-shadow:none!important;filter:var(--pt-studio-tone,brightness(1)) drop-shadow(0 0 .25em var(--pt-accent)) drop-shadow(0 0 .65em var(--pt-accent))}", "body.lampa_view .minimal-overview-full {white-space:pre-wrap;overflow-wrap:break-word;line-height:1.7}", "body.lampa_view .minimal-source-hidden {display:none!important}", "body.lampa_view .minimal-detail-facts>div>span {display:block}", "body.lampa_view .minimal-detail-identity .full-start-new__buttons {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.45em;align-items:stretch;overflow:visible}", "body.lampa_view .minimal-detail-identity .full-start__button {margin:0;min-width:0;box-sizing:border-box;justify-content:center;padding:.8em .5em;font-size:.85em}", "body.lampa_view .minimal-detail-identity .button--alc-auto {grid-column:1/-1;width:100%}", "body.lampa_view .minimal-detail-identity .full-start__button>span {display:none!important}", "body.lampa_view .minimal-detail-identity .button--alc-auto>span,body.lampa_view .minimal-detail-identity .button--alc-torrent>span {display:inline!important}", "body.lampa_view .minimal-detail-identity .button--alc-torrent {grid-column:span 2}", "body.lampa_view .minimal-detail-identity .minimal-actions--no-bell>.button--alc-torrent {grid-column:1/-1}", "body.lampa_view .minimal-detail-identity .full-start-new__buttons:not(.minimal-actions--auto)>.button--play {grid-column:1/-1}", "body.lampa_view .minimal-detail-identity .full-start-new__buttons:not(.minimal-actions--auto)>.button--play>span {display:inline!important}", "body.lampa_view.pt-mobile .minimal-detail-header>.full-start-new__body {min-height:0;padding-top:1em}", "body.lampa_view.pt-mobile .minimal-detail-header>.minimal-detail-columns {display:block}", "body.lampa_view.pt-mobile .minimal-detail-identity .full-start-new__buttons {max-width:24em}", "/* Compact filter form: labels and values are distinct, with a clear primary action. */", "body.lampa_view .minimal-filter-panel .selectbox__content {width:27em;max-width:100vw;background:#080808;border:1px solid var(--pt-line);box-sizing:border-box}", "body.lampa_view .minimal-filter-panel .selectbox__head {padding:1.3em 1.3em .8em}", "body.lampa_view .minimal-filter-panel .selectbox__title {font-size:1.3em;line-height:1.2}", "body.lampa_view .minimal-filter-panel .selectbox-item {display:flex;align-items:center;justify-content:space-between;gap:1em;padding:.85em 1.3em;border-radius:0;border-bottom:1px solid #ffffff0a;min-height:3.2em;box-sizing:border-box}", "body.lampa_view .minimal-filter-panel .selectbox-item__title {font-size:.9em;font-weight:500}", "body.lampa_view .minimal-filter-panel .selectbox-item__subtitle {font-size:.8em;text-align:right;color:var(--pt-muted);margin:0;max-width:55%;line-height:1.4}", "body.lampa_view .minimal-filter-panel .minimal-filter-run {background:var(--pt-accent);color:#07151a;justify-content:center;border-radius:.5em;margin:.9em 1.1em .5em}", "body.lampa_view .minimal-filter-panel .minimal-filter-reset {justify-content:center;color:var(--pt-muted);min-height:2.8em}", "body.lampa_view .minimal-filter-panel .selectbox-item.focus {box-shadow:inset 3px 0 var(--pt-accent)}", "body.lampa_view .minimal-filter-panel .minimal-filter-run.focus {background:#d1edf5;color:#07151a;box-shadow:inset 0 0 0 2px #fff}", "/* Legacy history/filter grids share the catalogue's content boundaries. */", "body.lampa_view .category-full,body.lampa_view .mapping--grid {width:100%;max-width:90vw;margin-left:auto;margin-right:auto;padding-left:0;padding-right:0;box-sizing:border-box}", "body.lampa_view .category-full>.card {box-sizing:border-box;margin-left:0;padding-left:.5em;padding-right:.5em}", "@media(min-width:1100px){body.lampa_view:not(.pt-tv) .category-full>.card:not(.card--wide):not(.card--collection) {width:clamp(8.4em,calc((90vw - 10em / var(--pt-interface-scale,1)) / 10 * var(--pt-interface-scale,1)),11.1em)!important}}", "@media(min-width:1200px){body.lampa_view:not(.pt-tv) .mapping--grid>.card,body.lampa_view:not(.pt-tv) .category-full>.card:not(.card--wide):not(.card--collection) {width:calc(12.5% * var(--pt-interface-scale,1))!important}}", "@media(min-width:1800px){body.lampa_view:not(.pt-tv) .mapping--grid>.card,body.lampa_view:not(.pt-tv) .category-full>.card:not(.card--wide):not(.card--collection) {width:calc(10% * var(--pt-interface-scale,1))!important}}", "@media(max-width:650px){body.lampa_view .minimal-filter-panel .selectbox__content {width:100%;max-height:90vh}body.lampa_view .minimal-filter-panel .selectbox-item {min-height:3em;padding:.7em 1em}}", "body.lampa_view .minimal-crew-native {max-width:90%;margin:1.2em auto}", "body.lampa_view .minimal-crew-native .full-person {font-size:.8em;padding-right:1em}", "body.lampa_view .minimal-crew-native .full-person__photo {width:4.5em;height:4.5em;border-radius:50%}", "body.lampa_view .minimal-crew-native .full-person__photo>img {height:100%;object-fit:cover}", "body.lampa_view .minimal-crew-native .full-person__name {font-size:1em}", "body.lampa_view .pt-hero__logo.pt-hero__logo--translated {margin-bottom:.5em}", "body.lampa_view .pt-hero__title.pt-hero__title--translation {font-size:1.05em;line-height:1.35;letter-spacing:0;font-weight:500;max-width:100%;margin:0 0 1.1em;color:#dbdde2}", "body.lampa_view .minimal-detail-identity .minimal-detail-logo.minimal-detail-logo--translated {margin-bottom:.5em}", "body.lampa_view .minimal-detail-identity .full-start-new__title.minimal-detail-translation {font-size:1em;line-height:1.35;letter-spacing:0;font-weight:500;margin-bottom:1.25em;color:#dbdde2}", "/* Clip translated rails to their own content column, with room for focus rings. */", "body.lampa_view .items-line__body {overflow:hidden;padding:1.1em 0;margin:-1.1em 0;-webkit-mask-image:linear-gradient(to right,transparent,#000 1.25em,#000 calc(100% - 1.25em),transparent);mask-image:linear-gradient(to right,transparent,#000 1.25em,#000 calc(100% - 1.25em),transparent)}", "body.lampa_view .items-line__body>.scroll--horizontal {-webkit-mask-image:none!important;mask-image:none!important}", "/* Native social actions and data stay with Lampa; only presentation changes. */", "body.lampa_view .full-start-new__reactions {display:flex;align-items:center;flex-wrap:wrap;gap:.4em;min-height:0;margin:.9em 0;color:var(--pt-muted);font-size:.8em}", "body.lampa_view .full-start-new__reactions>div {padding:0}", "body.lampa_view .full-start-new__reactions .reaction {gap:.3em;padding:.35em .65em;background:#0b0b0b;border:1px solid var(--pt-line);border-radius:.5em}", "body.lampa_view .full-start-new__reactions .reaction__icon {width:1.25em;height:1.25em}", "body.lampa_view .full-start-new__reactions .reaction__count {padding:0;font-size:1em;font-weight:500}", "body.lampa_view .full-start-new__reactions .reaction--voted {border-color:var(--pt-accent);color:var(--pt-accent)}", "body.lampa_view .minimal-comments-native {width:90%;max-width:90%;margin:1em auto 2em;padding-bottom:1em}", "body.lampa_view .minimal-comments-native .items-line__head {padding-left:0;padding-right:0}", "body.lampa_view .minimal-comments-native .scroll--horizontal>.scroll__content {padding-left:0;padding-right:0}", "body.lampa_view .minimal-comments-native .items-line__body,body.lampa_view .minimal-comments-native .scroll--horizontal {-webkit-mask-image:none!important;mask-image:none!important}", "body.lampa_view .full-review {background:#0b0b0b;border:1px solid var(--pt-line);border-radius:.7em;padding:1.1em;box-sizing:border-box;color:#e5e5e5}", "body.lampa_view .mapping--line>.full-review {min-width:18em;max-width:25em}", "body.lampa_view .full-review__text {font-size:.9em;line-height:1.6;margin-bottom:1.1em;-webkit-line-clamp:3;line-clamp:3}", "body.lampa_view .full-review__footer {font-size:.78em;color:var(--pt-muted)}", "body.lampa_view .full-review__user-icon {width:1.8em;height:1.8em}", "body.lampa_view .full-review.focus {border-color:var(--pt-accent);background:#111;color:#fff}", "body.lampa_view .mapping--line>.full-review-add {width:10em;min-height:7.5em;padding:1em;border:1px solid var(--pt-line);background:#0b0b0b;border-radius:.7em;box-sizing:border-box}", "body.lampa_view .full-review-add::before {width:1.4em;height:1.4em;margin:-1.3em 0 0 -.7em;opacity:.75}", "body.lampa_view .full-review-add::after {content:'Написать';position:absolute;inset:auto 0 1.2em;text-align:center;font-size:.8em;color:var(--pt-muted)}", "body.lampa_view .full-review-add.focus {border-color:var(--pt-accent);background:#111}", "body.lampa_view .full-review-add.focus::after {border:0;width:auto;border-radius:0;inset:auto 0 1.2em;color:var(--pt-accent)}", "body.lampa_view .full-review--full-text .full-review__text {-webkit-line-clamp:unset;line-clamp:unset}", "body.lampa_view .minimal-comments-native .items-line__head {gap:.7em}", "body.lampa_view .minimal-comments-native .items-line__title {margin-right:auto}", "body.lampa_view .minimal-comments-nav {display:flex;gap:.4em;flex:none}", "body.lampa_view .minimal-comments-nav[hidden] {display:none}", "body.lampa_view .minimal-comments-arrow {display:flex;align-items:center;justify-content:center;width:2.1em;height:2.1em;padding:0;border:1px solid var(--pt-line);border-radius:.6em;background:#ffffff04;color:var(--pt-muted);cursor:pointer}", "body.lampa_view .minimal-comments-arrow svg {width:1em;height:1em}", "/* Shared transparent badges: ratings, age, status and reactions. */", "body.lampa_view .minimal-detail-header .full-start-new__rate-line {display:flex;align-items:center;flex-wrap:wrap;gap:.5em;margin-bottom:.85em;font-size:.8em}", "body.lampa_view .minimal-detail-header .full-start-new__rate-line>* {margin:0!important}", "body.lampa_view .minimal-detail-header .full-start__rate,body.lampa_view .minimal-detail-header .full-start__pg,body.lampa_view .minimal-detail-header .full-start__status,body.lampa_view .minimal-detail-header .full-start-new__reactions .reaction {box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:.5em;min-height:2.3em;padding:.45em .7em;font-size:1em;line-height:1.1;border:1px solid var(--pt-line);border-radius:.45em;background:rgba(0,0,0,.36);color:#dbdde2;box-shadow:none}", "body.lampa_view .minimal-detail-header .full-start-new__reactions .reaction--voted {border-color:var(--pt-accent);color:var(--pt-accent)}", "body.lampa_view .minimal-detail-header .full-start__rate>div {width:auto;height:auto;padding:0;background:transparent}", "/* A stable card box keeps remote geometry intact; only the artwork moves. */", "body.lampa_view .card__view {transition:transform .24s cubic-bezier(.2,.75,.25,1),box-shadow .24s ease!important;-webkit-transition:-webkit-transform .24s cubic-bezier(.2,.75,.25,1),box-shadow .24s ease!important;transform-origin:center}", "body.lampa_view .card.focus .card__view,body.lampa_view .card.hover .card__view {animation:none!important;-webkit-animation:none!important;-webkit-transform:translateY(-.2em) scale(1.045);transform:translateY(-.2em) scale(1.045);box-shadow:0 0 .85em rgba(173,217,229,.4),0 0 1.8em rgba(173,217,229,.22)}", "body.lampa_view .minimal-cast-native .full-person.focus {background:#161b1e;color:var(--pt-text);box-shadow:inset 0 0 0 1px var(--pt-accent)}", "body.lampa_view .items-line__more {display:none!important}", "body.lampa_view .minimal-paged-row .card-more:not(.card-more--first) {display:none!important}", "body.lampa_view .items-line__head {display:flex;align-items:center;gap:.6em}", "body.lampa_view .items-line__title {margin-right:auto}", ".minimal-row-nav {display:none}", "body.lampa_view .minimal-row-nav {display:flex;gap:.4em;flex:none}", "body.lampa_view .minimal-row-arrow,body.lampa_view .minimal-row-more {display:flex;align-items:center;justify-content:center;width:2em;height:2em;padding:0;border:1px solid var(--pt-line);border-radius:.6em;background:#ffffff04;color:var(--pt-muted);cursor:pointer}", "body.lampa_view .minimal-row-arrow svg,body.lampa_view .minimal-row-more svg {width:1em;height:1em}", "body.lampa_view .minimal-paged-row .scroll__body>.card:last-child,body.lampa_view .minimal-paged-row .scroll__body>.full-person:last-child {margin-right:2.5em}", "body.lampa_view .minimal-paged-row .mapping--line>.card+.card {margin-left:.75em}", "body.lampa_view .minimal-paged-row .items-line__body {-webkit-mask-image:linear-gradient(to right,transparent 1em,#000 1.25em,#000 calc(100% - 1.25em),transparent calc(100% - 1em));mask-image:linear-gradient(to right,transparent 1em,#000 1.25em,#000 calc(100% - 1.25em),transparent calc(100% - 1em))}", "/* Header, row and comment navigation share one pointer/remote/keyboard focus. */", "body.lampa_view .minimal-back svg,body.lampa_view .head__menu-icon svg,body.lampa_view .minimal-row-nav svg,body.lampa_view .minimal-comments-arrow svg {stroke-width:2}", "body.lampa_view .minimal-back:hover,body.lampa_view .minimal-back.hover,body.lampa_view .minimal-back.focus,body.lampa_view .minimal-back:focus-visible,", "body.lampa_view .head__menu-icon:hover,body.lampa_view .head__menu-icon.hover,body.lampa_view .head__menu-icon.focus,body.lampa_view .head__menu-icon:focus-visible,", "body.lampa_view .minimal-row-arrow:hover:not(:disabled),body.lampa_view .minimal-row-arrow.hover:not(:disabled),body.lampa_view .minimal-row-arrow.focus:not(:disabled),body.lampa_view .minimal-row-arrow:focus-visible:not(:disabled),", "body.lampa_view .minimal-row-more:hover,body.lampa_view .minimal-row-more.hover,body.lampa_view .minimal-row-more.focus,body.lampa_view .minimal-row-more:focus-visible,", "body.lampa_view .minimal-comments-arrow:hover:not(:disabled),body.lampa_view .minimal-comments-arrow.hover:not(:disabled),body.lampa_view .minimal-comments-arrow.focus:not(:disabled),body.lampa_view .minimal-comments-arrow:focus-visible:not(:disabled) {color:var(--pt-text);background:var(--pt-high);border-color:var(--pt-line);outline:none;outline-offset:0;box-shadow:inset 0 0 0 1px var(--pt-accent)}", "body.lampa_view.pt-tv .minimal-row-arrow,body.lampa_view.pt-tv .minimal-person-row .minimal-row-nav {display:none}", "body.lampa_view .pt-row-paging>.scroll__content>.scroll__body {transition:none!important;-webkit-transition:none!important}", "body.lampa_view .minimal-people-grid {display:grid;grid-template-columns:repeat(auto-fill,minmax(7em,1fr));gap:1em;max-width:65em}", "body.lampa_view .minimal-people-grid .full-person {width:100%!important;margin:0;box-sizing:border-box}", "", "body.lampa_view .alc-ap__voices {--alc-vcol:29em}", "body.lampa_view .alc-ap-vgroup__title {font-size:.9em;color:var(--pt-text);margin:.85em 0 .5em}", "body.lampa_view .alc-ep--soon .alc-ep__time {color:var(--pt-accent)}", "", "body.lampa_view .minimal-detail-studio {display:inline-block;width:auto;max-width:6.5em;height:1.3em;object-fit:contain;vertical-align:middle;margin-right:.65em;filter:var(--pt-studio-tone,brightness(1)) drop-shadow(0 0 .6px rgba(255,255,255,.7)) drop-shadow(0 1px 2px #000);opacity:1}", "body.lampa_view .minimal-detail-studio[hidden] {display:none}", "body.lampa_view .minimal-anime-controls {width:100%;box-sizing:border-box;margin:0 0 1.6em;padding:.4em 1em}", "body.lampa_view .minimal-anime-tabs {display:flex;justify-content:center;align-items:center;gap:.65em;width:100%;margin:0 auto}", "body.lampa_view .minimal-anime-tab {font-family:inherit;justify-content:center;min-width:9.5em;transition:box-shadow .24s ease!important;-webkit-transition:box-shadow .24s ease!important}", 'body.lampa_view .minimal-anime-tab[aria-selected="true"] {box-shadow:0 0 .35em rgba(173,217,229,.85),0 0 1.2em rgba(173,217,229,.65),0 0 2.4em rgba(173,217,229,.42);outline:none}', "body.lampa_view .minimal-anime-status {margin:1.2em auto;text-align:center;color:var(--pt-muted);line-height:1.5}", "body.lampa_view .minimal-anime-retry {display:inline-block;font:inherit;color:var(--pt-text);background:#111;border:1px solid var(--pt-line);border-radius:.6em;padding:.65em 1.2em;margin:.8em auto 0;cursor:pointer}", "body.lampa_view .minimal-anime-retry.focus,body.lampa_view .minimal-anime-retry:hover {background:var(--pt-accent);color:#11171b;outline:none}", "body.lampa_view .minimal-anime-status[hidden],body.lampa_view .minimal-anime-retry[hidden] {display:none!important}", "", "/* Small touch controls keep native actions, including the iPhone safe area. */", "body.lampa_view.pt-mobile .navigation-bar {font-size:calc(14px * var(--pt-interface-scale,1))!important;padding:0 .8em .65em;padding-bottom:calc(.65em + env(safe-area-inset-bottom,0px))}", "body.lampa_view.pt-mobile .navigation-bar__body {max-width:400px;margin:0 auto;padding:.5em .6em;border:1px solid var(--pt-line);background:#181a1cf2;box-shadow:0 4px 20px #0006}", "body.lampa_view.pt-mobile .navigation-bar__item {display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:44px;min-width:56px}", "body.lampa_view.pt-mobile .navigation-bar__icon {width:1.5em;height:1.5em}", "body.lampa_view.pt-mobile .navigation-bar__label {font-size:.78em;line-height:1.2;margin-top:.3em}", "body.lampa_view.pt-mobile .settings__content {font-size:calc(14px * var(--pt-interface-scale,1))!important;box-sizing:border-box;max-height:78vh!important;border-radius:1em}", "body.lampa_view.pt-mobile .settings__body,", "body.lampa_view.pt-tv .settings__body {font-size:1em!important;min-height:0;overflow:hidden}", "body.lampa_view.pt-mobile .settings__head,", "body.lampa_view.pt-tv .settings__head {padding:1em 1.1em .8em}", "body.lampa_view.pt-mobile .settings__title,", "body.lampa_view.pt-tv .settings__title {font-size:1.4em;line-height:1.3}", "body.lampa_view.pt-mobile .settings .minimal-back--overlay {font-size:1em}", "body.lampa_view.pt-mobile .settings-folder,", "body.lampa_view.pt-tv .settings-folder {padding:.9em 1.1em;min-height:3.6em;align-items:center;box-sizing:border-box;border-radius:.5em}", "body.lampa_view.pt-mobile .settings-folder__icon,", "body.lampa_view.pt-tv .settings-folder__icon {width:1.4em;height:1.4em;min-width:1.4em;margin-right:.9em}", "body.lampa_view.pt-mobile .settings-folder__icon>*,", "body.lampa_view.pt-tv .settings-folder__icon>* {width:100%;height:100%}", "body.lampa_view.pt-mobile .settings-folder__name,", "body.lampa_view.pt-tv .settings-folder__name {font-size:1em;line-height:1.35}", "body.lampa_view.pt-mobile .settings-param,", "body.lampa_view.pt-tv .settings-param {padding:1em 1.1em;font-size:1em}", "body.lampa_view.pt-mobile .settings-param__name,", "body.lampa_view.pt-tv .settings-param__name {font-size:1em}", "body.lampa_view.pt-mobile .settings-param__value,", "body.lampa_view.pt-tv .settings-param__value {font-size:.95em}", "body.lampa_view.pt-mobile .wrap__content {padding-bottom:calc(5.1em + env(safe-area-inset-bottom,0px))!important}", "body.lampa_view.pt-mobile.orientation--landscape .navigation-bar {padding:.6em .6em .6em 0}", "body.lampa_view.pt-mobile.orientation--landscape .navigation-bar__body {gap:.45em;padding:.55em}", "", "/* TV geometry is separate from desktop sizes and the rest of the interface. */", "body.lampa_view.pt-tv .items-line {max-width:90vw;margin-left:auto;margin-right:auto}", "body.lampa_view.pt-tv .card,body.lampa_view.pt-mobile .settings-folder {will-change:auto}", "/* Clip TV rails without an extra full-width gradient compositing layer. */", "body.lampa_view.pt-tv .items-line__body {-webkit-mask-image:none;mask-image:none}", "body.lampa_view.pt-tv .minimal-paged-row .scroll--horizontal>.scroll__content>.scroll__body {transition:transform .12s linear;-webkit-transition:-webkit-transform .12s linear}", "body.lampa_view.pt-tv .card__view {transition:none!important;-webkit-transition:none!important}", "", "/* TV drawers use the same compact rows as phones, with readable TV text. */", "body.lampa_view.pt-tv .settings .minimal-back--overlay {font-size:1em}", "body.lampa_view .selectbox__head {padding:1em 1.1em .8em}", "body.lampa_view .selectbox__title {font-size:1.4em;line-height:1.3}", "body.lampa_view .selectbox-item {padding:.85em 1.1em;font-size:1em;min-height:3.2em;box-sizing:border-box}", "body.lampa_view.pt-tv .selectbox-item__title {font-size:1em;line-height:1.35}", "body.lampa_view.pt-tv .selectbox-item__subtitle {font-size:.85em;line-height:1.4}", "body.lampa_view.pt-tv .settings-folder,body.lampa_view.pt-tv .settings-param {will-change:auto}", "", "/* Compact TV badges and captions retain the existing poster geometry. */", "/* TV uses the same focus treatment as the browser; keep repaint cost bounded. */", "body.lampa_view.pt-tv .card.focus .card__view,body.lampa_view.pt-tv .card.hover .card__view {-webkit-transform:translateY(-.2em) scale(1.045);transform:translateY(-.2em) scale(1.045);box-shadow:0 0 .85em rgba(173,217,229,.4),0 0 1.8em rgba(173,217,229,.22)}", "body.lampa_view.pt-tv .card.hover:not(.focus) .card__view {box-shadow:none!important;transform:none!important}", "body.lampa_view.pt-tv .card.hover:not(.focus) .card__view:after {border-color:transparent!important;box-shadow:none!important}", "body.lampa_view .pt-hero__studio.selector {cursor:pointer;border-radius:.2em}", "body.lampa_view .pt-hero__studio.selector.focus,body.lampa_view .pt-hero__studio.selector:focus-visible {outline:none;box-shadow:0 0 0 2px var(--pt-accent);filter:var(--pt-studio-tone,brightness(1))}", "", "/* A native cast rail stays inside its grid cell at every scroll position. */", "body.lampa_view .minimal-detail-columns>.minimal-detail-cast {grid-column:1;grid-row:1;position:relative;display:flex;flex-direction:column;flex:1;min-width:0;max-width:100%;width:100%;box-sizing:border-box;overflow:hidden}", "body.lampa_view .minimal-detail-cast .items-line__body,body.lampa_view .minimal-detail-cast .scroll--horizontal {min-width:0;max-width:100%;box-sizing:border-box}", "body.lampa_view .minimal-detail-facts>div>span {min-width:0;overflow-wrap:anywhere}", "body.lampa_view .minimal-detail-facts>div>span:first-child {overflow-wrap:normal;word-break:normal}", "body.lampa_view.pt-tv .minimal-cast-native .full-person {width:var(--minimal-person-width,7em);flex-basis:var(--minimal-person-width,7em)}", "body.lampa_view.pt-tv .minimal-cast-native .full-person:last-child {margin-right:0}", "body.lampa_view.pt-mobile .minimal-detail-header>.minimal-detail-columns {grid-template-columns:minmax(0,1fr)}", "body.lampa_view.pt-mobile .minimal-detail-columns>.minimal-detail-cast,body.lampa_view.pt-mobile .minimal-detail-columns>.minimal-detail-facts {grid-column:1;grid-row:auto}", "@media(max-width:900px){", " body.lampa_view .minimal-detail-header>.minimal-detail-columns {grid-template-columns:minmax(0,1fr)}", " body.lampa_view .minimal-detail-columns>.minimal-detail-cast,body.lampa_view .minimal-detail-columns>.minimal-detail-facts {grid-column:1;grid-row:auto}", "}", "", "/* Equal footer space on every poster: focus never changes card/row geometry. */", "body.lampa_view .card .pt-card-watch {position:relative;height:4.1em;margin-top:.4em;font-size:.72em;line-height:1.35;pointer-events:none;visibility:hidden}", "body.lampa_view .card__view>.card-watched {display:none!important}", "body.lampa_view .card .pt-card-watch>.card-watched {display:block;position:absolute;inset:0;width:100%;height:100%;max-width:100%;font-size:1em;line-height:1.35;transform:none;-webkit-transform:none;border:0;border-radius:0;background:none!important;color:var(--pt-muted);box-sizing:border-box}", "body.lampa_view .card .pt-card-watch .card-watched__inner,body.lampa_view .card .pt-card-watch .card-watched__body {padding:0;font-size:1em}", "body.lampa_view .card .pt-card-watch .card-watched__item {display:none;margin:0;color:var(--pt-muted)}", "body.lampa_view .card .pt-card-watch .pt-card-watch__current {position:absolute;inset:0;display:flex;flex-direction:column;align-items:stretch;line-height:1.25}", "body.lampa_view .card .pt-card-watch .card-watched__item>span {display:none}", "body.lampa_view .pt-card-watch__row {display:block}", "body.lampa_view .pt-card-watch__meter {display:flex;align-items:center;min-width:0;margin-top:.25em;min-height:1em}", "body.lampa_view .pt-card-watch__label {display:flex;flex-wrap:wrap;gap:0 .25em;min-width:0;white-space:normal}", "body.lampa_view .pt-card-watch__label>span {white-space:nowrap}", "body.lampa_view .pt-card-watch__label {align-content:start}", "body.lampa_view .pt-card-watch__label>.pt-card-watch__heading {flex-basis:100%;margin-bottom:.1em}", "body.lampa_view .pt-card-watch__time {flex:0 0 auto;margin-left:.4em;font-variant-numeric:tabular-nums;font-size:.9em;line-height:1}", "body.lampa_view .card .pt-card-watch .time-line {display:block;flex:1 1 0%;align-self:center;position:relative;top:auto;right:auto;bottom:auto;left:auto;width:auto;margin:0;min-width:1px;height:3px;min-height:3px;overflow:hidden;background:rgba(255,255,255,.24)!important}", "body.lampa_view .card .pt-card-watch .time-line>div {display:block;height:3px;min-height:3px;background:var(--pt-accent)!important}", "body.lampa_view .card .pt-card-watch--complete .time-line,body.lampa_view .card .pt-card-watch--complete .pt-card-watch__time {display:none!important}", "/* Reveal saved viewing history only for the card under pointer/remote focus.", "   Reserved footer space prevents neighbouring rows from jumping on focus. */", "body.lampa_view .card.focus .pt-card-watch--has-progress,body.lampa_view .card.hover .pt-card-watch--has-progress,body.lampa_view .card.pt-card-pointer .pt-card-watch--has-progress,body.lampa_view .card.pt-card-touch .pt-card-watch--has-progress {visibility:visible}", "body.lampa_view .card .pt-card-watch>.card-watched.pt-card-watch--empty {display:none!important}", "/* One compact release pill below Series, shared by desktop and TV. */", "body.lampa_view .pt-series-status {position:absolute;left:auto;right:4px;top:2.6em;z-index:4;display:block;width:auto;max-width:calc(100% - 8px);font-size:.55em;line-height:1;white-space:nowrap;padding:.3em .4em;border:1px solid #ffffff25;border-radius:.35em;background:#000b;color:#d4e2e6;pointer-events:none;box-sizing:border-box}", "body.lampa_view .pt-series-status>span {white-space:pre}", "", "/* Badges keep their own corners and wrap to another line when space is short. */", "body.lampa_view .card__view .pt-quality,body.lampa_view .card__view .pt-kind {max-width:calc(100% - 8px);box-sizing:border-box;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}", "/* Native history/play marker, in the same understated pill as metadata.", "   Favorites sit along the lower edge, leaving faces and top metadata uncovered. */", "body.lampa_view .card__view .card__icons {inset:0!important;display:block!important;width:auto;max-width:none;pointer-events:none}", "body.lampa_view .card__view .card__icons-inner {position:static;display:flex;flex-direction:row;align-items:flex-end;justify-content:flex-start;gap:.2em;height:100%;box-sizing:border-box;padding:0 .3em .3em;background:none!important;border-radius:0;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}", "body.lampa_view .card__view .card__icon {position:relative}", 'body.lampa_view .card__view .card__icon[style*="left:"] {position:absolute}', "body.lampa_view .card__view .card__icon:not(.icon--history) {box-sizing:border-box;width:1.9em;height:1.9em;font-size:.65em;border:1px solid #ffffff25;border-radius:.35em;background-color:#000b;background-size:72% 72%;background-position:center;background-repeat:no-repeat;box-shadow:none}", "body.lampa_view.pt-theme-glass .card__view .card__icon:not(.icon--history) {background-color:rgba(24,26,29,.52);border-color:var(--pt-glass-border);box-shadow:var(--pt-glass-edge)}", 'body.lampa_view .card__view .card__icon.icon--book {background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23f4f4f6%22%20stroke-width%3D%221.6%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M6%203h12v18l-6-4-6%204Z%22%2F%3E%3C%2Fsvg%3E")!important}', 'body.lampa_view .card__view .card__icon.icon--wath {background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23f4f4f6%22%20stroke-width%3D%221.6%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%229%22%2F%3E%3Cpath%20d%3D%22M12%207v5l3%202%22%2F%3E%3C%2Fsvg%3E")!important}', 'body.lampa_view .card__view .card__icon.icon--like {background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23f4f4f6%22%20stroke-width%3D%221.6%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M20.5%205.5a5%205%200%200%200-7%200L12%207l-1.5-1.5a5%205%200%200%200-7%207L12%2021l8.5-8.5a5%205%200%200%200%200-7Z%22%2F%3E%3C%2Fsvg%3E")!important}', "body.lampa_view .card__view .icon--history {position:absolute;top:62%!important;left:50%!important;right:auto!important;bottom:auto!important;transform:translate(-50%,-50%);box-sizing:border-box;width:2.2em;height:1.8em;font-size:.65em;background:#000b!important;border:1px solid #ffffff25;border-radius:.35em;color:#d4e2e6;box-shadow:none!important}", "body.lampa_view .card__view .icon--history:before {content:'';position:absolute;top:50%;left:53%;transform:translate(-50%,-50%);width:0;height:0;border-top:.38em solid transparent;border-bottom:.38em solid transparent;border-left:.58em solid currentColor}", "body.lampa_view .card__view.minimal-badge-layout>.card__vote,body.lampa_view .card__view.minimal-badge-layout>.card__icons {z-index:4}", "/* Shared controls for both online layouts. */", "body.lampa_view .nova-plus-root .nova-btn,body.lampa_view .nova-plus-root .nova-chip,body.lampa_view .nova-plus-root .nova-group {background:#171717!important;color:var(--pt-text)!important;border:1px solid var(--pt-line)!important;border-radius:.625em!important;box-shadow:none!important;outline:none!important}", "body.lampa_view .nova-plus-root .nova-btn {padding:.75em 1.15em;font-weight:600}", "body.lampa_view .nova-plus-root .nova-chip--view-icon {display:inline-flex;align-items:center;justify-content:center;flex:0 0 2.65em;width:2.65em;min-width:2.65em;height:2.65em;box-sizing:border-box;padding:0!important;gap:0;line-height:1}", "body.lampa_view .nova-plus-root .nova-chip--view-icon>.nova-chip__label {display:none}", "body.lampa_view .nova-plus-root .nova-chip--view-icon>svg {display:block;flex:none;width:1.1em;height:1.1em;margin:0!important;align-self:center}", "body.lampa_view .nova-plus-root .nova-chip--active,body.lampa_view .nova-plus-root .nova-group--open {background:var(--pt-high)!important;border-color:#add9e560!important}", "body.lampa_view .nova-plus-root .nova-btn.focus,body.lampa_view .nova-plus-root .nova-btn.hover,body.lampa_view .nova-plus-root .nova-btn:hover,body.lampa_view .nova-plus-root .nova-chip.focus,body.lampa_view .nova-plus-root .nova-chip.hover,body.lampa_view .nova-plus-root .nova-chip:hover,body.lampa_view .nova-plus-root .nova-group.focus,body.lampa_view .nova-plus-root .nova-group:hover {background:var(--pt-high)!important;color:var(--pt-text)!important;border-color:var(--pt-accent)!important;box-shadow:0 0 0 1px var(--pt-accent)!important}", "body.lampa_view .nova-plus-root .nova-chip__badge,body.lampa_view .nova-plus-root .nova-chip.focus .nova-chip__badge {background:#ffffff1a!important;color:var(--pt-text)!important;border-radius:.25em}", "body.lampa_view .nova-plus-root .nova-card.focus {background:var(--pt-high)!important;color:var(--pt-text)!important;box-shadow:inset 0 0 0 2px var(--pt-accent)!important}", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card.focus {background:none!important;box-shadow:none!important}", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card.focus .nova-card__thumb {box-shadow:0 0 0 2px var(--pt-accent)!important}", "body.lampa_view .nova-plus-root .nova-card__line .time-line>div,body.lampa_view .nova-plus-root .nova-hero__progress .time-line>div {background:var(--pt-accent)!important}", "/* Native torrent focus has an outer white pseudo-element; use one accent border. */", "body.lampa_view .torrent-item.focus::after {display:none!important;content:none!important}", "body.lampa_view .torrent-filter .filter__item.focus,body.lampa_view .torrent-filter .filter__item.hover,body.lampa_view .torrent-filter .selector--filter.focus {border-color:var(--pt-accent)!important;box-shadow:0 0 0 1px var(--pt-accent)!important;outline:none!important}", "body.lampa_view .torrent-filter .simple-button.focus,body.lampa_view .torrent-filter .simple-button.hover {border-color:var(--pt-accent)!important;box-shadow:0 0 0 1px var(--pt-accent)!important;outline:none!important}", "body.lampa_view .minimal-torrent-view>.explorer__left {display:block!important;width:28.7%;flex:0 0 28.7%;min-width:0;padding:.3em 1.6em 0 .3em;box-sizing:border-box}", "body.lampa_view .minimal-torrent-view>.explorer__left .explorer__card {display:none!important}", "/* The hidden native sidebar scroll still reserves a full viewport of height. */", "body.lampa_view .minimal-torrent-view>.explorer__left>.scroll {display:none!important}", "body.lampa_view .minimal-torrent-view>.explorer__files {width:71.3%;min-width:0;box-sizing:border-box}", "body.lampa_view .minimal-torrent-view .explorer__files-head {padding:.3em .6em .6em 0}", "body.lampa_view .minimal-torrent-view .explorer__files-body .scroll__body {padding-left:0}", "body.lampa_view .minimal-torrent-view .filter--back {display:none!important}", ".minimal-torrent-banner {display:none}", "body.lampa_view .minimal-torrent-banner {display:block;position:relative;width:100%;min-width:0;overflow:hidden;border-radius:1em;background:#0b1016;aspect-ratio:1.65;min-height:0;color:var(--pt-text)}", "body.lampa_view .minimal-torrent-banner__image,body.lampa_view .minimal-torrent-banner__shade {position:absolute;inset:0;width:100%;height:100%;object-fit:cover}", "body.lampa_view .minimal-torrent-banner__shade {background:linear-gradient(180deg,#080d1633 30%,#080d16e6 100%)}", "body.lampa_view .minimal-torrent-banner__meta {position:absolute;top:1em;right:1.2em;left:1.2em;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:.7em;font-size:.9em;text-shadow:0 1px 5px #000}", "body.lampa_view .minimal-torrent-banner__title {position:absolute;left:1.3em;right:1.3em;bottom:1.2em;font-size:1.7em;font-weight:650;line-height:1.2;text-shadow:0 2px 8px #000}", "body.lampa_view .minimal-torrent-banner__logo {display:block;width:auto;height:auto;max-width:100%;max-height:4em;object-fit:contain;filter:drop-shadow(0 2px 5px #0009)}", "body.lampa_view .minimal-torrent-view--classic {flex-wrap:wrap}", "body.lampa_view .minimal-torrent-view--classic>.explorer__left,body.lampa_view .minimal-torrent-view--classic>.explorer__files {width:100%}", "body.lampa_view .minimal-torrent-view--classic>.explorer__left {padding-right:.3em;margin-bottom:1em}", "body.lampa_view .minimal-torrent-view--classic .minimal-torrent-banner {aspect-ratio:auto;height:14.7em;min-height:0}", "body.lampa_view .minimal-torrent-view--classic .minimal-torrent-banner__logo {max-width:55%}", "@media(max-width:767px){", " body.lampa_view .minimal-torrent-view {flex-direction:column;flex-wrap:nowrap;min-height:0}", " body.lampa_view .minimal-torrent-view>.explorer__left {width:100%;flex:0 0 auto;padding-right:.3em;margin-bottom:.5em}", " body.lampa_view .minimal-torrent-view>.explorer__files {width:100%;flex:1 1 0;min-height:0;display:flex;flex-direction:column}", " body.lampa_view .minimal-torrent-banner {width:100%;min-height:0;max-height:22vh}", " body.lampa_view .minimal-torrent-banner__title {font-size:1.4em;bottom:.8em}", " body.lampa_view .minimal-torrent-banner__meta {font-size:.8em;top:.8em;right:1em;left:1em}", " body.lampa_view .minimal-torrent-view .explorer__files-head {padding-left:.3em;padding-right:.3em;flex:0 0 auto}", " body.lampa_view .minimal-torrent-view .explorer__files-head>.scroll {width:100%;min-width:0;overflow:visible!important}", " body.lampa_view .minimal-torrent-view .explorer__files-head .scroll__content {padding:0!important}", " body.lampa_view .minimal-torrent-view .explorer__files-head .scroll__body {transform:none!important;-webkit-transform:none!important;width:100%!important}", " body.lampa_view .minimal-torrent-view .torrent-filter {display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:.5em;margin:0!important;white-space:normal;align-items:stretch}", " body.lampa_view .minimal-torrent-view .torrent-filter .simple-button {font-size:.88em;min-height:44px;min-width:0;margin:0;padding:.5em .65em;box-sizing:border-box;justify-content:center}", " body.lampa_view .minimal-torrent-view .filter--search>div {display:none!important}", " body.lampa_view .minimal-torrent-view .filter--search>svg {width:1.3em;height:1.3em;margin:0}", " body.lampa_view .minimal-torrent-view .filter--sort {flex-wrap:wrap;gap:.15em .4em}", " body.lampa_view .minimal-torrent-view .filter--sort>div {margin:0;padding:0;background:transparent;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.8em;color:var(--pt-muted)}", " body.lampa_view .minimal-torrent-view .filter--filter>div:not(.hide) {margin-left:.4em;padding:.15em .3em}", " body.lampa_view .minimal-torrent-view .explorer__files-body {flex:1 1 0;min-height:0}", " /* Lampa sizes this scroll for the whole screen; it now shares it with the banner. */", " body.lampa_view .minimal-torrent-view .explorer__files-body>.scroll {height:100%!important}", " body.lampa_view .minimal-torrent-view .explorer__files-body .scroll__content {padding-top:.5em}", " body.lampa_view .minimal-torrent-view .explorer__files-body .scroll__body {padding-left:.3em;padding-right:.3em;box-sizing:border-box}", " body.lampa_view .minimal-torrent-view .watched-history {font-size:.8em;padding:.6em;margin-bottom:.5em}", " body.lampa_view .minimal-torrent-view .torrent-item.tc-item {padding:.75em!important}", " body.lampa_view .minimal-torrent-view .tc-head {display:flex;flex-wrap:wrap;gap:.4em .7em}", " body.lampa_view .minimal-torrent-view .tc-summary {flex:1 1 50%;gap:.3em .55em}", " body.lampa_view .minimal-torrent-view .tc-right {font-size:.8em;gap:.2em;max-width:100%}", " body.lampa_view .minimal-torrent-view .tc-size {margin-top:0;font-size:1em}", " body.lampa_view .minimal-torrent-view .tc-seeds {font-size:.85em}", " body.lampa_view .minimal-torrent-view .tc-tags {margin:.5em 0}", " body.lampa_view .minimal-torrent-view .tc-tags .tc-tag {font-size:.72em}", " body.lampa_view .minimal-torrent-view .tc-voices {font-size:inherit}", " body.lampa_view .minimal-torrent-view .tc-foot {font-size:.72em;gap:.6em;margin-top:.5em}", " body.lampa_view .minimal-torrent-view .tc-source {display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}", "}", "/* Let the activity scroll whole catalogues; selector groups never become inner carousels. */", "@media(max-width:767px){", " body.lampa_view .minimal-torrent-files .modal__content {display:flex;flex-direction:column;box-sizing:border-box;padding:1em;padding-bottom:calc(1em + env(safe-area-inset-bottom,0px));max-height:calc(100vh - 1em);max-height:calc(100dvh - 1em);overflow:hidden}", " body.lampa_view .minimal-torrent-files .modal__head {flex-shrink:0}", " body.lampa_view .minimal-torrent-files .modal__body {display:flex;flex-direction:column;min-height:0}", " body.lampa_view .minimal-torrent-files .modal__head {margin-bottom:.5em}", " body.lampa_view .minimal-torrent-files .modal__title {font-size:1.5em;line-height:1.25}", " body.lampa_view .minimal-torrent-files .modal__body .scroll {display:block;height:auto!important;max-height:calc(100vh - 8em);max-height:calc(100dvh - 8em);overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior-y:contain;touch-action:pan-y;-webkit-overflow-scrolling:touch}", " body.lampa_view .minimal-torrent-files--virtual .modal__body .scroll {overflow:hidden!important;touch-action:none}", " body.lampa_view .minimal-torrent-files .modal__body .scroll__content {padding:.4em 0;max-height:none!important}", " body.lampa_view .torrent-files .torrnet-folder-name {font-size:.85em;line-height:1.4;padding:.6em 0 .8em;overflow-wrap:anywhere;color:var(--pt-muted);opacity:1}", " body.lampa_view .torrent-files .torrent-serial {display:grid;grid-template-columns:clamp(72px,24vw,100px) minmax(0,1fr);align-items:stretch;min-width:0;overflow:hidden;border-radius:.55em}", " body.lampa_view .torrent-files .torrent-serial__img {width:100%;height:100%;min-height:5.5em;object-fit:cover;align-self:stretch;border-radius:0}", " body.lampa_view .torrent-files .torrent-serial__content {display:grid;grid-template-columns:minmax(0,1fr);gap:.4em;min-width:0;padding:.65em .75em;overflow:hidden}", " body.lampa_view .torrent-files .torrent-serial__body {float:none;min-width:0;max-width:100%}", " body.lampa_view .torrent-files .torrent-serial__title {font-size:1.05em;line-height:1.25;margin:0;white-space:normal;overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2}", " body.lampa_view .torrent-files .torrent-serial__line {display:flex;flex-direction:row;flex-wrap:wrap;font-size:.72em;line-height:1.3;margin-top:.3em;padding:0}", " body.lampa_view .torrent-files .torrent-serial__detail {display:flex;flex-wrap:wrap;gap:.3em .7em;float:none;margin:0;min-width:0;text-align:left;font-size:.75em;color:var(--pt-muted)}", " body.lampa_view .torrent-files .torrent-serial__size {font-size:1em;line-height:1.3;padding:0;background:none;color:var(--pt-text)}", " body.lampa_view .torrent-files .torrent-serial__exe {font-size:1em;line-height:1.3;margin:0}", " body.lampa_view .torrent-files .torrent-serial__clear {display:none}", " body.lampa_view .torrent-files .torrent-serial .time-line {position:static;inset:auto;width:100%;min-width:0;margin:0;align-self:end}", " body.lampa_view .torrent-files .time-line>div {height:3px;background:var(--pt-accent)}", " body.lampa_view .torrent-files .torrent-serial__episode {font-size:.8em;line-height:1.2;padding:.25em .4em}", " body.lampa_view .torrent-files .torrent-serial__progress {width:2px;background:var(--pt-accent)}", " body.lampa_view .torrent-files .torrent-file {display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.5em;padding:.8em}", " body.lampa_view .torrent-files .torrent-file__title {font-size:1em;min-width:0;padding:0;overflow-wrap:anywhere}", " body.lampa_view .torrent-files .torrent-file__size {font-size:.8em;padding:.2em .4em}", " body.lampa_view .torrent-files .torrent-file .time-line {grid-column:1/-1;position:static;inset:auto;margin:0;width:100%}", "}", "", "body.lampa_view .nova-plus-root .nova-toolbar {flex-wrap:wrap!important;white-space:normal}", "body.lampa_view .nova-plus-root .nova-toolbar__label {margin-left:.8em!important;margin-right:.55em!important}", "body.lampa_view .nova-plus-root .nova-toolbar__label:first-child {margin-left:0!important}", "body.lampa_view .nova-plus-root .nova-plus__row,body.lampa_view .nova-plus-root .nova-plus__pane {display:flex!important;flex-wrap:wrap!important;transform:none!important;-webkit-transform:none!important;width:100%!important;height:auto!important;max-height:none!important;overflow:visible!important}", "body.lampa_view .nova-plus-root .nova-plus__group,body.lampa_view .nova-plus-root .nova-drop {height:auto!important;max-height:none!important;overflow:visible!important}", "body.lampa_view .nova-plus-root .nova__rows,body.lampa_view .nova-plus-root .nova-plus__panel {height:auto!important;max-height:none!important;overflow:visible!important}", "body.lampa_view .nova-plus-root .nova-plus__row .nova-chip,body.lampa_view .nova-plus-root .nova-plus__pane .nova-chip {flex-shrink:0;max-width:100%;white-space:normal}", "body.lampa_view .nova-plus-root .nova-btn--movie {max-width:100%;white-space:normal;text-align:left}", "body.lampa_view .nova-plus-root .nova-btn--movie .nova-btn__label {max-width:none;white-space:normal;overflow:visible;text-overflow:clip}", "/* Composite the artwork and its shade inside one rounded clip. */", "body.lampa_view .minimal-torrent-banner,body.lampa_view .nova-plus-root .nova-hero {border-radius:1em;overflow:hidden;isolation:isolate;-webkit-clip-path:inset(0 round 1em);clip-path:inset(0 round 1em);-webkit-transform:translateZ(0);transform:translateZ(0)}", "body.lampa_view .minimal-torrent-banner__image,body.lampa_view .minimal-torrent-banner__shade {inset:-1px;width:calc(100% + 2px);height:calc(100% + 2px)}", "body.lampa_view .nova-plus-root .nova-hero__bg,body.lampa_view .nova-plus-root .nova-hero__shade {top:-1px;right:-1px;bottom:-1px;left:-1px}", "/* An independent focus layer avoids repainting a border over the banner image. */", "body.lampa_view .nova-plus-root .nova-hero .nova-btn {background:rgba(18,21,25,.68)!important;border:0!important;box-shadow:none!important;outline:none!important}", "body.lampa_view .nova-plus-root .nova-hero .nova-btn.focus,body.lampa_view .nova-plus-root .nova-hero .nova-btn.hover,body.lampa_view .nova-plus-root .nova-hero .nova-btn:hover {background:rgba(37,44,52,.78)!important;border:0!important;box-shadow:none!important}", "body.lampa_view .nova-plus-root .nova-btn__focus {display:none;position:absolute;inset:0;border:2px solid var(--pt-accent);border-radius:inherit;pointer-events:none}", "body.lampa_view .nova-plus-root .nova-hero .nova-btn.focus>.nova-btn__focus,body.lampa_view .nova-plus-root .nova-hero .nova-btn.hover>.nova-btn__focus,body.lampa_view .nova-plus-root .nova-hero .nova-btn:hover>.nova-btn__focus,body.lampa_view .nova-plus-root .nova-hero .nova-btn:focus-visible>.nova-btn__focus {display:block}", "/* Keep focus paint inside controls: exterior shadows can leave stale edge pixels", "   when adjacent chips change focus in WebKit. Never animate the ring itself. */", "body.lampa_view .nova-plus-root .nova-btn,body.lampa_view .nova-plus-root .nova-chip,body.lampa_view .nova-plus-root .nova-group,body.lampa_view .full-start__button,body.lampa_view .simple-button,body.lampa_view .tc-info,body.lampa_view .alc-chip,body.lampa_view .alc-ap-voice,body.lampa_view .alc-ep,body.lampa_view .minimal-comments-arrow {outline:none!important;transition-property:background-color,color!important;box-shadow:none!important}", "body.lampa_view .nova-plus-root .nova-btn,body.lampa_view .nova-plus-root .nova-chip,body.lampa_view .nova-plus-root .nova-group {transform:none!important;-webkit-transform:none!important}", "body.lampa_view .nova-plus-root .nova-btn.focus,body.lampa_view .nova-plus-root .nova-btn.hover,body.lampa_view .nova-plus-root .nova-btn:hover,body.lampa_view .nova-plus-root .nova-btn:focus-visible,body.lampa_view .nova-plus-root .nova-chip.focus,body.lampa_view .nova-plus-root .nova-chip.hover,body.lampa_view .nova-plus-root .nova-chip:hover,body.lampa_view .nova-plus-root .nova-chip:focus-visible,body.lampa_view .nova-plus-root .nova-group.focus,body.lampa_view .nova-plus-root .nova-group:hover,body.lampa_view .nova-plus-root .nova-group:focus-visible,body.lampa_view .full-start__button.focus,body.lampa_view .full-start__button.hover,body.lampa_view .full-start__button:focus-visible,body.lampa_view .simple-button.focus,body.lampa_view .simple-button.hover,body.lampa_view .simple-button:focus-visible,body.lampa_view .tc-info.focus,body.lampa_view .tc-info:hover,body.lampa_view .tc-info:focus-visible,body.lampa_view .alc-chip.focus,body.lampa_view .alc-ap-voice.focus,body.lampa_view .alc-ep.focus,body.lampa_view .minimal-comments-arrow.focus,body.lampa_view .minimal-comments-arrow.hover,body.lampa_view .minimal-comments-arrow:hover,body.lampa_view .minimal-comments-arrow:focus-visible {outline:none!important;border-color:var(--pt-accent)!important;box-shadow:inset 0 0 0 1px var(--pt-accent)!important}", "body.lampa_view .nova-plus-root .nova-btn::after,body.lampa_view .nova-plus-root .nova-chip::after,body.lampa_view .nova-plus-root .nova-group::after,body.lampa_view .full-start__button.focus::after {display:none!important;content:none!important}", "body.lampa_view .nova-plus-root .nova-hero .nova-btn.focus,body.lampa_view .nova-plus-root .nova-hero .nova-btn.hover,body.lampa_view .nova-plus-root .nova-hero .nova-btn:hover,body.lampa_view .nova-plus-root .nova-hero .nova-btn:focus-visible {box-shadow:none!important}", "body.lampa_view .nova-plus-root .nova-hero__progress {position:absolute;left:0;right:0;bottom:0;width:100%;height:.3em;border-radius:0;background:rgba(255,255,255,.15);overflow:hidden}", "/* Banner facts share a baseline; duration belongs to the year, season to the banner. */", "body.lampa_view .nova-plus-root .nova-hero__meta {display:flex;align-items:flex-start;gap:.65em;line-height:1.5;max-width:calc(100% - 2.4em);padding:.25em .5em;border-radius:.45em;background:rgba(8,11,16,.78);color:#f5f7fa!important;text-shadow:0 1px 2px #000}", "body.lampa_view .nova-plus-root .nova-hero__meta>* {margin:0;white-space:normal}", "body.lampa_view .nova-plus-root .nova-hero__date {display:flex;flex-direction:column;align-items:flex-end;min-width:0;text-align:right}", "body.lampa_view .nova-plus-root .nova-hero__runtime {color:inherit;font-size:.9em;line-height:1.5}", "body.lampa_view .nova-plus-root .nova-hero__seasons {position:absolute;top:calc(100% + .35em);right:0;display:flex;flex-direction:column;align-items:flex-end;gap:.25em;font-size:.9em;line-height:1.5}", "body.lampa_view .nova-plus-root .nova-hero__season-label,body.lampa_view .nova-plus-root .nova-hero__season-name {display:block;max-width:min(24em,58vw);padding:.15em .5em;border-radius:.4em;background:rgba(8,11,16,.78)!important;white-space:normal;text-align:right}", "body.lampa_view .nova-plus-root .nova-badge,body.lampa_view .nova-plus-root .nova-chip__badge {display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;flex:0 0 auto;min-width:2.3em;height:1.5em;padding:0 .35em;font-size:.78em;line-height:1;font-weight:600;vertical-align:middle}", "body.lampa_view .nova-plus-root .nova-hero__meta>.nova-badge {font-size:.85em;margin-top:.12em;background:#ffffff1a!important;text-shadow:none}", "body.lampa_view .nova-plus-root .nova-card__head .nova-card__quality {display:inline-flex;align-items:center;justify-content:center;min-width:2.3em;height:1.5em;padding:0 .35em;font-size:.85em;line-height:1}", "body.lampa_view .nova-plus-root .nova-card__head {align-items:center}", "body.lampa_view .nova-source-option {box-sizing:border-box;min-height:2.8em;padding:.6em 2.6em .6em 1em}", "body.lampa_view .nova-source-option .selectbox-item__title {display:flex;align-items:center;gap:.6em;line-height:1.4}", "body.lampa_view .nova-source-option__quality {display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;min-width:2.3em;height:1.5em;padding:0 .35em;border-radius:.3em;background:#ffffff1a;color:inherit;font-size:.78em;line-height:1;font-weight:600}", "/* A compact, consistent toolbar; native values and callbacks remain in menus. */", "body.lampa_view .minimal-torrent-banner__meta {width:max-content;max-width:calc(100% - 2em);margin-left:auto;padding:.4em .6em;border-radius:.55em;background:rgba(8,11,16,.78);color:#f5f7fa!important;text-shadow:0 1px 2px #000}", "body.lampa_view .nova-plus-root .nova-card--rowlist .nova-card__num {position:absolute;top:auto;right:auto;bottom:.3em;left:.3em;display:block;width:auto;height:auto;min-width:0;padding:0;border-radius:.35em;background:none!important;font-size:.8em;line-height:1.4;white-space:nowrap}", "body.lampa_view .nova-plus-root .nova-card--rowlist .nova-card__thumb--loaded img {opacity:1}", "body.lampa_view .nova-plus-root .nova-card--rowlist .nova-card__meta {display:flex;align-items:baseline;flex-wrap:wrap;gap:.5em}", "@media(max-width:767px){", " body.lampa_view .nova-plus-root .nova-plus__bar {display:flex;flex-wrap:wrap!important;gap:.45em;margin-bottom:.6em;padding:0}", " body.lampa_view .nova-plus-root .nova-plus__bar>.nova-toolbar__label {display:none}", " body.lampa_view .nova-plus-root .nova-plus__bar>.nova-chip {display:inline-flex;align-items:center;box-sizing:border-box;flex:1 1 0;min-width:0;max-width:100%;min-height:44px;margin:0;padding:.45em .6em;font-size:.9em;line-height:1.3}", " body.lampa_view .nova-plus-root .nova-plus__bar>.nova-chip--view-icon {flex:0 0 44px;width:44px;min-width:44px;height:44px;padding:0!important}", " body.lampa_view .nova-plus-root .nova-plus__bar .nova-chip__label {min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}", " body.lampa_view .nova-plus-root .nova-plus__bar .nova-chip>svg {flex-shrink:0}", " body.lampa_view .nova-plus-root .nova-hero__meta {top:.65em;right:.65em;font-size:.78em;max-width:calc(100% - 1.3em);gap:.4em}", " body.lampa_view .nova-plus-root .nova__list .nova-card.nova-card--rowlist {display:grid;grid-template-columns:clamp(calc(100px * var(--pt-interface-scale,1)),calc(30vw * var(--pt-interface-scale,1)),calc(136px * var(--pt-interface-scale,1))) minmax(0,1fr);gap:.25em .7em;padding:.4em;margin-bottom:.6em;box-sizing:border-box}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__thumb {grid-column:1;grid-row:1 / span 2;align-self:center;width:100%;height:auto;aspect-ratio:16/9;margin:0;padding:0}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__body {grid-column:2;grid-row:1;min-width:0;padding:0}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__title {font-size:1em;line-height:1.3;margin-bottom:.3em;-webkit-line-clamp:2}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__meta {display:flex;flex-wrap:wrap;align-items:baseline;gap:.2em .45em;min-width:0;font-size:.75em;line-height:1.4;-webkit-line-clamp:unset}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-dot {display:none}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__side {grid-column:2;grid-row:2;display:flex!important;align-items:center;gap:.5em;max-width:none;min-width:0;padding:0;text-align:left;font-size:.75em}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__side .nova-card__eye {margin:0!important}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__line--body {margin-top:.35em}", "}", "/* Seasonal extensions retain native handlers; header art follows our icon grid. */", "body.lampa_view .head__logo-icon {position:relative;align-items:center;min-height:2.2em}", "body.lampa_view .head__logo-icon.head__logo-halloween {width:auto!important;min-width:2.2em;height:2.2em!important;gap:.55em}", "body.lampa_view .pt-holiday-art {display:block;position:relative;flex:0 0 2.2em;width:2.2em;height:2.2em}", "body.lampa_view .head__logo-halloween .head__logo-halloween-svg,", "body.lampa_view .head__logo-halloween .head__logo-halloween-svg svg {width:2.2em!important;height:2.2em!important}", "body.lampa_view .head__logo-halloween .head__logo-halloween-fire {top:.75em;bottom:.4em}", "body.lampa_view .head__logo-cap {top:-.4em!important;left:-.55em!important;pointer-events:none}", "body.lampa_view .head__logo-cap svg {display:block;width:1.8em!important;height:1.8em!important}", "body.lampa_view .head__logo-icon>.garland {position:absolute;width:5em!important;height:3em!important;top:-.4em!important;left:-.3em!important;opacity:.7;z-index:0!important;pointer-events:none}", "body.lampa_view .head__logo-icon>.pt-brand {position:relative;z-index:1}", "body.lampa_view .head__body {position:relative;z-index:1}", "body.lampa_view .head__actions>.head__action.halloween__button,", "body.lampa_view .head__actions>.head__action.black-friday__button,", "body.lampa_view .head__actions>.head__action.new-year__button,", "body.lampa_view .head__actions>.head__action.womens_day__button {display:flex!important;align-items:center;justify-content:center;box-sizing:border-box;flex:0 0 2.2em;width:2.2em;height:2.2em;padding:0;border:1px solid var(--pt-line);border-radius:.6em;background:var(--pt-panel);color:var(--pt-text);overflow:hidden}", "body.lampa_view .head__action.halloween__button svg,", "body.lampa_view .head__action.black-friday__button svg,", "body.lampa_view .head__action.new-year__button svg,", "body.lampa_view .head__action.womens_day__button svg {width:1.15em!important;height:1.15em!important;margin:0!important}", "body.lampa_view .halloween,body.lampa_view .womens_day {font-size:1em;line-height:1.5;color:var(--pt-text)}", "body.lampa_view .halloween__title,body.lampa_view .womens_day__title {font-size:1.35em;line-height:1.3}", "body.lampa_view .halloween__details,body.lampa_view .womens_day__details {font-size:.95em;color:var(--pt-muted)}", "body.lampa_view .black-friday,body.lampa_view .new-year {z-index:110}", "body.lampa_view .black-friday .head-backward__button,body.lampa_view .new-year .head-backward__button {border:1px solid var(--pt-line);border-radius:.6em;background:var(--pt-panel);color:var(--pt-text)}", "body.lampa_view.pt-tv .head__action.--animate {animation:none!important;background:var(--pt-panel)}", "body.lampa_view.pt-tv .head__logo-halloween-fire {animation:none!important;background:#ffc13b}", "@media(prefers-reduced-motion:reduce){body.lampa_view .head__action.--animate,body.lampa_view .head__logo-halloween-fire {animation:none!important}}", ".minimal-toolbar-label {display:none}", "body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar {display:flex;flex-wrap:nowrap;align-items:stretch;gap:.55em;white-space:normal;margin:0!important}", "body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button {display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-width:0;min-height:2.65em;margin:0;padding:.6em 1em;font-size:.9em;line-height:1.2;border:1px solid var(--pt-line);border-radius:.6em;background:var(--pt-panel);color:var(--pt-text);flex:0 1 auto}", "body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button>:not(.minimal-toolbar-label) {display:none!important}", "body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .minimal-toolbar-label {display:inline;margin:0;padding:0;background:none;font-size:1em;white-space:nowrap}", "body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button:after {display:none!important}", "body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button.focus,body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button.hover {border-color:var(--pt-accent);box-shadow:inset 0 0 0 1px var(--pt-accent)!important}", "body.lampa_view .minimal-torrent-view .watched-history {box-sizing:border-box;min-width:0;border:1px solid var(--pt-line);border-radius:.6em;background:var(--pt-panel);margin-top:.5em}", "body.lampa_view .minimal-torrent-view .watched-history.focus {border-color:var(--pt-accent);box-shadow:inset 0 0 0 1px var(--pt-accent)}", "body.lampa_view .minimal-torrent-view .watched-history:after {display:none!important}", "/* The native search overlay was transparent, showing controls over releases. */", "body.lampa_view .search-box {z-index:90!important;background:#080b10!important;box-sizing:border-box;isolation:isolate}", "@media(max-width:767px){", " body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.45em}", " body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button {min-height:44px;padding:.55em .3em;font-size:.88em}", "}", "", "/* Keep hero focus inside its paint bounds, including keyboard and remote input. */", "body.lampa_view .pt-hero__action {outline:none!important;transition-property:background-color,color!important}", "body.lampa_view .pt-hero__studio.selector {outline:none!important;transition:none!important}", "body.lampa_view .pt-hero__studio.selector.focus,body.lampa_view .pt-hero__studio.selector:focus-visible {outline:none!important;box-shadow:inset 0 0 0 2px var(--pt-accent)!important}", "", "/* Seasonal controls keep their native nodes and use the shared SVG style. */", "body.lampa_view .pt-holiday-icons {display:flex;align-items:center;gap:.35em;flex-shrink:0}", "body.lampa_view .pt-holiday-icons>.head__action {display:flex!important;align-items:center;justify-content:center;flex:0 0 2.2em;box-sizing:border-box;width:2.2em;height:2.2em;margin:0;padding:.3em;border:1px solid transparent;border-radius:.5em;background:transparent!important;color:var(--pt-accent)!important;animation:none!important;outline:none!important;box-shadow:none!important}", "body.lampa_view .pt-holiday-icons>.head__action svg {display:block;width:1.45em!important;height:1.45em!important;object-fit:contain}", "body.lampa_view .pt-holiday-icons>.head__action.focus,body.lampa_view .pt-holiday-icons>.head__action.hover,body.lampa_view .pt-holiday-icons>.head__action:hover {border-color:var(--pt-accent);background:var(--pt-high)!important}", "body.lampa_view .head__logo-halloween .pt-holiday-art {display:none}", "/* Episode grids wrap by the scaled minimum rather than a fixed poster count. */", "", "body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar>.nova-chip {min-height:44px;min-width:44px}", "body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar>.nova-chip--view-icon {width:44px;height:44px;flex-basis:44px}", "", "/* Whole poster slots leave a small gutter for the focus ring at both ends. */", "body.lampa_view .minimal-fit-posters>.items-line__body>.scroll--horizontal>.scroll__content {padding-left:var(--minimal-poster-gutter,.55em);padding-right:var(--minimal-poster-gutter,.55em)}", "body.lampa_view .items-line.minimal-posters-sized .card:not(.card--wide):not(.card--collection) {width:var(--minimal-poster-width)!important}", "body.lampa_view .minimal-fit-posters>.items-line__body {-webkit-mask-image:none!important;mask-image:none!important}", "body.lampa_view .minimal-fit-posters .mapping--line>.card+.card {margin-left:var(--minimal-poster-gap,1em)}", "body.lampa_view .minimal-fit-posters .scroll__body>.card:last-child {margin-right:0}", "", "/* The banner frame uses the reference Bigger size, independent of UI scale. */", "body.lampa_view {--pt-banner-unit:calc(clamp(14px,.94vw,18px) * 1.05)}", "body.lampa_view .pt-hero {height:clamp(calc(32 * var(--pt-banner-unit)),67vh,calc(43 * var(--pt-banner-unit)));min-height:0;max-height:none}", "@media(min-width:1100px){body.lampa_view .pt-hero {height:clamp(calc(27 * var(--pt-banner-unit)),56vh,calc(34 * var(--pt-banner-unit)))}}", "body.lampa_view.pt-desktop .pt-hero {margin-bottom:.8em}", "body.lampa_view.pt-desktop .pt-hero__image {transform:scale(1.12)}", "", "", "/* The same mark has one position, before and after the native update. */", "body.lampa_view .torrent-item .torrent-item__viewed {position:absolute;top:.85em;left:auto;right:.85em;width:1.5em;height:1.5em;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:.2em;border:1px solid var(--pt-accent);border-radius:50%;background:var(--pt-accent);color:#13232c;z-index:2;pointer-events:none}", "body.lampa_view .torrent-item__viewed svg {width:100%;height:100%}", "body.lampa_view .torrent-item .tc-right {padding-right:2em}", "", "body.lampa_view .pt-holiday-native,body.lampa_view .head__logo-cap,body.lampa_view .head__logo-icon>.garland {display:none!important}", "body.lampa_view .pt-holiday-winter {display:flex;align-items:center;justify-content:center;flex:0 0 2.2em;width:2.2em;height:2.2em;color:var(--pt-accent);pointer-events:none}", "body.lampa_view .pt-holiday-winter svg {display:block;width:1.45em;height:1.45em}", "", "/* Torrent focus belongs inside the tile; the scroll viewport cannot clip it. */", "body.lampa_view .torrent-item.focus,body.lampa_view .torrent-item.hover,body.lampa_view .torrent-list .torrent-item.tc-item.focus,body.lampa_view .torrent-list .torrent-item.tc-item:hover {outline:none!important;box-shadow:inset 0 0 0 2px var(--pt-accent)!important}", "", "/* Episode tiles share the main poster selection. Animate position only, never", "   the border or shadow; dormant hover cannot leave another TV tile selected. */", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card {background:none!important;box-shadow:none!important;transform:none!important;transition:none!important}", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card__thumb {position:relative;transform:none;box-shadow:none!important;transition:transform .2s!important;will-change:auto}", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card__thumb:after {content:''!important;display:block!important;position:absolute;inset:0!important;width:auto!important;height:auto!important;margin:0!important;padding:0!important;transform:none!important;background:transparent!important;opacity:1!important;transition:none!important;z-index:5;border:2px solid transparent;border-radius:inherit;box-sizing:border-box!important;pointer-events:none}", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card.focus .nova-card__thumb,body.lampa_view .nova-plus-root .nova__list--grid .nova-card.hover .nova-card__thumb {transform:translateY(-.2em) scale(1.045);box-shadow:0 0 .85em rgba(173,217,229,.4),0 0 1.8em rgba(173,217,229,.22)!important}", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card.focus .nova-card__thumb:after,body.lampa_view .nova-plus-root .nova__list--grid .nova-card.hover .nova-card__thumb:after {border-color:var(--pt-accent)}", "body.lampa_view .nova-plus-root .nova-card.focus .nova-card__title,body.lampa_view .nova-plus-root .nova-card.hover .nova-card__title {color:var(--pt-accent)}", "body.lampa_view.pt-tv .nova-plus-root .nova__list--grid .nova-card.hover:not(.focus) .nova-card__thumb {transform:none!important;box-shadow:none!important}", "body.lampa_view.pt-tv .nova-plus-root .nova__list--grid .nova-card.hover:not(.focus) .nova-card__thumb:after {border-color:transparent!important}", "body.lampa_view.pt-tv .nova-plus-root .nova-card.hover:not(.focus) .nova-card__title {color:var(--pt-text)}", "", "/* The same native menu becomes a dock only when the native preference is on. */", "body.lampa_view.pt-menu-pinned {--pt-menu-width:min(16em,28vw)}", "body.lampa_view.pt-menu-pinned .head__menu-icon {display:none!important}", "body.lampa_view.pt-menu-pinned .wrap__left,body.lampa_view.menu--always.pt-menu-pinned .wrap__left {top:3.6em!important;bottom:0!important;left:0!important;width:var(--pt-menu-width)!important;height:calc(100% - 3.6em)!important;max-height:none!important;padding:.7em .35em!important;border:0;border-right:1px solid var(--pt-line);border-radius:0;box-shadow:none;visibility:visible!important;opacity:1!important;pointer-events:auto;transition:none}", "body.lampa_view.pt-menu-pinned .wrap__left>.scroll {height:100%!important;max-height:100%!important}", "body.lampa_view.pt-menu-pinned .wrap__left>.scroll>.scroll__content {height:100%!important;max-height:100%!important}", "body.lampa_view.pt-menu-pinned .wrap {width:100%!important;max-width:100%}", "body.lampa_view.pt-menu-pinned .wrap__content {min-width:0;box-sizing:border-box;flex:0 0 auto;width:calc(100% - var(--pt-menu-width))!important;max-width:calc(100% - var(--pt-menu-width))!important;margin-left:var(--pt-menu-width)!important}", "body.lampa_view.pt-menu-pinned .pt-hero,body.lampa_view.pt-menu-pinned .items-line {width:94%;max-width:94%!important;margin-left:auto!important;margin-right:auto!important}", "body.lampa_view.pt-menu-pinned .menu__text {white-space:normal}", "body.lampa_view.pt-mobile.pt-menu-pinned {--pt-menu-width:min(14em,38vw)}", "body.lampa_view.pt-mobile.pt-menu-pinned .wrap__left {bottom:5.5em!important;height:calc(100% - 9.1em)!important}", "", "body.lampa_view .card:not(.focus):not(.hover):not(.pt-card-pointer):not(.pt-card-touch) .pt-series-status {display:none}", "", "/* Header controls keep their boxes when focused. Draw outside the avatar so", "   its image cannot cover the remote/keyboard focus indicator. */", "body.lampa_view .head__body {box-sizing:border-box;min-width:0}", "body.lampa_view .head__actions {flex-shrink:0}", "body.lampa_view .head__menu-icon,body.lampa_view .head__backward {position:relative;align-self:center;top:auto;left:auto;transform:none!important;transition:none!important}", "body.lampa_view .head__menu-icon svg {display:block;flex:none;margin:0!important;position:static!important;transform:none!important}", "/* Header focus stays inside the control, matching Menu, with no second ring. */", "body.lampa_view .head__menu-icon,body.lampa_view .head__backward,body.lampa_view .head__action.open--search,body.lampa_view .head__action.open--profile,body.lampa_view .head__action.open--settings,body.lampa_view .pt-holiday-icons>.head__action {outline:0 solid transparent!important;outline-offset:0!important;box-shadow:none!important;animation:none!important;transition:none!important;transform:none!important;border:1px solid var(--pt-line)!important}", "body.lampa_view .head__action.open--profile {padding:0!important}", "body.lampa_view .head__menu-icon.focus,body.lampa_view .head__menu-icon:focus-visible,body.lampa_view .head__backward.focus,body.lampa_view .head__backward:focus-visible,", "body.lampa_view .head__action.open--search.focus,body.lampa_view .head__action.open--profile.focus,body.lampa_view .head__action.open--settings.focus,body.lampa_view .head__action.open--search:focus-visible,body.lampa_view .head__action.open--profile:focus-visible,body.lampa_view .head__action.open--settings:focus-visible,", "body.lampa_view .pt-holiday-icons>.head__action.focus,body.lampa_view .pt-holiday-icons>.head__action:focus-visible,", "body.lampa_view:not(.pt-tv) .head__menu-icon:hover,body.lampa_view:not(.pt-tv) .head__backward:hover,body.lampa_view:not(.pt-tv) .head__action.open--search:hover,body.lampa_view:not(.pt-tv) .head__action.open--profile:hover,body.lampa_view:not(.pt-tv) .head__action.open--settings:hover,", "body.lampa_view:not(.pt-tv) .pt-holiday-icons>.head__action:hover {border-color:var(--pt-accent)!important;background:var(--pt-high)!important;color:var(--pt-text)}", "body.lampa_view .head__action.open--search.focus:after,body.lampa_view .head__action.open--search:focus-visible:after {color:var(--pt-text)}", "body.lampa_view .menu__item {min-width:0;box-sizing:border-box}", "body.lampa_view .menu__text {flex:1;min-width:0;white-space:normal!important;overflow-wrap:break-word;line-height:1.35;max-height:none;text-overflow:clip}", "", "/* Android WebView can rasterize white inset focus shadows as a solid fill.", "   Use a real, constant-width border for primary TV controls instead. */", "body.lampa_view.pt-tv .pt-hero__action {appearance:none;-webkit-appearance:none;box-sizing:border-box;border:2px solid transparent;padding:calc(.85em - 1px) calc(1.15em - 1px);background:var(--pt-accent)!important;color:#13232c!important;box-shadow:none!important;transition:none!important}", "body.lampa_view.pt-tv .pt-hero__action--secondary {background:#212a35dd!important;color:#d4dce3!important}", "body.lampa_view.pt-tv .pt-hero__action.focus,body.lampa_view.pt-tv .pt-hero__action:focus-visible {border-color:#fff!important;box-shadow:none!important;outline:none!important}", "body.lampa_view.pt-tv .pt-hero__action.hover:not(.focus):not(:focus-visible) {border-color:transparent!important;box-shadow:none!important}", 'body.lampa_view.pt-tv .minimal-anime-tab[aria-selected="true"] {box-shadow:0 0 .35em rgba(173,217,229,.85),0 0 1.2em rgba(173,217,229,.65),0 0 2.4em rgba(173,217,229,.42)!important;transition:none!important}', "body.lampa_view.pt-tv .full-start__button.button--alc-auto.focus,body.lampa_view.pt-tv .alc-ap__play.focus {background:var(--pt-accent)!important;color:#13232c!important;border-color:#fff!important;box-shadow:none!important;outline:none!important}", "", "/* TV uses the same full-frame artwork and text composition as desktop. */", "body.lampa_view.pt-tv .pt-hero__image {object-position:right center}", "body.lampa_view.pt-tv .pt-hero__body {top:auto;bottom:7em;transform:none}", "body.lampa_view.pt-tv .pt-hero__logo {max-height:7em;margin-bottom:1.4em}", "body.lampa_view.pt-tv .pt-hero__overview {-webkit-line-clamp:3}", "body.lampa_view.pt-tv.pt-menu-pinned .wrap__left {top:4.5em!important;height:calc(100% - 4.5em)!important}", "", "body.lampa_view .nova-plus-root .nova-hero__meta {background:rgba(8,11,16,.52);padding:.2em .4em}", "body.lampa_view .nova-plus-root .nova-hero__runtime {position:absolute;right:0;top:calc(100% + .45em);padding:.2em .45em;white-space:nowrap;border-radius:.35em;background:rgba(8,11,16,.52);color:var(--pt-text);font-size:.8em;line-height:1.3}", "body.lampa_view.pt-tv .minimal-comments-nav {display:none!important}", "body.lampa_view .nova-episode-nav {display:flex;justify-content:flex-end;gap:.4em;margin-bottom:.5em}", "body.lampa_view .nova-episode-nav button {width:2.1em;height:2.1em;display:flex;align-items:center;justify-content:center;border:1px solid var(--pt-line);border-radius:.6em;background:#ffffff04;color:var(--pt-muted);cursor:pointer}", "body.lampa_view .nova-episode-nav svg {width:1em;height:1em}", "body.lampa_view.pt-tv .nova-episode-nav {display:none!important}", "body.lampa_view.pt-favorites .category-full>.card,body.lampa_view.pt-favorites .mapping--grid>.card {width:calc(12.5% * var(--pt-interface-scale,1))!important}", "@media(max-width:650px){body.lampa_view.pt-favorites .category-full>.card,body.lampa_view.pt-favorites .mapping--grid>.card {width:33.333%!important}}", "", "/* Episode arrows share the collection buttons' pointer and keyboard focus. */", "body.lampa_view .nova-episode-nav button:hover,body.lampa_view .nova-episode-nav button:focus-visible,body.lampa_view .nova-episode-nav button.focus,body.lampa_view .nova-episode-nav button.hover {border-color:var(--pt-accent);background:#add9e512;color:var(--pt-accent);box-shadow:0 0 0 1px var(--pt-accent);outline:none}", "", "/* Fixed pixel focus geometry is identical on TV and desktop, independent of", "   native focus themes and the interface font scale. */", "body.lampa_view .card.focus .card__view:after,body.lampa_view .card.hover .card__view:after {border:2px solid var(--pt-accent)!important;top:0!important;left:0!important;right:0!important;bottom:0!important;outline:none!important;box-shadow:none!important;border-radius:.5em!important}", "body.lampa_view .head__menu-icon:before,body.lampa_view .head__menu-icon:after,body.lampa_view .head__backward:before,body.lampa_view .head__backward:after,body.lampa_view .head__action.open--profile:before,body.lampa_view .head__action.open--profile:after,body.lampa_view .head__action.open--search:before,body.lampa_view .pt-holiday-icons>.head__action:before,body.lampa_view .pt-holiday-icons>.head__action:after {content:none!important;display:none!important}", "body.lampa_view .head__menu-icon,body.lampa_view .head__backward,body.lampa_view .head__action.open--search,body.lampa_view .head__action.open--profile,body.lampa_view .head__action.open--settings,body.lampa_view .pt-holiday-icons>.head__action {border-width:2px!important}", "body.lampa_view .menu__item.focus,body.lampa_view .menu__item.hover,body.lampa_view .menu__item.traverse {background:#20272e!important;color:var(--pt-text)!important;outline:none!important;box-shadow:inset 2px 0 var(--pt-accent)!important;animation:none!important;transform:none!important}", "body.lampa_view .menu__ico [stroke] {stroke:currentColor!important}", 'body.lampa_view .menu__ico [fill]:not([fill="none"]) {fill:currentColor!important}', "body.lampa_view .menu__item .menu__text {color:inherit!important}", "", "/* RTL is scoped to plugin controls. Content titles and saved values retain their text. */", "body.lampa_view.pt-rtl .settings__content,body.lampa_view.pt-rtl .selectbox__content,body.lampa_view.pt-rtl .nova-plus__bar,body.lampa_view.pt-rtl .minimal-detail-facts {direction:rtl;text-align:start}", "body.lampa_view.pt-rtl .pt-hero__body {direction:rtl;text-align:right}", "body.lampa_view.pt-rtl .pt-hero__meta,body.lampa_view.pt-rtl .pt-watch-progress {direction:rtl}", "body.lampa_view.pt-rtl .minimal-back--overlay svg {transform:scaleX(-1)}", "body.lampa_view.pt-rtl .minimal-settings .settings-param__value {margin-left:0;margin-right:auto}", "", "/* Episode information comes from one TMDB season book, shared by providers. */", "body.lampa_view .nova-plus-root .nova-card__overview {font-size:.82em;line-height:1.55;color:var(--pt-muted);margin-top:.65em;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:5;overflow:hidden;overflow-wrap:break-word}", "body.lampa_view .minimal-online-option {position:relative;margin:.35em .6em;padding:.8em 2.8em .8em 1em;border:1px solid var(--pt-line);border-radius:.9em;background:var(--pt-panel);min-height:2.8em;box-sizing:border-box}", "body.lampa_view .minimal-online-option--selected {border-color:#add9e560;background:var(--pt-high)}", "body.lampa_view .minimal-online-option.focus {border-color:var(--pt-accent);background:var(--pt-high);color:var(--pt-text)}", "body.lampa_view .minimal-online-option .selectbox-item__title {white-space:normal;overflow-wrap:break-word;line-height:1.35}", "body.lampa_view .minimal-choice-check {position:absolute;right:.85em;top:50%;transform:translateY(-50%);width:1.1em;height:1.1em;color:var(--pt-accent)}", "body.lampa_view.pt-rtl .minimal-online-option {padding-right:1em;padding-left:2.8em}", "body.lampa_view.pt-rtl .minimal-choice-check {right:auto;left:.85em}", "body.lampa_view .pt-hero__studio {pointer-events:auto;cursor:pointer}", "body.lampa_view.pt-tv .pt-hero__studio {pointer-events:none;cursor:default}", "body.lampa_view:not(.pt-tv) .pt-hero__studio.selector:hover,body.lampa_view:not(.pt-tv) .pt-hero__studio.selector:focus-visible {outline:none!important;box-shadow:none!important;filter:var(--pt-studio-tone,brightness(1)) drop-shadow(0 0 .45em var(--pt-accent))}", "body.lampa_view .minimal-online-option:after {display:none!important}", "", "body.lampa_view .nova-plus-root .nova-chip--unavailable {opacity:.65;cursor:default;pointer-events:none}", "", "/* Episode facts use the same catalogue coordinates as native file playback. */", "body.lampa_view .torrent-serial .minimal-episode-overview {clear:both;padding-top:.65em;color:var(--pt-muted);font-size:.85em;line-height:1.5;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;overflow-wrap:break-word}", "body.lampa_view .torrent-serial.minimal-has-summary .torrent-serial__content {padding-bottom:1.5em}", "", "body.lampa_view .minimal-studio-heading {box-sizing:border-box;width:100%;padding:1.2em 5vw 1.5em;min-height:5em;display:flex;align-items:center;justify-content:center}", "body.lampa_view .minimal-studio-heading img {display:block;max-width:min(65vw,22em);width:auto;height:auto;max-height:5em;object-fit:contain}", "body.lampa_view .minimal-studio-heading img[hidden],body.lampa_view .minimal-studio-heading h1[hidden] {display:none}", "body.lampa_view .minimal-studio-heading h1 {font-size:1.4em;margin:0}", "body.lampa_view .minimal-studio-catalogue .company-start {display:none}", "body.lampa_view .minimal-filter-panel .selectbox-item {position:relative;justify-content:flex-start;text-align:start;margin:0;border-radius:.5em;padding:.85em 1.3em;box-shadow:none}", "body.lampa_view .minimal-filter-panel .selectbox-item__title {flex:1;min-width:0;line-height:1.4}", "body.lampa_view .minimal-filter-panel .selectbox-item__checkbox {position:static;flex:0 0 1.1em;width:1.1em;height:1.1em;margin:0;margin-inline-start:auto;transform:none}", "body.lampa_view .minimal-filter-panel .minimal-filter-choice .selectbox-item__subtitle {display:none}", "body.lampa_view .minimal-filter-panel .selectbox-item.focus {box-shadow:inset 0 0 0 1px var(--pt-accent)!important}", "body.lampa_view .minimal-filter-panel .minimal-filter-run {margin:.8em 1.1em .4em;width:auto;justify-content:center;text-align:center}", "body.lampa_view.pt-theme-glass .minimal-filter-panel .minimal-filter-run {background:var(--pt-glass-button);color:var(--pt-text)}", "", "/* Native file identity/actions with Online's list proportions. */", "body.lampa_view .torrent-files .torrent-serial {box-sizing:border-box;align-items:center;padding:.6em .75em;gap:1em}", "body.lampa_view .torrent-files .torrent-serial__img {width:12em;height:6.75em;min-height:0;align-self:center;object-fit:cover;border-radius:.8em}", "body.lampa_view .torrent-files .torrent-serial__content {display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:.5em .8em;min-width:0;padding:0;flex:1}", "body.lampa_view .torrent-files .torrent-serial.minimal-has-summary .torrent-serial__content {padding-bottom:0}", "body.lampa_view .torrent-files .torrent-serial__body {grid-column:1;grid-row:1;float:none;min-width:0;max-width:100%}", "body.lampa_view .torrent-files .torrent-serial__title {font-size:1.3em;line-height:1.3;margin:0;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}", "body.lampa_view .torrent-files .torrent-serial__line {display:flex;flex-direction:row;flex-wrap:wrap;gap:.5em;font-size:.9em;line-height:1.4;padding:0;margin:.3em 0 0}", "body.lampa_view .torrent-files .torrent-serial__line span+span:before {content:none}", "body.lampa_view .torrent-files .torrent-serial__line span {margin:0}", "body.lampa_view .torrent-files .torrent-serial__detail {grid-column:2;grid-row:1/4;float:none;align-self:center;text-align:right;margin:0}", "body.lampa_view .torrent-files .torrent-serial__size,body.lampa_view .torrent-files .torrent-serial__exe {font-size:.9em;line-height:1.4}", "body.lampa_view .torrent-files .torrent-serial .time-line {grid-column:1;grid-row:2;position:static;inset:auto;width:100%;margin:0}", "body.lampa_view .torrent-files .torrent-serial .minimal-episode-overview {grid-column:1;grid-row:3;padding:0;clear:none;font-size:.85em;line-height:1.5}", "body.lampa_view .torrent-files .torrent-serial__clear {display:none}", "body.lampa_view.pt-mobile .torrent-files .torrent-serial {grid-template-columns:clamp(90px,30vw,136px) minmax(0,1fr);gap:.6em;padding:.5em}", "body.lampa_view.pt-mobile .torrent-files .torrent-serial__img {width:100%;height:auto;aspect-ratio:16/9;align-self:center}", "body.lampa_view.pt-mobile .torrent-files .torrent-serial__title {font-size:1.05em}", "body.lampa_view.pt-mobile .torrent-files .torrent-serial__content {gap:.35em}", "body.lampa_view.pt-mobile .torrent-files .torrent-serial__detail {grid-column:1;grid-row:4;display:flex;gap:.6em;text-align:start;font-size:.75em}", "body.lampa_view.pt-mobile .torrent-files .torrent-serial__line {font-size:.72em}", "", "/* Availability follows confirmed provider results, independent of selection. */", "body.lampa_view .nova-source-option__status {display:inline-block;flex:0 0 auto;width:.55em;height:.55em;margin-inline-start:.65em;border-radius:50%;background:#fff;box-shadow:0 0 .3em #ffffffb3,0 0 .65em #ffffff66;vertical-align:middle}", "body.lampa_view .nova-source-option .selectbox-item__title>.nova-source-option__status {position:absolute;inset-inline-end:3.6em;top:50%;transform:translateY(-50%);margin:0}", "body.lampa_view .nova-source-option {padding-inline-end:5.2em!important}", "", "", "/* Native immediate/shift temporarily disables transitions; keep that contract on TV. */", "body.lampa_view.pt-tv .minimal-paged-row .scroll__body.notransition,body.lampa_view.pt-tv .minimal-paged-row .scroll__body.transition-reset {transition:none!important;-webkit-transition:none!important}", "", "/* Studio grids keep each complete row centered under their heading. */", "body.lampa_view .minimal-studio-catalogue .category-full,body.lampa_view .minimal-studio-catalogue .mapping--grid {justify-content:center}", "", "body.lampa_view.pt-mobile .card:not(.pt-card-touch) .pt-card-watch,body.lampa_view.pt-mobile .card:not(.pt-card-touch) .pt-series-status {visibility:hidden!important}", "", "body.lampa_view.pt-mobile .card__title,body.lampa_view.pt-mobile .card__age {cursor:pointer;pointer-events:auto}", "/* Touch layouts retain account controls and fit panels to the visual viewport. */", "body.lampa_view .head__action.open--profile {display:flex!important;align-items:center;justify-content:center}", "body.lampa_view .head__action.open--settings {border:1px solid var(--pt-line);border-radius:50%;background:var(--pt-panel)}", "body.lampa_view.pt-mobile .head__body {gap:.4em;padding-left:.65em;padding-right:.65em}", "body.lampa_view.pt-mobile .head__actions {display:flex!important;gap:.35em;flex-shrink:0}", "body.lampa_view.pt-mobile .head__logo-icon {margin-right:.4em!important}", "body.lampa_view .settings__content,body.lampa_view .selectbox__content {max-height:calc(100vh - 1em)!important;max-height:calc(100dvh - 1em)!important;box-sizing:border-box}", "body.lampa_view .settings__body,body.lampa_view .selectbox__body {min-height:0;overflow:hidden;flex:1 1 auto}", "body.lampa_view .settings__body>.scroll,body.lampa_view .selectbox__body>.scroll {min-height:0;max-height:100%;touch-action:pan-y}", "@media (pointer:coarse) {", " body.lampa_view:not(.pt-menu-pinned) .head__body {max-width:100%;padding-left:.65em;padding-right:.65em}", " body.lampa_view .minimal-detail-header,body.lampa_view .minimal-detail-columns {width:calc(100% - 2em);max-width:calc(100% - 2em)}", "}", "/* Scaled action labels may wrap; the hit area follows the enlarged controls. */", "body.lampa_view .minimal-detail-identity .full-start__button {height:auto;flex-shrink:0}", "body.lampa_view .minimal-detail-identity .full-start__button>span {white-space:normal;overflow-wrap:anywhere;text-align:center}", "body.lampa_view .minimal-detail-header .full-start-new__right {min-width:0}", "", "/* Explicit tablet profile keeps a wide card layout while retaining touch targets. */", "body.lampa_view.pt-tablet .head__actions {display:flex!important;gap:.35em;flex-shrink:0}", "body.lampa_view.pt-tablet .head__action {min-width:44px;min-height:44px}", "body.lampa_view.pt-tablet .head__action.open--settings {display:flex!important;align-items:center;justify-content:center}", "body.lampa_view.pt-tablet:not(.pt-menu-pinned) .head__body {max-width:100%;padding-left:.65em;padding-right:.65em}", "body.lampa_view.pt-tablet .minimal-detail-header,body.lampa_view.pt-tablet .minimal-detail-columns {width:calc(100% - 2em);max-width:calc(100% - 2em)}", "body.lampa_view.pt-tablet .card__title,body.lampa_view.pt-tablet .card__age {cursor:pointer;pointer-events:auto}", "body.lampa_view.pt-tablet .card:not(.pt-card-touch) .pt-card-watch,body.lampa_view.pt-tablet .card:not(.pt-card-touch) .pt-series-status {visibility:hidden!important}", "", "/* Personal sizing must grow the content pane instead of clipping its controls. */", "body.lampa_view.pt-personal-enlarged .pt-hero__body {flex-shrink:0;max-height:none!important}", "body.lampa_view.pt-personal-enlarged .pt-hero__actions {flex-wrap:wrap}", "body.lampa_view.pt-personal-enlarged .head__body {min-height:100%}", "body.lampa_view .full-start-new__buttons>.selector {box-sizing:border-box;align-items:center;justify-content:center}", "body.lampa_view.pt-personal-enlarged .minimal-detail-identity .full-start-new__buttons {grid-template-columns:repeat(auto-fit,minmax(3.5em,1fr))}", "", "/* Native windows stay slightly smaller than Lampa at the same screen size. */", "body.lampa_view {--pt-native-window-font:max(10px,calc(1.117vw * var(--pt-native-interface-scale,1)))}", "body.lampa_view .extensions,", "body.lampa_view .selectbox:not(.minimal-filter-panel) .selectbox__content,", "body.lampa_view .modal:not(.minimal-torrent-files) .modal__content {font-size:min(1em,var(--pt-native-window-font))!important}", "body.lampa_view .selectbox__content,body.lampa_view .modal__content {font-size:1em}", "body.lampa_view .modal__title {font-size:1.4em;line-height:1.3}", "body.lampa_view.pt-mobile .minimal-filter-panel .selectbox__content,body.lampa_view.pt-mobile .minimal-torrent-files .modal__content {font-size:calc(14px * var(--pt-interface-scale,1))}", "body.lampa_view .extensions {background:var(--pt-bg);color:var(--pt-text)}", "body.lampa_view .extensions__item,body.lampa_view .extensions__block-add {background:var(--pt-panel);border:1px solid var(--pt-line);box-sizing:border-box}", "body.lampa_view .pt-hero__artwork,body.lampa_view .pt-hero__branding {cursor:pointer}", "body.lampa_view.pt-detail-poster .minimal-detail-identity .full-start-new__poster {display:block;width:min(100%,15em);margin:0 auto 1em}", "body.lampa_view.pt-detail-poster .minimal-detail-identity .minimal-detail-logo,body.lampa_view.pt-detail-poster .minimal-detail-identity>.full-start-new__title {display:none!important}", "body.lampa_view.card--no-cover .minimal-detail-shade {display:none}", "body.lampa_view .pt-studio-white {--pt-studio-tone:brightness(0) invert(1);filter:var(--pt-studio-tone)}", "/* A proxy without CORS cannot be classified safely; retain its colours. */", "body.lampa_view .pt-studio-unreadable {background:rgba(255,255,255,.7);border-radius:.15em}", "body.lampa_view .nova-initial-loading .nova__hero {display:none!important}", "", "/* Keep the mobile detail artwork at banner proportions, independent of content height. */", "body.lampa_view.pt-mobile .full-start__background {height:auto!important;aspect-ratio:16/9;object-fit:contain;object-position:center top;transform:none!important}", "body.lampa_view.pt-mobile .minimal-detail-shade {height:auto!important;aspect-ratio:16/9;bottom:auto}", "", "/* Mobile cover is a separate image above the identity and actions. */", "body.lampa_view.pt-mobile .minimal-detail-header>.full-start__background {position:relative!important;z-index:0;left:auto!important;top:auto!important;margin:0 0 1em;opacity:1!important;-webkit-mask-image:none!important;mask-image:none!important}", "body.lampa_view.pt-mobile .minimal-detail-header>.minimal-detail-shade {display:none}", "body.lampa_view.pt-mobile .minimal-detail-header {padding-top:0}", "", "/* Selected sources remain legible independently of the native active colour. */", "body.lampa_view .search-source.active {background:#555b64!important;color:#f5f5f7!important;border-color:#ffffff45}", "body.lampa_view .search-source.active .search-source__name {color:inherit!important}", "body.lampa_view .extensions {background:var(--pt-bg)!important;min-height:100vh;isolation:isolate}", "/* Contained landscape artwork starts at the top when the window narrows. */", "body.lampa_view:not(.pt-mobile) .pt-hero__image {object-position:right top}", "body.lampa_view.pt-desktop .pt-hero {height:min(56vh,calc(34 * var(--pt-banner-unit)),calc((100vw - 6em) * .5625))}", "/* Mobile identity overlaps the soft cover edge, without enlarging the artwork. */", "body.lampa_view.pt-mobile .minimal-detail-header>.full-start__background {margin:0; border-radius:1em 1em 0 0;-webkit-mask-image:linear-gradient(#000 0%,#000 55%,transparent 100%)!important;mask-image:linear-gradient(#000 0%,#000 55%,transparent 100%)!important}", "body.lampa_view.pt-mobile:not(.card--no-cover):not(.pt-detail-poster) .minimal-detail-header>.full-start__background.loaded~.full-start-new__body {position:relative;margin-top:-3.5em}", "body.lampa_view.pt-mobile .minimal-detail-identity .minimal-detail-logo {width:auto;max-width:82%;height:4em;max-height:4em;margin:0 auto 1.2em;object-fit:contain;filter:drop-shadow(0 2px 5px #000)}", "", "/* Progress is text over the page, not a separate glass surface on phones. */", "body.lampa_view.pt-mobile .card .pt-card-watch,", "body.lampa_view.pt-mobile .card .pt-card-watch .card-watched,", "body.lampa_view.pt-mobile .card .pt-card-watch .card-watched__inner,", "body.lampa_view.pt-mobile .card .pt-card-watch .card-watched__body,", "body.lampa_view.pt-mobile .card .pt-card-watch .card-watched__item {background:transparent!important;border:0!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}", "", "body.lampa_view .full-start-new__details>[hidden],", "body.lampa_view .full-start-new__details>[hidden]+.full-start-new__split {display:none!important}", "", "", "body.lampa_view .nova-plus-root .nova-chip__stack+svg {margin-inline-start:.75em;align-self:center}", "body.lampa_view .nova-plus-root .nova-chip__stack {min-width:0}", "body.lampa_view .minimal-season-section {margin:1.1em 1.2em .55em;padding-top:.8em;border-top:1px solid var(--pt-line);font-size:.85em;line-height:1.4;color:var(--pt-muted);white-space:normal;overflow-wrap:anywhere}", "body.lampa_view .minimal-season-section:first-child {margin-top:.4em;padding-top:0;border-top:0}", "", "body.lampa_view .nova-card__part {font-size:.8em;line-height:1.3;padding:.15em .45em;border-radius:.35em;background:#ffffff18;color:inherit}", "body.lampa_view .nova-plus-root .nova-hero__season-name {width:max-content;max-width:min(24em,58vw)}", "", "body.lampa_view .nova-card__labels {position:absolute;top:.5em;left:.5em;right:.5em;display:flex;gap:.4em;align-items:center;pointer-events:none}", "body.lampa_view .nova-card__labels .nova-card__num {position:static!important;margin:0;flex:0 0 auto}", "body.lampa_view .nova-card__labels .nova-card__part {background:rgba(0,0,0,.72);white-space:nowrap}", "", "body.lampa_view .minimal-anime-order {padding:1em 1.5em; margin:0 0 1em; color:var(--pt-text)}", "body.lampa_view .minimal-anime-order h2 {font-size:1.2em;font-weight:600;margin:0 0 .5em}", "body.lampa_view .minimal-anime-order p {color:var(--pt-muted);line-height:1.4;margin:0 0 1em}", "body.lampa_view .minimal-anime-order ol {display:grid;grid-template-columns:repeat(auto-fit,minmax(13em,1fr));gap:.8em;list-style:none;padding:0 0 .6em;margin:0}", "body.lampa_view .minimal-anime-order li {min-width:0;padding:1em;border:1px solid var(--pt-line);border-radius:1em;background:var(--pt-panel)}", "body.lampa_view .minimal-anime-order strong,body.lampa_view .minimal-anime-order span,body.lampa_view .minimal-anime-order small {display:block;line-height:1.4}", "body.lampa_view .minimal-anime-order span {margin:.5em 0}", "body.lampa_view .minimal-anime-order small {color:var(--pt-muted)}", "", "body.lampa_view.pt-mobile .minimal-anime-order ol {grid-template-columns:1fr}", ""].join("\n");
+  var theme_default = ["/* Minimal presentation for native Lampa. No application replacement. */", ".pt-hidden {display:none!important}", "body.lampa_view {", " --pt-bg:#000000;--pt-side:#14161b;--pt-panel:#191d24;--pt-high:#252c34;", " --pt-line:#ffffff12;--pt-text:#eeeff2;--pt-muted:#9299a3;--pt-accent:#add9e5;--pt-dim:#add9e514;", ' background:var(--pt-bg)!important;color:var(--pt-text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;', " font-size:calc(clamp(14px,.94vw,18px) * var(--pt-interface-scale,1))!important;", "}", "body.lampa_view .background {opacity:.08!important}", "body.lampa_view .background__fade {background:linear-gradient(0deg,var(--pt-bg),transparent)!important}", "body.lampa_view .head {height:3.6em;background:#000000f5;border-bottom:1px solid var(--pt-line);z-index:30}", "body.lampa_view .head__body {height:100%;max-width:112em;margin:auto;padding:.5em 2.5em;gap:.65em;display:flex;align-items:center}", "body.lampa_view .head__menu-icon {display:flex!important;order:-2;align-items:center;justify-content:center;width:2.2em;height:2.2em;flex:0 0 2.2em;box-sizing:border-box;padding:0;border:1px solid var(--pt-line);border-radius:.6em;margin:0!important;background:#ffffff04;color:var(--pt-muted);cursor:pointer}", "body.lampa_view .head__menu-icon svg {width:1.1em;height:1.1em}", "body.lampa_view .head__logo-icon {display:flex!important;width:auto!important;margin:0 2em 0 0!important;flex-shrink:0;cursor:pointer}", "body.lampa_view .pt-brand {font-size:.92em;font-weight:700;letter-spacing:.13em;color:var(--pt-text)}", "body.lampa_view .head__split,body.lampa_view .head__time,body.lampa_view .head__markers,body.lampa_view .head__title,body.lampa_view .head__logo-local {display:none!important}", "body.lampa_view .head__backward {display:none!important}", "body.lampa_view .head__backward.pt-back-visible {display:flex!important;order:-3;align-items:center;justify-content:center;width:2.2em;height:2.2em;flex:0 0 2.2em;box-sizing:border-box;margin:0!important;padding:0;border:1px solid var(--pt-line);border-radius:.6em;background:#ffffff04;color:var(--pt-muted);cursor:pointer}", "body.lampa_view.pt-home .head__backward {display:none!important}", "body.lampa_view .minimal-back svg {width:1.1em;height:1.1em}", ".minimal-back--overlay {display:none}", "body.lampa_view .minimal-back-heading {display:flex;align-items:center;gap:.7em}", "body.lampa_view .minimal-back--overlay {display:flex;align-items:center;justify-content:center;flex:0 0 2em;width:2em;height:2em;border:1px solid var(--pt-line);border-radius:.6em;background:#ffffff04;color:var(--pt-muted);cursor:pointer;font-size:1em}", "body.lampa_view .minimal-back-heading>.selectbox__title,body.lampa_view .minimal-back-heading>.settings__title {flex:1;min-width:0}", "body.lampa_view .head .open--broadcast,body.lampa_view .head .notice--icon,body.lampa_view .head .full--screen,body.lampa_view .head .open--notice,body.lampa_view .head .open--split {display:none!important}", "body.lampa_view .head__actions {margin-left:auto;display:flex;align-items:center;gap:.5em}", "body.lampa_view .head__action {width:2.2em;height:2.2em;border-radius:.55em;margin:0;color:var(--pt-muted)}", "body.lampa_view .head__action svg {width:1.15em;height:1.15em}", "body.lampa_view .head__action.open--settings {display:flex!important;align-items:center;justify-content:center;box-sizing:border-box;flex:0 0 2.2em;padding:0}", "body.lampa_view.pt-mobile .head__action.open--settings {display:flex!important}", "body.lampa_view .head__action.focus,body.lampa_view .head__action.hover {background:var(--pt-high);color:white}", "body.lampa_view .head__action.open--search {width:18em;background:#ffffff04;border:1px solid var(--pt-line);justify-content:flex-start;padding:0 .8em;gap:.65em}", "body.lampa_view .head__action.open--search:after {content:attr(data-pt-placeholder);font-size:.8em;color:var(--pt-muted)}", "body.lampa_view .pt-topnav {display:flex;align-items:center;gap:1.5em}", "body.lampa_view .pt-topnav__item {font-size:.81em;color:var(--pt-muted);padding:.55em 0;cursor:pointer;border-bottom:1px solid transparent}", "body.lampa_view .pt-topnav__item.active {color:var(--pt-text);border-bottom-color:var(--pt-accent)}", "body.lampa_view .pt-topnav__item.focus,body.lampa_view .pt-topnav__item.hover {color:var(--pt-accent);outline:0;border-bottom-color:var(--pt-accent)}", "body.lampa_view .wrap {display:block!important}", "body.lampa_view .wrap__content,body.lampa_view.menu--always .wrap__content,body.lampa_view.menu--open .wrap__content {width:100%!important;max-width:100%;margin-left:0!important;transform:none!important;padding-top:3.6em!important}", "body.lampa_view .activitys,body.lampa_view .activity {width:100%!important;max-width:100%}", "body.lampa_view .wrap__left,body.lampa_view.menu--always:not(.light--version) .wrap__left {position:fixed!important;top:4.1em!important;bottom:auto!important;left:2.5em!important;width:19em!important;height:auto!important;max-height:calc(100% - 5em)!important;padding:.65em 0!important;margin:0!important;border:1px solid #ffffff19;border-radius:.9em;background:#121419;box-shadow:0 18px 60px #0008;z-index:40;transform:none!important;transition:opacity .12s;visibility:hidden!important;opacity:0;pointer-events:none}", "body.lampa_view.menu--open .wrap__left,body.lampa_view.menu--always.menu--open .wrap__left {visibility:visible!important;opacity:1;pointer-events:auto}", "body.lampa_view .wrap__left>.scroll {width:100%!important;max-height:75vh!important}", "body.lampa_view .menu {padding:0 .6em!important}", "body.lampa_view .menu__case {padding:0!important}", "body.lampa_view .menu__list {display:block!important}", "body.lampa_view .menu__item {font-size:.86em;padding:.85em .8em;margin:.12em 0;border-radius:.5em;color:#a9afb8}", "body.lampa_view .menu__text,body.lampa_view.menu--always .menu__text {display:block!important;font-size:1em;font-weight:450}", "body.lampa_view .menu__ico {width:1.15em;height:1.15em;min-width:1.15em;margin-right:1em;opacity:.8}", "body.lampa_view .menu__ico svg {width:100%;height:100%}", "body.lampa_view .menu__item.focus,body.lampa_view .menu__item.hover,body.lampa_view .menu__item.traverse {background:var(--pt-high);color:#fff;box-shadow:none}", "body.lampa_view .menu__split {display:none!important}", 'body.lampa_view .menu__item[data-action="edit"],body.lampa_view .menu__item[data-action="feed"],body.lampa_view .menu__item[data-action="relise"],body.lampa_view .menu__item[data-action="myperson"],body.lampa_view .menu__item[data-action="subscribes"],body.lampa_view .menu__item[data-action="catalog"],body.lampa_view .menu__item[data-action="filter"] {display:none}', "body.lampa_view .items-line {margin-bottom:.8em;padding-bottom:.7em}", "body.lampa_view .items-line__head {margin-bottom:1em}", "body.lampa_view .items-line__title {font-size:1.12em;font-weight:600;letter-spacing:-.02em}", "body.lampa_view .items-line__more {font-size:.8em;background:transparent;color:var(--pt-muted)}", "/* The desktop profile owns scale; native Bigger adds another 14% otherwise. */", "body.lampa_view.pt-desktop .card {font-size:1em}", "body.lampa_view .card__view,body.lampa_view .card__img {border-radius:.5em;background:var(--pt-panel);box-shadow:none;overflow:hidden}", "body.lampa_view .card__title {font-size:.83em;font-weight:500;line-height:1.4;margin-top:.65em;height:auto;min-height:0;max-height:2.85em;display:-webkit-box;-webkit-box-orient:vertical;white-space:normal;overflow:hidden;transform:none;-webkit-transform:none;-webkit-line-clamp:2;line-clamp:2;text-overflow:ellipsis}", "body.lampa_view .card__age {font-size:.73em;color:var(--pt-muted);margin-top:.2em}", "body.lampa_view .card__vote {background:#000000dc;color:#eee;border:0;font-size:.65em;border-radius:.3em;padding:.2em .4em}", "body.lampa_view .card.focus .card__view:after,body.lampa_view .card.hover .card__view:after {border:2px solid var(--pt-accent);border-radius:.5em;inset:0;box-shadow:none;z-index:5;box-sizing:border-box}", "body.lampa_view .card.focus .card__title {color:var(--pt-accent)}", "body.lampa_view .card__quality {border-radius:.3em;background:#000000dc;font-size:.65em}", "body.lampa_view .scroll--mask:before,body.lampa_view .scroll--mask:after {display:none}", "body.lampa_view .pt-hero {position:relative;min-height:32em;height:min(67vh,43em);margin:0 0 2.2em;overflow:hidden;-webkit-clip-path:inset(0);clip-path:inset(0);border:0;box-shadow:none;background:#000;isolation:isolate}", "/* The bottom fade belongs to the unscaled frame, not the enlarged bitmap. */", "body.lampa_view .pt-hero__artwork {position:absolute;inset:0;z-index:0;overflow:hidden;-webkit-mask-image:linear-gradient(180deg,#000 0%,#000 65%,#000000c7 80%,#0000004d 92%,transparent 100%);mask-image:linear-gradient(180deg,#000 0%,#000 65%,#000000c7 80%,#0000004d 92%,transparent 100%)}", "body.lampa_view.pt-mobile .pt-hero__artwork {position:relative;inset:auto;width:100%;height:auto;flex:none;-webkit-mask-image:none;mask-image:none}", "body.lampa_view .pt-hero__image {display:block;position:absolute;top:0;left:auto;right:0;width:auto;max-width:100%;height:100%;object-fit:contain;object-position:right center;z-index:0;-webkit-mask-image:linear-gradient(90deg,transparent,#000 16%);mask-image:linear-gradient(90deg,transparent,#000 16%)}", "/* Minimal blends the artwork edge gradually without blurring the source. */", "body.lampa_view:not(.pt-theme-glass):not(.pt-mobile) .pt-hero__image {-webkit-mask-image:linear-gradient(90deg,transparent 0%,#0000000a 5%,#00000029 11%,#00000075 19%,#000000cc 27%,#000 35%);mask-image:linear-gradient(90deg,transparent 0%,#0000000a 5%,#00000029 11%,#00000075 19%,#000000cc 27%,#000 35%)}", "body.lampa_view .pt-hero:before {content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,#000000 0%,#000000ed 13%,#0000008c 40%,#00000000 76%)}", "body.lampa_view .pt-hero__body {position:absolute;z-index:2;left:max(4.5em,calc((100% - 100em)/2));bottom:6.5em;max-width:34em;padding-right:1em}", "body.lampa_view .pt-hero__title {font-size:2.9em;line-height:1.08;font-weight:650;letter-spacing:-.045em;margin:0 0 .65em;text-wrap:balance;max-width:14em}", "body.lampa_view .pt-hero__meta {display:flex;align-items:center;gap:.75em;font-size:.8em;line-height:1.5;font-weight:500;color:#dbdde2;margin-bottom:1.25em}", "body.lampa_view .pt-hero__studio {width:auto;max-width:6em;height:1.5em;object-fit:contain;flex:none;filter:var(--pt-studio-tone,brightness(1)) drop-shadow(0 0 .6px rgba(255,255,255,.7)) drop-shadow(0 1px 2px #000);opacity:.95}", "body.lampa_view .pt-hero__overview {font-size:.85em;line-height:1.65;color:#a3a8b1;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;max-width:34em}", "body.lampa_view .pt-hero__actions {display:flex;gap:.8em;margin-top:1.6em}", "body.lampa_view .pt-hero__action {display:flex;align-items:center;gap:.6em;border-radius:.6em;font-size:.82em;font-weight:600;padding:.85em 1.15em;background:var(--pt-accent);color:#13232c;cursor:pointer;border:1px solid transparent}", "body.lampa_view .pt-hero__action svg {width:1.15em;height:1.15em}", "body.lampa_view .pt-hero__action--secondary {background:#212a35dd;color:#d4dce3;border-color:#ffffff12}", "body.lampa_view .pt-hero__action.focus,body.lampa_view .pt-hero__action.hover,body.lampa_view .pt-hero__action:hover,body.lampa_view .pt-hero__action:focus-visible {outline:none!important;box-shadow:inset 0 0 0 2px #fff!important}", "body.lampa_view .pt-hero__dots {position:absolute;z-index:2;bottom:2.8em;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:.5em}", "body.lampa_view .pt-hero__dot {width:.5em;height:.5em;background:#ffffff50;border-radius:1em;cursor:pointer;position:relative}", "body.lampa_view .pt-hero__dot:after {content:'';position:absolute;inset:-.6em}", "body.lampa_view .pt-hero__dot.active {width:1.5em;background:var(--pt-accent)}", "body.lampa_view .pt-hero__dot {box-sizing:border-box;border:1.5px solid transparent;outline:none!important;box-shadow:none!important;transition:none!important}", "body.lampa_view .pt-hero__dot.focus,body.lampa_view .pt-hero__dot:focus-visible {border-color:#fff}", "body.lampa_view .pt-mobile-nav {display:none!important}", "body.lampa_view.pt-reduce-motion *,body.lampa_view.pt-reduce-motion *:before,body.lampa_view.pt-reduce-motion *:after {animation-duration:0s!important;transition-duration:0s!important;scroll-behavior:auto!important}", "body.lampa_view .full-start-new {padding-top:1.5em}", "body.lampa_view .full-start-new__left {width:15em;min-width:15em}", "body.lampa_view .full-start-new__poster {border-radius:.8em;overflow:hidden;box-shadow:0 16px 48px #0007}", "body.lampa_view .full-start-new__title {font-size:2.45em;letter-spacing:-.04em;font-weight:750;line-height:1.08;max-width:22em}", "body.lampa_view .full-start-new__tagline {font-size:.92em;color:var(--pt-muted);font-weight:400;line-height:1.6}", "body.lampa_view .full-start-new__rate-line {gap:.7em;margin-top:1em}", "body.lampa_view .full-start__rate {border:1px solid var(--pt-line);border-radius:.45em;padding:.4em .65em;font-size:.85em;background:var(--pt-panel)}", "body.lampa_view .full-start__rate .source--name {color:var(--pt-muted);font-size:.65em;font-weight:500}", "body.lampa_view .full-start-new__details {font-size:.82em;color:#bdbdc5;line-height:1.6}", "body.lampa_view .full-start-new__head {font-size:.82em;color:#bdbdc5;margin-bottom:.75em}", "body.lampa_view .full-start-new__reactions {display:none}", "body.lampa_view .full-start__status,body.lampa_view .full-start__pg {font-size:.7em;border:1px solid var(--pt-line);border-radius:.4em;padding:.45em .7em;color:var(--pt-muted)}", "body.lampa_view .full-start-new__buttons {display:flex;align-items:center;gap:.7em;flex-wrap:wrap}", "body.lampa_view .button--alc-torrent span {display:inline!important;max-width:none!important;font-size:1em!important}", "body.lampa_view .full-start__button,body.lampa_view .full-descr__tag {background:var(--pt-high);border:1px solid var(--pt-line);color:white;border-radius:.625em;font-size:.85em;padding:.8em 1.15em;box-shadow:none}", "body.lampa_view .full-start__button.focus,body.lampa_view .full-start__button.hover {border-color:var(--pt-accent);background:var(--pt-high);color:white;box-shadow:0 0 0 1px var(--pt-accent)}", "body.lampa_view .full-start__button.button--alc-auto {background:var(--pt-accent);border-color:var(--pt-accent);color:#07151c}", "body.lampa_view .full-start__button.button--alc-auto.focus {background:#65c9f3;color:#07151c;box-shadow:0 0 0 3px #2bb4ed55}", "body.lampa_view .full-start__button svg {width:1.1em;height:1.1em}", "body.lampa_view .full-descr__text {color:#bfbfc6;font-size:.9em;line-height:1.75;max-width:65em}", "body.lampa_view .full-descr__title,body.lampa_view .full-persons__title {font-size:1.2em;font-weight:650}", "body.lampa_view .pt-context-badge {font-size:.62em;line-height:1.5;color:#98989f;margin-top:1.3em}", "body.lampa_view .pt-context-badge span {color:var(--pt-accent)}", "body.lampa_view .torrent-item,body.lampa_view .torrent-item.tc-item {background:var(--pt-panel)!important;border:1px solid var(--pt-line)!important;border-radius:.625em!important;padding:1em!important;margin-bottom:.55em!important;color:var(--pt-text)!important}", "body.lampa_view .torrent-item.focus,body.lampa_view .torrent-item.hover,body.lampa_view .torrent-list .torrent-item.tc-item.focus {background:var(--pt-high)!important;border-color:var(--pt-accent)!important;box-shadow:inset 0 0 0 2px var(--pt-accent)!important;color:white!important}", "body.lampa_view .torrent-item__title {font-size:.95em;font-weight:600;line-height:1.45}", "body.lampa_view .torrent-item__details {font-size:.72em;color:var(--pt-muted)}", "body.lampa_view .tc-title {font-size:1em;font-weight:600;letter-spacing:-.015em}", "body.lampa_view .tc-tag {border-radius:.35em;font-size:.68em;padding:.2em .5em;border-color:#ffffff14}", "body.lampa_view .tc-tag--voice {background:#ffffff08}", "body.lampa_view .tc-tag--complete {color:#7ed0a7;border-color:#7ed0a72c}", "body.lampa_view .tc-tag--partial {color:#d6b777;border-color:#d6b7772c}", "body.lampa_view .tc-original,body.lampa_view .tc-foot {font-size:.68em;color:var(--pt-muted)}", "body.lampa_view .tc-size {font-size:1em;font-weight:600}", "body.lampa_view .tc-seeds {font-size:.8em;font-weight:500;color:#7ed0a7}", "body.lampa_view .tc-summary {display:flex;align-items:center;flex-wrap:wrap;gap:.5em .8em;min-width:0}", "body.lampa_view .tc-season {font-size:1.06em;font-weight:650;line-height:1.35;color:var(--pt-accent)}", "body.lampa_view .tc-episodes {font-size:.88em;color:#c4c8cf;line-height:1.4}", "body.lampa_view .tc-summary .tc-tag--quality {font-size:.86em;color:var(--pt-accent);background:#add9e50c;border-color:#add9e52e}", "body.lampa_view .tc-head {gap:1em;align-items:flex-start}", "body.lampa_view .tc-right {flex:none;gap:.4em}", "body.lampa_view .tc-tags {gap:.5em 1.2em;margin:.65em 0}", "body.lampa_view .tc-tags .tc-tag {font-size:.8em;line-height:1.3;color:#c4c8cf;background:transparent}", "body.lampa_view .tc-voices {display:flex;align-items:baseline;flex-wrap:wrap;gap:.4em .8em;font-size:.86em;line-height:1.5}", "body.lampa_view .tc-voice-names {display:inline-flex;align-items:center;flex-wrap:wrap;gap:.35em;min-width:0;max-width:100%;color:#e2e5eb;white-space:normal;overflow:visible;overflow-wrap:anywhere}", "body.lampa_view .tc-languages {font-size:.88em;color:var(--pt-accent)}", "body.lampa_view .tc-language-tags .tc-voices {font-size:inherit;line-height:inherit;align-items:center;gap:.35em}", "body.lampa_view .tc-language-tags .tc-voices .tc-group-label {font-size:.72em}", "body.lampa_view .tc-bitrate {font-size:.8em;color:var(--pt-muted)}", "body.lampa_view .tc-warning {font-size:.8em;line-height:1.4;margin-top:.5em;color:#d6b777}", "body.lampa_view .tc-foot {display:flex;align-items:center;justify-content:space-between;gap:1em;margin-top:.7em;font-size:.8em}", "body.lampa_view .tc-source {min-width:0;overflow-wrap:anywhere}", "body.lampa_view .tc-info {flex:none;cursor:pointer;font:inherit;color:#c4c8cf;padding:.3em .6em;border:1px solid var(--pt-line);border-radius:.4em;background:transparent}", "body.lampa_view .tc-info:hover,body.lampa_view .tc-info:focus-visible {color:white;border-color:var(--pt-accent);outline:none}", "body.lampa_view .tc-info.focus {color:white;border-color:white;box-shadow:0 0 0 1px white,0 0 .6em #add9e540;outline:none}", "body.lampa_view .tc-release-name {font-size:.9em;font-weight:500;line-height:1.45;color:var(--pt-text);margin:.65em 0;white-space:normal;overflow-wrap:anywhere}", "body.lampa_view .tc-full-details {font-size:.95em;line-height:1.6}", "body.lampa_view .tc-full-details dl {margin:0}", "body.lampa_view .tc-full-details dt {color:var(--pt-muted);font-size:.85em;margin-top:1em}", "body.lampa_view .tc-full-details dt:first-child {margin-top:0}", "body.lampa_view .tc-full-details dd {margin:0;white-space:pre-wrap;overflow-wrap:anywhere}", "body.lampa_view .tc-item .tc-title,body.lampa_view .tc-item .tc-original {display:none!important}", "@media(max-width:650px){body.lampa_view .tc-head{display:flex;flex-wrap:wrap}body.lampa_view .tc-right{margin-left:auto}body.lampa_view .tc-seeds{white-space:normal;text-align:right}body.lampa_view .tc-summary{flex:1 1 12em}body.lampa_view .tc-foot{align-items:flex-end}}", "body.lampa_view .filter__item,body.lampa_view .selector--filter {border-radius:.5em;background:var(--pt-panel);border:1px solid var(--pt-line);color:#c4c4ca}", "body.lampa_view .filter__item.focus,body.lampa_view .filter__item.hover {background:var(--pt-high);border-color:var(--pt-accent);color:white}", "body.lampa_view .modal__content,body.lampa_view .selectbox__content,body.lampa_view .settings__content {background:var(--pt-panel)!important;color:var(--pt-text);border:1px solid var(--pt-line);border-radius:.85em;box-shadow:0 20px 80px #0008}", "body.lampa_view .modal__title,body.lampa_view .selectbox__title,body.lampa_view .settings__title {font-weight:650;letter-spacing:-.025em}", "body.lampa_view .settings-param {border-radius:.5em;border-bottom:1px solid var(--pt-line);font-size:.9em}", "body.lampa_view .settings-param__descr {color:var(--pt-muted);opacity:1;font-size:.8em;line-height:1.5}", "body.lampa_view .settings-param.focus,body.lampa_view .selectbox-item.focus,body.lampa_view .settings-folder.focus {background:var(--pt-high)!important;color:white;box-shadow:inset 3px 0 var(--pt-accent)}", "body.lampa_view .settings-param__value {color:var(--pt-accent)}", "body.lampa_view .selectbox-item {border-radius:.45em;font-size:.9em}", "body.lampa_view .settings-folder {border:1px solid var(--pt-line);border-radius:.7em;background:var(--pt-panel)}", "body.lampa_view .wrap__left {background:var(--pt-panel)!important;color:var(--pt-text)}", "body.lampa_view .menu__item,body.lampa_view .settings-folder,body.lampa_view .settings-param,body.lampa_view .selectbox-item {color:var(--pt-text)}", "body.lampa_view .settings-folder__name,body.lampa_view .settings-param__name,body.lampa_view .selectbox-item__title {color:inherit}", "body.lampa_view .menu__ico,body.lampa_view .settings-folder__icon {color:inherit;opacity:1}", "body.lampa_view .settings-param__descr,body.lampa_view .selectbox-item__subtitle {color:#a2aab4;opacity:1}", "body.lampa_view .settings-folder.focus,body.lampa_view .settings-param.focus,body.lampa_view .selectbox-item.focus,body.lampa_view .menu__item.focus,body.lampa_view .menu__item.traverse {background:#20272e!important;color:var(--pt-text);box-shadow:inset 2px 0 var(--pt-accent)}", "body.lampa_view .simple-button {background:var(--pt-high);border-radius:.5em;color:white;border:1px solid var(--pt-line)}", "body.lampa_view .simple-button.focus {border-color:var(--pt-accent);background:var(--pt-dim);color:white}", "body.lampa_view .search {background:var(--pt-bg)}", "body.lampa_view .search .simple-keyboard-input,body.lampa_view .search-box .simple-keyboard-input {box-sizing:border-box;padding:0 .8em;line-height:normal;vertical-align:middle}", "body.lampa_view .search .search__input {box-sizing:border-box;padding-inline:.8em;display:flex;align-items:center;min-height:2.1em}", "body.lampa_view .search-source {background:var(--pt-panel);border:1px solid var(--pt-line);border-radius:.625em}", "body.lampa_view .search-source.focus {border-color:var(--pt-accent);color:white}", "body.lampa_view .alc-ap {background:var(--pt-bg)!important}", "body.lampa_view .alc-ap__head {border-radius:.8em;overflow:hidden}", "body.lampa_view .alc-ap__play {background:var(--pt-accent)!important;color:#07151c!important;border-radius:.6em!important}", "body.lampa_view .alc-chip,body.lampa_view .alc-ap-voice,body.lampa_view .alc-ep,body.lampa_view .alc-ap-season__head {background:var(--pt-panel)!important;border:1px solid var(--pt-line)!important;border-radius:.6em!important;color:var(--pt-text)!important;box-shadow:none!important}", "body.lampa_view .alc-chip--on,body.lampa_view .alc-chip.focus,body.lampa_view .alc-ap-voice.focus,body.lampa_view .alc-ep.focus {border-color:var(--pt-accent)!important;background:var(--pt-dim)!important;color:white!important;box-shadow:0 0 0 1px var(--pt-accent)!important}", "body.lampa_view input {accent-color:var(--pt-accent)}", "body.lampa_view .empty__title {font-size:1.4em;font-weight:650}", "body.lampa_view .empty__descr {color:var(--pt-muted);font-size:.85em;line-height:1.6}", "", "body.lampa_view .full-start-new__reactions,body.lampa_view .full-start-new__tagline {display:none}", "body.lampa_view .full-start-new__title {font-weight:600;font-size:2.4em}", "body.lampa_view .full-start__button.button--alc-auto,body.lampa_view .alc-ap__play {background:var(--pt-accent)!important;color:#13232c!important}", "body.lampa_view .full-start__button.button--alc-auto.focus {background:#d0eaf1;color:#13232c;box-shadow:0 0 0 2px #fff}", "body.lampa_view .simple-button,body.lampa_view .selectbox-item,body.lampa_view .settings-param {font-weight:450}", "@media(min-width:1100px) {", " body.lampa_view .items-line .card:not(.card--wide):not(.card--collection) {width:11.1em!important}", " body.lampa_view .items-line>.items-line__head {padding-left:1.1em}", "}", "@media(max-width:900px) {", " body.lampa_view .head__body {padding:.5em 1.2em}", " body.lampa_view .head__action.open--search {width:2.2em;padding:0;justify-content:center;border:0;background:transparent}", " body.lampa_view .head__action.open--search:after {display:none}", " body.lampa_view .head__logo-icon {margin-right:1em!important}", " body.lampa_view .pt-topnav {gap:1.2em;margin-left:auto}", " body.lampa_view .pt-hero__body {left:2em;max-width:29em;bottom:5.5em}", " body.lampa_view .pt-hero__title {font-size:2.5em}", " body.lampa_view .wrap__left {left:1.2em!important}", "}", "body.lampa_view.pt-mobile {font-size:calc(16px * var(--pt-interface-scale,1))!important}", "body.lampa_view.pt-mobile .head {height:6.5em}", "body.lampa_view.pt-mobile .head__body {height:3.5em;padding:.5em 1em;position:relative}", "body.lampa_view.pt-mobile .head__logo-icon {margin-right:auto!important}", "body.lampa_view.pt-mobile .pt-topnav {position:absolute;top:3.5em;left:1em;right:1em;height:3em;justify-content:space-around;gap:.5em;border-top:1px solid var(--pt-line);margin:0}", "body.lampa_view.pt-mobile .pt-topnav__item {font-size:.8em;padding:.6em .4em}", "body.lampa_view.pt-mobile .wrap__content {padding-top:6.5em!important;padding-bottom:1em!important}", "body.lampa_view.pt-mobile .wrap__left {top:3.8em!important;left:1em!important;width:18em!important}", "body.lampa_view.pt-mobile .pt-hero {display:flex;flex-direction:column;align-items:stretch;height:auto;min-height:0;max-height:none;margin-bottom:1.2em}", "body.lampa_view.pt-mobile .pt-hero__image {position:relative;top:auto;right:auto;left:auto;width:100%;height:auto;aspect-ratio:16/9;flex:none;object-position:center top;transform-origin:center top;-webkit-mask-image:linear-gradient(180deg,#000 0%,#000 75%,#000000f7 82%,#000000c7 89%,#0000004d 96%,transparent 100%);mask-image:linear-gradient(180deg,#000 0%,#000 75%,#000000f7 82%,#000000c7 89%,#0000004d 96%,transparent 100%)}", "body.lampa_view.pt-mobile .pt-hero:before {background:linear-gradient(0deg,#000000 8%,#000000f0 24%,#00000040 61%,#00000000 100%)}", "body.lampa_view.pt-mobile .pt-hero__body {position:relative;left:auto;right:auto;bottom:auto;max-width:none;padding:1.5em 1.3em 4.5em}", "body.lampa_view.pt-mobile .pt-hero__title {font-size:2.05em;max-width:15em;margin-bottom:.6em}", "body.lampa_view.pt-mobile .pt-hero__meta {box-sizing:border-box;height:3em;min-height:3em;font-size:.74em;line-height:1.5;margin-bottom:.85em;overflow:hidden}", "body.lampa_view.pt-mobile .pt-hero__meta>span {min-width:0;max-height:3em;overflow:hidden}", "body.lampa_view.pt-mobile .pt-hero__overview {box-sizing:border-box;height:4.95em;min-height:4.95em;line-height:1.65;font-size:.8em;-webkit-line-clamp:3;margin:0}", "body.lampa_view.pt-mobile .pt-hero__actions {gap:.6em;margin-top:1.2em}", "body.lampa_view.pt-mobile .pt-hero__action {font-size:.76em;padding:.95em .9em}", "body.lampa_view.pt-mobile .pt-hero__dots {bottom:2.2em;gap:.7em}", "body.lampa_view.pt-mobile .items-line .card:not(.card--wide):not(.card--collection) {width:9.1em!important}", "body.lampa_view.pt-mobile .items-line__title {font-size:1.08em}", "body.lampa_view.pt-mobile .full-start-new__left {width:7em;min-width:7em}", "body.lampa_view.pt-mobile .full-start-new__title {font-size:1.65em}", "@media(max-width:600px) {", " body.lampa_view:not(.pt-tv) .head__action.open--search {width:2.2em;padding:0;justify-content:center;border:0;background:transparent}", " body.lampa_view:not(.pt-tv) .head__action.open--search:after {display:none}", "}", "", "body.lampa_view .head__menu-icon svg {width:1.1em!important;height:1.1em!important}", "body.lampa_view.pt-home .activity--active>.activity__body>.scroll>.scroll__content {padding-top:0!important}", "body.lampa_view .app,body.lampa_view .wrap {background:var(--pt-bg)!important}", "body.lampa_view .scroll--mask {mask-image:none!important;-webkit-mask-image:none!important}", "", "body.lampa_view.pt-home .activity--active>.activity__body>div>.scroll>.scroll__content {padding-top:0!important}", "body.lampa_view .wrap__left>.scroll,body.lampa_view .wrap__left>.scroll>.scroll__content {height:auto!important;min-height:0!important;padding:0!important}", "", "body.lampa_view .wrap__left .menu__split:last-child {display:none}", "", "/* 0.3.1: all catalogue routes live in the menu. */", "body.lampa_view .pt-topnav,body.lampa_view .pt-mobile-nav {display:none!important}", "body.lampa_view .head__actions>.head__action:not(.open--search):not(.open--settings):not(.open--profile) {display:none!important}", "body.lampa_view .head__action.open--profile {width:2.4em!important;height:2.4em!important;min-width:2.4em;flex:0 0 2.4em;padding:0!important;border-radius:50%!important;overflow:hidden}", "body.lampa_view .head__action.open--profile img,body.lampa_view .head__action.open--profile svg {width:100%!important;height:100%!important;display:block;max-width:none;max-height:none;flex:1 0 auto;object-fit:cover;border-radius:50%!important;aspect-ratio:1}", 'body.lampa_view .menu__item[data-action="movie"],body.lampa_view .menu__item[data-action="tv"],body.lampa_view .menu__item[data-action="anime"],body.lampa_view .menu__item[data-action="main"] {display:flex!important}', 'body.lampa_view .menu__item[data-action="timetable"],body.lampa_view .menu__item[data-action*="sport"],body.lampa_view .menu__item[data-action*="shot"],body.lampa_view .pt-removed-section {display:none!important}', "body.lampa_view .settings {z-index:60!important}", "body.lampa_view .settings__head {padding:1.4em 1.5em 1em;flex-shrink:0}", "body.lampa_view .card__type {display:none!important}", "body.lampa_view .card--wide {width:26em!important}", "body.lampa_view .card--wide .card__title {font-size:1em;line-height:1.35;max-height:2.7em}", "body.lampa_view .card--wide .card__description,body.lampa_view .card--wide .card__descr {font-size:.85em;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}", "body.lampa_view .pt-quality {position:absolute;top:.6em;left:.6em;z-index:4;background:#000000e8;color:#d5e9ee;border:1px solid #ffffff25;border-radius:.35em;padding:.3em .5em;font-size:.65em;line-height:1;font-weight:600;pointer-events:none}", "", "body.lampa_view .card__quality {display:block!important;z-index:4}", "body.lampa_view.pt-mobile .head {height:3.5em!important}", "body.lampa_view.pt-mobile .wrap__content {padding-top:3.5em!important}", "body.lampa_view.pt-mobile .card--wide {width:20em!important}", "", "body.lampa_view .card--wide .card__textbox {font-size:.8em;line-height:1.4;padding:1.2em;overflow:hidden}", "body.lampa_view .card--wide .card__textbox>* {display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;max-height:2.8em}", "body.lampa_view .card__quality {top:.6em;left:.6em;bottom:auto;background:#000000e8;color:#d5e9ee;border:1px solid #ffffff25}", "", "/* Frame animation owns transforms while the pointer is moving. */", "body.lampa_view .pt-wheel-moving>.scroll__content>.scroll__body {transition:none!important;-webkit-transition:none!important}", "body.lampa_view.pt-wheel-active .card {transition:none!important}", "@media(min-width:1100px) {", " body.lampa_view .pt-hero {height:min(56vh,34em);min-height:27em;max-width:100em;margin:0 auto 2em}", " body.lampa_view .pt-hero__body {left:3em;bottom:7em;max-width:31em}", " body.lampa_view .pt-hero__title {font-size:2.55em;max-width:15em}", " body.lampa_view .pt-hero__dots {left:45%;bottom:1.5em}", " body.lampa_view .items-line {max-width:100em;margin-left:auto;margin-right:auto;margin-bottom:.8em;padding-bottom:.7em}", " body.lampa_view .items-line .card:not(.card--wide):not(.card--collection) {width:9.2em!important}", " body.lampa_view .card__title {font-size:.79em}", " body.lampa_view .head__body {max-width:100em;padding-left:1.5em;padding-right:1.5em}", "}", "", "@media(min-width:1100px) {", " body.lampa_view .pt-hero,body.lampa_view .items-line {max-width:90vw}", " body.lampa_view .head__body {max-width:90vw;padding-left:0;padding-right:0}", " body.lampa_view .items-line .card:not(.card--wide):not(.card--collection) {width:clamp(8.4em,calc((90vw - 10em / var(--pt-interface-scale,1)) / 10 * var(--pt-interface-scale,1)),11.1em)!important}", "}", "", "/* OLED: true black canvas; poster artwork retains its own colors. */", "body.lampa_view {--pt-bg:#000000;--pt-side:#080808;--pt-panel:#0b0b0b;--pt-high:#171717;background:#000000!important}", "body.lampa_view .background {display:none!important}", "body.lampa_view .head,body.lampa_view .app,body.lampa_view .wrap,body.lampa_view .search {background:#000000!important}", "body.lampa_view .pt-hero__dots {left:0!important;right:0!important;justify-content:center}", "body.lampa_view .pt-hero__logo {display:block;width:auto;max-width:100%;height:auto;max-height:7em;object-fit:contain;object-position:left center;margin:0 0 1.4em}", "body.lampa_view .pt-hero__logo.pt-hidden {display:none!important}", "/* A stable mobile brand slot covers logos, plain titles and translated logos. */", "body.lampa_view.pt-mobile .pt-hero__branding {box-sizing:border-box;display:flex;flex-direction:column;align-items:center;height:auto;min-height:5.5em;margin:0 0 1em;overflow:hidden}", "body.lampa_view.pt-mobile .pt-hero__branding>.pt-hero__logo {flex:0 0 auto;width:100%;max-width:100%;height:5.5em;max-height:5.5em;margin:0;object-fit:contain;object-position:center}", "body.lampa_view.pt-mobile .pt-hero__branding>.pt-hero__title {width:100%;margin:0;font-size:2.05em;line-height:1.08;max-height:2.16em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}", "body.lampa_view.pt-mobile .pt-hero__branding>.pt-hero__logo--translated {height:3em;max-height:3em}", "body.lampa_view.pt-mobile .pt-hero__branding>.pt-hero__title--translation {font-size:.9em;line-height:1.35;max-height:2.7em}", "", "", "body.lampa_view .pt-kind {position:absolute;top:.6em;right:.6em;z-index:4;pointer-events:none;font-size:.6em;line-height:1;padding:.35em .5em;background:#000b;color:#d4e2e6;border:1px solid #ffffff25;border-radius:.35em}", "body.lampa_view .card.pt-has-quality .card__quality {display:none!important}", "/* Search and circular profile share the same outer height. */", "body.lampa_view .head__action.open--search {box-sizing:border-box;height:2.2em}", "body.lampa_view .head__action.open--profile {box-sizing:border-box;width:2.2em!important;height:2.2em!important;min-width:2.2em;flex:0 0 2.2em}", "body.lampa_view .pt-hero__image {image-rendering:auto;filter:none!important;transform:scale(1.06);transform-origin:right top}", "/* Compact detail cover, fading to OLED black before the following rows. */", "body.lampa_view .full-start__background {left:0!important;top:0!important;width:100%!important;height:var(--pt-detail-backdrop-height,30em)!important;max-height:none;object-fit:cover;object-position:center 30%;-webkit-mask-image:linear-gradient(to bottom,#000 30%,#0008 78%,transparent 100%)!important;mask-image:linear-gradient(to bottom,#000 30%,#0008 78%,transparent 100%)!important}", "body.lampa_view .full-start-new {padding-top:2em;padding-bottom:1em}", "body.lampa_view .full-start-new__left {width:10em;min-width:10em;margin-right:2em}", "body.lampa_view .full-start-new__body {align-items:center}", "body.lampa_view .full-start-new__right {min-width:0;max-width:58em}", "body.lampa_view .full-start-new__title {font-size:2em}", "body.lampa_view .minimal-detail-logo {display:none;width:auto;max-width:min(24em,75%);height:auto;max-height:5.5em;object-fit:contain;object-position:left center;margin:0 0 1em}", "body.lampa_view .minimal-detail-logo.loaded {display:block}", "body.lampa_view .minimal-detail-overview,body.lampa_view .full-start-new__description {color:#fff;font-size:.9em;line-height:1.55;max-width:52em;margin:1em 0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}", "body.lampa_view.pt-mobile .full-start-new__left {width:6.5em;min-width:6.5em;margin:0 1.2em 0 0}", "body.lampa_view.pt-mobile .full-start-new__body {display:flex;align-items:flex-start}", "body.lampa_view.pt-mobile .full-start-new__right {margin:0;padding:0;background:none;overflow:visible}", "body.lampa_view.pt-mobile .full-start-new__title {font-size:1.4em}", "body.lampa_view.pt-mobile .minimal-detail-logo {max-width:100%;max-height:4em}", "body.lampa_view.pt-mobile .full-start-new__buttons {gap:.4em}", ".minimal-detail-logo {display:none}", "/* Keep native modal/player order; file actions must stay above their dialog. */", "body.lampa_view .settings {z-index:40!important}", "body.lampa_view .selectbox {z-index:70!important}", "body.lampa_view .modal {z-index:50!important}", "body.lampa_view .settings-input {z-index:90!important}", "body.lampa_view .settings-input__content {background:#101010}", "body.lampa_view .minimal-detail-header {max-width:90%;margin:0 auto;padding:3em 0 1.5em;min-height:23em;display:flex;align-items:flex-end}", "body.lampa_view .minimal-detail-header .full-start-new__body {width:100%;align-items:flex-end;gap:2em}", "/* Native no--poster hides this column, but it now contains essential actions. */", "body.lampa_view .minimal-detail-header .full-start-new__left.minimal-detail-identity {display:block}", "body.lampa_view .minimal-detail-identity {width:15em;min-width:15em;margin:0}", "body.lampa_view:not(.pt-detail-poster) .minimal-detail-identity .full-start-new__poster {display:none}", "body.lampa_view .minimal-detail-identity .full-start-new__title {margin-bottom:1em;font-size:1.7em}", "body.lampa_view .minimal-detail-identity .minimal-detail-logo {width:100%;max-width:100%;max-height:5em;object-position:center;margin:0 auto 1.5em}", "body.lampa_view .minimal-detail-identity .full-start-new__buttons {display:flex;gap:.45em;flex-wrap:wrap}", "body.lampa_view .minimal-detail-identity .button--alc-auto {width:100%;justify-content:center;gap:.5em}", "body.lampa_view .minimal-detail-heading {overflow-wrap:anywhere;word-break:normal;min-width:0;font-size:1.15em;font-weight:600;line-height:1.35;margin:0 0 .7em}", "body.lampa_view .minimal-detail-header .full-start-new__right {max-width:60em}", "body.lampa_view .minimal-detail-header .full-start-new__rate-line {margin-top:.6em;font-size:.8em}", "body.lampa_view .minimal-detail-header .full-start-new__details {margin:.7em 0}", "body.lampa_view .minimal-detail-columns {max-width:90%;margin:1em auto 2em;display:flex;gap:1.25em;align-items:stretch}", "body.lampa_view .minimal-detail-cast>.minimal-cast-native {order:0;grid-column:1;grid-row:1;min-width:0;width:100%!important;max-width:100%;box-sizing:border-box;overflow:hidden;flex:1;background:#0b0b0b;border:1px solid var(--pt-line);border-radius:.8em;padding:1em;margin:0}", "body.lampa_view .minimal-detail-facts {order:1;width:22%;min-width:15em;flex-shrink:0;padding:1.2em;background:#0b0b0b;border:1px solid var(--pt-line);border-radius:.8em;margin:0}", "body.lampa_view .minimal-detail-facts h3 {font-size:1em;margin:0 0 1em}", "body.lampa_view .minimal-detail-facts>div {display:grid;grid-template-columns:minmax(7.5em,.9fr) minmax(0,1.1fr);gap:.75em;font-size:.78em;margin:.8em 0;line-height:1.5}", "body.lampa_view .minimal-detail-facts>div>span:first-child {color:var(--pt-muted)}", "body.lampa_view .minimal-detail-facts>div>span:last-child {text-align:right}", "body.lampa_view.pt-mobile .minimal-detail-header {min-height:18em;padding-top:2em}", "body.lampa_view.pt-mobile .minimal-detail-header .full-start-new__body {flex-direction:column;gap:1em}", "body.lampa_view.pt-mobile .minimal-detail-identity {width:100%;min-width:0}", "body.lampa_view.pt-mobile .minimal-detail-columns {display:block}", "body.lampa_view.pt-mobile .minimal-detail-facts {width:100%;min-width:0;box-sizing:border-box;margin:1em 0}", "body.lampa_view .minimal-cast-native .full-person {width:7em;box-sizing:border-box;flex-direction:column;align-items:center;padding:.4em;gap:.65em;font-size:.85em;text-align:center}", "body.lampa_view .minimal-cast-native .full-person__photo {width:5em;height:5em;border-radius:50%;margin:0;background:#151515}", "body.lampa_view .minimal-cast-native .full-person__photo>img {height:100%;object-fit:cover}", "body.lampa_view .minimal-cast-native .full-person__name {font-size:.95em;line-height:1.3}", "body.lampa_view .minimal-cast-native .full-person__role {font-size:.8em;color:var(--pt-muted);line-height:1.3}", "body.lampa_view .person-start__img {border-radius:50%;width:10em;height:10em;object-fit:cover}", "body.lampa_view .person-start {background:#000}", "/* The complete card is one vertical native row, including its lower columns. */", "body.lampa_view .minimal-detail-header {display:block;box-sizing:border-box;width:90%;max-width:90%;min-height:0;padding:0 0 1.5em}", "body.lampa_view .minimal-detail-header>.full-start-new__body {box-sizing:border-box;min-height:0;padding:1.5em 0 .4em;display:flex;-webkit-box-align:start;-webkit-align-items:flex-start;align-items:flex-start}", "body.lampa_view .minimal-detail-header>.minimal-detail-columns {position:relative;inset:auto;clear:both;float:none;width:100%;max-width:none;margin:.7em 0 0;min-height:0;box-sizing:border-box;display:grid;grid-template-columns:minmax(0,1fr) minmax(15em,22%);gap:1.25em;align-items:stretch}", "body.lampa_view.pt-desktop:not(.pt-safari) .minimal-detail-header>.full-start-new__body {min-height:24em;padding:3em 0 1em}", "body.lampa_view.pt-desktop:not(.pt-safari) .minimal-detail-header>.minimal-detail-columns {margin-top:1.5em}", "body.lampa_view .minimal-detail-columns>.minimal-detail-facts {grid-column:2;grid-row:1;position:relative;inset:auto;float:none;width:auto;min-width:0;box-sizing:border-box;align-self:stretch;overflow-wrap:anywhere}", "body.lampa_view .minimal-overview-action {cursor:pointer;border-radius:.3em;outline:none!important;border:0!important;box-shadow:none!important;position:relative;max-width:52em;margin:1em 0}", "body.lampa_view .minimal-overview-action>.full-start-new__description,body.lampa_view .minimal-overview-action>.minimal-detail-overview {width:100%;max-width:none;margin:0;outline:none!important;border:0!important;box-shadow:none!important}", "body.lampa_view .minimal-overview-focus {display:none;position:absolute;inset:0;border:2px solid var(--pt-accent);border-radius:.3em;pointer-events:none}", "body.lampa_view .minimal-overview-action.focus>.minimal-overview-focus:not([hidden]),body.lampa_view .minimal-overview-action:focus-visible>.minimal-overview-focus:not([hidden]) {display:block!important}", "body.lampa_view .minimal-overview-action {transition:none!important;transform:none!important}", "body.lampa_view .minimal-overview-action>.minimal-overview-focus[hidden] {display:none!important}", "body.lampa_view .minimal-overview-action::before,body.lampa_view .minimal-overview-action::after {display:none!important}", "body.lampa_view .minimal-detail-studio.selector {cursor:pointer;border-radius:.2em;outline:none;transition:none!important}", "body.lampa_view .minimal-detail-studio.selector.focus,body.lampa_view .minimal-detail-studio.selector:focus-visible {outline:none!important;border:0!important;box-shadow:none!important;filter:var(--pt-studio-tone,brightness(1)) drop-shadow(0 0 .25em var(--pt-accent)) drop-shadow(0 0 .65em var(--pt-accent))}", "body.lampa_view .minimal-overview-full {white-space:pre-wrap;overflow-wrap:break-word;line-height:1.7}", "body.lampa_view .minimal-source-hidden {display:none!important}", "body.lampa_view .minimal-detail-facts>div>span {display:block}", "body.lampa_view .minimal-detail-identity .full-start-new__buttons {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.45em;align-items:stretch;overflow:visible}", "body.lampa_view .minimal-detail-identity .full-start__button {margin:0;min-width:0;box-sizing:border-box;justify-content:center;padding:.8em .5em;font-size:.85em}", "body.lampa_view .minimal-detail-identity .button--alc-auto {grid-column:1/-1;width:100%}", "body.lampa_view .minimal-detail-identity .full-start__button>span {display:none!important}", "body.lampa_view .minimal-detail-identity .button--alc-auto>span,body.lampa_view .minimal-detail-identity .button--alc-torrent>span {display:inline!important}", "body.lampa_view .minimal-detail-identity .button--alc-torrent {grid-column:span 2}", "body.lampa_view .minimal-detail-identity .minimal-actions--no-bell>.button--alc-torrent {grid-column:1/-1}", "body.lampa_view .minimal-detail-identity .full-start-new__buttons:not(.minimal-actions--auto)>.button--play {grid-column:1/-1}", "body.lampa_view .minimal-detail-identity .full-start-new__buttons:not(.minimal-actions--auto)>.button--play>span {display:inline!important}", "body.lampa_view.pt-mobile .minimal-detail-header>.full-start-new__body {min-height:0;padding-top:1em}", "body.lampa_view.pt-mobile .minimal-detail-header>.minimal-detail-columns {display:block}", "body.lampa_view.pt-mobile .minimal-detail-identity .full-start-new__buttons {max-width:24em}", "/* Compact filter form: labels and values are distinct, with a clear primary action. */", "body.lampa_view .minimal-filter-panel .selectbox__content {width:27em;max-width:100vw;background:#080808;border:1px solid var(--pt-line);box-sizing:border-box}", "body.lampa_view .minimal-filter-panel .selectbox__head {padding:1.3em 1.3em .8em}", "body.lampa_view .minimal-filter-panel .selectbox__title {font-size:1.3em;line-height:1.2}", "body.lampa_view .minimal-filter-panel .selectbox-item {display:flex;align-items:center;justify-content:space-between;gap:1em;padding:.85em 1.3em;border-radius:0;border-bottom:1px solid #ffffff0a;min-height:3.2em;box-sizing:border-box}", "body.lampa_view .minimal-filter-panel .selectbox-item__title {font-size:.9em;font-weight:500}", "body.lampa_view .minimal-filter-panel .selectbox-item__subtitle {font-size:.8em;text-align:right;color:var(--pt-muted);margin:0;max-width:55%;line-height:1.4}", "body.lampa_view .minimal-filter-panel .minimal-filter-run {background:var(--pt-accent);color:#07151a;justify-content:center;border-radius:.5em;margin:.9em 1.1em .5em}", "body.lampa_view .minimal-filter-panel .minimal-filter-reset {justify-content:center;color:var(--pt-muted);min-height:2.8em}", "body.lampa_view .minimal-filter-panel .selectbox-item.focus {box-shadow:inset 3px 0 var(--pt-accent)}", "body.lampa_view .minimal-filter-panel .minimal-filter-run.focus {background:#d1edf5;color:#07151a;box-shadow:inset 0 0 0 2px #fff}", "/* Legacy history/filter grids share the catalogue's content boundaries. */", "body.lampa_view .category-full,body.lampa_view .mapping--grid {width:100%;max-width:90vw;margin-left:auto;margin-right:auto;padding-left:0;padding-right:0;box-sizing:border-box}", "body.lampa_view .category-full>.card {box-sizing:border-box;margin-left:0;padding-left:.5em;padding-right:.5em}", "@media(min-width:1100px){body.lampa_view:not(.pt-tv) .category-full>.card:not(.card--wide):not(.card--collection) {width:clamp(8.4em,calc((90vw - 10em / var(--pt-interface-scale,1)) / 10 * var(--pt-interface-scale,1)),11.1em)!important}}", "@media(min-width:1200px){body.lampa_view:not(.pt-tv) .mapping--grid>.card,body.lampa_view:not(.pt-tv) .category-full>.card:not(.card--wide):not(.card--collection) {width:calc(12.5% * var(--pt-interface-scale,1))!important}}", "@media(min-width:1800px){body.lampa_view:not(.pt-tv) .mapping--grid>.card,body.lampa_view:not(.pt-tv) .category-full>.card:not(.card--wide):not(.card--collection) {width:calc(10% * var(--pt-interface-scale,1))!important}}", "@media(max-width:650px){body.lampa_view .minimal-filter-panel .selectbox__content {width:100%;max-height:90vh}body.lampa_view .minimal-filter-panel .selectbox-item {min-height:3em;padding:.7em 1em}}", "body.lampa_view .minimal-crew-native {max-width:90%;margin:1.2em auto}", "body.lampa_view .minimal-crew-native .full-person {font-size:.8em;padding-right:1em}", "body.lampa_view .minimal-crew-native .full-person__photo {width:4.5em;height:4.5em;border-radius:50%}", "body.lampa_view .minimal-crew-native .full-person__photo>img {height:100%;object-fit:cover}", "body.lampa_view .minimal-crew-native .full-person__name {font-size:1em}", "body.lampa_view .pt-hero__logo.pt-hero__logo--translated {margin-bottom:.5em}", "body.lampa_view .pt-hero__title.pt-hero__title--translation {font-size:1.05em;line-height:1.35;letter-spacing:0;font-weight:500;max-width:100%;margin:0 0 1.1em;color:#dbdde2}", "body.lampa_view .minimal-detail-identity .minimal-detail-logo.minimal-detail-logo--translated {margin-bottom:.5em}", "body.lampa_view .minimal-detail-identity .full-start-new__title.minimal-detail-translation {font-size:1em;line-height:1.35;letter-spacing:0;font-weight:500;margin-bottom:1.25em;color:#dbdde2}", "/* Clip translated rails to their own content column, with room for focus rings. */", "body.lampa_view .items-line__body {overflow:hidden;padding:1.1em 0;margin:-1.1em 0;-webkit-mask-image:linear-gradient(to right,transparent,#000 1.25em,#000 calc(100% - 1.25em),transparent);mask-image:linear-gradient(to right,transparent,#000 1.25em,#000 calc(100% - 1.25em),transparent)}", "body.lampa_view .items-line__body>.scroll--horizontal {-webkit-mask-image:none!important;mask-image:none!important}", "/* Native social actions and data stay with Lampa; only presentation changes. */", "body.lampa_view .full-start-new__reactions {display:flex;align-items:center;flex-wrap:wrap;gap:.4em;min-height:0;margin:.9em 0;color:var(--pt-muted);font-size:.8em}", "body.lampa_view .full-start-new__reactions>div {padding:0}", "body.lampa_view .full-start-new__reactions .reaction {gap:.3em;padding:.35em .65em;background:#0b0b0b;border:1px solid var(--pt-line);border-radius:.5em}", "body.lampa_view .full-start-new__reactions .reaction__icon {width:1.25em;height:1.25em}", "body.lampa_view .full-start-new__reactions .reaction__count {padding:0;font-size:1em;font-weight:500}", "body.lampa_view .full-start-new__reactions .reaction--voted {border-color:var(--pt-accent);color:var(--pt-accent)}", "body.lampa_view .minimal-comments-native {width:90%;max-width:90%;margin:1em auto 2em;padding-bottom:1em}", "body.lampa_view .minimal-comments-native .items-line__head {padding-left:0;padding-right:0}", "body.lampa_view .minimal-comments-native .scroll--horizontal>.scroll__content {padding-left:0;padding-right:0}", "body.lampa_view .minimal-comments-native .items-line__body,body.lampa_view .minimal-comments-native .scroll--horizontal {-webkit-mask-image:none!important;mask-image:none!important}", "body.lampa_view .full-review {background:#0b0b0b;border:1px solid var(--pt-line);border-radius:.7em;padding:1.1em;box-sizing:border-box;color:#e5e5e5}", "body.lampa_view .mapping--line>.full-review {min-width:18em;max-width:25em}", "body.lampa_view .full-review__text {font-size:.9em;line-height:1.6;margin-bottom:1.1em;-webkit-line-clamp:3;line-clamp:3}", "body.lampa_view .full-review__footer {font-size:.78em;color:var(--pt-muted)}", "body.lampa_view .full-review__user-icon {width:1.8em;height:1.8em}", "body.lampa_view .full-review.focus {border-color:var(--pt-accent);background:#111;color:#fff}", "body.lampa_view .mapping--line>.full-review-add {width:10em;min-height:7.5em;padding:1em;border:1px solid var(--pt-line);background:#0b0b0b;border-radius:.7em;box-sizing:border-box}", "body.lampa_view .full-review-add::before {width:1.4em;height:1.4em;margin:-1.3em 0 0 -.7em;opacity:.75}", "body.lampa_view .full-review-add::after {content:'Написать';position:absolute;inset:auto 0 1.2em;text-align:center;font-size:.8em;color:var(--pt-muted)}", "body.lampa_view .full-review-add.focus {border-color:var(--pt-accent);background:#111}", "body.lampa_view .full-review-add.focus::after {border:0;width:auto;border-radius:0;inset:auto 0 1.2em;color:var(--pt-accent)}", "body.lampa_view .full-review--full-text .full-review__text {-webkit-line-clamp:unset;line-clamp:unset}", "body.lampa_view .minimal-comments-native .items-line__head {gap:.7em}", "body.lampa_view .minimal-comments-native .items-line__title {margin-right:auto}", "body.lampa_view .minimal-comments-nav {display:flex;gap:.4em;flex:none}", "body.lampa_view .minimal-comments-nav[hidden] {display:none}", "body.lampa_view .minimal-comments-arrow {display:flex;align-items:center;justify-content:center;width:2.1em;height:2.1em;padding:0;border:1px solid var(--pt-line);border-radius:.6em;background:#ffffff04;color:var(--pt-muted);cursor:pointer}", "body.lampa_view .minimal-comments-arrow svg {width:1em;height:1em}", "/* Shared transparent badges: ratings, age, status and reactions. */", "body.lampa_view .minimal-detail-header .full-start-new__rate-line {display:flex;align-items:center;flex-wrap:wrap;gap:.5em;margin-bottom:.85em;font-size:.8em}", "body.lampa_view .minimal-detail-header .full-start-new__rate-line>* {margin:0!important}", "body.lampa_view .minimal-detail-header .full-start__rate,body.lampa_view .minimal-detail-header .full-start__pg,body.lampa_view .minimal-detail-header .full-start__status,body.lampa_view .minimal-detail-header .full-start-new__reactions .reaction {box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:.5em;min-height:2.3em;padding:.45em .7em;font-size:1em;line-height:1.1;border:1px solid var(--pt-line);border-radius:.45em;background:rgba(0,0,0,.36);color:#dbdde2;box-shadow:none}", "body.lampa_view .minimal-detail-header .full-start-new__reactions .reaction--voted {border-color:var(--pt-accent);color:var(--pt-accent)}", "body.lampa_view .minimal-detail-header .full-start__rate>div {width:auto;height:auto;padding:0;background:transparent}", "/* A stable card box keeps remote geometry intact; only the artwork moves. */", "body.lampa_view .card__view {transition:transform .24s cubic-bezier(.2,.75,.25,1),box-shadow .24s ease!important;-webkit-transition:-webkit-transform .24s cubic-bezier(.2,.75,.25,1),box-shadow .24s ease!important;transform-origin:center}", "body.lampa_view .card.focus .card__view,body.lampa_view .card.hover .card__view {animation:none!important;-webkit-animation:none!important;-webkit-transform:translateY(-.2em) scale(1.045);transform:translateY(-.2em) scale(1.045);box-shadow:0 0 .85em rgba(173,217,229,.4),0 0 1.8em rgba(173,217,229,.22)}", "body.lampa_view .minimal-cast-native .full-person.focus {background:#161b1e;color:var(--pt-text);box-shadow:inset 0 0 0 1px var(--pt-accent)}", "body.lampa_view .items-line__more {display:none!important}", "body.lampa_view .minimal-paged-row .card-more:not(.card-more--first) {display:none!important}", "body.lampa_view .items-line__head {display:flex;align-items:center;gap:.6em}", "body.lampa_view .items-line__title {margin-right:auto}", ".minimal-row-nav {display:none}", "body.lampa_view .minimal-row-nav {display:flex;gap:.4em;flex:none}", "body.lampa_view .minimal-row-arrow,body.lampa_view .minimal-row-more {display:flex;align-items:center;justify-content:center;width:2em;height:2em;padding:0;border:1px solid var(--pt-line);border-radius:.6em;background:#ffffff04;color:var(--pt-muted);cursor:pointer}", "body.lampa_view .minimal-row-arrow svg,body.lampa_view .minimal-row-more svg {width:1em;height:1em}", "body.lampa_view .minimal-paged-row .scroll__body>.card:last-child,body.lampa_view .minimal-paged-row .scroll__body>.full-person:last-child {margin-right:2.5em}", "body.lampa_view .minimal-paged-row .mapping--line>.card+.card {margin-left:.75em}", "body.lampa_view .minimal-paged-row .items-line__body {-webkit-mask-image:linear-gradient(to right,transparent 1em,#000 1.25em,#000 calc(100% - 1.25em),transparent calc(100% - 1em));mask-image:linear-gradient(to right,transparent 1em,#000 1.25em,#000 calc(100% - 1.25em),transparent calc(100% - 1em))}", "/* Header, row and comment navigation share one pointer/remote/keyboard focus. */", "body.lampa_view .minimal-back svg,body.lampa_view .head__menu-icon svg,body.lampa_view .minimal-row-nav svg,body.lampa_view .minimal-comments-arrow svg {stroke-width:2}", "body.lampa_view .minimal-back:hover,body.lampa_view .minimal-back.hover,body.lampa_view .minimal-back.focus,body.lampa_view .minimal-back:focus-visible,", "body.lampa_view .head__menu-icon:hover,body.lampa_view .head__menu-icon.hover,body.lampa_view .head__menu-icon.focus,body.lampa_view .head__menu-icon:focus-visible,", "body.lampa_view .minimal-row-arrow:hover:not(:disabled),body.lampa_view .minimal-row-arrow.hover:not(:disabled),body.lampa_view .minimal-row-arrow.focus:not(:disabled),body.lampa_view .minimal-row-arrow:focus-visible:not(:disabled),", "body.lampa_view .minimal-row-more:hover,body.lampa_view .minimal-row-more.hover,body.lampa_view .minimal-row-more.focus,body.lampa_view .minimal-row-more:focus-visible,", "body.lampa_view .minimal-comments-arrow:hover:not(:disabled),body.lampa_view .minimal-comments-arrow.hover:not(:disabled),body.lampa_view .minimal-comments-arrow.focus:not(:disabled),body.lampa_view .minimal-comments-arrow:focus-visible:not(:disabled) {color:var(--pt-text);background:var(--pt-high);border-color:var(--pt-line);outline:none;outline-offset:0;box-shadow:inset 0 0 0 1px var(--pt-accent)}", "body.lampa_view.pt-tv .minimal-row-arrow,body.lampa_view.pt-tv .minimal-person-row .minimal-row-nav {display:none}", "body.lampa_view .pt-row-paging>.scroll__content>.scroll__body {transition:none!important;-webkit-transition:none!important}", "body.lampa_view .minimal-people-grid {display:grid;grid-template-columns:repeat(auto-fill,minmax(7em,1fr));gap:1em;max-width:65em}", "body.lampa_view .minimal-people-grid .full-person {width:100%!important;margin:0;box-sizing:border-box}", "", "body.lampa_view .alc-ap__voices {--alc-vcol:29em}", "body.lampa_view .alc-ap-vgroup__title {font-size:.9em;color:var(--pt-text);margin:.85em 0 .5em}", "body.lampa_view .alc-ep--soon .alc-ep__time {color:var(--pt-accent)}", "", "body.lampa_view .minimal-detail-studio {display:inline-block;width:auto;max-width:6.5em;height:1.3em;object-fit:contain;vertical-align:middle;margin-right:.65em;filter:var(--pt-studio-tone,brightness(1)) drop-shadow(0 0 .6px rgba(255,255,255,.7)) drop-shadow(0 1px 2px #000);opacity:1}", "body.lampa_view .minimal-detail-studio[hidden] {display:none}", "body.lampa_view .minimal-anime-controls {width:100%;box-sizing:border-box;margin:0 0 1.6em;padding:.4em 1em}", "body.lampa_view .minimal-anime-tabs {display:flex;justify-content:center;align-items:center;gap:.65em;width:100%;margin:0 auto}", "body.lampa_view .minimal-anime-tab {font-family:inherit;justify-content:center;min-width:9.5em;transition:box-shadow .24s ease!important;-webkit-transition:box-shadow .24s ease!important}", 'body.lampa_view .minimal-anime-tab[aria-selected="true"] {box-shadow:0 0 .35em rgba(173,217,229,.85),0 0 1.2em rgba(173,217,229,.65),0 0 2.4em rgba(173,217,229,.42);outline:none}', "body.lampa_view .minimal-anime-status {margin:1.2em auto;text-align:center;color:var(--pt-muted);line-height:1.5}", "body.lampa_view .minimal-anime-retry {display:inline-block;font:inherit;color:var(--pt-text);background:#111;border:1px solid var(--pt-line);border-radius:.6em;padding:.65em 1.2em;margin:.8em auto 0;cursor:pointer}", "body.lampa_view .minimal-anime-retry.focus,body.lampa_view .minimal-anime-retry:hover {background:var(--pt-accent);color:#11171b;outline:none}", "body.lampa_view .minimal-anime-status[hidden],body.lampa_view .minimal-anime-retry[hidden] {display:none!important}", "", "/* Small touch controls keep native actions, including the iPhone safe area. */", "body.lampa_view.pt-mobile .navigation-bar {font-size:calc(14px * var(--pt-interface-scale,1))!important;padding:0 .8em .65em;padding-bottom:calc(.65em + env(safe-area-inset-bottom,0px))}", "body.lampa_view.pt-mobile .navigation-bar__body {max-width:400px;margin:0 auto;padding:.5em .6em;border:1px solid var(--pt-line);background:#181a1cf2;box-shadow:0 4px 20px #0006}", "body.lampa_view.pt-mobile .navigation-bar__item {display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:44px;min-width:56px}", "body.lampa_view.pt-mobile .navigation-bar__icon {width:1.5em;height:1.5em}", "body.lampa_view.pt-mobile .navigation-bar__label {font-size:.78em;line-height:1.2;margin-top:.3em}", "body.lampa_view.pt-mobile .settings__content {font-size:calc(14px * var(--pt-interface-scale,1))!important;box-sizing:border-box;max-height:78vh!important;border-radius:1em}", "body.lampa_view.pt-mobile .settings__body,", "body.lampa_view.pt-tv .settings__body {font-size:1em!important;min-height:0;overflow:hidden}", "body.lampa_view.pt-mobile .settings__head,", "body.lampa_view.pt-tv .settings__head {padding:1em 1.1em .8em}", "body.lampa_view.pt-mobile .settings__title,", "body.lampa_view.pt-tv .settings__title {font-size:1.4em;line-height:1.3}", "body.lampa_view.pt-mobile .settings .minimal-back--overlay {font-size:1em}", "body.lampa_view.pt-mobile .settings-folder,", "body.lampa_view.pt-tv .settings-folder {padding:.9em 1.1em;min-height:3.6em;align-items:center;box-sizing:border-box;border-radius:.5em}", "body.lampa_view.pt-mobile .settings-folder__icon,", "body.lampa_view.pt-tv .settings-folder__icon {width:1.4em;height:1.4em;min-width:1.4em;margin-right:.9em}", "body.lampa_view.pt-mobile .settings-folder__icon>*,", "body.lampa_view.pt-tv .settings-folder__icon>* {width:100%;height:100%}", "body.lampa_view.pt-mobile .settings-folder__name,", "body.lampa_view.pt-tv .settings-folder__name {font-size:1em;line-height:1.35}", "body.lampa_view.pt-mobile .settings-param,", "body.lampa_view.pt-tv .settings-param {padding:1em 1.1em;font-size:1em}", "body.lampa_view.pt-mobile .settings-param__name,", "body.lampa_view.pt-tv .settings-param__name {font-size:1em}", "body.lampa_view.pt-mobile .settings-param__value,", "body.lampa_view.pt-tv .settings-param__value {font-size:.95em}", "body.lampa_view.pt-mobile .wrap__content {padding-bottom:calc(5.1em + env(safe-area-inset-bottom,0px))!important}", "body.lampa_view.pt-mobile.orientation--landscape .navigation-bar {padding:.6em .6em .6em 0}", "body.lampa_view.pt-mobile.orientation--landscape .navigation-bar__body {gap:.45em;padding:.55em}", "", "/* TV geometry is separate from desktop sizes and the rest of the interface. */", "body.lampa_view.pt-tv .items-line {max-width:90vw;margin-left:auto;margin-right:auto}", "body.lampa_view.pt-tv .card,body.lampa_view.pt-mobile .settings-folder {will-change:auto}", "/* Clip TV rails without an extra full-width gradient compositing layer. */", "body.lampa_view.pt-tv .items-line__body {-webkit-mask-image:none;mask-image:none}", "body.lampa_view.pt-tv .minimal-paged-row .scroll--horizontal>.scroll__content>.scroll__body {transition:transform .12s linear;-webkit-transition:-webkit-transform .12s linear}", "body.lampa_view.pt-tv .card__view {transition:none!important;-webkit-transition:none!important}", "", "/* TV drawers use the same compact rows as phones, with readable TV text. */", "body.lampa_view.pt-tv .settings .minimal-back--overlay {font-size:1em}", "body.lampa_view .selectbox__head {padding:1em 1.1em .8em}", "body.lampa_view .selectbox__title {font-size:1.4em;line-height:1.3}", "body.lampa_view .selectbox-item {padding:.85em 1.1em;font-size:1em;min-height:3.2em;box-sizing:border-box}", "body.lampa_view.pt-tv .selectbox-item__title {font-size:1em;line-height:1.35}", "body.lampa_view.pt-tv .selectbox-item__subtitle {font-size:.85em;line-height:1.4}", "body.lampa_view.pt-tv .settings-folder,body.lampa_view.pt-tv .settings-param {will-change:auto}", "", "/* Compact TV badges and captions retain the existing poster geometry. */", "/* TV uses the same focus treatment as the browser; keep repaint cost bounded. */", "body.lampa_view.pt-tv .card.focus .card__view,body.lampa_view.pt-tv .card.hover .card__view {-webkit-transform:translateY(-.2em) scale(1.045);transform:translateY(-.2em) scale(1.045);box-shadow:0 0 .85em rgba(173,217,229,.4),0 0 1.8em rgba(173,217,229,.22)}", "body.lampa_view.pt-tv .card.hover:not(.focus) .card__view {box-shadow:none!important;transform:none!important}", "body.lampa_view.pt-tv .card.hover:not(.focus) .card__view:after {border-color:transparent!important;box-shadow:none!important}", "body.lampa_view .pt-hero__studio.selector {cursor:pointer;border-radius:.2em}", "body.lampa_view .pt-hero__studio.selector.focus,body.lampa_view .pt-hero__studio.selector:focus-visible {outline:none;box-shadow:0 0 0 2px var(--pt-accent);filter:var(--pt-studio-tone,brightness(1))}", "", "/* A native cast rail stays inside its grid cell at every scroll position. */", "body.lampa_view .minimal-detail-columns>.minimal-detail-cast {grid-column:1;grid-row:1;position:relative;display:flex;flex-direction:column;flex:1;min-width:0;max-width:100%;width:100%;box-sizing:border-box;overflow:hidden}", "body.lampa_view .minimal-detail-cast .items-line__body,body.lampa_view .minimal-detail-cast .scroll--horizontal {min-width:0;max-width:100%;box-sizing:border-box}", "body.lampa_view .minimal-detail-facts>div>span {min-width:0;overflow-wrap:anywhere}", "body.lampa_view .minimal-detail-facts>div>span:first-child {overflow-wrap:normal;word-break:normal}", "body.lampa_view.pt-tv .minimal-cast-native .full-person {width:var(--minimal-person-width,7em);flex-basis:var(--minimal-person-width,7em)}", "body.lampa_view.pt-tv .minimal-cast-native .full-person:last-child {margin-right:0}", "body.lampa_view.pt-mobile .minimal-detail-header>.minimal-detail-columns {grid-template-columns:minmax(0,1fr)}", "body.lampa_view.pt-mobile .minimal-detail-columns>.minimal-detail-cast,body.lampa_view.pt-mobile .minimal-detail-columns>.minimal-detail-facts {grid-column:1;grid-row:auto}", "@media(max-width:900px){", " body.lampa_view .minimal-detail-header>.minimal-detail-columns {grid-template-columns:minmax(0,1fr)}", " body.lampa_view .minimal-detail-columns>.minimal-detail-cast,body.lampa_view .minimal-detail-columns>.minimal-detail-facts {grid-column:1;grid-row:auto}", "}", "", "/* Equal footer space on every poster: focus never changes card/row geometry. */", "body.lampa_view .card .pt-card-watch {position:relative;height:4.1em;margin-top:.4em;font-size:.72em;line-height:1.35;pointer-events:none;visibility:hidden}", "body.lampa_view .card__view>.card-watched {display:none!important}", "body.lampa_view .card .pt-card-watch>.card-watched {display:block;position:absolute;inset:0;width:100%;height:100%;max-width:100%;font-size:1em;line-height:1.35;transform:none;-webkit-transform:none;border:0;border-radius:0;background:none!important;color:var(--pt-muted);box-sizing:border-box}", "body.lampa_view .card .pt-card-watch .card-watched__inner,body.lampa_view .card .pt-card-watch .card-watched__body {padding:0;font-size:1em}", "body.lampa_view .card .pt-card-watch .card-watched__item {display:none;margin:0;color:var(--pt-muted)}", "body.lampa_view .card .pt-card-watch .pt-card-watch__current {position:absolute;inset:0;display:flex;flex-direction:column;align-items:stretch;line-height:1.25}", "body.lampa_view .card .pt-card-watch .card-watched__item>span {display:none}", "body.lampa_view .pt-card-watch__row {display:block}", "body.lampa_view .pt-card-watch__meter {display:flex;align-items:center;min-width:0;margin-top:.25em;min-height:1em}", "body.lampa_view .pt-card-watch__label {display:flex;flex-wrap:wrap;gap:0 .25em;min-width:0;white-space:normal}", "body.lampa_view .pt-card-watch__label>span {white-space:nowrap}", "body.lampa_view .pt-card-watch__label {align-content:start}", "body.lampa_view .pt-card-watch__label>.pt-card-watch__heading {flex-basis:100%;margin-bottom:.1em}", "body.lampa_view .pt-card-watch__time {flex:0 0 auto;margin-left:.4em;font-variant-numeric:tabular-nums;font-size:.9em;line-height:1}", "body.lampa_view .card .pt-card-watch .time-line {display:block;flex:1 1 0%;align-self:center;position:relative;top:auto;right:auto;bottom:auto;left:auto;width:auto;margin:0;min-width:1px;height:3px;min-height:3px;overflow:hidden;background:rgba(255,255,255,.24)!important}", "body.lampa_view .card .pt-card-watch .time-line>div {display:block;height:3px;min-height:3px;background:var(--pt-accent)!important}", "body.lampa_view .card .pt-card-watch--complete .time-line,body.lampa_view .card .pt-card-watch--complete .pt-card-watch__time {display:none!important}", "/* Reveal saved viewing history only for the card under pointer/remote focus.", "   Reserved footer space prevents neighbouring rows from jumping on focus. */", "body.lampa_view .card.focus .pt-card-watch--has-progress,body.lampa_view .card.hover .pt-card-watch--has-progress,body.lampa_view .card.pt-card-pointer .pt-card-watch--has-progress,body.lampa_view .card.pt-card-touch .pt-card-watch--has-progress {visibility:visible}", "body.lampa_view .card .pt-card-watch>.card-watched.pt-card-watch--empty {display:none!important}", "/* One compact release pill below Series, shared by desktop and TV. */", "body.lampa_view .pt-series-status {position:absolute;left:auto;right:4px;top:2.6em;z-index:4;display:block;width:auto;max-width:calc(100% - 8px);font-size:.55em;line-height:1;white-space:nowrap;padding:.3em .4em;border:1px solid #ffffff25;border-radius:.35em;background:#000b;color:#d4e2e6;pointer-events:none;box-sizing:border-box}", "body.lampa_view .pt-series-status>span {white-space:pre}", "", "/* Badges keep their own corners and wrap to another line when space is short. */", "body.lampa_view .card__view .pt-quality,body.lampa_view .card__view .pt-kind {max-width:calc(100% - 8px);box-sizing:border-box;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}", "/* Native history/play marker, in the same understated pill as metadata.", "   Favorites sit along the lower edge, leaving faces and top metadata uncovered. */", "body.lampa_view .card__view .card__icons {inset:0!important;display:block!important;width:auto;max-width:none;pointer-events:none}", "body.lampa_view .card__view .card__icons-inner {position:static;display:flex;flex-direction:row;align-items:flex-end;justify-content:flex-start;gap:.2em;height:100%;box-sizing:border-box;padding:0 .3em .3em;background:none!important;border-radius:0;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}", "body.lampa_view .card__view .card__icon {position:relative}", 'body.lampa_view .card__view .card__icon[style*="left:"] {position:absolute}', "body.lampa_view .card__view .card__icon:not(.icon--history) {box-sizing:border-box;width:1.9em;height:1.9em;font-size:.65em;border:1px solid #ffffff25;border-radius:.35em;background-color:#000b;background-size:72% 72%;background-position:center;background-repeat:no-repeat;box-shadow:none}", "body.lampa_view.pt-theme-glass .card__view .card__icon:not(.icon--history) {background-color:rgba(24,26,29,.52);border-color:var(--pt-glass-border);box-shadow:var(--pt-glass-edge)}", 'body.lampa_view .card__view .card__icon.icon--book {background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23f4f4f6%22%20stroke-width%3D%221.6%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M6%203h12v18l-6-4-6%204Z%22%2F%3E%3C%2Fsvg%3E")!important}', 'body.lampa_view .card__view .card__icon.icon--wath {background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23f4f4f6%22%20stroke-width%3D%221.6%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%229%22%2F%3E%3Cpath%20d%3D%22M12%207v5l3%202%22%2F%3E%3C%2Fsvg%3E")!important}', 'body.lampa_view .card__view .card__icon.icon--like {background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23f4f4f6%22%20stroke-width%3D%221.6%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M20.5%205.5a5%205%200%200%200-7%200L12%207l-1.5-1.5a5%205%200%200%200-7%207L12%2021l8.5-8.5a5%205%200%200%200%200-7Z%22%2F%3E%3C%2Fsvg%3E")!important}', "body.lampa_view .card__view .icon--history {position:absolute;top:62%!important;left:50%!important;right:auto!important;bottom:auto!important;transform:translate(-50%,-50%);box-sizing:border-box;width:2.2em;height:1.8em;font-size:.65em;background:#000b!important;border:1px solid #ffffff25;border-radius:.35em;color:#d4e2e6;box-shadow:none!important}", "body.lampa_view .card__view .icon--history:before {content:'';position:absolute;top:50%;left:53%;transform:translate(-50%,-50%);width:0;height:0;border-top:.38em solid transparent;border-bottom:.38em solid transparent;border-left:.58em solid currentColor}", "body.lampa_view .card__view.minimal-badge-layout>.card__vote,body.lampa_view .card__view.minimal-badge-layout>.card__icons {z-index:4}", "/* Shared controls for both online layouts. */", "body.lampa_view .nova-plus-root .nova-btn,body.lampa_view .nova-plus-root .nova-chip,body.lampa_view .nova-plus-root .nova-group {background:#171717!important;color:var(--pt-text)!important;border:1px solid var(--pt-line)!important;border-radius:.625em!important;box-shadow:none!important;outline:none!important}", "body.lampa_view .nova-plus-root .nova-btn {padding:.75em 1.15em;font-weight:600}", "body.lampa_view .nova-plus-root .nova-chip--view-icon {display:inline-flex;align-items:center;justify-content:center;flex:0 0 2.65em;width:2.65em;min-width:2.65em;height:2.65em;box-sizing:border-box;padding:0!important;gap:0;line-height:1}", "body.lampa_view .nova-plus-root .nova-chip--view-icon>.nova-chip__label {display:none}", "body.lampa_view .nova-plus-root .nova-chip--view-icon>svg {display:block;flex:none;width:1.1em;height:1.1em;margin:0!important;align-self:center}", "body.lampa_view .nova-plus-root .nova-chip--active,body.lampa_view .nova-plus-root .nova-group--open {background:var(--pt-high)!important;border-color:#add9e560!important}", "body.lampa_view .nova-plus-root .nova-btn.focus,body.lampa_view .nova-plus-root .nova-btn.hover,body.lampa_view .nova-plus-root .nova-btn:hover,body.lampa_view .nova-plus-root .nova-chip.focus,body.lampa_view .nova-plus-root .nova-chip.hover,body.lampa_view .nova-plus-root .nova-chip:hover,body.lampa_view .nova-plus-root .nova-group.focus,body.lampa_view .nova-plus-root .nova-group:hover {background:var(--pt-high)!important;color:var(--pt-text)!important;border-color:var(--pt-accent)!important;box-shadow:0 0 0 1px var(--pt-accent)!important}", "body.lampa_view .nova-plus-root .nova-chip__badge,body.lampa_view .nova-plus-root .nova-chip.focus .nova-chip__badge {background:#ffffff1a!important;color:var(--pt-text)!important;border-radius:.25em}", "body.lampa_view .nova-plus-root .nova-card.focus {background:var(--pt-high)!important;color:var(--pt-text)!important;box-shadow:inset 0 0 0 2px var(--pt-accent)!important}", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card.focus {background:none!important;box-shadow:none!important}", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card.focus .nova-card__thumb {box-shadow:0 0 0 2px var(--pt-accent)!important}", "body.lampa_view .nova-plus-root .nova-card__line .time-line>div,body.lampa_view .nova-plus-root .nova-hero__progress .time-line>div {background:var(--pt-accent)!important}", "/* Native torrent focus has an outer white pseudo-element; use one accent border. */", "body.lampa_view .torrent-item.focus::after {display:none!important;content:none!important}", "body.lampa_view .torrent-filter .filter__item.focus,body.lampa_view .torrent-filter .filter__item.hover,body.lampa_view .torrent-filter .selector--filter.focus {border-color:var(--pt-accent)!important;box-shadow:0 0 0 1px var(--pt-accent)!important;outline:none!important}", "body.lampa_view .torrent-filter .simple-button.focus,body.lampa_view .torrent-filter .simple-button.hover {border-color:var(--pt-accent)!important;box-shadow:0 0 0 1px var(--pt-accent)!important;outline:none!important}", "body.lampa_view .minimal-torrent-view>.explorer__left {display:block!important;width:28.7%;flex:0 0 28.7%;min-width:0;padding:.3em 1.6em 0 .3em;box-sizing:border-box}", "body.lampa_view .minimal-torrent-view>.explorer__left .explorer__card {display:none!important}", "/* The hidden native sidebar scroll still reserves a full viewport of height. */", "body.lampa_view .minimal-torrent-view>.explorer__left>.scroll {display:none!important}", "body.lampa_view .minimal-torrent-view>.explorer__files {width:71.3%;min-width:0;box-sizing:border-box}", "body.lampa_view .minimal-torrent-view .explorer__files-head {padding:.3em .6em .6em 0}", "body.lampa_view .minimal-torrent-view .explorer__files-body .scroll__body {padding-left:0}", "body.lampa_view .minimal-torrent-view .filter--back {display:none!important}", ".minimal-torrent-banner {display:none}", "body.lampa_view .minimal-torrent-banner {display:block;position:relative;width:100%;min-width:0;overflow:hidden;border-radius:1em;background:#0b1016;aspect-ratio:1.65;min-height:0;color:var(--pt-text)}", "body.lampa_view .minimal-torrent-banner__image,body.lampa_view .minimal-torrent-banner__shade {position:absolute;inset:0;width:100%;height:100%;object-fit:cover}", "body.lampa_view .minimal-torrent-banner__shade {background:linear-gradient(180deg,#080d1633 30%,#080d16e6 100%)}", "body.lampa_view .minimal-torrent-banner__meta {position:absolute;top:1em;right:1.2em;left:1.2em;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:.7em;font-size:.9em;text-shadow:0 1px 5px #000}", "body.lampa_view .minimal-torrent-banner__title {position:absolute;left:1.3em;right:1.3em;bottom:1.2em;font-size:1.7em;font-weight:650;line-height:1.2;text-shadow:0 2px 8px #000}", "body.lampa_view .minimal-torrent-banner__logo {display:block;width:auto;height:auto;max-width:100%;max-height:4em;object-fit:contain;filter:drop-shadow(0 2px 5px #0009)}", "body.lampa_view .minimal-torrent-view--classic {flex-wrap:wrap}", "body.lampa_view .minimal-torrent-view--classic>.explorer__left,body.lampa_view .minimal-torrent-view--classic>.explorer__files {width:100%}", "body.lampa_view .minimal-torrent-view--classic>.explorer__left {padding-right:.3em;margin-bottom:1em}", "body.lampa_view .minimal-torrent-view--classic .minimal-torrent-banner {aspect-ratio:auto;height:14.7em;min-height:0}", "body.lampa_view .minimal-torrent-view--classic .minimal-torrent-banner__logo {max-width:55%}", "@media(max-width:767px){", " body.lampa_view .minimal-torrent-view {flex-direction:column;flex-wrap:nowrap;min-height:0}", " body.lampa_view .minimal-torrent-view>.explorer__left {width:100%;flex:0 0 auto;padding-right:.3em;margin-bottom:.5em}", " body.lampa_view .minimal-torrent-view>.explorer__files {width:100%;flex:1 1 0;min-height:0;display:flex;flex-direction:column}", " body.lampa_view .minimal-torrent-banner {width:100%;min-height:0;max-height:22vh}", " body.lampa_view .minimal-torrent-banner__title {font-size:1.4em;bottom:.8em}", " body.lampa_view .minimal-torrent-banner__meta {font-size:.8em;top:.8em;right:1em;left:1em}", " body.lampa_view .minimal-torrent-view .explorer__files-head {padding-left:.3em;padding-right:.3em;flex:0 0 auto}", " body.lampa_view .minimal-torrent-view .explorer__files-head>.scroll {width:100%;min-width:0;overflow:visible!important}", " body.lampa_view .minimal-torrent-view .explorer__files-head .scroll__content {padding:0!important}", " body.lampa_view .minimal-torrent-view .explorer__files-head .scroll__body {transform:none!important;-webkit-transform:none!important;width:100%!important}", " body.lampa_view .minimal-torrent-view .torrent-filter {display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:.5em;margin:0!important;white-space:normal;align-items:stretch}", " body.lampa_view .minimal-torrent-view .torrent-filter .simple-button {font-size:.88em;min-height:44px;min-width:0;margin:0;padding:.5em .65em;box-sizing:border-box;justify-content:center}", " body.lampa_view .minimal-torrent-view .filter--search>div {display:none!important}", " body.lampa_view .minimal-torrent-view .filter--search>svg {width:1.3em;height:1.3em;margin:0}", " body.lampa_view .minimal-torrent-view .filter--sort {flex-wrap:wrap;gap:.15em .4em}", " body.lampa_view .minimal-torrent-view .filter--sort>div {margin:0;padding:0;background:transparent;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.8em;color:var(--pt-muted)}", " body.lampa_view .minimal-torrent-view .filter--filter>div:not(.hide) {margin-left:.4em;padding:.15em .3em}", " body.lampa_view .minimal-torrent-view .explorer__files-body {flex:1 1 0;min-height:0}", " /* Lampa sizes this scroll for the whole screen; it now shares it with the banner. */", " body.lampa_view .minimal-torrent-view .explorer__files-body>.scroll {height:100%!important}", " body.lampa_view .minimal-torrent-view .explorer__files-body .scroll__content {padding-top:.5em}", " body.lampa_view .minimal-torrent-view .explorer__files-body .scroll__body {padding-left:.3em;padding-right:.3em;box-sizing:border-box}", " body.lampa_view .minimal-torrent-view .watched-history {font-size:.8em;padding:.6em;margin-bottom:.5em}", " body.lampa_view .minimal-torrent-view .torrent-item.tc-item {padding:.75em!important}", " body.lampa_view .minimal-torrent-view .tc-head {display:flex;flex-wrap:wrap;gap:.4em .7em}", " body.lampa_view .minimal-torrent-view .tc-summary {flex:1 1 50%;gap:.3em .55em}", " body.lampa_view .minimal-torrent-view .tc-right {font-size:.8em;gap:.2em;max-width:100%}", " body.lampa_view .minimal-torrent-view .tc-size {margin-top:0;font-size:1em}", " body.lampa_view .minimal-torrent-view .tc-seeds {font-size:.85em}", " body.lampa_view .minimal-torrent-view .tc-tags {margin:.5em 0}", " body.lampa_view .minimal-torrent-view .tc-tags .tc-tag {font-size:.72em}", " body.lampa_view .minimal-torrent-view .tc-voices {font-size:inherit}", " body.lampa_view .minimal-torrent-view .tc-foot {font-size:.72em;gap:.6em;margin-top:.5em}", " body.lampa_view .minimal-torrent-view .tc-source {display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}", "}", "/* Let the activity scroll whole catalogues; selector groups never become inner carousels. */", "@media(max-width:767px){", " body.lampa_view .minimal-torrent-files .modal__content {display:flex;flex-direction:column;box-sizing:border-box;padding:1em;padding-bottom:calc(1em + env(safe-area-inset-bottom,0px));max-height:calc(100vh - 1em);max-height:calc(100dvh - 1em);overflow:hidden}", " body.lampa_view .minimal-torrent-files .modal__head {flex-shrink:0}", " body.lampa_view .minimal-torrent-files .modal__body {display:flex;flex-direction:column;min-height:0}", " body.lampa_view .minimal-torrent-files .modal__head {margin-bottom:.5em}", " body.lampa_view .minimal-torrent-files .modal__title {font-size:1.5em;line-height:1.25}", " body.lampa_view .minimal-torrent-files .modal__body .scroll {display:block;height:auto!important;max-height:calc(100vh - 8em);max-height:calc(100dvh - 8em);overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior-y:contain;touch-action:pan-y;-webkit-overflow-scrolling:touch}", " body.lampa_view .minimal-torrent-files--virtual .modal__body .scroll {overflow:hidden!important;touch-action:none}", " body.lampa_view .minimal-torrent-files .modal__body .scroll__content {padding:.4em 0;max-height:none!important}", " body.lampa_view .torrent-files .torrnet-folder-name {font-size:.85em;line-height:1.4;padding:.6em 0 .8em;overflow-wrap:anywhere;color:var(--pt-muted);opacity:1}", " body.lampa_view .torrent-files .torrent-serial {display:grid;grid-template-columns:clamp(72px,24vw,100px) minmax(0,1fr);align-items:stretch;min-width:0;overflow:hidden;border-radius:.55em}", " body.lampa_view .torrent-files .torrent-serial__img {width:100%;height:100%;min-height:5.5em;object-fit:cover;align-self:stretch;border-radius:0}", " body.lampa_view .torrent-files .torrent-serial__content {display:grid;grid-template-columns:minmax(0,1fr);gap:.4em;min-width:0;padding:.65em .75em;overflow:hidden}", " body.lampa_view .torrent-files .torrent-serial__body {float:none;min-width:0;max-width:100%}", " body.lampa_view .torrent-files .torrent-serial__title {font-size:1.05em;line-height:1.25;margin:0;white-space:normal;overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2}", " body.lampa_view .torrent-files .torrent-serial__line {display:flex;flex-direction:row;flex-wrap:wrap;font-size:.72em;line-height:1.3;margin-top:.3em;padding:0}", " body.lampa_view .torrent-files .torrent-serial__detail {display:flex;flex-wrap:wrap;gap:.3em .7em;float:none;margin:0;min-width:0;text-align:left;font-size:.75em;color:var(--pt-muted)}", " body.lampa_view .torrent-files .torrent-serial__size {font-size:1em;line-height:1.3;padding:0;background:none;color:var(--pt-text)}", " body.lampa_view .torrent-files .torrent-serial__exe {font-size:1em;line-height:1.3;margin:0}", " body.lampa_view .torrent-files .torrent-serial__clear {display:none}", " body.lampa_view .torrent-files .torrent-serial .time-line {position:static;inset:auto;width:100%;min-width:0;margin:0;align-self:end}", " body.lampa_view .torrent-files .time-line>div {height:3px;background:var(--pt-accent)}", " body.lampa_view .torrent-files .torrent-serial__episode {font-size:.8em;line-height:1.2;padding:.25em .4em}", " body.lampa_view .torrent-files .torrent-serial__progress {width:2px;background:var(--pt-accent)}", " body.lampa_view .torrent-files .torrent-file {display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.5em;padding:.8em}", " body.lampa_view .torrent-files .torrent-file__title {font-size:1em;min-width:0;padding:0;overflow-wrap:anywhere}", " body.lampa_view .torrent-files .torrent-file__size {font-size:.8em;padding:.2em .4em}", " body.lampa_view .torrent-files .torrent-file .time-line {grid-column:1/-1;position:static;inset:auto;margin:0;width:100%}", "}", "", "body.lampa_view .nova-plus-root .nova-toolbar {flex-wrap:wrap!important;white-space:normal}", "body.lampa_view .nova-plus-root .nova-toolbar__label {margin-left:.8em!important;margin-right:.55em!important}", "body.lampa_view .nova-plus-root .nova-toolbar__label:first-child {margin-left:0!important}", "body.lampa_view .nova-plus-root .nova-plus__row,body.lampa_view .nova-plus-root .nova-plus__pane {display:flex!important;flex-wrap:wrap!important;transform:none!important;-webkit-transform:none!important;width:100%!important;height:auto!important;max-height:none!important;overflow:visible!important}", "body.lampa_view .nova-plus-root .nova-plus__group,body.lampa_view .nova-plus-root .nova-drop {height:auto!important;max-height:none!important;overflow:visible!important}", "body.lampa_view .nova-plus-root .nova__rows,body.lampa_view .nova-plus-root .nova-plus__panel {height:auto!important;max-height:none!important;overflow:visible!important}", "body.lampa_view .nova-plus-root .nova-plus__row .nova-chip,body.lampa_view .nova-plus-root .nova-plus__pane .nova-chip {flex-shrink:0;max-width:100%;white-space:normal}", "body.lampa_view .nova-plus-root .nova-btn--movie {max-width:100%;white-space:normal;text-align:left}", "body.lampa_view .nova-plus-root .nova-btn--movie .nova-btn__label {max-width:none;white-space:normal;overflow:visible;text-overflow:clip}", "/* Composite the artwork and its shade inside one rounded clip. */", "body.lampa_view .minimal-torrent-banner,body.lampa_view .nova-plus-root .nova-hero {border-radius:1em;overflow:hidden;isolation:isolate;-webkit-clip-path:inset(0 round 1em);clip-path:inset(0 round 1em);-webkit-transform:translateZ(0);transform:translateZ(0)}", "body.lampa_view .minimal-torrent-banner__image,body.lampa_view .minimal-torrent-banner__shade {inset:-1px;width:calc(100% + 2px);height:calc(100% + 2px)}", "body.lampa_view .nova-plus-root .nova-hero__bg,body.lampa_view .nova-plus-root .nova-hero__shade {top:-1px;right:-1px;bottom:-1px;left:-1px}", "/* An independent focus layer avoids repainting a border over the banner image. */", "body.lampa_view .nova-plus-root .nova-hero .nova-btn {background:rgba(18,21,25,.68)!important;border:0!important;box-shadow:none!important;outline:none!important}", "body.lampa_view .nova-plus-root .nova-hero .nova-btn.focus,body.lampa_view .nova-plus-root .nova-hero .nova-btn.hover,body.lampa_view .nova-plus-root .nova-hero .nova-btn:hover {background:rgba(37,44,52,.78)!important;border:0!important;box-shadow:none!important}", "body.lampa_view .nova-plus-root .nova-btn__focus {display:none;position:absolute;inset:0;border:2px solid var(--pt-accent);border-radius:inherit;pointer-events:none}", "body.lampa_view .nova-plus-root .nova-hero .nova-btn.focus>.nova-btn__focus,body.lampa_view .nova-plus-root .nova-hero .nova-btn.hover>.nova-btn__focus,body.lampa_view .nova-plus-root .nova-hero .nova-btn:hover>.nova-btn__focus,body.lampa_view .nova-plus-root .nova-hero .nova-btn:focus-visible>.nova-btn__focus {display:block}", "/* Keep focus paint inside controls: exterior shadows can leave stale edge pixels", "   when adjacent chips change focus in WebKit. Never animate the ring itself. */", "body.lampa_view .nova-plus-root .nova-btn,body.lampa_view .nova-plus-root .nova-chip,body.lampa_view .nova-plus-root .nova-group,body.lampa_view .full-start__button,body.lampa_view .simple-button,body.lampa_view .tc-info,body.lampa_view .alc-chip,body.lampa_view .alc-ap-voice,body.lampa_view .alc-ep,body.lampa_view .minimal-comments-arrow {outline:none!important;transition-property:background-color,color!important;box-shadow:none!important}", "body.lampa_view .nova-plus-root .nova-btn,body.lampa_view .nova-plus-root .nova-chip,body.lampa_view .nova-plus-root .nova-group {transform:none!important;-webkit-transform:none!important}", "body.lampa_view .nova-plus-root .nova-btn.focus,body.lampa_view .nova-plus-root .nova-btn.hover,body.lampa_view .nova-plus-root .nova-btn:hover,body.lampa_view .nova-plus-root .nova-btn:focus-visible,body.lampa_view .nova-plus-root .nova-chip.focus,body.lampa_view .nova-plus-root .nova-chip.hover,body.lampa_view .nova-plus-root .nova-chip:hover,body.lampa_view .nova-plus-root .nova-chip:focus-visible,body.lampa_view .nova-plus-root .nova-group.focus,body.lampa_view .nova-plus-root .nova-group:hover,body.lampa_view .nova-plus-root .nova-group:focus-visible,body.lampa_view .full-start__button.focus,body.lampa_view .full-start__button.hover,body.lampa_view .full-start__button:focus-visible,body.lampa_view .simple-button.focus,body.lampa_view .simple-button.hover,body.lampa_view .simple-button:focus-visible,body.lampa_view .tc-info.focus,body.lampa_view .tc-info:hover,body.lampa_view .tc-info:focus-visible,body.lampa_view .alc-chip.focus,body.lampa_view .alc-ap-voice.focus,body.lampa_view .alc-ep.focus,body.lampa_view .minimal-comments-arrow.focus,body.lampa_view .minimal-comments-arrow.hover,body.lampa_view .minimal-comments-arrow:hover,body.lampa_view .minimal-comments-arrow:focus-visible {outline:none!important;border-color:var(--pt-accent)!important;box-shadow:inset 0 0 0 1px var(--pt-accent)!important}", "body.lampa_view .nova-plus-root .nova-btn::after,body.lampa_view .nova-plus-root .nova-chip::after,body.lampa_view .nova-plus-root .nova-group::after,body.lampa_view .full-start__button.focus::after {display:none!important;content:none!important}", "body.lampa_view .nova-plus-root .nova-hero .nova-btn.focus,body.lampa_view .nova-plus-root .nova-hero .nova-btn.hover,body.lampa_view .nova-plus-root .nova-hero .nova-btn:hover,body.lampa_view .nova-plus-root .nova-hero .nova-btn:focus-visible {box-shadow:none!important}", "body.lampa_view .nova-plus-root .nova-hero__progress {position:absolute;left:0;right:0;bottom:0;width:100%;height:.3em;border-radius:0;background:rgba(255,255,255,.15);overflow:hidden}", "/* Banner facts share a baseline; duration belongs to the year, season to the banner. */", "body.lampa_view .nova-plus-root .nova-hero__meta {display:flex;align-items:flex-start;gap:.65em;line-height:1.5;max-width:calc(100% - 2.4em);padding:.25em .5em;border-radius:.45em;background:rgba(8,11,16,.78);color:#f5f7fa!important;text-shadow:0 1px 2px #000}", "body.lampa_view .nova-plus-root .nova-hero__meta>* {margin:0;white-space:normal}", "body.lampa_view .nova-plus-root .nova-hero__date {display:flex;flex-direction:column;align-items:flex-end;min-width:0;text-align:right}", "body.lampa_view .nova-plus-root .nova-hero__runtime {color:inherit;font-size:.9em;line-height:1.5}", "body.lampa_view .nova-plus-root .nova-hero__seasons {position:absolute;top:calc(100% + .35em);right:0;display:flex;flex-direction:column;align-items:flex-end;gap:.25em;font-size:.9em;line-height:1.5}", "body.lampa_view .nova-plus-root .nova-hero__season-label,body.lampa_view .nova-plus-root .nova-hero__season-name {display:block;max-width:min(24em,58vw);padding:.15em .5em;border-radius:.4em;background:rgba(8,11,16,.78)!important;white-space:normal;text-align:right}", "body.lampa_view .nova-plus-root .nova-badge,body.lampa_view .nova-plus-root .nova-chip__badge {display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;flex:0 0 auto;min-width:2.3em;height:1.5em;padding:0 .35em;font-size:.78em;line-height:1;font-weight:600;vertical-align:middle}", "body.lampa_view .nova-plus-root .nova-hero__meta>.nova-badge {font-size:.85em;margin-top:.12em;background:#ffffff1a!important;text-shadow:none}", "body.lampa_view .nova-plus-root .nova-card__head .nova-card__quality {display:inline-flex;align-items:center;justify-content:center;min-width:2.3em;height:1.5em;padding:0 .35em;font-size:.85em;line-height:1}", "body.lampa_view .nova-plus-root .nova-card__head {align-items:center}", "body.lampa_view .nova-source-option {box-sizing:border-box;min-height:2.8em;padding:.6em 2.6em .6em 1em}", "body.lampa_view .nova-source-option .selectbox-item__title {display:flex;align-items:center;gap:.6em;line-height:1.4}", "body.lampa_view .nova-source-option__quality {display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;min-width:2.3em;height:1.5em;padding:0 .35em;border-radius:.3em;background:#ffffff1a;color:inherit;font-size:.78em;line-height:1;font-weight:600}", "/* A compact, consistent toolbar; native values and callbacks remain in menus. */", "body.lampa_view .minimal-torrent-banner__meta {width:max-content;max-width:calc(100% - 2em);margin-left:auto;padding:.4em .6em;border-radius:.55em;background:rgba(8,11,16,.78);color:#f5f7fa!important;text-shadow:0 1px 2px #000}", "body.lampa_view .nova-plus-root .nova-card--rowlist .nova-card__num {position:absolute;top:auto;right:auto;bottom:.3em;left:.3em;display:block;width:auto;height:auto;min-width:0;padding:0;border-radius:.35em;background:none!important;font-size:.8em;line-height:1.4;white-space:nowrap}", "body.lampa_view .nova-plus-root .nova-card--rowlist .nova-card__thumb--loaded img {opacity:1}", "body.lampa_view .nova-plus-root .nova-card--rowlist .nova-card__meta {display:flex;align-items:baseline;flex-wrap:wrap;gap:.5em}", "@media(max-width:767px){", " body.lampa_view .nova-plus-root .nova-plus__bar {display:flex;flex-wrap:wrap!important;gap:.45em;margin-bottom:.6em;padding:0}", " body.lampa_view .nova-plus-root .nova-plus__bar>.nova-toolbar__label {display:none}", " body.lampa_view .nova-plus-root .nova-plus__bar>.nova-chip {display:inline-flex;align-items:center;box-sizing:border-box;flex:1 1 0;min-width:0;max-width:100%;min-height:44px;margin:0;padding:.45em .6em;font-size:.9em;line-height:1.3}", " body.lampa_view .nova-plus-root .nova-plus__bar>.nova-chip--view-icon {flex:0 0 44px;width:44px;min-width:44px;height:44px;padding:0!important}", " body.lampa_view .nova-plus-root .nova-plus__bar .nova-chip__label {min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}", " body.lampa_view .nova-plus-root .nova-plus__bar .nova-chip>svg {flex-shrink:0}", " body.lampa_view .nova-plus-root .nova-hero__meta {top:.65em;right:.65em;font-size:.78em;max-width:calc(100% - 1.3em);gap:.4em}", " body.lampa_view .nova-plus-root .nova__list .nova-card.nova-card--rowlist {display:grid;grid-template-columns:clamp(calc(100px * var(--pt-interface-scale,1)),calc(30vw * var(--pt-interface-scale,1)),calc(136px * var(--pt-interface-scale,1))) minmax(0,1fr);gap:.25em .7em;padding:.4em;margin-bottom:.6em;box-sizing:border-box}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__thumb {grid-column:1;grid-row:1 / span 2;align-self:center;width:100%;height:auto;aspect-ratio:16/9;margin:0;padding:0}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__body {grid-column:2;grid-row:1;min-width:0;padding:0}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__title {font-size:1em;line-height:1.3;margin-bottom:.3em;-webkit-line-clamp:2}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__meta {display:flex;flex-wrap:wrap;align-items:baseline;gap:.2em .45em;min-width:0;font-size:.75em;line-height:1.4;-webkit-line-clamp:unset}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-dot {display:none}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__side {grid-column:2;grid-row:2;display:flex!important;align-items:center;gap:.5em;max-width:none;min-width:0;padding:0;text-align:left;font-size:.75em}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__side .nova-card__eye {margin:0!important}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__line--body {margin-top:.35em}", "}", "/* Seasonal extensions retain native handlers; header art follows our icon grid. */", "body.lampa_view .head__logo-icon {position:relative;align-items:center;min-height:2.2em}", "body.lampa_view .head__logo-icon.head__logo-halloween {width:auto!important;min-width:2.2em;height:2.2em!important;gap:.55em}", "body.lampa_view .pt-holiday-art {display:block;position:relative;flex:0 0 2.2em;width:2.2em;height:2.2em}", "body.lampa_view .head__logo-halloween .head__logo-halloween-svg,", "body.lampa_view .head__logo-halloween .head__logo-halloween-svg svg {width:2.2em!important;height:2.2em!important}", "body.lampa_view .head__logo-halloween .head__logo-halloween-fire {top:.75em;bottom:.4em}", "body.lampa_view .head__logo-cap {top:-.4em!important;left:-.55em!important;pointer-events:none}", "body.lampa_view .head__logo-cap svg {display:block;width:1.8em!important;height:1.8em!important}", "body.lampa_view .head__logo-icon>.garland {position:absolute;width:5em!important;height:3em!important;top:-.4em!important;left:-.3em!important;opacity:.7;z-index:0!important;pointer-events:none}", "body.lampa_view .head__logo-icon>.pt-brand {position:relative;z-index:1}", "body.lampa_view .head__body {position:relative;z-index:1}", "body.lampa_view .head__actions>.head__action.halloween__button,", "body.lampa_view .head__actions>.head__action.black-friday__button,", "body.lampa_view .head__actions>.head__action.new-year__button,", "body.lampa_view .head__actions>.head__action.womens_day__button {display:flex!important;align-items:center;justify-content:center;box-sizing:border-box;flex:0 0 2.2em;width:2.2em;height:2.2em;padding:0;border:1px solid var(--pt-line);border-radius:.6em;background:var(--pt-panel);color:var(--pt-text);overflow:hidden}", "body.lampa_view .head__action.halloween__button svg,", "body.lampa_view .head__action.black-friday__button svg,", "body.lampa_view .head__action.new-year__button svg,", "body.lampa_view .head__action.womens_day__button svg {width:1.15em!important;height:1.15em!important;margin:0!important}", "body.lampa_view .halloween,body.lampa_view .womens_day {font-size:1em;line-height:1.5;color:var(--pt-text)}", "body.lampa_view .halloween__title,body.lampa_view .womens_day__title {font-size:1.35em;line-height:1.3}", "body.lampa_view .halloween__details,body.lampa_view .womens_day__details {font-size:.95em;color:var(--pt-muted)}", "body.lampa_view .black-friday,body.lampa_view .new-year {z-index:110}", "body.lampa_view .black-friday .head-backward__button,body.lampa_view .new-year .head-backward__button {border:1px solid var(--pt-line);border-radius:.6em;background:var(--pt-panel);color:var(--pt-text)}", "body.lampa_view.pt-tv .head__action.--animate {animation:none!important;background:var(--pt-panel)}", "body.lampa_view.pt-tv .head__logo-halloween-fire {animation:none!important;background:#ffc13b}", "@media(prefers-reduced-motion:reduce){body.lampa_view .head__action.--animate,body.lampa_view .head__logo-halloween-fire {animation:none!important}}", ".minimal-toolbar-label {display:none}", "body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar {display:flex;flex-wrap:nowrap;align-items:stretch;gap:.55em;white-space:normal;margin:0!important}", "body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button {display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-width:0;min-height:2.65em;margin:0;padding:.6em 1em;font-size:.9em;line-height:1.2;border:1px solid var(--pt-line);border-radius:.6em;background:var(--pt-panel);color:var(--pt-text);flex:0 1 auto}", "body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button>:not(.minimal-toolbar-label) {display:none!important}", "body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .minimal-toolbar-label {display:inline;margin:0;padding:0;background:none;font-size:1em;white-space:nowrap}", "body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button:after {display:none!important}", "body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button.focus,body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button.hover {border-color:var(--pt-accent);box-shadow:inset 0 0 0 1px var(--pt-accent)!important}", "body.lampa_view .minimal-torrent-view .watched-history {box-sizing:border-box;min-width:0;border:1px solid var(--pt-line);border-radius:.6em;background:var(--pt-panel);margin-top:.5em}", "body.lampa_view .minimal-torrent-view .watched-history.focus {border-color:var(--pt-accent);box-shadow:inset 0 0 0 1px var(--pt-accent)}", "body.lampa_view .minimal-torrent-view .watched-history:after {display:none!important}", "/* The native search overlay was transparent, showing controls over releases. */", "body.lampa_view .search-box {z-index:90!important;background:#080b10!important;box-sizing:border-box;isolation:isolate}", "@media(max-width:767px){", " body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.45em}", " body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button {min-height:44px;padding:.55em .3em;font-size:.88em}", "}", "", "/* Keep hero focus inside its paint bounds, including keyboard and remote input. */", "body.lampa_view .pt-hero__action {outline:none!important;transition-property:background-color,color!important}", "body.lampa_view .pt-hero__studio.selector {outline:none!important;transition:none!important}", "body.lampa_view .pt-hero__studio.selector.focus,body.lampa_view .pt-hero__studio.selector:focus-visible {outline:none!important;box-shadow:inset 0 0 0 2px var(--pt-accent)!important}", "", "/* Seasonal controls keep their native nodes and use the shared SVG style. */", "body.lampa_view .pt-holiday-icons {display:flex;align-items:center;gap:.35em;flex-shrink:0}", "body.lampa_view .pt-holiday-icons>.head__action {display:flex!important;align-items:center;justify-content:center;flex:0 0 2.2em;box-sizing:border-box;width:2.2em;height:2.2em;margin:0;padding:.3em;border:1px solid transparent;border-radius:.5em;background:transparent!important;color:var(--pt-accent)!important;animation:none!important;outline:none!important;box-shadow:none!important}", "body.lampa_view .pt-holiday-icons>.head__action svg {display:block;width:1.45em!important;height:1.45em!important;object-fit:contain}", "body.lampa_view .pt-holiday-icons>.head__action.focus,body.lampa_view .pt-holiday-icons>.head__action.hover,body.lampa_view .pt-holiday-icons>.head__action:hover {border-color:var(--pt-accent);background:var(--pt-high)!important}", "body.lampa_view .head__logo-halloween .pt-holiday-art {display:none}", "/* Episode grids wrap by the scaled minimum rather than a fixed poster count. */", "", "body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar>.nova-chip {min-height:44px;min-width:44px}", "body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar>.nova-chip--view-icon {width:44px;height:44px;flex-basis:44px}", "", "/* Whole poster slots leave a small gutter for the focus ring at both ends. */", "body.lampa_view .minimal-fit-posters>.items-line__body>.scroll--horizontal>.scroll__content {padding-left:var(--minimal-poster-gutter,.55em);padding-right:var(--minimal-poster-gutter,.55em)}", "body.lampa_view .items-line.minimal-posters-sized .card:not(.card--wide):not(.card--collection) {width:var(--minimal-poster-width)!important}", "body.lampa_view .minimal-fit-posters>.items-line__body {-webkit-mask-image:none!important;mask-image:none!important}", "body.lampa_view .minimal-fit-posters .mapping--line>.card+.card {margin-left:var(--minimal-poster-gap,1em)}", "body.lampa_view .minimal-fit-posters .scroll__body>.card:last-child {margin-right:0}", "", "/* The banner frame uses the reference Bigger size, independent of UI scale. */", "body.lampa_view {--pt-banner-unit:calc(clamp(14px,.94vw,18px) * 1.05)}", "body.lampa_view .pt-hero {height:clamp(calc(32 * var(--pt-banner-unit)),67vh,calc(43 * var(--pt-banner-unit)));min-height:0;max-height:none}", "@media(min-width:1100px){body.lampa_view .pt-hero {height:clamp(calc(27 * var(--pt-banner-unit)),56vh,calc(34 * var(--pt-banner-unit)))}}", "body.lampa_view.pt-desktop .pt-hero {margin-bottom:.8em}", "body.lampa_view.pt-desktop .pt-hero__image {transform:scale(1.12)}", "", "", "/* The same mark has one position, before and after the native update. */", "body.lampa_view .torrent-item .torrent-item__viewed {position:absolute;top:.85em;left:auto;right:.85em;width:1.5em;height:1.5em;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:.2em;border:1px solid var(--pt-accent);border-radius:50%;background:var(--pt-accent);color:#13232c;z-index:2;pointer-events:none}", "body.lampa_view .torrent-item__viewed svg {width:100%;height:100%}", "body.lampa_view .torrent-item .tc-right {padding-right:2em}", "", "body.lampa_view .pt-holiday-native,body.lampa_view .head__logo-cap,body.lampa_view .head__logo-icon>.garland {display:none!important}", "body.lampa_view .pt-holiday-winter {display:flex;align-items:center;justify-content:center;flex:0 0 2.2em;width:2.2em;height:2.2em;color:var(--pt-accent);pointer-events:none}", "body.lampa_view .pt-holiday-winter svg {display:block;width:1.45em;height:1.45em}", "", "/* Torrent focus belongs inside the tile; the scroll viewport cannot clip it. */", "body.lampa_view .torrent-item.focus,body.lampa_view .torrent-item.hover,body.lampa_view .torrent-list .torrent-item.tc-item.focus,body.lampa_view .torrent-list .torrent-item.tc-item:hover {outline:none!important;box-shadow:inset 0 0 0 2px var(--pt-accent)!important}", "", "/* Episode tiles share the main poster selection. Animate position only, never", "   the border or shadow; dormant hover cannot leave another TV tile selected. */", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card {background:none!important;box-shadow:none!important;transform:none!important;transition:none!important}", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card__thumb {position:relative;transform:none;box-shadow:none!important;transition:transform .2s!important;will-change:auto}", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card__thumb:after {content:''!important;display:block!important;position:absolute;inset:0!important;width:auto!important;height:auto!important;margin:0!important;padding:0!important;transform:none!important;background:transparent!important;opacity:1!important;transition:none!important;z-index:5;border:2px solid transparent;border-radius:inherit;box-sizing:border-box!important;pointer-events:none}", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card.focus .nova-card__thumb,body.lampa_view .nova-plus-root .nova__list--grid .nova-card.hover .nova-card__thumb {transform:translateY(-.2em) scale(1.045);box-shadow:0 0 .85em rgba(173,217,229,.4),0 0 1.8em rgba(173,217,229,.22)!important}", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card.focus .nova-card__thumb:after,body.lampa_view .nova-plus-root .nova__list--grid .nova-card.hover .nova-card__thumb:after {border-color:var(--pt-accent)}", "body.lampa_view .nova-plus-root .nova-card.focus .nova-card__title,body.lampa_view .nova-plus-root .nova-card.hover .nova-card__title {color:var(--pt-accent)}", "body.lampa_view.pt-tv .nova-plus-root .nova__list--grid .nova-card.hover:not(.focus) .nova-card__thumb {transform:none!important;box-shadow:none!important}", "body.lampa_view.pt-tv .nova-plus-root .nova__list--grid .nova-card.hover:not(.focus) .nova-card__thumb:after {border-color:transparent!important}", "body.lampa_view.pt-tv .nova-plus-root .nova-card.hover:not(.focus) .nova-card__title {color:var(--pt-text)}", "", "/* The same native menu becomes a dock only when the native preference is on. */", "body.lampa_view.pt-menu-pinned {--pt-menu-width:min(16em,28vw)}", "body.lampa_view.pt-menu-pinned .head__menu-icon {display:none!important}", "body.lampa_view.pt-menu-pinned .wrap__left,body.lampa_view.menu--always.pt-menu-pinned .wrap__left {top:3.6em!important;bottom:0!important;left:0!important;width:var(--pt-menu-width)!important;height:calc(100% - 3.6em)!important;max-height:none!important;padding:.7em .35em!important;border:0;border-right:1px solid var(--pt-line);border-radius:0;box-shadow:none;visibility:visible!important;opacity:1!important;pointer-events:auto;transition:none}", "body.lampa_view.pt-menu-pinned .wrap__left>.scroll {height:100%!important;max-height:100%!important}", "body.lampa_view.pt-menu-pinned .wrap__left>.scroll>.scroll__content {height:100%!important;max-height:100%!important}", "body.lampa_view.pt-menu-pinned .wrap {width:100%!important;max-width:100%}", "body.lampa_view.pt-menu-pinned .wrap__content {min-width:0;box-sizing:border-box;flex:0 0 auto;width:calc(100% - var(--pt-menu-width))!important;max-width:calc(100% - var(--pt-menu-width))!important;margin-left:var(--pt-menu-width)!important}", "body.lampa_view.pt-menu-pinned .pt-hero,body.lampa_view.pt-menu-pinned .items-line {width:94%;max-width:94%!important;margin-left:auto!important;margin-right:auto!important}", "body.lampa_view.pt-menu-pinned .menu__text {white-space:normal}", "body.lampa_view.pt-mobile.pt-menu-pinned {--pt-menu-width:min(14em,38vw)}", "body.lampa_view.pt-mobile.pt-menu-pinned .wrap__left {bottom:5.5em!important;height:calc(100% - 9.1em)!important}", "", "body.lampa_view .card:not(.focus):not(.hover):not(.pt-card-pointer):not(.pt-card-touch) .pt-series-status {display:none}", "", "/* Header controls keep their boxes when focused. Draw outside the avatar so", "   its image cannot cover the remote/keyboard focus indicator. */", "body.lampa_view .head__body {box-sizing:border-box;min-width:0}", "body.lampa_view .head__actions {flex-shrink:0}", "body.lampa_view .head__menu-icon,body.lampa_view .head__backward {position:relative;align-self:center;top:auto;left:auto;transform:none!important;transition:none!important}", "body.lampa_view .head__menu-icon svg {display:block;flex:none;margin:0!important;position:static!important;transform:none!important}", "/* Header focus stays inside the control, matching Menu, with no second ring. */", "body.lampa_view .head__menu-icon,body.lampa_view .head__backward,body.lampa_view .head__action.open--search,body.lampa_view .head__action.open--profile,body.lampa_view .head__action.open--settings,body.lampa_view .pt-holiday-icons>.head__action {outline:0 solid transparent!important;outline-offset:0!important;box-shadow:none!important;animation:none!important;transition:none!important;transform:none!important;border:1px solid var(--pt-line)!important}", "body.lampa_view .head__action.open--profile {padding:0!important}", "body.lampa_view .head__menu-icon.focus,body.lampa_view .head__menu-icon:focus-visible,body.lampa_view .head__backward.focus,body.lampa_view .head__backward:focus-visible,", "body.lampa_view .head__action.open--search.focus,body.lampa_view .head__action.open--profile.focus,body.lampa_view .head__action.open--settings.focus,body.lampa_view .head__action.open--search:focus-visible,body.lampa_view .head__action.open--profile:focus-visible,body.lampa_view .head__action.open--settings:focus-visible,", "body.lampa_view .pt-holiday-icons>.head__action.focus,body.lampa_view .pt-holiday-icons>.head__action:focus-visible,", "body.lampa_view:not(.pt-tv) .head__menu-icon:hover,body.lampa_view:not(.pt-tv) .head__backward:hover,body.lampa_view:not(.pt-tv) .head__action.open--search:hover,body.lampa_view:not(.pt-tv) .head__action.open--profile:hover,body.lampa_view:not(.pt-tv) .head__action.open--settings:hover,", "body.lampa_view:not(.pt-tv) .pt-holiday-icons>.head__action:hover {border-color:var(--pt-accent)!important;background:var(--pt-high)!important;color:var(--pt-text)}", "body.lampa_view .head__action.open--search.focus:after,body.lampa_view .head__action.open--search:focus-visible:after {color:var(--pt-text)}", "body.lampa_view .menu__item {min-width:0;box-sizing:border-box}", "body.lampa_view .menu__text {flex:1;min-width:0;white-space:normal!important;overflow-wrap:break-word;line-height:1.35;max-height:none;text-overflow:clip}", "", "/* Android WebView can rasterize white inset focus shadows as a solid fill.", "   Use a real, constant-width border for primary TV controls instead. */", "body.lampa_view.pt-tv .pt-hero__action {appearance:none;-webkit-appearance:none;box-sizing:border-box;border:2px solid transparent;padding:calc(.85em - 1px) calc(1.15em - 1px);background:var(--pt-accent)!important;color:#13232c!important;box-shadow:none!important;transition:none!important}", "body.lampa_view.pt-tv .pt-hero__action--secondary {background:#212a35dd!important;color:#d4dce3!important}", "body.lampa_view.pt-tv .pt-hero__action.focus,body.lampa_view.pt-tv .pt-hero__action:focus-visible {border-color:#fff!important;box-shadow:none!important;outline:none!important}", "body.lampa_view.pt-tv .pt-hero__action.hover:not(.focus):not(:focus-visible) {border-color:transparent!important;box-shadow:none!important}", 'body.lampa_view.pt-tv .minimal-anime-tab[aria-selected="true"] {box-shadow:0 0 .35em rgba(173,217,229,.85),0 0 1.2em rgba(173,217,229,.65),0 0 2.4em rgba(173,217,229,.42)!important;transition:none!important}', "body.lampa_view.pt-tv .full-start__button.button--alc-auto.focus,body.lampa_view.pt-tv .alc-ap__play.focus {background:var(--pt-accent)!important;color:#13232c!important;border-color:#fff!important;box-shadow:none!important;outline:none!important}", "", "/* TV uses the same full-frame artwork and text composition as desktop. */", "body.lampa_view.pt-tv .pt-hero__image {object-position:right center}", "body.lampa_view.pt-tv .pt-hero__body {top:auto;bottom:7em;transform:none}", "body.lampa_view.pt-tv .pt-hero__logo {max-height:7em;margin-bottom:1.4em}", "body.lampa_view.pt-tv .pt-hero__overview {-webkit-line-clamp:3}", "body.lampa_view.pt-tv.pt-menu-pinned .wrap__left {top:4.5em!important;height:calc(100% - 4.5em)!important}", "", "body.lampa_view .nova-plus-root .nova-hero__meta {background:rgba(8,11,16,.52);padding:.2em .4em}", "body.lampa_view .nova-plus-root .nova-hero__runtime {position:absolute;right:0;top:calc(100% + .45em);padding:.2em .45em;white-space:nowrap;border-radius:.35em;background:rgba(8,11,16,.52);color:var(--pt-text);font-size:.8em;line-height:1.3}", "body.lampa_view.pt-tv .minimal-comments-nav {display:none!important}", "body.lampa_view .nova-episode-nav {display:flex;justify-content:flex-end;gap:.4em;margin-bottom:.5em}", "body.lampa_view .nova-episode-nav button {width:2.1em;height:2.1em;display:flex;align-items:center;justify-content:center;border:1px solid var(--pt-line);border-radius:.6em;background:#ffffff04;color:var(--pt-muted);cursor:pointer}", "body.lampa_view .nova-episode-nav svg {width:1em;height:1em}", "body.lampa_view.pt-tv .nova-episode-nav {display:none!important}", "body.lampa_view.pt-favorites .category-full>.card,body.lampa_view.pt-favorites .mapping--grid>.card {width:calc(12.5% * var(--pt-interface-scale,1))!important}", "@media(max-width:650px){body.lampa_view.pt-favorites .category-full>.card,body.lampa_view.pt-favorites .mapping--grid>.card {width:33.333%!important}}", "", "/* Episode arrows share the collection buttons' pointer and keyboard focus. */", "body.lampa_view .nova-episode-nav button:hover,body.lampa_view .nova-episode-nav button:focus-visible,body.lampa_view .nova-episode-nav button.focus,body.lampa_view .nova-episode-nav button.hover {border-color:var(--pt-accent);background:#add9e512;color:var(--pt-accent);box-shadow:0 0 0 1px var(--pt-accent);outline:none}", "", "/* Fixed pixel focus geometry is identical on TV and desktop, independent of", "   native focus themes and the interface font scale. */", "body.lampa_view .card.focus .card__view:after,body.lampa_view .card.hover .card__view:after {border:2px solid var(--pt-accent)!important;top:0!important;left:0!important;right:0!important;bottom:0!important;outline:none!important;box-shadow:none!important;border-radius:.5em!important}", "body.lampa_view .head__menu-icon:before,body.lampa_view .head__menu-icon:after,body.lampa_view .head__backward:before,body.lampa_view .head__backward:after,body.lampa_view .head__action.open--profile:before,body.lampa_view .head__action.open--profile:after,body.lampa_view .head__action.open--search:before,body.lampa_view .pt-holiday-icons>.head__action:before,body.lampa_view .pt-holiday-icons>.head__action:after {content:none!important;display:none!important}", "body.lampa_view .head__menu-icon,body.lampa_view .head__backward,body.lampa_view .head__action.open--search,body.lampa_view .head__action.open--profile,body.lampa_view .head__action.open--settings,body.lampa_view .pt-holiday-icons>.head__action {border-width:2px!important}", "body.lampa_view .menu__item.focus,body.lampa_view .menu__item.hover,body.lampa_view .menu__item.traverse {background:#20272e!important;color:var(--pt-text)!important;outline:none!important;box-shadow:inset 2px 0 var(--pt-accent)!important;animation:none!important;transform:none!important}", "body.lampa_view .menu__ico [stroke] {stroke:currentColor!important}", 'body.lampa_view .menu__ico [fill]:not([fill="none"]) {fill:currentColor!important}', "body.lampa_view .menu__item .menu__text {color:inherit!important}", "", "/* RTL is scoped to plugin controls. Content titles and saved values retain their text. */", "body.lampa_view.pt-rtl .settings__content,body.lampa_view.pt-rtl .selectbox__content,body.lampa_view.pt-rtl .nova-plus__bar,body.lampa_view.pt-rtl .minimal-detail-facts {direction:rtl;text-align:start}", "body.lampa_view.pt-rtl .pt-hero__body {direction:rtl;text-align:right}", "body.lampa_view.pt-rtl .pt-hero__meta,body.lampa_view.pt-rtl .pt-watch-progress {direction:rtl}", "body.lampa_view.pt-rtl .minimal-back--overlay svg {transform:scaleX(-1)}", "body.lampa_view.pt-rtl .minimal-settings .settings-param__value {margin-left:0;margin-right:auto}", "", "/* Episode information comes from one TMDB season book, shared by providers. */", "body.lampa_view .nova-plus-root .nova-card__overview {font-size:.82em;line-height:1.55;color:var(--pt-muted);margin-top:.65em;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:5;overflow:hidden;overflow-wrap:break-word}", "body.lampa_view .minimal-online-option {position:relative;margin:.35em .6em;padding:.8em 2.8em .8em 1em;border:1px solid var(--pt-line);border-radius:.9em;background:var(--pt-panel);min-height:2.8em;box-sizing:border-box}", "body.lampa_view .minimal-online-option--selected {border-color:#add9e560;background:var(--pt-high)}", "body.lampa_view .minimal-online-option.focus {border-color:var(--pt-accent);background:var(--pt-high);color:var(--pt-text)}", "body.lampa_view .minimal-online-option .selectbox-item__title {white-space:normal;overflow-wrap:break-word;line-height:1.35}", "body.lampa_view .minimal-choice-check {position:absolute;right:.85em;top:50%;transform:translateY(-50%);width:1.1em;height:1.1em;color:var(--pt-accent)}", "body.lampa_view.pt-rtl .minimal-online-option {padding-right:1em;padding-left:2.8em}", "body.lampa_view.pt-rtl .minimal-choice-check {right:auto;left:.85em}", "body.lampa_view .pt-hero__studio {pointer-events:auto;cursor:pointer}", "body.lampa_view.pt-tv .pt-hero__studio {pointer-events:none;cursor:default}", "body.lampa_view:not(.pt-tv) .pt-hero__studio.selector:hover,body.lampa_view:not(.pt-tv) .pt-hero__studio.selector:focus-visible {outline:none!important;box-shadow:none!important;filter:var(--pt-studio-tone,brightness(1)) drop-shadow(0 0 .45em var(--pt-accent))}", "body.lampa_view .minimal-online-option:after {display:none!important}", "", "body.lampa_view .nova-plus-root .nova-chip--unavailable {opacity:.65;cursor:default;pointer-events:none}", "", "/* Episode facts use the same catalogue coordinates as native file playback. */", "body.lampa_view .torrent-serial .minimal-episode-overview {clear:both;padding-top:.65em;color:var(--pt-muted);font-size:.85em;line-height:1.5;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;overflow-wrap:break-word}", "body.lampa_view .torrent-serial.minimal-has-summary .torrent-serial__content {padding-bottom:1.5em}", "", "body.lampa_view .minimal-studio-heading {box-sizing:border-box;width:100%;padding:1.2em 5vw 1.5em;min-height:5em;display:flex;align-items:center;justify-content:center}", "body.lampa_view .minimal-studio-heading img {display:block;max-width:min(65vw,22em);width:auto;height:auto;max-height:5em;object-fit:contain}", "body.lampa_view .minimal-studio-heading img[hidden],body.lampa_view .minimal-studio-heading h1[hidden] {display:none}", "body.lampa_view .minimal-studio-heading h1 {font-size:1.4em;margin:0}", "body.lampa_view .minimal-studio-catalogue .company-start {display:none}", "body.lampa_view .minimal-filter-panel .selectbox-item {position:relative;justify-content:flex-start;text-align:start;margin:0;border-radius:.5em;padding:.85em 1.3em;box-shadow:none}", "body.lampa_view .minimal-filter-panel .selectbox-item__title {flex:1;min-width:0;line-height:1.4}", "body.lampa_view .minimal-filter-panel .selectbox-item__checkbox {position:static;flex:0 0 1.1em;width:1.1em;height:1.1em;margin:0;margin-inline-start:auto;transform:none}", "body.lampa_view .minimal-filter-panel .minimal-filter-choice .selectbox-item__subtitle {display:none}", "body.lampa_view .minimal-filter-panel .selectbox-item.focus {box-shadow:inset 0 0 0 1px var(--pt-accent)!important}", "body.lampa_view .minimal-filter-panel .minimal-filter-run {margin:.8em 1.1em .4em;width:auto;justify-content:center;text-align:center}", "body.lampa_view.pt-theme-glass .minimal-filter-panel .minimal-filter-run {background:var(--pt-glass-button);color:var(--pt-text)}", "", "/* Native file identity/actions with Online's list proportions. */", "body.lampa_view .torrent-files .torrent-serial {box-sizing:border-box;align-items:center;padding:.6em .75em;gap:1em}", "body.lampa_view .torrent-files .torrent-serial__img {width:12em;height:6.75em;min-height:0;align-self:center;object-fit:cover;border-radius:.8em}", "body.lampa_view .torrent-files .torrent-serial__content {display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:.5em .8em;min-width:0;padding:0;flex:1}", "body.lampa_view .torrent-files .torrent-serial.minimal-has-summary .torrent-serial__content {padding-bottom:0}", "body.lampa_view .torrent-files .torrent-serial__body {grid-column:1;grid-row:1;float:none;min-width:0;max-width:100%}", "body.lampa_view .torrent-files .torrent-serial__title {font-size:1.3em;line-height:1.3;margin:0;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}", "body.lampa_view .torrent-files .torrent-serial__line {display:flex;flex-direction:row;flex-wrap:wrap;gap:.5em;font-size:.9em;line-height:1.4;padding:0;margin:.3em 0 0}", "body.lampa_view .torrent-files .torrent-serial__line span+span:before {content:none}", "body.lampa_view .torrent-files .torrent-serial__line span {margin:0}", "body.lampa_view .torrent-files .torrent-serial__detail {grid-column:2;grid-row:1/4;float:none;align-self:center;text-align:right;margin:0}", "body.lampa_view .torrent-files .torrent-serial__size,body.lampa_view .torrent-files .torrent-serial__exe {font-size:.9em;line-height:1.4}", "body.lampa_view .torrent-files .torrent-serial .time-line {grid-column:1;grid-row:2;position:static;inset:auto;width:100%;margin:0}", "body.lampa_view .torrent-files .torrent-serial .minimal-episode-overview {grid-column:1;grid-row:3;padding:0;clear:none;font-size:.85em;line-height:1.5}", "body.lampa_view .torrent-files .torrent-serial__clear {display:none}", "body.lampa_view.pt-mobile .torrent-files .torrent-serial {grid-template-columns:clamp(90px,30vw,136px) minmax(0,1fr);gap:.6em;padding:.5em}", "body.lampa_view.pt-mobile .torrent-files .torrent-serial__img {width:100%;height:auto;aspect-ratio:16/9;align-self:center}", "body.lampa_view.pt-mobile .torrent-files .torrent-serial__title {font-size:1.05em}", "body.lampa_view.pt-mobile .torrent-files .torrent-serial__content {gap:.35em}", "body.lampa_view.pt-mobile .torrent-files .torrent-serial__detail {grid-column:1;grid-row:4;display:flex;gap:.6em;text-align:start;font-size:.75em}", "body.lampa_view.pt-mobile .torrent-files .torrent-serial__line {font-size:.72em}", "", "/* Availability follows confirmed provider results, independent of selection. */", "body.lampa_view .nova-source-option__status {display:inline-block;flex:0 0 auto;width:.55em;height:.55em;margin-inline-start:.65em;border-radius:50%;background:#fff;box-shadow:0 0 .3em #ffffffb3,0 0 .65em #ffffff66;vertical-align:middle}", "body.lampa_view .nova-source-option .selectbox-item__title>.nova-source-option__status {position:absolute;inset-inline-end:3.6em;top:50%;transform:translateY(-50%);margin:0}", "body.lampa_view .nova-source-option {padding-inline-end:5.2em!important}", "", "", "/* Native immediate/shift temporarily disables transitions; keep that contract on TV. */", "body.lampa_view.pt-tv .minimal-paged-row .scroll__body.notransition,body.lampa_view.pt-tv .minimal-paged-row .scroll__body.transition-reset {transition:none!important;-webkit-transition:none!important}", "", "/* Studio grids keep each complete row centered under their heading. */", "body.lampa_view .minimal-studio-catalogue .category-full,body.lampa_view .minimal-studio-catalogue .mapping--grid {justify-content:center}", "", "body.lampa_view.pt-mobile .card:not(.pt-card-touch) .pt-card-watch,body.lampa_view.pt-mobile .card:not(.pt-card-touch) .pt-series-status {visibility:hidden!important}", "", "body.lampa_view.pt-mobile .card__title,body.lampa_view.pt-mobile .card__age {cursor:pointer;pointer-events:auto}", "/* Touch layouts retain account controls and fit panels to the visual viewport. */", "body.lampa_view .head__action.open--profile {display:flex!important;align-items:center;justify-content:center}", "body.lampa_view .head__action.open--settings {border:1px solid var(--pt-line);border-radius:50%;background:var(--pt-panel)}", "body.lampa_view.pt-mobile .head__body {gap:.4em;padding-left:.65em;padding-right:.65em}", "body.lampa_view.pt-mobile .head__actions {display:flex!important;gap:.35em;flex-shrink:0}", "body.lampa_view.pt-mobile .head__logo-icon {margin-right:.4em!important}", "body.lampa_view .settings__content,body.lampa_view .selectbox__content {max-height:calc(100vh - 1em)!important;max-height:calc(100dvh - 1em)!important;box-sizing:border-box}", "body.lampa_view .settings__body,body.lampa_view .selectbox__body {min-height:0;overflow:hidden;flex:1 1 auto}", "body.lampa_view .settings__body>.scroll,body.lampa_view .selectbox__body>.scroll {min-height:0;max-height:100%;touch-action:pan-y}", "@media (pointer:coarse) {", " body.lampa_view:not(.pt-menu-pinned) .head__body {max-width:100%;padding-left:.65em;padding-right:.65em}", " body.lampa_view .minimal-detail-header,body.lampa_view .minimal-detail-columns {width:calc(100% - 2em);max-width:calc(100% - 2em)}", "}", "/* Scaled action labels may wrap; the hit area follows the enlarged controls. */", "body.lampa_view .minimal-detail-identity .full-start__button {height:auto;flex-shrink:0}", "body.lampa_view .minimal-detail-identity .full-start__button>span {white-space:normal;overflow-wrap:anywhere;text-align:center}", "body.lampa_view .minimal-detail-header .full-start-new__right {min-width:0}", "", "/* Explicit tablet profile keeps a wide card layout while retaining touch targets. */", "body.lampa_view.pt-tablet .head__actions {display:flex!important;gap:.35em;flex-shrink:0}", "body.lampa_view.pt-tablet .head__action {min-width:44px;min-height:44px}", "body.lampa_view.pt-tablet .head__action.open--settings {display:flex!important;align-items:center;justify-content:center}", "body.lampa_view.pt-tablet:not(.pt-menu-pinned) .head__body {max-width:100%;padding-left:.65em;padding-right:.65em}", "body.lampa_view.pt-tablet .minimal-detail-header,body.lampa_view.pt-tablet .minimal-detail-columns {width:calc(100% - 2em);max-width:calc(100% - 2em)}", "body.lampa_view.pt-tablet .card__title,body.lampa_view.pt-tablet .card__age {cursor:pointer;pointer-events:auto}", "body.lampa_view.pt-tablet .card:not(.pt-card-touch) .pt-card-watch,body.lampa_view.pt-tablet .card:not(.pt-card-touch) .pt-series-status {visibility:hidden!important}", "", "/* Personal sizing must grow the content pane instead of clipping its controls. */", "body.lampa_view.pt-personal-enlarged .pt-hero__body {flex-shrink:0;max-height:none!important}", "body.lampa_view.pt-personal-enlarged .pt-hero__actions {flex-wrap:wrap}", "body.lampa_view.pt-personal-enlarged .head__body {min-height:100%}", "body.lampa_view .full-start-new__buttons>.selector {box-sizing:border-box;align-items:center;justify-content:center}", "body.lampa_view.pt-personal-enlarged .minimal-detail-identity .full-start-new__buttons {grid-template-columns:repeat(auto-fit,minmax(3.5em,1fr))}", "", "/* Native windows stay slightly smaller than Lampa at the same screen size. */", "body.lampa_view {--pt-native-window-font:max(10px,calc(1.117vw * var(--pt-native-interface-scale,1)))}", "body.lampa_view .extensions,", "body.lampa_view .selectbox:not(.minimal-filter-panel) .selectbox__content,", "body.lampa_view .modal:not(.minimal-torrent-files) .modal__content {font-size:min(1em,var(--pt-native-window-font))!important}", "body.lampa_view .selectbox__content,body.lampa_view .modal__content {font-size:1em}", "body.lampa_view .modal__title {font-size:1.4em;line-height:1.3}", "body.lampa_view.pt-mobile .minimal-filter-panel .selectbox__content,body.lampa_view.pt-mobile .minimal-torrent-files .modal__content {font-size:calc(14px * var(--pt-interface-scale,1))}", "body.lampa_view .extensions {background:var(--pt-bg);color:var(--pt-text)}", "body.lampa_view .extensions__item,body.lampa_view .extensions__block-add {background:var(--pt-panel);border:1px solid var(--pt-line);box-sizing:border-box}", "body.lampa_view .pt-hero__artwork,body.lampa_view .pt-hero__branding {cursor:pointer}", "body.lampa_view.pt-detail-poster .minimal-detail-identity .full-start-new__poster {display:block;width:min(100%,15em);margin:0 auto 1em}", "body.lampa_view.pt-detail-poster .minimal-detail-identity .minimal-detail-logo,body.lampa_view.pt-detail-poster .minimal-detail-identity>.full-start-new__title {display:none!important}", "body.lampa_view.card--no-cover .minimal-detail-shade {display:none}", "body.lampa_view .pt-studio-white {--pt-studio-tone:brightness(0) invert(1);filter:var(--pt-studio-tone)}", "/* A proxy without CORS cannot be classified safely; retain its colours. */", "body.lampa_view .pt-studio-unreadable {background:rgba(255,255,255,.7);border-radius:.15em}", "body.lampa_view .nova-initial-loading .nova__hero {display:none!important}", "", "/* Keep the mobile detail artwork at banner proportions, independent of content height. */", "body.lampa_view.pt-mobile .full-start__background {height:auto!important;aspect-ratio:16/9;object-fit:contain;object-position:center top;transform:none!important}", "body.lampa_view.pt-mobile .minimal-detail-shade {height:auto!important;aspect-ratio:16/9;bottom:auto}", "", "/* Mobile cover is a separate image above the identity and actions. */", "body.lampa_view.pt-mobile .minimal-detail-header>.full-start__background {position:relative!important;z-index:0;left:auto!important;top:auto!important;margin:0 0 1em;opacity:1!important;-webkit-mask-image:none!important;mask-image:none!important}", "body.lampa_view.pt-mobile .minimal-detail-header>.minimal-detail-shade {display:none}", "body.lampa_view.pt-mobile .minimal-detail-header {padding-top:0}", "", "/* Selected sources remain legible independently of the native active colour. */", "body.lampa_view .search-source.active {background:#555b64!important;color:#f5f5f7!important;border-color:#ffffff45}", "body.lampa_view .search-source.active .search-source__name {color:inherit!important}", "body.lampa_view .extensions {background:var(--pt-bg)!important;min-height:100vh;isolation:isolate}", "/* Contained landscape artwork starts at the top when the window narrows. */", "body.lampa_view:not(.pt-mobile) .pt-hero__image {object-position:right top}", "body.lampa_view.pt-desktop .pt-hero {height:min(56vh,calc(34 * var(--pt-banner-unit)),calc((100vw - 6em) * .5625))}", "/* Mobile identity overlaps the soft cover edge, without enlarging the artwork. */", "body.lampa_view.pt-mobile .minimal-detail-header>.full-start__background {margin:0; border-radius:1em 1em 0 0;-webkit-mask-image:linear-gradient(#000 0%,#000 55%,transparent 100%)!important;mask-image:linear-gradient(#000 0%,#000 55%,transparent 100%)!important}", "body.lampa_view.pt-mobile:not(.card--no-cover):not(.pt-detail-poster) .minimal-detail-header>.full-start__background.loaded~.full-start-new__body {position:relative;margin-top:-3.5em}", "body.lampa_view.pt-mobile .minimal-detail-identity .minimal-detail-logo {width:auto;max-width:82%;height:4em;max-height:4em;margin:0 auto 1.2em;object-fit:contain;filter:drop-shadow(0 2px 5px #000)}", "", "/* Progress is text over the page, not a separate glass surface on phones. */", "body.lampa_view.pt-mobile .card .pt-card-watch,", "body.lampa_view.pt-mobile .card .pt-card-watch .card-watched,", "body.lampa_view.pt-mobile .card .pt-card-watch .card-watched__inner,", "body.lampa_view.pt-mobile .card .pt-card-watch .card-watched__body,", "body.lampa_view.pt-mobile .card .pt-card-watch .card-watched__item {background:transparent!important;border:0!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}", "", "body.lampa_view .full-start-new__details>[hidden],", "body.lampa_view .full-start-new__details>[hidden]+.full-start-new__split {display:none!important}", "", "", "body.lampa_view .nova-plus-root .nova-chip__stack+svg {margin-inline-start:.75em;align-self:center}", "body.lampa_view .nova-plus-root .nova-chip__stack {min-width:0}", "body.lampa_view .minimal-season-section {margin:1.1em 1.2em .55em;padding-top:.8em;border-top:1px solid var(--pt-line);font-size:.85em;line-height:1.4;color:var(--pt-muted);white-space:normal;overflow-wrap:anywhere}", "body.lampa_view .minimal-season-section:first-child {margin-top:.4em;padding-top:0;border-top:0}", "", "body.lampa_view .nova-card__part {font-size:.8em;line-height:1.3;padding:.15em .45em;border-radius:.35em;background:#ffffff18;color:inherit}", "body.lampa_view .nova-plus-root .nova-hero__season-name {width:max-content;max-width:min(24em,58vw)}", "", "", "", "", "body.lampa_view .minimal-anime-franchise {margin-top:1em}", "body.lampa_view .minimal-anime-franchise__button {display:inline-flex;align-items:center;gap:1em;max-width:100%;padding:.65em 1em;border:1px solid var(--pt-line);border-radius:2em;background:var(--pt-panel);color:var(--pt-text);font:inherit;cursor:pointer}", "body.lampa_view .minimal-anime-franchise__button.focus,body.lampa_view .minimal-anime-franchise__button:hover,body.lampa_view .minimal-anime-franchise__button:focus-visible {outline:1px solid var(--pt-text);background:var(--pt-panel-hover,var(--pt-panel))}", "body.lampa_view .minimal-anime-franchise__item {padding:.65em 1em}", "body.lampa_view .minimal-anime-franchise__item .selectbox-item__title {white-space:normal;line-height:1.3}", "body.lampa_view .minimal-anime-franchise__item .selectbox-item__subtitle {font-size:.8em;margin-top:.2em}", "", "body.lampa_view .nova-plus-root .nova-card__labels {position:absolute;top:.5em;left:.5em;right:.5em;bottom:auto;display:flex;flex-wrap:wrap;gap:.4em;align-items:center;justify-content:flex-start;z-index:3;pointer-events:none}", "body.lampa_view .nova-plus-root .nova-card__labels .nova-card__num,body.lampa_view .nova-plus-root .nova-card__labels .nova-card__part {position:static!important;inset:auto!important;transform:none!important;width:auto!important;height:auto!important;min-width:0!important;padding:.15em .45em!important;margin:0!important;flex:0 0 auto;display:block;line-height:1.3}", "body.lampa_view .nova-plus-root .nova-card__labels .nova-card__part {background:rgba(0,0,0,.72);white-space:nowrap;font-size:.8em}", ""].join("\n");
 
   // src/online-layout.css
   var online_layout_default = ["/* Online layout owns geometry; native Nova owns selection, playback and data.", "   Both themes share the same centered column and episode sizing contract. */", "body.lampa_view .nova-plus-root.nova-plus {box-sizing:border-box;width:100%;max-width:104em;margin-left:auto;margin-right:auto;padding:1.25em 2em 3em;gap:0}", "body.lampa_view .nova-plus-root.nova-plus>.nova__hero {box-sizing:border-box}", "body.lampa_view .nova-plus-root.nova-plus>.nova-plus__strip {box-sizing:border-box;padding:.6em 0;width:100%;margin-top:1.2em}", "body.lampa_view .nova-plus-root .nova__list--row>.nova-card--wide {width:24%!important;flex:0 0 24%!important;max-width:24%!important}", "body.lampa_view .nova-plus-root .nova-chip[data-nova-label]:before {display:none}", "body.lampa_view.pt-mobile .nova-plus-root.nova-plus {max-width:42em;padding:1em 1.1em calc(6em + env(safe-area-inset-bottom,0px))}", "body.lampa_view.pt-mobile .nova-plus-root.nova-plus>.nova__hero {padding:0;flex:0 0 100%;width:100%;max-width:100%}", "body.lampa_view.pt-mobile .nova-plus-root.nova-plus>.nova__rows {width:100%;padding:1em 0 0;flex:0 0 100%;min-width:0}", "body.lampa_view.pt-mobile .nova-plus-root.nova-plus>.nova-plus__strip {padding:0;margin-top:1.2em}", "body.lampa_view.pt-mobile .nova-plus-root .nova__list--row>.nova-card--wide {width:80%!important;flex-basis:80%!important;max-width:80%!important}", "/* One grid owner: portrait mobile uses one column in both themes; TV profiles", "   set the column count together with poster slots and typography. */", "body.lampa_view .nova-plus-root .nova__list--grid:not(.nova__list--row) {display:grid!important;grid-template-columns:repeat(var(--pt-episode-columns,auto-fill),minmax(min(100%,23em),1fr));gap:1.8em 1em;margin:0}", "body.lampa_view .nova-plus-root .nova__list--grid:not(.nova__list--row)>.nova-card--wide {width:100%!important;max-width:100%!important;min-width:0;padding:0;margin:0}", "body.lampa_view.pt-mobile .nova-plus-root .nova__list--grid:not(.nova__list--row) {grid-template-columns:minmax(0,1fr)}", "/* Keep the film synopsis and ratings in the full card. Online is for choosing", "   playback: a restrained banner, source, season, audio and episode summaries. */", "/* Shared placement: view/direction, source and audio, then seasons below. */", "body.lampa_view .nova-plus-root .nova-plus__panel>[data-nova-group=season] {margin-top:1em}", "body.lampa_view .nova-plus-root [data-nova-group=season] .nova-plus__row {display:flex;flex-wrap:wrap;gap:.5em}", "body.lampa_view .nova-plus-root [data-nova-group=season] .nova-chip {margin:0}", "body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar {display:flex;flex-wrap:wrap;align-items:stretch;gap:.5em}", "body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar>.nova-toolbar__label {display:none}", "body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar>.nova-chip {box-sizing:border-box;min-width:0;margin:0;min-height:44px}", "body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar>.nova-chip--view-icon {flex:0 0 44px;width:44px}", "body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar>[data-nova-focus=source],body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar>[data-nova-focus=voice],body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar>[data-nova-status=voice],body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar>[data-nova-focus=movievoice] {flex:1 1 0;max-width:none}", "body.lampa_view.pt-mobile .nova-plus-root [data-nova-group=season] .nova-chip {min-height:44px;box-sizing:border-box;max-width:100%}", "body.lampa_view.pt-mobile .nova-plus-root .nova-chip__label {min-width:0;overflow:hidden;text-overflow:ellipsis}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-hero__meta {background:#18181866;text-shadow:none;font-size:.8em;gap:.5em}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-hero__season-label,body.lampa_view.pt-theme-glass .nova-plus-root .nova-hero__season-name {background:#18181866!important}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-hero .nova-btn {font-size:.95em;font-weight:500;padding:.6em .9em;min-height:2.5em;box-sizing:border-box}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-hero__title--logo>img {max-height:2.5em;max-width:75%}", "body.lampa_view.pt-theme-glass.pt-mobile .nova-plus-root .nova-hero__bg {padding-top:62%}", "body.lampa_view.pt-theme-glass.pt-mobile .nova-plus-root .nova-hero__title--logo {margin-bottom:.6em}", "body.lampa_view.pt-theme-glass.pt-mobile .nova-plus-root .nova-hero__body {padding:.9em}", "body.lampa_view.pt-mobile .nova-plus-root .nova__list--grid:not(.nova__list--row)>.nova-card--wide {flex:0 0 100%!important;padding:0;margin:0}", "body.lampa_view.pt-mobile .nova-plus-root .nova__list--grid .nova-card__thumb {padding-top:56.25%;border-radius:1em}", "body.lampa_view.pt-mobile .nova-plus-root .nova__list--grid .nova-card__body {padding:.65em .05em 0}", "body.lampa_view.pt-mobile .nova-plus-root .nova-card__title {font-size:1.08em;line-height:1.4;-webkit-line-clamp:2}", "body.lampa_view.pt-mobile .nova-plus-root .nova-card__overview {font-size:.88em;line-height:1.55;-webkit-line-clamp:5;margin-top:.65em}", "body.lampa_view.pt-mobile .nova-plus-root .nova-card__head {font-size:.8em;line-height:1.4}", "@media(min-width:700px) and (orientation:landscape){body.lampa_view.pt-mobile .nova-plus-root .nova__list--grid:not(.nova__list--row) {grid-template-columns:repeat(2,minmax(0,1fr))}}", "", "/* A cached image is visible on the first paint, without replaying a fade on", "   every new DOM mount. New network work remains lazy and bounded. */", "body.lampa_view .card__img,body.lampa_view .pt-hero__image,body.lampa_view .nova-plus-root .nova-card__thumb img,body.lampa_view .nova-plus-root .nova-hero__bg img {transition:none!important;-webkit-transition:none!important}", ""].join("\n");
@@ -13988,14 +14515,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         ctx.drawImage(image2, 0, 0, 6, 6);
         var pixels = ctx.getImageData(0, 0, 6, 6).data,
           colors = [];
-        var _loop10 = function _loop10() {
+        var _loop11 = function _loop11() {
             var sum = [0, 0, 0];
             var count = 0;
             for (var _y = 0; _y < 6; _y++) for (var _x3 = half * 3; _x3 < half * 3 + 3; _x3++) {
-              var _i1 = (_y * 6 + _x3) * 4;
-              if (pixels[_i1 + 3] < 128) continue;
+              var _i14 = (_y * 6 + _x3) * 4;
+              if (pixels[_i14 + 3] < 128) continue;
               count++;
-              for (var _k2 = 0; _k2 < 3; _k2++) sum[_k2] += pixels[_i1 + _k2];
+              for (var _k2 = 0; _k2 < 3; _k2++) sum[_k2] += pixels[_i14 + _k2];
             }
             if (!count) return {
               v: void 0
@@ -14013,7 +14540,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           },
           _ret6;
         for (var half = 0; half < 2; half++) {
-          _ret6 = _loop10();
+          _ret6 = _loop11();
           if (_ret6) return _ret6.v;
         }
         canvas.width = 64;
@@ -14038,7 +14565,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var light = 0;
         for (var i = 0; i < out.length; i += 4) light += out[i] + out[i + 1] + out[i + 2];
         var gain = Math.min(2.4, Math.max(0.7, 110 / Math.max(1, light / (64 * 36 * 3))));
-        for (var _i0 = 0; _i0 < out.length; _i0++) if (_i0 % 4 !== 3) out[_i0] = Math.min(255, out[_i0] * gain);
+        for (var _i13 = 0; _i13 < out.length; _i13++) if (_i13 % 4 !== 3) out[_i13] = Math.min(255, out[_i13] * gain);
         frame.data.set(out);
         ctx.putImageData(frame, 0, 0);
         var scene = canvas.toDataURL("image/png"),
@@ -14289,11 +14816,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         return cacheControl(L).clear("quality");
       }
     });
-    var _loop11 = function _loop11() {
-      var _arr8$_i = _slicedToArray(_arr8[_i10], 3),
-        type = _arr8$_i[0],
-        name = _arr8$_i[1],
-        description = _arr8$_i[2];
+    var _loop12 = function _loop12() {
+      var _arr9$_i = _slicedToArray(_arr9[_i15], 3),
+        type = _arr9$_i[0],
+        name = _arr9$_i[1],
+        description = _arr9$_i[2];
       L.SettingsApi.addParam({
         component: "lampa_view",
         param: {
@@ -14310,8 +14837,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
       });
     };
-    for (var _i10 = 0, _arr8 = [["ratings", text("Очистить кеш рейтингов"), text("Удалить сохранённые оценки. История и закладки сохранятся.")], ["quality", text("Очистить кеш качества"), text("Удалить сохранённое качество карточек каталога и заново проверить видимые карточки.")]]; _i10 < _arr8.length; _i10++) {
-      _loop11();
+    for (var _i15 = 0, _arr9 = [["ratings", text("Очистить кеш рейтингов"), text("Удалить сохранённые оценки. История и закладки сохранятся.")], ["quality", text("Очистить кеш качества"), text("Удалить сохранённое качество карточек каталога и заново проверить видимые карточки.")]]; _i15 < _arr9.length; _i15++) {
+      _loop12();
     }
   }
 
@@ -14392,8 +14919,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       if (ratings && Number.isFinite(vote) && vote > 0 && vote <= 10) entry.vote_average = vote;
       if (isAnime(c)) entry.minimal_anime = true;
       if (source(c) === "minimal_shiki") {
-        for (var _i11 = 0, _arr9 = ["episodes", "episodes_aired"]; _i11 < _arr9.length; _i11++) {
-          var field = _arr9[_i11];
+        for (var _i16 = 0, _arr0 = ["episodes", "episodes_aired"]; _i16 < _arr0.length; _i16++) {
+          var field = _arr0[_i16];
           if (Number(c[field]) >= 0) entry[field] = Number(c[field]);
         }
         if (c.status) entry.status = c.status;
@@ -14454,7 +14981,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       return document.body.matches(".pt-wheel-active,.pt-tv-busy") || document.hidden;
     };
     function pump() {
-      var _loop12 = function _loop12() {
+      var _loop13 = function _loop13() {
         var job = queue.shift();
         if (!job.listeners.some(function (l) {
           return !l.alive || l.alive();
@@ -14498,7 +15025,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
       };
       while (!paused() && running < (document.body.classList.contains("pt-tv") ? 1 : 2) && queue.length) {
-        if (_loop12()) continue;
+        if (_loop13()) continue;
       }
     }
     function fetch(c, ok, alive) {
@@ -14736,8 +15263,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }
       function expand(meta) {
         if (!alive()) return;
-        for (var _i12 = 0, _arr0 = ["name", "russian", "english", "japanese", "synonyms"]; _i12 < _arr0.length; _i12++) {
-          var field = _arr0[_i12];
+        for (var _i17 = 0, _arr1 = ["name", "russian", "english", "japanese", "synonyms"]; _i17 < _arr1.length; _i17++) {
+          var field = _arr1[_i17];
           var values = meta && meta[field];
           (Array.isArray(values) ? values : [values]).filter(Boolean).slice(0, 2).forEach(function (name) {
             return add(name);
@@ -14868,19 +15395,19 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       return String(value || "").toLowerCase().replace(/ё/g, "е").replace(/[^a-zа-я0-9\u3040-\u30ff\u3400-\u9fff]+/g, " ").trim();
     };
     var matched = false;
-    var _iterator29 = _createForOfIteratorHelper(text2.split(/[\/|]/)),
-      _step29;
+    var _iterator38 = _createForOfIteratorHelper(text2.split(/[\/|]/)),
+      _step38;
     try {
-      for (_iterator29.s(); !(_step29 = _iterator29.n()).done;) {
-        var part = _step29.value;
+      for (_iterator38.s(); !(_step38 = _iterator38.n()).done;) {
+        var part = _step38.value;
         var normalized = " " + normalize(part) + " ";
         var contains = false,
           exact = false;
-        var _iterator30 = _createForOfIteratorHelper(names),
-          _step30;
+        var _iterator39 = _createForOfIteratorHelper(names),
+          _step39;
         try {
-          for (_iterator30.s(); !(_step30 = _iterator30.n()).done;) {
-            var name = _step30.value;
+          for (_iterator39.s(); !(_step39 = _iterator39.n()).done;) {
+            var name = _step39.value;
             var needle = " " + normalize(name) + " ",
               at = normalized.indexOf(needle);
             if (at < 0) continue;
@@ -14889,17 +15416,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             if (!tail || /^(?:\d|s\d|season\b|сезон(?:\s|$)|tv\b|bd|blu|web|hd|dvd|uhd|hevc|avc|x26)/.test(tail)) exact = true;
           }
         } catch (err) {
-          _iterator30.e(err);
+          _iterator39.e(err);
         } finally {
-          _iterator30.f();
+          _iterator39.f();
         }
         if (contains && !exact) return false;
         if (exact) matched = true;
       }
     } catch (err) {
-      _iterator29.e(err);
+      _iterator38.e(err);
     } finally {
-      _iterator29.f();
+      _iterator38.f();
     }
     if (!matched) return false;
     if (card.source === "minimal_shiki") {
@@ -14926,11 +15453,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         return a - b;
       });
     if (numbers.length < 2) return null;
-    var _iterator31 = _createForOfIteratorHelper(numbers.reverse()),
-      _step31;
+    var _iterator40 = _createForOfIteratorHelper(numbers.reverse()),
+      _step40;
     try {
-      for (_iterator31.s(); !(_step31 = _iterator31.n()).done;) {
-        var season = _step31.value;
+      for (_iterator40.s(); !(_step40 = _iterator40.n()).done;) {
+        var season = _step40.value;
         var rows = groups[season],
           aired = rows.filter(function (e) {
             return Number(e.episode_number) > 0 && e.air_date && String(e.air_date).slice(0, 10) <= today2;
@@ -14944,9 +15471,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         };
       }
     } catch (err) {
-      _iterator31.e(err);
+      _iterator40.e(err);
     } finally {
-      _iterator31.f();
+      _iterator40.f();
     }
     return null;
   }
@@ -14986,8 +15513,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     function walk(value, depth) {
       if (!value || _typeof(value) !== "object" || depth > 6 || ++visited > 250) return;
       if (value.uhd === true || value.uhd === 1) add("4K");
-      for (var _i13 = 0, _arr1 = ["quality", "qualitys", "resolution", "max_quality"]; _i13 < _arr1.length; _i13++) {
-        var key2 = _arr1[_i13];
+      for (var _i18 = 0, _arr10 = ["quality", "qualitys", "resolution", "max_quality"]; _i18 < _arr10.length; _i18++) {
+        var key2 = _arr10[_i18];
         var field = value[key2];
         if (field && _typeof(field) === "object") Object.keys(field).forEach(add);else add(field);
       }
@@ -14997,8 +15524,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }
       if (Array.isArray(value)) value.forEach(function (entry) {
         return walk(entry, depth + 1);
-      });else for (var _i14 = 0, _arr10 = ["data", "results", "items", "list", "playlists"]; _i14 < _arr10.length; _i14++) {
-        var _key2 = _arr10[_i14];
+      });else for (var _i19 = 0, _arr11 = ["data", "results", "items", "list", "playlists"]; _i19 < _arr11.length; _i19++) {
+        var _key2 = _arr11[_i19];
         walk(value[_key2], depth + 1);
       }
     }
@@ -15026,11 +15553,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var padding = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 4;
     var gap = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 3;
     var placed = [];
-    var _iterator32 = _createForOfIteratorHelper(badges),
-      _step32;
+    var _iterator41 = _createForOfIteratorHelper(badges),
+      _step41;
     try {
-      var _loop13 = function _loop13() {
-          var badge = _step32.value;
+      var _loop14 = function _loop14() {
+          var badge = _step41.value;
           var w = Math.min(badge.width, Math.max(0, width - padding * 2)),
             h = badge.height;
           if (w <= 0 || h <= 0) return 0; // continue
@@ -15062,14 +15589,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }));
         },
         _ret7;
-      for (_iterator32.s(); !(_step32 = _iterator32.n()).done;) {
-        _ret7 = _loop13();
+      for (_iterator41.s(); !(_step41 = _iterator41.n()).done;) {
+        _ret7 = _loop14();
         if (_ret7 === 0) continue;
       }
     } catch (err) {
-      _iterator32.e(err);
+      _iterator41.e(err);
     } finally {
-      _iterator32.f();
+      _iterator41.f();
     }
     return placed;
   }
@@ -15084,11 +15611,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       if (paused()) return;
       var reads = [];
       var count = 0;
-      var _iterator33 = _createForOfIteratorHelper(pending),
-        _step33;
+      var _iterator42 = _createForOfIteratorHelper(pending),
+        _step42;
       try {
-        for (_iterator33.s(); !(_step33 = _iterator33.n()).done;) {
-          var node = _step33.value;
+        for (_iterator42.s(); !(_step42 = _iterator42.n()).done;) {
+          var node = _step42.value;
           if (document.body.classList.contains("pt-tv") && count++ >= 6) break;
           pending.delete(node);
           if (!node.isConnected) continue;
@@ -15101,15 +15628,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             _height = _view.clientHeight || rect.height,
             scale = rect.width / _width || 1,
             _entries = [];
-          for (var _i16 = 0, _arr11 = [[".card__vote", "br"], [".pt-quality,.card__quality", "tl"], [".pt-kind", "tr"], [".pt-series-status", "tr"], [".card__marker", "bl"], [".card__icon:not(.icon--history)", "bl"], [".card__new-episode", "bl"]]; _i16 < _arr11.length; _i16++) {
-            var _arr11$_i = _slicedToArray(_arr11[_i16], 2),
-              selector = _arr11$_i[0],
-              corner = _arr11$_i[1];
-            var _iterator35 = _createForOfIteratorHelper(_view.querySelectorAll(selector)),
-              _step35;
+          for (var _i21 = 0, _arr12 = [[".card__vote", "br"], [".pt-quality,.card__quality", "tl"], [".pt-kind", "tr"], [".pt-series-status", "tr"], [".card__marker", "bl"], [".card__icon:not(.icon--history)", "bl"], [".card__new-episode", "bl"]]; _i21 < _arr12.length; _i21++) {
+            var _arr12$_i = _slicedToArray(_arr12[_i21], 2),
+              selector = _arr12$_i[0],
+              corner = _arr12$_i[1];
+            var _iterator44 = _createForOfIteratorHelper(_view.querySelectorAll(selector)),
+              _step44;
             try {
-              for (_iterator35.s(); !(_step35 = _iterator35.n()).done;) {
-                var el = _step35.value;
+              for (_iterator44.s(); !(_step44 = _iterator44.n()).done;) {
+                var el = _step44.value;
                 if (el.hidden || el.classList.contains("hide") || getComputedStyle(el).display === "none") continue;
                 if (el.classList.contains("pt-series-status")) {
                   el.style.fontSize = "";
@@ -15132,9 +15659,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 });
               }
             } catch (err) {
-              _iterator35.e(err);
+              _iterator44.e(err);
             } finally {
-              _iterator35.f();
+              _iterator44.f();
             }
           }
           reads.push({
@@ -15146,23 +15673,23 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
         }
       } catch (err) {
-        _iterator33.e(err);
+        _iterator42.e(err);
       } finally {
-        _iterator33.f();
+        _iterator42.f();
       }
-      for (var _i15 = 0, _reads = reads; _i15 < _reads.length; _i15++) {
-        var _reads$_i = _reads[_i15],
+      for (var _i20 = 0, _reads = reads; _i20 < _reads.length; _i20++) {
+        var _reads$_i = _reads[_i20],
           view = _reads$_i.view,
           width = _reads$_i.width,
           height = _reads$_i.height,
           entries2 = _reads$_i.entries,
           places = _reads$_i.places;
         view.classList.add("minimal-badge-layout");
-        var _iterator34 = _createForOfIteratorHelper(entries2),
-          _step34;
+        var _iterator43 = _createForOfIteratorHelper(entries2),
+          _step43;
         try {
-          var _loop14 = function _loop14() {
-            var entry = _step34.value;
+          var _loop15 = function _loop15() {
+            var entry = _step43.value;
             var p = places.find(function (p2) {
               return p2.el === entry.el;
             });
@@ -15177,13 +15704,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               bottom: bottom ? Math.round(height - p.y - p.height) + "px" : "auto"
             });
           };
-          for (_iterator34.s(); !(_step34 = _iterator34.n()).done;) {
-            if (_loop14()) continue;
+          for (_iterator43.s(); !(_step43 = _iterator43.n()).done;) {
+            if (_loop15()) continue;
           }
         } catch (err) {
-          _iterator34.e(err);
+          _iterator43.e(err);
         } finally {
-          _iterator34.f();
+          _iterator43.f();
         }
       }
       if (pending.size) frame = requestAnimationFrame(flush);
@@ -15193,8 +15720,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       pending.add(node);
       if (!frame && !paused()) frame = requestAnimationFrame(flush);
     }
-    for (var _i17 = 0, _arr12 = ["minimal:tv-idle", "minimal:wheel-idle", "visibilitychange"]; _i17 < _arr12.length; _i17++) {
-      var event = _arr12[_i17];
+    for (var _i22 = 0, _arr13 = ["minimal:tv-idle", "minimal:wheel-idle", "visibilitychange"]; _i22 < _arr13.length; _i22++) {
+      var event = _arr13[_i22];
       document.addEventListener(event, function () {
         if (pending.size && !frame) frame = requestAnimationFrame(flush);
       });
@@ -15352,17 +15879,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       slot.appendChild(wrap);
     }
     if (!wrap) return;
-    var _iterator36 = _createForOfIteratorHelper(slot.querySelectorAll(".card-watched")),
-      _step36;
+    var _iterator45 = _createForOfIteratorHelper(slot.querySelectorAll(".card-watched")),
+      _step45;
     try {
-      for (_iterator36.s(); !(_step36 = _iterator36.n()).done;) {
-        var other = _step36.value;
+      for (_iterator45.s(); !(_step45 = _iterator45.n()).done;) {
+        var other = _step45.value;
         if (other !== wrap) other.remove();
       }
     } catch (err) {
-      _iterator36.e(err);
+      _iterator45.e(err);
     } finally {
-      _iterator36.f();
+      _iterator45.f();
     }
     if (wrap.parentNode !== slot) slot.appendChild(wrap);
     var row = Array.from(wrap.querySelectorAll(".card-watched__item")).find(function (item) {
@@ -15451,11 +15978,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         _episode = match && Number(match[1] || match[2]);
       var table = L.TimeTable && L.TimeTable.get ? L.TimeTable.get(data) || [] : [];
       var _season = 0;
-      var _iterator37 = _createForOfIteratorHelper(table),
-        _step37;
+      var _iterator46 = _createForOfIteratorHelper(table),
+        _step46;
       try {
-        for (_iterator37.s(); !(_step37 = _iterator37.n()).done;) {
-          var ep = _step37.value;
+        for (_iterator46.s(); !(_step46 = _iterator46.n()).done;) {
+          var ep = _step46.value;
           if (Number(ep.episode_number) !== _episode) continue;
           var _key3 = hash([ep.season_number, ep.season_number > 10 ? ":" : "", _episode, data.original_title].join(""));
           if (progressHash && String(_key3) !== progressHash) continue;
@@ -15466,9 +15993,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }
         }
       } catch (err) {
-        _iterator37.e(err);
+        _iterator46.e(err);
       } finally {
-        _iterator37.f();
+        _iterator46.f();
       }
       if (!_season && _episode) {
         var _last = L.Storage && L.Storage.get ? L.Storage.get("online_watched_last", "{}") || {} : {};
@@ -15562,17 +16089,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       lifetime = 9e5;
     var saved = L.Storage && L.Storage.get ? L.Storage.get(storage, []) : [];
     if (Array.isArray(saved)) {
-      var _iterator38 = _createForOfIteratorHelper(saved.slice(-80)),
-        _step38;
+      var _iterator47 = _createForOfIteratorHelper(saved.slice(-80)),
+        _step47;
       try {
-        for (_iterator38.s(); !(_step38 = _iterator38.n()).done;) {
-          var pair = _step38.value;
+        for (_iterator47.s(); !(_step47 = _iterator47.n()).done;) {
+          var pair = _step47.value;
           if (Array.isArray(pair) && typeof pair[0] === "string" && pair[1] && pair[1].details && Date.now() - pair[1].at < lifetime) cache2.set(pair[0], pair[1]);
         }
       } catch (err) {
-        _iterator38.e(err);
+        _iterator47.e(err);
       } finally {
-        _iterator38.f();
+        _iterator47.f();
       }
     }
     var cacheKey = function cacheKey(data) {
@@ -15652,7 +16179,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var table = L.TimeTable && L.TimeTable.get ? L.TimeTable.get(data) || [] : [];
       var available = facts || releaseStatus(data, table);
       var box = view.querySelector(".pt-series-status");
-      if (available) {
+      if (available && flag(L, "card_episodes", true)) {
         if (!box) {
           box = document.createElement("div");
           box.className = "pt-series-status";
@@ -15665,10 +16192,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           published = group ? Number((group.match(/\d+/) || [])[0]) : 0;
         var seasonName2 = available.season ? text("Сезон {0}", [published || available.season]) : "",
           prefix = seasonName2 ? seasonName2 + " • " : "";
-        var text2 = prefix + (data.source === "minimal_shiki" ? text("Эпизодов в релизе: {0}", [released]) : (partial ? text("Серия ") : text("Серий ")) + released);
+        var episodes = (partial ? text("Серия ") : text("Серий ")) + released,
+          text2 = prefix + episodes;
         if (box.textContent !== text2) {
           box.firstElementChild.textContent = prefix;
-          box.lastElementChild.textContent = data.source === "minimal_shiki" ? text("Эпизодов в релизе: {0}", [released]) : (partial ? text("Серия ") : text("Серий ")) + released;
+          box.lastElementChild.textContent = episodes;
         }
         box.title = available.season ? text("Сезон {0}: вышло {1}. История просмотра — под обложкой.", [available.season, released]).replace(text("Сезон {0}", [available.season]), seasonName2) : text2;
       } else if (box) box.remove();
@@ -15684,7 +16212,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       } else if (pending.has(key2)) pending.get(key2).nodes.add(node);
     }
     function pump() {
-      var _loop15 = function _loop15() {
+      var _loop16 = function _loop16() {
         var task = queue.shift();
         running++;
         var done = false;
@@ -15701,17 +16229,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
           if (cache2.size > 80) cache2.delete(cache2.keys().next().value);
           save();
-          var _iterator39 = _createForOfIteratorHelper(task.nodes),
-            _step39;
+          var _iterator48 = _createForOfIteratorHelper(task.nodes),
+            _step48;
           try {
-            for (_iterator39.s(); !(_step39 = _iterator39.n()).done;) {
-              var node = _step39.value;
+            for (_iterator48.s(); !(_step48 = _iterator48.n()).done;) {
+              var node = _step48.value;
               if (node.isConnected && node.matches(".focus,.hover,.pt-card-pointer,.pt-card-touch")) schedule(node);
             }
           } catch (err) {
-            _iterator39.e(err);
+            _iterator48.e(err);
           } finally {
-            _iterator39.f();
+            _iterator48.f();
           }
           pump();
         };
@@ -15753,22 +16281,22 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
       };
       while (running < (document.body.classList.contains("pt-tv") ? 1 : 2) && queue.length) {
-        if (_loop15()) continue;
+        if (_loop16()) continue;
       }
     }
     if (L.Listener && L.Listener.follow) L.Listener.follow("state:changed", function (event) {
       if (event.target === "timeline" || event.target === "favorite") {
-        var _iterator40 = _createForOfIteratorHelper(document.querySelectorAll(".card.focus,.card.hover,.card.pt-card-pointer,.card.pt-card-touch")),
-          _step40;
+        var _iterator49 = _createForOfIteratorHelper(document.querySelectorAll(".card.focus,.card.hover,.card.pt-card-pointer,.card.pt-card-touch")),
+          _step49;
         try {
-          for (_iterator40.s(); !(_step40 = _iterator40.n()).done;) {
-            var node = _step40.value;
+          for (_iterator49.s(); !(_step49 = _iterator49.n()).done;) {
+            var node = _step49.value;
             if (cards.has(node)) schedule(node);
           }
         } catch (err) {
-          _iterator40.e(err);
+          _iterator49.e(err);
         } finally {
-          _iterator40.f();
+          _iterator49.f();
         }
       }
     });
@@ -15840,13 +16368,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     }
     function forget(item) {
       deferred.delete(item);
-      var _iterator41 = _createForOfIteratorHelper(tracked),
-        _step41;
+      var _iterator50 = _createForOfIteratorHelper(tracked),
+        _step50;
       try {
-        for (_iterator41.s(); !(_step41 = _iterator41.n()).done;) {
-          var _step41$value = _slicedToArray(_step41.value, 2),
-            node = _step41$value[0],
-            value = _step41$value[1];
+        for (_iterator50.s(); !(_step50 = _iterator50.n()).done;) {
+          var _step50$value = _slicedToArray(_step50.value, 2),
+            node = _step50$value[0],
+            value = _step50$value[1];
           if (value === item) {
             if (observer) observer.unobserve(node);
             visible.delete(node);
@@ -15856,39 +16384,39 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }
         }
       } catch (err) {
-        _iterator41.e(err);
+        _iterator50.e(err);
       } finally {
-        _iterator41.f();
+        _iterator50.f();
       }
     }
     function revisit() {
       if (observer) {
-        var _iterator42 = _createForOfIteratorHelper(visible),
-          _step42;
+        var _iterator51 = _createForOfIteratorHelper(visible),
+          _step51;
         try {
-          for (_iterator42.s(); !(_step42 = _iterator42.n()).done;) {
-            var node = _step42.value;
+          for (_iterator51.s(); !(_step51 = _iterator51.n()).done;) {
+            var node = _step51.value;
             if (node.isConnected) deferred.add(tracked.get(node));
           }
         } catch (err) {
-          _iterator42.e(err);
+          _iterator51.e(err);
         } finally {
-          _iterator42.f();
+          _iterator51.f();
         }
       } else {
-        var _iterator43 = _createForOfIteratorHelper(tracked),
-          _step43;
+        var _iterator52 = _createForOfIteratorHelper(tracked),
+          _step52;
         try {
-          for (_iterator43.s(); !(_step43 = _iterator43.n()).done;) {
-            var _step43$value = _slicedToArray(_step43.value, 2),
-              _node3 = _step43$value[0],
-              item = _step43$value[1];
+          for (_iterator52.s(); !(_step52 = _iterator52.n()).done;) {
+            var _step52$value = _slicedToArray(_step52.value, 2),
+              _node3 = _step52$value[0],
+              item = _step52$value[1];
             if (_node3.isConnected) deferred.add(item);
           }
         } catch (err) {
-          _iterator43.e(err);
+          _iterator52.e(err);
         } finally {
-          _iterator43.f();
+          _iterator52.f();
         }
       }
       if (!timer && deferred.size && !document.body.classList.contains("pt-tv-busy")) timer = setTimeout(flush, 100);
@@ -15933,7 +16461,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       badges.schedule(node);
     }
     function drain() {
-      var _loop16 = function _loop16() {
+      var _loop17 = function _loop17() {
         var _next2 = function next() {
           if (job.generation !== generation) return;
           if (!job.nodes.some(function (n) {
@@ -16045,7 +16573,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         _next2();
       };
       while (!document.body.matches(".pt-wheel-active,.pt-tv-busy") && running < (document.body.classList.contains("pt-tv") ? 1 : 2) && queue.length) {
-        if (_loop16()) continue;
+        if (_loop17()) continue;
       }
     }
     function inspect(item) {
@@ -16202,19 +16730,19 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             return node.nodeType === 1 && (node.matches(".card") || node.querySelector(".card"));
           });
         })) {
-          var _iterator44 = _createForOfIteratorHelper(tracked),
-            _step44;
+          var _iterator53 = _createForOfIteratorHelper(tracked),
+            _step53;
           try {
-            for (_iterator44.s(); !(_step44 = _iterator44.n()).done;) {
-              var _step44$value = _slicedToArray(_step44.value, 2),
-                node = _step44$value[0],
-                item = _step44$value[1];
+            for (_iterator53.s(); !(_step53 = _iterator53.n()).done;) {
+              var _step53$value = _slicedToArray(_step53.value, 2),
+                node = _step53$value[0],
+                item = _step53$value[1];
               if (!node.isConnected) forget(item);
             }
           } catch (err) {
-            _iterator44.e(err);
+            _iterator53.e(err);
           } finally {
-            _iterator44.f();
+            _iterator53.f();
           }
         }
       }).observe(document.body, {
@@ -16238,19 +16766,19 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       });
       var limit = document.body.classList.contains("pt-tv") ? 6 : Infinity;
       var count = 0;
-      var _iterator45 = _createForOfIteratorHelper(deferred),
-        _step45;
+      var _iterator54 = _createForOfIteratorHelper(deferred),
+        _step54;
       try {
-        for (_iterator45.s(); !(_step45 = _iterator45.n()).done;) {
-          var item = _step45.value;
+        for (_iterator54.s(); !(_step54 = _iterator54.n()).done;) {
+          var item = _step54.value;
           deferred.delete(item);
           inspect(item);
           if (++count >= limit) break;
         }
       } catch (err) {
-        _iterator45.e(err);
+        _iterator54.e(err);
       } finally {
-        _iterator45.f();
+        _iterator54.f();
       }
       if (deferred.size) timer = setTimeout(flush, 16);
       drain();
@@ -16304,17 +16832,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var caption = document.body.matches(".pt-mobile,.pt-tablet") && event.target.closest && event.target.closest(".card__title,.card__age");
       var selected = caption && caption.closest(".card"),
         open = selected && !selected.classList.contains("pt-card-touch");
-      var _iterator46 = _createForOfIteratorHelper(document.querySelectorAll(".card.pt-card-touch")),
-        _step46;
+      var _iterator55 = _createForOfIteratorHelper(document.querySelectorAll(".card.pt-card-touch")),
+        _step55;
       try {
-        for (_iterator46.s(); !(_step46 = _iterator46.n()).done;) {
-          var card = _step46.value;
+        for (_iterator55.s(); !(_step55 = _iterator55.n()).done;) {
+          var card = _step55.value;
           card.classList.remove("pt-card-touch");
         }
       } catch (err) {
-        _iterator46.e(err);
+        _iterator55.e(err);
       } finally {
-        _iterator46.f();
+        _iterator55.f();
       }
       if (!selected) return;
       event.preventDefault();
@@ -16341,21 +16869,21 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       retries.clear();
       running = 0;
       if (L.Storage && L.Storage.set) L.Storage.set(storage, []);
-      var _iterator47 = _createForOfIteratorHelper(tracked),
-        _step47;
+      var _iterator56 = _createForOfIteratorHelper(tracked),
+        _step56;
       try {
-        for (_iterator47.s(); !(_step47 = _iterator47.n()).done;) {
-          var _step47$value = _slicedToArray(_step47.value, 1),
-            node = _step47$value[0];
+        for (_iterator56.s(); !(_step56 = _iterator56.n()).done;) {
+          var _step56$value = _slicedToArray(_step56.value, 1),
+            node = _step56$value[0];
           node.querySelectorAll(".pt-quality").forEach(function (b) {
             return b.remove();
           });
           node.classList.remove("pt-has-quality");
         }
       } catch (err) {
-        _iterator47.e(err);
+        _iterator56.e(err);
       } finally {
-        _iterator47.f();
+        _iterator56.f();
       }
       revisit();
     });
@@ -16519,8 +17047,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     };
     if (!state.posterFitWrapped) {
       state.posterFitWrapped = true;
-      var _loop17 = function _loop17() {
-        var method = _arr13[_i18];
+      var _loop18 = function _loop18() {
+        var method = _arr14[_i23];
         var original = line.scroll[method];
         if (!original) return 1; // continue
         line.scroll[method] = function (element, center) {
@@ -16534,8 +17062,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           return original.apply(this, arguments);
         };
       };
-      for (var _i18 = 0, _arr13 = ["update", "immediate"]; _i18 < _arr13.length; _i18++) {
-        if (_loop17()) continue;
+      for (var _i23 = 0, _arr14 = ["update", "immediate"]; _i23 < _arr14.length; _i23++) {
+        if (_loop18()) continue;
       }
     }
     if (line.last && line.scroll.immediate) line.scroll.immediate(line.last, true);
@@ -17568,19 +18096,19 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
           if (metadataCache.size > 80) metadataCache.delete(metadataCache.keys().next().value);
         }
-        var _iterator48 = _createForOfIteratorHelper(listeners),
-          _step48;
+        var _iterator57 = _createForOfIteratorHelper(listeners),
+          _step57;
         try {
-          for (_iterator48.s(); !(_step48 = _iterator48.n()).done;) {
-            var _step48$value = _slicedToArray(_step48.value, 2),
-              success = _step48$value[0],
-              error = _step48$value[1];
+          for (_iterator57.s(); !(_step57 = _iterator57.n()).done;) {
+            var _step57$value = _slicedToArray(_step57.value, 2),
+              success = _step57$value[0],
+              error = _step57$value[1];
             if (json) success(__spreadValues({}, json));else error();
           }
         } catch (err) {
-          _iterator48.e(err);
+          _iterator57.e(err);
         } finally {
-          _iterator48.f();
+          _iterator57.f();
         }
       };
       api("/api/animes/" + id, finish, function () {
@@ -17797,8 +18325,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     function fields2(json, kind, id) {
       if (!json || Number(json.id) !== Number(id) || !(json.title || json.name)) return null;
       var value = {};
-      for (var _i19 = 0, _arr14 = ["title", "name", "original_title", "original_name", "overview", "poster_path", "backdrop_path", "release_date", "first_air_date", "original_language", "vote_average", "vote_count", "genre_ids", "genres", "origin_country", "production_companies", "networks"]; _i19 < _arr14.length; _i19++) {
-        var name = _arr14[_i19];
+      for (var _i24 = 0, _arr15 = ["title", "name", "original_title", "original_name", "overview", "poster_path", "backdrop_path", "release_date", "first_air_date", "original_language", "vote_average", "vote_count", "genre_ids", "genres", "origin_country", "production_companies", "networks"]; _i24 < _arr15.length; _i24++) {
+        var name = _arr15[_i24];
         if (json[name] != null) value[name] = json[name];
       }
       value.title = json.title || json.name;
@@ -17822,7 +18350,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       save();
     }
     function pump() {
-      var _loop18 = function _loop18() {
+      var _loop19 = function _loop19() {
         var task = queue.shift();
         if (task.generation !== generation) return 1; // continue
         running++;
@@ -17852,7 +18380,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
       };
       while (running < 2 && queue.length) {
-        if (_loop18()) continue;
+        if (_loop19()) continue;
       }
     }
     function request(path, lang, done) {
@@ -17882,18 +18410,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           type = _ref20[1];
         return request(path, lang, function (json) {
           if (json && Array.isArray(json.results)) answers++;
-          var _iterator49 = _createForOfIteratorHelper(json && json.results || []),
-            _step49;
+          var _iterator58 = _createForOfIteratorHelper(json && json.results || []),
+            _step58;
           try {
-            for (_iterator49.s(); !(_step49 = _iterator49.n()).done;) {
-              var row = _step49.value;
+            for (_iterator58.s(); !(_step58 = _iterator58.n()).done;) {
+              var row = _step58.value;
               var kind = type || row.media_type;
               if ((kind === "movie" || kind === "tv") && row.poster_path && row.backdrop_path) remember(lang, kind, row);
             }
           } catch (err) {
-            _iterator49.e(err);
+            _iterator58.e(err);
           } finally {
-            _iterator49.f();
+            _iterator58.f();
           }
           if (! --remaining) {
             if (!answers) unavailableUntil = Date.now() + 6e4;
@@ -19369,7 +19897,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       pump();
     }
     function pump() {
-      var _loop19 = function _loop19() {
+      var _loop20 = function _loop20() {
         var job = queue.shift();
         if (job.generation !== generation) {
           pending.delete(job.key);
@@ -19418,7 +19946,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
       };
       while (active < 3 && queue.length) {
-        if (_loop19()) continue;
+        if (_loop20()) continue;
       }
     }
     function clear() {
@@ -19603,11 +20131,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             return a.length;
           }))));
           for (var i = 0; i < length; i++) {
-            var _iterator50 = _createForOfIteratorHelper(accepted),
-              _step50;
+            var _iterator59 = _createForOfIteratorHelper(accepted),
+              _step59;
             try {
-              for (_iterator50.s(); !(_step50 = _iterator50.n()).done;) {
-                var rows = _step50.value;
+              for (_iterator59.s(); !(_step59 = _iterator59.n()).done;) {
+                var rows = _step59.value;
                 var card = rows[i];
                 if (!card) continue;
                 var key2 = card.media_type + ":" + card.id;
@@ -19617,9 +20145,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 }
               }
             } catch (err) {
-              _iterator50.e(err);
+              _iterator59.e(err);
             } finally {
-              _iterator50.f();
+              _iterator59.f();
             }
           }
           next();
@@ -19731,10 +20259,6 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           return row.key === "popular";
         }), 1)[0];
         plan.unshift(popular);
-        plan.push({
-          title: text("Все"),
-          shiki: SHIKI_ALL
-        });
       }
       return plan;
     }
@@ -19929,7 +20453,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         complete();
         return;
       }
-      var _loop20 = function _loop20() {
+      var _loop21 = function _loop21() {
         var finish = function finish(json) {
           if (settled) return;
           settled = true;
@@ -19991,7 +20515,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });else finish(null);
       };
       while (!ended && running < 3 && cursor < plan.length) {
-        if (_loop20()) continue;
+        if (_loop21()) continue;
       }
       complete();
     }
@@ -20148,7 +20672,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       });
     };
     function pump() {
-      var _loop21 = function _loop21() {
+      var _loop22 = function _loop22() {
         var finish = function finish(json, message) {
           if (settled) return;
           settled = true;
@@ -20210,7 +20734,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
       };
       while (running < 2 && queue.length) {
-        if (_loop21()) continue;
+        if (_loop22()) continue;
       }
     }
     function clear() {
@@ -20218,8 +20742,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       queue.length = 0;
       pending.clear();
       metadata2.clear();
-      for (var _i20 = 0, _Array$from = Array.from(live); _i20 < _Array$from.length; _i20++) {
-        var xhr = _Array$from[_i20];
+      for (var _i25 = 0, _Array$from = Array.from(live); _i25 < _Array$from.length; _i25++) {
+        var xhr = _Array$from[_i25];
         xhr.abort();
       }
     }
@@ -20241,11 +20765,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           var results = [],
             seen = /* @__PURE__ */new Set();
           for (var i = 0; i < 10; i++) {
-            var _iterator51 = _createForOfIteratorHelper(good),
-              _step51;
+            var _iterator60 = _createForOfIteratorHelper(good),
+              _step60;
             try {
-              for (_iterator51.s(); !(_step51 = _iterator51.n()).done;) {
-                var part = _step51.value;
+              for (_iterator60.s(); !(_step60 = _iterator60.n()).done;) {
+                var part = _step60.value;
                 var card = part.results[i];
                 if (card && !seen.has(card.media_type + ":" + card.id)) {
                   seen.add(card.media_type + ":" + card.id);
@@ -20253,9 +20777,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 }
               }
             } catch (err) {
-              _iterator51.e(err);
+              _iterator60.e(err);
             } finally {
-              _iterator51.f();
+              _iterator60.f();
             }
           }
           ok({
@@ -20355,22 +20879,22 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         pending.delete(queue[i].key);
         queue.splice(i, 1);
       }
-      var _iterator52 = _createForOfIteratorHelper(pending),
-        _step52;
+      var _iterator61 = _createForOfIteratorHelper(pending),
+        _step61;
       try {
-        for (_iterator52.s(); !(_step52 = _iterator52.n()).done;) {
-          var _step52$value = _slicedToArray(_step52.value, 2),
-            key2 = _step52$value[0],
-            job = _step52$value[1];
+        for (_iterator61.s(); !(_step61 = _iterator61.n()).done;) {
+          var _step61$value = _slicedToArray(_step61.value, 2),
+            key2 = _step61$value[0],
+            job = _step61$value[1];
           if (job.path.startsWith("search/")) job.callbacks = [];
         }
       } catch (err) {
-        _iterator52.e(err);
+        _iterator61.e(err);
       } finally {
-        _iterator52.f();
+        _iterator61.f();
       }
-      for (var _i21 = 0, _Array$from2 = Array.from(live); _i21 < _Array$from2.length; _i21++) {
-        var xhr = _Array$from2[_i21];
+      for (var _i26 = 0, _Array$from2 = Array.from(live); _i26 < _Array$from2.length; _i26++) {
+        var xhr = _Array$from2[_i26];
         if ((xhr.minimalTraktPath || "").startsWith("search/")) xhr.abort();
       }
     }
@@ -20510,14 +21034,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         list: list,
         clear: clear
       };
-    var _loop22 = function _loop22() {
-      var method = _arr15[_i22];
+    var _loop23 = function _loop23() {
+      var method = _arr16[_i27];
       if (tmdb[method]) adapter[method] = function () {
         return tmdb[method].apply(tmdb, arguments);
       };
     };
-    for (var _i22 = 0, _arr15 = ["full", "person", "seasons", "menu", "menuCategory", "genres", "collections"]; _i22 < _arr15.length; _i22++) {
-      _loop22();
+    for (var _i27 = 0, _arr16 = ["full", "person", "seasons", "menu", "menuCategory", "genres", "collections"]; _i27 < _arr16.length; _i27++) {
+      _loop23();
     }
     L.Api.sources.trakt = adapter;
     function sources() {
@@ -21583,8 +22107,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   function yearBounds(f) {
     var from = String(f.year_from || f.year || "").trim(),
       to = String(f.year_to || f.year || "").trim();
-    for (var _i23 = 0, _arr16 = [from, to]; _i23 < _arr16.length; _i23++) {
-      var value = _arr16[_i23];
+    for (var _i28 = 0, _arr17 = [from, to]; _i28 < _arr17.length; _i28++) {
+      var value = _arr17[_i28];
       if (value && (!/^\d{4}$/.test(value) || Number(value) < 1870 || Number(value) > 2100)) throw Error(text("Укажите год от 1870 до 2100"));
     }
     if (from && to && Number(from) > Number(to)) throw Error(text("Начальный год не может быть больше конечного"));
@@ -21718,11 +22242,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       UA: text("Украина")
     };
     if (locale() !== "ru") {
-      var _iterator53 = _createForOfIteratorHelper(Object.keys(countries).filter(Boolean)),
-        _step53;
+      var _iterator62 = _createForOfIteratorHelper(Object.keys(countries).filter(Boolean)),
+        _step62;
       try {
-        for (_iterator53.s(); !(_step53 = _iterator53.n()).done;) {
-          var code = _step53.value;
+        for (_iterator62.s(); !(_step62 = _iterator62.n()).done;) {
+          var code = _step62.value;
           try {
             countries[code] = new Intl.DisplayNames([locale()], {
               type: "region"
@@ -21738,9 +22262,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }
         }
       } catch (err) {
-        _iterator53.e(err);
+        _iterator62.e(err);
       } finally {
-        _iterator53.f();
+        _iterator62.f();
       }
     }
     var values = {
@@ -22045,17 +22569,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                     return s.length;
                   })));
                 for (var i = 0; i < length; i++) {
-                  var _iterator54 = _createForOfIteratorHelper(streams2),
-                    _step54;
+                  var _iterator63 = _createForOfIteratorHelper(streams2),
+                    _step63;
                   try {
-                    for (_iterator54.s(); !(_step54 = _iterator54.n()).done;) {
-                      var rows = _step54.value;
+                    for (_iterator63.s(); !(_step63 = _iterator63.n()).done;) {
+                      var rows = _step63.value;
                       if (rows[i]) cursor.results.push(rows[i]);
                     }
                   } catch (err) {
-                    _iterator54.e(err);
+                    _iterator63.e(err);
                   } finally {
-                    _iterator54.f();
+                    _iterator63.f();
                   }
                 }
               }
@@ -22075,7 +22599,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             function pump() {
               if (cursor.cancelled) return;
               if (done === matches.length) return accept(results.filter(Boolean));
-              var _loop23 = function _loop23() {
+              var _loop24 = function _loop24() {
                 var index2 = at++,
                   card = matches[index2],
                   known = card.origin_country;
@@ -22099,7 +22623,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 });
               };
               while (running < 3 && at < matches.length) {
-                if (_loop23()) continue;
+                if (_loop24()) continue;
               }
               if (done === matches.length) accept(results.filter(Boolean));
             }
@@ -22561,11 +23085,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (options.onBack) options.onBack();
       };
       function refresh() {
-        var _iterator55 = _createForOfIteratorHelper(rendered.get(event.items) || []),
-          _step55;
+        var _iterator64 = _createForOfIteratorHelper(rendered.get(event.items) || []),
+          _step64;
         try {
-          for (_iterator55.s(); !(_step55 = _iterator55.n()).done;) {
-            var row = _step55.value;
+          for (_iterator64.s(); !(_step64 = _iterator64.n()).done;) {
+            var row = _step64.value;
             var view = state.reader(movie)(Number(row.element.season) || 0, Number(row.element.episode) || 0, row.element.timeline && row.element.timeline.hash || row.element.hash);
             if (row.element.timeline) Object.assign(row.element.timeline, {
               percent: view.percent || 0,
@@ -22574,9 +23098,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             });
           }
         } catch (err) {
-          _iterator55.e(err);
+          _iterator64.e(err);
         } finally {
-          _iterator55.f();
+          _iterator64.f();
         }
         if (L.Timeline.read) L.Timeline.read();
       }
@@ -22596,19 +23120,19 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (entry.action === "season") state.setWatchedRows(movie, rows.map(coordinates));
         if (entry.action === "all") state.setAllWatched(movie, refresh);
         if (entry.action === "seasonclear") {
-          var _iterator56 = _createForOfIteratorHelper(rows),
-            _step56;
+          var _iterator65 = _createForOfIteratorHelper(rows),
+            _step65;
           try {
-            for (_iterator56.s(); !(_step56 = _iterator56.n()).done;) {
-              var row = _step56.value;
+            for (_iterator65.s(); !(_step65 = _iterator65.n()).done;) {
+              var row = _step65.value;
               var c = coordinates(row);
               if (row.element.viewed) row.element.viewed(0);
               state.clearProgress(movie, c.season, c.episode, c.hash);
             }
           } catch (err) {
-            _iterator56.e(err);
+            _iterator65.e(err);
           } finally {
-            _iterator56.f();
+            _iterator65.f();
           }
         }
         if (entry.action === "titleclear") state.clearTitleProgress(movie, (rendered.get(event.items) || []).map(function (row) {
@@ -22712,30 +23236,30 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   // src/torrent-episodes.js
   function explicitSeason(path) {
     var expressions = [/\bs(\d{1,2})(?=\b|\.?ep?\d)/i, /\b(\d{1,2})[x-]\d{1,4}\b/i, /(?:season|сезон)\s*(\d{1,2})\b/i, /\b(\d{1,2})\s*(?:season|сезон)\b/i, /(?:^|[^a-zа-я])(?:tv|тв)\s*-\s*(\d{1,2})\b/i];
-    var _iterator57 = _createForOfIteratorHelper(String(path || "").replace(/_/g, " ").split(/[\\/]/).reverse()),
-      _step57;
+    var _iterator66 = _createForOfIteratorHelper(String(path || "").replace(/_/g, " ").split(/[\\/]/).reverse()),
+      _step66;
     try {
-      for (_iterator57.s(); !(_step57 = _iterator57.n()).done;) {
-        var value = _step57.value;
+      for (_iterator66.s(); !(_step66 = _iterator66.n()).done;) {
+        var value = _step66.value;
         if (/\bs\d+\s*-\s*s?\d+\b|(?:season|сезон)\s*\d+\s*-\s*\d+|\d+\s*-\s*\d+\s*(?:season|сезон)/i.test(value)) continue;
-        var _iterator58 = _createForOfIteratorHelper(expressions),
-          _step58;
+        var _iterator67 = _createForOfIteratorHelper(expressions),
+          _step67;
         try {
-          for (_iterator58.s(); !(_step58 = _iterator58.n()).done;) {
-            var expression = _step58.value;
+          for (_iterator67.s(); !(_step67 = _iterator67.n()).done;) {
+            var expression = _step67.value;
             var m = value.match(expression);
             if (m) return Number(m[1]);
           }
         } catch (err) {
-          _iterator58.e(err);
+          _iterator67.e(err);
         } finally {
-          _iterator58.f();
+          _iterator67.f();
         }
       }
     } catch (err) {
-      _iterator57.e(err);
+      _iterator66.e(err);
     } finally {
-      _iterator57.f();
+      _iterator66.f();
     }
     return null;
   }
@@ -22761,18 +23285,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }).map(clean));
       folderFamilies.set(files, anchors);
     }
-    var _iterator59 = _createForOfIteratorHelper(own.reverse()),
-      _step59;
+    var _iterator68 = _createForOfIteratorHelper(own.reverse()),
+      _step68;
     try {
-      for (_iterator59.s(); !(_step59 = _iterator59.n()).done;) {
-        var part = _step59.value;
+      for (_iterator68.s(); !(_step68 = _iterator68.n()).done;) {
+        var part = _step68.value;
         var match = clean(part).match(/^(.+?)\s+([1-9]\d?)(?:-\d{1,2})?$/);
         if (match && Number(match[2]) <= 60 && anchors.has(match[1])) return Number(match[2]);
       }
     } catch (err) {
-      _iterator59.e(err);
+      _iterator68.e(err);
     } finally {
-      _iterator59.f();
+      _iterator68.f();
     }
     return null;
   }
@@ -22934,11 +23458,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       network.silent(url + "/viewed", function (data) {
         busy = false;
         if (!active() || scope !== (0, import_timeline_meta.profileScope)(L) || url !== server() || !Array.isArray(data)) return;
-        var _iterator60 = _createForOfIteratorHelper(files),
-          _step60;
+        var _iterator69 = _createForOfIteratorHelper(files),
+          _step69;
         try {
-          var _loop24 = function _loop24() {
-              var row = _step60.value;
+          var _loop25 = function _loop25() {
+              var row = _step69.value;
               var saved = data.find(function (v) {
                 return Number(v.file_index) === row.index && (!v.hash || v.hash === row.hash);
               });
@@ -22956,14 +23480,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               }));
             },
             _ret8;
-          for (_iterator60.s(); !(_step60 = _iterator60.n()).done;) {
-            _ret8 = _loop24();
+          for (_iterator69.s(); !(_step69 = _iterator69.n()).done;) {
+            _ret8 = _loop25();
             if (_ret8 === 0) continue;
           }
         } catch (err) {
-          _iterator60.e(err);
+          _iterator69.e(err);
         } finally {
-          _iterator60.f();
+          _iterator69.f();
         }
       }, function () {
         busy = false;
@@ -23104,11 +23628,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         };
       });
       var endpoint = null;
-      var _iterator61 = _createForOfIteratorHelper(plugins.concat(scripts)),
-        _step61;
+      var _iterator70 = _createForOfIteratorHelper(plugins.concat(scripts)),
+        _step70;
       try {
-        for (_iterator61.s(); !(_step61 = _iterator61.n()).done;) {
-          var item = _step61.value;
+        for (_iterator70.s(); !(_step70 = _iterator70.n()).done;) {
+          var item = _step70.value;
           if (item && (item.status === 0 || item.status === "0" || item.status === false)) continue;
           var value = typeof item === "string" ? item : item && item.url;
           if (!value) continue;
@@ -23124,9 +23648,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           } catch (error) {}
         }
       } catch (err) {
-        _iterator61.e(err);
+        _iterator70.e(err);
       } finally {
-        _iterator61.f();
+        _iterator70.f();
       }
       if (!endpoint || !$ || typeof $.ajax !== "function") return null;
       var id = String(profile.id),
@@ -23145,17 +23669,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     }
     function reset(ctx) {
       generation++;
-      var _iterator62 = _createForOfIteratorHelper(requests),
-        _step62;
+      var _iterator71 = _createForOfIteratorHelper(requests),
+        _step71;
       try {
-        for (_iterator62.s(); !(_step62 = _iterator62.n()).done;) {
-          var xhr = _step62.value;
+        for (_iterator71.s(); !(_step71 = _iterator71.n()).done;) {
+          var xhr = _step71.value;
           if (xhr && xhr.abort) xhr.abort();
         }
       } catch (err) {
-        _iterator62.e(err);
+        _iterator71.e(err);
       } finally {
-        _iterator62.f();
+        _iterator71.f();
       }
       requests.clear();
       clearTimeout(timer);
@@ -23173,19 +23697,19 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       health.pending = 0;
       health.received = 0;
       if (ctx) {
-        var _iterator63 = _createForOfIteratorHelper(Object.entries(L.Storage.get(ctx.file, {}) || {}).slice(-1e4)),
-          _step63;
+        var _iterator72 = _createForOfIteratorHelper(Object.entries(L.Storage.get(ctx.file, {}) || {}).slice(-1e4)),
+          _step72;
         try {
-          for (_iterator63.s(); !(_step63 = _iterator63.n()).done;) {
-            var _step63$value = _slicedToArray(_step63.value, 2),
-              hash = _step63$value[0],
-              value = _step63$value[1];
+          for (_iterator72.s(); !(_step72 = _iterator72.n()).done;) {
+            var _step72$value = _slicedToArray(_step72.value, 2),
+              hash = _step72$value[0],
+              value = _step72$value[1];
             if (validHash(hash) && road(value).updated > 0) queue(hash, value);
           }
         } catch (err) {
-          _iterator63.e(err);
+          _iterator72.e(err);
         } finally {
-          _iterator63.f();
+          _iterator72.f();
         }
       }
     }
@@ -23271,13 +23795,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     function merge(ctx, rows) {
       var records = __spreadValues({}, L.Storage.get(ctx.file, {}) || {});
       var changed = false;
-      var _iterator64 = _createForOfIteratorHelper(pending),
-        _step64;
+      var _iterator73 = _createForOfIteratorHelper(pending),
+        _step73;
       try {
-        for (_iterator64.s(); !(_step64 = _iterator64.n()).done;) {
-          var _step64$value = _slicedToArray(_step64.value, 2),
-            hash = _step64$value[0],
-            value = _step64$value[1];
+        for (_iterator73.s(); !(_step73 = _iterator73.n()).done;) {
+          var _step73$value = _slicedToArray(_step73.value, 2),
+            hash = _step73$value[0],
+            value = _step73$value[1];
           if (value.updated > road(records[hash]).updated) {
             records[hash] = __spreadProps(__spreadValues(__spreadValues({}, records[hash]), value), {
               profile: number(ctx.id)
@@ -23286,15 +23810,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }
         }
       } catch (err) {
-        _iterator64.e(err);
+        _iterator73.e(err);
       } finally {
-        _iterator64.f();
+        _iterator73.f();
       }
-      var _iterator65 = _createForOfIteratorHelper(rows),
-        _step65;
+      var _iterator74 = _createForOfIteratorHelper(rows),
+        _step74;
       try {
-        for (_iterator65.s(); !(_step65 = _iterator65.n()).done;) {
-          var row = _step65.value;
+        for (_iterator74.s(); !(_step74 = _iterator74.n()).done;) {
+          var row = _step74.value;
           if (!row || !validHash(row.hash)) continue;
           var _hash = String(row.hash),
             _value4 = road(__spreadValues({
@@ -23313,17 +23837,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           if (remote.size > 1e4) remote.delete(remote.keys().next().value);
         }
       } catch (err) {
-        _iterator65.e(err);
+        _iterator74.e(err);
       } finally {
-        _iterator65.f();
+        _iterator74.f();
       }
-      var _iterator66 = _createForOfIteratorHelper(remote),
-        _step66;
+      var _iterator75 = _createForOfIteratorHelper(remote),
+        _step75;
       try {
-        for (_iterator66.s(); !(_step66 = _iterator66.n()).done;) {
-          var _step66$value = _slicedToArray(_step66.value, 2),
-            _hash2 = _step66$value[0],
-            entry = _step66$value[1];
+        for (_iterator75.s(); !(_step75 = _iterator75.n()).done;) {
+          var _step75$value = _slicedToArray(_step75.value, 2),
+            _hash2 = _step75$value[0],
+            entry = _step75$value[1];
           var local = road(records[_hash2]);
           if (records[_hash2] && local.updated > entry.value.updated) {
             queue(_hash2, local);
@@ -23341,24 +23865,24 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           if (waiting && waiting.updated <= entry.value.updated) pending.delete(_hash2);
         }
       } catch (err) {
-        _iterator66.e(err);
+        _iterator75.e(err);
       } finally {
-        _iterator66.f();
+        _iterator75.f();
       }
-      var _iterator67 = _createForOfIteratorHelper(Object.keys(records).slice(-1e4)),
-        _step67;
+      var _iterator76 = _createForOfIteratorHelper(Object.keys(records).slice(-1e4)),
+        _step76;
       try {
-        for (_iterator67.s(); !(_step67 = _iterator67.n()).done;) {
-          var _hash3 = _step67.value;
+        for (_iterator76.s(); !(_step76 = _iterator76.n()).done;) {
+          var _hash3 = _step76.value;
           if (!validHash(_hash3)) continue;
           var _value5 = road(records[_hash3]),
             known = remote.get(_hash3);
           if (!known && (_value5.percent || _value5.time || _value5.updated) || known && _value5.updated > known.value.updated) queue(_hash3, _value5);
         }
       } catch (err) {
-        _iterator67.e(err);
+        _iterator76.e(err);
       } finally {
-        _iterator67.f();
+        _iterator76.f();
       }
       health.pending = pending.size;
       if (changed) store(ctx, records);
@@ -23427,13 +23951,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           failed();
           return;
         }
-        var _iterator68 = _createForOfIteratorHelper(batch),
-          _step68;
+        var _iterator77 = _createForOfIteratorHelper(batch),
+          _step77;
         try {
-          for (_iterator68.s(); !(_step68 = _iterator68.n()).done;) {
-            var _step68$value = _slicedToArray(_step68.value, 2),
-              hash = _step68$value[0],
-              sent = _step68$value[1];
+          for (_iterator77.s(); !(_step77 = _iterator77.n()).done;) {
+            var _step77$value = _slicedToArray(_step77.value, 2),
+              hash = _step77$value[0],
+              sent = _step77$value[1];
             var waiting = pending.get(hash);
             if (waiting && fingerprint(waiting) === fingerprint(sent)) pending.delete(hash);
             var known = remote.get(hash);
@@ -23443,9 +23967,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             });
           }
         } catch (err) {
-          _iterator68.e(err);
+          _iterator77.e(err);
         } finally {
-          _iterator68.f();
+          _iterator77.f();
         }
         failures = 0;
         retryAt = 0;
@@ -23534,17 +24058,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     };
     var cached = L.Storage && L.Storage.get ? L.Storage.get(bindingKey, []) : [];
     if (Array.isArray(cached)) {
-      var _iterator69 = _createForOfIteratorHelper(cached.slice(-limit)),
-        _step69;
+      var _iterator78 = _createForOfIteratorHelper(cached.slice(-limit)),
+        _step78;
       try {
-        for (_iterator69.s(); !(_step69 = _iterator69.n()).done;) {
-          var row = _step69.value;
+        for (_iterator78.s(); !(_step78 = _iterator78.n()).done;) {
+          var row = _step78.value;
           if (row && /^[a-zA-Z0-9_.:-]{1,128}$/.test(String(row.hash)) && typeof row.scope === "string" && row.meta && /^[a-z0-9_]{1,64}$/.test(row.meta.card || "") && Date.now() - row.at < 7 * 864e5) bindings.set(String(row.hash), row);
         }
       } catch (err) {
-        _iterator69.e(err);
+        _iterator78.e(err);
       } finally {
-        _iterator69.f();
+        _iterator78.f();
       }
     }
     function persist() {
@@ -23661,8 +24185,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         save();
         current = null;
       });
-      for (var _i24 = 0, _arr17 = ["close", "destroy"]; _i24 < _arr17.length; _i24++) {
-        var event = _arr17[_i24];
+      for (var _i29 = 0, _arr18 = ["close", "destroy"]; _i29 < _arr18.length; _i29++) {
+        var event = _arr18[_i29];
         listener.follow(event, function () {
           save();
           current = null;
@@ -24066,137 +24590,142 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   var stamp2 = function stamp2(value) {
     return typeof value === "string" && !/^\d+$/.test(value) ? Date.parse(value) || 0 : number2(value);
   };
+  var titleClean = function titleClean(value) {
+    return String(value || "").normalize("NFKC").toLowerCase().replace(/ё/g, "е").replace(/[^a-zа-я0-9\u3040-\u30ff\u3400-\u9fff]+/g, " ").trim();
+  };
+  function providerRelease(row, card) {
+    var title = String(row.title || row.name || row.text || ""),
+      names = [card.name, card.title, card.original_name, card.original_title].filter(Boolean),
+      family = new Set(names.flatMap(function (v) {
+        return String(v).split(/\s+[\/|]\s+/).map(titleClean);
+      }));
+    var marker = title.match(/\[(?:тв|tv)(?:\s*[- ]\s*(\d+))?\]/i),
+      explicit = title.match(/(?:сезон|season)\s*(\d+)|(\d+)\s*(?:сезон|season)|\bs(\d+)\b/i);
+    var season = Number(row.season || marker && marker[1] || explicit && (explicit[1] || explicit[2] || explicit[3])) || 0;
+    if ((card.name || card.original_name) && !family.has(titleClean(title)) && /\b(?:ova|ona[- ]?special|movie|film|special)\b|спецвыпуск|фильм/i.test(title)) return null;
+    var base = title.replace(/\[(?:тв|tv)(?:\s*[- ]\s*\d+)?\]/gi, " ").replace(/(?:сезон|season)\s*\d+|\d+\s*(?:сезон|season)|\bs\d+\b/gi, " ").replace(/\b(?:19|20)\d{2}\b/g, " ");
+    var match = base.split(/\s+[\/|]\s+/).some(function (value) {
+      var name = titleClean(value);
+      if (family.has(name)) return true;
+      var roman = value.match(/\s+(II|III|IV|V|VI|VII|VIII|IX|X)\s*$/i);
+      if (roman) {
+        name = titleClean(value.slice(0, roman.index));
+        if (family.has(name)) {
+          if (!season) season = {
+            II: 2,
+            III: 3,
+            IV: 4,
+            V: 5,
+            VI: 6,
+            VII: 7,
+            VIII: 8,
+            IX: 9,
+            X: 10
+          }[roman[1].toUpperCase()];
+          return true;
+        }
+      }
+      return _toConsumableArray(family).some(function (alias) {
+        var tail = name.startsWith(alias + " ") ? name.slice(alias.length + 1) : "";
+        if (!/^[1-9]\d?$/.test(tail) || Number(tail) > 60) return false;
+        if (!season) season = Number(tail);
+        return true;
+      });
+    });
+    if (!match) return null;
+    var param = String(row.url || "").match(/[?&](?:s|season)=(\d+)/);
+    season = season || Number(param && param[1]) || 1;
+    var year = Number(String(card.first_air_date || card.release_date || "").slice(0, 4)),
+      ownYear = Number(String(row.year || row.start_date || "").slice(0, 4)) || Number((title.match(/\b(?:19|20)\d{2}\b/) || [])[0]);
+    if (year && ownYear && (season === 1 ? Math.abs(year - ownYear) > 1 : ownYear < year)) return null;
+    return {
+      season: season,
+      explicit: !!marker || !!explicit
+    };
+  }
   function folderTarget(rows, card) {
     var season = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 1;
     if (!card || !Array.isArray(rows) || rows.some(function (row) {
       return /^(play|call)$/.test(row.method);
     })) return "";
-    var normalize = function normalize(value) {
-      return String(value || "").toLowerCase().replace(/ё/g, "е").replace(/(?:сезон|season)\s*\d+|\d+\s*(?:сезон|season)|\bs\d+\b/gi, " ").replace(/\b(?:19|20)\d{2}\b/g, " ").replace(/[^a-zа-я0-9\u3040-\u30ff\u3400-\u9fff]+/g, " ").trim();
-    };
-    var aliases = function aliases(value) {
-      return Array.from(new Set([String(value || "")].concat(_toConsumableArray(String(value || "").split(/\s+[\/|]\s+/))).map(normalize).filter(Boolean)));
-    };
-    var names = new Set([card.title, card.name, card.original_title, card.original_name].flatMap(aliases));
-    var year = Number(String(card.first_air_date || card.release_date || "").slice(0, 4));
-    var candidates = rows.filter(function (row) {
-      if (row.method !== "link" || typeof row.url !== "string" || !/^(?:https?:\/\/|\/)/i.test(row.url)) return false;
-      var title = String(row.title || row.name || row.text || "");
-      if (!aliases(title).some(function (name) {
-        return names.has(name);
-      })) return false;
-      var found = title.match(/(?:сезон|season)\s*(\d+)|(\d+)\s*(?:сезон|season)|\bs(\d+)\b/i),
-        param = row.url.match(/[?&](?:s|season)=(\d+)/);
-      var ownSeason = Number(row.season || found && (found[1] || found[2] || found[3]) || param && param[1]);
-      if (ownSeason && ownSeason !== Number(season)) return false;
-      var ownYear = Number(String(row.year || row.start_date || "").slice(0, 4)) || Number((title.match(/\b(?:19|20)\d{2}\b/) || [])[0]);
-      return !year || !ownYear || Math.abs(year - ownYear) <= 1;
-    });
-    return candidates.length === 1 ? candidates[0].url : "";
+    var matches = rows.filter(function (row) {
+        return row.method === "link" && /^(?:https?:\/\/|\/)/i.test(row.url || "");
+      }).map(function (row) {
+        return {
+          row: row,
+          release: providerRelease(row, card)
+        };
+      }).filter(function (v) {
+        var _a;
+        return ((_a = v.release) == null ? void 0 : _a.season) === Number(season);
+      }),
+      strong = matches.filter(function (v) {
+        return v.release.explicit;
+      }),
+      choice = strong.length ? strong : matches;
+    return choice.length === 1 ? choice[0].row.url : "";
   }
   function folderSeasons(rows, card) {
     if (!card || !(card.name || card.original_name) || !Array.isArray(rows)) return [];
-    var names = [card.name, card.original_name, card.title, card.original_title].filter(Boolean);
-    var clean = function clean(v) {
-      return String(v || "").toLowerCase().replace(/ё/g, "е").replace(/[^a-zа-я0-9\u3040-\u30ff\u3400-\u9fff]+/g, " ").trim();
-    };
-    var aliases = function aliases(v) {
-      return String(v || "").split(/\s*[\/|]\s*/).map(clean).filter(Boolean);
-    };
-    var family = new Set(names.flatMap(aliases)),
-      year = Number(String(card.first_air_date || card.release_date || "").slice(0, 4));
-    var known = Math.max.apply(Math, [1, Number(card.number_of_seasons) || 0].concat(_toConsumableArray(Array.isArray(card.seasons) ? card.seasons.map(function (row) {
-        return Number(row.season_number) || 0;
-      }) : []))),
-      found = [];
-    var _iterator70 = _createForOfIteratorHelper(rows),
-      _step70;
+    var found = /* @__PURE__ */new Map();
+    var _iterator79 = _createForOfIteratorHelper(rows),
+      _step79;
     try {
-      var _loop25 = function _loop25() {
-          var row = _step70.value;
-          if (!row.similar || row.method !== "link" || !/^(?:https?:\/\/|\/)/i.test(row.url || "")) return 0; // continue
-          var title = String(row.title || row.name || row.text || ""),
-            match = title.match(/(?:сезон|season)\s*(\d+)|(\d+)\s*(?:сезон|season)|\bs(\d+)\b/i);
-          var season = Number(row.season || match && (match[1] || match[2] || match[3]));
-          var base = title.replace(/(?:сезон|season)\s*\d+|\d+\s*(?:сезон|season)|\bs\d+\b/gi, " ");
-          var hit = aliases(base).find(function (name) {
-            return family.has(name) || _toConsumableArray(family).some(function (alias) {
-              if (!name.startsWith(alias + " ")) return false;
-              var tail = name.slice(alias.length + 1);
-              if (!/^[1-9]\d?$/.test(tail)) return false;
-              if (Number(tail) > 60) return false;
-              if (!season) season = Number(tail);
-              return season === Number(tail);
-            });
-          });
-          if (!hit) return 0; // continue
-          if (!season) {
-            var param = (row.url || "").match(/[?&](?:s|season)=(\d+)/);
-            season = Number(param && param[1]) || 1;
-          }
-          var ownYear = Number(row.year || String(row.start_date || "").slice(0, 4));
-          if (year && ownYear && (season === 1 ? Math.abs(year - ownYear) > 1 : ownYear < year)) return 0; // continue
-          if (found.some(function (value) {
-            return value.season === season;
-          })) return {
-            v: []
-          };
-          found.push({
-            season: season,
-            title: "Сезон " + season,
-            method: "link",
-            url: row.url
-          });
-        },
-        _ret9;
-      for (_iterator70.s(); !(_step70 = _iterator70.n()).done;) {
-        _ret9 = _loop25();
-        if (_ret9 === 0) continue;
-        if (_ret9) return _ret9.v;
+      for (_iterator79.s(); !(_step79 = _iterator79.n()).done;) {
+        var row = _step79.value;
+        if (!row.similar || row.method !== "link" || !/^(?:https?:\/\/|\/)/i.test(row.url || "")) continue;
+        var release = providerRelease(row, card);
+        if (!release) continue;
+        var old = found.get(release.season);
+        if (old) {
+          if (old.url === row.url) continue;
+          if (old.explicit && !release.explicit) continue;
+          if (!old.explicit && release.explicit) {
+            found.delete(release.season);
+          } else return [];
+        }
+        found.set(release.season, {
+          season: release.season,
+          title: "Сезон " + release.season,
+          method: "link",
+          url: row.url,
+          explicit: release.explicit
+        });
       }
     } catch (err) {
-      _iterator70.e(err);
+      _iterator79.e(err);
     } finally {
-      _iterator70.f();
+      _iterator79.f();
     }
-    return found.length > 1 ? found.sort(function (a, b) {
+    return found.size > 1 ? _toConsumableArray(found.values()).sort(function (a, b) {
       return a.season - b.season;
+    }).map(function (_a) {
+      var _b = _a,
+        explicit = _b.explicit,
+        row = __objRest(_b, ["explicit"]);
+      return row;
     }) : [];
   }
   function relevantFolders(rows, card) {
     if (!card || !Array.isArray(rows) || !rows.some(function (row) {
       return row.similar;
     })) return rows;
-    var clean = function clean(value) {
-      return String(value || "").toLowerCase().replace(/ё/g, "е").replace(/(?:сезон|season)\s*\d+|\d+\s*(?:сезон|season)|\bs\d+\b/gi, " ").replace(/\b(?:19|20)\d{2}\b/g, " ").replace(/[^a-zа-я0-9\u3040-\u30ff\u3400-\u9fff]+/g, " ").trim();
-    };
-    var aliases = function aliases(value) {
-      return String(value || "").split(/\s+[\/|]\s+/).map(clean).filter(Boolean);
-    };
-    var names = new Set([card.title, card.name, card.original_title, card.original_name].flatMap(aliases));
-    if (!names.size) return rows;
-    var serial = !!(card.name || card.original_name),
-      year = Number(String(card.first_air_date || card.release_date || "").slice(0, 4));
-    var known = Math.max.apply(Math, [1, Number(card.number_of_seasons) || 0].concat(_toConsumableArray((Array.isArray(card.seasons) ? card.seasons : []).map(function (row) {
-      return Number(row.season_number) || 0;
-    }))));
     return rows.filter(function (row) {
-      if (!row.similar) return true;
-      if (row.method !== "link" || !/^(?:https?:\/\/|\/)/i.test(row.url || "")) return false;
-      var title = String(row.title || row.name || row.text || ""),
-        season = title.match(/(?:сезон|season)\s*(\d+)|(\d+)\s*(?:сезон|season)|\bs(\d+)\b/i);
-      var part = Number(row.season || season && (season[1] || season[2] || season[3])) || 1;
-      var match = aliases(title).some(function (name) {
-        return names.has(name) || serial && _toConsumableArray(names).some(function (alias) {
-          var tail = name.startsWith(alias + " ") ? name.slice(alias.length + 1) : "";
-          if (!/^[1-9]\d?$/.test(tail) || Number(tail) > 60) return false;
-          part = Number(tail);
-          return true;
-        });
-      });
-      var ownYear = Number(String(row.year || row.start_date || "").slice(0, 4));
-      return match && (!year || !ownYear || part > 1 && ownYear >= year || Math.abs(year - ownYear) <= 1);
+      return !row.similar || row.method === "link" && /^(?:https?:\/\/|\/)/i.test(row.url || "") && providerRelease(row, card);
     });
+  }
+  function episodeRows(rows) {
+    var video = function video(row) {
+      return row.method === "call" || row.method === "play";
+    };
+    var episode = function episode(row) {
+      return row.episode != null && row.episode !== "" && Number.isInteger(Number(row.episode)) && Number(row.episode) >= 0;
+    };
+    return rows.some(function (row) {
+      return video(row) && episode(row);
+    }) ? rows.filter(function (row) {
+      return !video(row) || episode(row);
+    }) : rows;
   }
   function folderRows(body) {
     var json = body;
@@ -24219,11 +24748,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       tags = clean.match(/<(?:div|span|a)\b[^>]*>/gi) || [],
       decoder = document.createElement("textarea"),
       rows = [];
-    var _iterator71 = _createForOfIteratorHelper(tags),
-      _step71;
+    var _iterator80 = _createForOfIteratorHelper(tags),
+      _step80;
     try {
-      for (_iterator71.s(); !(_step71 = _iterator71.n()).done;) {
-        var tag = _step71.value;
+      for (_iterator80.s(); !(_step80 = _iterator80.n()).done;) {
+        var tag = _step80.value;
         var cls = tag.match(/\bclass\s*=\s*(["'])([\s\S]*?)\1/i),
           data = tag.match(/\bdata-json\s*=\s*(["'])([\s\S]*?)\1/i);
         if (!cls || !/(^|\s)videos__item(\s|$)/.test(cls[2]) || !data) continue;
@@ -24231,10 +24760,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           decoder.innerHTML = data[2].replace(/</g, "&lt;");
           var row = JSON.parse(decoder.value);
           if (row && /^(play|call)$/.test(row.method)) {
-            for (var _i25 = 0, _arr18 = [["s", "season"], ["e", "episode"]]; _i25 < _arr18.length; _i25++) {
-              var _arr18$_i = _slicedToArray(_arr18[_i25], 2),
-                attribute = _arr18$_i[0],
-                field = _arr18$_i[1];
+            for (var _i30 = 0, _arr19 = [["s", "season"], ["e", "episode"]]; _i30 < _arr19.length; _i30++) {
+              var _arr19$_i = _slicedToArray(_arr19[_i30], 2),
+                attribute = _arr19$_i[0],
+                field = _arr19$_i[1];
               var value = tag.match(new RegExp("\\s" + attribute + "\\s*=\\s*([\"'])([0-9]+)\\1", "i"));
               if (value) row[field] = Number(value[2]);else if (row[field] === void 0 && row[attribute] !== void 0) row[field] = Number(row[attribute]);
             }
@@ -24243,9 +24772,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         } catch (error) {}
       }
     } catch (err) {
-      _iterator71.e(err);
+      _iterator80.e(err);
     } finally {
-      _iterator71.f();
+      _iterator80.f();
     }
     return rows;
   }
@@ -24271,8 +24800,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (typeof value.url === "string" && value.url.trim() && !value.similar && /^(play|call|link)$/.test(value.method)) count++;
         if (Array.isArray(value)) value.forEach(function (row) {
           return _walk(row, depth + 1);
-        });else for (var _i26 = 0, _arr19 = ["data", "results", "items", "list", "playlists"]; _i26 < _arr19.length; _i26++) {
-          var key2 = _arr19[_i26];
+        });else for (var _i31 = 0, _arr20 = ["data", "results", "items", "list", "playlists"]; _i31 < _arr20.length; _i31++) {
+          var key2 = _arr20[_i31];
           _walk(value[key2], depth + 1);
         }
       };
@@ -24328,13 +24857,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var records = L.Storage.get(file(), {}) || {},
         titles = names(card);
       var linked = /* @__PURE__ */new Map();
-      var _iterator72 = _createForOfIteratorHelper(linkedRecords(card, records)),
-        _step72;
+      var _iterator81 = _createForOfIteratorHelper(linkedRecords(card, records)),
+        _step81;
       try {
-        for (_iterator72.s(); !(_step72 = _iterator72.n()).done;) {
-          var _step72$value = _slicedToArray(_step72.value, 2),
-            key2 = _step72$value[0],
-            value = _step72$value[1];
+        for (_iterator81.s(); !(_step81 = _iterator81.n()).done;) {
+          var _step81$value = _slicedToArray(_step81.value, 2),
+            key2 = _step81$value[0],
+            value = _step81$value[1];
           var coordinate = number2(value.season) + ":" + number2(value.episode),
             old = linked.get(coordinate);
           if (!old || stamp2(value.updated) > stamp2(old.value.updated)) linked.set(coordinate, {
@@ -24343,9 +24872,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
         }
       } catch (err) {
-        _iterator72.e(err);
+        _iterator81.e(err);
       } finally {
-        _iterator72.f();
+        _iterator81.f();
       }
       return function () {
         var season = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
@@ -24358,11 +24887,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (match) keys.push(match.key);
         if (explicit) keys.push(explicit);
         var best = null;
-        var _iterator73 = _createForOfIteratorHelper(new Set(keys)),
-          _step73;
+        var _iterator82 = _createForOfIteratorHelper(new Set(keys)),
+          _step82;
         try {
-          for (_iterator73.s(); !(_step73 = _iterator73.n()).done;) {
-            var key2 = _step73.value;
+          for (_iterator82.s(); !(_step82 = _iterator82.n()).done;) {
+            var key2 = _step82.value;
             var value = records[key2],
               raw = typeof value === "number" ? {
                 percent: value
@@ -24379,9 +24908,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             if (!best || row.updated > best.updated || row.updated === best.updated && row.percent > best.percent) best = row;
           }
         } catch (err) {
-          _iterator73.e(err);
+          _iterator82.e(err);
         } finally {
-          _iterator73.f();
+          _iterator82.f();
         }
         return best || {
           found: false,
@@ -24407,13 +24936,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         seasons = Array.isArray(card.seasons) ? card.seasons : [],
         max = 60;
       var latest = null;
-      var _iterator74 = _createForOfIteratorHelper(linkedRecords(card, records)),
-        _step74;
+      var _iterator83 = _createForOfIteratorHelper(linkedRecords(card, records)),
+        _step83;
       try {
         var _loop27 = function _loop27() {
-          var _step74$value = _slicedToArray(_step74.value, 2),
-            key3 = _step74$value[0],
-            raw = _step74$value[1];
+          var _step83$value = _slicedToArray(_step83.value, 2),
+            key3 = _step83$value[0],
+            raw = _step83$value[1];
           var season = Number(raw.season),
             episode = Number(raw.episode),
             percent = Math.min(100, number2(raw.percent)),
@@ -24437,13 +24966,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             }
           };
         };
-        for (_iterator74.s(); !(_step74 = _iterator74.n()).done;) {
+        for (_iterator83.s(); !(_step83 = _iterator83.n()).done;) {
           if (_loop27()) continue;
         }
       } catch (err) {
-        _iterator74.e(err);
+        _iterator83.e(err);
       } finally {
-        _iterator74.f();
+        _iterator83.f();
       }
       if (Object.keys(records).length) {
         var _loop26 = function _loop26(s) {
@@ -24453,11 +24982,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             total = number2(detail2 && detail2.episode_count),
             limit = Math.min(500, Math.max(100, total));
           for (var e = 1; e <= limit; e++) {
-            var _iterator75 = _createForOfIteratorHelper(titles),
-              _step75;
+            var _iterator84 = _createForOfIteratorHelper(titles),
+              _step84;
             try {
-              for (_iterator75.s(); !(_step75 = _iterator75.n()).done;) {
-                var title = _step75.value;
+              for (_iterator84.s(); !(_step84 = _iterator84.n()).done;) {
+                var title = _step84.value;
                 var key3 = hash(title, s, e),
                   raw = records[key3];
                 if (!raw) continue;
@@ -24479,9 +25008,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 };
               }
             } catch (err) {
-              _iterator75.e(err);
+              _iterator84.e(err);
             } finally {
-              _iterator75.f();
+              _iterator84.f();
             }
           }
         };
@@ -24550,8 +25079,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }
       return value;
     }
-    if (L.Timeline && L.Timeline.listener) for (var _i27 = 0, _arr20 = ["update", "read"]; _i27 < _arr20.length; _i27++) {
-      var event = _arr20[_i27];
+    if (L.Timeline && L.Timeline.listener) for (var _i32 = 0, _arr21 = ["update", "read"]; _i32 < _arr21.length; _i32++) {
+      var event = _arr21[_i32];
       L.Timeline.listener.follow(event, function () {
         revision++;
         snapshots.clear();
@@ -24596,11 +25125,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var saved = L.Storage.get("online_watched_last", {}) || {},
         next = __spreadValues({}, saved);
       var changed = false;
-      var _iterator76 = _createForOfIteratorHelper(names(card)),
-        _step76;
+      var _iterator85 = _createForOfIteratorHelper(names(card)),
+        _step85;
       try {
-        for (_iterator76.s(); !(_step76 = _iterator76.n()).done;) {
-          var title = _step76.value;
+        for (_iterator85.s(); !(_step85 = _iterator85.n()).done;) {
+          var title = _step85.value;
           var key2 = L.Utils.hash(title),
             row = saved[key2];
           if (row && (season === void 0 || Number(row.season) === Number(season) && Number(row.episode) === Number(episode))) {
@@ -24609,9 +25138,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }
         }
       } catch (err) {
-        _iterator76.e(err);
+        _iterator85.e(err);
       } finally {
-        _iterator76.f();
+        _iterator85.f();
       }
       if (changed) L.Storage.set("online_watched_last", next);
     }
@@ -24626,11 +25155,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
       if (explicit) keys.push(explicit);
       clearLast(card, season, episode);
-      var _iterator77 = _createForOfIteratorHelper(new Set(keys)),
-        _step77;
+      var _iterator86 = _createForOfIteratorHelper(new Set(keys)),
+        _step86;
       try {
-        for (_iterator77.s(); !(_step77 = _iterator77.n()).done;) {
-          var key2 = _step77.value;
+        for (_iterator86.s(); !(_step86 = _iterator86.n()).done;) {
+          var key2 = _step86.value;
           if (records[key2] || key2 === explicit) writeTimeline({
             hash: key2,
             percent: 0,
@@ -24639,9 +25168,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
         }
       } catch (err) {
-        _iterator77.e(err);
+        _iterator86.e(err);
       } finally {
-        _iterator77.f();
+        _iterator86.f();
       }
       revision++;
       snapshots.clear();
@@ -24654,26 +25183,26 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         keys = /* @__PURE__ */new Set();
       if (titles.length) keys.add(hash(titles[0], season, episode));
       if (explicit) keys.add(explicit);
-      var _iterator78 = _createForOfIteratorHelper(titles),
-        _step78;
+      var _iterator87 = _createForOfIteratorHelper(titles),
+        _step87;
       try {
-        for (_iterator78.s(); !(_step78 = _iterator78.n()).done;) {
-          var _title = _step78.value;
+        for (_iterator87.s(); !(_step87 = _iterator87.n()).done;) {
+          var _title = _step87.value;
           var _key4 = hash(_title, season, episode);
           if (records[_key4]) keys.add(_key4);
         }
       } catch (err) {
-        _iterator78.e(err);
+        _iterator87.e(err);
       } finally {
-        _iterator78.f();
+        _iterator87.f();
       }
       if (watched && season && !batching) {
         var saved = __spreadValues({}, L.Storage.get("online_watched_last", {}) || {});
-        var _iterator79 = _createForOfIteratorHelper(titles.slice(0, 2)),
-          _step79;
+        var _iterator88 = _createForOfIteratorHelper(titles.slice(0, 2)),
+          _step88;
         try {
-          for (_iterator79.s(); !(_step79 = _iterator79.n()).done;) {
-            var title = _step79.value;
+          for (_iterator88.s(); !(_step88 = _iterator88.n()).done;) {
+            var title = _step88.value;
             var key2 = L.Utils.hash(title);
             saved[key2] = __spreadProps(__spreadValues({}, saved[key2]), {
               season: season,
@@ -24681,17 +25210,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             });
           }
         } catch (err) {
-          _iterator79.e(err);
+          _iterator88.e(err);
         } finally {
-          _iterator79.f();
+          _iterator88.f();
         }
         L.Storage.set("online_watched_last", saved);
       } else if (!watched) clearLast(card, season, episode);
-      var _iterator80 = _createForOfIteratorHelper(keys),
-        _step80;
+      var _iterator89 = _createForOfIteratorHelper(keys),
+        _step89;
       try {
-        for (_iterator80.s(); !(_step80 = _iterator80.n()).done;) {
-          var _key5 = _step80.value;
+        for (_iterator89.s(); !(_step89 = _iterator89.n()).done;) {
+          var _key5 = _step89.value;
           var raw = records[_key5],
             percent = typeof raw === "number" ? raw : number2(raw && raw.percent);
           if (watched || percent >= WATCHED_PERCENT) {
@@ -24705,9 +25234,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }
         }
       } catch (err) {
-        _iterator80.e(err);
+        _iterator89.e(err);
       } finally {
-        _iterator80.f();
+        _iterator89.f();
       }
       revision++;
       snapshots.clear();
@@ -24716,17 +25245,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     function markRows(card, rows) {
       batching++;
       try {
-        var _iterator81 = _createForOfIteratorHelper(rows),
-          _step81;
+        var _iterator90 = _createForOfIteratorHelper(rows),
+          _step90;
         try {
-          for (_iterator81.s(); !(_step81 = _iterator81.n()).done;) {
-            var row = _step81.value;
+          for (_iterator90.s(); !(_step90 = _iterator90.n()).done;) {
+            var row = _step90.value;
             setWatched(card, row.season, row.episode, true, row.hash);
           }
         } catch (err) {
-          _iterator81.e(err);
+          _iterator90.e(err);
         } finally {
-          _iterator81.f();
+          _iterator90.f();
         }
       } finally {
         batching--;
@@ -24734,11 +25263,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var last = rows[rows.length - 1];
       if (last) {
         var saved = __spreadValues({}, L.Storage.get("online_watched_last", {}) || {});
-        var _iterator82 = _createForOfIteratorHelper(names(card).slice(0, 2)),
-          _step82;
+        var _iterator91 = _createForOfIteratorHelper(names(card).slice(0, 2)),
+          _step91;
         try {
-          for (_iterator82.s(); !(_step82 = _iterator82.n()).done;) {
-            var title = _step82.value;
+          for (_iterator91.s(); !(_step91 = _iterator91.n()).done;) {
+            var title = _step91.value;
             var key2 = L.Utils.hash(title);
             saved[key2] = __spreadProps(__spreadValues({}, saved[key2]), {
               season: last.season,
@@ -24746,9 +25275,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             });
           }
         } catch (err) {
-          _iterator82.e(err);
+          _iterator91.e(err);
         } finally {
-          _iterator82.f();
+          _iterator91.f();
         }
         L.Storage.set("online_watched_last", saved);
       }
@@ -24792,24 +25321,24 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           last = full.last_episode_to_air;
         var aired = last && last.air_date && String(last.air_date).slice(0, 10) <= today2 ? last : null;
         var episodes = /* @__PURE__ */new Map();
-        var _iterator83 = _createForOfIteratorHelper(table),
-          _step83;
+        var _iterator92 = _createForOfIteratorHelper(table),
+          _step92;
         try {
-          for (_iterator83.s(); !(_step83 = _iterator83.n()).done;) {
-            var row = _step83.value;
+          for (_iterator92.s(); !(_step92 = _iterator92.n()).done;) {
+            var row = _step92.value;
             if (row.air_date && String(row.air_date).slice(0, 10) <= today2 && Number(row.season_number) > 0) episodes.set(row.season_number + ":" + row.episode_number, row);
           }
         } catch (err) {
-          _iterator83.e(err);
+          _iterator92.e(err);
         } finally {
-          _iterator83.f();
+          _iterator92.f();
         }
         if (aired) {
-          var _iterator84 = _createForOfIteratorHelper(Array.isArray(full.seasons) ? full.seasons : []),
-            _step84;
+          var _iterator93 = _createForOfIteratorHelper(Array.isArray(full.seasons) ? full.seasons : []),
+            _step93;
           try {
-            for (_iterator84.s(); !(_step84 = _iterator84.n()).done;) {
-              var season = _step84.value;
+            for (_iterator93.s(); !(_step93 = _iterator93.n()).done;) {
+              var season = _step93.value;
               var n = Number(season.season_number);
               if (n <= 0 || n > Number(aired.season_number)) continue;
               var count = n === Number(aired.season_number) ? Number(aired.episode_number) : Number(season.episode_count);
@@ -24819,9 +25348,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               });
             }
           } catch (err) {
-            _iterator84.e(err);
+            _iterator93.e(err);
           } finally {
-            _iterator84.f();
+            _iterator93.f();
           }
         }
         markRows(full, Array.from(episodes.values()).map(function (row) {
@@ -24856,80 +25385,80 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           season = number2(season);
           if (season > 0 && season <= 100) limits.set(season, Math.min(5e3, Math.max(100, limits.get(season) || 0, number2(total))));
         };
-        var _iterator85 = _createForOfIteratorHelper(seasons),
-          _step85;
+        var _iterator94 = _createForOfIteratorHelper(seasons),
+          _step94;
         try {
-          for (_iterator85.s(); !(_step85 = _iterator85.n()).done;) {
-            var row = _step85.value;
+          for (_iterator94.s(); !(_step94 = _iterator94.n()).done;) {
+            var row = _step94.value;
             remember(row.season_number, row.episode_count);
           }
         } catch (err) {
-          _iterator85.e(err);
+          _iterator94.e(err);
         } finally {
-          _iterator85.f();
+          _iterator94.f();
         }
         var table = L.TimeTable && L.TimeTable.get ? L.TimeTable.get(card) || [] : [];
-        var _iterator86 = _createForOfIteratorHelper(table),
-          _step86;
+        var _iterator95 = _createForOfIteratorHelper(table),
+          _step95;
         try {
-          for (_iterator86.s(); !(_step86 = _iterator86.n()).done;) {
-            var _row = _step86.value;
+          for (_iterator95.s(); !(_step95 = _iterator95.n()).done;) {
+            var _row = _step95.value;
             remember(_row.season_number, _row.episode_number);
           }
         } catch (err) {
-          _iterator86.e(err);
+          _iterator95.e(err);
         } finally {
-          _iterator86.f();
+          _iterator95.f();
         }
         var last = L.Storage.get("online_watched_last", {}) || {};
-        var _iterator87 = _createForOfIteratorHelper(titles),
-          _step87;
+        var _iterator96 = _createForOfIteratorHelper(titles),
+          _step96;
         try {
-          for (_iterator87.s(); !(_step87 = _iterator87.n()).done;) {
-            var _title2 = _step87.value;
+          for (_iterator96.s(); !(_step96 = _iterator96.n()).done;) {
+            var _title2 = _step96.value;
             var _row2 = last[L.Utils.hash(_title2)];
             if (_row2) remember(_row2.season, _row2.episode);
           }
         } catch (err) {
-          _iterator87.e(err);
+          _iterator96.e(err);
         } finally {
-          _iterator87.f();
+          _iterator96.f();
         }
         var max = Math.min(100, Math.max.apply(Math, [1, number2(card.number_of_seasons)].concat(_toConsumableArray(limits.keys()))));
         for (var season = 1; season <= max; season++) for (var episode = 1; episode <= (limits.get(season) || 100); episode++) {
-          var _iterator88 = _createForOfIteratorHelper(titles),
-            _step88;
+          var _iterator97 = _createForOfIteratorHelper(titles),
+            _step97;
           try {
-            for (_iterator88.s(); !(_step88 = _iterator88.n()).done;) {
-              var title = _step88.value;
+            for (_iterator97.s(); !(_step97 = _iterator97.n()).done;) {
+              var title = _step97.value;
               keys.add(hash(title, season, episode));
             }
           } catch (err) {
-            _iterator88.e(err);
+            _iterator97.e(err);
           } finally {
-            _iterator88.f();
+            _iterator97.f();
           }
         }
       } else {
-        var _iterator89 = _createForOfIteratorHelper(titles),
-          _step89;
+        var _iterator98 = _createForOfIteratorHelper(titles),
+          _step98;
         try {
-          for (_iterator89.s(); !(_step89 = _iterator89.n()).done;) {
-            var _title3 = _step89.value;
+          for (_iterator98.s(); !(_step98 = _iterator98.n()).done;) {
+            var _title3 = _step98.value;
             keys.add(hash(_title3));
           }
         } catch (err) {
-          _iterator89.e(err);
+          _iterator98.e(err);
         } finally {
-          _iterator89.f();
+          _iterator98.f();
         }
       }
       clearLast(card);
-      var _iterator90 = _createForOfIteratorHelper(keys),
-        _step90;
+      var _iterator99 = _createForOfIteratorHelper(keys),
+        _step99;
       try {
-        for (_iterator90.s(); !(_step90 = _iterator90.n()).done;) {
-          var key2 = _step90.value;
+        for (_iterator99.s(); !(_step99 = _iterator99.n()).done;) {
+          var key2 = _step99.value;
           var _row3 = records[key2];
           if (_row3 && (typeof _row3 === "number" ? _row3 : _row3.percent || _row3.time)) writeTimeline({
             hash: key2,
@@ -24939,9 +25468,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
         }
       } catch (err) {
-        _iterator90.e(err);
+        _iterator99.e(err);
       } finally {
-        _iterator90.f();
+        _iterator99.f();
       }
       revision++;
       snapshots.clear();
@@ -24956,6 +25485,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       folderRows: folderRows,
       folderSeasons: folderSeasons,
       relevantFolders: relevantFolders,
+      episodeRows: episodeRows,
       clearProgress: clearProgress,
       clearTitleProgress: clearTitleProgress,
       setWatched: setWatched,
@@ -24968,7 +25498,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // src/anime-continuations.js
-  var positive2 = function positive2(value) {
+  var positive3 = function positive3(value) {
     return Number.isSafeInteger(Number(value)) && Number(value) > 0;
   };
   var today = function today() {
@@ -24999,14 +25529,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         return Number(row.season_number) === 1;
       });
     if (!first || !season || first.episodes !== Number(season.episode_count) || first.record.season !== 1 || first.record.offset || !files.every(function (row) {
-      return Number(row.season) === 1 && positive2(row.episode) && Number(row.episode) <= first.episodes;
+      return Number(row.season) === 1 && positive3(row.episode) && Number(row.episode) <= first.episodes;
     })) return [];
     var output = [];
-    var _iterator91 = _createForOfIteratorHelper(releases.slice(1)),
-      _step91;
+    var _iterator100 = _createForOfIteratorHelper(releases.slice(1)),
+      _step100;
     try {
       var _loop28 = function _loop28() {
-          var release = _step91.value;
+          var release = _step100.value;
           if (!release.aired || release.aired > today() || release.status === "anons" || !release.original) return 0; // continue
           var map = animeEpisodeMap(release.record, release.episodes, card),
             start = map && map[0];
@@ -25039,16 +25569,16 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             section: section
           });
         },
-        _ret0;
-      for (_iterator91.s(); !(_step91 = _iterator91.n()).done;) {
-        _ret0 = _loop28();
-        if (_ret0 === 0) continue;
-        if (_ret0) return _ret0.v;
+        _ret9;
+      for (_iterator100.s(); !(_step100 = _iterator100.n()).done;) {
+        _ret9 = _loop28();
+        if (_ret9 === 0) continue;
+        if (_ret9) return _ret9.v;
       }
     } catch (err) {
-      _iterator91.e(err);
+      _iterator100.e(err);
     } finally {
-      _iterator91.f();
+      _iterator100.f();
     }
     return output.length <= 8 ? output : [];
   }
@@ -25068,18 +25598,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
   function matchContinuations(parts, rows, base) {
     var entries2 = [];
-    var _iterator92 = _createForOfIteratorHelper(parts),
-      _step92;
+    var _iterator101 = _createForOfIteratorHelper(parts),
+      _step101;
     try {
       var _loop29 = function _loop29() {
-        var part = _step92.value;
+        var part = _step101.value;
         var names = [part.name, part.original].map(titleKey).filter(Boolean);
         var urls = /* @__PURE__ */new Set();
-        var _iterator93 = _createForOfIteratorHelper(rows),
-          _step93;
+        var _iterator102 = _createForOfIteratorHelper(rows),
+          _step102;
         try {
-          for (_iterator93.s(); !(_step93 = _iterator93.n()).done;) {
-            var row = _step93.value;
+          for (_iterator102.s(); !(_step102 = _iterator102.n()).done;) {
+            var row = _step102.value;
             if (!row.similar || row.method !== "link" || String(row.year || row.start_date || "").slice(0, 4) !== part.year) continue;
             if (!String(row.title || row.name || row.text || "").split(/\s+[\/|]\s+/).some(function (name) {
               return names.includes(titleKey(name));
@@ -25088,21 +25618,21 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             if (url && url.searchParams.get("pick") && !url.searchParams.has("s")) urls.add(url.href);
           }
         } catch (err) {
-          _iterator93.e(err);
+          _iterator102.e(err);
         } finally {
-          _iterator93.f();
+          _iterator102.f();
         }
         if (urls.size === 1) entries2.push(__spreadProps(__spreadValues({}, part), {
           url: _toConsumableArray(urls)[0]
         }));
       };
-      for (_iterator92.s(); !(_step92 = _iterator92.n()).done;) {
+      for (_iterator101.s(); !(_step101 = _iterator101.n()).done;) {
         _loop29();
       }
     } catch (err) {
-      _iterator92.e(err);
+      _iterator101.e(err);
     } finally {
-      _iterator92.f();
+      _iterator101.f();
     }
     return entries2;
   }
@@ -25112,7 +25642,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var numbers = files.map(function (file) {
       return Number(file.episode);
     });
-    if (!numbers.every(positive2)) return [];
+    if (!numbers.every(positive3)) return [];
     var local = numbers.every(function (number3) {
       return number3 <= part.count;
     });
@@ -25142,8 +25672,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           if (!parts.length) return done([]);
           var url = kodikRoute(base),
             query = url.searchParams;
-          for (var _i28 = 0, _arr21 = ["id", "imdb_id", "kinopoisk_id", "tmdb_id", "mal_id", "shikimori_id", "kid", "pick", "s", "t", "e", "rjson", "nojson"]; _i28 < _arr21.length; _i28++) {
-            var key3 = _arr21[_i28];
+          for (var _i33 = 0, _arr22 = ["id", "imdb_id", "kinopoisk_id", "tmdb_id", "mal_id", "shikimori_id", "kid", "pick", "s", "t", "e", "rjson", "nojson"]; _i33 < _arr22.length; _i33++) {
+            var key3 = _arr22[_i33];
             query.delete(key3);
           }
           query.set("title", original);
@@ -25155,8 +25685,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             uid: "lampac_unic_id",
             nws_id: "lampac_nws_id"
           };
-          for (var _i29 = 0, _Object$keys = Object.keys(account); _i29 < _Object$keys.length; _i29++) {
-            var name = _Object$keys[_i29];
+          for (var _i34 = 0, _Object$keys = Object.keys(account); _i34 < _Object$keys.length; _i34++) {
+            var name = _Object$keys[_i34];
             var value2 = L.Storage.get(account[name], "");
             if (value2 && !query.has(name)) query.set(name, value2);
           }
@@ -25243,11 +25773,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     })) return [];
     var first = following[0];
     var offset = 0;
-    var _iterator94 = _createForOfIteratorHelper(following),
-      _step94;
+    var _iterator103 = _createForOfIteratorHelper(following),
+      _step103;
     try {
-      for (_iterator94.s(); !(_step94 = _iterator94.n()).done;) {
-        var release = _step94.value;
+      for (_iterator103.s(); !(_step103 = _iterator103.n()).done;) {
+        var release = _step103.value;
         if (Number(release.record.offset || 0) !== offset || !release.original) break;
         var map = animeEpisodeMap(release.record, release.episodes, card);
         var canonical = seasons.find(function (s) {
@@ -25280,9 +25810,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         offset += release.episodes;
       }
     } catch (err) {
-      _iterator94.e(err);
+      _iterator103.e(err);
     } finally {
-      _iterator94.f();
+      _iterator103.f();
     }
     if (result.length < 2 || result.reduce(function (total, p) {
       return total + p.count;
@@ -25339,7 +25869,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var searches = /* @__PURE__ */new Map(),
       reads = /* @__PURE__ */new Map(),
       pending = /* @__PURE__ */new Map(),
-      overrides = /* @__PURE__ */new Map();
+      overrides = /* @__PURE__ */new Map(),
+      bundles = /* @__PURE__ */new Map();
     var scope = function scope() {
       var _a, _b;
       return JSON.stringify([L.Storage.get("account_email", ""), ((_b = (_a = L.Timeline) == null ? void 0 : _a.filename) == null ? void 0 : _b.call(_a)) || "", L.Storage.get("language", "ru")]);
@@ -25403,8 +25934,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     function search(card, base, parts, done) {
       var url = kodikRoute(base),
         q = url.searchParams;
-      for (var _i30 = 0, _arr22 = ["id", "imdb_id", "kinopoisk_id", "tmdb_id", "mal_id", "shikimori_id", "kid", "pick", "s", "t", "e", "rjson", "nojson"]; _i30 < _arr22.length; _i30++) {
-        var name = _arr22[_i30];
+      for (var _i35 = 0, _arr23 = ["id", "imdb_id", "kinopoisk_id", "tmdb_id", "mal_id", "shikimori_id", "kid", "pick", "s", "t", "e", "rjson", "nojson"]; _i35 < _arr23.length; _i35++) {
+        var name = _arr23[_i35];
         q.delete(name);
       }
       var title = card.original_name || card.original_title || card.name;
@@ -25452,6 +25983,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       follow(part.url, 0);
     }
     function join(card, base, body, number3, numbers, done) {
+      var bundle = bundles.get(scope() + "|" + routeKey(base));
+      if (bundle) return readBundle(bundle, base, body, done);
       if (!isAnime(card) || !kodikRoute(base) || numbers.filter(function (n) {
         return n > 0;
       }).length < 2) return done(body, []);
@@ -25474,8 +26007,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             var u = new URL(row.stream || row.url, base),
               link = u.searchParams.get("link");
             if (link) return link;
-            for (var _i31 = 0, _arr23 = ["title", "original_title", "episode", "play"]; _i31 < _arr23.length; _i31++) {
-              var name = _arr23[_i31];
+            for (var _i36 = 0, _arr24 = ["title", "original_title", "episode", "play"]; _i36 < _arr24.length; _i36++) {
+              var name = _arr24[_i36];
               u.searchParams.delete(name);
             }
             u.searchParams.sort();
@@ -25497,48 +26030,48 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (matches.length !== 1) return done(body, []);
         var kept = [];
         var next = 0;
-        var _iterator95 = _createForOfIteratorHelper(parts.sort(function (a, b) {
+        var _iterator104 = _createForOfIteratorHelper(parts.sort(function (a, b) {
             return a.offset - b.offset;
           })),
-          _step95;
+          _step104;
         try {
-          for (_iterator95.s(); !(_step95 = _iterator95.n()).done;) {
-            var _part = _step95.value;
+          for (_iterator104.s(); !(_step104 = _iterator104.n()).done;) {
+            var _part = _step104.value;
             if (_part.offset !== next || !((_a = _part.files) == null ? void 0 : _a.length)) break;
             kept.push(_part);
             next += _part.files.length;
             if (_part.files.length !== _part.count) break;
           }
         } catch (err) {
-          _iterator95.e(err);
+          _iterator104.e(err);
         } finally {
-          _iterator95.f();
+          _iterator104.f();
         }
         if (!kept.includes(matches[0]) || next <= files.length) return done(body, []);
         var box = document.createElement("div");
         box.innerHTML = body;
         var line = box.querySelector(".videos__line") || box;
-        var _iterator96 = _createForOfIteratorHelper(box.querySelectorAll(".videos__item[data-json]")),
-          _step96;
+        var _iterator105 = _createForOfIteratorHelper(box.querySelectorAll(".videos__item[data-json]")),
+          _step105;
         try {
-          for (_iterator96.s(); !(_step96 = _iterator96.n()).done;) {
-            var _node5 = _step96.value;
+          for (_iterator105.s(); !(_step105 = _iterator105.n()).done;) {
+            var _node5 = _step105.value;
             try {
               if (playable2(JSON.parse(_node5.getAttribute("data-json")))) _node5.remove();
             } catch (error) {}
           }
         } catch (err) {
-          _iterator96.e(err);
+          _iterator105.e(err);
         } finally {
-          _iterator96.f();
+          _iterator105.f();
         }
-        for (var _i32 = 0, _kept = kept; _i32 < _kept.length; _i32++) {
-          var part = _kept[_i32];
-          var _iterator97 = _createForOfIteratorHelper(part.files),
-            _step97;
+        for (var _i37 = 0, _kept = kept; _i37 < _kept.length; _i37++) {
+          var part = _kept[_i37];
+          var _iterator106 = _createForOfIteratorHelper(part.files),
+            _step106;
           try {
-            for (_iterator97.s(); !(_step97 = _iterator97.n()).done;) {
-              var row = _step97.value;
+            for (_iterator106.s(); !(_step106 = _iterator106.n()).done;) {
+              var row = _step106.value;
               var original = originals.get(videoIdentity(row)),
                 file = original ? __spreadProps(__spreadValues({}, original), {
                   season: row.season,
@@ -25554,9 +26087,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               line.appendChild(node);
             }
           } catch (err) {
-            _iterator97.e(err);
+            _iterator106.e(err);
           } finally {
-            _iterator97.f();
+            _iterator106.f();
           }
         }
         done(box.innerHTML, kept.map(function (_b) {
@@ -25603,6 +26136,183 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
       });
     }
+    function readBundle(bundle, base, body, done) {
+      var voice = (voices(body).find(function (v) {
+          return v.active;
+        }) || {}).title || "",
+        result = [];
+      var left = bundle.parts.length,
+        ended = false;
+      var timer = setTimeout(function () {
+        return finish(false);
+      }, 6500);
+      function finish(valid) {
+        if (ended) return;
+        ended = true;
+        clearTimeout(timer);
+        if (!valid) return done(body, []);
+        var box = document.createElement("div");
+        box.innerHTML = body;
+        var line = box.querySelector(".videos__line") || box;
+        box.querySelectorAll(".videos__item[data-json]").forEach(function (node) {
+          try {
+            if (playable2(JSON.parse(node.getAttribute("data-json")))) node.remove();
+          } catch (error) {}
+        });
+        var parts = result.sort(function (a, b) {
+          return a.offset - b.offset;
+        });
+        var _iterator107 = _createForOfIteratorHelper(parts),
+          _step107;
+        try {
+          for (_iterator107.s(); !(_step107 = _iterator107.n()).done;) {
+            var part = _step107.value;
+            var _iterator108 = _createForOfIteratorHelper(part.files),
+              _step108;
+            try {
+              for (_iterator108.s(); !(_step108 = _iterator108.n()).done;) {
+                var row = _step108.value;
+                var file = __spreadProps(__spreadValues({}, row), {
+                    season: bundle.source,
+                    lampa_part: part.part
+                  }),
+                  node = document.createElement("div");
+                node.className = "videos__item videos__movie selector";
+                node.setAttribute("s", bundle.source);
+                node.setAttribute("e", file.episode);
+                node.setAttribute("data-json", JSON.stringify(file));
+                node.textContent = file.episode + " серия";
+                line.appendChild(node);
+              }
+            } catch (err) {
+              _iterator108.e(err);
+            } finally {
+              _iterator108.f();
+            }
+          }
+        } catch (err) {
+          _iterator107.e(err);
+        } finally {
+          _iterator107.f();
+        }
+        done(box.innerHTML, parts.map(function (_a) {
+          var _b = _a,
+            files = _b.files,
+            part = __objRest(_b, ["files"]);
+          return __spreadProps(__spreadValues({}, part), {
+            available: files.length
+          });
+        }));
+      }
+      bundle.parts.forEach(function (part) {
+        return read(part, base, voice, function (files) {
+          if (ended) return;
+          if (files.length !== part.count) return finish(false);
+          result.push(__spreadProps(__spreadValues({}, part), {
+            files: files
+          }));
+          if (! --left) finish(true);
+        });
+      });
+    }
+    function collapseFolders(body, layout, card) {
+      var _a;
+      if (!layout) return body;
+      var box = document.createElement("div");
+      box.innerHTML = body;
+      var grouped = /* @__PURE__ */new Map();
+      var changed = false;
+      var _iterator109 = _createForOfIteratorHelper(box.querySelectorAll(".videos__item[data-json]")),
+        _step109;
+      try {
+        for (_iterator109.s(); !(_step109 = _iterator109.n()).done;) {
+          var node = _step109.value;
+          try {
+            var row = JSON.parse(node.getAttribute("data-json")),
+              source = Number((_a = row.season) != null ? _a : new URL(row.url, location.href).searchParams.get("s")),
+              mapped = layout[source];
+            if (!mapped || !Number.isInteger(mapped.offset)) continue;
+            var entries2 = grouped.get(mapped.number) || [];
+            entries2.push({
+              node: node,
+              row: row,
+              mapped: mapped,
+              source: source
+            });
+            grouped.set(mapped.number, entries2);
+          } catch (error) {}
+        }
+      } catch (err) {
+        _iterator109.e(err);
+      } finally {
+        _iterator109.f();
+      }
+      var _iterator110 = _createForOfIteratorHelper(grouped),
+        _step110;
+      try {
+        var _loop31 = function _loop31() {
+            var _step110$value = _slicedToArray(_step110.value, 2),
+              number3 = _step110$value[0],
+              entries2 = _step110$value[1];
+            if (entries2.length < 2) return 0; // continue
+            entries2.sort(function (a, b) {
+              return a.mapped.offset - b.mapped.offset;
+            });
+            var season = (card.seasons || []).find(function (s) {
+              return Number(s.season_number) === number3;
+            });
+            var offset = 0;
+            if (!season || !entries2.every(function (entry) {
+              var valid = entry.mapped.offset === offset && entry.mapped.count > 0;
+              offset += entry.mapped.count;
+              return valid;
+            }) || offset !== Number(season.episode_count)) return 0; // continue
+            var first = entries2[0],
+              parts = entries2.map(function (entry, i) {
+                return {
+                  season: number3,
+                  offset: entry.mapped.offset,
+                  count: entry.mapped.count,
+                  kind: "tv",
+                  part: i + 1,
+                  url: entry.row.url
+                };
+              }),
+              bundle = {
+                source: first.source,
+                parts: parts
+              };
+            bundles.set(scope() + "|" + routeKey(first.row.url), bundle);
+            while (bundles.size > 32) bundles.delete(bundles.keys().next().value);
+            first.mapped.count = offset;
+            first.mapped.parts = parts.length;
+            changed = true;
+            var _iterator111 = _createForOfIteratorHelper(entries2.slice(1)),
+              _step111;
+            try {
+              for (_iterator111.s(); !(_step111 = _iterator111.n()).done;) {
+                var entry = _step111.value;
+                entry.node.remove();
+                delete layout[entry.source];
+              }
+            } catch (err) {
+              _iterator111.e(err);
+            } finally {
+              _iterator111.f();
+            }
+          },
+          _ret0;
+        for (_iterator110.s(); !(_step110 = _iterator110.n()).done;) {
+          _ret0 = _loop31();
+          if (_ret0 === 0) continue;
+        }
+      } catch (err) {
+        _iterator110.e(err);
+      } finally {
+        _iterator110.f();
+      }
+      return changed ? box.innerHTML : body;
+    }
     function routeKey(value) {
       var url = kodikRoute(value);
       return url && url.origin + url.pathname + "|" + url.searchParams.get("pick") + "|" + url.searchParams.get("s");
@@ -25612,11 +26322,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       if (!number3) return body;
       var box = document.createElement("div");
       box.innerHTML = body;
-      var _iterator98 = _createForOfIteratorHelper(box.querySelectorAll(".videos__item[data-json]")),
-        _step98;
+      var _iterator112 = _createForOfIteratorHelper(box.querySelectorAll(".videos__item[data-json]")),
+        _step112;
       try {
-        for (_iterator98.s(); !(_step98 = _iterator98.n()).done;) {
-          var node = _step98.value;
+        for (_iterator112.s(); !(_step112 = _iterator112.n()).done;) {
+          var node = _step112.value;
           try {
             var row = JSON.parse(node.getAttribute("data-json"));
             if (playable2(row)) {
@@ -25628,9 +26338,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           } catch (error) {}
         }
       } catch (err) {
-        _iterator98.e(err);
+        _iterator112.e(err);
       } finally {
-        _iterator98.f();
+        _iterator112.f();
       }
       return box.innerHTML;
     };
@@ -25649,7 +26359,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }),
         max = Math.max.apply(Math, _toConsumableArray(numbers));
       if (!numbers.length || max > 30) return done(body, null);
-      var ended = false;
+      var ended = false,
+        canonical = null;
       var timer = setTimeout(function () {
         return finish([], null);
       }, 6500);
@@ -25657,15 +26368,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (ended) return;
         ended = true;
         clearTimeout(timer);
-        if (!parts.length) return done(body, layout);
+        if (!parts.length) return done(canonical ? collapseFolders(body, layout, canonical) : body, layout);
         var box = document.createElement("div");
         box.innerHTML = body;
         var line = box.querySelector(".videos__line") || box;
-        var _iterator99 = _createForOfIteratorHelper(parts),
-          _step99;
+        var _iterator113 = _createForOfIteratorHelper(parts),
+          _step113;
         try {
-          for (_iterator99.s(); !(_step99 = _iterator99.n()).done;) {
-            var part = _step99.value;
+          for (_iterator113.s(); !(_step113 = _iterator113.n()).done;) {
+            var part = _step113.value;
             overrides.set(routeKey(part.url), part.sourceNumber);
             var node = document.createElement("div");
             node.className = "videos__item videos__season selector";
@@ -25679,16 +26390,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             line.appendChild(node);
           }
         } catch (err) {
-          _iterator99.e(err);
+          _iterator113.e(err);
         } finally {
-          _iterator99.f();
+          _iterator113.f();
         }
         while (overrides.size > 48) overrides.delete(overrides.keys().next().value);
-        done(box.innerHTML, layout);
+        done(canonical ? collapseFolders(box.innerHTML, layout, canonical) : box.innerHTML, layout);
       }
       anime.canonical(card, function (value) {
         if (ended) return;
         if (!value) return finish([], null);
+        canonical = value;
         anime.collection(value, function (model) {
           if (ended) return;
           if (!(model == null ? void 0 : model.complete)) return finish([], null);
@@ -25734,13 +26446,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           })) return finish([], null);
           var layout = {},
             missing = [];
-          var _iterator100 = _createForOfIteratorHelper(existing),
-            _step100;
+          var _iterator114 = _createForOfIteratorHelper(existing),
+            _step114;
           try {
-            var _loop31 = function _loop31() {
-                var _step100$value = _slicedToArray(_step100.value, 2),
-                  source = _step100$value[0],
-                  release = _step100$value[1];
+            var _loop32 = function _loop32() {
+                var _step114$value = _slicedToArray(_step114.value, 2),
+                  source = _step114$value[0],
+                  release = _step114$value[1];
                 var map = animeEpisodeMap(release.record, release.episodes, value);
                 if (!map || !map.every(function (e) {
                   return e.season === map[0].season;
@@ -25749,18 +26461,20 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 };
                 layout[source] = {
                   number: map[0].season,
-                  mal: release.id
+                  mal: release.id,
+                  offset: map[0].episode - 1,
+                  count: map.length
                 };
               },
               _ret1;
-            for (_iterator100.s(); !(_step100 = _iterator100.n()).done;) {
-              _ret1 = _loop31();
+            for (_iterator114.s(); !(_step114 = _iterator114.n()).done;) {
+              _ret1 = _loop32();
               if (_ret1) return _ret1.v;
             }
           } catch (err) {
-            _iterator100.e(err);
+            _iterator114.e(err);
           } finally {
-            _iterator100.f();
+            _iterator114.f();
           }
           var used = new Set(numbers),
             represented = new Set(_toConsumableArray(existing.values()).map(function (n) {
@@ -25773,11 +26487,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             used.add(i + 1);
             represented.add(releases[i].id);
           }
-          var _iterator101 = _createForOfIteratorHelper(all),
-            _step101;
+          var _iterator115 = _createForOfIteratorHelper(all),
+            _step115;
           try {
-            for (_iterator101.s(); !(_step101 = _iterator101.n()).done;) {
-              var release = _step101.value;
+            for (_iterator115.s(); !(_step115 = _iterator115.n()).done;) {
+              var release = _step115.value;
               if (!represented.has(release.id)) {
                 var next = max + 1;
                 while (used.has(next)) next++;
@@ -25788,9 +26502,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               }
             }
           } catch (err) {
-            _iterator101.e(err);
+            _iterator115.e(err);
           } finally {
-            _iterator101.f();
+            _iterator115.f();
           }
           if (missing.length > 3) return finish([], null);
           function discover() {
@@ -25822,7 +26536,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                     }));
                     layout[part.sourceNumber] = {
                       number: map[0].season,
-                      mal: part.id
+                      mal: part.id,
+                      offset: map[0].episode - 1,
+                      count: map.length
                     };
                   }
                   if (! --left) finish(ready, layout);
@@ -25862,429 +26578,6 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     return join;
   }
 
-  // src/anime-franchise.js
-  var positive3 = function positive3(n) {
-    return Number.isSafeInteger(Number(n)) && Number(n) > 0;
-  };
-  var kindNames = {
-    "TV Сериал": "tv",
-    "Фильм": "movie",
-    "Спецвыпуск": "special",
-    "TV Спецвыпуск": "tv_special",
-    "Музыка": "music",
-    "Клип": "music",
-    "OVA": "ova",
-    "ONA": "ona"
-  };
-  var date = function date(value) {
-    return /^\d{4}-\d{2}-\d{2}$/.test(String(value || "")) ? String(value) : "";
-  };
-  function franchiseModel(graph, seed) {
-    var metadata2 = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
-    if (!graph || Number(graph.current_id) !== Number(seed) || !Array.isArray(graph.nodes) || !Array.isArray(graph.links) || graph.nodes.length < 2 || graph.nodes.length > 240 || graph.links.length > 1800) return null;
-    var details = new Map(metadata2.filter(function (v) {
-        return v && positive3(v.id);
-      }).map(function (v) {
-        return [Number(v.id), v];
-      })),
-      nodes = /* @__PURE__ */new Map(),
-      edges = [],
-      seen = /* @__PURE__ */new Set();
-    var _iterator102 = _createForOfIteratorHelper(graph.nodes),
-      _step102;
-    try {
-      for (_iterator102.s(); !(_step102 = _iterator102.n()).done;) {
-        var node = _step102.value;
-        var _id = Number(node.id);
-        if (!positive3(_id) || nodes.has(_id) || typeof node.name !== "string" || !node.name.trim()) return null;
-        var meta = details.get(_id) || {},
-          records = animeRecords({
-            source: "minimal_shiki",
-            id: _id
-          }),
-          record = records.length === 1 ? records[0] : null,
-          kind = meta.kind || record && record.kind || kindNames[node.kind] || String(node.kind || "").toLowerCase(),
-          aired = date(meta.aired_on),
-          year = aired.slice(0, 4) || (Number(node.year) >= 1900 && Number(node.year) <= 2200 ? String(node.year) : "");
-        nodes.set(_id, {
-          id: _id,
-          url: node.url || "",
-          name: locale() === "ru" ? meta.russian || node.name || meta.name : meta.name || node.name,
-          original: meta.name || "",
-          kind: kind,
-          aired: aired,
-          released: date(meta.released_on),
-          year: year,
-          status: meta.status || "",
-          episodes: Number(meta.episodes) || 0,
-          airedCount: Number(meta.episodes_aired) || 0,
-          poster: meta.image && meta.image.original || node.image_url || "",
-          record: record
-        });
-      }
-    } catch (err) {
-      _iterator102.e(err);
-    } finally {
-      _iterator102.f();
-    }
-    if (!nodes.has(Number(seed))) return null;
-    var _iterator103 = _createForOfIteratorHelper(graph.links),
-      _step103;
-    try {
-      for (_iterator103.s(); !(_step103 = _iterator103.n()).done;) {
-        var link = _step103.value;
-        var _from = Number(link.source_id),
-          _to = Number(link.target_id),
-          relation = String(link.relation || "").toLowerCase();
-        if (!nodes.has(_from) || !nodes.has(_to) || _from === _to) return null;
-        var key2 = _from + ":" + _to + ":" + relation;
-        if (!seen.has(key2)) {
-          seen.add(key2);
-          edges.push({
-            from: _from,
-            to: _to,
-            relation: relation
-          });
-        }
-      }
-    } catch (err) {
-      _iterator103.e(err);
-    } finally {
-      _iterator103.f();
-    }
-    var connected = function connected(ids, relations) {
-      var change = true;
-      while (change) {
-        change = false;
-        for (var _i33 = 0, _edges = edges; _i33 < _edges.length; _i33++) {
-          var edge = _edges[_i33];
-          if (relations.includes(edge.relation) && (ids.has(edge.from) || ids.has(edge.to))) {
-            for (var _i34 = 0, _arr24 = [edge.from, edge.to]; _i34 < _arr24.length; _i34++) {
-              var id = _arr24[_i34];
-              if (!ids.has(id)) {
-                ids.add(id);
-                change = true;
-              }
-            }
-          }
-        }
-      }
-      return ids;
-    };
-    var story = connected(/* @__PURE__ */new Set([Number(seed)]), ["prequel", "sequel"]),
-      relevant = connected(new Set(story), ["alternative_version", "summary", "full_story"]);
-    var parents = new Map(_toConsumableArray(nodes.keys()).map(function (id) {
-        return [id, id];
-      })),
-      root = function root(id) {
-        while (parents.get(id) !== id) id = parents.get(id);
-        return id;
-      };
-    for (var _i35 = 0, _edges2 = edges; _i35 < _edges2.length; _i35++) {
-      var edge = _edges2[_i35];
-      if (edge.relation === "alternative_version" && relevant.has(edge.from) && relevant.has(edge.to)) parents.set(root(edge.to), root(edge.from));
-    }
-    var variants = /* @__PURE__ */new Map();
-    var _iterator104 = _createForOfIteratorHelper(relevant),
-      _step104;
-    try {
-      for (_iterator104.s(); !(_step104 = _iterator104.n()).done;) {
-        var _id2 = _step104.value;
-        var r = root(_id2),
-          group = variants.get(r) || [];
-        group.push(_id2);
-        variants.set(r, group);
-      }
-    } catch (err) {
-      _iterator104.e(err);
-    } finally {
-      _iterator104.f();
-    }
-    var compare = function compare(a, b) {
-      var x = nodes.get(a),
-        y = nodes.get(b);
-      return !!y.year - !!x.year || (x.aired || x.year || "9999").localeCompare(y.aired || y.year || "9999") || a - b;
-    };
-    var representative = /* @__PURE__ */new Map(),
-      alternatives = /* @__PURE__ */new Set();
-    var _iterator105 = _createForOfIteratorHelper(variants.values()),
-      _step105;
-    try {
-      for (_iterator105.s(); !(_step105 = _iterator105.n()).done;) {
-        var _group = _step105.value;
-        _group.sort(compare);
-        var selected = _group.includes(Number(seed)) ? Number(seed) : _group[0];
-        var _iterator108 = _createForOfIteratorHelper(_group),
-          _step108;
-        try {
-          for (_iterator108.s(); !(_step108 = _iterator108.n()).done;) {
-            var _id3 = _step108.value;
-            representative.set(_id3, selected);
-            if (_id3 !== selected) alternatives.add(_id3);
-          }
-        } catch (err) {
-          _iterator108.e(err);
-        } finally {
-          _iterator108.f();
-        }
-      }
-    } catch (err) {
-      _iterator105.e(err);
-    } finally {
-      _iterator105.f();
-    }
-    var main = new Set(_toConsumableArray(story).map(function (id) {
-        return representative.get(id) || id;
-      })),
-      directed = new Map(_toConsumableArray(main).map(function (id) {
-        return [id, /* @__PURE__ */new Set()];
-      }));
-    for (var _i36 = 0, _edges3 = edges; _i36 < _edges3.length; _i36++) {
-      var _edge = _edges3[_i36];
-      if (["prequel", "sequel"].includes(_edge.relation)) {
-        var from = _edge.relation === "sequel" ? _edge.from : _edge.to,
-          to = _edge.relation === "sequel" ? _edge.to : _edge.from;
-        from = representative.get(from) || from;
-        to = representative.get(to) || to;
-        if (main.has(from) && main.has(to) && from !== to) directed.get(from).add(to);
-      }
-    }
-    var degrees = new Map(_toConsumableArray(main).map(function (id) {
-      return [id, 0];
-    }));
-    var _iterator106 = _createForOfIteratorHelper(directed.values()),
-      _step106;
-    try {
-      for (_iterator106.s(); !(_step106 = _iterator106.n()).done;) {
-        var values = _step106.value;
-        var _iterator109 = _createForOfIteratorHelper(values),
-          _step109;
-        try {
-          for (_iterator109.s(); !(_step109 = _iterator109.n()).done;) {
-            var _id4 = _step109.value;
-            degrees.set(_id4, degrees.get(_id4) + 1);
-          }
-        } catch (err) {
-          _iterator109.e(err);
-        } finally {
-          _iterator109.f();
-        }
-      }
-    } catch (err) {
-      _iterator106.e(err);
-    } finally {
-      _iterator106.f();
-    }
-    var ready = _toConsumableArray(main).filter(function (id) {
-        return degrees.get(id) === 0;
-      }).sort(compare),
-      ordered = [];
-    while (ready.length) {
-      var id = ready.shift();
-      ordered.push(id);
-      var _iterator107 = _createForOfIteratorHelper(directed.get(id)),
-        _step107;
-      try {
-        for (_iterator107.s(); !(_step107 = _iterator107.n()).done;) {
-          var next = _step107.value;
-          degrees.set(next, degrees.get(next) - 1);
-          if (!degrees.get(next)) {
-            ready.push(next);
-            ready.sort(compare);
-          }
-        }
-      } catch (err) {
-        _iterator107.e(err);
-      } finally {
-        _iterator107.f();
-      }
-    }
-    var complete = ordered.length === main.size;
-    if (!complete) ordered.splice.apply(ordered, [0, ordered.length].concat(_toConsumableArray(_toConsumableArray(main).sort(compare))));
-    var summary = new Set(edges.filter(function (e) {
-      return e.relation === "summary" && (story.has(e.from) || story.has(e.to));
-    }).flatMap(function (e) {
-      return [e.from, e.to];
-    }).filter(function (id) {
-      return !story.has(id);
-    }));
-    summary.forEach(function (id) {
-      return alternatives.add(id);
-    });
-    var related = connected(new Set(relevant), ["prequel", "sequel", "side_story", "parent_story", "spin_off", "alternative_version", "summary", "full_story"]);
-    for (var _i37 = 0, _edges4 = edges; _i37 < _edges4.length; _i37++) {
-      var _edge2 = _edges4[_i37];
-      if (_edge2.relation === "other" && (related.has(_edge2.from) || related.has(_edge2.to))) {
-        if (relevant.has(_edge2.from)) related.add(_edge2.to);
-        if (relevant.has(_edge2.to)) related.add(_edge2.from);
-      }
-    }
-    var rest = _toConsumableArray(related).filter(function (id) {
-      return !main.has(id) && !alternatives.has(id) && !["music", "pv", "cm"].includes(nodes.get(id).kind);
-    });
-    var today2 = (/* @__PURE__ */new Date()).toISOString().slice(0, 10),
-      future = function future(n) {
-        return n.status === "anons" || !!n.aired && n.aired > today2;
-      };
-    function card(id) {
-      var node = nodes.get(id),
-        movie = node.kind === "movie",
-        image2 = /^https:\/\/shikimori\.(?:io|one)\//.test(node.poster) ? node.poster : node.poster.startsWith("/") ? "https://shikimori.io" + node.poster : "";
-      return __spreadProps(__spreadValues({
-        id: id,
-        shikimori_id: id,
-        mal_id: id,
-        source: "minimal_shiki",
-        media_type: movie ? "movie" : "tv",
-        minimal_anime: true,
-        title: node.name,
-        original_title: node.original
-      }, movie ? {
-        release_date: node.aired || node.year
-      } : {
-        name: node.name,
-        original_name: node.original,
-        first_air_date: node.aired || node.year
-      }), {
-        img: image2,
-        episodes: node.episodes,
-        episodes_aired: node.airedCount,
-        status: node.status,
-        minimal_anime_kind: node.kind,
-        minimal_anime_targets: animeTargets(node.record)
-      });
-    }
-    var announced = new Set([].concat(_toConsumableArray(main), _toConsumableArray(alternatives), _toConsumableArray(rest)).filter(function (id) {
-      return future(nodes.get(id));
-    }));
-    var rows = [{
-      key: "story",
-      title: text(complete ? "Основная история" : "Связанные релизы"),
-      ids: ordered
-    }, {
-      key: "alternatives",
-      title: text("Другие версии и пересказы"),
-      ids: _toConsumableArray(alternatives).sort(compare)
-    }, {
-      key: "related",
-      title: text("Ответвления и спецвыпуски"),
-      ids: rest.sort(compare)
-    }, {
-      key: "announced",
-      title: text("Продолжения и анонсы"),
-      ids: _toConsumableArray(announced).sort(compare)
-    }].map(function (row) {
-      return __spreadProps(__spreadValues({}, row), {
-        results: row.ids.filter(function (id) {
-          return row.key === "announced" || !announced.has(id);
-        }).map(card)
-      });
-    }).filter(function (row) {
-      return row.results.length;
-    });
-    return {
-      seed: Number(seed),
-      complete: complete,
-      rows: rows,
-      nodes: _toConsumableArray(nodes.values()),
-      edges: edges
-    };
-  }
-  function franchiseCatalogueRows(model) {
-    var _a;
-    var seen = /* @__PURE__ */new Set(),
-      nodes = new Map(model.nodes.map(function (n) {
-        return [Number(n.id), n];
-      })),
-      first = (_a = model.rows.find(function (r) {
-        return r.key === "story";
-      })) == null ? void 0 : _a.results[0],
-      prefix = String((first == null ? void 0 : first.title) || (first == null ? void 0 : first.name) || "").trim();
-    return model.rows.map(function (row) {
-      return __spreadProps(__spreadValues({}, row), {
-        results: row.results.filter(function (card) {
-          var node = nodes.get(Number(card.id)),
-            name = String((node == null ? void 0 : node.original) || "") + " " + String(card.title || "") + " " + String((node == null ? void 0 : node.url) || "");
-          if (["music", "pv", "cm"].includes(node == null ? void 0 : node.kind) || row.key === "related" && /manner[- _]eizou|урок хороших манер|(?:\s+x\s+|×)/i.test(name)) return false;
-          var type = card.media_type,
-            targets = (card.minimal_anime_targets || []).filter(function (t) {
-              return t.type === type;
-            }),
-            key2 = targets.length === 1 ? type + ":" + targets[0].id : "mal:" + card.id;
-          if (seen.has(key2)) return false;
-          seen.add(key2);
-          return true;
-        }).map(function (card) {
-          var name = String(card.title || card.name || ""),
-            short = prefix && name.toLowerCase().startsWith(prefix.toLowerCase() + ":") ? name.slice(prefix.length + 1).trim() : name;
-          return short !== name ? __spreadProps(__spreadValues(__spreadProps(__spreadValues({}, card), {
-            title: short
-          }), card.name ? {
-            name: short
-          } : {}), {
-            minimal_franchise_full_title: name
-          }) : card;
-        })
-      });
-    }).filter(function (row) {
-      return row.results.length;
-    });
-  }
-  function franchiseViewingOrder(model) {
-    if (!model.complete) return [];
-    var story = model.rows.find(function (row) {
-      return row.key === "story";
-    });
-    if (!story) return [];
-    var ids = new Set(story.results.map(function (c) {
-        return Number(c.id);
-      })),
-      nodes = model.nodes.filter(function (n) {
-        return ids.has(n.id) && n.status !== "anons" && (!n.aired || n.aired <= (/* @__PURE__ */new Date()).toISOString().slice(0, 10));
-      });
-    return nodes.slice().sort(function (a, b) {
-      return (a.aired || a.year || "9999").localeCompare(b.aired || b.year || "9999") || story.results.findIndex(function (c) {
-        return c.id === a.id;
-      }) - story.results.findIndex(function (c) {
-        return c.id === b.id;
-      });
-    }).map(function (node, i) {
-      var _a, _b;
-      return {
-        id: node.id,
-        number: i + 1,
-        name: node.name,
-        year: node.year,
-        kind: node.kind,
-        season: ["tv", "ona", "special", "tv_special"].includes(node.kind) ? Number((_a = node.record) == null ? void 0 : _a.season) || 0 : 0,
-        part: ((_b = node.record) == null ? void 0 : _b.tv) && node.record.season > 0 && nodes.filter(function (n) {
-          var _a2, _b2;
-          return ((_a2 = n.record) == null ? void 0 : _a2.tv) === node.record.tv && ((_b2 = n.record) == null ? void 0 : _b2.season) === node.record.season;
-        }).length > 1 ? nodes.filter(function (n) {
-          var _a2, _b2;
-          return ((_a2 = n.record) == null ? void 0 : _a2.tv) === node.record.tv && ((_b2 = n.record) == null ? void 0 : _b2.season) === node.record.season;
-        }).sort(function (a, b) {
-          return Number(a.record.offset || 0) - Number(b.record.offset || 0);
-        }).findIndex(function (n) {
-          return n.id === node.id;
-        }) + 1 : 0,
-        episodes: node.episodes,
-        alternatives: model.nodes.filter(function (n) {
-          return model.edges.some(function (e) {
-            return e.relation === "alternative_version" && (e.from === node.id && e.to === n.id || e.to === node.id && e.from === n.id);
-          });
-        }).map(function (n) {
-          var _a2;
-          return {
-            id: n.id,
-            kind: n.kind,
-            season: Number((_a2 = n.record) == null ? void 0 : _a2.season) || 0
-          };
-        })
-      };
-    });
-  }
-
   // src/anime-catalogue.js
   var positive4 = function positive4(n) {
     return Number.isSafeInteger(Number(n)) && Number(n) > 0;
@@ -26298,7 +26591,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   function inRelease(episode, release) {
     var aired = time(episode.air_date),
       from = time(release.aired),
-      until = time(release.released || (release.status === "ongoing" ? (/* @__PURE__ */new Date()).toISOString().slice(0, 10) : ""));
+      until = time(release.released || (["ongoing", "released"].includes(release.status) ? (/* @__PURE__ */new Date()).toISOString().slice(0, 10) : ""));
     return Number.isFinite(aired) && Number.isFinite(from) && Number.isFinite(until) && aired >= from - 864e5 && aired <= until + 864e5;
   }
   function releaseGroups(card, files, model, books) {
@@ -26316,11 +26609,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     }) || seasons.reduce(function (n, s) {
       return n + Number(s.episode_count || 0);
     }, 0) !== numbers.length) return null;
-    var _iterator110 = _createForOfIteratorHelper(seasons),
-      _step110;
+    var _iterator116 = _createForOfIteratorHelper(seasons),
+      _step116;
     try {
-      var _loop32 = function _loop32() {
-          var season = _step110.value;
+      var _loop33 = function _loop33() {
+          var season = _step116.value;
           var book = books[season.season_number],
             rows = book && (book.episodes_original || book.episodes);
           if (!Array.isArray(rows) || rows.length !== Number(season.episode_count)) return {
@@ -26337,14 +26630,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           episodes.push.apply(episodes, _toConsumableArray(sorted));
         },
         _ret10;
-      for (_iterator110.s(); !(_step110 = _iterator110.n()).done;) {
-        _ret10 = _loop32();
+      for (_iterator116.s(); !(_step116 = _iterator116.n()).done;) {
+        _ret10 = _loop33();
         if (_ret10) return _ret10.v;
       }
     } catch (err) {
-      _iterator110.e(err);
+      _iterator116.e(err);
     } finally {
-      _iterator110.f();
+      _iterator116.f();
     }
     var releases = model.nodes.filter(function (n) {
       return n.record && Number(n.record.tv) === Number(card.tmdb_id || card.id) && ["tv", "ona"].includes(n.kind) && Number.isSafeInteger(n.episodes) && n.episodes > 0 && n.status !== "anons";
@@ -26357,11 +26650,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       })),
       used = /* @__PURE__ */new Set(),
       groups = [];
-    var _iterator111 = _createForOfIteratorHelper(releases),
-      _step111;
+    var _iterator117 = _createForOfIteratorHelper(releases),
+      _step117;
     try {
-      var _loop33 = function _loop33() {
-          var release = _step111.value;
+      var _loop34 = function _loop34() {
+          var release = _step117.value;
           var map = animeEpisodeMap(release.record, release.episodes, card, books);
           if (map && release.aired && release.released && map.some(function (e) {
             return !e.metadata || !inRelease(e.metadata, release);
@@ -26424,14 +26717,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
         },
         _ret11;
-      for (_iterator111.s(); !(_step111 = _iterator111.n()).done;) {
-        _ret11 = _loop33();
+      for (_iterator117.s(); !(_step117 = _iterator117.n()).done;) {
+        _ret11 = _loop34();
         if (_ret11) return _ret11.v;
       }
     } catch (err) {
-      _iterator111.e(err);
+      _iterator117.e(err);
     } finally {
-      _iterator111.f();
+      _iterator117.f();
     }
     if (used.size !== episodes.length) return null;
     groups.sort(function (a, b) {
@@ -26469,11 +26762,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
   function joinedPartsBook(parts, books) {
     var result = {};
-    var _iterator112 = _createForOfIteratorHelper(parts),
-      _step112;
+    var _iterator118 = _createForOfIteratorHelper(parts),
+      _step118;
     try {
-      var _loop34 = function _loop34() {
-        var part = _step112.value;
+      var _loop35 = function _loop35() {
+        var part = _step118.value;
         var source = books[part.season],
           rows = source && (source.episodes_original || source.episodes) || [];
         var available = Number(part.available || part.count);
@@ -26501,13 +26794,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
         });
       };
-      for (_iterator112.s(); !(_step112 = _iterator112.n()).done;) {
-        _loop34();
+      for (_iterator118.s(); !(_step118 = _iterator118.n()).done;) {
+        _loop35();
       }
     } catch (err) {
-      _iterator112.e(err);
+      _iterator118.e(err);
     } finally {
-      _iterator112.f();
+      _iterator118.f();
     }
     return Object.keys(result).length ? result : null;
   }
@@ -26540,7 +26833,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       pump();
     }
     function pump() {
-      var _loop35 = function _loop35() {
+      var _loop36 = function _loop36() {
         var finish = function finish(value) {
           if (settled) return;
           settled = true;
@@ -26603,7 +26896,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
       };
       while (active < 2 && queue.length) {
-        _loop35();
+        _loop36();
       }
     }
     function canonical(card, done) {
@@ -26827,45 +27120,73 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             }),
             books = {};
           if (!seasons.length || seasons.length > 100) return done(null);
-          var left = seasons.length;
-          seasons.forEach(function (s) {
-            return load("tv/" + value.id + "/season/" + s.season_number, function (response) {
-              books[s.season_number] = response;
-              if (--left) return;
-              var map = animeEpisodeMap(release.record, files.length, value, books);
-              if (map && map.some(function (e) {
-                return !e.metadata || !inRelease(e.metadata, release);
-              })) map = null;
-              if (!map) {
-                var rows = seasons.flatMap(function (s2) {
-                  return books[s2.season_number] && (books[s2.season_number].episodes_original || books[s2.season_number].episodes) || [];
-                }).filter(function (e) {
-                  return inRelease(e, release);
-                });
-                if (files.length !== release.episodes || rows.length !== release.episodes) return done(null);
-                map = rows.map(function (metadata2, i) {
-                  return {
-                    number: i + 1,
-                    metadata: metadata2
-                  };
-                });
-              }
-              var book = {};
-              map.forEach(function (e) {
-                var _a, _b;
-                return book[e.number] = __spreadProps(__spreadValues({}, e.metadata), {
-                  lampa_grouped: true,
-                  lampa_season_name: seasonName({
-                    seasons: [{
-                      season_number: number3,
-                      name: release.name
-                    }]
-                  }, number3, __spreadProps(__spreadValues({}, card), {
-                    lampa_series_names: [(_a = main[0]) == null ? void 0 : _a.name, (_b = main[0]) == null ? void 0 : _b.original]
-                  }))
-                });
+          function loadSeasons(numbers2, next) {
+            var unread = numbers2.filter(function (n) {
+              return !Object.prototype.hasOwnProperty.call(books, n);
+            });
+            var left = unread.length;
+            if (!left) return next();
+            unread.forEach(function (n) {
+              return load("tv/" + value.id + "/season/" + n, function (response) {
+                books[n] = response;
+                if (! --left) next();
               });
-              done(Object.keys(book).length === files.length ? book : null);
+            });
+          }
+          function finish(map) {
+            var book = {};
+            map.forEach(function (e) {
+              var _a, _b;
+              return book[e.number] = __spreadProps(__spreadValues({}, e.metadata), {
+                lampa_grouped: true,
+                lampa_season_name: seasonName({
+                  seasons: [{
+                    season_number: number3,
+                    name: release.name
+                  }]
+                }, number3, __spreadProps(__spreadValues({}, card), {
+                  lampa_series_names: [(_a = main[0]) == null ? void 0 : _a.name, (_b = main[0]) == null ? void 0 : _b.original]
+                }))
+              });
+            });
+            done(Object.keys(book).length === files.length ? book : null);
+          }
+          var mapped = animeEpisodeMap(release.record, files.length, value);
+          loadSeasons(mapped ? _toConsumableArray(new Set(mapped.map(function (e) {
+            return e.season;
+          }))) : [], function () {
+            var map = mapped && animeEpisodeMap(release.record, files.length, value, books);
+            if (map && map.every(function (e) {
+              return e.metadata && inRelease(e.metadata, release);
+            })) return finish(map);
+            if (files.length !== release.episodes) return done(null);
+            var sorted = seasons.slice().sort(function (a, b) {
+                return a.season_number - b.season_number;
+              }),
+              from = time(release.aired),
+              until = time(release.released);
+            var fallback = sorted.filter(function (s, i) {
+              var _a;
+              var start = time(s.air_date),
+                next = time((_a = sorted[i + 1]) == null ? void 0 : _a.air_date);
+              return !(Number.isFinite(start) && Number.isFinite(until) && start > until + 864e5 || Number.isFinite(next) && next < from - 864e5);
+            });
+            if (!fallback.length || fallback.length > 12) return done(null);
+            loadSeasons(fallback.map(function (s) {
+              return s.season_number;
+            }), function () {
+              var rows = fallback.flatMap(function (s) {
+                return books[s.season_number] && (books[s.season_number].episodes_original || books[s.season_number].episodes) || [];
+              }).filter(function (e) {
+                return inRelease(e, release);
+              });
+              if (rows.length !== release.episodes) return done(null);
+              finish(rows.map(function (metadata2, i) {
+                return {
+                  number: i + 1,
+                  metadata: metadata2
+                };
+              }));
             });
           });
         });
@@ -26954,7 +27275,6 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
       });
       collection(card, function (model) {
-        var _link$rows2;
         link._minimalAnimePending = false;
         if (disposed || !model || !model.rows.some(function (r) {
           return r.results.some(function (c) {
@@ -26963,81 +27283,102 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         })) return;
         var current = L.Activity && L.Activity.active && L.Activity.active();
         if (!current || !current.activity || current.activity.component !== link) return;
+        var header = link.items[0],
+          render = header && header.render(true),
+          root = render && (render.nodeType ? render : render[0]),
+          right = root && root.querySelector(".full-start-new__right");
+        if (!right) return;
         link._minimalAnimeMounted = true;
-        var rows = franchiseCatalogueRows(model).map(function (row) {
-          return ["cards", {
-            title: row.title,
-            source: "minimal_anime_collection",
-            url: JSON.stringify({
-              seed: model.seed,
-              row: row.key
-            }),
-            results: row.results.slice(0, 20),
-            total_pages: Math.max(1, Math.ceil(row.results.length / 20)),
-            minimal_anime_collection: true
-          }];
-        });
-        var first = link.rows.findIndex(function (row) {
-          return Array.isArray(row) && row[0] === "cards";
-        });
-        var index2 = first < 0 ? link.rows.length : first;
-        var focused = link.items[link.active];
-        if (link.active >= index2) index2 = link.items.length;
-        if (index2 < link.items.length) {
-          var _link$items;
-          var length = link.items.length,
-            previous = link.fragment;
-          link.fragment = document.createDocumentFragment();
-          rows.forEach(function (row) {
-            return link.emit("createAndAppend", row);
+        var wrap = document.createElement("div");
+        wrap.className = "minimal-anime-franchise";
+        var control = document.createElement("button");
+        control.type = "button";
+        control.className = "minimal-anime-franchise__button selector";
+        control.textContent = text("Порядок просмотра");
+        control.setAttribute("aria-haspopup", "listbox");
+        wrap.appendChild(control);
+        right.appendChild(wrap);
+        var arrow = document.createElement("span");
+        arrow.textContent = "⌄";
+        arrow.setAttribute("aria-hidden", "true");
+        control.appendChild(arrow);
+        var remember = function remember() {
+            header.last = control;
+          },
+          back = function back() {
+            L.Select.hide();
+            if (control.isConnected) {
+              remember();
+              L.Controller.toggle("full_start");
+            }
+          };
+        var escape = function escape(value) {
+          return String(value).replace(/[&<>"']/g, function (c) {
+            return {
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;"
+            }[c];
           });
-          var added = link.items.splice(length);
-          (_link$items = link.items).splice.apply(_link$items, [index2, 0].concat(_toConsumableArray(added)));
-          var before = link.items[index2 + added.length],
-            render = before && before.render(true),
-            node = render && (render.nodeType ? render : render[0]);
-          if (node && node.parentNode) node.parentNode.insertBefore(link.fragment, node);else link.scroll.append(link.fragment);
-          link.fragment = previous;
-        }
-        (_link$rows2 = link.rows).splice.apply(_link$rows2, [index2, 0].concat(_toConsumableArray(rows)));
-        var order = franchiseViewingOrder(model);
-        if (order.length > 1) {
-          var guide = document.createElement("section");
-          guide.className = "minimal-anime-order";
-          var heading = document.createElement("h2");
-          heading.textContent = text("Порядок просмотра");
-          guide.appendChild(heading);
-          var note = document.createElement("p");
-          note.textContent = text("По порядку выхода. Пересказы и ответвления показаны отдельно.");
-          guide.appendChild(note);
-          var list = document.createElement("ol");
-          guide.appendChild(list);
-          order.forEach(function (step) {
-            var item = document.createElement("li"),
-              label = document.createElement("strong"),
-              name = document.createElement("span"),
-              detail2 = document.createElement("small");
-            var film = step.kind === "movie",
-              type = film ? text("Фильм") : step.season ? text("Сезон {0}", [step.season]) : ["special", "tv_special", "ova"].includes(step.kind) ? text("Спецвыпуски") : text("Сериал");
-            label.textContent = step.number + ". " + type + (step.part ? " \xB7 " + text("Часть {0}", [step.part]) : "");
-            name.textContent = step.name;
-            detail2.textContent = [step.year].concat(_toConsumableArray(step.episodes > 1 ? [text("Эпизодов в релизе: {0}", [step.episodes])] : []), _toConsumableArray(step.alternatives.filter(function (a) {
-              return a.season > 0;
-            }).map(function (a) {
-              return text("ТВ-версия: сезон {0}", [a.season]);
-            }))).filter(Boolean).join(" \xB7 ");
-            [label, name, detail2].forEach(function (node2) {
-              return item.appendChild(node2);
+        };
+        function open() {
+          if (disposed || !control.isConnected) return;
+          remember();
+          var groups2 = franchiseMenuGroups(model),
+            items = [];
+          groups2.forEach(function (group) {
+            items.push({
+              title: escape(group.title),
+              separator: true
             });
-            list.appendChild(item);
+            group.entries.forEach(function (entry) {
+              return items.push({
+                title: escape(entry.title),
+                subtitle: escape(entry.subtitle),
+                card: entry.card,
+                selected: Number(entry.card.id) === Number(card.shikimori_id || card.mal_id || model.seed)
+              });
+            });
           });
-          var first2 = link.items[index2],
-            _render3 = first2 && first2.render(true),
-            _node6 = _render3 && (_render3.nodeType ? _render3 : _render3[0]);
-          if (_node6 == null ? void 0 : _node6.parentNode) _node6.parentNode.insertBefore(guide, _node6);else link.scroll.append(guide);
+          L.Select.show({
+            title: text("Порядок просмотра"),
+            items: items,
+            onFullDraw: function onFullDraw(scroll) {
+              scroll.body().find(".settings-param-title").addClass("minimal-season-section");
+              scroll.body().find(".selectbox-item").addClass("minimal-anime-franchise__item");
+            },
+            onSelect: function onSelect(entry) {
+              L.Select.hide();
+              var selected = entry.card;
+              if (!selected) return back();
+              if (Number(selected.id) === Number(card.shikimori_id || card.mal_id)) return back();
+              L.Activity.push({
+                component: "full",
+                source: selected.source,
+                id: selected.id,
+                method: selected.media_type,
+                card: selected
+              });
+            },
+            onBack: back
+          });
         }
-        link.active = Math.max(0, link.items.indexOf(focused));
-        if (link.emit) link.emit("scroll", 0);
+        control.addEventListener("hover:focus", remember);
+        control.addEventListener("hover:enter", open);
+        control.addEventListener("click", function (event2) {
+          event2.preventDefault();
+          event2.stopImmediatePropagation();
+          open();
+        });
+        control.addEventListener("keydown", function (event2) {
+          if (event2.key === "Enter" || event2.key === " ") {
+            event2.preventDefault();
+            event2.stopImmediatePropagation();
+            open();
+          }
+        });
       });
     }
     if (L.Listener && L.Listener.follow) {
@@ -27083,11 +27424,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var known = /* @__PURE__ */new Map(),
       seen = /* @__PURE__ */new Set(),
       rows = [];
-    var _iterator113 = _createForOfIteratorHelper(seasons),
-      _step113;
+    var _iterator119 = _createForOfIteratorHelper(seasons),
+      _step119;
     try {
-      for (_iterator113.s(); !(_step113 = _iterator113.n()).done;) {
-        var s = _step113.value;
+      for (_iterator119.s(); !(_step119 = _iterator119.n()).done;) {
+        var s = _step119.value;
         if (!positive5(s.season_number) || !positive5(s.episode_count)) continue;
         var n = Number(s.season_number);
         if (known.has(n)) return null;
@@ -27098,15 +27439,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
       }
     } catch (err) {
-      _iterator113.e(err);
+      _iterator119.e(err);
     } finally {
-      _iterator113.f();
+      _iterator119.f();
     }
-    var _iterator114 = _createForOfIteratorHelper(episodes),
-      _step114;
+    var _iterator120 = _createForOfIteratorHelper(episodes),
+      _step120;
     try {
-      for (_iterator114.s(); !(_step114 = _iterator114.n()).done;) {
-        var e = _step114.value;
+      for (_iterator120.s(); !(_step120 = _iterator120.n()).done;) {
+        var e = _step120.value;
         var season = Number(e.season_number),
           number3 = Number(e.tmdb_episode_number),
           key2 = season + ":" + number3;
@@ -27132,18 +27473,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
       }
     } catch (err) {
-      _iterator114.e(err);
+      _iterator120.e(err);
     } finally {
-      _iterator114.f();
+      _iterator120.f();
     }
     rows.sort(function (a, b) {
       return a.season - b.season || a.number - b.number;
     });
-    var _iterator115 = _createForOfIteratorHelper(known.values()),
-      _step115;
+    var _iterator121 = _createForOfIteratorHelper(known.values()),
+      _step121;
     try {
-      var _loop36 = function _loop36() {
-          var s = _step115.value;
+      var _loop37 = function _loop37() {
+          var s = _step121.value;
           if (rows.filter(function (e) {
             return e.season === s.number;
           }).length !== s.count) return {
@@ -27151,14 +27492,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           };
         },
         _ret12;
-      for (_iterator115.s(); !(_step115 = _iterator115.n()).done;) {
-        _ret12 = _loop36();
+      for (_iterator121.s(); !(_step121 = _iterator121.n()).done;) {
+        _ret12 = _loop37();
         if (_ret12) return _ret12.v;
       }
     } catch (err) {
-      _iterator115.e(err);
+      _iterator121.e(err);
     } finally {
-      _iterator115.f();
+      _iterator121.f();
     }
     var groups = _toConsumableArray(known.values()).sort(function (a, b) {
       return a.number - b.number;
@@ -27525,16 +27866,16 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var _a;
     if (!spec || !["dorama", "tvshow"].includes(spec.kind) || !Array.isArray(spec.countries) || !spec.countries.length) return [];
     var queries = [];
-    var _iterator116 = _createForOfIteratorHelper(spec.countries.slice(0, 2)),
-      _step116;
+    var _iterator122 = _createForOfIteratorHelper(spec.countries.slice(0, 2)),
+      _step122;
     try {
-      for (_iterator116.s(); !(_step116 = _iterator116.n()).done;) {
-        var country = _step116.value;
-        var _iterator117 = _createForOfIteratorHelper((((_a = spec.genres) == null ? void 0 : _a.length) ? spec.genres : [""]).slice(0, 2)),
-          _step117;
+      for (_iterator122.s(); !(_step122 = _iterator122.n()).done;) {
+        var country = _step122.value;
+        var _iterator123 = _createForOfIteratorHelper((((_a = spec.genres) == null ? void 0 : _a.length) ? spec.genres : [""]).slice(0, 2)),
+          _step123;
         try {
-          for (_iterator117.s(); !(_step117 = _iterator117.n()).done;) {
-            var genre = _step117.value;
+          for (_iterator123.s(); !(_step123 = _iterator123.n()).done;) {
+            var genre = _step123.value;
             var p = new URLSearchParams({
               type: "tv",
               country: country,
@@ -27549,15 +27890,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             queries.push("titles?" + p);
           }
         } catch (err) {
-          _iterator117.e(err);
+          _iterator123.e(err);
         } finally {
-          _iterator117.f();
+          _iterator123.f();
         }
       }
     } catch (err) {
-      _iterator116.e(err);
+      _iterator122.e(err);
     } finally {
-      _iterator116.f();
+      _iterator122.f();
     }
     return queries;
   }
@@ -27671,7 +28012,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           var visible = rows.filter(Boolean);
           return visible.length ? ok(visible) : fail();
         }
-        var _loop37 = function _loop37() {
+        var _loop38 = function _loop38() {
           var index2 = cursor++,
             job = plan[index2],
             url = JSON.stringify(job.spec),
@@ -27708,7 +28049,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
         };
         while (!ended && active < 2 && cursor < plan.length) {
-          if (_loop37()) continue;
+          if (_loop38()) continue;
         }
         if (done === plan.length) pump();
       }
@@ -27793,7 +28134,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           args[_key6] = arguments[_key6];
         }
         var request = _construct(Native, args);
-        var _loop38 = function _loop38() {
+        var _loop39 = function _loop39() {
           var method = _arr25[_i39];
           var send = request[method];
           if (typeof send !== "function") return 1; // continue
@@ -27816,7 +28157,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           };
         };
         for (var _i39 = 0, _arr25 = ["silent", "native"]; _i39 < _arr25.length; _i39++) {
-          if (_loop38()) continue;
+          if (_loop39()) continue;
         }
         return request;
       };
@@ -28382,18 +28723,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     };
     var group, winter;
     function update() {
-      var _iterator118 = _createForOfIteratorHelper(origins),
-        _step118;
+      var _iterator124 = _createForOfIteratorHelper(origins),
+        _step124;
       try {
-        for (_iterator118.s(); !(_step118 = _iterator118.n()).done;) {
-          var _step118$value = _slicedToArray(_step118.value, 1),
-            _button = _step118$value[0];
+        for (_iterator124.s(); !(_step124 = _iterator124.n()).done;) {
+          var _step124$value = _slicedToArray(_step124.value, 1),
+            _button = _step124$value[0];
           if (!_button.isConnected) origins.delete(_button);
         }
       } catch (err) {
-        _iterator118.e(err);
+        _iterator124.e(err);
       } finally {
-        _iterator118.f();
+        _iterator124.f();
       }
       var logo = head.querySelector(".head__logo-icon");
       if (!logo) return;
@@ -28435,11 +28776,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             group.className = "pt-holiday-icons";
           }
           if (group.parentNode !== logo.parentNode || group.nextSibling !== logo) logo.before(group);
-          var _iterator119 = _createForOfIteratorHelper(buttons),
-            _step119;
+          var _iterator125 = _createForOfIteratorHelper(buttons),
+            _step125;
           try {
-            var _loop39 = function _loop39() {
-              var button = _step119.value;
+            var _loop40 = function _loop40() {
+              var button = _step125.value;
               if (!origins.has(button)) {
                 var native = document.createElement("span");
                 native.className = "pt-holiday-native";
@@ -28461,13 +28802,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               }
               if (button.parentNode !== group) group.appendChild(button);
             };
-            for (_iterator119.s(); !(_step119 = _iterator119.n()).done;) {
-              _loop39();
+            for (_iterator125.s(); !(_step125 = _iterator125.n()).done;) {
+              _loop40();
             }
           } catch (err) {
-            _iterator119.e(err);
+            _iterator125.e(err);
           } finally {
-            _iterator119.f();
+            _iterator125.f();
           }
           if (snow) {
             if (!winter) {
@@ -28481,17 +28822,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           } else if (winter) winter.remove();
         } else if (group) group.remove();
         for (var _i42 = 0, _Array$from4 = Array.from(head.children); _i42 < _Array$from4.length; _i42++) {
-          var _node7 = _Array$from4[_i42];
-          if (_node7.classList.contains("garland")) logo.appendChild(_node7);
+          var _node6 = _Array$from4[_i42];
+          if (_node6.classList.contains("garland")) logo.appendChild(_node6);
         }
       } else {
-        var _iterator120 = _createForOfIteratorHelper(origins),
-          _step120;
+        var _iterator126 = _createForOfIteratorHelper(origins),
+          _step126;
         try {
-          for (_iterator120.s(); !(_step120 = _iterator120.n()).done;) {
-            var _step120$value = _slicedToArray(_step120.value, 2),
-              button = _step120$value[0],
-              origin = _step120$value[1];
+          for (_iterator126.s(); !(_step126 = _iterator126.n()).done;) {
+            var _step126$value = _slicedToArray(_step126.value, 2),
+              button = _step126$value[0],
+              origin = _step126$value[1];
             origin.icon.remove();
             while (origin.native.firstChild) button.insertBefore(origin.native.firstChild, origin.native);
             origin.native.remove();
@@ -28499,15 +28840,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             if (origin.parent.isConnected) origin.parent.insertBefore(button, origin.next && origin.next.parentNode === origin.parent ? origin.next : null);
           }
         } catch (err) {
-          _iterator120.e(err);
+          _iterator126.e(err);
         } finally {
-          _iterator120.f();
+          _iterator126.f();
         }
         origins.clear();
         if (group) group.remove();
         for (var _i43 = 0, _Array$from5 = Array.from(logo.children); _i43 < _Array$from5.length; _i43++) {
-          var _node8 = _Array$from5[_i43];
-          if (_node8.classList.contains("garland")) head.insertBefore(_node8, head.firstChild);
+          var _node7 = _Array$from5[_i43];
+          if (_node7.classList.contains("garland")) head.insertBefore(_node7, head.firstChild);
         }
       }
     }
@@ -28666,24 +29007,24 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       return Number.isFinite(n) ? Math.max(0.8, Math.min(2, n / 100)) : 1;
     };
     function restore() {
-      var _iterator121 = _createForOfIteratorHelper(applied),
-        _step121;
+      var _iterator127 = _createForOfIteratorHelper(applied),
+        _step127;
       try {
-        for (_iterator121.s(); !(_step121 = _iterator121.n()).done;) {
-          var _step121$value = _step121.value,
-            el = _step121$value.el,
-            prop = _step121$value.prop,
-            old = _step121$value.old,
-            priority = _step121$value.priority,
-            value = _step121$value.value;
+        for (_iterator127.s(); !(_step127 = _iterator127.n()).done;) {
+          var _step127$value = _step127.value,
+            el = _step127$value.el,
+            prop = _step127$value.prop,
+            old = _step127$value.old,
+            priority = _step127$value.priority,
+            value = _step127$value.value;
           if (el.style.getPropertyValue(prop) === value) {
             if (old) el.style.setProperty(prop, old, priority);else el.style.removeProperty(prop);
           }
         }
       } catch (err) {
-        _iterator121.e(err);
+        _iterator127.e(err);
       } finally {
-        _iterator121.f();
+        _iterator127.f();
       }
       applied = [];
     }
@@ -28724,11 +29065,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }
       function measure(el, props, scale) {
         var css = getComputedStyle(el);
-        var _iterator122 = _createForOfIteratorHelper(props),
-          _step122;
+        var _iterator128 = _createForOfIteratorHelper(props),
+          _step128;
         try {
-          for (_iterator122.s(); !(_step122 = _iterator122.n()).done;) {
-            var prop = _step122.value;
+          for (_iterator128.s(); !(_step128 = _iterator128.n()).done;) {
+            var prop = _step128.value;
             var base = css.getPropertyValue(prop);
             if (!/^\d+(?:\.\d+)?px$/.test(base)) continue;
             var value = (parseFloat(base) * scale).toFixed(2) + "px";
@@ -28741,55 +29082,55 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             });
           }
         } catch (err) {
-          _iterator122.e(err);
+          _iterator128.e(err);
         } finally {
-          _iterator122.f();
+          _iterator128.f();
         }
       }
       if (text2 !== 1) {
-        var _iterator123 = _createForOfIteratorHelper(select(TEXT)),
-          _step123;
+        var _iterator129 = _createForOfIteratorHelper(select(TEXT)),
+          _step129;
         try {
-          for (_iterator123.s(); !(_step123 = _iterator123.n()).done;) {
-            var el = _step123.value;
+          for (_iterator129.s(); !(_step129 = _iterator129.n()).done;) {
+            var el = _step129.value;
             if (!el.querySelector(TEXT)) measure(el, ["font-size"], text2);
           }
         } catch (err) {
-          _iterator123.e(err);
+          _iterator129.e(err);
         } finally {
-          _iterator123.f();
+          _iterator129.f();
         }
       }
       if (controls !== 1) {
-        var _iterator124 = _createForOfIteratorHelper(select(CONTROLS)),
-          _step124;
+        var _iterator130 = _createForOfIteratorHelper(select(CONTROLS)),
+          _step130;
         try {
-          for (_iterator124.s(); !(_step124 = _iterator124.n()).done;) {
-            var _el2 = _step124.value;
+          for (_iterator130.s(); !(_step130 = _iterator130.n()).done;) {
+            var _el2 = _step130.value;
             measure(_el2, ["padding-top", "padding-bottom", "padding-left", "padding-right", "min-height"], controls);
           }
         } catch (err) {
-          _iterator124.e(err);
+          _iterator130.e(err);
         } finally {
-          _iterator124.f();
+          _iterator130.f();
         }
-        var _iterator125 = _createForOfIteratorHelper(select(ICONS)),
-          _step125;
+        var _iterator131 = _createForOfIteratorHelper(select(ICONS)),
+          _step131;
         try {
-          for (_iterator125.s(); !(_step125 = _iterator125.n()).done;) {
-            var _el3 = _step125.value;
+          for (_iterator131.s(); !(_step131 = _iterator131.n()).done;) {
+            var _el3 = _step131.value;
             measure(_el3, ["width", "height", "min-width"], controls);
           }
         } catch (err) {
-          _iterator125.e(err);
+          _iterator131.e(err);
         } finally {
-          _iterator125.f();
+          _iterator131.f();
         }
-        var _iterator126 = _createForOfIteratorHelper(select(ACTIONS + ",.head__action,.head__menu-icon,.nova-chip,.nova-btn,.alc-chip,.alc-ap__play")),
-          _step126;
+        var _iterator132 = _createForOfIteratorHelper(select(ACTIONS + ",.head__action,.head__menu-icon,.nova-chip,.nova-btn,.alc-chip,.alc-ap__play")),
+          _step132;
         try {
-          var _loop40 = function _loop40() {
-            var el = _step126.value;
+          var _loop41 = function _loop41() {
+            var el = _step132.value;
             var height = el.getBoundingClientRect().height;
             if (height) {
               var old = changes.findIndex(function (c) {
@@ -28799,43 +29140,43 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               set(el, "min-height", (height * controls).toFixed(2) + "px");
             }
           };
-          for (_iterator126.s(); !(_step126 = _iterator126.n()).done;) {
-            _loop40();
+          for (_iterator132.s(); !(_step132 = _iterator132.n()).done;) {
+            _loop41();
           }
         } catch (err) {
-          _iterator126.e(err);
+          _iterator132.e(err);
         } finally {
-          _iterator126.f();
+          _iterator132.f();
         }
-        var _iterator127 = _createForOfIteratorHelper(select(".head,.head__body")),
-          _step127;
+        var _iterator133 = _createForOfIteratorHelper(select(".head,.head__body")),
+          _step133;
         try {
-          for (_iterator127.s(); !(_step127 = _iterator127.n()).done;) {
-            var _el4 = _step127.value;
+          for (_iterator133.s(); !(_step133 = _iterator133.n()).done;) {
+            var _el4 = _step133.value;
             measure(_el4, ["height"], controls);
           }
         } catch (err) {
-          _iterator127.e(err);
+          _iterator133.e(err);
         } finally {
-          _iterator127.f();
+          _iterator133.f();
         }
-        var _iterator128 = _createForOfIteratorHelper(select(".head__action:not(.open--search),.head__menu-icon")),
-          _step128;
+        var _iterator134 = _createForOfIteratorHelper(select(".head__action:not(.open--search),.head__menu-icon")),
+          _step134;
         try {
-          for (_iterator128.s(); !(_step128 = _iterator128.n()).done;) {
-            var _el5 = _step128.value;
+          for (_iterator134.s(); !(_step134 = _iterator134.n()).done;) {
+            var _el5 = _step134.value;
             measure(_el5, ["width", "flex-basis"], controls);
           }
         } catch (err) {
-          _iterator128.e(err);
+          _iterator134.e(err);
         } finally {
-          _iterator128.f();
+          _iterator134.f();
         }
-        var _iterator129 = _createForOfIteratorHelper(select(ACTIONS)),
-          _step129;
+        var _iterator135 = _createForOfIteratorHelper(select(ACTIONS)),
+          _step135;
         try {
-          for (_iterator129.s(); !(_step129 = _iterator129.n()).done;) {
-            var _el6 = _step129.value;
+          for (_iterator135.s(); !(_step135 = _iterator135.n()).done;) {
+            var _el6 = _step135.value;
             var size = getComputedStyle(_el6),
               _width2 = _el6.getBoundingClientRect().width;
             if (_width2 && _width2 < _el6.parentElement.clientWidth * 0.5) set(_el6, "min-width", (_width2 * controls).toFixed(2) + "px");
@@ -28843,16 +29184,16 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             set(_el6, "flex-shrink", "0");
           }
         } catch (err) {
-          _iterator129.e(err);
+          _iterator135.e(err);
         } finally {
-          _iterator129.f();
+          _iterator135.f();
         }
         if (!document.body.classList.contains("pt-mobile")) {
-          var _iterator130 = _createForOfIteratorHelper(select(".minimal-detail-identity")),
-            _step130;
+          var _iterator136 = _createForOfIteratorHelper(select(".minimal-detail-identity")),
+            _step136;
           try {
-            for (_iterator130.s(); !(_step130 = _iterator130.n()).done;) {
-              var _el = _step130.value;
+            for (_iterator136.s(); !(_step136 = _iterator136.n()).done;) {
+              var _el = _step136.value;
               var width = Math.min(_el.getBoundingClientRect().width * controls, window.innerWidth * 0.45);
               if (width) {
                 set(_el, "width", width.toFixed(2) + "px");
@@ -28860,18 +29201,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               }
             }
           } catch (err) {
-            _iterator130.e(err);
+            _iterator136.e(err);
           } finally {
-            _iterator130.f();
+            _iterator136.f();
           }
         }
       }
       if (cards !== 1) {
-        var _iterator131 = _createForOfIteratorHelper(select(".card,.nova__list--grid .nova-card,.nova__list--row .nova-card")),
-          _step131;
+        var _iterator137 = _createForOfIteratorHelper(select(".card,.nova__list--grid .nova-card,.nova__list--row .nova-card")),
+          _step137;
         try {
-          for (_iterator131.s(); !(_step131 = _iterator131.n()).done;) {
-            var _el7 = _step131.value;
+          for (_iterator137.s(); !(_step137 = _iterator137.n()).done;) {
+            var _el7 = _step137.value;
             if (_el7.closest(".extensions") || _el7.closest(".minimal-fit-posters") || _el7.closest(".pt-hero") || _el7.classList.contains("card--collection")) continue;
             var _width3 = _el7.getBoundingClientRect().width,
               parent = _el7.parentElement.getBoundingClientRect().width;
@@ -28883,21 +29224,21 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             }
           }
         } catch (err) {
-          _iterator131.e(err);
+          _iterator137.e(err);
         } finally {
-          _iterator131.f();
+          _iterator137.f();
         }
-        var _iterator132 = _createForOfIteratorHelper(select(".nova__list:not(.nova__list--grid):not(.nova__list--row) .nova-card__thumb")),
-          _step132;
+        var _iterator138 = _createForOfIteratorHelper(select(".nova__list:not(.nova__list--grid):not(.nova__list--row) .nova-card__thumb")),
+          _step138;
         try {
-          for (_iterator132.s(); !(_step132 = _iterator132.n()).done;) {
-            var _el8 = _step132.value;
+          for (_iterator138.s(); !(_step138 = _iterator138.n()).done;) {
+            var _el8 = _step138.value;
             measure(_el8, ["width", "height", "min-width"], cards);
           }
         } catch (err) {
-          _iterator132.e(err);
+          _iterator138.e(err);
         } finally {
-          _iterator132.f();
+          _iterator138.f();
         }
       }
       for (var _i46 = 0, _changes = changes; _i46 < _changes.length; _i46++) {
@@ -28906,11 +29247,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         change.value = change.el.style.getPropertyValue(change.prop);
       }
       if (text2 > 1 || controls > 1) {
-        var _iterator133 = _createForOfIteratorHelper(select(".pt-hero")),
-          _step133;
+        var _iterator139 = _createForOfIteratorHelper(select(".pt-hero")),
+          _step139;
         try {
-          for (_iterator133.s(); !(_step133 = _iterator133.n()).done;) {
-            var hero = _step133.value;
+          for (_iterator139.s(); !(_step139 = _iterator139.n()).done;) {
+            var hero = _step139.value;
             var body = hero.querySelector(".pt-hero__body");
             if (!body) continue;
             var css = getComputedStyle(body),
@@ -28928,9 +29269,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             changes.push(_change);
           }
         } catch (err) {
-          _iterator133.e(err);
+          _iterator139.e(err);
         } finally {
-          _iterator133.f();
+          _iterator139.f();
         }
       }
       applied = applied.concat(changes);
@@ -28963,28 +29304,28 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var observer = new MutationObserver(function (records) {
       if (factor("lampa_view_text_scale") === 1 && factor("lampa_view_controls_scale") === 1 && factor("lampa_view_cards_scale") === 1) return;
       var targets = TEXT + "," + CONTROLS + "," + ICONS + ",.card,.nova-card,.nova-card__thumb,.minimal-detail-identity,.head,.head__body,.pt-hero";
-      var _iterator134 = _createForOfIteratorHelper(records),
-        _step134;
+      var _iterator140 = _createForOfIteratorHelper(records),
+        _step140;
       try {
-        for (_iterator134.s(); !(_step134 = _iterator134.n()).done;) {
-          var record = _step134.value;
-          var _iterator135 = _createForOfIteratorHelper(record.addedNodes),
-            _step135;
+        for (_iterator140.s(); !(_step140 = _iterator140.n()).done;) {
+          var record = _step140.value;
+          var _iterator141 = _createForOfIteratorHelper(record.addedNodes),
+            _step141;
           try {
-            for (_iterator135.s(); !(_step135 = _iterator135.n()).done;) {
-              var node = _step135.value;
+            for (_iterator141.s(); !(_step141 = _iterator141.n()).done;) {
+              var node = _step141.value;
               if (node.nodeType === 1 && node.isConnected && (node.matches(targets) || node.querySelector(targets))) inserted.add(node);
             }
           } catch (err) {
-            _iterator135.e(err);
+            _iterator141.e(err);
           } finally {
-            _iterator135.f();
+            _iterator141.f();
           }
         }
       } catch (err) {
-        _iterator134.e(err);
+        _iterator140.e(err);
       } finally {
-        _iterator134.f();
+        _iterator140.f();
       }
       if (inserted.size) schedule(false);
     });
@@ -29332,10 +29673,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
         var previous = series;
         for (var _i48 = 0, _arr30 = [dorama, shows, cartoons, anime]; _i48 < _arr30.length; _i48++) {
-          var _node9 = _arr30[_i48];
-          if (previous && _node9) {
-            if (previous.nextElementSibling !== _node9) previous.after(_node9);
-            previous = _node9;
+          var _node8 = _arr30[_i48];
+          if (previous && _node8) {
+            if (previous.nextElementSibling !== _node8) previous.after(_node8);
+            previous = _node8;
           }
         }
         document.querySelectorAll(".menu__item,.settings-folder").forEach(function (node) {
@@ -48417,7 +48758,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var deadline = Date.now() + PROBE_BUDGET;
         var index = 0,
           pendingCount = 0;
-        var _step136 = function step() {
+        var _step142 = function step() {
           if (!probe_busy || generation !== probe_generation || owner !== componentNow() || scopeId !== qualityScope()) return;
           if (index >= queue.length) {
             if (!pendingCount) probe_busy = false;
@@ -48444,7 +48785,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             answered = true;
             pendingCount--;
             probeAnswer(entry.key, answer);
-            _step136();
+            _step142();
           };
           try {
             net["native"](probeUrlFor(entry.key), done, function () {
@@ -48456,7 +48797,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             done("");
           }
         };
-        for (var worker = 0; worker < PROBE_PARALLEL; worker++) _step136();
+        for (var worker = 0; worker < PROBE_PARALLEL; worker++) _step142();
       }
       function probeSchedule() {
         if (!probeAllowed() || !movie || !probe_url || probe_busy || (groups.sort || []).length < 2) return;
@@ -48637,7 +48978,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           voice_seed_net = null;
           if (typeof after === "function") after();
         };
-        var _step137 = function step() {
+        var _step143 = function step() {
           if (!voice_seed_busy) return;
           if (seat >= jobs.length || Date.now() > deadline || !inSkin() || !movie) return finish();
           var job = jobs[seat++];
@@ -48666,7 +49007,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               } catch (e) {}
             }
             if (voiceListFresh()) return finish();
-            _step137();
+            _step143();
           };
           var guard = setTimeout(function () {
             if (settled) return;
@@ -48687,7 +49028,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             done("");
           }
         };
-        _step137();
+        _step143();
       }
       function voiceLink(url) {
         var value = String(url || "").replace("rjson=", "nojson=");
@@ -48847,7 +49188,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         voice_busy = true;
         var deadline = Date.now() + VOICE_BUDGET;
         var index = 0;
-        var _step138 = function step() {
+        var _step144 = function step() {
           if (!voice_busy || index >= queue.length) return;
           if (Date.now() > deadline || !inSkin()) return voiceStop();
           var entry = queue[index++];
@@ -48886,7 +49227,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             clearTimeout(guard);
             var got = voiceAnswer(entry.name, answer);
             if (!got) retryAlt();
-            _step138();
+            _step144();
           };
           var guard = setTimeout(function () {
             if (settled) return;
@@ -48907,7 +49248,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             done("");
           }
         };
-        for (var worker = 0; worker < VOICE_PARALLEL; worker++) _step138();
+        for (var worker = 0; worker < VOICE_PARALLEL; worker++) _step144();
       }
       function voiceSchedule() {
         if (!voiceWanted()) return;
@@ -49090,6 +49431,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         resetAvailability(initialSource ? initialSource[1] : "");
         if (typeof comp.draw === "function" && typeof comp.getEpisodes === "function") {
           var metadataRows = function metadataRows(book) {
+            var api = window.LampaView && window.LampaView.episodeMetadata;
+            if (book && api && api.localizeBook && episodeContext && api.isAnime(episodeContext.card)) book = api.localizeBook(book);
             return book ? Object.keys(book).map(function (key) {
               return $.extend({}, book[key], {
                 episode_number: Number(key)
@@ -49195,7 +49538,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 return "";
               }
             },
-            loadSeasonList = function loadSeasonList(url, done) {
+            releaseSeason = function releaseSeason(url) {
+              var target = releasePicks && continuationApi && continuationApi.route(url);
+              return target && releasePicks[target.origin + target.pathname + "|" + target.searchParams.get("pick")] || 0;
+            },
+            _loadSeasonList = function loadSeasonList(url, done, followed) {
               var target = url && sameList(url);
               if (!target) return done("");
               try {
@@ -49203,6 +49550,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 net.timeout(4e3);
                 net["native"](target, function (body) {
                   var join = window.LampaView && window.LampaView.animeProviderParts;
+                  if (!followed && releaseSeason(target)) {
+                    var rows = onlineState().folderRows(body),
+                      child = rows.length === 1 && !rows[0].similar && sameList(rows[0].url);
+                    if (child && child !== target && releaseSeason(child) === releaseSeason(target)) return _loadSeasonList(child, done, true);
+                  }
                   done(join && join.rewrite ? join.rewrite(target, body) : body);
                 }, function () {
                   done("");
@@ -49225,7 +49577,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                   var rows = body ? parseRows.call(comp, body, ".videos__item") || [] : [];
                   var numbers = {};
                   rows.forEach(function (row) {
-                    if ((row.method === "play" || row.method === "call") && Number(row.season) === task.number && Number(row.episode) > 0) numbers[row.episode] = true;
+                    if ((row.method === "play" || row.method === "call") && (Number(row.season) === task.number || releaseSeason(task.url) === task.number) && Number(row.episode) > 0) numbers[row.episode] = true;
                   });
                   counts[task.number] = Object.keys(numbers).length;
                   countDone[task.number] = true;
@@ -49248,7 +49600,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                   finish(value);
                 });
               }
-              loadSeasonList(task.url, function (body) {
+              _loadSeasonList(task.url, function (body) {
                 if (!body || !active()) return finish("");
                 var voices = parseRows.call(comp, body, ".videos__button") || [];
                 if (!voices.length) return joined(task.voice ? "" : body);
@@ -49257,11 +49609,12 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 })[0];
                 if (!match) return finish("");
                 if (match.active) return joined(body);
-                loadSeasonList(match.url, joined);
+                _loadSeasonList(match.url, joined);
               });
             };
           var parseRows = comp.parseJsonDate,
             seasonLinks = null,
+            releasePicks = null,
             countScope = "",
             counts = {},
             countDone = {},
@@ -49270,14 +49623,26 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             countBusy = false;
           comp.parseJsonDate = function (body, selector) {
             var rows = parseRows.apply(this, arguments);
+            var card = object && (object.movie || object.card) || movie,
+              state = onlineState(),
+              metadata = window.LampaView && window.LampaView.episodeMetadata;
+            if (selector === ".videos__item" && rows && state && state.episodeRows && card && tmdbKind(card) === "tv" && metadata && metadata.isAnime(card)) {
+              rows = state.episodeRows(rows);
+              var number = releaseSeason(providerUrl);
+              if (number) rows = rows.map(function (row) {
+                return /^(play|call)$/.test(row.method) && row.episode != null ? Object.assign({}, row, {
+                  season: number
+                }) : row;
+              });
+            }
             if (providerPart && selector === ".videos__item" && rows && rows.length) return continuationApi.files(providerPart, rows);
             if (selector === ".videos__item" && rows && rows.length > 1 && rows.length <= 100 && rows.every(function (row) {
               return row.method === "link" && !row.similar;
             })) {
               var links = {};
               rows.forEach(function (row) {
-                var number = row.season !== void 0 ? Number(row.season) : digits(row.text || row.title);
-                if (number >= 0) links[number] = row.url;
+                var number2 = row.season !== void 0 ? Number(row.season) : digits(row.text || row.title);
+                if (number2 >= 0) links[number2] = row.url;
               });
               if (Object.keys(links).length === rows.length) {
                 var linkSource = String(rows[0].url || "").match(/\/lite\/([^\/?#]+)/i);
@@ -49334,10 +49699,45 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             var active = Lampa.Activity.active(),
               card = object && (object.movie || object.card) || active && active.activity && active.activity.component === comp && (active.movie || active.card) || (componentNow() === comp ? movie : null);
             var joinParts = window.LampaView && window.LampaView.animeProviderParts;
+            var episodeApi = window.LampaView && window.LampaView.episodeMetadata,
+              route = continuationApi && continuationApi.route(providerUrl);
+            if (route && card && episodeApi && episodeApi.isAnime(card) && tmdbKind(card) === "tv" && !route.searchParams.has("pick") && !route.searchParams.has("s") && folderChain.length < 2) {
+              var unnumbered = comp.parseJsonDate(str, ".videos__item");
+              if (unnumbered && unnumbered.length && unnumbered.every(function (row) {
+                return /^(?:call|play)$/.test(row.method) && row.episode == null;
+              })) {
+                ["id", "imdb_id", "kinopoisk_id", "tmdb_id", "mal_id", "shikimori_id", "kid", "rjson", "nojson"].forEach(function (key) {
+                  route.searchParams.delete(key);
+                });
+                route.searchParams.set("title", card.name || card.original_name || "");
+                route.searchParams.set("clarification", "0");
+                route.searchParams.set("similar", "false");
+                if (route.href !== providerUrl) {
+                  parsing = true;
+                  try {
+                    return comp.request(route.href);
+                  } finally {
+                    parsing = false;
+                  }
+                }
+              }
+            }
             if (joinParts && joinParts.rewrite) str = joinParts.rewrite(providerUrl, str);
             arguments[0] = str;
             if (!foldersReady && !providerPart && joinParts && joinParts.folders && card && continuationApi && continuationApi.route(providerUrl)) {
               var rootFolders = onlineState().folderRows(str);
+              if (seasonLinks && Object.keys(seasonLinks.links).length > 1 && rootFolders.length === 1 && !rootFolders[0].similar) {
+                var parentRoute = continuationApi.route(providerUrl),
+                  childRoute = continuationApi.route(rootFolders[0].url, providerUrl);
+                if (parentRoute && childRoute && parentRoute.searchParams.has("pick") && !parentRoute.searchParams.has("s") && childRoute.searchParams.has("s") && parentRoute.searchParams.get("pick") === childRoute.searchParams.get("pick")) {
+                  parsing = true;
+                  try {
+                    return comp.request(childRoute.href);
+                  } finally {
+                    parsing = false;
+                  }
+                }
+              }
               if (rootFolders.length >= 1 && rootFolders.every(function (row) {
                 return !row.similar;
               })) {
@@ -49418,6 +49818,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               }) || seasons && seasons[0];
               if (folderChain.length >= 6 || seasonTarget && folderChain.indexOf(seasonTarget.url) >= 0) seasons = [];
               if (seasons && seasons.length) {
+                if (continuationApi && episodeApi && episodeApi.isAnime(card)) {
+                  releasePicks = /* @__PURE__ */Object.create(null);
+                  seasons.forEach(function (row) {
+                    var r = continuationApi.route(row.url, providerUrl);
+                    if (r && r.searchParams.has("pick")) releasePicks[r.origin + r.pathname + "|" + r.searchParams.get("pick")] = row.season;
+                  });
+                }
                 str = seasons.map(function (row) {
                   return '<div class="videos__item videos__season" data-json="' + JSON.stringify(row).replace(/&/g, "&amp;").replace(/"/g, "&quot;") + '">' + row.title + "</div>";
                 }).join("");
@@ -50458,7 +50865,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var direct = logoDirect(path);
         if (direct && urls.indexOf(direct) === -1) urls.push(direct);
         var at = 0;
-        var _step139 = function step() {
+        var _step145 = function step() {
           if (at >= urls.length) {
             LOGO_BLIND[src] = true;
             return done("blind");
@@ -50478,7 +50885,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             } catch (e) {
               tone = "";
             }
-            if (tone !== "invert" && tone !== "glow" && tone !== "ok") return _step139();
+            if (tone !== "invert" && tone !== "glow" && tone !== "ok") return _step145();
             var now = cached(LOGO_TONE_KEY, 500, {});
             if (now && _typeof(now) === "object") {
               now[src] = tone;
@@ -50486,10 +50893,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             }
             done(tone);
           };
-          probe.onerror = _step139;
+          probe.onerror = _step145;
           probe.src = url;
         };
-        _step139();
+        _step145();
       }
       function logoKey(target) {
         var card = target || movie;
@@ -51952,7 +52359,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               pending2 = counts.length + 1;
             gate.timer = setTimeout(function () {
               finishMetadata(gate.book, gate.grouped);
-            }, 6500);
+            }, window.LampaView && window.LampaView.episodeMetadata && window.LampaView.episodeMetadata.isAnime(movie) ? 14e3 : 6500);
             wideBook(activeSeason, function (book, grouped) {
               if (gate.ready || wide_metadata_gate !== gate) return;
               gate.book = book;
@@ -52903,6 +53310,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         return !!(comp && comp.lampaViewProviderSeasons) || api && api.alternate(movie, providerSeasonNumbers());
       }
       function wideBook(number, done, countOnly) {
+        var callback = done,
+          metadataApi = window.LampaView && window.LampaView.episodeMetadata;
+        done = function done(book, grouped) {
+          callback(metadataApi && metadataApi.localizeBook && metadataApi.isAnime(movie) ? metadataApi.localizeBook(book) : book, grouped);
+        };
         var api = window.LampaView && window.LampaView.episodeMetadata,
           arc = wideAnimeCurrent();
         var continuation = currentContinuation();

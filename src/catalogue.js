@@ -1,6 +1,5 @@
 import {text as lampaViewText} from './i18n.js';
 import tmdbGet,{catalogueResults} from './tmdb.js';
-import {SHIKI_ALL} from './shikimori.js';
 import {DISCOVERY_KINDS,discoveryPlan,discoveryState} from './discovery-model.js';
 import {DISCOVERY_SOURCE} from './discovery-source.js';
 export function animeMode(L,object={}){
@@ -60,7 +59,7 @@ function legacyCataloguePlan(kind,mode='standard',date=new Date()){
    ['upcoming','Ожидаемые',null,'tv',base+'&first_air_date.gte='+day(1)+'&first_air_date.lte='+day(365),'order=popularity&status=anons']
   ];
   const plan=definitions.filter(row=>mode!=='shikimori' || row[0]!=='watch').map(([key,title,cub,media_type,query,shiki])=>({key,title:lampaViewText(title),media_type,...(mode==='shikimori'?{shiki}:{cub,tmdb:'discover/'+media_type+'?'+query})}));
-  if(mode==='shikimori'){const popular=plan.splice(plan.findIndex(row=>row.key==='popular'),1)[0];plan.unshift(popular);plan.push({title:lampaViewText('Все'),shiki:SHIKI_ALL});}
+  if(mode==='shikimori'){const popular=plan.splice(plan.findIndex(row=>row.key==='popular'),1)[0];plan.unshift(popular);}
   return plan;
  }
  function add(key,title,cub,query){

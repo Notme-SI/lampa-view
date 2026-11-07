@@ -1,4 +1,13 @@
 import {isAnime} from './metadata.js';
+import {locale,text as t} from './i18n.js';
+export function metadataText(value,language=locale()){
+ const text=String(value || '').trim().replace(/[\u2013\u2014]/g,'-');
+ return language==='ru' && /[a-z]/i.test(text) && !/[а-яё]/i.test(text) && text.length>1?'':text;
+}
+export function localizedEpisodeBook(book,language=locale()){
+ if(!book)return book;const result={};
+ Object.keys(book).forEach(key=>{const row=book[key];result[key]={...row,name:metadataText(row.name,language) || t('Серия {0}',[key],language),overview:metadataText(row.overview,language),...(row.lampa_season_name!==undefined?{lampa_season_name:metadataText(row.lampa_season_name,language)}:{})};});return result;
+}
 function plannedSeason(card,season,today){
  const valid=d=>/^\d{4}-\d{2}-\d{2}$/.test(String(d || ''));
  if(valid(season.air_date))return season.air_date>today;
@@ -38,12 +47,12 @@ export function absoluteRangeSeasons(card,files){
  let offset=0;const groups=[];for(const s of seasons){const selected=numbers.filter(n=>n>offset && n<=offset+Number(s.episode_count)),coordinates=selected.map(number=>({number,episode:number-offset}));offset+=Number(s.episode_count);if(selected.length)groups.push({number:Number(s.season_number),name:String(s.name || ''),count:selected.length,episodes:selected,coordinates,canonical_count:Number(s.episode_count),native:true});}return groups.length?groups:null;
 }
 export function seasonName(card,number,series=card){
- const row=(Array.isArray(card && card.seasons)?card.seasons:[]).find(s=>Number(s.season_number)===Number(number));let name=String(row && row.name || '').trim();
+ const row=(Array.isArray(card && card.seasons)?card.seasons:[]).find(s=>Number(s.season_number)===Number(number));let name=metadataText(row && row.name);
  // Series titles are sometimes reused as the first season's name.
  const clean=value=>String(value || '').normalize('NFKC').toLowerCase().replace(/[\s.,:;!?'’"«»()[\]…—–_-]+/g,'');
  const title=name.replace(/(?:season|сезон)\s*\d+|\d+\s*(?:season|сезон)/gi,'');
  const aliases=[series.name,series.title,series.original_name,series.original_title,...(series.lampa_series_names || [])].map(clean).filter(Boolean);
- const split=name.match(/^(.+?)\s*:\s*(.+)$/);if(split && aliases.includes(clean(split[1])))name=split[2].trim();
+ const split=name.match(/^(.+?)\s*:\s*(.+)$/);if(split && aliases.some(alias=>alias===clean(split[1]) || alias===clean(split[1].replace(/\s+(?:(?:season|сезон)\s*)?\d+$/i,''))))name=split[2].trim();
  const unnumbered=name.replace(/(?:[\s:._–—-]+|\s*\()(?:s(?:eason)?\s*|сезон\s*|part\s*|часть\s*|cour\s*)?\d+(?:st|nd|rd|th)?(?:\s*(?:season|сезон|part|часть|cour))?\)?$/i,'');
  if([name,title,unnumbered].some(value=>aliases.includes(clean(value))))return '';
  if(/^(?:part|часть|частина|частка|parte|partie|teil|część|část|חלק|部分|部)\s*\d+$/i.test(name))return '';
@@ -178,7 +187,7 @@ export default function episodeMetadata(L,kino,anime){
   // Preserve the provider's menu unless these files cover a verified full list.
   if(partialAllowed && kino && kino.enabled())kino.groups(card,files,value=>value?done(value):fallback());else fallback();
  }
- return {isAnime,availableMetadata,alternate:alternativeNumbering,groups,groupBook,seasonName,book(card,number,numbers,actual,done,files=[],verifiedAbsolute=false,layout=null){
+ return {isAnime,availableMetadata,localizeBook:localizedEpisodeBook,alternate:alternativeNumbering,groups,groupBook,seasonName,book(card,number,numbers,actual,done,files=[],verifiedAbsolute=false,layout=null){
   // Fewer source seasons can mean a missing arc, a merged arc or a missing tail.
   // A matching length of just the selected season cannot distinguish them.
   // Full absolute lists have a separately verified partition in groups()/groupBook().

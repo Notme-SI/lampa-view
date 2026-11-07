@@ -1,3 +1,4 @@
+import flag from './storage-flag.js';
 import {WATCHED_PERCENT} from './watch-threshold.js';
 import {text as lampaViewText} from './i18n.js';
 import tmdbGet from './tmdb.js';
@@ -192,14 +193,14 @@ export default function seriesStatus(L,schedule){
   const table=L.TimeTable && L.TimeTable.get?L.TimeTable.get(data) || []:[];
   const available=facts || releaseStatus(data,table);
   let box=view.querySelector('.pt-series-status');
-  if(available){
+  if(available && flag(L,'card_episodes',true)){
    if(!box){box=document.createElement('div');box.className='pt-series-status';box.innerHTML='<span></span><span></span>';view.appendChild(box);}
    const partial=available.total>available.count;
    const released=partial?available.count+'/'+available.total:String(available.count);
    const group=namedSeason(historyData,available.season),published=group?Number((group.match(/\d+/)||[])[0]):0;
    const seasonName=available.season?lampaViewText("Сезон {0}",[published || available.season]):'',prefix=seasonName?seasonName+" • ":'';
-   const text=prefix+(data.source==='minimal_shiki'?lampaViewText("Эпизодов в релизе: {0}",[released]):(partial?lampaViewText("Серия "):lampaViewText("Серий "))+released);
-   if(box.textContent!==text){box.firstElementChild.textContent=prefix;box.lastElementChild.textContent=data.source==='minimal_shiki'?lampaViewText("Эпизодов в релизе: {0}",[released]):(partial?lampaViewText("Серия "):lampaViewText("Серий "))+released;}
+   const episodes=(partial?lampaViewText("Серия "):lampaViewText("Серий "))+released,text=prefix+episodes;
+   if(box.textContent!==text){box.firstElementChild.textContent=prefix;box.lastElementChild.textContent=episodes;}
    box.title=available.season?lampaViewText("Сезон {0}: вышло {1}. История просмотра — под обложкой.", [available.season,released]).replace(lampaViewText("Сезон {0}",[available.season]),seasonName):text;
   }else if(box)box.remove();
   // Release metadata stays independent of the native watch timeline below the cover.

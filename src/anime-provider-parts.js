@@ -57,7 +57,7 @@ export function mappedPartFiles(part,rows){
 }
 
 export default function animeProviderParts(L,anime,online){
- const searches=new Map(),reads=new Map(),pending=new Map(),overrides=new Map();
+ const searches=new Map(),reads=new Map(),pending=new Map(),overrides=new Map(),bundles=new Map();
  const scope=()=>JSON.stringify([L.Storage.get('account_email',''),L.Timeline?.filename?.() || '',L.Storage.get('language','ru')]);
  function request(url,done){
   const cacheKey=scope()+'|'+url,hit=reads.get(cacheKey);if(hit && Date.now()-hit.at<120000)return done(hit.body);
@@ -94,6 +94,8 @@ export default function animeProviderParts(L,anime,online){
   follow(part.url,0);
  }
  function join(card,base,body,number,numbers,done){
+  const bundle=bundles.get(scope()+'|'+routeKey(base));
+  if(bundle)return readBundle(bundle,base,body,done);
   if(!isAnime(card) || !kodikRoute(base) || numbers.filter(n=>n>0).length<2)return done(body,[]);
   const files=catalogueRows(body).filter(playable);if(!files.length)return done(body,[]);
   const voice=(voices(body).find(v=>v.active)||{}).title || '';
@@ -123,6 +125,35 @@ export default function animeProviderParts(L,anime,online){
   });});
  }
 
+ // Merge only an explicit, complete partition of one canonical season.
+ // Keep stream URLs intact; episode coordinates become continuous within it.
+ function readBundle(bundle,base,body,done){
+  const voice=(voices(body).find(v=>v.active)||{}).title || '',result=[];let left=bundle.parts.length,ended=false;
+  const timer=setTimeout(()=>finish(false),6500);
+  function finish(valid){if(ended)return;ended=true;clearTimeout(timer);if(!valid)return done(body,[]);
+   const box=document.createElement('div');box.innerHTML=body;const line=box.querySelector('.videos__line') || box;
+   box.querySelectorAll('.videos__item[data-json]').forEach(node=>{try{if(playable(JSON.parse(node.getAttribute('data-json'))))node.remove();}catch(error){}});
+   const parts=result.sort((a,b)=>a.offset-b.offset);
+   for(const part of parts)for(const row of part.files){const file={...row,season:bundle.source,lampa_part:part.part},node=document.createElement('div');node.className='videos__item videos__movie selector';node.setAttribute('s',bundle.source);node.setAttribute('e',file.episode);node.setAttribute('data-json',JSON.stringify(file));node.textContent=file.episode+' серия';line.appendChild(node);}
+   done(box.innerHTML,parts.map(({files,...part})=>({...part,available:files.length})));
+  }
+  bundle.parts.forEach(part=>read(part,base,voice,files=>{if(ended)return;if(files.length!==part.count)return finish(false);result.push({...part,files});if(!--left)finish(true);}));
+ }
+ function collapseFolders(body,layout,card){
+  if(!layout)return body;
+  const box=document.createElement('div');box.innerHTML=body;const grouped=new Map();let changed=false;
+  for(const node of box.querySelectorAll('.videos__item[data-json]')){try{const row=JSON.parse(node.getAttribute('data-json')),source=Number(row.season ?? new URL(row.url,location.href).searchParams.get('s')),mapped=layout[source];if(!mapped || !Number.isInteger(mapped.offset))continue;const entries=grouped.get(mapped.number)||[];entries.push({node,row,mapped,source});grouped.set(mapped.number,entries);}catch(error){}}
+  for(const [number,entries] of grouped){
+   if(entries.length<2)continue;entries.sort((a,b)=>a.mapped.offset-b.mapped.offset);
+   const season=(card.seasons || []).find(s=>Number(s.season_number)===number);let offset=0;
+   if(!season || !entries.every(entry=>{const valid=entry.mapped.offset===offset && entry.mapped.count>0;offset+=entry.mapped.count;return valid;}) || offset!==Number(season.episode_count))continue;
+   const first=entries[0],parts=entries.map((entry,i)=>({season:number,offset:entry.mapped.offset,count:entry.mapped.count,kind:'tv',part:i+1,url:entry.row.url})),bundle={source:first.source,parts};
+   bundles.set(scope()+'|'+routeKey(first.row.url),bundle);while(bundles.size>32)bundles.delete(bundles.keys().next().value);
+   first.mapped.count=offset;first.mapped.parts=parts.length;changed=true;
+   for(const entry of entries.slice(1)){entry.node.remove();delete layout[entry.source];}
+  }
+  return changed?box.innerHTML:body;
+ }
  function routeKey(value){const url=kodikRoute(value);return url && url.origin+url.pathname+'|'+url.searchParams.get('pick')+'|'+url.searchParams.get('s');}
  join.rewrite=function(url,body){
   const number=overrides.get(routeKey(url));if(!number)return body;
@@ -136,9 +167,9 @@ export default function animeProviderParts(L,anime,online){
   const number=row=>Number(row.season ?? new URL(row.url,base).searchParams.get('s'));
   const numbers=folders.map(number).filter(n=>n>0),max=Math.max(...numbers);
   if(!numbers.length || max>30)return done(body,null);
-  let ended=false;const timer=setTimeout(()=>finish([],null),6500);
-  function finish(parts,layout){if(ended)return;ended=true;clearTimeout(timer);if(!parts.length)return done(body,layout);const box=document.createElement('div');box.innerHTML=body;const line=box.querySelector('.videos__line') || box;for(const part of parts){overrides.set(routeKey(part.url),part.sourceNumber);const node=document.createElement('div');node.className='videos__item videos__season selector';node.setAttribute('data-json',JSON.stringify({method:'link',season:part.sourceNumber,title:part.sourceNumber+' сезон',url:part.url}));node.textContent=part.sourceNumber+' сезон';line.appendChild(node);}while(overrides.size>48)overrides.delete(overrides.keys().next().value);done(box.innerHTML,layout);}
-  anime.canonical(card,value=>{if(ended)return;if(!value)return finish([],null);anime.collection(value,model=>{
+  let ended=false,canonical=null;const timer=setTimeout(()=>finish([],null),6500);
+  function finish(parts,layout){if(ended)return;ended=true;clearTimeout(timer);if(!parts.length)return done(canonical?collapseFolders(body,layout,canonical):body,layout);const box=document.createElement('div');box.innerHTML=body;const line=box.querySelector('.videos__line') || box;for(const part of parts){overrides.set(routeKey(part.url),part.sourceNumber);const node=document.createElement('div');node.className='videos__item videos__season selector';node.setAttribute('data-json',JSON.stringify({method:'link',season:part.sourceNumber,title:part.sourceNumber+' сезон',url:part.url}));node.textContent=part.sourceNumber+' сезон';line.appendChild(node);}while(overrides.size>48)overrides.delete(overrides.keys().next().value);done(canonical?collapseFolders(box.innerHTML,layout,canonical):box.innerHTML,layout);}
+  anime.canonical(card,value=>{if(ended)return;if(!value)return finish([],null);canonical=value;anime.collection(value,model=>{
    if(ended)return;if(!model?.complete)return finish([],null);const story=model.rows.find(row=>row.key==='story'),ids=new Set(story?.results.map(row=>row.id)),today=new Date().toISOString().slice(0,10);
    const eligible=n=>n.record && Number(n.record.tv)===Number(value.id) && ['tv','ona'].includes(n.kind) && n.episodes>0 && n.aired && n.aired<=today && n.status!=='anons';
    const main=model.nodes.filter(n=>ids.has(n.id) && eligible(n)).sort((a,b)=>a.aired.localeCompare(b.aired));
@@ -146,7 +177,7 @@ export default function animeProviderParts(L,anime,online){
    const candidates=[main,all].filter((rows,i,a)=>(rows.length===max || numbers.length===1 && rows.length===1) && !a.slice(0,i).some(old=>old.map(n=>n.id).join()===rows.map(n=>n.id).join()));
    if(candidates.length!==1)return finish([],null);const releases=candidates[0],single=numbers.length===1 && releases.length===1;
    const existing=new Map(numbers.map(n=>[n,releases[single?0:n-1]]));if([...existing.values()].some(n=>!n))return finish([],null);
-   const layout={},missing=[];for(const [source,release] of existing){const map=animeEpisodeMap(release.record,release.episodes,value);if(!map || !map.every(e=>e.season===map[0].season))return finish([],null);layout[source]={number:map[0].season,mal:release.id};}
+   const layout={},missing=[];for(const [source,release] of existing){const map=animeEpisodeMap(release.record,release.episodes,value);if(!map || !map.every(e=>e.season===map[0].season))return finish([],null);layout[source]={number:map[0].season,mal:release.id,offset:map[0].episode-1,count:map.length};}
    const used=new Set(numbers),represented=new Set([...existing.values()].map(n=>n.id));
    for(let i=0;i<releases.length;i++)if(!represented.has(releases[i].id)){missing.push({...releases[i],sourceNumber:i+1});used.add(i+1);represented.add(releases[i].id);}
    // Alternative TV adaptations are playable seasons too, even when the film
@@ -157,7 +188,7 @@ export default function animeProviderParts(L,anime,online){
     if(!missing.length)return finish([],layout);
     const plan=missing.map(release=>({...release,family:main[0]?.original?.split(/\s*:\s*|\s+Season\s+\d+/i)[0]}));
     search(card,base,plan,parts=>{if(ended)return;if(!parts.length)return finish([],layout);const ready=[];let left=parts.length;
-     parts.forEach(part=>request(part.url,response=>{if(ended)return;const rows=online.folderRows(response),direct=catalogueRows(response).some(playable),only=rows.length===1 && !rows[0].similar && kodikRoute(rows[0].url,base);const url=direct?part.url:only?.href,map=animeEpisodeMap(part.record,part.episodes,value);if(url && map && map.every(e=>e.season===map[0].season)){ready.push({...part,url});layout[part.sourceNumber]={number:map[0].season,mal:part.id};}if(!--left)finish(ready,layout);}));
+     parts.forEach(part=>request(part.url,response=>{if(ended)return;const rows=online.folderRows(response),direct=catalogueRows(response).some(playable),only=rows.length===1 && !rows[0].similar && kodikRoute(rows[0].url,base);const url=direct?part.url:only?.href,map=animeEpisodeMap(part.record,part.episodes,value);if(url && map && map.every(e=>e.season===map[0].season)){ready.push({...part,url});layout[part.sourceNumber]={number:map[0].season,mal:part.id,offset:map[0].episode-1,count:map.length};}if(!--left)finish(ready,layout);}));
     });
    }
    const anchors=[...new Set([numbers[0],numbers[numbers.length-1],...numbers])];let checked=0,cursor=0;

@@ -318,12 +318,12 @@ export default function detail(L,event,loadLogo){
   const variants=(event.data.images || card.images || {}).backdrops || [],current=variants.find(v=>v.file_path===card.backdrop_path),needed=Math.max(1280,Math.ceil((window.innerWidth || 1920)*Math.min(2,window.devicePixelRatio || 1)));
   const better=current && Number(current.width)<needed && variants.filter(v=>Number(v.width)>=needed && Number(v.aspect_ratio || 1.78)>1.4 && !v.iso_639_1).sort((a,b)=>Number(b.width)-Number(a.width))[0];
   const backdrop=better?better.file_path:card.backdrop_path;
-  const size=artworkSize(L,'backdrop');
-  const url=L.TMDB.image('/t/p/'+size+backdrop);
+  const size=artworkSize(L,'detail-backdrop');
+  const url=L.TMDB.image('/t/p/'+size+backdrop,{preserveSize:true});
   const variant='/t/p/'+size+backdrop;
   if(background.src!==url && !background.src.includes(variant)){
    const preload=new Image();
-   preload.onload=()=>{if(background.isConnected && artworkSize(L,'backdrop')===size){background.src=preload.src;background.classList.add('loaded');}};
+   preload.onload=()=>{if(background.isConnected && artworkSize(L,'detail-backdrop')===size){background.src=preload.src;background.classList.add('loaded');}};
    preload.src=url;
   }
  }

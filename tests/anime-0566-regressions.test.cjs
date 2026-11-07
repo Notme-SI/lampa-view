@@ -36,12 +36,12 @@ test('provider season labels are independent from canonical seasons, including a
   const single={id:31911,minimal_anime:true,seasons:[{season_number:1,episode_count:64}]},one={complete:true,rows:[{key:'story',results:[{id:5114}]}],nodes:[{id:5114,kind:'tv',episodes:64,aired:'2009-04-05',original:'Fullmetal Alchemist: Brotherhood',status:'released',record:index.animeRecords({mal_id:5114})[0]}],edges:[]};
   function Single(){this.timeout=()=>{};this.native=(url,ok)=>ok(files(2,64));}
   const singleApi=install({Reguest:Single,Storage:{get:(k,d)=>d}},{canonical:(v,done)=>done(single),collection:(v,done)=>done(one)},online),singleRoot=folder(2,base+'&s=2');
-  const answer=await new Promise(resolve=>singleApi.folders(single,base,singleRoot,(body,layout)=>resolve({body,layout})));assert.equal(answer.body,singleRoot);assert.deepEqual(answer.layout,{2:{number:1,mal:5114}});
+  const answer=await new Promise(resolve=>singleApi.folders(single,base,singleRoot,(body,layout)=>resolve({body,layout})));assert.equal(answer.body,singleRoot);assert.deepEqual(answer.layout,{2:{number:1,mal:5114,offset:0,count:64}});
  }finally{global.document=oldDoc;global.location=oldLocation;dom.window.close();}
 });
 
 test('provider metadata selects the verified release rather than its arbitrary source folder label',async()=>{
- const card={id:31911,minimal_anime:true,seasons:[{season_number:1,episode_count:2}]},meta=[{id:5114,kind:'tv',name:'Fullmetal Alchemist: Brotherhood',episodes:2,aired_on:'2009-04-05',released_on:'2009-04-12'}],graph={current_id:5114,nodes:[{id:5114,name:meta[0].name,kind:'TV Сериал'},{id:6421,name:'Extra',kind:'Спецвыпуск'}],links:[{source_id:5114,target_id:6421,relation:'side_story'}]},episodes=[1,2].map((episode_number,i)=>({season_number:1,episode_number,name:'Real '+i,air_date:i?'2009-04-12':'2009-04-05',still_path:'/still'+i})),L={Api:{sources:{tmdb:{get:(route,p,ok)=>ok({season_number:1,episodes})},minimal_shiki:{franchise:(id,ok)=>ok({graph,metadata:meta})}}}};
+ const card={id:31911,minimal_anime:true,seasons:[{season_number:1,episode_count:2}]},meta=[{id:5114,kind:'tv',name:'Fullmetal Alchemist: Brotherhood',episodes:2,aired_on:'2009-04-05',released_on:null,status:'released'}],graph={current_id:5114,nodes:[{id:5114,name:meta[0].name,kind:'TV Сериал'},{id:6421,name:'Extra',kind:'Спецвыпуск'}],links:[{source_id:5114,target_id:6421,relation:'side_story'}]},episodes=[1,2].map((episode_number,i)=>({season_number:1,episode_number,name:'Real '+i,air_date:i?'2009-04-12':'2009-04-05',still_path:'/still'+i})),L={Api:{sources:{tmdb:{get:(route,p,ok)=>ok({season_number:1,episodes})},minimal_shiki:{franchise:(id,ok)=>ok({graph,metadata:meta})}}}};
  const api=catalogue.default(L),book=await new Promise(done=>api.providerBook(card,2,[2],[1,2],done,{2:{number:1,mal:5114}}));assert.equal(book[1].name,'Real 0');assert.equal(book[1].season_number,1);const independent=await new Promise(done=>api.providerBook(card,2,[2],[1,2],done));assert.equal(independent[1].name,'Real 0','A sole verified release also maps for providers without the Kodik folder adapter');
 });
 
@@ -92,4 +92,35 @@ test('an announced undated season is excluded using release status while its pub
  const model={complete:true,rows:[{key:'story',results:[{id:10},{id:11}]}],nodes:[{id:10,record:{tv:1,season:1},kind:'tv',status:'released',aired:'2017-01-01'},{id:11,record:{tv:1,season:2},kind:'tv',status:'anons',aired:''}]};
  global.window={LampaView:{animeBase:{canonical:(c,done)=>done(card),collection:(c,done)=>done(model)}}};
  try{const L={Api:{full:(p,done)=>done({movie:card})}};installFullGuard(L);L.Api.full({},v=>answer=v);assert.equal(answer.movie.minimal_detail_seasons,1);assert.equal(answer.movie.minimal_detail_episodes,12);assert.equal(card.number_of_seasons,2);assert.equal(card.number_of_episodes,24);}finally{global.window=previous;}
+});
+
+test('Kodik TV markers preserve the season selector and reject dubs as episodes',()=>{
+ const {folderSeasons,folderTarget,episodeRows}=mod('online-state'),card={name:'Моб Психо 100',original_name:'Mob Psycho 100',first_air_date:'2016-07-12'},base='https://example.test/lite/kodik?pick=';
+ const row=(title,year,id)=>({title,year,url:base+id,method:'link',similar:true});
+ const rows=[row('Моб Психо 100 [ТВ-3] / Mob Psycho 100 III',2022,3),row('Моб Психо 100',2018,'live'),row('Моб Психо 100 [ТВ-1] / Mob Psycho 100',2016,1),row('Моб Психо 100 [ТВ-2] / Mob Psycho 100 II',2019,2),row('Моб Психо 100 [OVA]',2019,'ova')];
+ assert.deepEqual(folderSeasons(rows,card).map(r=>[r.season,r.url]),[1,2,3].map(n=>[n,base+n]));
+ assert.equal(folderTarget(rows,card,2),base+2);
+ const episodes=[{method:'play',episode:0},{method:'call',episode:1},{method:'call',episode:2}];
+ assert.deepEqual(episodeRows([...episodes,{method:'call',title:'Crunchyroll.Subtitles'},{method:'call',title:'AniDUB'}]),episodes);
+});
+
+test('Russian episode cards preserve local text and images without substituting English',()=>{
+ const {localizedEpisodeBook}=mod('episode-metadata'),book={1:{name:'English title',overview:'English synopsis',air_date:'2025-01-01',still_path:'/episode.jpg'},2:{name:'Название — часть',overview:'Описание'},3:{name:'A'}};
+ assert.deepEqual(localizedEpisodeBook(book,'ru')[1],{...book[1],name:'Серия 1',overview:''});
+ assert.equal(localizedEpisodeBook(book,'ru')[2].name,'Название - часть');
+ assert.equal(localizedEpisodeBook(book,'ru')[3].name,'A');
+ assert.equal(localizedEpisodeBook(book,'en')[1].name,'English title');
+});
+
+test('nonadjacent mapped releases stay separate, and verified consecutive parts share a season',()=>{
+ const nodes=[
+  {id:1,name:'Series',kind:'tv',aired:'2020-01-01',record:{tv:10,season:1,offset:0}},
+  {id:2,name:'Prequel film',kind:'movie',aired:'2021-01-01'},
+  {id:3,name:'Series 2',kind:'tv',aired:'2023-01-01',record:{tv:10,season:2,offset:0}},
+  {id:4,name:'Series 3',kind:'tv',aired:'2024-01-01',record:{tv:10,season:1,offset:24}},
+  {id:5,name:'Series 4',kind:'tv',aired:'2025-01-01',record:{tv:10,season:4,offset:0}},
+  {id:6,name:'Series 4 Part 2',kind:'tv',aired:'2025-04-01',record:{tv:10,season:4,offset:12}}
+ ];
+ const model={complete:true,nodes,edges:[],rows:[{key:'story',results:nodes.map(({id})=>({id}))}]};
+ assert.deepEqual(franchise.franchiseViewingOrder(model).map(({season,part})=>[season,part]),[[1,0],[0,0],[2,0],[3,0],[4,1],[4,2]]);
 });

@@ -1,6 +1,7 @@
 import {isAnime} from './metadata.js';
 import {locale} from './i18n.js';
 import {publishedSeasonCount,publishedEpisodeCount} from './episode-metadata.js';
+import {franchiseViewingOrder} from './anime-franchise.js';
 
 // Explicitly missing artwork is not a useful catalogue preview. Unknown image
 // metadata may still be supplied by a provider, so do not discard it here.
@@ -108,7 +109,7 @@ export function installFullGuard(L){
     data.movie={...data.movie,minimal_detail_ready:true,minimal_detail_seasons:count || publishedSeasonCount(resolved),minimal_detail_episodes:publishedEpisodeCount(resolved)};
     ok(data);
    };
-   const timer=setTimeout(()=>finish(0),6500);
+   const timer=setTimeout(()=>finish(0),18000);
    anime.canonical(data.movie,card=>{
     if(complete || !card)return finish(0);
     resolved=card;anime.collection(card,model=>{
@@ -120,7 +121,9 @@ export function installFullGuard(L){
      const aired=new Set((releases || []).map(n=>Number(n.record.season)));
      const announced=model && model.nodes.filter(n=>n.record && Number(n.record.tv)===Number(card.id) && ['tv','ona'].includes(n.kind) && (n.status==='anons' || n.aired && n.aired>date)).map(n=>Number(n.record.season)).filter(n=>n>0 && !aired.has(n)) || [];
      resolved={...card,minimal_unreleased_seasons:announced};
-     finish(Number(card.number_of_seasons)===1 && releases && releases.length>1?releases.length:publishedSeasonCount(resolved));
+     const guide=model && model.complete?franchiseViewingOrder(model).filter(row=>['tv','ona'].includes(row.kind) && row.season):[];
+     const seasonCount=new Set(guide.filter(row=>Number(model.nodes.find(n=>n.id===row.id)?.record?.tv)===Number(card.id)).map(row=>row.season)).size;
+     finish(Math.max(seasonCount,publishedSeasonCount(resolved)));
     });
    });
   },error);

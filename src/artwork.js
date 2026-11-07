@@ -11,10 +11,11 @@ export function artworkQuality(L){
  return ['medium','w1280'].includes(value)?'medium':'high';
 }
 export function artworkSize(L,kind){
+ if(kind==='detail-backdrop')return artworkQuality(L)==='high'?'original':'w1280';
  if(artworkQuality(L)==='medium')return kind==='backdrop'?'w1280':'w500';
  if(kind!=='backdrop')return 'w780';
  // CSS pixels alone underestimate the TV panel. Keep originals behind the
- // explicit High preference; image queues and decoded caches remain bounded.
+ // explicit High preference; keep compact catalogue/loading images adaptive.
  if(document.body.classList.contains('pt-tv'))return 'original';
  const width=(window.innerWidth || 1920)*Math.min(2,window.devicePixelRatio || 1);
  return width>1440?'original':'w1280';
@@ -32,7 +33,7 @@ export default function installArtwork(L,enabled){
   api.image=function(url,options){
    const value=image.apply(this,arguments);if(!enabled())return value;
    if(options && options.preserveSize)return canonical(value);
-   return typeof value==='string'?canonical(value).replace(/(\/t\/p\/)w(\d+)(?:_and_h\d+_face)?(\/)/,(all,prefix,size,suffix)=>prefix+(/_face\//.test(all)?portraitSize(L):Number(size)<=500?artworkSize(L,'poster'):'w'+size)+suffix):value;
+   return typeof value==='string'?canonical(value).replace(/(\/t\/p\/)w(\d+)(?:_and_h\d+_face)?(\/)/,(all,prefix,size,suffix)=>prefix+(/_face\//.test(all)?portraitSize(L):Number(size)<=500?artworkSize(L,'poster'):Number(size)===1280?artworkSize(L,'backdrop'):'w'+size)+suffix):value;
   };
   imageWrappers.add(api.image);
  }
@@ -64,7 +65,7 @@ export default function installArtwork(L,enabled){
    if(!/\/t\/p\/(?:w\d+(?:_and_h\d+_face)?|original)\//.test(url))return;
    const backdrop=image.matches('.full-start__background,.pt-hero__image,.media-loading__backdrop') || image.closest('.card--wide,.card--collection');
    const portrait=image.matches('.full-person img,.person-start__img');
-   const next=url.replace(/(\/t\/p\/)(?:w\d+(?:_and_h\d+_face)?|original)(\/)/,'$1'+(portrait?portraitSize(L):artworkSize(L,backdrop?'backdrop':'poster'))+'$2');
+   const next=url.replace(/(\/t\/p\/)(?:w\d+(?:_and_h\d+_face)?|original)(\/)/,'$1'+(portrait?portraitSize(L):artworkSize(L,image.matches('.full-start__background')?'detail-backdrop':backdrop?'backdrop':'poster'))+'$2');
    if(next!==url)image.src=next;
   });
   document.dispatchEvent(new Event('minimal:artwork-quality'));

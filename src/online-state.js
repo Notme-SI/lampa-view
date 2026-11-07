@@ -8,72 +8,51 @@ const number=value=>Number.isFinite(Number(value))?Math.max(0,Number(value)):0;
 const stamp=value=>typeof value==='string' && !/^\d+$/.test(value)?Date.parse(value) || 0:number(value);
 // Resolve a provider's search folder only when it identifies this title.
 // Ambiguous results and a different season remain a manual choice.
+const titleClean=value=>String(value || '').normalize('NFKC').toLowerCase().replace(/ё/g,'е').replace(/[^a-zа-я0-9\u3040-\u30ff\u3400-\u9fff]+/g,' ').trim();
+function providerRelease(row,card){
+ const title=String(row.title || row.name || row.text || ''),names=[card.name,card.title,card.original_name,card.original_title].filter(Boolean),family=new Set(names.flatMap(v=>String(v).split(/\s+[\/|]\s+/).map(titleClean)));
+ const marker=title.match(/\[(?:тв|tv)(?:\s*[- ]\s*(\d+))?\]/i),explicit=title.match(/(?:сезон|season)\s*(\d+)|(\d+)\s*(?:сезон|season)|\bs(\d+)\b/i);
+ let season=Number(row.season || (marker && marker[1]) || (explicit && (explicit[1] || explicit[2] || explicit[3]))) || 0;
+ if((card.name || card.original_name) && !family.has(titleClean(title)) && /\b(?:ova|ona[- ]?special|movie|film|special)\b|спецвыпуск|фильм/i.test(title))return null;
+ const base=title.replace(/\[(?:тв|tv)(?:\s*[- ]\s*\d+)?\]/gi,' ').replace(/(?:сезон|season)\s*\d+|\d+\s*(?:сезон|season)|\bs\d+\b/gi,' ').replace(/\b(?:19|20)\d{2}\b/g,' ');
+ const match=base.split(/\s+[\/|]\s+/).some(value=>{
+  let name=titleClean(value);if(family.has(name))return true;
+  const roman=value.match(/\s+(II|III|IV|V|VI|VII|VIII|IX|X)\s*$/i);if(roman){name=titleClean(value.slice(0,roman.index));if(family.has(name)){if(!season)season=({II:2,III:3,IV:4,V:5,VI:6,VII:7,VIII:8,IX:9,X:10})[roman[1].toUpperCase()];return true;}}
+  return [...family].some(alias=>{const tail=name.startsWith(alias+' ')?name.slice(alias.length+1):'';if(!/^[1-9]\d?$/.test(tail) || Number(tail)>60)return false;if(!season)season=Number(tail);return true;});
+ });
+ if(!match)return null;
+ const param=String(row.url || '').match(/[?&](?:s|season)=(\d+)/);season=season || Number(param && param[1]) || 1;
+ const year=Number(String(card.first_air_date || card.release_date || '').slice(0,4)),ownYear=Number(String(row.year || row.start_date || '').slice(0,4)) || Number((title.match(/\b(?:19|20)\d{2}\b/) || [])[0]);
+ if(year && ownYear && (season===1?Math.abs(year-ownYear)>1:ownYear<year))return null;
+ return {season,explicit:!!marker || !!explicit};
+}
 export function folderTarget(rows,card,season=1){
  if(!card || !Array.isArray(rows) || rows.some(row=>/^(play|call)$/.test(row.method)))return '';
- const normalize=value=>String(value || '').toLowerCase().replace(/ё/g,'е').replace(/(?:сезон|season)\s*\d+|\d+\s*(?:сезон|season)|\bs\d+\b/gi,' ').replace(/\b(?:19|20)\d{2}\b/g,' ').replace(/[^a-zа-я0-9\u3040-\u30ff\u3400-\u9fff]+/g,' ').trim();
- const aliases=value=>Array.from(new Set([String(value || ''),...String(value || '').split(/\s+[\/|]\s+/)].map(normalize).filter(Boolean)));
- const names=new Set([card.title,card.name,card.original_title,card.original_name].flatMap(aliases));
- const year=Number(String(card.first_air_date || card.release_date || '').slice(0,4));
- const candidates=rows.filter(row=>{
-  if(row.method!=='link' || typeof row.url!=='string' || !/^(?:https?:\/\/|\/)/i.test(row.url))return false;
-  const title=String(row.title || row.name || row.text || '');if(!aliases(title).some(name=>names.has(name)))return false;
-  const found=title.match(/(?:сезон|season)\s*(\d+)|(\d+)\s*(?:сезон|season)|\bs(\d+)\b/i),param=row.url.match(/[?&](?:s|season)=(\d+)/);
-  const ownSeason=Number(row.season || (found && (found[1] || found[2] || found[3])) || (param && param[1]));
-  if(ownSeason && ownSeason!==Number(season))return false;
-  const ownYear=Number(String(row.year || row.start_date || '').slice(0,4)) || Number((title.match(/\b(?:19|20)\d{2}\b/) || [])[0]);
-  return !year || !ownYear || Math.abs(year-ownYear)<=1;
- });
- return candidates.length===1?candidates[0].url:'';
+ const matches=rows.filter(row=>row.method==='link' && /^(?:https?:\/\/|\/)/i.test(row.url || '')).map(row=>({row,release:providerRelease(row,card)})).filter(v=>v.release?.season===Number(season)),strong=matches.filter(v=>v.release.explicit),choice=strong.length?strong:matches;
+ return choice.length===1?choice[0].row.url:'';
 }
-// Search responses vary by provider: native HTML, a JSON string, or an object.
-// Read only data attributes; never mount provider HTML or load its images.
 export function folderSeasons(rows,card){
  if(!card || !(card.name || card.original_name) || !Array.isArray(rows))return [];
- const names=[card.name,card.original_name,card.title,card.original_title].filter(Boolean);
- const clean=v=>String(v || '').toLowerCase().replace(/ё/g,'е').replace(/[^a-zа-я0-9\u3040-\u30ff\u3400-\u9fff]+/g,' ').trim();
- const aliases=v=>String(v || '').split(/\s*[\/|]\s*/).map(clean).filter(Boolean);
- const family=new Set(names.flatMap(aliases)),year=Number(String(card.first_air_date || card.release_date || '').slice(0,4));
- const known=Math.max(1,Number(card.number_of_seasons)||0,...(Array.isArray(card.seasons)?card.seasons.map(row=>Number(row.season_number)||0):[])),found=[];
+ const found=new Map();
  for(const row of rows){
   if(!row.similar || row.method!=='link' || !/^(?:https?:\/\/|\/)/i.test(row.url || ''))continue;
-  const title=String(row.title || row.name || row.text || ''),match=title.match(/(?:сезон|season)\s*(\d+)|(\d+)\s*(?:сезон|season)|\bs(\d+)\b/i);
-  let season=Number(row.season || (match && (match[1] || match[2] || match[3])));
-  const base=title.replace(/(?:сезон|season)\s*\d+|\d+\s*(?:сезон|season)|\bs\d+\b/gi,' ');
-  const hit=aliases(base).find(name=>family.has(name) || [...family].some(alias=>{
-   if(!name.startsWith(alias+' '))return false;
-   const tail=name.slice(alias.length+1);if(!/^[1-9]\d?$/.test(tail))return false;
-   if(Number(tail)>60)return false;if(!season)season=Number(tail);return season===Number(tail);
-  }));
-  if(!hit)continue;
-  if(!season){const param=(row.url || '').match(/[?&](?:s|season)=(\d+)/);season=Number(param && param[1]) || 1;}
-  const ownYear=Number(row.year || String(row.start_date || '').slice(0,4));
-  if(year && ownYear && (season===1?Math.abs(year-ownYear)>1:ownYear<year))continue;
-  if(found.some(value=>value.season===season))return [];
-  found.push({season,title:'Сезон '+season,method:'link',url:row.url});
+  const release=providerRelease(row,card);if(!release)continue;
+  const old=found.get(release.season);if(old){if(old.url===row.url)continue;if(old.explicit && !release.explicit)continue;if(!old.explicit && release.explicit){found.delete(release.season);}else return [];}
+  found.set(release.season,{season:release.season,title:'Сезон '+release.season,method:'link',url:row.url,explicit:release.explicit});
  }
- return found.length>1?found.sort((a,b)=>a.season-b.season):[];
+ return found.size>1?[...found.values()].sort((a,b)=>a.season-b.season).map(({explicit,...row})=>row):[];
 }
-// Provider fuzzy matches are not alternatives to the requested movie.
-// Keep same-title seasons; never touch playable entries or native voice lists.
+// Preserve native voice/file responses and filter only provider search folders.
 export function relevantFolders(rows,card){
  if(!card || !Array.isArray(rows) || !rows.some(row=>row.similar))return rows;
- const clean=value=>String(value || '').toLowerCase().replace(/ё/g,'е').replace(/(?:сезон|season)\s*\d+|\d+\s*(?:сезон|season)|\bs\d+\b/gi,' ').replace(/\b(?:19|20)\d{2}\b/g,' ').replace(/[^a-zа-я0-9\u3040-\u30ff\u3400-\u9fff]+/g,' ').trim();
- const aliases=value=>String(value || '').split(/\s+[\/|]\s+/).map(clean).filter(Boolean);
- const names=new Set([card.title,card.name,card.original_title,card.original_name].flatMap(aliases));if(!names.size)return rows;
- const serial=!!(card.name || card.original_name),year=Number(String(card.first_air_date || card.release_date || '').slice(0,4));
- const known=Math.max(1,Number(card.number_of_seasons)||0,...(Array.isArray(card.seasons)?card.seasons:[]).map(row=>Number(row.season_number)||0));
- return rows.filter(row=>{
-  if(!row.similar)return true;
-  if(row.method!=='link' || !/^(?:https?:\/\/|\/)/i.test(row.url || ''))return false;
-  const title=String(row.title || row.name || row.text || ''),season=title.match(/(?:сезон|season)\s*(\d+)|(\d+)\s*(?:сезон|season)|\bs(\d+)\b/i);
-  let part=Number(row.season || season && (season[1] || season[2] || season[3])) || 1;
-  const match=aliases(title).some(name=>names.has(name) || serial && [...names].some(alias=>{
-   const tail=name.startsWith(alias+' ')?name.slice(alias.length+1):'';
-   if(!/^[1-9]\d?$/.test(tail) || Number(tail)>60)return false;part=Number(tail);return true;
-  }));
-  const ownYear=Number(String(row.year || row.start_date || '').slice(0,4));
-  return match && (!year || !ownYear || part>1 && ownYear>=year || Math.abs(year-ownYear)<=1);
- });
+ return rows.filter(row=>!row.similar || row.method==='link' && /^(?:https?:\/\/|\/)/i.test(row.url || '') && providerRelease(row,card));
+}
+// Some provider replies mix dub choices and actual episodes. Coordinates
+// come from the provider, never from the card's position in the returned list.
+export function episodeRows(rows){
+ const video=row=>row.method==='call' || row.method==='play';
+ const episode=row=>row.episode!=null && row.episode!=='' && Number.isInteger(Number(row.episode)) && Number(row.episode)>=0;
+ return rows.some(row=>video(row) && episode(row))?rows.filter(row=>!video(row) || episode(row)):rows;
 }
 export function folderRows(body){
  let json=body;
@@ -302,5 +281,5 @@ export default function onlineState(L){
   if(L.Timeline.read)L.Timeline.read();
  }
 
- return {availability,reader,resume,seasonIndex,folderTarget,folderRows,folderSeasons,relevantFolders,clearProgress,clearTitleProgress,setWatched,setAllWatched,setPreviousWatched,setWatchedRows:markRows,lastWatched,seasonWatched};
+ return {availability,reader,resume,seasonIndex,folderTarget,folderRows,folderSeasons,relevantFolders,episodeRows,clearProgress,clearTitleProgress,setWatched,setAllWatched,setPreviousWatched,setWatchedRows:markRows,lastWatched,seasonWatched};
 }
