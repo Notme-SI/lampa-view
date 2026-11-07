@@ -117,7 +117,10 @@ export function installFullGuard(L){
      const ids=new Set(story && story.results.map(row=>row.id));
      const date=new Date().toISOString().slice(0,10);
      const releases=model && model.nodes.filter(node=>ids.has(node.id) && node.record && Number(node.record.tv)===Number(card.id) && ['tv','ona'].includes(node.kind) && node.status!=='anons' && node.aired && node.aired<=date);
-     finish(Number(card.number_of_seasons)===1 && releases && releases.length>1?releases.length:publishedSeasonCount(card));
+     const aired=new Set((releases || []).map(n=>Number(n.record.season)));
+     const announced=model && model.nodes.filter(n=>n.record && Number(n.record.tv)===Number(card.id) && ['tv','ona'].includes(n.kind) && (n.status==='anons' || n.aired && n.aired>date)).map(n=>Number(n.record.season)).filter(n=>n>0 && !aired.has(n)) || [];
+     resolved={...card,minimal_unreleased_seasons:announced};
+     finish(Number(card.number_of_seasons)===1 && releases && releases.length>1?releases.length:publishedSeasonCount(resolved));
     });
    });
   },error);

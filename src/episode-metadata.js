@@ -1,17 +1,20 @@
 import {isAnime} from './metadata.js';
-export function publishedSeasonCount(card,today=new Date().toISOString().slice(0,10)){
- const seasons=(card.seasons || []).filter(s=>Number(s.season_number)>0),last=card.last_episode_to_air;
- if(!seasons.length)return Number(card.number_of_seasons)||0;
+function plannedSeason(card,season,today){
  const valid=d=>/^\d{4}-\d{2}-\d{2}$/.test(String(d || ''));
- const airedLast=last && valid(last.air_date) && last.air_date<=today?Number(last.season_number):0;
- const known=seasons.filter(s=>valid(s.air_date) && s.air_date<=today || airedLast>0 && Number(s.season_number)<=airedLast);
- const future=seasons.some(s=>valid(s.air_date) && s.air_date>today || airedLast>0 && Number(s.season_number)>airedLast && !valid(s.air_date));
- return future?known.length:Number(card.number_of_seasons)||seasons.length;
+ if(valid(season.air_date))return season.air_date>today;
+ const last=card.last_episode_to_air,aired=last && valid(last.air_date) && last.air_date<=today?Number(last.season_number):0;
+ if(aired && Number(season.season_number)<=aired)return false;
+ return aired && Number(season.season_number)>aired || (card.minimal_unreleased_seasons || []).includes(Number(season.season_number));
+}
+export function publishedSeasonCount(card,today=new Date().toISOString().slice(0,10)){
+ const seasons=(card.seasons || []).filter(s=>Number(s.season_number)>0);
+ if(!seasons.length)return Number(card.number_of_seasons)||0;
+ return seasons.some(s=>plannedSeason(card,s,today))?seasons.filter(s=>!plannedSeason(card,s,today)).length:Number(card.number_of_seasons)||seasons.length;
 }
 export function publishedEpisodeCount(card,today=new Date().toISOString().slice(0,10)){
  const seasons=(card.seasons || []).filter(s=>Number(s.season_number)>0),count=publishedSeasonCount(card,today);
  if(!count || count>=seasons.length)return Number(card.number_of_episodes)||0;
- const last=card.last_episode_to_air,rows=seasons.filter(s=>s.air_date && s.air_date<=today || last && last.air_date<=today && Number(s.season_number)<=Number(last.season_number));
+ const rows=seasons.filter(s=>!plannedSeason(card,s,today));
  return rows.length===count && rows.every(s=>Number(s.episode_count)>0)?rows.reduce((n,s)=>n+Number(s.episode_count),0):Number(card.number_of_episodes)||0;
 }
 // Only partition a complete absolute provider list using confirmed catalogue counts.

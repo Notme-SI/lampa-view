@@ -102,8 +102,8 @@ export default function animeCatalogue(L,kino){
     const note=document.createElement('p');note.textContent=t('По порядку выхода. Пересказы и ответвления показаны отдельно.');guide.appendChild(note);
     const list=document.createElement('ol');guide.appendChild(list);
     order.forEach(step=>{const item=document.createElement('li'),label=document.createElement('strong'),name=document.createElement('span'),detail=document.createElement('small');
-     const film=step.kind==='movie',type=film?t('Фильм'):step.season?t('Сезон {0}',[step.season]):t('Сериал');
-     label.textContent=step.number+'. '+type;name.textContent=step.name;detail.textContent=[step.year,...(step.episodes>1?[t('Эпизодов в релизе: {0}',[step.episodes])]:[]),...step.alternatives.filter(a=>a.season>0).map(a=>t('ТВ-версия: сезон {0}',[a.season]))].filter(Boolean).join(' · ');[label,name,detail].forEach(node=>item.appendChild(node));list.appendChild(item);
+     const film=step.kind==='movie',type=film?t('Фильм'):step.season?t('Сезон {0}',[step.season]):['special','tv_special','ova'].includes(step.kind)?t('Спецвыпуски'):t('Сериал');
+     label.textContent=step.number+'. '+type+(step.part?' · '+t('Часть {0}',[step.part]):'');name.textContent=step.name;detail.textContent=[step.year,...(step.episodes>1?[t('Эпизодов в релизе: {0}',[step.episodes])]:[]),...step.alternatives.filter(a=>a.season>0).map(a=>t('ТВ-версия: сезон {0}',[a.season]))].filter(Boolean).join(' · ');[label,name,detail].forEach(node=>item.appendChild(node));list.appendChild(item);
     });
     const first=link.items[index],render=first && first.render(true),node=render && (render.nodeType?render:render[0]);if(node?.parentNode)node.parentNode.insertBefore(guide,node);else link.scroll.append(guide);
    }

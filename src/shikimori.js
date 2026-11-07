@@ -33,7 +33,7 @@ export default function shikimori(L){
   if(timer!==null || !queue.length || running>=2)return;
   const wait=350-(Date.now()-lastStart);if(wait>0){timer=setTimeout(()=>{timer=null;pump();},wait);return;}
   const job=queue.shift();lastStart=Date.now();running++;let settled=false;
-  function finish(json){if(settled)return;settled=true;running--;pending.delete(job.key);if(json){cache.set(job.key,{time:Date.now(),json});if(cache.size>40)cache.delete(cache.keys().next().value);}job.listeners.forEach(([ok,fail])=>json?deliver(json,ok,job.params):fail());pump();}
+  function finish(json){if(settled)return;settled=true;running--;pending.delete(job.key);if(json){cache.set(job.key,{time:Date.now(),json});if(cache.size>40)cache.delete(cache.keys().next().value);}job.listeners.forEach(([ok,fail,params])=>json?deliver(json,ok,params):fail());pump();}
   api('/api/animes?limit=24&page='+job.page+'&'+job.query,(json,base)=>{
    finish({results:json.map(card=>shikiCard(card,base)),page:job.page,total_pages:json.length===24?job.page+1:job.page});
   },()=>finish(null));pump();
@@ -42,7 +42,7 @@ export default function shikimori(L){
   // Keep All independently configurable but share unfiltered popularity pages.
   const query=params.url===SHIKI_ALL?'order=popularity':String(params.url || 'order=popularity').replace(/^\?/,''),page=Math.max(1,Number(params.page)||1),key=locale()+'|'+query+'|'+page,cached=cache.get(key);
   if(cached && Date.now()-cached.time<900000)return deliver(cached.json,ok,params);
-  cache.delete(key);const listener=[ok,fail || (()=>{})];if(pending.has(key)){pending.get(key).listeners.push(listener);return;}
+  cache.delete(key);const listener=[ok,fail || (()=>{}),params];if(pending.has(key)){pending.get(key).listeners.push(listener);return;}
   const job={key,query,page,params,listeners:[listener]};pending.set(key,job);queue.push(job);pump();
  }
  const full=shikimoriMatch(L,(id,ok,fail)=>/^\d+$/.test(id)?api('/api/animes/'+id,ok,fail,null,json=>!!(json && Number(json.id)===Number(id))):fail());

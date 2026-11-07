@@ -85,3 +85,11 @@ test('an exact same-year release wins over broad franchise aliases instead of lo
  const rows=[{method:'link',similar:true,title:'Истребитель демонов [ТВ-2] / Kimetsu no Yaiba: Mugen Ressha-hen',year:'2021',url:base+'?pick=train'},{method:'link',similar:true,title:'Истребитель демонов [ТВ-2] / Kimetsu no Yaiba: Yuukaku-hen',year:'2021',url:base+'?pick=redlight'}];
  assert.equal(matchProviderParts([part],rows,base)[0].url,base+'?pick=train');
 });
+
+test('an announced undated season is excluded using release status while its published predecessor retains all episodes',()=>{
+ const {installFullGuard}=mod('tmdb'),previous=global.window;let answer;
+ const card={id:1,minimal_anime:true,number_of_seasons:2,number_of_episodes:24,seasons:[1,2].map(season_number=>({season_number,episode_count:12}))};
+ const model={complete:true,rows:[{key:'story',results:[{id:10},{id:11}]}],nodes:[{id:10,record:{tv:1,season:1},kind:'tv',status:'released',aired:'2017-01-01'},{id:11,record:{tv:1,season:2},kind:'tv',status:'anons',aired:''}]};
+ global.window={LampaView:{animeBase:{canonical:(c,done)=>done(card),collection:(c,done)=>done(model)}}};
+ try{const L={Api:{full:(p,done)=>done({movie:card})}};installFullGuard(L);L.Api.full({},v=>answer=v);assert.equal(answer.movie.minimal_detail_seasons,1);assert.equal(answer.movie.minimal_detail_episodes,12);assert.equal(card.number_of_seasons,2);assert.equal(card.number_of_episodes,24);}finally{global.window=previous;}
+});

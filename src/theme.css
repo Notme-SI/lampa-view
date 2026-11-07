@@ -1137,3 +1137,5 @@ body.lampa_view .minimal-anime-order li {min-width:0;padding:1em;border:1px soli
 body.lampa_view .minimal-anime-order strong,body.lampa_view .minimal-anime-order span,body.lampa_view .minimal-anime-order small {display:block;line-height:1.4}
 body.lampa_view .minimal-anime-order span {margin:.5em 0}
 body.lampa_view .minimal-anime-order small {color:var(--pt-muted)}
+
+body.lampa_view.pt-mobile .minimal-anime-order ol {grid-template-columns:1fr}
