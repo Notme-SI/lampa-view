@@ -1,4 +1,4 @@
-/*! Lampa View 0.5.71 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.5.72 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -10096,6 +10096,36 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       fr: "Prochain \xE9pisode : {0}",
       pl: "Następny odcinek: {0}",
       es: "Pr\xF3ximo episodio: {0}"
+    },
+    "Кадры из сериала": {
+      ru: "Кадры из сериала",
+      en: "Series stills",
+      uk: "Кадри із серіалу",
+      be: "Кадры з серыяла",
+      zh: "剧集画面",
+      pt: "Cenas da s\xE9rie",
+      bg: "Кадри от сериала",
+      he: "תמונות מהסדרה",
+      cs: "Záběry ze seriálu",
+      ro: "Cadre din serial",
+      fr: "Images de la s\xE9rie",
+      pl: "Kadry z serialu",
+      es: "Im\xE1genes de la serie"
+    },
+    "Кадр из серии {0}": {
+      ru: "Кадр из серии {0}",
+      en: "Frame from episode {0}",
+      uk: "Кадр із серії {0}",
+      be: "Кадр з серыі {0}",
+      zh: "第 {0} 集画面",
+      pt: "Cena do epis\xF3dio {0}",
+      bg: "Кадър от епизод {0}",
+      he: "תמונה מפרק {0}",
+      cs: "Záběr z epizody {0}",
+      ro: "Cadru din episodul {0}",
+      fr: "Image de l’épisode {0}",
+      pl: "Kadr z odcinka {0}",
+      es: "Imagen del episodio {0}"
     }
   };
 
@@ -10460,6 +10490,41 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     records: anime_index_data_default.count,
     mapped: anime_index_data_default.mapped
   };
+  function datedReleaseTarget(card, canonical, books) {
+    var _a, _b;
+    var parent = card.minimal_franchise_parent,
+      release = card.minimal_franchise_release;
+    if (!parent || Number(parent.id) !== Number(canonical == null ? void 0 : canonical.id) || parent.type !== "tv" || !release || !/^\d{4}-\d{2}-\d{2}$/.test(release.aired || "") || !/^\d{4}-\d{2}-\d{2}$/.test(release.released || "") || !Number.isInteger(release.episodes) || release.episodes < 1) return null;
+    var matches = [];
+    var _loop5 = function _loop5() {
+      var _Object$entries$_i = _slicedToArray(_Object$entries[_i5], 2),
+        number3 = _Object$entries$_i[0],
+        book = _Object$entries$_i[1];
+      var rows = ((book == null ? void 0 : book.episodes_original) || (book == null ? void 0 : book.episodes) || []).filter(function (e) {
+        return e.air_date >= release.aired && e.air_date <= release.released;
+      }).sort(function (a, b) {
+        return a.episode_number - b.episode_number;
+      });
+      if (rows.length !== release.episodes || ((_a = rows[0]) == null ? void 0 : _a.air_date) !== release.aired || ((_b = rows.at(-1)) == null ? void 0 : _b.air_date) !== release.released || !rows.every(function (e, i) {
+        return Number(e.season_number) === Number(number3) && Number(e.episode_number) === Number(rows[0].episode_number) + i;
+      })) return 1; // continue
+      matches.push({
+        id: Number(parent.id),
+        type: "tv",
+        release: {
+          mal: Number(card.shikimori_id || card.id),
+          kind: card.minimal_anime_kind || "tv",
+          tv: Number(parent.id),
+          season: Number(number3),
+          offset: Number(rows[0].episode_number) - 1
+        }
+      });
+    };
+    for (var _i5 = 0, _Object$entries = Object.entries(books); _i5 < _Object$entries.length; _i5++) {
+      if (_loop5()) continue;
+    }
+    return matches.length === 1 ? matches[0] : null;
+  }
 
   // src/metadata.js
   function localizedTitle(card) {
@@ -10655,7 +10720,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var _iterator11 = _createForOfIteratorHelper(seasons),
       _step11;
     try {
-      var _loop5 = function _loop5() {
+      var _loop6 = function _loop6() {
         var s = _step11.value;
         var selected = numbers.filter(function (n) {
             return n > offset && n <= offset + Number(s.episode_count);
@@ -10678,7 +10743,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
       };
       for (_iterator11.s(); !(_step11 = _iterator11.n()).done;) {
-        _loop5();
+        _loop6();
       }
     } catch (err) {
       _iterator11.e(err);
@@ -10714,7 +10779,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var actual = new Set(files.map(Number)),
       now = Date.now();
     return rows.filter(function (row) {
-      return actual.has(Number(row.episode_number)) || allowFuture && Number(row.season_number) === Number(season) && typeof row.air_date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(row.air_date) && Date.parse(row.air_date + "T00:00:00Z") > now;
+      var _a;
+      return actual.has(Number(row.episode_number)) || allowFuture && Number((_a = row.lampa_source_season) != null ? _a : row.season_number) === Number(season) && typeof row.air_date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(row.air_date) && Date.parse(row.air_date + "T00:00:00Z") > now;
     });
   }
   function alternativeNumbering(card, numbers) {
@@ -10778,7 +10844,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var _iterator13 = _createForOfIteratorHelper(known),
       _step13;
     try {
-      var _loop6 = function _loop6() {
+      var _loop7 = function _loop7() {
           var _step13$value = _slicedToArray(_step13.value, 2),
             s = _step13$value[0],
             count = _step13$value[1];
@@ -10794,7 +10860,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         },
         _ret2;
       for (_iterator13.s(); !(_step13 = _iterator13.n()).done;) {
-        _ret2 = _loop6();
+        _ret2 = _loop7();
         if (_ret2) return _ret2.v;
       }
     } catch (err) {
@@ -10840,7 +10906,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       pump();
     }
     function pump() {
-      var _loop7 = function _loop7() {
+      var _loop8 = function _loop8() {
         var job = queue.shift(),
           path = job.path;
         running++;
@@ -10886,7 +10952,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
       };
       while (running < 2 && queue.length) {
-        if (_loop7()) continue;
+        if (_loop8()) continue;
       }
     }
     function legacyBook(card, number3, numbers, actual, done) {
@@ -11012,7 +11078,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                   var _iterator15 = _createForOfIteratorHelper(g.rows),
                     _step15;
                   try {
-                    var _loop8 = function _loop8() {
+                    var _loop9 = function _loop9() {
                         var e = _step15.value;
                         var number3 = ++offset;
                         if (!selected.has(number3)) return 0; // continue
@@ -11029,7 +11095,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                       },
                       _ret3;
                     for (_iterator15.s(); !(_step15 = _iterator15.n()).done;) {
-                      _ret3 = _loop8();
+                      _ret3 = _loop9();
                       if (_ret3 === 0) continue;
                       if (_ret3) return _ret3.v;
                     }
@@ -11236,11 +11302,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var change = true;
       while (change) {
         change = false;
-        for (var _i5 = 0, _edges = edges; _i5 < _edges.length; _i5++) {
-          var edge = _edges[_i5];
+        for (var _i6 = 0, _edges = edges; _i6 < _edges.length; _i6++) {
+          var edge = _edges[_i6];
           if (relations.includes(edge.relation) && (ids.has(edge.from) || ids.has(edge.to))) {
-            for (var _i6 = 0, _arr3 = [edge.from, edge.to]; _i6 < _arr3.length; _i6++) {
-              var id = _arr3[_i6];
+            for (var _i7 = 0, _arr3 = [edge.from, edge.to]; _i7 < _arr3.length; _i7++) {
+              var id = _arr3[_i7];
               if (!ids.has(id)) {
                 ids.add(id);
                 change = true;
@@ -11260,8 +11326,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         while (parents.get(id) !== id) id = parents.get(id);
         return id;
       };
-    for (var _i7 = 0, _edges2 = edges; _i7 < _edges2.length; _i7++) {
-      var edge = _edges2[_i7];
+    for (var _i8 = 0, _edges2 = edges; _i8 < _edges2.length; _i8++) {
+      var edge = _edges2[_i8];
       if (edge.relation === "alternative_version" && relevant.has(edge.from) && relevant.has(edge.to)) parents.set(root(edge.to), root(edge.from));
     }
     var variants = /* @__PURE__ */new Map();
@@ -11344,8 +11410,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       directed = new Map(_toConsumableArray(main).map(function (id) {
         return [id, /* @__PURE__ */new Set()];
       }));
-    for (var _i8 = 0, _edges3 = edges; _i8 < _edges3.length; _i8++) {
-      var _edge = _edges3[_i8];
+    for (var _i9 = 0, _edges3 = edges; _i9 < _edges3.length; _i9++) {
+      var _edge = _edges3[_i9];
       if (["prequel", "sequel"].includes(_edge.relation)) {
         var from = _edge.relation === "sequel" ? _edge.from : _edge.to,
           to = _edge.relation === "sequel" ? _edge.to : _edge.from;
@@ -11417,8 +11483,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       return alternatives.add(id);
     });
     var related = connected(new Set(relevant), ["prequel", "sequel", "side_story", "parent_story", "spin_off", "alternative_version", "summary", "full_story"]);
-    for (var _i9 = 0, _edges4 = edges; _i9 < _edges4.length; _i9++) {
-      var _edge2 = _edges4[_i9];
+    for (var _i0 = 0, _edges4 = edges; _i0 < _edges4.length; _i0++) {
+      var _edge2 = _edges4[_i0];
       if (_edge2.relation === "other" && (related.has(_edge2.from) || related.has(_edge2.to))) {
         if (relevant.has(_edge2.from)) related.add(_edge2.to);
         if (relevant.has(_edge2.to)) related.add(_edge2.from);
@@ -11563,7 +11629,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var _iterator25 = _createForOfIteratorHelper(nodes),
       _step25;
     try {
-      var _loop9 = function _loop9() {
+      var _loop0 = function _loop0() {
         var node = _step25.value;
         var number3 = 0,
           part = 0;
@@ -11604,7 +11670,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         };
       };
       for (_iterator25.s(); !(_step25 = _iterator25.n()).done;) {
-        _loop9();
+        _loop0();
       }
     } catch (err) {
       _iterator25.e(err);
@@ -11655,6 +11721,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         seen.add(identity2);
         return true;
       }).map(function (card) {
+        var _a2, _b2, _c;
         var originalStep = steps.get(card.id),
           step = card.minimal_franchise_season ? __spreadProps(__spreadValues({}, originalStep), {
             season: card.minimal_franchise_season
@@ -11665,11 +11732,32 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var short = base && full.toLowerCase().startsWith(base.toLowerCase()) ? full.slice(base.length).replace(/^[\s:.-]+/, "") : full;
         if (step == null ? void 0 : step.part) short = short.replace(/(?:[.\s:-]+)?(?:часть|part|cour)\s*\d+$/i, "").replace(/\s+\d+$/, "").trim();
         if (!short || /^(?:\d+|[ivx]+|(?:часть|part|season|сезон)\s*\d+|\d+\s*(?:сезон|season))$/i.test(short)) short = "";
-        var label = type + ((step == null ? void 0 : step.part) ? " \xB7 " + text("Часть {0}", [step.part]) : "");
+        var label = card.minimal_franchise_season ? text("Сезон {0}", [card.minimal_franchise_season]) : short || full || type;
+        var heading = label + ((step == null ? void 0 : step.part) ? " \xB7 " + text("Часть {0}", [step.part]) : "");
+        var count = card.minimal_franchise_season ? (_b2 = (_a2 = canonical.seasons) == null ? void 0 : _a2.find(function (s) {
+          return s.season_number === card.minimal_franchise_season;
+        })) == null ? void 0 : _b2.episode_count : card.episodes;
+        var format = kind === "movie" ? text("Фильм") : kind === "ova" ? "OVA" : kind === "ona" ? "ONA" : ["special", "tv_special"].includes(kind) ? text("Спецвыпуски") : text("Сериал");
+        var status = card.status === "anons" ? text("Анонс") : card.status === "ongoing" ? text("Выходит") : card.status === "released" ? text("Вышло") : "";
+        var node = model.nodes.find(function (n) {
+            return n.id === card.id;
+          }),
+          parent = canonical.media_type !== "movie" && Number(canonical.tmdb_id || canonical.id) > 0 && row.key === "story" && model.complete ? {
+            id: Number(canonical.tmdb_id || canonical.id),
+            type: "tv"
+          } : null;
+        var destination = parent && !((_c = node == null ? void 0 : node.record) == null ? void 0 : _c.tv) ? __spreadProps(__spreadValues({}, card), {
+          minimal_franchise_parent: parent,
+          minimal_franchise_release: {
+            aired: node == null ? void 0 : node.aired,
+            released: node == null ? void 0 : node.released,
+            episodes: node == null ? void 0 : node.episodes
+          }
+        }) : card;
         return {
-          card: card,
-          title: label + (short ? " : " + short : ""),
-          subtitle: [step ? String(step.number).padStart(2, "0") : "", String(card.release_date || card.first_air_date || "").slice(0, 4)].filter(Boolean).join(" \xB7 "),
+          card: destination,
+          title: heading,
+          subtitle: [String(card.release_date || card.first_air_date || "").slice(0, 4), format, count > 0 ? pluralSource(["%s серия", "%s серии", "%s серий"], count) : "", status].filter(Boolean).join(" \xB7 "),
           icon: kind === "movie" ? "▷" : kind === "ova" ? "◇" : ["special", "tv_special"].includes(kind) ? "✦" : "▤"
         };
       });
@@ -12332,8 +12420,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         try {
           var request = w.indexedDB.open("lampa-view-artwork", 1);
           request.onupgradeneeded = function () {
-            for (var _i0 = 0, _arr4 = ["files", "sizes"]; _i0 < _arr4.length; _i0++) {
-              var store = _arr4[_i0];
+            for (var _i1 = 0, _arr4 = ["files", "sizes"]; _i1 < _arr4.length; _i1++) {
+              var store = _arr4[_i1];
               if (!request.result.objectStoreNames.contains(store)) request.result.createObjectStore(store, {
                 keyPath: "url"
               });
@@ -12693,8 +12781,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       db().then(function (database2) {
         if (database2) try {
           var tx = database2.transaction(["files", "sizes"], "readwrite");
-          for (var _i1 = 0, _arr5 = ["files", "sizes"]; _i1 < _arr5.length; _i1++) {
-            var store = _arr5[_i1];
+          for (var _i10 = 0, _arr5 = ["files", "sizes"]; _i10 < _arr5.length; _i10++) {
+            var store = _arr5[_i10];
             tx.objectStore(store).delete(url);
           }
           tx.onerror = function (event) {
@@ -12842,7 +12930,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       queue.sort(function (a, b) {
         return Number(visibleJobs.get(b)) - Number(visibleJobs.get(a));
       });
-      var _loop0 = function _loop0() {
+      var _loop1 = function _loop1() {
           var job = queue.shift();
           if (!job.alive()) {
             job.finished = true;
@@ -12931,7 +13019,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         },
         _ret4;
       for (var remaining = queue.length; remaining > 0; remaining--) {
-        _ret4 = _loop0();
+        _ret4 = _loop1();
         if (_ret4 === 0) continue;
       }
     }
@@ -13091,6 +13179,23 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // src/artwork.js
+  function detailBackdrop(variants, path, width) {
+    var language = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : "ru";
+    var _a;
+    var current = variants.find(function (v) {
+        return v.file_path === path;
+      }),
+      needed = Math.max(1920, Number(width) || 1920);
+    if (!current) return path;
+    var lang = String(language).split("-")[0];
+    var suitable = variants.filter(function (v) {
+      return Number(v.width) > Number(current.width) && Number(v.width) >= needed && Number(v.height) > 0 && Number(v.width) / Number(v.height) > 1.4 && (!v.iso_639_1 || v.iso_639_1 === lang);
+    });
+    suitable.sort(function (a, b) {
+      return Number(b.width) - Number(a.width) || Number(!b.iso_639_1) - Number(!a.iso_639_1) || Number(b.vote_average || 0) - Number(a.vote_average || 0);
+    });
+    return ((_a = suitable[0]) == null ? void 0 : _a.file_path) || path;
+  }
   function artworkQuality(L) {
     var get = function get(key2, def) {
       return L.Storage && L.Storage.get ? L.Storage.get(key2, def) : def;
@@ -13214,7 +13319,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   // src/watch-actions.js
   function onlineButton(root) {
     return Array.from(root.querySelectorAll(".buttons--container>.full-start__button")).find(function (button) {
-      if (button.classList.contains("hide") || button.hidden) return false;
+      if (button.classList.contains("hide") || button.hidden || button.matches('.shots-view-button,[data-action="shots"]')) return false;
       var label = button.querySelector("span");
       return button.matches(".view--online,.button--online,.button--lampac") || /^(онлайн|online)$/i.test((label && label.textContent || button.getAttribute("title") || "").trim());
     }) || null;
@@ -13302,8 +13407,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       return date2 && date2.date > today2 ? date2 : null;
     };
     var next = upcoming(card == null ? void 0 : card.next_episode_to_air);
-    if (!next) for (var _i10 = 0, _arr6 = [book == null ? void 0 : book.episodes, book == null ? void 0 : book.episodes_original]; _i10 < _arr6.length; _i10++) {
-      var rows = _arr6[_i10];
+    if (!next) for (var _i11 = 0, _arr6 = [book == null ? void 0 : book.episodes, book == null ? void 0 : book.episodes_original]; _i11 < _arr6.length; _i11++) {
+      var rows = _arr6[_i11];
       if (!Array.isArray(rows)) continue;
       var _iterator34 = _createForOfIteratorHelper(rows),
         _step34;
@@ -13326,7 +13431,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     }, next.date.getFullYear() !== now.getFullYear() ? {
       year: "numeric"
     } : {});
+    var remainingDays = Math.round((Date.UTC(next.date.getFullYear(), next.date.getMonth(), next.date.getDate()) - Date.UTC(today2.getFullYear(), today2.getMonth(), today2.getDate())) / 864e5);
     return __spreadProps(__spreadValues({}, next), {
+      remainingDays: remainingDays,
       label: new Intl.DateTimeFormat(locale(), options).format(next.date)
     });
   }
@@ -13345,7 +13452,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     if (!root || !Array.isArray((_a = event.data) == null ? void 0 : _a.results) || !event.data.results.some(still)) return;
     root.classList.add("minimal-detail-screenshots");
     var heading = root.querySelector(".items-line__title");
-    if (heading) heading.textContent = text("Скриншоты");
+    if (heading) heading.textContent = text("Кадры из сериала");
     function frame(item) {
       var node = nodeOf(item);
       if (!(node == null ? void 0 : node.classList.contains("full-episode")) || node.dataset.minimalScreenshot) return;
@@ -13358,7 +13465,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       node.dataset.minimalScreenshot = "1";
       node.setAttribute("role", "button");
       node.tabIndex = 0;
-      node.setAttribute("aria-label", text("Скриншот серии {0}", [item.data.episode_number || ""]));
+      node.setAttribute("aria-label", text("Кадр из серии {0}", [item.data.episode_number || ""]));
       var open = function open() {
         var _a2, _b2, _c;
         if (!node.isConnected || !((_a2 = L.Modal) == null ? void 0 : _a2.open) || ((_c = (_b2 = L.Modal).opened) == null ? void 0 : _c.call(_b2))) return;
@@ -13424,7 +13531,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         return name(row) === kind;
       });
     };
-    var anchorIndex = Math.max(0, index2("episodes") >= 0 ? index2("episodes") : Math.max(index2("discuss"), index2("persons")));
+    var anchorIndex = Math.max(0, index2("episodes") >= 0 ? index2("episodes") : Math.max(0, index2("persons")));
     if (anchorIndex >= link.items.length) {
       var view = link.view;
       try {
@@ -13493,10 +13600,99 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     link.items.splice(at, 0, item);
     link.active = Math.max(0, link.items.indexOf(active));
     anchor.after(wrap);
+    orderDetailSections(link);
     return {
       control: control,
       item: item
     };
+  }
+  function orderDetailSections(link) {
+    var _a;
+    if (!Array.isArray(link == null ? void 0 : link.rows) || !Array.isArray(link.items) || link._minimalOrdering) return;
+    link._minimalOrdering = true;
+    try {
+      var _link$rows, _link$items;
+      var kind = function kind(row) {
+        return Array.isArray(row) ? row[0] : row;
+      };
+      var wanted = ["episodes", "minimal_related", "discuss"];
+      var last = link.rows.reduce(function (n, row, i) {
+        return wanted.includes(kind(row)) ? Math.max(n, i) : n;
+      }, -1);
+      if (last < 0) return;
+      if (last >= link.items.length) {
+        var view = link.view;
+        try {
+          link.view = Math.max(view || 3, last + 1);
+          link.emit("scroll", 0);
+        } finally {
+          link.view = view;
+        }
+      }
+      var active = link.items[link.active],
+        built = link.items.length,
+        pairs = link.rows.map(function (row, i) {
+          return {
+            row: row,
+            item: link.items[i]
+          };
+        });
+      var moving = wanted.flatMap(function (name) {
+        return pairs.filter(function (p) {
+          return kind(p.row) === name;
+        });
+      });
+      if (moving.some(function (p) {
+        return !p.item;
+      })) return;
+      var retained = pairs.filter(function (p) {
+        return !wanted.includes(kind(p.row));
+      });
+      var header = ((_a = nodeOf(link.items[0])) == null ? void 0 : _a.closest(".minimal-detail-header")) || nodeOf(link.items[0]);
+      var at = 1;
+      while (at < retained.length && retained[at].item && (header == null ? void 0 : header.contains(nodeOf(retained[at].item)))) at++;
+      retained.splice.apply(retained, [at, 0].concat(_toConsumableArray(moving)));
+      (_link$rows = link.rows).splice.apply(_link$rows, [0, link.rows.length].concat(_toConsumableArray(retained.map(function (p) {
+        return p.row;
+      }))));
+      (_link$items = link.items).splice.apply(_link$items, [0, built].concat(_toConsumableArray(retained.slice(0, built).map(function (p) {
+        return p.item;
+      }))));
+      link.active = Math.max(0, link.items.indexOf(active));
+      var anchor = header;
+      var _iterator35 = _createForOfIteratorHelper(retained.slice(at)),
+        _step35;
+      try {
+        for (_iterator35.s(); !(_step35 = _iterator35.n()).done;) {
+          var entry = _step35.value;
+          var node = nodeOf(entry.item);
+          if (!node || !(anchor == null ? void 0 : anchor.parentNode) || (header == null ? void 0 : header.contains(node))) continue;
+          if (kind(entry.row) === "discuss") node.classList.add("minimal-comments-native");
+          anchor.after(node);
+          anchor = node;
+        }
+      } catch (err) {
+        _iterator35.e(err);
+      } finally {
+        _iterator35.f();
+      }
+    } finally {
+      link._minimalOrdering = false;
+    }
+  }
+  function styleSuggestions(L, event) {
+    var _a, _b, _c, _d, _e;
+    var labels = [L.Lang.translate("title_recomendations"), L.Lang.translate("title_similar")];
+    if (!labels.includes((_a = event.data) == null ? void 0 : _a.title)) return;
+    var root = nodeOf(event.item);
+    if (!root) return;
+    root.classList.add("minimal-detail-suggestions");
+    var first = (_c = (_b = event.link) == null ? void 0 : _b.rows) == null ? void 0 : _c.find(function (row) {
+      var _a2;
+      return Array.isArray(row) && row[0] === "cards" && labels.includes((_a2 = row[1]) == null ? void 0 : _a2.title);
+    });
+    root.classList.toggle("minimal-detail-suggestions--first", !!first && first[1].title === event.data.title);
+    (_e = (_d = event.item).minimalPosterRefresh) == null ? void 0 : _e.call(_d);
   }
 
   // src/detail.js
@@ -13518,11 +13714,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   function overviewFocus(target) {
     var active = document.activeElement;
     if (active && active.matches(".minimal-overview-action,.minimal-detail-studio") && active !== target && !active.contains(target)) active.blur();
-    var _iterator35 = _createForOfIteratorHelper(overviewControls),
-      _step35;
+    var _iterator36 = _createForOfIteratorHelper(overviewControls),
+      _step36;
     try {
-      for (_iterator35.s(); !(_step35 = _iterator35.n()).done;) {
-        var control = _step35.value;
+      for (_iterator36.s(); !(_step36 = _iterator36.n()).done;) {
+        var control = _step36.value;
         if (!control.isConnected) {
           overviewControls.delete(control);
           continue;
@@ -13531,9 +13727,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (ring) ring.hidden = !(target === control || control.contains(target));
       }
     } catch (err) {
-      _iterator35.e(err);
+      _iterator36.e(err);
     } finally {
-      _iterator35.f();
+      _iterator36.f();
     }
   }
   function readableOverview(L, card, right, link) {
@@ -13559,8 +13755,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     overviewControls.add(control);
     if (overviewDocument !== document) {
       overviewDocument = document;
-      for (var _i11 = 0, _arr7 = ["hover:focus", "hover:hover", "focusin"]; _i11 < _arr7.length; _i11++) {
-        var name = _arr7[_i11];
+      for (var _i12 = 0, _arr7 = ["hover:focus", "hover:hover", "focusin"]; _i12 < _arr7.length; _i12++) {
+        var name = _arr7[_i12];
         document.addEventListener(name, function (event) {
           return overviewFocus(event.target);
         }, true);
@@ -13650,7 +13846,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var node = document.createElement("time");
         node.className = "minimal-detail-next-episode";
         node.dateTime = date2.iso;
-        node.textContent = text("Следующая серия: {0}", [date2.label]);
+        node.textContent = text("Следующая серия: {0}", [date2.label]) + " / " + L.Lang.translate("full_episode_days_left") + ": " + date2.remainingDays;
         retained.push(node);
       }
       while (line.firstChild) line.removeChild(line.firstChild);
@@ -13688,8 +13884,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var key2 = String(person.id || person.name || person.original_name),
           old = seen.get(key2);
         if (old) {
-          for (var _i12 = 0, _arr8 = ["popularity", "episode_count", "total_episode_count"]; _i12 < _arr8.length; _i12++) {
-            var field = _arr8[_i12];
+          for (var _i13 = 0, _arr8 = ["popularity", "episode_count", "total_episode_count"]; _i13 < _arr8.length; _i13++) {
+            var field = _arr8[_i13];
             old[field] = Math.max(Number(old[field]) || 0, Number(person[field]) || 0);
           }
           if (!old.profile_path && person.profile_path) old.profile_path = person.profile_path;
@@ -13739,56 +13935,6 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       result: []
     };
   }
-  function orderComments(link) {
-    if (!link || !link.rows || !link.items) return;
-    var index2 = link.rows.findIndex(function (row) {
-      return Array.isArray(row) && row[0] === "discuss";
-    });
-    if (index2 < 0) return;
-    var cast = link.rows.findIndex(function (row) {
-      return Array.isArray(row) && row[0] === "persons";
-    });
-    var target = Math.min(cast === 1 ? 2 : 1, link.rows.length - 1);
-    var built = index2 < link.items.length;
-    if (!built && target >= link.items.length) {
-      link.rows.splice(target, 0, link.rows.splice(index2, 1)[0]);
-    } else {
-      if (!built && document.body.classList.contains("pt-tv")) {
-        var next = link.items.length,
-          previous = link.view;
-        link.rows.splice(next, 0, link.rows.splice(index2, 1)[0]);
-        index2 = next;
-        link.view = next + 1;
-        link.emit("scroll", 0);
-        link.view = previous;
-        built = index2 < link.items.length;
-      }
-      if (!built) {
-        link.view = Math.max(link.view || 3, index2 + 1);
-        link.emit("scroll", 0);
-        built = index2 < link.items.length;
-      }
-      if (built) {
-        var active = link.items[link.active];
-        link.rows.splice(target, 0, link.rows.splice(index2, 1)[0]);
-        link.items.splice(target, 0, link.items.splice(index2, 1)[0]);
-        link.active = Math.max(0, link.items.indexOf(active));
-      }
-    }
-    link.view = Math.max(link.view || 3, target + 1);
-    link.emit("scroll", 0);
-    var item = link.items[target],
-      render = item && item.render(true),
-      node = render && (render.nodeType ? render : render[0]);
-    if (node) {
-      node.classList.add("minimal-comments-native");
-      var _previous = link.items[target - 1],
-        r = _previous && _previous.render(true),
-        previousNode = r && (r.nodeType ? r : r[0]);
-      var anchor = previousNode && (previousNode.closest(".minimal-detail-header") || previousNode);
-      if (anchor && anchor.parentNode && !anchor.contains(node)) anchor.parentNode.insertBefore(node, anchor.nextSibling);
-    }
-  }
   function mountCast(columns, node) {
     if (!columns || !node) return;
     var cell = Array.from(columns.children).find(function (child) {
@@ -13816,7 +13962,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     link.active = Math.max(0, link.items.indexOf(active));
   }
   function restoreDetailRows(L, link, data) {
-    var _link$rows;
+    var _link$rows2;
     if (!link || !Array.isArray(link.rows) || !Array.isArray(link.items)) return;
     var missing = [],
       cast = data.persons && data.persons.cast || [];
@@ -13843,8 +13989,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         results: results
       })]);
     }
-    var _loop1 = function _loop1() {
-      var _arr9$_i = _slicedToArray(_arr9[_i13], 2),
+    var _loop10 = function _loop10() {
+      var _arr9$_i = _slicedToArray(_arr9[_i14], 2),
         key2 = _arr9$_i[0],
         label = _arr9$_i[1];
       var supplied = data[key2],
@@ -13857,10 +14003,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         title: title
       })]);
     };
-    for (var _i13 = 0, _arr9 = [["collection", "title_collection"], ["recomend", "title_recomendations"], ["simular", "title_similar"]]; _i13 < _arr9.length; _i13++) {
-      if (_loop1()) continue;
+    for (var _i14 = 0, _arr9 = [["collection", "title_collection"], ["recomend", "title_recomendations"], ["simular", "title_similar"]]; _i14 < _arr9.length; _i14++) {
+      if (_loop10()) continue;
     }
-    if (missing.length) (_link$rows = link.rows).splice.apply(_link$rows, [link.items.length, 0].concat(missing));
+    if (missing.length) (_link$rows2 = link.rows).splice.apply(_link$rows2, [link.items.length, 0].concat(missing));
   }
   function detail(L, event, loadLogo) {
     if (event && event.type === "options" && event.link && event.options) {
@@ -13892,6 +14038,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       prepareDetail(event.data);
       return;
     }
+    if (event && event.type === "build" && event.name === "cards" && event.item) styleSuggestions(L, event);
     if (event && event.type === "build" && event.name === "episodes" && event.item) {
       styleScreenshots(L, event);
       return;
@@ -14094,7 +14241,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
       }
     }
-    orderComments(event.link);
+    orderDetailSections(event.link);
     if (event.link && event.link.rows && event.link.items) {
       var _link = event.link;
       if (!document.body.classList.contains("pt-tv")) {
@@ -14307,16 +14454,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     }
     if (background && card.backdrop_path) {
       var variants = (event.data.images || card.images || {}).backdrops || [],
-        current = variants.find(function (v) {
-          return v.file_path === card.backdrop_path;
-        }),
-        needed = Math.max(1280, Math.ceil((window.innerWidth || 1920) * Math.min(2, window.devicePixelRatio || 1)));
-      var better = current && Number(current.width) < needed && variants.filter(function (v) {
-        return Number(v.width) >= needed && Number(v.aspect_ratio || 1.78) > 1.4 && !v.iso_639_1;
-      }).sort(function (a, b) {
-        return Number(b.width) - Number(a.width);
-      })[0];
-      var backdrop = better ? better.file_path : card.backdrop_path;
+        needed = document.body.classList.contains("pt-tv") ? 3840 : Math.ceil((window.innerWidth || 1920) * Math.min(2, window.devicePixelRatio || 1));
+      var backdrop = detailBackdrop(variants, card.backdrop_path, needed, L.Storage.get("language", "ru"));
       var size = artworkSize(L, "detail-backdrop");
       var url = L.TMDB.image("/t/p/" + size + backdrop, {
         preserveSize: true
@@ -14412,7 +14551,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // package.json
-  var version = "0.5.71";
+  var version = "0.5.72";
 
   // src/inputs.js
   function inputs(L) {
@@ -14483,13 +14622,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var originals = _toConsumableArray(images.values()).filter(function (e) {
         return e.original && e.done;
       }).length;
-      var _iterator36 = _createForOfIteratorHelper(images),
-        _step36;
+      var _iterator37 = _createForOfIteratorHelper(images),
+        _step37;
       try {
-        var _loop10 = function _loop10() {
-            var _step36$value = _slicedToArray(_step36.value, 2),
-              url = _step36$value[0],
-              entry = _step36$value[1];
+        var _loop11 = function _loop11() {
+            var _step37$value = _slicedToArray(_step37.value, 2),
+              url = _step37$value[0],
+              entry = _step37$value[1];
             var crowded = images.size > 24 || bytes > budget;
             if (!crowded && originals <= maximumOriginals) return 0; // break
             if (!crowded && !entry.original) return 1; // continue
@@ -14502,15 +14641,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             }
           },
           _ret5;
-        for (_iterator36.s(); !(_step36 = _iterator36.n()).done;) {
-          _ret5 = _loop10();
+        for (_iterator37.s(); !(_step37 = _iterator37.n()).done;) {
+          _ret5 = _loop11();
           if (_ret5 === 0) break;
           if (_ret5 === 1) continue;
         }
       } catch (err) {
-        _iterator36.e(err);
+        _iterator37.e(err);
       } finally {
-        _iterator36.f();
+        _iterator37.f();
       }
     }
     function fetchImage(url, callback, type, priority, coverPath) {
@@ -14591,21 +14730,21 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }
       current = wrap(i);
       var path = cards[current].backdrop_path;
-      var _iterator37 = _createForOfIteratorHelper(images),
-        _step37;
+      var _iterator38 = _createForOfIteratorHelper(images),
+        _step38;
       try {
-        for (_iterator37.s(); !(_step37 = _iterator37.n()).done;) {
-          var _step37$value = _slicedToArray(_step37.value, 2),
-            url = _step37$value[0],
-            entry = _step37$value[1];
+        for (_iterator38.s(); !(_step38 = _iterator38.n()).done;) {
+          var _step38$value = _slicedToArray(_step38.value, 2),
+            url = _step38$value[0],
+            entry = _step38$value[1];
           if (entry.owner === owner && entry.cover && !entry.background && !entry.done && entry.coverPath !== path && entry.callbacks.every(function (fn) {
             return fn.owner === owner;
           })) remove(url, entry);
         }
       } catch (err) {
-        _iterator37.e(err);
+        _iterator38.e(err);
       } finally {
-        _iterator37.f();
+        _iterator38.f();
       }
     }
     function cover(i, size, callback, background) {
@@ -14718,21 +14857,21 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       clearTimeout(upgradeTimer);
       upgradeWanted = null;
       if (cancelPendingOriginal) {
-        var _iterator38 = _createForOfIteratorHelper(images),
-          _step38;
+        var _iterator39 = _createForOfIteratorHelper(images),
+          _step39;
         try {
-          for (_iterator38.s(); !(_step38 = _iterator38.n()).done;) {
-            var _step38$value = _slicedToArray(_step38.value, 2),
-              url = _step38$value[0],
-              entry = _step38$value[1];
+          for (_iterator39.s(); !(_step39 = _iterator39.n()).done;) {
+            var _step39$value = _slicedToArray(_step39.value, 2),
+              url = _step39$value[0],
+              entry = _step39$value[1];
             if (entry.owner === owner && entry.original && !entry.done && entry.callbacks.every(function (fn) {
               return fn.owner === owner;
             })) remove(url, entry);
           }
         } catch (err) {
-          _iterator38.e(err);
+          _iterator39.e(err);
         } finally {
-          _iterator38.f();
+          _iterator39.f();
         }
       }
     }
@@ -14786,13 +14925,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       document.removeEventListener("minimal:tv-idle", resume);
       document.removeEventListener("visibilitychange", resume);
       pool.active.delete(owner);
-      var _iterator39 = _createForOfIteratorHelper(images),
-        _step39;
+      var _iterator40 = _createForOfIteratorHelper(images),
+        _step40;
       try {
-        for (_iterator39.s(); !(_step39 = _iterator39.n()).done;) {
-          var _step39$value = _slicedToArray(_step39.value, 2),
-            url = _step39$value[0],
-            entry = _step39$value[1];
+        for (_iterator40.s(); !(_step40 = _iterator40.n()).done;) {
+          var _step40$value = _slicedToArray(_step40.value, 2),
+            url = _step40$value[0],
+            entry = _step40$value[1];
           if (!entry.done) {
             entry.callbacks = entry.callbacks.filter(function (fn) {
               return fn.owner !== owner;
@@ -14801,9 +14940,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }
         }
       } catch (err) {
-        _iterator39.e(err);
+        _iterator40.e(err);
       } finally {
-        _iterator39.f();
+        _iterator40.f();
       }
       trim();
       branding2.clear();
@@ -14822,7 +14961,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // src/theme.css
-  var theme_default = ["/* Minimal presentation for native Lampa. No application replacement. */", ".pt-hidden {display:none!important}", "body.lampa_view {", " --pt-bg:#000000;--pt-side:#14161b;--pt-panel:#191d24;--pt-high:#252c34;", " --pt-line:#ffffff12;--pt-text:#eeeff2;--pt-muted:#9299a3;--pt-accent:#add9e5;--pt-dim:#add9e514;", ' background:var(--pt-bg)!important;color:var(--pt-text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;', " font-size:calc(clamp(14px,.94vw,18px) * var(--pt-interface-scale,1))!important;", "}", "body.lampa_view .background {opacity:.08!important}", "body.lampa_view .background__fade {background:linear-gradient(0deg,var(--pt-bg),transparent)!important}", "body.lampa_view .head {height:3.6em;background:#000000f5;border-bottom:1px solid var(--pt-line);z-index:30}", "body.lampa_view .head__body {height:100%;max-width:112em;margin:auto;padding:.5em 2.5em;gap:.65em;display:flex;align-items:center}", "body.lampa_view .head__menu-icon {display:flex!important;order:-2;align-items:center;justify-content:center;width:2.2em;height:2.2em;flex:0 0 2.2em;box-sizing:border-box;padding:0;border:1px solid var(--pt-line);border-radius:.6em;margin:0!important;background:#ffffff04;color:var(--pt-muted);cursor:pointer}", "body.lampa_view .head__menu-icon svg {width:1.1em;height:1.1em}", "body.lampa_view .head__logo-icon {display:flex!important;width:auto!important;margin:0 2em 0 0!important;flex-shrink:0;cursor:pointer}", "body.lampa_view .pt-brand {font-size:.92em;font-weight:700;letter-spacing:.13em;color:var(--pt-text)}", "body.lampa_view .head__split,body.lampa_view .head__time,body.lampa_view .head__markers,body.lampa_view .head__title,body.lampa_view .head__logo-local {display:none!important}", "body.lampa_view .head__backward {display:none!important}", "body.lampa_view .head__backward.pt-back-visible {display:flex!important;order:-3;align-items:center;justify-content:center;width:2.2em;height:2.2em;flex:0 0 2.2em;box-sizing:border-box;margin:0!important;padding:0;border:1px solid var(--pt-line);border-radius:.6em;background:#ffffff04;color:var(--pt-muted);cursor:pointer}", "body.lampa_view.pt-home .head__backward {display:none!important}", "body.lampa_view .minimal-back svg {width:1.1em;height:1.1em}", ".minimal-back--overlay {display:none}", "body.lampa_view .minimal-back-heading {display:flex;align-items:center;gap:.7em}", "body.lampa_view .minimal-back--overlay {display:flex;align-items:center;justify-content:center;flex:0 0 2em;width:2em;height:2em;border:1px solid var(--pt-line);border-radius:.6em;background:#ffffff04;color:var(--pt-muted);cursor:pointer;font-size:1em}", "body.lampa_view .minimal-back-heading>.selectbox__title,body.lampa_view .minimal-back-heading>.settings__title {flex:1;min-width:0}", "body.lampa_view .head .open--broadcast,body.lampa_view .head .notice--icon,body.lampa_view .head .full--screen,body.lampa_view .head .open--notice,body.lampa_view .head .open--split {display:none!important}", "body.lampa_view .head__actions {margin-left:auto;display:flex;align-items:center;gap:.5em}", "body.lampa_view .head__action {width:2.2em;height:2.2em;border-radius:.55em;margin:0;color:var(--pt-muted)}", "body.lampa_view .head__action svg {width:1.15em;height:1.15em}", "body.lampa_view .head__action.open--settings {display:flex!important;align-items:center;justify-content:center;box-sizing:border-box;flex:0 0 2.2em;padding:0}", "body.lampa_view.pt-mobile .head__action.open--settings {display:flex!important}", "body.lampa_view .head__action.focus,body.lampa_view .head__action.hover {background:var(--pt-high);color:white}", "body.lampa_view .head__action.open--search {width:18em;background:#ffffff04;border:1px solid var(--pt-line);justify-content:flex-start;padding:0 .8em;gap:.65em}", "body.lampa_view .head__action.open--search:after {content:attr(data-pt-placeholder);font-size:.8em;color:var(--pt-muted)}", "body.lampa_view .pt-topnav {display:flex;align-items:center;gap:1.5em}", "body.lampa_view .pt-topnav__item {font-size:.81em;color:var(--pt-muted);padding:.55em 0;cursor:pointer;border-bottom:1px solid transparent}", "body.lampa_view .pt-topnav__item.active {color:var(--pt-text);border-bottom-color:var(--pt-accent)}", "body.lampa_view .pt-topnav__item.focus,body.lampa_view .pt-topnav__item.hover {color:var(--pt-accent);outline:0;border-bottom-color:var(--pt-accent)}", "body.lampa_view .wrap {display:block!important}", "body.lampa_view .wrap__content,body.lampa_view.menu--always .wrap__content,body.lampa_view.menu--open .wrap__content {width:100%!important;max-width:100%;margin-left:0!important;transform:none!important;padding-top:3.6em!important}", "body.lampa_view .activitys,body.lampa_view .activity {width:100%!important;max-width:100%}", "body.lampa_view .wrap__left,body.lampa_view.menu--always:not(.light--version) .wrap__left {position:fixed!important;top:4.1em!important;bottom:auto!important;left:2.5em!important;width:19em!important;height:auto!important;max-height:calc(100% - 5em)!important;padding:.65em 0!important;margin:0!important;border:1px solid #ffffff19;border-radius:.9em;background:#121419;box-shadow:0 18px 60px #0008;z-index:40;transform:none!important;transition:opacity .12s;visibility:hidden!important;opacity:0;pointer-events:none}", "body.lampa_view.menu--open .wrap__left,body.lampa_view.menu--always.menu--open .wrap__left {visibility:visible!important;opacity:1;pointer-events:auto}", "body.lampa_view .wrap__left>.scroll {width:100%!important;max-height:75vh!important}", "body.lampa_view .menu {padding:0 .6em!important}", "body.lampa_view .menu__case {padding:0!important}", "body.lampa_view .menu__list {display:block!important}", "body.lampa_view .menu__item {font-size:.86em;padding:.85em .8em;margin:.12em 0;border-radius:.5em;color:#a9afb8}", "body.lampa_view .menu__text,body.lampa_view.menu--always .menu__text {display:block!important;font-size:1em;font-weight:450}", "body.lampa_view .menu__ico {width:1.15em;height:1.15em;min-width:1.15em;margin-right:1em;opacity:.8}", "body.lampa_view .menu__ico svg {width:100%;height:100%}", "body.lampa_view .menu__item.focus,body.lampa_view .menu__item.hover,body.lampa_view .menu__item.traverse {background:var(--pt-high);color:#fff;box-shadow:none}", "body.lampa_view .menu__split {display:none!important}", 'body.lampa_view .menu__item[data-action="edit"],body.lampa_view .menu__item[data-action="feed"],body.lampa_view .menu__item[data-action="relise"],body.lampa_view .menu__item[data-action="myperson"],body.lampa_view .menu__item[data-action="subscribes"],body.lampa_view .menu__item[data-action="catalog"],body.lampa_view .menu__item[data-action="filter"] {display:none}', "body.lampa_view .items-line {margin-bottom:.8em;padding-bottom:.7em}", "body.lampa_view .items-line__head {margin-bottom:1em}", "body.lampa_view .items-line__title {font-size:1.12em;font-weight:600;letter-spacing:-.02em}", "body.lampa_view .items-line__more {font-size:.8em;background:transparent;color:var(--pt-muted)}", "/* The desktop profile owns scale; native Bigger adds another 14% otherwise. */", "body.lampa_view.pt-desktop .card {font-size:1em}", "body.lampa_view .card__view,body.lampa_view .card__img {border-radius:.5em;background:var(--pt-panel);box-shadow:none;overflow:hidden}", "body.lampa_view .card__title {font-size:.83em;font-weight:500;line-height:1.4;margin-top:.65em;height:auto;min-height:0;max-height:2.85em;display:-webkit-box;-webkit-box-orient:vertical;white-space:normal;overflow:hidden;transform:none;-webkit-transform:none;-webkit-line-clamp:2;line-clamp:2;text-overflow:ellipsis}", "body.lampa_view .card__age {font-size:.73em;color:var(--pt-muted);margin-top:.2em}", "body.lampa_view .card__vote {background:#000000dc;color:#eee;border:0;font-size:.65em;border-radius:.3em;padding:.2em .4em}", "body.lampa_view .card.focus .card__view:after,body.lampa_view .card.hover .card__view:after {border:2px solid var(--pt-accent);border-radius:.5em;inset:0;box-shadow:none;z-index:5;box-sizing:border-box}", "body.lampa_view .card.focus .card__title {color:var(--pt-accent)}", "body.lampa_view .card__quality {border-radius:.3em;background:#000000dc;font-size:.65em}", "body.lampa_view .scroll--mask:before,body.lampa_view .scroll--mask:after {display:none}", "body.lampa_view .pt-hero {position:relative;min-height:32em;height:min(67vh,43em);margin:0 0 2.2em;overflow:hidden;-webkit-clip-path:inset(0);clip-path:inset(0);border:0;box-shadow:none;background:#000;isolation:isolate}", "/* The bottom fade belongs to the unscaled frame, not the enlarged bitmap. */", "body.lampa_view .pt-hero__artwork {position:absolute;inset:0;z-index:0;overflow:hidden;-webkit-mask-image:linear-gradient(180deg,#000 0%,#000 65%,#000000c7 80%,#0000004d 92%,transparent 100%);mask-image:linear-gradient(180deg,#000 0%,#000 65%,#000000c7 80%,#0000004d 92%,transparent 100%)}", "body.lampa_view.pt-mobile .pt-hero__artwork {position:relative;inset:auto;width:100%;height:auto;flex:none;-webkit-mask-image:none;mask-image:none}", "body.lampa_view .pt-hero__image {display:block;position:absolute;top:0;left:auto;right:0;width:auto;max-width:100%;height:100%;object-fit:contain;object-position:right center;z-index:0;-webkit-mask-image:linear-gradient(90deg,transparent,#000 16%);mask-image:linear-gradient(90deg,transparent,#000 16%)}", "/* Minimal blends the artwork edge gradually without blurring the source. */", "body.lampa_view:not(.pt-theme-glass):not(.pt-mobile) .pt-hero__image {-webkit-mask-image:linear-gradient(90deg,transparent 0%,#0000000a 5%,#00000029 11%,#00000075 19%,#000000cc 27%,#000 35%);mask-image:linear-gradient(90deg,transparent 0%,#0000000a 5%,#00000029 11%,#00000075 19%,#000000cc 27%,#000 35%)}", "body.lampa_view .pt-hero:before {content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,#000000 0%,#000000ed 13%,#0000008c 40%,#00000000 76%)}", "body.lampa_view .pt-hero__body {position:absolute;z-index:2;left:max(4.5em,calc((100% - 100em)/2));bottom:6.5em;max-width:34em;padding-right:1em}", "body.lampa_view .pt-hero__title {font-size:2.9em;line-height:1.08;font-weight:650;letter-spacing:-.045em;margin:0 0 .65em;text-wrap:balance;max-width:14em}", "body.lampa_view .pt-hero__meta {display:flex;align-items:center;gap:.75em;font-size:.8em;line-height:1.5;font-weight:500;color:#dbdde2;margin-bottom:1.25em}", "body.lampa_view .pt-hero__studio {width:auto;max-width:6em;height:1.5em;object-fit:contain;flex:none;filter:var(--pt-studio-tone,brightness(1)) drop-shadow(0 0 .6px rgba(255,255,255,.7)) drop-shadow(0 1px 2px #000);opacity:.95}", "body.lampa_view .pt-hero__overview {font-size:.85em;line-height:1.65;color:#a3a8b1;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;max-width:34em}", "body.lampa_view .pt-hero__actions {display:flex;gap:.8em;margin-top:1.6em}", "body.lampa_view .pt-hero__action {display:flex;align-items:center;gap:.6em;border-radius:.6em;font-size:.82em;font-weight:600;padding:.85em 1.15em;background:var(--pt-accent);color:#13232c;cursor:pointer;border:1px solid transparent}", "body.lampa_view .pt-hero__action svg {width:1.15em;height:1.15em}", "body.lampa_view .pt-hero__action--secondary {background:#212a35dd;color:#d4dce3;border-color:#ffffff12}", "body.lampa_view .pt-hero__action.focus,body.lampa_view .pt-hero__action.hover,body.lampa_view .pt-hero__action:hover,body.lampa_view .pt-hero__action:focus-visible {outline:none!important;box-shadow:inset 0 0 0 2px #fff!important}", "body.lampa_view .pt-hero__dots {position:absolute;z-index:2;bottom:2.8em;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:.5em}", "body.lampa_view .pt-hero__dot {width:.5em;height:.5em;background:#ffffff50;border-radius:1em;cursor:pointer;position:relative}", "body.lampa_view .pt-hero__dot:after {content:'';position:absolute;inset:-.6em}", "body.lampa_view .pt-hero__dot.active {width:1.5em;background:var(--pt-accent)}", "body.lampa_view .pt-hero__dot {box-sizing:border-box;border:1.5px solid transparent;outline:none!important;box-shadow:none!important;transition:none!important}", "body.lampa_view .pt-hero__dot.focus,body.lampa_view .pt-hero__dot:focus-visible {border-color:#fff}", "body.lampa_view .pt-mobile-nav {display:none!important}", "body.lampa_view.pt-reduce-motion *,body.lampa_view.pt-reduce-motion *:before,body.lampa_view.pt-reduce-motion *:after {animation-duration:0s!important;transition-duration:0s!important;scroll-behavior:auto!important}", "body.lampa_view .full-start-new {padding-top:1.5em}", "body.lampa_view .full-start-new__left {width:15em;min-width:15em}", "body.lampa_view .full-start-new__poster {border-radius:.8em;overflow:hidden;box-shadow:0 16px 48px #0007}", "body.lampa_view .full-start-new__title {font-size:2.45em;letter-spacing:-.04em;font-weight:750;line-height:1.08;max-width:22em}", "body.lampa_view .full-start-new__tagline {font-size:.92em;color:var(--pt-muted);font-weight:400;line-height:1.6}", "body.lampa_view .full-start-new__rate-line {gap:.7em;margin-top:1em}", "body.lampa_view .full-start__rate {border:1px solid var(--pt-line);border-radius:.45em;padding:.4em .65em;font-size:.85em;background:var(--pt-panel)}", "body.lampa_view .full-start__rate .source--name {color:var(--pt-muted);font-size:.65em;font-weight:500}", "body.lampa_view .full-start-new__details {font-size:.82em;color:#bdbdc5;line-height:1.6}", "body.lampa_view .full-start-new__head {font-size:.82em;color:#bdbdc5;margin-bottom:.75em}", "body.lampa_view .full-start-new__reactions {display:none}", "body.lampa_view .full-start__status,body.lampa_view .full-start__pg {font-size:.7em;border:1px solid var(--pt-line);border-radius:.4em;padding:.45em .7em;color:var(--pt-muted)}", "body.lampa_view .full-start-new__buttons {display:flex;align-items:center;gap:.7em;flex-wrap:wrap}", "body.lampa_view .button--alc-torrent span {display:inline!important;max-width:none!important;font-size:1em!important}", "body.lampa_view .full-start__button,body.lampa_view .full-descr__tag {background:var(--pt-high);border:1px solid var(--pt-line);color:white;border-radius:.625em;font-size:.85em;padding:.8em 1.15em;box-shadow:none}", "body.lampa_view .full-start__button.focus,body.lampa_view .full-start__button.hover {border-color:var(--pt-accent);background:var(--pt-high);color:white;box-shadow:0 0 0 1px var(--pt-accent)}", "body.lampa_view .full-start__button.button--alc-auto {background:var(--pt-accent);border-color:var(--pt-accent);color:#07151c}", "body.lampa_view .full-start__button.button--alc-auto.focus {background:#65c9f3;color:#07151c;box-shadow:0 0 0 3px #2bb4ed55}", "body.lampa_view .full-start__button svg {width:1.1em;height:1.1em}", "body.lampa_view .full-descr__text {color:#bfbfc6;font-size:.9em;line-height:1.75;max-width:65em}", "body.lampa_view .full-descr__title,body.lampa_view .full-persons__title {font-size:1.2em;font-weight:650}", "body.lampa_view .pt-context-badge {font-size:.62em;line-height:1.5;color:#98989f;margin-top:1.3em}", "body.lampa_view .pt-context-badge span {color:var(--pt-accent)}", "body.lampa_view .torrent-item,body.lampa_view .torrent-item.tc-item {background:var(--pt-panel)!important;border:1px solid var(--pt-line)!important;border-radius:.625em!important;padding:1em!important;margin-bottom:.55em!important;color:var(--pt-text)!important}", "body.lampa_view .torrent-item.focus,body.lampa_view .torrent-item.hover,body.lampa_view .torrent-list .torrent-item.tc-item.focus {background:var(--pt-high)!important;border-color:var(--pt-accent)!important;box-shadow:inset 0 0 0 2px var(--pt-accent)!important;color:white!important}", "body.lampa_view .torrent-item__title {font-size:.95em;font-weight:600;line-height:1.45}", "body.lampa_view .torrent-item__details {font-size:.72em;color:var(--pt-muted)}", "body.lampa_view .tc-title {font-size:1em;font-weight:600;letter-spacing:-.015em}", "body.lampa_view .tc-tag {border-radius:.35em;font-size:.68em;padding:.2em .5em;border-color:#ffffff14}", "body.lampa_view .tc-tag--voice {background:#ffffff08}", "body.lampa_view .tc-tag--complete {color:#7ed0a7;border-color:#7ed0a72c}", "body.lampa_view .tc-tag--partial {color:#d6b777;border-color:#d6b7772c}", "body.lampa_view .tc-original,body.lampa_view .tc-foot {font-size:.68em;color:var(--pt-muted)}", "body.lampa_view .tc-size {font-size:1em;font-weight:600}", "body.lampa_view .tc-seeds {font-size:.8em;font-weight:500;color:#7ed0a7}", "body.lampa_view .tc-summary {display:flex;align-items:center;flex-wrap:wrap;gap:.5em .8em;min-width:0}", "body.lampa_view .tc-season {font-size:1.06em;font-weight:650;line-height:1.35;color:var(--pt-accent)}", "body.lampa_view .tc-episodes {font-size:.88em;color:#c4c8cf;line-height:1.4}", "body.lampa_view .tc-summary .tc-tag--quality {font-size:.86em;color:var(--pt-accent);background:#add9e50c;border-color:#add9e52e}", "body.lampa_view .tc-head {gap:1em;align-items:flex-start}", "body.lampa_view .tc-right {flex:none;gap:.4em}", "body.lampa_view .tc-tags {gap:.5em 1.2em;margin:.65em 0}", "body.lampa_view .tc-tags .tc-tag {font-size:.8em;line-height:1.3;color:#c4c8cf;background:transparent}", "body.lampa_view .tc-voices {display:flex;align-items:baseline;flex-wrap:wrap;gap:.4em .8em;font-size:.86em;line-height:1.5}", "body.lampa_view .tc-voice-names {display:inline-flex;align-items:center;flex-wrap:wrap;gap:.35em;min-width:0;max-width:100%;color:#e2e5eb;white-space:normal;overflow:visible;overflow-wrap:anywhere}", "body.lampa_view .tc-languages {font-size:.88em;color:var(--pt-accent)}", "body.lampa_view .tc-language-tags .tc-voices {font-size:inherit;line-height:inherit;align-items:center;gap:.35em}", "body.lampa_view .tc-language-tags .tc-voices .tc-group-label {font-size:.72em}", "body.lampa_view .tc-bitrate {font-size:.8em;color:var(--pt-muted)}", "body.lampa_view .tc-warning {font-size:.8em;line-height:1.4;margin-top:.5em;color:#d6b777}", "body.lampa_view .tc-foot {display:flex;align-items:center;justify-content:space-between;gap:1em;margin-top:.7em;font-size:.8em}", "body.lampa_view .tc-source {min-width:0;overflow-wrap:anywhere}", "body.lampa_view .tc-info {flex:none;cursor:pointer;font:inherit;color:#c4c8cf;padding:.3em .6em;border:1px solid var(--pt-line);border-radius:.4em;background:transparent}", "body.lampa_view .tc-info:hover,body.lampa_view .tc-info:focus-visible {color:white;border-color:var(--pt-accent);outline:none}", "body.lampa_view .tc-info.focus {color:white;border-color:white;box-shadow:0 0 0 1px white,0 0 .6em #add9e540;outline:none}", "body.lampa_view .tc-release-name {font-size:.9em;font-weight:500;line-height:1.45;color:var(--pt-text);margin:.65em 0;white-space:normal;overflow-wrap:anywhere}", "body.lampa_view .tc-full-details {font-size:.95em;line-height:1.6}", "body.lampa_view .tc-full-details dl {margin:0}", "body.lampa_view .tc-full-details dt {color:var(--pt-muted);font-size:.85em;margin-top:1em}", "body.lampa_view .tc-full-details dt:first-child {margin-top:0}", "body.lampa_view .tc-full-details dd {margin:0;white-space:pre-wrap;overflow-wrap:anywhere}", "body.lampa_view .tc-item .tc-title,body.lampa_view .tc-item .tc-original {display:none!important}", "@media(max-width:650px){body.lampa_view .tc-head{display:flex;flex-wrap:wrap}body.lampa_view .tc-right{margin-left:auto}body.lampa_view .tc-seeds{white-space:normal;text-align:right}body.lampa_view .tc-summary{flex:1 1 12em}body.lampa_view .tc-foot{align-items:flex-end}}", "body.lampa_view .filter__item,body.lampa_view .selector--filter {border-radius:.5em;background:var(--pt-panel);border:1px solid var(--pt-line);color:#c4c4ca}", "body.lampa_view .filter__item.focus,body.lampa_view .filter__item.hover {background:var(--pt-high);border-color:var(--pt-accent);color:white}", "body.lampa_view .modal__content,body.lampa_view .selectbox__content,body.lampa_view .settings__content {background:var(--pt-panel)!important;color:var(--pt-text);border:1px solid var(--pt-line);border-radius:.85em;box-shadow:0 20px 80px #0008}", "body.lampa_view .modal__title,body.lampa_view .selectbox__title,body.lampa_view .settings__title {font-weight:650;letter-spacing:-.025em}", "body.lampa_view .settings-param {border-radius:.5em;border-bottom:1px solid var(--pt-line);font-size:.9em}", "body.lampa_view .settings-param__descr {color:var(--pt-muted);opacity:1;font-size:.8em;line-height:1.5}", "body.lampa_view .settings-param.focus,body.lampa_view .selectbox-item.focus,body.lampa_view .settings-folder.focus {background:var(--pt-high)!important;color:white;box-shadow:inset 3px 0 var(--pt-accent)}", "body.lampa_view .settings-param__value {color:var(--pt-accent)}", "body.lampa_view .selectbox-item {border-radius:.45em;font-size:.9em}", "body.lampa_view .settings-folder {border:1px solid var(--pt-line);border-radius:.7em;background:var(--pt-panel)}", "body.lampa_view .wrap__left {background:var(--pt-panel)!important;color:var(--pt-text)}", "body.lampa_view .menu__item,body.lampa_view .settings-folder,body.lampa_view .settings-param,body.lampa_view .selectbox-item {color:var(--pt-text)}", "body.lampa_view .settings-folder__name,body.lampa_view .settings-param__name,body.lampa_view .selectbox-item__title {color:inherit}", "body.lampa_view .menu__ico,body.lampa_view .settings-folder__icon {color:inherit;opacity:1}", "body.lampa_view .settings-param__descr,body.lampa_view .selectbox-item__subtitle {color:#a2aab4;opacity:1}", "body.lampa_view .settings-folder.focus,body.lampa_view .settings-param.focus,body.lampa_view .selectbox-item.focus,body.lampa_view .menu__item.focus,body.lampa_view .menu__item.traverse {background:#20272e!important;color:var(--pt-text);box-shadow:inset 2px 0 var(--pt-accent)}", "body.lampa_view .simple-button {background:var(--pt-high);border-radius:.5em;color:white;border:1px solid var(--pt-line)}", "body.lampa_view .simple-button.focus {border-color:var(--pt-accent);background:var(--pt-dim);color:white}", "body.lampa_view .search {background:var(--pt-bg)}", "body.lampa_view .search .simple-keyboard-input,body.lampa_view .search-box .simple-keyboard-input {box-sizing:border-box;padding:0 .8em;line-height:normal;vertical-align:middle}", "body.lampa_view .search .search__input {box-sizing:border-box;padding-inline:.8em;display:flex;align-items:center;min-height:2.1em}", "body.lampa_view .search-source {background:var(--pt-panel);border:1px solid var(--pt-line);border-radius:.625em}", "body.lampa_view .search-source.focus {border-color:var(--pt-accent);color:white}", "body.lampa_view .alc-ap {background:var(--pt-bg)!important}", "body.lampa_view .alc-ap__head {border-radius:.8em;overflow:hidden}", "body.lampa_view .alc-ap__play {background:var(--pt-accent)!important;color:#07151c!important;border-radius:.6em!important}", "body.lampa_view .alc-chip,body.lampa_view .alc-ap-voice,body.lampa_view .alc-ep,body.lampa_view .alc-ap-season__head {background:var(--pt-panel)!important;border:1px solid var(--pt-line)!important;border-radius:.6em!important;color:var(--pt-text)!important;box-shadow:none!important}", "body.lampa_view .alc-chip--on,body.lampa_view .alc-chip.focus,body.lampa_view .alc-ap-voice.focus,body.lampa_view .alc-ep.focus {border-color:var(--pt-accent)!important;background:var(--pt-dim)!important;color:white!important;box-shadow:0 0 0 1px var(--pt-accent)!important}", "body.lampa_view input {accent-color:var(--pt-accent)}", "body.lampa_view .empty__title {font-size:1.4em;font-weight:650}", "body.lampa_view .empty__descr {color:var(--pt-muted);font-size:.85em;line-height:1.6}", "", "body.lampa_view .full-start-new__reactions,body.lampa_view .full-start-new__tagline {display:none}", "body.lampa_view .full-start-new__title {font-weight:600;font-size:2.4em}", "body.lampa_view .full-start__button.button--alc-auto,body.lampa_view .alc-ap__play {background:var(--pt-accent)!important;color:#13232c!important}", "body.lampa_view .full-start__button.button--alc-auto.focus {background:#d0eaf1;color:#13232c;box-shadow:0 0 0 2px #fff}", "body.lampa_view .simple-button,body.lampa_view .selectbox-item,body.lampa_view .settings-param {font-weight:450}", "@media(min-width:1100px) {", " body.lampa_view .items-line .card:not(.card--wide):not(.card--collection) {width:11.1em!important}", " body.lampa_view .items-line>.items-line__head {padding-left:1.1em}", "}", "@media(max-width:900px) {", " body.lampa_view .head__body {padding:.5em 1.2em}", " body.lampa_view .head__action.open--search {width:2.2em;padding:0;justify-content:center;border:0;background:transparent}", " body.lampa_view .head__action.open--search:after {display:none}", " body.lampa_view .head__logo-icon {margin-right:1em!important}", " body.lampa_view .pt-topnav {gap:1.2em;margin-left:auto}", " body.lampa_view .pt-hero__body {left:2em;max-width:29em;bottom:5.5em}", " body.lampa_view .pt-hero__title {font-size:2.5em}", " body.lampa_view .wrap__left {left:1.2em!important}", "}", "body.lampa_view.pt-mobile {font-size:calc(16px * var(--pt-interface-scale,1))!important}", "body.lampa_view.pt-mobile .head {height:6.5em}", "body.lampa_view.pt-mobile .head__body {height:3.5em;padding:.5em 1em;position:relative}", "body.lampa_view.pt-mobile .head__logo-icon {margin-right:auto!important}", "body.lampa_view.pt-mobile .pt-topnav {position:absolute;top:3.5em;left:1em;right:1em;height:3em;justify-content:space-around;gap:.5em;border-top:1px solid var(--pt-line);margin:0}", "body.lampa_view.pt-mobile .pt-topnav__item {font-size:.8em;padding:.6em .4em}", "body.lampa_view.pt-mobile .wrap__content {padding-top:6.5em!important;padding-bottom:1em!important}", "body.lampa_view.pt-mobile .wrap__left {top:3.8em!important;left:1em!important;width:18em!important}", "body.lampa_view.pt-mobile .pt-hero {display:flex;flex-direction:column;align-items:stretch;height:auto;min-height:0;max-height:none;margin-bottom:1.2em}", "body.lampa_view.pt-mobile .pt-hero__image {position:relative;top:auto;right:auto;left:auto;width:100%;height:auto;aspect-ratio:16/9;flex:none;object-position:center top;transform-origin:center top;-webkit-mask-image:linear-gradient(180deg,#000 0%,#000 75%,#000000f7 82%,#000000c7 89%,#0000004d 96%,transparent 100%);mask-image:linear-gradient(180deg,#000 0%,#000 75%,#000000f7 82%,#000000c7 89%,#0000004d 96%,transparent 100%)}", "body.lampa_view.pt-mobile .pt-hero:before {background:linear-gradient(0deg,#000000 8%,#000000f0 24%,#00000040 61%,#00000000 100%)}", "body.lampa_view.pt-mobile .pt-hero__body {position:relative;left:auto;right:auto;bottom:auto;max-width:none;padding:1.5em 1.3em 4.5em}", "body.lampa_view.pt-mobile .pt-hero__title {font-size:2.05em;max-width:15em;margin-bottom:.6em}", "body.lampa_view.pt-mobile .pt-hero__meta {box-sizing:border-box;height:3em;min-height:3em;font-size:.74em;line-height:1.5;margin-bottom:.85em;overflow:hidden}", "body.lampa_view.pt-mobile .pt-hero__meta>span {min-width:0;max-height:3em;overflow:hidden}", "body.lampa_view.pt-mobile .pt-hero__overview {box-sizing:border-box;height:4.95em;min-height:4.95em;line-height:1.65;font-size:.8em;-webkit-line-clamp:3;margin:0}", "body.lampa_view.pt-mobile .pt-hero__actions {gap:.6em;margin-top:1.2em}", "body.lampa_view.pt-mobile .pt-hero__action {font-size:.76em;padding:.95em .9em}", "body.lampa_view.pt-mobile .pt-hero__dots {bottom:2.2em;gap:.7em}", "body.lampa_view.pt-mobile .items-line .card:not(.card--wide):not(.card--collection) {width:9.1em!important}", "body.lampa_view.pt-mobile .items-line__title {font-size:1.08em}", "body.lampa_view.pt-mobile .full-start-new__left {width:7em;min-width:7em}", "body.lampa_view.pt-mobile .full-start-new__title {font-size:1.65em}", "@media(max-width:600px) {", " body.lampa_view:not(.pt-tv) .head__action.open--search {width:2.2em;padding:0;justify-content:center;border:0;background:transparent}", " body.lampa_view:not(.pt-tv) .head__action.open--search:after {display:none}", "}", "", "body.lampa_view .head__menu-icon svg {width:1.1em!important;height:1.1em!important}", "body.lampa_view.pt-home .activity--active>.activity__body>.scroll>.scroll__content {padding-top:0!important}", "body.lampa_view .app,body.lampa_view .wrap {background:var(--pt-bg)!important}", "body.lampa_view .scroll--mask {mask-image:none!important;-webkit-mask-image:none!important}", "", "body.lampa_view.pt-home .activity--active>.activity__body>div>.scroll>.scroll__content {padding-top:0!important}", "body.lampa_view .wrap__left>.scroll,body.lampa_view .wrap__left>.scroll>.scroll__content {height:auto!important;min-height:0!important;padding:0!important}", "", "body.lampa_view .wrap__left .menu__split:last-child {display:none}", "", "/* 0.3.1: all catalogue routes live in the menu. */", "body.lampa_view .pt-topnav,body.lampa_view .pt-mobile-nav {display:none!important}", "body.lampa_view .head__actions>.head__action:not(.open--search):not(.open--settings):not(.open--profile) {display:none!important}", "body.lampa_view .head__action.open--profile {width:2.4em!important;height:2.4em!important;min-width:2.4em;flex:0 0 2.4em;padding:0!important;border-radius:50%!important;overflow:hidden}", "body.lampa_view .head__action.open--profile img,body.lampa_view .head__action.open--profile svg {width:100%!important;height:100%!important;display:block;max-width:none;max-height:none;flex:1 0 auto;object-fit:cover;border-radius:50%!important;aspect-ratio:1}", 'body.lampa_view .menu__item[data-action="movie"],body.lampa_view .menu__item[data-action="tv"],body.lampa_view .menu__item[data-action="anime"],body.lampa_view .menu__item[data-action="main"] {display:flex!important}', 'body.lampa_view .menu__item[data-action="timetable"],body.lampa_view .menu__item[data-action*="sport"],body.lampa_view .menu__item[data-action*="shot"],body.lampa_view .pt-removed-section {display:none!important}', "body.lampa_view .settings {z-index:60!important}", "body.lampa_view .settings__head {padding:1.4em 1.5em 1em;flex-shrink:0}", "body.lampa_view .card__type {display:none!important}", "body.lampa_view .card--wide {width:26em!important}", "body.lampa_view .card--wide .card__title {font-size:1em;line-height:1.35;max-height:2.7em}", "body.lampa_view .card--wide .card__description,body.lampa_view .card--wide .card__descr {font-size:.85em;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}", "body.lampa_view .pt-quality {position:absolute;top:.6em;left:.6em;z-index:4;background:#000000e8;color:#d5e9ee;border:1px solid #ffffff25;border-radius:.35em;padding:.3em .5em;font-size:.65em;line-height:1;font-weight:600;pointer-events:none}", "", "body.lampa_view .card__quality {display:block!important;z-index:4}", "body.lampa_view.pt-mobile .head {height:3.5em!important}", "body.lampa_view.pt-mobile .wrap__content {padding-top:3.5em!important}", "body.lampa_view.pt-mobile .card--wide {width:20em!important}", "", "body.lampa_view .card--wide .card__textbox {font-size:.8em;line-height:1.4;padding:1.2em;overflow:hidden}", "body.lampa_view .card--wide .card__textbox>* {display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;max-height:2.8em}", "body.lampa_view .card__quality {top:.6em;left:.6em;bottom:auto;background:#000000e8;color:#d5e9ee;border:1px solid #ffffff25}", "", "/* Frame animation owns transforms while the pointer is moving. */", "body.lampa_view .pt-wheel-moving>.scroll__content>.scroll__body {transition:none!important;-webkit-transition:none!important}", "body.lampa_view.pt-wheel-active .card {transition:none!important}", "@media(min-width:1100px) {", " body.lampa_view .pt-hero {height:min(56vh,34em);min-height:27em;max-width:100em;margin:0 auto 2em}", " body.lampa_view .pt-hero__body {left:3em;bottom:7em;max-width:31em}", " body.lampa_view .pt-hero__title {font-size:2.55em;max-width:15em}", " body.lampa_view .pt-hero__dots {left:45%;bottom:1.5em}", " body.lampa_view .items-line {max-width:100em;margin-left:auto;margin-right:auto;margin-bottom:.8em;padding-bottom:.7em}", " body.lampa_view .items-line .card:not(.card--wide):not(.card--collection) {width:9.2em!important}", " body.lampa_view .card__title {font-size:.79em}", " body.lampa_view .head__body {max-width:100em;padding-left:1.5em;padding-right:1.5em}", "}", "", "@media(min-width:1100px) {", " body.lampa_view .pt-hero,body.lampa_view .items-line {max-width:90vw}", " body.lampa_view .head__body {max-width:90vw;padding-left:0;padding-right:0}", " body.lampa_view .items-line .card:not(.card--wide):not(.card--collection) {width:clamp(8.4em,calc((90vw - 10em / var(--pt-interface-scale,1)) / 10 * var(--pt-interface-scale,1)),11.1em)!important}", "}", "", "/* OLED: true black canvas; poster artwork retains its own colors. */", "body.lampa_view {--pt-bg:#000000;--pt-side:#080808;--pt-panel:#0b0b0b;--pt-high:#171717;background:#000000!important}", "body.lampa_view .background {display:none!important}", "body.lampa_view .head,body.lampa_view .app,body.lampa_view .wrap,body.lampa_view .search {background:#000000!important}", "body.lampa_view .pt-hero__dots {left:0!important;right:0!important;justify-content:center}", "body.lampa_view .pt-hero__logo {display:block;width:auto;max-width:100%;height:auto;max-height:7em;object-fit:contain;object-position:left center;margin:0 0 1.4em}", "body.lampa_view .pt-hero__logo.pt-hidden {display:none!important}", "/* A stable mobile brand slot covers logos, plain titles and translated logos. */", "body.lampa_view.pt-mobile .pt-hero__branding {box-sizing:border-box;display:flex;flex-direction:column;align-items:center;height:auto;min-height:5.5em;margin:0 0 1em;overflow:hidden}", "body.lampa_view.pt-mobile .pt-hero__branding>.pt-hero__logo {flex:0 0 auto;width:100%;max-width:100%;height:5.5em;max-height:5.5em;margin:0;object-fit:contain;object-position:center}", "body.lampa_view.pt-mobile .pt-hero__branding>.pt-hero__title {width:100%;margin:0;font-size:2.05em;line-height:1.08;max-height:2.16em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}", "body.lampa_view.pt-mobile .pt-hero__branding>.pt-hero__logo--translated {height:3em;max-height:3em}", "body.lampa_view.pt-mobile .pt-hero__branding>.pt-hero__title--translation {font-size:.9em;line-height:1.35;max-height:2.7em}", "", "", "body.lampa_view .pt-kind {position:absolute;top:.6em;right:.6em;z-index:4;pointer-events:none;font-size:.6em;line-height:1;padding:.35em .5em;background:#000b;color:#d4e2e6;border:1px solid #ffffff25;border-radius:.35em}", "body.lampa_view .card.pt-has-quality .card__quality {display:none!important}", "/* Search and circular profile share the same outer height. */", "body.lampa_view .head__action.open--search {box-sizing:border-box;height:2.2em}", "body.lampa_view .head__action.open--profile {box-sizing:border-box;width:2.2em!important;height:2.2em!important;min-width:2.2em;flex:0 0 2.2em}", "body.lampa_view .pt-hero__image {image-rendering:auto;filter:none!important;transform:scale(1.06);transform-origin:right top}", "/* Compact detail cover, fading to OLED black before the following rows. */", "body.lampa_view .full-start__background {left:0!important;top:0!important;width:100%!important;height:var(--pt-detail-backdrop-height,30em)!important;max-height:none;object-fit:cover;object-position:center 30%;-webkit-mask-image:linear-gradient(to bottom,#000 30%,#0008 78%,transparent 100%)!important;mask-image:linear-gradient(to bottom,#000 30%,#0008 78%,transparent 100%)!important}", "body.lampa_view .full-start-new {padding-top:2em;padding-bottom:1em}", "body.lampa_view .full-start-new__left {width:10em;min-width:10em;margin-right:2em}", "body.lampa_view .full-start-new__body {align-items:center}", "body.lampa_view .full-start-new__right {min-width:0;max-width:58em}", "body.lampa_view .full-start-new__title {font-size:2em}", "body.lampa_view .minimal-detail-logo {display:none;width:auto;max-width:min(24em,75%);height:auto;max-height:5.5em;object-fit:contain;object-position:left center;margin:0 0 1em}", "body.lampa_view .minimal-detail-logo.loaded {display:block}", "body.lampa_view .minimal-detail-overview,body.lampa_view .full-start-new__description {color:#fff;font-size:.9em;line-height:1.55;max-width:52em;margin:1em 0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}", "body.lampa_view.pt-mobile .full-start-new__left {width:6.5em;min-width:6.5em;margin:0 1.2em 0 0}", "body.lampa_view.pt-mobile .full-start-new__body {display:flex;align-items:flex-start}", "body.lampa_view.pt-mobile .full-start-new__right {margin:0;padding:0;background:none;overflow:visible}", "body.lampa_view.pt-mobile .full-start-new__title {font-size:1.4em}", "body.lampa_view.pt-mobile .minimal-detail-logo {max-width:100%;max-height:4em}", "body.lampa_view.pt-mobile .full-start-new__buttons {gap:.4em}", ".minimal-detail-logo {display:none}", "/* Keep native modal/player order; file actions must stay above their dialog. */", "body.lampa_view .settings {z-index:40!important}", "body.lampa_view .selectbox {z-index:70!important}", "body.lampa_view .modal {z-index:50!important}", "body.lampa_view .settings-input {z-index:90!important}", "body.lampa_view .settings-input__content {background:#101010}", "body.lampa_view .minimal-detail-header {max-width:90%;margin:0 auto;padding:3em 0 1.5em;min-height:23em;display:flex;align-items:flex-end}", "body.lampa_view .minimal-detail-header .full-start-new__body {width:100%;align-items:flex-end;gap:2em}", "/* Native no--poster hides this column, but it now contains essential actions. */", "body.lampa_view .minimal-detail-header .full-start-new__left.minimal-detail-identity {display:block}", "body.lampa_view .minimal-detail-identity {width:15em;min-width:15em;margin:0}", "body.lampa_view:not(.pt-detail-poster) .minimal-detail-identity .full-start-new__poster {display:none}", "body.lampa_view .minimal-detail-identity .full-start-new__title {margin-bottom:1em;font-size:1.7em}", "body.lampa_view .minimal-detail-identity .minimal-detail-logo {width:100%;max-width:100%;max-height:5em;object-position:center;margin:0 auto 1.5em}", "body.lampa_view .minimal-detail-identity .full-start-new__buttons {display:flex;gap:.45em;flex-wrap:wrap}", "body.lampa_view .minimal-detail-identity .button--alc-auto {width:100%;justify-content:center;gap:.5em}", "body.lampa_view .minimal-detail-heading {overflow-wrap:anywhere;word-break:normal;min-width:0;font-size:1.15em;font-weight:600;line-height:1.35;margin:0 0 .7em}", "body.lampa_view .minimal-detail-header .full-start-new__right {max-width:60em}", "body.lampa_view .minimal-detail-header .full-start-new__rate-line {margin-top:.6em;font-size:.8em}", "body.lampa_view .minimal-detail-header .full-start-new__details {margin:.7em 0}", "body.lampa_view .minimal-detail-columns {max-width:90%;margin:1em auto 2em;display:flex;gap:1.25em;align-items:stretch}", "body.lampa_view .minimal-detail-cast>.minimal-cast-native {order:0;grid-column:1;grid-row:1;min-width:0;width:100%!important;max-width:100%;box-sizing:border-box;overflow:hidden;flex:1;background:#0b0b0b;border:1px solid var(--pt-line);border-radius:.8em;padding:1em;margin:0}", "body.lampa_view .minimal-detail-facts {order:1;width:22%;min-width:15em;flex-shrink:0;padding:1.2em;background:#0b0b0b;border:1px solid var(--pt-line);border-radius:.8em;margin:0}", "body.lampa_view .minimal-detail-facts h3 {font-size:1em;margin:0 0 1em}", "body.lampa_view .minimal-detail-facts>div {display:grid;grid-template-columns:minmax(7.5em,.9fr) minmax(0,1.1fr);gap:.75em;font-size:.78em;margin:.8em 0;line-height:1.5}", "body.lampa_view .minimal-detail-facts>div>span:first-child {color:var(--pt-muted)}", "body.lampa_view .minimal-detail-facts>div>span:last-child {text-align:right}", "body.lampa_view.pt-mobile .minimal-detail-header {min-height:18em;padding-top:2em}", "body.lampa_view.pt-mobile .minimal-detail-header .full-start-new__body {flex-direction:column;gap:1em}", "body.lampa_view.pt-mobile .minimal-detail-identity {width:100%;min-width:0}", "body.lampa_view.pt-mobile .minimal-detail-columns {display:block}", "body.lampa_view.pt-mobile .minimal-detail-facts {width:100%;min-width:0;box-sizing:border-box;margin:1em 0}", "body.lampa_view .minimal-cast-native .full-person {width:7em;box-sizing:border-box;flex-direction:column;align-items:center;padding:.4em;gap:.65em;font-size:.85em;text-align:center}", "body.lampa_view .minimal-cast-native .full-person__photo {width:5em;height:5em;border-radius:50%;margin:0;background:#151515}", "body.lampa_view .minimal-cast-native .full-person__photo>img {height:100%;object-fit:cover}", "body.lampa_view .minimal-cast-native .full-person__name {font-size:.95em;line-height:1.3}", "body.lampa_view .minimal-cast-native .full-person__role {font-size:.8em;color:var(--pt-muted);line-height:1.3}", "body.lampa_view .person-start__img {border-radius:50%;width:10em;height:10em;object-fit:cover}", "body.lampa_view .person-start {background:#000}", "/* The complete card is one vertical native row, including its lower columns. */", "body.lampa_view .minimal-detail-header {display:block;box-sizing:border-box;width:90%;max-width:90%;min-height:0;padding:0 0 1.5em}", "body.lampa_view .minimal-detail-header>.full-start-new__body {box-sizing:border-box;min-height:0;padding:1.5em 0 .4em;display:flex;-webkit-box-align:start;-webkit-align-items:flex-start;align-items:flex-start}", "body.lampa_view .minimal-detail-header>.minimal-detail-columns {position:relative;inset:auto;clear:both;float:none;width:100%;max-width:none;margin:.7em 0 0;min-height:0;box-sizing:border-box;display:grid;grid-template-columns:minmax(0,1fr) minmax(15em,22%);gap:1.25em;align-items:stretch}", "body.lampa_view.pt-desktop:not(.pt-safari) .minimal-detail-header>.full-start-new__body {min-height:24em;padding:3em 0 1em}", "body.lampa_view.pt-desktop:not(.pt-safari) .minimal-detail-header>.minimal-detail-columns {margin-top:1.5em}", "body.lampa_view .minimal-detail-columns>.minimal-detail-facts {grid-column:2;grid-row:1;position:relative;inset:auto;float:none;width:auto;min-width:0;box-sizing:border-box;align-self:stretch;overflow-wrap:anywhere}", "body.lampa_view .minimal-overview-action {cursor:pointer;border-radius:.3em;outline:none!important;border:0!important;box-shadow:none!important;position:relative;max-width:52em;margin:1em 0}", "body.lampa_view .minimal-overview-action>.full-start-new__description,body.lampa_view .minimal-overview-action>.minimal-detail-overview {width:100%;max-width:none;margin:0;outline:none!important;border:0!important;box-shadow:none!important}", "body.lampa_view .minimal-overview-focus {display:none;position:absolute;inset:0;border:2px solid var(--pt-accent);border-radius:.3em;pointer-events:none}", "body.lampa_view .minimal-overview-action.focus>.minimal-overview-focus:not([hidden]),body.lampa_view .minimal-overview-action:focus-visible>.minimal-overview-focus:not([hidden]) {display:block!important}", "body.lampa_view .minimal-overview-action {transition:none!important;transform:none!important}", "body.lampa_view .minimal-overview-action>.minimal-overview-focus[hidden] {display:none!important}", "body.lampa_view .minimal-overview-action::before,body.lampa_view .minimal-overview-action::after {display:none!important}", "body.lampa_view .minimal-detail-studio.selector {cursor:pointer;border-radius:.2em;outline:none;transition:none!important}", "body.lampa_view .minimal-detail-studio.selector.focus,body.lampa_view .minimal-detail-studio.selector:focus-visible {outline:none!important;border:0!important;box-shadow:none!important;filter:var(--pt-studio-tone,brightness(1)) drop-shadow(0 0 .25em var(--pt-accent)) drop-shadow(0 0 .65em var(--pt-accent))}", "body.lampa_view .minimal-overview-full {white-space:pre-wrap;overflow-wrap:break-word;line-height:1.7}", "body.lampa_view .minimal-source-hidden {display:none!important}", "body.lampa_view .minimal-detail-facts>div>span {display:block}", "body.lampa_view .minimal-detail-identity .full-start-new__buttons {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.45em;align-items:stretch;overflow:visible}", "body.lampa_view .minimal-detail-identity .full-start__button {margin:0;min-width:0;box-sizing:border-box;justify-content:center;padding:.8em .5em;font-size:.85em}", "body.lampa_view .minimal-detail-identity .button--alc-auto {grid-column:1/-1;width:100%}", "body.lampa_view .minimal-detail-identity .full-start__button>span {display:none!important}", "body.lampa_view .minimal-detail-identity .button--alc-auto>span,body.lampa_view .minimal-detail-identity .button--alc-torrent>span {display:inline!important}", "body.lampa_view .minimal-detail-identity .button--alc-torrent {grid-column:span 2}", "body.lampa_view .minimal-detail-identity .minimal-actions--no-bell>.button--alc-torrent {grid-column:1/-1}", "body.lampa_view .minimal-detail-identity .full-start-new__buttons:not(.minimal-actions--auto)>.button--play {grid-column:1/-1}", "body.lampa_view .minimal-detail-identity .full-start-new__buttons:not(.minimal-actions--auto)>.button--play>span {display:inline!important}", "body.lampa_view.pt-mobile .minimal-detail-header>.full-start-new__body {min-height:0;padding-top:1em}", "body.lampa_view.pt-mobile .minimal-detail-header>.minimal-detail-columns {display:block}", "body.lampa_view.pt-mobile .minimal-detail-identity .full-start-new__buttons {max-width:24em}", "/* Compact filter form: labels and values are distinct, with a clear primary action. */", "body.lampa_view .minimal-filter-panel .selectbox__content {width:27em;max-width:100vw;background:#080808;border:1px solid var(--pt-line);box-sizing:border-box}", "body.lampa_view .minimal-filter-panel .selectbox__head {padding:1.3em 1.3em .8em}", "body.lampa_view .minimal-filter-panel .selectbox__title {font-size:1.3em;line-height:1.2}", "body.lampa_view .minimal-filter-panel .selectbox-item {display:flex;align-items:center;justify-content:space-between;gap:1em;padding:.85em 1.3em;border-radius:0;border-bottom:1px solid #ffffff0a;min-height:3.2em;box-sizing:border-box}", "body.lampa_view .minimal-filter-panel .selectbox-item__title {font-size:.9em;font-weight:500}", "body.lampa_view .minimal-filter-panel .selectbox-item__subtitle {font-size:.8em;text-align:right;color:var(--pt-muted);margin:0;max-width:55%;line-height:1.4}", "body.lampa_view .minimal-filter-panel .minimal-filter-run {background:var(--pt-accent);color:#07151a;justify-content:center;border-radius:.5em;margin:.9em 1.1em .5em}", "body.lampa_view .minimal-filter-panel .minimal-filter-reset {justify-content:center;color:var(--pt-muted);min-height:2.8em}", "body.lampa_view .minimal-filter-panel .selectbox-item.focus {box-shadow:inset 3px 0 var(--pt-accent)}", "body.lampa_view .minimal-filter-panel .minimal-filter-run.focus {background:#d1edf5;color:#07151a;box-shadow:inset 0 0 0 2px #fff}", "/* Legacy history/filter grids share the catalogue's content boundaries. */", "body.lampa_view .category-full,body.lampa_view .mapping--grid {width:100%;max-width:90vw;margin-left:auto;margin-right:auto;padding-left:0;padding-right:0;box-sizing:border-box}", "body.lampa_view .category-full>.card {box-sizing:border-box;margin-left:0;padding-left:.5em;padding-right:.5em}", "@media(min-width:1100px){body.lampa_view:not(.pt-tv) .category-full>.card:not(.card--wide):not(.card--collection) {width:clamp(8.4em,calc((90vw - 10em / var(--pt-interface-scale,1)) / 10 * var(--pt-interface-scale,1)),11.1em)!important}}", "@media(min-width:1200px){body.lampa_view:not(.pt-tv) .mapping--grid>.card,body.lampa_view:not(.pt-tv) .category-full>.card:not(.card--wide):not(.card--collection) {width:calc(12.5% * var(--pt-interface-scale,1))!important}}", "@media(min-width:1800px){body.lampa_view:not(.pt-tv) .mapping--grid>.card,body.lampa_view:not(.pt-tv) .category-full>.card:not(.card--wide):not(.card--collection) {width:calc(10% * var(--pt-interface-scale,1))!important}}", "@media(max-width:650px){body.lampa_view .minimal-filter-panel .selectbox__content {width:100%;max-height:90vh}body.lampa_view .minimal-filter-panel .selectbox-item {min-height:3em;padding:.7em 1em}}", "body.lampa_view .minimal-crew-native {max-width:90%;margin:1.2em auto}", "body.lampa_view .minimal-crew-native .full-person {font-size:.8em;padding-right:1em}", "body.lampa_view .minimal-crew-native .full-person__photo {width:4.5em;height:4.5em;border-radius:50%}", "body.lampa_view .minimal-crew-native .full-person__photo>img {height:100%;object-fit:cover}", "body.lampa_view .minimal-crew-native .full-person__name {font-size:1em}", "body.lampa_view .pt-hero__logo.pt-hero__logo--translated {margin-bottom:.5em}", "body.lampa_view .pt-hero__title.pt-hero__title--translation {font-size:1.05em;line-height:1.35;letter-spacing:0;font-weight:500;max-width:100%;margin:0 0 1.1em;color:#dbdde2}", "body.lampa_view .minimal-detail-identity .minimal-detail-logo.minimal-detail-logo--translated {margin-bottom:.5em}", "body.lampa_view .minimal-detail-identity .full-start-new__title.minimal-detail-translation {font-size:1em;line-height:1.35;letter-spacing:0;font-weight:500;margin-bottom:1.25em;color:#dbdde2}", "/* Clip translated rails to their own content column, with room for focus rings. */", "body.lampa_view .items-line__body {overflow:hidden;padding:1.1em 0;margin:-1.1em 0;-webkit-mask-image:linear-gradient(to right,transparent,#000 1.25em,#000 calc(100% - 1.25em),transparent);mask-image:linear-gradient(to right,transparent,#000 1.25em,#000 calc(100% - 1.25em),transparent)}", "body.lampa_view .items-line__body>.scroll--horizontal {-webkit-mask-image:none!important;mask-image:none!important}", "/* Native social actions and data stay with Lampa; only presentation changes. */", "body.lampa_view .full-start-new__reactions {display:flex;align-items:center;flex-wrap:wrap;gap:.4em;min-height:0;margin:.9em 0;color:var(--pt-muted);font-size:.8em}", "body.lampa_view .full-start-new__reactions>div {padding:0}", "body.lampa_view .full-start-new__reactions .reaction {gap:.3em;padding:.35em .65em;background:#0b0b0b;border:1px solid var(--pt-line);border-radius:.5em}", "body.lampa_view .full-start-new__reactions .reaction__icon {width:1.25em;height:1.25em}", "body.lampa_view .full-start-new__reactions .reaction__count {padding:0;font-size:1em;font-weight:500}", "body.lampa_view .full-start-new__reactions .reaction--voted {border-color:var(--pt-accent);color:var(--pt-accent)}", "body.lampa_view .minimal-comments-native {width:90%;max-width:90%;margin:1em auto 2em;padding-bottom:1em}", "body.lampa_view .minimal-comments-native .items-line__head {padding-left:0;padding-right:0}", "body.lampa_view .minimal-comments-native .scroll--horizontal>.scroll__content {padding-left:0;padding-right:0}", "body.lampa_view .minimal-comments-native .items-line__body,body.lampa_view .minimal-comments-native .scroll--horizontal {-webkit-mask-image:none!important;mask-image:none!important}", "body.lampa_view .full-review {background:#0b0b0b;border:1px solid var(--pt-line);border-radius:.7em;padding:1.1em;box-sizing:border-box;color:#e5e5e5}", "body.lampa_view .mapping--line>.full-review {min-width:18em;max-width:25em}", "body.lampa_view .full-review__text {font-size:.9em;line-height:1.6;margin-bottom:1.1em;-webkit-line-clamp:3;line-clamp:3}", "body.lampa_view .full-review__footer {font-size:.78em;color:var(--pt-muted)}", "body.lampa_view .full-review__user-icon {width:1.8em;height:1.8em}", "body.lampa_view .full-review.focus {border-color:var(--pt-accent);background:#111;color:#fff}", "body.lampa_view .mapping--line>.full-review-add {width:10em;min-height:7.5em;padding:1em;border:1px solid var(--pt-line);background:#0b0b0b;border-radius:.7em;box-sizing:border-box}", "body.lampa_view .full-review-add::before {width:1.4em;height:1.4em;margin:-1.3em 0 0 -.7em;opacity:.75}", "body.lampa_view .full-review-add::after {content:'Написать';position:absolute;inset:auto 0 1.2em;text-align:center;font-size:.8em;color:var(--pt-muted)}", "body.lampa_view .full-review-add.focus {border-color:var(--pt-accent);background:#111}", "body.lampa_view .full-review-add.focus::after {border:0;width:auto;border-radius:0;inset:auto 0 1.2em;color:var(--pt-accent)}", "body.lampa_view .full-review--full-text .full-review__text {-webkit-line-clamp:unset;line-clamp:unset}", "body.lampa_view .minimal-comments-native .items-line__head {gap:.7em}", "body.lampa_view .minimal-comments-native .items-line__title {margin-right:auto}", "body.lampa_view .minimal-comments-nav {display:flex;gap:.4em;flex:none}", "body.lampa_view .minimal-comments-nav[hidden] {display:none}", "body.lampa_view .minimal-comments-arrow {display:flex;align-items:center;justify-content:center;width:2.1em;height:2.1em;padding:0;border:1px solid var(--pt-line);border-radius:.6em;background:#ffffff04;color:var(--pt-muted);cursor:pointer}", "body.lampa_view .minimal-comments-arrow svg {width:1em;height:1em}", "/* Shared transparent badges: ratings, age, status and reactions. */", "body.lampa_view .minimal-detail-header .full-start-new__rate-line {display:flex;align-items:center;flex-wrap:wrap;gap:.5em;margin-bottom:.85em;font-size:.8em}", "body.lampa_view .minimal-detail-header .full-start-new__rate-line>* {margin:0!important}", "body.lampa_view .minimal-detail-header .full-start__rate,body.lampa_view .minimal-detail-header .full-start__pg,body.lampa_view .minimal-detail-header .full-start__status,body.lampa_view .minimal-detail-header .full-start-new__reactions .reaction {box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:.5em;min-height:2.3em;padding:.45em .7em;font-size:1em;line-height:1.1;border:1px solid var(--pt-line);border-radius:.45em;background:rgba(0,0,0,.36);color:#dbdde2;box-shadow:none}", "body.lampa_view .minimal-detail-header .full-start-new__reactions .reaction--voted {border-color:var(--pt-accent);color:var(--pt-accent)}", "body.lampa_view .minimal-detail-header .full-start__rate>div {width:auto;height:auto;padding:0;background:transparent}", "/* A stable card box keeps remote geometry intact; only the artwork moves. */", "body.lampa_view .card__view {transition:transform .24s cubic-bezier(.2,.75,.25,1),box-shadow .24s ease!important;-webkit-transition:-webkit-transform .24s cubic-bezier(.2,.75,.25,1),box-shadow .24s ease!important;transform-origin:center}", "body.lampa_view .card.focus .card__view,body.lampa_view .card.hover .card__view {animation:none!important;-webkit-animation:none!important;-webkit-transform:translateY(-.2em) scale(1.045);transform:translateY(-.2em) scale(1.045);box-shadow:0 0 .85em rgba(173,217,229,.4),0 0 1.8em rgba(173,217,229,.22)}", "body.lampa_view .minimal-cast-native .full-person.focus {background:#161b1e;color:var(--pt-text);box-shadow:inset 0 0 0 1px var(--pt-accent)}", "body.lampa_view .items-line__more {display:none!important}", "body.lampa_view .minimal-paged-row .card-more:not(.card-more--first) {display:none!important}", "body.lampa_view .items-line__head {display:flex;align-items:center;gap:.6em}", "body.lampa_view .items-line__title {margin-right:auto}", ".minimal-row-nav {display:none}", "body.lampa_view .minimal-row-nav {display:flex;gap:.4em;flex:none}", "body.lampa_view .minimal-row-arrow,body.lampa_view .minimal-row-more {display:flex;align-items:center;justify-content:center;width:2em;height:2em;padding:0;border:1px solid var(--pt-line);border-radius:.6em;background:#ffffff04;color:var(--pt-muted);cursor:pointer}", "body.lampa_view .minimal-row-arrow svg,body.lampa_view .minimal-row-more svg {width:1em;height:1em}", "body.lampa_view .minimal-paged-row .scroll__body>.card:last-child,body.lampa_view .minimal-paged-row .scroll__body>.full-person:last-child {margin-right:2.5em}", "body.lampa_view .minimal-paged-row .mapping--line>.card+.card {margin-left:.75em}", "body.lampa_view .minimal-paged-row .items-line__body {-webkit-mask-image:linear-gradient(to right,transparent 1em,#000 1.25em,#000 calc(100% - 1.25em),transparent calc(100% - 1em));mask-image:linear-gradient(to right,transparent 1em,#000 1.25em,#000 calc(100% - 1.25em),transparent calc(100% - 1em))}", "/* Header, row and comment navigation share one pointer/remote/keyboard focus. */", "body.lampa_view .minimal-back svg,body.lampa_view .head__menu-icon svg,body.lampa_view .minimal-row-nav svg,body.lampa_view .minimal-comments-arrow svg {stroke-width:2}", "body.lampa_view .minimal-back:hover,body.lampa_view .minimal-back.hover,body.lampa_view .minimal-back.focus,body.lampa_view .minimal-back:focus-visible,", "body.lampa_view .head__menu-icon:hover,body.lampa_view .head__menu-icon.hover,body.lampa_view .head__menu-icon.focus,body.lampa_view .head__menu-icon:focus-visible,", "body.lampa_view .minimal-row-arrow:hover:not(:disabled),body.lampa_view .minimal-row-arrow.hover:not(:disabled),body.lampa_view .minimal-row-arrow.focus:not(:disabled),body.lampa_view .minimal-row-arrow:focus-visible:not(:disabled),", "body.lampa_view .minimal-row-more:hover,body.lampa_view .minimal-row-more.hover,body.lampa_view .minimal-row-more.focus,body.lampa_view .minimal-row-more:focus-visible,", "body.lampa_view .minimal-comments-arrow:hover:not(:disabled),body.lampa_view .minimal-comments-arrow.hover:not(:disabled),body.lampa_view .minimal-comments-arrow.focus:not(:disabled),body.lampa_view .minimal-comments-arrow:focus-visible:not(:disabled) {color:var(--pt-text);background:var(--pt-high);border-color:var(--pt-line);outline:none;outline-offset:0;box-shadow:inset 0 0 0 1px var(--pt-accent)}", "body.lampa_view.pt-tv .minimal-row-arrow,body.lampa_view.pt-tv .minimal-person-row .minimal-row-nav {display:none}", "body.lampa_view .pt-row-paging>.scroll__content>.scroll__body {transition:none!important;-webkit-transition:none!important}", "body.lampa_view .minimal-people-grid {display:grid;grid-template-columns:repeat(auto-fill,minmax(7em,1fr));gap:1em;max-width:65em}", "body.lampa_view .minimal-people-grid .full-person {width:100%!important;margin:0;box-sizing:border-box}", "", "body.lampa_view .alc-ap__voices {--alc-vcol:29em}", "body.lampa_view .alc-ap-vgroup__title {font-size:.9em;color:var(--pt-text);margin:.85em 0 .5em}", "body.lampa_view .alc-ep--soon .alc-ep__time {color:var(--pt-accent)}", "", "body.lampa_view .minimal-detail-studio {display:inline-block;width:auto;max-width:6.5em;height:1.3em;object-fit:contain;vertical-align:middle;margin-right:.65em;filter:var(--pt-studio-tone,brightness(1)) drop-shadow(0 0 .6px rgba(255,255,255,.7)) drop-shadow(0 1px 2px #000);opacity:1}", "body.lampa_view .minimal-detail-studio[hidden] {display:none}", "body.lampa_view .minimal-anime-controls {width:100%;box-sizing:border-box;margin:0 0 1.6em;padding:.4em 1em}", "body.lampa_view .minimal-anime-tabs {display:flex;justify-content:center;align-items:center;gap:.65em;width:100%;margin:0 auto}", "body.lampa_view .minimal-anime-tab {font-family:inherit;justify-content:center;min-width:9.5em;transition:box-shadow .24s ease!important;-webkit-transition:box-shadow .24s ease!important}", 'body.lampa_view .minimal-anime-tab[aria-selected="true"] {box-shadow:0 0 .35em rgba(173,217,229,.85),0 0 1.2em rgba(173,217,229,.65),0 0 2.4em rgba(173,217,229,.42);outline:none}', "body.lampa_view .minimal-anime-status {margin:1.2em auto;text-align:center;color:var(--pt-muted);line-height:1.5}", "body.lampa_view .minimal-anime-retry {display:inline-block;font:inherit;color:var(--pt-text);background:#111;border:1px solid var(--pt-line);border-radius:.6em;padding:.65em 1.2em;margin:.8em auto 0;cursor:pointer}", "body.lampa_view .minimal-anime-retry.focus,body.lampa_view .minimal-anime-retry:hover {background:var(--pt-accent);color:#11171b;outline:none}", "body.lampa_view .minimal-anime-status[hidden],body.lampa_view .minimal-anime-retry[hidden] {display:none!important}", "", "/* Small touch controls keep native actions, including the iPhone safe area. */", "body.lampa_view.pt-mobile .navigation-bar {font-size:calc(14px * var(--pt-interface-scale,1))!important;padding:0 .8em .65em;padding-bottom:calc(.65em + env(safe-area-inset-bottom,0px))}", "body.lampa_view.pt-mobile .navigation-bar__body {max-width:400px;margin:0 auto;padding:.5em .6em;border:1px solid var(--pt-line);background:#181a1cf2;box-shadow:0 4px 20px #0006}", "body.lampa_view.pt-mobile .navigation-bar__item {display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:44px;min-width:56px}", "body.lampa_view.pt-mobile .navigation-bar__icon {width:1.5em;height:1.5em}", "body.lampa_view.pt-mobile .navigation-bar__label {font-size:.78em;line-height:1.2;margin-top:.3em}", "body.lampa_view.pt-mobile .settings__content {font-size:calc(14px * var(--pt-interface-scale,1))!important;box-sizing:border-box;max-height:78vh!important;border-radius:1em}", "body.lampa_view.pt-mobile .settings__body,", "body.lampa_view.pt-tv .settings__body {font-size:1em!important;min-height:0;overflow:hidden}", "body.lampa_view.pt-mobile .settings__head,", "body.lampa_view.pt-tv .settings__head {padding:1em 1.1em .8em}", "body.lampa_view.pt-mobile .settings__title,", "body.lampa_view.pt-tv .settings__title {font-size:1.4em;line-height:1.3}", "body.lampa_view.pt-mobile .settings .minimal-back--overlay {font-size:1em}", "body.lampa_view.pt-mobile .settings-folder,", "body.lampa_view.pt-tv .settings-folder {padding:.9em 1.1em;min-height:3.6em;align-items:center;box-sizing:border-box;border-radius:.5em}", "body.lampa_view.pt-mobile .settings-folder__icon,", "body.lampa_view.pt-tv .settings-folder__icon {width:1.4em;height:1.4em;min-width:1.4em;margin-right:.9em}", "body.lampa_view.pt-mobile .settings-folder__icon>*,", "body.lampa_view.pt-tv .settings-folder__icon>* {width:100%;height:100%}", "body.lampa_view.pt-mobile .settings-folder__name,", "body.lampa_view.pt-tv .settings-folder__name {font-size:1em;line-height:1.35}", "body.lampa_view.pt-mobile .settings-param,", "body.lampa_view.pt-tv .settings-param {padding:1em 1.1em;font-size:1em}", "body.lampa_view.pt-mobile .settings-param__name,", "body.lampa_view.pt-tv .settings-param__name {font-size:1em}", "body.lampa_view.pt-mobile .settings-param__value,", "body.lampa_view.pt-tv .settings-param__value {font-size:.95em}", "body.lampa_view.pt-mobile .wrap__content {padding-bottom:calc(5.1em + env(safe-area-inset-bottom,0px))!important}", "body.lampa_view.pt-mobile.orientation--landscape .navigation-bar {padding:.6em .6em .6em 0}", "body.lampa_view.pt-mobile.orientation--landscape .navigation-bar__body {gap:.45em;padding:.55em}", "", "/* TV geometry is separate from desktop sizes and the rest of the interface. */", "body.lampa_view.pt-tv .items-line {max-width:90vw;margin-left:auto;margin-right:auto}", "body.lampa_view.pt-tv .card,body.lampa_view.pt-mobile .settings-folder {will-change:auto}", "/* Clip TV rails without an extra full-width gradient compositing layer. */", "body.lampa_view.pt-tv .items-line__body {-webkit-mask-image:none;mask-image:none}", "body.lampa_view.pt-tv .minimal-paged-row .scroll--horizontal>.scroll__content>.scroll__body {transition:transform .12s linear;-webkit-transition:-webkit-transform .12s linear}", "body.lampa_view.pt-tv .card__view {transition:none!important;-webkit-transition:none!important}", "", "/* TV drawers use the same compact rows as phones, with readable TV text. */", "body.lampa_view.pt-tv .settings .minimal-back--overlay {font-size:1em}", "body.lampa_view .selectbox__head {padding:1em 1.1em .8em}", "body.lampa_view .selectbox__title {font-size:1.4em;line-height:1.3}", "body.lampa_view .selectbox-item {padding:.85em 1.1em;font-size:1em;min-height:3.2em;box-sizing:border-box}", "body.lampa_view.pt-tv .selectbox-item__title {font-size:1em;line-height:1.35}", "body.lampa_view.pt-tv .selectbox-item__subtitle {font-size:.85em;line-height:1.4}", "body.lampa_view.pt-tv .settings-folder,body.lampa_view.pt-tv .settings-param {will-change:auto}", "", "/* Compact TV badges and captions retain the existing poster geometry. */", "/* TV uses the same focus treatment as the browser; keep repaint cost bounded. */", "body.lampa_view.pt-tv .card.focus .card__view,body.lampa_view.pt-tv .card.hover .card__view {-webkit-transform:translateY(-.2em) scale(1.045);transform:translateY(-.2em) scale(1.045);box-shadow:0 0 .85em rgba(173,217,229,.4),0 0 1.8em rgba(173,217,229,.22)}", "body.lampa_view.pt-tv .card.hover:not(.focus) .card__view {box-shadow:none!important;transform:none!important}", "body.lampa_view.pt-tv .card.hover:not(.focus) .card__view:after {border-color:transparent!important;box-shadow:none!important}", "body.lampa_view .pt-hero__studio.selector {cursor:pointer;border-radius:.2em}", "body.lampa_view .pt-hero__studio.selector.focus,body.lampa_view .pt-hero__studio.selector:focus-visible {outline:none;box-shadow:0 0 0 2px var(--pt-accent);filter:var(--pt-studio-tone,brightness(1))}", "", "/* A native cast rail stays inside its grid cell at every scroll position. */", "body.lampa_view .minimal-detail-columns>.minimal-detail-cast {grid-column:1;grid-row:1;position:relative;display:flex;flex-direction:column;flex:1;min-width:0;max-width:100%;width:100%;box-sizing:border-box;overflow:hidden}", "body.lampa_view .minimal-detail-cast .items-line__body,body.lampa_view .minimal-detail-cast .scroll--horizontal {min-width:0;max-width:100%;box-sizing:border-box}", "body.lampa_view .minimal-detail-facts>div>span {min-width:0;overflow-wrap:anywhere}", "body.lampa_view .minimal-detail-facts>div>span:first-child {overflow-wrap:normal;word-break:normal}", "body.lampa_view.pt-tv .minimal-cast-native .full-person {width:var(--minimal-person-width,7em);flex-basis:var(--minimal-person-width,7em)}", "body.lampa_view.pt-tv .minimal-cast-native .full-person:last-child {margin-right:0}", "body.lampa_view.pt-mobile .minimal-detail-header>.minimal-detail-columns {grid-template-columns:minmax(0,1fr)}", "body.lampa_view.pt-mobile .minimal-detail-columns>.minimal-detail-cast,body.lampa_view.pt-mobile .minimal-detail-columns>.minimal-detail-facts {grid-column:1;grid-row:auto}", "@media(max-width:900px){", " body.lampa_view .minimal-detail-header>.minimal-detail-columns {grid-template-columns:minmax(0,1fr)}", " body.lampa_view .minimal-detail-columns>.minimal-detail-cast,body.lampa_view .minimal-detail-columns>.minimal-detail-facts {grid-column:1;grid-row:auto}", "}", "", "/* Equal footer space on every poster: focus never changes card/row geometry. */", "body.lampa_view .card .pt-card-watch {position:relative;height:4.1em;margin-top:.4em;font-size:.72em;line-height:1.35;pointer-events:none;visibility:hidden}", "body.lampa_view .card__view>.card-watched {display:none!important}", "body.lampa_view .card .pt-card-watch>.card-watched {display:block;position:absolute;inset:0;width:100%;height:100%;max-width:100%;font-size:1em;line-height:1.35;transform:none;-webkit-transform:none;border:0;border-radius:0;background:none!important;color:var(--pt-muted);box-sizing:border-box}", "body.lampa_view .card .pt-card-watch .card-watched__inner,body.lampa_view .card .pt-card-watch .card-watched__body {padding:0;font-size:1em}", "body.lampa_view .card .pt-card-watch .card-watched__item {display:none;margin:0;color:var(--pt-muted)}", "body.lampa_view .card .pt-card-watch .pt-card-watch__current {position:absolute;inset:0;display:flex;flex-direction:column;align-items:stretch;line-height:1.25}", "body.lampa_view .card .pt-card-watch .card-watched__item>span {display:none}", "body.lampa_view .pt-card-watch__row {display:block}", "body.lampa_view .pt-card-watch__meter {display:flex;align-items:center;min-width:0;margin-top:.25em;min-height:1em}", "body.lampa_view .pt-card-watch__label {display:flex;flex-wrap:wrap;gap:0 .25em;min-width:0;white-space:normal}", "body.lampa_view .pt-card-watch__label>span {white-space:nowrap}", "body.lampa_view .pt-card-watch__label {align-content:start}", "body.lampa_view .pt-card-watch__label>.pt-card-watch__heading {flex-basis:100%;margin-bottom:.1em}", "body.lampa_view .pt-card-watch__time {flex:0 0 auto;margin-left:.4em;font-variant-numeric:tabular-nums;font-size:.9em;line-height:1}", "body.lampa_view .card .pt-card-watch .time-line {display:block;flex:1 1 0%;align-self:center;position:relative;top:auto;right:auto;bottom:auto;left:auto;width:auto;margin:0;min-width:1px;height:3px;min-height:3px;overflow:hidden;background:rgba(255,255,255,.24)!important}", "body.lampa_view .card .pt-card-watch .time-line>div {display:block;height:3px;min-height:3px;background:var(--pt-accent)!important}", "body.lampa_view .card .pt-card-watch--complete .time-line,body.lampa_view .card .pt-card-watch--complete .pt-card-watch__time {display:none!important}", "/* Reveal saved viewing history only for the card under pointer/remote focus.", "   Reserved footer space prevents neighbouring rows from jumping on focus. */", "body.lampa_view .card.focus .pt-card-watch--has-progress,body.lampa_view .card.hover .pt-card-watch--has-progress,body.lampa_view .card.pt-card-pointer .pt-card-watch--has-progress,body.lampa_view .card.pt-card-touch .pt-card-watch--has-progress {visibility:visible}", "body.lampa_view .card .pt-card-watch>.card-watched.pt-card-watch--empty {display:none!important}", "/* One compact release pill below Series, shared by desktop and TV. */", "body.lampa_view .pt-series-status {position:absolute;left:auto;right:4px;top:2.6em;z-index:4;display:block;width:auto;max-width:calc(100% - 8px);font-size:.55em;line-height:1;white-space:nowrap;padding:.3em .4em;border:1px solid #ffffff25;border-radius:.35em;background:#000b;color:#d4e2e6;pointer-events:none;box-sizing:border-box}", "body.lampa_view .pt-series-status>span {white-space:pre}", "", "/* Badges keep their own corners and wrap to another line when space is short. */", "body.lampa_view .card__view .pt-quality,body.lampa_view .card__view .pt-kind {max-width:calc(100% - 8px);box-sizing:border-box;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}", "/* Native history/play marker, in the same understated pill as metadata.", "   Favorites sit along the lower edge, leaving faces and top metadata uncovered. */", "body.lampa_view .card__view .card__icons {inset:0!important;display:block!important;width:auto;max-width:none;pointer-events:none}", "body.lampa_view .card__view .card__icons-inner {position:static;display:flex;flex-direction:row;align-items:flex-end;justify-content:flex-start;gap:.2em;height:100%;box-sizing:border-box;padding:0 .3em .3em;background:none!important;border-radius:0;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}", "body.lampa_view .card__view .card__icon {position:relative}", 'body.lampa_view .card__view .card__icon[style*="left:"] {position:absolute}', "body.lampa_view .card__view .card__icon:not(.icon--history) {box-sizing:border-box;width:1.9em;height:1.9em;font-size:.65em;border:1px solid #ffffff25;border-radius:.35em;background-color:#000b;background-size:72% 72%;background-position:center;background-repeat:no-repeat;box-shadow:none}", "body.lampa_view.pt-theme-glass .card__view .card__icon:not(.icon--history) {background-color:rgba(24,26,29,.52);border-color:var(--pt-glass-border);box-shadow:var(--pt-glass-edge)}", 'body.lampa_view .card__view .card__icon.icon--book {background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23f4f4f6%22%20stroke-width%3D%221.6%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M6%203h12v18l-6-4-6%204Z%22%2F%3E%3C%2Fsvg%3E")!important}', 'body.lampa_view .card__view .card__icon.icon--wath {background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23f4f4f6%22%20stroke-width%3D%221.6%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%229%22%2F%3E%3Cpath%20d%3D%22M12%207v5l3%202%22%2F%3E%3C%2Fsvg%3E")!important}', 'body.lampa_view .card__view .card__icon.icon--like {background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23f4f4f6%22%20stroke-width%3D%221.6%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M20.5%205.5a5%205%200%200%200-7%200L12%207l-1.5-1.5a5%205%200%200%200-7%207L12%2021l8.5-8.5a5%205%200%200%200%200-7Z%22%2F%3E%3C%2Fsvg%3E")!important}', "body.lampa_view .card__view .icon--history {position:absolute;top:62%!important;left:50%!important;right:auto!important;bottom:auto!important;transform:translate(-50%,-50%);box-sizing:border-box;width:2.2em;height:1.8em;font-size:.65em;background:#000b!important;border:1px solid #ffffff25;border-radius:.35em;color:#d4e2e6;box-shadow:none!important}", "body.lampa_view .card__view .icon--history:before {content:'';position:absolute;top:50%;left:53%;transform:translate(-50%,-50%);width:0;height:0;border-top:.38em solid transparent;border-bottom:.38em solid transparent;border-left:.58em solid currentColor}", "body.lampa_view .card__view.minimal-badge-layout>.card__vote,body.lampa_view .card__view.minimal-badge-layout>.card__icons {z-index:4}", "/* Shared controls for both online layouts. */", "body.lampa_view .nova-plus-root .nova-btn,body.lampa_view .nova-plus-root .nova-chip,body.lampa_view .nova-plus-root .nova-group {background:#171717!important;color:var(--pt-text)!important;border:1px solid var(--pt-line)!important;border-radius:.625em!important;box-shadow:none!important;outline:none!important}", "body.lampa_view .nova-plus-root .nova-btn {padding:.75em 1.15em;font-weight:600}", "body.lampa_view .nova-plus-root .nova-chip--view-icon {display:inline-flex;align-items:center;justify-content:center;flex:0 0 2.65em;width:2.65em;min-width:2.65em;height:2.65em;box-sizing:border-box;padding:0!important;gap:0;line-height:1}", "body.lampa_view .nova-plus-root .nova-chip--view-icon>.nova-chip__label {display:none}", "body.lampa_view .nova-plus-root .nova-chip--view-icon>svg {display:block;flex:none;width:1.1em;height:1.1em;margin:0!important;align-self:center}", "body.lampa_view .nova-plus-root .nova-chip--active,body.lampa_view .nova-plus-root .nova-group--open {background:var(--pt-high)!important;border-color:#add9e560!important}", "body.lampa_view .nova-plus-root .nova-btn.focus,body.lampa_view .nova-plus-root .nova-btn.hover,body.lampa_view .nova-plus-root .nova-btn:hover,body.lampa_view .nova-plus-root .nova-chip.focus,body.lampa_view .nova-plus-root .nova-chip.hover,body.lampa_view .nova-plus-root .nova-chip:hover,body.lampa_view .nova-plus-root .nova-group.focus,body.lampa_view .nova-plus-root .nova-group:hover {background:var(--pt-high)!important;color:var(--pt-text)!important;border-color:var(--pt-accent)!important;box-shadow:0 0 0 1px var(--pt-accent)!important}", "body.lampa_view .nova-plus-root .nova-chip__badge,body.lampa_view .nova-plus-root .nova-chip.focus .nova-chip__badge {background:#ffffff1a!important;color:var(--pt-text)!important;border-radius:.25em}", "body.lampa_view .nova-plus-root .nova-card.focus {background:var(--pt-high)!important;color:var(--pt-text)!important;box-shadow:inset 0 0 0 2px var(--pt-accent)!important}", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card.focus {background:none!important;box-shadow:none!important}", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card.focus .nova-card__thumb {box-shadow:0 0 0 2px var(--pt-accent)!important}", "body.lampa_view .nova-plus-root .nova-card__line .time-line>div,body.lampa_view .nova-plus-root .nova-hero__progress .time-line>div {background:var(--pt-accent)!important}", "/* Native torrent focus has an outer white pseudo-element; use one accent border. */", "body.lampa_view .torrent-item.focus::after {display:none!important;content:none!important}", "body.lampa_view .torrent-filter .filter__item.focus,body.lampa_view .torrent-filter .filter__item.hover,body.lampa_view .torrent-filter .selector--filter.focus {border-color:var(--pt-accent)!important;box-shadow:0 0 0 1px var(--pt-accent)!important;outline:none!important}", "body.lampa_view .torrent-filter .simple-button.focus,body.lampa_view .torrent-filter .simple-button.hover {border-color:var(--pt-accent)!important;box-shadow:0 0 0 1px var(--pt-accent)!important;outline:none!important}", "body.lampa_view .minimal-torrent-view>.explorer__left {display:block!important;width:28.7%;flex:0 0 28.7%;min-width:0;padding:.3em 1.6em 0 .3em;box-sizing:border-box}", "body.lampa_view .minimal-torrent-view>.explorer__left .explorer__card {display:none!important}", "/* The hidden native sidebar scroll still reserves a full viewport of height. */", "body.lampa_view .minimal-torrent-view>.explorer__left>.scroll {display:none!important}", "body.lampa_view .minimal-torrent-view>.explorer__files {width:71.3%;min-width:0;box-sizing:border-box}", "body.lampa_view .minimal-torrent-view .explorer__files-head {padding:.3em .6em .6em 0}", "body.lampa_view .minimal-torrent-view .explorer__files-body .scroll__body {padding-left:0}", "body.lampa_view .minimal-torrent-view .filter--back {display:none!important}", ".minimal-torrent-banner {display:none}", "body.lampa_view .minimal-torrent-banner {display:block;position:relative;width:100%;min-width:0;overflow:hidden;border-radius:1em;background:#0b1016;aspect-ratio:1.65;min-height:0;color:var(--pt-text)}", "body.lampa_view .minimal-torrent-banner__image,body.lampa_view .minimal-torrent-banner__shade {position:absolute;inset:0;width:100%;height:100%;object-fit:cover}", "body.lampa_view .minimal-torrent-banner__shade {background:linear-gradient(180deg,#080d1633 30%,#080d16e6 100%)}", "body.lampa_view .minimal-torrent-banner__meta {position:absolute;top:1em;right:1.2em;left:1.2em;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:.7em;font-size:.9em;text-shadow:0 1px 5px #000}", "body.lampa_view .minimal-torrent-banner__title {position:absolute;left:1.3em;right:1.3em;bottom:1.2em;font-size:1.7em;font-weight:650;line-height:1.2;text-shadow:0 2px 8px #000}", "body.lampa_view .minimal-torrent-banner__logo {display:block;width:auto;height:auto;max-width:100%;max-height:4em;object-fit:contain;filter:drop-shadow(0 2px 5px #0009)}", "body.lampa_view .minimal-torrent-view--classic {flex-wrap:wrap}", "body.lampa_view .minimal-torrent-view--classic>.explorer__left,body.lampa_view .minimal-torrent-view--classic>.explorer__files {width:100%}", "body.lampa_view .minimal-torrent-view--classic>.explorer__left {padding-right:.3em;margin-bottom:1em}", "body.lampa_view .minimal-torrent-view--classic .minimal-torrent-banner {aspect-ratio:auto;height:14.7em;min-height:0}", "body.lampa_view .minimal-torrent-view--classic .minimal-torrent-banner__logo {max-width:55%}", "@media(max-width:767px){", " body.lampa_view .minimal-torrent-view {flex-direction:column;flex-wrap:nowrap;min-height:0}", " body.lampa_view .minimal-torrent-view>.explorer__left {width:100%;flex:0 0 auto;padding-right:.3em;margin-bottom:.5em}", " body.lampa_view .minimal-torrent-view>.explorer__files {width:100%;flex:1 1 0;min-height:0;display:flex;flex-direction:column}", " body.lampa_view .minimal-torrent-banner {width:100%;min-height:0;max-height:22vh}", " body.lampa_view .minimal-torrent-banner__title {font-size:1.4em;bottom:.8em}", " body.lampa_view .minimal-torrent-banner__meta {font-size:.8em;top:.8em;right:1em;left:1em}", " body.lampa_view .minimal-torrent-view .explorer__files-head {padding-left:.3em;padding-right:.3em;flex:0 0 auto}", " body.lampa_view .minimal-torrent-view .explorer__files-head>.scroll {width:100%;min-width:0;overflow:visible!important}", " body.lampa_view .minimal-torrent-view .explorer__files-head .scroll__content {padding:0!important}", " body.lampa_view .minimal-torrent-view .explorer__files-head .scroll__body {transform:none!important;-webkit-transform:none!important;width:100%!important}", " body.lampa_view .minimal-torrent-view .torrent-filter {display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:.5em;margin:0!important;white-space:normal;align-items:stretch}", " body.lampa_view .minimal-torrent-view .torrent-filter .simple-button {font-size:.88em;min-height:44px;min-width:0;margin:0;padding:.5em .65em;box-sizing:border-box;justify-content:center}", " body.lampa_view .minimal-torrent-view .filter--search>div {display:none!important}", " body.lampa_view .minimal-torrent-view .filter--search>svg {width:1.3em;height:1.3em;margin:0}", " body.lampa_view .minimal-torrent-view .filter--sort {flex-wrap:wrap;gap:.15em .4em}", " body.lampa_view .minimal-torrent-view .filter--sort>div {margin:0;padding:0;background:transparent;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.8em;color:var(--pt-muted)}", " body.lampa_view .minimal-torrent-view .filter--filter>div:not(.hide) {margin-left:.4em;padding:.15em .3em}", " body.lampa_view .minimal-torrent-view .explorer__files-body {flex:1 1 0;min-height:0}", " /* Lampa sizes this scroll for the whole screen; it now shares it with the banner. */", " body.lampa_view .minimal-torrent-view .explorer__files-body>.scroll {height:100%!important}", " body.lampa_view .minimal-torrent-view .explorer__files-body .scroll__content {padding-top:.5em}", " body.lampa_view .minimal-torrent-view .explorer__files-body .scroll__body {padding-left:.3em;padding-right:.3em;box-sizing:border-box}", " body.lampa_view .minimal-torrent-view .watched-history {font-size:.8em;padding:.6em;margin-bottom:.5em}", " body.lampa_view .minimal-torrent-view .torrent-item.tc-item {padding:.75em!important}", " body.lampa_view .minimal-torrent-view .tc-head {display:flex;flex-wrap:wrap;gap:.4em .7em}", " body.lampa_view .minimal-torrent-view .tc-summary {flex:1 1 50%;gap:.3em .55em}", " body.lampa_view .minimal-torrent-view .tc-right {font-size:.8em;gap:.2em;max-width:100%}", " body.lampa_view .minimal-torrent-view .tc-size {margin-top:0;font-size:1em}", " body.lampa_view .minimal-torrent-view .tc-seeds {font-size:.85em}", " body.lampa_view .minimal-torrent-view .tc-tags {margin:.5em 0}", " body.lampa_view .minimal-torrent-view .tc-tags .tc-tag {font-size:.72em}", " body.lampa_view .minimal-torrent-view .tc-voices {font-size:inherit}", " body.lampa_view .minimal-torrent-view .tc-foot {font-size:.72em;gap:.6em;margin-top:.5em}", " body.lampa_view .minimal-torrent-view .tc-source {display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}", "}", "/* Let the activity scroll whole catalogues; selector groups never become inner carousels. */", "@media(max-width:767px){", " body.lampa_view .minimal-torrent-files .modal__content {display:flex;flex-direction:column;box-sizing:border-box;padding:1em;padding-bottom:calc(1em + env(safe-area-inset-bottom,0px));max-height:calc(100vh - 1em);max-height:calc(100dvh - 1em);overflow:hidden}", " body.lampa_view .minimal-torrent-files .modal__head {flex-shrink:0}", " body.lampa_view .minimal-torrent-files .modal__body {display:flex;flex-direction:column;min-height:0}", " body.lampa_view .minimal-torrent-files .modal__head {margin-bottom:.5em}", " body.lampa_view .minimal-torrent-files .modal__title {font-size:1.5em;line-height:1.25}", " body.lampa_view .minimal-torrent-files .modal__body .scroll {display:block;height:auto!important;max-height:calc(100vh - 8em);max-height:calc(100dvh - 8em);overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior-y:contain;touch-action:pan-y;-webkit-overflow-scrolling:touch}", " body.lampa_view .minimal-torrent-files--virtual .modal__body .scroll {overflow:hidden!important;touch-action:none}", " body.lampa_view .minimal-torrent-files .modal__body .scroll__content {padding:.4em 0;max-height:none!important}", " body.lampa_view .torrent-files .torrnet-folder-name {font-size:.85em;line-height:1.4;padding:.6em 0 .8em;overflow-wrap:anywhere;color:var(--pt-muted);opacity:1}", " body.lampa_view .torrent-files .torrent-serial {display:grid;grid-template-columns:clamp(72px,24vw,100px) minmax(0,1fr);align-items:stretch;min-width:0;overflow:hidden;border-radius:.55em}", " body.lampa_view .torrent-files .torrent-serial__img {width:100%;height:100%;min-height:5.5em;object-fit:cover;align-self:stretch;border-radius:0}", " body.lampa_view .torrent-files .torrent-serial__content {display:grid;grid-template-columns:minmax(0,1fr);gap:.4em;min-width:0;padding:.65em .75em;overflow:hidden}", " body.lampa_view .torrent-files .torrent-serial__body {float:none;min-width:0;max-width:100%}", " body.lampa_view .torrent-files .torrent-serial__title {font-size:1.05em;line-height:1.25;margin:0;white-space:normal;overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2}", " body.lampa_view .torrent-files .torrent-serial__line {display:flex;flex-direction:row;flex-wrap:wrap;font-size:.72em;line-height:1.3;margin-top:.3em;padding:0}", " body.lampa_view .torrent-files .torrent-serial__detail {display:flex;flex-wrap:wrap;gap:.3em .7em;float:none;margin:0;min-width:0;text-align:left;font-size:.75em;color:var(--pt-muted)}", " body.lampa_view .torrent-files .torrent-serial__size {font-size:1em;line-height:1.3;padding:0;background:none;color:var(--pt-text)}", " body.lampa_view .torrent-files .torrent-serial__exe {font-size:1em;line-height:1.3;margin:0}", " body.lampa_view .torrent-files .torrent-serial__clear {display:none}", " body.lampa_view .torrent-files .torrent-serial .time-line {position:static;inset:auto;width:100%;min-width:0;margin:0;align-self:end}", " body.lampa_view .torrent-files .time-line>div {height:3px;background:var(--pt-accent)}", " body.lampa_view .torrent-files .torrent-serial__episode {font-size:.8em;line-height:1.2;padding:.25em .4em}", " body.lampa_view .torrent-files .torrent-serial__progress {width:2px;background:var(--pt-accent)}", " body.lampa_view .torrent-files .torrent-file {display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.5em;padding:.8em}", " body.lampa_view .torrent-files .torrent-file__title {font-size:1em;min-width:0;padding:0;overflow-wrap:anywhere}", " body.lampa_view .torrent-files .torrent-file__size {font-size:.8em;padding:.2em .4em}", " body.lampa_view .torrent-files .torrent-file .time-line {grid-column:1/-1;position:static;inset:auto;margin:0;width:100%}", "}", "", "body.lampa_view .nova-plus-root .nova-toolbar {flex-wrap:wrap!important;white-space:normal}", "body.lampa_view .nova-plus-root .nova-toolbar__label {margin-left:.8em!important;margin-right:.55em!important}", "body.lampa_view .nova-plus-root .nova-toolbar__label:first-child {margin-left:0!important}", "body.lampa_view .nova-plus-root .nova-plus__row,body.lampa_view .nova-plus-root .nova-plus__pane {display:flex!important;flex-wrap:wrap!important;transform:none!important;-webkit-transform:none!important;width:100%!important;height:auto!important;max-height:none!important;overflow:visible!important}", "body.lampa_view .nova-plus-root .nova-plus__group,body.lampa_view .nova-plus-root .nova-drop {height:auto!important;max-height:none!important;overflow:visible!important}", "body.lampa_view .nova-plus-root .nova__rows,body.lampa_view .nova-plus-root .nova-plus__panel {height:auto!important;max-height:none!important;overflow:visible!important}", "body.lampa_view .nova-plus-root .nova-plus__row .nova-chip,body.lampa_view .nova-plus-root .nova-plus__pane .nova-chip {flex-shrink:0;max-width:100%;white-space:normal}", "body.lampa_view .nova-plus-root .nova-btn--movie {max-width:100%;white-space:normal;text-align:left}", "body.lampa_view .nova-plus-root .nova-btn--movie .nova-btn__label {max-width:none;white-space:normal;overflow:visible;text-overflow:clip}", "/* Composite the artwork and its shade inside one rounded clip. */", "body.lampa_view .minimal-torrent-banner,body.lampa_view .nova-plus-root .nova-hero {border-radius:1em;overflow:hidden;isolation:isolate;-webkit-clip-path:inset(0 round 1em);clip-path:inset(0 round 1em);-webkit-transform:translateZ(0);transform:translateZ(0)}", "body.lampa_view .minimal-torrent-banner__image,body.lampa_view .minimal-torrent-banner__shade {inset:-1px;width:calc(100% + 2px);height:calc(100% + 2px)}", "body.lampa_view .nova-plus-root .nova-hero__bg,body.lampa_view .nova-plus-root .nova-hero__shade {top:-1px;right:-1px;bottom:-1px;left:-1px}", "/* An independent focus layer avoids repainting a border over the banner image. */", "body.lampa_view .nova-plus-root .nova-hero .nova-btn {background:rgba(18,21,25,.68)!important;border:0!important;box-shadow:none!important;outline:none!important}", "body.lampa_view .nova-plus-root .nova-hero .nova-btn.focus,body.lampa_view .nova-plus-root .nova-hero .nova-btn.hover,body.lampa_view .nova-plus-root .nova-hero .nova-btn:hover {background:rgba(37,44,52,.78)!important;border:0!important;box-shadow:none!important}", "body.lampa_view .nova-plus-root .nova-btn__focus {display:none;position:absolute;inset:0;border:2px solid var(--pt-accent);border-radius:inherit;pointer-events:none}", "body.lampa_view .nova-plus-root .nova-hero .nova-btn.focus>.nova-btn__focus,body.lampa_view .nova-plus-root .nova-hero .nova-btn.hover>.nova-btn__focus,body.lampa_view .nova-plus-root .nova-hero .nova-btn:hover>.nova-btn__focus,body.lampa_view .nova-plus-root .nova-hero .nova-btn:focus-visible>.nova-btn__focus {display:block}", "/* Keep focus paint inside controls: exterior shadows can leave stale edge pixels", "   when adjacent chips change focus in WebKit. Never animate the ring itself. */", "body.lampa_view .nova-plus-root .nova-btn,body.lampa_view .nova-plus-root .nova-chip,body.lampa_view .nova-plus-root .nova-group,body.lampa_view .full-start__button,body.lampa_view .simple-button,body.lampa_view .tc-info,body.lampa_view .alc-chip,body.lampa_view .alc-ap-voice,body.lampa_view .alc-ep,body.lampa_view .minimal-comments-arrow {outline:none!important;transition-property:background-color,color!important;box-shadow:none!important}", "body.lampa_view .nova-plus-root .nova-btn,body.lampa_view .nova-plus-root .nova-chip,body.lampa_view .nova-plus-root .nova-group {transform:none!important;-webkit-transform:none!important}", "body.lampa_view .nova-plus-root .nova-btn.focus,body.lampa_view .nova-plus-root .nova-btn.hover,body.lampa_view .nova-plus-root .nova-btn:hover,body.lampa_view .nova-plus-root .nova-btn:focus-visible,body.lampa_view .nova-plus-root .nova-chip.focus,body.lampa_view .nova-plus-root .nova-chip.hover,body.lampa_view .nova-plus-root .nova-chip:hover,body.lampa_view .nova-plus-root .nova-chip:focus-visible,body.lampa_view .nova-plus-root .nova-group.focus,body.lampa_view .nova-plus-root .nova-group:hover,body.lampa_view .nova-plus-root .nova-group:focus-visible,body.lampa_view .full-start__button.focus,body.lampa_view .full-start__button.hover,body.lampa_view .full-start__button:focus-visible,body.lampa_view .simple-button.focus,body.lampa_view .simple-button.hover,body.lampa_view .simple-button:focus-visible,body.lampa_view .tc-info.focus,body.lampa_view .tc-info:hover,body.lampa_view .tc-info:focus-visible,body.lampa_view .alc-chip.focus,body.lampa_view .alc-ap-voice.focus,body.lampa_view .alc-ep.focus,body.lampa_view .minimal-comments-arrow.focus,body.lampa_view .minimal-comments-arrow.hover,body.lampa_view .minimal-comments-arrow:hover,body.lampa_view .minimal-comments-arrow:focus-visible {outline:none!important;border-color:var(--pt-accent)!important;box-shadow:inset 0 0 0 1px var(--pt-accent)!important}", "body.lampa_view .nova-plus-root .nova-btn::after,body.lampa_view .nova-plus-root .nova-chip::after,body.lampa_view .nova-plus-root .nova-group::after,body.lampa_view .full-start__button.focus::after {display:none!important;content:none!important}", "body.lampa_view .nova-plus-root .nova-hero .nova-btn.focus,body.lampa_view .nova-plus-root .nova-hero .nova-btn.hover,body.lampa_view .nova-plus-root .nova-hero .nova-btn:hover,body.lampa_view .nova-plus-root .nova-hero .nova-btn:focus-visible {box-shadow:none!important}", "body.lampa_view .nova-plus-root .nova-hero__progress {position:absolute;left:0;right:0;bottom:0;width:100%;height:.3em;border-radius:0;background:rgba(255,255,255,.15);overflow:hidden}", "/* Banner facts share a baseline; duration belongs to the year, season to the banner. */", "body.lampa_view .nova-plus-root .nova-hero__meta {display:flex;align-items:flex-start;gap:.65em;line-height:1.5;max-width:calc(100% - 2.4em);padding:.25em .5em;border-radius:.45em;background:rgba(8,11,16,.78);color:#f5f7fa!important;text-shadow:0 1px 2px #000}", "body.lampa_view .nova-plus-root .nova-hero__meta>* {margin:0;white-space:normal}", "body.lampa_view .nova-plus-root .nova-hero__date {display:flex;flex-direction:column;align-items:flex-end;min-width:0;text-align:right}", "body.lampa_view .nova-plus-root .nova-hero__runtime {color:inherit;font-size:.9em;line-height:1.5}", "body.lampa_view .nova-plus-root .nova-hero__seasons {position:absolute;top:calc(100% + .35em);right:0;display:flex;flex-direction:column;align-items:flex-end;gap:.25em;font-size:.9em;line-height:1.5}", "body.lampa_view .nova-plus-root .nova-hero__season-label,body.lampa_view .nova-plus-root .nova-hero__season-name {display:block;max-width:min(24em,58vw);padding:.15em .5em;border-radius:.4em;background:rgba(8,11,16,.78)!important;white-space:normal;text-align:right}", "body.lampa_view .nova-plus-root .nova-badge,body.lampa_view .nova-plus-root .nova-chip__badge {display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;flex:0 0 auto;min-width:2.3em;height:1.5em;padding:0 .35em;font-size:.78em;line-height:1;font-weight:600;vertical-align:middle}", "body.lampa_view .nova-plus-root .nova-hero__meta>.nova-badge {font-size:.85em;margin-top:.12em;background:#ffffff1a!important;text-shadow:none}", "body.lampa_view .nova-plus-root .nova-card__head .nova-card__quality {display:inline-flex;align-items:center;justify-content:center;min-width:2.3em;height:1.5em;padding:0 .35em;font-size:.85em;line-height:1}", "body.lampa_view .nova-plus-root .nova-card__head {align-items:center}", "body.lampa_view .nova-source-option {box-sizing:border-box;min-height:2.8em;padding:.6em 2.6em .6em 1em}", "body.lampa_view .nova-source-option .selectbox-item__title {display:flex;align-items:center;gap:.6em;line-height:1.4}", "body.lampa_view .nova-source-option__quality {display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;min-width:2.3em;height:1.5em;padding:0 .35em;border-radius:.3em;background:#ffffff1a;color:inherit;font-size:.78em;line-height:1;font-weight:600}", "/* A compact, consistent toolbar; native values and callbacks remain in menus. */", "body.lampa_view .minimal-torrent-banner__meta {width:max-content;max-width:calc(100% - 2em);margin-left:auto;padding:.4em .6em;border-radius:.55em;background:rgba(8,11,16,.78);color:#f5f7fa!important;text-shadow:0 1px 2px #000}", "body.lampa_view .nova-plus-root .nova-card--rowlist .nova-card__num {position:absolute;top:auto;right:auto;bottom:.3em;left:.3em;display:block;width:auto;height:auto;min-width:0;padding:0;border-radius:.35em;background:none!important;font-size:.8em;line-height:1.4;white-space:nowrap}", "body.lampa_view .nova-plus-root .nova-card--rowlist .nova-card__thumb--loaded img {opacity:1}", "body.lampa_view .nova-plus-root .nova-card--rowlist .nova-card__meta {display:flex;align-items:baseline;flex-wrap:wrap;gap:.5em}", "@media(max-width:767px){", " body.lampa_view .nova-plus-root .nova-plus__bar {display:flex;flex-wrap:wrap!important;gap:.45em;margin-bottom:.6em;padding:0}", " body.lampa_view .nova-plus-root .nova-plus__bar>.nova-toolbar__label {display:none}", " body.lampa_view .nova-plus-root .nova-plus__bar>.nova-chip {display:inline-flex;align-items:center;box-sizing:border-box;flex:1 1 0;min-width:0;max-width:100%;min-height:44px;margin:0;padding:.45em .6em;font-size:.9em;line-height:1.3}", " body.lampa_view .nova-plus-root .nova-plus__bar>.nova-chip--view-icon {flex:0 0 44px;width:44px;min-width:44px;height:44px;padding:0!important}", " body.lampa_view .nova-plus-root .nova-plus__bar .nova-chip__label {min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}", " body.lampa_view .nova-plus-root .nova-plus__bar .nova-chip>svg {flex-shrink:0}", " body.lampa_view .nova-plus-root .nova-hero__meta {top:.65em;right:.65em;font-size:.78em;max-width:calc(100% - 1.3em);gap:.4em}", " body.lampa_view .nova-plus-root .nova__list .nova-card.nova-card--rowlist {display:grid;grid-template-columns:clamp(calc(100px * var(--pt-interface-scale,1)),calc(30vw * var(--pt-interface-scale,1)),calc(136px * var(--pt-interface-scale,1))) minmax(0,1fr);gap:.25em .7em;padding:.4em;margin-bottom:.6em;box-sizing:border-box}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__thumb {grid-column:1;grid-row:1 / span 2;align-self:center;width:100%;height:auto;aspect-ratio:16/9;margin:0;padding:0}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__body {grid-column:2;grid-row:1;min-width:0;padding:0}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__title {font-size:1em;line-height:1.3;margin-bottom:.3em;-webkit-line-clamp:2}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__meta {display:flex;flex-wrap:wrap;align-items:baseline;gap:.2em .45em;min-width:0;font-size:.75em;line-height:1.4;-webkit-line-clamp:unset}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-dot {display:none}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__side {grid-column:2;grid-row:2;display:flex!important;align-items:center;gap:.5em;max-width:none;min-width:0;padding:0;text-align:left;font-size:.75em}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__side .nova-card__eye {margin:0!important}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__line--body {margin-top:.35em}", "}", "/* Seasonal extensions retain native handlers; header art follows our icon grid. */", "body.lampa_view .head__logo-icon {position:relative;align-items:center;min-height:2.2em}", "body.lampa_view .head__logo-icon.head__logo-halloween {width:auto!important;min-width:2.2em;height:2.2em!important;gap:.55em}", "body.lampa_view .pt-holiday-art {display:block;position:relative;flex:0 0 2.2em;width:2.2em;height:2.2em}", "body.lampa_view .head__logo-halloween .head__logo-halloween-svg,", "body.lampa_view .head__logo-halloween .head__logo-halloween-svg svg {width:2.2em!important;height:2.2em!important}", "body.lampa_view .head__logo-halloween .head__logo-halloween-fire {top:.75em;bottom:.4em}", "body.lampa_view .head__logo-cap {top:-.4em!important;left:-.55em!important;pointer-events:none}", "body.lampa_view .head__logo-cap svg {display:block;width:1.8em!important;height:1.8em!important}", "body.lampa_view .head__logo-icon>.garland {position:absolute;width:5em!important;height:3em!important;top:-.4em!important;left:-.3em!important;opacity:.7;z-index:0!important;pointer-events:none}", "body.lampa_view .head__logo-icon>.pt-brand {position:relative;z-index:1}", "body.lampa_view .head__body {position:relative;z-index:1}", "body.lampa_view .head__actions>.head__action.halloween__button,", "body.lampa_view .head__actions>.head__action.black-friday__button,", "body.lampa_view .head__actions>.head__action.new-year__button,", "body.lampa_view .head__actions>.head__action.womens_day__button {display:flex!important;align-items:center;justify-content:center;box-sizing:border-box;flex:0 0 2.2em;width:2.2em;height:2.2em;padding:0;border:1px solid var(--pt-line);border-radius:.6em;background:var(--pt-panel);color:var(--pt-text);overflow:hidden}", "body.lampa_view .head__action.halloween__button svg,", "body.lampa_view .head__action.black-friday__button svg,", "body.lampa_view .head__action.new-year__button svg,", "body.lampa_view .head__action.womens_day__button svg {width:1.15em!important;height:1.15em!important;margin:0!important}", "body.lampa_view .halloween,body.lampa_view .womens_day {font-size:1em;line-height:1.5;color:var(--pt-text)}", "body.lampa_view .halloween__title,body.lampa_view .womens_day__title {font-size:1.35em;line-height:1.3}", "body.lampa_view .halloween__details,body.lampa_view .womens_day__details {font-size:.95em;color:var(--pt-muted)}", "body.lampa_view .black-friday,body.lampa_view .new-year {z-index:110}", "body.lampa_view .black-friday .head-backward__button,body.lampa_view .new-year .head-backward__button {border:1px solid var(--pt-line);border-radius:.6em;background:var(--pt-panel);color:var(--pt-text)}", "body.lampa_view.pt-tv .head__action.--animate {animation:none!important;background:var(--pt-panel)}", "body.lampa_view.pt-tv .head__logo-halloween-fire {animation:none!important;background:#ffc13b}", "@media(prefers-reduced-motion:reduce){body.lampa_view .head__action.--animate,body.lampa_view .head__logo-halloween-fire {animation:none!important}}", ".minimal-toolbar-label {display:none}", "body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar {display:flex;flex-wrap:nowrap;align-items:stretch;gap:.55em;white-space:normal;margin:0!important}", "body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button {display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-width:0;min-height:2.65em;margin:0;padding:.6em 1em;font-size:.9em;line-height:1.2;border:1px solid var(--pt-line);border-radius:.6em;background:var(--pt-panel);color:var(--pt-text);flex:0 1 auto}", "body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button>:not(.minimal-toolbar-label) {display:none!important}", "body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .minimal-toolbar-label {display:inline;margin:0;padding:0;background:none;font-size:1em;white-space:nowrap}", "body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button:after {display:none!important}", "body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button.focus,body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button.hover {border-color:var(--pt-accent);box-shadow:inset 0 0 0 1px var(--pt-accent)!important}", "body.lampa_view .minimal-torrent-view .watched-history {box-sizing:border-box;min-width:0;border:1px solid var(--pt-line);border-radius:.6em;background:var(--pt-panel);margin-top:.5em}", "body.lampa_view .minimal-torrent-view .watched-history.focus {border-color:var(--pt-accent);box-shadow:inset 0 0 0 1px var(--pt-accent)}", "body.lampa_view .minimal-torrent-view .watched-history:after {display:none!important}", "/* The native search overlay was transparent, showing controls over releases. */", "body.lampa_view .search-box {z-index:90!important;background:#080b10!important;box-sizing:border-box;isolation:isolate}", "@media(max-width:767px){", " body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.45em}", " body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button {min-height:44px;padding:.55em .3em;font-size:.88em}", "}", "", "/* Keep hero focus inside its paint bounds, including keyboard and remote input. */", "body.lampa_view .pt-hero__action {outline:none!important;transition-property:background-color,color!important}", "body.lampa_view .pt-hero__studio.selector {outline:none!important;transition:none!important}", "body.lampa_view .pt-hero__studio.selector.focus,body.lampa_view .pt-hero__studio.selector:focus-visible {outline:none!important;box-shadow:inset 0 0 0 2px var(--pt-accent)!important}", "", "/* Seasonal controls keep their native nodes and use the shared SVG style. */", "body.lampa_view .pt-holiday-icons {display:flex;align-items:center;gap:.35em;flex-shrink:0}", "body.lampa_view .pt-holiday-icons>.head__action {display:flex!important;align-items:center;justify-content:center;flex:0 0 2.2em;box-sizing:border-box;width:2.2em;height:2.2em;margin:0;padding:.3em;border:1px solid transparent;border-radius:.5em;background:transparent!important;color:var(--pt-accent)!important;animation:none!important;outline:none!important;box-shadow:none!important}", "body.lampa_view .pt-holiday-icons>.head__action svg {display:block;width:1.45em!important;height:1.45em!important;object-fit:contain}", "body.lampa_view .pt-holiday-icons>.head__action.focus,body.lampa_view .pt-holiday-icons>.head__action.hover,body.lampa_view .pt-holiday-icons>.head__action:hover {border-color:var(--pt-accent);background:var(--pt-high)!important}", "body.lampa_view .head__logo-halloween .pt-holiday-art {display:none}", "/* Episode grids wrap by the scaled minimum rather than a fixed poster count. */", "", "body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar>.nova-chip {min-height:44px;min-width:44px}", "body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar>.nova-chip--view-icon {width:44px;height:44px;flex-basis:44px}", "", "/* Whole poster slots leave a small gutter for the focus ring at both ends. */", "body.lampa_view .minimal-fit-posters>.items-line__body>.scroll--horizontal>.scroll__content {padding-left:var(--minimal-poster-gutter,.55em);padding-right:var(--minimal-poster-gutter,.55em)}", "body.lampa_view .items-line.minimal-posters-sized .card:not(.card--wide):not(.card--collection) {width:var(--minimal-poster-width)!important}", "body.lampa_view .minimal-fit-posters>.items-line__body {-webkit-mask-image:none!important;mask-image:none!important}", "body.lampa_view .minimal-fit-posters .mapping--line>.card+.card {margin-left:var(--minimal-poster-gap,1em)}", "body.lampa_view .minimal-fit-posters .scroll__body>.card:last-child {margin-right:0}", "", "/* The banner frame uses the reference Bigger size, independent of UI scale. */", "body.lampa_view {--pt-banner-unit:calc(clamp(14px,.94vw,18px) * 1.05)}", "body.lampa_view .pt-hero {height:clamp(calc(32 * var(--pt-banner-unit)),67vh,calc(43 * var(--pt-banner-unit)));min-height:0;max-height:none}", "@media(min-width:1100px){body.lampa_view .pt-hero {height:clamp(calc(27 * var(--pt-banner-unit)),56vh,calc(34 * var(--pt-banner-unit)))}}", "body.lampa_view.pt-desktop .pt-hero {margin-bottom:.8em}", "body.lampa_view.pt-desktop .pt-hero__image {transform:scale(1.12)}", "", "", "/* The same mark has one position, before and after the native update. */", "body.lampa_view .torrent-item .torrent-item__viewed {position:absolute;top:.85em;left:auto;right:.85em;width:1.5em;height:1.5em;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:.2em;border:1px solid var(--pt-accent);border-radius:50%;background:var(--pt-accent);color:#13232c;z-index:2;pointer-events:none}", "body.lampa_view .torrent-item__viewed svg {width:100%;height:100%}", "body.lampa_view .torrent-item .tc-right {padding-right:2em}", "", "body.lampa_view .pt-holiday-native,body.lampa_view .head__logo-cap,body.lampa_view .head__logo-icon>.garland {display:none!important}", "body.lampa_view .pt-holiday-winter {display:flex;align-items:center;justify-content:center;flex:0 0 2.2em;width:2.2em;height:2.2em;color:var(--pt-accent);pointer-events:none}", "body.lampa_view .pt-holiday-winter svg {display:block;width:1.45em;height:1.45em}", "", "/* Torrent focus belongs inside the tile; the scroll viewport cannot clip it. */", "body.lampa_view .torrent-item.focus,body.lampa_view .torrent-item.hover,body.lampa_view .torrent-list .torrent-item.tc-item.focus,body.lampa_view .torrent-list .torrent-item.tc-item:hover {outline:none!important;box-shadow:inset 0 0 0 2px var(--pt-accent)!important}", "", "/* Episode tiles share the main poster selection. Animate position only, never", "   the border or shadow; dormant hover cannot leave another TV tile selected. */", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card {background:none!important;box-shadow:none!important;transform:none!important;transition:none!important}", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card__thumb {position:relative;transform:none;box-shadow:none!important;transition:transform .2s!important;will-change:auto}", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card__thumb:after {content:''!important;display:block!important;position:absolute;inset:0!important;width:auto!important;height:auto!important;margin:0!important;padding:0!important;transform:none!important;background:transparent!important;opacity:1!important;transition:none!important;z-index:5;border:2px solid transparent;border-radius:inherit;box-sizing:border-box!important;pointer-events:none}", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card.focus .nova-card__thumb,body.lampa_view .nova-plus-root .nova__list--grid .nova-card.hover .nova-card__thumb {transform:translateY(-.2em) scale(1.045);box-shadow:0 0 .85em rgba(173,217,229,.4),0 0 1.8em rgba(173,217,229,.22)!important}", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card.focus .nova-card__thumb:after,body.lampa_view .nova-plus-root .nova__list--grid .nova-card.hover .nova-card__thumb:after {border-color:var(--pt-accent)}", "body.lampa_view .nova-plus-root .nova-card.focus .nova-card__title,body.lampa_view .nova-plus-root .nova-card.hover .nova-card__title {color:var(--pt-accent)}", "body.lampa_view.pt-tv .nova-plus-root .nova__list--grid .nova-card.hover:not(.focus) .nova-card__thumb {transform:none!important;box-shadow:none!important}", "body.lampa_view.pt-tv .nova-plus-root .nova__list--grid .nova-card.hover:not(.focus) .nova-card__thumb:after {border-color:transparent!important}", "body.lampa_view.pt-tv .nova-plus-root .nova-card.hover:not(.focus) .nova-card__title {color:var(--pt-text)}", "", "/* The same native menu becomes a dock only when the native preference is on. */", "body.lampa_view.pt-menu-pinned {--pt-menu-width:min(16em,28vw)}", "body.lampa_view.pt-menu-pinned .head__menu-icon {display:none!important}", "body.lampa_view.pt-menu-pinned .wrap__left,body.lampa_view.menu--always.pt-menu-pinned .wrap__left {top:3.6em!important;bottom:0!important;left:0!important;width:var(--pt-menu-width)!important;height:calc(100% - 3.6em)!important;max-height:none!important;padding:.7em .35em!important;border:0;border-right:1px solid var(--pt-line);border-radius:0;box-shadow:none;visibility:visible!important;opacity:1!important;pointer-events:auto;transition:none}", "body.lampa_view.pt-menu-pinned .wrap__left>.scroll {height:100%!important;max-height:100%!important}", "body.lampa_view.pt-menu-pinned .wrap__left>.scroll>.scroll__content {height:100%!important;max-height:100%!important}", "body.lampa_view.pt-menu-pinned .wrap {width:100%!important;max-width:100%}", "body.lampa_view.pt-menu-pinned .wrap__content {min-width:0;box-sizing:border-box;flex:0 0 auto;width:calc(100% - var(--pt-menu-width))!important;max-width:calc(100% - var(--pt-menu-width))!important;margin-left:var(--pt-menu-width)!important}", "body.lampa_view.pt-menu-pinned .pt-hero,body.lampa_view.pt-menu-pinned .items-line {width:94%;max-width:94%!important;margin-left:auto!important;margin-right:auto!important}", "body.lampa_view.pt-menu-pinned .menu__text {white-space:normal}", "body.lampa_view.pt-mobile.pt-menu-pinned {--pt-menu-width:min(14em,38vw)}", "body.lampa_view.pt-mobile.pt-menu-pinned .wrap__left {bottom:5.5em!important;height:calc(100% - 9.1em)!important}", "", "body.lampa_view .card:not(.focus):not(.hover):not(.pt-card-pointer):not(.pt-card-touch) .pt-series-status {display:none}", "", "/* Header controls keep their boxes when focused. Draw outside the avatar so", "   its image cannot cover the remote/keyboard focus indicator. */", "body.lampa_view .head__body {box-sizing:border-box;min-width:0}", "body.lampa_view .head__actions {flex-shrink:0}", "body.lampa_view .head__menu-icon,body.lampa_view .head__backward {position:relative;align-self:center;top:auto;left:auto;transform:none!important;transition:none!important}", "body.lampa_view .head__menu-icon svg {display:block;flex:none;margin:0!important;position:static!important;transform:none!important}", "/* Header focus stays inside the control, matching Menu, with no second ring. */", "body.lampa_view .head__menu-icon,body.lampa_view .head__backward,body.lampa_view .head__action.open--search,body.lampa_view .head__action.open--profile,body.lampa_view .head__action.open--settings,body.lampa_view .pt-holiday-icons>.head__action {outline:0 solid transparent!important;outline-offset:0!important;box-shadow:none!important;animation:none!important;transition:none!important;transform:none!important;border:1px solid var(--pt-line)!important}", "body.lampa_view .head__action.open--profile {padding:0!important}", "body.lampa_view .head__menu-icon.focus,body.lampa_view .head__menu-icon:focus-visible,body.lampa_view .head__backward.focus,body.lampa_view .head__backward:focus-visible,", "body.lampa_view .head__action.open--search.focus,body.lampa_view .head__action.open--profile.focus,body.lampa_view .head__action.open--settings.focus,body.lampa_view .head__action.open--search:focus-visible,body.lampa_view .head__action.open--profile:focus-visible,body.lampa_view .head__action.open--settings:focus-visible,", "body.lampa_view .pt-holiday-icons>.head__action.focus,body.lampa_view .pt-holiday-icons>.head__action:focus-visible,", "body.lampa_view:not(.pt-tv) .head__menu-icon:hover,body.lampa_view:not(.pt-tv) .head__backward:hover,body.lampa_view:not(.pt-tv) .head__action.open--search:hover,body.lampa_view:not(.pt-tv) .head__action.open--profile:hover,body.lampa_view:not(.pt-tv) .head__action.open--settings:hover,", "body.lampa_view:not(.pt-tv) .pt-holiday-icons>.head__action:hover {border-color:var(--pt-accent)!important;background:var(--pt-high)!important;color:var(--pt-text)}", "body.lampa_view .head__action.open--search.focus:after,body.lampa_view .head__action.open--search:focus-visible:after {color:var(--pt-text)}", "body.lampa_view .menu__item {min-width:0;box-sizing:border-box}", "body.lampa_view .menu__text {flex:1;min-width:0;white-space:normal!important;overflow-wrap:break-word;line-height:1.35;max-height:none;text-overflow:clip}", "", "/* Android WebView can rasterize white inset focus shadows as a solid fill.", "   Use a real, constant-width border for primary TV controls instead. */", "body.lampa_view.pt-tv .pt-hero__action {appearance:none;-webkit-appearance:none;box-sizing:border-box;border:2px solid transparent;padding:calc(.85em - 1px) calc(1.15em - 1px);background:var(--pt-accent)!important;color:#13232c!important;box-shadow:none!important;transition:none!important}", "body.lampa_view.pt-tv .pt-hero__action--secondary {background:#212a35dd!important;color:#d4dce3!important}", "body.lampa_view.pt-tv .pt-hero__action.focus,body.lampa_view.pt-tv .pt-hero__action:focus-visible {border-color:#fff!important;box-shadow:none!important;outline:none!important}", "body.lampa_view.pt-tv .pt-hero__action.hover:not(.focus):not(:focus-visible) {border-color:transparent!important;box-shadow:none!important}", 'body.lampa_view.pt-tv .minimal-anime-tab[aria-selected="true"] {box-shadow:0 0 .35em rgba(173,217,229,.85),0 0 1.2em rgba(173,217,229,.65),0 0 2.4em rgba(173,217,229,.42)!important;transition:none!important}', "body.lampa_view.pt-tv .full-start__button.button--alc-auto.focus,body.lampa_view.pt-tv .alc-ap__play.focus {background:var(--pt-accent)!important;color:#13232c!important;border-color:#fff!important;box-shadow:none!important;outline:none!important}", "", "/* TV uses the same full-frame artwork and text composition as desktop. */", "body.lampa_view.pt-tv .pt-hero__image {object-position:right center}", "body.lampa_view.pt-tv .pt-hero__body {top:auto;bottom:7em;transform:none}", "body.lampa_view.pt-tv .pt-hero__logo {max-height:7em;margin-bottom:1.4em}", "body.lampa_view.pt-tv .pt-hero__overview {-webkit-line-clamp:3}", "body.lampa_view.pt-tv.pt-menu-pinned .wrap__left {top:4.5em!important;height:calc(100% - 4.5em)!important}", "", "body.lampa_view .nova-plus-root .nova-hero__meta {background:rgba(8,11,16,.52);padding:.2em .4em}", "body.lampa_view .nova-plus-root .nova-hero__runtime {position:absolute;right:0;top:calc(100% + .45em);padding:.2em .45em;white-space:nowrap;border-radius:.35em;background:rgba(8,11,16,.52);color:var(--pt-text);font-size:.8em;line-height:1.3}", "body.lampa_view.pt-tv .minimal-comments-nav {display:none!important}", "body.lampa_view .nova-episode-nav {display:flex;justify-content:flex-end;gap:.4em;margin-bottom:.5em}", "body.lampa_view .nova-episode-nav button {width:2.1em;height:2.1em;display:flex;align-items:center;justify-content:center;border:1px solid var(--pt-line);border-radius:.6em;background:#ffffff04;color:var(--pt-muted);cursor:pointer}", "body.lampa_view .nova-episode-nav svg {width:1em;height:1em}", "body.lampa_view.pt-tv .nova-episode-nav {display:none!important}", "body.lampa_view.pt-favorites .category-full>.card,body.lampa_view.pt-favorites .mapping--grid>.card {width:calc(12.5% * var(--pt-interface-scale,1))!important}", "@media(max-width:650px){body.lampa_view.pt-favorites .category-full>.card,body.lampa_view.pt-favorites .mapping--grid>.card {width:33.333%!important}}", "", "/* Episode arrows share the collection buttons' pointer and keyboard focus. */", "body.lampa_view .nova-episode-nav button:hover,body.lampa_view .nova-episode-nav button:focus-visible,body.lampa_view .nova-episode-nav button.focus,body.lampa_view .nova-episode-nav button.hover {border-color:var(--pt-accent);background:#add9e512;color:var(--pt-accent);box-shadow:0 0 0 1px var(--pt-accent);outline:none}", "", "/* Fixed pixel focus geometry is identical on TV and desktop, independent of", "   native focus themes and the interface font scale. */", "body.lampa_view .card.focus .card__view:after,body.lampa_view .card.hover .card__view:after {border:2px solid var(--pt-accent)!important;top:0!important;left:0!important;right:0!important;bottom:0!important;outline:none!important;box-shadow:none!important;border-radius:.5em!important}", "body.lampa_view .head__menu-icon:before,body.lampa_view .head__menu-icon:after,body.lampa_view .head__backward:before,body.lampa_view .head__backward:after,body.lampa_view .head__action.open--profile:before,body.lampa_view .head__action.open--profile:after,body.lampa_view .head__action.open--search:before,body.lampa_view .pt-holiday-icons>.head__action:before,body.lampa_view .pt-holiday-icons>.head__action:after {content:none!important;display:none!important}", "body.lampa_view .head__menu-icon,body.lampa_view .head__backward,body.lampa_view .head__action.open--search,body.lampa_view .head__action.open--profile,body.lampa_view .head__action.open--settings,body.lampa_view .pt-holiday-icons>.head__action {border-width:2px!important}", "body.lampa_view .menu__item.focus,body.lampa_view .menu__item.hover,body.lampa_view .menu__item.traverse {background:#20272e!important;color:var(--pt-text)!important;outline:none!important;box-shadow:inset 2px 0 var(--pt-accent)!important;animation:none!important;transform:none!important}", "body.lampa_view .menu__ico [stroke] {stroke:currentColor!important}", 'body.lampa_view .menu__ico [fill]:not([fill="none"]) {fill:currentColor!important}', "body.lampa_view .menu__item .menu__text {color:inherit!important}", "", "/* RTL is scoped to plugin controls. Content titles and saved values retain their text. */", "body.lampa_view.pt-rtl .settings__content,body.lampa_view.pt-rtl .selectbox__content,body.lampa_view.pt-rtl .nova-plus__bar,body.lampa_view.pt-rtl .minimal-detail-facts {direction:rtl;text-align:start}", "body.lampa_view.pt-rtl .pt-hero__body {direction:rtl;text-align:right}", "body.lampa_view.pt-rtl .pt-hero__meta,body.lampa_view.pt-rtl .pt-watch-progress {direction:rtl}", "body.lampa_view.pt-rtl .minimal-back--overlay svg {transform:scaleX(-1)}", "body.lampa_view.pt-rtl .minimal-settings .settings-param__value {margin-left:0;margin-right:auto}", "", "/* Episode information comes from one TMDB season book, shared by providers. */", "body.lampa_view .nova-plus-root .nova-card__overview {font-size:.82em;line-height:1.55;color:var(--pt-muted);margin-top:.65em;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:5;overflow:hidden;overflow-wrap:break-word}", "body.lampa_view .minimal-online-option {position:relative;margin:.35em .6em;padding:.8em 2.8em .8em 1em;border:1px solid var(--pt-line);border-radius:.9em;background:var(--pt-panel);min-height:2.8em;box-sizing:border-box}", "body.lampa_view .minimal-online-option--selected {border-color:#add9e560;background:var(--pt-high)}", "body.lampa_view .minimal-online-option.focus {border-color:var(--pt-accent);background:var(--pt-high);color:var(--pt-text)}", "body.lampa_view .minimal-online-option .selectbox-item__title {white-space:normal;overflow-wrap:break-word;line-height:1.35}", "body.lampa_view .minimal-choice-check {position:absolute;right:.85em;top:50%;transform:translateY(-50%);width:1.1em;height:1.1em;color:var(--pt-accent)}", "body.lampa_view.pt-rtl .minimal-online-option {padding-right:1em;padding-left:2.8em}", "body.lampa_view.pt-rtl .minimal-choice-check {right:auto;left:.85em}", "body.lampa_view .pt-hero__studio {pointer-events:auto;cursor:pointer}", "body.lampa_view.pt-tv .pt-hero__studio {pointer-events:none;cursor:default}", "body.lampa_view:not(.pt-tv) .pt-hero__studio.selector:hover,body.lampa_view:not(.pt-tv) .pt-hero__studio.selector:focus-visible {outline:none!important;box-shadow:none!important;filter:var(--pt-studio-tone,brightness(1)) drop-shadow(0 0 .45em var(--pt-accent))}", "body.lampa_view .minimal-online-option:after {display:none!important}", "", "body.lampa_view .nova-plus-root .nova-chip--unavailable {opacity:.65;cursor:default;pointer-events:none}", "", "/* Episode facts use the same catalogue coordinates as native file playback. */", "body.lampa_view .torrent-serial .minimal-episode-overview {clear:both;padding-top:.65em;color:var(--pt-muted);font-size:.85em;line-height:1.5;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;overflow-wrap:break-word}", "body.lampa_view .torrent-serial.minimal-has-summary .torrent-serial__content {padding-bottom:1.5em}", "", "body.lampa_view .minimal-studio-heading {box-sizing:border-box;width:100%;padding:1.2em 5vw 1.5em;min-height:5em;display:flex;align-items:center;justify-content:center}", "body.lampa_view .minimal-studio-heading img {display:block;max-width:min(65vw,22em);width:auto;height:auto;max-height:5em;object-fit:contain}", "body.lampa_view .minimal-studio-heading img[hidden],body.lampa_view .minimal-studio-heading h1[hidden] {display:none}", "body.lampa_view .minimal-studio-heading h1 {font-size:1.4em;margin:0}", "body.lampa_view .minimal-studio-catalogue .company-start {display:none}", "body.lampa_view .minimal-filter-panel .selectbox-item {position:relative;justify-content:flex-start;text-align:start;margin:0;border-radius:.5em;padding:.85em 1.3em;box-shadow:none}", "body.lampa_view .minimal-filter-panel .selectbox-item__title {flex:1;min-width:0;line-height:1.4}", "body.lampa_view .minimal-filter-panel .selectbox-item__checkbox {position:static;flex:0 0 1.1em;width:1.1em;height:1.1em;margin:0;margin-inline-start:auto;transform:none}", "body.lampa_view .minimal-filter-panel .minimal-filter-choice .selectbox-item__subtitle {display:none}", "body.lampa_view .minimal-filter-panel .selectbox-item.focus {box-shadow:inset 0 0 0 1px var(--pt-accent)!important}", "body.lampa_view .minimal-filter-panel .minimal-filter-run {margin:.8em 1.1em .4em;width:auto;justify-content:center;text-align:center}", "body.lampa_view.pt-theme-glass .minimal-filter-panel .minimal-filter-run {background:var(--pt-glass-button);color:var(--pt-text)}", "", "/* Native file identity/actions with Online's list proportions. */", "body.lampa_view .torrent-files .torrent-serial {box-sizing:border-box;align-items:center;padding:.6em .75em;gap:1em}", "body.lampa_view .torrent-files .torrent-serial__img {width:12em;height:6.75em;min-height:0;align-self:center;object-fit:cover;border-radius:.8em}", "body.lampa_view .torrent-files .torrent-serial__content {display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:.5em .8em;min-width:0;padding:0;flex:1}", "body.lampa_view .torrent-files .torrent-serial.minimal-has-summary .torrent-serial__content {padding-bottom:0}", "body.lampa_view .torrent-files .torrent-serial__body {grid-column:1;grid-row:1;float:none;min-width:0;max-width:100%}", "body.lampa_view .torrent-files .torrent-serial__title {font-size:1.3em;line-height:1.3;margin:0;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}", "body.lampa_view .torrent-files .torrent-serial__line {display:flex;flex-direction:row;flex-wrap:wrap;gap:.5em;font-size:.9em;line-height:1.4;padding:0;margin:.3em 0 0}", "body.lampa_view .torrent-files .torrent-serial__line span+span:before {content:none}", "body.lampa_view .torrent-files .torrent-serial__line span {margin:0}", "body.lampa_view .torrent-files .torrent-serial__detail {grid-column:2;grid-row:1/4;float:none;align-self:center;text-align:right;margin:0}", "body.lampa_view .torrent-files .torrent-serial__size,body.lampa_view .torrent-files .torrent-serial__exe {font-size:.9em;line-height:1.4}", "body.lampa_view .torrent-files .torrent-serial .time-line {grid-column:1;grid-row:2;position:static;inset:auto;width:100%;margin:0}", "body.lampa_view .torrent-files .torrent-serial .minimal-episode-overview {grid-column:1;grid-row:3;padding:0;clear:none;font-size:.85em;line-height:1.5}", "body.lampa_view .torrent-files .torrent-serial__clear {display:none}", "body.lampa_view.pt-mobile .torrent-files .torrent-serial {grid-template-columns:clamp(90px,30vw,136px) minmax(0,1fr);gap:.6em;padding:.5em}", "body.lampa_view.pt-mobile .torrent-files .torrent-serial__img {width:100%;height:auto;aspect-ratio:16/9;align-self:center}", "body.lampa_view.pt-mobile .torrent-files .torrent-serial__title {font-size:1.05em}", "body.lampa_view.pt-mobile .torrent-files .torrent-serial__content {gap:.35em}", "body.lampa_view.pt-mobile .torrent-files .torrent-serial__detail {grid-column:1;grid-row:4;display:flex;gap:.6em;text-align:start;font-size:.75em}", "body.lampa_view.pt-mobile .torrent-files .torrent-serial__line {font-size:.72em}", "", "/* Availability follows confirmed provider results, independent of selection. */", "body.lampa_view .nova-source-option__status {display:inline-block;flex:0 0 auto;width:.55em;height:.55em;margin-inline-start:.65em;border-radius:50%;background:#fff;box-shadow:0 0 .3em #ffffffb3,0 0 .65em #ffffff66;vertical-align:middle}", "body.lampa_view .nova-source-option .selectbox-item__title>.nova-source-option__status {position:absolute;inset-inline-end:3.6em;top:50%;transform:translateY(-50%);margin:0}", "body.lampa_view .nova-source-option {padding-inline-end:5.2em!important}", "", "", "/* Native immediate/shift temporarily disables transitions; keep that contract on TV. */", "body.lampa_view.pt-tv .minimal-paged-row .scroll__body.notransition,body.lampa_view.pt-tv .minimal-paged-row .scroll__body.transition-reset {transition:none!important;-webkit-transition:none!important}", "", "/* Studio grids keep each complete row centered under their heading. */", "body.lampa_view .minimal-studio-catalogue .category-full,body.lampa_view .minimal-studio-catalogue .mapping--grid {justify-content:center}", "", "body.lampa_view.pt-mobile .card:not(.pt-card-touch) .pt-card-watch,body.lampa_view.pt-mobile .card:not(.pt-card-touch) .pt-series-status {visibility:hidden!important}", "", "body.lampa_view.pt-mobile .card__title,body.lampa_view.pt-mobile .card__age {cursor:pointer;pointer-events:auto}", "/* Touch layouts retain account controls and fit panels to the visual viewport. */", "body.lampa_view .head__action.open--profile {display:flex!important;align-items:center;justify-content:center}", "body.lampa_view .head__action.open--settings {border:1px solid var(--pt-line);border-radius:50%;background:var(--pt-panel)}", "body.lampa_view.pt-mobile .head__body {gap:.4em;padding-left:.65em;padding-right:.65em}", "body.lampa_view.pt-mobile .head__actions {display:flex!important;gap:.35em;flex-shrink:0}", "body.lampa_view.pt-mobile .head__logo-icon {margin-right:.4em!important}", "body.lampa_view .settings__content,body.lampa_view .selectbox__content {max-height:calc(100vh - 1em)!important;max-height:calc(100dvh - 1em)!important;box-sizing:border-box}", "body.lampa_view .settings__body,body.lampa_view .selectbox__body {min-height:0;overflow:hidden;flex:1 1 auto}", "body.lampa_view .settings__body>.scroll,body.lampa_view .selectbox__body>.scroll {min-height:0;max-height:100%;touch-action:pan-y}", "@media (pointer:coarse) {", " body.lampa_view:not(.pt-menu-pinned) .head__body {max-width:100%;padding-left:.65em;padding-right:.65em}", " body.lampa_view .minimal-detail-header,body.lampa_view .minimal-detail-columns {width:calc(100% - 2em);max-width:calc(100% - 2em)}", "}", "/* Scaled action labels may wrap; the hit area follows the enlarged controls. */", "body.lampa_view .minimal-detail-identity .full-start__button {height:auto;flex-shrink:0}", "body.lampa_view .minimal-detail-identity .full-start__button>span {white-space:normal;overflow-wrap:anywhere;text-align:center}", "body.lampa_view .minimal-detail-header .full-start-new__right {min-width:0}", "", "/* Explicit tablet profile keeps a wide card layout while retaining touch targets. */", "body.lampa_view.pt-tablet .head__actions {display:flex!important;gap:.35em;flex-shrink:0}", "body.lampa_view.pt-tablet .head__action {min-width:44px;min-height:44px}", "body.lampa_view.pt-tablet .head__action.open--settings {display:flex!important;align-items:center;justify-content:center}", "body.lampa_view.pt-tablet:not(.pt-menu-pinned) .head__body {max-width:100%;padding-left:.65em;padding-right:.65em}", "body.lampa_view.pt-tablet .minimal-detail-header,body.lampa_view.pt-tablet .minimal-detail-columns {width:calc(100% - 2em);max-width:calc(100% - 2em)}", "body.lampa_view.pt-tablet .card__title,body.lampa_view.pt-tablet .card__age {cursor:pointer;pointer-events:auto}", "body.lampa_view.pt-tablet .card:not(.pt-card-touch) .pt-card-watch,body.lampa_view.pt-tablet .card:not(.pt-card-touch) .pt-series-status {visibility:hidden!important}", "", "/* Personal sizing must grow the content pane instead of clipping its controls. */", "body.lampa_view.pt-personal-enlarged .pt-hero__body {flex-shrink:0;max-height:none!important}", "body.lampa_view.pt-personal-enlarged .pt-hero__actions {flex-wrap:wrap}", "body.lampa_view.pt-personal-enlarged .head__body {min-height:100%}", "body.lampa_view .full-start-new__buttons>.selector {box-sizing:border-box;align-items:center;justify-content:center}", "body.lampa_view.pt-personal-enlarged .minimal-detail-identity .full-start-new__buttons {grid-template-columns:repeat(auto-fit,minmax(3.5em,1fr))}", "", "/* Native windows stay slightly smaller than Lampa at the same screen size. */", "body.lampa_view {--pt-native-window-font:max(10px,calc(1.117vw * var(--pt-native-interface-scale,1)))}", "body.lampa_view .extensions,", "body.lampa_view .selectbox:not(.minimal-filter-panel) .selectbox__content,", "body.lampa_view .modal:not(.minimal-torrent-files) .modal__content {font-size:min(1em,var(--pt-native-window-font))!important}", "body.lampa_view .selectbox__content,body.lampa_view .modal__content {font-size:1em}", "body.lampa_view .modal__title {font-size:1.4em;line-height:1.3}", "body.lampa_view.pt-mobile .minimal-filter-panel .selectbox__content,body.lampa_view.pt-mobile .minimal-torrent-files .modal__content {font-size:calc(14px * var(--pt-interface-scale,1))}", "body.lampa_view .extensions {background:var(--pt-bg);color:var(--pt-text)}", "body.lampa_view .extensions__item,body.lampa_view .extensions__block-add {background:var(--pt-panel);border:1px solid var(--pt-line);box-sizing:border-box}", "body.lampa_view .pt-hero__artwork,body.lampa_view .pt-hero__branding {cursor:pointer}", "body.lampa_view.pt-detail-poster .minimal-detail-identity .full-start-new__poster {display:block;width:min(100%,15em);margin:0 auto 1em}", "body.lampa_view.pt-detail-poster .minimal-detail-identity .minimal-detail-logo,body.lampa_view.pt-detail-poster .minimal-detail-identity>.full-start-new__title {display:none!important}", "body.lampa_view.card--no-cover .minimal-detail-shade {display:none}", "body.lampa_view .pt-studio-white {--pt-studio-tone:brightness(0) invert(1);filter:var(--pt-studio-tone)}", "/* A proxy without CORS cannot be classified safely; retain its colours. */", "body.lampa_view .pt-studio-unreadable {background:rgba(255,255,255,.7);border-radius:.15em}", "body.lampa_view .nova-initial-loading .nova__hero {display:none!important}", "", "/* Keep the mobile detail artwork at banner proportions, independent of content height. */", "body.lampa_view.pt-mobile .full-start__background {height:auto!important;aspect-ratio:16/9;object-fit:contain;object-position:center top;transform:none!important}", "body.lampa_view.pt-mobile .minimal-detail-shade {height:auto!important;aspect-ratio:16/9;bottom:auto}", "", "/* Mobile cover is a separate image above the identity and actions. */", "body.lampa_view.pt-mobile .minimal-detail-header>.full-start__background {position:relative!important;z-index:0;left:auto!important;top:auto!important;margin:0 0 1em;opacity:1!important;-webkit-mask-image:none!important;mask-image:none!important}", "body.lampa_view.pt-mobile .minimal-detail-header>.minimal-detail-shade {display:none}", "body.lampa_view.pt-mobile .minimal-detail-header {padding-top:0}", "", "/* Selected sources remain legible independently of the native active colour. */", "body.lampa_view .search-source.active {background:#555b64!important;color:#f5f5f7!important;border-color:#ffffff45}", "body.lampa_view .search-source.active .search-source__name {color:inherit!important}", "body.lampa_view .extensions {background:var(--pt-bg)!important;min-height:100vh;isolation:isolate}", "/* Contained landscape artwork starts at the top when the window narrows. */", "body.lampa_view:not(.pt-mobile) .pt-hero__image {object-position:right top}", "body.lampa_view.pt-desktop .pt-hero {height:min(56vh,calc(34 * var(--pt-banner-unit)),calc((100vw - 6em) * .5625))}", "/* Mobile identity overlaps the soft cover edge, without enlarging the artwork. */", "body.lampa_view.pt-mobile .minimal-detail-header>.full-start__background {margin:0; border-radius:1em 1em 0 0;-webkit-mask-image:linear-gradient(#000 0%,#000 55%,transparent 100%)!important;mask-image:linear-gradient(#000 0%,#000 55%,transparent 100%)!important}", "body.lampa_view.pt-mobile:not(.card--no-cover):not(.pt-detail-poster) .minimal-detail-header>.full-start__background.loaded~.full-start-new__body {position:relative;margin-top:-3.5em}", "body.lampa_view.pt-mobile .minimal-detail-identity .minimal-detail-logo {width:auto;max-width:82%;height:4em;max-height:4em;margin:0 auto 1.2em;object-fit:contain;filter:drop-shadow(0 2px 5px #000)}", "", "/* Progress is text over the page, not a separate glass surface on phones. */", "body.lampa_view.pt-mobile .card .pt-card-watch,", "body.lampa_view.pt-mobile .card .pt-card-watch .card-watched,", "body.lampa_view.pt-mobile .card .pt-card-watch .card-watched__inner,", "body.lampa_view.pt-mobile .card .pt-card-watch .card-watched__body,", "body.lampa_view.pt-mobile .card .pt-card-watch .card-watched__item {background:transparent!important;border:0!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}", "", "body.lampa_view .full-start-new__details>[hidden],", "body.lampa_view .full-start-new__details>[hidden]+.full-start-new__split {display:none!important}", "", "", "body.lampa_view .nova-plus-root .nova-chip__stack+svg {margin-inline-start:.75em;align-self:center}", "body.lampa_view .nova-plus-root .nova-chip__stack {min-width:0}", "body.lampa_view .minimal-season-section {margin:1.1em 1.2em .55em;padding-top:.8em;border-top:1px solid var(--pt-line);font-size:.85em;line-height:1.4;color:var(--pt-muted);white-space:normal;overflow-wrap:anywhere}", "body.lampa_view .minimal-season-section:first-child {margin-top:.4em;padding-top:0;border-top:0}", "", "body.lampa_view .nova-card__part {font-size:.8em;line-height:1.3;padding:.15em .45em;border-radius:.35em;background:#ffffff18;color:inherit}", "body.lampa_view .nova-plus-root .nova-hero__season-name {width:max-content;max-width:min(24em,58vw)}", "", "", "", "", "body.lampa_view .minimal-detail-screenshots,body.lampa_view .minimal-anime-franchise {box-sizing:border-box;width:90%;max-width:90%;margin:0 auto 1.4em}", "body.lampa_view .minimal-detail-screenshots .items-line__head,body.lampa_view .minimal-detail-screenshots .scroll--horizontal>.scroll__content {padding-left:0;padding-right:0}", "body.lampa_view .minimal-detail-screenshots .items-line__body,body.lampa_view .minimal-detail-screenshots .scroll--horizontal {-webkit-mask-image:none!important;mask-image:none!important}", "body.lampa_view .minimal-detail-screenshots .full-episode[hidden],body.lampa_view .minimal-detail-screenshots .card-more[hidden],body.lampa_view .minimal-detail-screenshots .full-episode__body,body.lampa_view .minimal-detail-screenshots .full-episode__viewed {display:none!important}", "body.lampa_view .minimal-detail-screenshots .mapping--line>.full-episode {margin-left:0;margin-right:1em;cursor:pointer}", "body.lampa_view.pt-rtl .minimal-detail-screenshots .mapping--line>.full-episode {margin-left:1em;margin-right:0}", "body.lampa_view .minimal-detail-screenshots .full-episode.focus::after {inset:0;border:2px solid var(--pt-text);border-radius:inherit}", "body.lampa_view .minimal-screenshot-preview {display:block;max-width:100%;max-height:68vh;margin:auto;object-fit:contain}", "body.lampa_view .minimal-anime-franchise__button {box-sizing:border-box;width:100%;min-height:3.2em;display:flex;align-items:center;gap:.75em;padding:.7em 1em;text-align:start;border:1px solid var(--pt-line);border-radius:.55em;background:var(--pt-panel);color:var(--pt-text);font:inherit;font-weight:600;cursor:pointer}", "body.lampa_view .minimal-anime-franchise__button svg {width:1.2em;height:1.2em;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}", "body.lampa_view .minimal-anime-franchise__button svg:last-child {margin-inline-start:auto;width:1em;height:1em}", 'body.lampa_view .minimal-anime-franchise__button[aria-expanded="true"] svg:last-child {transform:rotate(180deg)}', "body.lampa_view .minimal-detail-next-episode {display:inline-block;white-space:normal;color:var(--pt-text)}", "body.lampa_view .minimal-anime-franchise__button.focus,body.lampa_view .minimal-anime-franchise__button:hover,body.lampa_view .minimal-anime-franchise__button:focus-visible {outline:1px solid var(--pt-text);background:var(--pt-panel-hover,var(--pt-panel))}", "body.lampa_view .minimal-anime-franchise__item {padding:.65em 1em}", "body.lampa_view .minimal-anime-franchise__item .selectbox-item__title {white-space:normal;line-height:1.3}", "body.lampa_view .minimal-anime-franchise__item .selectbox-item__subtitle {font-size:.8em;margin-top:.2em}", "", "body.lampa_view .nova-plus-root .nova-card__labels {position:absolute;top:.5em;left:.5em;right:.5em;bottom:auto;display:flex;flex-wrap:wrap;gap:.4em;align-items:center;justify-content:flex-start;z-index:3;pointer-events:none}", "body.lampa_view .nova-plus-root .nova-card__labels .nova-card__num,body.lampa_view .nova-plus-root .nova-card__labels .nova-card__tag,body.lampa_view .nova-plus-root .nova-card__labels .nova-card__part {position:static!important;inset:auto!important;transform:none!important;width:auto!important;height:auto!important;min-width:0!important;padding:.15em .45em!important;margin:0!important;flex:0 0 auto;display:block;line-height:1.3}", "body.lampa_view .nova-plus-root .nova-card__labels .nova-card__part {background:rgba(0,0,0,.72);white-space:nowrap;font-size:.8em}", "", "/* Only the franchise picker is anchored to its trigger; native Settings keep their size. */", "body.lampa_view .minimal-franchise-menu .selectbox__content {left:var(--franchise-left)!important;top:var(--franchise-top)!important;bottom:auto!important;width:var(--franchise-width)!important;height:var(--franchise-height)!important;max-height:var(--franchise-height);transform:none!important;transition:none;border:1px solid var(--pt-line);border-radius:1em;box-shadow:0 1em 3em #0008;font-size:14px;overflow:hidden}", "body.lampa_view .minimal-franchise-menu .selectbox__head {padding:1em 1.2em .5em}", "body.lampa_view .minimal-franchise-menu .selectbox__title {font-size:1.2em;font-weight:600}", "body.lampa_view .minimal-franchise-menu .selectbox__body {min-height:0;height:auto!important}", "body.lampa_view .minimal-franchise-menu .selectbox-item {padding:.7em 1.1em;min-height:44px}", "body.lampa_view .minimal-franchise-menu .selectbox-item__title {font-size:1em}", "body.lampa_view .minimal-franchise-menu .selectbox-item.selected {box-shadow:inset 3px 0 var(--pt-accent);background:#ffffff0d}", "body.lampa_view .minimal-franchise-menu .selectbox-item.focus {background:var(--pt-text);color:var(--pt-bg,#111)}", "body.lampa_view .minimal-franchise-menu .selectbox__layer {backdrop-filter:none}", "@media(max-width:700px){body.lampa_view .nova-plus-root .nova-card__clock,body.lampa_view .pt-card-watch__time {background:none!important;border:0!important;box-shadow:none!important;outline:0!important}}", ""].join("\n");
+  var theme_default = ["/* Minimal presentation for native Lampa. No application replacement. */", ".pt-hidden {display:none!important}", "body.lampa_view {", " --pt-bg:#000000;--pt-side:#14161b;--pt-panel:#191d24;--pt-high:#252c34;", " --pt-line:#ffffff12;--pt-text:#eeeff2;--pt-muted:#9299a3;--pt-accent:#add9e5;--pt-dim:#add9e514;", ' background:var(--pt-bg)!important;color:var(--pt-text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;', " font-size:calc(clamp(14px,.94vw,18px) * var(--pt-interface-scale,1))!important;", "}", "body.lampa_view .background {opacity:.08!important}", "body.lampa_view .background__fade {background:linear-gradient(0deg,var(--pt-bg),transparent)!important}", "body.lampa_view .head {height:3.6em;background:#000000f5;border-bottom:1px solid var(--pt-line);z-index:30}", "body.lampa_view .head__body {height:100%;max-width:112em;margin:auto;padding:.5em 2.5em;gap:.65em;display:flex;align-items:center}", "body.lampa_view .head__menu-icon {display:flex!important;order:-2;align-items:center;justify-content:center;width:2.2em;height:2.2em;flex:0 0 2.2em;box-sizing:border-box;padding:0;border:1px solid var(--pt-line);border-radius:.6em;margin:0!important;background:#ffffff04;color:var(--pt-muted);cursor:pointer}", "body.lampa_view .head__menu-icon svg {width:1.1em;height:1.1em}", "body.lampa_view .head__logo-icon {display:flex!important;width:auto!important;margin:0 2em 0 0!important;flex-shrink:0;cursor:pointer}", "body.lampa_view .pt-brand {font-size:.92em;font-weight:700;letter-spacing:.13em;color:var(--pt-text)}", "body.lampa_view .head__split,body.lampa_view .head__time,body.lampa_view .head__markers,body.lampa_view .head__title,body.lampa_view .head__logo-local {display:none!important}", "body.lampa_view .head__backward {display:none!important}", "body.lampa_view .head__backward.pt-back-visible {display:flex!important;order:-3;align-items:center;justify-content:center;width:2.2em;height:2.2em;flex:0 0 2.2em;box-sizing:border-box;margin:0!important;padding:0;border:1px solid var(--pt-line);border-radius:.6em;background:#ffffff04;color:var(--pt-muted);cursor:pointer}", "body.lampa_view.pt-home .head__backward {display:none!important}", "body.lampa_view .minimal-back svg {width:1.1em;height:1.1em}", ".minimal-back--overlay {display:none}", "body.lampa_view .minimal-back-heading {display:flex;align-items:center;gap:.7em}", "body.lampa_view .minimal-back--overlay {display:flex;align-items:center;justify-content:center;flex:0 0 2em;width:2em;height:2em;border:1px solid var(--pt-line);border-radius:.6em;background:#ffffff04;color:var(--pt-muted);cursor:pointer;font-size:1em}", "body.lampa_view .minimal-back-heading>.selectbox__title,body.lampa_view .minimal-back-heading>.settings__title {flex:1;min-width:0}", "body.lampa_view .head .open--broadcast,body.lampa_view .head .notice--icon,body.lampa_view .head .full--screen,body.lampa_view .head .open--notice,body.lampa_view .head .open--split {display:none!important}", "body.lampa_view .head__actions {margin-left:auto;display:flex;align-items:center;gap:.5em}", "body.lampa_view .head__action {width:2.2em;height:2.2em;border-radius:.55em;margin:0;color:var(--pt-muted)}", "body.lampa_view .head__action svg {width:1.15em;height:1.15em}", "body.lampa_view .head__action.open--settings {display:flex!important;align-items:center;justify-content:center;box-sizing:border-box;flex:0 0 2.2em;padding:0}", "body.lampa_view.pt-mobile .head__action.open--settings {display:flex!important}", "body.lampa_view .head__action.focus,body.lampa_view .head__action.hover {background:var(--pt-high);color:white}", "body.lampa_view .head__action.open--search {width:18em;background:#ffffff04;border:1px solid var(--pt-line);justify-content:flex-start;padding:0 .8em;gap:.65em}", "body.lampa_view .head__action.open--search:after {content:attr(data-pt-placeholder);font-size:.8em;color:var(--pt-muted)}", "body.lampa_view .pt-topnav {display:flex;align-items:center;gap:1.5em}", "body.lampa_view .pt-topnav__item {font-size:.81em;color:var(--pt-muted);padding:.55em 0;cursor:pointer;border-bottom:1px solid transparent}", "body.lampa_view .pt-topnav__item.active {color:var(--pt-text);border-bottom-color:var(--pt-accent)}", "body.lampa_view .pt-topnav__item.focus,body.lampa_view .pt-topnav__item.hover {color:var(--pt-accent);outline:0;border-bottom-color:var(--pt-accent)}", "body.lampa_view .wrap {display:block!important}", "body.lampa_view .wrap__content,body.lampa_view.menu--always .wrap__content,body.lampa_view.menu--open .wrap__content {width:100%!important;max-width:100%;margin-left:0!important;transform:none!important;padding-top:3.6em!important}", "body.lampa_view .activitys,body.lampa_view .activity {width:100%!important;max-width:100%}", "body.lampa_view .wrap__left,body.lampa_view.menu--always:not(.light--version) .wrap__left {position:fixed!important;top:4.1em!important;bottom:auto!important;left:2.5em!important;width:19em!important;height:auto!important;max-height:calc(100% - 5em)!important;padding:.65em 0!important;margin:0!important;border:1px solid #ffffff19;border-radius:.9em;background:#121419;box-shadow:0 18px 60px #0008;z-index:40;transform:none!important;transition:opacity .12s;visibility:hidden!important;opacity:0;pointer-events:none}", "body.lampa_view.menu--open .wrap__left,body.lampa_view.menu--always.menu--open .wrap__left {visibility:visible!important;opacity:1;pointer-events:auto}", "body.lampa_view .wrap__left>.scroll {width:100%!important;max-height:75vh!important}", "body.lampa_view .menu {padding:0 .6em!important}", "body.lampa_view .menu__case {padding:0!important}", "body.lampa_view .menu__list {display:block!important}", "body.lampa_view .menu__item {font-size:.86em;padding:.85em .8em;margin:.12em 0;border-radius:.5em;color:#a9afb8}", "body.lampa_view .menu__text,body.lampa_view.menu--always .menu__text {display:block!important;font-size:1em;font-weight:450}", "body.lampa_view .menu__ico {width:1.15em;height:1.15em;min-width:1.15em;margin-right:1em;opacity:.8}", "body.lampa_view .menu__ico svg {width:100%;height:100%}", "body.lampa_view .menu__item.focus,body.lampa_view .menu__item.hover,body.lampa_view .menu__item.traverse {background:var(--pt-high);color:#fff;box-shadow:none}", "body.lampa_view .menu__split {display:none!important}", 'body.lampa_view .menu__item[data-action="edit"],body.lampa_view .menu__item[data-action="feed"],body.lampa_view .menu__item[data-action="relise"],body.lampa_view .menu__item[data-action="myperson"],body.lampa_view .menu__item[data-action="subscribes"],body.lampa_view .menu__item[data-action="catalog"],body.lampa_view .menu__item[data-action="filter"] {display:none}', "body.lampa_view .items-line {margin-bottom:.8em;padding-bottom:.7em}", "body.lampa_view .items-line__head {margin-bottom:1em}", "body.lampa_view .items-line__title {font-size:1.12em;font-weight:600;letter-spacing:-.02em}", "body.lampa_view .items-line__more {font-size:.8em;background:transparent;color:var(--pt-muted)}", "/* The desktop profile owns scale; native Bigger adds another 14% otherwise. */", "body.lampa_view.pt-desktop .card {font-size:1em}", "body.lampa_view .card__view,body.lampa_view .card__img {border-radius:.5em;background:var(--pt-panel);box-shadow:none;overflow:hidden}", "body.lampa_view .card__title {font-size:.83em;font-weight:500;line-height:1.4;margin-top:.65em;height:auto;min-height:0;max-height:2.85em;display:-webkit-box;-webkit-box-orient:vertical;white-space:normal;overflow:hidden;transform:none;-webkit-transform:none;-webkit-line-clamp:2;line-clamp:2;text-overflow:ellipsis}", "body.lampa_view .card__age {font-size:.73em;color:var(--pt-muted);margin-top:.2em}", "body.lampa_view .card__vote {background:#000000dc;color:#eee;border:0;font-size:.65em;border-radius:.3em;padding:.2em .4em}", "body.lampa_view .card.focus .card__view:after,body.lampa_view .card.hover .card__view:after {border:2px solid var(--pt-accent);border-radius:.5em;inset:0;box-shadow:none;z-index:5;box-sizing:border-box}", "body.lampa_view .card.focus .card__title {color:var(--pt-accent)}", "body.lampa_view .card__quality {border-radius:.3em;background:#000000dc;font-size:.65em}", "body.lampa_view .scroll--mask:before,body.lampa_view .scroll--mask:after {display:none}", "body.lampa_view .pt-hero {position:relative;min-height:32em;height:min(67vh,43em);margin:0 0 2.2em;overflow:hidden;-webkit-clip-path:inset(0);clip-path:inset(0);border:0;box-shadow:none;background:#000;isolation:isolate}", "/* The bottom fade belongs to the unscaled frame, not the enlarged bitmap. */", "body.lampa_view .pt-hero__artwork {position:absolute;inset:0;z-index:0;overflow:hidden;-webkit-mask-image:linear-gradient(180deg,#000 0%,#000 65%,#000000c7 80%,#0000004d 92%,transparent 100%);mask-image:linear-gradient(180deg,#000 0%,#000 65%,#000000c7 80%,#0000004d 92%,transparent 100%)}", "body.lampa_view.pt-mobile .pt-hero__artwork {position:relative;inset:auto;width:100%;height:auto;flex:none;-webkit-mask-image:none;mask-image:none}", "body.lampa_view .pt-hero__image {display:block;position:absolute;top:0;left:auto;right:0;width:auto;max-width:100%;height:100%;object-fit:contain;object-position:right center;z-index:0;-webkit-mask-image:linear-gradient(90deg,transparent,#000 16%);mask-image:linear-gradient(90deg,transparent,#000 16%)}", "/* Minimal blends the artwork edge gradually without blurring the source. */", "body.lampa_view:not(.pt-theme-glass):not(.pt-mobile) .pt-hero__image {-webkit-mask-image:linear-gradient(90deg,transparent 0%,#0000000a 5%,#00000029 11%,#00000075 19%,#000000cc 27%,#000 35%);mask-image:linear-gradient(90deg,transparent 0%,#0000000a 5%,#00000029 11%,#00000075 19%,#000000cc 27%,#000 35%)}", "body.lampa_view .pt-hero:before {content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,#000000 0%,#000000ed 13%,#0000008c 40%,#00000000 76%)}", "body.lampa_view .pt-hero__body {position:absolute;z-index:2;left:max(4.5em,calc((100% - 100em)/2));bottom:6.5em;max-width:34em;padding-right:1em}", "body.lampa_view .pt-hero__title {font-size:2.9em;line-height:1.08;font-weight:650;letter-spacing:-.045em;margin:0 0 .65em;text-wrap:balance;max-width:14em}", "body.lampa_view .pt-hero__meta {display:flex;align-items:center;gap:.75em;font-size:.8em;line-height:1.5;font-weight:500;color:#dbdde2;margin-bottom:1.25em}", "body.lampa_view .pt-hero__studio {width:auto;max-width:6em;height:1.5em;object-fit:contain;flex:none;filter:var(--pt-studio-tone,brightness(1)) drop-shadow(0 0 .6px rgba(255,255,255,.7)) drop-shadow(0 1px 2px #000);opacity:.95}", "body.lampa_view .pt-hero__overview {font-size:.85em;line-height:1.65;color:#a3a8b1;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;max-width:34em}", "body.lampa_view .pt-hero__actions {display:flex;gap:.8em;margin-top:1.6em}", "body.lampa_view .pt-hero__action {display:flex;align-items:center;gap:.6em;border-radius:.6em;font-size:.82em;font-weight:600;padding:.85em 1.15em;background:var(--pt-accent);color:#13232c;cursor:pointer;border:1px solid transparent}", "body.lampa_view .pt-hero__action svg {width:1.15em;height:1.15em}", "body.lampa_view .pt-hero__action--secondary {background:#212a35dd;color:#d4dce3;border-color:#ffffff12}", "body.lampa_view .pt-hero__action.focus,body.lampa_view .pt-hero__action.hover,body.lampa_view .pt-hero__action:hover,body.lampa_view .pt-hero__action:focus-visible {outline:none!important;box-shadow:inset 0 0 0 2px #fff!important}", "body.lampa_view .pt-hero__dots {position:absolute;z-index:2;bottom:2.8em;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:.5em}", "body.lampa_view .pt-hero__dot {width:.5em;height:.5em;background:#ffffff50;border-radius:1em;cursor:pointer;position:relative}", "body.lampa_view .pt-hero__dot:after {content:'';position:absolute;inset:-.6em}", "body.lampa_view .pt-hero__dot.active {width:1.5em;background:var(--pt-accent)}", "body.lampa_view .pt-hero__dot {box-sizing:border-box;border:1.5px solid transparent;outline:none!important;box-shadow:none!important;transition:none!important}", "body.lampa_view .pt-hero__dot.focus,body.lampa_view .pt-hero__dot:focus-visible {border-color:#fff}", "body.lampa_view .pt-mobile-nav {display:none!important}", "body.lampa_view.pt-reduce-motion *,body.lampa_view.pt-reduce-motion *:before,body.lampa_view.pt-reduce-motion *:after {animation-duration:0s!important;transition-duration:0s!important;scroll-behavior:auto!important}", "body.lampa_view .full-start-new {padding-top:1.5em}", "body.lampa_view .full-start-new__left {width:15em;min-width:15em}", "body.lampa_view .full-start-new__poster {border-radius:.8em;overflow:hidden;box-shadow:0 16px 48px #0007}", "body.lampa_view .full-start-new__title {font-size:2.45em;letter-spacing:-.04em;font-weight:750;line-height:1.08;max-width:22em}", "body.lampa_view .full-start-new__tagline {font-size:.92em;color:var(--pt-muted);font-weight:400;line-height:1.6}", "body.lampa_view .full-start-new__rate-line {gap:.7em;margin-top:1em}", "body.lampa_view .full-start__rate {border:1px solid var(--pt-line);border-radius:.45em;padding:.4em .65em;font-size:.85em;background:var(--pt-panel)}", "body.lampa_view .full-start__rate .source--name {color:var(--pt-muted);font-size:.65em;font-weight:500}", "body.lampa_view .full-start-new__details {font-size:.82em;color:#bdbdc5;line-height:1.6}", "body.lampa_view .full-start-new__head {font-size:.82em;color:#bdbdc5;margin-bottom:.75em}", "body.lampa_view .full-start-new__reactions {display:none}", "body.lampa_view .full-start__status,body.lampa_view .full-start__pg {font-size:.7em;border:1px solid var(--pt-line);border-radius:.4em;padding:.45em .7em;color:var(--pt-muted)}", "body.lampa_view .full-start-new__buttons {display:flex;align-items:center;gap:.7em;flex-wrap:wrap}", "body.lampa_view .button--alc-torrent span {display:inline!important;max-width:none!important;font-size:1em!important}", "body.lampa_view .full-start__button,body.lampa_view .full-descr__tag {background:var(--pt-high);border:1px solid var(--pt-line);color:white;border-radius:.625em;font-size:.85em;padding:.8em 1.15em;box-shadow:none}", "body.lampa_view .full-start__button.focus,body.lampa_view .full-start__button.hover {border-color:var(--pt-accent);background:var(--pt-high);color:white;box-shadow:0 0 0 1px var(--pt-accent)}", "body.lampa_view .full-start__button.button--alc-auto {background:var(--pt-accent);border-color:var(--pt-accent);color:#07151c}", "body.lampa_view .full-start__button.button--alc-auto.focus {background:#65c9f3;color:#07151c;box-shadow:0 0 0 3px #2bb4ed55}", "body.lampa_view .full-start__button svg {width:1.1em;height:1.1em}", "body.lampa_view .full-descr__text {color:#bfbfc6;font-size:.9em;line-height:1.75;max-width:65em}", "body.lampa_view .full-descr__title,body.lampa_view .full-persons__title {font-size:1.2em;font-weight:650}", "body.lampa_view .pt-context-badge {font-size:.62em;line-height:1.5;color:#98989f;margin-top:1.3em}", "body.lampa_view .pt-context-badge span {color:var(--pt-accent)}", "body.lampa_view .torrent-item,body.lampa_view .torrent-item.tc-item {background:var(--pt-panel)!important;border:1px solid var(--pt-line)!important;border-radius:.625em!important;padding:1em!important;margin-bottom:.55em!important;color:var(--pt-text)!important}", "body.lampa_view .torrent-item.focus,body.lampa_view .torrent-item.hover,body.lampa_view .torrent-list .torrent-item.tc-item.focus {background:var(--pt-high)!important;border-color:var(--pt-accent)!important;box-shadow:inset 0 0 0 2px var(--pt-accent)!important;color:white!important}", "body.lampa_view .torrent-item__title {font-size:.95em;font-weight:600;line-height:1.45}", "body.lampa_view .torrent-item__details {font-size:.72em;color:var(--pt-muted)}", "body.lampa_view .tc-title {font-size:1em;font-weight:600;letter-spacing:-.015em}", "body.lampa_view .tc-tag {border-radius:.35em;font-size:.68em;padding:.2em .5em;border-color:#ffffff14}", "body.lampa_view .tc-tag--voice {background:#ffffff08}", "body.lampa_view .tc-tag--complete {color:#7ed0a7;border-color:#7ed0a72c}", "body.lampa_view .tc-tag--partial {color:#d6b777;border-color:#d6b7772c}", "body.lampa_view .tc-original,body.lampa_view .tc-foot {font-size:.68em;color:var(--pt-muted)}", "body.lampa_view .tc-size {font-size:1em;font-weight:600}", "body.lampa_view .tc-seeds {font-size:.8em;font-weight:500;color:#7ed0a7}", "body.lampa_view .tc-summary {display:flex;align-items:center;flex-wrap:wrap;gap:.5em .8em;min-width:0}", "body.lampa_view .tc-season {font-size:1.06em;font-weight:650;line-height:1.35;color:var(--pt-accent)}", "body.lampa_view .tc-episodes {font-size:.88em;color:#c4c8cf;line-height:1.4}", "body.lampa_view .tc-summary .tc-tag--quality {font-size:.86em;color:var(--pt-accent);background:#add9e50c;border-color:#add9e52e}", "body.lampa_view .tc-head {gap:1em;align-items:flex-start}", "body.lampa_view .tc-right {flex:none;gap:.4em}", "body.lampa_view .tc-tags {gap:.5em 1.2em;margin:.65em 0}", "body.lampa_view .tc-tags .tc-tag {font-size:.8em;line-height:1.3;color:#c4c8cf;background:transparent}", "body.lampa_view .tc-voices {display:flex;align-items:baseline;flex-wrap:wrap;gap:.4em .8em;font-size:.86em;line-height:1.5}", "body.lampa_view .tc-voice-names {display:inline-flex;align-items:center;flex-wrap:wrap;gap:.35em;min-width:0;max-width:100%;color:#e2e5eb;white-space:normal;overflow:visible;overflow-wrap:anywhere}", "body.lampa_view .tc-languages {font-size:.88em;color:var(--pt-accent)}", "body.lampa_view .tc-language-tags .tc-voices {font-size:inherit;line-height:inherit;align-items:center;gap:.35em}", "body.lampa_view .tc-language-tags .tc-voices .tc-group-label {font-size:.72em}", "body.lampa_view .tc-bitrate {font-size:.8em;color:var(--pt-muted)}", "body.lampa_view .tc-warning {font-size:.8em;line-height:1.4;margin-top:.5em;color:#d6b777}", "body.lampa_view .tc-foot {display:flex;align-items:center;justify-content:space-between;gap:1em;margin-top:.7em;font-size:.8em}", "body.lampa_view .tc-source {min-width:0;overflow-wrap:anywhere}", "body.lampa_view .tc-info {flex:none;cursor:pointer;font:inherit;color:#c4c8cf;padding:.3em .6em;border:1px solid var(--pt-line);border-radius:.4em;background:transparent}", "body.lampa_view .tc-info:hover,body.lampa_view .tc-info:focus-visible {color:white;border-color:var(--pt-accent);outline:none}", "body.lampa_view .tc-info.focus {color:white;border-color:white;box-shadow:0 0 0 1px white,0 0 .6em #add9e540;outline:none}", "body.lampa_view .tc-release-name {font-size:.9em;font-weight:500;line-height:1.45;color:var(--pt-text);margin:.65em 0;white-space:normal;overflow-wrap:anywhere}", "body.lampa_view .tc-full-details {font-size:.95em;line-height:1.6}", "body.lampa_view .tc-full-details dl {margin:0}", "body.lampa_view .tc-full-details dt {color:var(--pt-muted);font-size:.85em;margin-top:1em}", "body.lampa_view .tc-full-details dt:first-child {margin-top:0}", "body.lampa_view .tc-full-details dd {margin:0;white-space:pre-wrap;overflow-wrap:anywhere}", "body.lampa_view .tc-item .tc-title,body.lampa_view .tc-item .tc-original {display:none!important}", "@media(max-width:650px){body.lampa_view .tc-head{display:flex;flex-wrap:wrap}body.lampa_view .tc-right{margin-left:auto}body.lampa_view .tc-seeds{white-space:normal;text-align:right}body.lampa_view .tc-summary{flex:1 1 12em}body.lampa_view .tc-foot{align-items:flex-end}}", "body.lampa_view .filter__item,body.lampa_view .selector--filter {border-radius:.5em;background:var(--pt-panel);border:1px solid var(--pt-line);color:#c4c4ca}", "body.lampa_view .filter__item.focus,body.lampa_view .filter__item.hover {background:var(--pt-high);border-color:var(--pt-accent);color:white}", "body.lampa_view .modal__content,body.lampa_view .selectbox__content,body.lampa_view .settings__content {background:var(--pt-panel)!important;color:var(--pt-text);border:1px solid var(--pt-line);border-radius:.85em;box-shadow:0 20px 80px #0008}", "body.lampa_view .modal__title,body.lampa_view .selectbox__title,body.lampa_view .settings__title {font-weight:650;letter-spacing:-.025em}", "body.lampa_view .settings-param {border-radius:.5em;border-bottom:1px solid var(--pt-line);font-size:.9em}", "body.lampa_view .settings-param__descr {color:var(--pt-muted);opacity:1;font-size:.8em;line-height:1.5}", "body.lampa_view .settings-param.focus,body.lampa_view .selectbox-item.focus,body.lampa_view .settings-folder.focus {background:var(--pt-high)!important;color:white;box-shadow:inset 3px 0 var(--pt-accent)}", "body.lampa_view .settings-param__value {color:var(--pt-accent)}", "body.lampa_view .selectbox-item {border-radius:.45em;font-size:.9em}", "body.lampa_view .settings-folder {border:1px solid var(--pt-line);border-radius:.7em;background:var(--pt-panel)}", "body.lampa_view .wrap__left {background:var(--pt-panel)!important;color:var(--pt-text)}", "body.lampa_view .menu__item,body.lampa_view .settings-folder,body.lampa_view .settings-param,body.lampa_view .selectbox-item {color:var(--pt-text)}", "body.lampa_view .settings-folder__name,body.lampa_view .settings-param__name,body.lampa_view .selectbox-item__title {color:inherit}", "body.lampa_view .menu__ico,body.lampa_view .settings-folder__icon {color:inherit;opacity:1}", "body.lampa_view .settings-param__descr,body.lampa_view .selectbox-item__subtitle {color:#a2aab4;opacity:1}", "body.lampa_view .settings-folder.focus,body.lampa_view .settings-param.focus,body.lampa_view .selectbox-item.focus,body.lampa_view .menu__item.focus,body.lampa_view .menu__item.traverse {background:#20272e!important;color:var(--pt-text);box-shadow:inset 2px 0 var(--pt-accent)}", "body.lampa_view .simple-button {background:var(--pt-high);border-radius:.5em;color:white;border:1px solid var(--pt-line)}", "body.lampa_view .simple-button.focus {border-color:var(--pt-accent);background:var(--pt-dim);color:white}", "body.lampa_view .search {background:var(--pt-bg)}", "body.lampa_view .search .simple-keyboard-input,body.lampa_view .search-box .simple-keyboard-input {box-sizing:border-box;padding:0 .8em;line-height:normal;vertical-align:middle}", "body.lampa_view .search .search__input {box-sizing:border-box;padding-inline:.8em;display:flex;align-items:center;min-height:2.1em}", "body.lampa_view .search-source {background:var(--pt-panel);border:1px solid var(--pt-line);border-radius:.625em}", "body.lampa_view .search-source.focus {border-color:var(--pt-accent);color:white}", "body.lampa_view .alc-ap {background:var(--pt-bg)!important}", "body.lampa_view .alc-ap__head {border-radius:.8em;overflow:hidden}", "body.lampa_view .alc-ap__play {background:var(--pt-accent)!important;color:#07151c!important;border-radius:.6em!important}", "body.lampa_view .alc-chip,body.lampa_view .alc-ap-voice,body.lampa_view .alc-ep,body.lampa_view .alc-ap-season__head {background:var(--pt-panel)!important;border:1px solid var(--pt-line)!important;border-radius:.6em!important;color:var(--pt-text)!important;box-shadow:none!important}", "body.lampa_view .alc-chip--on,body.lampa_view .alc-chip.focus,body.lampa_view .alc-ap-voice.focus,body.lampa_view .alc-ep.focus {border-color:var(--pt-accent)!important;background:var(--pt-dim)!important;color:white!important;box-shadow:0 0 0 1px var(--pt-accent)!important}", "body.lampa_view input {accent-color:var(--pt-accent)}", "body.lampa_view .empty__title {font-size:1.4em;font-weight:650}", "body.lampa_view .empty__descr {color:var(--pt-muted);font-size:.85em;line-height:1.6}", "", "body.lampa_view .full-start-new__reactions,body.lampa_view .full-start-new__tagline {display:none}", "body.lampa_view .full-start-new__title {font-weight:600;font-size:2.4em}", "body.lampa_view .full-start__button.button--alc-auto,body.lampa_view .alc-ap__play {background:var(--pt-accent)!important;color:#13232c!important}", "body.lampa_view .full-start__button.button--alc-auto.focus {background:#d0eaf1;color:#13232c;box-shadow:0 0 0 2px #fff}", "body.lampa_view .simple-button,body.lampa_view .selectbox-item,body.lampa_view .settings-param {font-weight:450}", "@media(min-width:1100px) {", " body.lampa_view .items-line .card:not(.card--wide):not(.card--collection) {width:11.1em!important}", " body.lampa_view .items-line>.items-line__head {padding-left:1.1em}", "}", "@media(max-width:900px) {", " body.lampa_view .head__body {padding:.5em 1.2em}", " body.lampa_view .head__action.open--search {width:2.2em;padding:0;justify-content:center;border:0;background:transparent}", " body.lampa_view .head__action.open--search:after {display:none}", " body.lampa_view .head__logo-icon {margin-right:1em!important}", " body.lampa_view .pt-topnav {gap:1.2em;margin-left:auto}", " body.lampa_view .pt-hero__body {left:2em;max-width:29em;bottom:5.5em}", " body.lampa_view .pt-hero__title {font-size:2.5em}", " body.lampa_view .wrap__left {left:1.2em!important}", "}", "body.lampa_view.pt-mobile {font-size:calc(16px * var(--pt-interface-scale,1))!important}", "body.lampa_view.pt-mobile .head {height:6.5em}", "body.lampa_view.pt-mobile .head__body {height:3.5em;padding:.5em 1em;position:relative}", "body.lampa_view.pt-mobile .head__logo-icon {margin-right:auto!important}", "body.lampa_view.pt-mobile .pt-topnav {position:absolute;top:3.5em;left:1em;right:1em;height:3em;justify-content:space-around;gap:.5em;border-top:1px solid var(--pt-line);margin:0}", "body.lampa_view.pt-mobile .pt-topnav__item {font-size:.8em;padding:.6em .4em}", "body.lampa_view.pt-mobile .wrap__content {padding-top:6.5em!important;padding-bottom:1em!important}", "body.lampa_view.pt-mobile .wrap__left {top:3.8em!important;left:1em!important;width:18em!important}", "body.lampa_view.pt-mobile .pt-hero {display:flex;flex-direction:column;align-items:stretch;height:auto;min-height:0;max-height:none;margin-bottom:1.2em}", "body.lampa_view.pt-mobile .pt-hero__image {position:relative;top:auto;right:auto;left:auto;width:100%;height:auto;aspect-ratio:16/9;flex:none;object-position:center top;transform-origin:center top;-webkit-mask-image:linear-gradient(180deg,#000 0%,#000 75%,#000000f7 82%,#000000c7 89%,#0000004d 96%,transparent 100%);mask-image:linear-gradient(180deg,#000 0%,#000 75%,#000000f7 82%,#000000c7 89%,#0000004d 96%,transparent 100%)}", "body.lampa_view.pt-mobile .pt-hero:before {background:linear-gradient(0deg,#000000 8%,#000000f0 24%,#00000040 61%,#00000000 100%)}", "body.lampa_view.pt-mobile .pt-hero__body {position:relative;left:auto;right:auto;bottom:auto;max-width:none;padding:1.5em 1.3em 4.5em}", "body.lampa_view.pt-mobile .pt-hero__title {font-size:2.05em;max-width:15em;margin-bottom:.6em}", "body.lampa_view.pt-mobile .pt-hero__meta {box-sizing:border-box;height:3em;min-height:3em;font-size:.74em;line-height:1.5;margin-bottom:.85em;overflow:hidden}", "body.lampa_view.pt-mobile .pt-hero__meta>span {min-width:0;max-height:3em;overflow:hidden}", "body.lampa_view.pt-mobile .pt-hero__overview {box-sizing:border-box;height:4.95em;min-height:4.95em;line-height:1.65;font-size:.8em;-webkit-line-clamp:3;margin:0}", "body.lampa_view.pt-mobile .pt-hero__actions {gap:.6em;margin-top:1.2em}", "body.lampa_view.pt-mobile .pt-hero__action {font-size:.76em;padding:.95em .9em}", "body.lampa_view.pt-mobile .pt-hero__dots {bottom:2.2em;gap:.7em}", "body.lampa_view.pt-mobile .items-line .card:not(.card--wide):not(.card--collection) {width:9.1em!important}", "body.lampa_view.pt-mobile .items-line__title {font-size:1.08em}", "body.lampa_view.pt-mobile .full-start-new__left {width:7em;min-width:7em}", "body.lampa_view.pt-mobile .full-start-new__title {font-size:1.65em}", "@media(max-width:600px) {", " body.lampa_view:not(.pt-tv) .head__action.open--search {width:2.2em;padding:0;justify-content:center;border:0;background:transparent}", " body.lampa_view:not(.pt-tv) .head__action.open--search:after {display:none}", "}", "", "body.lampa_view .head__menu-icon svg {width:1.1em!important;height:1.1em!important}", "body.lampa_view.pt-home .activity--active>.activity__body>.scroll>.scroll__content {padding-top:0!important}", "body.lampa_view .app,body.lampa_view .wrap {background:var(--pt-bg)!important}", "body.lampa_view .scroll--mask {mask-image:none!important;-webkit-mask-image:none!important}", "", "body.lampa_view.pt-home .activity--active>.activity__body>div>.scroll>.scroll__content {padding-top:0!important}", "body.lampa_view .wrap__left>.scroll,body.lampa_view .wrap__left>.scroll>.scroll__content {height:auto!important;min-height:0!important;padding:0!important}", "", "body.lampa_view .wrap__left .menu__split:last-child {display:none}", "", "/* 0.3.1: all catalogue routes live in the menu. */", "body.lampa_view .pt-topnav,body.lampa_view .pt-mobile-nav {display:none!important}", "body.lampa_view .head__actions>.head__action:not(.open--search):not(.open--settings):not(.open--profile) {display:none!important}", "body.lampa_view .head__action.open--profile {width:2.4em!important;height:2.4em!important;min-width:2.4em;flex:0 0 2.4em;padding:0!important;border-radius:50%!important;overflow:hidden}", "body.lampa_view .head__action.open--profile img,body.lampa_view .head__action.open--profile svg {width:100%!important;height:100%!important;display:block;max-width:none;max-height:none;flex:1 0 auto;object-fit:cover;border-radius:50%!important;aspect-ratio:1}", 'body.lampa_view .menu__item[data-action="movie"],body.lampa_view .menu__item[data-action="tv"],body.lampa_view .menu__item[data-action="anime"],body.lampa_view .menu__item[data-action="main"] {display:flex!important}', 'body.lampa_view .menu__item[data-action="timetable"],body.lampa_view .menu__item[data-action*="sport"],body.lampa_view .menu__item[data-action*="shot"],body.lampa_view .pt-removed-section {display:none!important}', "body.lampa_view .settings {z-index:60!important}", "body.lampa_view .settings__head {padding:1.4em 1.5em 1em;flex-shrink:0}", "body.lampa_view .card__type {display:none!important}", "body.lampa_view .card--wide {width:26em!important}", "body.lampa_view .card--wide .card__title {font-size:1em;line-height:1.35;max-height:2.7em}", "body.lampa_view .card--wide .card__description,body.lampa_view .card--wide .card__descr {font-size:.85em;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}", "body.lampa_view .pt-quality {position:absolute;top:.6em;left:.6em;z-index:4;background:#000000e8;color:#d5e9ee;border:1px solid #ffffff25;border-radius:.35em;padding:.3em .5em;font-size:.65em;line-height:1;font-weight:600;pointer-events:none}", "", "body.lampa_view .card__quality {display:block!important;z-index:4}", "body.lampa_view.pt-mobile .head {height:3.5em!important}", "body.lampa_view.pt-mobile .wrap__content {padding-top:3.5em!important}", "body.lampa_view.pt-mobile .card--wide {width:20em!important}", "", "body.lampa_view .card--wide .card__textbox {font-size:.8em;line-height:1.4;padding:1.2em;overflow:hidden}", "body.lampa_view .card--wide .card__textbox>* {display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;max-height:2.8em}", "body.lampa_view .card__quality {top:.6em;left:.6em;bottom:auto;background:#000000e8;color:#d5e9ee;border:1px solid #ffffff25}", "", "/* Frame animation owns transforms while the pointer is moving. */", "body.lampa_view .pt-wheel-moving>.scroll__content>.scroll__body {transition:none!important;-webkit-transition:none!important}", "body.lampa_view.pt-wheel-active .card {transition:none!important}", "@media(min-width:1100px) {", " body.lampa_view .pt-hero {height:min(56vh,34em);min-height:27em;max-width:100em;margin:0 auto 2em}", " body.lampa_view .pt-hero__body {left:3em;bottom:7em;max-width:31em}", " body.lampa_view .pt-hero__title {font-size:2.55em;max-width:15em}", " body.lampa_view .pt-hero__dots {left:45%;bottom:1.5em}", " body.lampa_view .items-line {max-width:100em;margin-left:auto;margin-right:auto;margin-bottom:.8em;padding-bottom:.7em}", " body.lampa_view .items-line .card:not(.card--wide):not(.card--collection) {width:9.2em!important}", " body.lampa_view .card__title {font-size:.79em}", " body.lampa_view .head__body {max-width:100em;padding-left:1.5em;padding-right:1.5em}", "}", "", "@media(min-width:1100px) {", " body.lampa_view .pt-hero,body.lampa_view .items-line {max-width:90vw}", " body.lampa_view .head__body {max-width:90vw;padding-left:0;padding-right:0}", " body.lampa_view .items-line .card:not(.card--wide):not(.card--collection) {width:clamp(8.4em,calc((90vw - 10em / var(--pt-interface-scale,1)) / 10 * var(--pt-interface-scale,1)),11.1em)!important}", "}", "", "/* OLED: true black canvas; poster artwork retains its own colors. */", "body.lampa_view {--pt-bg:#000000;--pt-side:#080808;--pt-panel:#0b0b0b;--pt-high:#171717;background:#000000!important}", "body.lampa_view .background {display:none!important}", "body.lampa_view .head,body.lampa_view .app,body.lampa_view .wrap,body.lampa_view .search {background:#000000!important}", "body.lampa_view .pt-hero__dots {left:0!important;right:0!important;justify-content:center}", "body.lampa_view .pt-hero__logo {display:block;width:auto;max-width:100%;height:auto;max-height:7em;object-fit:contain;object-position:left center;margin:0 0 1.4em}", "body.lampa_view .pt-hero__logo.pt-hidden {display:none!important}", "/* A stable mobile brand slot covers logos, plain titles and translated logos. */", "body.lampa_view.pt-mobile .pt-hero__branding {box-sizing:border-box;display:flex;flex-direction:column;align-items:center;height:auto;min-height:5.5em;margin:0 0 1em;overflow:hidden}", "body.lampa_view.pt-mobile .pt-hero__branding>.pt-hero__logo {flex:0 0 auto;width:100%;max-width:100%;height:5.5em;max-height:5.5em;margin:0;object-fit:contain;object-position:center}", "body.lampa_view.pt-mobile .pt-hero__branding>.pt-hero__title {width:100%;margin:0;font-size:2.05em;line-height:1.08;max-height:2.16em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}", "body.lampa_view.pt-mobile .pt-hero__branding>.pt-hero__logo--translated {height:3em;max-height:3em}", "body.lampa_view.pt-mobile .pt-hero__branding>.pt-hero__title--translation {font-size:.9em;line-height:1.35;max-height:2.7em}", "", "", "body.lampa_view .pt-kind {position:absolute;top:.6em;right:.6em;z-index:4;pointer-events:none;font-size:.6em;line-height:1;padding:.35em .5em;background:#000b;color:#d4e2e6;border:1px solid #ffffff25;border-radius:.35em}", "body.lampa_view .card.pt-has-quality .card__quality {display:none!important}", "/* Search and circular profile share the same outer height. */", "body.lampa_view .head__action.open--search {box-sizing:border-box;height:2.2em}", "body.lampa_view .head__action.open--profile {box-sizing:border-box;width:2.2em!important;height:2.2em!important;min-width:2.2em;flex:0 0 2.2em}", "body.lampa_view .pt-hero__image {image-rendering:auto;filter:none!important;transform:scale(1.06);transform-origin:right top}", "/* Compact detail cover, fading to OLED black before the following rows. */", "body.lampa_view .full-start__background {left:0!important;top:0!important;width:100%!important;height:var(--pt-detail-backdrop-height,30em)!important;max-height:none;object-fit:cover;object-position:center 30%;-webkit-mask-image:linear-gradient(to bottom,#000 30%,#0008 78%,transparent 100%)!important;mask-image:linear-gradient(to bottom,#000 30%,#0008 78%,transparent 100%)!important}", "body.lampa_view .full-start-new {padding-top:2em;padding-bottom:1em}", "body.lampa_view .full-start-new__left {width:10em;min-width:10em;margin-right:2em}", "body.lampa_view .full-start-new__body {align-items:center}", "body.lampa_view .full-start-new__right {min-width:0;max-width:58em}", "body.lampa_view .full-start-new__title {font-size:2em}", "body.lampa_view .minimal-detail-logo {display:none;width:auto;max-width:min(24em,75%);height:auto;max-height:5.5em;object-fit:contain;object-position:left center;margin:0 0 1em}", "body.lampa_view .minimal-detail-logo.loaded {display:block}", "body.lampa_view .minimal-detail-overview,body.lampa_view .full-start-new__description {color:#fff;font-size:.9em;line-height:1.55;max-width:52em;margin:1em 0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}", "body.lampa_view.pt-mobile .full-start-new__left {width:6.5em;min-width:6.5em;margin:0 1.2em 0 0}", "body.lampa_view.pt-mobile .full-start-new__body {display:flex;align-items:flex-start}", "body.lampa_view.pt-mobile .full-start-new__right {margin:0;padding:0;background:none;overflow:visible}", "body.lampa_view.pt-mobile .full-start-new__title {font-size:1.4em}", "body.lampa_view.pt-mobile .minimal-detail-logo {max-width:100%;max-height:4em}", "body.lampa_view.pt-mobile .full-start-new__buttons {gap:.4em}", ".minimal-detail-logo {display:none}", "/* Keep native modal/player order; file actions must stay above their dialog. */", "body.lampa_view .settings {z-index:40!important}", "body.lampa_view .selectbox {z-index:70!important}", "body.lampa_view .modal {z-index:50!important}", "body.lampa_view .settings-input {z-index:90!important}", "body.lampa_view .settings-input__content {background:#101010}", "body.lampa_view .minimal-detail-header {max-width:90%;margin:0 auto;padding:3em 0 1.5em;min-height:23em;display:flex;align-items:flex-end}", "body.lampa_view .minimal-detail-header .full-start-new__body {width:100%;align-items:flex-end;gap:2em}", "/* Native no--poster hides this column, but it now contains essential actions. */", "body.lampa_view .minimal-detail-header .full-start-new__left.minimal-detail-identity {display:block}", "body.lampa_view .minimal-detail-identity {width:15em;min-width:15em;margin:0}", "body.lampa_view:not(.pt-detail-poster) .minimal-detail-identity .full-start-new__poster {display:none}", "body.lampa_view .minimal-detail-identity .full-start-new__title {margin-bottom:1em;font-size:1.7em}", "body.lampa_view .minimal-detail-identity .minimal-detail-logo {width:100%;max-width:100%;max-height:5em;object-position:center;margin:0 auto 1.5em}", "body.lampa_view .minimal-detail-identity .full-start-new__buttons {display:flex;gap:.45em;flex-wrap:wrap}", "body.lampa_view .minimal-detail-identity .button--alc-auto {width:100%;justify-content:center;gap:.5em}", "body.lampa_view .minimal-detail-heading {overflow-wrap:anywhere;word-break:normal;min-width:0;font-size:1.15em;font-weight:600;line-height:1.35;margin:0 0 .7em}", "body.lampa_view .minimal-detail-header .full-start-new__right {max-width:60em}", "body.lampa_view .minimal-detail-header .full-start-new__rate-line {margin-top:.6em;font-size:.8em}", "body.lampa_view .minimal-detail-header .full-start-new__details {margin:.7em 0}", "body.lampa_view .minimal-detail-columns {max-width:90%;margin:1em auto 2em;display:flex;gap:1.25em;align-items:stretch}", "body.lampa_view .minimal-detail-cast>.minimal-cast-native {order:0;grid-column:1;grid-row:1;min-width:0;width:100%!important;max-width:100%;box-sizing:border-box;overflow:hidden;flex:1;background:#0b0b0b;border:1px solid var(--pt-line);border-radius:.8em;padding:1em;margin:0}", "body.lampa_view .minimal-detail-facts {order:1;width:22%;min-width:15em;flex-shrink:0;padding:1.2em;background:#0b0b0b;border:1px solid var(--pt-line);border-radius:.8em;margin:0}", "body.lampa_view .minimal-detail-facts h3 {font-size:1em;margin:0 0 1em}", "body.lampa_view .minimal-detail-facts>div {display:grid;grid-template-columns:minmax(7.5em,.9fr) minmax(0,1.1fr);gap:.75em;font-size:.78em;margin:.8em 0;line-height:1.5}", "body.lampa_view .minimal-detail-facts>div>span:first-child {color:var(--pt-muted)}", "body.lampa_view .minimal-detail-facts>div>span:last-child {text-align:right}", "body.lampa_view.pt-mobile .minimal-detail-header {min-height:18em;padding-top:2em}", "body.lampa_view.pt-mobile .minimal-detail-header .full-start-new__body {flex-direction:column;gap:1em}", "body.lampa_view.pt-mobile .minimal-detail-identity {width:100%;min-width:0}", "body.lampa_view.pt-mobile .minimal-detail-columns {display:block}", "body.lampa_view.pt-mobile .minimal-detail-facts {width:100%;min-width:0;box-sizing:border-box;margin:1em 0}", "body.lampa_view .minimal-cast-native .full-person {width:7em;box-sizing:border-box;flex-direction:column;align-items:center;padding:.4em;gap:.65em;font-size:.85em;text-align:center}", "body.lampa_view .minimal-cast-native .full-person__photo {width:5em;height:5em;border-radius:50%;margin:0;background:#151515}", "body.lampa_view .minimal-cast-native .full-person__photo>img {height:100%;object-fit:cover}", "body.lampa_view .minimal-cast-native .full-person__name {font-size:.95em;line-height:1.3}", "body.lampa_view .minimal-cast-native .full-person__role {font-size:.8em;color:var(--pt-muted);line-height:1.3}", "body.lampa_view .person-start__img {border-radius:50%;width:10em;height:10em;object-fit:cover}", "body.lampa_view .person-start {background:#000}", "/* The complete card is one vertical native row, including its lower columns. */", "body.lampa_view .minimal-detail-header {display:block;box-sizing:border-box;width:90%;max-width:90%;min-height:0;padding:0 0 1.5em}", "body.lampa_view .minimal-detail-header>.full-start-new__body {box-sizing:border-box;min-height:0;padding:1.5em 0 .4em;display:flex;-webkit-box-align:start;-webkit-align-items:flex-start;align-items:flex-start}", "body.lampa_view .minimal-detail-header>.minimal-detail-columns {position:relative;inset:auto;clear:both;float:none;width:100%;max-width:none;margin:.7em 0 0;min-height:0;box-sizing:border-box;display:grid;grid-template-columns:minmax(0,1fr) minmax(15em,22%);gap:1.25em;align-items:stretch}", "body.lampa_view.pt-desktop:not(.pt-safari) .minimal-detail-header>.full-start-new__body {min-height:24em;padding:3em 0 1em}", "body.lampa_view.pt-desktop:not(.pt-safari) .minimal-detail-header>.minimal-detail-columns {margin-top:1.5em}", "body.lampa_view .minimal-detail-columns>.minimal-detail-facts {grid-column:2;grid-row:1;position:relative;inset:auto;float:none;width:auto;min-width:0;box-sizing:border-box;align-self:stretch;overflow-wrap:anywhere}", "body.lampa_view .minimal-overview-action {cursor:pointer;border-radius:.3em;outline:none!important;border:0!important;box-shadow:none!important;position:relative;max-width:52em;margin:1em 0}", "body.lampa_view .minimal-overview-action>.full-start-new__description,body.lampa_view .minimal-overview-action>.minimal-detail-overview {width:100%;max-width:none;margin:0;outline:none!important;border:0!important;box-shadow:none!important}", "body.lampa_view .minimal-overview-focus {display:none;position:absolute;inset:0;border:2px solid var(--pt-accent);border-radius:.3em;pointer-events:none}", "body.lampa_view .minimal-overview-action.focus>.minimal-overview-focus:not([hidden]),body.lampa_view .minimal-overview-action:focus-visible>.minimal-overview-focus:not([hidden]) {display:block!important}", "body.lampa_view .minimal-overview-action {transition:none!important;transform:none!important}", "body.lampa_view .minimal-overview-action>.minimal-overview-focus[hidden] {display:none!important}", "body.lampa_view .minimal-overview-action::before,body.lampa_view .minimal-overview-action::after {display:none!important}", "body.lampa_view .minimal-detail-studio.selector {cursor:pointer;border-radius:.2em;outline:none;transition:none!important}", "body.lampa_view .minimal-detail-studio.selector.focus,body.lampa_view .minimal-detail-studio.selector:focus-visible {outline:none!important;border:0!important;box-shadow:none!important;filter:var(--pt-studio-tone,brightness(1)) drop-shadow(0 0 .25em var(--pt-accent)) drop-shadow(0 0 .65em var(--pt-accent))}", "body.lampa_view .minimal-overview-full {white-space:pre-wrap;overflow-wrap:break-word;line-height:1.7}", "body.lampa_view .minimal-source-hidden {display:none!important}", "body.lampa_view .minimal-detail-facts>div>span {display:block}", "body.lampa_view .minimal-detail-identity .full-start-new__buttons {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.45em;align-items:stretch;overflow:visible}", "body.lampa_view .minimal-detail-identity .full-start__button {margin:0;min-width:0;box-sizing:border-box;justify-content:center;padding:.8em .5em;font-size:.85em}", "body.lampa_view .minimal-detail-identity .button--alc-auto {grid-column:1/-1;width:100%}", "body.lampa_view .minimal-detail-identity .full-start__button>span {display:none!important}", "body.lampa_view .minimal-detail-identity .button--alc-auto>span,body.lampa_view .minimal-detail-identity .button--alc-torrent>span {display:inline!important}", "body.lampa_view .minimal-detail-identity .button--alc-torrent {grid-column:span 2}", "body.lampa_view .minimal-detail-identity .minimal-actions--no-bell>.button--alc-torrent {grid-column:1/-1}", "body.lampa_view .minimal-detail-identity .full-start-new__buttons:not(.minimal-actions--auto)>.button--play {grid-column:1/-1}", "body.lampa_view .minimal-detail-identity .full-start-new__buttons:not(.minimal-actions--auto)>.button--play>span {display:inline!important}", "body.lampa_view.pt-mobile .minimal-detail-header>.full-start-new__body {min-height:0;padding-top:1em}", "body.lampa_view.pt-mobile .minimal-detail-header>.minimal-detail-columns {display:block}", "body.lampa_view.pt-mobile .minimal-detail-identity .full-start-new__buttons {max-width:24em}", "/* Compact filter form: labels and values are distinct, with a clear primary action. */", "body.lampa_view .minimal-filter-panel .selectbox__content {width:27em;max-width:100vw;background:#080808;border:1px solid var(--pt-line);box-sizing:border-box}", "body.lampa_view .minimal-filter-panel .selectbox__head {padding:1.3em 1.3em .8em}", "body.lampa_view .minimal-filter-panel .selectbox__title {font-size:1.3em;line-height:1.2}", "body.lampa_view .minimal-filter-panel .selectbox-item {display:flex;align-items:center;justify-content:space-between;gap:1em;padding:.85em 1.3em;border-radius:0;border-bottom:1px solid #ffffff0a;min-height:3.2em;box-sizing:border-box}", "body.lampa_view .minimal-filter-panel .selectbox-item__title {font-size:.9em;font-weight:500}", "body.lampa_view .minimal-filter-panel .selectbox-item__subtitle {font-size:.8em;text-align:right;color:var(--pt-muted);margin:0;max-width:55%;line-height:1.4}", "body.lampa_view .minimal-filter-panel .minimal-filter-run {background:var(--pt-accent);color:#07151a;justify-content:center;border-radius:.5em;margin:.9em 1.1em .5em}", "body.lampa_view .minimal-filter-panel .minimal-filter-reset {justify-content:center;color:var(--pt-muted);min-height:2.8em}", "body.lampa_view .minimal-filter-panel .selectbox-item.focus {box-shadow:inset 3px 0 var(--pt-accent)}", "body.lampa_view .minimal-filter-panel .minimal-filter-run.focus {background:#d1edf5;color:#07151a;box-shadow:inset 0 0 0 2px #fff}", "/* Legacy history/filter grids share the catalogue's content boundaries. */", "body.lampa_view .category-full,body.lampa_view .mapping--grid {width:100%;max-width:90vw;margin-left:auto;margin-right:auto;padding-left:0;padding-right:0;box-sizing:border-box}", "body.lampa_view .category-full>.card {box-sizing:border-box;margin-left:0;padding-left:.5em;padding-right:.5em}", "@media(min-width:1100px){body.lampa_view:not(.pt-tv) .category-full>.card:not(.card--wide):not(.card--collection) {width:clamp(8.4em,calc((90vw - 10em / var(--pt-interface-scale,1)) / 10 * var(--pt-interface-scale,1)),11.1em)!important}}", "@media(min-width:1200px){body.lampa_view:not(.pt-tv) .mapping--grid>.card,body.lampa_view:not(.pt-tv) .category-full>.card:not(.card--wide):not(.card--collection) {width:calc(12.5% * var(--pt-interface-scale,1))!important}}", "@media(min-width:1800px){body.lampa_view:not(.pt-tv) .mapping--grid>.card,body.lampa_view:not(.pt-tv) .category-full>.card:not(.card--wide):not(.card--collection) {width:calc(10% * var(--pt-interface-scale,1))!important}}", "@media(max-width:650px){body.lampa_view .minimal-filter-panel .selectbox__content {width:100%;max-height:90vh}body.lampa_view .minimal-filter-panel .selectbox-item {min-height:3em;padding:.7em 1em}}", "body.lampa_view .minimal-crew-native {max-width:90%;margin:1.2em auto}", "body.lampa_view .minimal-crew-native .full-person {font-size:.8em;padding-right:1em}", "body.lampa_view .minimal-crew-native .full-person__photo {width:4.5em;height:4.5em;border-radius:50%}", "body.lampa_view .minimal-crew-native .full-person__photo>img {height:100%;object-fit:cover}", "body.lampa_view .minimal-crew-native .full-person__name {font-size:1em}", "body.lampa_view .pt-hero__logo.pt-hero__logo--translated {margin-bottom:.5em}", "body.lampa_view .pt-hero__title.pt-hero__title--translation {font-size:1.05em;line-height:1.35;letter-spacing:0;font-weight:500;max-width:100%;margin:0 0 1.1em;color:#dbdde2}", "body.lampa_view .minimal-detail-identity .minimal-detail-logo.minimal-detail-logo--translated {margin-bottom:.5em}", "body.lampa_view .minimal-detail-identity .full-start-new__title.minimal-detail-translation {font-size:1em;line-height:1.35;letter-spacing:0;font-weight:500;margin-bottom:1.25em;color:#dbdde2}", "/* Clip translated rails to their own content column, with room for focus rings. */", "body.lampa_view .items-line__body {overflow:hidden;padding:1.1em 0;margin:-1.1em 0;-webkit-mask-image:linear-gradient(to right,transparent,#000 1.25em,#000 calc(100% - 1.25em),transparent);mask-image:linear-gradient(to right,transparent,#000 1.25em,#000 calc(100% - 1.25em),transparent)}", "body.lampa_view .items-line__body>.scroll--horizontal {-webkit-mask-image:none!important;mask-image:none!important}", "/* Native social actions and data stay with Lampa; only presentation changes. */", "body.lampa_view .full-start-new__reactions {display:flex;align-items:center;flex-wrap:wrap;gap:.4em;min-height:0;margin:.9em 0;color:var(--pt-muted);font-size:.8em}", "body.lampa_view .full-start-new__reactions>div {padding:0}", "body.lampa_view .full-start-new__reactions .reaction {gap:.3em;padding:.35em .65em;background:#0b0b0b;border:1px solid var(--pt-line);border-radius:.5em}", "body.lampa_view .full-start-new__reactions .reaction__icon {width:1.25em;height:1.25em}", "body.lampa_view .full-start-new__reactions .reaction__count {padding:0;font-size:1em;font-weight:500}", "body.lampa_view .full-start-new__reactions .reaction--voted {border-color:var(--pt-accent);color:var(--pt-accent)}", "body.lampa_view .minimal-comments-native {width:90%;max-width:90%;margin:1em auto 2em;padding-bottom:1em}", "body.lampa_view .minimal-comments-native .items-line__head {padding-left:0;padding-right:0}", "body.lampa_view .minimal-comments-native .scroll--horizontal>.scroll__content {padding-left:0;padding-right:0}", "body.lampa_view .minimal-comments-native .items-line__body,body.lampa_view .minimal-comments-native .scroll--horizontal {-webkit-mask-image:none!important;mask-image:none!important}", "body.lampa_view .full-review {background:#0b0b0b;border:1px solid var(--pt-line);border-radius:.7em;padding:1.1em;box-sizing:border-box;color:#e5e5e5}", "body.lampa_view .mapping--line>.full-review {min-width:18em;max-width:25em}", "body.lampa_view .full-review__text {font-size:.9em;line-height:1.6;margin-bottom:1.1em;-webkit-line-clamp:3;line-clamp:3}", "body.lampa_view .full-review__footer {font-size:.78em;color:var(--pt-muted)}", "body.lampa_view .full-review__user-icon {width:1.8em;height:1.8em}", "body.lampa_view .full-review.focus {border-color:var(--pt-accent);background:#111;color:#fff}", "body.lampa_view .mapping--line>.full-review-add {width:10em;min-height:7.5em;padding:1em;border:1px solid var(--pt-line);background:#0b0b0b;border-radius:.7em;box-sizing:border-box}", "body.lampa_view .full-review-add::before {width:1.4em;height:1.4em;margin:-1.3em 0 0 -.7em;opacity:.75}", "body.lampa_view .full-review-add::after {content:'Написать';position:absolute;inset:auto 0 1.2em;text-align:center;font-size:.8em;color:var(--pt-muted)}", "body.lampa_view .full-review-add.focus {border-color:var(--pt-accent);background:#111}", "body.lampa_view .full-review-add.focus::after {border:0;width:auto;border-radius:0;inset:auto 0 1.2em;color:var(--pt-accent)}", "body.lampa_view .full-review--full-text .full-review__text {-webkit-line-clamp:unset;line-clamp:unset}", "body.lampa_view .minimal-comments-native .items-line__head {gap:.7em}", "body.lampa_view .minimal-comments-native .items-line__title {margin-right:auto}", "body.lampa_view .minimal-comments-nav {display:flex;gap:.4em;flex:none}", "body.lampa_view .minimal-comments-nav[hidden] {display:none}", "body.lampa_view .minimal-comments-arrow {display:flex;align-items:center;justify-content:center;width:2.1em;height:2.1em;padding:0;border:1px solid var(--pt-line);border-radius:.6em;background:#ffffff04;color:var(--pt-muted);cursor:pointer}", "body.lampa_view .minimal-comments-arrow svg {width:1em;height:1em}", "/* Shared transparent badges: ratings, age, status and reactions. */", "body.lampa_view .minimal-detail-header .full-start-new__rate-line {display:flex;align-items:center;flex-wrap:wrap;gap:.5em;margin-bottom:.85em;font-size:.8em}", "body.lampa_view .minimal-detail-header .full-start-new__rate-line>* {margin:0!important}", "body.lampa_view .minimal-detail-header .full-start__rate,body.lampa_view .minimal-detail-header .full-start__pg,body.lampa_view .minimal-detail-header .full-start__status,body.lampa_view .minimal-detail-header .full-start-new__reactions .reaction {box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;gap:.5em;min-height:2.3em;padding:.45em .7em;font-size:1em;line-height:1.1;border:1px solid var(--pt-line);border-radius:.45em;background:rgba(0,0,0,.36);color:#dbdde2;box-shadow:none}", "body.lampa_view .minimal-detail-header .full-start-new__reactions .reaction--voted {border-color:var(--pt-accent);color:var(--pt-accent)}", "body.lampa_view .minimal-detail-header .full-start__rate>div {width:auto;height:auto;padding:0;background:transparent}", "/* A stable card box keeps remote geometry intact; only the artwork moves. */", "body.lampa_view .card__view {transition:transform .24s cubic-bezier(.2,.75,.25,1),box-shadow .24s ease!important;-webkit-transition:-webkit-transform .24s cubic-bezier(.2,.75,.25,1),box-shadow .24s ease!important;transform-origin:center}", "body.lampa_view .card.focus .card__view,body.lampa_view .card.hover .card__view {animation:none!important;-webkit-animation:none!important;-webkit-transform:translateY(-.2em) scale(1.045);transform:translateY(-.2em) scale(1.045);box-shadow:0 0 .85em rgba(173,217,229,.4),0 0 1.8em rgba(173,217,229,.22)}", "body.lampa_view .minimal-cast-native .full-person.focus {background:#161b1e;color:var(--pt-text);box-shadow:inset 0 0 0 1px var(--pt-accent)}", "body.lampa_view .items-line__more {display:none!important}", "body.lampa_view .minimal-paged-row .card-more:not(.card-more--first) {display:none!important}", "body.lampa_view .items-line__head {display:flex;align-items:center;gap:.6em}", "body.lampa_view .items-line__title {margin-right:auto}", ".minimal-row-nav {display:none}", "body.lampa_view .minimal-row-nav {display:flex;gap:.4em;flex:none}", "body.lampa_view .minimal-row-arrow,body.lampa_view .minimal-row-more {display:flex;align-items:center;justify-content:center;width:2em;height:2em;padding:0;border:1px solid var(--pt-line);border-radius:.6em;background:#ffffff04;color:var(--pt-muted);cursor:pointer}", "body.lampa_view .minimal-row-arrow svg,body.lampa_view .minimal-row-more svg {width:1em;height:1em}", "body.lampa_view .minimal-paged-row .scroll__body>.card:last-child,body.lampa_view .minimal-paged-row .scroll__body>.full-person:last-child {margin-right:2.5em}", "body.lampa_view .minimal-paged-row .mapping--line>.card+.card {margin-left:.75em}", "body.lampa_view .minimal-paged-row .items-line__body {-webkit-mask-image:linear-gradient(to right,transparent 1em,#000 1.25em,#000 calc(100% - 1.25em),transparent calc(100% - 1em));mask-image:linear-gradient(to right,transparent 1em,#000 1.25em,#000 calc(100% - 1.25em),transparent calc(100% - 1em))}", "/* Header, row and comment navigation share one pointer/remote/keyboard focus. */", "body.lampa_view .minimal-back svg,body.lampa_view .head__menu-icon svg,body.lampa_view .minimal-row-nav svg,body.lampa_view .minimal-comments-arrow svg {stroke-width:2}", "body.lampa_view .minimal-back:hover,body.lampa_view .minimal-back.hover,body.lampa_view .minimal-back.focus,body.lampa_view .minimal-back:focus-visible,", "body.lampa_view .head__menu-icon:hover,body.lampa_view .head__menu-icon.hover,body.lampa_view .head__menu-icon.focus,body.lampa_view .head__menu-icon:focus-visible,", "body.lampa_view .minimal-row-arrow:hover:not(:disabled),body.lampa_view .minimal-row-arrow.hover:not(:disabled),body.lampa_view .minimal-row-arrow.focus:not(:disabled),body.lampa_view .minimal-row-arrow:focus-visible:not(:disabled),", "body.lampa_view .minimal-row-more:hover,body.lampa_view .minimal-row-more.hover,body.lampa_view .minimal-row-more.focus,body.lampa_view .minimal-row-more:focus-visible,", "body.lampa_view .minimal-comments-arrow:hover:not(:disabled),body.lampa_view .minimal-comments-arrow.hover:not(:disabled),body.lampa_view .minimal-comments-arrow.focus:not(:disabled),body.lampa_view .minimal-comments-arrow:focus-visible:not(:disabled) {color:var(--pt-text);background:var(--pt-high);border-color:var(--pt-line);outline:none;outline-offset:0;box-shadow:inset 0 0 0 1px var(--pt-accent)}", "body.lampa_view.pt-tv .minimal-row-arrow,body.lampa_view.pt-tv .minimal-person-row .minimal-row-nav {display:none}", "body.lampa_view .pt-row-paging>.scroll__content>.scroll__body {transition:none!important;-webkit-transition:none!important}", "body.lampa_view .minimal-people-grid {display:grid;grid-template-columns:repeat(auto-fill,minmax(7em,1fr));gap:1em;max-width:65em}", "body.lampa_view .minimal-people-grid .full-person {width:100%!important;margin:0;box-sizing:border-box}", "", "body.lampa_view .alc-ap__voices {--alc-vcol:29em}", "body.lampa_view .alc-ap-vgroup__title {font-size:.9em;color:var(--pt-text);margin:.85em 0 .5em}", "body.lampa_view .alc-ep--soon .alc-ep__time {color:var(--pt-accent)}", "", "body.lampa_view .minimal-detail-studio {display:inline-block;width:auto;max-width:6.5em;height:1.3em;object-fit:contain;vertical-align:middle;margin-right:.65em;filter:var(--pt-studio-tone,brightness(1)) drop-shadow(0 0 .6px rgba(255,255,255,.7)) drop-shadow(0 1px 2px #000);opacity:1}", "body.lampa_view .minimal-detail-studio[hidden] {display:none}", "body.lampa_view .minimal-anime-controls {width:100%;box-sizing:border-box;margin:0 0 1.6em;padding:.4em 1em}", "body.lampa_view .minimal-anime-tabs {display:flex;justify-content:center;align-items:center;gap:.65em;width:100%;margin:0 auto}", "body.lampa_view .minimal-anime-tab {font-family:inherit;justify-content:center;min-width:9.5em;transition:box-shadow .24s ease!important;-webkit-transition:box-shadow .24s ease!important}", 'body.lampa_view .minimal-anime-tab[aria-selected="true"] {box-shadow:0 0 .35em rgba(173,217,229,.85),0 0 1.2em rgba(173,217,229,.65),0 0 2.4em rgba(173,217,229,.42);outline:none}', "body.lampa_view .minimal-anime-status {margin:1.2em auto;text-align:center;color:var(--pt-muted);line-height:1.5}", "body.lampa_view .minimal-anime-retry {display:inline-block;font:inherit;color:var(--pt-text);background:#111;border:1px solid var(--pt-line);border-radius:.6em;padding:.65em 1.2em;margin:.8em auto 0;cursor:pointer}", "body.lampa_view .minimal-anime-retry.focus,body.lampa_view .minimal-anime-retry:hover {background:var(--pt-accent);color:#11171b;outline:none}", "body.lampa_view .minimal-anime-status[hidden],body.lampa_view .minimal-anime-retry[hidden] {display:none!important}", "", "/* Small touch controls keep native actions, including the iPhone safe area. */", "body.lampa_view.pt-mobile .navigation-bar {font-size:calc(14px * var(--pt-interface-scale,1))!important;padding:0 .8em .65em;padding-bottom:calc(.65em + env(safe-area-inset-bottom,0px))}", "body.lampa_view.pt-mobile .navigation-bar__body {max-width:400px;margin:0 auto;padding:.5em .6em;border:1px solid var(--pt-line);background:#181a1cf2;box-shadow:0 4px 20px #0006}", "body.lampa_view.pt-mobile .navigation-bar__item {display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:44px;min-width:56px}", "body.lampa_view.pt-mobile .navigation-bar__icon {width:1.5em;height:1.5em}", "body.lampa_view.pt-mobile .navigation-bar__label {font-size:.78em;line-height:1.2;margin-top:.3em}", "body.lampa_view.pt-mobile .settings__content {font-size:calc(14px * var(--pt-interface-scale,1))!important;box-sizing:border-box;max-height:78vh!important;border-radius:1em}", "body.lampa_view.pt-mobile .settings__body,", "body.lampa_view.pt-tv .settings__body {font-size:1em!important;min-height:0;overflow:hidden}", "body.lampa_view.pt-mobile .settings__head,", "body.lampa_view.pt-tv .settings__head {padding:1em 1.1em .8em}", "body.lampa_view.pt-mobile .settings__title,", "body.lampa_view.pt-tv .settings__title {font-size:1.4em;line-height:1.3}", "body.lampa_view.pt-mobile .settings .minimal-back--overlay {font-size:1em}", "body.lampa_view.pt-mobile .settings-folder,", "body.lampa_view.pt-tv .settings-folder {padding:.9em 1.1em;min-height:3.6em;align-items:center;box-sizing:border-box;border-radius:.5em}", "body.lampa_view.pt-mobile .settings-folder__icon,", "body.lampa_view.pt-tv .settings-folder__icon {width:1.4em;height:1.4em;min-width:1.4em;margin-right:.9em}", "body.lampa_view.pt-mobile .settings-folder__icon>*,", "body.lampa_view.pt-tv .settings-folder__icon>* {width:100%;height:100%}", "body.lampa_view.pt-mobile .settings-folder__name,", "body.lampa_view.pt-tv .settings-folder__name {font-size:1em;line-height:1.35}", "body.lampa_view.pt-mobile .settings-param,", "body.lampa_view.pt-tv .settings-param {padding:1em 1.1em;font-size:1em}", "body.lampa_view.pt-mobile .settings-param__name,", "body.lampa_view.pt-tv .settings-param__name {font-size:1em}", "body.lampa_view.pt-mobile .settings-param__value,", "body.lampa_view.pt-tv .settings-param__value {font-size:.95em}", "body.lampa_view.pt-mobile .wrap__content {padding-bottom:calc(5.1em + env(safe-area-inset-bottom,0px))!important}", "body.lampa_view.pt-mobile.orientation--landscape .navigation-bar {padding:.6em .6em .6em 0}", "body.lampa_view.pt-mobile.orientation--landscape .navigation-bar__body {gap:.45em;padding:.55em}", "", "/* TV geometry is separate from desktop sizes and the rest of the interface. */", "body.lampa_view.pt-tv .items-line {max-width:90vw;margin-left:auto;margin-right:auto}", "body.lampa_view.pt-tv .card,body.lampa_view.pt-mobile .settings-folder {will-change:auto}", "/* Clip TV rails without an extra full-width gradient compositing layer. */", "body.lampa_view.pt-tv .items-line__body {-webkit-mask-image:none;mask-image:none}", "body.lampa_view.pt-tv .minimal-paged-row .scroll--horizontal>.scroll__content>.scroll__body {transition:transform .12s linear;-webkit-transition:-webkit-transform .12s linear}", "body.lampa_view.pt-tv .card__view {transition:none!important;-webkit-transition:none!important}", "", "/* TV drawers use the same compact rows as phones, with readable TV text. */", "body.lampa_view.pt-tv .settings .minimal-back--overlay {font-size:1em}", "body.lampa_view .selectbox__head {padding:1em 1.1em .8em}", "body.lampa_view .selectbox__title {font-size:1.4em;line-height:1.3}", "body.lampa_view .selectbox-item {padding:.85em 1.1em;font-size:1em;min-height:3.2em;box-sizing:border-box}", "body.lampa_view.pt-tv .selectbox-item__title {font-size:1em;line-height:1.35}", "body.lampa_view.pt-tv .selectbox-item__subtitle {font-size:.85em;line-height:1.4}", "body.lampa_view.pt-tv .settings-folder,body.lampa_view.pt-tv .settings-param {will-change:auto}", "", "/* Compact TV badges and captions retain the existing poster geometry. */", "/* TV uses the same focus treatment as the browser; keep repaint cost bounded. */", "body.lampa_view.pt-tv .card.focus .card__view,body.lampa_view.pt-tv .card.hover .card__view {-webkit-transform:translateY(-.2em) scale(1.045);transform:translateY(-.2em) scale(1.045);box-shadow:0 0 .85em rgba(173,217,229,.4),0 0 1.8em rgba(173,217,229,.22)}", "body.lampa_view.pt-tv .card.hover:not(.focus) .card__view {box-shadow:none!important;transform:none!important}", "body.lampa_view.pt-tv .card.hover:not(.focus) .card__view:after {border-color:transparent!important;box-shadow:none!important}", "body.lampa_view .pt-hero__studio.selector {cursor:pointer;border-radius:.2em}", "body.lampa_view .pt-hero__studio.selector.focus,body.lampa_view .pt-hero__studio.selector:focus-visible {outline:none;box-shadow:0 0 0 2px var(--pt-accent);filter:var(--pt-studio-tone,brightness(1))}", "", "/* A native cast rail stays inside its grid cell at every scroll position. */", "body.lampa_view .minimal-detail-columns>.minimal-detail-cast {grid-column:1;grid-row:1;position:relative;display:flex;flex-direction:column;flex:1;min-width:0;max-width:100%;width:100%;box-sizing:border-box;overflow:hidden}", "body.lampa_view .minimal-detail-cast .items-line__body,body.lampa_view .minimal-detail-cast .scroll--horizontal {min-width:0;max-width:100%;box-sizing:border-box}", "body.lampa_view .minimal-detail-facts>div>span {min-width:0;overflow-wrap:anywhere}", "body.lampa_view .minimal-detail-facts>div>span:first-child {overflow-wrap:normal;word-break:normal}", "body.lampa_view.pt-tv .minimal-cast-native .full-person {width:var(--minimal-person-width,7em);flex-basis:var(--minimal-person-width,7em)}", "body.lampa_view.pt-tv .minimal-cast-native .full-person:last-child {margin-right:0}", "body.lampa_view.pt-mobile .minimal-detail-header>.minimal-detail-columns {grid-template-columns:minmax(0,1fr)}", "body.lampa_view.pt-mobile .minimal-detail-columns>.minimal-detail-cast,body.lampa_view.pt-mobile .minimal-detail-columns>.minimal-detail-facts {grid-column:1;grid-row:auto}", "@media(max-width:900px){", " body.lampa_view .minimal-detail-header>.minimal-detail-columns {grid-template-columns:minmax(0,1fr)}", " body.lampa_view .minimal-detail-columns>.minimal-detail-cast,body.lampa_view .minimal-detail-columns>.minimal-detail-facts {grid-column:1;grid-row:auto}", "}", "", "/* Equal footer space on every poster: focus never changes card/row geometry. */", "body.lampa_view .card .pt-card-watch {position:relative;height:4.1em;margin-top:.4em;font-size:.72em;line-height:1.35;pointer-events:none;visibility:hidden}", "body.lampa_view .card__view>.card-watched {display:none!important}", "body.lampa_view .card .pt-card-watch>.card-watched {display:block;position:absolute;inset:0;width:100%;height:100%;max-width:100%;font-size:1em;line-height:1.35;transform:none;-webkit-transform:none;border:0;border-radius:0;background:none!important;color:var(--pt-muted);box-sizing:border-box}", "body.lampa_view .card .pt-card-watch .card-watched__inner,body.lampa_view .card .pt-card-watch .card-watched__body {padding:0;font-size:1em}", "body.lampa_view .card .pt-card-watch .card-watched__item {display:none;margin:0;color:var(--pt-muted)}", "body.lampa_view .card .pt-card-watch .pt-card-watch__current {position:absolute;inset:0;display:flex;flex-direction:column;align-items:stretch;line-height:1.25}", "body.lampa_view .card .pt-card-watch .card-watched__item>span {display:none}", "body.lampa_view .pt-card-watch__row {display:block}", "body.lampa_view .pt-card-watch__meter {display:flex;align-items:center;min-width:0;margin-top:.25em;min-height:1em}", "body.lampa_view .pt-card-watch__label {display:flex;flex-wrap:wrap;gap:0 .25em;min-width:0;white-space:normal}", "body.lampa_view .pt-card-watch__label>span {white-space:nowrap}", "body.lampa_view .pt-card-watch__label {align-content:start}", "body.lampa_view .pt-card-watch__label>.pt-card-watch__heading {flex-basis:100%;margin-bottom:.1em}", "body.lampa_view .pt-card-watch__time {flex:0 0 auto;margin-left:.4em;font-variant-numeric:tabular-nums;font-size:.9em;line-height:1}", "body.lampa_view .card .pt-card-watch .time-line {display:block;flex:1 1 0%;align-self:center;position:relative;top:auto;right:auto;bottom:auto;left:auto;width:auto;margin:0;min-width:1px;height:3px;min-height:3px;overflow:hidden;background:rgba(255,255,255,.24)!important}", "body.lampa_view .card .pt-card-watch .time-line>div {display:block;height:3px;min-height:3px;background:var(--pt-accent)!important}", "body.lampa_view .card .pt-card-watch--complete .time-line,body.lampa_view .card .pt-card-watch--complete .pt-card-watch__time {display:none!important}", "/* Reveal saved viewing history only for the card under pointer/remote focus.", "   Reserved footer space prevents neighbouring rows from jumping on focus. */", "body.lampa_view .card.focus .pt-card-watch--has-progress,body.lampa_view .card.hover .pt-card-watch--has-progress,body.lampa_view .card.pt-card-pointer .pt-card-watch--has-progress,body.lampa_view .card.pt-card-touch .pt-card-watch--has-progress {visibility:visible}", "body.lampa_view .card .pt-card-watch>.card-watched.pt-card-watch--empty {display:none!important}", "/* One compact release pill below Series, shared by desktop and TV. */", "body.lampa_view .pt-series-status {position:absolute;left:auto;right:4px;top:2.6em;z-index:4;display:block;width:auto;max-width:calc(100% - 8px);font-size:.55em;line-height:1;white-space:nowrap;padding:.3em .4em;border:1px solid #ffffff25;border-radius:.35em;background:#000b;color:#d4e2e6;pointer-events:none;box-sizing:border-box}", "body.lampa_view .pt-series-status>span {white-space:pre}", "", "/* Badges keep their own corners and wrap to another line when space is short. */", "body.lampa_view .card__view .pt-quality,body.lampa_view .card__view .pt-kind {max-width:calc(100% - 8px);box-sizing:border-box;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}", "/* Native history/play marker, in the same understated pill as metadata.", "   Favorites sit along the lower edge, leaving faces and top metadata uncovered. */", "body.lampa_view .card__view .card__icons {inset:0!important;display:block!important;width:auto;max-width:none;pointer-events:none}", "body.lampa_view .card__view .card__icons-inner {position:static;display:flex;flex-direction:row;align-items:flex-end;justify-content:flex-start;gap:.2em;height:100%;box-sizing:border-box;padding:0 .3em .3em;background:none!important;border-radius:0;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}", "body.lampa_view .card__view .card__icon {position:relative}", 'body.lampa_view .card__view .card__icon[style*="left:"] {position:absolute}', "body.lampa_view .card__view .card__icon:not(.icon--history) {box-sizing:border-box;width:1.9em;height:1.9em;font-size:.65em;border:1px solid #ffffff25;border-radius:.35em;background-color:#000b;background-size:72% 72%;background-position:center;background-repeat:no-repeat;box-shadow:none}", "body.lampa_view.pt-theme-glass .card__view .card__icon:not(.icon--history) {background-color:rgba(24,26,29,.52);border-color:var(--pt-glass-border);box-shadow:var(--pt-glass-edge)}", 'body.lampa_view .card__view .card__icon.icon--book {background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23f4f4f6%22%20stroke-width%3D%221.6%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M6%203h12v18l-6-4-6%204Z%22%2F%3E%3C%2Fsvg%3E")!important}', 'body.lampa_view .card__view .card__icon.icon--wath {background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23f4f4f6%22%20stroke-width%3D%221.6%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%229%22%2F%3E%3Cpath%20d%3D%22M12%207v5l3%202%22%2F%3E%3C%2Fsvg%3E")!important}', 'body.lampa_view .card__view .card__icon.icon--like {background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23f4f4f6%22%20stroke-width%3D%221.6%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M20.5%205.5a5%205%200%200%200-7%200L12%207l-1.5-1.5a5%205%200%200%200-7%207L12%2021l8.5-8.5a5%205%200%200%200%200-7Z%22%2F%3E%3C%2Fsvg%3E")!important}', "body.lampa_view .card__view .icon--history {position:absolute;top:62%!important;left:50%!important;right:auto!important;bottom:auto!important;transform:translate(-50%,-50%);box-sizing:border-box;width:2.2em;height:1.8em;font-size:.65em;background:#000b!important;border:1px solid #ffffff25;border-radius:.35em;color:#d4e2e6;box-shadow:none!important}", "body.lampa_view .card__view .icon--history:before {content:'';position:absolute;top:50%;left:53%;transform:translate(-50%,-50%);width:0;height:0;border-top:.38em solid transparent;border-bottom:.38em solid transparent;border-left:.58em solid currentColor}", "body.lampa_view .card__view.minimal-badge-layout>.card__vote,body.lampa_view .card__view.minimal-badge-layout>.card__icons {z-index:4}", "/* Shared controls for both online layouts. */", "body.lampa_view .nova-plus-root .nova-btn,body.lampa_view .nova-plus-root .nova-chip,body.lampa_view .nova-plus-root .nova-group {background:#171717!important;color:var(--pt-text)!important;border:1px solid var(--pt-line)!important;border-radius:.625em!important;box-shadow:none!important;outline:none!important}", "body.lampa_view .nova-plus-root .nova-btn {padding:.75em 1.15em;font-weight:600}", "body.lampa_view .nova-plus-root .nova-chip--view-icon {display:inline-flex;align-items:center;justify-content:center;flex:0 0 2.65em;width:2.65em;min-width:2.65em;height:2.65em;box-sizing:border-box;padding:0!important;gap:0;line-height:1}", "body.lampa_view .nova-plus-root .nova-chip--view-icon>.nova-chip__label {display:none}", "body.lampa_view .nova-plus-root .nova-chip--view-icon>svg {display:block;flex:none;width:1.1em;height:1.1em;margin:0!important;align-self:center}", "body.lampa_view .nova-plus-root .nova-chip--active,body.lampa_view .nova-plus-root .nova-group--open {background:var(--pt-high)!important;border-color:#add9e560!important}", "body.lampa_view .nova-plus-root .nova-btn.focus,body.lampa_view .nova-plus-root .nova-btn.hover,body.lampa_view .nova-plus-root .nova-btn:hover,body.lampa_view .nova-plus-root .nova-chip.focus,body.lampa_view .nova-plus-root .nova-chip.hover,body.lampa_view .nova-plus-root .nova-chip:hover,body.lampa_view .nova-plus-root .nova-group.focus,body.lampa_view .nova-plus-root .nova-group:hover {background:var(--pt-high)!important;color:var(--pt-text)!important;border-color:var(--pt-accent)!important;box-shadow:0 0 0 1px var(--pt-accent)!important}", "body.lampa_view .nova-plus-root .nova-chip__badge,body.lampa_view .nova-plus-root .nova-chip.focus .nova-chip__badge {background:#ffffff1a!important;color:var(--pt-text)!important;border-radius:.25em}", "body.lampa_view .nova-plus-root .nova-card.focus {background:var(--pt-high)!important;color:var(--pt-text)!important;box-shadow:inset 0 0 0 2px var(--pt-accent)!important}", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card.focus {background:none!important;box-shadow:none!important}", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card.focus .nova-card__thumb {box-shadow:0 0 0 2px var(--pt-accent)!important}", "body.lampa_view .nova-plus-root .nova-card__line .time-line>div,body.lampa_view .nova-plus-root .nova-hero__progress .time-line>div {background:var(--pt-accent)!important}", "/* Native torrent focus has an outer white pseudo-element; use one accent border. */", "body.lampa_view .torrent-item.focus::after {display:none!important;content:none!important}", "body.lampa_view .torrent-filter .filter__item.focus,body.lampa_view .torrent-filter .filter__item.hover,body.lampa_view .torrent-filter .selector--filter.focus {border-color:var(--pt-accent)!important;box-shadow:0 0 0 1px var(--pt-accent)!important;outline:none!important}", "body.lampa_view .torrent-filter .simple-button.focus,body.lampa_view .torrent-filter .simple-button.hover {border-color:var(--pt-accent)!important;box-shadow:0 0 0 1px var(--pt-accent)!important;outline:none!important}", "body.lampa_view .minimal-torrent-view>.explorer__left {display:block!important;width:28.7%;flex:0 0 28.7%;min-width:0;padding:.3em 1.6em 0 .3em;box-sizing:border-box}", "body.lampa_view .minimal-torrent-view>.explorer__left .explorer__card {display:none!important}", "/* The hidden native sidebar scroll still reserves a full viewport of height. */", "body.lampa_view .minimal-torrent-view>.explorer__left>.scroll {display:none!important}", "body.lampa_view .minimal-torrent-view>.explorer__files {width:71.3%;min-width:0;box-sizing:border-box}", "body.lampa_view .minimal-torrent-view .explorer__files-head {padding:.3em .6em .6em 0}", "body.lampa_view .minimal-torrent-view .explorer__files-body .scroll__body {padding-left:0}", "body.lampa_view .minimal-torrent-view .filter--back {display:none!important}", ".minimal-torrent-banner {display:none}", "body.lampa_view .minimal-torrent-banner {display:block;position:relative;width:100%;min-width:0;overflow:hidden;border-radius:1em;background:#0b1016;aspect-ratio:1.65;min-height:0;color:var(--pt-text)}", "body.lampa_view .minimal-torrent-banner__image,body.lampa_view .minimal-torrent-banner__shade {position:absolute;inset:0;width:100%;height:100%;object-fit:cover}", "body.lampa_view .minimal-torrent-banner__shade {background:linear-gradient(180deg,#080d1633 30%,#080d16e6 100%)}", "body.lampa_view .minimal-torrent-banner__meta {position:absolute;top:1em;right:1.2em;left:1.2em;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:.7em;font-size:.9em;text-shadow:0 1px 5px #000}", "body.lampa_view .minimal-torrent-banner__title {position:absolute;left:1.3em;right:1.3em;bottom:1.2em;font-size:1.7em;font-weight:650;line-height:1.2;text-shadow:0 2px 8px #000}", "body.lampa_view .minimal-torrent-banner__logo {display:block;width:auto;height:auto;max-width:100%;max-height:4em;object-fit:contain;filter:drop-shadow(0 2px 5px #0009)}", "body.lampa_view .minimal-torrent-view--classic {flex-wrap:wrap}", "body.lampa_view .minimal-torrent-view--classic>.explorer__left,body.lampa_view .minimal-torrent-view--classic>.explorer__files {width:100%}", "body.lampa_view .minimal-torrent-view--classic>.explorer__left {padding-right:.3em;margin-bottom:1em}", "body.lampa_view .minimal-torrent-view--classic .minimal-torrent-banner {aspect-ratio:auto;height:14.7em;min-height:0}", "body.lampa_view .minimal-torrent-view--classic .minimal-torrent-banner__logo {max-width:55%}", "@media(max-width:767px){", " body.lampa_view .minimal-torrent-view {flex-direction:column;flex-wrap:nowrap;min-height:0}", " body.lampa_view .minimal-torrent-view>.explorer__left {width:100%;flex:0 0 auto;padding-right:.3em;margin-bottom:.5em}", " body.lampa_view .minimal-torrent-view>.explorer__files {width:100%;flex:1 1 0;min-height:0;display:flex;flex-direction:column}", " body.lampa_view .minimal-torrent-banner {width:100%;min-height:0;max-height:22vh}", " body.lampa_view .minimal-torrent-banner__title {font-size:1.4em;bottom:.8em}", " body.lampa_view .minimal-torrent-banner__meta {font-size:.8em;top:.8em;right:1em;left:1em}", " body.lampa_view .minimal-torrent-view .explorer__files-head {padding-left:.3em;padding-right:.3em;flex:0 0 auto}", " body.lampa_view .minimal-torrent-view .explorer__files-head>.scroll {width:100%;min-width:0;overflow:visible!important}", " body.lampa_view .minimal-torrent-view .explorer__files-head .scroll__content {padding:0!important}", " body.lampa_view .minimal-torrent-view .explorer__files-head .scroll__body {transform:none!important;-webkit-transform:none!important;width:100%!important}", " body.lampa_view .minimal-torrent-view .torrent-filter {display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:.5em;margin:0!important;white-space:normal;align-items:stretch}", " body.lampa_view .minimal-torrent-view .torrent-filter .simple-button {font-size:.88em;min-height:44px;min-width:0;margin:0;padding:.5em .65em;box-sizing:border-box;justify-content:center}", " body.lampa_view .minimal-torrent-view .filter--search>div {display:none!important}", " body.lampa_view .minimal-torrent-view .filter--search>svg {width:1.3em;height:1.3em;margin:0}", " body.lampa_view .minimal-torrent-view .filter--sort {flex-wrap:wrap;gap:.15em .4em}", " body.lampa_view .minimal-torrent-view .filter--sort>div {margin:0;padding:0;background:transparent;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.8em;color:var(--pt-muted)}", " body.lampa_view .minimal-torrent-view .filter--filter>div:not(.hide) {margin-left:.4em;padding:.15em .3em}", " body.lampa_view .minimal-torrent-view .explorer__files-body {flex:1 1 0;min-height:0}", " /* Lampa sizes this scroll for the whole screen; it now shares it with the banner. */", " body.lampa_view .minimal-torrent-view .explorer__files-body>.scroll {height:100%!important}", " body.lampa_view .minimal-torrent-view .explorer__files-body .scroll__content {padding-top:.5em}", " body.lampa_view .minimal-torrent-view .explorer__files-body .scroll__body {padding-left:.3em;padding-right:.3em;box-sizing:border-box}", " body.lampa_view .minimal-torrent-view .watched-history {font-size:.8em;padding:.6em;margin-bottom:.5em}", " body.lampa_view .minimal-torrent-view .torrent-item.tc-item {padding:.75em!important}", " body.lampa_view .minimal-torrent-view .tc-head {display:flex;flex-wrap:wrap;gap:.4em .7em}", " body.lampa_view .minimal-torrent-view .tc-summary {flex:1 1 50%;gap:.3em .55em}", " body.lampa_view .minimal-torrent-view .tc-right {font-size:.8em;gap:.2em;max-width:100%}", " body.lampa_view .minimal-torrent-view .tc-size {margin-top:0;font-size:1em}", " body.lampa_view .minimal-torrent-view .tc-seeds {font-size:.85em}", " body.lampa_view .minimal-torrent-view .tc-tags {margin:.5em 0}", " body.lampa_view .minimal-torrent-view .tc-tags .tc-tag {font-size:.72em}", " body.lampa_view .minimal-torrent-view .tc-voices {font-size:inherit}", " body.lampa_view .minimal-torrent-view .tc-foot {font-size:.72em;gap:.6em;margin-top:.5em}", " body.lampa_view .minimal-torrent-view .tc-source {display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}", "}", "/* Let the activity scroll whole catalogues; selector groups never become inner carousels. */", "@media(max-width:767px){", " body.lampa_view .minimal-torrent-files .modal__content {display:flex;flex-direction:column;box-sizing:border-box;padding:1em;padding-bottom:calc(1em + env(safe-area-inset-bottom,0px));max-height:calc(100vh - 1em);max-height:calc(100dvh - 1em);overflow:hidden}", " body.lampa_view .minimal-torrent-files .modal__head {flex-shrink:0}", " body.lampa_view .minimal-torrent-files .modal__body {display:flex;flex-direction:column;min-height:0}", " body.lampa_view .minimal-torrent-files .modal__head {margin-bottom:.5em}", " body.lampa_view .minimal-torrent-files .modal__title {font-size:1.5em;line-height:1.25}", " body.lampa_view .minimal-torrent-files .modal__body .scroll {display:block;height:auto!important;max-height:calc(100vh - 8em);max-height:calc(100dvh - 8em);overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior-y:contain;touch-action:pan-y;-webkit-overflow-scrolling:touch}", " body.lampa_view .minimal-torrent-files--virtual .modal__body .scroll {overflow:hidden!important;touch-action:none}", " body.lampa_view .minimal-torrent-files .modal__body .scroll__content {padding:.4em 0;max-height:none!important}", " body.lampa_view .torrent-files .torrnet-folder-name {font-size:.85em;line-height:1.4;padding:.6em 0 .8em;overflow-wrap:anywhere;color:var(--pt-muted);opacity:1}", " body.lampa_view .torrent-files .torrent-serial {display:grid;grid-template-columns:clamp(72px,24vw,100px) minmax(0,1fr);align-items:stretch;min-width:0;overflow:hidden;border-radius:.55em}", " body.lampa_view .torrent-files .torrent-serial__img {width:100%;height:100%;min-height:5.5em;object-fit:cover;align-self:stretch;border-radius:0}", " body.lampa_view .torrent-files .torrent-serial__content {display:grid;grid-template-columns:minmax(0,1fr);gap:.4em;min-width:0;padding:.65em .75em;overflow:hidden}", " body.lampa_view .torrent-files .torrent-serial__body {float:none;min-width:0;max-width:100%}", " body.lampa_view .torrent-files .torrent-serial__title {font-size:1.05em;line-height:1.25;margin:0;white-space:normal;overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2}", " body.lampa_view .torrent-files .torrent-serial__line {display:flex;flex-direction:row;flex-wrap:wrap;font-size:.72em;line-height:1.3;margin-top:.3em;padding:0}", " body.lampa_view .torrent-files .torrent-serial__detail {display:flex;flex-wrap:wrap;gap:.3em .7em;float:none;margin:0;min-width:0;text-align:left;font-size:.75em;color:var(--pt-muted)}", " body.lampa_view .torrent-files .torrent-serial__size {font-size:1em;line-height:1.3;padding:0;background:none;color:var(--pt-text)}", " body.lampa_view .torrent-files .torrent-serial__exe {font-size:1em;line-height:1.3;margin:0}", " body.lampa_view .torrent-files .torrent-serial__clear {display:none}", " body.lampa_view .torrent-files .torrent-serial .time-line {position:static;inset:auto;width:100%;min-width:0;margin:0;align-self:end}", " body.lampa_view .torrent-files .time-line>div {height:3px;background:var(--pt-accent)}", " body.lampa_view .torrent-files .torrent-serial__episode {font-size:.8em;line-height:1.2;padding:.25em .4em}", " body.lampa_view .torrent-files .torrent-serial__progress {width:2px;background:var(--pt-accent)}", " body.lampa_view .torrent-files .torrent-file {display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.5em;padding:.8em}", " body.lampa_view .torrent-files .torrent-file__title {font-size:1em;min-width:0;padding:0;overflow-wrap:anywhere}", " body.lampa_view .torrent-files .torrent-file__size {font-size:.8em;padding:.2em .4em}", " body.lampa_view .torrent-files .torrent-file .time-line {grid-column:1/-1;position:static;inset:auto;margin:0;width:100%}", "}", "", "body.lampa_view .nova-plus-root .nova-toolbar {flex-wrap:wrap!important;white-space:normal}", "body.lampa_view .nova-plus-root .nova-toolbar__label {margin-left:.8em!important;margin-right:.55em!important}", "body.lampa_view .nova-plus-root .nova-toolbar__label:first-child {margin-left:0!important}", "body.lampa_view .nova-plus-root .nova-plus__row,body.lampa_view .nova-plus-root .nova-plus__pane {display:flex!important;flex-wrap:wrap!important;transform:none!important;-webkit-transform:none!important;width:100%!important;height:auto!important;max-height:none!important;overflow:visible!important}", "body.lampa_view .nova-plus-root .nova-plus__group,body.lampa_view .nova-plus-root .nova-drop {height:auto!important;max-height:none!important;overflow:visible!important}", "body.lampa_view .nova-plus-root .nova__rows,body.lampa_view .nova-plus-root .nova-plus__panel {height:auto!important;max-height:none!important;overflow:visible!important}", "body.lampa_view .nova-plus-root .nova-plus__row .nova-chip,body.lampa_view .nova-plus-root .nova-plus__pane .nova-chip {flex-shrink:0;max-width:100%;white-space:normal}", "body.lampa_view .nova-plus-root .nova-btn--movie {max-width:100%;white-space:normal;text-align:left}", "body.lampa_view .nova-plus-root .nova-btn--movie .nova-btn__label {max-width:none;white-space:normal;overflow:visible;text-overflow:clip}", "/* Composite the artwork and its shade inside one rounded clip. */", "body.lampa_view .minimal-torrent-banner,body.lampa_view .nova-plus-root .nova-hero {border-radius:1em;overflow:hidden;isolation:isolate;-webkit-clip-path:inset(0 round 1em);clip-path:inset(0 round 1em);-webkit-transform:translateZ(0);transform:translateZ(0)}", "body.lampa_view .minimal-torrent-banner__image,body.lampa_view .minimal-torrent-banner__shade {inset:-1px;width:calc(100% + 2px);height:calc(100% + 2px)}", "body.lampa_view .nova-plus-root .nova-hero__bg,body.lampa_view .nova-plus-root .nova-hero__shade {top:-1px;right:-1px;bottom:-1px;left:-1px}", "/* An independent focus layer avoids repainting a border over the banner image. */", "body.lampa_view .nova-plus-root .nova-hero .nova-btn {background:rgba(18,21,25,.68)!important;border:0!important;box-shadow:none!important;outline:none!important}", "body.lampa_view .nova-plus-root .nova-hero .nova-btn.focus,body.lampa_view .nova-plus-root .nova-hero .nova-btn.hover,body.lampa_view .nova-plus-root .nova-hero .nova-btn:hover {background:rgba(37,44,52,.78)!important;border:0!important;box-shadow:none!important}", "body.lampa_view .nova-plus-root .nova-btn__focus {display:none;position:absolute;inset:0;border:2px solid var(--pt-accent);border-radius:inherit;pointer-events:none}", "body.lampa_view .nova-plus-root .nova-hero .nova-btn.focus>.nova-btn__focus,body.lampa_view .nova-plus-root .nova-hero .nova-btn.hover>.nova-btn__focus,body.lampa_view .nova-plus-root .nova-hero .nova-btn:hover>.nova-btn__focus,body.lampa_view .nova-plus-root .nova-hero .nova-btn:focus-visible>.nova-btn__focus {display:block}", "/* Keep focus paint inside controls: exterior shadows can leave stale edge pixels", "   when adjacent chips change focus in WebKit. Never animate the ring itself. */", "body.lampa_view .nova-plus-root .nova-btn,body.lampa_view .nova-plus-root .nova-chip,body.lampa_view .nova-plus-root .nova-group,body.lampa_view .full-start__button,body.lampa_view .simple-button,body.lampa_view .tc-info,body.lampa_view .alc-chip,body.lampa_view .alc-ap-voice,body.lampa_view .alc-ep,body.lampa_view .minimal-comments-arrow {outline:none!important;transition-property:background-color,color!important;box-shadow:none!important}", "body.lampa_view .nova-plus-root .nova-btn,body.lampa_view .nova-plus-root .nova-chip,body.lampa_view .nova-plus-root .nova-group {transform:none!important;-webkit-transform:none!important}", "body.lampa_view .nova-plus-root .nova-btn.focus,body.lampa_view .nova-plus-root .nova-btn.hover,body.lampa_view .nova-plus-root .nova-btn:hover,body.lampa_view .nova-plus-root .nova-btn:focus-visible,body.lampa_view .nova-plus-root .nova-chip.focus,body.lampa_view .nova-plus-root .nova-chip.hover,body.lampa_view .nova-plus-root .nova-chip:hover,body.lampa_view .nova-plus-root .nova-chip:focus-visible,body.lampa_view .nova-plus-root .nova-group.focus,body.lampa_view .nova-plus-root .nova-group:hover,body.lampa_view .nova-plus-root .nova-group:focus-visible,body.lampa_view .full-start__button.focus,body.lampa_view .full-start__button.hover,body.lampa_view .full-start__button:focus-visible,body.lampa_view .simple-button.focus,body.lampa_view .simple-button.hover,body.lampa_view .simple-button:focus-visible,body.lampa_view .tc-info.focus,body.lampa_view .tc-info:hover,body.lampa_view .tc-info:focus-visible,body.lampa_view .alc-chip.focus,body.lampa_view .alc-ap-voice.focus,body.lampa_view .alc-ep.focus,body.lampa_view .minimal-comments-arrow.focus,body.lampa_view .minimal-comments-arrow.hover,body.lampa_view .minimal-comments-arrow:hover,body.lampa_view .minimal-comments-arrow:focus-visible {outline:none!important;border-color:var(--pt-accent)!important;box-shadow:inset 0 0 0 1px var(--pt-accent)!important}", "body.lampa_view .nova-plus-root .nova-btn::after,body.lampa_view .nova-plus-root .nova-chip::after,body.lampa_view .nova-plus-root .nova-group::after,body.lampa_view .full-start__button.focus::after {display:none!important;content:none!important}", "body.lampa_view .nova-plus-root .nova-hero .nova-btn.focus,body.lampa_view .nova-plus-root .nova-hero .nova-btn.hover,body.lampa_view .nova-plus-root .nova-hero .nova-btn:hover,body.lampa_view .nova-plus-root .nova-hero .nova-btn:focus-visible {box-shadow:none!important}", "body.lampa_view .nova-plus-root .nova-hero__progress {position:absolute;left:0;right:0;bottom:0;width:100%;height:.3em;border-radius:0;background:rgba(255,255,255,.15);overflow:hidden}", "/* Banner facts share a baseline; duration belongs to the year, season to the banner. */", "body.lampa_view .nova-plus-root .nova-hero__meta {display:flex;align-items:flex-start;gap:.65em;line-height:1.5;max-width:calc(100% - 2.4em);padding:.25em .5em;border-radius:.45em;background:rgba(8,11,16,.78);color:#f5f7fa!important;text-shadow:0 1px 2px #000}", "body.lampa_view .nova-plus-root .nova-hero__meta>* {margin:0;white-space:normal}", "body.lampa_view .nova-plus-root .nova-hero__date {display:flex;flex-direction:column;align-items:flex-end;min-width:0;text-align:right}", "body.lampa_view .nova-plus-root .nova-hero__runtime {color:inherit;font-size:.9em;line-height:1.5}", "body.lampa_view .nova-plus-root .nova-hero__seasons {position:absolute;top:calc(100% + .35em);right:0;display:flex;flex-direction:column;align-items:flex-end;gap:.25em;font-size:.9em;line-height:1.5}", "body.lampa_view .nova-plus-root .nova-hero__season-label,body.lampa_view .nova-plus-root .nova-hero__season-name {display:block;max-width:min(24em,58vw);padding:.15em .5em;border-radius:.4em;background:rgba(8,11,16,.78)!important;white-space:normal;text-align:right}", "body.lampa_view .nova-plus-root .nova-badge,body.lampa_view .nova-plus-root .nova-chip__badge {display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;flex:0 0 auto;min-width:2.3em;height:1.5em;padding:0 .35em;font-size:.78em;line-height:1;font-weight:600;vertical-align:middle}", "body.lampa_view .nova-plus-root .nova-hero__meta>.nova-badge {font-size:.85em;margin-top:.12em;background:#ffffff1a!important;text-shadow:none}", "body.lampa_view .nova-plus-root .nova-card__head .nova-card__quality {display:inline-flex;align-items:center;justify-content:center;min-width:2.3em;height:1.5em;padding:0 .35em;font-size:.85em;line-height:1}", "body.lampa_view .nova-plus-root .nova-card__head {align-items:center}", "body.lampa_view .nova-source-option {box-sizing:border-box;min-height:2.8em;padding:.6em 2.6em .6em 1em}", "body.lampa_view .nova-source-option .selectbox-item__title {display:flex;align-items:center;gap:.6em;line-height:1.4}", "body.lampa_view .nova-source-option__quality {display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;min-width:2.3em;height:1.5em;padding:0 .35em;border-radius:.3em;background:#ffffff1a;color:inherit;font-size:.78em;line-height:1;font-weight:600}", "/* A compact, consistent toolbar; native values and callbacks remain in menus. */", "body.lampa_view .minimal-torrent-banner__meta {width:max-content;max-width:calc(100% - 2em);margin-left:auto;padding:.4em .6em;border-radius:.55em;background:rgba(8,11,16,.78);color:#f5f7fa!important;text-shadow:0 1px 2px #000}", "body.lampa_view .nova-plus-root .nova-card--rowlist .nova-card__num {position:absolute;top:auto;right:auto;bottom:.3em;left:.3em;display:block;width:auto;height:auto;min-width:0;padding:0;border-radius:.35em;background:none!important;font-size:.8em;line-height:1.4;white-space:nowrap}", "body.lampa_view .nova-plus-root .nova-card--rowlist .nova-card__thumb--loaded img {opacity:1}", "body.lampa_view .nova-plus-root .nova-card--rowlist .nova-card__meta {display:flex;align-items:baseline;flex-wrap:wrap;gap:.5em}", "@media(max-width:767px){", " body.lampa_view .nova-plus-root .nova-plus__bar {display:flex;flex-wrap:wrap!important;gap:.45em;margin-bottom:.6em;padding:0}", " body.lampa_view .nova-plus-root .nova-plus__bar>.nova-toolbar__label {display:none}", " body.lampa_view .nova-plus-root .nova-plus__bar>.nova-chip {display:inline-flex;align-items:center;box-sizing:border-box;flex:1 1 0;min-width:0;max-width:100%;min-height:44px;margin:0;padding:.45em .6em;font-size:.9em;line-height:1.3}", " body.lampa_view .nova-plus-root .nova-plus__bar>.nova-chip--view-icon {flex:0 0 44px;width:44px;min-width:44px;height:44px;padding:0!important}", " body.lampa_view .nova-plus-root .nova-plus__bar .nova-chip__label {min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}", " body.lampa_view .nova-plus-root .nova-plus__bar .nova-chip>svg {flex-shrink:0}", " body.lampa_view .nova-plus-root .nova-hero__meta {top:.65em;right:.65em;font-size:.78em;max-width:calc(100% - 1.3em);gap:.4em}", " body.lampa_view .nova-plus-root .nova__list .nova-card.nova-card--rowlist {display:grid;grid-template-columns:clamp(calc(100px * var(--pt-interface-scale,1)),calc(30vw * var(--pt-interface-scale,1)),calc(136px * var(--pt-interface-scale,1))) minmax(0,1fr);gap:.25em .7em;padding:.4em;margin-bottom:.6em;box-sizing:border-box}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__thumb {grid-column:1;grid-row:1 / span 2;align-self:center;width:100%;height:auto;aspect-ratio:16/9;margin:0;padding:0}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__body {grid-column:2;grid-row:1;min-width:0;padding:0}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__title {font-size:1em;line-height:1.3;margin-bottom:.3em;-webkit-line-clamp:2}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__meta {display:flex;flex-wrap:wrap;align-items:baseline;gap:.2em .45em;min-width:0;font-size:.75em;line-height:1.4;-webkit-line-clamp:unset}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-dot {display:none}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__side {grid-column:2;grid-row:2;display:flex!important;align-items:center;gap:.5em;max-width:none;min-width:0;padding:0;text-align:left;font-size:.75em}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__side .nova-card__eye {margin:0!important}", " body.lampa_view .nova-plus-root .nova__list .nova-card--rowlist .nova-card__line--body {margin-top:.35em}", "}", "/* Seasonal extensions retain native handlers; header art follows our icon grid. */", "body.lampa_view .head__logo-icon {position:relative;align-items:center;min-height:2.2em}", "body.lampa_view .head__logo-icon.head__logo-halloween {width:auto!important;min-width:2.2em;height:2.2em!important;gap:.55em}", "body.lampa_view .pt-holiday-art {display:block;position:relative;flex:0 0 2.2em;width:2.2em;height:2.2em}", "body.lampa_view .head__logo-halloween .head__logo-halloween-svg,", "body.lampa_view .head__logo-halloween .head__logo-halloween-svg svg {width:2.2em!important;height:2.2em!important}", "body.lampa_view .head__logo-halloween .head__logo-halloween-fire {top:.75em;bottom:.4em}", "body.lampa_view .head__logo-cap {top:-.4em!important;left:-.55em!important;pointer-events:none}", "body.lampa_view .head__logo-cap svg {display:block;width:1.8em!important;height:1.8em!important}", "body.lampa_view .head__logo-icon>.garland {position:absolute;width:5em!important;height:3em!important;top:-.4em!important;left:-.3em!important;opacity:.7;z-index:0!important;pointer-events:none}", "body.lampa_view .head__logo-icon>.pt-brand {position:relative;z-index:1}", "body.lampa_view .head__body {position:relative;z-index:1}", "body.lampa_view .head__actions>.head__action.halloween__button,", "body.lampa_view .head__actions>.head__action.black-friday__button,", "body.lampa_view .head__actions>.head__action.new-year__button,", "body.lampa_view .head__actions>.head__action.womens_day__button {display:flex!important;align-items:center;justify-content:center;box-sizing:border-box;flex:0 0 2.2em;width:2.2em;height:2.2em;padding:0;border:1px solid var(--pt-line);border-radius:.6em;background:var(--pt-panel);color:var(--pt-text);overflow:hidden}", "body.lampa_view .head__action.halloween__button svg,", "body.lampa_view .head__action.black-friday__button svg,", "body.lampa_view .head__action.new-year__button svg,", "body.lampa_view .head__action.womens_day__button svg {width:1.15em!important;height:1.15em!important;margin:0!important}", "body.lampa_view .halloween,body.lampa_view .womens_day {font-size:1em;line-height:1.5;color:var(--pt-text)}", "body.lampa_view .halloween__title,body.lampa_view .womens_day__title {font-size:1.35em;line-height:1.3}", "body.lampa_view .halloween__details,body.lampa_view .womens_day__details {font-size:.95em;color:var(--pt-muted)}", "body.lampa_view .black-friday,body.lampa_view .new-year {z-index:110}", "body.lampa_view .black-friday .head-backward__button,body.lampa_view .new-year .head-backward__button {border:1px solid var(--pt-line);border-radius:.6em;background:var(--pt-panel);color:var(--pt-text)}", "body.lampa_view.pt-tv .head__action.--animate {animation:none!important;background:var(--pt-panel)}", "body.lampa_view.pt-tv .head__logo-halloween-fire {animation:none!important;background:#ffc13b}", "@media(prefers-reduced-motion:reduce){body.lampa_view .head__action.--animate,body.lampa_view .head__logo-halloween-fire {animation:none!important}}", ".minimal-toolbar-label {display:none}", "body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar {display:flex;flex-wrap:nowrap;align-items:stretch;gap:.55em;white-space:normal;margin:0!important}", "body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button {display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-width:0;min-height:2.65em;margin:0;padding:.6em 1em;font-size:.9em;line-height:1.2;border:1px solid var(--pt-line);border-radius:.6em;background:var(--pt-panel);color:var(--pt-text);flex:0 1 auto}", "body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button>:not(.minimal-toolbar-label) {display:none!important}", "body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .minimal-toolbar-label {display:inline;margin:0;padding:0;background:none;font-size:1em;white-space:nowrap}", "body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button:after {display:none!important}", "body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button.focus,body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button.hover {border-color:var(--pt-accent);box-shadow:inset 0 0 0 1px var(--pt-accent)!important}", "body.lampa_view .minimal-torrent-view .watched-history {box-sizing:border-box;min-width:0;border:1px solid var(--pt-line);border-radius:.6em;background:var(--pt-panel);margin-top:.5em}", "body.lampa_view .minimal-torrent-view .watched-history.focus {border-color:var(--pt-accent);box-shadow:inset 0 0 0 1px var(--pt-accent)}", "body.lampa_view .minimal-torrent-view .watched-history:after {display:none!important}", "/* The native search overlay was transparent, showing controls over releases. */", "body.lampa_view .search-box {z-index:90!important;background:#080b10!important;box-sizing:border-box;isolation:isolate}", "@media(max-width:767px){", " body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.45em}", " body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button {min-height:44px;padding:.55em .3em;font-size:.88em}", "}", "", "/* Keep hero focus inside its paint bounds, including keyboard and remote input. */", "body.lampa_view .pt-hero__action {outline:none!important;transition-property:background-color,color!important}", "body.lampa_view .pt-hero__studio.selector {outline:none!important;transition:none!important}", "body.lampa_view .pt-hero__studio.selector.focus,body.lampa_view .pt-hero__studio.selector:focus-visible {outline:none!important;box-shadow:inset 0 0 0 2px var(--pt-accent)!important}", "", "/* Seasonal controls keep their native nodes and use the shared SVG style. */", "body.lampa_view .pt-holiday-icons {display:flex;align-items:center;gap:.35em;flex-shrink:0}", "body.lampa_view .pt-holiday-icons>.head__action {display:flex!important;align-items:center;justify-content:center;flex:0 0 2.2em;box-sizing:border-box;width:2.2em;height:2.2em;margin:0;padding:.3em;border:1px solid transparent;border-radius:.5em;background:transparent!important;color:var(--pt-accent)!important;animation:none!important;outline:none!important;box-shadow:none!important}", "body.lampa_view .pt-holiday-icons>.head__action svg {display:block;width:1.45em!important;height:1.45em!important;object-fit:contain}", "body.lampa_view .pt-holiday-icons>.head__action.focus,body.lampa_view .pt-holiday-icons>.head__action.hover,body.lampa_view .pt-holiday-icons>.head__action:hover {border-color:var(--pt-accent);background:var(--pt-high)!important}", "body.lampa_view .head__logo-halloween .pt-holiday-art {display:none}", "/* Episode grids wrap by the scaled minimum rather than a fixed poster count. */", "", "body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar>.nova-chip {min-height:44px;min-width:44px}", "body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar>.nova-chip--view-icon {width:44px;height:44px;flex-basis:44px}", "", "/* Whole poster slots leave a small gutter for the focus ring at both ends. */", "body.lampa_view .minimal-fit-posters>.items-line__body>.scroll--horizontal>.scroll__content {padding-left:var(--minimal-poster-gutter,.55em);padding-right:var(--minimal-poster-gutter,.55em)}", "body.lampa_view .items-line.minimal-posters-sized .card:not(.card--wide):not(.card--collection) {width:var(--minimal-poster-width)!important}", "body.lampa_view .minimal-fit-posters>.items-line__body {-webkit-mask-image:none!important;mask-image:none!important}", "body.lampa_view .minimal-fit-posters .mapping--line>.card+.card {margin-left:var(--minimal-poster-gap,1em)}", "body.lampa_view .minimal-fit-posters .scroll__body>.card:last-child {margin-right:0}", "", "/* The banner frame uses the reference Bigger size, independent of UI scale. */", "body.lampa_view {--pt-banner-unit:calc(clamp(14px,.94vw,18px) * 1.05)}", "body.lampa_view .pt-hero {height:clamp(calc(32 * var(--pt-banner-unit)),67vh,calc(43 * var(--pt-banner-unit)));min-height:0;max-height:none}", "@media(min-width:1100px){body.lampa_view .pt-hero {height:clamp(calc(27 * var(--pt-banner-unit)),56vh,calc(34 * var(--pt-banner-unit)))}}", "body.lampa_view.pt-desktop .pt-hero {margin-bottom:.8em}", "body.lampa_view.pt-desktop .pt-hero__image {transform:scale(1.12)}", "", "", "/* The same mark has one position, before and after the native update. */", "body.lampa_view .torrent-item .torrent-item__viewed {position:absolute;top:.85em;left:auto;right:.85em;width:1.5em;height:1.5em;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:.2em;border:1px solid var(--pt-accent);border-radius:50%;background:var(--pt-accent);color:#13232c;z-index:2;pointer-events:none}", "body.lampa_view .torrent-item__viewed svg {width:100%;height:100%}", "body.lampa_view .torrent-item .tc-right {padding-right:2em}", "", "body.lampa_view .pt-holiday-native,body.lampa_view .head__logo-cap,body.lampa_view .head__logo-icon>.garland {display:none!important}", "body.lampa_view .pt-holiday-winter {display:flex;align-items:center;justify-content:center;flex:0 0 2.2em;width:2.2em;height:2.2em;color:var(--pt-accent);pointer-events:none}", "body.lampa_view .pt-holiday-winter svg {display:block;width:1.45em;height:1.45em}", "", "/* Torrent focus belongs inside the tile; the scroll viewport cannot clip it. */", "body.lampa_view .torrent-item.focus,body.lampa_view .torrent-item.hover,body.lampa_view .torrent-list .torrent-item.tc-item.focus,body.lampa_view .torrent-list .torrent-item.tc-item:hover {outline:none!important;box-shadow:inset 0 0 0 2px var(--pt-accent)!important}", "", "/* Episode tiles share the main poster selection. Animate position only, never", "   the border or shadow; dormant hover cannot leave another TV tile selected. */", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card {background:none!important;box-shadow:none!important;transform:none!important;transition:none!important}", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card__thumb {position:relative;transform:none;box-shadow:none!important;transition:transform .2s!important;will-change:auto}", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card__thumb:after {content:''!important;display:block!important;position:absolute;inset:0!important;width:auto!important;height:auto!important;margin:0!important;padding:0!important;transform:none!important;background:transparent!important;opacity:1!important;transition:none!important;z-index:5;border:2px solid transparent;border-radius:inherit;box-sizing:border-box!important;pointer-events:none}", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card.focus .nova-card__thumb,body.lampa_view .nova-plus-root .nova__list--grid .nova-card.hover .nova-card__thumb {transform:translateY(-.2em) scale(1.045);box-shadow:0 0 .85em rgba(173,217,229,.4),0 0 1.8em rgba(173,217,229,.22)!important}", "body.lampa_view .nova-plus-root .nova__list--grid .nova-card.focus .nova-card__thumb:after,body.lampa_view .nova-plus-root .nova__list--grid .nova-card.hover .nova-card__thumb:after {border-color:var(--pt-accent)}", "body.lampa_view .nova-plus-root .nova-card.focus .nova-card__title,body.lampa_view .nova-plus-root .nova-card.hover .nova-card__title {color:var(--pt-accent)}", "body.lampa_view.pt-tv .nova-plus-root .nova__list--grid .nova-card.hover:not(.focus) .nova-card__thumb {transform:none!important;box-shadow:none!important}", "body.lampa_view.pt-tv .nova-plus-root .nova__list--grid .nova-card.hover:not(.focus) .nova-card__thumb:after {border-color:transparent!important}", "body.lampa_view.pt-tv .nova-plus-root .nova-card.hover:not(.focus) .nova-card__title {color:var(--pt-text)}", "", "/* The same native menu becomes a dock only when the native preference is on. */", "body.lampa_view.pt-menu-pinned {--pt-menu-width:min(16em,28vw)}", "body.lampa_view.pt-menu-pinned .head__menu-icon {display:none!important}", "body.lampa_view.pt-menu-pinned .wrap__left,body.lampa_view.menu--always.pt-menu-pinned .wrap__left {top:3.6em!important;bottom:0!important;left:0!important;width:var(--pt-menu-width)!important;height:calc(100% - 3.6em)!important;max-height:none!important;padding:.7em .35em!important;border:0;border-right:1px solid var(--pt-line);border-radius:0;box-shadow:none;visibility:visible!important;opacity:1!important;pointer-events:auto;transition:none}", "body.lampa_view.pt-menu-pinned .wrap__left>.scroll {height:100%!important;max-height:100%!important}", "body.lampa_view.pt-menu-pinned .wrap__left>.scroll>.scroll__content {height:100%!important;max-height:100%!important}", "body.lampa_view.pt-menu-pinned .wrap {width:100%!important;max-width:100%}", "body.lampa_view.pt-menu-pinned .wrap__content {min-width:0;box-sizing:border-box;flex:0 0 auto;width:calc(100% - var(--pt-menu-width))!important;max-width:calc(100% - var(--pt-menu-width))!important;margin-left:var(--pt-menu-width)!important}", "body.lampa_view.pt-menu-pinned .pt-hero,body.lampa_view.pt-menu-pinned .items-line {width:94%;max-width:94%!important;margin-left:auto!important;margin-right:auto!important}", "body.lampa_view.pt-menu-pinned .menu__text {white-space:normal}", "body.lampa_view.pt-mobile.pt-menu-pinned {--pt-menu-width:min(14em,38vw)}", "body.lampa_view.pt-mobile.pt-menu-pinned .wrap__left {bottom:5.5em!important;height:calc(100% - 9.1em)!important}", "", "body.lampa_view .card:not(.focus):not(.hover):not(.pt-card-pointer):not(.pt-card-touch) .pt-series-status {display:none}", "", "/* Header controls keep their boxes when focused. Draw outside the avatar so", "   its image cannot cover the remote/keyboard focus indicator. */", "body.lampa_view .head__body {box-sizing:border-box;min-width:0}", "body.lampa_view .head__actions {flex-shrink:0}", "body.lampa_view .head__menu-icon,body.lampa_view .head__backward {position:relative;align-self:center;top:auto;left:auto;transform:none!important;transition:none!important}", "body.lampa_view .head__menu-icon svg {display:block;flex:none;margin:0!important;position:static!important;transform:none!important}", "/* Header focus stays inside the control, matching Menu, with no second ring. */", "body.lampa_view .head__menu-icon,body.lampa_view .head__backward,body.lampa_view .head__action.open--search,body.lampa_view .head__action.open--profile,body.lampa_view .head__action.open--settings,body.lampa_view .pt-holiday-icons>.head__action {outline:0 solid transparent!important;outline-offset:0!important;box-shadow:none!important;animation:none!important;transition:none!important;transform:none!important;border:1px solid var(--pt-line)!important}", "body.lampa_view .head__action.open--profile {padding:0!important}", "body.lampa_view .head__menu-icon.focus,body.lampa_view .head__menu-icon:focus-visible,body.lampa_view .head__backward.focus,body.lampa_view .head__backward:focus-visible,", "body.lampa_view .head__action.open--search.focus,body.lampa_view .head__action.open--profile.focus,body.lampa_view .head__action.open--settings.focus,body.lampa_view .head__action.open--search:focus-visible,body.lampa_view .head__action.open--profile:focus-visible,body.lampa_view .head__action.open--settings:focus-visible,", "body.lampa_view .pt-holiday-icons>.head__action.focus,body.lampa_view .pt-holiday-icons>.head__action:focus-visible,", "body.lampa_view:not(.pt-tv) .head__menu-icon:hover,body.lampa_view:not(.pt-tv) .head__backward:hover,body.lampa_view:not(.pt-tv) .head__action.open--search:hover,body.lampa_view:not(.pt-tv) .head__action.open--profile:hover,body.lampa_view:not(.pt-tv) .head__action.open--settings:hover,", "body.lampa_view:not(.pt-tv) .pt-holiday-icons>.head__action:hover {border-color:var(--pt-accent)!important;background:var(--pt-high)!important;color:var(--pt-text)}", "body.lampa_view .head__action.open--search.focus:after,body.lampa_view .head__action.open--search:focus-visible:after {color:var(--pt-text)}", "body.lampa_view .menu__item {min-width:0;box-sizing:border-box}", "body.lampa_view .menu__text {flex:1;min-width:0;white-space:normal!important;overflow-wrap:break-word;line-height:1.35;max-height:none;text-overflow:clip}", "", "/* Android WebView can rasterize white inset focus shadows as a solid fill.", "   Use a real, constant-width border for primary TV controls instead. */", "body.lampa_view.pt-tv .pt-hero__action {appearance:none;-webkit-appearance:none;box-sizing:border-box;border:2px solid transparent;padding:calc(.85em - 1px) calc(1.15em - 1px);background:var(--pt-accent)!important;color:#13232c!important;box-shadow:none!important;transition:none!important}", "body.lampa_view.pt-tv .pt-hero__action--secondary {background:#212a35dd!important;color:#d4dce3!important}", "body.lampa_view.pt-tv .pt-hero__action.focus,body.lampa_view.pt-tv .pt-hero__action:focus-visible {border-color:#fff!important;box-shadow:none!important;outline:none!important}", "body.lampa_view.pt-tv .pt-hero__action.hover:not(.focus):not(:focus-visible) {border-color:transparent!important;box-shadow:none!important}", 'body.lampa_view.pt-tv .minimal-anime-tab[aria-selected="true"] {box-shadow:0 0 .35em rgba(173,217,229,.85),0 0 1.2em rgba(173,217,229,.65),0 0 2.4em rgba(173,217,229,.42)!important;transition:none!important}', "body.lampa_view.pt-tv .full-start__button.button--alc-auto.focus,body.lampa_view.pt-tv .alc-ap__play.focus {background:var(--pt-accent)!important;color:#13232c!important;border-color:#fff!important;box-shadow:none!important;outline:none!important}", "", "/* TV uses the same full-frame artwork and text composition as desktop. */", "body.lampa_view.pt-tv .pt-hero__image {object-position:right center}", "body.lampa_view.pt-tv .pt-hero__body {top:auto;bottom:7em;transform:none}", "body.lampa_view.pt-tv .pt-hero__logo {max-height:7em;margin-bottom:1.4em}", "body.lampa_view.pt-tv .pt-hero__overview {-webkit-line-clamp:3}", "body.lampa_view.pt-tv.pt-menu-pinned .wrap__left {top:4.5em!important;height:calc(100% - 4.5em)!important}", "", "body.lampa_view .nova-plus-root .nova-hero__meta {background:rgba(8,11,16,.52);padding:.2em .4em}", "body.lampa_view .nova-plus-root .nova-hero__runtime {position:absolute;right:0;top:calc(100% + .45em);padding:.2em .45em;white-space:nowrap;border-radius:.35em;background:rgba(8,11,16,.52);color:var(--pt-text);font-size:.8em;line-height:1.3}", "body.lampa_view.pt-tv .minimal-comments-nav {display:none!important}", "body.lampa_view .nova-episode-nav {display:flex;justify-content:flex-end;gap:.4em;margin-bottom:.5em}", "body.lampa_view .nova-episode-nav button {width:2.1em;height:2.1em;display:flex;align-items:center;justify-content:center;border:1px solid var(--pt-line);border-radius:.6em;background:#ffffff04;color:var(--pt-muted);cursor:pointer}", "body.lampa_view .nova-episode-nav svg {width:1em;height:1em}", "body.lampa_view.pt-tv .nova-episode-nav {display:none!important}", "body.lampa_view.pt-favorites .category-full>.card,body.lampa_view.pt-favorites .mapping--grid>.card {width:calc(12.5% * var(--pt-interface-scale,1))!important}", "@media(max-width:650px){body.lampa_view.pt-favorites .category-full>.card,body.lampa_view.pt-favorites .mapping--grid>.card {width:33.333%!important}}", "", "/* Episode arrows share the collection buttons' pointer and keyboard focus. */", "body.lampa_view .nova-episode-nav button:hover,body.lampa_view .nova-episode-nav button:focus-visible,body.lampa_view .nova-episode-nav button.focus,body.lampa_view .nova-episode-nav button.hover {border-color:var(--pt-accent);background:#add9e512;color:var(--pt-accent);box-shadow:0 0 0 1px var(--pt-accent);outline:none}", "", "/* Fixed pixel focus geometry is identical on TV and desktop, independent of", "   native focus themes and the interface font scale. */", "body.lampa_view .card.focus .card__view:after,body.lampa_view .card.hover .card__view:after {border:2px solid var(--pt-accent)!important;top:0!important;left:0!important;right:0!important;bottom:0!important;outline:none!important;box-shadow:none!important;border-radius:.5em!important}", "body.lampa_view .head__menu-icon:before,body.lampa_view .head__menu-icon:after,body.lampa_view .head__backward:before,body.lampa_view .head__backward:after,body.lampa_view .head__action.open--profile:before,body.lampa_view .head__action.open--profile:after,body.lampa_view .head__action.open--search:before,body.lampa_view .pt-holiday-icons>.head__action:before,body.lampa_view .pt-holiday-icons>.head__action:after {content:none!important;display:none!important}", "body.lampa_view .head__menu-icon,body.lampa_view .head__backward,body.lampa_view .head__action.open--search,body.lampa_view .head__action.open--profile,body.lampa_view .head__action.open--settings,body.lampa_view .pt-holiday-icons>.head__action {border-width:2px!important}", "body.lampa_view .menu__item.focus,body.lampa_view .menu__item.hover,body.lampa_view .menu__item.traverse {background:#20272e!important;color:var(--pt-text)!important;outline:none!important;box-shadow:inset 2px 0 var(--pt-accent)!important;animation:none!important;transform:none!important}", "body.lampa_view .menu__ico [stroke] {stroke:currentColor!important}", 'body.lampa_view .menu__ico [fill]:not([fill="none"]) {fill:currentColor!important}', "body.lampa_view .menu__item .menu__text {color:inherit!important}", "", "/* RTL is scoped to plugin controls. Content titles and saved values retain their text. */", "body.lampa_view.pt-rtl .settings__content,body.lampa_view.pt-rtl .selectbox__content,body.lampa_view.pt-rtl .nova-plus__bar,body.lampa_view.pt-rtl .minimal-detail-facts {direction:rtl;text-align:start}", "body.lampa_view.pt-rtl .pt-hero__body {direction:rtl;text-align:right}", "body.lampa_view.pt-rtl .pt-hero__meta,body.lampa_view.pt-rtl .pt-watch-progress {direction:rtl}", "body.lampa_view.pt-rtl .minimal-back--overlay svg {transform:scaleX(-1)}", "body.lampa_view.pt-rtl .minimal-settings .settings-param__value {margin-left:0;margin-right:auto}", "", "/* Episode information comes from one TMDB season book, shared by providers. */", "body.lampa_view .nova-plus-root .nova-card__overview {font-size:.82em;line-height:1.55;color:var(--pt-muted);margin-top:.65em;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:5;overflow:hidden;overflow-wrap:break-word}", "body.lampa_view .minimal-online-option {position:relative;margin:.35em .6em;padding:.8em 2.8em .8em 1em;border:1px solid var(--pt-line);border-radius:.9em;background:var(--pt-panel);min-height:2.8em;box-sizing:border-box}", "body.lampa_view .minimal-online-option--selected {border-color:#add9e560;background:var(--pt-high)}", "body.lampa_view .minimal-online-option.focus {border-color:var(--pt-accent);background:var(--pt-high);color:var(--pt-text)}", "body.lampa_view .minimal-online-option .selectbox-item__title {white-space:normal;overflow-wrap:break-word;line-height:1.35}", "body.lampa_view .minimal-choice-check {position:absolute;right:.85em;top:50%;transform:translateY(-50%);width:1.1em;height:1.1em;color:var(--pt-accent)}", "body.lampa_view.pt-rtl .minimal-online-option {padding-right:1em;padding-left:2.8em}", "body.lampa_view.pt-rtl .minimal-choice-check {right:auto;left:.85em}", "body.lampa_view .pt-hero__studio {pointer-events:auto;cursor:pointer}", "body.lampa_view.pt-tv .pt-hero__studio {pointer-events:none;cursor:default}", "body.lampa_view:not(.pt-tv) .pt-hero__studio.selector:hover,body.lampa_view:not(.pt-tv) .pt-hero__studio.selector:focus-visible {outline:none!important;box-shadow:none!important;filter:var(--pt-studio-tone,brightness(1)) drop-shadow(0 0 .45em var(--pt-accent))}", "body.lampa_view .minimal-online-option:after {display:none!important}", "", "body.lampa_view .nova-plus-root .nova-chip--unavailable {opacity:.65;cursor:default;pointer-events:none}", "", "/* Episode facts use the same catalogue coordinates as native file playback. */", "body.lampa_view .torrent-serial .minimal-episode-overview {clear:both;padding-top:.65em;color:var(--pt-muted);font-size:.85em;line-height:1.5;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;overflow-wrap:break-word}", "body.lampa_view .torrent-serial.minimal-has-summary .torrent-serial__content {padding-bottom:1.5em}", "", "body.lampa_view .minimal-studio-heading {box-sizing:border-box;width:100%;padding:1.2em 5vw 1.5em;min-height:5em;display:flex;align-items:center;justify-content:center}", "body.lampa_view .minimal-studio-heading img {display:block;max-width:min(65vw,22em);width:auto;height:auto;max-height:5em;object-fit:contain}", "body.lampa_view .minimal-studio-heading img[hidden],body.lampa_view .minimal-studio-heading h1[hidden] {display:none}", "body.lampa_view .minimal-studio-heading h1 {font-size:1.4em;margin:0}", "body.lampa_view .minimal-studio-catalogue .company-start {display:none}", "body.lampa_view .minimal-filter-panel .selectbox-item {position:relative;justify-content:flex-start;text-align:start;margin:0;border-radius:.5em;padding:.85em 1.3em;box-shadow:none}", "body.lampa_view .minimal-filter-panel .selectbox-item__title {flex:1;min-width:0;line-height:1.4}", "body.lampa_view .minimal-filter-panel .selectbox-item__checkbox {position:static;flex:0 0 1.1em;width:1.1em;height:1.1em;margin:0;margin-inline-start:auto;transform:none}", "body.lampa_view .minimal-filter-panel .minimal-filter-choice .selectbox-item__subtitle {display:none}", "body.lampa_view .minimal-filter-panel .selectbox-item.focus {box-shadow:inset 0 0 0 1px var(--pt-accent)!important}", "body.lampa_view .minimal-filter-panel .minimal-filter-run {margin:.8em 1.1em .4em;width:auto;justify-content:center;text-align:center}", "body.lampa_view.pt-theme-glass .minimal-filter-panel .minimal-filter-run {background:var(--pt-glass-button);color:var(--pt-text)}", "", "/* Native file identity/actions with Online's list proportions. */", "body.lampa_view .torrent-files .torrent-serial {box-sizing:border-box;align-items:center;padding:.6em .75em;gap:1em}", "body.lampa_view .torrent-files .torrent-serial__img {width:12em;height:6.75em;min-height:0;align-self:center;object-fit:cover;border-radius:.8em}", "body.lampa_view .torrent-files .torrent-serial__content {display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:.5em .8em;min-width:0;padding:0;flex:1}", "body.lampa_view .torrent-files .torrent-serial.minimal-has-summary .torrent-serial__content {padding-bottom:0}", "body.lampa_view .torrent-files .torrent-serial__body {grid-column:1;grid-row:1;float:none;min-width:0;max-width:100%}", "body.lampa_view .torrent-files .torrent-serial__title {font-size:1.3em;line-height:1.3;margin:0;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}", "body.lampa_view .torrent-files .torrent-serial__line {display:flex;flex-direction:row;flex-wrap:wrap;gap:.5em;font-size:.9em;line-height:1.4;padding:0;margin:.3em 0 0}", "body.lampa_view .torrent-files .torrent-serial__line span+span:before {content:none}", "body.lampa_view .torrent-files .torrent-serial__line span {margin:0}", "body.lampa_view .torrent-files .torrent-serial__detail {grid-column:2;grid-row:1/4;float:none;align-self:center;text-align:right;margin:0}", "body.lampa_view .torrent-files .torrent-serial__size,body.lampa_view .torrent-files .torrent-serial__exe {font-size:.9em;line-height:1.4}", "body.lampa_view .torrent-files .torrent-serial .time-line {grid-column:1;grid-row:2;position:static;inset:auto;width:100%;margin:0}", "body.lampa_view .torrent-files .torrent-serial .minimal-episode-overview {grid-column:1;grid-row:3;padding:0;clear:none;font-size:.85em;line-height:1.5}", "body.lampa_view .torrent-files .torrent-serial__clear {display:none}", "body.lampa_view.pt-mobile .torrent-files .torrent-serial {grid-template-columns:clamp(90px,30vw,136px) minmax(0,1fr);gap:.6em;padding:.5em}", "body.lampa_view.pt-mobile .torrent-files .torrent-serial__img {width:100%;height:auto;aspect-ratio:16/9;align-self:center}", "body.lampa_view.pt-mobile .torrent-files .torrent-serial__title {font-size:1.05em}", "body.lampa_view.pt-mobile .torrent-files .torrent-serial__content {gap:.35em}", "body.lampa_view.pt-mobile .torrent-files .torrent-serial__detail {grid-column:1;grid-row:4;display:flex;gap:.6em;text-align:start;font-size:.75em}", "body.lampa_view.pt-mobile .torrent-files .torrent-serial__line {font-size:.72em}", "", "/* Availability follows confirmed provider results, independent of selection. */", "body.lampa_view .nova-source-option__status {display:inline-block;flex:0 0 auto;width:.55em;height:.55em;margin-inline-start:.65em;border-radius:50%;background:#fff;box-shadow:0 0 .3em #ffffffb3,0 0 .65em #ffffff66;vertical-align:middle}", "body.lampa_view .nova-source-option .selectbox-item__title>.nova-source-option__status {position:absolute;inset-inline-end:3.6em;top:50%;transform:translateY(-50%);margin:0}", "body.lampa_view .nova-source-option {padding-inline-end:5.2em!important}", "", "", "/* Native immediate/shift temporarily disables transitions; keep that contract on TV. */", "body.lampa_view.pt-tv .minimal-paged-row .scroll__body.notransition,body.lampa_view.pt-tv .minimal-paged-row .scroll__body.transition-reset {transition:none!important;-webkit-transition:none!important}", "", "/* Studio grids keep each complete row centered under their heading. */", "body.lampa_view .minimal-studio-catalogue .category-full,body.lampa_view .minimal-studio-catalogue .mapping--grid {justify-content:center}", "", "body.lampa_view.pt-mobile .card:not(.pt-card-touch) .pt-card-watch,body.lampa_view.pt-mobile .card:not(.pt-card-touch) .pt-series-status {visibility:hidden!important}", "", "body.lampa_view.pt-mobile .card__title,body.lampa_view.pt-mobile .card__age {cursor:pointer;pointer-events:auto}", "/* Touch layouts retain account controls and fit panels to the visual viewport. */", "body.lampa_view .head__action.open--profile {display:flex!important;align-items:center;justify-content:center}", "body.lampa_view .head__action.open--settings {border:1px solid var(--pt-line);border-radius:50%;background:var(--pt-panel)}", "body.lampa_view.pt-mobile .head__body {gap:.4em;padding-left:.65em;padding-right:.65em}", "body.lampa_view.pt-mobile .head__actions {display:flex!important;gap:.35em;flex-shrink:0}", "body.lampa_view.pt-mobile .head__logo-icon {margin-right:.4em!important}", "body.lampa_view .settings__content,body.lampa_view .selectbox__content {max-height:calc(100vh - 1em)!important;max-height:calc(100dvh - 1em)!important;box-sizing:border-box}", "body.lampa_view .settings__body,body.lampa_view .selectbox__body {min-height:0;overflow:hidden;flex:1 1 auto}", "body.lampa_view .settings__body>.scroll,body.lampa_view .selectbox__body>.scroll {min-height:0;max-height:100%;touch-action:pan-y}", "@media (pointer:coarse) {", " body.lampa_view:not(.pt-menu-pinned) .head__body {max-width:100%;padding-left:.65em;padding-right:.65em}", " body.lampa_view .minimal-detail-header,body.lampa_view .minimal-detail-columns {width:calc(100% - 2em);max-width:calc(100% - 2em)}", "}", "/* Scaled action labels may wrap; the hit area follows the enlarged controls. */", "body.lampa_view .minimal-detail-identity .full-start__button {height:auto;flex-shrink:0}", "body.lampa_view .minimal-detail-identity .full-start__button>span {white-space:normal;overflow-wrap:anywhere;text-align:center}", "body.lampa_view .minimal-detail-header .full-start-new__right {min-width:0}", "", "/* Explicit tablet profile keeps a wide card layout while retaining touch targets. */", "body.lampa_view.pt-tablet .head__actions {display:flex!important;gap:.35em;flex-shrink:0}", "body.lampa_view.pt-tablet .head__action {min-width:44px;min-height:44px}", "body.lampa_view.pt-tablet .head__action.open--settings {display:flex!important;align-items:center;justify-content:center}", "body.lampa_view.pt-tablet:not(.pt-menu-pinned) .head__body {max-width:100%;padding-left:.65em;padding-right:.65em}", "body.lampa_view.pt-tablet .minimal-detail-header,body.lampa_view.pt-tablet .minimal-detail-columns {width:calc(100% - 2em);max-width:calc(100% - 2em)}", "body.lampa_view.pt-tablet .card__title,body.lampa_view.pt-tablet .card__age {cursor:pointer;pointer-events:auto}", "body.lampa_view.pt-tablet .card:not(.pt-card-touch) .pt-card-watch,body.lampa_view.pt-tablet .card:not(.pt-card-touch) .pt-series-status {visibility:hidden!important}", "", "/* Personal sizing must grow the content pane instead of clipping its controls. */", "body.lampa_view.pt-personal-enlarged .pt-hero__body {flex-shrink:0;max-height:none!important}", "body.lampa_view.pt-personal-enlarged .pt-hero__actions {flex-wrap:wrap}", "body.lampa_view.pt-personal-enlarged .head__body {min-height:100%}", "body.lampa_view .full-start-new__buttons>.selector {box-sizing:border-box;align-items:center;justify-content:center}", "body.lampa_view.pt-personal-enlarged .minimal-detail-identity .full-start-new__buttons {grid-template-columns:repeat(auto-fit,minmax(3.5em,1fr))}", "", "/* Native windows stay slightly smaller than Lampa at the same screen size. */", "body.lampa_view {--pt-native-window-font:max(10px,calc(1.117vw * var(--pt-native-interface-scale,1)))}", "body.lampa_view .extensions,", "body.lampa_view .selectbox:not(.minimal-filter-panel) .selectbox__content,", "body.lampa_view .modal:not(.minimal-torrent-files) .modal__content {font-size:min(1em,var(--pt-native-window-font))!important}", "body.lampa_view .selectbox__content,body.lampa_view .modal__content {font-size:1em}", "body.lampa_view .modal__title {font-size:1.4em;line-height:1.3}", "body.lampa_view.pt-mobile .minimal-filter-panel .selectbox__content,body.lampa_view.pt-mobile .minimal-torrent-files .modal__content {font-size:calc(14px * var(--pt-interface-scale,1))}", "body.lampa_view .extensions {background:var(--pt-bg);color:var(--pt-text)}", "body.lampa_view .extensions__item,body.lampa_view .extensions__block-add {background:var(--pt-panel);border:1px solid var(--pt-line);box-sizing:border-box}", "body.lampa_view .pt-hero__artwork,body.lampa_view .pt-hero__branding {cursor:pointer}", "body.lampa_view.pt-detail-poster .minimal-detail-identity .full-start-new__poster {display:block;width:min(100%,15em);margin:0 auto 1em}", "body.lampa_view.pt-detail-poster .minimal-detail-identity .minimal-detail-logo,body.lampa_view.pt-detail-poster .minimal-detail-identity>.full-start-new__title {display:none!important}", "body.lampa_view.card--no-cover .minimal-detail-shade {display:none}", "body.lampa_view .pt-studio-white {--pt-studio-tone:brightness(0) invert(1);filter:var(--pt-studio-tone)}", "/* A proxy without CORS cannot be classified safely; retain its colours. */", "body.lampa_view .pt-studio-unreadable {background:rgba(255,255,255,.7);border-radius:.15em}", "body.lampa_view .nova-initial-loading .nova__hero {display:none!important}", "", "/* Keep the mobile detail artwork at banner proportions, independent of content height. */", "body.lampa_view.pt-mobile .full-start__background {height:auto!important;aspect-ratio:16/9;object-fit:contain;object-position:center top;transform:none!important}", "body.lampa_view.pt-mobile .minimal-detail-shade {height:auto!important;aspect-ratio:16/9;bottom:auto}", "", "/* Mobile cover is a separate image above the identity and actions. */", "body.lampa_view.pt-mobile .minimal-detail-header>.full-start__background {position:relative!important;z-index:0;left:auto!important;top:auto!important;margin:0 0 1em;opacity:1!important;-webkit-mask-image:none!important;mask-image:none!important}", "body.lampa_view.pt-mobile .minimal-detail-header>.minimal-detail-shade {display:none}", "body.lampa_view.pt-mobile .minimal-detail-header {padding-top:0}", "", "/* Selected sources remain legible independently of the native active colour. */", "body.lampa_view .search-source.active {background:#555b64!important;color:#f5f5f7!important;border-color:#ffffff45}", "body.lampa_view .search-source.active .search-source__name {color:inherit!important}", "body.lampa_view .extensions {background:var(--pt-bg)!important;min-height:100vh;isolation:isolate}", "/* Contained landscape artwork starts at the top when the window narrows. */", "body.lampa_view:not(.pt-mobile) .pt-hero__image {object-position:right top}", "body.lampa_view.pt-desktop .pt-hero {height:min(56vh,calc(34 * var(--pt-banner-unit)),calc((100vw - 6em) * .5625))}", "/* Mobile identity overlaps the soft cover edge, without enlarging the artwork. */", "body.lampa_view.pt-mobile .minimal-detail-header>.full-start__background {margin:0; border-radius:1em 1em 0 0;-webkit-mask-image:linear-gradient(#000 0%,#000 55%,transparent 100%)!important;mask-image:linear-gradient(#000 0%,#000 55%,transparent 100%)!important}", "body.lampa_view.pt-mobile:not(.card--no-cover):not(.pt-detail-poster) .minimal-detail-header>.full-start__background.loaded~.full-start-new__body {position:relative;margin-top:-3.5em}", "body.lampa_view.pt-mobile .minimal-detail-identity .minimal-detail-logo {width:auto;max-width:82%;height:4em;max-height:4em;margin:0 auto 1.2em;object-fit:contain;filter:drop-shadow(0 2px 5px #000)}", "", "/* Progress is text over the page, not a separate glass surface on phones. */", "body.lampa_view.pt-mobile .card .pt-card-watch,", "body.lampa_view.pt-mobile .card .pt-card-watch .card-watched,", "body.lampa_view.pt-mobile .card .pt-card-watch .card-watched__inner,", "body.lampa_view.pt-mobile .card .pt-card-watch .card-watched__body,", "body.lampa_view.pt-mobile .card .pt-card-watch .card-watched__item {background:transparent!important;border:0!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}", "", "body.lampa_view .full-start-new__details>[hidden],", "body.lampa_view .full-start-new__details>[hidden]+.full-start-new__split {display:none!important}", "", "", "body.lampa_view .nova-plus-root .nova-chip__stack+svg {margin-inline-start:.75em;align-self:center}", "body.lampa_view .nova-plus-root .nova-chip__stack {min-width:0}", "body.lampa_view .minimal-season-section {margin:1.1em 1.2em .55em;padding-top:.8em;border-top:1px solid var(--pt-line);font-size:.85em;line-height:1.4;color:var(--pt-muted);white-space:normal;overflow-wrap:anywhere}", "body.lampa_view .minimal-season-section:first-child {margin-top:.4em;padding-top:0;border-top:0}", "", "body.lampa_view .nova-card__part {font-size:.8em;line-height:1.3;padding:.15em .45em;border-radius:.35em;background:#ffffff18;color:inherit}", "body.lampa_view .nova-plus-root .nova-hero__season-name {width:max-content;max-width:min(24em,58vw)}", "", "", "", "", "body.lampa_view .minimal-detail-screenshots,body.lampa_view .minimal-anime-franchise {box-sizing:border-box;width:90%;max-width:90%;margin:0 auto 1.4em}", "body.lampa_view .minimal-detail-screenshots .items-line__head,body.lampa_view .minimal-detail-screenshots .scroll--horizontal>.scroll__content {padding-left:0;padding-right:0}", "body.lampa_view .minimal-detail-screenshots .items-line__body,body.lampa_view .minimal-detail-screenshots .scroll--horizontal {-webkit-mask-image:none!important;mask-image:none!important}", "body.lampa_view .minimal-detail-screenshots .full-episode[hidden],body.lampa_view .minimal-detail-screenshots .card-more[hidden],body.lampa_view .minimal-detail-screenshots .full-episode__body,body.lampa_view .minimal-detail-screenshots .full-episode__viewed {display:none!important}", "body.lampa_view .minimal-detail-screenshots .mapping--line>.full-episode {margin-left:0;margin-right:1em;cursor:pointer}", "body.lampa_view.pt-rtl .minimal-detail-screenshots .mapping--line>.full-episode {margin-left:1em;margin-right:0}", "body.lampa_view .minimal-detail-screenshots .full-episode.focus::after {inset:0;border:2px solid var(--pt-text);border-radius:inherit}", "body.lampa_view .minimal-screenshot-preview {display:block;max-width:100%;max-height:68vh;margin:auto;object-fit:contain}", "body.lampa_view .minimal-anime-franchise__button {box-sizing:border-box;width:100%;min-height:3.2em;display:flex;align-items:center;gap:.75em;padding:.7em 1em;text-align:start;border:1px solid var(--pt-line);border-radius:.55em;background:var(--pt-panel);color:var(--pt-text);font:inherit;font-weight:600;cursor:pointer}", "body.lampa_view .minimal-anime-franchise__button svg {width:1.2em;height:1.2em;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}", "body.lampa_view .minimal-anime-franchise__button svg:last-child {margin-inline-start:auto;width:1em;height:1em}", 'body.lampa_view .minimal-anime-franchise__button[aria-expanded="true"] svg:last-child {transform:rotate(180deg)}', "body.lampa_view .minimal-detail-next-episode {display:inline-block;white-space:normal;color:inherit}", "body.lampa_view .minimal-anime-franchise__button.focus,body.lampa_view .minimal-anime-franchise__button:hover,body.lampa_view .minimal-anime-franchise__button:focus-visible {outline:1px solid var(--pt-text);background:var(--pt-panel-hover,var(--pt-panel))}", "body.lampa_view .minimal-anime-franchise__item {padding:.65em 1em}", "body.lampa_view .minimal-anime-franchise__item .selectbox-item__title {white-space:normal;line-height:1.3}", "body.lampa_view .minimal-anime-franchise__item .selectbox-item__subtitle {font-size:.8em;margin-top:.2em}", "", "body.lampa_view .nova-plus-root .nova-card__labels {position:absolute;top:.5em;left:.5em;right:.5em;bottom:auto;display:flex;flex-wrap:wrap;gap:.4em;align-items:center;justify-content:flex-start;z-index:3;pointer-events:none}", "body.lampa_view .nova-plus-root .nova-card__labels .nova-card__num,body.lampa_view .nova-plus-root .nova-card__labels .nova-card__tag,body.lampa_view .nova-plus-root .nova-card__labels .nova-card__part {position:static!important;inset:auto!important;transform:none!important;width:auto!important;height:auto!important;min-width:0!important;padding:.15em .45em!important;margin:0!important;flex:0 0 auto;display:block;line-height:1.3}", "body.lampa_view .nova-plus-root .nova-card__labels .nova-card__part {background:rgba(0,0,0,.72);white-space:nowrap;font-size:.8em}", "", "/* Only the franchise picker is anchored to its trigger; native Settings keep their size. */", "body.lampa_view .minimal-franchise-menu .selectbox__content {left:var(--franchise-left)!important;top:var(--franchise-top)!important;bottom:auto!important;width:var(--franchise-width)!important;height:var(--franchise-height)!important;max-height:var(--franchise-height);transform:none!important;transition:none;border:1px solid var(--pt-line);border-radius:1em;box-shadow:0 1em 3em #0008;font-size:14px;overflow:hidden}", "body.lampa_view .minimal-franchise-menu .selectbox__head {padding:1em 1.2em .5em}", "body.lampa_view .minimal-franchise-menu .selectbox__title {font-size:1.2em;font-weight:600}", "body.lampa_view .minimal-franchise-menu .selectbox__body {min-height:0;height:auto!important}", "body.lampa_view .minimal-franchise-menu .selectbox-item {padding:.7em 1.1em;min-height:44px}", "body.lampa_view .minimal-franchise-menu .selectbox-item__title {font-size:1em}", "body.lampa_view .minimal-franchise-menu .selectbox-item.selected {box-shadow:inset 3px 0 var(--pt-accent);background:#ffffff0d}", "body.lampa_view .minimal-franchise-menu .selectbox-item.focus {background:var(--pt-text);color:var(--pt-bg,#111)}", "body.lampa_view .minimal-franchise-menu .selectbox__layer {backdrop-filter:none}", "@media(max-width:700px){body.lampa_view .nova-plus-root .nova-card__clock,body.lampa_view .pt-card-watch__time {background:none!important;border:0!important;box-shadow:none!important;outline:0!important}}", "", "/* Detail content shares the header edge; discovery rows start after a clear break. */", "body.lampa_view .minimal-detail-suggestions {box-sizing:border-box;width:90%!important;max-width:90%!important;margin:0 auto 2em;--minimal-poster-gutter:0px!important}", "body.lampa_view .minimal-detail-suggestions--first {margin-top:3em}", "body.lampa_view .minimal-detail-suggestions>.items-line__head {padding-left:0!important;padding-right:0!important}", "body.lampa_view .minimal-detail-suggestions>.items-line__body>.scroll--horizontal>.scroll__content {padding-left:0!important;padding-right:0!important}", "body.lampa_view .minimal-related-art {position:relative;width:6.5em;height:4.2em;flex:none;border-radius:.45em;overflow:hidden;background:linear-gradient(135deg,#ffffff15,#ffffff04)}", "body.lampa_view .minimal-related-art:empty:after {content:'◇';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:currentColor;opacity:.5}", "body.lampa_view .minimal-related-art img {width:100%;height:100%;object-fit:cover;object-position:center 30%}", "body.lampa_view .minimal-franchise-menu .minimal-anime-franchise__item {display:flex;align-items:center;gap:1em;min-height:5.6em;padding:.65em 1em}", "body.lampa_view .minimal-related-info {min-width:0;flex:1}", "body.lampa_view .minimal-related-info .selectbox-item__title {font-weight:600;line-height:1.35}", "body.lampa_view .minimal-related-info .selectbox-item__subtitle {white-space:normal;line-height:1.45;font-size:.85em;opacity:.8}", "@media(max-width:500px){body.lampa_view .minimal-related-art {width:5.4em;height:3.7em}}", "", "body.lampa_view .minimal-related-info .selectbox-item__title {color:inherit}", ""].join("\n");
 
   // src/online-layout.css
   var online_layout_default = ["/* Online layout owns geometry; native Nova owns selection, playback and data.", "   Both themes share the same centered column and episode sizing contract. */", "body.lampa_view .nova-plus-root.nova-plus {box-sizing:border-box;width:100%;max-width:104em;margin-left:auto;margin-right:auto;padding:1.25em 2em 3em;gap:0}", "body.lampa_view .nova-plus-root.nova-plus>.nova__hero {box-sizing:border-box}", "body.lampa_view .nova-plus-root.nova-plus>.nova-plus__strip {box-sizing:border-box;padding:.6em 0;width:100%;margin-top:1.2em}", "body.lampa_view .nova-plus-root .nova__list--row>.nova-card--wide {width:24%!important;flex:0 0 24%!important;max-width:24%!important}", "body.lampa_view .nova-plus-root .nova-chip[data-nova-label]:before {display:none}", "body.lampa_view.pt-mobile .nova-plus-root.nova-plus {max-width:42em;padding:1em 1.1em calc(6em + env(safe-area-inset-bottom,0px))}", "body.lampa_view.pt-mobile .nova-plus-root.nova-plus>.nova__hero {padding:0;flex:0 0 100%;width:100%;max-width:100%}", "body.lampa_view.pt-mobile .nova-plus-root.nova-plus>.nova__rows {width:100%;padding:1em 0 0;flex:0 0 100%;min-width:0}", "body.lampa_view.pt-mobile .nova-plus-root.nova-plus>.nova-plus__strip {padding:0;margin-top:1.2em}", "body.lampa_view.pt-mobile .nova-plus-root .nova__list--row>.nova-card--wide {width:80%!important;flex-basis:80%!important;max-width:80%!important}", "/* One grid owner: portrait mobile uses one column in both themes; TV profiles", "   set the column count together with poster slots and typography. */", "body.lampa_view .nova-plus-root .nova__list--grid:not(.nova__list--row) {display:grid!important;grid-template-columns:repeat(var(--pt-episode-columns,auto-fill),minmax(min(100%,23em),1fr));gap:1.8em 1em;margin:0}", "body.lampa_view .nova-plus-root .nova__list--grid:not(.nova__list--row)>.nova-card--wide {width:100%!important;max-width:100%!important;min-width:0;padding:0;margin:0}", "body.lampa_view.pt-mobile .nova-plus-root .nova__list--grid:not(.nova__list--row) {grid-template-columns:minmax(0,1fr)}", "/* Keep the film synopsis and ratings in the full card. Online is for choosing", "   playback: a restrained banner, source, season, audio and episode summaries. */", "/* Shared placement: view/direction, source and audio, then seasons below. */", "body.lampa_view .nova-plus-root .nova-plus__panel>[data-nova-group=season] {margin-top:1em}", "body.lampa_view .nova-plus-root [data-nova-group=season] .nova-plus__row {display:flex;flex-wrap:wrap;gap:.5em}", "body.lampa_view .nova-plus-root [data-nova-group=season] .nova-chip {margin:0}", "body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar {display:flex;flex-wrap:wrap;align-items:stretch;gap:.5em}", "body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar>.nova-toolbar__label {display:none}", "body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar>.nova-chip {box-sizing:border-box;min-width:0;margin:0;min-height:44px}", "body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar>.nova-chip--view-icon {flex:0 0 44px;width:44px}", "body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar>[data-nova-focus=source],body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar>[data-nova-focus=voice],body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar>[data-nova-status=voice],body.lampa_view.pt-mobile .nova-plus-root .nova-plus__bar>[data-nova-focus=movievoice] {flex:1 1 0;max-width:none}", "body.lampa_view.pt-mobile .nova-plus-root [data-nova-group=season] .nova-chip {min-height:44px;box-sizing:border-box;max-width:100%}", "body.lampa_view.pt-mobile .nova-plus-root .nova-chip__label {min-width:0;overflow:hidden;text-overflow:ellipsis}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-hero__meta {background:#18181866;text-shadow:none;font-size:.8em;gap:.5em}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-hero__season-label,body.lampa_view.pt-theme-glass .nova-plus-root .nova-hero__season-name {background:#18181866!important}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-hero .nova-btn {font-size:.95em;font-weight:500;padding:.6em .9em;min-height:2.5em;box-sizing:border-box}", "body.lampa_view.pt-theme-glass .nova-plus-root .nova-hero__title--logo>img {max-height:2.5em;max-width:75%}", "body.lampa_view.pt-theme-glass.pt-mobile .nova-plus-root .nova-hero__bg {padding-top:62%}", "body.lampa_view.pt-theme-glass.pt-mobile .nova-plus-root .nova-hero__title--logo {margin-bottom:.6em}", "body.lampa_view.pt-theme-glass.pt-mobile .nova-plus-root .nova-hero__body {padding:.9em}", "body.lampa_view.pt-mobile .nova-plus-root .nova__list--grid:not(.nova__list--row)>.nova-card--wide {flex:0 0 100%!important;padding:0;margin:0}", "body.lampa_view.pt-mobile .nova-plus-root .nova__list--grid .nova-card__thumb {padding-top:56.25%;border-radius:1em}", "body.lampa_view.pt-mobile .nova-plus-root .nova__list--grid .nova-card__body {padding:.65em .05em 0}", "body.lampa_view.pt-mobile .nova-plus-root .nova-card__title {font-size:1.08em;line-height:1.4;-webkit-line-clamp:2}", "body.lampa_view.pt-mobile .nova-plus-root .nova-card__overview {font-size:.88em;line-height:1.55;-webkit-line-clamp:5;margin-top:.65em}", "body.lampa_view.pt-mobile .nova-plus-root .nova-card__head {font-size:.8em;line-height:1.4}", "@media(min-width:700px) and (orientation:landscape){body.lampa_view.pt-mobile .nova-plus-root .nova__list--grid:not(.nova__list--row) {grid-template-columns:repeat(2,minmax(0,1fr))}}", "", "/* A cached image is visible on the first paint, without replaying a fade on", "   every new DOM mount. New network work remains lazy and bounded. */", "body.lampa_view .card__img,body.lampa_view .pt-hero__image,body.lampa_view .nova-plus-root .nova-card__thumb img,body.lampa_view .nova-plus-root .nova-hero__bg img {transition:none!important;-webkit-transition:none!important}", ""].join("\n");
@@ -14881,14 +15020,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         ctx.drawImage(image2, 0, 0, 6, 6);
         var pixels = ctx.getImageData(0, 0, 6, 6).data,
           colors = [];
-        var _loop11 = function _loop11() {
+        var _loop12 = function _loop12() {
             var sum = [0, 0, 0];
             var count = 0;
             for (var _y = 0; _y < 6; _y++) for (var _x3 = half * 3; _x3 < half * 3 + 3; _x3++) {
-              var _i15 = (_y * 6 + _x3) * 4;
-              if (pixels[_i15 + 3] < 128) continue;
+              var _i16 = (_y * 6 + _x3) * 4;
+              if (pixels[_i16 + 3] < 128) continue;
               count++;
-              for (var _k2 = 0; _k2 < 3; _k2++) sum[_k2] += pixels[_i15 + _k2];
+              for (var _k2 = 0; _k2 < 3; _k2++) sum[_k2] += pixels[_i16 + _k2];
             }
             if (!count) return {
               v: void 0
@@ -14906,7 +15045,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           },
           _ret6;
         for (var half = 0; half < 2; half++) {
-          _ret6 = _loop11();
+          _ret6 = _loop12();
           if (_ret6) return _ret6.v;
         }
         canvas.width = 64;
@@ -14931,7 +15070,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var light = 0;
         for (var i = 0; i < out.length; i += 4) light += out[i] + out[i + 1] + out[i + 2];
         var gain = Math.min(2.4, Math.max(0.7, 110 / Math.max(1, light / (64 * 36 * 3))));
-        for (var _i14 = 0; _i14 < out.length; _i14++) if (_i14 % 4 !== 3) out[_i14] = Math.min(255, out[_i14] * gain);
+        for (var _i15 = 0; _i15 < out.length; _i15++) if (_i15 % 4 !== 3) out[_i15] = Math.min(255, out[_i15] * gain);
         frame.data.set(out);
         ctx.putImageData(frame, 0, 0);
         var scene = canvas.toDataURL("image/png"),
@@ -15182,8 +15321,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         return cacheControl(L).clear("quality");
       }
     });
-    var _loop12 = function _loop12() {
-      var _arr0$_i = _slicedToArray(_arr0[_i16], 3),
+    var _loop13 = function _loop13() {
+      var _arr0$_i = _slicedToArray(_arr0[_i17], 3),
         type = _arr0$_i[0],
         name = _arr0$_i[1],
         description = _arr0$_i[2];
@@ -15203,8 +15342,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
       });
     };
-    for (var _i16 = 0, _arr0 = [["ratings", text("Очистить кеш рейтингов"), text("Удалить сохранённые оценки. История и закладки сохранятся.")], ["quality", text("Очистить кеш качества"), text("Удалить сохранённое качество карточек каталога и заново проверить видимые карточки.")]]; _i16 < _arr0.length; _i16++) {
-      _loop12();
+    for (var _i17 = 0, _arr0 = [["ratings", text("Очистить кеш рейтингов"), text("Удалить сохранённые оценки. История и закладки сохранятся.")], ["quality", text("Очистить кеш качества"), text("Удалить сохранённое качество карточек каталога и заново проверить видимые карточки.")]]; _i17 < _arr0.length; _i17++) {
+      _loop13();
     }
   }
 
@@ -15285,8 +15424,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       if (ratings && Number.isFinite(vote) && vote > 0 && vote <= 10) entry.vote_average = vote;
       if (isAnime(c)) entry.minimal_anime = true;
       if (source(c) === "minimal_shiki") {
-        for (var _i17 = 0, _arr1 = ["episodes", "episodes_aired"]; _i17 < _arr1.length; _i17++) {
-          var field = _arr1[_i17];
+        for (var _i18 = 0, _arr1 = ["episodes", "episodes_aired"]; _i18 < _arr1.length; _i18++) {
+          var field = _arr1[_i18];
           if (Number(c[field]) >= 0) entry[field] = Number(c[field]);
         }
         if (c.status) entry.status = c.status;
@@ -15347,7 +15486,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       return document.body.matches(".pt-wheel-active,.pt-tv-busy") || document.hidden;
     };
     function pump() {
-      var _loop13 = function _loop13() {
+      var _loop14 = function _loop14() {
         var job = queue.shift();
         if (!job.listeners.some(function (l) {
           return !l.alive || l.alive();
@@ -15391,7 +15530,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
       };
       while (!paused() && running < (document.body.classList.contains("pt-tv") ? 1 : 2) && queue.length) {
-        if (_loop13()) continue;
+        if (_loop14()) continue;
       }
     }
     function fetch(c, ok, alive) {
@@ -15602,7 +15741,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               return name && bases.includes(normal2(name));
             });
           });
-        if (!group && (exact2.length === 1 || results.length === 1)) return open(exact2[0] || results[0]);
+        var named = results.filter(function (c) {
+          return [c.title, c.name, c.original_title, c.original_name].some(function (value) {
+            return value && names.some(function (name) {
+              return normal2(name) === normal2(value);
+            });
+          });
+        });
+        if (!group && named.length === 1 && (!year || !String(named[0].first_air_date || named[0].release_date || "").slice(0, 4) || String(named[0].first_air_date || named[0].release_date).slice(0, 4) === year)) return open(named[0]);
         L.Select.show({
           title: group ? "Откройте общую карточку сериала" : "Выберите карточку аниме",
           items: results.slice(0, 12).map(function (c) {
@@ -15629,8 +15775,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }
       function expand(meta) {
         if (!alive()) return;
-        for (var _i18 = 0, _arr10 = ["name", "russian", "english", "japanese", "synonyms"]; _i18 < _arr10.length; _i18++) {
-          var field = _arr10[_i18];
+        for (var _i19 = 0, _arr10 = ["name", "russian", "english", "japanese", "synonyms"]; _i19 < _arr10.length; _i19++) {
+          var field = _arr10[_i19];
           var values = meta && meta[field];
           (Array.isArray(values) ? values : [values]).filter(Boolean).slice(0, 2).forEach(function (name) {
             return add(name);
@@ -15763,19 +15909,19 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       return String(value || "").toLowerCase().replace(/ё/g, "е").replace(/[^a-zа-я0-9\u3040-\u30ff\u3400-\u9fff]+/g, " ").trim();
     };
     var matched = false;
-    var _iterator40 = _createForOfIteratorHelper(text2.split(/[\/|]/)),
-      _step40;
+    var _iterator41 = _createForOfIteratorHelper(text2.split(/[\/|]/)),
+      _step41;
     try {
-      for (_iterator40.s(); !(_step40 = _iterator40.n()).done;) {
-        var part = _step40.value;
+      for (_iterator41.s(); !(_step41 = _iterator41.n()).done;) {
+        var part = _step41.value;
         var normalized = " " + normalize(part) + " ";
         var contains = false,
           exact = false;
-        var _iterator41 = _createForOfIteratorHelper(names),
-          _step41;
+        var _iterator42 = _createForOfIteratorHelper(names),
+          _step42;
         try {
-          for (_iterator41.s(); !(_step41 = _iterator41.n()).done;) {
-            var name = _step41.value;
+          for (_iterator42.s(); !(_step42 = _iterator42.n()).done;) {
+            var name = _step42.value;
             var needle = " " + normalize(name) + " ",
               at = normalized.indexOf(needle);
             if (at < 0) continue;
@@ -15784,17 +15930,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             if (!tail || /^(?:\d|s\d|season\b|сезон(?:\s|$)|tv\b|bd|blu|web|hd|dvd|uhd|hevc|avc|x26)/.test(tail)) exact = true;
           }
         } catch (err) {
-          _iterator41.e(err);
+          _iterator42.e(err);
         } finally {
-          _iterator41.f();
+          _iterator42.f();
         }
         if (contains && !exact) return false;
         if (exact) matched = true;
       }
     } catch (err) {
-      _iterator40.e(err);
+      _iterator41.e(err);
     } finally {
-      _iterator40.f();
+      _iterator41.f();
     }
     if (!matched) return false;
     if (card.source === "minimal_shiki") {
@@ -15821,11 +15967,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         return a - b;
       });
     if (numbers.length < 2) return null;
-    var _iterator42 = _createForOfIteratorHelper(numbers.reverse()),
-      _step42;
+    var _iterator43 = _createForOfIteratorHelper(numbers.reverse()),
+      _step43;
     try {
-      for (_iterator42.s(); !(_step42 = _iterator42.n()).done;) {
-        var season = _step42.value;
+      for (_iterator43.s(); !(_step43 = _iterator43.n()).done;) {
+        var season = _step43.value;
         var rows = groups[season],
           aired = rows.filter(function (e) {
             return Number(e.episode_number) > 0 && e.air_date && String(e.air_date).slice(0, 10) <= today2;
@@ -15839,9 +15985,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         };
       }
     } catch (err) {
-      _iterator42.e(err);
+      _iterator43.e(err);
     } finally {
-      _iterator42.f();
+      _iterator43.f();
     }
     return null;
   }
@@ -15881,8 +16027,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     function walk(value, depth) {
       if (!value || _typeof(value) !== "object" || depth > 6 || ++visited > 250) return;
       if (value.uhd === true || value.uhd === 1) add("4K");
-      for (var _i19 = 0, _arr11 = ["quality", "qualitys", "resolution", "max_quality"]; _i19 < _arr11.length; _i19++) {
-        var key2 = _arr11[_i19];
+      for (var _i20 = 0, _arr11 = ["quality", "qualitys", "resolution", "max_quality"]; _i20 < _arr11.length; _i20++) {
+        var key2 = _arr11[_i20];
         var field = value[key2];
         if (field && _typeof(field) === "object") Object.keys(field).forEach(add);else add(field);
       }
@@ -15892,8 +16038,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }
       if (Array.isArray(value)) value.forEach(function (entry) {
         return walk(entry, depth + 1);
-      });else for (var _i20 = 0, _arr12 = ["data", "results", "items", "list", "playlists"]; _i20 < _arr12.length; _i20++) {
-        var _key2 = _arr12[_i20];
+      });else for (var _i21 = 0, _arr12 = ["data", "results", "items", "list", "playlists"]; _i21 < _arr12.length; _i21++) {
+        var _key2 = _arr12[_i21];
         walk(value[_key2], depth + 1);
       }
     }
@@ -15921,11 +16067,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var padding = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 4;
     var gap = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 3;
     var placed = [];
-    var _iterator43 = _createForOfIteratorHelper(badges),
-      _step43;
+    var _iterator44 = _createForOfIteratorHelper(badges),
+      _step44;
     try {
-      var _loop14 = function _loop14() {
-          var badge = _step43.value;
+      var _loop15 = function _loop15() {
+          var badge = _step44.value;
           var w = Math.min(badge.width, Math.max(0, width - padding * 2)),
             h = badge.height;
           if (w <= 0 || h <= 0) return 0; // continue
@@ -15957,14 +16103,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }));
         },
         _ret7;
-      for (_iterator43.s(); !(_step43 = _iterator43.n()).done;) {
-        _ret7 = _loop14();
+      for (_iterator44.s(); !(_step44 = _iterator44.n()).done;) {
+        _ret7 = _loop15();
         if (_ret7 === 0) continue;
       }
     } catch (err) {
-      _iterator43.e(err);
+      _iterator44.e(err);
     } finally {
-      _iterator43.f();
+      _iterator44.f();
     }
     return placed;
   }
@@ -15979,11 +16125,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       if (paused()) return;
       var reads = [];
       var count = 0;
-      var _iterator44 = _createForOfIteratorHelper(pending),
-        _step44;
+      var _iterator45 = _createForOfIteratorHelper(pending),
+        _step45;
       try {
-        for (_iterator44.s(); !(_step44 = _iterator44.n()).done;) {
-          var node = _step44.value;
+        for (_iterator45.s(); !(_step45 = _iterator45.n()).done;) {
+          var node = _step45.value;
           if (document.body.classList.contains("pt-tv") && count++ >= 6) break;
           pending.delete(node);
           if (!node.isConnected) continue;
@@ -15996,15 +16142,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             _height = _view.clientHeight || rect.height,
             scale = rect.width / _width || 1,
             _entries = [];
-          for (var _i22 = 0, _arr13 = [[".card__vote", "br"], [".pt-quality,.card__quality", "tl"], [".pt-kind", "tr"], [".pt-series-status", "tr"], [".card__marker", "bl"], [".card__icon:not(.icon--history)", "bl"], [".card__new-episode", "bl"]]; _i22 < _arr13.length; _i22++) {
-            var _arr13$_i = _slicedToArray(_arr13[_i22], 2),
+          for (var _i23 = 0, _arr13 = [[".card__vote", "br"], [".pt-quality,.card__quality", "tl"], [".pt-kind", "tr"], [".pt-series-status", "tr"], [".card__marker", "bl"], [".card__icon:not(.icon--history)", "bl"], [".card__new-episode", "bl"]]; _i23 < _arr13.length; _i23++) {
+            var _arr13$_i = _slicedToArray(_arr13[_i23], 2),
               selector = _arr13$_i[0],
               corner = _arr13$_i[1];
-            var _iterator46 = _createForOfIteratorHelper(_view.querySelectorAll(selector)),
-              _step46;
+            var _iterator47 = _createForOfIteratorHelper(_view.querySelectorAll(selector)),
+              _step47;
             try {
-              for (_iterator46.s(); !(_step46 = _iterator46.n()).done;) {
-                var el = _step46.value;
+              for (_iterator47.s(); !(_step47 = _iterator47.n()).done;) {
+                var el = _step47.value;
                 if (el.hidden || el.classList.contains("hide") || getComputedStyle(el).display === "none") continue;
                 if (el.classList.contains("pt-series-status")) {
                   el.style.fontSize = "";
@@ -16027,9 +16173,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 });
               }
             } catch (err) {
-              _iterator46.e(err);
+              _iterator47.e(err);
             } finally {
-              _iterator46.f();
+              _iterator47.f();
             }
           }
           reads.push({
@@ -16041,23 +16187,23 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
         }
       } catch (err) {
-        _iterator44.e(err);
+        _iterator45.e(err);
       } finally {
-        _iterator44.f();
+        _iterator45.f();
       }
-      for (var _i21 = 0, _reads = reads; _i21 < _reads.length; _i21++) {
-        var _reads$_i = _reads[_i21],
+      for (var _i22 = 0, _reads = reads; _i22 < _reads.length; _i22++) {
+        var _reads$_i = _reads[_i22],
           view = _reads$_i.view,
           width = _reads$_i.width,
           height = _reads$_i.height,
           entries2 = _reads$_i.entries,
           places = _reads$_i.places;
         view.classList.add("minimal-badge-layout");
-        var _iterator45 = _createForOfIteratorHelper(entries2),
-          _step45;
+        var _iterator46 = _createForOfIteratorHelper(entries2),
+          _step46;
         try {
-          var _loop15 = function _loop15() {
-            var entry = _step45.value;
+          var _loop16 = function _loop16() {
+            var entry = _step46.value;
             var p = places.find(function (p2) {
               return p2.el === entry.el;
             });
@@ -16072,13 +16218,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               bottom: bottom ? Math.round(height - p.y - p.height) + "px" : "auto"
             });
           };
-          for (_iterator45.s(); !(_step45 = _iterator45.n()).done;) {
-            if (_loop15()) continue;
+          for (_iterator46.s(); !(_step46 = _iterator46.n()).done;) {
+            if (_loop16()) continue;
           }
         } catch (err) {
-          _iterator45.e(err);
+          _iterator46.e(err);
         } finally {
-          _iterator45.f();
+          _iterator46.f();
         }
       }
       if (pending.size) frame = requestAnimationFrame(flush);
@@ -16088,8 +16234,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       pending.add(node);
       if (!frame && !paused()) frame = requestAnimationFrame(flush);
     }
-    for (var _i23 = 0, _arr14 = ["minimal:tv-idle", "minimal:wheel-idle", "visibilitychange"]; _i23 < _arr14.length; _i23++) {
-      var event = _arr14[_i23];
+    for (var _i24 = 0, _arr14 = ["minimal:tv-idle", "minimal:wheel-idle", "visibilitychange"]; _i24 < _arr14.length; _i24++) {
+      var event = _arr14[_i24];
       document.addEventListener(event, function () {
         if (pending.size && !frame) frame = requestAnimationFrame(flush);
       });
@@ -16247,17 +16393,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       slot.appendChild(wrap);
     }
     if (!wrap) return;
-    var _iterator47 = _createForOfIteratorHelper(slot.querySelectorAll(".card-watched")),
-      _step47;
+    var _iterator48 = _createForOfIteratorHelper(slot.querySelectorAll(".card-watched")),
+      _step48;
     try {
-      for (_iterator47.s(); !(_step47 = _iterator47.n()).done;) {
-        var other = _step47.value;
+      for (_iterator48.s(); !(_step48 = _iterator48.n()).done;) {
+        var other = _step48.value;
         if (other !== wrap) other.remove();
       }
     } catch (err) {
-      _iterator47.e(err);
+      _iterator48.e(err);
     } finally {
-      _iterator47.f();
+      _iterator48.f();
     }
     if (wrap.parentNode !== slot) slot.appendChild(wrap);
     var row = Array.from(wrap.querySelectorAll(".card-watched__item")).find(function (item) {
@@ -16346,11 +16492,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         _episode = match && Number(match[1] || match[2]);
       var table = L.TimeTable && L.TimeTable.get ? L.TimeTable.get(data) || [] : [];
       var _season = 0;
-      var _iterator48 = _createForOfIteratorHelper(table),
-        _step48;
+      var _iterator49 = _createForOfIteratorHelper(table),
+        _step49;
       try {
-        for (_iterator48.s(); !(_step48 = _iterator48.n()).done;) {
-          var ep = _step48.value;
+        for (_iterator49.s(); !(_step49 = _iterator49.n()).done;) {
+          var ep = _step49.value;
           if (Number(ep.episode_number) !== _episode) continue;
           var _key3 = hash([ep.season_number, ep.season_number > 10 ? ":" : "", _episode, data.original_title].join(""));
           if (progressHash && String(_key3) !== progressHash) continue;
@@ -16361,9 +16507,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }
         }
       } catch (err) {
-        _iterator48.e(err);
+        _iterator49.e(err);
       } finally {
-        _iterator48.f();
+        _iterator49.f();
       }
       if (!_season && _episode) {
         var _last = L.Storage && L.Storage.get ? L.Storage.get("online_watched_last", "{}") || {} : {};
@@ -16457,17 +16603,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       lifetime = 9e5;
     var saved = L.Storage && L.Storage.get ? L.Storage.get(storage, []) : [];
     if (Array.isArray(saved)) {
-      var _iterator49 = _createForOfIteratorHelper(saved.slice(-80)),
-        _step49;
+      var _iterator50 = _createForOfIteratorHelper(saved.slice(-80)),
+        _step50;
       try {
-        for (_iterator49.s(); !(_step49 = _iterator49.n()).done;) {
-          var pair = _step49.value;
+        for (_iterator50.s(); !(_step50 = _iterator50.n()).done;) {
+          var pair = _step50.value;
           if (Array.isArray(pair) && typeof pair[0] === "string" && pair[1] && pair[1].details && Date.now() - pair[1].at < lifetime) cache2.set(pair[0], pair[1]);
         }
       } catch (err) {
-        _iterator49.e(err);
+        _iterator50.e(err);
       } finally {
-        _iterator49.f();
+        _iterator50.f();
       }
     }
     var cacheKey = function cacheKey(data) {
@@ -16580,7 +16726,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       } else if (pending.has(key2)) pending.get(key2).nodes.add(node);
     }
     function pump() {
-      var _loop16 = function _loop16() {
+      var _loop17 = function _loop17() {
         var task = queue.shift();
         running++;
         var done = false;
@@ -16597,17 +16743,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
           if (cache2.size > 80) cache2.delete(cache2.keys().next().value);
           save();
-          var _iterator50 = _createForOfIteratorHelper(task.nodes),
-            _step50;
+          var _iterator51 = _createForOfIteratorHelper(task.nodes),
+            _step51;
           try {
-            for (_iterator50.s(); !(_step50 = _iterator50.n()).done;) {
-              var node = _step50.value;
+            for (_iterator51.s(); !(_step51 = _iterator51.n()).done;) {
+              var node = _step51.value;
               if (node.isConnected && node.matches(".focus,.hover,.pt-card-pointer,.pt-card-touch")) schedule(node);
             }
           } catch (err) {
-            _iterator50.e(err);
+            _iterator51.e(err);
           } finally {
-            _iterator50.f();
+            _iterator51.f();
           }
           pump();
         };
@@ -16649,22 +16795,22 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
       };
       while (running < (document.body.classList.contains("pt-tv") ? 1 : 2) && queue.length) {
-        if (_loop16()) continue;
+        if (_loop17()) continue;
       }
     }
     if (L.Listener && L.Listener.follow) L.Listener.follow("state:changed", function (event) {
       if (event.target === "timeline" || event.target === "favorite") {
-        var _iterator51 = _createForOfIteratorHelper(document.querySelectorAll(".card.focus,.card.hover,.card.pt-card-pointer,.card.pt-card-touch")),
-          _step51;
+        var _iterator52 = _createForOfIteratorHelper(document.querySelectorAll(".card.focus,.card.hover,.card.pt-card-pointer,.card.pt-card-touch")),
+          _step52;
         try {
-          for (_iterator51.s(); !(_step51 = _iterator51.n()).done;) {
-            var node = _step51.value;
+          for (_iterator52.s(); !(_step52 = _iterator52.n()).done;) {
+            var node = _step52.value;
             if (cards.has(node)) schedule(node);
           }
         } catch (err) {
-          _iterator51.e(err);
+          _iterator52.e(err);
         } finally {
-          _iterator51.f();
+          _iterator52.f();
         }
       }
     });
@@ -16736,13 +16882,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     }
     function forget(item) {
       deferred.delete(item);
-      var _iterator52 = _createForOfIteratorHelper(tracked),
-        _step52;
+      var _iterator53 = _createForOfIteratorHelper(tracked),
+        _step53;
       try {
-        for (_iterator52.s(); !(_step52 = _iterator52.n()).done;) {
-          var _step52$value = _slicedToArray(_step52.value, 2),
-            node = _step52$value[0],
-            value = _step52$value[1];
+        for (_iterator53.s(); !(_step53 = _iterator53.n()).done;) {
+          var _step53$value = _slicedToArray(_step53.value, 2),
+            node = _step53$value[0],
+            value = _step53$value[1];
           if (value === item) {
             if (observer) observer.unobserve(node);
             visible.delete(node);
@@ -16752,39 +16898,39 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }
         }
       } catch (err) {
-        _iterator52.e(err);
+        _iterator53.e(err);
       } finally {
-        _iterator52.f();
+        _iterator53.f();
       }
     }
     function revisit() {
       if (observer) {
-        var _iterator53 = _createForOfIteratorHelper(visible),
-          _step53;
-        try {
-          for (_iterator53.s(); !(_step53 = _iterator53.n()).done;) {
-            var node = _step53.value;
-            if (node.isConnected) deferred.add(tracked.get(node));
-          }
-        } catch (err) {
-          _iterator53.e(err);
-        } finally {
-          _iterator53.f();
-        }
-      } else {
-        var _iterator54 = _createForOfIteratorHelper(tracked),
+        var _iterator54 = _createForOfIteratorHelper(visible),
           _step54;
         try {
           for (_iterator54.s(); !(_step54 = _iterator54.n()).done;) {
-            var _step54$value = _slicedToArray(_step54.value, 2),
-              _node3 = _step54$value[0],
-              item = _step54$value[1];
-            if (_node3.isConnected) deferred.add(item);
+            var node = _step54.value;
+            if (node.isConnected) deferred.add(tracked.get(node));
           }
         } catch (err) {
           _iterator54.e(err);
         } finally {
           _iterator54.f();
+        }
+      } else {
+        var _iterator55 = _createForOfIteratorHelper(tracked),
+          _step55;
+        try {
+          for (_iterator55.s(); !(_step55 = _iterator55.n()).done;) {
+            var _step55$value = _slicedToArray(_step55.value, 2),
+              _node3 = _step55$value[0],
+              item = _step55$value[1];
+            if (_node3.isConnected) deferred.add(item);
+          }
+        } catch (err) {
+          _iterator55.e(err);
+        } finally {
+          _iterator55.f();
         }
       }
       if (!timer && deferred.size && !document.body.classList.contains("pt-tv-busy")) timer = setTimeout(flush, 100);
@@ -16829,7 +16975,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       badges.schedule(node);
     }
     function drain() {
-      var _loop17 = function _loop17() {
+      var _loop18 = function _loop18() {
         var _next2 = function next() {
           if (job.generation !== generation) return;
           if (!job.nodes.some(function (n) {
@@ -16941,7 +17087,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         _next2();
       };
       while (!document.body.matches(".pt-wheel-active,.pt-tv-busy") && running < (document.body.classList.contains("pt-tv") ? 1 : 2) && queue.length) {
-        if (_loop17()) continue;
+        if (_loop18()) continue;
       }
     }
     function inspect(item) {
@@ -17098,19 +17244,19 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             return node.nodeType === 1 && (node.matches(".card") || node.querySelector(".card"));
           });
         })) {
-          var _iterator55 = _createForOfIteratorHelper(tracked),
-            _step55;
+          var _iterator56 = _createForOfIteratorHelper(tracked),
+            _step56;
           try {
-            for (_iterator55.s(); !(_step55 = _iterator55.n()).done;) {
-              var _step55$value = _slicedToArray(_step55.value, 2),
-                node = _step55$value[0],
-                item = _step55$value[1];
+            for (_iterator56.s(); !(_step56 = _iterator56.n()).done;) {
+              var _step56$value = _slicedToArray(_step56.value, 2),
+                node = _step56$value[0],
+                item = _step56$value[1];
               if (!node.isConnected) forget(item);
             }
           } catch (err) {
-            _iterator55.e(err);
+            _iterator56.e(err);
           } finally {
-            _iterator55.f();
+            _iterator56.f();
           }
         }
       }).observe(document.body, {
@@ -17134,19 +17280,19 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       });
       var limit = document.body.classList.contains("pt-tv") ? 6 : Infinity;
       var count = 0;
-      var _iterator56 = _createForOfIteratorHelper(deferred),
-        _step56;
+      var _iterator57 = _createForOfIteratorHelper(deferred),
+        _step57;
       try {
-        for (_iterator56.s(); !(_step56 = _iterator56.n()).done;) {
-          var item = _step56.value;
+        for (_iterator57.s(); !(_step57 = _iterator57.n()).done;) {
+          var item = _step57.value;
           deferred.delete(item);
           inspect(item);
           if (++count >= limit) break;
         }
       } catch (err) {
-        _iterator56.e(err);
+        _iterator57.e(err);
       } finally {
-        _iterator56.f();
+        _iterator57.f();
       }
       if (deferred.size) timer = setTimeout(flush, 16);
       drain();
@@ -17200,17 +17346,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var caption = document.body.matches(".pt-mobile,.pt-tablet") && event.target.closest && event.target.closest(".card__title,.card__age");
       var selected = caption && caption.closest(".card"),
         open = selected && !selected.classList.contains("pt-card-touch");
-      var _iterator57 = _createForOfIteratorHelper(document.querySelectorAll(".card.pt-card-touch")),
-        _step57;
+      var _iterator58 = _createForOfIteratorHelper(document.querySelectorAll(".card.pt-card-touch")),
+        _step58;
       try {
-        for (_iterator57.s(); !(_step57 = _iterator57.n()).done;) {
-          var card = _step57.value;
+        for (_iterator58.s(); !(_step58 = _iterator58.n()).done;) {
+          var card = _step58.value;
           card.classList.remove("pt-card-touch");
         }
       } catch (err) {
-        _iterator57.e(err);
+        _iterator58.e(err);
       } finally {
-        _iterator57.f();
+        _iterator58.f();
       }
       if (!selected) return;
       event.preventDefault();
@@ -17237,21 +17383,21 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       retries.clear();
       running = 0;
       if (L.Storage && L.Storage.set) L.Storage.set(storage, []);
-      var _iterator58 = _createForOfIteratorHelper(tracked),
-        _step58;
+      var _iterator59 = _createForOfIteratorHelper(tracked),
+        _step59;
       try {
-        for (_iterator58.s(); !(_step58 = _iterator58.n()).done;) {
-          var _step58$value = _slicedToArray(_step58.value, 1),
-            node = _step58$value[0];
+        for (_iterator59.s(); !(_step59 = _iterator59.n()).done;) {
+          var _step59$value = _slicedToArray(_step59.value, 1),
+            node = _step59$value[0];
           node.querySelectorAll(".pt-quality").forEach(function (b) {
             return b.remove();
           });
           node.classList.remove("pt-has-quality");
         }
       } catch (err) {
-        _iterator58.e(err);
+        _iterator59.e(err);
       } finally {
-        _iterator58.f();
+        _iterator59.f();
       }
       revisit();
     });
@@ -17415,8 +17561,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     };
     if (!state.posterFitWrapped) {
       state.posterFitWrapped = true;
-      var _loop18 = function _loop18() {
-        var method = _arr15[_i24];
+      var _loop19 = function _loop19() {
+        var method = _arr15[_i25];
         var original = line.scroll[method];
         if (!original) return 1; // continue
         line.scroll[method] = function (element, center) {
@@ -17430,8 +17576,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           return original.apply(this, arguments);
         };
       };
-      for (var _i24 = 0, _arr15 = ["update", "immediate"]; _i24 < _arr15.length; _i24++) {
-        if (_loop18()) continue;
+      for (var _i25 = 0, _arr15 = ["update", "immediate"]; _i25 < _arr15.length; _i25++) {
+        if (_loop19()) continue;
       }
     }
     if (line.last && line.scroll.immediate) line.scroll.immediate(line.last, true);
@@ -18471,19 +18617,19 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
           if (metadataCache.size > 80) metadataCache.delete(metadataCache.keys().next().value);
         }
-        var _iterator59 = _createForOfIteratorHelper(listeners),
-          _step59;
+        var _iterator60 = _createForOfIteratorHelper(listeners),
+          _step60;
         try {
-          for (_iterator59.s(); !(_step59 = _iterator59.n()).done;) {
-            var _step59$value = _slicedToArray(_step59.value, 2),
-              success = _step59$value[0],
-              error = _step59$value[1];
+          for (_iterator60.s(); !(_step60 = _iterator60.n()).done;) {
+            var _step60$value = _slicedToArray(_step60.value, 2),
+              success = _step60$value[0],
+              error = _step60$value[1];
             if (json) success(__spreadValues({}, json));else error();
           }
         } catch (err) {
-          _iterator59.e(err);
+          _iterator60.e(err);
         } finally {
-          _iterator59.f();
+          _iterator60.f();
         }
       };
       api("/api/animes/" + id, finish, function () {
@@ -18700,8 +18846,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     function fields2(json, kind, id) {
       if (!json || Number(json.id) !== Number(id) || !(json.title || json.name)) return null;
       var value = {};
-      for (var _i25 = 0, _arr16 = ["title", "name", "original_title", "original_name", "overview", "poster_path", "backdrop_path", "release_date", "first_air_date", "original_language", "vote_average", "vote_count", "genre_ids", "genres", "origin_country", "production_companies", "networks"]; _i25 < _arr16.length; _i25++) {
-        var name = _arr16[_i25];
+      for (var _i26 = 0, _arr16 = ["title", "name", "original_title", "original_name", "overview", "poster_path", "backdrop_path", "release_date", "first_air_date", "original_language", "vote_average", "vote_count", "genre_ids", "genres", "origin_country", "production_companies", "networks"]; _i26 < _arr16.length; _i26++) {
+        var name = _arr16[_i26];
         if (json[name] != null) value[name] = json[name];
       }
       value.title = json.title || json.name;
@@ -18725,7 +18871,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       save();
     }
     function pump() {
-      var _loop19 = function _loop19() {
+      var _loop20 = function _loop20() {
         var task = queue.shift();
         if (task.generation !== generation) return 1; // continue
         running++;
@@ -18755,7 +18901,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
       };
       while (running < 2 && queue.length) {
-        if (_loop19()) continue;
+        if (_loop20()) continue;
       }
     }
     function request(path, lang, done) {
@@ -18785,18 +18931,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           type = _ref20[1];
         return request(path, lang, function (json) {
           if (json && Array.isArray(json.results)) answers++;
-          var _iterator60 = _createForOfIteratorHelper(json && json.results || []),
-            _step60;
+          var _iterator61 = _createForOfIteratorHelper(json && json.results || []),
+            _step61;
           try {
-            for (_iterator60.s(); !(_step60 = _iterator60.n()).done;) {
-              var row = _step60.value;
+            for (_iterator61.s(); !(_step61 = _iterator61.n()).done;) {
+              var row = _step61.value;
               var kind = type || row.media_type;
               if ((kind === "movie" || kind === "tv") && row.poster_path && row.backdrop_path) remember(lang, kind, row);
             }
           } catch (err) {
-            _iterator60.e(err);
+            _iterator61.e(err);
           } finally {
-            _iterator60.f();
+            _iterator61.f();
           }
           if (! --remaining) {
             if (!answers) unavailableUntil = Date.now() + 6e4;
@@ -20272,7 +20418,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       pump();
     }
     function pump() {
-      var _loop20 = function _loop20() {
+      var _loop21 = function _loop21() {
         var job = queue.shift();
         if (job.generation !== generation) {
           pending.delete(job.key);
@@ -20321,7 +20467,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
       };
       while (active < 3 && queue.length) {
-        if (_loop20()) continue;
+        if (_loop21()) continue;
       }
     }
     function clear() {
@@ -20506,11 +20652,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             return a.length;
           }))));
           for (var i = 0; i < length; i++) {
-            var _iterator61 = _createForOfIteratorHelper(accepted),
-              _step61;
+            var _iterator62 = _createForOfIteratorHelper(accepted),
+              _step62;
             try {
-              for (_iterator61.s(); !(_step61 = _iterator61.n()).done;) {
-                var rows = _step61.value;
+              for (_iterator62.s(); !(_step62 = _iterator62.n()).done;) {
+                var rows = _step62.value;
                 var card = rows[i];
                 if (!card) continue;
                 var key2 = card.media_type + ":" + card.id;
@@ -20520,9 +20666,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 }
               }
             } catch (err) {
-              _iterator61.e(err);
+              _iterator62.e(err);
             } finally {
-              _iterator61.f();
+              _iterator62.f();
             }
           }
           next();
@@ -20828,7 +20974,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         complete();
         return;
       }
-      var _loop21 = function _loop21() {
+      var _loop22 = function _loop22() {
         var finish = function finish(json) {
           if (settled) return;
           settled = true;
@@ -20890,7 +21036,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });else finish(null);
       };
       while (!ended && running < 3 && cursor < plan.length) {
-        if (_loop21()) continue;
+        if (_loop22()) continue;
       }
       complete();
     }
@@ -21047,7 +21193,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       });
     };
     function pump() {
-      var _loop22 = function _loop22() {
+      var _loop23 = function _loop23() {
         var finish = function finish(json, message) {
           if (settled) return;
           settled = true;
@@ -21109,7 +21255,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
       };
       while (running < 2 && queue.length) {
-        if (_loop22()) continue;
+        if (_loop23()) continue;
       }
     }
     function clear() {
@@ -21117,8 +21263,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       queue.length = 0;
       pending.clear();
       metadata2.clear();
-      for (var _i26 = 0, _Array$from = Array.from(live); _i26 < _Array$from.length; _i26++) {
-        var xhr = _Array$from[_i26];
+      for (var _i27 = 0, _Array$from = Array.from(live); _i27 < _Array$from.length; _i27++) {
+        var xhr = _Array$from[_i27];
         xhr.abort();
       }
     }
@@ -21140,11 +21286,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           var results = [],
             seen = /* @__PURE__ */new Set();
           for (var i = 0; i < 10; i++) {
-            var _iterator62 = _createForOfIteratorHelper(good),
-              _step62;
+            var _iterator63 = _createForOfIteratorHelper(good),
+              _step63;
             try {
-              for (_iterator62.s(); !(_step62 = _iterator62.n()).done;) {
-                var part = _step62.value;
+              for (_iterator63.s(); !(_step63 = _iterator63.n()).done;) {
+                var part = _step63.value;
                 var card = part.results[i];
                 if (card && !seen.has(card.media_type + ":" + card.id)) {
                   seen.add(card.media_type + ":" + card.id);
@@ -21152,9 +21298,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 }
               }
             } catch (err) {
-              _iterator62.e(err);
+              _iterator63.e(err);
             } finally {
-              _iterator62.f();
+              _iterator63.f();
             }
           }
           ok({
@@ -21254,22 +21400,22 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         pending.delete(queue[i].key);
         queue.splice(i, 1);
       }
-      var _iterator63 = _createForOfIteratorHelper(pending),
-        _step63;
+      var _iterator64 = _createForOfIteratorHelper(pending),
+        _step64;
       try {
-        for (_iterator63.s(); !(_step63 = _iterator63.n()).done;) {
-          var _step63$value = _slicedToArray(_step63.value, 2),
-            key2 = _step63$value[0],
-            job = _step63$value[1];
+        for (_iterator64.s(); !(_step64 = _iterator64.n()).done;) {
+          var _step64$value = _slicedToArray(_step64.value, 2),
+            key2 = _step64$value[0],
+            job = _step64$value[1];
           if (job.path.startsWith("search/")) job.callbacks = [];
         }
       } catch (err) {
-        _iterator63.e(err);
+        _iterator64.e(err);
       } finally {
-        _iterator63.f();
+        _iterator64.f();
       }
-      for (var _i27 = 0, _Array$from2 = Array.from(live); _i27 < _Array$from2.length; _i27++) {
-        var xhr = _Array$from2[_i27];
+      for (var _i28 = 0, _Array$from2 = Array.from(live); _i28 < _Array$from2.length; _i28++) {
+        var xhr = _Array$from2[_i28];
         if ((xhr.minimalTraktPath || "").startsWith("search/")) xhr.abort();
       }
     }
@@ -21409,14 +21555,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         list: list,
         clear: clear
       };
-    var _loop23 = function _loop23() {
-      var method = _arr17[_i28];
+    var _loop24 = function _loop24() {
+      var method = _arr17[_i29];
       if (tmdb[method]) adapter[method] = function () {
         return tmdb[method].apply(tmdb, arguments);
       };
     };
-    for (var _i28 = 0, _arr17 = ["full", "person", "seasons", "menu", "menuCategory", "genres", "collections"]; _i28 < _arr17.length; _i28++) {
-      _loop23();
+    for (var _i29 = 0, _arr17 = ["full", "person", "seasons", "menu", "menuCategory", "genres", "collections"]; _i29 < _arr17.length; _i29++) {
+      _loop24();
     }
     L.Api.sources.trakt = adapter;
     function sources() {
@@ -22482,8 +22628,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   function yearBounds(f) {
     var from = String(f.year_from || f.year || "").trim(),
       to = String(f.year_to || f.year || "").trim();
-    for (var _i29 = 0, _arr18 = [from, to]; _i29 < _arr18.length; _i29++) {
-      var value = _arr18[_i29];
+    for (var _i30 = 0, _arr18 = [from, to]; _i30 < _arr18.length; _i30++) {
+      var value = _arr18[_i30];
       if (value && (!/^\d{4}$/.test(value) || Number(value) < 1870 || Number(value) > 2100)) throw Error(text("Укажите год от 1870 до 2100"));
     }
     if (from && to && Number(from) > Number(to)) throw Error(text("Начальный год не может быть больше конечного"));
@@ -22617,11 +22763,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       UA: text("Украина")
     };
     if (locale() !== "ru") {
-      var _iterator64 = _createForOfIteratorHelper(Object.keys(countries).filter(Boolean)),
-        _step64;
+      var _iterator65 = _createForOfIteratorHelper(Object.keys(countries).filter(Boolean)),
+        _step65;
       try {
-        for (_iterator64.s(); !(_step64 = _iterator64.n()).done;) {
-          var code = _step64.value;
+        for (_iterator65.s(); !(_step65 = _iterator65.n()).done;) {
+          var code = _step65.value;
           try {
             countries[code] = new Intl.DisplayNames([locale()], {
               type: "region"
@@ -22637,9 +22783,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }
         }
       } catch (err) {
-        _iterator64.e(err);
+        _iterator65.e(err);
       } finally {
-        _iterator64.f();
+        _iterator65.f();
       }
     }
     var values = {
@@ -22944,17 +23090,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                     return s.length;
                   })));
                 for (var i = 0; i < length; i++) {
-                  var _iterator65 = _createForOfIteratorHelper(streams2),
-                    _step65;
+                  var _iterator66 = _createForOfIteratorHelper(streams2),
+                    _step66;
                   try {
-                    for (_iterator65.s(); !(_step65 = _iterator65.n()).done;) {
-                      var rows = _step65.value;
+                    for (_iterator66.s(); !(_step66 = _iterator66.n()).done;) {
+                      var rows = _step66.value;
                       if (rows[i]) cursor.results.push(rows[i]);
                     }
                   } catch (err) {
-                    _iterator65.e(err);
+                    _iterator66.e(err);
                   } finally {
-                    _iterator65.f();
+                    _iterator66.f();
                   }
                 }
               }
@@ -22974,7 +23120,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             function pump() {
               if (cursor.cancelled) return;
               if (done === matches.length) return accept(results.filter(Boolean));
-              var _loop24 = function _loop24() {
+              var _loop25 = function _loop25() {
                 var index2 = at++,
                   card = matches[index2],
                   known = card.origin_country;
@@ -22998,7 +23144,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 });
               };
               while (running < 3 && at < matches.length) {
-                if (_loop24()) continue;
+                if (_loop25()) continue;
               }
               if (done === matches.length) accept(results.filter(Boolean));
             }
@@ -23460,11 +23606,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (options.onBack) options.onBack();
       };
       function refresh() {
-        var _iterator66 = _createForOfIteratorHelper(rendered.get(event.items) || []),
-          _step66;
+        var _iterator67 = _createForOfIteratorHelper(rendered.get(event.items) || []),
+          _step67;
         try {
-          for (_iterator66.s(); !(_step66 = _iterator66.n()).done;) {
-            var row = _step66.value;
+          for (_iterator67.s(); !(_step67 = _iterator67.n()).done;) {
+            var row = _step67.value;
             var view = state.reader(movie)(Number(row.element.season) || 0, Number(row.element.episode) || 0, row.element.timeline && row.element.timeline.hash || row.element.hash);
             if (row.element.timeline) Object.assign(row.element.timeline, {
               percent: view.percent || 0,
@@ -23473,9 +23619,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             });
           }
         } catch (err) {
-          _iterator66.e(err);
+          _iterator67.e(err);
         } finally {
-          _iterator66.f();
+          _iterator67.f();
         }
         if (L.Timeline.read) L.Timeline.read();
       }
@@ -23495,19 +23641,19 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (entry.action === "season") state.setWatchedRows(movie, rows.map(coordinates));
         if (entry.action === "all") state.setAllWatched(movie, refresh);
         if (entry.action === "seasonclear") {
-          var _iterator67 = _createForOfIteratorHelper(rows),
-            _step67;
+          var _iterator68 = _createForOfIteratorHelper(rows),
+            _step68;
           try {
-            for (_iterator67.s(); !(_step67 = _iterator67.n()).done;) {
-              var row = _step67.value;
+            for (_iterator68.s(); !(_step68 = _iterator68.n()).done;) {
+              var row = _step68.value;
               var c = coordinates(row);
               if (row.element.viewed) row.element.viewed(0);
               state.clearProgress(movie, c.season, c.episode, c.hash);
             }
           } catch (err) {
-            _iterator67.e(err);
+            _iterator68.e(err);
           } finally {
-            _iterator67.f();
+            _iterator68.f();
           }
         }
         if (entry.action === "titleclear") state.clearTitleProgress(movie, (rendered.get(event.items) || []).map(function (row) {
@@ -23611,30 +23757,30 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   // src/torrent-episodes.js
   function explicitSeason(path) {
     var expressions = [/\bs(\d{1,2})(?=\b|\.?ep?\d)/i, /\b(\d{1,2})[x-]\d{1,4}\b/i, /(?:season|сезон)\s*(\d{1,2})\b/i, /\b(\d{1,2})\s*(?:season|сезон)\b/i, /(?:^|[^a-zа-я])(?:tv|тв)\s*-\s*(\d{1,2})\b/i];
-    var _iterator68 = _createForOfIteratorHelper(String(path || "").replace(/_/g, " ").split(/[\\/]/).reverse()),
-      _step68;
+    var _iterator69 = _createForOfIteratorHelper(String(path || "").replace(/_/g, " ").split(/[\\/]/).reverse()),
+      _step69;
     try {
-      for (_iterator68.s(); !(_step68 = _iterator68.n()).done;) {
-        var value = _step68.value;
+      for (_iterator69.s(); !(_step69 = _iterator69.n()).done;) {
+        var value = _step69.value;
         if (/\bs\d+\s*-\s*s?\d+\b|(?:season|сезон)\s*\d+\s*-\s*\d+|\d+\s*-\s*\d+\s*(?:season|сезон)/i.test(value)) continue;
-        var _iterator69 = _createForOfIteratorHelper(expressions),
-          _step69;
+        var _iterator70 = _createForOfIteratorHelper(expressions),
+          _step70;
         try {
-          for (_iterator69.s(); !(_step69 = _iterator69.n()).done;) {
-            var expression = _step69.value;
+          for (_iterator70.s(); !(_step70 = _iterator70.n()).done;) {
+            var expression = _step70.value;
             var m = value.match(expression);
             if (m) return Number(m[1]);
           }
         } catch (err) {
-          _iterator69.e(err);
+          _iterator70.e(err);
         } finally {
-          _iterator69.f();
+          _iterator70.f();
         }
       }
     } catch (err) {
-      _iterator68.e(err);
+      _iterator69.e(err);
     } finally {
-      _iterator68.f();
+      _iterator69.f();
     }
     return null;
   }
@@ -23660,18 +23806,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }).map(clean));
       folderFamilies.set(files, anchors);
     }
-    var _iterator70 = _createForOfIteratorHelper(own.reverse()),
-      _step70;
+    var _iterator71 = _createForOfIteratorHelper(own.reverse()),
+      _step71;
     try {
-      for (_iterator70.s(); !(_step70 = _iterator70.n()).done;) {
-        var part = _step70.value;
+      for (_iterator71.s(); !(_step71 = _iterator71.n()).done;) {
+        var part = _step71.value;
         var match = clean(part).match(/^(.+?)\s+([1-9]\d?)(?:-\d{1,2})?$/);
         if (match && Number(match[2]) <= 60 && anchors.has(match[1])) return Number(match[2]);
       }
     } catch (err) {
-      _iterator70.e(err);
+      _iterator71.e(err);
     } finally {
-      _iterator70.f();
+      _iterator71.f();
     }
     return null;
   }
@@ -23835,11 +23981,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       network.silent(url + "/viewed", function (data) {
         busy = false;
         if (!active() || scope !== (0, import_timeline_meta.profileScope)(L) || url !== server() || !Array.isArray(data)) return;
-        var _iterator71 = _createForOfIteratorHelper(files),
-          _step71;
+        var _iterator72 = _createForOfIteratorHelper(files),
+          _step72;
         try {
-          var _loop25 = function _loop25() {
-              var row = _step71.value;
+          var _loop26 = function _loop26() {
+              var row = _step72.value;
               var saved = data.find(function (v) {
                 return Number(v.file_index) === row.index && (!v.hash || v.hash === row.hash);
               });
@@ -23857,14 +24003,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               }));
             },
             _ret8;
-          for (_iterator71.s(); !(_step71 = _iterator71.n()).done;) {
-            _ret8 = _loop25();
+          for (_iterator72.s(); !(_step72 = _iterator72.n()).done;) {
+            _ret8 = _loop26();
             if (_ret8 === 0) continue;
           }
         } catch (err) {
-          _iterator71.e(err);
+          _iterator72.e(err);
         } finally {
-          _iterator71.f();
+          _iterator72.f();
         }
       }, function () {
         busy = false;
@@ -24005,11 +24151,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         };
       });
       var endpoint = null;
-      var _iterator72 = _createForOfIteratorHelper(plugins.concat(scripts)),
-        _step72;
+      var _iterator73 = _createForOfIteratorHelper(plugins.concat(scripts)),
+        _step73;
       try {
-        for (_iterator72.s(); !(_step72 = _iterator72.n()).done;) {
-          var item = _step72.value;
+        for (_iterator73.s(); !(_step73 = _iterator73.n()).done;) {
+          var item = _step73.value;
           if (item && (item.status === 0 || item.status === "0" || item.status === false)) continue;
           var value = typeof item === "string" ? item : item && item.url;
           if (!value) continue;
@@ -24025,9 +24171,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           } catch (error) {}
         }
       } catch (err) {
-        _iterator72.e(err);
+        _iterator73.e(err);
       } finally {
-        _iterator72.f();
+        _iterator73.f();
       }
       if (!endpoint || !$ || typeof $.ajax !== "function") return null;
       var id = String(profile.id),
@@ -24046,17 +24192,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     }
     function reset(ctx) {
       generation++;
-      var _iterator73 = _createForOfIteratorHelper(requests),
-        _step73;
+      var _iterator74 = _createForOfIteratorHelper(requests),
+        _step74;
       try {
-        for (_iterator73.s(); !(_step73 = _iterator73.n()).done;) {
-          var xhr = _step73.value;
+        for (_iterator74.s(); !(_step74 = _iterator74.n()).done;) {
+          var xhr = _step74.value;
           if (xhr && xhr.abort) xhr.abort();
         }
       } catch (err) {
-        _iterator73.e(err);
+        _iterator74.e(err);
       } finally {
-        _iterator73.f();
+        _iterator74.f();
       }
       requests.clear();
       clearTimeout(timer);
@@ -24074,19 +24220,19 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       health.pending = 0;
       health.received = 0;
       if (ctx) {
-        var _iterator74 = _createForOfIteratorHelper(Object.entries(L.Storage.get(ctx.file, {}) || {}).slice(-1e4)),
-          _step74;
+        var _iterator75 = _createForOfIteratorHelper(Object.entries(L.Storage.get(ctx.file, {}) || {}).slice(-1e4)),
+          _step75;
         try {
-          for (_iterator74.s(); !(_step74 = _iterator74.n()).done;) {
-            var _step74$value = _slicedToArray(_step74.value, 2),
-              hash = _step74$value[0],
-              value = _step74$value[1];
+          for (_iterator75.s(); !(_step75 = _iterator75.n()).done;) {
+            var _step75$value = _slicedToArray(_step75.value, 2),
+              hash = _step75$value[0],
+              value = _step75$value[1];
             if (validHash(hash) && road(value).updated > 0) queue(hash, value);
           }
         } catch (err) {
-          _iterator74.e(err);
+          _iterator75.e(err);
         } finally {
-          _iterator74.f();
+          _iterator75.f();
         }
       }
     }
@@ -24172,13 +24318,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     function merge(ctx, rows) {
       var records = __spreadValues({}, L.Storage.get(ctx.file, {}) || {});
       var changed = false;
-      var _iterator75 = _createForOfIteratorHelper(pending),
-        _step75;
+      var _iterator76 = _createForOfIteratorHelper(pending),
+        _step76;
       try {
-        for (_iterator75.s(); !(_step75 = _iterator75.n()).done;) {
-          var _step75$value = _slicedToArray(_step75.value, 2),
-            hash = _step75$value[0],
-            value = _step75$value[1];
+        for (_iterator76.s(); !(_step76 = _iterator76.n()).done;) {
+          var _step76$value = _slicedToArray(_step76.value, 2),
+            hash = _step76$value[0],
+            value = _step76$value[1];
           if (value.updated > road(records[hash]).updated) {
             records[hash] = __spreadProps(__spreadValues(__spreadValues({}, records[hash]), value), {
               profile: number(ctx.id)
@@ -24187,15 +24333,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }
         }
       } catch (err) {
-        _iterator75.e(err);
+        _iterator76.e(err);
       } finally {
-        _iterator75.f();
+        _iterator76.f();
       }
-      var _iterator76 = _createForOfIteratorHelper(rows),
-        _step76;
+      var _iterator77 = _createForOfIteratorHelper(rows),
+        _step77;
       try {
-        for (_iterator76.s(); !(_step76 = _iterator76.n()).done;) {
-          var row = _step76.value;
+        for (_iterator77.s(); !(_step77 = _iterator77.n()).done;) {
+          var row = _step77.value;
           if (!row || !validHash(row.hash)) continue;
           var _hash = String(row.hash),
             _value4 = road(__spreadValues({
@@ -24214,17 +24360,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           if (remote.size > 1e4) remote.delete(remote.keys().next().value);
         }
       } catch (err) {
-        _iterator76.e(err);
+        _iterator77.e(err);
       } finally {
-        _iterator76.f();
+        _iterator77.f();
       }
-      var _iterator77 = _createForOfIteratorHelper(remote),
-        _step77;
+      var _iterator78 = _createForOfIteratorHelper(remote),
+        _step78;
       try {
-        for (_iterator77.s(); !(_step77 = _iterator77.n()).done;) {
-          var _step77$value = _slicedToArray(_step77.value, 2),
-            _hash2 = _step77$value[0],
-            entry = _step77$value[1];
+        for (_iterator78.s(); !(_step78 = _iterator78.n()).done;) {
+          var _step78$value = _slicedToArray(_step78.value, 2),
+            _hash2 = _step78$value[0],
+            entry = _step78$value[1];
           var local = road(records[_hash2]);
           if (records[_hash2] && local.updated > entry.value.updated) {
             queue(_hash2, local);
@@ -24242,24 +24388,24 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           if (waiting && waiting.updated <= entry.value.updated) pending.delete(_hash2);
         }
       } catch (err) {
-        _iterator77.e(err);
+        _iterator78.e(err);
       } finally {
-        _iterator77.f();
+        _iterator78.f();
       }
-      var _iterator78 = _createForOfIteratorHelper(Object.keys(records).slice(-1e4)),
-        _step78;
+      var _iterator79 = _createForOfIteratorHelper(Object.keys(records).slice(-1e4)),
+        _step79;
       try {
-        for (_iterator78.s(); !(_step78 = _iterator78.n()).done;) {
-          var _hash3 = _step78.value;
+        for (_iterator79.s(); !(_step79 = _iterator79.n()).done;) {
+          var _hash3 = _step79.value;
           if (!validHash(_hash3)) continue;
           var _value5 = road(records[_hash3]),
             known = remote.get(_hash3);
           if (!known && (_value5.percent || _value5.time || _value5.updated) || known && _value5.updated > known.value.updated) queue(_hash3, _value5);
         }
       } catch (err) {
-        _iterator78.e(err);
+        _iterator79.e(err);
       } finally {
-        _iterator78.f();
+        _iterator79.f();
       }
       health.pending = pending.size;
       if (changed) store(ctx, records);
@@ -24328,13 +24474,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           failed();
           return;
         }
-        var _iterator79 = _createForOfIteratorHelper(batch),
-          _step79;
+        var _iterator80 = _createForOfIteratorHelper(batch),
+          _step80;
         try {
-          for (_iterator79.s(); !(_step79 = _iterator79.n()).done;) {
-            var _step79$value = _slicedToArray(_step79.value, 2),
-              hash = _step79$value[0],
-              sent = _step79$value[1];
+          for (_iterator80.s(); !(_step80 = _iterator80.n()).done;) {
+            var _step80$value = _slicedToArray(_step80.value, 2),
+              hash = _step80$value[0],
+              sent = _step80$value[1];
             var waiting = pending.get(hash);
             if (waiting && fingerprint(waiting) === fingerprint(sent)) pending.delete(hash);
             var known = remote.get(hash);
@@ -24344,9 +24490,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             });
           }
         } catch (err) {
-          _iterator79.e(err);
+          _iterator80.e(err);
         } finally {
-          _iterator79.f();
+          _iterator80.f();
         }
         failures = 0;
         retryAt = 0;
@@ -24435,17 +24581,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     };
     var cached = L.Storage && L.Storage.get ? L.Storage.get(bindingKey, []) : [];
     if (Array.isArray(cached)) {
-      var _iterator80 = _createForOfIteratorHelper(cached.slice(-limit)),
-        _step80;
+      var _iterator81 = _createForOfIteratorHelper(cached.slice(-limit)),
+        _step81;
       try {
-        for (_iterator80.s(); !(_step80 = _iterator80.n()).done;) {
-          var row = _step80.value;
+        for (_iterator81.s(); !(_step81 = _iterator81.n()).done;) {
+          var row = _step81.value;
           if (row && /^[a-zA-Z0-9_.:-]{1,128}$/.test(String(row.hash)) && typeof row.scope === "string" && row.meta && /^[a-z0-9_]{1,64}$/.test(row.meta.card || "") && Date.now() - row.at < 7 * 864e5) bindings.set(String(row.hash), row);
         }
       } catch (err) {
-        _iterator80.e(err);
+        _iterator81.e(err);
       } finally {
-        _iterator80.f();
+        _iterator81.f();
       }
     }
     function persist() {
@@ -24562,8 +24708,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         save();
         current = null;
       });
-      for (var _i30 = 0, _arr19 = ["close", "destroy"]; _i30 < _arr19.length; _i30++) {
-        var event = _arr19[_i30];
+      for (var _i31 = 0, _arr19 = ["close", "destroy"]; _i31 < _arr19.length; _i31++) {
+        var event = _arr19[_i31];
         listener.follow(event, function () {
           save();
           current = null;
@@ -25045,11 +25191,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   function folderSeasons(rows, card) {
     if (!card || !(card.name || card.original_name) || !Array.isArray(rows)) return [];
     var found = /* @__PURE__ */new Map();
-    var _iterator81 = _createForOfIteratorHelper(rows),
-      _step81;
+    var _iterator82 = _createForOfIteratorHelper(rows),
+      _step82;
     try {
-      for (_iterator81.s(); !(_step81 = _iterator81.n()).done;) {
-        var row = _step81.value;
+      for (_iterator82.s(); !(_step82 = _iterator82.n()).done;) {
+        var row = _step82.value;
         if (!row.similar || row.method !== "link" || !/^(?:https?:\/\/|\/)/i.test(row.url || "")) continue;
         var release = providerRelease(row, card);
         if (!release) continue;
@@ -25070,9 +25216,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
       }
     } catch (err) {
-      _iterator81.e(err);
+      _iterator82.e(err);
     } finally {
-      _iterator81.f();
+      _iterator82.f();
     }
     return found.size > 1 ? _toConsumableArray(found.values()).sort(function (a, b) {
       return a.season - b.season;
@@ -25107,11 +25253,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   function seasonNavigation(rows) {
     if (!Array.isArray(rows) || rows.length < 2 || rows.length > 100) return null;
     var links = {};
-    var _iterator82 = _createForOfIteratorHelper(rows),
-      _step82;
+    var _iterator83 = _createForOfIteratorHelper(rows),
+      _step83;
     try {
-      for (_iterator82.s(); !(_step82 = _iterator82.n()).done;) {
-        var row = _step82.value;
+      for (_iterator83.s(); !(_step83 = _iterator83.n()).done;) {
+        var row = _step83.value;
         if (row.method !== "link" || row.similar || !row.url) return null;
         var label = String(row.text || row.title || row.name || "").trim(),
           match = label.match(/^(?:(?:сезон|season)\s*(\d+)|(\d+)\s*(?:сезон|season))(?:\s|$)/i);
@@ -25121,9 +25267,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         links[number3] = row.url;
       }
     } catch (err) {
-      _iterator82.e(err);
+      _iterator83.e(err);
     } finally {
-      _iterator82.f();
+      _iterator83.f();
     }
     return links;
   }
@@ -25148,11 +25294,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       tags = clean.match(/<(?:div|span|a)\b[^>]*>/gi) || [],
       decoder = document.createElement("textarea"),
       rows = [];
-    var _iterator83 = _createForOfIteratorHelper(tags),
-      _step83;
+    var _iterator84 = _createForOfIteratorHelper(tags),
+      _step84;
     try {
-      for (_iterator83.s(); !(_step83 = _iterator83.n()).done;) {
-        var tag = _step83.value;
+      for (_iterator84.s(); !(_step84 = _iterator84.n()).done;) {
+        var tag = _step84.value;
         var cls = tag.match(/\bclass\s*=\s*(["'])([\s\S]*?)\1/i),
           data = tag.match(/\bdata-json\s*=\s*(["'])([\s\S]*?)\1/i);
         if (!cls || !/(^|\s)videos__item(\s|$)/.test(cls[2]) || !data) continue;
@@ -25160,8 +25306,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           decoder.innerHTML = data[2].replace(/</g, "&lt;");
           var row = JSON.parse(decoder.value);
           if (row && /^(play|call)$/.test(row.method)) {
-            for (var _i31 = 0, _arr20 = [["s", "season"], ["e", "episode"]]; _i31 < _arr20.length; _i31++) {
-              var _arr20$_i = _slicedToArray(_arr20[_i31], 2),
+            for (var _i32 = 0, _arr20 = [["s", "season"], ["e", "episode"]]; _i32 < _arr20.length; _i32++) {
+              var _arr20$_i = _slicedToArray(_arr20[_i32], 2),
                 attribute = _arr20$_i[0],
                 field = _arr20$_i[1];
               var value = tag.match(new RegExp("\\s" + attribute + "\\s*=\\s*([\"'])([0-9]+)\\1", "i"));
@@ -25172,9 +25318,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         } catch (error) {}
       }
     } catch (err) {
-      _iterator83.e(err);
+      _iterator84.e(err);
     } finally {
-      _iterator83.f();
+      _iterator84.f();
     }
     return rows;
   }
@@ -25200,8 +25346,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (typeof value.url === "string" && value.url.trim() && !value.similar && /^(play|call|link)$/.test(value.method)) count++;
         if (Array.isArray(value)) value.forEach(function (row) {
           return _walk(row, depth + 1);
-        });else for (var _i32 = 0, _arr21 = ["data", "results", "items", "list", "playlists"]; _i32 < _arr21.length; _i32++) {
-          var key2 = _arr21[_i32];
+        });else for (var _i33 = 0, _arr21 = ["data", "results", "items", "list", "playlists"]; _i33 < _arr21.length; _i33++) {
+          var key2 = _arr21[_i33];
           _walk(value[key2], depth + 1);
         }
       };
@@ -25257,13 +25403,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var records = L.Storage.get(file(), {}) || {},
         titles = names(card);
       var linked = /* @__PURE__ */new Map();
-      var _iterator84 = _createForOfIteratorHelper(linkedRecords(card, records)),
-        _step84;
+      var _iterator85 = _createForOfIteratorHelper(linkedRecords(card, records)),
+        _step85;
       try {
-        for (_iterator84.s(); !(_step84 = _iterator84.n()).done;) {
-          var _step84$value = _slicedToArray(_step84.value, 2),
-            key2 = _step84$value[0],
-            value = _step84$value[1];
+        for (_iterator85.s(); !(_step85 = _iterator85.n()).done;) {
+          var _step85$value = _slicedToArray(_step85.value, 2),
+            key2 = _step85$value[0],
+            value = _step85$value[1];
           var coordinate = number2(value.season) + ":" + number2(value.episode),
             old = linked.get(coordinate);
           if (!old || stamp2(value.updated) > stamp2(old.value.updated)) linked.set(coordinate, {
@@ -25272,9 +25418,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
         }
       } catch (err) {
-        _iterator84.e(err);
+        _iterator85.e(err);
       } finally {
-        _iterator84.f();
+        _iterator85.f();
       }
       return function () {
         var season = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
@@ -25287,11 +25433,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (match) keys.push(match.key);
         if (explicit) keys.push(explicit);
         var best = null;
-        var _iterator85 = _createForOfIteratorHelper(new Set(keys)),
-          _step85;
+        var _iterator86 = _createForOfIteratorHelper(new Set(keys)),
+          _step86;
         try {
-          for (_iterator85.s(); !(_step85 = _iterator85.n()).done;) {
-            var key2 = _step85.value;
+          for (_iterator86.s(); !(_step86 = _iterator86.n()).done;) {
+            var key2 = _step86.value;
             var value = records[key2],
               raw = typeof value === "number" ? {
                 percent: value
@@ -25308,9 +25454,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             if (!best || row.updated > best.updated || row.updated === best.updated && row.percent > best.percent) best = row;
           }
         } catch (err) {
-          _iterator85.e(err);
+          _iterator86.e(err);
         } finally {
-          _iterator85.f();
+          _iterator86.f();
         }
         return best || {
           found: false,
@@ -25336,13 +25482,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         seasons = Array.isArray(card.seasons) ? card.seasons : [],
         max = 60;
       var latest = null;
-      var _iterator86 = _createForOfIteratorHelper(linkedRecords(card, records)),
-        _step86;
+      var _iterator87 = _createForOfIteratorHelper(linkedRecords(card, records)),
+        _step87;
       try {
-        var _loop27 = function _loop27() {
-          var _step86$value = _slicedToArray(_step86.value, 2),
-            key3 = _step86$value[0],
-            raw = _step86$value[1];
+        var _loop28 = function _loop28() {
+          var _step87$value = _slicedToArray(_step87.value, 2),
+            key3 = _step87$value[0],
+            raw = _step87$value[1];
           var season = Number(raw.season),
             episode = Number(raw.episode),
             percent = Math.min(100, number2(raw.percent)),
@@ -25366,27 +25512,27 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             }
           };
         };
-        for (_iterator86.s(); !(_step86 = _iterator86.n()).done;) {
-          if (_loop27()) continue;
+        for (_iterator87.s(); !(_step87 = _iterator87.n()).done;) {
+          if (_loop28()) continue;
         }
       } catch (err) {
-        _iterator86.e(err);
+        _iterator87.e(err);
       } finally {
-        _iterator86.f();
+        _iterator87.f();
       }
       if (Object.keys(records).length) {
-        var _loop26 = function _loop26(s) {
+        var _loop27 = function _loop27(s) {
           var detail2 = seasons.find(function (row) {
               return Number(row.season_number) === s;
             }),
             total = number2(detail2 && detail2.episode_count),
             limit = Math.min(500, Math.max(100, total));
           for (var e = 1; e <= limit; e++) {
-            var _iterator87 = _createForOfIteratorHelper(titles),
-              _step87;
+            var _iterator88 = _createForOfIteratorHelper(titles),
+              _step88;
             try {
-              for (_iterator87.s(); !(_step87 = _iterator87.n()).done;) {
-                var title = _step87.value;
+              for (_iterator88.s(); !(_step88 = _iterator88.n()).done;) {
+                var title = _step88.value;
                 var key3 = hash(title, s, e),
                   raw = records[key3];
                 if (!raw) continue;
@@ -25408,14 +25554,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 };
               }
             } catch (err) {
-              _iterator87.e(err);
+              _iterator88.e(err);
             } finally {
-              _iterator87.f();
+              _iterator88.f();
             }
           }
         };
         for (var s = 1; s <= max; s++) {
-          _loop26(s);
+          _loop27(s);
         }
       }
       var value = latest ? {
@@ -25479,8 +25625,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }
       return value;
     }
-    if (L.Timeline && L.Timeline.listener) for (var _i33 = 0, _arr22 = ["update", "read"]; _i33 < _arr22.length; _i33++) {
-      var event = _arr22[_i33];
+    if (L.Timeline && L.Timeline.listener) for (var _i34 = 0, _arr22 = ["update", "read"]; _i34 < _arr22.length; _i34++) {
+      var event = _arr22[_i34];
       L.Timeline.listener.follow(event, function () {
         revision++;
         snapshots.clear();
@@ -25525,11 +25671,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var saved = L.Storage.get("online_watched_last", {}) || {},
         next = __spreadValues({}, saved);
       var changed = false;
-      var _iterator88 = _createForOfIteratorHelper(names(card)),
-        _step88;
+      var _iterator89 = _createForOfIteratorHelper(names(card)),
+        _step89;
       try {
-        for (_iterator88.s(); !(_step88 = _iterator88.n()).done;) {
-          var title = _step88.value;
+        for (_iterator89.s(); !(_step89 = _iterator89.n()).done;) {
+          var title = _step89.value;
           var key2 = L.Utils.hash(title),
             row = saved[key2];
           if (row && (season === void 0 || Number(row.season) === Number(season) && Number(row.episode) === Number(episode))) {
@@ -25538,9 +25684,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }
         }
       } catch (err) {
-        _iterator88.e(err);
+        _iterator89.e(err);
       } finally {
-        _iterator88.f();
+        _iterator89.f();
       }
       if (changed) L.Storage.set("online_watched_last", next);
     }
@@ -25555,11 +25701,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
       if (explicit) keys.push(explicit);
       clearLast(card, season, episode);
-      var _iterator89 = _createForOfIteratorHelper(new Set(keys)),
-        _step89;
+      var _iterator90 = _createForOfIteratorHelper(new Set(keys)),
+        _step90;
       try {
-        for (_iterator89.s(); !(_step89 = _iterator89.n()).done;) {
-          var key2 = _step89.value;
+        for (_iterator90.s(); !(_step90 = _iterator90.n()).done;) {
+          var key2 = _step90.value;
           if (records[key2] || key2 === explicit) writeTimeline({
             hash: key2,
             percent: 0,
@@ -25568,9 +25714,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
         }
       } catch (err) {
-        _iterator89.e(err);
+        _iterator90.e(err);
       } finally {
-        _iterator89.f();
+        _iterator90.f();
       }
       revision++;
       snapshots.clear();
@@ -25583,26 +25729,26 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         keys = /* @__PURE__ */new Set();
       if (titles.length) keys.add(hash(titles[0], season, episode));
       if (explicit) keys.add(explicit);
-      var _iterator90 = _createForOfIteratorHelper(titles),
-        _step90;
+      var _iterator91 = _createForOfIteratorHelper(titles),
+        _step91;
       try {
-        for (_iterator90.s(); !(_step90 = _iterator90.n()).done;) {
-          var _title = _step90.value;
+        for (_iterator91.s(); !(_step91 = _iterator91.n()).done;) {
+          var _title = _step91.value;
           var _key4 = hash(_title, season, episode);
           if (records[_key4]) keys.add(_key4);
         }
       } catch (err) {
-        _iterator90.e(err);
+        _iterator91.e(err);
       } finally {
-        _iterator90.f();
+        _iterator91.f();
       }
       if (watched && season && !batching) {
         var saved = __spreadValues({}, L.Storage.get("online_watched_last", {}) || {});
-        var _iterator91 = _createForOfIteratorHelper(titles.slice(0, 2)),
-          _step91;
+        var _iterator92 = _createForOfIteratorHelper(titles.slice(0, 2)),
+          _step92;
         try {
-          for (_iterator91.s(); !(_step91 = _iterator91.n()).done;) {
-            var title = _step91.value;
+          for (_iterator92.s(); !(_step92 = _iterator92.n()).done;) {
+            var title = _step92.value;
             var key2 = L.Utils.hash(title);
             saved[key2] = __spreadProps(__spreadValues({}, saved[key2]), {
               season: season,
@@ -25610,17 +25756,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             });
           }
         } catch (err) {
-          _iterator91.e(err);
+          _iterator92.e(err);
         } finally {
-          _iterator91.f();
+          _iterator92.f();
         }
         L.Storage.set("online_watched_last", saved);
       } else if (!watched) clearLast(card, season, episode);
-      var _iterator92 = _createForOfIteratorHelper(keys),
-        _step92;
+      var _iterator93 = _createForOfIteratorHelper(keys),
+        _step93;
       try {
-        for (_iterator92.s(); !(_step92 = _iterator92.n()).done;) {
-          var _key5 = _step92.value;
+        for (_iterator93.s(); !(_step93 = _iterator93.n()).done;) {
+          var _key5 = _step93.value;
           var raw = records[_key5],
             percent = typeof raw === "number" ? raw : number2(raw && raw.percent);
           if (watched || percent >= WATCHED_PERCENT) {
@@ -25634,9 +25780,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }
         }
       } catch (err) {
-        _iterator92.e(err);
+        _iterator93.e(err);
       } finally {
-        _iterator92.f();
+        _iterator93.f();
       }
       revision++;
       snapshots.clear();
@@ -25645,17 +25791,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     function markRows(card, rows) {
       batching++;
       try {
-        var _iterator93 = _createForOfIteratorHelper(rows),
-          _step93;
+        var _iterator94 = _createForOfIteratorHelper(rows),
+          _step94;
         try {
-          for (_iterator93.s(); !(_step93 = _iterator93.n()).done;) {
-            var row = _step93.value;
+          for (_iterator94.s(); !(_step94 = _iterator94.n()).done;) {
+            var row = _step94.value;
             setWatched(card, row.season, row.episode, true, row.hash);
           }
         } catch (err) {
-          _iterator93.e(err);
+          _iterator94.e(err);
         } finally {
-          _iterator93.f();
+          _iterator94.f();
         }
       } finally {
         batching--;
@@ -25663,11 +25809,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var last = rows[rows.length - 1];
       if (last) {
         var saved = __spreadValues({}, L.Storage.get("online_watched_last", {}) || {});
-        var _iterator94 = _createForOfIteratorHelper(names(card).slice(0, 2)),
-          _step94;
+        var _iterator95 = _createForOfIteratorHelper(names(card).slice(0, 2)),
+          _step95;
         try {
-          for (_iterator94.s(); !(_step94 = _iterator94.n()).done;) {
-            var title = _step94.value;
+          for (_iterator95.s(); !(_step95 = _iterator95.n()).done;) {
+            var title = _step95.value;
             var key2 = L.Utils.hash(title);
             saved[key2] = __spreadProps(__spreadValues({}, saved[key2]), {
               season: last.season,
@@ -25675,9 +25821,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             });
           }
         } catch (err) {
-          _iterator94.e(err);
+          _iterator95.e(err);
         } finally {
-          _iterator94.f();
+          _iterator95.f();
         }
         L.Storage.set("online_watched_last", saved);
       }
@@ -25721,24 +25867,24 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           last = full.last_episode_to_air;
         var aired = last && last.air_date && String(last.air_date).slice(0, 10) <= today2 ? last : null;
         var episodes = /* @__PURE__ */new Map();
-        var _iterator95 = _createForOfIteratorHelper(table),
-          _step95;
+        var _iterator96 = _createForOfIteratorHelper(table),
+          _step96;
         try {
-          for (_iterator95.s(); !(_step95 = _iterator95.n()).done;) {
-            var row = _step95.value;
+          for (_iterator96.s(); !(_step96 = _iterator96.n()).done;) {
+            var row = _step96.value;
             if (row.air_date && String(row.air_date).slice(0, 10) <= today2 && Number(row.season_number) > 0) episodes.set(row.season_number + ":" + row.episode_number, row);
           }
         } catch (err) {
-          _iterator95.e(err);
+          _iterator96.e(err);
         } finally {
-          _iterator95.f();
+          _iterator96.f();
         }
         if (aired) {
-          var _iterator96 = _createForOfIteratorHelper(Array.isArray(full.seasons) ? full.seasons : []),
-            _step96;
+          var _iterator97 = _createForOfIteratorHelper(Array.isArray(full.seasons) ? full.seasons : []),
+            _step97;
           try {
-            for (_iterator96.s(); !(_step96 = _iterator96.n()).done;) {
-              var season = _step96.value;
+            for (_iterator97.s(); !(_step97 = _iterator97.n()).done;) {
+              var season = _step97.value;
               var n = Number(season.season_number);
               if (n <= 0 || n > Number(aired.season_number)) continue;
               var count = n === Number(aired.season_number) ? Number(aired.episode_number) : Number(season.episode_count);
@@ -25748,9 +25894,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               });
             }
           } catch (err) {
-            _iterator96.e(err);
+            _iterator97.e(err);
           } finally {
-            _iterator96.f();
+            _iterator97.f();
           }
         }
         markRows(full, Array.from(episodes.values()).map(function (row) {
@@ -25785,80 +25931,80 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           season = number2(season);
           if (season > 0 && season <= 100) limits.set(season, Math.min(5e3, Math.max(100, limits.get(season) || 0, number2(total))));
         };
-        var _iterator97 = _createForOfIteratorHelper(seasons),
-          _step97;
-        try {
-          for (_iterator97.s(); !(_step97 = _iterator97.n()).done;) {
-            var row = _step97.value;
-            remember(row.season_number, row.episode_count);
-          }
-        } catch (err) {
-          _iterator97.e(err);
-        } finally {
-          _iterator97.f();
-        }
-        var table = L.TimeTable && L.TimeTable.get ? L.TimeTable.get(card) || [] : [];
-        var _iterator98 = _createForOfIteratorHelper(table),
+        var _iterator98 = _createForOfIteratorHelper(seasons),
           _step98;
         try {
           for (_iterator98.s(); !(_step98 = _iterator98.n()).done;) {
-            var _row = _step98.value;
-            remember(_row.season_number, _row.episode_number);
+            var row = _step98.value;
+            remember(row.season_number, row.episode_count);
           }
         } catch (err) {
           _iterator98.e(err);
         } finally {
           _iterator98.f();
         }
-        var last = L.Storage.get("online_watched_last", {}) || {};
-        var _iterator99 = _createForOfIteratorHelper(titles),
+        var table = L.TimeTable && L.TimeTable.get ? L.TimeTable.get(card) || [] : [];
+        var _iterator99 = _createForOfIteratorHelper(table),
           _step99;
         try {
           for (_iterator99.s(); !(_step99 = _iterator99.n()).done;) {
-            var _title2 = _step99.value;
-            var _row2 = last[L.Utils.hash(_title2)];
-            if (_row2) remember(_row2.season, _row2.episode);
+            var _row = _step99.value;
+            remember(_row.season_number, _row.episode_number);
           }
         } catch (err) {
           _iterator99.e(err);
         } finally {
           _iterator99.f();
         }
+        var last = L.Storage.get("online_watched_last", {}) || {};
+        var _iterator100 = _createForOfIteratorHelper(titles),
+          _step100;
+        try {
+          for (_iterator100.s(); !(_step100 = _iterator100.n()).done;) {
+            var _title2 = _step100.value;
+            var _row2 = last[L.Utils.hash(_title2)];
+            if (_row2) remember(_row2.season, _row2.episode);
+          }
+        } catch (err) {
+          _iterator100.e(err);
+        } finally {
+          _iterator100.f();
+        }
         var max = Math.min(100, Math.max.apply(Math, [1, number2(card.number_of_seasons)].concat(_toConsumableArray(limits.keys()))));
         for (var season = 1; season <= max; season++) for (var episode = 1; episode <= (limits.get(season) || 100); episode++) {
-          var _iterator100 = _createForOfIteratorHelper(titles),
-            _step100;
+          var _iterator101 = _createForOfIteratorHelper(titles),
+            _step101;
           try {
-            for (_iterator100.s(); !(_step100 = _iterator100.n()).done;) {
-              var title = _step100.value;
+            for (_iterator101.s(); !(_step101 = _iterator101.n()).done;) {
+              var title = _step101.value;
               keys.add(hash(title, season, episode));
             }
           } catch (err) {
-            _iterator100.e(err);
+            _iterator101.e(err);
           } finally {
-            _iterator100.f();
+            _iterator101.f();
           }
         }
       } else {
-        var _iterator101 = _createForOfIteratorHelper(titles),
-          _step101;
+        var _iterator102 = _createForOfIteratorHelper(titles),
+          _step102;
         try {
-          for (_iterator101.s(); !(_step101 = _iterator101.n()).done;) {
-            var _title3 = _step101.value;
+          for (_iterator102.s(); !(_step102 = _iterator102.n()).done;) {
+            var _title3 = _step102.value;
             keys.add(hash(_title3));
           }
         } catch (err) {
-          _iterator101.e(err);
+          _iterator102.e(err);
         } finally {
-          _iterator101.f();
+          _iterator102.f();
         }
       }
       clearLast(card);
-      var _iterator102 = _createForOfIteratorHelper(keys),
-        _step102;
+      var _iterator103 = _createForOfIteratorHelper(keys),
+        _step103;
       try {
-        for (_iterator102.s(); !(_step102 = _iterator102.n()).done;) {
-          var key2 = _step102.value;
+        for (_iterator103.s(); !(_step103 = _iterator103.n()).done;) {
+          var key2 = _step103.value;
           var _row3 = records[key2];
           if (_row3 && (typeof _row3 === "number" ? _row3 : _row3.percent || _row3.time)) writeTimeline({
             hash: key2,
@@ -25868,9 +26014,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
         }
       } catch (err) {
-        _iterator102.e(err);
+        _iterator103.e(err);
       } finally {
-        _iterator102.f();
+        _iterator103.f();
       }
       revision++;
       snapshots.clear();
@@ -25933,11 +26079,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       return Number(row.season) === 1 && positive3(row.episode) && Number(row.episode) <= first.episodes;
     })) return [];
     var output = [];
-    var _iterator103 = _createForOfIteratorHelper(releases.slice(1)),
-      _step103;
+    var _iterator104 = _createForOfIteratorHelper(releases.slice(1)),
+      _step104;
     try {
-      var _loop28 = function _loop28() {
-          var release = _step103.value;
+      var _loop29 = function _loop29() {
+          var release = _step104.value;
           if (!release.aired || release.aired > today() || release.status === "anons" || !release.original) return 0; // continue
           var map = animeEpisodeMap(release.record, release.episodes, card),
             start = map && map[0];
@@ -25971,15 +26117,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
         },
         _ret9;
-      for (_iterator103.s(); !(_step103 = _iterator103.n()).done;) {
-        _ret9 = _loop28();
+      for (_iterator104.s(); !(_step104 = _iterator104.n()).done;) {
+        _ret9 = _loop29();
         if (_ret9 === 0) continue;
         if (_ret9) return _ret9.v;
       }
     } catch (err) {
-      _iterator103.e(err);
+      _iterator104.e(err);
     } finally {
-      _iterator103.f();
+      _iterator104.f();
     }
     return output.length <= 8 ? output : [];
   }
@@ -25999,18 +26145,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
   function matchContinuations(parts, rows, base) {
     var entries2 = [];
-    var _iterator104 = _createForOfIteratorHelper(parts),
-      _step104;
+    var _iterator105 = _createForOfIteratorHelper(parts),
+      _step105;
     try {
-      var _loop29 = function _loop29() {
-        var part = _step104.value;
+      var _loop30 = function _loop30() {
+        var part = _step105.value;
         var names = [part.name, part.original].map(titleKey).filter(Boolean);
         var urls = /* @__PURE__ */new Set();
-        var _iterator105 = _createForOfIteratorHelper(rows),
-          _step105;
+        var _iterator106 = _createForOfIteratorHelper(rows),
+          _step106;
         try {
-          for (_iterator105.s(); !(_step105 = _iterator105.n()).done;) {
-            var row = _step105.value;
+          for (_iterator106.s(); !(_step106 = _iterator106.n()).done;) {
+            var row = _step106.value;
             if (!row.similar || row.method !== "link" || String(row.year || row.start_date || "").slice(0, 4) !== part.year) continue;
             if (!String(row.title || row.name || row.text || "").split(/\s+[\/|]\s+/).some(function (name) {
               return names.includes(titleKey(name));
@@ -26019,21 +26165,21 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             if (url && url.searchParams.get("pick") && !url.searchParams.has("s")) urls.add(url.href);
           }
         } catch (err) {
-          _iterator105.e(err);
+          _iterator106.e(err);
         } finally {
-          _iterator105.f();
+          _iterator106.f();
         }
         if (urls.size === 1) entries2.push(__spreadProps(__spreadValues({}, part), {
           url: _toConsumableArray(urls)[0]
         }));
       };
-      for (_iterator104.s(); !(_step104 = _iterator104.n()).done;) {
-        _loop29();
+      for (_iterator105.s(); !(_step105 = _iterator105.n()).done;) {
+        _loop30();
       }
     } catch (err) {
-      _iterator104.e(err);
+      _iterator105.e(err);
     } finally {
-      _iterator104.f();
+      _iterator105.f();
     }
     return entries2;
   }
@@ -26073,8 +26219,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           if (!parts.length) return done([]);
           var url = kodikRoute(base),
             query = url.searchParams;
-          for (var _i34 = 0, _arr23 = ["id", "imdb_id", "kinopoisk_id", "tmdb_id", "mal_id", "shikimori_id", "kid", "pick", "s", "t", "e", "rjson", "nojson"]; _i34 < _arr23.length; _i34++) {
-            var key3 = _arr23[_i34];
+          for (var _i35 = 0, _arr23 = ["id", "imdb_id", "kinopoisk_id", "tmdb_id", "mal_id", "shikimori_id", "kid", "pick", "s", "t", "e", "rjson", "nojson"]; _i35 < _arr23.length; _i35++) {
+            var key3 = _arr23[_i35];
             query.delete(key3);
           }
           query.set("title", original);
@@ -26086,8 +26232,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             uid: "lampac_unic_id",
             nws_id: "lampac_nws_id"
           };
-          for (var _i35 = 0, _Object$keys = Object.keys(account); _i35 < _Object$keys.length; _i35++) {
-            var name = _Object$keys[_i35];
+          for (var _i36 = 0, _Object$keys = Object.keys(account); _i36 < _Object$keys.length; _i36++) {
+            var name = _Object$keys[_i36];
             var value2 = L.Storage.get(account[name], "");
             if (value2 && !query.has(name)) query.set(name, value2);
           }
@@ -26174,11 +26320,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     })) return [];
     var first = following[0];
     var offset = 0;
-    var _iterator106 = _createForOfIteratorHelper(following),
-      _step106;
+    var _iterator107 = _createForOfIteratorHelper(following),
+      _step107;
     try {
-      var _loop30 = function _loop30() {
-          var release = _step106.value;
+      var _loop31 = function _loop31() {
+          var release = _step107.value;
           if (Number(release.record.offset || 0) !== offset || !release.original) return 0; // break
           var map = animeEpisodeMap(release.record, release.episodes, card);
           if (!map && Number.isInteger(release.record.season) && release.record.season > 0 && !(release.record.rules || []).length) map = Array.from({
@@ -26220,14 +26366,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           offset += release.episodes;
         },
         _ret0;
-      for (_iterator106.s(); !(_step106 = _iterator106.n()).done;) {
-        _ret0 = _loop30();
+      for (_iterator107.s(); !(_step107 = _iterator107.n()).done;) {
+        _ret0 = _loop31();
         if (_ret0 === 0) break;
       }
     } catch (err) {
-      _iterator106.e(err);
+      _iterator107.e(err);
     } finally {
-      _iterator106.f();
+      _iterator107.f();
     }
     if (result.length < 2 || result.reduce(function (total, p) {
       return total + p.count;
@@ -26356,8 +26502,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var _a, _b;
       var url = kodikRoute(base),
         q = url.searchParams;
-      for (var _i36 = 0, _arr24 = ["id", "imdb_id", "kinopoisk_id", "tmdb_id", "mal_id", "shikimori_id", "kid", "pick", "s", "t", "e", "rjson", "nojson"]; _i36 < _arr24.length; _i36++) {
-        var name = _arr24[_i36];
+      for (var _i37 = 0, _arr24 = ["id", "imdb_id", "kinopoisk_id", "tmdb_id", "mal_id", "shikimori_id", "kid", "pick", "s", "t", "e", "rjson", "nojson"]; _i37 < _arr24.length; _i37++) {
+        var name = _arr24[_i37];
         q.delete(name);
       }
       q.set("clarification", "0");
@@ -26373,17 +26519,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var cacheKey = scope() + "|" + url.href,
           hit = searches.get(cacheKey);
         function accept(rows) {
-          var _iterator107 = _createForOfIteratorHelper(matchProviderParts(parts, rows, base)),
-            _step107;
+          var _iterator108 = _createForOfIteratorHelper(matchProviderParts(parts, rows, base)),
+            _step108;
           try {
-            for (_iterator107.s(); !(_step107 = _iterator107.n()).done;) {
-              var part = _step107.value;
+            for (_iterator108.s(); !(_step108 = _iterator108.n()).done;) {
+              var part = _step108.value;
               found.set(part.original + "|" + part.year, part);
             }
           } catch (err) {
-            _iterator107.e(err);
+            _iterator108.e(err);
           } finally {
-            _iterator107.f();
+            _iterator108.f();
           }
           next();
         }
@@ -26450,8 +26596,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             var u = new URL(row.stream || row.url, base),
               link = u.searchParams.get("link");
             if (link) return link;
-            for (var _i37 = 0, _arr25 = ["title", "original_title", "episode", "play"]; _i37 < _arr25.length; _i37++) {
-              var name = _arr25[_i37];
+            for (var _i38 = 0, _arr25 = ["title", "original_title", "episode", "play"]; _i38 < _arr25.length; _i38++) {
+              var name = _arr25[_i38];
               u.searchParams.delete(name);
             }
             u.searchParams.sort();
@@ -26473,21 +26619,21 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (matches.length !== 1) return done(body, []);
         var kept = [];
         var next = 0;
-        var _iterator108 = _createForOfIteratorHelper(parts.sort(function (a, b) {
+        var _iterator109 = _createForOfIteratorHelper(parts.sort(function (a, b) {
             return a.offset - b.offset;
           })),
-          _step108;
+          _step109;
         try {
-          for (_iterator108.s(); !(_step108 = _iterator108.n()).done;) {
-            var _part = _step108.value;
+          for (_iterator109.s(); !(_step109 = _iterator109.n()).done;) {
+            var _part = _step109.value;
             if (_part.offset !== next) break;
             kept.push(_part);
             next += _part.count;
           }
         } catch (err) {
-          _iterator108.e(err);
+          _iterator109.e(err);
         } finally {
-          _iterator108.f();
+          _iterator109.f();
         }
         if (!kept.includes(matches[0]) || kept.reduce(function (sum, part) {
           return sum + part.files.length;
@@ -26495,27 +26641,27 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var box = document.createElement("div");
         box.innerHTML = body;
         var line = box.querySelector(".videos__line") || box;
-        var _iterator109 = _createForOfIteratorHelper(box.querySelectorAll(".videos__item[data-json]")),
-          _step109;
+        var _iterator110 = _createForOfIteratorHelper(box.querySelectorAll(".videos__item[data-json]")),
+          _step110;
         try {
-          for (_iterator109.s(); !(_step109 = _iterator109.n()).done;) {
-            var _node5 = _step109.value;
+          for (_iterator110.s(); !(_step110 = _iterator110.n()).done;) {
+            var _node5 = _step110.value;
             try {
               if (playable2(JSON.parse(_node5.getAttribute("data-json")))) _node5.remove();
             } catch (error) {}
           }
         } catch (err) {
-          _iterator109.e(err);
+          _iterator110.e(err);
         } finally {
-          _iterator109.f();
+          _iterator110.f();
         }
-        for (var _i38 = 0, _kept = kept; _i38 < _kept.length; _i38++) {
-          var part = _kept[_i38];
-          var _iterator110 = _createForOfIteratorHelper(part.files),
-            _step110;
+        for (var _i39 = 0, _kept = kept; _i39 < _kept.length; _i39++) {
+          var part = _kept[_i39];
+          var _iterator111 = _createForOfIteratorHelper(part.files),
+            _step111;
           try {
-            for (_iterator110.s(); !(_step110 = _iterator110.n()).done;) {
-              var row = _step110.value;
+            for (_iterator111.s(); !(_step111 = _iterator111.n()).done;) {
+              var row = _step111.value;
               var original = originals.get(videoIdentity(row)),
                 file = original ? __spreadProps(__spreadValues({}, original), {
                   season: row.season,
@@ -26531,9 +26677,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               line.appendChild(node);
             }
           } catch (err) {
-            _iterator110.e(err);
+            _iterator111.e(err);
           } finally {
-            _iterator110.f();
+            _iterator111.f();
           }
         }
         done(box.innerHTML, kept.map(function (_a) {
@@ -26567,7 +26713,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               left = parts.length;
             var results = [];
             function pump() {
-              var _loop31 = function _loop31() {
+              var _loop32 = function _loop32() {
                 var part = parts[next++];
                 running++;
                 read(part, base, voice, function (files2) {
@@ -26579,7 +26725,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 });
               };
               while (!ended && running < 2 && next < parts.length) {
-                _loop31();
+                _loop32();
               }
             }
             pump();
@@ -26624,16 +26770,16 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             });
           });
         })) return done(body, []);
-        var _iterator111 = _createForOfIteratorHelper(parts),
-          _step111;
+        var _iterator112 = _createForOfIteratorHelper(parts),
+          _step112;
         try {
-          for (_iterator111.s(); !(_step111 = _iterator111.n()).done;) {
-            var part = _step111.value;
-            var _iterator112 = _createForOfIteratorHelper(part.files),
-              _step112;
+          for (_iterator112.s(); !(_step112 = _iterator112.n()).done;) {
+            var part = _step112.value;
+            var _iterator113 = _createForOfIteratorHelper(part.files),
+              _step113;
             try {
-              for (_iterator112.s(); !(_step112 = _iterator112.n()).done;) {
-                var row = _step112.value;
+              for (_iterator113.s(); !(_step113 = _iterator113.n()).done;) {
+                var row = _step113.value;
                 var file = __spreadProps(__spreadValues({}, row), {
                     season: bundle.source,
                     lampa_part: part.part
@@ -26647,15 +26793,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 line.appendChild(node);
               }
             } catch (err) {
-              _iterator112.e(err);
+              _iterator113.e(err);
             } finally {
-              _iterator112.f();
+              _iterator113.f();
             }
           }
         } catch (err) {
-          _iterator111.e(err);
+          _iterator112.e(err);
         } finally {
-          _iterator111.f();
+          _iterator112.f();
         }
         done(box.innerHTML, parts.map(function (_a) {
           var _b = _a,
@@ -26688,11 +26834,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       box.innerHTML = body;
       var grouped = /* @__PURE__ */new Map();
       var changed = false;
-      var _iterator113 = _createForOfIteratorHelper(box.querySelectorAll(".videos__item[data-json]")),
-        _step113;
+      var _iterator114 = _createForOfIteratorHelper(box.querySelectorAll(".videos__item[data-json]")),
+        _step114;
       try {
-        for (_iterator113.s(); !(_step113 = _iterator113.n()).done;) {
-          var node = _step113.value;
+        for (_iterator114.s(); !(_step114 = _iterator114.n()).done;) {
+          var node = _step114.value;
           try {
             var row = JSON.parse(node.getAttribute("data-json")),
               source = Number((_a = row.season) != null ? _a : new URL(row.url, location.href).searchParams.get("s")),
@@ -26709,17 +26855,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           } catch (error) {}
         }
       } catch (err) {
-        _iterator113.e(err);
+        _iterator114.e(err);
       } finally {
-        _iterator113.f();
+        _iterator114.f();
       }
-      var _iterator114 = _createForOfIteratorHelper(grouped),
-        _step114;
+      var _iterator115 = _createForOfIteratorHelper(grouped),
+        _step115;
       try {
-        var _loop32 = function _loop32() {
-            var _step114$value = _slicedToArray(_step114.value, 2),
-              number3 = _step114$value[0],
-              entries2 = _step114$value[1];
+        var _loop33 = function _loop33() {
+            var _step115$value = _slicedToArray(_step115.value, 2),
+              number3 = _step115$value[0],
+              entries2 = _step115$value[1];
             if (entries2.length < 2) return 0; // continue
             entries2.sort(function (a, b) {
               return a.mapped.offset - b.mapped.offset;
@@ -26753,29 +26899,29 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             first.mapped.count = offset;
             first.mapped.parts = parts.length;
             changed = true;
-            var _iterator115 = _createForOfIteratorHelper(entries2.slice(1)),
-              _step115;
+            var _iterator116 = _createForOfIteratorHelper(entries2.slice(1)),
+              _step116;
             try {
-              for (_iterator115.s(); !(_step115 = _iterator115.n()).done;) {
-                var entry = _step115.value;
+              for (_iterator116.s(); !(_step116 = _iterator116.n()).done;) {
+                var entry = _step116.value;
                 entry.node.remove();
                 delete layout[entry.source];
               }
             } catch (err) {
-              _iterator115.e(err);
+              _iterator116.e(err);
             } finally {
-              _iterator115.f();
+              _iterator116.f();
             }
           },
           _ret1;
-        for (_iterator114.s(); !(_step114 = _iterator114.n()).done;) {
-          _ret1 = _loop32();
+        for (_iterator115.s(); !(_step115 = _iterator115.n()).done;) {
+          _ret1 = _loop33();
           if (_ret1 === 0) continue;
         }
       } catch (err) {
-        _iterator114.e(err);
+        _iterator115.e(err);
       } finally {
-        _iterator114.f();
+        _iterator115.f();
       }
       return changed ? box.innerHTML : body;
     }
@@ -26788,11 +26934,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       if (!number3) return body;
       var box = document.createElement("div");
       box.innerHTML = body;
-      var _iterator116 = _createForOfIteratorHelper(box.querySelectorAll(".videos__item[data-json]")),
-        _step116;
+      var _iterator117 = _createForOfIteratorHelper(box.querySelectorAll(".videos__item[data-json]")),
+        _step117;
       try {
-        for (_iterator116.s(); !(_step116 = _iterator116.n()).done;) {
-          var node = _step116.value;
+        for (_iterator117.s(); !(_step117 = _iterator117.n()).done;) {
+          var node = _step117.value;
           try {
             var row = JSON.parse(node.getAttribute("data-json"));
             if (playable2(row)) {
@@ -26804,9 +26950,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           } catch (error) {}
         }
       } catch (err) {
-        _iterator116.e(err);
+        _iterator117.e(err);
       } finally {
-        _iterator116.f();
+        _iterator117.f();
       }
       return box.innerHTML;
     };
@@ -26838,11 +26984,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var box = document.createElement("div");
         box.innerHTML = body;
         var line = box.querySelector(".videos__line") || box;
-        var _iterator117 = _createForOfIteratorHelper(parts),
-          _step117;
+        var _iterator118 = _createForOfIteratorHelper(parts),
+          _step118;
         try {
-          for (_iterator117.s(); !(_step117 = _iterator117.n()).done;) {
-            var part = _step117.value;
+          for (_iterator118.s(); !(_step118 = _iterator118.n()).done;) {
+            var part = _step118.value;
             overrides.set(routeKey(part.url), part.sourceNumber);
             var node = document.createElement("div");
             node.className = "videos__item videos__season selector";
@@ -26856,9 +27002,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             line.appendChild(node);
           }
         } catch (err) {
-          _iterator117.e(err);
+          _iterator118.e(err);
         } finally {
-          _iterator117.f();
+          _iterator118.f();
         }
         while (overrides.size > 48) overrides.delete(overrides.keys().next().value);
         done(canonical ? collapseFolders(box.innerHTML, layout, canonical) : box.innerHTML, layout);
@@ -26939,8 +27085,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                       var u = new URL(row.stream || row.url, base);
                       var link = u.searchParams.get("link");
                       if (link) return link;
-                      for (var _i39 = 0, _arr26 = ["title", "original_title", "episode", "play"]; _i39 < _arr26.length; _i39++) {
-                        var name = _arr26[_i39];
+                      for (var _i40 = 0, _arr26 = ["title", "original_title", "episode", "play"]; _i40 < _arr26.length; _i40++) {
+                        var name = _arr26[_i40];
                         u.searchParams.delete(name);
                       }
                       u.searchParams.sort();
@@ -26970,7 +27116,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                   var cursor2 = 0,
                     running = 0;
                   function pump() {
-                    var _loop33 = function _loop33() {
+                    var _loop34 = function _loop34() {
                       var part = pending2[cursor2++];
                       running++;
                       request(part.url, function (body2) {
@@ -26997,7 +27143,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                       });
                     };
                     while (!ended && running < 2 && cursor2 < pending2.length) {
-                      _loop33();
+                      _loop34();
                     }
                   }
                   pump();
@@ -27016,13 +27162,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           })) return finish([], null);
           var layout = {},
             missing = [];
-          var _iterator118 = _createForOfIteratorHelper(existing),
-            _step118;
+          var _iterator119 = _createForOfIteratorHelper(existing),
+            _step119;
           try {
-            var _loop34 = function _loop34() {
-                var _step118$value = _slicedToArray(_step118.value, 2),
-                  source = _step118$value[0],
-                  release = _step118$value[1];
+            var _loop35 = function _loop35() {
+                var _step119$value = _slicedToArray(_step119.value, 2),
+                  source = _step119$value[0],
+                  release = _step119$value[1];
                 var map = animeEpisodeMap(release.record, release.episodes, value);
                 if (!map || !map.every(function (e) {
                   return e.season === map[0].season;
@@ -27037,14 +27183,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 };
               },
               _ret10;
-            for (_iterator118.s(); !(_step118 = _iterator118.n()).done;) {
-              _ret10 = _loop34();
+            for (_iterator119.s(); !(_step119 = _iterator119.n()).done;) {
+              _ret10 = _loop35();
               if (_ret10) return _ret10.v;
             }
           } catch (err) {
-            _iterator118.e(err);
+            _iterator119.e(err);
           } finally {
-            _iterator118.f();
+            _iterator119.f();
           }
           var used = new Set(numbers),
             represented = new Set(_toConsumableArray(existing.values()).map(function (n) {
@@ -27057,11 +27203,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             used.add(i + 1);
             represented.add(releases[i].id);
           }
-          var _iterator119 = _createForOfIteratorHelper(all),
-            _step119;
+          var _iterator120 = _createForOfIteratorHelper(all),
+            _step120;
           try {
-            for (_iterator119.s(); !(_step119 = _iterator119.n()).done;) {
-              var release = _step119.value;
+            for (_iterator120.s(); !(_step120 = _iterator120.n()).done;) {
+              var release = _step120.value;
               if (!represented.has(release.id)) {
                 var next = max + 1;
                 while (used.has(next)) next++;
@@ -27072,9 +27218,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               }
             }
           } catch (err) {
-            _iterator119.e(err);
+            _iterator120.e(err);
           } finally {
-            _iterator119.f();
+            _iterator120.f();
           }
           if (missing.length > 30) return finish([], null);
           function discover() {
@@ -27163,11 +27309,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var known = /* @__PURE__ */new Set();
     var template = null,
       param = "";
-    var _iterator120 = _createForOfIteratorHelper(rows),
-      _step120;
+    var _iterator121 = _createForOfIteratorHelper(rows),
+      _step121;
     try {
-      var _loop35 = function _loop35() {
-          var row = _step120.value;
+      var _loop36 = function _loop36() {
+          var row = _step121.value;
           if (row.similar || row.method !== "link") return {
             v: []
           };
@@ -27201,14 +27347,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           template = template || url;
         },
         _ret11;
-      for (_iterator120.s(); !(_step120 = _iterator120.n()).done;) {
-        _ret11 = _loop35();
+      for (_iterator121.s(); !(_step121 = _iterator121.n()).done;) {
+        _ret11 = _loop36();
         if (_ret11) return _ret11.v;
       }
     } catch (err) {
-      _iterator120.e(err);
+      _iterator121.e(err);
     } finally {
-      _iterator120.f();
+      _iterator121.f();
     }
     var max = Math.max.apply(Math, _toConsumableArray(known));
     if (max < 2) return [];
@@ -27262,13 +27408,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var box = document.createElement("div");
         box.innerHTML = body;
         var line = box.querySelector(".videos__line") || box;
-        var _iterator121 = _createForOfIteratorHelper(ready.sort(function (a, b) {
+        var _iterator122 = _createForOfIteratorHelper(ready.sort(function (a, b) {
             return a.number - b.number;
           })),
-          _step121;
+          _step122;
         try {
-          for (_iterator121.s(); !(_step121 = _iterator121.n()).done;) {
-            var part = _step121.value;
+          for (_iterator122.s(); !(_step122 = _iterator122.n()).done;) {
+            var part = _step122.value;
             var node = document.createElement("div");
             node.className = "videos__item videos__season selector";
             node.setAttribute("data-json", JSON.stringify({
@@ -27281,9 +27427,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             line.appendChild(node);
           }
         } catch (err) {
-          _iterator121.e(err);
+          _iterator122.e(err);
         } finally {
-          _iterator121.f();
+          _iterator122.f();
         }
         var result = box.innerHTML;
         cache2.set(key2, {
@@ -27294,7 +27440,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         done(result);
       }
       function pump() {
-        var _loop36 = function _loop36() {
+        var _loop37 = function _loop37() {
           var accept = function accept(value) {
             if (settled) return;
             settled = true;
@@ -27337,7 +27483,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }
         };
         while (!ended && running < 2 && cursor < plan.length) {
-          _loop36();
+          _loop37();
         }
       }
       pump();
@@ -27375,11 +27521,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     }) || seasons.reduce(function (n, s) {
       return n + Number(s.episode_count || 0);
     }, 0) !== numbers.length) return null;
-    var _iterator122 = _createForOfIteratorHelper(seasons),
-      _step122;
+    var _iterator123 = _createForOfIteratorHelper(seasons),
+      _step123;
     try {
-      var _loop37 = function _loop37() {
-          var season = _step122.value;
+      var _loop38 = function _loop38() {
+          var season = _step123.value;
           var book = books[season.season_number],
             rows = book && (book.episodes_original || book.episodes);
           if (!Array.isArray(rows) || rows.length !== Number(season.episode_count)) return {
@@ -27396,14 +27542,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           episodes.push.apply(episodes, _toConsumableArray(sorted));
         },
         _ret12;
-      for (_iterator122.s(); !(_step122 = _iterator122.n()).done;) {
-        _ret12 = _loop37();
+      for (_iterator123.s(); !(_step123 = _iterator123.n()).done;) {
+        _ret12 = _loop38();
         if (_ret12) return _ret12.v;
       }
     } catch (err) {
-      _iterator122.e(err);
+      _iterator123.e(err);
     } finally {
-      _iterator122.f();
+      _iterator123.f();
     }
     var releases = model.nodes.filter(function (n) {
       return n.record && Number(n.record.tv) === Number(card.tmdb_id || card.id) && ["tv", "ona"].includes(n.kind) && Number.isSafeInteger(n.episodes) && n.episodes > 0 && n.status !== "anons";
@@ -27416,11 +27562,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       })),
       used = /* @__PURE__ */new Set(),
       groups = [];
-    var _iterator123 = _createForOfIteratorHelper(releases),
-      _step123;
+    var _iterator124 = _createForOfIteratorHelper(releases),
+      _step124;
     try {
-      var _loop38 = function _loop38() {
-          var release = _step123.value;
+      var _loop39 = function _loop39() {
+          var release = _step124.value;
           var map = animeEpisodeMap(release.record, release.episodes, card, books);
           if (map && release.aired && release.released && map.some(function (e) {
             return !e.metadata || !inRelease(e.metadata, release);
@@ -27483,14 +27629,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
         },
         _ret13;
-      for (_iterator123.s(); !(_step123 = _iterator123.n()).done;) {
-        _ret13 = _loop38();
+      for (_iterator124.s(); !(_step124 = _iterator124.n()).done;) {
+        _ret13 = _loop39();
         if (_ret13) return _ret13.v;
       }
     } catch (err) {
-      _iterator123.e(err);
+      _iterator124.e(err);
     } finally {
-      _iterator123.f();
+      _iterator124.f();
     }
     if (used.size !== episodes.length) return null;
     groups.sort(function (a, b) {
@@ -27529,11 +27675,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   function joinedPartsBook(parts, books) {
     var _a;
     var result = {};
-    var _iterator124 = _createForOfIteratorHelper(parts),
-      _step124;
+    var _iterator125 = _createForOfIteratorHelper(parts),
+      _step125;
     try {
-      var _loop39 = function _loop39() {
-        var part = _step124.value;
+      var _loop40 = function _loop40() {
+        var part = _step125.value;
         var source = books[part.season],
           rows = source && (source.episodes_original || source.episodes) || [];
         var coordinates = Array.isArray(part.episodes) ? part.episodes.filter(function (n) {
@@ -27565,28 +27711,28 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             lampa_grouped: true
           });
         });
-        var _iterator125 = _createForOfIteratorHelper(rows),
-          _step125;
+        var _iterator126 = _createForOfIteratorHelper(rows),
+          _step126;
         try {
-          for (_iterator125.s(); !(_step125 = _iterator125.n()).done;) {
-            var e = _step125.value;
+          for (_iterator126.s(); !(_step126 = _iterator126.n()).done;) {
+            var e = _step126.value;
             if (e.episode_number > part.offset && e.episode_number <= part.offset + part.count && /^\d{4}-\d{2}-\d{2}$/.test(e.air_date || "") && e.air_date > (/* @__PURE__ */new Date()).toISOString().slice(0, 10)) result[e.episode_number] = __spreadProps(__spreadValues({}, e), {
               lampa_grouped: true
             });
           }
         } catch (err) {
-          _iterator125.e(err);
+          _iterator126.e(err);
         } finally {
-          _iterator125.f();
+          _iterator126.f();
         }
       };
-      for (_iterator124.s(); !(_step124 = _iterator124.n()).done;) {
-        _loop39();
+      for (_iterator125.s(); !(_step125 = _iterator125.n()).done;) {
+        _loop40();
       }
     } catch (err) {
-      _iterator124.e(err);
+      _iterator125.e(err);
     } finally {
-      _iterator124.f();
+      _iterator125.f();
     }
     return Object.keys(result).length ? result : null;
   }
@@ -27619,7 +27765,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       pump();
     }
     function pump() {
-      var _loop40 = function _loop40() {
+      var _loop41 = function _loop41() {
         var finish = function finish(value) {
           if (settled) return;
           settled = true;
@@ -27682,7 +27828,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
       };
       while (active < 2 && queue.length) {
-        _loop40();
+        _loop41();
       }
     }
     function canonical(card, done) {
@@ -27738,6 +27884,43 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var target = animeTarget(card);
       if (target) return done(target);
       var records = animeRecords(card);
+      if (card.minimal_franchise_parent && card.minimal_franchise_release) {
+        var parent = card.minimal_franchise_parent,
+          release = card.minimal_franchise_release;
+        return load("tv/" + parent.id, function (value) {
+          if (!value || Number(value.id) !== Number(parent.id)) return done(null);
+          var seasons = (value.seasons || []).filter(function (s) {
+            return s.season_number > 0;
+          }).sort(function (a, b) {
+            return a.season_number - b.season_number;
+          });
+          var selected = seasons.filter(function (s, i) {
+            var _a;
+            return s.air_date && s.air_date <= release.released && (!((_a = seasons[i + 1]) == null ? void 0 : _a.air_date) || seasons[i + 1].air_date >= release.aired);
+          });
+          if (!selected.length || selected.length > 3) return done(null);
+          var books = {};
+          var left = selected.length;
+          var _iterator127 = _createForOfIteratorHelper(selected),
+            _step127;
+          try {
+            var _loop42 = function _loop42() {
+              var season = _step127.value;
+              load("tv/" + parent.id + "/season/" + season.season_number, function (book) {
+                books[season.season_number] = book;
+                if (! --left) done(datedReleaseTarget(card, value, books));
+              });
+            };
+            for (_iterator127.s(); !(_step127 = _iterator127.n()).done;) {
+              _loop42();
+            }
+          } catch (err) {
+            _iterator127.e(err);
+          } finally {
+            _iterator127.f();
+          }
+        });
+      }
       if (records.length !== 1 || (records[0].imdb || []).length !== 1) return done(null);
       var record = records[0],
         type = card.media_type || (card.name ? "tv" : "movie");
@@ -27920,22 +28103,43 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             });
           }
           function finish(map) {
-            var book = {};
-            map.forEach(function (e) {
-              var _a, _b;
-              return book[e.number] = __spreadProps(__spreadValues({}, e.metadata), {
-                lampa_grouped: true,
-                lampa_season_name: seasonName({
-                  seasons: [{
-                    season_number: number3,
-                    name: release.name
-                  }]
-                }, number3, __spreadProps(__spreadValues({}, card), {
-                  lampa_series_names: [(_a = main[0]) == null ? void 0 : _a.name, (_b = main[0]) == null ? void 0 : _b.original]
-                }))
-              });
-            });
-            done(Object.keys(book).length === files.length ? book : null);
+            var _a;
+            var book = {},
+              put = function put(e) {
+                var _a2, _b;
+                return book[e.number] = __spreadProps(__spreadValues({}, e.metadata), {
+                  lampa_grouped: true,
+                  lampa_source_season: Number(number3),
+                  lampa_season_name: seasonName({
+                    seasons: [{
+                      season_number: number3,
+                      name: release.name
+                    }]
+                  }, number3, __spreadProps(__spreadValues({}, card), {
+                    lampa_series_names: [(_a2 = main[0]) == null ? void 0 : _a2.name, (_b = main[0]) == null ? void 0 : _b.original]
+                  }))
+                });
+              };
+            map.forEach(put);
+            if (files.some(function (n) {
+              return !book[n];
+            })) return done(null);
+            if (release.status === "ongoing") {
+              var complete = animeEpisodeMap(release.record, release.episodes, value, books);
+              var _iterator128 = _createForOfIteratorHelper(complete || []),
+                _step128;
+              try {
+                for (_iterator128.s(); !(_step128 = _iterator128.n()).done;) {
+                  var e = _step128.value;
+                  if (!book[e.number] && ((_a = e.metadata) == null ? void 0 : _a.air_date) > today2 && e.metadata.air_date >= release.aired && (!release.released || e.metadata.air_date <= release.released)) put(e);
+                }
+              } catch (err) {
+                _iterator128.e(err);
+              } finally {
+                _iterator128.f();
+              }
+            }
+            done(book);
           }
           var mapped = animeEpisodeMap(release.record, files.length, value);
           loadSeasons(mapped ? _toConsumableArray(new Set(mapped.map(function (e) {
@@ -27985,16 +28189,16 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }))) return done(book);
         var result = __spreadValues({}, book || {});
         var left = parts.length;
-        var _iterator126 = _createForOfIteratorHelper(parts),
-          _step126;
+        var _iterator129 = _createForOfIteratorHelper(parts),
+          _step129;
         try {
-          var _loop41 = function _loop41() {
-            var part = _step126.value;
+          var _loop43 = function _loop43() {
+            var part = _step129.value;
             var merge = function merge(release) {
-              if (release) for (var _i40 = 0, _Object$entries = Object.entries(release); _i40 < _Object$entries.length; _i40++) {
-                var _Object$entries$_i = _slicedToArray(_Object$entries[_i40], 2),
-                  key2 = _Object$entries$_i[0],
-                  row = _Object$entries$_i[1];
+              if (release) for (var _i41 = 0, _Object$entries2 = Object.entries(release); _i41 < _Object$entries2.length; _i41++) {
+                var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i41], 2),
+                  key2 = _Object$entries2$_i[0],
+                  row = _Object$entries2$_i[1];
                 var number3 = part.offset + Number(key2);
                 if (Number(key2) > part.count || Array.isArray(part.episodes) && !part.episodes.includes(number3)) continue;
                 var old = result[number3] || {};
@@ -28009,13 +28213,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             };
             if (part.mal) kino.releaseBook(part.mal, merge);else merge(null);
           };
-          for (_iterator126.s(); !(_step126 = _iterator126.n()).done;) {
-            _loop41();
+          for (_iterator129.s(); !(_step129 = _iterator129.n()).done;) {
+            _loop43();
           }
         } catch (err) {
-          _iterator126.e(err);
+          _iterator129.e(err);
         } finally {
-          _iterator126.f();
+          _iterator129.f();
         }
       };
       canonical(card, function (value) {
@@ -28115,6 +28319,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           var control = row.control,
             item = row.item;
           var panel;
+          var posterCache2 = /* @__PURE__ */new Map();
           var cleanup = function cleanup() {
             if (panel) panel.classList.remove("minimal-franchise-menu");
             panel = null;
@@ -28157,7 +28362,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               group.entries.forEach(function (entry) {
                 var _a;
                 return items.push({
-                  title: escape(entry.icon + " " + entry.title),
+                  title: escape(entry.title),
                   subtitle: escape(entry.subtitle),
                   card: entry.card,
                   selected: Number(entry.card.id) === Number(card.shikimori_id || card.mal_id || model.seed) && (!entry.card.minimal_franchise_season || entry.card.minimal_franchise_season === (((_a = card.minimal_anime_release) == null ? void 0 : _a.season) || 1))
@@ -28173,7 +28378,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 panel = box[0];
                 panel.classList.add("minimal-franchise-menu");
                 var rect = control.getBoundingClientRect(),
-                  width = Math.min(460, window.innerWidth - 24),
+                  width = Math.min(560, window.innerWidth - 24),
                   height = Math.min(520, window.innerHeight - 24),
                   left = Math.max(12, Math.min(rect.left, window.innerWidth - width - 12)),
                   top = rect.bottom + height + 20 <= window.innerHeight ? Math.max(12, rect.bottom + 8) : Math.max(12, Math.min(rect.top - height - 8, window.innerHeight - height - 12));
@@ -28182,7 +28387,80 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 panel.style.setProperty("--franchise-width", width + "px");
                 panel.style.setProperty("--franchise-height", height + "px");
                 scroll.body().find(".settings-param-title").addClass("minimal-season-section");
-                scroll.body().find(".selectbox-item").addClass("minimal-anime-franchise__item");
+                var nodes = scroll.body().find(".selectbox-item");
+                nodes.addClass("minimal-anime-franchise__item");
+                var releases = items.filter(function (entry) {
+                  return !entry.separator;
+                });
+                nodes.each(function (index2, node) {
+                  var entry = releases[index2];
+                  if (!entry) return;
+                  var picture = document.createElement("div");
+                  picture.className = "minimal-related-art";
+                  picture.setAttribute("aria-hidden", "true");
+                  picture.dataset.release = String(entry.card.id);
+                  var poster = posterCache2.get(String(entry.card.id)) || entry.card.img;
+                  if (poster && !poster.includes("/missing_")) {
+                    var image2 = document.createElement("img");
+                    image2.alt = "";
+                    image2.decoding = "async";
+                    image2.loading = "lazy";
+                    image2.onerror = function () {
+                      return image2.remove();
+                    };
+                    image2.src = poster;
+                    picture.appendChild(image2);
+                  }
+                  var info = document.createElement("div");
+                  info.className = "minimal-related-info";
+                  for (var _i42 = 0, _arr27 = _toConsumableArray(node.children); _i42 < _arr27.length; _i42++) {
+                    var child = _arr27[_i42];
+                    info.appendChild(child);
+                  }
+                  node.appendChild(picture);
+                  node.appendChild(info);
+                });
+                var ids = releases.map(function (entry) {
+                    return String(entry.card.id);
+                  }).filter(function (id) {
+                    return !posterCache2.has(id);
+                  }).slice(0, 12),
+                  api2 = L.Api.sources.minimal_shiki;
+                if (ids.length && (api2 == null ? void 0 : api2.posters)) api2.posters(ids, function (rows) {
+                  var _a, _b;
+                  var _iterator130 = _createForOfIteratorHelper(rows),
+                    _step130;
+                  try {
+                    var _loop44 = function _loop44() {
+                        var value = _step130.value;
+                        var id = String(value.id);
+                        if (!ids.includes(id)) return 0; // continue
+                        var url = ((_a = value.poster) == null ? void 0 : _a.mainUrl) || ((_b = value.poster) == null ? void 0 : _b.originalUrl);
+                        if (!/^https:\/\//.test(url || "")) return 0; // continue
+                        posterCache2.set(id, url);
+                        var art = panel == null ? void 0 : panel.querySelector('.minimal-related-art[data-release="' + id + '"]');
+                        if (!art) return 0; // continue
+                        art.textContent = "";
+                        var image2 = document.createElement("img");
+                        image2.alt = "";
+                        image2.decoding = "async";
+                        image2.onerror = function () {
+                          return image2.remove();
+                        };
+                        image2.src = url;
+                        art.appendChild(image2);
+                      },
+                      _ret14;
+                    for (_iterator130.s(); !(_step130 = _iterator130.n()).done;) {
+                      _ret14 = _loop44();
+                      if (_ret14 === 0) continue;
+                    }
+                  } catch (err) {
+                    _iterator130.e(err);
+                  } finally {
+                    _iterator130.f();
+                  }
+                }, function () {});
               },
               onSelect: function onSelect(entry) {
                 var _a;
@@ -28262,11 +28540,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var known = /* @__PURE__ */new Map(),
       seen = /* @__PURE__ */new Set(),
       rows = [];
-    var _iterator127 = _createForOfIteratorHelper(seasons),
-      _step127;
+    var _iterator131 = _createForOfIteratorHelper(seasons),
+      _step131;
     try {
-      for (_iterator127.s(); !(_step127 = _iterator127.n()).done;) {
-        var s = _step127.value;
+      for (_iterator131.s(); !(_step131 = _iterator131.n()).done;) {
+        var s = _step131.value;
         if (!positive5(s.season_number) || !positive5(s.episode_count)) continue;
         var n = Number(s.season_number);
         if (known.has(n)) return null;
@@ -28277,15 +28555,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
       }
     } catch (err) {
-      _iterator127.e(err);
+      _iterator131.e(err);
     } finally {
-      _iterator127.f();
+      _iterator131.f();
     }
-    var _iterator128 = _createForOfIteratorHelper(episodes),
-      _step128;
+    var _iterator132 = _createForOfIteratorHelper(episodes),
+      _step132;
     try {
-      for (_iterator128.s(); !(_step128 = _iterator128.n()).done;) {
-        var e = _step128.value;
+      for (_iterator132.s(); !(_step132 = _iterator132.n()).done;) {
+        var e = _step132.value;
         var season = Number(e.season_number),
           number3 = Number(e.tmdb_episode_number),
           key2 = season + ":" + number3;
@@ -28311,33 +28589,33 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
       }
     } catch (err) {
-      _iterator128.e(err);
+      _iterator132.e(err);
     } finally {
-      _iterator128.f();
+      _iterator132.f();
     }
     rows.sort(function (a, b) {
       return a.season - b.season || a.number - b.number;
     });
-    var _iterator129 = _createForOfIteratorHelper(known.values()),
-      _step129;
+    var _iterator133 = _createForOfIteratorHelper(known.values()),
+      _step133;
     try {
-      var _loop42 = function _loop42() {
-          var s = _step129.value;
+      var _loop45 = function _loop45() {
+          var s = _step133.value;
           if (rows.filter(function (e) {
             return e.season === s.number;
           }).length !== s.count) return {
             v: null
           };
         },
-        _ret14;
-      for (_iterator129.s(); !(_step129 = _iterator129.n()).done;) {
-        _ret14 = _loop42();
-        if (_ret14) return _ret14.v;
+        _ret15;
+      for (_iterator133.s(); !(_step133 = _iterator133.n()).done;) {
+        _ret15 = _loop45();
+        if (_ret15) return _ret15.v;
       }
     } catch (err) {
-      _iterator129.e(err);
+      _iterator133.e(err);
     } finally {
-      _iterator129.f();
+      _iterator133.f();
     }
     var groups = _toConsumableArray(known.values()).sort(function (a, b) {
       return a.number - b.number;
@@ -28430,11 +28708,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var rows = payload && payload.data;
     if (!positive5(mal) || !Array.isArray(rows) || !rows.length) return null;
     var book = {};
-    var _iterator130 = _createForOfIteratorHelper(rows),
-      _step130;
+    var _iterator134 = _createForOfIteratorHelper(rows),
+      _step134;
     try {
-      for (_iterator130.s(); !(_step130 = _iterator130.n()).done;) {
-        var row = _step130.value;
+      for (_iterator134.s(); !(_step134 = _iterator134.n()).done;) {
+        var row = _step134.value;
         var n = Number(row.mal_episode_number);
         if (Number(row.mal_id) !== Number(mal) || !positive5(n) || book[n]) return null;
         book[n] = {
@@ -28448,9 +28726,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         };
       }
     } catch (err) {
-      _iterator130.e(err);
+      _iterator134.e(err);
     } finally {
-      _iterator130.f();
+      _iterator134.f();
     }
     return book;
   }
@@ -28739,16 +29017,16 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var _a;
     if (!spec || !["dorama", "tvshow"].includes(spec.kind) || !Array.isArray(spec.countries) || !spec.countries.length) return [];
     var queries = [];
-    var _iterator131 = _createForOfIteratorHelper(spec.countries.slice(0, 2)),
-      _step131;
+    var _iterator135 = _createForOfIteratorHelper(spec.countries.slice(0, 2)),
+      _step135;
     try {
-      for (_iterator131.s(); !(_step131 = _iterator131.n()).done;) {
-        var country = _step131.value;
-        var _iterator132 = _createForOfIteratorHelper((((_a = spec.genres) == null ? void 0 : _a.length) ? spec.genres : [""]).slice(0, 2)),
-          _step132;
+      for (_iterator135.s(); !(_step135 = _iterator135.n()).done;) {
+        var country = _step135.value;
+        var _iterator136 = _createForOfIteratorHelper((((_a = spec.genres) == null ? void 0 : _a.length) ? spec.genres : [""]).slice(0, 2)),
+          _step136;
         try {
-          for (_iterator132.s(); !(_step132 = _iterator132.n()).done;) {
-            var genre = _step132.value;
+          for (_iterator136.s(); !(_step136 = _iterator136.n()).done;) {
+            var genre = _step136.value;
             var p = new URLSearchParams({
               type: "tv",
               country: country,
@@ -28763,15 +29041,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             queries.push("titles?" + p);
           }
         } catch (err) {
-          _iterator132.e(err);
+          _iterator136.e(err);
         } finally {
-          _iterator132.f();
+          _iterator136.f();
         }
       }
     } catch (err) {
-      _iterator131.e(err);
+      _iterator135.e(err);
     } finally {
-      _iterator131.f();
+      _iterator135.f();
     }
     return queries;
   }
@@ -28850,8 +29128,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             })) return fail();
             var seen = /* @__PURE__ */new Set(),
               results = [];
-            for (var i = 0; i < 24; i++) for (var _i41 = 0, _replies = replies; _i41 < _replies.length; _i41++) {
-              var row = _replies[_i41];
+            for (var i = 0; i < 24; i++) for (var _i43 = 0, _replies = replies; _i43 < _replies.length; _i43++) {
+              var row = _replies[_i43];
               var card = catalogueCard(row.data[i], spec, locale());
               if (card && !seen.has(card.id)) {
                 seen.add(card.id);
@@ -28885,7 +29163,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           var visible = rows.filter(Boolean);
           return visible.length ? ok(visible) : fail();
         }
-        var _loop43 = function _loop43() {
+        var _loop46 = function _loop46() {
           var index2 = cursor++,
             job = plan[index2],
             url = JSON.stringify(job.spec),
@@ -28922,7 +29200,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
         };
         while (!ended && active < 2 && cursor < plan.length) {
-          if (_loop43()) continue;
+          if (_loop46()) continue;
         }
         if (done === plan.length) pump();
       }
@@ -29007,8 +29285,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           args[_key6] = arguments[_key6];
         }
         var request = _construct(Native, args);
-        var _loop44 = function _loop44() {
-          var method = _arr27[_i42];
+        var _loop47 = function _loop47() {
+          var method = _arr28[_i44];
           var send = request[method];
           if (typeof send !== "function") return 1; // continue
           request[method] = function (url, ok) {
@@ -29029,8 +29307,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             }].concat(rest));
           };
         };
-        for (var _i42 = 0, _arr27 = ["silent", "native"]; _i42 < _arr27.length; _i42++) {
-          if (_loop44()) continue;
+        for (var _i44 = 0, _arr28 = ["silent", "native"]; _i44 < _arr28.length; _i44++) {
+          if (_loop47()) continue;
         }
         return request;
       };
@@ -29071,8 +29349,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           return fn();
         });
       };
-      for (var _i43 = 0, _arr28 = ["serial=0", "serial=1", "serial=1&anime=1"]; _i43 < _arr28.length; _i43++) {
-        var query = _arr28[_i43];
+      for (var _i45 = 0, _arr29 = ["serial=0", "serial=1", "serial=1&anime=1"]; _i45 < _arr29.length; _i45++) {
+        var query = _arr29[_i45];
         var request = new L.Reguest();
         request.lampaViewInventory = true;
         request.timeout(4500);
@@ -29596,18 +29874,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     };
     var group, winter;
     function update() {
-      var _iterator133 = _createForOfIteratorHelper(origins),
-        _step133;
+      var _iterator137 = _createForOfIteratorHelper(origins),
+        _step137;
       try {
-        for (_iterator133.s(); !(_step133 = _iterator133.n()).done;) {
-          var _step133$value = _slicedToArray(_step133.value, 1),
-            _button = _step133$value[0];
+        for (_iterator137.s(); !(_step137 = _iterator137.n()).done;) {
+          var _step137$value = _slicedToArray(_step137.value, 1),
+            _button = _step137$value[0];
           if (!_button.isConnected) origins.delete(_button);
         }
       } catch (err) {
-        _iterator133.e(err);
+        _iterator137.e(err);
       } finally {
-        _iterator133.f();
+        _iterator137.f();
       }
       var logo = head.querySelector(".head__logo-icon");
       if (!logo) return;
@@ -29618,8 +29896,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           if (!art) {
             art = document.createElement("span");
             art.className = "pt-holiday-art";
-            for (var _i44 = 0, _Array$from3 = Array.from(logo.children); _i44 < _Array$from3.length; _i44++) {
-              var node = _Array$from3[_i44];
+            for (var _i46 = 0, _Array$from3 = Array.from(logo.children); _i46 < _Array$from3.length; _i46++) {
+              var node = _Array$from3[_i46];
               if (node.classList.contains("head__logo-halloween-fire") || node.classList.contains("head__logo-halloween-svg")) art.appendChild(node);
             }
             logo.insertBefore(art, logo.firstChild);
@@ -29649,11 +29927,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             group.className = "pt-holiday-icons";
           }
           if (group.parentNode !== logo.parentNode || group.nextSibling !== logo) logo.before(group);
-          var _iterator134 = _createForOfIteratorHelper(buttons),
-            _step134;
+          var _iterator138 = _createForOfIteratorHelper(buttons),
+            _step138;
           try {
-            var _loop45 = function _loop45() {
-              var button = _step134.value;
+            var _loop48 = function _loop48() {
+              var button = _step138.value;
               if (!origins.has(button)) {
                 var native = document.createElement("span");
                 native.className = "pt-holiday-native";
@@ -29675,13 +29953,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               }
               if (button.parentNode !== group) group.appendChild(button);
             };
-            for (_iterator134.s(); !(_step134 = _iterator134.n()).done;) {
-              _loop45();
+            for (_iterator138.s(); !(_step138 = _iterator138.n()).done;) {
+              _loop48();
             }
           } catch (err) {
-            _iterator134.e(err);
+            _iterator138.e(err);
           } finally {
-            _iterator134.f();
+            _iterator138.f();
           }
           if (snow) {
             if (!winter) {
@@ -29694,18 +29972,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             if (winter.parentNode !== group) group.appendChild(winter);
           } else if (winter) winter.remove();
         } else if (group) group.remove();
-        for (var _i45 = 0, _Array$from4 = Array.from(head.children); _i45 < _Array$from4.length; _i45++) {
-          var _node6 = _Array$from4[_i45];
+        for (var _i47 = 0, _Array$from4 = Array.from(head.children); _i47 < _Array$from4.length; _i47++) {
+          var _node6 = _Array$from4[_i47];
           if (_node6.classList.contains("garland")) logo.appendChild(_node6);
         }
       } else {
-        var _iterator135 = _createForOfIteratorHelper(origins),
-          _step135;
+        var _iterator139 = _createForOfIteratorHelper(origins),
+          _step139;
         try {
-          for (_iterator135.s(); !(_step135 = _iterator135.n()).done;) {
-            var _step135$value = _slicedToArray(_step135.value, 2),
-              button = _step135$value[0],
-              origin = _step135$value[1];
+          for (_iterator139.s(); !(_step139 = _iterator139.n()).done;) {
+            var _step139$value = _slicedToArray(_step139.value, 2),
+              button = _step139$value[0],
+              origin = _step139$value[1];
             origin.icon.remove();
             while (origin.native.firstChild) button.insertBefore(origin.native.firstChild, origin.native);
             origin.native.remove();
@@ -29713,14 +29991,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             if (origin.parent.isConnected) origin.parent.insertBefore(button, origin.next && origin.next.parentNode === origin.parent ? origin.next : null);
           }
         } catch (err) {
-          _iterator135.e(err);
+          _iterator139.e(err);
         } finally {
-          _iterator135.f();
+          _iterator139.f();
         }
         origins.clear();
         if (group) group.remove();
-        for (var _i46 = 0, _Array$from5 = Array.from(logo.children); _i46 < _Array$from5.length; _i46++) {
-          var _node7 = _Array$from5[_i46];
+        for (var _i48 = 0, _Array$from5 = Array.from(logo.children); _i48 < _Array$from5.length; _i48++) {
+          var _node7 = _Array$from5[_i48];
           if (_node7.classList.contains("garland")) head.insertBefore(_node7, head.firstChild);
         }
       }
@@ -29832,11 +30110,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   function personalScale(L) {
     var values = {};
     for (var n = 80; n <= 200; n += 10) values[n] = n + "%";
-    for (var _i47 = 0, _arr29 = [["lampa_view_text_scale", "Размер текста", "Названия, описания и подписи. 100% — обычный размер."], ["lampa_view_cards_scale", "Размер карточек", "Постеры в подборках и превью серий. От 80 до 200%."], ["lampa_view_controls_scale", "Размер кнопок", "Размер значков и отступы элементов управления. Размер текста настраивается отдельно."]]; _i47 < _arr29.length; _i47++) {
-      var _arr29$_i = _slicedToArray(_arr29[_i47], 3),
-        name = _arr29$_i[0],
-        label = _arr29$_i[1],
-        description = _arr29$_i[2];
+    for (var _i49 = 0, _arr30 = [["lampa_view_text_scale", "Размер текста", "Названия, описания и подписи. 100% — обычный размер."], ["lampa_view_cards_scale", "Размер карточек", "Постеры в подборках и превью серий. От 80 до 200%."], ["lampa_view_controls_scale", "Размер кнопок", "Размер значков и отступы элементов управления. Размер текста настраивается отдельно."]]; _i49 < _arr30.length; _i49++) {
+      var _arr30$_i = _slicedToArray(_arr30[_i49], 3),
+        name = _arr30$_i[0],
+        label = _arr30$_i[1],
+        description = _arr30$_i[2];
       L.SettingsApi.addParam({
         component: "lampa_view",
         param: {
@@ -29862,8 +30140,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         description: text("Вернуть текст, кнопки и карточки к 100%.")
       },
       onChange: function onChange() {
-        for (var _i48 = 0, _arr30 = ["text", "controls", "cards"]; _i48 < _arr30.length; _i48++) {
-          var key2 = _arr30[_i48];
+        for (var _i50 = 0, _arr31 = ["text", "controls", "cards"]; _i50 < _arr31.length; _i50++) {
+          var key2 = _arr31[_i50];
           L.Storage.set("lampa_view_" + key2 + "_scale", "100");
         }
         update();
@@ -29880,24 +30158,24 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       return Number.isFinite(n) ? Math.max(0.8, Math.min(2, n / 100)) : 1;
     };
     function restore() {
-      var _iterator136 = _createForOfIteratorHelper(applied),
-        _step136;
+      var _iterator140 = _createForOfIteratorHelper(applied),
+        _step140;
       try {
-        for (_iterator136.s(); !(_step136 = _iterator136.n()).done;) {
-          var _step136$value = _step136.value,
-            el = _step136$value.el,
-            prop = _step136$value.prop,
-            old = _step136$value.old,
-            priority = _step136$value.priority,
-            value = _step136$value.value;
+        for (_iterator140.s(); !(_step140 = _iterator140.n()).done;) {
+          var _step140$value = _step140.value,
+            el = _step140$value.el,
+            prop = _step140$value.prop,
+            old = _step140$value.old,
+            priority = _step140$value.priority,
+            value = _step140$value.value;
           if (el.style.getPropertyValue(prop) === value) {
             if (old) el.style.setProperty(prop, old, priority);else el.style.removeProperty(prop);
           }
         }
       } catch (err) {
-        _iterator136.e(err);
+        _iterator140.e(err);
       } finally {
-        _iterator136.f();
+        _iterator140.f();
       }
       applied = [];
     }
@@ -29938,11 +30216,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }
       function measure(el, props, scale) {
         var css = getComputedStyle(el);
-        var _iterator137 = _createForOfIteratorHelper(props),
-          _step137;
+        var _iterator141 = _createForOfIteratorHelper(props),
+          _step141;
         try {
-          for (_iterator137.s(); !(_step137 = _iterator137.n()).done;) {
-            var prop = _step137.value;
+          for (_iterator141.s(); !(_step141 = _iterator141.n()).done;) {
+            var prop = _step141.value;
             var base = css.getPropertyValue(prop);
             if (!/^\d+(?:\.\d+)?px$/.test(base)) continue;
             var value = (parseFloat(base) * scale).toFixed(2) + "px";
@@ -29955,55 +30233,55 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             });
           }
         } catch (err) {
-          _iterator137.e(err);
+          _iterator141.e(err);
         } finally {
-          _iterator137.f();
+          _iterator141.f();
         }
       }
       if (text2 !== 1) {
-        var _iterator138 = _createForOfIteratorHelper(select(TEXT)),
-          _step138;
+        var _iterator142 = _createForOfIteratorHelper(select(TEXT)),
+          _step142;
         try {
-          for (_iterator138.s(); !(_step138 = _iterator138.n()).done;) {
-            var el = _step138.value;
+          for (_iterator142.s(); !(_step142 = _iterator142.n()).done;) {
+            var el = _step142.value;
             if (!el.querySelector(TEXT)) measure(el, ["font-size"], text2);
           }
         } catch (err) {
-          _iterator138.e(err);
+          _iterator142.e(err);
         } finally {
-          _iterator138.f();
+          _iterator142.f();
         }
       }
       if (controls !== 1) {
-        var _iterator139 = _createForOfIteratorHelper(select(CONTROLS)),
-          _step139;
+        var _iterator143 = _createForOfIteratorHelper(select(CONTROLS)),
+          _step143;
         try {
-          for (_iterator139.s(); !(_step139 = _iterator139.n()).done;) {
-            var _el2 = _step139.value;
+          for (_iterator143.s(); !(_step143 = _iterator143.n()).done;) {
+            var _el2 = _step143.value;
             measure(_el2, ["padding-top", "padding-bottom", "padding-left", "padding-right", "min-height"], controls);
           }
         } catch (err) {
-          _iterator139.e(err);
+          _iterator143.e(err);
         } finally {
-          _iterator139.f();
+          _iterator143.f();
         }
-        var _iterator140 = _createForOfIteratorHelper(select(ICONS)),
-          _step140;
+        var _iterator144 = _createForOfIteratorHelper(select(ICONS)),
+          _step144;
         try {
-          for (_iterator140.s(); !(_step140 = _iterator140.n()).done;) {
-            var _el3 = _step140.value;
+          for (_iterator144.s(); !(_step144 = _iterator144.n()).done;) {
+            var _el3 = _step144.value;
             measure(_el3, ["width", "height", "min-width"], controls);
           }
         } catch (err) {
-          _iterator140.e(err);
+          _iterator144.e(err);
         } finally {
-          _iterator140.f();
+          _iterator144.f();
         }
-        var _iterator141 = _createForOfIteratorHelper(select(ACTIONS + ",.head__action,.head__menu-icon,.nova-chip,.nova-btn,.alc-chip,.alc-ap__play")),
-          _step141;
+        var _iterator145 = _createForOfIteratorHelper(select(ACTIONS + ",.head__action,.head__menu-icon,.nova-chip,.nova-btn,.alc-chip,.alc-ap__play")),
+          _step145;
         try {
-          var _loop46 = function _loop46() {
-            var el = _step141.value;
+          var _loop49 = function _loop49() {
+            var el = _step145.value;
             var height = el.getBoundingClientRect().height;
             if (height) {
               var old = changes.findIndex(function (c) {
@@ -30013,43 +30291,43 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               set(el, "min-height", (height * controls).toFixed(2) + "px");
             }
           };
-          for (_iterator141.s(); !(_step141 = _iterator141.n()).done;) {
-            _loop46();
+          for (_iterator145.s(); !(_step145 = _iterator145.n()).done;) {
+            _loop49();
           }
         } catch (err) {
-          _iterator141.e(err);
+          _iterator145.e(err);
         } finally {
-          _iterator141.f();
+          _iterator145.f();
         }
-        var _iterator142 = _createForOfIteratorHelper(select(".head,.head__body")),
-          _step142;
+        var _iterator146 = _createForOfIteratorHelper(select(".head,.head__body")),
+          _step146;
         try {
-          for (_iterator142.s(); !(_step142 = _iterator142.n()).done;) {
-            var _el4 = _step142.value;
+          for (_iterator146.s(); !(_step146 = _iterator146.n()).done;) {
+            var _el4 = _step146.value;
             measure(_el4, ["height"], controls);
           }
         } catch (err) {
-          _iterator142.e(err);
+          _iterator146.e(err);
         } finally {
-          _iterator142.f();
+          _iterator146.f();
         }
-        var _iterator143 = _createForOfIteratorHelper(select(".head__action:not(.open--search),.head__menu-icon")),
-          _step143;
+        var _iterator147 = _createForOfIteratorHelper(select(".head__action:not(.open--search),.head__menu-icon")),
+          _step147;
         try {
-          for (_iterator143.s(); !(_step143 = _iterator143.n()).done;) {
-            var _el5 = _step143.value;
+          for (_iterator147.s(); !(_step147 = _iterator147.n()).done;) {
+            var _el5 = _step147.value;
             measure(_el5, ["width", "flex-basis"], controls);
           }
         } catch (err) {
-          _iterator143.e(err);
+          _iterator147.e(err);
         } finally {
-          _iterator143.f();
+          _iterator147.f();
         }
-        var _iterator144 = _createForOfIteratorHelper(select(ACTIONS)),
-          _step144;
+        var _iterator148 = _createForOfIteratorHelper(select(ACTIONS)),
+          _step148;
         try {
-          for (_iterator144.s(); !(_step144 = _iterator144.n()).done;) {
-            var _el6 = _step144.value;
+          for (_iterator148.s(); !(_step148 = _iterator148.n()).done;) {
+            var _el6 = _step148.value;
             var size = getComputedStyle(_el6),
               _width2 = _el6.getBoundingClientRect().width;
             if (_width2 && _width2 < _el6.parentElement.clientWidth * 0.5) set(_el6, "min-width", (_width2 * controls).toFixed(2) + "px");
@@ -30057,16 +30335,16 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             set(_el6, "flex-shrink", "0");
           }
         } catch (err) {
-          _iterator144.e(err);
+          _iterator148.e(err);
         } finally {
-          _iterator144.f();
+          _iterator148.f();
         }
         if (!document.body.classList.contains("pt-mobile")) {
-          var _iterator145 = _createForOfIteratorHelper(select(".minimal-detail-identity")),
-            _step145;
+          var _iterator149 = _createForOfIteratorHelper(select(".minimal-detail-identity")),
+            _step149;
           try {
-            for (_iterator145.s(); !(_step145 = _iterator145.n()).done;) {
-              var _el = _step145.value;
+            for (_iterator149.s(); !(_step149 = _iterator149.n()).done;) {
+              var _el = _step149.value;
               var width = Math.min(_el.getBoundingClientRect().width * controls, window.innerWidth * 0.45);
               if (width) {
                 set(_el, "width", width.toFixed(2) + "px");
@@ -30074,18 +30352,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               }
             }
           } catch (err) {
-            _iterator145.e(err);
+            _iterator149.e(err);
           } finally {
-            _iterator145.f();
+            _iterator149.f();
           }
         }
       }
       if (cards !== 1) {
-        var _iterator146 = _createForOfIteratorHelper(select(".card,.nova__list--grid .nova-card,.nova__list--row .nova-card")),
-          _step146;
+        var _iterator150 = _createForOfIteratorHelper(select(".card,.nova__list--grid .nova-card,.nova__list--row .nova-card")),
+          _step150;
         try {
-          for (_iterator146.s(); !(_step146 = _iterator146.n()).done;) {
-            var _el7 = _step146.value;
+          for (_iterator150.s(); !(_step150 = _iterator150.n()).done;) {
+            var _el7 = _step150.value;
             if (_el7.closest(".extensions") || _el7.closest(".minimal-fit-posters") || _el7.closest(".pt-hero") || _el7.classList.contains("card--collection")) continue;
             var _width3 = _el7.getBoundingClientRect().width,
               parent = _el7.parentElement.getBoundingClientRect().width;
@@ -30097,34 +30375,34 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             }
           }
         } catch (err) {
-          _iterator146.e(err);
+          _iterator150.e(err);
         } finally {
-          _iterator146.f();
+          _iterator150.f();
         }
-        var _iterator147 = _createForOfIteratorHelper(select(".nova__list:not(.nova__list--grid):not(.nova__list--row) .nova-card__thumb")),
-          _step147;
+        var _iterator151 = _createForOfIteratorHelper(select(".nova__list:not(.nova__list--grid):not(.nova__list--row) .nova-card__thumb")),
+          _step151;
         try {
-          for (_iterator147.s(); !(_step147 = _iterator147.n()).done;) {
-            var _el8 = _step147.value;
+          for (_iterator151.s(); !(_step151 = _iterator151.n()).done;) {
+            var _el8 = _step151.value;
             measure(_el8, ["width", "height", "min-width"], cards);
           }
         } catch (err) {
-          _iterator147.e(err);
+          _iterator151.e(err);
         } finally {
-          _iterator147.f();
+          _iterator151.f();
         }
       }
-      for (var _i49 = 0, _changes = changes; _i49 < _changes.length; _i49++) {
-        var change = _changes[_i49];
+      for (var _i51 = 0, _changes = changes; _i51 < _changes.length; _i51++) {
+        var change = _changes[_i51];
         change.el.style.setProperty(change.prop, change.value, "important");
         change.value = change.el.style.getPropertyValue(change.prop);
       }
       if (text2 > 1 || controls > 1) {
-        var _iterator148 = _createForOfIteratorHelper(select(".pt-hero")),
-          _step148;
+        var _iterator152 = _createForOfIteratorHelper(select(".pt-hero")),
+          _step152;
         try {
-          for (_iterator148.s(); !(_step148 = _iterator148.n()).done;) {
-            var hero = _step148.value;
+          for (_iterator152.s(); !(_step152 = _iterator152.n()).done;) {
+            var hero = _step152.value;
             var body = hero.querySelector(".pt-hero__body");
             if (!body) continue;
             var css = getComputedStyle(body),
@@ -30142,9 +30420,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             changes.push(_change);
           }
         } catch (err) {
-          _iterator148.e(err);
+          _iterator152.e(err);
         } finally {
-          _iterator148.f();
+          _iterator152.f();
         }
       }
       applied = applied.concat(changes);
@@ -30177,28 +30455,28 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var observer = new MutationObserver(function (records) {
       if (factor("lampa_view_text_scale") === 1 && factor("lampa_view_controls_scale") === 1 && factor("lampa_view_cards_scale") === 1) return;
       var targets = TEXT + "," + CONTROLS + "," + ICONS + ",.card,.nova-card,.nova-card__thumb,.minimal-detail-identity,.head,.head__body,.pt-hero";
-      var _iterator149 = _createForOfIteratorHelper(records),
-        _step149;
+      var _iterator153 = _createForOfIteratorHelper(records),
+        _step153;
       try {
-        for (_iterator149.s(); !(_step149 = _iterator149.n()).done;) {
-          var record = _step149.value;
-          var _iterator150 = _createForOfIteratorHelper(record.addedNodes),
-            _step150;
+        for (_iterator153.s(); !(_step153 = _iterator153.n()).done;) {
+          var record = _step153.value;
+          var _iterator154 = _createForOfIteratorHelper(record.addedNodes),
+            _step154;
           try {
-            for (_iterator150.s(); !(_step150 = _iterator150.n()).done;) {
-              var node = _step150.value;
+            for (_iterator154.s(); !(_step154 = _iterator154.n()).done;) {
+              var node = _step154.value;
               if (node.nodeType === 1 && node.isConnected && (node.matches(targets) || node.querySelector(targets))) inserted.add(node);
             }
           } catch (err) {
-            _iterator150.e(err);
+            _iterator154.e(err);
           } finally {
-            _iterator150.f();
+            _iterator154.f();
           }
         }
       } catch (err) {
-        _iterator149.e(err);
+        _iterator153.e(err);
       } finally {
-        _iterator149.f();
+        _iterator153.f();
       }
       if (inserted.size) schedule(false);
     });
@@ -30508,10 +30786,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }));
           (cartoons || series).after(anime);
         }
-        for (var _i50 = 0, _arr31 = [[anime, "Аниме"], [profile, "Профиль"], [cartoons, "Мультфильмы"]]; _i50 < _arr31.length; _i50++) {
-          var _arr31$_i = _slicedToArray(_arr31[_i50], 2),
-            node = _arr31$_i[0],
-            label = _arr31$_i[1];
+        for (var _i52 = 0, _arr32 = [[anime, "Аниме"], [profile, "Профиль"], [cartoons, "Мультфильмы"]]; _i52 < _arr32.length; _i52++) {
+          var _arr32$_i = _slicedToArray(_arr32[_i52], 2),
+            node = _arr32$_i[0],
+            label = _arr32$_i[1];
           var text2 = node && node.querySelector(".menu__text"),
             translated = text(label);
           if (text2 && text2.textContent !== translated) text2.textContent = translated;
@@ -30545,8 +30823,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }));
         }
         var previous = series;
-        for (var _i51 = 0, _arr32 = [dorama, shows, cartoons, anime]; _i51 < _arr32.length; _i51++) {
-          var _node8 = _arr32[_i51];
+        for (var _i53 = 0, _arr33 = [dorama, shows, cartoons, anime]; _i53 < _arr33.length; _i53++) {
+          var _node8 = _arr33[_i53];
           if (previous && _node8) {
             if (previous.nextElementSibling !== _node8) previous.after(_node8);
             previous = _node8;
@@ -49633,7 +49911,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var deadline = Date.now() + PROBE_BUDGET;
         var index = 0,
           pendingCount = 0;
-        var _step151 = function step() {
+        var _step155 = function step() {
           if (!probe_busy || generation !== probe_generation || owner !== componentNow() || scopeId !== qualityScope()) return;
           if (index >= queue.length) {
             if (!pendingCount) probe_busy = false;
@@ -49660,7 +49938,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             answered = true;
             pendingCount--;
             probeAnswer(entry.key, answer);
-            _step151();
+            _step155();
           };
           try {
             net["native"](probeUrlFor(entry.key), done, function () {
@@ -49672,7 +49950,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             done("");
           }
         };
-        for (var worker = 0; worker < PROBE_PARALLEL; worker++) _step151();
+        for (var worker = 0; worker < PROBE_PARALLEL; worker++) _step155();
       }
       function probeSchedule() {
         if (!probeAllowed() || !movie || !probe_url || probe_busy || (groups.sort || []).length < 2) return;
@@ -49853,7 +50131,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           voice_seed_net = null;
           if (typeof after === "function") after();
         };
-        var _step152 = function step() {
+        var _step156 = function step() {
           if (!voice_seed_busy) return;
           if (seat >= jobs.length || Date.now() > deadline || !inSkin() || !movie) return finish();
           var job = jobs[seat++];
@@ -49882,7 +50160,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               } catch (e) {}
             }
             if (voiceListFresh()) return finish();
-            _step152();
+            _step156();
           };
           var guard = setTimeout(function () {
             if (settled) return;
@@ -49903,7 +50181,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             done("");
           }
         };
-        _step152();
+        _step156();
       }
       function voiceLink(url) {
         var value = String(url || "").replace("rjson=", "nojson=");
@@ -50063,7 +50341,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         voice_busy = true;
         var deadline = Date.now() + VOICE_BUDGET;
         var index = 0;
-        var _step153 = function step() {
+        var _step157 = function step() {
           if (!voice_busy || index >= queue.length) return;
           if (Date.now() > deadline || !inSkin()) return voiceStop();
           var entry = queue[index++];
@@ -50102,7 +50380,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             clearTimeout(guard);
             var got = voiceAnswer(entry.name, answer);
             if (!got) retryAlt();
-            _step153();
+            _step157();
           };
           var guard = setTimeout(function () {
             if (settled) return;
@@ -50123,7 +50401,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             done("");
           }
         };
-        for (var worker = 0; worker < VOICE_PARALLEL; worker++) _step153();
+        for (var worker = 0; worker < VOICE_PARALLEL; worker++) _step157();
       }
       function voiceSchedule() {
         if (!voiceWanted()) return;
@@ -50307,7 +50585,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (typeof comp.draw === "function" && typeof comp.getEpisodes === "function") {
           var metadataRows = function metadataRows(book) {
             var api = window.LampaView && window.LampaView.episodeMetadata;
-            if (book && api && api.localizeBook && episodeContext && api.isAnime(episodeContext.card)) book = api.localizeBook(book);
+            if (book && api && api.localizeBook && episodeContext) book = api.localizeBook(book);
             return book ? Object.keys(book).map(function (key) {
               return $.extend({}, book[key], {
                 episode_number: Number(key)
@@ -50349,7 +50627,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                   return !comp.destroyed && episodeContext === context;
                 }
                 function canonical() {
-                  if (api.isAnime(context.card) && tmdbId(context.card) && Number(season) >= 0) {
+                  if (tmdbId(context.card) && Number(season) >= 0) {
                     var part = context.part;
                     return wideJoinedBook(season, function (book) {
                       if (!current()) return;
@@ -51759,7 +52037,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var direct = logoDirect(path);
         if (direct && urls.indexOf(direct) === -1) urls.push(direct);
         var at = 0;
-        var _step154 = function step() {
+        var _step158 = function step() {
           if (at >= urls.length) {
             LOGO_BLIND[src] = true;
             return done("blind");
@@ -51779,7 +52057,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             } catch (e) {
               tone = "";
             }
-            if (tone !== "invert" && tone !== "glow" && tone !== "ok") return _step154();
+            if (tone !== "invert" && tone !== "glow" && tone !== "ok") return _step158();
             var now = cached(LOGO_TONE_KEY, 500, {});
             if (now && _typeof(now) === "object") {
               now[src] = tone;
@@ -51787,10 +52065,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             }
             done(tone);
           };
-          probe.onerror = _step154;
+          probe.onerror = _step158;
           probe.src = url;
         };
-        _step154();
+        _step158();
       }
       function logoKey(target) {
         var card = target || movie;
@@ -54213,7 +54491,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var callback = done,
           metadataApi = window.LampaView && window.LampaView.episodeMetadata;
         done = function done(book, grouped) {
-          callback(metadataApi && metadataApi.localizeBook && metadataApi.isAnime(movie) ? metadataApi.localizeBook(book) : book, grouped);
+          callback(metadataApi && metadataApi.localizeBook ? metadataApi.localizeBook(book) : book, grouped);
         };
         var api = window.LampaView && window.LampaView.episodeMetadata,
           arc = wideAnimeCurrent();
