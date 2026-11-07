@@ -12,13 +12,23 @@ export function shikiCard(a,base=BASE){
 }
 export default function shikimori(L){
  const cache=new Map(),pending=new Map(),queue=[];let timer=null,running=0,lastStart=0;
- const hosts=[BASE,'https://shikimori.one'];let preferred=0,unavailableUntil=0;
+ const hosts=[BASE,'https://shikimori.one'];let preferred=0,unavailableUntil=0,retryVersion=0,successVersion=0;
  function api(path,ok,fail,postData,valid=Array.isArray){
-  if(!postData && Date.now()<unavailableUntil)return fail();let attempt=0;
+  if(!postData && Date.now()<unavailableUntil)return fail();
+  const first=preferred,revision=retryVersion,successAtStart=successVersion;let attempt=0;
   function send(){
-   const index=preferred,request=new L.Reguest();request.timeout(7000);let settled=false;
-   function error(){if(settled)return;settled=true;attempt++;preferred=(index+1)%hosts.length;if(attempt<hosts.length)send();else{if(!postData)unavailableUntil=Date.now()+30000;fail();}}
-   request.silent(hosts[index]+path,json=>{if(settled)return;if(!valid(json))return error();settled=true;preferred=index;unavailableUntil=0;ok(json,hosts[index]);},error,postData);
+   const index=(first+attempt)%hosts.length,request=new L.Reguest();request.timeout(7000);let settled=false;
+   function error(){
+    if(settled)return;settled=true;attempt++;
+    if(attempt<hosts.length && revision===retryVersion)return send();
+    if(!postData && revision===retryVersion && successAtStart===successVersion)unavailableUntil=Date.now()+30000;
+    fail();
+   }
+   request.silent(hosts[index]+path,json=>{
+    if(settled)return;if(!valid(json))return error();settled=true;
+    if(revision===retryVersion){preferred=index;unavailableUntil=0;successVersion++;}
+    ok(json,hosts[index]);
+   },error,postData);
   }
   send();
  }
@@ -46,7 +56,7 @@ export default function shikimori(L){
   const job={key,query,page,params,listeners:[listener]};pending.set(key,job);queue.push(job);pump();
  }
  const full=shikimoriMatch(L,(id,ok,fail)=>/^\d+$/.test(id)?api('/api/animes/'+id,ok,fail,null,json=>!!(json && Number(json.id)===Number(id))):fail());
- function retry(){unavailableUntil=0;preferred=0;}
+ function retry(){retryVersion++;unavailableUntil=0;preferred=0;}
  function genres(ok,fail){api('/api/genres',ok,fail);}
  function posters(ids,ok,fail){
   const clean=Array.from(new Set(ids.map(String).filter(id=>/^\d+$/.test(id)))).slice(0,12);if(!clean.length)return ok([]);
