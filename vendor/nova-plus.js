@@ -2492,7 +2492,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       var nativeDraw=comp.draw,nativeEpisodes=comp.getEpisodes,episodeContext=null;
       function metadataRows(book){
         var api=window.LampaView && window.LampaView.episodeMetadata;
-        if(book && api && api.localizeBook && episodeContext && api.isAnime(episodeContext.card))book=api.localizeBook(book);
+        if(book && api && api.localizeBook && episodeContext)book=api.localizeBook(book);
         return book?Object.keys(book).map(function(key){return $.extend({},book[key],{episode_number:Number(key)});}):[];
       }
       comp.draw=function(files,params){
@@ -2511,7 +2511,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
             context.seasons=(own.season && own.season.items || []).map(function(s){return sourceSeason(s);});
             function current(){return !comp.destroyed && episodeContext===context;}
             function canonical(){
-              if(api.isAnime(context.card) && tmdbId(context.card) && Number(season)>=0){
+              if(tmdbId(context.card) && Number(season)>=0){
                 var part=context.part;
                 return wideJoinedBook(season,function(book){
                   if(!current())return;
@@ -5922,7 +5922,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
   function alternateSeasons(){var api=window.LampaView && window.LampaView.episodeMetadata,comp=componentNow();return !!(comp && comp.lampaViewProviderSeasons) || api && api.alternate(movie,providerSeasonNumbers());}
   function wideBook(number, done, countOnly) {
     var callback=done,metadataApi=window.LampaView && window.LampaView.episodeMetadata;
-    done=function(book,grouped){callback(metadataApi && metadataApi.localizeBook && metadataApi.isAnime(movie)?metadataApi.localizeBook(book):book,grouped);};
+    done=function(book,grouped){callback(metadataApi && metadataApi.localizeBook?metadataApi.localizeBook(book):book,grouped);};
     var api=window.LampaView && window.LampaView.episodeMetadata,arc=wideAnimeCurrent();
     var joined=componentNow() && componentNow().lampaViewJoinedParts;
     if(joined && joined.season===number && joined.parts.length)return wideJoinedBook(number,done);
