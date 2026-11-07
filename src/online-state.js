@@ -54,6 +54,19 @@ export function episodeRows(rows){
  const episode=row=>row.episode!=null && row.episode!=='' && Number.isInteger(Number(row.episode)) && Number(row.episode)>=0;
  return rows.some(row=>video(row) && episode(row))?rows.filter(row=>!video(row) || episode(row)):rows;
 }
+// Native season navigation is shared by every source. Digits in a studio name
+// or a translation URL do not identify a season.
+export function seasonNavigation(rows){
+ if(!Array.isArray(rows) || rows.length<2 || rows.length>100)return null;
+ const links={};for(const row of rows){
+  if(row.method!=='link' || row.similar || !row.url)return null;
+  const label=String(row.text || row.title || row.name || '').trim(),match=label.match(/^(?:(?:сезон|season)\s*(\d+)|(\d+)\s*(?:сезон|season))(?:\s|$)/i);
+  const explicit=row.season!==undefined && row.season!==null && row.season!==''?Number(row.season):null;
+  const number=explicit===null?(match?Number(match[1] || match[2]):NaN):explicit;
+  if(!Number.isInteger(number) || number<0 || links[number] || !match && /[?&](?:t|translation|voice|dub)=/i.test(row.url))return null;
+  links[number]=row.url;
+ }return links;
+}
 export function folderRows(body){
  let json=body;
  if(typeof body==='string'){try{json=JSON.parse(body);}catch(error){json=null;}}
@@ -281,5 +294,5 @@ export default function onlineState(L){
   if(L.Timeline.read)L.Timeline.read();
  }
 
- return {availability,reader,resume,seasonIndex,folderTarget,folderRows,folderSeasons,relevantFolders,episodeRows,clearProgress,clearTitleProgress,setWatched,setAllWatched,setPreviousWatched,setWatchedRows:markRows,lastWatched,seasonWatched};
+ return {availability,reader,resume,seasonIndex,folderTarget,folderRows,seasonNavigation,folderSeasons,relevantFolders,episodeRows,clearProgress,clearTitleProgress,setWatched,setAllWatched,setPreviousWatched,setWatchedRows:markRows,lastWatched,seasonWatched};
 }
