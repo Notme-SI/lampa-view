@@ -12,27 +12,33 @@ async function open(page,movie){
   L.TMDB.image=(path,options)=>{frameRequests.push(path);return image(path,options);};
   L.Api.sources.tmdb.get=(path,params,done)=>{
    frameRequests.push(path);
+   if(path==='tv/91/season/1')return done({episodes:[
+    {season_number:1,episode_number:1,air_date:'2024-01-01',still_path:'/early-episode-cover.jpg'},
+    {season_number:1,episode_number:2,air_date:'2099-01-01'}
+   ]});
    if(!path.endsWith('/images?include_image_language=null'))return done({stills:[]});
-   if(path.includes('/episode/3/'))return done({stills:Array.from({length:12},(_,i)=>({file_path:'/episode-three-'+i+'.jpg',width:1920}))});
+   if(path.includes('/season/1/episode/1/'))return done({stills:[{file_path:'/early-episode-cover.jpg'},
+    ...Array.from({length:12},(_,i)=>({file_path:'/early-scene-'+i+'.jpg',width:1920}))]});
    if(!path.includes('/episode/1/'))return done({stills:[]});
    done({stills:[{file_path:'/episode-cover.jpg'},{file_path:'/art0.jpg'},
     ...Array.from({length:9},(_,i)=>({file_path:'/episode-still'+(i+1)+'.jpg',width:1920}))]});
   };
   const artwork=Array.from({length:movie?25:6},(_,i)=>({file_path:'/art'+i+'.jpg',width:1280,aspect_ratio:16/9}));
   const card={id:91,source:'tmdb',backdrop_path:'/art0.jpg',production_countries:[],production_companies:[],spoken_languages:[],genres:[],
-   ...(movie?{title:'Проверка фильма',original_title:'Gallery Film',release_date:'2025-01-01'}:{name:'Проверка сериала',first_air_date:'2025-01-01'})};
+   ...(movie?{title:'Проверка фильма',original_title:'Gallery Film',release_date:'2025-01-01'}:
+    {name:'Проверка сериала',first_air_date:'2024-01-01',seasons:[{season_number:1,air_date:'2024-01-01'},{season_number:2,air_date:'2025-01-01'}]})};
   window.detailFixture={movie:card,persons:{cast:[],crew:[]},images:{backdrops:artwork},videos:{results:[]},
    ...(movie?{collection:{results:[card,{id:92,title:'Фильм 2',release_date:'2026-01-01'}]}}:
     {episodes:{name:'Суперсезон',episodes:[
-     ...Array.from({length:5},(_,i)=>({season_number:1,episode_number:i+1,air_date:'2025-01-01',still_path:i===0?'/episode-cover.jpg':null})),
-     {season_number:1,episode_number:6,air_date:'2099-11-13'}]}})};
+     ...Array.from({length:5},(_,i)=>({season_number:2,episode_number:i+1,air_date:'2025-01-01',still_path:i===0?'/episode-cover.jpg':null})),
+     {season_number:2,episode_number:6,air_date:'2099-11-13'}]}})};
   L.Activity.push({component:'full',source:'tmdb',id:card.id,method:movie?'movie':'tv',card});
  },movie);
  const row=page.locator('.activity--active .minimal-detail-screenshots');
  await row.waitFor();
- assert.equal(await row.locator('[data-minimal-screenshot]').count(),20);
+ assert.equal(await row.locator('[data-minimal-screenshot]').count(),14);
  assert.equal(await row.locator('.items-line__title').textContent(),movie?'Кадры из фильма':'Кадры из сериала');
- assert.ok(await row.locator('.full-episode:not([hidden])').count()<=20);
+ assert.ok(await row.locator('.full-episode:not([hidden])').count()<=14);
  if(movie){
   await page.getByRole('button',{name:'Связанные'}).waitFor();
   assert.equal(await page.getByText('Коллекция',{exact:true}).count(),0);
@@ -41,8 +47,8 @@ async function open(page,movie){
   assert.equal(await page.locator('time.minimal-detail-next-episode').getAttribute('datetime'),'2099-11-13');
   const requests=await page.evaluate(()=>frameRequests);
   assert.ok(requests.includes('tv/91/season/1/episode/1/images?include_image_language=null'));
-  assert.ok(requests.includes('tv/91/season/1/episode/3/images?include_image_language=null'));
-  assert.ok(!requests.includes('tv/91/season/1/episode/6/images?include_image_language=null'));
+  assert.ok(requests.includes('tv/91/season/2/episode/1/images?include_image_language=null'));
+  assert.ok(!requests.some(path=>path.includes('/season/2/episode/6/') || path.includes('/season/1/episode/2/')));
  }
  return row;
 }
@@ -64,6 +70,9 @@ async function open(page,movie){
        Array.from({length:25},(_,i)=>'<a href="https://film-grab.com/wp-content/uploads/photo-gallery/real-frame-'+i+'.jpg"></a>').join('')}};
       return route.fulfill({json:data,headers:{'Access-Control-Allow-Origin':'*'}});
      });
+     await page.route('https://film-grab.com/wp-content/uploads/photo-gallery/**',route=>route.fulfill({
+      contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"></svg>'
+     }));
      const row=await open(page,mobile);
      const stills=row.locator('[data-minimal-screenshot]'),first=stills.first();
      await page.evaluate(()=>Lampa.Activity.active().activity.component.scroll.immediate(document.querySelector('.minimal-detail-screenshots')));
@@ -98,7 +107,7 @@ async function open(page,movie){
      if(mobile)assert.match(await viewer.locator('img').getAttribute('src'),/real-frame-0\.jpg/);
      else assert.ok((await page.evaluate(()=>frameRequests)).includes('/t/p/original/episode-still1.jpg'));
      const position=()=>viewer.locator('[aria-live]').textContent();
-     const total=20;
+     const total=14;
      assert.equal(await position(),'1 / '+total);
      if(tv)await page.keyboard.press('ArrowRight');
      else if(mobile)await viewer.evaluate(node=>{
@@ -129,6 +138,39 @@ async function open(page,movie){
       assert.equal(await active.locator('.minimal-detail-screenshots,.full-episode').count(),0);
       assert.equal(await active.getByText('Суперсезон',{exact:true}).count(),0);
       assert.equal(await active.locator('time.minimal-detail-next-episode').getAttribute('datetime'),'2099-11-13');
+
+      const cors={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'X-API-KEY'};
+      await page.route('https://api.poiskkino.dev/v1.5/**',route=>{
+       if(route.request().method()==='OPTIONS')return route.fulfill({status:204,headers:cors});
+       const url=new URL(route.request().url());
+       if(url.pathname.endsWith('/movie')){
+        assert.equal(url.searchParams.get('externalId.imdb'),'tt0000910');
+        return route.fulfill({headers:cors,json:{docs:[{id:201,isSeries:false,externalId:{imdb:'tt0000910'}}]}});
+       }
+       assert.ok(url.searchParams.getAll('type').includes('still'));
+       const base='https://frames.example.invalid/';
+       return route.fulfill({headers:cors,json:{docs:[
+        {movieId:201,type:'backdrops',url:base+'promo.jpg',width:3840},
+        {movieId:201,type:'still',url:base+'original.jpg',previewUrl:base+'thumb.jpg',width:1920}
+       ]}});
+      });
+      await page.route('https://frames.example.invalid/**',route=>route.request().url().endsWith('/thumb.jpg')?
+       route.fulfill({status:403}):route.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"></svg>'}));
+      await page.evaluate(()=>{
+       Lampa.Storage.set('minimal_poiskkino_frames_key','test-fixture');
+       const movie={id:94,source:'tmdb',title:'Другой фильм',original_title:'Gallery Alternate',release_date:'2025-01-01',imdb_id:'tt0000910',
+        production_countries:[],production_companies:[],spoken_languages:[],genres:[]};
+       detailFixture={movie,persons:{cast:[],crew:[]},videos:{results:[]}};
+       Lampa.Activity.push({component:'full',source:'tmdb',id:movie.id,method:'movie',card:movie});
+      });
+      const recovered=active.locator('.minimal-detail-screenshots');
+      await recovered.waitFor();
+      assert.equal(await recovered.locator('[data-minimal-screenshot]').count(),1);
+      await page.evaluate(()=>Lampa.Activity.active().activity.component.scroll.immediate(document.querySelector('.activity--active .minimal-detail-screenshots')));
+      await page.waitForFunction(()=>{
+       const image=document.querySelector('.activity--active [data-minimal-screenshot] img');
+       return image?.naturalWidth===1920 && image.currentSrc.endsWith('/original.jpg');
+      });
      }
      assert.deepEqual(errors,[]);
      console.log(engine.name(),mode,'frames and navigation passed');
