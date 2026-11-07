@@ -18,3 +18,12 @@ test('joined parts bypass single-release rejection and keep both overlay tags in
   assert.equal(cards.eq(0).find('.nova-card__labels .nova-card__tag,.nova-card__labels .nova-card__num').length,1);assert.equal(cards.eq(1).find('.nova-card__labels .nova-card__part').text(),'Часть 2');assert.deepEqual(n.errors,[]);
  }finally{n.close();}
 });
+
+test('episode zero stays visible but the season caption counts ordinary episodes separately',async()=>{
+ const n=await native({built:true});try{
+ n.w.LampaView.episodeMetadata.groups=(c,f,done)=>done(null);
+ const movie={id:94664,name:'Реинкарнация безработного',source:'tmdb',minimal_anime:true,number_of_seasons:2,seasons:[{season_number:2,episode_count:24}]};
+ const view=await scene(n,movie,[2],[0,1,2]);assert.equal(view.root.find('.nova-card').length,3);assert.match(view.root.find('.nova-card__title').first().text(),/^(?:Серия 0|Дополнительный выпуск)$/);
+ assert.ok(view.root.text().includes('2 эпизода + Серия 0'),view.root.text().slice(0,500));
+ }finally{n.close();}
+});

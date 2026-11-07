@@ -19,3 +19,14 @@ test('a missing or incomplete TMDB season cannot truncate explicitly mapped anim
  const fixture=fixtures.find(f=>f.graph.current_id===39535),model=f.franchiseModel(fixture.graph,39535,fixture.metadata),files=Array.from({length:12},(_,i)=>({method:'call',season:2,episode:i+1}));
  for(const seasons of [[],[{season_number:2,episode_count:12}]]){const plan=p.providerPartPlan({id:94664,seasons},model,files,2,[1,2,3]);assert.deepEqual(plan.map(p=>[p.mal,p.offset,p.count]),[[51179,0,12],[55888,12,12]]);}
 });
+
+test('all providers distinguish native season navigation from numbered dub names',()=>{
+ const {seasonNavigation}=mod('online-state');
+ for(const source of ['kodik','ailiberty','animevost','anidub','hdvb']){
+ const rows=[1,2,3].map(season=>({method:'link',text:'Сезон '+season,url:'https://example.invalid/lite/'+source+'?s='+season}));
+ assert.deepEqual(Object.keys(seasonNavigation(rows)),['1','2','3']);
+ assert.equal(seasonNavigation([{method:'link',text:'Studio 1',url:rows[0].url+'&t=1'},{method:'link',text:'Studio 2',url:rows[0].url+'&t=2'}]),null);
+ assert.equal(seasonNavigation([rows[0],{...rows[1],text:'Studio 2',season:1,url:rows[0].url+'&t=2'}]),null);
+ assert.equal(seasonNavigation([rows[0],{...rows[0]}]),null);
+ }
+});
