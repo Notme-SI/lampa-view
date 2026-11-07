@@ -26,7 +26,8 @@ import branding from './branding.js';
 import startup from './startup.js';
 import shikimoriPosters from './shikimori-posters.js';
 import torrentEpisodes from './torrent-episodes.js';
-import installArtwork,{artworkSize} from './artwork.js';
+import installArtwork,{artworkSize,officialBanner,officialEpisodePreview} from './artwork.js';
+import {galleryFramesKey} from './gallery-frames.js';
 import progressSync from './progress-sync.js';
 import historyCards from './history-cards.js';
 import installBack from './back.js';
@@ -513,12 +514,17 @@ if (!ROOT.LampaView) {
     L.SettingsApi.addParam({component:'lampa_view',param:{name:'card_interfice_cover',type:'trigger',default:true},field:{name:'Карточка фильма: фон',description:'Баннер фильма за названием, описанием и кнопками.'},onChange:()=>document.body.classList.toggle('card--no-cover',!yes('card_interfice_cover'))});
     personalScale(L);
     L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_banner_quality',type:'select',values:{medium:lampaViewText("Среднее"),high:lampaViewText("Высокое")},default:'high'},field:{name:lampaViewText("Качество баннеров и обложек"),description:lampaViewText("Общее качество баннеров, фонов загрузки и карточек. Высокое подбирает чёткий размер под экран и использует общий кеш обложек.")},onChange:()=>artwork && artwork.choose()});
+    L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_poiskkino_frames',type:'button'},field:{name:lampaViewText('ПоискКино · ключ для кадров'),description:lampaViewText('Кадры из фильмов и сериалов. Пустой ключ отключает источник.')},onChange:()=>{
+      L.Input.edit({title:lampaViewText('Ключ API ПоискКино'),value:L.Storage.get(galleryFramesKey,''),free:true,nosave:true,nomic:true},value=>L.Storage.set(galleryFramesKey,String(value || '').trim()));
+    }});
   }
   function start() {
     if (initialized || !ROOT.Lampa || !ROOT.jQuery) return;
     initialized=true; L=ROOT.Lampa; $=ROOT.jQuery;
     L.Storage.set('lampa_view_enabled',true);loadLogo=logoLoader(L);
     P.bannerCountries=card=>bannerCountries(card,L.Storage.get('language','ru'),L);
+    P.officialBanner=card=>officialBanner(card,artworkSize(L,'detail-backdrop')==='original');
+    P.officialEpisodePreview=officialEpisodePreview;
     installI18n(L,P);
     P.online=onlineState(L);P.providerSeasons=providerSeasons(L);P.kinoapi=kinoapi(L);P.animeBase=animeCatalogue(L,P.kinoapi);P.animeContinuations={find:animeContinuations(L,P.animeBase,P.online),route:kodikRoute,files:continuationFiles};P.animeProviderParts=animeProviderParts(L,P.animeBase,P.online);P.onlineSources=onlineSources(L);P.episodeMetadata=episodeMetadata(L,P.kinoapi,P.animeBase);P.onlineNavigation=onlineNavigation;P.onlineSourceCache=onlineSourceCache(L);
     layout();interfaceLayout=interfaceSize(L);installTmdb(L);installFullGuard(L);installListGuard(L);torrentEpisodes(L,ROOT);inputs(L);

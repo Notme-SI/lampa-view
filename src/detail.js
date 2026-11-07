@@ -4,7 +4,7 @@ import {namedPartCount} from './episode-metadata.js';
 import {localizedTitle,isAnime} from './metadata.js';
 import {chooseLogo,pickStudio} from './logos.js';
 import comments from './comments.js';
-import {artworkSize,logoSize,detailBackdrop} from './artwork.js';
+import {artworkSize,logoSize,detailBackdrop,officialBanner} from './artwork.js';
 import {onlineButton,watchActions} from './watch-actions.js';
 import {prepareScreenshotRow,styleScreenshots,nextDetailEpisode,orderDetailSections,styleSuggestions} from './detail-gallery.js';
 export function releaseDate(card){
@@ -130,7 +130,11 @@ export default function detail(L,event,loadLogo){
   });
   return;
  }
- if(event && event.type==='start' && event.data){prepareDetail(event.data);prepareScreenshotRow(event);return;}
+ if(event && event.type==='start' && event.data){
+  const card=event.data.movie,official=officialBanner(card,artworkSize(L,'detail-backdrop')==='original');
+  if(official)event.data.movie={...card,backdrop_path:official};
+  prepareDetail(event.data);prepareScreenshotRow(event);return;
+ }
  if(event && event.type==='build' && event.name==='cards' && event.item)styleSuggestions(L,event);
  if(event && event.type==='build' && event.name==='episodes' && event.item){styleScreenshots(L,event);return;}
  if(event && event.type==='build' && event.name==='discuss' && event.item){const render=event.item.render(true),node=render && (render.nodeType?render:render[0]);comments(event.item,node);}
@@ -293,6 +297,16 @@ export default function detail(L,event,loadLogo){
   if(event.link && event.link.use)event.link.use({onDestroy:()=>{if(resize)resize.disconnect();}});
  }
  if(background && card.backdrop_path){
+  if(/^https:\/\//i.test(card.backdrop_path)){
+   if(!background.getAttribute('src'))background.src=card.backdrop_path;
+   background._minimalArtwork=()=>{
+    const url=officialBanner(card,artworkSize(L,'detail-backdrop')==='original');
+    if(!url)return false;
+    if(background.src!==url)background.src=url;
+    return true;
+   };
+   return;
+  }
   const variants=(event.data.images || card.images || {}).backdrops || [],needed=document.body.classList.contains('pt-tv')?3840:Math.ceil((window.innerWidth || 1920)*Math.min(2,window.devicePixelRatio || 1));
   const backdrop=detailBackdrop(variants,card.backdrop_path,needed,L.Storage.get('language','ru'));
   const size=artworkSize(L,'detail-backdrop');

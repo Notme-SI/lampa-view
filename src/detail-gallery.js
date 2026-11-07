@@ -1,5 +1,6 @@
 import {locale,text as t} from './i18n.js';
 import tmdbGet from './tmdb.js';
+import {frameLimit} from './gallery-frames.js';
 
 function airDate(value){
  const match=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || ''));if(!match)return null;
@@ -21,23 +22,16 @@ export function nextDetailEpisode(card,book,now=new Date()){
 }
 
 const nodeOf=item=>{const rendered=item?.render?.(true);return rendered?.nodeType?rendered:rendered?.[0];};
-const still=episode=>episode && !episode.comeing && (episode.still_path || (/^https?:\/\//i.test(episode.img || '')?episode.img:''));
-const frameLimit=20;
+const still=episode=>episode && !episode.comeing && (episode.still_path || episode.minimal_still_url);
 const titleFor=card=>t(card?.media_type==='tv' || (card?.media_type!=='movie' && (card?.name || card?.first_air_date))?'Кадры из сериала':'Кадры из фильма');
 const imagePath=path=>/^\/[\w.-]+\.(?:jpg|jpeg|png|webp)$/i.test(path || '');
 const imageRows=(images,episode)=>images.filter(image=>imagePath(image?.file_path)).map(image=>({
  still_path:image.file_path,minimal_gallery_art:true,episode_number:episode?.episode_number
 }));
-function backdrops(data){
- const images=data?.images?.backdrops || data?.movie?.images?.backdrops || [];
- return imageRows(images.filter(image=>!image?.iso_639_1 && (!image.width || image.width>=640) &&
-  (!image.aspect_ratio || image.aspect_ratio>=1.4)));
-}
 export function prepareScreenshotRow(event){
  const {data,link}=event;
  if(!data?.movie || data.movie.adult || data.movie.blocked || !Array.isArray(link?.rows) || Array.isArray(data.episodes?.episodes))return;
- const results=backdrops(data).slice(0,frameLimit);
- if(!results.length && imagePath(data.movie.backdrop_path))results.push({still_path:data.movie.backdrop_path,minimal_gallery_art:true});
+ const results=(data.minimal_gallery_frames || []).slice(0,frameLimit);
  if(results.length)link.rows.push(['episodes',{movie:data.movie,title:titleFor(data.movie),results:results.reverse()}]);
 }
 
@@ -125,6 +119,10 @@ export function styleScreenshots(L,event){
  }
  function update(){
   if(!frames.length)return;
+  for(const item of line.items){
+   const node=nodeOf(item);
+   if(node && !node.dataset.minimalScreenshot){node.hidden=true;node.classList.remove('selector');}
+  }
   root.classList.add('minimal-detail-screenshots');
   if(heading)heading.textContent=titleFor(card);
   if(!nav){
@@ -160,21 +158,13 @@ export function styleScreenshots(L,event){
   if(frames.length)rows.splice(0,rows.length,...line.items.filter(item=>item!==line.more).map(item=>item.data));
   update();
  }
- const supplemental=backdrops(data);
- if(!candidates.some(still) && !supplemental.length)return;
- const episode=candidates.find(row=>still(row) && !row.minimal_gallery_art && Number(row.season_number)>0 && Number(row.episode_number)>0);
+ const supplemental=data?.minimal_gallery_frames || [];
+ const episode=candidates.find(row=>!row.comeing && !row.minimal_gallery_art && Number(row.season_number)>0 && Number(row.episode_number)>0);
  const id=Number(card?.tmdb_id || (['tmdb','cub'].includes(card?.source)?card.id:0));
  const fetchStills=id>0 && episode && candidates.filter(still).length<4;
- for(const item of line.items){
-  const node=nodeOf(item);
-  if(node && !still(item.data)){node.hidden=true;node.classList.remove('selector');}
- }
+ if(!candidates.some(still) && !supplemental.length && !fetchStills)return;
  const initialArt=fetchStills?supplemental.slice(0,8):supplemental;
  add(candidates.concat(initialArt));
- for(const item of line.items){
-  const node=nodeOf(item);
-  if(node && !node.dataset.minimalScreenshot){node.hidden=true;node.classList.remove('selector');}
- }
  line.use?.({onDestroy(){disposed=true;}});
  if(fetchStills){
   const path='tv/'+id+'/season/'+episode.season_number+'/episode/'+episode.episode_number+'/images';

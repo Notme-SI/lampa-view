@@ -1176,20 +1176,21 @@ body.lampa_view .minimal-franchise-menu .selectbox__layer {backdrop-filter:none}
 
 /* Detail content shares the header edge; discovery rows start after a clear break. */
 body.lampa_view .minimal-detail-suggestions {box-sizing:border-box;width:90%!important;max-width:90%!important;margin:0 auto 2em;--minimal-poster-gutter:0px!important}
-body.lampa_view .minimal-detail-suggestions--first {margin-top:5em}
+body.lampa_view .minimal-detail-suggestions--first {padding-top:clamp(7rem,15vh,13rem)!important}
 body.lampa_view .minimal-detail-suggestions>.items-line__head {padding-left:0!important;padding-right:0!important}
 body.lampa_view .minimal-detail-suggestions>.items-line__body>.scroll--horizontal>.scroll__content {padding-left:0!important;padding-right:0!important}
-body.lampa_view .minimal-related-art {position:relative;width:6.5em;height:4.2em;flex:none;border-radius:.45em;overflow:hidden;background:linear-gradient(135deg,#ffffff15,#ffffff04)}
-body.lampa_view .minimal-related-art:empty:after {content:'◇';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:currentColor;opacity:.5}
-body.lampa_view .minimal-related-art:before {content:'';position:absolute;inset:-.4em;background:var(--related-image,none) center/cover no-repeat;filter:blur(.45em) brightness(.46)}
-body.lampa_view .minimal-related-art img {position:relative;display:block;width:100%;height:100%;object-fit:contain}
+body.lampa_view .minimal-related-art {width:3.5em;aspect-ratio:2/3;flex:none;border-radius:.35em;overflow:hidden;background:#ffffff0d}
+body.lampa_view .minimal-related-art img {display:block;width:100%;height:100%;object-fit:contain}
+body.lampa_view .minimal-franchise-menu .selectbox-item[aria-current="true"]:not(.focus) {background:#ffffff0c}
+body.lampa_view .minimal-franchise-menu .selectbox-item__checkbox {display:none!important}
 body.lampa_view .minimal-franchise-menu .minimal-anime-franchise__item {display:flex;align-items:center;gap:1em;min-height:5.6em;padding:.65em 1em}
 body.lampa_view .minimal-related-info {min-width:0;flex:1}
 body.lampa_view .minimal-related-info .selectbox-item__title {font-weight:600;line-height:1.35}
 body.lampa_view .minimal-related-info .selectbox-item__subtitle {white-space:normal;line-height:1.45;font-size:.85em;opacity:.8}
-@media(max-width:500px){body.lampa_view .minimal-related-art {width:5.4em;height:3.7em}}
+@media(max-width:500px){body.lampa_view .minimal-related-art {width:3em}}
 
 body.lampa_view .minimal-related-info .selectbox-item__title {color:inherit}
 
 /* Native expected rows carry countdown placeholders, never a video runtime. */
 body.lampa_view .nova-plus-root .nova-card--soon .nova-card__clock {display:none!important}
+body.lampa_view .nova-plus-root .nova-card__thumb--episode-preview:not(.nova-card__thumb--loaded) {background:linear-gradient(150deg,#20292d,#101719)}

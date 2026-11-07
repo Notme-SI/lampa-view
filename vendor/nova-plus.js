@@ -1225,7 +1225,11 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
   }
 
   function heroArt() {
-    return pickArt(artSize());
+    return officialHeroArt() || pickArt(artSize());
+  }
+
+  function officialHeroArt() {
+    return window.LampaView && window.LampaView.officialBanner && window.LampaView.officialBanner(movie);
   }
 
   function fallbackArt() {
@@ -3431,14 +3435,18 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       card.find('.nova-card__line').remove();
       card.append('<div class="nova-card__go">' + ICON.chevron + '</div>');
     } else {
-      var art = ownArt(item);
+      var officialShow = serial && !!officialHeroArt();
+      var art = officialShow
+        ? window.LampaView.officialEpisodePreview(movie, seasonNumber(), item.num)
+        : ownArt(item);
       var isFallback = false;
-      if (!art) {
+      if (!art && !officialShow) {
         art = fallbackArt();
         isFallback = !!art;
       }
+      if (officialShow) thumb.addClass('nova-card__thumb--episode-preview');
       paintThumb(thumb, art, isFallback);
-      if (!art || isFallback) watchThumb(item, thumb);
+      if (!officialShow && (!art || isFallback)) watchThumb(item, thumb);
       if (item.viewed || isSeen(item)) {
         if (grid) thumb.append('<div class="nova-card__viewed">' + ICON.eye + '</div>');
         else card.find('.nova-card__side').append('<div class="nova-card__eye">' + ICON.eye + '</div>');
