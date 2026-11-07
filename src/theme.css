@@ -1158,7 +1158,7 @@ body.lampa_view .minimal-franchise-menu .selectbox__body {min-height:0;height:au
 body.lampa_view .minimal-franchise-menu .selectbox-item {padding:.7em 1.1em;min-height:44px}
 body.lampa_view .minimal-franchise-menu .selectbox-item__title {font-size:1em}
 body.lampa_view .minimal-franchise-menu .selectbox-item.selected {box-shadow:inset 3px 0 var(--pt-accent);background:#ffffff0d}
-body.lampa_view .minimal-franchise-menu .selectbox-item.focus {background:var(--pt-text);color:var(--pt-bg,#111)}
+body.lampa_view .minimal-franchise-menu .selectbox-item.focus {background:#20272e!important;color:var(--pt-text);box-shadow:inset 3px 0 var(--pt-accent)}
 body.lampa_view .minimal-franchise-menu .selectbox__layer {backdrop-filter:none}
 @media(max-width:700px){body.lampa_view .nova-plus-root .nova-card__clock,body.lampa_view .pt-card-watch__time {background:none!important;border:0!important;box-shadow:none!important;outline:0!important}}
 
