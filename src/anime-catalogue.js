@@ -1,10 +1,10 @@
 import tmdbGet from './tmdb.js';
 import {locale,text as t} from './i18n.js';
 import {isAnime} from './metadata.js';
-import {animeRecords,animeTarget,animeSeed,animeEpisodeMap,animeIndexInfo,datedReleaseTarget} from './anime-index.js';
+import {animeRecords,animeTarget,animeTargets,animeSeed,animeEpisodeMap,animeIndexInfo,datedReleaseTarget} from './anime-index.js';
 import {franchiseModel,franchiseCatalogueRows,franchiseMenuGroups} from './anime-franchise.js';
 import {seasonName} from './episode-metadata.js';
-import {mountRelatedRow} from './detail-gallery.js';
+import {mountRelatedRow,removeDetailRows} from './detail-gallery.js';
 const positive=n=>Number.isSafeInteger(Number(n)) && Number(n)>0;
 function collectionMenu(data){
  const card=data.movie,collection=data.collection;
@@ -144,6 +144,15 @@ export default function animeCatalogue(L,kino){
    if(disposed || !hasAnime && !nativeGroups.length)return;
    const current=L.Activity && L.Activity.active && L.Activity.active();if(!current || !current.activity || current.activity.component!==link)return;
    const row=mountRelatedRow(L,link);if(!row)return;
+   const groups=hasAnime?franchiseMenuGroups(model,card):[];
+   const represented=new Set(groups.flatMap(group=>group.entries.flatMap(entry=>
+    animeTargets(model.nodes.find(node=>node.id===entry.card.id)?.record).map(target=>target.type+':'+target.id))));
+   for(const group of nativeGroups){
+    const entries=group.entries.filter(entry=>!represented.has(entry.card.media_type+':'+entry.card.id));
+    if(entries.length)groups.push({...group,entries});
+   }
+   if(nativeGroups.length)removeDetailRows(link,entry=>Array.isArray(entry) && entry[0]==='cards' &&
+    (entry[1]===event.data.collection || entry[1]?.title===L.Lang.translate('title_collection')));
    link._minimalAnimeMounted=true;const {control,item}=row;let panel;const posterCache=new Map();
    const cleanup=()=>{if(panel)panel.classList.remove('minimal-franchise-menu');panel=null;control.setAttribute('aria-expanded','false');};
    if(L.Select.listener)L.Select.listener.follow('hide',cleanup);
@@ -152,9 +161,9 @@ export default function animeCatalogue(L,kino){
    const escape=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
    function open(){
     if(disposed || !control.isConnected || control.getAttribute('aria-expanded')==='true')return;item.activate();
-    const groups=hasAnime?franchiseMenuGroups(model,card):nativeGroups,items=[];
+    const items=[];
     groups.forEach(group=>{items.push({title:escape(group.title),separator:true});group.entries.forEach(entry=>{
-     const current=hasAnime?Number(entry.card.id)===Number(card.shikimori_id || card.mal_id || model.seed) && (!entry.card.minimal_franchise_season || entry.card.minimal_franchise_season===(card.minimal_anime_release?.season || 1)):entry.current;
+     const current=entry.current ?? (hasAnime && Number(entry.card.id)===Number(card.shikimori_id || card.mal_id || model.seed) && (!entry.card.minimal_franchise_season || entry.card.minimal_franchise_season===(card.minimal_anime_release?.season || 1)));
      items.push({title:escape(entry.title),subtitle:escape(entry.subtitle),card:entry.card,selected:current});
     });});
     control.setAttribute('aria-expanded','true');
@@ -175,7 +184,7 @@ export default function animeCatalogue(L,kino){
       for(const child of [...node.children])info.appendChild(child);
       node.appendChild(picture);node.appendChild(info);
      });
-     const ids=hasAnime?releases.map(entry=>String(entry.card.id)).filter(id=>!posterCache.has(id)).slice(0,12):[],api=L.Api.sources.minimal_shiki;
+     const ids=releases.filter(entry=>entry.card.source==='minimal_shiki').map(entry=>String(entry.card.id)).filter(id=>!posterCache.has(id)).slice(0,12),api=L.Api.sources.minimal_shiki;
      if(ids.length && api?.posters)api.posters(ids,rows=>{
       for(const value of rows){const id=String(value.id);if(!ids.includes(id))continue;const url=value.poster?.mainUrl || value.poster?.originalUrl;if(!/^https:\/\//.test(url || ''))continue;posterCache.set(id,url);
        const art=panel?.querySelector('.minimal-related-art[data-release="'+id+'"]');if(art)showArtwork(art,url);
