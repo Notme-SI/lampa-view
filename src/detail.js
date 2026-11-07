@@ -6,7 +6,7 @@ import {chooseLogo,pickStudio} from './logos.js';
 import comments from './comments.js';
 import {artworkSize,logoSize,detailBackdrop} from './artwork.js';
 import {onlineButton,watchActions} from './watch-actions.js';
-import {styleScreenshots,nextDetailEpisode,orderDetailSections,styleSuggestions} from './detail-gallery.js';
+import {prepareScreenshotRow,styleScreenshots,nextDetailEpisode,orderDetailSections,styleSuggestions} from './detail-gallery.js';
 export function releaseDate(card){
  const raw=String(card.release_date || card.first_air_date || ''),match=/^(\d{4})-(\d{2})-(\d{2})$/.exec(raw);
  if(!match)return /^\d{4}$/.test(raw) && Number(raw)>0?raw:'';
@@ -130,7 +130,7 @@ export default function detail(L,event,loadLogo){
   });
   return;
  }
- if(event && event.type==='start' && event.data){prepareDetail(event.data);return;}
+ if(event && event.type==='start' && event.data){prepareDetail(event.data);prepareScreenshotRow(event);return;}
  if(event && event.type==='build' && event.name==='cards' && event.item)styleSuggestions(L,event);
  if(event && event.type==='build' && event.name==='episodes' && event.item){styleScreenshots(L,event);return;}
  if(event && event.type==='build' && event.name==='discuss' && event.item){const render=event.item.render(true),node=render && (render.nodeType?render:render[0]);comments(event.item,node);}

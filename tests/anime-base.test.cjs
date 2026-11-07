@@ -50,7 +50,7 @@ test('native full page places Related after screenshots, restores its focus and 
   L.Api.full=(p,ok)=>ok({movie,episodes:{name:'Сезон 3',episodes:[{season_number:3,episode_number:1,name:'First',air_date:'2020-01-01',still_path:'/frame.jpg'},{season_number:3,episode_number:2,name:'Next',air_date:'2099-11-13'},{season_number:3,episode_number:3,name:'No still',air_date:'2020-01-08'}]},persons:{crew:[],cast:[]},images:{logos:[]},videos:{results:[]},simular:{results:[{id:2,title:'Other'}]},recomend:{results:[]}});L.Activity.push({component:'full',source:'tmdb',id:85937,method:'tv',card:movie});await new Promise(r=>setTimeout(r,250));const component=L.Activity.active().activity.component;
   assert.equal(component.active,0);assert.equal(component.props.get('movie').id,85937);assert.equal(component.rows.some(r=>Array.isArray(r) && r[1].minimal_anime_collection),false);assert.equal(w.document.querySelector('.minimal-anime-order'),null);
   const gallery=w.document.querySelector('.minimal-detail-screenshots'),button=w.document.querySelector('.minimal-anime-franchise__button');assert.ok(gallery);assert.ok(button);assert.equal(gallery.querySelector('.items-line__title').textContent,'Кадры из сериала');assert.equal(gallery.nextElementSibling,button.parentElement);assert.ok(button.parentElement.nextElementSibling.classList.contains('minimal-comments-native'));assert.deepEqual(Array.from(component.rows,r=>Array.isArray(r)?r[0]:r).filter(x=>['episodes','minimal_related','discuss'].includes(x)),['episodes','minimal_related','discuss']);assert.equal(button.textContent,'Связанные');assert.equal(gallery.querySelectorAll('.full-episode:not([hidden])').length,1);assert.equal(w.document.querySelector('time.minimal-detail-next-episode').dateTime,'2099-11-13');
-  let opened;L.Modal.open=o=>opened=o;L.Modal.opened=()=>false;gallery.querySelector('[data-minimal-screenshot]').click();assert.match(opened.html.attr('src'),/w1280\/frame.jpg/);
+  let opened;L.Modal.open=o=>opened=o;L.Modal.opened=()=>false;gallery.querySelector('[data-minimal-screenshot]').click();assert.match(opened.html.find('img').attr('src'),/w1280\/frame.jpg/);
   const related=component.items.find(i=>i.render(true)===button.parentElement);component.active=component.items.indexOf(related)-1;component.emit('down');assert.equal(component.items[component.active],related);assert.equal(L.Controller.enabled().name,'minimal_franchise');let menu;const show=L.Select.show;L.Select.show=params=>{menu=params;show(params);};button.click();assert.ok(menu.items.some(entry=>entry.card?.id===40456));assert.ok(menu.items.some(entry=>entry.separator));assert.equal(w.document.querySelectorAll('.minimal-anime-franchise__item').length,menu.items.filter(entry=>!entry.separator).length);menu.onBack();assert.equal(component.items[component.active],related);assert.equal(L.Controller.enabled().name,'minimal_franchise');
   let destination;const push=L.Activity.push;L.Activity.push=params=>destination=params;button.click();menu.onSelect(menu.items.find(entry=>entry.card?.id===40456));assert.equal(destination.source,'minimal_shiki');assert.equal(destination.id,40456);assert.equal(destination.method,'movie');assert.equal(destination.card.mal_id,40456);L.Activity.push=push;assert.deepEqual(n.errors,[]);
   let target;L.Api.sources.tmdb.full=(p,ok)=>{target=p;ok({movie:{id:p.id}});};const result=await new Promise((ok,fail)=>L.Api.sources.minimal_shiki.full({card:{id:40456,source:'minimal_shiki',media_type:'movie',title:'Бесконечный поезд'}},ok,fail));assert.equal(target.id,635302);assert.equal(target.method,'movie');assert.equal(result.movie.shikimori_id,40456);
@@ -160,7 +160,25 @@ test('Related labels describe franchise releases, not invented broadcast seasons
  const {franchiseMenuGroups}=mod('anime-franchise');
  const nodes=[{id:20,name:'Наруто',kind:'TV Сериал',year:2002},{id:1735,name:'Наруто: Ураганные хроники',kind:'TV Сериал',year:2007}],graph={current_id:20,nodes,links:[{source_id:20,target_id:1735,relation:'sequel'}]},metadata=[{id:20,name:'Naruto',russian:'Наруто',kind:'tv',episodes:220,aired_on:'2002-10-03',status:'released'},{id:1735,name:'Naruto: Shippuuden',russian:'Наруто: Ураганные хроники',kind:'tv',episodes:500,aired_on:'2007-02-15',status:'released'}];
  const model=franchiseModel(graph,20,metadata),entries=franchiseMenuGroups(model,{id:31910,media_type:'tv'}).flatMap(g=>g.entries);
- assert.equal(entries.find(e=>e.card.id===1735).title,'Ураганные хроники');assert.ok(entries.every(e=>!/^Сезон \d/.test(e.title)));assert.match(entries[1].subtitle,/500 серий/);
+ assert.equal(entries.find(e=>e.card.id===1735).title,'Наруто: Ураганные хроники');assert.ok(entries.every(e=>!/^Сезон \d/.test(e.title)));assert.match(entries[1].subtitle,/Сериал.*500 серий/);
+});
+test('Related labels number seasons only within a verified shared TV card',()=>{
+ const {franchiseMenuGroups}=mod('anime-franchise');
+ const releases=[
+  [40748,'Магическая битва','2020-10-03','tv',24],
+  [48561,'Магическая битва 0. Фильм','2021-12-24','movie',1],
+  [51009,'Магическая битва 2','2023-07-06','tv',23],
+  [57658,'Магическая битва: Смертельная миграция','2026-01-09','tv',12]
+ ];
+ const metadata=releases.map(([id,russian,aired_on,kind,episodes])=>({id,name:russian,russian,aired_on,kind,episodes,status:'released'}));
+ const graph={current_id:40748,nodes:metadata.map(row=>({id:row.id,name:row.name})),
+  links:metadata.slice(1).map((row,index)=>({source_id:metadata[index].id,target_id:row.id,relation:'sequel'}))};
+ const entries=franchiseMenuGroups(franchiseModel(graph,40748,metadata),{id:95479,media_type:'tv'}).flatMap(group=>group.entries);
+ assert.match(entries.find(entry=>entry.card.id===40748).subtitle,/Сериал · Сезон 1/);
+ assert.match(entries.find(entry=>entry.card.id===51009).subtitle,/Сериал · Сезон 2/);
+ assert.match(entries.find(entry=>entry.card.id===57658).subtitle,/Сериал · Сезон 3/);
+ const film=entries.find(entry=>entry.card.id===48561);
+ assert.match(film.subtitle,/Фильм/);assert.doesNotMatch(film.subtitle,/Сезон/);
 });
 test('an unmapped finale resolves only through a complete dated episode interval in its verified parent',()=>{
  const {datedReleaseTarget}=mod('anime-index'),release={source:'minimal_shiki',id:53874,shikimori_id:53874,minimal_anime_kind:'tv',minimal_franchise_parent:{id:60572,type:'tv'},minimal_franchise_release:{aired:'2023-01-13',released:'2023-03-24',episodes:11}},rows=Array.from({length:11},(_,i)=>({season_number:25,episode_number:47+i,air_date:new Date(Date.UTC(2023,0,13+i*7)).toISOString().slice(0,10)})),target=datedReleaseTarget(release,{id:60572},{25:{episodes:rows}});

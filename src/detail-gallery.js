@@ -1,4 +1,5 @@
 import {locale,text as t} from './i18n.js';
+import tmdbGet from './tmdb.js';
 
 function airDate(value){
  const match=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || ''));if(!match)return null;
@@ -21,20 +22,99 @@ export function nextDetailEpisode(card,book,now=new Date()){
 
 const nodeOf=item=>{const rendered=item?.render?.(true);return rendered?.nodeType?rendered:rendered?.[0];};
 const still=episode=>episode && !episode.comeing && (episode.still_path || (/^https?:\/\//i.test(episode.img || '')?episode.img:''));
+const frameLimit=20;
+const titleFor=card=>t(card?.media_type==='tv' || (card?.media_type!=='movie' && (card?.name || card?.first_air_date))?'Кадры из сериала':'Кадры из фильма');
+const imagePath=path=>/^\/[\w.-]+\.(?:jpg|jpeg|png|webp)$/i.test(path || '');
+const imageRows=(images,episode)=>images.filter(image=>imagePath(image?.file_path)).map(image=>({
+ still_path:image.file_path,minimal_gallery_art:true,episode_number:episode?.episode_number
+}));
+function backdrops(data){
+ const images=data?.images?.backdrops || data?.movie?.images?.backdrops || [];
+ return imageRows(images.filter(image=>!image?.iso_639_1 && (!image.width || image.width>=640) &&
+  (!image.aspect_ratio || image.aspect_ratio>=1.4)));
+}
+export function prepareScreenshotRow(event){
+ const {data,link}=event;
+ if(!data?.movie || data.movie.adult || data.movie.blocked || !Array.isArray(link?.rows) || Array.isArray(data.episodes?.episodes))return;
+ const results=backdrops(data).slice(0,frameLimit);
+ if(!results.length && imagePath(data.movie.backdrop_path))results.push({still_path:data.movie.backdrop_path,minimal_gallery_art:true});
+ if(results.length)link.rows.push(['episodes',{movie:data.movie,title:titleFor(data.movie),results:results.reverse()}]);
+}
+
+function galleryButton(className,label,path,action){
+ const button=document.createElement('button');button.type='button';button.className=className;
+ const arrow=icon(path);arrow.setAttribute('fill','none');arrow.setAttribute('stroke','currentColor');arrow.setAttribute('stroke-width','2');
+ button.setAttribute('aria-label',label);button.title=label;button.appendChild(arrow);
+ button.addEventListener('click',event=>{event.preventDefault();event.stopImmediatePropagation();action();});
+ button.addEventListener('hover:enter',action);
+ return button;
+}
+const previousPath='m14 6-6 6 6 6',nextPath='m10 6 6 6-6 6';
+function showFrames(L,line,frames,start){
+ const $=window.jQuery;
+ const viewer=document.createElement('div');viewer.className='minimal-frame-viewer';
+ const image=document.createElement('img');image.className='minimal-screenshot-preview';image.draggable=false;
+ const controls=document.createElement('div');controls.className='minimal-frame-controls';
+ const counter=document.createElement('span');counter.setAttribute('aria-live','polite');
+ let index=start,touch=null;
+ const close=()=>{
+  L.Modal.close();
+  const node=frames[index]?.node;
+  if(node?.isConnected){line.last=node;line.active=line.items.findIndex(item=>nodeOf(item)===node);line.toggle();node.focus?.({preventScroll:true});}
+ };
+ const move=step=>{index=(index+step+frames.length)%frames.length;draw();};
+ const previous=galleryButton('minimal-row-arrow selector',t('Предыдущий кадр'),previousPath,()=>move(-1));
+ const next=galleryButton('minimal-row-arrow selector',t('Следующий кадр'),nextPath,()=>move(1));
+ const dismiss=galleryButton('minimal-row-arrow selector',t('Закрыть'),'m6 6 12 12m0-12L6 18',close);
+ previous.hidden=next.hidden=frames.length<2;
+ for(const control of [previous,counter,next,dismiss])controls.appendChild(control);
+ viewer.appendChild(controls);viewer.appendChild(image);
+ function draw(){
+  const frame=frames[index],label=frame.node.getAttribute('aria-label');
+  image.alt=label;image.src=imagePath(frame.path)?L.TMDB.image('/t/p/w1280'+frame.path,{preserveSize:true}):frame.path;
+  counter.textContent=(index+1)+' / '+frames.length;
+  if(L.Modal.opened())L.Modal.title?.(label);
+ }
+ viewer.addEventListener('touchstart',event=>{
+  if(event.touches.length!==1 || event.target.closest('button')){touch=null;return;}
+  const point=event.touches[0];touch=[point.clientX,point.clientY];
+ },{passive:true});
+ viewer.addEventListener('touchcancel',()=>{touch=null;},{passive:true});
+ viewer.addEventListener('touchend',event=>{
+  if(!touch || !event.changedTouches.length)return;
+  const point=event.changedTouches[0],dx=point.clientX-touch[0],dy=point.clientY-touch[1];touch=null;
+  if(frames.length>1 && Math.abs(dx)>45 && Math.abs(dx)>Math.abs(dy)*1.4){event.preventDefault();move(dx<0?1:-1);}
+ },{passive:false});
+ draw();
+ L.Modal.open({title:image.alt,size:'large',html:$(viewer),select:dismiss,onBack:close});
+ const controller=L.Controller?.enabled?.();
+ if(controller?.name==='modal' && controller.controller){
+  controller.controller.left=()=>move(-1);
+  controller.controller.right=()=>move(1);
+ }
+}
+
 export function styleScreenshots(L,event){
- const line=event.item,root=nodeOf(line);if(!root || !Array.isArray(event.data?.results) || !event.data.results.some(still))return;
- root.classList.add('minimal-detail-screenshots');
- const heading=root.querySelector('.items-line__title');if(heading)heading.textContent=t('Кадры из сериала');
- function frame(item){
-  const node=nodeOf(item);if(!node?.classList.contains('full-episode') || node.dataset.minimalScreenshot)return;
-  const path=still(item.data);if(!path){node.hidden=true;node.classList.remove('selector');return;}
-  node.dataset.minimalScreenshot='1';node.setAttribute('role','button');node.tabIndex=0;node.setAttribute('aria-label',t('Кадр из серии {0}',[item.data.episode_number || '']));
+ const line=event.item,root=nodeOf(line),rows=event.data?.results;
+ if(!root || !Array.isArray(rows) || !Array.isArray(line.items))return;
+ const data=event.props?.all?.(),card=event.data.movie,heading=root.querySelector('.items-line__title');
+ const candidates=rows.slice(),frames=[],seen=new Set();
+ const template=candidates.find(row=>!row.comeing && row.params?.createInstance);
+ let disposed=false,nav;
+ function frame(item,path){
+  const node=nodeOf(item);
+  if(!node?.classList.contains('full-episode') || !path || seen.has(path) || frames.length>=frameLimit){
+   if(node){node.hidden=true;node.classList.remove('selector');}
+   return;
+  }
+  const entry={node,path},number=item.data.episode_number;
+  frames.push(entry);seen.add(path);
+  node.dataset.minimalScreenshot='1';node.setAttribute('role','button');node.tabIndex=0;
+  node.setAttribute('aria-label',number?t('Кадр из серии {0}',[number]):t('Кадр {0}',[frames.length]));
   const open=()=>{
    if(!node.isConnected || !L.Modal?.open || L.Modal.opened?.())return;
-   const image=document.createElement('img');image.className='minimal-screenshot-preview';image.alt=node.getAttribute('aria-label');
-   image.src=item.data.still_path && !/^https?:\/\//i.test(path)?L.TMDB.image('/t/p/w1280'+path,{preserveSize:true}):path;
    line.last=node;
-   L.Modal.open({title:image.alt,size:'large',html:window.jQuery(image),onBack(){L.Modal.close();if(node.isConnected)line.toggle();}});
+   showFrames(L,line,frames.slice(),frames.indexOf(entry));
   };
   // Native thumbnails normally toggle watched status. The full episode list
   // is still available through Watch; this strip only opens images.
@@ -43,8 +123,68 @@ export function styleScreenshots(L,event){
   node.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();open();});
   node.addEventListener('keydown',e=>{if(e.key==='Enter' || e.key===' '){e.preventDefault();e.stopPropagation();open();}});
  }
- (line.items || []).forEach(frame);line.use?.({onAppend:frame});
- if(line.more){const more=nodeOf(line.more);if(more){more.hidden=true;more.classList.remove('selector');}}
+ function update(){
+  if(!frames.length)return;
+  root.classList.add('minimal-detail-screenshots');
+  if(heading)heading.textContent=titleFor(card);
+  if(!nav){
+   const head=root.querySelector('.items-line__head'),viewport=line.scroll?.render(true);
+   if(head && viewport){
+    const page=step=>{
+     const nodes=frames.map(item=>item.node),bounds=viewport.getBoundingClientRect();
+     const visible=nodes.findIndex(node=>node.getBoundingClientRect().right>bounds.left+2);
+     const count=Math.max(1,Math.floor(bounds.width/(nodes[0].getBoundingClientRect().width || bounds.width || 1)));
+     const target=nodes[Math.max(0,Math.min(nodes.length-1,Math.max(0,visible)+step*count))];
+     line.last=target;line.active=line.items.findIndex(item=>nodeOf(item)===target);
+     line.scroll.update(target,false);
+    };
+    nav=document.createElement('div');nav.className='minimal-row-nav minimal-frame-nav';
+    nav.appendChild(galleryButton('minimal-row-arrow',t('Предыдущая страница'),previousPath,()=>page(-1)));
+    nav.appendChild(galleryButton('minimal-row-arrow',t('Следующая страница'),nextPath,()=>page(1)));
+    head.appendChild(nav);
+   }
+  }
+  if(nav)nav.hidden=frames.length<2;
+ }
+ function add(rowsToAdd){
+  for(const row of rowsToAdd){
+   const path=still(row);if(!path || seen.has(path) || frames.length>=frameLimit)continue;
+   const existing=line.items.find(item=>item.data===row);
+   if(existing){frame(existing,path);continue;}
+   const element=row.params?row:template?{...row,params:{...template.params}}:null;
+   if(!element || !line.emit)continue;
+   const before=line.items.length;line.emit('createAndAppend',element);
+   if(line.items.length>before)frame(line.items.at(-1),path);
+  }
+  // The native row already owns the items; do not let its lazy append rebuild them.
+  if(frames.length)rows.splice(0,rows.length,...line.items.filter(item=>item!==line.more).map(item=>item.data));
+  update();
+ }
+ const supplemental=backdrops(data);
+ if(!candidates.some(still) && !supplemental.length)return;
+ const episode=candidates.find(row=>still(row) && !row.minimal_gallery_art && Number(row.season_number)>0 && Number(row.episode_number)>0);
+ const id=Number(card?.tmdb_id || (['tmdb','cub'].includes(card?.source)?card.id:0));
+ const fetchStills=id>0 && episode && candidates.filter(still).length<4;
+ for(const item of line.items){
+  const node=nodeOf(item);
+  if(node && !still(item.data)){node.hidden=true;node.classList.remove('selector');}
+ }
+ const initialArt=fetchStills?supplemental.slice(0,8):supplemental;
+ add(candidates.concat(initialArt));
+ for(const item of line.items){
+  const node=nodeOf(item);
+  if(node && !node.dataset.minimalScreenshot){node.hidden=true;node.classList.remove('selector');}
+ }
+ line.use?.({onDestroy(){disposed=true;}});
+ if(fetchStills){
+  const path='tv/'+id+'/season/'+episode.season_number+'/episode/'+episode.episode_number+'/images';
+  const complete=result=>{
+   if(disposed)return;
+   const images=Array.isArray(result?.stills)?imageRows(result.stills,episode):[];
+   add(images.concat(supplemental.slice(initialArt.length)));
+  };
+  tmdbGet(L,path,{},complete,()=>complete(null));
+ }
 }
 
 function icon(path){const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('aria-hidden','true');const line=document.createElementNS(svg.namespaceURI,'path');line.setAttribute('d',path);svg.appendChild(line);return svg;}

@@ -9435,5 +9435,61 @@
   "fr": "Image de l’épisode {0}",
   "pl": "Kadr z odcinka {0}",
   "es": "Imagen del episodio {0}"
+ },
+ "Кадры из фильма": {
+  "en": "Film stills",
+  "uk": "Кадри з фільму",
+  "be": "Кадры з фільма",
+  "zh": "电影剧照",
+  "pt": "Imagens do filme",
+  "bg": "Кадри от филма",
+  "he": "תמונות מהסרט",
+  "cs": "Záběry z filmu",
+  "ro": "Cadre din film",
+  "fr": "Images du film",
+  "pl": "Kadry z filmu",
+  "es": "Fotogramas de la película"
+ },
+ "Кадр {0}": {
+  "en": "Still {0}",
+  "uk": "Кадр {0}",
+  "be": "Кадр {0}",
+  "zh": "剧照 {0}",
+  "pt": "Imagem {0}",
+  "bg": "Кадър {0}",
+  "he": "תמונה {0}",
+  "cs": "Záběr {0}",
+  "ro": "Cadru {0}",
+  "fr": "Image {0}",
+  "pl": "Kadr {0}",
+  "es": "Fotograma {0}"
+ },
+ "Предыдущий кадр": {
+  "en": "Previous still",
+  "uk": "Попередній кадр",
+  "be": "Папярэдні кадр",
+  "zh": "上一张剧照",
+  "pt": "Imagem anterior",
+  "bg": "Предишен кадър",
+  "he": "התמונה הקודמת",
+  "cs": "Předchozí záběr",
+  "ro": "Cadrul anterior",
+  "fr": "Image précédente",
+  "pl": "Poprzedni kadr",
+  "es": "Fotograma anterior"
+ },
+ "Следующий кадр": {
+  "en": "Next still",
+  "uk": "Наступний кадр",
+  "be": "Наступны кадр",
+  "zh": "下一张剧照",
+  "pt": "Próxima imagem",
+  "bg": "Следващ кадър",
+  "he": "התמונה הבאה",
+  "cs": "Další záběr",
+  "ro": "Cadrul următor",
+  "fr": "Image suivante",
+  "pl": "Następny kadr",
+  "es": "Fotograma siguiente"
  }
 }
