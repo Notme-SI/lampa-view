@@ -11,15 +11,16 @@ test('home follows current CUB history order rather than old bookmark order, inc
   api.refresh();L.Account.Permit.account.profile.id=8;assert.deepEqual(Array.from(api.cards(),c=>c.id),[1,2]);calls[3].ok({results:[{id:99,title:'Wrong profile'}]});assert.equal(api.cards().some(c=>c.id===99),false);
  }finally{w.close();}
 });
-test('visible idle refresh updates CUB marks and notifies cards after the native callback; playback and disabled sync pause it',async()=>{
+test('visible idle refresh reads native CUB history and Timeline without racing the bookmark queue',async()=>{
  const d=new JSDOM('',{runScripts:'outside-only',pretendToBeVisual:true}),w=d.window;try{
   let poll,marks=0,timeline=0,callback;const events=[];w.setInterval=fn=>{poll=fn;return 1;};
-  const L={Storage:{get:(k,f)=>f},Account:{Permit:{sync:true,account:{profile:{id:7}}},Timeline:{update(){timeline++;}},Bookmarks:{update(cb){marks++;callback=cb;}}},Listener:{send:(n,e)=>events.push(e),follow(){}}};
-  const sync=load(w,'progress-sync')(L,()=>true);sync.refresh();assert.equal(marks,1);assert.equal(timeline,1);assert.equal(events.length,0);callback();assert.equal(events[0].target,'favorite');
+  let reads=0;
+  const L={Storage:{get:(k,f)=>f},Account:{Permit:{sync:true,account:{profile:{id:7}}},Api:{watchHistory(p,ok){assert.equal(p.group,'card');reads++;callback=ok;}},Timeline:{update(){timeline++;}},Bookmarks:{update(){marks++;}}},Listener:{send:(n,e)=>events.push(e),follow(){}}};
+  const sync=load(w,'progress-sync')(L,()=>true);sync.refresh();assert.equal(reads,1);assert.equal(timeline,1);assert.equal(events.length,0);callback({results:[{id:1,title:'Film'}]});assert.equal(events[0].target,'favorite');
   // Deterministic clock advance, exercising the real periodic refresh callback.
-  const real=w.Date.now;w.Date.now=()=>real()+31000;poll();assert.equal(marks,2);assert.equal(timeline,2);callback();
-  w.Date.now=()=>real()+62000;L.Controller={enabled:()=>({name:'player'})};poll();assert.equal(marks,2);
-  L.Controller.enabled=()=>({name:'content'});L.Account.Permit.sync=false;poll();assert.equal(marks,2);sync.stop();
+  const real=w.Date.now;w.Date.now=()=>real()+31000;poll();assert.equal(reads,2);assert.equal(timeline,2);callback({results:[{id:2,title:'Next film'}]});
+  w.Date.now=()=>real()+62000;L.Controller={enabled:()=>({name:'player'})};poll();assert.equal(reads,2);
+  L.Controller.enabled=()=>({name:'content'});L.Account.Permit.sync=false;poll();assert.equal(reads,2);assert.equal(marks,0);sync.stop();
  }finally{w.close();}
 });
 

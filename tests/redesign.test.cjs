@@ -6,7 +6,7 @@ test('anime uses CUB, hero switches its action target, native remote navigation 
  try {
  const $=w.jQuery,events={},pushes=[],controllers={},params=[],used=[],toggles=[];let backToLine=0;
  const activity={render:()=>$('main')};
- w.appready=true;w.Lampa={Storage:{get:(key,def)=>def,set(){}},Platform:{screen:v=>v==='tv'},SettingsApi:{addComponent:v=>params.push(v),addParam:v=>params.push(v)},
+ w.appready=true;w.Lampa={Storage:{get:(key,def)=>key==='source'?'cub':def,set(){}},Platform:{screen:v=>v==='tv'},SettingsApi:{addComponent:v=>params.push(v),addParam:v=>params.push(v)},
   Listener:{follow:(key,fn)=>events[key]=fn},Activity:{active:()=>({component:'main',activity}),push:v=>pushes.push(v)},
   Player:{listener:{follow(){}},playlist(){}},TMDB:{image:v=>'http://images.test'+v},Favorite:{check:()=>({wath:false}),add(){}},Noty:{show(){}},
   Controller:{add:(key,c)=>controllers[key]=c,toggle:key=>{toggles.push(key);if(controllers[key])controllers[key].toggle();},collectionSet(){},collectionFocus(){}}
