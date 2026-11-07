@@ -6,6 +6,7 @@ import {chooseLogo,pickStudio} from './logos.js';
 import comments from './comments.js';
 import {artworkSize,logoSize} from './artwork.js';
 import {onlineButton,watchActions} from './watch-actions.js';
+import {styleScreenshots,nextDetailEpisode} from './detail-gallery.js';
 export function releaseDate(card){
  const raw=String(card.release_date || card.first_air_date || ''),match=/^(\d{4})-(\d{2})-(\d{2})$/.exec(raw);
  if(!match)return /^\d{4}$/.test(raw) && Number(raw)>0?raw:'';
@@ -38,21 +39,24 @@ function readableOverview(L,card,right,link){
  control.addEventListener('click',event=>{event.preventDefault();event.stopImmediatePropagation();open();});
  control.addEventListener('keydown',event=>{if(event.key==='Enter' || event.key===' '){event.preventDefault();event.stopImmediatePropagation();open();}});
 }
-function moveTechnicalDetails(L,card,right){
+function moveTechnicalDetails(L,card,right,episodeBook){
  const line=right.querySelector('.full-start-new__details'),genres=(card.genres || []).slice(0,5).map(g=>g.name).join(' | ').trim().toLowerCase(),prefix=L.Lang && L.Lang.translate?L.Lang.translate('player_quality')+':':lampaViewText("Качество:");
  let duration='',quality='';
  if(line){
-  const parts=namedPartCount(card);
+  const parts=namedPartCount(card),nextPrefix=L.Lang.translate('full_next_episode')+':';
   if(parts>Number(card.number_of_seasons)){const prefix=(L.Lang.translate('title_seasons') || '')+':',counter=Array.from(line.children).find(part=>part.textContent.trim().startsWith(prefix));if(counter)counter.textContent=prefix+' '+parts;}
   const retained=Array.from(line.children).filter(part=>{
    if(part.classList.contains('full-start-new__split'))return false;
    const text=(part.textContent || part.innerText || '').trim();
-   if(!text)return false;
+   if(!text || text.startsWith(nextPrefix))return false;
    if(/^\d{1,3}:\d{2}$/.test(text)){duration=text;return false;}
    if(genres && text.toLowerCase()===genres)return false;
    if(text.toLowerCase().startsWith(prefix.toLowerCase())){quality=text.slice(prefix.length).trim();return false;}
    return true;
   });
+  const dated=nextDetailEpisode(card,episodeBook);
+  const date=dated || ((card.media_type==='tv' || card.original_name || card.first_air_date) && ['tmdb','cub'].includes(card.source) && L.TimeTable?.get?nextDetailEpisode(card,{episodes:L.TimeTable.get(card)}):null);
+  if(date){const node=document.createElement('time');node.className='minimal-detail-next-episode';node.dateTime=date.iso;node.textContent=lampaViewText('Следующая серия: {0}',[date.label]);retained.push(node);}
   while(line.firstChild)line.removeChild(line.firstChild);
   retained.forEach((part,index)=>{if(index){const split=document.createElement('span');split.className='full-start-new__split';split.textContent='·';line.appendChild(split);}line.appendChild(part);});
   line.classList.toggle('pt-hidden',!retained.length);
@@ -155,6 +159,7 @@ export default function detail(L,event,loadLogo){
   return;
  }
  if(event && event.type==='start' && event.data){prepareDetail(event.data);return;}
+ if(event && event.type==='build' && event.name==='episodes' && event.item){styleScreenshots(L,event);return;}
  if(event && event.type==='build' && event.name==='discuss' && event.item){const render=event.item.render(true),node=render && (render.nodeType?render:render[0]);comments(event.item,node);}
  if(event && event.type==='build' && event.name==='persons' && event.item && event.data && (event.data.title===L.Lang.translate('title_actors') || (event.data.results || []).some(p=>Object.prototype.hasOwnProperty.call(p,'character')))){
   const render=event.item.render(true),node=render && (render.nodeType?render:render[0]);
@@ -172,7 +177,7 @@ export default function detail(L,event,loadLogo){
  readableOverview(L,card,right,event.link);
  removeDescription(event.link);
  restoreDetailRows(L,event.link,event.data);
- const technical=moveTechnicalDetails(L,card,right);
+ const technical=moveTechnicalDetails(L,card,right,event.data.episodes);
  const animeBase=window.LampaView && window.LampaView.animeBase;
  if(isAnime(card)){
   const prefix=L.Lang.translate('title_seasons')+':';
