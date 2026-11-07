@@ -5,7 +5,7 @@ const normal=name=>String(name || '').toLowerCase().replace(/[^a-zа-яё0-9\u30
 export default function shikimoriMatch(L,details){
  const cache=new Map();
  return function full(params,ok,fail){
-  const card=params.card || params,kind=card.media_type || (card.name?'tv':'movie'),id=String(card.shikimori_id || card.id),key=kind+':'+id;
+  const card=params.card || params,kind=card.media_type || (card.name?'tv':'movie'),id=String(card.shikimori_id || card.id),key=kind+':'+id+':'+(card.minimal_franchise_season || 0);
   const original=card.original_title || card.original_name,local=card.minimal_franchise_full_title || card.title || card.name,seen=new Set(),queue=[],names=[];let expanded=false,networkError=false,searches=0,failures=0;
   const alive=()=>!(params.activity && params.activity.component && params.activity.component.destroyed);
   function add(name,base=false){name=String(name || '').trim();const n=normal(name);if(name && n && !seen.has(n)){seen.add(n);queue.push({name,base});names.push(name);}}
@@ -33,7 +33,7 @@ export default function shikimoriMatch(L,details){
   }
   if(cache.has(key))return open(cache.get(key));add(original);add(local);
   const reference={...card,source:'minimal_shiki',shikimori_id:id,media_type:kind},exact=animeTarget(reference);
-  function mapped(target){open({id:target.id,media_type:target.type,minimal_anime_release:{mal:target.release.mal,anidb:target.release.anidb,anilist:target.release.anilist,kind:target.release.kind,title:local || '',original:original || '',date:card.first_air_date || card.release_date || ''}});}
+  function mapped(target){open({id:target.id,media_type:target.type,minimal_anime_release:{mal:target.release.mal,anidb:target.release.anidb,anilist:target.release.anilist,kind:target.release.kind,season:card.minimal_franchise_season || target.release.season,offset:target.release.offset,title:local || '',original:original || '',date:card.first_air_date || card.release_date || ''}});}
   if(exact)return mapped(exact);
   const view=typeof window!=='undefined' && window.LampaView,kino=view && view.kinoapi,base=view && view.animeBase;
   function fallback(){if(kino && kino.enabled())return kino.title(card,result=>{

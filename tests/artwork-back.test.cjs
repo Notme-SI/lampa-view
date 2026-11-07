@@ -13,7 +13,7 @@ test('built plugin migrates image quality and applies both quality levels to pos
   for(const [quality,poster,backdrop] of [['medium','w500','w1280'],['high','w780','w1280']]){
    L.Storage.set('minimal_banner_quality',quality);setting.onChange();
    assert.ok(L.Api.img('/poster.jpg').includes('/'+poster+'/'));assert.ok(L.Api.sources.tmdb.img('/backdrop.jpg','w780').includes('/'+backdrop+'/'));
-   assert.ok(root.children[0].src.includes('/'+poster+'/'));assert.ok(root.children[1].src.includes('/'+backdrop+'/'));assert.equal(root.children[2].src,'https://shikimori.io/poster.jpg');
+   assert.ok(root.children[0].src.includes('/'+poster+'/'));assert.ok(root.children[1].src.includes('/'+(quality==='high'?'original':backdrop)+'/'));assert.equal(root.children[2].src,'https://shikimori.io/poster.jpg');
   }
   assert.equal(L.Storage.get('poster_size'),'w500');L.Storage.set('lampa_view_enabled',false);assert.match(L.Api.img('/poster.jpg'),/\/w500\//);
   assert.deepEqual(n.errors,[]);

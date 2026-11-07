@@ -1,0 +1,3302 @@
+[
+ {
+  "graph": {
+   "links": [
+    {
+     "id": 48051820,
+     "source_id": 11757,
+     "target_id": 16099,
+     "source": 26,
+     "target": 25,
+     "weight": 6,
+     "relation": "other"
+    },
+    {
+     "id": 48051814,
+     "source_id": 11757,
+     "target_id": 20021,
+     "source": 26,
+     "target": 24,
+     "weight": 6,
+     "relation": "sequel"
+    },
+    {
+     "id": 48051815,
+     "source_id": 11757,
+     "target_id": 21881,
+     "source": 26,
+     "target": 22,
+     "weight": 6,
+     "relation": "sequel"
+    },
+    {
+     "id": 48051819,
+     "source_id": 11757,
+     "target_id": 42916,
+     "source": 26,
+     "target": 6,
+     "weight": 6,
+     "relation": "alternative_version"
+    },
+    {
+     "id": 48051821,
+     "source_id": 11757,
+     "target_id": 53588,
+     "source": 26,
+     "target": 4,
+     "weight": 6,
+     "relation": "other"
+    },
+    {
+     "id": 48051822,
+     "source_id": 11757,
+     "target_id": 63736,
+     "source": 26,
+     "target": 1,
+     "weight": 6,
+     "relation": "other"
+    },
+    {
+     "id": 48067624,
+     "source_id": 20021,
+     "target_id": 11757,
+     "source": 24,
+     "target": 26,
+     "weight": 3,
+     "relation": "prequel"
+    },
+    {
+     "id": 48067627,
+     "source_id": 20021,
+     "target_id": 21879,
+     "source": 24,
+     "target": 23,
+     "weight": 3,
+     "relation": "other"
+    },
+    {
+     "id": 48067625,
+     "source_id": 20021,
+     "target_id": 21881,
+     "source": 24,
+     "target": 22,
+     "weight": 3,
+     "relation": "sequel"
+    },
+    {
+     "id": 48193913,
+     "source_id": 42916,
+     "target_id": 11757,
+     "source": 6,
+     "target": 26,
+     "weight": 2,
+     "relation": "alternative_version"
+    },
+    {
+     "id": 48193911,
+     "source_id": 42916,
+     "target_id": 50275,
+     "source": 6,
+     "target": 5,
+     "weight": 2,
+     "relation": "sequel"
+    },
+    {
+     "id": 48575209,
+     "source_id": 53588,
+     "target_id": 11757,
+     "source": 4,
+     "target": 26,
+     "weight": 1,
+     "relation": "other"
+    },
+    {
+     "id": 47935510,
+     "source_id": 21881,
+     "target_id": 20021,
+     "source": 22,
+     "target": 24,
+     "weight": 8,
+     "relation": "prequel"
+    },
+    {
+     "id": 47935516,
+     "source_id": 21881,
+     "target_id": 27891,
+     "source": 22,
+     "target": 21,
+     "weight": 8,
+     "relation": "summary"
+    },
+    {
+     "id": 47935519,
+     "source_id": 21881,
+     "target_id": 28063,
+     "source": 22,
+     "target": 20,
+     "weight": 8,
+     "relation": "other"
+    },
+    {
+     "id": 47935511,
+     "source_id": 21881,
+     "target_id": 31765,
+     "source": 22,
+     "target": 19,
+     "weight": 8,
+     "relation": "sequel"
+    },
+    {
+     "id": 47935517,
+     "source_id": 21881,
+     "target_id": 36475,
+     "source": 22,
+     "target": 15,
+     "weight": 8,
+     "relation": "alternative_setting"
+    },
+    {
+     "id": 47935520,
+     "source_id": 21881,
+     "target_id": 37278,
+     "source": 22,
+     "target": 17,
+     "weight": 8,
+     "relation": "other"
+    },
+    {
+     "id": 47935521,
+     "source_id": 21881,
+     "target_id": 37362,
+     "source": 22,
+     "target": 16,
+     "weight": 8,
+     "relation": "other"
+    },
+    {
+     "id": 47935518,
+     "source_id": 21881,
+     "target_id": 55994,
+     "source": 22,
+     "target": 2,
+     "weight": 8,
+     "relation": "alternative_setting"
+    },
+    {
+     "id": 48052843,
+     "source_id": 16099,
+     "target_id": 11757,
+     "source": 25,
+     "target": 26,
+     "weight": 2,
+     "relation": "parent_story"
+    },
+    {
+     "id": 48052842,
+     "source_id": 16099,
+     "target_id": 21879,
+     "source": 25,
+     "target": 23,
+     "weight": 2,
+     "relation": "sequel"
+    },
+    {
+     "id": 49290598,
+     "source_id": 63736,
+     "target_id": 11757,
+     "source": 1,
+     "target": 26,
+     "weight": 1,
+     "relation": "other"
+    },
+    {
+     "id": 47935887,
+     "source_id": 36475,
+     "target_id": 21881,
+     "source": 15,
+     "target": 22,
+     "weight": 6,
+     "relation": "alternative_setting"
+    },
+    {
+     "id": 47935888,
+     "source_id": 36475,
+     "target_id": 37278,
+     "source": 15,
+     "target": 17,
+     "weight": 6,
+     "relation": "other"
+    },
+    {
+     "id": 47935889,
+     "source_id": 36475,
+     "target_id": 37362,
+     "source": 15,
+     "target": 16,
+     "weight": 6,
+     "relation": "other"
+    },
+    {
+     "id": 47935885,
+     "source_id": 36475,
+     "target_id": 37831,
+     "source": 15,
+     "target": 14,
+     "weight": 6,
+     "relation": "summary"
+    },
+    {
+     "id": 47935882,
+     "source_id": 36475,
+     "target_id": 55994,
+     "source": 15,
+     "target": 2,
+     "weight": 6,
+     "relation": "sequel"
+    },
+    {
+     "id": 47935886,
+     "source_id": 36475,
+     "target_id": 59968,
+     "source": 15,
+     "target": 3,
+     "weight": 6,
+     "relation": "summary"
+    },
+    {
+     "id": 48133950,
+     "source_id": 37278,
+     "target_id": 21881,
+     "source": 17,
+     "target": 22,
+     "weight": 3,
+     "relation": "other"
+    },
+    {
+     "id": 48133951,
+     "source_id": 37278,
+     "target_id": 36475,
+     "source": 17,
+     "target": 15,
+     "weight": 3,
+     "relation": "other"
+    },
+    {
+     "id": 48133949,
+     "source_id": 37278,
+     "target_id": 37362,
+     "source": 17,
+     "target": 16,
+     "weight": 3,
+     "relation": "alternative_version"
+    },
+    {
+     "id": 48162655,
+     "source_id": 37362,
+     "target_id": 21881,
+     "source": 16,
+     "target": 22,
+     "weight": 3,
+     "relation": "other"
+    },
+    {
+     "id": 48162656,
+     "source_id": 37362,
+     "target_id": 36475,
+     "source": 16,
+     "target": 15,
+     "weight": 3,
+     "relation": "other"
+    },
+    {
+     "id": 48162654,
+     "source_id": 37362,
+     "target_id": 37278,
+     "source": 16,
+     "target": 17,
+     "weight": 3,
+     "relation": "alternative_version"
+    },
+    {
+     "id": 48067965,
+     "source_id": 55994,
+     "target_id": 21881,
+     "source": 2,
+     "target": 22,
+     "weight": 3,
+     "relation": "alternative_setting"
+    },
+    {
+     "id": 48067961,
+     "source_id": 55994,
+     "target_id": 36475,
+     "source": 2,
+     "target": 15,
+     "weight": 3,
+     "relation": "prequel"
+    },
+    {
+     "id": 48067962,
+     "source_id": 55994,
+     "target_id": 59968,
+     "source": 2,
+     "target": 3,
+     "weight": 3,
+     "relation": "prequel"
+    },
+    {
+     "id": 48113113,
+     "source_id": 31765,
+     "target_id": 21881,
+     "source": 19,
+     "target": 22,
+     "weight": 3,
+     "relation": "prequel"
+    },
+    {
+     "id": 48113116,
+     "source_id": 31765,
+     "target_id": 36439,
+     "source": 19,
+     "target": 18,
+     "weight": 3,
+     "relation": "other"
+    },
+    {
+     "id": 48113114,
+     "source_id": 31765,
+     "target_id": 36474,
+     "source": 19,
+     "target": 13,
+     "weight": 3,
+     "relation": "sequel"
+    },
+    {
+     "id": 48082625,
+     "source_id": 21879,
+     "target_id": 16099,
+     "source": 23,
+     "target": 25,
+     "weight": 3,
+     "relation": "prequel"
+    },
+    {
+     "id": 48082627,
+     "source_id": 21879,
+     "target_id": 20021,
+     "source": 23,
+     "target": 24,
+     "weight": 3,
+     "relation": "parent_story"
+    },
+    {
+     "id": 48082626,
+     "source_id": 21879,
+     "target_id": 28063,
+     "source": 23,
+     "target": 20,
+     "weight": 3,
+     "relation": "sequel"
+    },
+    {
+     "id": 49012475,
+     "source_id": 50275,
+     "target_id": 42916,
+     "source": 5,
+     "target": 6,
+     "weight": 1,
+     "relation": "prequel"
+    },
+    {
+     "id": 48098045,
+     "source_id": 27891,
+     "target_id": 21881,
+     "source": 21,
+     "target": 22,
+     "weight": 1,
+     "relation": "full_story"
+    },
+    {
+     "id": 48098106,
+     "source_id": 28063,
+     "target_id": 21879,
+     "source": 20,
+     "target": 23,
+     "weight": 2,
+     "relation": "prequel"
+    },
+    {
+     "id": 48098107,
+     "source_id": 28063,
+     "target_id": 21881,
+     "source": 20,
+     "target": 22,
+     "weight": 2,
+     "relation": "parent_story"
+    },
+    {
+     "id": 49215247,
+     "source_id": 59968,
+     "target_id": 36475,
+     "source": 3,
+     "target": 15,
+     "weight": 2,
+     "relation": "full_story"
+    },
+    {
+     "id": 49215246,
+     "source_id": 59968,
+     "target_id": 55994,
+     "source": 3,
+     "target": 2,
+     "weight": 2,
+     "relation": "sequel"
+    },
+    {
+     "id": 48133540,
+     "source_id": 36439,
+     "target_id": 31765,
+     "source": 18,
+     "target": 19,
+     "weight": 1,
+     "relation": "other"
+    },
+    {
+     "id": 47983454,
+     "source_id": 36474,
+     "target_id": 31765,
+     "source": 13,
+     "target": 19,
+     "weight": 5,
+     "relation": "prequel"
+    },
+    {
+     "id": 47983458,
+     "source_id": 36474,
+     "target_id": 39239,
+     "source": 13,
+     "target": 12,
+     "weight": 5,
+     "relation": "summary"
+    },
+    {
+     "id": 47983455,
+     "source_id": 36474,
+     "target_id": 39597,
+     "source": 13,
+     "target": 9,
+     "weight": 5,
+     "relation": "sequel"
+    },
+    {
+     "id": 47983459,
+     "source_id": 36474,
+     "target_id": 40489,
+     "source": 13,
+     "target": 10,
+     "weight": 5,
+     "relation": "summary"
+    },
+    {
+     "id": 47983460,
+     "source_id": 36474,
+     "target_id": 42128,
+     "source": 13,
+     "target": 11,
+     "weight": 5,
+     "relation": "other"
+    },
+    {
+     "id": 47983429,
+     "source_id": 37831,
+     "target_id": 36475,
+     "source": 14,
+     "target": 15,
+     "weight": 1,
+     "relation": "full_story"
+    },
+    {
+     "id": 48207701,
+     "source_id": 42128,
+     "target_id": 36474,
+     "source": 11,
+     "target": 13,
+     "weight": 1,
+     "relation": "other"
+    },
+    {
+     "id": 48179441,
+     "source_id": 39239,
+     "target_id": 36474,
+     "source": 12,
+     "target": 13,
+     "weight": 1,
+     "relation": "full_story"
+    },
+    {
+     "id": 48163202,
+     "source_id": 39597,
+     "target_id": 36474,
+     "source": 9,
+     "target": 13,
+     "weight": 4,
+     "relation": "prequel"
+    },
+    {
+     "id": 48163203,
+     "source_id": 39597,
+     "target_id": 40489,
+     "source": 9,
+     "target": 10,
+     "weight": 4,
+     "relation": "prequel"
+    },
+    {
+     "id": 48163204,
+     "source_id": 39597,
+     "target_id": 40540,
+     "source": 9,
+     "target": 7,
+     "weight": 4,
+     "relation": "sequel"
+    },
+    {
+     "id": 48163207,
+     "source_id": 39597,
+     "target_id": 41341,
+     "source": 9,
+     "target": 8,
+     "weight": 4,
+     "relation": "summary"
+    },
+    {
+     "id": 48193419,
+     "source_id": 40489,
+     "target_id": 36474,
+     "source": 10,
+     "target": 13,
+     "weight": 2,
+     "relation": "full_story"
+    },
+    {
+     "id": 48193418,
+     "source_id": 40489,
+     "target_id": 39597,
+     "source": 10,
+     "target": 9,
+     "weight": 2,
+     "relation": "sequel"
+    },
+    {
+     "id": 48193677,
+     "source_id": 41341,
+     "target_id": 39597,
+     "source": 8,
+     "target": 9,
+     "weight": 2,
+     "relation": "full_story"
+    },
+    {
+     "id": 48193676,
+     "source_id": 41341,
+     "target_id": 40540,
+     "source": 8,
+     "target": 7,
+     "weight": 2,
+     "relation": "sequel"
+    },
+    {
+     "id": 49275961,
+     "source_id": 40540,
+     "target_id": 39597,
+     "source": 7,
+     "target": 9,
+     "weight": 3,
+     "relation": "prequel"
+    },
+    {
+     "id": 49275962,
+     "source_id": 40540,
+     "target_id": 41341,
+     "source": 7,
+     "target": 8,
+     "weight": 3,
+     "relation": "prequel"
+    },
+    {
+     "id": 49275965,
+     "source_id": 40540,
+     "target_id": 53529,
+     "source": 7,
+     "target": 0,
+     "weight": 3,
+     "relation": "side_story"
+    },
+    {
+     "id": 49296485,
+     "source_id": 53529,
+     "target_id": 40540,
+     "source": 0,
+     "target": 7,
+     "weight": 1,
+     "relation": "parent_story"
+    }
+   ],
+   "nodes": [
+    {
+     "id": 53529,
+     "date": 1830286800,
+     "name": "Мастера Меча Онлайн: Область целостности",
+     "image_url": "https://shikimori.io/system/animes/x96/53529.jpg?1714587349",
+     "url": "/animes/53529-sword-art-online-movie-integral-domain",
+     "year": 2028,
+     "kind": "Фильм",
+     "weight": 1
+    },
+    {
+     "id": 63736,
+     "date": 1783544400,
+     "name": "Мастера Меча Онлайн: Безответная бабочка",
+     "image_url": "https://shikimori.io/assets/globals/missing_x96.jpg",
+     "url": "/animes/63736-sword-art-online-unanswered-butterfly",
+     "year": 2026,
+     "kind": "Фильм",
+     "weight": 1
+    },
+    {
+     "id": 55994,
+     "date": 1728075600,
+     "name": "Мастера Меча Онлайн: Альтернативная «Призрачная пуля» 2",
+     "image_url": "https://shikimori.io/system/animes/x96/55994.jpg?1713233726",
+     "url": "/animes/55994-sword-art-online-alternative-gun-gale-online-ii",
+     "year": 2024,
+     "kind": "TV Сериал",
+     "weight": 3
+    },
+    {
+     "id": 59968,
+     "date": 1727384400,
+     "name": "Мастера Меча Онлайн: Альтернативная «Призрачная пуля» 2 — Гала",
+     "image_url": "https://shikimori.io/assets/globals/missing_x96.jpg",
+     "url": "/animes/59968-sword-art-online-alternative-gun-gale-online-ii-gala",
+     "year": 2024,
+     "kind": "ONA",
+     "weight": 2
+    },
+    {
+     "id": 53588,
+     "date": 1667682000,
+     "name": "Мастера Меча Онлайн: Полное погружение",
+     "image_url": "https://shikimori.io/system/animes/x96/53588.jpg?1711935071",
+     "url": "/animes/53588-sword-art-online-full-dive-opening-eizou",
+     "year": 2022,
+     "kind": "Фильм",
+     "weight": 1
+    },
+    {
+     "id": 50275,
+     "date": 1666386000,
+     "name": "Мастера Меча Онлайн: Прогрессив — Скерцо глубокой ночи",
+     "image_url": "https://shikimori.io/system/animes/x96/50275.jpg?1711941463",
+     "url": "/animes/50275-sword-art-online-progressive-movie-kuraki-yuuyami-no-scherzo",
+     "year": 2022,
+     "kind": "Фильм",
+     "weight": 1
+    },
+    {
+     "id": 42916,
+     "date": 1635541200,
+     "name": "Мастера Меча Онлайн: Прогрессив — Ария в беззвёздной ночи",
+     "image_url": "https://shikimori.io/system/animes/x96/42916.jpg?1711975994",
+     "url": "/animes/42916-sword-art-online-progressive-movie-hoshi-naki-yoru-no-aria",
+     "year": 2021,
+     "kind": "Фильм",
+     "weight": 2
+    },
+    {
+     "id": 40540,
+     "date": 1594501200,
+     "name": "Мастера Меча Онлайн: Алисизация — Война в Подмирье 2",
+     "image_url": "https://shikimori.io/system/animes/x96/40540.jpg?1711975982",
+     "url": "/animes/40540-sword-art-online-alicization-war-of-underworld-2nd-season",
+     "year": 2020,
+     "kind": "TV Сериал",
+     "weight": 3
+    },
+    {
+     "id": 41341,
+     "date": 1593810000,
+     "name": "Мастера Меча Онлайн: Алисизация — Война в Подмирье. Рекап",
+     "image_url": "https://shikimori.io/system/animes/x96/41341.jpg?1711975954",
+     "url": "/animes/41341-sword-art-online-alicization-war-of-underworld-recap",
+     "year": 2020,
+     "kind": "TV Спецвыпуск",
+     "weight": 2
+    },
+    {
+     "id": 39597,
+     "date": 1570914000,
+     "name": "Мастера Меча Онлайн: Алисизация — Война в Подмирье",
+     "image_url": "https://shikimori.io/system/animes/x96/39597.jpg?1711975987",
+     "url": "/animes/z39597-sword-art-online-alicization-war-of-underworld",
+     "year": 2019,
+     "kind": "TV Сериал",
+     "weight": 4
+    },
+    {
+     "id": 40489,
+     "date": 1570309200,
+     "name": "Мастера Меча Онлайн: Алисизация — Война в Подмирье. Отражение",
+     "image_url": "https://shikimori.io/system/animes/x96/40489.jpg?1711975986",
+     "url": "/animes/z40489-sword-art-online-alicization-war-of-underworld-reflection",
+     "year": 2019,
+     "kind": "TV Спецвыпуск",
+     "weight": 2
+    },
+    {
+     "id": 42128,
+     "date": 1569963600,
+     "name": "Мастера Меча Онлайн: Алисизация x He Wei Dao",
+     "image_url": "https://shikimori.io/system/animes/x96/42128.jpg?1711953096",
+     "url": "/animes/42128-he-wei-dao-x-daojian-shenyu-alicization",
+     "year": 2019,
+     "kind": "Реклама",
+     "weight": 1
+    },
+    {
+     "id": 39239,
+     "date": 1550350800,
+     "name": "Мастера Меча Онлайн: Алисизация — Рекап",
+     "image_url": "https://shikimori.io/system/animes/x96/39239.jpg?1711976029",
+     "url": "/animes/39239-sword-art-online-alicization-recollection",
+     "year": 2019,
+     "kind": "TV Спецвыпуск",
+     "weight": 1
+    },
+    {
+     "id": 36474,
+     "date": 1538859600,
+     "name": "Мастера Меча Онлайн: Алисизация",
+     "image_url": "https://shikimori.io/system/animes/x96/36474.jpg?1711975988",
+     "url": "/animes/z36474-sword-art-online-alicization",
+     "year": 2018,
+     "kind": "TV Сериал",
+     "weight": 5
+    },
+    {
+     "id": 37831,
+     "date": 1526158800,
+     "name": "Мастера Меча Онлайн: Альтернативная «Призрачная пуля» — Рекап",
+     "image_url": "https://shikimori.io/system/animes/x96/37831.jpg?1711975841",
+     "url": "/animes/37831-sword-art-online-alternative-gun-gale-online-refrain",
+     "year": 2018,
+     "kind": "TV Спецвыпуск",
+     "weight": 1
+    },
+    {
+     "id": 36475,
+     "date": 1523134800,
+     "name": "Мастера Меча Онлайн: Альтернативная «Призрачная пуля»",
+     "image_url": "https://shikimori.io/system/animes/x96/36475.jpg?1711975864",
+     "url": "/animes/z36475-sword-art-online-alternative-gun-gale-online",
+     "year": 2018,
+     "kind": "TV Сериал",
+     "weight": 6
+    },
+    {
+     "id": 37362,
+     "date": 1521493200,
+     "name": "Мастера Меча Онлайн: Роковая пуля — Третий эпизод",
+     "image_url": "https://shikimori.io/system/animes/x96/37362.jpg?1711975837",
+     "url": "/animes/37362-sword-art-online-fatal-bullet-the-third-episode",
+     "year": 2018,
+     "kind": "TV Спецвыпуск",
+     "weight": 3
+    },
+    {
+     "id": 37278,
+     "date": 1518037200,
+     "name": "Мастера Меча Онлайн: Роковая пуля — Третий эпизод. Пилот",
+     "image_url": "https://shikimori.io/system/animes/x96/37278.jpg?1711975867",
+     "url": "/animes/37278-sword-art-online-fatal-bullet-the-third-episode-pilot-ban",
+     "year": 2018,
+     "kind": "ONA",
+     "weight": 3
+    },
+    {
+     "id": 36439,
+     "date": 1506459600,
+     "name": "Мастера Меча Оффлайн: Порядковый ранг",
+     "image_url": "https://shikimori.io/system/animes/x96/36439.jpg?1711975958",
+     "url": "/animes/36439-sword-art-online-movie-ordinal-scale-sword-art-offline",
+     "year": 2017,
+     "kind": "Спецвыпуск",
+     "weight": 1
+    },
+    {
+     "id": 31765,
+     "date": 1487365200,
+     "name": "Мастера Меча Онлайн: Порядковый ранг",
+     "image_url": "https://shikimori.io/system/animes/x96/31765.jpg?1711975988",
+     "url": "/animes/z31765-sword-art-online-movie-ordinal-scale",
+     "year": 2017,
+     "kind": "Фильм",
+     "weight": 3
+    },
+    {
+     "id": 28063,
+     "date": 1413921600,
+     "name": "Мастера Меча Оффлайн II",
+     "image_url": "https://shikimori.io/system/animes/x96/28063.jpg?1711975887",
+     "url": "/animes/28063-sword-art-online-ii-sword-art-offline-ii",
+     "year": 2014,
+     "kind": "Спецвыпуск",
+     "weight": 2
+    },
+    {
+     "id": 27891,
+     "date": 1412971200,
+     "name": "Мастера Меча Онлайн II: Расследование",
+     "image_url": "https://shikimori.io/system/animes/x96/27891.jpg?1711975871",
+     "url": "/animes/27891-sword-art-online-ii-debriefing",
+     "year": 2014,
+     "kind": "TV Спецвыпуск",
+     "weight": 1
+    },
+    {
+     "id": 21881,
+     "date": 1404504000,
+     "name": "Мастера Меча Онлайн II",
+     "image_url": "https://shikimori.io/system/animes/x96/21881.jpg?1711975878",
+     "url": "/animes/y21881-sword-art-online-ii",
+     "year": 2014,
+     "kind": "TV Сериал",
+     "weight": 8
+    },
+    {
+     "id": 21879,
+     "date": 1398196800,
+     "name": "Мастера Меча Оффлайн: Дополнительное издание",
+     "image_url": "https://shikimori.io/system/animes/x96/21879.jpg?1711975991",
+     "url": "/animes/21879-sword-art-online-sword-art-offline-extra-edition",
+     "year": 2014,
+     "kind": "Спецвыпуск",
+     "weight": 3
+    },
+    {
+     "id": 20021,
+     "date": 1388433600,
+     "name": "Мастера Меча Онлайн: Дополнительное издание",
+     "image_url": "https://shikimori.io/system/animes/x96/20021.jpg?1711976022",
+     "url": "/animes/z20021-sword-art-online-extra-edition",
+     "year": 2013,
+     "kind": "Спецвыпуск",
+     "weight": 3
+    },
+    {
+     "id": 16099,
+     "date": 1351022400,
+     "name": "Мастера Меча Оффлайн",
+     "image_url": "https://shikimori.io/system/animes/x96/16099.jpg?1711975993",
+     "url": "/animes/16099-sword-art-online-sword-art-offline",
+     "year": 2012,
+     "kind": "Спецвыпуск",
+     "weight": 2
+    },
+    {
+     "id": 11757,
+     "date": 1341691200,
+     "name": "Мастера Меча Онлайн",
+     "image_url": "https://shikimori.io/system/animes/x96/11757.jpg?1711975853",
+     "url": "/animes/z11757-sword-art-online",
+     "year": 2012,
+     "kind": "TV Сериал",
+     "weight": 6
+    }
+   ],
+   "current_id": 11757
+  },
+  "metadata": [
+   {
+    "id": 39597,
+    "name": "Sword Art Online: Alicization - War of Underworld",
+    "russian": "Мастера Меча Онлайн: Алисизация — Война в Подмирье",
+    "kind": "tv",
+    "aired_on": "2019-10-13",
+    "released_on": "2019-12-29",
+    "episodes": 12,
+    "episodes_aired": 12,
+    "status": "released"
+   },
+   {
+    "id": 20021,
+    "name": "Sword Art Online: Extra Edition",
+    "russian": "Мастера Меча Онлайн: Дополнительное издание",
+    "kind": "special",
+    "aired_on": "2013-12-31",
+    "released_on": null,
+    "episodes": 1,
+    "episodes_aired": 0,
+    "status": "released"
+   },
+   {
+    "id": 21879,
+    "name": "Sword Art Online: Sword Art Offline - Extra Edition",
+    "russian": "Мастера Меча Оффлайн: Дополнительное издание",
+    "kind": "special",
+    "aired_on": "2014-04-23",
+    "released_on": null,
+    "episodes": 1,
+    "episodes_aired": 0,
+    "status": "released"
+   },
+   {
+    "id": 36439,
+    "name": "Sword Art Online Movie: Ordinal Scale - Sword Art Offline",
+    "russian": "Мастера Меча Оффлайн: Порядковый ранг",
+    "kind": "special",
+    "aired_on": "2017-09-27",
+    "released_on": null,
+    "episodes": 1,
+    "episodes_aired": 1,
+    "status": "released"
+   },
+   {
+    "id": 39239,
+    "name": "Sword Art Online: Alicization - Recollection",
+    "russian": "Мастера Меча Онлайн: Алисизация — Рекап",
+    "kind": "tv_special",
+    "aired_on": "2019-02-17",
+    "released_on": null,
+    "episodes": 1,
+    "episodes_aired": 1,
+    "status": "released"
+   },
+   {
+    "id": 59968,
+    "name": "Sword Art Online Alternative: Gun Gale Online II - Gala",
+    "russian": "Мастера Меча Онлайн: Альтернативная «Призрачная пуля» 2 — Гала",
+    "kind": "ona",
+    "aired_on": "2024-09-27",
+    "released_on": null,
+    "episodes": 1,
+    "episodes_aired": 0,
+    "status": "released"
+   },
+   {
+    "id": 53529,
+    "name": "Sword Art Online Movie: Integral Domain",
+    "russian": "Мастера Меча Онлайн: Область целостности",
+    "kind": "movie",
+    "aired_on": "2028-01-01",
+    "released_on": null,
+    "episodes": 1,
+    "episodes_aired": 0,
+    "status": "anons"
+   },
+   {
+    "id": 63736,
+    "name": "Sword Art Online: Unanswered//butterfly",
+    "russian": "Мастера Меча Онлайн: Безответная бабочка",
+    "kind": "movie",
+    "aired_on": "2026-07-09",
+    "released_on": null,
+    "episodes": 1,
+    "episodes_aired": 0,
+    "status": "released"
+   },
+   {
+    "id": 21881,
+    "name": "Sword Art Online II",
+    "russian": "Мастера Меча Онлайн II",
+    "kind": "tv",
+    "aired_on": "2014-07-05",
+    "released_on": "2014-12-20",
+    "episodes": 24,
+    "episodes_aired": 24,
+    "status": "released"
+   },
+   {
+    "id": 37362,
+    "name": "Sword Art Online Fatal Bullet: The Third Episode",
+    "russian": "Мастера Меча Онлайн: Роковая пуля — Третий эпизод",
+    "kind": "tv_special",
+    "aired_on": "2018-03-20",
+    "released_on": null,
+    "episodes": 1,
+    "episodes_aired": 1,
+    "status": "released"
+   },
+   {
+    "id": 40489,
+    "name": "Sword Art Online: Alicization - War of Underworld Reflection",
+    "russian": "Мастера Меча Онлайн: Алисизация — Война в Подмирье. Отражение",
+    "kind": "tv_special",
+    "aired_on": "2019-10-06",
+    "released_on": null,
+    "episodes": 1,
+    "episodes_aired": 0,
+    "status": "released"
+   },
+   {
+    "id": 42128,
+    "name": "He Wei Dao x Daojian Shenyu Alicization",
+    "russian": "Мастера Меча Онлайн: Алисизация x He Wei Dao",
+    "kind": "cm",
+    "aired_on": "2019-10-02",
+    "released_on": null,
+    "episodes": 1,
+    "episodes_aired": 0,
+    "status": "released"
+   },
+   {
+    "id": 55994,
+    "name": "Sword Art Online Alternative: Gun Gale Online II",
+    "russian": "Мастера Меча Онлайн: Альтернативная «Призрачная пуля» 2",
+    "kind": "tv",
+    "aired_on": "2024-10-05",
+    "released_on": "2024-12-21",
+    "episodes": 12,
+    "episodes_aired": 12,
+    "status": "released"
+   },
+   {
+    "id": 37831,
+    "name": "Sword Art Online Alternative: Gun Gale Online - Refrain",
+    "russian": "Мастера Меча Онлайн: Альтернативная «Призрачная пуля» — Рекап",
+    "kind": "tv_special",
+    "aired_on": "2018-05-13",
+    "released_on": null,
+    "episodes": 1,
+    "episodes_aired": 1,
+    "status": "released"
+   },
+   {
+    "id": 40540,
+    "name": "Sword Art Online: Alicization - War of Underworld 2nd Season",
+    "russian": "Мастера Меча Онлайн: Алисизация — Война в Подмирье 2",
+    "kind": "tv",
+    "aired_on": "2020-07-12",
+    "released_on": "2020-09-20",
+    "episodes": 11,
+    "episodes_aired": 11,
+    "status": "released"
+   },
+   {
+    "id": 36474,
+    "name": "Sword Art Online: Alicization",
+    "russian": "Мастера Меча Онлайн: Алисизация",
+    "kind": "tv",
+    "aired_on": "2018-10-07",
+    "released_on": "2019-03-31",
+    "episodes": 24,
+    "episodes_aired": 24,
+    "status": "released"
+   },
+   {
+    "id": 27891,
+    "name": "Sword Art Online II: Debriefing",
+    "russian": "Мастера Меча Онлайн II: Расследование",
+    "kind": "tv_special",
+    "aired_on": "2014-10-11",
+    "released_on": null,
+    "episodes": 1,
+    "episodes_aired": 0,
+    "status": "released"
+   },
+   {
+    "id": 16099,
+    "name": "Sword Art Online: Sword Art Offline",
+    "russian": "Мастера Меча Оффлайн",
+    "kind": "special",
+    "aired_on": "2012-10-24",
+    "released_on": "2013-06-26",
+    "episodes": 9,
+    "episodes_aired": 0,
+    "status": "released"
+   },
+   {
+    "id": 11757,
+    "name": "Sword Art Online",
+    "russian": "Мастера Меча Онлайн",
+    "kind": "tv",
+    "aired_on": "2012-07-08",
+    "released_on": "2012-12-23",
+    "episodes": 25,
+    "episodes_aired": 25,
+    "status": "released"
+   },
+   {
+    "id": 42916,
+    "name": "Sword Art Online: Progressive Movie - Hoshi Naki Yoru no Aria",
+    "russian": "Мастера Меча Онлайн: Прогрессив — Ария в беззвёздной ночи",
+    "kind": "movie",
+    "aired_on": "2021-10-30",
+    "released_on": null,
+    "episodes": 1,
+    "episodes_aired": 1,
+    "status": "released"
+   },
+   {
+    "id": 31765,
+    "name": "Sword Art Online Movie: Ordinal Scale",
+    "russian": "Мастера Меча Онлайн: Порядковый ранг",
+    "kind": "movie",
+    "aired_on": "2017-02-18",
+    "released_on": null,
+    "episodes": 1,
+    "episodes_aired": 0,
+    "status": "released"
+   },
+   {
+    "id": 50275,
+    "name": "Sword Art Online: Progressive Movie - Kuraki Yuuyami no Scherzo",
+    "russian": "Мастера Меча Онлайн: Прогрессив — Скерцо глубокой ночи",
+    "kind": "movie",
+    "aired_on": "2022-10-22",
+    "released_on": null,
+    "episodes": 1,
+    "episodes_aired": 1,
+    "status": "released"
+   },
+   {
+    "id": 28063,
+    "name": "Sword Art Online II: Sword Art Offline II",
+    "russian": "Мастера Меча Оффлайн II",
+    "kind": "special",
+    "aired_on": "2014-10-22",
+    "released_on": "2015-06-24",
+    "episodes": 9,
+    "episodes_aired": 0,
+    "status": "released"
+   },
+   {
+    "id": 36475,
+    "name": "Sword Art Online Alternative: Gun Gale Online",
+    "russian": "Мастера Меча Онлайн: Альтернативная «Призрачная пуля»",
+    "kind": "tv",
+    "aired_on": "2018-04-08",
+    "released_on": "2018-07-01",
+    "episodes": 12,
+    "episodes_aired": 12,
+    "status": "released"
+   },
+   {
+    "id": 41341,
+    "name": "Sword Art Online: Alicization - War of Underworld Recap",
+    "russian": "Мастера Меча Онлайн: Алисизация — Война в Подмирье. Рекап",
+    "kind": "tv_special",
+    "aired_on": "2020-07-04",
+    "released_on": null,
+    "episodes": 1,
+    "episodes_aired": 0,
+    "status": "released"
+   },
+   {
+    "id": 37278,
+    "name": "Sword Art Online Fatal Bullet: The Third Episode - Pilot-ban",
+    "russian": "Мастера Меча Онлайн: Роковая пуля — Третий эпизод. Пилот",
+    "kind": "ona",
+    "aired_on": "2018-02-08",
+    "released_on": null,
+    "episodes": 1,
+    "episodes_aired": 1,
+    "status": "released"
+   },
+   {
+    "id": 53588,
+    "name": "Sword Art Online: Full Dive - Opening Eizou",
+    "russian": "Мастера Меча Онлайн: Полное погружение",
+    "kind": "movie",
+    "aired_on": "2022-11-06",
+    "released_on": null,
+    "episodes": 1,
+    "episodes_aired": 0,
+    "status": "released"
+   }
+  ]
+ },
+ {
+  "graph": {
+   "links": [
+    {
+     "id": 47606995,
+     "source_id": 39535,
+     "target_id": 45576,
+     "source": 7,
+     "target": 6,
+     "weight": 1,
+     "relation": "sequel"
+    },
+    {
+     "id": 47606985,
+     "source_id": 45576,
+     "target_id": 39535,
+     "source": 6,
+     "target": 7,
+     "weight": 3,
+     "relation": "prequel"
+    },
+    {
+     "id": 47606990,
+     "source_id": 45576,
+     "target_id": 50360,
+     "source": 6,
+     "target": 5,
+     "weight": 3,
+     "relation": "side_story"
+    },
+    {
+     "id": 47606986,
+     "source_id": 45576,
+     "target_id": 55818,
+     "source": 6,
+     "target": 4,
+     "weight": 3,
+     "relation": "sequel"
+    },
+    {
+     "id": 47606980,
+     "source_id": 55818,
+     "target_id": 45576,
+     "source": 4,
+     "target": 6,
+     "weight": 2,
+     "relation": "prequel"
+    },
+    {
+     "id": 47606981,
+     "source_id": 55818,
+     "target_id": 51179,
+     "source": 4,
+     "target": 3,
+     "weight": 2,
+     "relation": "sequel"
+    },
+    {
+     "id": 47606994,
+     "source_id": 50360,
+     "target_id": 45576,
+     "source": 5,
+     "target": 6,
+     "weight": 1,
+     "relation": "parent_story"
+    },
+    {
+     "id": 47606975,
+     "source_id": 51179,
+     "target_id": 55818,
+     "source": 3,
+     "target": 4,
+     "weight": 2,
+     "relation": "prequel"
+    },
+    {
+     "id": 47606976,
+     "source_id": 51179,
+     "target_id": 55888,
+     "source": 3,
+     "target": 2,
+     "weight": 2,
+     "relation": "sequel"
+    },
+    {
+     "id": 47606999,
+     "source_id": 55888,
+     "target_id": 51179,
+     "source": 2,
+     "target": 3,
+     "weight": 2,
+     "relation": "prequel"
+    },
+    {
+     "id": 47607000,
+     "source_id": 55888,
+     "target_id": 59193,
+     "source": 2,
+     "target": 1,
+     "weight": 2,
+     "relation": "sequel"
+    },
+    {
+     "id": 49215765,
+     "source_id": 59193,
+     "target_id": 55888,
+     "source": 1,
+     "target": 2,
+     "weight": 2,
+     "relation": "prequel"
+    },
+    {
+     "id": 49215766,
+     "source_id": 59193,
+     "target_id": 65077,
+     "source": 1,
+     "target": 0,
+     "weight": 2,
+     "relation": "sequel"
+    },
+    {
+     "id": 49300475,
+     "source_id": 65077,
+     "target_id": 59193,
+     "source": 0,
+     "target": 1,
+     "weight": 1,
+     "relation": "prequel"
+    }
+   ],
+   "nodes": [
+    {
+     "id": 65077,
+     "date": 1798750800,
+     "name": "Реинкарнация безработного: История о приключениях в другом мире 3. Часть 2",
+     "image_url": "https://shikimori.io/assets/globals/missing_x96.jpg",
+     "url": "/animes/65077-mushoku-tensei-iii-isekai-ittara-honki-dasu-part-2",
+     "year": 2027,
+     "kind": "TV Сериал",
+     "weight": 1
+    },
+    {
+     "id": 59193,
+     "date": 1783285200,
+     "name": "Реинкарнация безработного: История о приключениях в другом мире 3",
+     "image_url": "https://shikimori.io/assets/globals/missing_x96.jpg",
+     "url": "/animes/59193-mushoku-tensei-iii-isekai-ittara-honki-dasu",
+     "year": 2026,
+     "kind": "TV Сериал",
+     "weight": 2
+    },
+    {
+     "id": 55888,
+     "date": 1712523600,
+     "name": "Реинкарнация безработного: История о приключениях в другом мире 2. Часть 2",
+     "image_url": "https://shikimori.io/system/animes/x96/55888.jpg?1718617531",
+     "url": "/animes/55888-mushoku-tensei-ii-isekai-ittara-honki-dasu-part-2",
+     "year": 2024,
+     "kind": "TV Сериал",
+     "weight": 2
+    },
+    {
+     "id": 51179,
+     "date": 1688936400,
+     "name": "Реинкарнация безработного: История о приключениях в другом мире 2",
+     "image_url": "https://shikimori.io/system/animes/x96/51179.jpg?1711939588",
+     "url": "/animes/51179-mushoku-tensei-ii-isekai-ittara-honki-dasu",
+     "year": 2023,
+     "kind": "TV Сериал",
+     "weight": 2
+    },
+    {
+     "id": 55818,
+     "date": 1688331600,
+     "name": "Реинкарнация безработного: История о приключениях в другом мире 2 — Маг-хранитель Фитц",
+     "image_url": "https://shikimori.io/system/animes/x96/55818.jpg?1712537860",
+     "url": "/animes/55818-mushoku-tensei-ii-isekai-ittara-honki-dasu-shugo-jutsushi-fitz",
+     "year": 2023,
+     "kind": "TV Спецвыпуск",
+     "weight": 2
+    },
+    {
+     "id": 50360,
+     "date": 1647378000,
+     "name": "Реинкарнация безработного: История о приключениях в другом мире. Эрис — убийца гоблинов",
+     "image_url": "https://shikimori.io/system/animes/x96/50360.jpg?1716776922",
+     "url": "/animes/50360-mushoku-tensei-isekai-ittara-honki-dasu-eris-no-goblin-toubatsu",
+     "year": 2022,
+     "kind": "Спецвыпуск",
+     "weight": 1
+    },
+    {
+     "id": 45576,
+     "date": 1633294800,
+     "name": "Реинкарнация безработного: История о приключениях в другом мире. Часть 2",
+     "image_url": "https://shikimori.io/system/animes/x96/45576.jpg?1711965124",
+     "url": "/animes/45576-mushoku-tensei-isekai-ittara-honki-dasu-part-2",
+     "year": 2021,
+     "kind": "TV Сериал",
+     "weight": 3
+    },
+    {
+     "id": 39535,
+     "date": 1610312400,
+     "name": "Реинкарнация безработного: История о приключениях в другом мире",
+     "image_url": "https://shikimori.io/system/animes/x96/39535.jpg?1711965119",
+     "url": "/animes/39535-mushoku-tensei-isekai-ittara-honki-dasu",
+     "year": 2021,
+     "kind": "TV Сериал",
+     "weight": 1
+    }
+   ],
+   "current_id": 39535
+  },
+  "metadata": [
+   {
+    "id": 39535,
+    "name": "Mushoku Tensei: Isekai Ittara Honki Dasu",
+    "russian": "Реинкарнация безработного: История о приключениях в другом мире",
+    "kind": "tv",
+    "aired_on": "2021-01-11",
+    "released_on": "2021-03-22",
+    "episodes": 11,
+    "episodes_aired": 11,
+    "status": "released"
+   },
+   {
+    "id": 45576,
+    "name": "Mushoku Tensei: Isekai Ittara Honki Dasu Part 2",
+    "russian": "Реинкарнация безработного: История о приключениях в другом мире. Часть 2",
+    "kind": "tv",
+    "aired_on": "2021-10-04",
+    "released_on": "2021-12-20",
+    "episodes": 12,
+    "episodes_aired": 12,
+    "status": "released"
+   },
+   {
+    "id": 50360,
+    "name": "Mushoku Tensei: Isekai Ittara Honki Dasu - Eris no Goblin Toubatsu",
+    "russian": "Реинкарнация безработного: История о приключениях в другом мире. Эрис — убийца гоблинов",
+    "kind": "special",
+    "aired_on": "2022-03-16",
+    "released_on": null,
+    "episodes": 1,
+    "episodes_aired": 0,
+    "status": "released"
+   },
+   {
+    "id": 51179,
+    "name": "Mushoku Tensei II: Isekai Ittara Honki Dasu",
+    "russian": "Реинкарнация безработного: История о приключениях в другом мире 2",
+    "kind": "tv",
+    "aired_on": "2023-07-10",
+    "released_on": "2023-09-25",
+    "episodes": 12,
+    "episodes_aired": 12,
+    "status": "released"
+   },
+   {
+    "id": 55818,
+    "name": "Mushoku Tensei II: Isekai Ittara Honki Dasu - Shugo Jutsushi Fitz",
+    "russian": "Реинкарнация безработного: История о приключениях в другом мире 2 — Маг-хранитель Фитц",
+    "kind": "tv_special",
+    "aired_on": "2023-07-03",
+    "released_on": null,
+    "episodes": 1,
+    "episodes_aired": 1,
+    "status": "released"
+   },
+   {
+    "id": 55888,
+    "name": "Mushoku Tensei II: Isekai Ittara Honki Dasu Part 2",
+    "russian": "Реинкарнация безработного: История о приключениях в другом мире 2. Часть 2",
+    "kind": "tv",
+    "aired_on": "2024-04-08",
+    "released_on": "2024-07-01",
+    "episodes": 12,
+    "episodes_aired": 12,
+    "status": "released"
+   },
+   {
+    "id": 59193,
+    "name": "Mushoku Tensei III: Isekai Ittara Honki Dasu",
+    "russian": "Реинкарнация безработного: История о приключениях в другом мире 3",
+    "kind": "tv",
+    "aired_on": "2026-07-06",
+    "released_on": "2026-09-28",
+    "episodes": 14,
+    "episodes_aired": 14,
+    "status": "released"
+   },
+   {
+    "id": 65077,
+    "name": "Mushoku Tensei III: Isekai Ittara Honki Dasu Part 2",
+    "russian": "Реинкарнация безработного: История о приключениях в другом мире 3. Часть 2",
+    "kind": "tv",
+    "aired_on": "2027-01-01",
+    "released_on": null,
+    "episodes": 0,
+    "episodes_aired": 0,
+    "status": "anons"
+   }
+  ]
+ },
+ {
+  "graph": {
+   "links": [
+    {
+     "id": 48751293,
+     "source_id": 14719,
+     "target_id": 3603,
+     "source": 10,
+     "target": 11,
+     "weight": 2,
+     "relation": "alternative_version"
+    },
+    {
+     "id": 48751290,
+     "source_id": 14719,
+     "target_id": 20899,
+     "source": 10,
+     "target": 9,
+     "weight": 2,
+     "relation": "sequel"
+    },
+    {
+     "id": 48764609,
+     "source_id": 20899,
+     "target_id": 665,
+     "source": 9,
+     "target": 13,
+     "weight": 3,
+     "relation": "alternative_version"
+    },
+    {
+     "id": 48764606,
+     "source_id": 20899,
+     "target_id": 14719,
+     "source": 9,
+     "target": 10,
+     "weight": 3,
+     "relation": "prequel"
+    },
+    {
+     "id": 48764607,
+     "source_id": 20899,
+     "target_id": 26055,
+     "source": 9,
+     "target": 8,
+     "weight": 3,
+     "relation": "sequel"
+    },
+    {
+     "id": 47967098,
+     "source_id": 3603,
+     "target_id": 14719,
+     "source": 11,
+     "target": 10,
+     "weight": 2,
+     "relation": "alternative_version"
+    },
+    {
+     "id": 47967097,
+     "source_id": 3603,
+     "target_id": 41306,
+     "source": 11,
+     "target": 12,
+     "weight": 2,
+     "relation": "alternative_version"
+    },
+    {
+     "id": 48751404,
+     "source_id": 26055,
+     "target_id": 666,
+     "source": 8,
+     "target": 14,
+     "weight": 3,
+     "relation": "alternative_version"
+    },
+    {
+     "id": 48751401,
+     "source_id": 26055,
+     "target_id": 20899,
+     "source": 8,
+     "target": 9,
+     "weight": 3,
+     "relation": "prequel"
+    },
+    {
+     "id": 48751402,
+     "source_id": 26055,
+     "target_id": 31933,
+     "source": 8,
+     "target": 7,
+     "weight": 3,
+     "relation": "sequel"
+    },
+    {
+     "id": 47904480,
+     "source_id": 665,
+     "target_id": 666,
+     "source": 13,
+     "target": 14,
+     "weight": 2,
+     "relation": "sequel"
+    },
+    {
+     "id": 47904482,
+     "source_id": 665,
+     "target_id": 20899,
+     "source": 13,
+     "target": 9,
+     "weight": 2,
+     "relation": "alternative_version"
+    },
+    {
+     "id": 48207641,
+     "source_id": 41306,
+     "target_id": 3603,
+     "source": 12,
+     "target": 11,
+     "weight": 1,
+     "relation": "alternative_version"
+    },
+    {
+     "id": 47918217,
+     "source_id": 666,
+     "target_id": 665,
+     "source": 14,
+     "target": 13,
+     "weight": 2,
+     "relation": "prequel"
+    },
+    {
+     "id": 47918219,
+     "source_id": 666,
+     "target_id": 26055,
+     "source": 14,
+     "target": 8,
+     "weight": 2,
+     "relation": "alternative_version"
+    },
+    {
+     "id": 47635269,
+     "source_id": 31933,
+     "target_id": 26055,
+     "source": 7,
+     "target": 8,
+     "weight": 3,
+     "relation": "prequel"
+    },
+    {
+     "id": 47635272,
+     "source_id": 31933,
+     "target_id": 33191,
+     "source": 7,
+     "target": 6,
+     "weight": 3,
+     "relation": "side_story"
+    },
+    {
+     "id": 47635270,
+     "source_id": 31933,
+     "target_id": 37991,
+     "source": 7,
+     "target": 5,
+     "weight": 3,
+     "relation": "sequel"
+    },
+    {
+     "id": 48113431,
+     "source_id": 33191,
+     "target_id": 31933,
+     "source": 6,
+     "target": 7,
+     "weight": 1,
+     "relation": "parent_story"
+    },
+    {
+     "id": 48868204,
+     "source_id": 37991,
+     "target_id": 31933,
+     "source": 5,
+     "target": 7,
+     "weight": 3,
+     "relation": "prequel"
+    },
+    {
+     "id": 48868207,
+     "source_id": 37991,
+     "target_id": 38972,
+     "source": 5,
+     "target": 4,
+     "weight": 3,
+     "relation": "summary"
+    },
+    {
+     "id": 48868205,
+     "source_id": 37991,
+     "target_id": 48661,
+     "source": 5,
+     "target": 3,
+     "weight": 3,
+     "relation": "sequel"
+    },
+    {
+     "id": 47999566,
+     "source_id": 38972,
+     "target_id": 37991,
+     "source": 4,
+     "target": 5,
+     "weight": 1,
+     "relation": "full_story"
+    },
+    {
+     "id": 48307353,
+     "source_id": 48661,
+     "target_id": 37991,
+     "source": 3,
+     "target": 5,
+     "weight": 2,
+     "relation": "prequel"
+    },
+    {
+     "id": 48307354,
+     "source_id": 48661,
+     "target_id": 51367,
+     "source": 3,
+     "target": 2,
+     "weight": 2,
+     "relation": "sequel"
+    },
+    {
+     "id": 48839214,
+     "source_id": 51367,
+     "target_id": 48661,
+     "source": 2,
+     "target": 3,
+     "weight": 2,
+     "relation": "prequel"
+    },
+    {
+     "id": 48839215,
+     "source_id": 51367,
+     "target_id": 53273,
+     "source": 2,
+     "target": 1,
+     "weight": 2,
+     "relation": "sequel"
+    },
+    {
+     "id": 48134309,
+     "source_id": 53273,
+     "target_id": 51367,
+     "source": 1,
+     "target": 2,
+     "weight": 2,
+     "relation": "prequel"
+    },
+    {
+     "id": 48134310,
+     "source_id": 53273,
+     "target_id": 61469,
+     "source": 1,
+     "target": 0,
+     "weight": 2,
+     "relation": "sequel"
+    },
+    {
+     "id": 49296607,
+     "source_id": 61469,
+     "target_id": 53273,
+     "source": 0,
+     "target": 1,
+     "weight": 1,
+     "relation": "prequel"
+    }
+   ],
+   "nodes": [
+    {
+     "id": 61469,
+     "date": 1773867600,
+     "name": "Невероятное приключение ДжоДжо: Гонка «Стальной шар»",
+     "image_url": "https://shikimori.io/assets/globals/missing_x96.jpg",
+     "url": "/animes/61469-steel-ball-run-jojo-no-kimyou-na-bouken",
+     "year": 2026,
+     "kind": "ONA",
+     "weight": 1
+    },
+    {
+     "id": 53273,
+     "date": 1669842000,
+     "name": "Невероятное приключение ДжоДжо: Каменный океан. Часть 3",
+     "image_url": "https://shikimori.io/system/animes/x96/53273.jpg?1709665727",
+     "url": "/animes/53273-jojo-no-kimyou-na-bouken-part-6-stone-ocean-part-3",
+     "year": 2022,
+     "kind": "ONA",
+     "weight": 2
+    },
+    {
+     "id": 51367,
+     "date": 1661979600,
+     "name": "Невероятное приключение ДжоДжо: Каменный океан. Часть 2",
+     "image_url": "https://shikimori.io/system/animes/x96/51367.jpg?1711939204",
+     "url": "/animes/51367-jojo-no-kimyou-na-bouken-part-6-stone-ocean-part-2",
+     "year": 2022,
+     "kind": "ONA",
+     "weight": 2
+    },
+    {
+     "id": 48661,
+     "date": 1638306000,
+     "name": "Невероятное приключение ДжоДжо: Каменный океан",
+     "image_url": "https://shikimori.io/system/animes/x96/48661.jpg?1708744652",
+     "url": "/animes/48661-jojo-no-kimyou-na-bouken-part-6-stone-ocean",
+     "year": 2021,
+     "kind": "ONA",
+     "weight": 2
+    },
+    {
+     "id": 38972,
+     "date": 1546635600,
+     "name": "Невероятное приключение ДжоДжо: Золотой ветер — Рекапы",
+     "image_url": "https://shikimori.io/system/animes/x96/38972.jpg?1711956284",
+     "url": "/animes/38972-jojo-no-kimyou-na-bouken-part-5-ougon-no-kaze-recaps",
+     "year": 2019,
+     "kind": "TV Спецвыпуск",
+     "weight": 1
+    },
+    {
+     "id": 37991,
+     "date": 1538773200,
+     "name": "Невероятное приключение ДжоДжо: Золотой ветер",
+     "image_url": "https://shikimori.io/system/animes/x96/37991.jpg?1711956291",
+     "url": "/animes/37991-jojo-no-kimyou-na-bouken-part-5-ougon-no-kaze",
+     "year": 2018,
+     "kind": "TV Сериал",
+     "weight": 3
+    },
+    {
+     "id": 33191,
+     "date": 1505854800,
+     "name": "Так говорил Рохан Кишибэ",
+     "image_url": "https://shikimori.io/system/animes/x96/33191.jpg?1711958892",
+     "url": "/animes/33191-kishibe-rohan-wa-ugokanai",
+     "year": 2017,
+     "kind": "OVA",
+     "weight": 1
+    },
+    {
+     "id": 31933,
+     "date": 1459544400,
+     "name": "Невероятное приключение ДжоДжо: Несокрушимый алмаз",
+     "image_url": "https://shikimori.io/system/animes/x96/31933.jpg?1711956267",
+     "url": "/animes/31933-jojo-no-kimyou-na-bouken-part-4-diamond-wa-kudakenai",
+     "year": 2016,
+     "kind": "TV Сериал",
+     "weight": 3
+    },
+    {
+     "id": 26055,
+     "date": 1420837200,
+     "name": "Невероятное приключение ДжоДжо: Рыцари звёздной пыли 2",
+     "image_url": "https://shikimori.io/system/animes/x96/26055.jpg?1711956303",
+     "url": "/animes/26055-jojo-no-kimyou-na-bouken-part-3-stardust-crusaders-egypt-hen",
+     "year": 2015,
+     "kind": "TV Сериал",
+     "weight": 3
+    },
+    {
+     "id": 20899,
+     "date": 1396641600,
+     "name": "Невероятное приключение ДжоДжо: Рыцари звёздной пыли",
+     "image_url": "https://shikimori.io/system/animes/x96/20899.jpg?1711956319",
+     "url": "/animes/20899-jojo-no-kimyou-na-bouken-part-3-stardust-crusaders",
+     "year": 2014,
+     "kind": "TV Сериал",
+     "weight": 3
+    },
+    {
+     "id": 14719,
+     "date": 1349467200,
+     "name": "Невероятное приключение ДжоДжо",
+     "image_url": "https://shikimori.io/system/animes/x96/14719.jpg?1711956282",
+     "url": "/animes/14719-jojo-no-kimyou-na-bouken-tv",
+     "year": 2012,
+     "kind": "TV Сериал",
+     "weight": 2
+    },
+    {
+     "id": 3603,
+     "date": 1171659600,
+     "name": "Невероятное приключение ДжоДжо: Призрачная кровь",
+     "image_url": "https://shikimori.io/system/animes/x96/3603.jpg?1711956310",
+     "url": "/animes/3603-jojo-no-kimyou-na-bouken-phantom-blood",
+     "year": 2007,
+     "kind": "Фильм",
+     "weight": 2
+    },
+    {
+     "id": 41306,
+     "date": 1080421200,
+     "name": "Невероятное приключение ДжоДжо: Призрачная кровь — Пилотный выпуск",
+     "image_url": "https://shikimori.io/system/animes/x96/41306.jpg?1711956294",
+     "url": "/animes/41306-jojo-no-kimyou-na-bouken-phantom-blood-pilot",
+     "year": 2004,
+     "kind": "Спецвыпуск",
+     "weight": 1
+    },
+    {
+     "id": 665,
+     "date": 959198400,
+     "name": "Невероятное приключение ДжоДжо OVA (2000)",
+     "image_url": "https://shikimori.io/system/animes/x96/665.jpg?1711956271",
+     "url": "/animes/665-jojo-no-kimyou-na-bouken-adventure",
+     "year": 2000,
+     "kind": "OVA",
+     "weight": 2
+    },
+    {
+     "id": 666,
+     "date": 753656400,
+     "name": "Невероятное приключение ДжоДжо OVA",
+     "image_url": "https://shikimori.io/system/animes/x96/666.jpg?1711956300",
+     "url": "/animes/666-jojo-no-kimyou-na-bouken",
+     "year": 1993,
+     "kind": "OVA",
+     "weight": 2
+    }
+   ],
+   "current_id": 14719
+  },
+  "metadata": [
+   {
+    "id": 665,
+    "name": "JoJo no Kimyou na Bouken: Adventure",
+    "russian": "Невероятное приключение ДжоДжо OVA (2000)",
+    "kind": "ova",
+    "aired_on": "2000-05-25",
+    "released_on": "2002-01-25",
+    "episodes": 7,
+    "episodes_aired": 0,
+    "status": "released"
+   },
+   {
+    "id": 666,
+    "name": "JoJo no Kimyou na Bouken",
+    "russian": "Невероятное приключение ДжоДжо OVA",
+    "kind": "ova",
+    "aired_on": "1993-11-19",
+    "released_on": "1994-11-18",
+    "episodes": 6,
+    "episodes_aired": 0,
+    "status": "released"
+   },
+   {
+    "id": 3603,
+    "name": "JoJo no Kimyou na Bouken: Phantom Blood",
+    "russian": "Невероятное приключение ДжоДжо: Призрачная кровь",
+    "kind": "movie",
+    "aired_on": "2007-02-17",
+    "released_on": null,
+    "episodes": 1,
+    "episodes_aired": 0,
+    "status": "released"
+   },
+   {
+    "id": 14719,
+    "name": "JoJo no Kimyou na Bouken (TV)",
+    "russian": "Невероятное приключение ДжоДжо",
+    "kind": "tv",
+    "aired_on": "2012-10-06",
+    "released_on": "2013-04-06",
+    "episodes": 26,
+    "episodes_aired": 26,
+    "status": "released"
+   },
+   {
+    "id": 20899,
+    "name": "JoJo no Kimyou na Bouken Part 3: Stardust Crusaders",
+    "russian": "Невероятное приключение ДжоДжо: Рыцари звёздной пыли",
+    "kind": "tv",
+    "aired_on": "2014-04-05",
+    "released_on": "2014-09-13",
+    "episodes": 24,
+    "episodes_aired": 24,
+    "status": "released"
+   },
+   {
+    "id": 26055,
+    "name": "JoJo no Kimyou na Bouken Part 3: Stardust Crusaders - Egypt-hen",
+    "russian": "Невероятное приключение ДжоДжо: Рыцари звёздной пыли 2",
+    "kind": "tv",
+    "aired_on": "2015-01-10",
+    "released_on": "2015-06-20",
+    "episodes": 24,
+    "episodes_aired": 24,
+    "status": "released"
+   },
+   {
+    "id": 31933,
+    "name": "JoJo no Kimyou na Bouken Part 4: Diamond wa Kudakenai",
+    "russian": "Невероятное приключение ДжоДжо: Несокрушимый алмаз",
+    "kind": "tv",
+    "aired_on": "2016-04-02",
+    "released_on": "2016-12-24",
+    "episodes": 39,
+    "episodes_aired": 39,
+    "status": "released"
+   },
+   {
+    "id": 33191,
+    "name": "Kishibe Rohan wa Ugokanai",
+    "russian": "Так говорил Рохан Кишибэ",
+    "kind": "ova",
+    "aired_on": "2017-09-20",
+    "released_on": "2020-03-25",
+    "episodes": 4,
+    "episodes_aired": 2,
+    "status": "released"
+   },
+   {
+    "id": 37991,
+    "name": "JoJo no Kimyou na Bouken Part 5: Ougon no Kaze",
+    "russian": "Невероятное приключение ДжоДжо: Золотой ветер",
+    "kind": "tv",
+    "aired_on": "2018-10-06",
+    "released_on": "2019-07-28",
+    "episodes": 39,
+    "episodes_aired": 39,
+    "status": "released"
+   },
+   {
+    "id": 38972,
+    "name": "JoJo no Kimyou na Bouken Part 5: Ougon no Kaze Recaps",
+    "russian": "Невероятное приключение ДжоДжо: Золотой ветер — Рекапы",
+    "kind": "tv_special",
+    "aired_on": "2019-01-05",
+    "released_on": "2019-05-04",
+    "episodes": 3,
+    "episodes_aired": 1,
+    "status": "released"
+   },
+   {
+    "id": 41306,
+    "name": "JoJo no Kimyou na Bouken: Phantom Blood Pilot",
+    "russian": "Невероятное приключение ДжоДжо: Призрачная кровь — Пилотный выпуск",
+    "kind": "special",
+    "aired_on": "2004-03-28",
+    "released_on": null,
+    "episodes": 1,
+    "episodes_aired": 0,
+    "status": "released"
+   },
+   {
+    "id": 48661,
+    "name": "JoJo no Kimyou na Bouken Part 6: Stone Ocean",
+    "russian": "Невероятное приключение ДжоДжо: Каменный океан",
+    "kind": "ona",
+    "aired_on": "2021-12-01",
+    "released_on": null,
+    "episodes": 12,
+    "episodes_aired": 12,
+    "status": "released"
+   },
+   {
+    "id": 51367,
+    "name": "JoJo no Kimyou na Bouken Part 6: Stone Ocean Part 2",
+    "russian": "Невероятное приключение ДжоДжо: Каменный океан. Часть 2",
+    "kind": "ona",
+    "aired_on": "2022-09-01",
+    "released_on": null,
+    "episodes": 12,
+    "episodes_aired": 10,
+    "status": "released"
+   },
+   {
+    "id": 53273,
+    "name": "JoJo no Kimyou na Bouken Part 6: Stone Ocean Part 3",
+    "russian": "Невероятное приключение ДжоДжо: Каменный океан. Часть 3",
+    "kind": "ona",
+    "aired_on": "2022-12-01",
+    "released_on": null,
+    "episodes": 14,
+    "episodes_aired": 14,
+    "status": "released"
+   },
+   {
+    "id": 61469,
+    "name": "Steel Ball Run: JoJo no Kimyou na Bouken",
+    "russian": "Невероятное приключение ДжоДжо: Гонка «Стальной шар»",
+    "kind": "ona",
+    "aired_on": "2026-03-19",
+    "released_on": null,
+    "episodes": 0,
+    "episodes_aired": 8,
+    "status": "ongoing"
+   }
+  ]
+ },
+ {
+  "graph": {
+   "links": [
+    {
+     "id": 48497491,
+     "source_id": 40748,
+     "target_id": 38777,
+     "source": 9,
+     "target": 10,
+     "weight": 6,
+     "relation": "other"
+    },
+    {
+     "id": 48497487,
+     "source_id": 40748,
+     "target_id": 48561,
+     "source": 9,
+     "target": 7,
+     "weight": 6,
+     "relation": "prequel"
+    },
+    {
+     "id": 48497488,
+     "source_id": 40748,
+     "target_id": 51009,
+     "source": 9,
+     "target": 6,
+     "weight": 6,
+     "relation": "sequel"
+    },
+    {
+     "id": 48497492,
+     "source_id": 40748,
+     "target_id": 52558,
+     "source": 9,
+     "target": 8,
+     "weight": 6,
+     "relation": "other"
+    },
+    {
+     "id": 48497490,
+     "source_id": 40748,
+     "target_id": 56243,
+     "source": 9,
+     "target": 5,
+     "weight": 6,
+     "relation": "summary"
+    },
+    {
+     "id": 48497493,
+     "source_id": 40748,
+     "target_id": 64080,
+     "source": 9,
+     "target": 1,
+     "weight": 6,
+     "relation": "other"
+    },
+    {
+     "id": 48068075,
+     "source_id": 56243,
+     "target_id": 40748,
+     "source": 5,
+     "target": 9,
+     "weight": 3,
+     "relation": "full_story"
+    },
+    {
+     "id": 48068076,
+     "source_id": 56243,
+     "target_id": 48561,
+     "source": 5,
+     "target": 7,
+     "weight": 3,
+     "relation": "full_story"
+    },
+    {
+     "id": 48068077,
+     "source_id": 56243,
+     "target_id": 51009,
+     "source": 5,
+     "target": 6,
+     "weight": 3,
+     "relation": "full_story"
+    },
+    {
+     "id": 48162950,
+     "source_id": 38777,
+     "target_id": 40748,
+     "source": 10,
+     "target": 9,
+     "weight": 1,
+     "relation": "other"
+    },
+    {
+     "id": 48434067,
+     "source_id": 48561,
+     "target_id": 40748,
+     "source": 7,
+     "target": 9,
+     "weight": 2,
+     "relation": "sequel"
+    },
+    {
+     "id": 48434070,
+     "source_id": 48561,
+     "target_id": 56243,
+     "source": 7,
+     "target": 5,
+     "weight": 2,
+     "relation": "summary"
+    },
+    {
+     "id": 48434285,
+     "source_id": 51009,
+     "target_id": 40748,
+     "source": 6,
+     "target": 9,
+     "weight": 5,
+     "relation": "prequel"
+    },
+    {
+     "id": 48434288,
+     "source_id": 51009,
+     "target_id": 56243,
+     "source": 6,
+     "target": 5,
+     "weight": 5,
+     "relation": "summary"
+    },
+    {
+     "id": 48434286,
+     "source_id": 51009,
+     "target_id": 57658,
+     "source": 6,
+     "target": 2,
+     "weight": 5,
+     "relation": "sequel"
+    },
+    {
+     "id": 48434289,
+     "source_id": 51009,
+     "target_id": 59654,
+     "source": 6,
+     "target": 4,
+     "weight": 5,
+     "relation": "summary"
+    },
+    {
+     "id": 48434290,
+     "source_id": 51009,
+     "target_id": 62392,
+     "source": 6,
+     "target": 3,
+     "weight": 5,
+     "relation": "summary"
+    },
+    {
+     "id": 48629943,
+     "source_id": 52558,
+     "target_id": 40748,
+     "source": 8,
+     "target": 9,
+     "weight": 1,
+     "relation": "other"
+    },
+    {
+     "id": 49290412,
+     "source_id": 64080,
+     "target_id": 40748,
+     "source": 1,
+     "target": 9,
+     "weight": 1,
+     "relation": "other"
+    },
+    {
+     "id": 49215482,
+     "source_id": 59654,
+     "target_id": 51009,
+     "source": 4,
+     "target": 6,
+     "weight": 1,
+     "relation": "full_story"
+    },
+    {
+     "id": 49213652,
+     "source_id": 62392,
+     "target_id": 51009,
+     "source": 3,
+     "target": 6,
+     "weight": 1,
+     "relation": "full_story"
+    },
+    {
+     "id": 49216555,
+     "source_id": 57658,
+     "target_id": 51009,
+     "source": 2,
+     "target": 6,
+     "weight": 2,
+     "relation": "prequel"
+    },
+    {
+     "id": 49216556,
+     "source_id": 57658,
+     "target_id": 63824,
+     "source": 2,
+     "target": 0,
+     "weight": 2,
+     "relation": "sequel"
+    },
+    {
+     "id": 49298592,
+     "source_id": 63824,
+     "target_id": 57658,
+     "source": 0,
+     "target": 2,
+     "weight": 1,
+     "relation": "prequel"
+    }
+   ],
+   "nodes": [
+    {
+     "id": 63824,
+     "date": 1794051875,
+     "name": "Магическая битва: Смертельная миграция. Часть 2",
+     "image_url": "https://shikimori.io/assets/globals/missing_x96.jpg",
+     "url": "/animes/63824-jujutsu-kaisen-shimetsu-kaiyuu-kouhen",
+     "year": null,
+     "kind": "TV Сериал",
+     "weight": 1
+    },
+    {
+     "id": 64080,
+     "date": 1777496400,
+     "name": "Магическая битва: Модуль PV",
+     "image_url": "https://shikimori.io/assets/globals/missing_x96.jpg",
+     "url": "/animes/64080-jujutsu-kaisen-modulo-saishuu-sankan-hatsubai-kinen-special-pv",
+     "year": 2026,
+     "kind": "Проморолик",
+     "weight": 1
+    },
+    {
+     "id": 57658,
+     "date": 1767906000,
+     "name": "Магическая битва: Смертельная миграция",
+     "image_url": "https://shikimori.io/system/animes/x96/57658.jpg?1711654571",
+     "url": "/animes/57658-jujutsu-kaisen-shimetsu-kaiyuu-zenpen",
+     "year": 2026,
+     "kind": "TV Сериал",
+     "weight": 2
+    },
+    {
+     "id": 62392,
+     "date": 1762462800,
+     "name": "Магическая битва: Инцидент в Сибуе — Смертельная миграция",
+     "image_url": "https://shikimori.io/assets/globals/missing_x96.jpg",
+     "url": "/animes/62392-jujutsu-kaisen-movie-shibuya-jihen-tokubetsu-henshuu-ban-x-shimetsu-kaiyuu-senkou-jouei",
+     "year": 2025,
+     "kind": "Фильм",
+     "weight": 1
+    },
+    {
+     "id": 59654,
+     "date": 1748552400,
+     "name": "Магическая битва: Пагубный талант/Таланты умирают молодыми",
+     "image_url": "https://shikimori.io/assets/globals/missing_x96.jpg",
+     "url": "/animes/59654-jujutsu-kaisen-movie-kaigyoku-gyokusetsu",
+     "year": 2025,
+     "kind": "Фильм",
+     "weight": 1
+    },
+    {
+     "id": 56243,
+     "date": 1691701200,
+     "name": "Магическая битва 2: Рекапы",
+     "image_url": "https://shikimori.io/system/animes/x96/56243.jpg?1716770124",
+     "url": "/animes/56243-jujutsu-kaisen-2nd-season-recaps",
+     "year": 2023,
+     "kind": "TV Спецвыпуск",
+     "weight": 3
+    },
+    {
+     "id": 51009,
+     "date": 1688590800,
+     "name": "Магическая битва 2",
+     "image_url": "https://shikimori.io/system/animes/x96/51009.jpg?1711334733",
+     "url": "/animes/51009-jujutsu-kaisen-2nd-season",
+     "year": 2023,
+     "kind": "TV Сериал",
+     "weight": 5
+    },
+    {
+     "id": 48561,
+     "date": 1640293200,
+     "name": "Магическая битва 0. Фильм",
+     "image_url": "https://shikimori.io/system/animes/x96/48561.jpg?1708744812",
+     "url": "/animes/48561-jujutsu-kaisen-0-movie",
+     "year": 2021,
+     "kind": "Фильм",
+     "weight": 2
+    },
+    {
+     "id": 52558,
+     "date": 1611867600,
+     "name": "Яркий порок",
+     "image_url": "https://shikimori.io/system/animes/x96/52558.jpg?1716774182",
+     "url": "/animes/52558-vivid-vice",
+     "year": 2021,
+     "kind": "Клип",
+     "weight": 1
+    },
+    {
+     "id": 40748,
+     "date": 1601672400,
+     "name": "Магическая битва",
+     "image_url": "https://shikimori.io/system/animes/x96/40748.jpg?1711956606",
+     "url": "/animes/40748-jujutsu-kaisen",
+     "year": 2020,
+     "kind": "TV Сериал",
+     "weight": 6
+    },
+    {
+     "id": 38777,
+     "date": 1543784400,
+     "name": "Магическая битва PV",
+     "image_url": "https://shikimori.io/system/animes/x96/38777.jpg?1711956601",
+     "url": "/animes/38777-jujutsu-kaisen-official-pvs",
+     "year": 2018,
+     "kind": "Проморолик",
+     "weight": 1
+    }
+   ],
+   "current_id": 40748
+  },
+  "metadata": [
+   {
+    "id": 38777,
+    "name": "Jujutsu Kaisen Official PVs",
+    "russian": "Магическая битва PV",
+    "kind": "pv",
+    "aired_on": "2018-12-03",
+    "released_on": "2018-12-08",
+    "episodes": 3,
+    "episodes_aired": 1,
+    "status": "released"
+   },
+   {
+    "id": 40748,
+    "name": "Jujutsu Kaisen",
+    "russian": "Магическая битва",
+    "kind": "tv",
+    "aired_on": "2020-10-03",
+    "released_on": "2021-03-27",
+    "episodes": 24,
+    "episodes_aired": 24,
+    "status": "released"
+   },
+   {
+    "id": 48561,
+    "name": "Jujutsu Kaisen 0 Movie",
+    "russian": "Магическая битва 0. Фильм",
+    "kind": "movie",
+    "aired_on": "2021-12-24",
+    "released_on": null,
+    "episodes": 1,
+    "episodes_aired": 1,
+    "status": "released"
+   },
+   {
+    "id": 51009,
+    "name": "Jujutsu Kaisen 2nd Season",
+    "russian": "Магическая битва 2",
+    "kind": "tv",
+    "aired_on": "2023-07-06",
+    "released_on": "2023-12-28",
+    "episodes": 23,
+    "episodes_aired": 23,
+    "status": "released"
+   },
+   {
+    "id": 52558,
+    "name": "Vivid Vice",
+    "russian": "Яркий порок",
+    "kind": "music",
+    "aired_on": "2021-01-29",
+    "released_on": null,
+    "episodes": 1,
+    "episodes_aired": 0,
+    "status": "released"
+   },
+   {
+    "id": 56243,
+    "name": "Jujutsu Kaisen 2nd Season Recaps",
+    "russian": "Магическая битва 2: Рекапы",
+    "kind": "tv_special",
+    "aired_on": "2023-08-11",
+    "released_on": "2023-08-18",
+    "episodes": 2,
+    "episodes_aired": 0,
+    "status": "released"
+   },
+   {
+    "id": 57658,
+    "name": "Jujutsu Kaisen: Shimetsu Kaiyuu - Zenpen",
+    "russian": "Магическая битва: Смертельная миграция",
+    "kind": "tv",
+    "aired_on": "2026-01-09",
+    "released_on": "2026-03-27",
+    "episodes": 12,
+    "episodes_aired": 12,
+    "status": "released"
+   },
+   {
+    "id": 59654,
+    "name": "Jujutsu Kaisen Movie: Kaigyoku/Gyokusetsu",
+    "russian": "Магическая битва: Пагубный талант/Таланты умирают молодыми",
+    "kind": "movie",
+    "aired_on": "2025-05-30",
+    "released_on": null,
+    "episodes": 1,
+    "episodes_aired": 0,
+    "status": "released"
+   },
+   {
+    "id": 62392,
+    "name": "Jujutsu Kaisen Movie: Shibuya Jihen Tokubetsu Henshuu-ban x Shimetsu Kaiyuu Senkou Jouei",
+    "russian": "Магическая битва: Инцидент в Сибуе — Смертельная миграция",
+    "kind": "movie",
+    "aired_on": "2025-11-07",
+    "released_on": null,
+    "episodes": 1,
+    "episodes_aired": 0,
+    "status": "released"
+   },
+   {
+    "id": 63824,
+    "name": "Jujutsu Kaisen: Shimetsu Kaiyuu - Kouhen",
+    "russian": "Магическая битва: Смертельная миграция. Часть 2",
+    "kind": "tv",
+    "aired_on": null,
+    "released_on": null,
+    "episodes": 0,
+    "episodes_aired": 0,
+    "status": "anons"
+   },
+   {
+    "id": 64080,
+    "name": "Jujutsu Kaisen Modulo Saishuu Sankan Hatsubai Kinen Special PV",
+    "russian": "Магическая битва: Модуль PV",
+    "kind": "pv",
+    "aired_on": "2026-04-30",
+    "released_on": null,
+    "episodes": 1,
+    "episodes_aired": 0,
+    "status": "released"
+   }
+  ]
+ },
+ {
+  "graph": {
+   "links": [
+    {
+     "id": 48388947,
+     "source_id": 54492,
+     "target_id": 56975,
+     "source": 10,
+     "target": 9,
+     "weight": 2,
+     "relation": "other"
+    },
+    {
+     "id": 48388943,
+     "source_id": 54492,
+     "target_id": 58514,
+     "source": 10,
+     "target": 8,
+     "weight": 2,
+     "relation": "sequel"
+    },
+    {
+     "id": 49216154,
+     "source_id": 58514,
+     "target_id": 54492,
+     "source": 8,
+     "target": 10,
+     "weight": 4,
+     "relation": "prequel"
+    },
+    {
+     "id": 49216160,
+     "source_id": 58514,
+     "target_id": 60749,
+     "source": 8,
+     "target": 7,
+     "weight": 4,
+     "relation": "other"
+    },
+    {
+     "id": 49216155,
+     "source_id": 58514,
+     "target_id": 61987,
+     "source": 8,
+     "target": 5,
+     "weight": 4,
+     "relation": "sequel"
+    },
+    {
+     "id": 49216159,
+     "source_id": 58514,
+     "target_id": 62844,
+     "source": 8,
+     "target": 1,
+     "weight": 4,
+     "relation": "side_story"
+    },
+    {
+     "id": 48607111,
+     "source_id": 56975,
+     "target_id": 54492,
+     "source": 9,
+     "target": 10,
+     "weight": 2,
+     "relation": "other"
+    },
+    {
+     "id": 48607110,
+     "source_id": 56975,
+     "target_id": 60749,
+     "source": 9,
+     "target": 7,
+     "weight": 2,
+     "relation": "sequel"
+    },
+    {
+     "id": 49296629,
+     "source_id": 61987,
+     "target_id": 58514,
+     "source": 5,
+     "target": 8,
+     "weight": 5,
+     "relation": "prequel"
+    },
+    {
+     "id": 49296630,
+     "source_id": 61987,
+     "target_id": 62841,
+     "source": 5,
+     "target": 0,
+     "weight": 5,
+     "relation": "sequel"
+    },
+    {
+     "id": 49296634,
+     "source_id": 61987,
+     "target_id": 65097,
+     "source": 5,
+     "target": 4,
+     "weight": 5,
+     "relation": "other"
+    },
+    {
+     "id": 49296635,
+     "source_id": 61987,
+     "target_id": 65119,
+     "source": 5,
+     "target": 3,
+     "weight": 5,
+     "relation": "other"
+    },
+    {
+     "id": 49296636,
+     "source_id": 61987,
+     "target_id": 65189,
+     "source": 5,
+     "target": 2,
+     "weight": 5,
+     "relation": "other"
+    },
+    {
+     "id": 49214672,
+     "source_id": 60749,
+     "target_id": 56975,
+     "source": 7,
+     "target": 9,
+     "weight": 4,
+     "relation": "prequel"
+    },
+    {
+     "id": 49214674,
+     "source_id": 60749,
+     "target_id": 58514,
+     "source": 7,
+     "target": 8,
+     "weight": 4,
+     "relation": "other"
+    },
+    {
+     "id": 49214675,
+     "source_id": 60749,
+     "target_id": 61876,
+     "source": 7,
+     "target": 6,
+     "weight": 4,
+     "relation": "other"
+    },
+    {
+     "id": 49214673,
+     "source_id": 60749,
+     "target_id": 65119,
+     "source": 7,
+     "target": 3,
+     "weight": 4,
+     "relation": "sequel"
+    },
+    {
+     "id": 49299698,
+     "source_id": 62844,
+     "target_id": 58514,
+     "source": 1,
+     "target": 8,
+     "weight": 1,
+     "relation": "parent_story"
+    },
+    {
+     "id": 49213982,
+     "source_id": 61876,
+     "target_id": 60749,
+     "source": 6,
+     "target": 7,
+     "weight": 1,
+     "relation": "other"
+    },
+    {
+     "id": 49299687,
+     "source_id": 62841,
+     "target_id": 61987,
+     "source": 0,
+     "target": 5,
+     "weight": 1,
+     "relation": "prequel"
+    },
+    {
+     "id": 49300392,
+     "source_id": 65189,
+     "target_id": 61987,
+     "source": 2,
+     "target": 5,
+     "weight": 1,
+     "relation": "other"
+    },
+    {
+     "id": 49300452,
+     "source_id": 65097,
+     "target_id": 61987,
+     "source": 4,
+     "target": 5,
+     "weight": 1,
+     "relation": "other"
+    },
+    {
+     "id": 49300515,
+     "source_id": 65119,
+     "target_id": 60749,
+     "source": 3,
+     "target": 7,
+     "weight": 2,
+     "relation": "prequel"
+    },
+    {
+     "id": 49300516,
+     "source_id": 65119,
+     "target_id": 61987,
+     "source": 3,
+     "target": 5,
+     "weight": 2,
+     "relation": "other"
+    }
+   ],
+   "nodes": [
+    {
+     "id": 62841,
+     "date": 1806526800,
+     "name": "Монолог фармацевта 3. Часть 2",
+     "image_url": "https://shikimori.io/assets/globals/missing_x96.jpg",
+     "url": "/animes/62841-kusuriya-no-hitorigoto-3rd-season-part-2",
+     "year": 2027,
+     "kind": "TV Сериал",
+     "weight": 1
+    },
+    {
+     "id": 62844,
+     "date": 1796936400,
+     "name": "Монолог фармацевта: Сокровище покойной наложницы",
+     "image_url": "https://shikimori.io/assets/globals/missing_x96.jpg",
+     "url": "/animes/62844-kusuriya-no-hitorigoto-movie-bouhi-no-hihou",
+     "year": 2026,
+     "kind": "Фильм",
+     "weight": 1
+    },
+    {
+     "id": 65189,
+     "date": 1791925200,
+     "name": "Kumo wo Nuke Kazashimo e Watashi dake",
+     "image_url": "https://shikimori.io/assets/globals/missing_x96.jpg",
+     "url": "/animes/65189-kumo-wo-nuke-kazashimo-e-watashi-dake",
+     "year": 2026,
+     "kind": "Клип",
+     "weight": 1
+    },
+    {
+     "id": 65119,
+     "date": 1791147600,
+     "name": "Монолог Маомао 3",
+     "image_url": "https://shikimori.io/assets/globals/missing_x96.jpg",
+     "url": "/animes/65119-maomao-no-hitorigoto-3rd-season",
+     "year": 2026,
+     "kind": "ONA",
+     "weight": 2
+    },
+    {
+     "id": 65097,
+     "date": 1790888400,
+     "name": "AIYOU",
+     "image_url": "https://shikimori.io/assets/globals/missing_x96.jpg",
+     "url": "/animes/65097-aiyou",
+     "year": 2026,
+     "kind": "Клип",
+     "weight": 1
+    },
+    {
+     "id": 61987,
+     "date": 1790888400,
+     "name": "Монолог фармацевта 3",
+     "image_url": "https://shikimori.io/assets/globals/missing_x96.jpg",
+     "url": "/animes/61987-kusuriya-no-hitorigoto-3rd-season",
+     "year": 2026,
+     "kind": "TV Сериал",
+     "weight": 5
+    },
+    {
+     "id": 61876,
+     "date": 1750280400,
+     "name": "Монолог МаоМао USJ",
+     "image_url": "https://shikimori.io/assets/globals/missing_x96.jpg",
+     "url": "/animes/61876-maomao-no-hitorigoto-usj",
+     "year": 2025,
+     "kind": "ONA",
+     "weight": 1
+    },
+    {
+     "id": 60749,
+     "date": 1736715600,
+     "name": "Монолог Маомао 2",
+     "image_url": "https://shikimori.io/assets/globals/missing_x96.jpg",
+     "url": "/animes/60749-maomao-no-hitorigoto-2nd-season",
+     "year": 2025,
+     "kind": "ONA",
+     "weight": 4
+    },
+    {
+     "id": 58514,
+     "date": 1736456400,
+     "name": "Монолог фармацевта 2",
+     "image_url": "https://shikimori.io/system/animes/x96/58514.jpg?1711218614",
+     "url": "/animes/58514-kusuriya-no-hitorigoto-2nd-season",
+     "year": 2025,
+     "kind": "TV Сериал",
+     "weight": 4
+    },
+    {
+     "id": 56975,
+     "date": 1698008400,
+     "name": "Монолог Маомао",
+     "image_url": "https://shikimori.io/system/animes/x96/56975.jpg?1718740172",
+     "url": "/animes/56975-maomao-no-hitorigoto",
+     "year": 2023,
+     "kind": "ONA",
+     "weight": 2
+    },
+    {
+     "id": 54492,
+     "date": 1697922000,
+     "name": "Монолог фармацевта",
+     "image_url": "https://shikimori.io/system/animes/x96/54492.jpg?1718587512",
+     "url": "/animes/54492-kusuriya-no-hitorigoto",
+     "year": 2023,
+     "kind": "TV Сериал",
+     "weight": 2
+    }
+   ],
+   "current_id": 54492
+  },
+  "metadata": [
+   {
+    "id": 54492,
+    "name": "Kusuriya no Hitorigoto",
+    "russian": "Монолог фармацевта",
+    "kind": "tv",
+    "aired_on": "2023-10-22",
+    "released_on": "2024-03-24",
+    "episodes": 24,
+    "episodes_aired": 24,
+    "status": "released"
+   },
+   {
+    "id": 56975,
+    "name": "Maomao no Hitorigoto",
+    "russian": "Монолог Маомао",
+    "kind": "ona",
+    "aired_on": "2023-10-23",
+    "released_on": "2024-03-25",
+    "episodes": 24,
+    "episodes_aired": 23,
+    "status": "released"
+   },
+   {
+    "id": 58514,
+    "name": "Kusuriya no Hitorigoto 2nd Season",
+    "russian": "Монолог фармацевта 2",
+    "kind": "tv",
+    "aired_on": "2025-01-10",
+    "released_on": "2025-07-04",
+    "episodes": 24,
+    "episodes_aired": 24,
+    "status": "released"
+   },
+   {
+    "id": 60749,
+    "name": "Maomao no Hitorigoto 2nd Season",
+    "russian": "Монолог Маомао 2",
+    "kind": "ona",
+    "aired_on": "2025-01-13",
+    "released_on": "2025-07-07",
+    "episodes": 24,
+    "episodes_aired": 23,
+    "status": "released"
+   },
+   {
+    "id": 61876,
+    "name": "Maomao no Hitorigoto USJ",
+    "russian": "Монолог МаоМао USJ",
+    "kind": "ona",
+    "aired_on": "2025-06-19",
+    "released_on": "2025-06-26",
+    "episodes": 2,
+    "episodes_aired": 1,
+    "status": "released"
+   },
+   {
+    "id": 61987,
+    "name": "Kusuriya no Hitorigoto 3rd Season",
+    "russian": "Монолог фармацевта 3",
+    "kind": "tv",
+    "aired_on": "2026-10-02",
+    "released_on": null,
+    "episodes": 12,
+    "episodes_aired": 6,
+    "status": "ongoing"
+   },
+   {
+    "id": 62841,
+    "name": "Kusuriya no Hitorigoto 3rd Season Part 2",
+    "russian": "Монолог фармацевта 3. Часть 2",
+    "kind": "tv",
+    "aired_on": "2027-04-01",
+    "released_on": null,
+    "episodes": 12,
+    "episodes_aired": 0,
+    "status": "anons"
+   },
+   {
+    "id": 62844,
+    "name": "Kusuriya no Hitorigoto Movie: Bouhi no Hihou",
+    "russian": "Монолог фармацевта: Сокровище покойной наложницы",
+    "kind": "movie",
+    "aired_on": "2026-12-11",
+    "released_on": null,
+    "episodes": 1,
+    "episodes_aired": 0,
+    "status": "anons"
+   },
+   {
+    "id": 65097,
+    "name": "AIYOU",
+    "russian": "",
+    "kind": "music",
+    "aired_on": "2026-10-02",
+    "released_on": null,
+    "episodes": 1,
+    "episodes_aired": 0,
+    "status": "released"
+   },
+   {
+    "id": 65119,
+    "name": "Maomao no Hitorigoto 3rd Season",
+    "russian": "Монолог Маомао 3",
+    "kind": "ona",
+    "aired_on": "2026-10-05",
+    "released_on": null,
+    "episodes": 12,
+    "episodes_aired": 0,
+    "status": "ongoing"
+   },
+   {
+    "id": 65189,
+    "name": "Kumo wo Nuke Kazashimo e Watashi dake",
+    "russian": "",
+    "kind": "music",
+    "aired_on": "2026-10-14",
+    "released_on": null,
+    "episodes": 1,
+    "episodes_aired": 0,
+    "status": "released"
+   }
+  ]
+ },
+ {
+  "graph": {
+   "links": [
+    {
+     "id": 48704786,
+     "source_id": 34572,
+     "target_id": 33950,
+     "source": 5,
+     "target": 6,
+     "weight": 6,
+     "relation": "alternative_version"
+    },
+    {
+     "id": 48704784,
+     "source_id": 34572,
+     "target_id": 38768,
+     "source": 5,
+     "target": 3,
+     "weight": 6,
+     "relation": "side_story"
+    },
+    {
+     "id": 48704783,
+     "source_id": 34572,
+     "target_id": 39864,
+     "source": 5,
+     "target": 4,
+     "weight": 6,
+     "relation": "side_story"
+    },
+    {
+     "id": 48704787,
+     "source_id": 34572,
+     "target_id": 40031,
+     "source": 5,
+     "target": 2,
+     "weight": 6,
+     "relation": "other"
+    },
+    {
+     "id": 48704785,
+     "source_id": 34572,
+     "target_id": 48585,
+     "source": 5,
+     "target": 1,
+     "weight": 6,
+     "relation": "side_story"
+    },
+    {
+     "id": 48704781,
+     "source_id": 34572,
+     "target_id": 61967,
+     "source": 5,
+     "target": 0,
+     "weight": 6,
+     "relation": "sequel"
+    },
+    {
+     "id": 48179307,
+     "source_id": 38768,
+     "target_id": 34572,
+     "source": 3,
+     "target": 5,
+     "weight": 1,
+     "relation": "parent_story"
+    },
+    {
+     "id": 48163246,
+     "source_id": 39864,
+     "target_id": 34572,
+     "source": 4,
+     "target": 5,
+     "weight": 1,
+     "relation": "parent_story"
+    },
+    {
+     "id": 48179627,
+     "source_id": 40031,
+     "target_id": 34572,
+     "source": 2,
+     "target": 5,
+     "weight": 1,
+     "relation": "other"
+    },
+    {
+     "id": 48113596,
+     "source_id": 33950,
+     "target_id": 34572,
+     "source": 6,
+     "target": 5,
+     "weight": 1,
+     "relation": "alternative_version"
+    },
+    {
+     "id": 48254488,
+     "source_id": 48585,
+     "target_id": 34572,
+     "source": 1,
+     "target": 5,
+     "weight": 1,
+     "relation": "parent_story"
+    },
+    {
+     "id": 49296627,
+     "source_id": 61967,
+     "target_id": 34572,
+     "source": 0,
+     "target": 5,
+     "weight": 1,
+     "relation": "prequel"
+    }
+   ],
+   "nodes": [
+    {
+     "id": 61967,
+     "date": 1790974800,
+     "name": "Чёрный клевер 2",
+     "image_url": "https://shikimori.io/assets/globals/missing_x96.jpg",
+     "url": "/animes/61967-black-clover-2nd-season",
+     "year": 2026,
+     "kind": "TV Сериал",
+     "weight": 1
+    },
+    {
+     "id": 48585,
+     "date": 1686862800,
+     "name": "Чёрный клевер: Меч короля магов",
+     "image_url": "https://shikimori.io/system/animes/x96/48585.jpg?1708719192",
+     "url": "/animes/48585-black-clover-mahou-tei-no-ken",
+     "year": 2023,
+     "kind": "Фильм",
+     "weight": 1
+    },
+    {
+     "id": 40031,
+     "date": 1561928400,
+     "name": "Чёрный клевер: Прости меня!",
+     "image_url": "https://shikimori.io/system/animes/x96/40031.jpg?1711964880",
+     "url": "/animes/z40031-mugyutto-black-clover",
+     "year": 2019,
+     "kind": "ONA",
+     "weight": 1
+    },
+    {
+     "id": 38768,
+     "date": 1543093200,
+     "name": "Чёрный клевер: Джамп Феста 2018",
+     "image_url": "https://shikimori.io/system/animes/x96/38768.jpg?1711944038",
+     "url": "/animes/38768-black-clover-jump-festa-2018-special",
+     "year": 2018,
+     "kind": "Спецвыпуск",
+     "weight": 1
+    },
+    {
+     "id": 39864,
+     "date": 1519333200,
+     "name": "Чёрный клевер: Спецвыпуски",
+     "image_url": "https://shikimori.io/system/animes/x96/39864.jpg?1711968690",
+     "url": "/animes/39864-petit-clover-advance",
+     "year": 2018,
+     "kind": "Спецвыпуск",
+     "weight": 1
+    },
+    {
+     "id": 34572,
+     "date": 1506978000,
+     "name": "Чёрный клевер",
+     "image_url": "https://shikimori.io/system/animes/x96/34572.jpg?1711944087",
+     "url": "/animes/z34572-black-clover",
+     "year": 2017,
+     "kind": "TV Сериал",
+     "weight": 6
+    },
+    {
+     "id": 33950,
+     "date": 1480194000,
+     "name": "Чёрный клевер: Джамп Феста 2016",
+     "image_url": "https://shikimori.io/system/animes/x96/33950.jpg?1711944046",
+     "url": "/animes/z33950-black-clover-jump-festa-2016-special",
+     "year": 2016,
+     "kind": "OVA",
+     "weight": 1
+    }
+   ],
+   "current_id": 34572
+  },
+  "metadata": [
+   {
+    "id": 33950,
+    "name": "Black Clover: Jump Festa 2016 Special",
+    "russian": "Чёрный клевер: Джамп Феста 2016",
+    "kind": "ova",
+    "aired_on": "2016-11-27",
+    "released_on": null,
+    "episodes": 1,
+    "episodes_aired": 0,
+    "status": "released"
+   },
+   {
+    "id": 34572,
+    "name": "Black Clover",
+    "russian": "Чёрный клевер",
+    "kind": "tv",
+    "aired_on": "2017-10-03",
+    "released_on": "2021-03-30",
+    "episodes": 170,
+    "episodes_aired": 170,
+    "status": "released"
+   },
+   {
+    "id": 38768,
+    "name": "Black Clover: Jump Festa 2018 Special",
+    "russian": "Чёрный клевер: Джамп Феста 2018",
+    "kind": "special",
+    "aired_on": "2018-11-25",
+    "released_on": null,
+    "episodes": 1,
+    "episodes_aired": 1,
+    "status": "released"
+   },
+   {
+    "id": 39864,
+    "name": "Petit Clover Advance",
+    "russian": "Чёрный клевер: Спецвыпуски",
+    "kind": "special",
+    "aired_on": "2018-02-23",
+    "released_on": "2021-06-25",
+    "episodes": 15,
+    "episodes_aired": 0,
+    "status": "released"
+   },
+   {
+    "id": 40031,
+    "name": "Mugyutto! Black Clover",
+    "russian": "Чёрный клевер: Прости меня!",
+    "kind": "ona",
+    "aired_on": "2019-07-01",
+    "released_on": "2019-08-19",
+    "episodes": 8,
+    "episodes_aired": 8,
+    "status": "released"
+   },
+   {
+    "id": 48585,
+    "name": "Black Clover: Mahou Tei no Ken",
+    "russian": "Чёрный клевер: Меч короля магов",
+    "kind": "movie",
+    "aired_on": "2023-06-16",
+    "released_on": null,
+    "episodes": 1,
+    "episodes_aired": 0,
+    "status": "released"
+   },
+   {
+    "id": 61967,
+    "name": "Black Clover 2nd Season",
+    "russian": "Чёрный клевер 2",
+    "kind": "tv",
+    "aired_on": "2026-10-03",
+    "released_on": null,
+    "episodes": 0,
+    "episodes_aired": 5,
+    "status": "ongoing"
+   }
+  ]
+ }
+]

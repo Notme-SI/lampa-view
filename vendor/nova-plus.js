@@ -2524,6 +2524,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
               }
               return nativeEpisodes.call(comp,season,function(){if(current())done.apply(this,arguments);});
             }
+            if(comp.lampaViewJoinedParts && comp.lampaViewJoinedParts.season===Number(season) && comp.lampaViewJoinedParts.parts.length)return canonical();
             if(Number(season)!==0 && !context.part && context.seasons.length && (comp.lampaViewProviderSeasons || api.alternate(context.card,context.seasons))){
               var handled=api.book(context.card,season,context.seasons,context.files.length,function(book,grouped){
                 if(!current())return;
@@ -2748,6 +2749,8 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
             }
           }
           var seasons=card && folderState && folderState.folderSeasons(folders,card);
+          var releaseSeason=card && card.minimal_anime_release && card.minimal_anime_release.season;
+          if(comp.lampaViewManualSeason===undefined && releaseSeason>0){var mapping=comp.lampaViewProviderSeasons || {},matched=Object.keys(mapping).filter(function(key){return mapping[key].number===releaseSeason;});comp.lampaViewManualSeason=matched.length===1?Number(matched[0]):releaseSeason;}
           var desiredSeason=comp.lampaViewManualSeason!==undefined?comp.lampaViewManualSeason:folders && folders.length && folderState.resume(card || {}),seasonNumberWanted=desiredSeason && typeof desiredSeason==='object'?desiredSeason.season:desiredSeason!==false && desiredSeason!==null && desiredSeason!==undefined?desiredSeason:1;
           var seasonTarget=seasons && seasons.find(function(row){return row.season===seasonNumberWanted;}) || seasons && seasons[0];
           if(folderChain.length>=6 || seasonTarget && folderChain.indexOf(seasonTarget.url)>=0)seasons=[];
@@ -5911,6 +5914,8 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     var callback=done,metadataApi=window.LampaView && window.LampaView.episodeMetadata;
     done=function(book,grouped){callback(metadataApi && metadataApi.localizeBook && metadataApi.isAnime(movie)?metadataApi.localizeBook(book):book,grouped);};
     var api=window.LampaView && window.LampaView.episodeMetadata,arc=wideAnimeCurrent();
+    var joined=componentNow() && componentNow().lampaViewJoinedParts;
+    if(joined && joined.season===number && joined.parts.length)return wideJoinedBook(number,done);
     var continuation=currentContinuation();
     if(continuation)return wideCanonicalBook(continuation.part.season,function(book){done(book,true);});
     if(number===0)return wideCanonicalBook(0,done);
@@ -6247,7 +6252,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
   function widePartLabel(item,card,thumb){
     var current=componentNow(),joined=current && current.lampaViewJoinedParts;
     var part=joined && joined.season===seasonNumber() && joined.parts.filter(function(p){return Number(item.num)>p.offset && Number(item.num)<=p.offset+p.available;})[0];
-    if(part && !thumb.find('.nova-card__labels').length){var labels=$('<div class="nova-card__labels"></div>').appendTo(thumb);labels.append(card.find('.nova-card__num')).append($('<span class="nova-card__part"></span>').text(lampaViewText("Часть {0}",[part.part])));}
+    if(part && !thumb.find('.nova-card__labels').length){var labels=$('<div class="nova-card__labels"></div>').appendTo(thumb);labels.append(card.find('.nova-card__num,.nova-card__tag')).append($('<span class="nova-card__part"></span>').text(lampaViewText("Часть {0}",[part.part])));}
   }
   function wideFill(item, card, thumb, readEpisodeBook) {
     widePartLabel(item,card,thumb);

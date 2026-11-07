@@ -13,9 +13,9 @@ test('native online metadata obeys the complete coordinate guard before construc
   metadataResponse={url:'tv/85937/season/1',season_number:4,episodes:[{episode_number:1,season_number:4,name:'Synthetic fallback'}]};
   reply();assert.equal(result.length,0,'A season 1 fallback is rejected even if Lampa relabels its rows');
   comp.draw(files);await new Promise(r=>setTimeout(r,20));
-  metadataResponse={url:'tv/85937/season/4',season_number:4,episodes:[{episode_number:1,season_number:4,name:'Canonical season 4'}]};
-  reply();assert.equal(result[0].name,'Canonical season 4');
+  metadataResponse={url:'tv/85937/season/4',season_number:4,episodes:[{episode_number:1,season_number:4,name:'Правильная серия четвёртого сезона'}]};
+  reply();assert.equal(result[0].name,'Правильная серия четвёртого сезона');
   seasons(4);const callbacks=[];w.LampaView.episodeMetadata.book=(card,season,numbers,count,done,actual)=>{assert.equal(count,8);assert.deepEqual(Array.from(actual),[1,2,3,4,5,6,7,8]);callbacks.push(done);return true;};
-  comp.draw(files);await new Promise(r=>setTimeout(r,20));comp.draw(files);await new Promise(r=>setTimeout(r,20));callbacks[0]({1:{episode_number:41,season_number:5,name:'Stale'}},true);assert.equal(result[0].name,'Canonical season 4');callbacks[1]({1:{episode_number:41,season_number:5,name:'Verified'}},true);assert.equal(result[0].name,'Verified');assert.equal(result[0].episode_number,1,'Only the metadata lookup is rekeyed to the provider number');assert.equal(result[0].season_number,5);assert.equal(nativeReads,0);assert.equal(JSON.stringify(files),before);assert.deepEqual(n.errors,[]);
+  comp.draw(files);await new Promise(r=>setTimeout(r,20));comp.draw(files);await new Promise(r=>setTimeout(r,20));callbacks[0]({1:{episode_number:41,season_number:5,name:'Stale'}},true);assert.equal(result[0].name,'Правильная серия четвёртого сезона');callbacks[1]({1:{episode_number:41,season_number:5,name:'Подтверждённая серия'}},true);assert.equal(result[0].name,'Подтверждённая серия');assert.equal(result[0].episode_number,1,'Only the metadata lookup is rekeyed to the provider number');assert.equal(result[0].season_number,5);assert.equal(nativeReads,0);assert.equal(JSON.stringify(files),before);assert.deepEqual(n.errors,[]);
  }finally{n.close();}
 });

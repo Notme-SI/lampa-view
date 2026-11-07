@@ -1136,5 +1136,18 @@ body.lampa_view .minimal-anime-franchise__item .selectbox-item__title {white-spa
 body.lampa_view .minimal-anime-franchise__item .selectbox-item__subtitle {font-size:.8em;margin-top:.2em}
 
 body.lampa_view .nova-plus-root .nova-card__labels {position:absolute;top:.5em;left:.5em;right:.5em;bottom:auto;display:flex;flex-wrap:wrap;gap:.4em;align-items:center;justify-content:flex-start;z-index:3;pointer-events:none}
-body.lampa_view .nova-plus-root .nova-card__labels .nova-card__num,body.lampa_view .nova-plus-root .nova-card__labels .nova-card__part {position:static!important;inset:auto!important;transform:none!important;width:auto!important;height:auto!important;min-width:0!important;padding:.15em .45em!important;margin:0!important;flex:0 0 auto;display:block;line-height:1.3}
+body.lampa_view .nova-plus-root .nova-card__labels .nova-card__num,body.lampa_view .nova-plus-root .nova-card__labels .nova-card__tag,body.lampa_view .nova-plus-root .nova-card__labels .nova-card__part {position:static!important;inset:auto!important;transform:none!important;width:auto!important;height:auto!important;min-width:0!important;padding:.15em .45em!important;margin:0!important;flex:0 0 auto;display:block;line-height:1.3}
 body.lampa_view .nova-plus-root .nova-card__labels .nova-card__part {background:rgba(0,0,0,.72);white-space:nowrap;font-size:.8em}
+
+/* Only the franchise picker is anchored to its trigger; native Settings keep their size. */
+body.lampa_view .minimal-anime-franchise {margin:.6em 0 1em}
+body.lampa_view .minimal-franchise-menu .selectbox__content {left:var(--franchise-left)!important;top:var(--franchise-top)!important;bottom:auto!important;width:var(--franchise-width)!important;height:var(--franchise-height)!important;max-height:var(--franchise-height);transform:none!important;transition:none;border:1px solid var(--pt-line);border-radius:1em;box-shadow:0 1em 3em #0008;font-size:14px;overflow:hidden}
+body.lampa_view .minimal-franchise-menu .selectbox__head {padding:1em 1.2em .5em}
+body.lampa_view .minimal-franchise-menu .selectbox__title {font-size:1.2em;font-weight:600}
+body.lampa_view .minimal-franchise-menu .selectbox__body {min-height:0;height:auto!important}
+body.lampa_view .minimal-franchise-menu .selectbox-item {padding:.7em 1.1em;min-height:44px}
+body.lampa_view .minimal-franchise-menu .selectbox-item__title {font-size:1em}
+body.lampa_view .minimal-franchise-menu .selectbox-item.selected {box-shadow:inset 3px 0 var(--pt-accent);background:#ffffff0d}
+body.lampa_view .minimal-franchise-menu .selectbox-item.focus {background:var(--pt-text);color:var(--pt-bg,#111)}
+body.lampa_view .minimal-franchise-menu .selectbox__layer {backdrop-filter:none}
+@media(max-width:700px){body.lampa_view .nova-plus-root .nova-card__clock,body.lampa_view .pt-card-watch__time {background:none!important;border:0!important;box-shadow:none!important;outline:0!important}}

@@ -40,6 +40,13 @@ export function absoluteGroups(model,fileNumbers){
  if(!model || model.groups.length<2 || files.length!==model.rows.length || !files.every((n,i)=>n===i+1) || !model.rows.every((e,i)=>e.number===i+1))return null;
  return model.groups.map(s=>({number:s.number,name:s.name,count:s.count,episodes:s.rows.map(e=>e.number)}));
 }
+// MAL coordinates identify the release independently of a TMDB season count.
+export function malEpisodeBook(payload,mal,language=locale()){
+ const rows=payload && payload.data;if(!positive(mal) || !Array.isArray(rows) || !rows.length)return null;
+ const book={};for(const row of rows){const n=Number(row.mal_episode_number);if(Number(row.mal_id)!==Number(mal) || !positive(n) || book[n])return null;
+  book[n]={episode_number:n,name:String((language==='ru'?row.name_ru:row.name_en) || ''),overview:String((language==='ru'?row.overview_ru:row.overview_en) || ''),air_date:row.air_date || '',still_path:row.still_path || '',runtime:Number(row.runtime)||0,lampa_grouped:true};
+ }return book;
+}
 export default function kinoapi(L){
  const cache=new Map(),pending=new Map(),queue=[],models=new Map(),loading=new Map();let active=0,next=0,timer,revision=0,blocked=0;
  const key=()=>String(L.Storage.value?L.Storage.value(KEY,''):L.Storage.get(KEY,'')).trim();
@@ -96,5 +103,5 @@ export default function kinoapi(L){
   }});
   L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_kinoapi',type:'button'},field:{name:t('KinoAPI · Ключ API'),description:''},onRender:setting,onChange:input});
  }
- return {enabled,title,anime,catalogueRequest(path,done){if(!/^titles\?/.test(path))return done(null);request(path,done);},book(card,season,numbers,files,done){anime(card,model=>done(metadataBook(model,season,numbers,files)));},groups(card,files,done){anime(card,model=>done(absoluteGroups(model,files)));},clear};
+ return {enabled,title,anime,releaseBook(mal,done){if(!positive(mal))return done(null);request('anime/mappings/by/myanimelist/'+mal+'/episodes',value=>done(malEpisodeBook(value,mal)));},catalogueRequest(path,done){if(!/^titles\?/.test(path))return done(null);request(path,done);},book(card,season,numbers,files,done){anime(card,model=>done(metadataBook(model,season,numbers,files)));},groups(card,files,done){anime(card,model=>done(absoluteGroups(model,files)));},clear};
 }
