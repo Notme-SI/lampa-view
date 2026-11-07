@@ -43,3 +43,13 @@ test('native cast portraits preserve a detailed square face crop through both TM
   assert.deepEqual(n.errors,[]);
  }finally{n.close();}
 });
+
+test('detail backdrop accepts a sharper image in the selected language without selecting a foreign banner',()=>{
+ const esbuild=require('esbuild'),path=require('path'),m={exports:{}};
+ new Function('module','exports',esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/artwork.js')],bundle:true,write:false,format:'cjs'}).outputFiles[0].text)(m,m.exports);
+ const choices=[{file_path:'/old.jpg',width:1920,height:1080,iso_639_1:null},{file_path:'/ru4k.jpg',width:3840,height:2160,iso_639_1:'ru'},{file_path:'/en8k.jpg',width:7680,height:4320,iso_639_1:'en'}];
+ assert.equal(m.exports.detailBackdrop(choices,'/old.jpg',2560,'ru'),'/ru4k.jpg');
+ assert.equal(m.exports.detailBackdrop(choices,'/old.jpg',1280,'ru'),'/ru4k.jpg');
+ assert.equal(m.exports.detailBackdrop(choices,'/ru4k.jpg',2560,'ru'),'/ru4k.jpg');
+ assert.equal(m.exports.detailBackdrop(choices,'/old.jpg',2560,'de'),'/old.jpg');
+});

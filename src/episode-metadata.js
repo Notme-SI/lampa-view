@@ -61,7 +61,7 @@ export function seasonName(card,number,series=card){
 // Keep a published schedule separate from a provider's available video files.
 export function availableMetadata(rows,files,season,allowFuture=true){
  const actual=new Set(files.map(Number)),now=Date.now();
- return rows.filter(row=>actual.has(Number(row.episode_number)) || allowFuture && Number(row.season_number)===Number(season) && typeof row.air_date==='string' && /^\d{4}-\d{2}-\d{2}$/.test(row.air_date) && Date.parse(row.air_date+'T00:00:00Z')>now);
+ return rows.filter(row=>actual.has(Number(row.episode_number)) || allowFuture && Number(row.lampa_source_season ?? row.season_number)===Number(season) && typeof row.air_date==='string' && /^\d{4}-\d{2}-\d{2}$/.test(row.air_date) && Date.parse(row.air_date+'T00:00:00Z')>now);
 }
 // Alternative episode groups change metadata coordinates, never playback hashes.
 export function alternativeNumbering(card,numbers){

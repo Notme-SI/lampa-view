@@ -4,9 +4,9 @@ import {namedPartCount} from './episode-metadata.js';
 import {localizedTitle,isAnime} from './metadata.js';
 import {chooseLogo,pickStudio} from './logos.js';
 import comments from './comments.js';
-import {artworkSize,logoSize} from './artwork.js';
+import {artworkSize,logoSize,detailBackdrop} from './artwork.js';
 import {onlineButton,watchActions} from './watch-actions.js';
-import {styleScreenshots,nextDetailEpisode} from './detail-gallery.js';
+import {styleScreenshots,nextDetailEpisode,orderDetailSections,styleSuggestions} from './detail-gallery.js';
 export function releaseDate(card){
  const raw=String(card.release_date || card.first_air_date || ''),match=/^(\d{4})-(\d{2})-(\d{2})$/.exec(raw);
  if(!match)return /^\d{4}$/.test(raw) && Number(raw)>0?raw:'';
@@ -56,7 +56,7 @@ function moveTechnicalDetails(L,card,right,episodeBook){
   });
   const dated=nextDetailEpisode(card,episodeBook);
   const date=dated || ((card.media_type==='tv' || card.original_name || card.first_air_date) && ['tmdb','cub'].includes(card.source) && L.TimeTable?.get?nextDetailEpisode(card,{episodes:L.TimeTable.get(card)}):null);
-  if(date){const node=document.createElement('time');node.className='minimal-detail-next-episode';node.dateTime=date.iso;node.textContent=lampaViewText('Следующая серия: {0}',[date.label]);retained.push(node);}
+  if(date){const node=document.createElement('time');node.className='minimal-detail-next-episode';node.dateTime=date.iso;node.textContent=lampaViewText('Следующая серия: {0}',[date.label])+' / '+L.Lang.translate('full_episode_days_left')+': '+date.remainingDays;retained.push(node);}
   while(line.firstChild)line.removeChild(line.firstChild);
   retained.forEach((part,index)=>{if(index){const split=document.createElement('span');split.className='full-start-new__split';split.textContent='·';line.appendChild(split);}line.appendChild(part);});
   line.classList.toggle('pt-hidden',!retained.length);
@@ -81,34 +81,6 @@ export function prepareDetail(data){
  const disabled=window.lampa_settings && window.lampa_settings.disable_features || {};
  if(!disabled.discuss)data.discuss={...(data.discuss || {}),result:((data.discuss || {}).result || []).slice()};
  if(!data.reactions || !Array.isArray(data.reactions.result))data.reactions={result:[]};
-}
-function orderComments(link){
- if(!link || !link.rows || !link.items)return;
- let index=link.rows.findIndex(row=>Array.isArray(row) && row[0]==='discuss');if(index<0)return;
- const cast=link.rows.findIndex(row=>Array.isArray(row) && row[0]==='persons');
- const target=Math.min(cast===1?2:1,link.rows.length-1);let built=index<link.items.length;
- // An unbuilt comments row can move ahead of other unbuilt rows without
- // constructing every recommendations row just to reach an empty discussion.
- if(!built && target>=link.items.length){link.rows.splice(target,0,link.rows.splice(index,1)[0]);}
- else{
-  if(!built && document.body.classList.contains('pt-tv')){
-   // Empty discussions are last in native Lampa. Build only that row, rather
-   // than every collection and recommendation between it and the header.
-   const next=link.items.length,previous=link.view;
-   link.rows.splice(next,0,link.rows.splice(index,1)[0]);index=next;
-   link.view=next+1;link.emit('scroll',0);link.view=previous;built=index<link.items.length;
-  }
-  if(!built){link.view=Math.max(link.view || 3,index+1);link.emit('scroll',0);built=index<link.items.length;}
-  if(built){const active=link.items[link.active];link.rows.splice(target,0,link.rows.splice(index,1)[0]);link.items.splice(target,0,link.items.splice(index,1)[0]);link.active=Math.max(0,link.items.indexOf(active));}
- }
- link.view=Math.max(link.view || 3,target+1);link.emit('scroll',0);
- const item=link.items[target],render=item && item.render(true),node=render && (render.nodeType?render:render[0]);
- if(node){
-  node.classList.add('minimal-comments-native');const previous=link.items[target-1],r=previous && previous.render(true),previousNode=r && (r.nodeType?r:r[0]);
-  // Cast is nested in the header grid, but comments are a full-width page row.
-  const anchor=previousNode && (previousNode.closest('.minimal-detail-header') || previousNode);
-  if(anchor && anchor.parentNode && !anchor.contains(node))anchor.parentNode.insertBefore(node,anchor.nextSibling);
- }
 }
 function mountCast(columns,node){
  if(!columns || !node)return;
@@ -159,6 +131,7 @@ export default function detail(L,event,loadLogo){
   return;
  }
  if(event && event.type==='start' && event.data){prepareDetail(event.data);return;}
+ if(event && event.type==='build' && event.name==='cards' && event.item)styleSuggestions(L,event);
  if(event && event.type==='build' && event.name==='episodes' && event.item){styleScreenshots(L,event);return;}
  if(event && event.type==='build' && event.name==='discuss' && event.item){const render=event.item.render(true),node=render && (render.nodeType?render:render[0]);comments(event.item,node);}
  if(event && event.type==='build' && event.name==='persons' && event.item && event.data && (event.data.title===L.Lang.translate('title_actors') || (event.data.results || []).some(p=>Object.prototype.hasOwnProperty.call(p,'character')))){
@@ -246,7 +219,7 @@ export default function detail(L,event,loadLogo){
    }
   }
  }
- orderComments(event.link);
+ orderDetailSections(event.link);
  // Vertical pointer scrolling does not advance Lampa's remote active-row index.
  // Build these few page rows now; their horizontal cards and images stay lazy.
  if(event.link && event.link.rows && event.link.items){
@@ -320,9 +293,8 @@ export default function detail(L,event,loadLogo){
   if(event.link && event.link.use)event.link.use({onDestroy:()=>{if(resize)resize.disconnect();}});
  }
  if(background && card.backdrop_path){
-  const variants=(event.data.images || card.images || {}).backdrops || [],current=variants.find(v=>v.file_path===card.backdrop_path),needed=Math.max(1280,Math.ceil((window.innerWidth || 1920)*Math.min(2,window.devicePixelRatio || 1)));
-  const better=current && Number(current.width)<needed && variants.filter(v=>Number(v.width)>=needed && Number(v.aspect_ratio || 1.78)>1.4 && !v.iso_639_1).sort((a,b)=>Number(b.width)-Number(a.width))[0];
-  const backdrop=better?better.file_path:card.backdrop_path;
+  const variants=(event.data.images || card.images || {}).backdrops || [],needed=document.body.classList.contains('pt-tv')?3840:Math.ceil((window.innerWidth || 1920)*Math.min(2,window.devicePixelRatio || 1));
+  const backdrop=detailBackdrop(variants,card.backdrop_path,needed,L.Storage.get('language','ru'));
   const size=artworkSize(L,'detail-backdrop');
   const url=L.TMDB.image('/t/p/'+size+backdrop,{preserveSize:true});
   const variant='/t/p/'+size+backdrop;

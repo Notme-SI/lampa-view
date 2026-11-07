@@ -15,7 +15,8 @@ export function nextDetailEpisode(card,book,now=new Date()){
  }
  if(!next)return null;
  const options={day:'numeric',month:'long',...(next.date.getFullYear()!==now.getFullYear()?{year:'numeric'}:{})};
- return {...next,label:new Intl.DateTimeFormat(locale(),options).format(next.date)};
+ const remainingDays=Math.round((Date.UTC(next.date.getFullYear(),next.date.getMonth(),next.date.getDate())-Date.UTC(today.getFullYear(),today.getMonth(),today.getDate()))/86400000);
+ return {...next,remainingDays,label:new Intl.DateTimeFormat(locale(),options).format(next.date)};
 }
 
 const nodeOf=item=>{const rendered=item?.render?.(true);return rendered?.nodeType?rendered:rendered?.[0];};
@@ -23,11 +24,11 @@ const still=episode=>episode && !episode.comeing && (episode.still_path || (/^ht
 export function styleScreenshots(L,event){
  const line=event.item,root=nodeOf(line);if(!root || !Array.isArray(event.data?.results) || !event.data.results.some(still))return;
  root.classList.add('minimal-detail-screenshots');
- const heading=root.querySelector('.items-line__title');if(heading)heading.textContent=t('Скриншоты');
+ const heading=root.querySelector('.items-line__title');if(heading)heading.textContent=t('Кадры из сериала');
  function frame(item){
   const node=nodeOf(item);if(!node?.classList.contains('full-episode') || node.dataset.minimalScreenshot)return;
   const path=still(item.data);if(!path){node.hidden=true;node.classList.remove('selector');return;}
-  node.dataset.minimalScreenshot='1';node.setAttribute('role','button');node.tabIndex=0;node.setAttribute('aria-label',t('Скриншот серии {0}',[item.data.episode_number || '']));
+  node.dataset.minimalScreenshot='1';node.setAttribute('role','button');node.tabIndex=0;node.setAttribute('aria-label',t('Кадр из серии {0}',[item.data.episode_number || '']));
   const open=()=>{
    if(!node.isConnected || !L.Modal?.open || L.Modal.opened?.())return;
    const image=document.createElement('img');image.className='minimal-screenshot-preview';image.alt=node.getAttribute('aria-label');
@@ -50,7 +51,7 @@ function icon(path){const svg=document.createElementNS('http://www.w3.org/2000/s
 export function mountRelatedRow(L,link){
  const name=row=>Array.isArray(row)?row[0]:row;
  const index=kind=>link.rows.findIndex(row=>name(row)===kind);
- const anchorIndex=Math.max(0,index('episodes')>=0?index('episodes'):Math.max(index('discuss'),index('persons')));
+ const anchorIndex=Math.max(0,index('episodes')>=0?index('episodes'):Math.max(0,index('persons')));
  if(anchorIndex>=link.items.length){const view=link.view;try{link.view=Math.max(view || 3,anchorIndex+1);link.emit('scroll',0);}finally{link.view=view;}}
  const found=nodeOf(link.items[anchorIndex]),anchor=found?.closest('.minimal-detail-header') || found;
  if(!anchor?.parentNode || !L.Controller)return null;
@@ -72,6 +73,45 @@ export function mountRelatedRow(L,link){
   }
  };
  link.rows.splice(at,0,['minimal_related',{}]);link.items.splice(at,0,item);
- link.active=Math.max(0,link.items.indexOf(active));anchor.after(wrap);
+ link.active=Math.max(0,link.items.indexOf(active));anchor.after(wrap);orderDetailSections(link);
  return {control,item};
+}
+
+// Keep native row indices and DOM order identical so Up/Down follows the page.
+export function orderDetailSections(link){
+ if(!Array.isArray(link?.rows) || !Array.isArray(link.items) || link._minimalOrdering)return;
+ link._minimalOrdering=true;
+ try{
+  const kind=row=>Array.isArray(row)?row[0]:row;
+  const wanted=['episodes','minimal_related','discuss'];
+  const last=link.rows.reduce((n,row,i)=>wanted.includes(kind(row))?Math.max(n,i):n,-1);
+  if(last<0)return;
+  if(last>=link.items.length){const view=link.view;try{link.view=Math.max(view || 3,last+1);link.emit('scroll',0);}finally{link.view=view;}}
+  const active=link.items[link.active],built=link.items.length,pairs=link.rows.map((row,i)=>({row,item:link.items[i]}));
+  const moving=wanted.flatMap(name=>pairs.filter(p=>kind(p.row)===name));
+  if(moving.some(p=>!p.item))return;
+  const retained=pairs.filter(p=>!wanted.includes(kind(p.row)));
+  const header=nodeOf(link.items[0])?.closest('.minimal-detail-header') || nodeOf(link.items[0]);
+  let at=1;
+  while(at<retained.length && retained[at].item && header?.contains(nodeOf(retained[at].item)))at++;
+  retained.splice(at,0,...moving);
+  link.rows.splice(0,link.rows.length,...retained.map(p=>p.row));
+  link.items.splice(0,built,...retained.slice(0,built).map(p=>p.item));
+  link.active=Math.max(0,link.items.indexOf(active));
+  let anchor=header;
+  for(const entry of retained.slice(at)){
+   const node=nodeOf(entry.item);if(!node || !anchor?.parentNode || header?.contains(node))continue;
+   if(kind(entry.row)==='discuss')node.classList.add('minimal-comments-native');
+   anchor.after(node);anchor=node;
+  }
+ }finally{link._minimalOrdering=false;}
+}
+export function styleSuggestions(L,event){
+ const labels=[L.Lang.translate('title_recomendations'),L.Lang.translate('title_similar')];
+ if(!labels.includes(event.data?.title))return;
+ const root=nodeOf(event.item);if(!root)return;
+ root.classList.add('minimal-detail-suggestions');
+ const first=event.link?.rows?.find(row=>Array.isArray(row) && row[0]==='cards' && labels.includes(row[1]?.title));
+ root.classList.toggle('minimal-detail-suggestions--first',!!first && first[1].title===event.data.title);
+ event.item.minimalPosterRefresh?.();
 }

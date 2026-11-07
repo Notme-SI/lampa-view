@@ -13,8 +13,8 @@ test('TV detail builds lower rows gradually, including empty comments, while rem
    const link=L.Activity.active().activity.component,root=L.Activity.active().activity.render(true),comments=root.querySelector('.minimal-comments-native');
    assert.equal(w.LampaView.layout,'tv');assert.equal(link.view,3);
    assert.equal(link.items.length,4,'Only header, cast, comments and the already built episodes should exist');
-   assert.equal(link.rows.length,6);assert.equal(link.rows[2][0],'discuss');
-   assert.equal(root.querySelector('.minimal-detail-header').nextElementSibling,comments);
+   assert.equal(link.rows.length,6);assert.equal(link.rows[2][0],'episodes');assert.equal(link.rows[3][0],'discuss');
+   assert.equal(root.querySelector('.minimal-detail-header').nextElementSibling.nextElementSibling,comments);
    assert.ok(!root.textContent.includes('Film 0'),'Recommendations must not be built ahead of the remote');
    if(populated){
     const active=link.active;

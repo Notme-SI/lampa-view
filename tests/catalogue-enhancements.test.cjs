@@ -43,7 +43,7 @@ test('legacy history cards restore missing years from metadata without changing 
   const history=[{id:910,name:'Series',original_name:'Series',source:'tmdb',genre_ids:[18],release_quality:'1080p'},{id:911,title:'Film',source:'tmdb',genre_ids:[18],release_quality:'1080p'}];L.Favorite.get=({type})=>type==='history'?history:[];
   L.Api.sources.tmdb.get=(url,p,ok)=>w.setTimeout(()=>ok(url.startsWith('tv/')?{id:910,first_air_date:'2026-10-07',genres:[{id:18}]}:{id:911,release_date:'2025-05-12',genres:[{id:18}]}),0);
   for(const data of history){const c=new L.Card(data,{});c.create();const node=c.render(true);node.getBoundingClientRect=()=>({width:120,height:180,top:0,bottom:180,left:0,right:120});w.document.body.appendChild(node);cards.push(c);}
-  await wait(170);assert.equal(cards[0].render(true).querySelector('.card__age').textContent,'2026');assert.equal(cards[1].render(true).querySelector('.card__age').textContent,'2025');assert.equal(history[0].first_air_date,undefined);assert.equal(history[1].release_date,undefined);assert.deepEqual(n.errors,[]);
+  for(let i=0;i<50 && !cards.every(c=>c.render(true).querySelector('.card__age'));i++)await wait(20);assert.equal(cards[0].render(true).querySelector('.card__age').textContent,'2026');assert.equal(cards[1].render(true).querySelector('.card__age').textContent,'2025');assert.equal(history[0].first_air_date,undefined);assert.equal(history[1].release_date,undefined);assert.deepEqual(n.errors,[]);
  }finally{cards.forEach(c=>c.destroy());n.close();}
 });
 test('settings hide locked and duplicate switches, retain active choices and have working action callbacks',async()=>{

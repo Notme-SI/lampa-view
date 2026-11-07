@@ -1,4 +1,4 @@
-import {locale,text as t} from './i18n.js';
+import {locale,text as t,pluralSource} from './i18n.js';
 import {animeRecords,animeTargets} from './anime-index.js';
 const positive=n=>Number.isSafeInteger(Number(n)) && Number(n)>0;
 const kindNames={'TV Сериал':'tv','Фильм':'movie','Спецвыпуск':'special','TV Спецвыпуск':'tv_special','Музыка':'music','Клип':'music','OVA':'ova','ONA':'ona'};
@@ -93,8 +93,14 @@ export function franchiseMenuGroups(model,canonical={}){
    let short=base && full.toLowerCase().startsWith(base.toLowerCase())?full.slice(base.length).replace(/^[\s:.-]+/,''):full;
    if(step?.part)short=short.replace(/(?:[.\s:-]+)?(?:часть|part|cour)\s*\d+$/i,'').replace(/\s+\d+$/,'').trim();
    if(!short || /^(?:\d+|[ivx]+|(?:часть|part|season|сезон)\s*\d+|\d+\s*(?:сезон|season))$/i.test(short))short='';
-   const label=type+(step?.part?' · '+t('Часть {0}',[step.part]):'');
-   return {card,title:label+(short?' : '+short:''),subtitle:[step?String(step.number).padStart(2,'0'):'',String(card.release_date || card.first_air_date || '').slice(0,4)].filter(Boolean).join(' · '),icon:kind==='movie'?'▷':kind==='ova'?'◇':['special','tv_special'].includes(kind)?'✦':'▤'};
+   const label=card.minimal_franchise_season?t('Сезон {0}',[card.minimal_franchise_season]):short || full || type;
+   const heading=label+(step?.part?' · '+t('Часть {0}',[step.part]):'');
+   const count=card.minimal_franchise_season?canonical.seasons?.find(s=>s.season_number===card.minimal_franchise_season)?.episode_count:card.episodes;
+   const format=kind==='movie'?t('Фильм'):kind==='ova'?'OVA':kind==='ona'?'ONA':['special','tv_special'].includes(kind)?t('Спецвыпуски'):t('Сериал');
+   const status=card.status==='anons'?t('Анонс'):card.status==='ongoing'?t('Выходит'):card.status==='released'?t('Вышло'):'';
+   const node=model.nodes.find(n=>n.id===card.id),parent=canonical.media_type!=='movie' && Number(canonical.tmdb_id || canonical.id)>0 && row.key==='story' && model.complete?{id:Number(canonical.tmdb_id || canonical.id),type:'tv'}:null;
+   const destination=parent && !node?.record?.tv?{...card,minimal_franchise_parent:parent,minimal_franchise_release:{aired:node?.aired,released:node?.released,episodes:node?.episodes}}:card;
+   return {card:destination,title:heading,subtitle:[String(card.release_date || card.first_air_date || '').slice(0,4),format,count>0?pluralSource(['%s серия','%s серии','%s серий'],count):'',status].filter(Boolean).join(' · '),icon:kind==='movie'?'▷':kind==='ova'?'◇':['special','tv_special'].includes(kind)?'✦':'▤'};
   });
   return {title:row.key==='story'?t('Порядок просмотра'):row.title,entries};
  }).filter(group=>group.entries.length);

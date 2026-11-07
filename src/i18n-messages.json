@@ -9405,5 +9405,35 @@
   "fr": "Prochain épisode : {0}",
   "pl": "Następny odcinek: {0}",
   "es": "Próximo episodio: {0}"
+ },
+ "Кадры из сериала": {
+  "ru": "Кадры из сериала",
+  "en": "Series stills",
+  "uk": "Кадри із серіалу",
+  "be": "Кадры з серыяла",
+  "zh": "剧集画面",
+  "pt": "Cenas da série",
+  "bg": "Кадри от сериала",
+  "he": "תמונות מהסדרה",
+  "cs": "Záběry ze seriálu",
+  "ro": "Cadre din serial",
+  "fr": "Images de la série",
+  "pl": "Kadry z serialu",
+  "es": "Imágenes de la serie"
+ },
+ "Кадр из серии {0}": {
+  "ru": "Кадр из серии {0}",
+  "en": "Frame from episode {0}",
+  "uk": "Кадр із серії {0}",
+  "be": "Кадр з серыі {0}",
+  "zh": "第 {0} 集画面",
+  "pt": "Cena do episódio {0}",
+  "bg": "Кадър от епизод {0}",
+  "he": "תמונה מפרק {0}",
+  "cs": "Záběr z epizody {0}",
+  "ro": "Cadru din episodul {0}",
+  "fr": "Image de l’épisode {0}",
+  "pl": "Kadr z odcinka {0}",
+  "es": "Imagen del episodio {0}"
  }
 }
