@@ -1,3 +1,4 @@
+import {animeRecords} from './anime-index.js';
 export function localizedTitle(card,language='ru'){
  const existing=card.name || card.title || card.original_name || card.original_title || '';
  if(String(language).slice(0,2)!=='ru' || /[а-яё]/i.test(existing))return existing;
@@ -10,6 +11,7 @@ export function localizedTitle(card,language='ru'){
 }
 export function isAnime(card){
  if(card.minimal_anime || card.source==='minimal_shiki' || card.shikimori_id || card.mal_id)return true;
+ if(animeRecords(card).some(record=>['tv','ona'].includes(record.kind) && record.tv || record.kind==='movie' && (record.movies || []).length))return true;
  const animation=[...(card.genre_ids || []),...(card.genres || [])].some(g=>Number(g.id || g)===16);
  const keywords=card.keywords && (card.keywords.results || card.keywords.keywords) || [];
  return animation && (['ja','zh'].includes(card.original_language) || (card.origin_country || []).includes('JP') || keywords.some(k=>k.id===210024 || k.name==='anime'));

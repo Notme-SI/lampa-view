@@ -52,7 +52,7 @@ export default function posterCache(L,enabled,highQuality){
   queue.sort((a,b)=>Number(visibleJobs.get(b))-Number(visibleJobs.get(a)));
   // Cached and shared in-flight images do not consume another network slot.
   for(let remaining=queue.length;remaining>0;remaining--){
-   const job=queue.shift();if(!job.alive())continue;
+   const job=queue.shift();if(!job.alive()){job.finished=true;continue;}
    if(!visibleJobs.get(job) && !nearby(job.image)){job.finished=true;continue;}
    job.url=job.resolve();
    let entry=cache.get(job.url);

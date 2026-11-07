@@ -8,7 +8,7 @@ export function franchiseModel(graph,seed,metadata=[]){
  const details=new Map(metadata.filter(v=>v && positive(v.id)).map(v=>[Number(v.id),v])),nodes=new Map(),edges=[],seen=new Set();
  for(const node of graph.nodes){const id=Number(node.id);if(!positive(id) || nodes.has(id) || typeof node.name!=='string' || !node.name.trim())return null;
   const meta=details.get(id)||{},records=animeRecords({source:'minimal_shiki',id}),record=records.length===1?records[0]:null,kind=meta.kind || record && record.kind || kindNames[node.kind] || String(node.kind || '').toLowerCase(),aired=date(meta.aired_on),year=aired.slice(0,4) || (Number(node.year)>=1900 && Number(node.year)<=2200?String(node.year):'');
-  nodes.set(id,{id,name:locale()==='ru'?(meta.russian || node.name || meta.name):(meta.name || node.name),original:meta.name || '',kind,aired,released:date(meta.released_on),year,status:meta.status || '',episodes:Number(meta.episodes)||0,airedCount:Number(meta.episodes_aired)||0,poster:meta.image && meta.image.original || node.image_url || '',record});
+  nodes.set(id,{id,url:node.url || '',name:locale()==='ru'?(meta.russian || node.name || meta.name):(meta.name || node.name),original:meta.name || '',kind,aired,released:date(meta.released_on),year,status:meta.status || '',episodes:Number(meta.episodes)||0,airedCount:Number(meta.episodes_aired)||0,poster:meta.image && meta.image.original || node.image_url || '',record});
  }
  if(!nodes.has(Number(seed)))return null;
  for(const link of graph.links){const from=Number(link.source_id),to=Number(link.target_id),relation=String(link.relation || '').toLowerCase();if(!nodes.has(from) || !nodes.has(to) || from===to)return null;const key=from+':'+to+':'+relation;if(!seen.has(key)){seen.add(key);edges.push({from,to,relation});}}
@@ -39,4 +39,26 @@ export function franchiseModel(graph,seed,metadata=[]){
  const announced=new Set([...main,...alternatives,...rest].filter(id=>future(nodes.get(id))));
  const rows=[{key:'story',title:t(complete?'Основная история':'Связанные релизы'),ids:ordered},{key:'alternatives',title:t('Другие версии и пересказы'),ids:[...alternatives].sort(compare)},{key:'related',title:t('Ответвления и спецвыпуски'),ids:rest.sort(compare)},{key:'announced',title:t('Продолжения и анонсы'),ids:[...announced].sort(compare)}].map(row=>({...row,results:row.ids.filter(id=>row.key==='announced' || !announced.has(id)).map(card)})).filter(row=>row.results.length);
  return {seed:Number(seed),complete,rows,nodes:[...nodes.values()],edges};
+}
+
+// Catalogue tiles represent destinations, while the model retains every release
+// for episode/provider mapping. A merged TV card must appear only once.
+export function franchiseCatalogueRows(model){
+ const seen=new Set(),nodes=new Map(model.nodes.map(n=>[Number(n.id),n])),first=model.rows.find(r=>r.key==='story')?.results[0],prefix=String(first?.title || first?.name || '').trim();
+ return model.rows.map(row=>({...row,results:row.results.filter(card=>{
+  const node=nodes.get(Number(card.id)),name=String(node?.original || '')+' '+String(card.title || '')+' '+String(node?.url || '');
+  if(['music','pv','cm'].includes(node?.kind) || row.key==='related' && /manner[- _]eizou|урок хороших манер|(?:\s+x\s+|×)/i.test(name))return false;
+  const type=card.media_type,targets=(card.minimal_anime_targets || []).filter(t=>t.type===type),key=targets.length===1?type+':'+targets[0].id:'mal:'+card.id;
+  if(seen.has(key))return false;seen.add(key);return true;
+ }).map(card=>{
+  const name=String(card.title || card.name || ''),short=prefix && name.toLowerCase().startsWith(prefix.toLowerCase()+':')?name.slice(prefix.length+1).trim():name;
+  return short!==name?{...card,title:short,...(card.name?{name:short}:{}),minimal_franchise_full_title:name}:card;
+ })})).filter(row=>row.results.length);
+}
+
+export function franchiseViewingOrder(model){
+ if(!model.complete)return [];
+ const story=model.rows.find(row=>row.key==='story');if(!story)return [];
+ const ids=new Set(story.results.map(c=>Number(c.id))),nodes=model.nodes.filter(n=>ids.has(n.id) && n.status!=='anons' && (!n.aired || n.aired<=new Date().toISOString().slice(0,10)));
+ return nodes.slice().sort((a,b)=>(a.aired || a.year || '9999').localeCompare(b.aired || b.year || '9999') || story.results.findIndex(c=>c.id===a.id)-story.results.findIndex(c=>c.id===b.id)).map((node,i)=>({id:node.id,number:i+1,name:node.name,year:node.year,kind:node.kind,season:['tv','ona'].includes(node.kind)?Number(node.record?.season)||0:0,episodes:node.episodes,alternatives:model.nodes.filter(n=>model.edges.some(e=>e.relation==='alternative_version' && (e.from===node.id && e.to===n.id || e.to===node.id && e.from===n.id))).map(n=>({id:n.id,kind:n.kind,season:Number(n.record?.season)||0}))}));
 }

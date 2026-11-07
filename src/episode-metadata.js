@@ -1,4 +1,19 @@
 import {isAnime} from './metadata.js';
+export function publishedSeasonCount(card,today=new Date().toISOString().slice(0,10)){
+ const seasons=(card.seasons || []).filter(s=>Number(s.season_number)>0),last=card.last_episode_to_air;
+ if(!seasons.length)return Number(card.number_of_seasons)||0;
+ const valid=d=>/^\d{4}-\d{2}-\d{2}$/.test(String(d || ''));
+ const airedLast=last && valid(last.air_date) && last.air_date<=today?Number(last.season_number):0;
+ const known=seasons.filter(s=>valid(s.air_date) && s.air_date<=today || airedLast>0 && Number(s.season_number)<=airedLast);
+ const future=seasons.some(s=>valid(s.air_date) && s.air_date>today || airedLast>0 && Number(s.season_number)>airedLast && !valid(s.air_date));
+ return future?known.length:Number(card.number_of_seasons)||seasons.length;
+}
+export function publishedEpisodeCount(card,today=new Date().toISOString().slice(0,10)){
+ const seasons=(card.seasons || []).filter(s=>Number(s.season_number)>0),count=publishedSeasonCount(card,today);
+ if(!count || count>=seasons.length)return Number(card.number_of_episodes)||0;
+ const last=card.last_episode_to_air,rows=seasons.filter(s=>s.air_date && s.air_date<=today || last && last.air_date<=today && Number(s.season_number)<=Number(last.season_number));
+ return rows.length===count && rows.every(s=>Number(s.episode_count)>0)?rows.reduce((n,s)=>n+Number(s.episode_count),0):Number(card.number_of_episodes)||0;
+}
 // Only partition a complete absolute provider list using confirmed catalogue counts.
 export function absoluteSeasons(card,files){
  const numbers=[...new Set(files.map(Number))].sort((a,b)=>a-b),seasons=(Array.isArray(card && card.seasons)?card.seasons:[]).filter(s=>Number(s.season_number)>0).slice().sort((a,b)=>Number(a.season_number)-Number(b.season_number));
@@ -39,7 +54,7 @@ export function availableMetadata(rows,files,season,allowFuture=true){
 // Alternative episode groups change metadata coordinates, never playback hashes.
 export function alternativeNumbering(card,numbers){
  const count=Number(card && card.number_of_seasons),rows=Array.from(new Set(numbers.map(Number))).filter(n=>n!==0).sort((a,b)=>a-b);
- return count>0 && rows.length>0 && (rows.length>count || isAnime(card) && rows.length<count) && rows.length<=30 && rows.every((n,i)=>n===i+1);
+ return count>0 && rows.length>0 && rows.length<=30 && ((rows.length>count || isAnime(card) && rows.length<count) && rows.every((n,i)=>n===i+1) || isAnime(card) && rows.length===1 && rows[0]>1);
 }
 // Validate the complete published coordinate map before using any of its groups.
 // Equal episode counts by themselves are never evidence of a season mapping.
@@ -160,11 +175,11 @@ export default function episodeMetadata(L,kino,anime){
   // Preserve the provider's menu unless these files cover a verified full list.
   if(partialAllowed && kino && kino.enabled())kino.groups(card,files,value=>value?done(value):fallback());else fallback();
  }
- return {isAnime,availableMetadata,alternate:alternativeNumbering,groups,groupBook,seasonName,book(card,number,numbers,actual,done,files=[],verifiedAbsolute=false){
+ return {isAnime,availableMetadata,alternate:alternativeNumbering,groups,groupBook,seasonName,book(card,number,numbers,actual,done,files=[],verifiedAbsolute=false,layout=null){
   // Fewer source seasons can mean a missing arc, a merged arc or a missing tail.
   // A matching length of just the selected season cannot distinguish them.
   // Full absolute lists have a separately verified partition in groups()/groupBook().
-  if(!verifiedAbsolute && alternativeNumbering(card,numbers) && anime && anime.providerBook && files.length){anime.providerBook(card,number,numbers,files,book=>{if(book)return done(book,true);if(new Set(numbers.map(Number).filter(n=>n>0)).size<Number(card.number_of_seasons))return done(null,true);if(!legacyBook(card,number,numbers,actual,done,files))done(null,true);});return true;}
+  if(!verifiedAbsolute && (layout || alternativeNumbering(card,numbers)) && anime && anime.providerBook && files.length){anime.providerBook(card,number,numbers,files,book=>{if(book)return done(book,true);const first=(card.seasons || []).find(s=>Number(s.season_number)===1);if(Number(number)===1 && first && files.length<=Number(first.episode_count) && (!layout || layout[number]?.number===1))return done(null,false);if(new Set(numbers.map(Number).filter(n=>n>0)).size<Number(card.number_of_seasons))return done(null,true);if(!legacyBook(card,number,numbers,actual,done,files))done(null,true);},layout);return true;}
   if(!verifiedAbsolute && alternativeNumbering(card,numbers) && new Set(numbers.map(Number).filter(n=>n>0)).size<Number(card.number_of_seasons)){done(null,true);return true;}
   if(kino && kino.enabled() && files.length){kino.book(card,number,numbers,files,book=>{if(book)return done(book,true);if(!legacyBook(card,number,numbers,actual,done,files))done(null,false);});return true;}
   return legacyBook(card,number,numbers,actual,done,files);

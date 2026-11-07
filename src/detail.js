@@ -179,7 +179,8 @@ export default function detail(L,event,loadLogo){
   const counter=Array.from(right.querySelectorAll('.full-start-new__details>*')).find(node=>node.textContent.trim().startsWith(prefix));
   const season=Array.isArray(card.seasons)?card.seasons.find(row=>row && Number(row.season_number)===1):null;
   const count=Number(season && season.episode_count || card.number_of_episodes);
-  if(counter && card.minimal_detail_seasons>1)counter.textContent=prefix+' '+card.minimal_detail_seasons;
+  if(counter && card.minimal_detail_seasons>0)counter.textContent=prefix+' '+card.minimal_detail_seasons;
+  if(card.minimal_detail_episodes>0){const epPrefix=L.Lang.translate('title_episodes')+':',epCounter=Array.from(right.querySelectorAll('.full-start-new__details>*')).find(node=>node.textContent.trim().startsWith(epPrefix));if(epCounter)epCounter.textContent=epPrefix+' '+card.minimal_detail_episodes;}
   if(counter && !card.minimal_detail_ready && Number(card.number_of_seasons)===1 && count>1 && count<=3000 && animeBase && animeBase.groups){
    let settled=false;
    const show=groups=>{
@@ -314,9 +315,12 @@ export default function detail(L,event,loadLogo){
   if(event.link && event.link.use)event.link.use({onDestroy:()=>{if(resize)resize.disconnect();}});
  }
  if(background && card.backdrop_path){
+  const variants=(event.data.images || card.images || {}).backdrops || [],current=variants.find(v=>v.file_path===card.backdrop_path),needed=Math.max(1280,Math.ceil((window.innerWidth || 1920)*Math.min(2,window.devicePixelRatio || 1)));
+  const better=current && Number(current.width)<needed && variants.filter(v=>Number(v.width)>=needed && Number(v.aspect_ratio || 1.78)>1.4 && !v.iso_639_1).sort((a,b)=>Number(b.width)-Number(a.width))[0];
+  const backdrop=better?better.file_path:card.backdrop_path;
   const size=artworkSize(L,'backdrop');
-  const url=L.TMDB.image('/t/p/'+size+card.backdrop_path);
-  const variant='/t/p/'+size+card.backdrop_path;
+  const url=L.TMDB.image('/t/p/'+size+backdrop);
+  const variant='/t/p/'+size+backdrop;
   if(background.src!==url && !background.src.includes(variant)){
    const preload=new Image();
    preload.onload=()=>{if(background.isConnected && artworkSize(L,'backdrop')===size){background.src=preload.src;background.classList.add('loaded');}};

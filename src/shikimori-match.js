@@ -6,7 +6,7 @@ export default function shikimoriMatch(L,details){
  const cache=new Map();
  return function full(params,ok,fail){
   const card=params.card || params,kind=card.media_type || (card.name?'tv':'movie'),id=String(card.shikimori_id || card.id),key=kind+':'+id;
-  const original=card.original_title || card.original_name,local=card.title || card.name,seen=new Set(),queue=[],names=[];let expanded=false,networkError=false,searches=0,failures=0;
+  const original=card.original_title || card.original_name,local=card.minimal_franchise_full_title || card.title || card.name,seen=new Set(),queue=[],names=[];let expanded=false,networkError=false,searches=0,failures=0;
   const alive=()=>!(params.activity && params.activity.component && params.activity.component.destroyed);
   function add(name,base=false){name=String(name || '').trim();const n=normal(name);if(name && n && !seen.has(n)){seen.add(n);queue.push({name,base});names.push(name);}}
   function back(){L.Select.hide();fail({empty:true});L.Activity.backward();}

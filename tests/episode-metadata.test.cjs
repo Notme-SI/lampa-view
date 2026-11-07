@@ -54,7 +54,7 @@ test('malformed responses stop after one retry and can recover on a later visit'
 test('complete absolute anime lists expose all confirmed named seasons without KinoAPI',async()=>{
  const api=fixture(),counts=[32,21,18,17,24,31,8,24,21,25,21,33,20,25,28,13,11,21,20,87],anime={id:31910,name:'Naruto',minimal_anime:true,seasons:counts.map((n,i)=>({season_number:i+1,episode_count:n,name:'Арка '+(i+1)}))},files=Array.from({length:500},(_,i)=>i+1);
  const groups=api.absoluteSeasons(anime,files);assert.equal(groups.length,20);assert.equal(groups[1].name,'Арка 2');assert.deepEqual([...groups[1].episodes],Array.from({length:21},(_,i)=>i+33));assert.equal(groups.at(-1).episodes.at(-1),500);
- assert.equal(api.absoluteSeasons(anime,files.slice(0,21)),null);assert.equal(api.absoluteSeasons({...anime,minimal_anime:false},files),null);assert.equal(api.absoluteSeasons({...anime,seasons:anime.seasons.concat(anime.seasons[0])},files),null);
+ assert.equal(api.absoluteSeasons(anime,files.slice(0,21)),null);assert.equal(api.absoluteSeasons({...anime,id:99999999,minimal_anime:false},files),null);assert.equal(api.absoluteSeasons({...anime,seasons:anime.seasons.concat(anime.seasons[0])},files),null);
  let requests=0;const service=api.default({Storage:{get:()=> 'ru'},Api:{sources:{tmdb:{get(url,p,ok){requests++;ok({seasons:anime.seasons});}}}}});
  const result=await new Promise(resolve=>service.groups({...anime,seasons:undefined},files,resolve));assert.equal(result.length,20);assert.equal(requests,1);await new Promise(resolve=>service.groups({...anime,seasons:undefined},files,resolve));assert.equal(requests,1,'The complete catalogue is shared and cached, not fetched per episode');
  const local=Object.fromEntries(Array.from({length:21},(_,i)=>[i+1,{episode_number:i+1,name:'Episode '+(i+1)}])),book=api.groupBook(local,result[1]);assert.equal(book[33].name,'Episode 1');assert.equal(book[53].name,'Episode 21');assert.equal(api.groupBook({...local,22:{episode_number:22}},result[1]),null);assert.equal(local[1].episode_number,1,'Playback/native metadata is never mutated');
@@ -86,7 +86,7 @@ test('fewer provider seasons never infer a mapping from selected episode counts 
  assert.equal(live.card.number_of_seasons,5);assert.deepEqual(live.provider[3].episodes,[1,2,3,4,5,6,7,8]);
  const gap=await new Promise(resolve=>service.book(live.card,4,[1,2,3,4],8,resolve,[1,2,3,4,5,6,7,9]));assert.equal(gap,null);
  assert.equal(api.alternativeNumbering(live.card,[0,1,2,3,4]),true,'Specials are not counted as an ordinary provider season');
- assert.equal(api.alternativeNumbering({...live.card,minimal_anime:false},[1]),false,'An ordinary series with one exposed source season keeps native metadata');
+ assert.equal(api.alternativeNumbering({...live.card,id:99999999,minimal_anime:false},[1]),false,'An ordinary series with one exposed source season keeps native metadata');
 });
 
 test('the entire episode-group model rejects specials, cross-group duplicates, incomplete maps and fractional coordinates',()=>{

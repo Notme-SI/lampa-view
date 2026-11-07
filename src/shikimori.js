@@ -22,22 +22,28 @@ export default function shikimori(L){
   }
   send();
  }
- function deliver(json,ok){ok({...json,results:json.results.map(card=>({...card}))});}
+ function deliver(json,ok,params){
+  ok({...json,results:json.results.map(card=>({...card}))});
+  // Native Full.Next keeps the initial total_pages and ignores later responses.
+  // Advance its boundary after every real page; stop at the first short page.
+  const active=L.Activity && L.Activity.active && L.Activity.active(),grid=active && active.component==='category_full' && active.source==='minimal_shiki' && active.activity && active.activity.component;
+  if(params && grid && grid.object && String(grid.object.url || '')===String(params.url || '') && Number(grid.object.page)===json.page)grid.total_pages=json.total_pages;
+ }
  function pump(){
   if(timer!==null || !queue.length || running>=2)return;
   const wait=350-(Date.now()-lastStart);if(wait>0){timer=setTimeout(()=>{timer=null;pump();},wait);return;}
   const job=queue.shift();lastStart=Date.now();running++;let settled=false;
-  function finish(json){if(settled)return;settled=true;running--;pending.delete(job.key);if(json){cache.set(job.key,{time:Date.now(),json});if(cache.size>40)cache.delete(cache.keys().next().value);}job.listeners.forEach(([ok,fail])=>json?deliver(json,ok):fail());pump();}
+  function finish(json){if(settled)return;settled=true;running--;pending.delete(job.key);if(json){cache.set(job.key,{time:Date.now(),json});if(cache.size>40)cache.delete(cache.keys().next().value);}job.listeners.forEach(([ok,fail])=>json?deliver(json,ok,job.params):fail());pump();}
   api('/api/animes?limit=24&page='+job.page+'&'+job.query,(json,base)=>{
    finish({results:json.map(card=>shikiCard(card,base)),page:job.page,total_pages:json.length===24?job.page+1:job.page});
   },()=>finish(null));pump();
  }
  function list(params,ok,fail){
   // Keep All independently configurable but share unfiltered popularity pages.
-  const query=params.url===SHIKI_ALL?'order=popularity':String(params.url || 'order=popularity').replace(/^\?/,''),page=Math.max(1,Number(params.page)||1),key=query+'|'+page,cached=cache.get(key);
-  if(cached && Date.now()-cached.time<900000)return deliver(cached.json,ok);
+  const query=params.url===SHIKI_ALL?'order=popularity':String(params.url || 'order=popularity').replace(/^\?/,''),page=Math.max(1,Number(params.page)||1),key=locale()+'|'+query+'|'+page,cached=cache.get(key);
+  if(cached && Date.now()-cached.time<900000)return deliver(cached.json,ok,params);
   cache.delete(key);const listener=[ok,fail || (()=>{})];if(pending.has(key)){pending.get(key).listeners.push(listener);return;}
-  const job={key,query,page,listeners:[listener]};pending.set(key,job);queue.push(job);pump();
+  const job={key,query,page,params,listeners:[listener]};pending.set(key,job);queue.push(job);pump();
  }
  const full=shikimoriMatch(L,(id,ok,fail)=>/^\d+$/.test(id)?api('/api/animes/'+id,ok,fail,null,json=>!!(json && Number(json.id)===Number(id))):fail());
  function retry(){unavailableUntil=0;preferred=0;}

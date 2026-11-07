@@ -1,5 +1,6 @@
 import {isAnime} from './metadata.js';
 import {locale} from './i18n.js';
+import {publishedSeasonCount,publishedEpisodeCount} from './episode-metadata.js';
 
 // Explicitly missing artwork is not a useful catalogue preview. Unknown image
 // metadata may still be supplied by a provider, so do not discard it here.
@@ -101,22 +102,22 @@ export function installFullGuard(L){
    if(!data || !data.movie)return error();
    const anime=typeof window!=='undefined' && window.LampaView && window.LampaView.animeBase;
    if(!anime || !isAnime(data.movie) || !anime.collection || !anime.canonical)return ok(data);
-   let complete=false;
+   let complete=false,resolved=data.movie;
    const finish=count=>{
     if(complete)return;complete=true;clearTimeout(timer);
-    data.movie={...data.movie,minimal_detail_ready:true,...(count>1?{minimal_detail_seasons:count}:{})};
+    data.movie={...data.movie,minimal_detail_ready:true,minimal_detail_seasons:count || publishedSeasonCount(resolved),minimal_detail_episodes:publishedEpisodeCount(resolved)};
     ok(data);
    };
    const timer=setTimeout(()=>finish(0),6500);
    anime.canonical(data.movie,card=>{
     if(complete || !card)return finish(0);
-    anime.collection(card,model=>{
+    resolved=card;anime.collection(card,model=>{
      if(complete)return;
      const story=model && model.complete && model.rows.find(row=>row.key==='story');
      const ids=new Set(story && story.results.map(row=>row.id));
      const date=new Date().toISOString().slice(0,10);
      const releases=model && model.nodes.filter(node=>ids.has(node.id) && node.record && Number(node.record.tv)===Number(card.id) && ['tv','ona'].includes(node.kind) && node.status!=='anons' && node.aired && node.aired<=date);
-     finish(Number(card.number_of_seasons)===1 && releases && releases.length>1?releases.length:0);
+     finish(Number(card.number_of_seasons)===1 && releases && releases.length>1?releases.length:publishedSeasonCount(card));
     });
    });
   },error);

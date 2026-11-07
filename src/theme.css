@@ -1124,3 +1124,16 @@ body.lampa_view .minimal-season-section:first-child {margin-top:.4em;padding-top
 
 body.lampa_view .nova-card__part {font-size:.8em;line-height:1.3;padding:.15em .45em;border-radius:.35em;background:#ffffff18;color:inherit}
 body.lampa_view .nova-plus-root .nova-hero__season-name {width:max-content;max-width:min(24em,58vw)}
+
+body.lampa_view .nova-card__labels {position:absolute;top:.5em;left:.5em;right:.5em;display:flex;gap:.4em;align-items:center;pointer-events:none}
+body.lampa_view .nova-card__labels .nova-card__num {position:static!important;margin:0;flex:0 0 auto}
+body.lampa_view .nova-card__labels .nova-card__part {background:rgba(0,0,0,.72);white-space:nowrap}
+
+body.lampa_view .minimal-anime-order {padding:1em 1.5em; margin:0 0 1em; color:var(--pt-text)}
+body.lampa_view .minimal-anime-order h2 {font-size:1.2em;font-weight:600;margin:0 0 .5em}
+body.lampa_view .minimal-anime-order p {color:var(--pt-muted);line-height:1.4;margin:0 0 1em}
+body.lampa_view .minimal-anime-order ol {display:grid;grid-template-columns:repeat(auto-fit,minmax(13em,1fr));gap:.8em;list-style:none;padding:0 0 .6em;margin:0}
+body.lampa_view .minimal-anime-order li {min-width:0;padding:1em;border:1px solid var(--pt-line);border-radius:1em;background:var(--pt-panel)}
+body.lampa_view .minimal-anime-order strong,body.lampa_view .minimal-anime-order span,body.lampa_view .minimal-anime-order small {display:block;line-height:1.4}
+body.lampa_view .minimal-anime-order span {margin:.5em 0}
+body.lampa_view .minimal-anime-order small {color:var(--pt-muted)}

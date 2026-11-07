@@ -9,8 +9,7 @@ export function shikiReleaseStatus(data={}){
  const total=Math.max(0,Number(data.episodes)||0),count=Math.max(0,Number(data.episodes_aired)||0) || (data.status==='released'?total:0);
  if(!count)return null;
  // Shikimori lists seasons as separate anime entries; never assume season 1.
- const title=data.original_name || data.original_title || data.name || data.title || '';
- return {season:Number(data.minimal_release_season)||animeSeasonTitle(title),count,total:Math.max(total,count)};
+ return {season:0,count,total:Math.max(total,count)};
 }
 export function releaseStatus(data={},episodes=[],today=day(new Date().toISOString())){
  if(data.source==='minimal_shiki')return shikiReleaseStatus(data);
@@ -166,7 +165,7 @@ function watchFooter(L,node,data,series){
 // Native timetable data and native watch history remain authoritative.
 export default function seriesStatus(L,schedule){
  const cards=new WeakMap(),cache=new Map(),pending=new Map(),queue=[];let running=0,saveTimer;
- const storage='minimal_series_release_v4',lifetime=900000;
+ const storage='minimal_series_release_v5',lifetime=900000;
  const saved=L.Storage && L.Storage.get?L.Storage.get(storage,[]):[];
  if(Array.isArray(saved))for(const pair of saved.slice(-80))if(Array.isArray(pair) && typeof pair[0]==='string' && pair[1] && pair[1].details && Date.now()-pair[1].at<lifetime)cache.set(pair[0],pair[1]);
  const cacheKey=data=>(data.source==='minimal_shiki'?'shiki':'tmdb')+':'+data.id+':'+(L.Storage && L.Storage.get?L.Storage.get('language','ru'):'ru');
@@ -199,8 +198,8 @@ export default function seriesStatus(L,schedule){
    const released=partial?available.count+'/'+available.total:String(available.count);
    const group=namedSeason(historyData,available.season),published=group?Number((group.match(/\d+/)||[])[0]):0;
    const seasonName=available.season?lampaViewText("Сезон {0}",[published || available.season]):'',prefix=seasonName?seasonName+" • ":'';
-   const text=prefix+(partial?lampaViewText("Серия "):lampaViewText("Серий "))+released;
-   if(box.textContent!==text){box.firstElementChild.textContent=prefix;box.lastElementChild.textContent=(partial?lampaViewText("Серия "):lampaViewText("Серий "))+released;}
+   const text=prefix+(data.source==='minimal_shiki'?lampaViewText("Эпизодов в релизе: {0}",[released]):(partial?lampaViewText("Серия "):lampaViewText("Серий "))+released);
+   if(box.textContent!==text){box.firstElementChild.textContent=prefix;box.lastElementChild.textContent=data.source==='minimal_shiki'?lampaViewText("Эпизодов в релизе: {0}",[released]):(partial?lampaViewText("Серия "):lampaViewText("Серий "))+released;}
    box.title=available.season?lampaViewText("Сезон {0}: вышло {1}. История просмотра — под обложкой.", [available.season,released]).replace(lampaViewText("Сезон {0}",[available.season]),seasonName):text;
   }else if(box)box.remove();
   // Release metadata stays independent of the native watch timeline below the cover.
