@@ -118,7 +118,7 @@ test('nonadjacent mapped releases stay separate, and verified consecutive parts 
   {id:2,name:'Prequel film',kind:'movie',aired:'2021-01-01'},
   {id:3,name:'Series 2',kind:'tv',aired:'2023-01-01',record:{tv:10,season:2,offset:0}},
   {id:4,name:'Series 3',kind:'tv',aired:'2024-01-01',record:{tv:10,season:1,offset:24}},
-  {id:5,name:'Series 4',kind:'tv',aired:'2025-01-01',record:{tv:10,season:4,offset:0}},
+  {id:5,name:'Series 4',episodes:12,kind:'tv',aired:'2025-01-01',record:{tv:10,season:4,offset:0}},
   {id:6,name:'Series 4 Part 2',kind:'tv',aired:'2025-04-01',record:{tv:10,season:4,offset:12}}
  ];
  const model={complete:true,nodes,edges:[],rows:[{key:'story',results:nodes.map(({id})=>({id}))}]};

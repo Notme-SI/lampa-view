@@ -45,7 +45,7 @@ test('joining actual Lampac HTML keeps the selected dub, video links and canonic
   routes.set('p1',html(1,12,'different-dub','Another voice'));
   const isolated=install({Reguest:Request,Storage:{get:(k,d)=>d}},{canonical:(c,done)=>done(card),collection:(c,done)=>done(model)},online);
   const rejected=await new Promise(resolve=>isolated(card,base,html(4,16,'first'),4,[1,2,3,4],body=>resolve(online.catalogueRows(body).length)));
-  assert.equal(rejected,16,'No silent dubbing change or jumping over a missing part');
+  assert.equal(rejected,18,'Keep the same dub and its actual finale files without filling the missing middle part');
  }finally{global.document=previous;global.location=previousLocation;dom.window.close();}
 });
 
