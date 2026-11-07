@@ -2576,9 +2576,8 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
         if(providerPart && selector==='.videos__item' && rows && rows.length)return continuationApi.files(providerPart,rows);
         if(selector==='.videos__item' && rows && rows.length>1 && rows.length<=100 &&
            rows.every(function(row){return row.method==='link' && !row.similar;})){
-          var links={};
-          rows.forEach(function(row){var number=row.season!==undefined?Number(row.season):digits(row.text || row.title);if(number>=0)links[number]=row.url;});
-          if(Object.keys(links).length===rows.length){var linkSource=String(rows[0].url || '').match(/\/lite\/([^\/?#]+)/i);seasonLinks={source:linkSource?linkSource[1]:requestSource,links:links};if(linkSource)comp.lampaViewSource=linkSource[1];}
+          var links=state && state.seasonNavigation && state.seasonNavigation(rows);
+          if(links && Object.keys(links).length===rows.length){var linkSource=String(rows[0].url || '').match(/\/lite\/([^\/?#]+)/i);seasonLinks={source:linkSource?linkSource[1]:requestSource,links:links};if(linkSource)comp.lampaViewSource=linkSource[1];}
         }
         return rows;
       };
@@ -2668,7 +2667,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     }
 
     if (typeof comp.parse === 'function' && !comp.nova_parse_hooked) {
-      var parse = comp.parse,partsReady=false,foldersReady=false;
+      var parse = comp.parse,partsReady=false,foldersReady=false,nativeFoldersReady=false;
       comp.nova_parse_hooked = true;
       comp.parse = function (str) {
         var responseGeneration=availabilityGeneration,responseSource=requestSource || currentSourceKey();
@@ -2682,6 +2681,14 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
             route.searchParams.set('title',card.name || card.original_name || '');route.searchParams.set('clarification','0');route.searchParams.set('similar','false');
             if(route.href!==providerUrl){parsing=true;try{return comp.request(route.href);}finally{parsing=false;}}
           }
+        }
+        var nativeSeasons=window.LampaView && window.LampaView.providerSeasons;
+        if(!nativeFoldersReady && nativeSeasons && card && episodeApi && episodeApi.isAnime(card)){
+          var nativeUrl=providerUrl;
+          nativeSeasons(card,nativeUrl,str,function(body){
+            if(comp.destroyed || componentNow()!==comp || providerUrl!==nativeUrl || availabilityGeneration!==responseGeneration)return;
+            nativeFoldersReady=true;try{comp.parse(body);}finally{nativeFoldersReady=false;}
+          });return;
         }
         if(joinParts && joinParts.rewrite)str=joinParts.rewrite(providerUrl,str);
         arguments[0]=str;
@@ -2819,9 +2826,11 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       continuation.selected=null;
       resetAvailability(typeof arguments[0]==='string' ? arguments[0] : '');
       probeStop(); probe_done_for = 0;
-      if (typeof comp.getChoice === 'function' && typeof comp.saveChoice === 'function' && typeof arguments[0] === 'string') {
-        try { var previous = comp.getChoice(), next = comp.getChoice(arguments[0]); if (previous.voice_name && !next.voice_name) { next.voice_name = previous.voice_name; comp.saveChoice(next, arguments[0]); } } catch (error) {}
-      }
+      // Each provider owns its season and dub choices. Keep the native saved
+      // selection for the destination source; never copy another source's dub.
+      comp.lampaViewManualSeason=undefined;
+      comp.lampaViewProviderSeasons=null;comp.lampaViewJoinedParts=null;
+      seasonLinks=null;releasePicks=null;countScope='';counts={};countDone={};countQueue=[];
       if (!inplace || !reloadable(comp)) return real.apply(comp, arguments);
 
       inplaceStop();
@@ -5851,13 +5860,14 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     if(number===undefined || number===null)return '';
     var key=wideCountKey(number),fileKey=wideFileCountKey(number);
     var active=Number(seasonNumber()),owner=root && root[0];
-    var nodes=items.filter(function(item){return !item.folder && !item.soon;}).map(function(item){return item.origin[0];});
+    var actual=items.filter(function(item){return !item.folder && !item.soon;}),zero=actual.some(function(item){return Number(episodeNumber(item.num))===0;});
+    var nodes=actual.map(function(item){return item.origin[0];});
     var activeKey=wideFileCountKey(active);
     var changed=wideObserved.owner!==owner || nodes.length!==wideObserved.nodes.length ||
       nodes.some(function(node,index){return node!==wideObserved.nodes[index];});
     if(active>=0 && (changed || !wideObserved.key))wideObserved={owner:owner,key:activeKey,nodes:nodes};
-    if(number===active && wideObserved.key===activeKey && nodes.length)wide_file_counts[fileKey]=nodes.length;
-    if(wide_file_counts[fileKey])return wideCount(wide_file_counts[fileKey]);
+    if(number===active && wideObserved.key===activeKey && nodes.length)wide_file_counts[fileKey]=actual.filter(function(item){return Number(episodeNumber(item.num))>0;}).length;
+    if(wide_file_counts[fileKey])return wideCount(wide_file_counts[fileKey])+(number===active && zero?' + '+lampaViewText('Серия {0}',[0]):'');
     var comp=componentNow(),exact=comp && comp.lampaViewSeasonCount && comp.lampaViewSeasonCount(number,wideVoiceName());
     if(exact)return wideCount(exact);
     var season=(movie && movie.seasons || []).filter(function(row){return Number(row.season_number)===displaySeason(number);})[0];
@@ -6231,7 +6241,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     widePartLabel(item,card,thumb);
     if (!serial || !wideMeta()) return;
     var number = parseInt(episodeNumber(item.num), 10) || 0;
-    if (!number) return;
+    if (!number){var zeroTitle=card.find('.nova-card__title');if(/^(?:(?:серия|эпизод|episode)\s*\d+|\d+\s*(?:серия|эпизод|episode))$/i.test(zeroTitle.text().trim()))zeroTitle.text(lampaViewText('Серия {0}',[0]));return;}
     readEpisodeBook(function (book, grouped) {
       if (!book) return;
       var episode = book[number];
@@ -6251,14 +6261,14 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
 
   function widePartLabel(item,card,thumb){
     var current=componentNow(),joined=current && current.lampaViewJoinedParts;
-    var part=joined && joined.season===seasonNumber() && joined.parts.filter(function(p){return Number(item.num)>p.offset && Number(item.num)<=p.offset+p.available;})[0];
+    var part=joined && joined.season===seasonNumber() && joined.parts.filter(function(p){return Array.isArray(p.episodes)?p.episodes.indexOf(Number(item.num))>=0 && Number(item.num)>0:Number(item.num)>p.offset && Number(item.num)<=p.offset+Number(p.available===undefined?p.count:p.available);})[0];
     if(part && !thumb.find('.nova-card__labels').length){var labels=$('<div class="nova-card__labels"></div>').appendTo(thumb);labels.append(card.find('.nova-card__num,.nova-card__tag')).append($('<span class="nova-card__part"></span>').text(lampaViewText("Часть {0}",[part.part])));}
   }
   function wideFill(item, card, thumb, readEpisodeBook) {
     widePartLabel(item,card,thumb);
     if (!serial || item.folder || !wideMeta()) return;
     var number = parseInt(episodeNumber(item.num), 10) || 0;
-    if (!number) return;
+    if (!number){var zeroTitle=card.find('.nova-card__title');if(/^(?:(?:серия|эпизод|episode)\s*\d+|\d+\s*(?:серия|эпизод|episode))$/i.test(zeroTitle.text().trim()))zeroTitle.text(lampaViewText('Серия {0}',[0]));return;}
     readEpisodeBook(function (book, grouped) {
       if (!book) return;
       var episode = book[number];
