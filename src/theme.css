@@ -1177,3 +1177,6 @@ body.lampa_view .minimal-related-info .selectbox-item__subtitle {white-space:nor
 @media(max-width:500px){body.lampa_view .minimal-related-art {width:5.4em;height:3.7em}}
 
 body.lampa_view .minimal-related-info .selectbox-item__title {color:inherit}
+
+/* Native expected rows carry countdown placeholders, never a video runtime. */
+body.lampa_view .nova-plus-root .nova-card--soon .nova-card__clock {display:none!important}
