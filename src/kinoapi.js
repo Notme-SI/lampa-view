@@ -75,6 +75,25 @@ export default function kinoapi(L){
  }
  function identity(card){const shiki=card.source==='minimal_shiki' && (card.shikimori_id||card.id);return shiki?{source:'shikimori',id:shiki}: {source:'tmdb',id:card.tmdb_id||card.id};}
  function title(card,done){if(!card)return done(null);const ref=identity(card),type=card.media_type==='movie' || !card.name && !card.first_air_date?'movie':'tv';if(!positive(ref.id))return done(null);request('titles/by/'+ref.source+'/'+ref.id+(ref.source==='tmdb'?'?type='+type:''),value=>done(value && value.data || null));}
+ function episodeStill(card,season,episode,done){
+  const genres=(card?.genres || []).concat(card?.genre_ids || []);
+  const isShow=genres.some(genre=>[10764,10767].includes(Number(genre?.id || genre)) ||
+   /^(?:реалити-шоу|реальное тв|ток-шоу|reality|talk)$/i.test(genre?.name || genre));
+  const id=Number(card?.tmdb_id || (['tmdb','cub'].includes(card?.source)?card.id:0));
+  const number=Number(episode?.episode_number),date=episode?.air_date;
+  if(!enabled() || !isShow || !positive(id) || !positive(season) || !positive(number) || !/^\d{4}-\d{2}-\d{2}$/.test(date || ''))return done('');
+  function read(kp){
+   if(!positive(kp))return done('');
+   request('tv/by/kinopoisk/'+Number(kp)+'/seasons/'+Number(season)+'/episodes',response=>{
+    const rows=Array.isArray(response?.data)?response.data.filter(row=>Number(row.episode_number)===number):[];
+    const row=rows.length===1?rows[0]:null,url=row?.still_path;
+    done(row?.air_date===date && (row.season_number==null || Number(row.season_number)===Number(season)) &&
+     (/^https:\/\/[^\s]+$/i.test(url || '') || /^\/[\w.-]+\.(?:jpg|jpeg|png|webp)$/i.test(url || ''))?url:'');
+   });
+  }
+  if(positive(card.kinopoisk_id))return read(card.kinopoisk_id);
+  title({...card,tmdb_id:id,media_type:'tv'},value=>read(value?.type==='tv' && Number(value.id?.tmdb)===id?value.id.kinopoisk:null));
+ }
  function anime(card,done){
   if(!enabled() || !isAnime(card))return done(null);
   const id=Number(card.tmdb_id||card.id),language=locale(),stamp=id+':'+language,existing=models.get(stamp);if(existing && existing.until>Date.now())return done(existing.value);
@@ -96,12 +115,12 @@ export default function kinoapi(L){
  }
  function setting(item){if(!item.find('.settings-param__value').length)item.append('<div class="settings-param__value"></div>');item.find('.settings-param__value').text(key());}
  if(L.SettingsApi){
-  L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_kinoapi_enabled',type:'trigger',default:!!key()},field:{name:'KinoAPI',description:t('Метаданные аниме.')+' '+t('Получить ключ: {0}.',['https://kinoapi.lampac.dev/'])},onChange(){
+  L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_kinoapi_enabled',type:'trigger',default:!!key()},field:{name:'KinoAPI',description:t('Метаданные аниме и кадры ТВ-шоу.')+' '+t('Получить ключ: {0}.',['https://kinoapi.lampac.dev/'])},onChange(){
    refresh();if(!flag(L,'minimal_kinoapi_enabled',!!key()) || key())return;
    // Cancelling the first input must leave the integration disabled.
    L.Storage.set('minimal_kinoapi_enabled',false);input();
   }});
   L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_kinoapi',type:'button'},field:{name:t('KinoAPI · Ключ API'),description:''},onRender:setting,onChange:input});
  }
- return {enabled,title,anime,releaseBook(mal,done){if(!positive(mal))return done(null);request('anime/mappings/by/myanimelist/'+mal+'/episodes',value=>done(malEpisodeBook(value,mal)));},catalogueRequest(path,done){if(!/^titles\?/.test(path))return done(null);request(path,done);},book(card,season,numbers,files,done){anime(card,model=>done(metadataBook(model,season,numbers,files)));},groups(card,files,done){anime(card,model=>done(absoluteGroups(model,files)));},clear};
+ return {enabled,title,anime,episodeStill,releaseBook(mal,done){if(!positive(mal))return done(null);request('anime/mappings/by/myanimelist/'+mal+'/episodes',value=>done(malEpisodeBook(value,mal)));},catalogueRequest(path,done){if(!/^titles\?/.test(path))return done(null);request(path,done);},book(card,season,numbers,files,done){anime(card,model=>done(metadataBook(model,season,numbers,files)));},groups(card,files,done){anime(card,model=>done(absoluteGroups(model,files)));},clear};
 }

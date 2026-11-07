@@ -1,9 +1,12 @@
 import posterPreview from './poster-cache.js';
 const premierArt='https://uma-static.rtbcdn.ru';
 const jungleBanner='/pic/cardimage/38/00/38005b24f09deabf6b021d9b1829979b.jpg';
-const jungleEpisodes={
- 1:'/pic/video/86/be/86be8a6310f4bad09364a65f3ce987f8.jpg',
- 2:'/pic/video/a9/31/a9311492d49e71967460312853bdfdf1.jpg'
+// Individual episode artwork from the Apple TV listings for season 3.
+const jungleAppleEpisodes={
+ 2:'PjioiIA_AR3I3AI2r2kQJg',
+ 3:'p42MWcd4nwuS-He3cA_ZcQ',
+ 4:'XqR66gyXX2-uMQjleIQ9IQ',
+ 5:'_NwbZ4Er28_v52s0SisQjA'
 };
 const isJungle=card=>card?.media_type!=='movie' && Number(card?.tmdb_id || (['tmdb','cub'].includes(card?.source)?card.id:0))===273552;
 
@@ -11,8 +14,10 @@ export function officialBanner(card,original){
  if(isJungle(card))return premierArt+(original?jungleBanner:'/cwebp'+jungleBanner+'?size=1280&quality=85');
 }
 export function officialEpisodePreview(card,season,episode){
- const path=isJungle(card) && Number(season)===3 && jungleEpisodes[Number(episode)];
- return path?premierArt+'/cwebp'+path+'?size=692&quality=85':'';
+ if(!isJungle(card) || Number(season)!==3)return '';
+ if(Number(episode)===1)return premierArt+'/cwebp/pic/video/86/be/86be8a6310f4bad09364a65f3ce987f8.jpg?size=692&quality=85';
+ const image=jungleAppleEpisodes[Number(episode)];
+ return image?'https://is1-ssl.mzstatic.com/image/thumb/'+image+'/1200x675.jpg':'';
 }
 export function detailBackdrop(variants,path,width,language='ru'){
  const current=variants.find(v=>v.file_path===path),needed=Math.max(1920,Number(width)||1920);

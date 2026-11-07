@@ -38,3 +38,28 @@ test('identical local episode counts never map a missing second season to the fi
  assert.equal(api.metadataBook(model,2,[1,2],files),null);
  assert.equal(api.metadataBook(model,1,[1,2],files)[1].season_number,1);
 });
+
+test('TV show stills use one exact Kinopoisk season and reject wrong dates and duplicate episodes',async()=>{
+ const card={id:273552,source:'tmdb',name:'Звёзды в джунглях',genre_ids:[10764]};
+ const f=fixture(xhr=>{
+  xhr.status=200;
+  xhr.responseText=JSON.stringify(xhr.url.includes('/titles/by/')?{
+   data:{id:{tmdb:273552,kinopoisk:456},type:'tv'}
+  }:{data:[
+   {episode_number:2,air_date:'2026-10-11',still_path:'https://art.example/episode-2.jpg'},
+   {episode_number:3,air_date:'2026-10-11',still_path:'https://art.example/wrong-date.jpg'},
+   {episode_number:4,air_date:'2026-10-25',still_path:'https://art.example/episode-4.jpg'},
+   {episode_number:4,air_date:'2026-10-25',still_path:'https://art.example/duplicate.jpg'}
+  ]});
+  xhr.onload();
+ });
+ const client=f.api.default(f.L);
+ const read=(episode_number,air_date)=>new Promise(resolve=>client.episodeStill(card,3,{episode_number,air_date},resolve));
+ assert.equal(await read(2,'2026-10-11'),'');
+ assert.equal(f.requests.length,0);
+ f.store.set('lampa_view_kinoapi_key','fixture-key');
+ assert.deepEqual(await Promise.all([read(2,'2026-10-11'),read(3,'2026-10-18'),read(4,'2026-10-25')]),
+  ['https://art.example/episode-2.jpg','','']);
+ assert.deepEqual(f.requests.map(req=>req.url.split('/api/v1/')[1]),
+  ['titles/by/tmdb/273552?type=tv','tv/by/kinopoisk/456/seasons/3/episodes']);
+});

@@ -1,4 +1,4 @@
-/*! Lampa View 0.5.75 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.5.76 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -13451,9 +13451,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   // src/artwork.js
   var premierArt = "https://uma-static.rtbcdn.ru";
   var jungleBanner = "/pic/cardimage/38/00/38005b24f09deabf6b021d9b1829979b.jpg";
-  var jungleEpisodes = {
-    1: "/pic/video/86/be/86be8a6310f4bad09364a65f3ce987f8.jpg",
-    2: "/pic/video/a9/31/a9311492d49e71967460312853bdfdf1.jpg"
+  var jungleAppleEpisodes = {
+    2: "PjioiIA_AR3I3AI2r2kQJg",
+    3: "p42MWcd4nwuS-He3cA_ZcQ",
+    4: "XqR66gyXX2-uMQjleIQ9IQ",
+    5: "_NwbZ4Er28_v52s0SisQjA"
   };
   var isJungle = function isJungle(card) {
     return (card == null ? void 0 : card.media_type) !== "movie" && Number((card == null ? void 0 : card.tmdb_id) || (["tmdb", "cub"].includes(card == null ? void 0 : card.source) ? card.id : 0)) === 273552;
@@ -13462,8 +13464,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     if (isJungle(card)) return premierArt + (original ? jungleBanner : "/cwebp" + jungleBanner + "?size=1280&quality=85");
   }
   function officialEpisodePreview(card, season, episode) {
-    var path = isJungle(card) && Number(season) === 3 && jungleEpisodes[Number(episode)];
-    return path ? premierArt + "/cwebp" + path + "?size=692&quality=85" : "";
+    if (!isJungle(card) || Number(season) !== 3) return "";
+    if (Number(episode) === 1) return premierArt + "/cwebp/pic/video/86/be/86be8a6310f4bad09364a65f3ce987f8.jpg?size=692&quality=85";
+    var image2 = jungleAppleEpisodes[Number(episode)];
+    return image2 ? "https://is1-ssl.mzstatic.com/image/thumb/" + image2 + "/1200x675.jpg" : "";
   }
   function detailBackdrop(variants, path, width) {
     var language = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : "ru";
@@ -15119,7 +15123,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // package.json
-  var version = "0.5.75";
+  var version = "0.5.76";
 
   // src/inputs.js
   function inputs(L) {
@@ -29462,6 +29466,35 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         return done(value && value.data || null);
       });
     }
+    function episodeStill(card, season, episode, done) {
+      var genres = ((card == null ? void 0 : card.genres) || []).concat((card == null ? void 0 : card.genre_ids) || []);
+      var isShow = genres.some(function (genre) {
+        return [10764, 10767].includes(Number((genre == null ? void 0 : genre.id) || genre)) || /^(?:реалити-шоу|реальное тв|ток-шоу|reality|talk)$/i.test((genre == null ? void 0 : genre.name) || genre);
+      });
+      var id = Number((card == null ? void 0 : card.tmdb_id) || (["tmdb", "cub"].includes(card == null ? void 0 : card.source) ? card.id : 0));
+      var number3 = Number(episode == null ? void 0 : episode.episode_number),
+        date2 = episode == null ? void 0 : episode.air_date;
+      if (!enabled() || !isShow || !positive5(id) || !positive5(season) || !positive5(number3) || !/^\d{4}-\d{2}-\d{2}$/.test(date2 || "")) return done("");
+      function read(kp) {
+        if (!positive5(kp)) return done("");
+        request("tv/by/kinopoisk/" + Number(kp) + "/seasons/" + Number(season) + "/episodes", function (response) {
+          var rows = Array.isArray(response == null ? void 0 : response.data) ? response.data.filter(function (row2) {
+            return Number(row2.episode_number) === number3;
+          }) : [];
+          var row = rows.length === 1 ? rows[0] : null,
+            url = row == null ? void 0 : row.still_path;
+          done((row == null ? void 0 : row.air_date) === date2 && (row.season_number == null || Number(row.season_number) === Number(season)) && (/^https:\/\/[^\s]+$/i.test(url || "") || /^\/[\w.-]+\.(?:jpg|jpeg|png|webp)$/i.test(url || "")) ? url : "");
+        });
+      }
+      if (positive5(card.kinopoisk_id)) return read(card.kinopoisk_id);
+      title(__spreadProps(__spreadValues({}, card), {
+        tmdb_id: id,
+        media_type: "tv"
+      }), function (value) {
+        var _a;
+        return read((value == null ? void 0 : value.type) === "tv" && Number((_a = value.id) == null ? void 0 : _a.tmdb) === id ? value.id.kinopoisk : null);
+      });
+    }
     function anime(card, done) {
       if (!enabled() || !isAnime(card)) return done(null);
       var id = Number(card.tmdb_id || card.id),
@@ -29529,7 +29562,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         },
         field: {
           name: "KinoAPI",
-          description: text("Метаданные аниме.") + " " + text("Получить ключ: {0}.", ["https://kinoapi.lampac.dev/"])
+          description: text("Метаданные аниме и кадры ТВ-шоу.") + " " + text("Получить ключ: {0}.", ["https://kinoapi.lampac.dev/"])
         },
         onChange: function onChange() {
           refresh();
@@ -29556,6 +29589,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       enabled: enabled,
       title: title,
       anime: anime,
+      episodeStill: episodeStill,
       releaseBook: function releaseBook(mal, done) {
         if (!positive5(mal)) return done(null);
         request("anime/mappings/by/myanimelist/" + mal + "/episodes", function (value) {
@@ -52230,7 +52264,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         } catch (e) {
           src = "";
         }
-        return src === "undefined" ? "" : src;
+        return usableThumb(src) ? src : "";
+      }
+      function usableThumb(src) {
+        return !!src && src !== "undefined" && !/(?:^|\/)(?:img_broken|img_placeholder)\.svg(?:$|[?#])/i.test(src);
       }
       function paintThumb(thumb, art, fallback, onError) {
         if (!thumb || !thumb.length) return;
@@ -52281,7 +52318,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           } catch (e) {
             src = "";
           }
-          if (!src || src === "undefined") return false;
+          if (!usableThumb(src)) return false;
           stop();
           paintThumb(thumb, src, false);
           return true;
@@ -55400,9 +55437,20 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
         };
       }
-      function paintEpisodeThumb(thumb, episode) {
-        if (!episode.still_path) return;
+      function paintEpisodeThumb(thumb, episode, item) {
         if (!episode.lampa_grouped && thumb.hasClass("nova-card__thumb--loaded") && !thumb.hasClass("nova-card__thumb--fallback")) return;
+        if (!episode.still_path) {
+          var service = window.LampaView && window.LampaView.kinoapi;
+          var card = movie,
+            season = seasonNumber();
+          if (!service || !service.episodeStill || item.soon || episode.lampa_grouped || Number(episode.episode_number) !== Number(item.num) || Number(episode.season_number || season) !== Number(season)) return;
+          if (window.LampaView.officialEpisodePreview && window.LampaView.officialEpisodePreview(card, season, item.num)) return;
+          return service.episodeStill(card, season, episode, function (url) {
+            if (url && movie === card && seasonNumber() === season) paintEpisodeThumb(thumb, {
+              still_path: url
+            }, item);
+          });
+        }
         var art = image(episode.still_path, get("minimal_banner_quality", "high") === "medium" ? "w500" : "w780");
         if (!art) return;
         var previous = thumb.find("img").attr("src");
@@ -55501,7 +55549,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           meta.empty();
           if (rating) meta.append($('<span class="nova-card__rate"></span>').text(rating));
           if (when) meta.append($('<span class="nova-card__date"></span>').text(when));
-          paintEpisodeThumb(thumb, episode);
+          paintEpisodeThumb(thumb, episode, item);
         });
       }
       function widePartLabel(item, card, thumb) {
@@ -55543,7 +55591,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           var title = card.find(".nova-card__title");
           if (episode.name) title.text(episodeTitle(item, episode.name));
           episodeOverview(card, episode);
-          paintEpisodeThumb(thumb, episode);
+          paintEpisodeThumb(thumb, episode, item);
         });
       }
       function wideOrderList(list) {
