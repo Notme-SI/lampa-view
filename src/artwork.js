@@ -1,4 +1,19 @@
 import posterPreview from './poster-cache.js';
+const premierArt='https://uma-static.rtbcdn.ru';
+const jungleBanner='/pic/cardimage/38/00/38005b24f09deabf6b021d9b1829979b.jpg';
+const jungleEpisodes={
+ 1:'/pic/video/86/be/86be8a6310f4bad09364a65f3ce987f8.jpg',
+ 2:'/pic/video/a9/31/a9311492d49e71967460312853bdfdf1.jpg'
+};
+const isJungle=card=>card?.media_type!=='movie' && Number(card?.tmdb_id || (['tmdb','cub'].includes(card?.source)?card.id:0))===273552;
+
+export function officialBanner(card,original){
+ if(isJungle(card))return premierArt+(original?jungleBanner:'/cwebp'+jungleBanner+'?size=1280&quality=85');
+}
+export function officialEpisodePreview(card,season,episode){
+ const path=isJungle(card) && Number(season)===3 && jungleEpisodes[Number(episode)];
+ return path?premierArt+'/cwebp'+path+'?size=692&quality=85':'';
+}
 export function detailBackdrop(variants,path,width,language='ru'){
  const current=variants.find(v=>v.file_path===path),needed=Math.max(1920,Number(width)||1920);
  if(!current)return path;
@@ -51,6 +66,7 @@ export default function installArtwork(L,enabled){
   if(!wrappers.has(original)){
    const wrapper=function(src,size){
     if(depth || !enabled() || (size && !/^(?:w\d+(?:_and_h\d+_face)?|original)$/.test(size)))return original.apply(this,arguments);
+    if(typeof src==='string' && /^https:\/\//i.test(src))return src;
     // Native MediaLoading asks for original: it is a fullscreen backdrop,
     // never a small portrait. Delegating APIs must not classify the size twice.
     const kind=['w780','w1280','original'].includes(size)?'backdrop':'poster';

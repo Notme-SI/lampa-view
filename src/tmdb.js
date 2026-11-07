@@ -2,6 +2,7 @@ import {isAnime} from './metadata.js';
 import {locale} from './i18n.js';
 import {publishedSeasonCount,publishedEpisodeCount} from './episode-metadata.js';
 import {franchiseViewingOrder} from './anime-franchise.js';
+import {galleryFramesKey,loadGalleryFrames} from './gallery-frames.js';
 
 // Explicitly missing artwork is not a useful catalogue preview. Unknown image
 // metadata may still be supplied by a provider, so do not discard it here.
@@ -102,13 +103,15 @@ export function installFullGuard(L){
   const error=status=>{if(fail)fail(status && typeof status==='object'?status:{empty:true});};
   return full.call(this,params,data=>{
    if(!data || !data.movie)return error();
+   const frames=L.Storage?.get(galleryFramesKey,'') && loadGalleryFrames(L,data.movie);
+   const publish=()=>frames?frames.then(rows=>{if(rows.length)data.minimal_gallery_frames=rows;ok(data);}):ok(data);
    const anime=typeof window!=='undefined' && window.LampaView && window.LampaView.animeBase;
-   if(!anime || !isAnime(data.movie) || !anime.collection || !anime.canonical)return ok(data);
+   if(!anime || !isAnime(data.movie) || !anime.collection || !anime.canonical)return publish();
    let complete=false,resolved=data.movie;
    const finish=count=>{
     if(complete)return;complete=true;clearTimeout(timer);
     data.movie={...data.movie,minimal_detail_ready:true,minimal_detail_seasons:count || publishedSeasonCount(resolved),minimal_detail_episodes:publishedEpisodeCount(resolved)};
-    ok(data);
+    publish();
    };
    const timer=setTimeout(()=>finish(0),18000);
    anime.canonical(data.movie,card=>{

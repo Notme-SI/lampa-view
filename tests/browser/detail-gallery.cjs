@@ -8,15 +8,20 @@ async function open(page,movie){
   L.Layer.init();L.DeviceInput.init();L.Controller.observe();L.Keypad.init();L.Keypad.enable();
   Navigator.follow('focus',event=>L.Controller.focus(event.elem));
   window.frameRequests=[];
+  const image=L.TMDB.image;
+  L.TMDB.image=(path,options)=>{frameRequests.push(path);return image(path,options);};
   L.Api.sources.tmdb.get=(path,params,done)=>{
    frameRequests.push(path);
-   done({stills:[{file_path:'/episode-still2.jpg'},{file_path:'/episode-still3.jpg'}]});
+   done({stills:Array.from({length:8},(_,i)=>({file_path:'/episode-still'+(i+2)+'.jpg'}))});
   };
   const artwork=Array.from({length:movie?25:6},(_,i)=>({file_path:'/art'+i+'.jpg',width:1280,aspect_ratio:16/9}));
-  const card={id:91,source:'tmdb',production_countries:[],production_companies:[],spoken_languages:[],genres:[],
+  const card={id:91,source:'tmdb',backdrop_path:'/art0.jpg',production_countries:[],production_companies:[],spoken_languages:[],genres:[],
    ...(movie?{title:'Проверка фильма',release_date:'2025-01-01'}:{name:'Проверка сериала',first_air_date:'2025-01-01'})};
   L.Api.full=(p,done)=>done({movie:card,persons:{cast:[],crew:[]},images:{backdrops:artwork},videos:{results:[]},
-   ...(movie?{}:{episodes:{episodes:[{season_number:1,episode_number:1,air_date:'2025-01-01',still_path:'/episode-still1.jpg'}]}})});
+   ...(movie?{minimal_gallery_frames:Array.from({length:25},(_,i)=>{
+    const url='https://image.tmdb.org/real-frame-'+i+'.jpg';
+    return {img:url,minimal_still_url:url,minimal_gallery_art:true};
+   })}:{episodes:{episodes:[{season_number:1,episode_number:1,air_date:'2025-01-01',still_path:'/episode-still1.jpg'}]}})});
   L.Activity.push({component:'full',source:'tmdb',id:card.id,method:movie?'movie':'tv',card});
  },movie);
  const row=page.locator('.activity--active .minimal-detail-screenshots');
@@ -67,6 +72,8 @@ async function open(page,movie){
      }
      const viewer=page.locator('.minimal-frame-viewer');
      await viewer.waitFor();
+     if(mobile)assert.match(await viewer.locator('img').getAttribute('src'),/real-frame-0\.jpg/);
+     else assert.ok((await page.evaluate(()=>frameRequests)).includes('/t/p/w1280/episode-still1.jpg'));
      const position=()=>viewer.locator('[aria-live]').textContent();
      const total=mobile?20:9;
      assert.equal(await position(),'1 / '+total);
