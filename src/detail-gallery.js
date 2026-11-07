@@ -75,7 +75,9 @@ function showFrames(L,line,frames,start){
  viewer.appendChild(controls);viewer.appendChild(image);
  function draw(){
   const frame=frames[index],label=frame.node.getAttribute('aria-label');
-  image.alt=label;image.src=imagePath(frame.path)?L.TMDB.image('/t/p/w1280'+frame.path,{preserveSize:true}):frame.path;
+  image.alt=label;
+  const size=frame.width>1280?'original':'w1280';
+  image.src=imagePath(frame.path)?L.TMDB.image('/t/p/'+size+frame.path,{preserveSize:true}):frame.path;
   counter.textContent=(index+1)+' / '+frames.length;
   if(L.Modal.opened())L.Modal.title?.(label);
  }
@@ -110,7 +112,7 @@ export function styleScreenshots(L,event){
    if(node){node.hidden=true;node.classList.remove('selector');}
    return;
   }
-  const entry={node,path};
+  const entry={node,path,width:item.data.width};
   frames.push(entry);seen.add(path);
   node.dataset.minimalScreenshot='1';node.setAttribute('role','button');node.tabIndex=0;
   node.setAttribute('aria-label',t('Кадр {0}',[frames.length]));
