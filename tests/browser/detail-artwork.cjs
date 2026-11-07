@@ -8,8 +8,15 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
 
   for(const theme of ['minimal','glass']){
    await page.evaluate(theme=>Lampa.Storage.set('lampa_view_theme',theme),theme);await page.waitForTimeout(450);
-   const value=await page.locator('.activity--active').evaluate(root=>{const background=root.querySelector('.full-start__background');if(!background)return {nativeBackground:false};const b=background.getBoundingClientRect(),cast=root.querySelector('.minimal-detail-columns').getBoundingClientRect(),header=root.querySelector('.minimal-detail-header').getBoundingClientRect();return {backgroundBottom:b.bottom,castBottom:cast.bottom,headerBottom:header.bottom,headerTop:header.top,first:root.querySelector('.full-person__name').textContent,mask:getComputedStyle(root.querySelector('.full-start__background')).maskImage};});
+   const value=await page.locator('.activity--active').evaluate(root=>{const background=root.querySelector('.full-start__background');if(!background)return {nativeBackground:false};const b=background.getBoundingClientRect(),cast=root.querySelector('.minimal-detail-columns').getBoundingClientRect(),header=root.querySelector('.minimal-detail-header').getBoundingClientRect();return {backgroundBottom:b.bottom,backgroundWidth:b.width,backgroundHeight:b.height,castTop:cast.top,castBottom:cast.bottom,headerBottom:header.bottom,headerTop:header.top,first:root.querySelector('.full-person__name').textContent,mask:getComputedStyle(root.querySelector('.full-start__background')).maskImage};});
    if(value.nativeBackground===false){assert.equal(mode,'mobile','Only the native mobile template may omit its backdrop');continue;}
+   if(mode==='mobile'){
+    assert.ok(Math.abs(value.backgroundWidth*9/16-value.backgroundHeight)<2,'Mobile cover keeps its 16:9 ratio: '+JSON.stringify(value));
+    assert.ok(value.backgroundBottom<value.castTop,'Mobile cover is above credits, with no background behind them');
+    assert.equal(value.first,'Native director');assert.ok(value.mask.includes('gradient'));
+    assert.equal(await page.locator('.activity--active .minimal-detail-shade').evaluate(n=>getComputedStyle(n).display),'none');
+    continue;
+   }
    assert.ok(value.backgroundBottom>=value.castBottom-1,'Backdrop reaches beneath the complete cast/facts block: '+JSON.stringify({mode,theme,value}));assert.ok(value.backgroundBottom<=value.headerBottom+2,'Backdrop fades before comments/recommendations');assert.equal(value.first,'Native director');assert.equal(await page.locator('.activity--active .full-start-new__description,.activity--active .minimal-detail-overview').first().evaluate(n=>getComputedStyle(n).color),'rgb(255, 255, 255)','Detail overview remains readable white');assert.ok(value.mask.includes('gradient'));const shade=await page.locator('.activity--active .minimal-detail-shade').evaluate(n=>({display:getComputedStyle(n).display,pointer:getComputedStyle(n).pointerEvents,bg:getComputedStyle(n).backgroundImage,height:n.getBoundingClientRect().height,imageHeight:n.previousElementSibling.getBoundingClientRect().height}));if(theme==='glass'){assert.ok(shade.bg.includes('gradient'));assert.equal(shade.pointer,'none');assert.ok(Math.abs(shade.height-shade.imageHeight)<2,'Contrast shade tracks the complete backdrop');}else assert.equal(shade.display,'none');
   }
   if(mode!=='mobile'){
@@ -38,6 +45,6 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
   }
   await page.evaluate(()=>{const root=document.querySelector('.activity--active'),sample=document.createElement('div');sample.className='minimal-detail-header';sample.innerHTML='<div class="full-start-new__reactions"><div class="reaction">Reaction</div></div><div class="mapping--line"><div class="full-review">Comment</div><div class="full-review-add">Add</div></div><div class="minimal-torrent-banner__meta">8.6 2025</div>';root.appendChild(sample);});
   for(const selector of ['.full-review','.full-review-add','.reaction','.minimal-torrent-banner__meta']){const material=await page.locator('.activity--active '+selector).evaluate(n=>({bg:getComputedStyle(n).backgroundColor,image:getComputedStyle(n).backgroundImage,blur:getComputedStyle(n).backdropFilter}));assert.ok(material.image.includes('gradient'),selector+JSON.stringify(material));assert.ok(Number(material.bg.match(/[\d.]+/g)[3])<.5,selector+JSON.stringify(material));assert.equal(material.blur,'none');}
-  assert.deepEqual(r.errors,[]);console.log(engine.name()+' '+mode+': native credits and full-height fading backdrop in both themes');
+  assert.deepEqual(r.errors,[]);console.log(engine.name()+' '+mode+': native credits and '+(mode==='mobile'?'separate 16:9 cover':'full-height fading backdrop')+' in both themes');
  }finally{await r.context.close();}
 }}finally{await browser.close();}}})().catch(e=>{console.error(e);process.exitCode=1;});

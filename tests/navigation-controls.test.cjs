@@ -23,8 +23,9 @@ test('cartoons menu sits below series and opens bounded film/TV animation rows t
   const item=w.document.querySelector('[data-action="cartoon"]'),series=w.document.querySelector('[data-action="tv"]');assert.equal(series.nextElementSibling.dataset.action,'dorama');assert.equal(series.nextElementSibling.nextElementSibling.dataset.action,'tvshow');assert.equal(series.nextElementSibling.nextElementSibling.nextElementSibling,item);assert.notEqual(w.getComputedStyle(item).display,'none');
   const response=require('./fixtures/discovery-response.cjs');L.Api.sources.tmdb.get=(url,params,ok)=>{requests.push(url);w.setTimeout(()=>ok(response(url,params.page)),0);};
   w.jQuery(item).trigger('hover:enter');await wait(180);
-  assert.equal(L.Activity.active().url,'cartoon');assert.ok(requests.length>=12 && requests.length<=24);
-  for(const path of requests){const query=new URLSearchParams(path.split('?')[1]);assert.ok(query.get('with_genres').split(',').includes('16'));if(!query.has('with_companies') && !query.has('with_networks'))assert.equal(query.get('without_keywords'),'210024');assert.match(path,/^discover\/(?:movie|tv)\?/);}
+  assert.equal(L.Activity.active().url,'cartoon');assert.ok(requests.length>=6 && requests.length<=10,'The first three mixed rows use bounded movie and TV requests');
+  assert.ok(requests.some(path=>path.startsWith('trending/movie/')));assert.ok(requests.some(path=>path.startsWith('trending/tv/')));
+  for(const path of requests){if(/^trending\/(?:movie|tv)\//.test(path))continue;const query=new URLSearchParams(path.split('?')[1]);assert.match(path,/^discover\/(?:movie|tv)\?/);assert.ok(query.get('with_genres').split(',').includes('16'));if(!query.has('with_companies') && !query.has('with_networks'))assert.equal(query.get('without_keywords'),'210024');}
   const root=L.Activity.active().activity.render(true),rows=L.Activity.active().activity.component;
   assert.match(root.textContent,/Новинки/);assert.ok(!rows.items.concat(rows.loaded.flat()).some(row=>/мультфильмы|мультсериалы/i.test((row.data||row).title)));assert.ok(rows.items.length+rows.loaded.length<=12);
   assert.deepEqual(r.errors,[]);
@@ -72,7 +73,7 @@ test('held TV navigation scrolls once per card, builds the next lazy batch and h
 });
 
 
-test('dorama is integrated as poster rows in series and has no visible separate menu',async()=>{const r=await native({built:true}),{w,L}=r;try{const item=w.document.querySelector('.menu__item[data-action=dorama]');assert.ok(item.classList.contains('pt-removed-section'));const response=require('./fixtures/discovery-response.cjs');L.Api.sources.tmdb.get=(url,p,ok)=>w.setTimeout(()=>ok(response(url,p.page)),0);item.click();await wait(250);assert.equal(L.Activity.active().url,'tv');assert.ok(L.Activity.active().activity.component.items.concat(L.Activity.active().activity.component.loaded.flat()).some(r=>(r.data||r).title==='Корейские дорамы'));assert.ok(!w.document.querySelector('.minimal-section-open,.minimal-section-tile'));assert.deepEqual(r.errors,[]);}finally{r.close();}});
+test('dorama is integrated as poster rows in series and has no visible separate menu',async()=>{const r=await native({built:true}),{w,L}=r;try{const item=w.document.querySelector('.menu__item[data-action=dorama]');assert.ok(item.classList.contains('pt-removed-section'));const response=require('./fixtures/discovery-response.cjs');L.Api.sources.tmdb.get=(url,p,ok)=>w.setTimeout(()=>ok(response(url,p.page)),0);item.click();await wait(250);assert.equal(L.Activity.active().url,'tv');const list=L.Activity.active().activity.component,rows=list.items.map(r=>r.data);for(let i=0;i<4 && !rows.some(r=>r.title==='Корейские дорамы');i++)await new Promise((ok,fail)=>list.emit('next',batch=>{rows.push(...batch);ok();},fail));assert.ok(rows.some(r=>r.title==='Корейские дорамы'));assert.ok(!w.document.querySelector('.minimal-section-open,.minimal-section-tile'));assert.deepEqual(r.errors,[]);}finally{r.close();}});
 
 test('native menu_always switches a single native menu between dock and popover and restores the button',async()=>{
  const r=await native({built:true}),{w,L}=r;try{
@@ -90,9 +91,9 @@ test('TV shows follow dorama in the native menu, open bounded feeds and preserve
   L.Storage.set('source','tmdb');const series=w.document.querySelector('.menu__item[data-action="tv"]'),dorama=series.nextElementSibling,shows=dorama.nextElementSibling;
   assert.equal(dorama.dataset.action,'dorama');assert.equal(shows.dataset.action,'tvshow');assert.equal(shows.querySelector('.menu__text').textContent,'ТВ-шоу');
   const response=require('./fixtures/discovery-response.cjs');L.Api.sources.tmdb.get=(url,params,ok)=>{requests.push(url);w.setTimeout(()=>ok(response(url,params.page)),0);};
-  shows.click();await wait(220);assert.equal(L.Activity.active().url,'tvshow');assert.equal(requests.length,5);
+  shows.click();await wait(220);assert.equal(L.Activity.active().url,'tvshow');assert.equal(requests.length,3,'Only the first batch loads before scrolling');
   for(const url of requests){const q=new URLSearchParams(url.split('?')[1]);assert.match(url,/^discover\/tv\?/);assert.match(q.get('with_genres'),/10764|10767/);assert.equal(q.get('without_genres'),'16,99,18,80,10766');assert.equal(q.get('with_origin_country'),'RU');}
-  const row=L.Activity.active().activity.component.items[0];assert.equal(row.data.title,'Популярное');
+  const row=L.Activity.active().activity.component.items[0];assert.equal(row.data.title,'Сейчас смотрят');
   row.render(true).querySelector('.minimal-row-more').dispatchEvent(new w.Event('hover:enter'));await wait(120);
   assert.equal(L.Activity.active().component,'category_full');assert.equal(L.Activity.active().source,'minimal_discovery');assert.equal(JSON.parse(L.Activity.active().url).kind,'tvshow');assert.deepEqual(r.errors,[]);
  }finally{r.close();}

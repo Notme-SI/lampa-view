@@ -3,10 +3,10 @@ function load(w,file,name){w.eval(esbuild.buildSync({entryPoints:[path.join(__di
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 test('CUB refresh uses the native account transport on foreground and coalesces duplicate lifecycle events',async()=>{
  const d=new JSDOM('',{runScripts:'outside-only',pretendToBeVisual:true}),w=d.window;
- try{let calls=0,bookmarkReads=0;const hooks={},L={Account:{Bookmarks:{update(){bookmarkReads++;}},Permit:{sync:true},Timeline:{update(){calls++;}}},Listener:{follow:(name,fn)=>hooks[name]=fn}};
-  load(w,'progress-sync','Sync').default(L,()=>true);w.dispatchEvent(new w.Event('focus'));hooks.activity({type:'start'});await wait(400);assert.equal(calls,1);
+ try{let calls=0,bookmarkReads=0;const hooks={},L={Storage:{get:(k,f)=>f},Account:{Bookmarks:{update(){bookmarkReads++;}},Permit:{sync:true},Timeline:{update(){calls++;}}},Listener:{follow:(name,fn)=>hooks[name]=fn}};
+  const sync=load(w,'progress-sync','Sync').default(L,()=>true);w.dispatchEvent(new w.Event('focus'));hooks.activity({type:'start'});await wait(400);assert.equal(calls,1);
   w.dispatchEvent(new w.Event('focus'));await wait(400);assert.equal(calls,1,'Foreground events are bounded, not a polling loop');assert.equal(bookmarkReads,0,'The plugin must not launch competing native bookmark refreshes');
-  L.Account.Permit.sync=false;w.dispatchEvent(new w.Event('focus'));await wait(400);assert.equal(calls,1);
+  L.Account.Permit.sync=false;w.dispatchEvent(new w.Event('focus'));await wait(400);assert.equal(calls,1);sync.stop();
  }finally{w.close();}
 });
 test('manual native timeline writes preserve profile and duration; remote read invalidates cached episode history',()=>{
@@ -56,7 +56,7 @@ test('all ten native 95-percent Cyberpunk marks complete the season, but a missi
   api.track(node,card);api.paint(node);assert.equal(node.querySelector('.pt-card-watch__label').textContent,'Сезон 2 просмотрен');assert.ok(node.querySelector('.pt-card-watch--complete'));assert.equal(node.querySelector('.pt-card-watch__time').textContent,'','A manual mark does not invent elapsed time');
   records['210Cyberpunk: Edgerunners']={percent:40,time:915,updated:11};hooks.update();api.paint(node);assert.equal(node.querySelector('.pt-card-watch--complete'),null);assert.equal(node.querySelector('.pt-card-watch__label').textContent,'Просмотрено: Серия 10 • Сезон 2');assert.equal(node.querySelector('.pt-card-watch__time').textContent,'15:15');
   records['210Cyberpunk: Edgerunners']={percent:95,time:0,updated:12};delete records['25Cyberpunk: Edgerunners'];hooks.update();api.paint(node);assert.equal(node.querySelector('.pt-card-watch__label').textContent,'Просмотрено: Серия 10 • Сезон 2','A completed final episode cannot replace a missing earlier mark');assert.equal(online.seasonWatched(card,2,10),false);
-  records['25Cyberpunk: Edgerunners']={percent:94,time:915};hooks.update();api.paint(node);assert.equal(node.querySelector('.pt-card-watch__label').textContent,'Просмотрено: Серия 10 • Сезон 2','An episode below the native manual-completion mark remains incomplete');assert.equal(online.seasonWatched(card,2,10),false);
+  records['25Cyberpunk: Edgerunners']={percent:89,time:915};hooks.update();api.paint(node);assert.equal(node.querySelector('.pt-card-watch__label').textContent,'Просмотрено: Серия 10 • Сезон 2','An episode below the completion threshold remains incomplete');assert.equal(online.seasonWatched(card,2,10),false);
  }finally{w.close();}
 });
 

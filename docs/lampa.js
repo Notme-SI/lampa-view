@@ -1,4 +1,4 @@
-/*! Lampa View 0.5.69 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.5.70 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -13115,11 +13115,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     });
     function refresh() {
       if (!enabled()) return;
-      document.querySelectorAll(".card__img,.full-person img,.full-start-new__img,.full-start__img,.full-start__background,.pt-hero__image,.media-loading__backdrop").forEach(function (image2) {
+      document.querySelectorAll(".card__img,.full-person img,.full-start-new__img,.full-start__img,.full-start__background,.media-loading__backdrop").forEach(function (image2) {
         var url = image2.getAttribute("src") || "";
         if (image2._minimalArtwork && image2._minimalArtwork(/^https?:/.test(url))) return;
         if (!/\/t\/p\/(?:w\d+(?:_and_h\d+_face)?|original)\//.test(url)) return;
-        var backdrop = image2.matches(".full-start__background,.pt-hero__image,.media-loading__backdrop") || image2.closest(".card--wide,.card--collection");
+        var backdrop = image2.matches(".full-start__background,.media-loading__backdrop") || image2.closest(".card--wide,.card--collection");
         var portrait = image2.matches(".full-person img,.person-start__img");
         var next = url.replace(/(\/t\/p\/)(?:w\d+(?:_and_h\d+_face)?|original)(\/)/, "$1" + (portrait ? portraitSize(L) : artworkSize(L, image2.matches(".full-start__background") ? "detail-backdrop" : backdrop ? "backdrop" : "poster")) + "$2");
         if (next !== url) image2.src = next;
@@ -14115,7 +14115,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // package.json
-  var version = "0.5.69";
+  var version = "0.5.70";
 
   // src/inputs.js
   function inputs(L) {
@@ -14163,7 +14163,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       return !onscreen || document.hidden || document.body.matches(".pt-wheel-active,.pt-tv-busy");
     };
     var coverUrl = function coverUrl(i, size) {
-      return L.TMDB.image("/t/p/" + size + cards[wrap(i)].backdrop_path);
+      return L.TMDB.image("/t/p/" + size + cards[wrap(i)].backdrop_path, {
+        preserveSize: true
+      });
     };
     function remove(url, entry) {
       images.delete(url);
@@ -18004,13 +18006,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       lastStart = 0;
     var hosts = [BASE, "https://shikimori.one"];
     var preferred = 0,
-      unavailableUntil = 0;
+      unavailableUntil = 0,
+      retryVersion = 0,
+      successVersion = 0;
     function api(path, ok, fail, postData) {
       var valid = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : Array.isArray;
       if (!postData && Date.now() < unavailableUntil) return fail();
+      var first = preferred,
+        revision = retryVersion,
+        successAtStart = successVersion;
       var attempt = 0;
       function send() {
-        var index2 = preferred,
+        var index2 = (first + attempt) % hosts.length,
           request = new L.Reguest();
         request.timeout(7e3);
         var settled = false;
@@ -18018,18 +18025,19 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           if (settled) return;
           settled = true;
           attempt++;
-          preferred = (index2 + 1) % hosts.length;
-          if (attempt < hosts.length) send();else {
-            if (!postData) unavailableUntil = Date.now() + 3e4;
-            fail();
-          }
+          if (attempt < hosts.length && revision === retryVersion) return send();
+          if (!postData && revision === retryVersion && successAtStart === successVersion) unavailableUntil = Date.now() + 3e4;
+          fail();
         }
         request.silent(hosts[index2] + path, function (json) {
           if (settled) return;
           if (!valid(json)) return error();
           settled = true;
-          preferred = index2;
-          unavailableUntil = 0;
+          if (revision === retryVersion) {
+            preferred = index2;
+            unavailableUntil = 0;
+            successVersion++;
+          }
           ok(json, hosts[index2]);
         }, error, postData);
       }
@@ -18122,6 +18130,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }) : fail();
     });
     function retry() {
+      retryVersion++;
       unavailableUntil = 0;
       preferred = 0;
     }
@@ -23466,9 +23475,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     rows = rows.filter(function (r) {
       return r && r.meta && r.hash && r.timeline && Date.now() - r.at < 7 * 864e5;
     }).slice(-400);
-    var server = function server() {
-      return L.Torserver && L.Torserver.url ? L.Torserver.url().replace(/\/$/, "") : "";
-    };
+    function server() {
+      var url = L.Torserver && typeof L.Torserver.url === "function" && L.Torserver.url();
+      return typeof url === "string" ? url.trim().replace(/\/+$/, "") : "";
+    }
     var active = function active() {
       return !stopped && enabled() && L.Storage.field("torrserver_tracktimecode") && network;
     };
@@ -23512,6 +23522,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       if (!active() || busy || Date.now() - last < 1e4) return;
       var scope = (0, import_timeline_meta.profileScope)(L),
         url = server();
+      if (!url) return;
       var recent = rows.filter(function (r) {
         return r.scope === scope && r.server === url && Date.now() - r.at < 7 * 864e5;
       }).sort(function (a, b) {
@@ -30958,6 +30969,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         trimSections();
         if (L.Storage.listener) L.Storage.listener.follow("change", function (event) {
           if (event.name === "source" || event.name === "language") trimSections();
+          if (event.name === "lampa_view_enabled") setTheme();
         });
         var menu = document.querySelector(".menu");
         if (menu && ROOT.MutationObserver) new ROOT.MutationObserver(trimSections).observe(menu, {

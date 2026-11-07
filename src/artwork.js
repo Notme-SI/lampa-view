@@ -59,11 +59,11 @@ export default function installArtwork(L,enabled){
  posterPreview(L,enabled,()=>artworkQuality(L)==='high');
  function refresh(){
   if(!enabled())return;
-  document.querySelectorAll('.card__img,.full-person img,.full-start-new__img,.full-start__img,.full-start__background,.pt-hero__image,.media-loading__backdrop').forEach(image=>{
+  document.querySelectorAll('.card__img,.full-person img,.full-start-new__img,.full-start__img,.full-start__background,.media-loading__backdrop').forEach(image=>{
    const url=image.getAttribute('src') || '';
    if(image._minimalArtwork && image._minimalArtwork(/^https?:/.test(url)))return;
    if(!/\/t\/p\/(?:w\d+(?:_and_h\d+_face)?|original)\//.test(url))return;
-   const backdrop=image.matches('.full-start__background,.pt-hero__image,.media-loading__backdrop') || image.closest('.card--wide,.card--collection');
+   const backdrop=image.matches('.full-start__background,.media-loading__backdrop') || image.closest('.card--wide,.card--collection');
    const portrait=image.matches('.full-person img,.person-start__img');
    const next=url.replace(/(\/t\/p\/)(?:w\d+(?:_and_h\d+_face)?|original)(\/)/,'$1'+(portrait?portraitSize(L):artworkSize(L,image.matches('.full-start__background')?'detail-backdrop':backdrop?'backdrop':'poster'))+'$2');
    if(next!==url)image.src=next;

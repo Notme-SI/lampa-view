@@ -6,7 +6,10 @@ export default function torrserverProgress(L,enabled){
  let rows=L.Storage.get(key,[]),busy=false,last=0,timer,stopped=false;
  if(!Array.isArray(rows))rows=[];
  rows=rows.filter(r=>r && r.meta && r.hash && r.timeline && Date.now()-r.at<7*86400000).slice(-400);
- const server=()=>L.Torserver && L.Torserver.url?L.Torserver.url().replace(/\/$/,''):'';
+ function server(){
+  const url=L.Torserver && typeof L.Torserver.url==='function' && L.Torserver.url();
+  return typeof url==='string'?url.trim().replace(/\/+$/,''):'';
+ }
  const active=()=>!stopped && enabled() && L.Storage.field('torrserver_tracktimecode') && network;
  function remember(video){
   if(!video || !video.torrent_hash || !video.timeline || !video.timeline.hash)return;
@@ -24,7 +27,7 @@ export default function torrserverProgress(L,enabled){
  }
  function refresh(){
   if(!active() || busy || Date.now()-last<10000)return;
-  const scope=profileScope(L),url=server();
+  const scope=profileScope(L),url=server();if(!url)return;
   // Only the most recently launched torrent in this profile/server is polled.
   const recent=rows.filter(r=>r.scope===scope && r.server===url && Date.now()-r.at<7*86400000).sort((a,b)=>b.at-a.at)[0];
   if(!recent)return;

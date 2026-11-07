@@ -9,7 +9,7 @@ export default function heroAssets(L,cards,loadLogo,element){
  const wrap=i=>(i+cards.length)%cards.length;
  const pin=(kind,url)=>{const active=pool.active.get(owner) || {};active[kind]=url;pool.active.set(owner,active);};
  const paused=()=>!onscreen || document.hidden || document.body.matches('.pt-wheel-active,.pt-tv-busy');
- const coverUrl=(i,size)=>L.TMDB.image('/t/p/'+size+cards[wrap(i)].backdrop_path);
+ const coverUrl=(i,size)=>L.TMDB.image('/t/p/'+size+cards[wrap(i)].backdrop_path,{preserveSize:true});
  function remove(url,entry){
   images.delete(url);clearTimeout(entry.timeout);entry.image.onload=entry.image.onerror=null;
   if(!entry.done)entry.callbacks=[];
