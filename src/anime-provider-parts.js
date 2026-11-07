@@ -1,4 +1,5 @@
 import {animeEpisodeMap} from './anime-index.js';
+import {franchiseViewingOrder} from './anime-franchise.js';
 import {kodikRoute} from './anime-continuations.js';
 import {isAnime} from './metadata.js';
 import {catalogueRows} from './online-state.js';
@@ -56,7 +57,7 @@ export function matchProviderParts(parts,rows,base){
 export function mappedPartFiles(part,rows){
  const files=rows.filter(playable).slice().sort((a,b)=>Number(a.episode)-Number(b.episode));
  const regular=files.filter(row=>Number(row.episode)>0),zero=files.filter(row=>Number(row.episode)===0);
- if(!regular.length || regular.length>part.count || zero.length>1 || zero.length && part.offset!==0 || !regular.every((row,i)=>Number(row.episode)===i+1))return [];
+ if(!regular.length || regular.length>part.count || zero.length>1 || zero.length && part.offset!==0 || !regular.every((row,i)=>Number.isInteger(Number(row.episode)) && Number(row.episode)<=part.count && (!i || Number(row.episode)>Number(regular[i-1].episode))))return [];
  return files.map(row=>({...row,season:part.season,episode:Number(row.episode)===0?0:part.offset+Number(row.episode),lampa_part:part.part}));
 }
 
@@ -183,7 +184,25 @@ export default function animeProviderParts(L,anime,online){
    const main=model.nodes.filter(n=>ids.has(n.id) && eligible(n)).sort((a,b)=>a.aired.localeCompare(b.aired));
    const all=model.nodes.filter(eligible).filter(n=>ids.has(n.id) || model.edges.some(e=>e.relation==='alternative_version' && (e.from===n.id || e.to===n.id))).sort((a,b)=>a.aired.localeCompare(b.aired));
    const candidates=[main,all].filter((rows,i,a)=>(rows.length===max || numbers.length===1 && rows.length===1) && !a.slice(0,i).some(old=>old.map(n=>n.id).join()===rows.map(n=>n.id).join()));
-   if(candidates.length!==1)return finish([],null);const releases=candidates[0],single=numbers.length===1 && releases.length===1;
+   if(candidates.length!==1){
+    // A partial dub in the first native folder does not describe the work's
+    // complete release structure. Identify it by its actual video links first.
+    if(numbers.length!==1 || numbers[0]!==1 || main.length<2 || main.length>30)return finish([],null);
+    const steps=franchiseViewingOrder(model);
+    const plans=main.map((release,i)=>{const step=steps.find(s=>s.id===release.id);return {...release,mal:release.id,season:step?.season || i+1,offset:step?.part?Number(release.record.offset || 0):0,part:step?.part || 0,count:release.episodes,sourceNumber:i+1,family:main[0].original?.split(/\s*:\s*|\s+Season\s+\d+/i)[0]};});
+    request(folders[0].url,response=>{if(ended)return;const actual=catalogueRows(response).filter(playable),voice=(voices(response).find(v=>v.active)||{}).title || '';if(!actual.length)return finish([],null);
+     search(card,base,plans,found=>{if(ended)return;const first=found.find(p=>p.id===main[0].id);if(!first)return finish([],null);
+      read(first,base,voice,files=>{if(ended)return;
+       const identity=row=>{try{const u=new URL(row.stream || row.url,base);const link=u.searchParams.get('link');if(link)return link;for(const name of ['title','original_title','episode','play'])u.searchParams.delete(name);u.searchParams.sort();return u.href;}catch(error){return '';}};
+       const verified=new Set(files.map(identity).filter(Boolean));if(!actual.every(row=>verified.has(identity(row))))return finish([],null);
+       const layout={1:{number:1,mal:first.id,offset:0,count:first.count}},ready=[];let left=found.length-1;if(!left)return finish([],null);
+       const pending=found.filter(p=>p.id!==first.id);let cursor=0,running=0;function pump(){while(!ended && running<2 && cursor<pending.length){const part=pending[cursor++];running++;request(part.url,body=>{running--;if(ended)return;const rows=online.folderRows(body),direct=catalogueRows(body).some(playable),own=rows.filter(row=>!row.similar && kodikRoute(row.url,base) && Number(kodikRoute(row.url,base).searchParams.get('s'))>0),url=direct?part.url:own.length===1?own[0].url:'';
+        if(url){ready.push({...part,url});layout[part.sourceNumber]={number:part.season,mal:part.id,offset:part.offset,count:part.count};}if(!--left)finish(ready,layout);else pump();
+       });}}pump();
+      });
+     });
+    });return;
+   }const releases=candidates[0],single=numbers.length===1 && releases.length===1;
    const existing=new Map(numbers.map(n=>[n,releases[single?0:n-1]]));if([...existing.values()].some(n=>!n))return finish([],null);
    const layout={},missing=[];for(const [source,release] of existing){const map=animeEpisodeMap(release.record,release.episodes,value);if(!map || !map.every(e=>e.season===map[0].season))return finish([],null);layout[source]={number:map[0].season,mal:release.id,offset:map[0].episode-1,count:map.length};}
    const used=new Set(numbers),represented=new Set([...existing.values()].map(n=>n.id));

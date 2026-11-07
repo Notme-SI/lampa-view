@@ -18,7 +18,9 @@ test('native broadcast seasons join consecutive mapped cours and a TV finale wit
  assert.equal(providerPartPlan(card,future,files(4,16),4,[1,2,3,4]).length,2);
  const part=fourth[1],video={method:'call',season:1,episode:1,url:'http://lampac.example/lite/kodik/video?actual=1',stream:'unchanged-stream'};
  const mapped=mappedPartFiles(part,[video])[0];assert.equal(mapped.episode,17);assert.equal(mapped.season,4);assert.equal(mapped.url,video.url);assert.equal(mapped.stream,video.stream);
- assert.deepEqual(mappedPartFiles(part,[{...video,episode:2}]),[]);
+ assert.equal(mappedPartFiles(part,[{...video,episode:2}])[0].episode,18,'A missing first file does not renumber the remaining dub');
+ assert.deepEqual(mappedPartFiles(part,[{...video,episode:2},{...video,episode:2}]),[]);
+ assert.deepEqual(mappedPartFiles(part,[{...video,episode:13}]),[]);
 });
 test('release search uses year and unambiguous identity and rejects recaps and foreign hosts',()=>{
  const plan=providerPartPlan(card,model,files(4,16),4,[1,2,3,4]).slice(1),base='http://lampac.example/lite/kodik?s=4';
@@ -66,4 +68,18 @@ test('a confirmed future schedule remains visible while missing aired files and 
  const {availableMetadata}=mod('episode-metadata'),rows=[{season_number:1,episode_number:1,air_date:'2020-01-01'},{season_number:1,episode_number:2,air_date:'2020-01-08'},{season_number:1,episode_number:3,air_date:'2099-01-01'},{season_number:2,episode_number:4,air_date:'2099-01-01'},{season_number:1,episode_number:5,air_date:'invalid'}];
  assert.deepEqual(availableMetadata(rows,[1],1).map(r=>r.episode_number),[1,3]);
  assert.deepEqual(availableMetadata(rows,[1],1,false).map(r=>r.episode_number),[1]);
+});
+
+test('a partial first dub discovers exact later releases only after video identity matches',async()=>{
+ const dom=new JSDOM(),previous=global.document,previousLocation=global.location;global.document=dom.window.document;global.location={href:'http://lampac.example/'};
+ const online=mod('online-state'),base='http://lampac.example/lite/kodik',card={id:777,name:'Series',original_name:'Series',minimal_anime:true,seasons:[{season_number:1,episode_count:2}]};
+ const nodes=[{id:1001,name:'Series',original:'Series',year:'2020',aired:'2020-01-01',episodes:5,kind:'tv',status:'released',record:{tv:777,season:1,offset:0}},{id:1002,name:'Series 2',original:'Series 2nd Season',year:'2021',aired:'2021-01-01',episodes:3,kind:'tv',status:'released',record:{tv:777,season:2,offset:0}}],model={complete:true,nodes,edges:[],rows:[{key:'story',results:nodes.map(n=>({id:n.id}))}]};
+ const tag=(row,cls='videos__item')=>'<div class="'+cls+'" data-json=\''+JSON.stringify(row)+'\'></div>',folder=n=>tag({method:'link',name:n+' сезон',url:base+'?pick='+n+'&s='+n},'videos__item videos__season');
+ let wrong=false,active=0,max=0;const requested=[];
+ const files=foreign=>[1,3].map(episode=>tag({method:'call',season:1,episode,url:base+'/video?link='+(foreign?'foreign':'real')+episode})).join('')+tag({method:'link',url:base+'?s=1&t=1'},'videos__button active').replace('></div>','>AniDUB</div>');
+ function Request(){this.timeout=()=>{};this.native=(url,ok)=>{requested.push(url);active++;max=Math.max(max,active);setTimeout(()=>{active--;const u=new URL(url);if(u.searchParams.has('s'))return ok(files(wrong && u.searchParams.has('pick')));if(u.searchParams.has('pick'))return ok(folder(Number(u.searchParams.get('pick'))));ok(nodes.map((n,i)=>tag({method:'link',similar:true,title:n.original,year:n.year,url:base+'?pick='+(i+1)},'videos__item similar')).join(''));},0);};}
+ try{const make=()=>install({Reguest:Request,Storage:{get:(k,d)=>d}},{canonical:(c,done)=>done(card),collection:(c,done)=>done(model)},online),root=folder(1).replace('?pick=1&s=1','?s=1');
+ const result=await new Promise(done=>make().folders(card,base,root,(body,layout)=>done({body,layout})));assert.equal(online.folderRows(result.body).length,2);assert.equal(result.layout[2].mal,1002);assert.ok(max<=2);assert.ok(requested.every(url=>!url.includes('/video')));
+ wrong=true;assert.equal(await new Promise(done=>make().folders(card,base,root,done)),root,'Different files cannot establish a release identity');
+ }finally{global.document=previous;global.location=previousLocation;dom.window.close();}
 });
