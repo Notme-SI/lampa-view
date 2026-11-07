@@ -1,3 +1,5 @@
+import bluscreens from './bluscreens-frames.json';
+
 export const galleryFramesKey='minimal_poiskkino_frames_key';
 export const frameLimit=14;
 
@@ -63,6 +65,23 @@ const titleKey=title=>String(title || '').normalize('NFKD').toLowerCase().replac
 const tmdbPath=value=>String(value || '').match(/(?:^|\/t\/p\/(?:original|w\d+))(\/[\w.-]+\.(?:jpg|jpeg|png|webp))$/i)?.[1] || '';
 const seriesCard=card=>card.media_type==='tv' || card.media_type!=='movie' && !!(card.name || card.first_air_date);
 const tmdbId=card=>Number(card.tmdb_id || (['tmdb','cub'].includes(card.source)?card.id:0));
+const bluArchive=new Map();
+for(const [title,year,images] of bluscreens){
+ for(const alias of new Set(title.split(/\s+\/\s+/).map(name=>titleKey(name.replace(/^(.+),\s*(the|a|an)$/i,'$2 $1'))).filter(Boolean))){
+  const key=alias+':'+year;
+  bluArchive.set(key,bluArchive.has(key)?null:images);
+ }
+}
+
+function bluFrames(titles,year){
+ const matches=[...new Set(titles.map(title=>bluArchive.get(titleKey(title)+':'+year)).filter(Boolean))];
+ if(matches.length!==1)return [];
+ const base='https://www.bluscreens.net/uploads/1/4/8/9/14897402/';
+ return matches[0].slice(0,frameLimit).map(file=>{
+  const [thumbnail,full]=Array.isArray(file)?file:[file,file];
+  return {img:base+thumbnail,minimal_still_url:base+full};
+ });
+}
 
 async function filmGrabFrames(title,year,signal){
  const key=titleKey(title);
@@ -108,7 +127,7 @@ async function movieArchive(card,id,readTmdb){
    await readGalleryData(readTmdb,'movie/'+id+'?language=en-US',1000):null;
   const titles=[...new Set([title,Number(english?.id)===id && english.title].filter(Boolean))];
   const film=Promise.all(titles.map(name=>filmGrabFrames(name,year,controller.signal)))
-   .then(results=>results.find(rows=>rows.length) || []);
+   .then(results=>results.find(rows=>rows.length) || bluFrames(titles,year));
   const wiki=wikiMovies.get(id);
   if(!wiki)return await film;
   const sources=[film,wikiFrames(wiki,controller.signal)];
