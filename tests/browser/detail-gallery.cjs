@@ -12,8 +12,9 @@ async function open(page,movie){
   L.TMDB.image=(path,options)=>{frameRequests.push(path);return image(path,options);};
   L.Api.sources.tmdb.get=(path,params,done)=>{
    frameRequests.push(path);
+   if(!path.endsWith('/images?include_image_language=null'))return done({stills:[]});
    done({stills:[{file_path:'/episode-cover.jpg'},{file_path:'/art0.jpg'},
-    ...Array.from({length:9},(_,i)=>({file_path:'/episode-still'+(i+1)+'.jpg'}))]});
+    ...Array.from({length:9},(_,i)=>({file_path:'/episode-still'+(i+1)+'.jpg',width:1920}))]});
   };
   const artwork=Array.from({length:movie?25:6},(_,i)=>({file_path:'/art'+i+'.jpg',width:1280,aspect_ratio:16/9}));
   const card={id:91,source:'tmdb',backdrop_path:'/art0.jpg',production_countries:[],production_companies:[],spoken_languages:[],genres:[],
@@ -35,7 +36,7 @@ async function open(page,movie){
  }else{
   assert.equal(await page.getByText('Суперсезон',{exact:true}).count(),0);
   assert.equal(await page.locator('time.minimal-detail-next-episode').getAttribute('datetime'),'2099-11-13');
-  assert.ok((await page.evaluate(()=>frameRequests)).includes('tv/91/season/1/episode/1/images'));
+  assert.ok((await page.evaluate(()=>frameRequests)).includes('tv/91/season/1/episode/1/images?include_image_language=null'));
  }
  return row;
 }
@@ -63,6 +64,7 @@ async function open(page,movie){
      async function activate(locator){
       if(!mobile)return locator.click();
       if(engine===chromium)return locator.tap();
+      await locator.click({trial:true});
       const point=await locator.evaluate(node=>{
        const r=node.getBoundingClientRect();
        return {x:r.left+r.width/2,y:r.top+r.height/2,width:innerWidth};
@@ -88,7 +90,7 @@ async function open(page,movie){
      const viewer=page.locator('.minimal-frame-viewer');
      await viewer.waitFor();
      if(mobile)assert.match(await viewer.locator('img').getAttribute('src'),/real-frame-0\.jpg/);
-     else assert.ok((await page.evaluate(()=>frameRequests)).includes('/t/p/w1280/episode-still1.jpg'));
+     else assert.ok((await page.evaluate(()=>frameRequests)).includes('/t/p/original/episode-still1.jpg'));
      const position=()=>viewer.locator('[aria-live]').textContent();
      const total=mobile?20:9;
      assert.equal(await position(),'1 / '+total);

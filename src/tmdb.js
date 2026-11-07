@@ -103,7 +103,7 @@ export function installFullGuard(L){
   const error=status=>{if(fail)fail(status && typeof status==='object'?status:{empty:true});};
   return full.call(this,params,data=>{
    if(!data || !data.movie)return error();
-   const frames=hasGallerySource(L,data) && loadDetailGallery(L,data,(path,done,failed)=>tmdbGet(L,path,{},done,failed));
+   const frames=hasGallerySource(L,data) && loadDetailGallery(L,data,(path,done,failed)=>tmdbGet(L,path,{},done,failed,{life:21600000}));
    const publish=()=>frames?frames.then(rows=>ok({...data,minimal_gallery_frames:rows}),()=>ok(data)):ok(data);
    const anime=typeof window!=='undefined' && window.LampaView && window.LampaView.animeBase;
    if(!anime || !isAnime(data.movie) || !anime.collection || !anime.canonical)return publish();
