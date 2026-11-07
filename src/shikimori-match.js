@@ -17,7 +17,8 @@ export default function shikimoriMatch(L,details){
    if(!alive())return;
    const year=String(card.first_air_date || card.release_date || '').slice(0,4),exact=results.filter(c=>year && String(c.first_air_date || c.release_date || '').slice(0,4)===year);
    const bases=kind==='tv'?names.filter(name=>seriesName(name)!==name).map(name=>normal(seriesName(name))):[],group=base || results.some(c=>[c.title,c.name,c.original_title,c.original_name].some(name=>name && bases.includes(normal(name))));
-   if(!group && (exact.length===1 || results.length===1))return open(exact[0] || results[0]);
+   const named=results.filter(c=>[c.title,c.name,c.original_title,c.original_name].some(value=>value && names.some(name=>normal(name)===normal(value))));
+   if(!group && named.length===1 && (!year || !String(named[0].first_air_date || named[0].release_date || '').slice(0,4) || String(named[0].first_air_date || named[0].release_date).slice(0,4)===year))return open(named[0]);
    L.Select.show({title:group?'Откройте общую карточку сериала':'Выберите карточку аниме',items:results.slice(0,12).map(c=>({title:(c.title || c.name)+' · '+String(c.first_air_date || c.release_date || '').slice(0,4),subtitle:group?'Продолжение может быть частью общего сезона. Проверьте список серий.':'',card:c})).concat([{id:'search',title:'Поиск по другому названию'},{id:'back',title:'Вернуться к аниме'}]),onSelect:item=>{if(item.id==='search')return manual();if(item.id==='back')return back();L.Select.hide();open(item.card);},onBack:back});
   }
   function expand(meta){

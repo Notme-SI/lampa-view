@@ -2,7 +2,7 @@ import {text as lampaViewText} from './i18n.js';
 // Reuse the installed online provider's own handler and card metadata.
 export function onlineButton(root){
  return Array.from(root.querySelectorAll('.buttons--container>.full-start__button')).find(button=>{
-  if(button.classList.contains('hide') || button.hidden)return false;
+  if(button.classList.contains('hide') || button.hidden || button.matches('.shots-view-button,[data-action="shots"]'))return false;
   const label=button.querySelector('span');
   return button.matches('.view--online,.button--online,.button--lampac') || /^(онлайн|online)$/i.test((label && label.textContent || button.getAttribute('title') || '').trim());
  }) || null;

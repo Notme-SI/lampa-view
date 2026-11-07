@@ -50,3 +50,17 @@ export function animeEpisodeMap(record,count,card,books={}){
  return result;
 }
 export const animeIndexInfo={schema:DATA.schema,sources:DATA.sources,records:DATA.count,mapped:DATA.mapped};
+
+// A sequel without a direct ID can be a dated interval inside a shared TV card.
+// Require every episode and both boundary dates, never a franchise-name guess.
+export function datedReleaseTarget(card,canonical,books){
+ const parent=card.minimal_franchise_parent,release=card.minimal_franchise_release;
+ if(!parent || Number(parent.id)!==Number(canonical?.id) || parent.type!=='tv' || !release || !/^\d{4}-\d{2}-\d{2}$/.test(release.aired || '') || !/^\d{4}-\d{2}-\d{2}$/.test(release.released || '') || !Number.isInteger(release.episodes) || release.episodes<1)return null;
+ const matches=[];
+ for(const [number,book] of Object.entries(books)){
+  const rows=(book?.episodes_original || book?.episodes || []).filter(e=>e.air_date>=release.aired && e.air_date<=release.released).sort((a,b)=>a.episode_number-b.episode_number);
+  if(rows.length!==release.episodes || rows[0]?.air_date!==release.aired || rows.at(-1)?.air_date!==release.released || !rows.every((e,i)=>Number(e.season_number)===Number(number) && Number(e.episode_number)===Number(rows[0].episode_number)+i))continue;
+  matches.push({id:Number(parent.id),type:'tv',release:{mal:Number(card.shikimori_id || card.id),kind:card.minimal_anime_kind || 'tv',tv:Number(parent.id),season:Number(number),offset:Number(rows[0].episode_number)-1}});
+ }
+ return matches.length===1?matches[0]:null;
+}

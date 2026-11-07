@@ -1,4 +1,12 @@
 import posterPreview from './poster-cache.js';
+export function detailBackdrop(variants,path,width,language='ru'){
+ const current=variants.find(v=>v.file_path===path),needed=Math.max(1920,Number(width)||1920);
+ if(!current)return path;
+ const lang=String(language).split('-')[0];
+ const suitable=variants.filter(v=>Number(v.width)>Number(current.width) && Number(v.width)>=needed && Number(v.height)>0 && Number(v.width)/Number(v.height)>1.4 && (!v.iso_639_1 || v.iso_639_1===lang));
+ suitable.sort((a,b)=>Number(b.width)-Number(a.width) || Number(!b.iso_639_1)-Number(!a.iso_639_1) || Number(b.vote_average||0)-Number(a.vote_average||0));
+ return suitable[0]?.file_path || path;
+}
 // High keeps the same source detail on TVs and desktops. A TV WebView can
 // report a 960px viewport while displaying the artwork on a 4K panel.
 export function artworkQuality(L){
