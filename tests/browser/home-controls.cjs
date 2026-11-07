@@ -9,8 +9,10 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
  }
  await page.evaluate(()=>Lampa.Storage.set('interface_size','normal'));await page.waitForTimeout(300);
  await page.evaluate(()=>{Lampa.Controller.toggle('lampa_view_hero');});assert.ok(await page.locator('.pt-hero__action.focus').count());
- await page.keyboard.press('ArrowRight');await page.waitForTimeout(80);assert.ok(await page.locator('.pt-hero__dot.focus').count(),'Right reaches carousel');
- await page.keyboard.press('ArrowUp');await page.waitForTimeout(80);assert.ok(await page.locator('.pt-hero__action.focus').count());
+ const slide=()=>page.locator('.pt-hero__dot[aria-pressed="true"]').evaluate(n=>[...n.parentElement.children].indexOf(n));
+ const initialSlide=await slide(),slideCount=await page.locator('.pt-hero__dot').count();assert.ok(slideCount>1);
+ await page.keyboard.press('ArrowRight');await page.waitForTimeout(80);assert.equal(await slide(),(initialSlide+1)%slideCount,'Right advances the slide directly');assert.ok(await page.locator('.pt-hero__action.focus').count(),'Watch keeps focus');
+ await page.keyboard.press('ArrowLeft');await page.waitForTimeout(80);assert.equal(await slide(),initialSlide,'Left returns to the previous slide');
  const heroHeight=await page.locator('.pt-hero').evaluate(n=>n.offsetHeight);
  const previewWidth=await page.locator('.minimal-home-first-row .card').first().evaluate(n=>n.getBoundingClientRect().width);
  await page.keyboard.press('ArrowDown');await page.waitForTimeout(100);assert.ok(await page.locator('.minimal-home-first-row .card.focus').count(),'Down goes directly to Now watching');
