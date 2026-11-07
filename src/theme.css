@@ -1133,6 +1133,9 @@ body.lampa_view .minimal-detail-screenshots .items-line__head,body.lampa_view .m
 body.lampa_view .minimal-detail-screenshots .items-line__body,body.lampa_view .minimal-detail-screenshots .scroll--horizontal {-webkit-mask-image:none!important;mask-image:none!important}
 body.lampa_view .minimal-detail-screenshots .full-episode[hidden],body.lampa_view .minimal-detail-screenshots .card-more[hidden],body.lampa_view .minimal-detail-screenshots .full-episode__body,body.lampa_view .minimal-detail-screenshots .full-episode__viewed {display:none!important}
 body.lampa_view .minimal-detail-screenshots .mapping--line>.full-episode {margin-left:0;margin-right:1em;cursor:pointer}
+body.lampa_view .minimal-detail-screenshots .full-episode__img {padding-bottom:61%;overflow:hidden}
+body.lampa_view .minimal-detail-screenshots .full-episode__img img {object-fit:cover}
+body.lampa_view .minimal-detail-screenshots[hidden] {display:none!important}
 body.lampa_view.pt-rtl .minimal-detail-screenshots .mapping--line>.full-episode {margin-left:1em;margin-right:0}
 body.lampa_view .minimal-detail-screenshots .full-episode.focus::after {inset:0;border:2px solid var(--pt-text);border-radius:inherit}
 body.lampa_view .minimal-screenshot-preview {display:block;max-width:100%;max-height:62vh;margin:auto;object-fit:contain}

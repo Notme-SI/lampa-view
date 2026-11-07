@@ -24,6 +24,26 @@ const nodeOf=item=>{const rendered=item?.render?.(true);return rendered?.nodeTyp
 const still=frame=>frame.still_path || frame.minimal_still_url;
 const titleFor=card=>t(card?.media_type==='tv' || (card?.media_type!=='movie' && (card?.name || card?.first_air_date))?'Кадры из сериала':'Кадры из фильма');
 const imagePath=path=>/^\/[\w.-]+\.(?:jpg|jpeg|png|webp)$/i.test(path || '');
+function frameUrls(L,path,size){
+ if(imagePath(path))return [L.TMDB.image('/t/p/'+size+path,{preserveSize:true})];
+ if(/^https:\/\/static\.wikia\.nocookie\.net\/marvelcinematicuniverse\/images\//.test(path || '')){
+  // The original Wiki host can return a challenge page for image requests.
+  return [path.replace('static.wikia.nocookie.net','images.wikia.com'),path];
+ }
+ return [path];
+}
+
+function loadFrameImage(image,urls,loaded,failed){
+ const remaining=[...new Set(urls.filter(Boolean))];
+ image.referrerPolicy='no-referrer';
+ image.onload=loaded;
+ image.onerror=()=>{
+  const next=remaining.shift();
+  if(next)image.src=next;
+  else{image.onerror=null;image.removeAttribute('src');failed();}
+ };
+ image.src=remaining.shift();
+}
 export function prepareScreenshotRow(event){
  const {data,link}=event;
  if(!data?.movie || data.movie.adult || data.movie.blocked || !Array.isArray(link?.rows))return;
@@ -77,7 +97,7 @@ function showFrames(L,line,frames,start){
   const frame=frames[index],label=frame.node.getAttribute('aria-label');
   image.alt=label;
   const size=frame.width>1280?'original':'w1280';
-  image.src=imagePath(frame.path)?L.TMDB.image('/t/p/'+size+frame.path,{preserveSize:true}):frame.path;
+  loadFrameImage(image,[...frameUrls(L,frame.path,size),frame.image.currentSrc],()=>{},()=>{});
   counter.textContent=(index+1)+' / '+frames.length;
   if(L.Modal.opened())L.Modal.title?.(label);
  }
@@ -112,14 +132,39 @@ export function styleScreenshots(L,event){
    if(node){node.hidden=true;node.classList.remove('selector');}
    return;
   }
-  const entry={node,path,width:item.data.width};
+  const image=node.querySelector('.full-episode__img img');
+  if(!image)return;
+  const entry={node,path,image,width:item.data.width};
   frames.push(entry);seen.add(path);
   node.dataset.minimalScreenshot='1';node.setAttribute('role','button');node.tabIndex=0;
   node.setAttribute('aria-label',t('Кадр {0}',[frames.length]));
+  let requested=false;
+  function load(){
+   if(requested)return;
+   requested=true;
+   const thumbnails=frameUrls(L,imagePath(path)?path:item.data.img,'w780');
+   loadFrameImage(image,[...thumbnails,...frameUrls(L,path,'w1280')],()=>{
+    node.classList.add('full-episode--loaded');
+   },()=>{
+    node.hidden=true;node.classList.remove('selector');node.tabIndex=-1;
+    if(frames.every(entry=>entry.node.hidden)){
+     root.hidden=true;
+     if(event.link)removeDetailRows(event.link,row=>row[1]===event.data);
+    }
+   });
+  }
+  // Native episode errors replace the image with a broken-image icon.
+  // Keep the gallery request and its fallback separate from episode playback.
+  node.addEventListener('visible',event=>{
+   event.stopImmediatePropagation();
+   load();
+  },true);
+  if(image.getAttribute('src'))load();
   const open=()=>{
-   if(!node.isConnected || !L.Modal?.open || L.Modal.opened?.())return;
+   if(node.hidden || !node.isConnected || !L.Modal?.open || L.Modal.opened?.())return;
    line.last=node;
-   showFrames(L,line,frames.slice(),frames.indexOf(entry));
+   const visible=frames.filter(entry=>!entry.node.hidden);
+   showFrames(L,line,visible,visible.indexOf(entry));
   };
   // Native thumbnails normally toggle watched status. The full episode list
   // is still available through Watch; this strip only opens images.
@@ -140,7 +185,8 @@ export function styleScreenshots(L,event){
    const head=root.querySelector('.items-line__head'),viewport=line.scroll?.render(true);
    if(head && viewport){
     const page=step=>{
-     const nodes=frames.map(item=>item.node),bounds=viewport.getBoundingClientRect();
+     const nodes=frames.filter(item=>!item.node.hidden).map(item=>item.node),bounds=viewport.getBoundingClientRect();
+     if(!nodes.length)return;
      const visible=nodes.findIndex(node=>node.getBoundingClientRect().right>bounds.left+2);
      const count=Math.max(1,Math.floor(bounds.width/(nodes[0].getBoundingClientRect().width || bounds.width || 1)));
      const target=nodes[Math.max(0,Math.min(nodes.length-1,Math.max(0,visible)+step*count))];
