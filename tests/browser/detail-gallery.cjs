@@ -13,6 +13,8 @@ async function open(page,movie){
   L.Api.sources.tmdb.get=(path,params,done)=>{
    frameRequests.push(path);
    if(!path.endsWith('/images?include_image_language=null'))return done({stills:[]});
+   if(path.includes('/episode/3/'))return done({stills:Array.from({length:12},(_,i)=>({file_path:'/episode-three-'+i+'.jpg',width:1920}))});
+   if(!path.includes('/episode/1/'))return done({stills:[]});
    done({stills:[{file_path:'/episode-cover.jpg'},{file_path:'/art0.jpg'},
     ...Array.from({length:9},(_,i)=>({file_path:'/episode-still'+(i+1)+'.jpg',width:1920}))]});
   };
@@ -21,13 +23,14 @@ async function open(page,movie){
    ...(movie?{title:'Проверка фильма',original_title:'Gallery Film',release_date:'2025-01-01'}:{name:'Проверка сериала',first_air_date:'2025-01-01'})};
   window.detailFixture={movie:card,persons:{cast:[],crew:[]},images:{backdrops:artwork},videos:{results:[]},
    ...(movie?{collection:{results:[card,{id:92,title:'Фильм 2',release_date:'2026-01-01'}]}}:
-    {episodes:{name:'Суперсезон',episodes:[{season_number:1,episode_number:1,air_date:'2025-01-01',still_path:'/episode-cover.jpg'},
-     {season_number:1,episode_number:2,air_date:'2099-11-13'}]}})};
+    {episodes:{name:'Суперсезон',episodes:[
+     ...Array.from({length:5},(_,i)=>({season_number:1,episode_number:i+1,air_date:'2025-01-01',still_path:i===0?'/episode-cover.jpg':null})),
+     {season_number:1,episode_number:6,air_date:'2099-11-13'}]}})};
   L.Activity.push({component:'full',source:'tmdb',id:card.id,method:movie?'movie':'tv',card});
  },movie);
  const row=page.locator('.activity--active .minimal-detail-screenshots');
  await row.waitFor();
- assert.equal(await row.locator('[data-minimal-screenshot]').count(),movie?20:9);
+ assert.equal(await row.locator('[data-minimal-screenshot]').count(),20);
  assert.equal(await row.locator('.items-line__title').textContent(),movie?'Кадры из фильма':'Кадры из сериала');
  assert.ok(await row.locator('.full-episode:not([hidden])').count()<=20);
  if(movie){
@@ -36,7 +39,10 @@ async function open(page,movie){
  }else{
   assert.equal(await page.getByText('Суперсезон',{exact:true}).count(),0);
   assert.equal(await page.locator('time.minimal-detail-next-episode').getAttribute('datetime'),'2099-11-13');
-  assert.ok((await page.evaluate(()=>frameRequests)).includes('tv/91/season/1/episode/1/images?include_image_language=null'));
+  const requests=await page.evaluate(()=>frameRequests);
+  assert.ok(requests.includes('tv/91/season/1/episode/1/images?include_image_language=null'));
+  assert.ok(requests.includes('tv/91/season/1/episode/3/images?include_image_language=null'));
+  assert.ok(!requests.includes('tv/91/season/1/episode/6/images?include_image_language=null'));
  }
  return row;
 }
@@ -92,7 +98,7 @@ async function open(page,movie){
      if(mobile)assert.match(await viewer.locator('img').getAttribute('src'),/real-frame-0\.jpg/);
      else assert.ok((await page.evaluate(()=>frameRequests)).includes('/t/p/original/episode-still1.jpg'));
      const position=()=>viewer.locator('[aria-live]').textContent();
-     const total=mobile?20:9;
+     const total=20;
      assert.equal(await position(),'1 / '+total);
      if(tv)await page.keyboard.press('ArrowRight');
      else if(mobile)await viewer.evaluate(node=>{
