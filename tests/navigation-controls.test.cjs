@@ -22,11 +22,12 @@ test('cartoons menu sits below series and opens bounded film/TV animation rows t
  try{
   const item=w.document.querySelector('[data-action="cartoon"]'),series=w.document.querySelector('[data-action="tv"]');assert.equal(series.nextElementSibling.dataset.action,'dorama');assert.equal(series.nextElementSibling.nextElementSibling.dataset.action,'tvshow');assert.equal(series.nextElementSibling.nextElementSibling.nextElementSibling,item);assert.notEqual(w.getComputedStyle(item).display,'none');
   const response=require('./fixtures/discovery-response.cjs');L.Api.sources.tmdb.get=(url,params,ok)=>{requests.push(url);w.setTimeout(()=>ok(response(url,params.page)),0);};
-  w.jQuery(item).trigger('hover:enter');await wait(180);
+  w.jQuery(item).trigger('hover:enter');
+  const activity=L.Activity.active().activity,root=activity.render(true),rows=activity.component;
+  for(let attempt=0;attempt<50 && !root.textContent.includes('Новинки');attempt++)await wait(20);
   assert.equal(L.Activity.active().url,'cartoon');assert.ok(requests.length>=6 && requests.length<=10,'The first three mixed rows use bounded movie and TV requests');
   assert.ok(requests.some(path=>path.startsWith('trending/movie/')));assert.ok(requests.some(path=>path.startsWith('trending/tv/')));
   for(const path of requests){if(/^trending\/(?:movie|tv)\//.test(path))continue;const query=new URLSearchParams(path.split('?')[1]);assert.match(path,/^discover\/(?:movie|tv)\?/);assert.ok(query.get('with_genres').split(',').includes('16'));if(!query.has('with_companies') && !query.has('with_networks'))assert.equal(query.get('without_keywords'),'210024');}
-  const root=L.Activity.active().activity.render(true),rows=L.Activity.active().activity.component;
   assert.match(root.textContent,/Новинки/);assert.ok(!rows.items.concat(rows.loaded.flat()).some(row=>/мультфильмы|мультсериалы/i.test((row.data||row).title)));assert.ok(rows.items.length+rows.loaded.length<=12);
   assert.deepEqual(r.errors,[]);
  }finally{r.close();}
