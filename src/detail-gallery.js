@@ -1,5 +1,4 @@
 import {locale,text as t} from './i18n.js';
-import tmdbGet from './tmdb.js';
 import {frameLimit} from './gallery-frames.js';
 
 function airDate(value){
@@ -22,17 +21,28 @@ export function nextDetailEpisode(card,book,now=new Date()){
 }
 
 const nodeOf=item=>{const rendered=item?.render?.(true);return rendered?.nodeType?rendered:rendered?.[0];};
-const still=episode=>episode && !episode.comeing && (episode.still_path || episode.minimal_still_url);
+const still=frame=>frame.still_path || frame.minimal_still_url;
 const titleFor=card=>t(card?.media_type==='tv' || (card?.media_type!=='movie' && (card?.name || card?.first_air_date))?'Кадры из сериала':'Кадры из фильма');
 const imagePath=path=>/^\/[\w.-]+\.(?:jpg|jpeg|png|webp)$/i.test(path || '');
-const imageRows=(images,episode)=>images.filter(image=>imagePath(image?.file_path)).map(image=>({
- still_path:image.file_path,minimal_gallery_art:true,episode_number:episode?.episode_number
-}));
 export function prepareScreenshotRow(event){
  const {data,link}=event;
- if(!data?.movie || data.movie.adult || data.movie.blocked || !Array.isArray(link?.rows) || Array.isArray(data.episodes?.episodes))return;
- const results=(data.minimal_gallery_frames || []).slice(0,frameLimit);
- if(results.length)link.rows.push(['episodes',{movie:data.movie,title:titleFor(data.movie),results:results.reverse()}]);
+ if(!data?.movie || data.movie.adult || data.movie.blocked || !Array.isArray(link?.rows))return;
+ const results=(data.minimal_gallery_frames || []).filter(still).slice(0,frameLimit).map(row=>({...row})).reverse();
+ if(results.length)link.rows.push(['episodes',{movie:data.movie,title:titleFor(data.movie),results,minimal_gallery:true}]);
+}
+
+export function removeDetailRows(link,match){
+ if(!Array.isArray(link?.rows) || !Array.isArray(link.items))return;
+ const active=link.items[link.active];
+ for(let i=link.rows.length-1;i>=0;i--){
+  if(!match(link.rows[i]))continue;
+  link.rows.splice(i,1);
+  if(i>=link.items.length)continue;
+  const [item]=link.items.splice(i,1);
+  nodeOf(item)?.remove();
+  item?.destroy?.();
+ }
+ link.active=Math.max(0,link.items.indexOf(active));
 }
 
 function galleryButton(className,label,path,action){
@@ -90,21 +100,20 @@ function showFrames(L,line,frames,start){
 
 export function styleScreenshots(L,event){
  const line=event.item,root=nodeOf(line),rows=event.data?.results;
- if(!root || !Array.isArray(rows) || !Array.isArray(line.items))return;
- const data=event.props?.all?.(),card=event.data.movie,heading=root.querySelector('.items-line__title');
+ if(!event.data?.minimal_gallery || !root || !Array.isArray(rows) || !Array.isArray(line.items))return;
+ const card=event.data.movie,heading=root.querySelector('.items-line__title');
  const candidates=rows.slice(),frames=[],seen=new Set();
- const template=candidates.find(row=>!row.comeing && row.params?.createInstance);
- let disposed=false,nav;
+ let nav;
  function frame(item,path){
   const node=nodeOf(item);
   if(!node?.classList.contains('full-episode') || !path || seen.has(path) || frames.length>=frameLimit){
    if(node){node.hidden=true;node.classList.remove('selector');}
    return;
   }
-  const entry={node,path},number=item.data.episode_number;
+  const entry={node,path};
   frames.push(entry);seen.add(path);
   node.dataset.minimalScreenshot='1';node.setAttribute('role','button');node.tabIndex=0;
-  node.setAttribute('aria-label',number?t('Кадр из серии {0}',[number]):t('Кадр {0}',[frames.length]));
+  node.setAttribute('aria-label',t('Кадр {0}',[frames.length]));
   const open=()=>{
    if(!node.isConnected || !L.Modal?.open || L.Modal.opened?.())return;
    line.last=node;
@@ -149,32 +158,15 @@ export function styleScreenshots(L,event){
    const path=still(row);if(!path || seen.has(path) || frames.length>=frameLimit)continue;
    const existing=line.items.find(item=>item.data===row);
    if(existing){frame(existing,path);continue;}
-   const element=row.params?row:template?{...row,params:{...template.params}}:null;
-   if(!element || !line.emit)continue;
-   const before=line.items.length;line.emit('createAndAppend',element);
+   if(!row.params || !line.emit)continue;
+   const before=line.items.length;line.emit('createAndAppend',row);
    if(line.items.length>before)frame(line.items.at(-1),path);
   }
   // The native row already owns the items; do not let its lazy append rebuild them.
   if(frames.length)rows.splice(0,rows.length,...line.items.filter(item=>item!==line.more).map(item=>item.data));
   update();
  }
- const supplemental=data?.minimal_gallery_frames || [];
- const episode=candidates.find(row=>!row.comeing && !row.minimal_gallery_art && Number(row.season_number)>0 && Number(row.episode_number)>0);
- const id=Number(card?.tmdb_id || (['tmdb','cub'].includes(card?.source)?card.id:0));
- const fetchStills=id>0 && episode && candidates.filter(still).length<4;
- if(!candidates.some(still) && !supplemental.length && !fetchStills)return;
- const initialArt=fetchStills?supplemental.slice(0,8):supplemental;
- add(candidates.concat(initialArt));
- line.use?.({onDestroy(){disposed=true;}});
- if(fetchStills){
-  const path='tv/'+id+'/season/'+episode.season_number+'/episode/'+episode.episode_number+'/images';
-  const complete=result=>{
-   if(disposed)return;
-   const images=Array.isArray(result?.stills)?imageRows(result.stills,episode):[];
-   add(images.concat(supplemental.slice(initialArt.length)));
-  };
-  tmdbGet(L,path,{},complete,()=>complete(null));
- }
+ add(candidates);
 }
 
 function icon(path){const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('aria-hidden','true');const line=document.createElementNS(svg.namespaceURI,'path');line.setAttribute('d',path);svg.appendChild(line);return svg;}

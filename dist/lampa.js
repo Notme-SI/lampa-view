@@ -1,4 +1,4 @@
-/*! Lampa View 0.5.76 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.5.77 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -11888,22 +11888,288 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   var https = function https(url) {
     return typeof url === "string" && /^https:\/\//i.test(url);
   };
-  function loadGalleryFrames(_x, _x2) {
-    return _loadGalleryFrames.apply(this, arguments);
-  } // src/tmdb.js
-  function _loadGalleryFrames() {
-    _loadGalleryFrames = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6(L, card) {
-      var _a, _b, _c, key2, isSeries, kp, tmdb, identity2, saved, controller, timer, get, _get, id, matches, images, urls, frames, _t8;
+  var galleryRows = function galleryRows(urls) {
+    return _toConsumableArray(new Set(urls)).slice(0, frameLimit).map(function (url) {
+      return {
+        img: url,
+        minimal_still_url: url
+      };
+    });
+  };
+  var filmGrab = "https://film-grab.com/wp-json/wp/v2/";
+  var jungleScenes = ["https://n1s1.hsmedia.ru/46/a7/ca/46a7ca37cc8b2256e71858615b927ef2/728x430_1_c3573bca8d9c76a5c628df3ffc7fbfa3@871x515_0x5SzHheKo_3233250768689457016.png.webp", "https://n1s1.hsmedia.ru/30/f0/6d/30f06d79482d5fc43e139fea1fbc63bb/728x436_1_f542fe460e5dd2f9e70005d279d296fc@823x493_0xEHRbNVwQ_7825159825102683938.png.webp", "https://n1s1.hsmedia.ru/9f/a3/b7/9fa3b75ec3be807e7947d1dee804e3aa/728x356_1_1ddb952f538b00740e6de8e664f1d45c@946x463_0x0liHqXl4_5219777036028771410.png.webp", "https://n1s1.hsmedia.ru/3a/71/a8/3a71a83236e1daa7a65db715b1c1d849/728x422_1_5e0cbc6e3d3e2787a4352eb0a5a00734@827x479_0xDYSo7zPY_4882153953486479564.png.webp", "https://n1s1.hsmedia.ru/3e/96/92/3e9692d05acab8c8c1e3aed75c889234/728x398_1_035e92ed2c1751026638158303687a0e@927x507_0xFdOia0LG_5868776976835435401.png.webp"];
+  var titleKey = function titleKey(title) {
+    return String(title || "").normalize("NFKD").toLowerCase().replace(/&amp;|&#0?38;/g, "&").replace(/&[a-z]+;|&#\d+;/g, "").replace(/&/g, "and").replace(/[^a-z0-9]/g, "");
+  };
+  var tmdbPath = function tmdbPath(value) {
+    var _a;
+    return ((_a = String(value || "").match(/(?:^|\/t\/p\/(?:original|w\d+))(\/[\w.-]+\.(?:jpg|jpeg|png|webp))$/i)) == null ? void 0 : _a[1]) || "";
+  };
+  var seriesCard = function seriesCard(card) {
+    return card.media_type === "tv" || card.media_type !== "movie" && !!(card.name || card.first_air_date);
+  };
+  var tmdbId = function tmdbId(card) {
+    return Number(card.tmdb_id || (["tmdb", "cub"].includes(card.source) ? card.id : 0));
+  };
+  function filmGrabFrames(_x) {
+    return _filmGrabFrames.apply(this, arguments);
+  }
+  function _filmGrabFrames() {
+    _filmGrabFrames = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee6(card) {
+      var title, year, key2, identity2, saved, controller, timer, get, _get, hits, matches, posts, verified, pattern, frames, _t7;
       return _regenerator().w(function (_context6) {
         while (1) switch (_context6.p = _context6.n) {
           case 0:
             _get = function _get3() {
-              _get = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5(path, params) {
-                var response, _t7;
+              _get = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5(path) {
+                var response;
                 return _regenerator().w(function (_context5) {
                   while (1) switch (_context5.n) {
                     case 0:
                       _context5.n = 1;
+                      return fetch(filmGrab + path, {
+                        signal: controller.signal,
+                        credentials: "omit"
+                      });
+                    case 1:
+                      response = _context5.v;
+                      if (response.ok) {
+                        _context5.n = 2;
+                        break;
+                      }
+                      throw new Error("Frame archive unavailable");
+                    case 2:
+                      return _context5.a(2, response.json());
+                  }
+                }, _callee5);
+              }));
+              return _get.apply(this, arguments);
+            };
+            get = function _get2(_x11) {
+              return _get.apply(this, arguments);
+            };
+            title = card.original_title || card.title, year = String(card.release_date || "").slice(0, 4);
+            key2 = titleKey(title);
+            if (!(!key2 || !/^\d{4}$/.test(year) || !/^[\x20-\x7e\u00a0-\u024f\u2000-\u206f]+$/.test(title))) {
+              _context6.n = 1;
+              break;
+            }
+            return _context6.a(2, []);
+          case 1:
+            identity2 = "film-grab:" + key2 + ":" + year, saved = cache2.get(identity2);
+            if (!((saved == null ? void 0 : saved.until) > Date.now())) {
+              _context6.n = 2;
+              break;
+            }
+            return _context6.a(2, saved.frames);
+          case 2:
+            controller = new AbortController(), timer = setTimeout(function () {
+              return controller.abort();
+            }, 2200);
+            _context6.p = 3;
+            _context6.n = 4;
+            return get("search?" + new URLSearchParams({
+              search: title,
+              subtype: "post",
+              per_page: "15",
+              _fields: "id,title"
+            }));
+          case 4:
+            hits = _context6.v;
+            matches = Array.isArray(hits) ? hits.filter(function (row) {
+              return Number.isSafeInteger(row == null ? void 0 : row.id) && row.id > 0 && titleKey(String(row.title || "").replace(new RegExp("\\s*\\(" + year + "\\)$"), "")) === key2;
+            }) : [];
+            if (!(!matches.length || matches.length > 3)) {
+              _context6.n = 5;
+              break;
+            }
+            return _context6.a(2, []);
+          case 5:
+            _context6.n = 6;
+            return Promise.all(matches.map(function (row) {
+              return get("posts/" + row.id + "?_fields=content");
+            }));
+          case 6:
+            posts = _context6.v;
+            verified = posts.map(function (post) {
+              var _a;
+              return ((_a = post.content) == null ? void 0 : _a.rendered) || "";
+            }).filter(function (html) {
+              return Array.from(html.matchAll(/<p\b[^>]*>([\s\S]*?)<\/p>/gi), function (match) {
+                return match[1].replace(/<[^>]+>/g, "").replace(/&nbsp;|\u00a0/g, " ").trim();
+              }).some(function (line) {
+                return line.replace(/\s+/g, " ").toLowerCase() === "year: " + year;
+              });
+            });
+            if (!(verified.length !== 1)) {
+              _context6.n = 7;
+              break;
+            }
+            return _context6.a(2, []);
+          case 7:
+            pattern = /href="(https:\/\/film-grab\.com\/wp-content\/uploads\/photo-gallery\/[\w.%()' -]+\.(?:jpg|jpeg|png|webp)(?:\?bwg=\d+)?)"/gi;
+            frames = galleryRows(Array.from(verified[0].matchAll(pattern), function (match) {
+              return new URL(match[1]).href;
+            }));
+            if (cache2.size >= 80) cache2.delete(cache2.keys().next().value);
+            cache2.set(identity2, {
+              frames: frames,
+              until: Date.now() + 18e5
+            });
+            return _context6.a(2, frames);
+          case 8:
+            _context6.p = 8;
+            _t7 = _context6.v;
+            return _context6.a(2, []);
+          case 9:
+            _context6.p = 9;
+            clearTimeout(timer);
+            return _context6.f(9);
+          case 10:
+            return _context6.a(2);
+        }
+      }, _callee6, null, [[3, 8, 9, 10]]);
+    }));
+    return _filmGrabFrames.apply(this, arguments);
+  }
+  function episodeGallery(_x2, _x3, _x4) {
+    return _episodeGallery.apply(this, arguments);
+  }
+  function _episodeGallery() {
+    _episodeGallery = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7(data, id, readTmdb) {
+      var _a, _b, _c, episodes, known, today2, thumbs, _iterator162, _step163, row, season, episode, date2, candidates, frames;
+      return _regenerator().w(function (_context7) {
+        while (1) switch (_context7.n) {
+          case 0:
+            episodes = [(_a = data.episodes) == null ? void 0 : _a.episodes_original, (_b = data.episodes) == null ? void 0 : _b.episodes].filter(Array.isArray).flat();
+            if (data.movie.last_episode_to_air) episodes.push(data.movie.last_episode_to_air);
+            known = /* @__PURE__ */new Map(), today2 = (/* @__PURE__ */new Date()).toISOString().slice(0, 10);
+            thumbs = new Set(episodes.concat(data.movie, ((_c = data.images) == null ? void 0 : _c.backdrops) || []).map(function (row) {
+              return tmdbPath((row == null ? void 0 : row.still_path) || (row == null ? void 0 : row.backdrop_path) || (row == null ? void 0 : row.file_path) || (row == null ? void 0 : row.img));
+            }).filter(Boolean));
+            _iterator162 = _createForOfIteratorHelper(episodes);
+            try {
+              for (_iterator162.s(); !(_step163 = _iterator162.n()).done;) {
+                row = _step163.value;
+                season = Number(row == null ? void 0 : row.season_number), episode = Number(row == null ? void 0 : row.episode_number), date2 = row == null ? void 0 : row.air_date;
+                if (Number.isSafeInteger(season) && season > 0 && Number.isSafeInteger(episode) && episode > 0 && /^\d{4}-\d{2}-\d{2}$/.test(date2 || "") && date2 <= today2 && !row.comeing) known.set(season + ":" + episode, {
+                  season: season,
+                  episode: episode
+                });
+              }
+            } catch (err) {
+              _iterator162.e(err);
+            } finally {
+              _iterator162.f();
+            }
+            candidates = _toConsumableArray(known.values()).sort(function (a, b) {
+              return b.season - a.season || b.episode - a.episode;
+            }).slice(0, 3);
+            _context7.n = 1;
+            return Promise.all(candidates.map(function (_ref83) {
+              var season = _ref83.season,
+                episode = _ref83.episode;
+              return new Promise(function (resolve) {
+                var timer = setTimeout(function () {
+                  return resolve([]);
+                }, 2200);
+                var complete = function complete(value) {
+                  clearTimeout(timer);
+                  var rows = Array.isArray(value == null ? void 0 : value.stills) ? value.stills : [];
+                  resolve(rows.map(function (row) {
+                    return tmdbPath(row == null ? void 0 : row.file_path);
+                  }).filter(function (path) {
+                    return path && !thumbs.has(path);
+                  }));
+                };
+                try {
+                  readTmdb("tv/" + id + "/season/" + season + "/episode/" + episode + "/images", complete, function () {
+                    return complete(null);
+                  });
+                } catch (error) {
+                  complete(null);
+                }
+              });
+            }));
+          case 1:
+            frames = _context7.v;
+            return _context7.a(2, _toConsumableArray(new Set(frames.flat())).slice(0, frameLimit).map(function (still_path) {
+              return {
+                still_path: still_path
+              };
+            }));
+        }
+      }, _callee7);
+    }));
+    return _episodeGallery.apply(this, arguments);
+  }
+  function hasGallerySource(L, data) {
+    var _a;
+    var card = data.movie;
+    if (card.adult || card.blocked) return false;
+    if ((_a = L.Storage) == null ? void 0 : _a.get(galleryFramesKey, "")) return true;
+    if (seriesCard(card)) return tmdbId(card) > 0 && (tmdbId(card) === 273552 || !!(data.episodes || card.last_episode_to_air));
+    return !!((card.original_title || card.title) && card.release_date && typeof fetch === "function" && typeof AbortController === "function");
+  }
+  function loadDetailGallery(_x5, _x6, _x7) {
+    return _loadDetailGallery.apply(this, arguments);
+  }
+  function _loadDetailGallery() {
+    _loadDetailGallery = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee8(L, data, readTmdb) {
+      var card, isSeries, id, provider, archive, _yield$Promise$all, _yield$Promise$all2, primary, optional, unique, _i55, _arr35, row;
+      return _regenerator().w(function (_context8) {
+        while (1) switch (_context8.n) {
+          case 0:
+            card = data.movie;
+            if (hasGallerySource(L, data)) {
+              _context8.n = 1;
+              break;
+            }
+            return _context8.a(2, []);
+          case 1:
+            isSeries = seriesCard(card), id = tmdbId(card);
+            if (!(isSeries && id === 273552)) {
+              _context8.n = 2;
+              break;
+            }
+            return _context8.a(2, galleryRows(jungleScenes));
+          case 2:
+            provider = loadGalleryFrames(L, card);
+            archive = isSeries ? id > 0 ? episodeGallery(data, id, readTmdb) : [] : typeof fetch === "function" && typeof AbortController === "function" ? filmGrabFrames(card) : [];
+            _context8.n = 3;
+            return Promise.all([archive, provider]);
+          case 3:
+            _yield$Promise$all = _context8.v;
+            _yield$Promise$all2 = _slicedToArray(_yield$Promise$all, 2);
+            primary = _yield$Promise$all2[0];
+            optional = _yield$Promise$all2[1];
+            unique = /* @__PURE__ */new Map();
+            for (_i55 = 0, _arr35 = [].concat(_toConsumableArray(primary), _toConsumableArray(optional)); _i55 < _arr35.length; _i55++) {
+              row = _arr35[_i55];
+              unique.set(row.still_path || row.minimal_still_url, row);
+            }
+            return _context8.a(2, _toConsumableArray(unique.values()).slice(0, frameLimit));
+        }
+      }, _callee8);
+    }));
+    return _loadDetailGallery.apply(this, arguments);
+  }
+  function loadGalleryFrames(_x8, _x9) {
+    return _loadGalleryFrames.apply(this, arguments);
+  } // src/tmdb.js
+  function _loadGalleryFrames() {
+    _loadGalleryFrames = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0(L, card) {
+      var _a, _b, _c, key2, isSeries, kp, tmdb, identity2, saved, controller, timer, get, _get4, id, matches, images, urls, frames, _t9;
+      return _regenerator().w(function (_context0) {
+        while (1) switch (_context0.p = _context0.n) {
+          case 0:
+            _get4 = function _get6() {
+              _get4 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9(path, params) {
+                var response, _t8;
+                return _regenerator().w(function (_context9) {
+                  while (1) switch (_context9.n) {
+                    case 0:
+                      _context9.n = 1;
                       return fetch("https://api.poiskkino.dev/v1.5/" + path + "?" + new URLSearchParams(params), {
                         headers: {
                           "X-API-KEY": key2
@@ -11912,124 +12178,118 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                         redirect: "error"
                       });
                     case 1:
-                      response = _context5.v;
+                      response = _context9.v;
                       if (response.ok) {
-                        _context5.n = 2;
+                        _context9.n = 2;
                         break;
                       }
                       throw new Error("Frame service unavailable");
                     case 2:
-                      _context5.n = 3;
+                      _context9.n = 3;
                       return response.json();
                     case 3:
-                      _t7 = _context5.v.docs;
-                      if (_t7) {
-                        _context5.n = 4;
+                      _t8 = _context9.v.docs;
+                      if (_t8) {
+                        _context9.n = 4;
                         break;
                       }
-                      _t7 = [];
+                      _t8 = [];
                     case 4:
-                      return _context5.a(2, _t7);
+                      return _context9.a(2, _t8);
                   }
-                }, _callee5);
+                }, _callee9);
               }));
-              return _get.apply(this, arguments);
+              return _get4.apply(this, arguments);
             };
-            get = function _get2(_x6, _x7) {
-              return _get.apply(this, arguments);
+            get = function _get5(_x12, _x13) {
+              return _get4.apply(this, arguments);
             };
             key2 = String(((_a = L.Storage) == null ? void 0 : _a.get(galleryFramesKey, "")) || "").trim();
             if (!(!key2 || !card || card.adult || card.blocked || typeof fetch !== "function" || typeof AbortController !== "function")) {
-              _context6.n = 1;
+              _context0.n = 1;
               break;
             }
-            return _context6.a(2, []);
+            return _context0.a(2, []);
           case 1:
-            isSeries = card.media_type === "tv" || card.media_type !== "movie" && !!(card.name || card.first_air_date);
+            isSeries = seriesCard(card);
             kp = Number(card.kinopoisk_id || ((_b = card.external_ids) == null ? void 0 : _b.kinopoisk_id));
-            tmdb = Number(card.tmdb_id || (["tmdb", "cub"].includes(card.source) ? card.id : 0));
+            tmdb = tmdbId(card);
             if (kp > 0 || tmdb > 0) {
-              _context6.n = 2;
+              _context0.n = 2;
               break;
             }
-            return _context6.a(2, []);
+            return _context0.a(2, []);
           case 2:
             identity2 = (kp > 0 ? "kp:" + kp : "tmdb:" + tmdb) + ":" + isSeries;
             saved = cache2.get(identity2);
             if (!((saved == null ? void 0 : saved.until) > Date.now())) {
-              _context6.n = 3;
+              _context0.n = 3;
               break;
             }
-            return _context6.a(2, saved.frames);
+            return _context0.a(2, saved.frames);
           case 3:
             controller = new AbortController(), timer = setTimeout(function () {
               return controller.abort();
             }, 2400);
-            _context6.p = 4;
+            _context0.p = 4;
             id = kp;
             if (id > 0) {
-              _context6.n = 7;
+              _context0.n = 7;
               break;
             }
-            _context6.n = 5;
+            _context0.n = 5;
             return get("movie", {
               "externalId.tmdb": tmdb,
               isSeries: isSeries,
               limit: 2
             });
           case 5:
-            matches = _context6.v;
+            matches = _context0.v;
             if (!(matches.length !== 1 || Number((_c = matches[0].externalId) == null ? void 0 : _c.tmdb) !== tmdb || matches[0].isSeries !== isSeries)) {
-              _context6.n = 6;
+              _context0.n = 6;
               break;
             }
-            return _context6.a(2, []);
+            return _context0.a(2, []);
           case 6:
             id = Number(matches[0].id);
             if (id > 0) {
-              _context6.n = 7;
+              _context0.n = 7;
               break;
             }
-            return _context6.a(2, []);
+            return _context0.a(2, []);
           case 7:
-            _context6.n = 8;
+            _context0.n = 8;
             return get("image", {
               movieId: id,
               type: "frame",
               limit: 40
             });
           case 8:
-            images = _context6.v;
+            images = _context0.v;
             urls = _toConsumableArray(new Set(images.filter(function (row) {
               return row.type === "frame" && Number(row.movieId) === id && https(row.url);
             }).map(function (row) {
               return row.url;
             }))).slice(0, frameLimit);
-            frames = urls.map(function (url) {
-              return {
-                img: url,
-                minimal_still_url: url,
-                minimal_gallery_art: true
-              };
-            });
+            frames = galleryRows(urls);
             if (cache2.size >= 80) cache2.delete(cache2.keys().next().value);
             cache2.set(identity2, {
               frames: frames,
               until: Date.now() + 18e5
             });
-            return _context6.a(2, frames);
+            return _context0.a(2, frames);
           case 9:
-            _context6.p = 9;
-            _t8 = _context6.v;
-            return _context6.a(2, []);
+            _context0.p = 9;
+            _t9 = _context0.v;
+            return _context0.a(2, []);
           case 10:
-            _context6.p = 10;
+            _context0.p = 10;
             clearTimeout(timer);
-            return _context6.f(10);
+            return _context0.f(10);
           case 11:
-            return _context6.a(2);
+            return _context0.a(2);
         }
-      }, _callee6, null, [[4, 9, 10, 11]]);
+      }, _callee0, null, [[4, 9, 10, 11]]);
     }));
     return _loadGalleryFrames.apply(this, arguments);
   }
@@ -12298,13 +12558,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
       };
       return full.call(this, params, function (data) {
-        var _a;
         if (!data || !data.movie) return error();
-        var frames = ((_a = L.Storage) == null ? void 0 : _a.get(galleryFramesKey, "")) && loadGalleryFrames(L, data.movie);
+        var frames = hasGallerySource(L, data) && loadDetailGallery(L, data, function (path, done, failed) {
+          return tmdbGet(L, path, {}, done, failed);
+        });
         var publish = function publish() {
           return frames ? frames.then(function (rows) {
-            if (rows.length) data.minimal_gallery_frames = rows;
-            ok(data);
+            return ok(__spreadProps(__spreadValues({}, data), {
+              minimal_gallery_frames: rows
+            }));
+          }, function () {
+            return ok(data);
           }) : ok(data);
         };
         var anime = typeof window !== "undefined" && window.LampaView && window.LampaView.animeBase;
@@ -12357,10 +12621,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               return ["tv", "ona"].includes(row.kind) && row.season;
             }) : [];
             var seasonCount = new Set(guide.filter(function (row) {
-              var _a2, _b;
-              return Number((_b = (_a2 = model.nodes.find(function (n) {
+              var _a, _b;
+              return Number((_b = (_a = model.nodes.find(function (n) {
                 return n.id === row.id;
-              })) == null ? void 0 : _a2.record) == null ? void 0 : _b.tv) === Number(card.id);
+              })) == null ? void 0 : _a.record) == null ? void 0 : _b.tv) === Number(card.id);
             }).map(function (row) {
               return row.season;
             })).size;
@@ -12525,9 +12789,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }
           done();
         }
-        function images(tmdbId) {
-          if (!tmdbId || !/^\d+$/.test(String(tmdbId))) return finish(null);
-          tmdbGet(L, kind + "/" + tmdbId + "?append_to_response=images&include_image_language=" + encodeURIComponent(language + ",en,null"), {
+        function images(tmdbId2) {
+          if (!tmdbId2 || !/^\d+$/.test(String(tmdbId2))) return finish(null);
+          tmdbGet(L, kind + "/" + tmdbId2 + "?append_to_response=images&include_image_language=" + encodeURIComponent(language + ",en,null"), {
             langs: language
           }, finish, function () {
             return finish(null);
@@ -12718,7 +12982,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       });
       return database;
     }
-    function read(_x3) {
+    function read(_x0) {
       return _read.apply(this, arguments);
     }
     function _read() {
@@ -12824,7 +13088,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                     }
                   }, _callee3);
                 }));
-                return function (_x4) {
+                return function (_x1) {
                   return _ref2.apply(this, arguments);
                 };
               }()));
@@ -13733,8 +13997,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var rendered = (_a = item == null ? void 0 : item.render) == null ? void 0 : _a.call(item, true);
     return (rendered == null ? void 0 : rendered.nodeType) ? rendered : rendered == null ? void 0 : rendered[0];
   };
-  var still = function still(episode) {
-    return episode && !episode.comeing && (episode.still_path || episode.minimal_still_url);
+  var still = function still(frame) {
+    return frame.still_path || frame.minimal_still_url;
   };
   var titleFor = function titleFor(card) {
     return text((card == null ? void 0 : card.media_type) === "tv" || (card == null ? void 0 : card.media_type) !== "movie" && ((card == null ? void 0 : card.name) || (card == null ? void 0 : card.first_air_date)) ? "Кадры из сериала" : "Кадры из фильма");
@@ -13742,28 +14006,35 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   var imagePath = function imagePath(path) {
     return /^\/[\w.-]+\.(?:jpg|jpeg|png|webp)$/i.test(path || "");
   };
-  var imageRows = function imageRows(images, episode) {
-    return images.filter(function (image2) {
-      return imagePath(image2 == null ? void 0 : image2.file_path);
-    }).map(function (image2) {
-      return {
-        still_path: image2.file_path,
-        minimal_gallery_art: true,
-        episode_number: episode == null ? void 0 : episode.episode_number
-      };
-    });
-  };
   function prepareScreenshotRow(event) {
-    var _a;
     var data = event.data,
       link = event.link;
-    if (!(data == null ? void 0 : data.movie) || data.movie.adult || data.movie.blocked || !Array.isArray(link == null ? void 0 : link.rows) || Array.isArray((_a = data.episodes) == null ? void 0 : _a.episodes)) return;
-    var results = (data.minimal_gallery_frames || []).slice(0, frameLimit);
+    if (!(data == null ? void 0 : data.movie) || data.movie.adult || data.movie.blocked || !Array.isArray(link == null ? void 0 : link.rows)) return;
+    var results = (data.minimal_gallery_frames || []).filter(still).slice(0, frameLimit).map(function (row) {
+      return __spreadValues({}, row);
+    }).reverse();
     if (results.length) link.rows.push(["episodes", {
       movie: data.movie,
       title: titleFor(data.movie),
-      results: results.reverse()
+      results: results,
+      minimal_gallery: true
     }]);
+  }
+  function removeDetailRows(link, match) {
+    var _a, _b;
+    if (!Array.isArray(link == null ? void 0 : link.rows) || !Array.isArray(link.items)) return;
+    var active = link.items[link.active];
+    for (var i = link.rows.length - 1; i >= 0; i--) {
+      if (!match(link.rows[i])) continue;
+      link.rows.splice(i, 1);
+      if (i >= link.items.length) continue;
+      var _link$items$splice = link.items.splice(i, 1),
+        _link$items$splice2 = _slicedToArray(_link$items$splice, 1),
+        item = _link$items$splice2[0];
+      (_a = nodeOf(item)) == null ? void 0 : _a.remove();
+      (_b = item == null ? void 0 : item.destroy) == null ? void 0 : _b.call(item);
+    }
+    link.active = Math.max(0, link.items.indexOf(active));
   }
   function galleryButton(className, label, path, action) {
     var button = document.createElement("button");
@@ -13891,23 +14162,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     }
   }
   function styleScreenshots(L, event) {
-    var _a, _b, _c, _d;
+    var _a, _b;
     var line = event.item,
       root = nodeOf(line),
       rows = (_a = event.data) == null ? void 0 : _a.results;
-    if (!root || !Array.isArray(rows) || !Array.isArray(line.items)) return;
-    var data = (_c = (_b = event.props) == null ? void 0 : _b.all) == null ? void 0 : _c.call(_b),
-      card = event.data.movie,
+    if (!((_b = event.data) == null ? void 0 : _b.minimal_gallery) || !root || !Array.isArray(rows) || !Array.isArray(line.items)) return;
+    var card = event.data.movie,
       heading = root.querySelector(".items-line__title");
     var candidates = rows.slice(),
       frames = [],
       seen = /* @__PURE__ */new Set();
-    var template = candidates.find(function (row) {
-      var _a2;
-      return !row.comeing && ((_a2 = row.params) == null ? void 0 : _a2.createInstance);
-    });
-    var disposed = false,
-      nav;
+    var nav;
     function frame(item, path) {
       var node = nodeOf(item);
       if (!(node == null ? void 0 : node.classList.contains("full-episode")) || !path || seen.has(path) || frames.length >= frameLimit) {
@@ -13918,19 +14183,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         return;
       }
       var entry = {
-          node: node,
-          path: path
-        },
-        number3 = item.data.episode_number;
+        node: node,
+        path: path
+      };
       frames.push(entry);
       seen.add(path);
       node.dataset.minimalScreenshot = "1";
       node.setAttribute("role", "button");
       node.tabIndex = 0;
-      node.setAttribute("aria-label", number3 ? text("Кадр из серии {0}", [number3]) : text("Кадр {0}", [frames.length]));
+      node.setAttribute("aria-label", text("Кадр {0}", [frames.length]));
       var open = function open() {
-        var _a2, _b2, _c2;
-        if (!node.isConnected || !((_a2 = L.Modal) == null ? void 0 : _a2.open) || ((_c2 = (_b2 = L.Modal).opened) == null ? void 0 : _c2.call(_b2))) return;
+        var _a2, _b2, _c;
+        if (!node.isConnected || !((_a2 = L.Modal) == null ? void 0 : _a2.open) || ((_c = (_b2 = L.Modal).opened) == null ? void 0 : _c.call(_b2))) return;
         line.last = node;
         showFrames(L, line, frames.slice(), frames.indexOf(entry));
       };
@@ -14018,12 +14282,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               frame(existing, path);
               return 0; // continue
             }
-            var element = row.params ? row : template ? __spreadProps(__spreadValues({}, row), {
-              params: __spreadValues({}, template.params)
-            }) : null;
-            if (!element || !line.emit) return 0; // continue
+            if (!row.params || !line.emit) return 0; // continue
             var before = line.items.length;
-            line.emit("createAndAppend", element);
+            line.emit("createAndAppend", row);
             if (line.items.length > before) frame(line.items.at(-1), path);
           },
           _ret5;
@@ -14043,31 +14304,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }))));
       update();
     }
-    var supplemental = (data == null ? void 0 : data.minimal_gallery_frames) || [];
-    var episode = candidates.find(function (row) {
-      return !row.comeing && !row.minimal_gallery_art && Number(row.season_number) > 0 && Number(row.episode_number) > 0;
-    });
-    var id = Number((card == null ? void 0 : card.tmdb_id) || (["tmdb", "cub"].includes(card == null ? void 0 : card.source) ? card.id : 0));
-    var fetchStills = id > 0 && episode && candidates.filter(still).length < 4;
-    if (!candidates.some(still) && !supplemental.length && !fetchStills) return;
-    var initialArt = fetchStills ? supplemental.slice(0, 8) : supplemental;
-    add(candidates.concat(initialArt));
-    (_d = line.use) == null ? void 0 : _d.call(line, {
-      onDestroy: function onDestroy() {
-        disposed = true;
-      }
-    });
-    if (fetchStills) {
-      var path = "tv/" + id + "/season/" + episode.season_number + "/episode/" + episode.episode_number + "/images";
-      var complete = function complete(result) {
-        if (disposed) return;
-        var images = Array.isArray(result == null ? void 0 : result.stills) ? imageRows(result.stills, episode) : [];
-        add(images.concat(supplemental.slice(initialArt.length)));
-      };
-      tmdbGet(L, path, {}, complete, function () {
-        return complete(null);
-      });
-    }
+    add(candidates);
   }
   function icon(path) {
     var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -14637,6 +14874,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     right.dataset.minimalDetail = "1";
     readableOverview(L, card, right, event.link);
     removeDescription(event.link);
+    removeDetailRows(event.link, function (row) {
+      var _a;
+      return Array.isArray(row) && row[0] === "episodes" && !((_a = row[1]) == null ? void 0 : _a.minimal_gallery);
+    });
     restoreDetailRows(L, event.link, event.data);
     var technical = moveTechnicalDetails(L, card, right, event.data.episodes);
     var animeBase = window.LampaView && window.LampaView.animeBase;
@@ -15123,7 +15364,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // package.json
-  var version = "0.5.76";
+  var version = "0.5.77";
 
   // src/inputs.js
   function inputs(L) {
@@ -15595,8 +15836,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var _loop13 = function _loop13() {
             var sum = [0, 0, 0];
             var count = 0;
-            for (var _y = 0; _y < 6; _y++) for (var _x5 = half * 3; _x5 < half * 3 + 3; _x5++) {
-              var _i17 = (_y * 6 + _x5) * 4;
+            for (var _y = 0; _y < 6; _y++) for (var _x10 = half * 3; _x10 < half * 3 + 3; _x10++) {
+              var _i17 = (_y * 6 + _x10) * 4;
               if (pixels[_i17 + 3] < 128) continue;
               count++;
               for (var _k2 = 0; _k2 < 3; _k2++) sum[_k2] += pixels[_i17 + _k2];
@@ -26623,7 +26864,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   var today = function today() {
     return (/* @__PURE__ */new Date()).toISOString().slice(0, 10);
   };
-  var titleKey = function titleKey(value) {
+  var titleKey2 = function titleKey2(value) {
     return String(value || "").normalize("NFKC").toLowerCase().replace(/ё/g, "е").replace(/[\s.,:;!?'’"«»()[\]…—–_-]+/g, "");
   };
   var playable = function playable(row) {
@@ -26722,7 +26963,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     try {
       var _loop31 = function _loop31() {
         var part = _step111.value;
-        var names = [part.name, part.original].map(titleKey).filter(Boolean);
+        var names = [part.name, part.original].map(titleKey2).filter(Boolean);
         var urls = /* @__PURE__ */new Set();
         var _iterator111 = _createForOfIteratorHelper(rows),
           _step112;
@@ -26731,7 +26972,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             var row = _step112.value;
             if (!row.similar || row.method !== "link" || String(row.year || row.start_date || "").slice(0, 4) !== part.year) continue;
             if (!String(row.title || row.name || row.text || "").split(/\s+[\/|]\s+/).some(function (name) {
-              return names.includes(titleKey(name));
+              return names.includes(titleKey2(name));
             })) continue;
             var url = kodikRoute(row.url, base);
             if (url && url.searchParams.get("pick") && !url.searchParams.has("s")) urls.add(url.href);
@@ -28929,6 +29170,38 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           if (!current || !current.activity || current.activity.component !== link) return;
           var row = mountRelatedRow(L, link);
           if (!row) return;
+          var groups2 = hasAnime ? franchiseMenuGroups(model, card) : [];
+          var represented = new Set(groups2.flatMap(function (group) {
+            return group.entries.flatMap(function (entry) {
+              var _a;
+              return animeTargets((_a = model.nodes.find(function (node) {
+                return node.id === entry.card.id;
+              })) == null ? void 0 : _a.record).map(function (target) {
+                return target.type + ":" + target.id;
+              });
+            });
+          }));
+          var _iterator136 = _createForOfIteratorHelper(nativeGroups),
+            _step137;
+          try {
+            for (_iterator136.s(); !(_step137 = _iterator136.n()).done;) {
+              var group = _step137.value;
+              var entries2 = group.entries.filter(function (entry) {
+                return !represented.has(entry.card.media_type + ":" + entry.card.id);
+              });
+              if (entries2.length) groups2.push(__spreadProps(__spreadValues({}, group), {
+                entries: entries2
+              }));
+            }
+          } catch (err) {
+            _iterator136.e(err);
+          } finally {
+            _iterator136.f();
+          }
+          if (nativeGroups.length) removeDetailRows(link, function (entry) {
+            var _a;
+            return Array.isArray(entry) && entry[0] === "cards" && (entry[1] === event.data.collection || ((_a = entry[1]) == null ? void 0 : _a.title) === L.Lang.translate("title_collection"));
+          });
           link._minimalAnimeMounted = true;
           var control = row.control,
             item = row.item;
@@ -28966,16 +29239,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           function open() {
             if (disposed || !control.isConnected || control.getAttribute("aria-expanded") === "true") return;
             item.activate();
-            var groups2 = hasAnime ? franchiseMenuGroups(model, card) : nativeGroups,
-              items = [];
+            var items = [];
             groups2.forEach(function (group) {
               items.push({
                 title: escape(group.title),
                 separator: true
               });
               group.entries.forEach(function (entry) {
-                var _a;
-                var current2 = hasAnime ? Number(entry.card.id) === Number(card.shikimori_id || card.mal_id || model.seed) && (!entry.card.minimal_franchise_season || entry.card.minimal_franchise_season === (((_a = card.minimal_anime_release) == null ? void 0 : _a.season) || 1)) : entry.current;
+                var _a, _b;
+                var current2 = (_b = entry.current) != null ? _b : hasAnime && Number(entry.card.id) === Number(card.shikimori_id || card.mal_id || model.seed) && (!entry.card.minimal_franchise_season || entry.card.minimal_franchise_season === (((_a = card.minimal_anime_release) == null ? void 0 : _a.season) || 1));
                 items.push({
                   title: escape(entry.title),
                   subtitle: escape(entry.subtitle),
@@ -29042,19 +29314,21 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                   node.appendChild(picture);
                   node.appendChild(info);
                 });
-                var ids = hasAnime ? releases.map(function (entry) {
+                var ids = releases.filter(function (entry) {
+                    return entry.card.source === "minimal_shiki";
+                  }).map(function (entry) {
                     return String(entry.card.id);
                   }).filter(function (id) {
                     return !posterCache2.has(id);
-                  }).slice(0, 12) : [],
+                  }).slice(0, 12),
                   api2 = L.Api.sources.minimal_shiki;
                 if (ids.length && (api2 == null ? void 0 : api2.posters)) api2.posters(ids, function (rows) {
                   var _a, _b;
-                  var _iterator136 = _createForOfIteratorHelper(rows),
-                    _step137;
+                  var _iterator137 = _createForOfIteratorHelper(rows),
+                    _step138;
                   try {
-                    for (_iterator136.s(); !(_step137 = _iterator136.n()).done;) {
-                      var value = _step137.value;
+                    for (_iterator137.s(); !(_step138 = _iterator137.n()).done;) {
+                      var value = _step138.value;
                       var id = String(value.id);
                       if (!ids.includes(id)) continue;
                       var url = ((_a = value.poster) == null ? void 0 : _a.mainUrl) || ((_b = value.poster) == null ? void 0 : _b.originalUrl);
@@ -29064,9 +29338,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                       if (art) showArtwork(art, url);
                     }
                   } catch (err) {
-                    _iterator136.e(err);
+                    _iterator137.e(err);
                   } finally {
-                    _iterator136.f();
+                    _iterator137.f();
                   }
                 }, function () {});
               },
@@ -29148,11 +29422,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var known = /* @__PURE__ */new Map(),
       seen = /* @__PURE__ */new Set(),
       rows = [];
-    var _iterator137 = _createForOfIteratorHelper(seasons),
-      _step138;
+    var _iterator138 = _createForOfIteratorHelper(seasons),
+      _step139;
     try {
-      for (_iterator137.s(); !(_step138 = _iterator137.n()).done;) {
-        var s = _step138.value;
+      for (_iterator138.s(); !(_step139 = _iterator138.n()).done;) {
+        var s = _step139.value;
         if (!positive5(s.season_number) || !positive5(s.episode_count)) continue;
         var n = Number(s.season_number);
         if (known.has(n)) return null;
@@ -29163,15 +29437,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
       }
     } catch (err) {
-      _iterator137.e(err);
+      _iterator138.e(err);
     } finally {
-      _iterator137.f();
+      _iterator138.f();
     }
-    var _iterator138 = _createForOfIteratorHelper(episodes),
-      _step139;
+    var _iterator139 = _createForOfIteratorHelper(episodes),
+      _step140;
     try {
-      for (_iterator138.s(); !(_step139 = _iterator138.n()).done;) {
-        var e = _step139.value;
+      for (_iterator139.s(); !(_step140 = _iterator139.n()).done;) {
+        var e = _step140.value;
         var season = Number(e.season_number),
           number3 = Number(e.tmdb_episode_number),
           key2 = season + ":" + number3;
@@ -29197,18 +29471,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
       }
     } catch (err) {
-      _iterator138.e(err);
+      _iterator139.e(err);
     } finally {
-      _iterator138.f();
+      _iterator139.f();
     }
     rows.sort(function (a, b) {
       return a.season - b.season || a.number - b.number;
     });
-    var _iterator139 = _createForOfIteratorHelper(known.values()),
-      _step140;
+    var _iterator140 = _createForOfIteratorHelper(known.values()),
+      _step141;
     try {
       var _loop45 = function _loop45() {
-          var s = _step140.value;
+          var s = _step141.value;
           if (rows.filter(function (e) {
             return e.season === s.number;
           }).length !== s.count) return {
@@ -29216,14 +29490,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           };
         },
         _ret15;
-      for (_iterator139.s(); !(_step140 = _iterator139.n()).done;) {
+      for (_iterator140.s(); !(_step141 = _iterator140.n()).done;) {
         _ret15 = _loop45();
         if (_ret15) return _ret15.v;
       }
     } catch (err) {
-      _iterator139.e(err);
+      _iterator140.e(err);
     } finally {
-      _iterator139.f();
+      _iterator140.f();
     }
     var groups = _toConsumableArray(known.values()).sort(function (a, b) {
       return a.number - b.number;
@@ -29316,11 +29590,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var rows = payload && payload.data;
     if (!positive5(mal) || !Array.isArray(rows) || !rows.length) return null;
     var book = {};
-    var _iterator140 = _createForOfIteratorHelper(rows),
-      _step141;
+    var _iterator141 = _createForOfIteratorHelper(rows),
+      _step142;
     try {
-      for (_iterator140.s(); !(_step141 = _iterator140.n()).done;) {
-        var row = _step141.value;
+      for (_iterator141.s(); !(_step142 = _iterator141.n()).done;) {
+        var row = _step142.value;
         var n = Number(row.mal_episode_number);
         if (Number(row.mal_id) !== Number(mal) || !positive5(n) || book[n]) return null;
         book[n] = {
@@ -29334,9 +29608,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         };
       }
     } catch (err) {
-      _iterator140.e(err);
+      _iterator141.e(err);
     } finally {
-      _iterator140.f();
+      _iterator141.f();
     }
     return book;
   }
@@ -29655,16 +29929,16 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var _a;
     if (!spec || !["dorama", "tvshow"].includes(spec.kind) || !Array.isArray(spec.countries) || !spec.countries.length) return [];
     var queries = [];
-    var _iterator141 = _createForOfIteratorHelper(spec.countries.slice(0, 2)),
-      _step142;
+    var _iterator142 = _createForOfIteratorHelper(spec.countries.slice(0, 2)),
+      _step143;
     try {
-      for (_iterator141.s(); !(_step142 = _iterator141.n()).done;) {
-        var country = _step142.value;
-        var _iterator142 = _createForOfIteratorHelper((((_a = spec.genres) == null ? void 0 : _a.length) ? spec.genres : [""]).slice(0, 2)),
-          _step143;
+      for (_iterator142.s(); !(_step143 = _iterator142.n()).done;) {
+        var country = _step143.value;
+        var _iterator143 = _createForOfIteratorHelper((((_a = spec.genres) == null ? void 0 : _a.length) ? spec.genres : [""]).slice(0, 2)),
+          _step144;
         try {
-          for (_iterator142.s(); !(_step143 = _iterator142.n()).done;) {
-            var genre = _step143.value;
+          for (_iterator143.s(); !(_step144 = _iterator143.n()).done;) {
+            var genre = _step144.value;
             var p = new URLSearchParams({
               type: "tv",
               country: country,
@@ -29679,15 +29953,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             queries.push("titles?" + p);
           }
         } catch (err) {
-          _iterator142.e(err);
+          _iterator143.e(err);
         } finally {
-          _iterator142.f();
+          _iterator143.f();
         }
       }
     } catch (err) {
-      _iterator141.e(err);
+      _iterator142.e(err);
     } finally {
-      _iterator141.f();
+      _iterator142.f();
     }
     return queries;
   }
@@ -30512,18 +30786,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     };
     var group, winter;
     function update() {
-      var _iterator143 = _createForOfIteratorHelper(origins),
-        _step144;
+      var _iterator144 = _createForOfIteratorHelper(origins),
+        _step145;
       try {
-        for (_iterator143.s(); !(_step144 = _iterator143.n()).done;) {
-          var _step144$value = _slicedToArray(_step144.value, 1),
-            _button = _step144$value[0];
+        for (_iterator144.s(); !(_step145 = _iterator144.n()).done;) {
+          var _step145$value = _slicedToArray(_step145.value, 1),
+            _button = _step145$value[0];
           if (!_button.isConnected) origins.delete(_button);
         }
       } catch (err) {
-        _iterator143.e(err);
+        _iterator144.e(err);
       } finally {
-        _iterator143.f();
+        _iterator144.f();
       }
       var logo = head.querySelector(".head__logo-icon");
       if (!logo) return;
@@ -30565,11 +30839,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             group.className = "pt-holiday-icons";
           }
           if (group.parentNode !== logo.parentNode || group.nextSibling !== logo) logo.before(group);
-          var _iterator144 = _createForOfIteratorHelper(buttons),
-            _step145;
+          var _iterator145 = _createForOfIteratorHelper(buttons),
+            _step146;
           try {
             var _loop48 = function _loop48() {
-              var button = _step145.value;
+              var button = _step146.value;
               if (!origins.has(button)) {
                 var native = document.createElement("span");
                 native.className = "pt-holiday-native";
@@ -30591,13 +30865,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               }
               if (button.parentNode !== group) group.appendChild(button);
             };
-            for (_iterator144.s(); !(_step145 = _iterator144.n()).done;) {
+            for (_iterator145.s(); !(_step146 = _iterator145.n()).done;) {
               _loop48();
             }
           } catch (err) {
-            _iterator144.e(err);
+            _iterator145.e(err);
           } finally {
-            _iterator144.f();
+            _iterator145.f();
           }
           if (snow) {
             if (!winter) {
@@ -30615,13 +30889,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           if (_node6.classList.contains("garland")) logo.appendChild(_node6);
         }
       } else {
-        var _iterator145 = _createForOfIteratorHelper(origins),
-          _step146;
+        var _iterator146 = _createForOfIteratorHelper(origins),
+          _step147;
         try {
-          for (_iterator145.s(); !(_step146 = _iterator145.n()).done;) {
-            var _step146$value = _slicedToArray(_step146.value, 2),
-              button = _step146$value[0],
-              origin = _step146$value[1];
+          for (_iterator146.s(); !(_step147 = _iterator146.n()).done;) {
+            var _step147$value = _slicedToArray(_step147.value, 2),
+              button = _step147$value[0],
+              origin = _step147$value[1];
             origin.icon.remove();
             while (origin.native.firstChild) button.insertBefore(origin.native.firstChild, origin.native);
             origin.native.remove();
@@ -30629,9 +30903,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             if (origin.parent.isConnected) origin.parent.insertBefore(button, origin.next && origin.next.parentNode === origin.parent ? origin.next : null);
           }
         } catch (err) {
-          _iterator145.e(err);
+          _iterator146.e(err);
         } finally {
-          _iterator145.f();
+          _iterator146.f();
         }
         origins.clear();
         if (group) group.remove();
@@ -30796,24 +31070,24 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       return Number.isFinite(n) ? Math.max(0.8, Math.min(2, n / 100)) : 1;
     };
     function restore() {
-      var _iterator146 = _createForOfIteratorHelper(applied),
-        _step147;
+      var _iterator147 = _createForOfIteratorHelper(applied),
+        _step148;
       try {
-        for (_iterator146.s(); !(_step147 = _iterator146.n()).done;) {
-          var _step147$value = _step147.value,
-            el = _step147$value.el,
-            prop = _step147$value.prop,
-            old = _step147$value.old,
-            priority = _step147$value.priority,
-            value = _step147$value.value;
+        for (_iterator147.s(); !(_step148 = _iterator147.n()).done;) {
+          var _step148$value = _step148.value,
+            el = _step148$value.el,
+            prop = _step148$value.prop,
+            old = _step148$value.old,
+            priority = _step148$value.priority,
+            value = _step148$value.value;
           if (el.style.getPropertyValue(prop) === value) {
             if (old) el.style.setProperty(prop, old, priority);else el.style.removeProperty(prop);
           }
         }
       } catch (err) {
-        _iterator146.e(err);
+        _iterator147.e(err);
       } finally {
-        _iterator146.f();
+        _iterator147.f();
       }
       applied = [];
     }
@@ -30854,11 +31128,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }
       function measure(el, props, scale) {
         var css = getComputedStyle(el);
-        var _iterator147 = _createForOfIteratorHelper(props),
-          _step148;
+        var _iterator148 = _createForOfIteratorHelper(props),
+          _step149;
         try {
-          for (_iterator147.s(); !(_step148 = _iterator147.n()).done;) {
-            var prop = _step148.value;
+          for (_iterator148.s(); !(_step149 = _iterator148.n()).done;) {
+            var prop = _step149.value;
             var base = css.getPropertyValue(prop);
             if (!/^\d+(?:\.\d+)?px$/.test(base)) continue;
             var value = (parseFloat(base) * scale).toFixed(2) + "px";
@@ -30871,55 +31145,55 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             });
           }
         } catch (err) {
-          _iterator147.e(err);
-        } finally {
-          _iterator147.f();
-        }
-      }
-      if (text2 !== 1) {
-        var _iterator148 = _createForOfIteratorHelper(select(TEXT)),
-          _step149;
-        try {
-          for (_iterator148.s(); !(_step149 = _iterator148.n()).done;) {
-            var el = _step149.value;
-            if (!el.querySelector(TEXT)) measure(el, ["font-size"], text2);
-          }
-        } catch (err) {
           _iterator148.e(err);
         } finally {
           _iterator148.f();
         }
       }
-      if (controls !== 1) {
-        var _iterator149 = _createForOfIteratorHelper(select(CONTROLS)),
+      if (text2 !== 1) {
+        var _iterator149 = _createForOfIteratorHelper(select(TEXT)),
           _step150;
         try {
           for (_iterator149.s(); !(_step150 = _iterator149.n()).done;) {
-            var _el2 = _step150.value;
-            measure(_el2, ["padding-top", "padding-bottom", "padding-left", "padding-right", "min-height"], controls);
+            var el = _step150.value;
+            if (!el.querySelector(TEXT)) measure(el, ["font-size"], text2);
           }
         } catch (err) {
           _iterator149.e(err);
         } finally {
           _iterator149.f();
         }
-        var _iterator150 = _createForOfIteratorHelper(select(ICONS)),
+      }
+      if (controls !== 1) {
+        var _iterator150 = _createForOfIteratorHelper(select(CONTROLS)),
           _step151;
         try {
           for (_iterator150.s(); !(_step151 = _iterator150.n()).done;) {
-            var _el3 = _step151.value;
-            measure(_el3, ["width", "height", "min-width"], controls);
+            var _el2 = _step151.value;
+            measure(_el2, ["padding-top", "padding-bottom", "padding-left", "padding-right", "min-height"], controls);
           }
         } catch (err) {
           _iterator150.e(err);
         } finally {
           _iterator150.f();
         }
-        var _iterator151 = _createForOfIteratorHelper(select(ACTIONS + ",.head__action,.head__menu-icon,.nova-chip,.nova-btn,.alc-chip,.alc-ap__play")),
+        var _iterator151 = _createForOfIteratorHelper(select(ICONS)),
           _step152;
         try {
+          for (_iterator151.s(); !(_step152 = _iterator151.n()).done;) {
+            var _el3 = _step152.value;
+            measure(_el3, ["width", "height", "min-width"], controls);
+          }
+        } catch (err) {
+          _iterator151.e(err);
+        } finally {
+          _iterator151.f();
+        }
+        var _iterator152 = _createForOfIteratorHelper(select(ACTIONS + ",.head__action,.head__menu-icon,.nova-chip,.nova-btn,.alc-chip,.alc-ap__play")),
+          _step153;
+        try {
           var _loop49 = function _loop49() {
-            var el = _step152.value;
+            var el = _step153.value;
             var height = el.getBoundingClientRect().height;
             if (height) {
               var old = changes.findIndex(function (c) {
@@ -30929,43 +31203,43 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               set(el, "min-height", (height * controls).toFixed(2) + "px");
             }
           };
-          for (_iterator151.s(); !(_step152 = _iterator151.n()).done;) {
-            _loop49();
-          }
-        } catch (err) {
-          _iterator151.e(err);
-        } finally {
-          _iterator151.f();
-        }
-        var _iterator152 = _createForOfIteratorHelper(select(".head,.head__body")),
-          _step153;
-        try {
           for (_iterator152.s(); !(_step153 = _iterator152.n()).done;) {
-            var _el4 = _step153.value;
-            measure(_el4, ["height"], controls);
+            _loop49();
           }
         } catch (err) {
           _iterator152.e(err);
         } finally {
           _iterator152.f();
         }
-        var _iterator153 = _createForOfIteratorHelper(select(".head__action:not(.open--search),.head__menu-icon")),
+        var _iterator153 = _createForOfIteratorHelper(select(".head,.head__body")),
           _step154;
         try {
           for (_iterator153.s(); !(_step154 = _iterator153.n()).done;) {
-            var _el5 = _step154.value;
-            measure(_el5, ["width", "flex-basis"], controls);
+            var _el4 = _step154.value;
+            measure(_el4, ["height"], controls);
           }
         } catch (err) {
           _iterator153.e(err);
         } finally {
           _iterator153.f();
         }
-        var _iterator154 = _createForOfIteratorHelper(select(ACTIONS)),
+        var _iterator154 = _createForOfIteratorHelper(select(".head__action:not(.open--search),.head__menu-icon")),
           _step155;
         try {
           for (_iterator154.s(); !(_step155 = _iterator154.n()).done;) {
-            var _el6 = _step155.value;
+            var _el5 = _step155.value;
+            measure(_el5, ["width", "flex-basis"], controls);
+          }
+        } catch (err) {
+          _iterator154.e(err);
+        } finally {
+          _iterator154.f();
+        }
+        var _iterator155 = _createForOfIteratorHelper(select(ACTIONS)),
+          _step156;
+        try {
+          for (_iterator155.s(); !(_step156 = _iterator155.n()).done;) {
+            var _el6 = _step156.value;
             var size = getComputedStyle(_el6),
               _width2 = _el6.getBoundingClientRect().width;
             if (_width2 && _width2 < _el6.parentElement.clientWidth * 0.5) set(_el6, "min-width", (_width2 * controls).toFixed(2) + "px");
@@ -30973,16 +31247,16 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             set(_el6, "flex-shrink", "0");
           }
         } catch (err) {
-          _iterator154.e(err);
+          _iterator155.e(err);
         } finally {
-          _iterator154.f();
+          _iterator155.f();
         }
         if (!document.body.classList.contains("pt-mobile")) {
-          var _iterator155 = _createForOfIteratorHelper(select(".minimal-detail-identity")),
-            _step156;
+          var _iterator156 = _createForOfIteratorHelper(select(".minimal-detail-identity")),
+            _step157;
           try {
-            for (_iterator155.s(); !(_step156 = _iterator155.n()).done;) {
-              var _el = _step156.value;
+            for (_iterator156.s(); !(_step157 = _iterator156.n()).done;) {
+              var _el = _step157.value;
               var width = Math.min(_el.getBoundingClientRect().width * controls, window.innerWidth * 0.45);
               if (width) {
                 set(_el, "width", width.toFixed(2) + "px");
@@ -30990,18 +31264,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               }
             }
           } catch (err) {
-            _iterator155.e(err);
+            _iterator156.e(err);
           } finally {
-            _iterator155.f();
+            _iterator156.f();
           }
         }
       }
       if (cards !== 1) {
-        var _iterator156 = _createForOfIteratorHelper(select(".card,.nova__list--grid .nova-card,.nova__list--row .nova-card")),
-          _step157;
+        var _iterator157 = _createForOfIteratorHelper(select(".card,.nova__list--grid .nova-card,.nova__list--row .nova-card")),
+          _step158;
         try {
-          for (_iterator156.s(); !(_step157 = _iterator156.n()).done;) {
-            var _el7 = _step157.value;
+          for (_iterator157.s(); !(_step158 = _iterator157.n()).done;) {
+            var _el7 = _step158.value;
             if (_el7.closest(".extensions") || _el7.closest(".minimal-fit-posters") || _el7.closest(".pt-hero") || _el7.classList.contains("card--collection")) continue;
             var _width3 = _el7.getBoundingClientRect().width,
               parent = _el7.parentElement.getBoundingClientRect().width;
@@ -31013,21 +31287,21 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             }
           }
         } catch (err) {
-          _iterator156.e(err);
-        } finally {
-          _iterator156.f();
-        }
-        var _iterator157 = _createForOfIteratorHelper(select(".nova__list:not(.nova__list--grid):not(.nova__list--row) .nova-card__thumb")),
-          _step158;
-        try {
-          for (_iterator157.s(); !(_step158 = _iterator157.n()).done;) {
-            var _el8 = _step158.value;
-            measure(_el8, ["width", "height", "min-width"], cards);
-          }
-        } catch (err) {
           _iterator157.e(err);
         } finally {
           _iterator157.f();
+        }
+        var _iterator158 = _createForOfIteratorHelper(select(".nova__list:not(.nova__list--grid):not(.nova__list--row) .nova-card__thumb")),
+          _step159;
+        try {
+          for (_iterator158.s(); !(_step159 = _iterator158.n()).done;) {
+            var _el8 = _step159.value;
+            measure(_el8, ["width", "height", "min-width"], cards);
+          }
+        } catch (err) {
+          _iterator158.e(err);
+        } finally {
+          _iterator158.f();
         }
       }
       for (var _i52 = 0, _changes = changes; _i52 < _changes.length; _i52++) {
@@ -31036,11 +31310,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         change.value = change.el.style.getPropertyValue(change.prop);
       }
       if (text2 > 1 || controls > 1) {
-        var _iterator158 = _createForOfIteratorHelper(select(".pt-hero")),
-          _step159;
+        var _iterator159 = _createForOfIteratorHelper(select(".pt-hero")),
+          _step160;
         try {
-          for (_iterator158.s(); !(_step159 = _iterator158.n()).done;) {
-            var hero = _step159.value;
+          for (_iterator159.s(); !(_step160 = _iterator159.n()).done;) {
+            var hero = _step160.value;
             var body = hero.querySelector(".pt-hero__body");
             if (!body) continue;
             var css = getComputedStyle(body),
@@ -31058,9 +31332,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             changes.push(_change);
           }
         } catch (err) {
-          _iterator158.e(err);
+          _iterator159.e(err);
         } finally {
-          _iterator158.f();
+          _iterator159.f();
         }
       }
       applied = applied.concat(changes);
@@ -31093,28 +31367,28 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var observer = new MutationObserver(function (records) {
       if (factor("lampa_view_text_scale") === 1 && factor("lampa_view_controls_scale") === 1 && factor("lampa_view_cards_scale") === 1) return;
       var targets = TEXT + "," + CONTROLS + "," + ICONS + ",.card,.nova-card,.nova-card__thumb,.minimal-detail-identity,.head,.head__body,.pt-hero";
-      var _iterator159 = _createForOfIteratorHelper(records),
-        _step160;
+      var _iterator160 = _createForOfIteratorHelper(records),
+        _step161;
       try {
-        for (_iterator159.s(); !(_step160 = _iterator159.n()).done;) {
-          var record = _step160.value;
-          var _iterator160 = _createForOfIteratorHelper(record.addedNodes),
-            _step161;
+        for (_iterator160.s(); !(_step161 = _iterator160.n()).done;) {
+          var record = _step161.value;
+          var _iterator161 = _createForOfIteratorHelper(record.addedNodes),
+            _step162;
           try {
-            for (_iterator160.s(); !(_step161 = _iterator160.n()).done;) {
-              var node = _step161.value;
+            for (_iterator161.s(); !(_step162 = _iterator161.n()).done;) {
+              var node = _step162.value;
               if (node.nodeType === 1 && node.isConnected && (node.matches(targets) || node.querySelector(targets))) inserted.add(node);
             }
           } catch (err) {
-            _iterator160.e(err);
+            _iterator161.e(err);
           } finally {
-            _iterator160.f();
+            _iterator161.f();
           }
         }
       } catch (err) {
-        _iterator159.e(err);
+        _iterator160.e(err);
       } finally {
-        _iterator159.f();
+        _iterator160.f();
       }
       if (inserted.size) schedule(false);
     });
@@ -50578,7 +50852,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var deadline = Date.now() + PROBE_BUDGET;
         var index = 0,
           pendingCount = 0;
-        var _step162 = function step() {
+        var _step164 = function step() {
           if (!probe_busy || generation !== probe_generation || owner !== componentNow() || scopeId !== qualityScope()) return;
           if (index >= queue.length) {
             if (!pendingCount) probe_busy = false;
@@ -50605,7 +50879,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             answered = true;
             pendingCount--;
             probeAnswer(entry.key, answer);
-            _step162();
+            _step164();
           };
           try {
             net["native"](probeUrlFor(entry.key), done, function () {
@@ -50617,7 +50891,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             done("");
           }
         };
-        for (var worker = 0; worker < PROBE_PARALLEL; worker++) _step162();
+        for (var worker = 0; worker < PROBE_PARALLEL; worker++) _step164();
       }
       function probeSchedule() {
         if (!probeAllowed() || !movie || !probe_url || probe_busy || (groups.sort || []).length < 2) return;
@@ -50798,7 +51072,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           voice_seed_net = null;
           if (typeof after === "function") after();
         };
-        var _step163 = function step() {
+        var _step165 = function step() {
           if (!voice_seed_busy) return;
           if (seat >= jobs.length || Date.now() > deadline || !inSkin() || !movie) return finish();
           var job = jobs[seat++];
@@ -50827,7 +51101,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               } catch (e) {}
             }
             if (voiceListFresh()) return finish();
-            _step163();
+            _step165();
           };
           var guard = setTimeout(function () {
             if (settled) return;
@@ -50848,7 +51122,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             done("");
           }
         };
-        _step163();
+        _step165();
       }
       function voiceLink(url) {
         var value = String(url || "").replace("rjson=", "nojson=");
@@ -51008,7 +51282,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         voice_busy = true;
         var deadline = Date.now() + VOICE_BUDGET;
         var index = 0;
-        var _step164 = function step() {
+        var _step166 = function step() {
           if (!voice_busy || index >= queue.length) return;
           if (Date.now() > deadline || !inSkin()) return voiceStop();
           var entry = queue[index++];
@@ -51047,7 +51321,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             clearTimeout(guard);
             var got = voiceAnswer(entry.name, answer);
             if (!got) retryAlt();
-            _step164();
+            _step166();
           };
           var guard = setTimeout(function () {
             if (settled) return;
@@ -51068,7 +51342,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             done("");
           }
         };
-        for (var worker = 0; worker < VOICE_PARALLEL; worker++) _step164();
+        for (var worker = 0; worker < VOICE_PARALLEL; worker++) _step166();
       }
       function voiceSchedule() {
         if (!voiceWanted()) return;
@@ -52709,7 +52983,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var direct = logoDirect(path);
         if (direct && urls.indexOf(direct) === -1) urls.push(direct);
         var at = 0;
-        var _step165 = function step() {
+        var _step167 = function step() {
           if (at >= urls.length) {
             LOGO_BLIND[src] = true;
             return done("blind");
@@ -52729,7 +53003,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             } catch (e) {
               tone = "";
             }
-            if (tone !== "invert" && tone !== "glow" && tone !== "ok") return _step165();
+            if (tone !== "invert" && tone !== "glow" && tone !== "ok") return _step167();
             var now = cached(LOGO_TONE_KEY, 500, {});
             if (now && _typeof(now) === "object") {
               now[src] = tone;
@@ -52737,10 +53011,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             }
             done(tone);
           };
-          probe.onerror = _step165;
+          probe.onerror = _step167;
           probe.src = url;
         };
-        _step165();
+        _step167();
       }
       function logoKey(target) {
         var card = target || movie;

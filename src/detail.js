@@ -6,7 +6,7 @@ import {chooseLogo,pickStudio} from './logos.js';
 import comments from './comments.js';
 import {artworkSize,logoSize,detailBackdrop,officialBanner} from './artwork.js';
 import {onlineButton,watchActions} from './watch-actions.js';
-import {prepareScreenshotRow,styleScreenshots,nextDetailEpisode,orderDetailSections,styleSuggestions} from './detail-gallery.js';
+import {prepareScreenshotRow,styleScreenshots,nextDetailEpisode,orderDetailSections,styleSuggestions,removeDetailRows} from './detail-gallery.js';
 export function releaseDate(card){
  const raw=String(card.release_date || card.first_air_date || ''),match=/^(\d{4})-(\d{2})-(\d{2})$/.exec(raw);
  if(!match)return /^\d{4}$/.test(raw) && Number(raw)>0?raw:'';
@@ -153,6 +153,7 @@ export default function detail(L,event,loadLogo){
  // exists; other Lampa templates must never lose their only description row.
  readableOverview(L,card,right,event.link);
  removeDescription(event.link);
+ removeDetailRows(event.link,row=>Array.isArray(row) && row[0]==='episodes' && !row[1]?.minimal_gallery);
  restoreDetailRows(L,event.link,event.data);
  const technical=moveTechnicalDetails(L,card,right,event.data.episodes);
  const animeBase=window.LampaView && window.LampaView.animeBase;
