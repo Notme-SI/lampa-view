@@ -103,15 +103,21 @@ export function installFullGuard(L){
   const error=status=>{if(fail)fail(status && typeof status==='object'?status:{empty:true});};
   return full.call(this,params,data=>{
    if(!data || !data.movie)return error();
-   const frames=hasGallerySource(L,data) && loadDetailGallery(L,data,(path,done,failed)=>tmdbGet(L,path,{},done,failed,{life:21600000}));
+   const eligible=hasGallerySource(L,data),anime=typeof window!=='undefined' && window.LampaView && window.LampaView.animeBase;
+   const resolveAnime=isAnime(data.movie) && anime?.collection && anime?.canonical;
+   const singleSeason=(data.movie.seasons || []).filter(row=>Number(row.season_number)>0).length===1;
+   let releaseSeasonsReady;
+   const releaseSeasons=eligible && resolveAnime && singleSeason && anime.galleryReleaseSeasons?
+    new Promise(resolve=>{releaseSeasonsReady=resolve;}):null;
+   const frames=eligible && loadDetailGallery(L,data,(path,done,failed)=>tmdbGet(L,path,{},done,failed,{life:21600000}),releaseSeasons);
    // Remember catalogue eligibility before native Full classifies keywords.
    // Native `adult` can later mean a mainstream title contains nudity.
    const publish=()=>frames?frames.then(rows=>ok({...data,minimal_gallery_eligible:true,minimal_gallery_frames:rows}),()=>ok(data)):ok(data);
-   const anime=typeof window!=='undefined' && window.LampaView && window.LampaView.animeBase;
-   if(!anime || !isAnime(data.movie) || !anime.collection || !anime.canonical)return publish();
+   if(!resolveAnime)return publish();
    let complete=false,resolved=data.movie;
-   const finish=count=>{
+   const finish=(count,model)=>{
     if(complete)return;complete=true;clearTimeout(timer);
+    releaseSeasonsReady?.(model?.complete?(season,book)=>anime.galleryReleaseSeasons(resolved,model,season,book):null);
     data.movie={...data.movie,minimal_detail_ready:true,minimal_detail_seasons:count || publishedSeasonCount(resolved),minimal_detail_episodes:publishedEpisodeCount(resolved)};
     publish();
    };
@@ -129,7 +135,7 @@ export function installFullGuard(L){
      resolved={...card,minimal_unreleased_seasons:announced};
      const guide=model && model.complete?franchiseViewingOrder(model).filter(row=>['tv','ona'].includes(row.kind) && row.season):[];
      const seasonCount=new Set(guide.filter(row=>Number(model.nodes.find(n=>n.id===row.id)?.record?.tv)===Number(card.id)).map(row=>row.season)).size;
-     finish(Math.max(seasonCount,publishedSeasonCount(resolved)));
+     finish(Math.max(seasonCount,publishedSeasonCount(resolved)),model);
     });
    });
   },error);

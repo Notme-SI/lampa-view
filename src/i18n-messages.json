@@ -5339,6 +5339,18 @@
   "ro": "Minimalist",
   "pl": "Minimalistyczny"
  },
+ "Акцент тёмной темы": {
+  "en": "Dark theme accent",
+  "uk": "Акцент темної теми"
+ },
+ "Код HEX. Пустое поле возвращает {0}.": {
+  "en": "HEX code. Leave blank to restore {0}.",
+  "uk": "Код HEX. Порожнє поле відновлює {0}."
+ },
+ "Введите цвет в формате #RRGGBB.": {
+  "en": "Enter a color in #RRGGBB format.",
+  "uk": "Введіть колір у форматі #RRGGBB."
+ },
  "Тема интерфейса": {
   "en": "Interface theme",
   "fr": "Thème de l’interface",

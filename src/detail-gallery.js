@@ -68,7 +68,7 @@ export function removeDetailRows(link,match){
 function galleryButton(className,label,path,action){
  const button=document.createElement('button');button.type='button';button.className=className;
  const arrow=icon(path);arrow.setAttribute('fill','none');arrow.setAttribute('stroke','currentColor');arrow.setAttribute('stroke-width','2');
- button.setAttribute('aria-label',label);button.title=label;button.appendChild(arrow);
+ button.setAttribute('aria-label',label);button.appendChild(arrow);
  button.addEventListener('click',event=>{event.preventDefault();event.stopImmediatePropagation();action();});
  button.addEventListener('hover:enter',action);
  return button;

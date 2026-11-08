@@ -1,6 +1,54 @@
 import GLASS from './glass.css';
 import glassAmbient from './glass-ambient.js';
 import iosChrome from './ios-chrome.js';
+import {text as t} from './i18n.js';
+const accentKey='lampa_view_dark_accent',defaultAccent='#d8c39a';
+
+function normalizeAccent(value){
+ const hex=String(value ?? '').trim().toLowerCase().replace(/^#/,'');
+ if(/^[0-9a-f]{6}$/.test(hex))return '#'+hex;
+ if(/^[0-9a-f]{3}$/.test(hex))return '#'+hex.replace(/./g,letter=>letter+letter);
+ return '';
+}
+const darkAccent=L=>normalizeAccent(L.Storage.get(accentKey,defaultAccent)) || defaultAccent;
+
+function applyDarkAccent(L){
+ const style=document.body.style,accent=darkAccent(L),custom=accent!==defaultAccent;
+ document.body.classList.toggle('pt-custom-accent',custom);
+ const rgb=accent.slice(1).match(/../g).map(channel=>parseInt(channel,16));
+ const linear=rgb.map(value=>{const channel=value/255;return channel<=.04045?channel/12.92:((channel+.055)/1.055)**2.4;});
+ const luminance=.2126*linear[0]+.7152*linear[1]+.0722*linear[2];
+ const selection=rgb.map(channel=>Math.round(20+.13*channel)).join(',');
+ const focus=rgb.map(channel=>Math.round(channel+.12*(255-channel))).join(',');
+ const overrides={
+  '--pt-custom-accent':accent,'--pt-custom-accent-rgb':rgb.join(','),
+  '--pt-custom-accent-ink':luminance>.179?'#000':'#fff',
+  '--pt-custom-accent-focus':'rgb('+focus+')','--pt-custom-selection-rgb':selection,
+ };
+ for(const [property,value] of Object.entries(overrides)){
+  if(custom)style.setProperty(property,value);
+  else style.removeProperty(property);
+ }
+}
+
+export function darkAccentSetting(L){
+ const label='Акцент тёмной темы';
+ L.SettingsApi.addParam({
+  component:'lampa_view',param:{name:accentKey,type:'button',default:defaultAccent},
+  field:{name:t(label),description:t('Код HEX. Пустое поле возвращает {0}.',[defaultAccent])},
+  onRender:item=>item.find('.settings-param__name').after('<div class="settings-param__value">'+darkAccent(L)+'</div>'),
+  onChange:()=>{
+   if(themeValue(L.Storage.get('lampa_view_theme','minimal'))!=='minimal')return;
+   L.Input.edit({title:t(label),value:darkAccent(L),free:true,nosave:true,nomic:true},value=>{
+    const raw=String(value ?? '').trim(),color=normalizeAccent(raw);
+    if(raw && !color){L.Noty?.show?.(t('Введите цвет в формате #RRGGBB.'));return;}
+    L.Storage.set(accentKey,color || defaultAccent);
+    document.querySelectorAll('[data-name="'+accentKey+'"] .settings-param__value').forEach(node=>{node.textContent=darkAccent(L);});
+   });
+  },
+ });
+}
+
 export function themeValue(value){return value==='glass' || value==='apple'?'glass':'minimal';}
 const yes=value=>![false,'false',0,'0','no'].includes(value);
 export default function appearance(L){
@@ -20,7 +68,7 @@ export default function appearance(L){
   chrome.update(active);ambient.refresh();
   document.dispatchEvent(new Event('minimal:interface-size'));document.dispatchEvent(new Event('minimal:hero-layout'));
  }
- update();if(L.Storage.listener)L.Storage.listener.follow('change',event=>{if(['lampa_view_theme','lampa_view_enabled','glass_style','glass_opacity'].includes(event.name))update();});
+ applyDarkAccent(L);update();if(L.Storage.listener)L.Storage.listener.follow('change',event=>{if(event.name===accentKey)applyDarkAccent(L);if(['lampa_view_theme','lampa_view_enabled','glass_style','glass_opacity'].includes(event.name))update();});
  if(L.Listener)L.Listener.follow('activity',event=>{if(event.type==='start')setTimeout(ambient.refresh,0);});
  return {update};
 }
