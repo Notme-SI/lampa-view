@@ -1,15 +1,17 @@
 {
   "version": 1,
   "shards": 64,
-  "records": 4864,
+  "records": 5119,
   "sources": {
     "filmgrab": 4140,
-    "kinoafisha": 196,
+    "kinoafisha": 396,
     "bluscreens": 494,
     "ghibli": 26,
+    "kinonews": 54,
     "wiki": 4,
     "movie-screencaps": 3,
-    "hsmedia": 1
+    "hsmedia": 1,
+    "srtimes": 1
   },
-  "updated": "2026-11-08T02:13:22.784Z"
+  "updated": "2026-11-08T02:44:58.124Z"
 }

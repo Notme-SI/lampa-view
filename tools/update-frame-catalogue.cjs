@@ -5,7 +5,8 @@ const {version,shardCount,titleKeys,shardFor,validFrames,validUrl}=require('../s
 const sources=require('./frame-catalogue-sources.cjs');
 
 const root=path.join(__dirname,'..'),output=path.join(root,'docs','frames','v1');
-const sourceNames=['filmGrab','bluscreens','ghibli','wiki','kinoafisha'];
+const snapshotSources=['filmGrab','bluscreens','ghibli','wiki'];
+const sourceNames=[...snapshotSources,'kinoafisha','kinonews'];
 
 function normalize(record){
  if(!['movie','tv'].includes(record?.media) || typeof record.title!=='string' || !validUrl(record.origin))return null;
@@ -69,7 +70,7 @@ async function update(){
    const normalized=rows.map(normalize);
    if(!rows.length || normalized.some(row=>!row))throw new Error('Invalid '+name+' source output');
    const source=normalized[0].source,old=[...records.values()].filter(row=>row.source===source);
-   if(name!=='kinoafisha' && old.length && normalized.length<old.length*0.85)throw new Error(name+' unexpectedly lost more than 15% of its galleries');
+   if(snapshotSources.includes(name) && old.length && normalized.length<old.length*0.85)throw new Error(name+' unexpectedly lost more than 15% of its galleries');
    // Retain a last-known gallery when its source page is temporarily absent.
    for(const row of normalized)records.set(row.id,row);
    successes++;

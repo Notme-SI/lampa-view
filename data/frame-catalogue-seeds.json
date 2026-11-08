@@ -1,11 +1,67 @@
 {
   "kinoafisha": [
-    ["/movies/8379477/shots/", 1368337],
-    ["/movies/8382609/shots/", 1423191],
-    ["/series/8248/shots/"],
-    ["/movies/8368958/shots/"]
+    [
+      "/movies/8379477/shots/",
+      1368337
+    ],
+    [
+      "/movies/8382609/shots/",
+      1423191
+    ],
+    [
+      "/series/8248/shots/"
+    ],
+    [
+      "/movies/8368958/shots/"
+    ],
+    [
+      "/movies/8380546/shots/",
+      1263337
+    ],
+    [
+      "/movies/8380363/shots/",
+      1283515
+    ],
+    [
+      "/series/lupin/shots/",
+      96677
+    ],
+    [
+      "/series/11487/shots/",
+      288673
+    ],
+    [
+      "/series/14852/shots/",
+      299981
+    ]
+  ],
+  "kinonews": [
+    [
+      "/shots_369771_all/",
+      1058424
+    ]
   ],
   "records": [
+    {
+      "media": "tv",
+      "tmdb": 289517,
+      "title": "Работа с призрачными перспективами",
+      "year": 2026,
+      "source": "srtimes",
+      "origin": "https://www.srtimes.kr/news/articleView.html?idxno=216350",
+      "priority": 20,
+      "frames": [
+        {
+          "url": "https://cdn.srtimes.kr/news/photo/202610/216350_221423_615.jpg"
+        },
+        {
+          "url": "https://cdn.srtimes.kr/news/photo/202610/216350_221422_614.jpg"
+        },
+        {
+          "url": "https://cdn.srtimes.kr/news/photo/202610/216350_221420_614.jpg"
+        }
+      ]
+    },
     {
       "media": "tv",
       "tmdb": 273552,

@@ -11,6 +11,33 @@ const {parseFilmGrab}=require('../tools/frame-catalogue-sources.cjs');
 const base=path.join(__dirname,'../docs/frames/v1');
 const frame={img:'https://frames.example/thumb.jpg',url:'https://frames.example/original.jpg'};
 
+test('Kinoafisha accepts named series and teleshow galleries with their own shots',()=>{
+ const {parseGallery,discover}=require('../tools/frame-source-kinoafisha.cjs');
+ const origin='https://www.kinoafisha.info',path='/series/show-name/shots/';
+ const base='https://static.kinoafisha.info/k/series_shots/1920x1080/upload/series/frames/8/4/2/';
+ const anchor=url=>'<a class="stillsList_item" href="'+url+'"></a>';
+ const html='<link rel="canonical" href="'+origin+path+'"><h1 class="universalHat_title">Кадры из телешоу «Шоу»</h1>'+
+  '<meta property="og:image:alt" content="Кадр из телешоу «Шоу» (2025)">';
+ const row=parseGallery(html+anchor(base+'8248/frame.jpg'),path);
+ assert.equal(row.media,'tv');
+ assert.equal(row.title,'Шоу');
+ assert.equal(row.frames.length,1);
+ assert.equal(parseGallery(html+anchor(base+'8248/frame.jpg')+anchor(base+'8249/frame.jpg'),path),null);
+ assert.deepEqual(discover('<a href="/series/11487/music/"><a href="/movies/12/posters/">'),['/series/11487/shots/']);
+});
+
+test('Kinonews uses the gallery image and ignores unrelated or promotional images',()=>{
+ const {parseGallery}=require('../tools/frame-source-kinonews.cjs');
+ const img='/insimgs/2026/shotimg/thumbs/shotimg142405_6.webp';
+ const html='<h1 class="new">Все кадры из фильма &quot;Надежда&quot; (2026)</h1>'+
+  '<a href="/shot275976/"><img src="'+img+'"></a><img src="/insimgs/2026/poster/poster142791_1_p.webp">';
+ const row=parseGallery(html,'/shots_369771_all/',1058424);
+ assert.deepEqual([row.media,row.title,row.year,row.tmdb],['movie','Надежда',2026,1058424]);
+ const original='https://www.kinonews.ru'+img.replace('/thumbs/','/');
+ assert.deepEqual(row.frames,[{img:original,url:original}]);
+ assert.equal(parseGallery(html,'/movie_369771/hopeu'),null);
+});
+
 test('a plugin update revalidates a fresh shard that missed the release before publication',async()=>{
  const key='tmdb:movie:91',record=normalize({media:'movie',tmdb:91,title:'Gallery Film',year:2025,source:'test',origin:'https://frames.example/',frames:[frame]});
  const initial={minimal_frame_catalogue_v1:{[shardFor(key)]:{at:Date.now(),data:{version,entries:{},records:{}}}}};
