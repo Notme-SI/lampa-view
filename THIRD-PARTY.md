@@ -10,7 +10,7 @@
 | Nova Plus | [amikdn](https://github.com/amikdn/amikdn.github.io), [nova_plus.js](https://amikdn.github.io/nova_plus.js), [card_overlay.js](https://amikdn.github.io/card_overlay.js) |
 | Структура подборок SURS | [aviamovie / surs.js](https://aviamovie.github.io/surs.js), [основной модуль](https://aviamovie.github.io/v3/surs.js), [выбор подборок](https://aviamovie.github.io/surs_select.js) |
 | Кадры фильмов о Человеке-пауке | [MCU Wiki](https://marvelcinematicuniverse.fandom.com/wiki/Spider-Man:_Brand_New_Day/Gallery#Screenshots), [Movie Screencaps](https://movie-screencaps.com/tag/spider-man/) |
-| Резервная галерея кадров из фильмов | [Bluscreens](https://www.bluscreens.net/screen-captures-a-z--updates.html). В сборке хранится индекс ссылок по названию и году, изображения загружаются с сайта архива. |
+| Общий каталог кадров | [FilmGrab](https://film-grab.com/), [Bluscreens](https://www.bluscreens.net/screen-captures-a-z--updates.html), [Studio Ghibli](https://www.ghibli.jp/works/). Публикуются ссылки с названием, годом и источником. Изображения загружаются с сайтов архивов. |
 
 Праздничное оформление использует существующие значки и элементы загруженных штатных дополнений [Lampa](https://github.com/yumata/lampa-source/tree/main/plugins): Хэллоуина, Чёрной пятницы, Нового года, 8 Марта и зимнего оформления. Плагин перемещает исходные DOM-элементы и задаёт размеры; SVG не копируются и не перерисовываются.
 
