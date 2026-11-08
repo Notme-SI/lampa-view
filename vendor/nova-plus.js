@@ -3894,9 +3894,9 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
 
   function heroMetadata(target) {
     var meta = ui.hero.find('.nova-hero__meta').empty();
-    ui.hero.find('.nova-hero__runtime').remove();
+    ui.hero.children('.nova-hero__quality').remove();
     var badge = target ? shortQuality(target.quality) : '';
-    if (badge) meta.append($('<div class="nova-badge"></div>').text(badge));
+    if (badge) ui.hero.append($('<div class="nova-badge nova-hero__quality"></div>').text(badge));
     if (movie.vote_average) meta.append($('<div class="nova-hero__rating"></div>').text(parseFloat(movie.vote_average + '').toFixed(1)));
     var year = String(movie.release_date || movie.first_air_date || '').slice(0, 4);
     var countries = '';

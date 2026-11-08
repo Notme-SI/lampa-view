@@ -1,5 +1,6 @@
 import {locale,text as t} from './i18n.js';
 import {frameLimit} from './gallery-frames.js';
+import rowOverlay from './row-overlay.js';
 
 function airDate(value){
  const match=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || ''));if(!match)return null;
@@ -244,6 +245,7 @@ export function styleScreenshots(L,event){
     nav.appendChild(galleryButton('minimal-row-arrow',t('Предыдущая страница'),previousPath,()=>page(-1)));
     nav.appendChild(galleryButton('minimal-row-arrow',t('Следующая страница'),nextPath,()=>page(1)));
     head.appendChild(nav);
+    const overlay=rowOverlay(root,viewport);line.use?.({onDestroy:()=>overlay.destroy()});
    }
   }
   if(nav)nav.hidden=frames.length<2;

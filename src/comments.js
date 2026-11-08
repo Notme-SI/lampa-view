@@ -1,4 +1,5 @@
 import {text as lampaViewText} from './i18n.js';
+import rowOverlay from './row-overlay.js';
 // Page the existing Lampa row: native cards, reading, touch and remote focus stay intact.
 export default function comments(item,node){
  if(!node || node.dataset.minimalComments)return;
@@ -33,9 +34,10 @@ export default function comments(item,node){
   control.addEventListener('hover:enter',()=>move(direction));nav.appendChild(control);return control;
  }
  const previous=button(-1,lampaViewText("Предыдущий комментарий")),next=button(1,lampaViewText("Следующий комментарий"));head.appendChild(nav);
+ const overlay=rowOverlay(node,viewport);
  const observer=window.ResizeObserver?new ResizeObserver(schedule):null;if(observer){observer.observe(viewport);observer.observe(body);}
  viewport.addEventListener('scroll',schedule,{passive:true});viewport.addEventListener('touchend',schedule,{passive:true});window.addEventListener('resize',schedule);
- function dispose(){disposed=true;if(frame)window.cancelAnimationFrame(frame);if(observer)observer.disconnect();viewport.removeEventListener('scroll',schedule);viewport.removeEventListener('touchend',schedule);window.removeEventListener('resize',schedule);}
+ function dispose(){disposed=true;overlay.destroy();if(frame)window.cancelAnimationFrame(frame);if(observer)observer.disconnect();viewport.removeEventListener('scroll',schedule);viewport.removeEventListener('touchend',schedule);window.removeEventListener('resize',schedule);}
  if(item.use)item.use({onScroll:schedule,onVisible:schedule,onAppend:schedule,onDestroy:dispose});
  update();schedule();
 }

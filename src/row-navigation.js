@@ -1,4 +1,5 @@
 import {text as lampaViewText} from './i18n.js';
+import rowOverlay from './row-overlay.js';
 // Remote navigation keeps one-card steps; pointer arrows page the viewport.
 export default function rowNavigation(L,line,enabled){
  if(!line.use || !line.scroll || !L.Controller)return;
@@ -33,7 +34,7 @@ export default function rowNavigation(L,line,enabled){
   stop();if(!enabled()){if(fallback)fallback();return;}
   if(more && !people){
    if(line.last===more && direction<0){focus(node(line.items[Math.min(line.active,total()-1)]));return;}
-   if(direction>0 && line.active>=total()-1){line.last=more;L.Controller.collectionAppend(more);L.Controller.collectionFocus(more,root);return;}
+   if(direction>0 && line.active>=total()-1){line.last=more;line.scroll.update(more,false);L.Controller.collectionAppend(more);L.Controller.collectionFocus(more,root);return;}
   }
   const old=line.active || 0,index=old+direction;
   if(index<0 || index>=total()){if(fallback)fallback();return;}
@@ -45,13 +46,13 @@ export default function rowNavigation(L,line,enabled){
  }
  function page(direction){
   if(!enabled() || tv())return;
-  const g=geometry(),start=pageStart===null?g.start:pageStart,index=Math.max(0,Math.min(Math.max(0,total()-g.count),start+direction*g.count));
-  stop();line.active=index;line.emit('scroll');const target=node(line.items[index]);if(!target)return;
+  const g=geometry(),start=pageStart===null?g.start:pageStart,index=Math.max(0,Math.min(Math.max(0,total()+(more?1:0)-g.count),start+direction*g.count));
+  stop();line.active=Math.min(index,total()-1);line.emit('scroll');mountMore();const target=index>=total()?more:node(line.items[index]);if(!target)return;
   line.last=target;
   const position=line.scroll.position?line.scroll.position():0;
   let to=index===0?0:position-(target.getBoundingClientRect().left-(g.view.left+g.inset));
   if(index>0 && index+g.count>=total()){
-   const last=node(line.items[total()-1]);
+   const last=more || node(line.items[total()-1]);
    if(last)to=Math.min(to,position-(last.getBoundingClientRect().right-(g.view.right-g.inset)));
   }
   const finish=()=>{frame=0;pageStart=null;viewport().classList.remove('pt-row-paging');if(disposed || !root.isConnected)return;if(L.Controller.own(line))focus(target,true);if(line.scroll.shift)line.scroll.shift((line.scroll.position?line.scroll.position():0)-to);if(line.scroll.onScroll)line.scroll.onScroll(Math.abs(line.scroll.position?line.scroll.position():0));};
@@ -71,6 +72,10 @@ export default function rowNavigation(L,line,enabled){
  const canMore=!people && (head.querySelector('.items-line__more') || line.data.url || line.data.onMore || line.params && line.params.emit && line.params.emit.onMore);
  if(canMore)more=button('minimal-row-more selector',lampaViewText("Показать ещё"),'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',()=>{if(!enabled())return;line.emit('more',line.data);});
  button('minimal-row-arrow',lampaViewText("Следующая страница"),'<path d="m10 6 6 6-6 6"/>',()=>page(1));head.appendChild(nav);
+ if(more){const label=document.createElement('span');label.textContent=lampaViewText('Ещё');more.appendChild(label);}
+ const overlay=rowOverlay(root,viewport);
+ function mountMore(){const body=viewport().querySelector('.scroll__body');if(more && body && body.lastElementChild!==more)body.appendChild(more);overlay.refresh();}
+ mountMore();line.use({onAppend:mountMore,onVisible:mountMore,onDestroy:()=>overlay.destroy()});
  line.use({onController(controller){const left=controller.left,right=controller.right,toggle=controller.toggle;controller.left=()=>move(-1,left);controller.right=()=>move(1,right);controller.toggle=function(){const result=toggle && toggle.apply(this,arguments);if(tv() && more && !people)L.Controller.collectionAppend(more);return result;};},onDestroy(){disposed=true;document.removeEventListener('minimal:tv-idle',idle);stop();root.removeEventListener('wheel',stop,true);root.removeEventListener('keydown',stop,true);}});
  document.addEventListener('minimal:tv-idle',idle);
  root.addEventListener('wheel',stop,true);root.addEventListener('keydown',stop,true);

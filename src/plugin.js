@@ -55,6 +55,7 @@ import holidayLayout from './holidays.js';
 import interfaceSize from './interface-size.js';
 import personalScale from './personal-scale.js';
 import menuLayout from './menu-layout.js';
+import pageScrollbar from './page-scrollbar.js';
 
 const ROOT = window;
 if (!ROOT.LampaView) {
@@ -65,7 +66,7 @@ if (!ROOT.LampaView) {
   }
   const P = ROOT.LampaView = {version, identity: C.identity, ready: false, bridge: false};
   P.matchCatalogue=matchCatalogue;
-  let L, $, lastCard, initialized = false, playlist = [], activeVideo,loadLogo,artwork,back,holidays,pinnedMenu,appearanceTheme,interfaceLayout;
+  let L, $, lastCard, initialized = false, playlist = [], activeVideo,loadLogo,artwork,back,holidays,pinnedMenu,appearanceTheme,interfaceLayout,menuOrdered=false;
   const metadata = new Map();
   const heroes = new WeakSet();
   const carousels = new Set();
@@ -205,7 +206,12 @@ if (!ROOT.LampaView) {
     updateRoute();
   }
   function trimSections(){
-    const savedOrder=L.Storage.get('menu_sort',[]),customOrder=Array.isArray(savedOrder) && savedOrder.length>0 || !!document.querySelector('.menu-edit-list');
+    // Lampa saves even its untouched initial order. Migrate that default once;
+    // thereafter both automatic Editor.observe and user edits own the order.
+    const nativeActions=['main','feed','movie','cartoon','tv','myperson','catalog','filter','relise','anime','favorite','history','subscribes','timetable','mytorrents'];
+    const sequence=Array.from(document.querySelectorAll('.menu .menu__list:first-child .menu__item')).map(node=>nativeActions.indexOf(node.dataset.action)).filter(index=>index>=0);
+    const nativeDefault=sequence.every((value,index)=>!index || value>sequence[index-1]);
+    const savedOrder=L.Storage.get('menu_sort',[]),customOrder=menuOrdered || Array.isArray(savedOrder) && savedOrder.length>0 && !nativeDefault || !!document.querySelector('.menu-edit-list');
     const home=document.querySelector('.menu__item[data-action="main"] .menu__text');
     const source=L.Storage.get('source','cub') || 'cub',sourceName={cub:'CUB',tmdb:'TMDB',trakt:'Trakt'}[source] || String(source);
     const homeLabel=lampaViewText("Главная")+' - '+sourceName;
@@ -269,6 +275,7 @@ if (!ROOT.LampaView) {
       });
     }
     if(pinnedMenu)pinnedMenu.groups();
+    if(!menuOrdered){menuOrdered=true;if(!customOrder){const list=document.querySelector('.menu .menu__list');if(list)L.Storage.set('menu_sort',Array.from(list.querySelectorAll('.menu__text'),node=>node.textContent.trim()));}}
   }
   function updateRoute() {
     const active = L.Activity.active() || {};
@@ -549,6 +556,7 @@ if (!ROOT.LampaView) {
     settings(); bridge(); shell();back=installBack(L,$,()=>yes('lampa_view_enabled'));holidays=holidayLayout(L,()=>yes('lampa_view_enabled'));artwork.refresh();
     tvPerformance(()=>yes('lampa_view_enabled'));
     pinnedMenu=menuLayout(L,()=>yes('lampa_view_enabled'));
+    pageScrollbar(L,()=>yes('lampa_view_enabled'));
     on('menu',event=>{if(yes('lampa_view_enabled') && event.type==='action' && ['cartoon','dorama','tvshow'].includes(event.action)){if(event.abort)event.abort();navigate(event.action);}});
     trimSections();
     if(L.Storage.listener)L.Storage.listener.follow('change',event=>{if(event.name==='source' || event.name==='language')trimSections();if(event.name==='lampa_view_enabled')setTheme();});

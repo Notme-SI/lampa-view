@@ -17,7 +17,7 @@ const {setup}=require('../fixtures/native-browser.cjs'),{stage}=require('../fixt
       const cols=[...root.querySelectorAll('.nova-card--wide')].map(rect);
       return {size:Lampa.Storage.get('interface_size'),font:parseFloat(getComputedStyle(document.body).fontSize),icon:rect(head.querySelector('.head__menu-icon svg')),menu:rect(head.querySelector('.head__menu-icon')),head:rect(head),poster:rect(document.querySelector('#qa-scale-rail .card')),bar:rect(bar),buttons:[...bar.querySelectorAll('.nova-chip')].map(rect),root:rect(root),cols};
      });
-     assert.ok(value.font>0 && value.menu.right<=device.width+1);assert.ok(value.menu.bottom<=value.head.bottom+1);
+     assert.ok(value.font>0 && value.menu.right<=device.width+1);assert.ok(value.menu.bottom<=value.head.bottom+1,'Menu stays within header: '+JSON.stringify({device,size,menu:value.menu,head:value.head}));
      for(const button of value.buttons)assert.ok(button.left>=value.root.left-1 && button.right<=value.root.right+1,'toolbar stays inside '+JSON.stringify({device,size,value}));
      for(const col of value.cols)assert.ok(col.right<=value.root.right+1 && col.width>0,'episode grid stays inside '+JSON.stringify({device,size,value}));
      if(device.mode==='mobile')assert.ok(value.buttons.every(button=>button.height>=43.5),'touch targets retain their minimum '+JSON.stringify({device,size,buttons:value.buttons}));
