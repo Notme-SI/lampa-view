@@ -1,4 +1,4 @@
-const {frameLimit,validFrames}=require('../src/frame-catalogue.cjs');
+const {sampleFrames}=require('../src/frame-catalogue.cjs');
 
 const base='https://www.kinoafisha.info';
 const year=new Date().getUTCFullYear();
@@ -34,11 +34,7 @@ function parseGallery(html,path,tmdb){
   images.add(url);galleryIds.add(id);
  }
  if(galleryIds.size!==1)return null;
- const all=[...images],count=Math.min(frameLimit,all.length);
- const frames=validFrames(Array.from({length:count},(_,index)=>{
-  const url=all[Math.floor(index*all.length/count)];
-  return {img:preview(url),url};
- }));
+ const frames=sampleFrames([...images].map(url=>({img:preview(url),url})),base+path);
  if(!frames.length)return null;
  return {media:type==='movies'?'movie':'tv',title,year,tmdb,source:'kinoafisha',priority:25,origin:base+path,frames};
 }

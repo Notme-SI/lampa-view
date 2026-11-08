@@ -76,6 +76,7 @@ function galleryButton(className,label,path,action){
 const previousPath='m14 6-6 6 6 6',nextPath='m10 6 6 6-6 6';
 function showFrames(L,line,frames,start){
  const $=window.jQuery,viewer=document.createElement('div'),image=document.createElement('img');
+ const tv=document.body.classList.contains('pt-tv');
  viewer.className='minimal-frame-viewer';image.className='minimal-screenshot-preview';image.draggable=false;image.referrerPolicy='no-referrer';
  const controls=document.createElement('div');controls.className='minimal-frame-controls';
  const counter=document.createElement('span');counter.className='minimal-frame-position';counter.setAttribute('aria-live','polite');
@@ -97,7 +98,7 @@ function showFrames(L,line,frames,start){
  const previous=galleryButton('minimal-frame-control minimal-frame-prev selector',t('Предыдущий кадр'),previousPath,()=>{focus(previous);move(-1);});
  const next=galleryButton('minimal-frame-control minimal-frame-next selector',t('Следующий кадр'),nextPath,()=>{focus(next);move(1);});
  const dismiss=galleryButton('minimal-frame-control minimal-frame-close selector',t('Закрыть'),'m6 6 12 12m0-12L6 18',close);
- previous.hidden=next.hidden=frames.length<2;
+ previous.hidden=next.hidden=tv || frames.length<2;
  for(const control of [previous,next,dismiss,counter])controls.appendChild(control);
  viewer.appendChild(image);viewer.appendChild(controls);
  function resource(number){
@@ -135,7 +136,7 @@ function showFrames(L,line,frames,start){
   if(frames.length>1 && Math.abs(dx)>45 && Math.abs(dx)>Math.abs(dy)*1.4){event.preventDefault();move(dx<0?1:-1);}
  },{passive:false});
  draw();
- L.Modal.open({title:image.alt,size:'large',html:$(viewer),select:frames.length>1?next:dismiss,onBack:close});
+ L.Modal.open({title:image.alt,size:'large',html:$(viewer),select:!tv && frames.length>1?next:dismiss,onBack:close});
  viewer.closest('.modal')?.classList.add('minimal-frame-modal');
  L.Modal.listener?.follow?.('close',dispose);
  const active=L.Controller?.enabled?.();
@@ -143,13 +144,13 @@ function showFrames(L,line,frames,start){
   controller=active.controller;original={};
   for(const key of ['left','right','up','down','enter'])original[key]=controller[key];
   $(controls).find('.selector').off('hover:focus').on('hover:focus',event=>{focused=event.currentTarget;});
-  controller.left=()=>{if(frames.length>1){focus(previous);move(-1);}};
-  controller.right=()=>{if(frames.length>1){focus(next);move(1);}};
+  controller.left=()=>{if(frames.length>1){if(!tv)focus(previous);move(-1);}};
+  controller.right=()=>{if(frames.length>1){if(!tv)focus(next);move(1);}};
   controller.up=()=>focus(dismiss);
-  controller.down=()=>focus(frames.length>1?next:dismiss);
+  controller.down=()=>focus(!tv && frames.length>1?next:dismiss);
   controller.enter=()=>focused===dismiss?close():move(focused===previous?-1:1);
  }
- focused=frames.length>1?next:dismiss;
+ focused=!tv && frames.length>1?next:dismiss;
  // DOM focus must leave the thumbnail too: after reopening, its Enter handler
  // otherwise consumes the remote OK before it reaches the modal controller.
  focused.focus?.({preventScroll:true});
@@ -217,7 +218,7 @@ export function styleScreenshots(L,event){
   node.addEventListener('keydown',e=>{if(e.key==='Enter' || e.key===' ')e.preventDefault();});
   // Keypad activates on key release. Opening on keydown would let that same
   // release activate the new modal's focused button, especially after reopen.
-  node.addEventListener('keyup',e=>{if(e.key==='Enter' || e.key===' '){e.preventDefault();e.stopPropagation();open();}});
+  node.addEventListener('keyup',e=>{if(e.key==='Enter' || e.key===' '){e.preventDefault();open();}});
  }
  function update(){
   if(!frames.length)return;

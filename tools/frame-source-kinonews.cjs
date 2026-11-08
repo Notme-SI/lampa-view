@@ -1,4 +1,4 @@
-const {frameLimit,validFrames}=require('../src/frame-catalogue.cjs');
+const {sampleFrames}=require('../src/frame-catalogue.cjs');
 
 const base='https://www.kinonews.ru';
 const gallery=/^\/shots_[1-9]\d*_all\/$/;
@@ -9,7 +9,7 @@ function parseGallery(html,path,tmdb){
  if(!label)return null;
  const [,kind,title,year]=label;
  const images=new Set(Array.from(html.matchAll(/<a\b[^>]*href=["']\/shot\d+\/["'][^>]*>\s*<img\b[^>]*\bsrc=["'](\/insimgs\/\d{4}\/shotimg\/thumbs\/shotimg[\d_-]+\.webp)["']/g),match=>match[1]));
- const frames=validFrames([...images].slice(0,frameLimit).map(img=>({url:base+img.replace('/thumbs/','/')})));
+ const frames=sampleFrames([...images].map(img=>({url:base+img.replace('/thumbs/','/')})),base+path);
  if(!frames.length)return null;
  return {media:/сериала|телешоу/i.test(kind)?'tv':'movie',title:title.replace(/&amp;/g,'&').replace(/&#039;/g,"'"),year:Number(year),
   tmdb,source:'kinonews',priority:35,origin:base+path,frames};

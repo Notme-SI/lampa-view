@@ -189,6 +189,6 @@ test('FilmGrab collector selects the dated frame gallery and rejects cover image
    Array.from({length:30},(_,i)=>'<a href="https://film-grab.com/wp-content/uploads/photo-gallery/scene-'+i+'.jpg"></a>').join('')}});
  const record=parseFilmGrab(make(2025));
  assert.equal(record.year,2025);assert.equal(record.title,'Gallery & Film');
- assert.equal(record.frames.length,14);assert.ok(record.frames.every(row=>row.url.includes('/photo-gallery/')));
+ assert.equal(record.frames.length,15);assert.ok(record.frames.every(row=>row.url.includes('/photo-gallery/')));
  assert.equal(parseFilmGrab(make('unknown')),null);
 });

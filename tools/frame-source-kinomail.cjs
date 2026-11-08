@@ -1,4 +1,4 @@
-const {frameLimit,validFrames}=require('../src/frame-catalogue.cjs');
+const {sampleFrames}=require('../src/frame-catalogue.cjs');
 const base='https://kino.mail.ru';
 const moviePath=/^\/(?:(?:cinema\/movies|series)\/|(?:series|tvshow)_)[1-9]\d*_[a-z\d_-]+\/$/;
 function image(value){
@@ -12,8 +12,8 @@ function parseGallery(html,path){
  let data;try{data=JSON.parse(payload).page_data;}catch{return null;}
  const info=data?.event_info,gallery=data?.gallery;
  if(info?.url!==base+path || !info.name || !/^\d{4}$/.test(String(info.year)) || !/^Кадры из (?:фильма|сериала|телешоу|шоу) «/.test(gallery?.title || ''))return null;
- const frames=validFrames((gallery.items || []).filter(row=>row.galleryId===gallery.gallery_id && /^Кадр (?:из (?:фильма|сериала|телешоу|шоу)|к [1-9]\d* сезону (?:сериала|телешоу)) «/.test(row.title || ''))
-  .map(row=>({img:image(row.base) || image(row.large),url:image(row.large),width:row.large?.width}))).slice(0,frameLimit);
+ const frames=sampleFrames((gallery.items || []).filter(row=>row.galleryId===gallery.gallery_id && /^Кадр (?:из (?:фильма|сериала|телешоу|шоу)|к [1-9]\d* сезону (?:сериала|телешоу)) «/.test(row.title || ''))
+  .map(row=>({img:image(row.base) || image(row.large),url:image(row.large),width:row.large?.width})),base+path);
  if(!frames.length)return null;
  return {media:path.startsWith('/cinema/movies/')?'movie':'tv',title:info.name,year:Number(info.year),aliases:[info.name_eng].filter(Boolean),
   imdb:info.imdb_url?.match(/^https:\/\/www\.imdb\.com\/title\/(tt\d+)\//)?.[1],source:'kinomail',origin:base+path,priority:30,frames};

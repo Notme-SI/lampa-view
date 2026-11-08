@@ -1,4 +1,4 @@
-const {frameLimit,validFrames}=require('../src/frame-catalogue.cjs');
+const {frameLimit,validFrames,stableSample}=require('../src/frame-catalogue.cjs');
 const {publishedGallery,collect:collectBluscreens}=require('./frame-source-bluscreens.cjs');
 const {collect:kinoafisha}=require('./frame-source-kinoafisha.cjs');
 const {collect:kinonews}=require('./frame-source-kinonews.cjs');
@@ -9,9 +9,9 @@ const decode=value=>value.replace(/&#(x[\da-f]+|\d+);|&(amp|quot|apos|nbsp);/gi,
  const number=code[0].toLowerCase()==='x'?parseInt(code.slice(1),16):Number(code);
  return number>0 && number<=0x10ffff?String.fromCodePoint(number):all;
 });
-const sample=(rows,count=frameLimit)=>{
+const sample=(rows,count=frameLimit,seed='gallery')=>{
  const unique=[...new Set(rows)];
- return Array.from({length:Math.min(unique.length,count)},(_,i)=>unique[Math.floor(i*unique.length/Math.min(unique.length,count))]);
+ return stableSample(unique,seed,count,row=>row);
 };
 
 async function request(url,json=true){
@@ -35,7 +35,7 @@ function parseFilmGrab(post){
  const title=decode(strip(post.title?.rendered)).replace(new RegExp('\\s*\\('+year+'\\)$'),'').trim();
  if(!title)return null;
  const pattern=/href="(https:\/\/film-grab\.com\/wp-content\/uploads\/photo-gallery\/[^"<>]+\.(?:jpe?g|png|webp)(?:\?bwg=\d+)?)"/gi;
- const frames=validFrames(sample(Array.from(html.matchAll(pattern),match=>new URL(decode(match[1])).href)).map(url=>({url})));
+ const frames=validFrames(sample(Array.from(html.matchAll(pattern),match=>new URL(decode(match[1])).href),frameLimit,post.link || title+year).map(url=>({url})));
  return frames.length?{media:'movie',title,year,source:'filmgrab',priority:30,origin:post.link || 'https://film-grab.com/',frames}:null;
 }
 
@@ -75,7 +75,7 @@ async function ghibli(seeds){
    html.match(/<td[^>]*>\s*(\d{4})年/)?.[1]);
   const urls=Array.from(html.matchAll(/href="(https:\/\/www\.ghibli\.jp\/gallery\/[\w-]+\.jpg)"/g),match=>match[1]);
   if(!year || urls.length<3)throw new Error('Incomplete Ghibli gallery '+slug);
-  records.push({media:'movie',title,year,source:'ghibli',origin,priority:10,frames:sample(urls).map(url=>({url}))});
+  records.push({media:'movie',title,year,source:'ghibli',origin,priority:10,frames:sample(urls,frameLimit,origin).map(url=>({url}))});
   }catch(error){console.warn('Ghibli '+slug+': '+error.message);}
  }
  if(records.length<20)throw new Error('Incomplete Ghibli archive');
@@ -102,7 +102,7 @@ async function wiki(seeds){
     if(/\.(?:jpe?g|png|webp)$/i.test(file) && !excluded.test(line))files.push(file);
    }
   }
-  const names=sample(files,40),images=await get({action:'query',titles:names.map(file=>'File:'+file).join('|'),prop:'imageinfo',iiprop:'url|size',iiurlwidth:780});
+  const names=sample(files,40,name),images=await get({action:'query',titles:names.map(file=>'File:'+file).join('|'),prop:'imageinfo',iiprop:'url|size',iiurlwidth:780});
   const urls=new Map();
   for(const row of images.query?.pages || []){
    const item=row.imageinfo?.[0],prefix='https://static.wikia.nocookie.net/'+site+'/images/';
