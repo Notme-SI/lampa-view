@@ -30,6 +30,18 @@ class DownloadTests(unittest.TestCase):
             for name, expected in data.items():
                 self.assertEqual((Path(directory) / name).read_bytes(), expected)
 
+    def test_downloads_current_public_bundles(self):
+        pages = Path(__file__).resolve().parents[1] / 'docs'
+
+        def opener(request, **options):
+            name = request.full_url.removeprefix(installer.BASE).split('?')[0]
+            return (pages / name).open("rb")
+
+        with tempfile.TemporaryDirectory() as directory:
+            installer.download(directory, opener)
+            for name, url in installer.FILES.items():
+                self.assertEqual((Path(directory) / name).read_bytes(), (pages / url).read_bytes())
+
     def test_bad_hash_never_writes_installer_files(self):
         _, opener = self.fixture(lambda m: m['files'].update({'dist/lampa.js': '0' * 64}))
         with tempfile.TemporaryDirectory() as directory:
