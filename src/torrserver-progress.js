@@ -10,7 +10,7 @@ export default function torrserverProgress(L,enabled){
   const url=L.Torserver && typeof L.Torserver.url==='function' && L.Torserver.url();
   return typeof url==='string'?url.trim().replace(/\/+$/,''):'';
  }
- const active=()=>!stopped && enabled() && L.Storage.field('torrserver_tracktimecode') && network;
+ const active=()=>!stopped && enabled() && (L.Storage.field?L.Storage.field('torrserver_tracktimecode'):L.Storage.get('torrserver_tracktimecode',false)) && network;
  function remember(video){
   if(!video || !video.torrent_hash || !video.timeline || !video.timeline.hash)return;
   let index;try{index=Number(new URL(video.url).searchParams.get('index'));}catch(e){return;}

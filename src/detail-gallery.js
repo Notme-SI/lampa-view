@@ -46,7 +46,7 @@ function loadFrameImage(image,urls,loaded,failed){
 }
 export function prepareScreenshotRow(event){
  const {data,link}=event;
- if(!data?.movie || data.movie.adult || data.movie.blocked || !Array.isArray(link?.rows))return;
+ if(!data?.movie || (data.movie.adult && !data.minimal_gallery_eligible) || data.movie.blocked || !Array.isArray(link?.rows))return;
  const results=(data.minimal_gallery_frames || []).filter(still).slice(0,frameLimit).map(row=>({...row})).reverse();
  if(results.length)link.rows.push(['episodes',{movie:data.movie,title:titleFor(data.movie),results,minimal_gallery:true}]);
 }

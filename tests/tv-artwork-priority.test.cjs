@@ -1,6 +1,7 @@
 const test=require('node:test');
 const assert=require('node:assert/strict');
 const native=require('./fixtures/native-lampa.cjs');
+const until=require('./fixtures/until.cjs');
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 
 test('TV starts visible posters immediately and a stalled first cover does not hold the second',async()=>{
@@ -63,7 +64,7 @@ test('unchanged card focus does not rewrite persistent metadata but changed rati
   await wait(400);assert.equal(writes.length,0);
   card.data.vote_average=9;
   card.render(true).dispatchEvent(new w.Event('hover:focus',{bubbles:true}));
-  await wait(400);assert.equal(writes.length,1);
+  await until(()=>writes.length>0,'changed rating persisted');assert.equal(writes.length,1);
   assert.ok(writes[0].some(([key,value])=>key==='tmdb:movie:981' && value.vote_average===9));
   card.destroy();assert.deepEqual(n.errors,[]);
  }finally{n.close();}
