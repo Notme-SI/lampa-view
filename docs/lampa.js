@@ -1,4 +1,4 @@
-/*! Lampa View 0.5.80 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.5.81 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -11881,6 +11881,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     });
   }
 
+  // src/bluscreens-frames.json
+  var bluscreens_frames_default = [["12 Years a Slave", 2013, [["12yearsaslave5.jpg", "12yearsaslave5_orig.jpg"], ["12yearsaslave8.jpg", "12yearsaslave8_orig.jpg"], ["12yearsaslave12.jpg", "12yearsaslave12_orig.jpg"], ["12yearsaslave15.jpg", "12yearsaslave15_orig.jpg"], ["12yearsaslave19.jpg", "12yearsaslave19_orig.jpg"], ["12yearsaslave22.jpg", "12yearsaslave22_orig.jpg"], ["12yearsaslave26.jpg", "12yearsaslave26_orig.jpg"], ["12yearsaslave29.jpg", "12yearsaslave29_orig.jpg"], ["12yearsaslave33.jpg", "12yearsaslave33_orig.jpg"], ["12yearsaslave36.jpg", "12yearsaslave36_orig.jpg"], ["12yearsaslave40.jpg", "12yearsaslave40_orig.jpg"], ["12yearsaslave43.jpg", "12yearsaslave43_orig.jpg"], ["12yearsaslave47.jpg", "12yearsaslave47_orig.jpg"], ["12yearsaslave50.jpg", "12yearsaslave50_orig.jpg"]]], ["2001: A Space Odyssey", 1968, [["2001aspaceodyssey5.jpg", "2001aspaceodyssey5_orig.jpg"], ["2001aspaceodyssey8.jpg", "2001aspaceodyssey8_orig.jpg"], ["2001aspaceodyssey12.jpg", "2001aspaceodyssey12_orig.jpg"], ["2001aspaceodyssey15.jpg", "2001aspaceodyssey15_orig.jpg"], ["2001aspaceodyssey19.jpg", "2001aspaceodyssey19_orig.jpg"], ["2001aspaceodyssey22.jpg", "2001aspaceodyssey22_orig.jpg"], ["2001aspaceodyssey26.jpg", "2001aspaceodyssey26_orig.jpg"], ["2001aspaceodyssey29.jpg", "2001aspaceodyssey29_orig.jpg"], ["2001aspaceodyssey33.jpg", "2001aspaceodyssey33_orig.jpg"], ["2001aspaceodyssey36.jpg", "2001aspaceodyssey36_orig.jpg"], ["2001aspaceodyssey40.jpg", "2001aspaceodyssey40_orig.jpg"], ["2001aspaceodyssey43.jpg", "2001aspaceodyssey43_orig.jpg"], ["2001aspaceodyssey47.jpg", "2001aspaceodyssey47_orig.jpg"], ["2001aspaceodyssey50.jpg", "2001aspaceodyssey50_orig.jpg"]]], ["21 Jump Street", 2012, [["21jumpstreet3.jpg", "21jumpstreet3_orig.jpg"], ["21jumpstreet5.jpg", "21jumpstreet5_orig.jpg"], ["21jumpstreet7.jpg", "21jumpstreet7_orig.jpg"], ["21jumpstreet10.jpg", "21jumpstreet10_orig.jpg"], ["21jumpstreet12.jpg", "21jumpstreet12_orig.jpg"], ["21jumpstreet14.jpg", "21jumpstreet14_orig.jpg"], ["21jumpstreet17.jpg", "21jumpstreet17_orig.jpg"], ["21jumpstreet19.jpg", "21jumpstreet19_orig.jpg"], ["21jumpstreet21.jpg", "21jumpstreet21_orig.jpg"], ["21jumpstreet24.jpg", "21jumpstreet24_orig.jpg"], ["21jumpstreet26.jpg", "21jumpstreet26_orig.jpg"], ["21jumpstreet28.jpg", "21jumpstreet28_orig.jpg"], ["21jumpstreet31.jpg", "21jumpstreet31_orig.jpg"], ["21jumpstreet33.jpg", "21jumpstreet33_orig.jpg"]]], ["28 Years Later", 2025, ["28yearslater5.jpg", "28yearslater9.jpg", "28yearslater13.jpg", "28yearslater17.jpg", "28yearslater21.jpg", "28yearslater25.jpg", "28yearslater29.jpg", "28yearslater33.jpg", "28yearslater37.jpg", "28yearslater41.jpg", "28yearslater45.jpg", "28yearslater49.jpg", "28yearslater53.jpg", "28yearslater57.jpg"]], ["8&frac12;", 1963, [["8andahalf4.jpg", "8andahalf4_orig.jpg"], ["8andahalf6.jpg", "8andahalf6_orig.jpg"], ["8andahalf9.jpg", "8andahalf9_orig.jpg"], ["8andahalf12.jpg", "8andahalf12_orig.jpg"], ["8andahalf15.jpg", "8andahalf15_orig.jpg"], ["8andahalf18.jpg", "8andahalf18_orig.jpg"], ["8andahalf21.jpg", "8andahalf21_orig.jpg"], ["8andahalf24.jpg", "8andahalf24_orig.jpg"], ["8andahalf27.jpg", "8andahalf27_orig.jpg"], ["8andahalf30.jpg", "8andahalf30_orig.jpg"], ["8andahalf33.jpg", "8andahalf33_orig.jpg"], ["8andahalf36.jpg", "8andahalf36_orig.jpg"], ["8andahalf39.jpg", "8andahalf39_orig.jpg"], ["8andahalf42.jpg", "8andahalf42_orig.jpg"]]], ["A Beautiful Mind", 2001, [["beautifulmind4.jpg", "beautifulmind4_orig.jpg"], ["beautifulmind6.jpg", "beautifulmind6_orig.jpg"], ["beautifulmind9.jpg", "beautifulmind9_orig.jpg"], ["beautifulmind12.jpg", "beautifulmind12_orig.jpg"], ["beautifulmind15.jpg", "beautifulmind15_orig.jpg"], ["beautifulmind18.jpg", "beautifulmind18_orig.jpg"], ["beautifulmind21.jpg", "beautifulmind21_orig.jpg"], ["beautifulmind24.jpg", "beautifulmind24_orig.jpg"], ["beautifulmind27.jpg", "beautifulmind27_orig.jpg"], ["beautifulmind30.jpg", "beautifulmind30_orig.jpg"], ["beautifulmind33.jpg", "beautifulmind33_orig.jpg"], ["beautifulmind36.jpg", "beautifulmind36_orig.jpg"], ["beautifulmind39.jpg", "beautifulmind39_orig.jpg"], ["beautifulmind42.jpg", "beautifulmind42_orig.jpg"]]], ["A Cure for Wellness", 2016, ["cureforwellness6.jpg", "cureforwellness10.jpg", "cureforwellness15.jpg", "cureforwellness19.jpg", "cureforwellness24.jpg", "cureforwellness29.jpg", "cureforwellness33.jpg", "cureforwellness38.jpg", "cureforwellness43.jpg", "cureforwellness47.jpg", "cureforwellness52.jpg", "cureforwellness57.jpg", "cureforwellness61.jpg", "cureforwellness66.jpg"]], ["A Field in England", 2013, [["fieldinengland5.jpg", "fieldinengland5_orig.jpg"], ["fieldinengland8.jpg", "fieldinengland8_orig.jpg"], ["fieldinengland12.jpg", "fieldinengland12_orig.jpg"], ["fieldinengland15.jpg", "fieldinengland15_orig.jpg"], ["fieldinengland19.jpg", "fieldinengland19_orig.jpg"], ["fieldinengland22.jpg", "fieldinengland22_orig.jpg"], ["fieldinengland26.jpg", "fieldinengland26_orig.jpg"], ["fieldinengland29.jpg", "fieldinengland29_orig.jpg"], ["fieldinengland33.jpg", "fieldinengland33_orig.jpg"], ["fieldinengland36.jpg", "fieldinengland36_orig.jpg"], ["fieldinengland40.jpg", "fieldinengland40_orig.jpg"], ["fieldinengland43.jpg", "fieldinengland43_orig.jpg"], ["fieldinengland47.jpg", "fieldinengland47_orig.jpg"], ["fieldinengland50.jpg", "fieldinengland50_orig.jpg"]]], ["A Fish Called Wanda", 1988, ["fishcalledwanda3.jpg", "fishcalledwanda5.jpg", "fishcalledwanda7.jpg", "fishcalledwanda10.jpg", "fishcalledwanda12.jpg", "fishcalledwanda14.jpg", "fishcalledwanda17.jpg", "fishcalledwanda19.jpg", "fishcalledwanda21.jpg", "fishcalledwanda24.jpg", "fishcalledwanda26.jpg", "fishcalledwanda28.jpg", "fishcalledwanda31.jpg", "fishcalledwanda33.jpg"]], ["A Most Violent Year", 2014, ["1250083.jpg", "317208.jpg", "7981054.jpg", "1428095.jpg", "2015848.jpg", "453337.jpg", "330428.jpg", "3854842.jpg", "1632839.jpg", "1663061.jpg", "6987434.jpg", "5357047.jpg", "8961709.jpg", "6327896.jpg"]], ["A Night to Remember", 1958, ["nighttoremember3.jpg", "nighttoremember5.jpg", "nighttoremember7.jpg", "nighttoremember10.jpg", "nighttoremember12.jpg", "nighttoremember14.jpg", "nighttoremember17.jpg", "nighttoremember19.jpg", "nighttoremember21.jpg", "nighttoremember24.jpg", "nighttoremember26.jpg", "nighttoremember28.jpg", "nighttoremember31.jpg", "nighttoremember33.jpg"]], ["A Nightmare on Elm Street", 1984, ["nightmareonelmstreet3.jpg", "nightmareonelmstreet4.jpg", "nightmareonelmstreet6.jpg", "nightmareonelmstreet8.jpg", "nightmareonelmstreet10.jpg", "nightmareonelmstreet11.jpg", "nightmareonelmstreet13.jpg", "nightmareonelmstreet15.jpg", "nightmareonelmstreet17.jpg", "nightmareonelmstreet19.jpg", "nightmareonelmstreet20.jpg", "nightmareonelmstreet22.jpg", "nightmareonelmstreet24.jpg", "nightmareonelmstreet26.jpg"]], ["A Royal Affair", 2012, ["royalaffair5.jpg", "royalaffair8.jpg", "royalaffair12.jpg", "royalaffair15.jpg", "royalaffair19.jpg", "royalaffair22.jpg", "royalaffair26.jpg", "royalaffair29.jpg", "royalaffair33.jpg", "royalaffair36.jpg", "royalaffair40.jpg", "royalaffair43.jpg", "royalaffair47.jpg", "royalaffair50.jpg"]], ["A Star is Born", 2018, ["astarisborn5.jpg", "astarisborn8.jpg", "astarisborn12.jpg", "astarisborn15.jpg", "astarisborn19.jpg", "astarisborn22.jpg", "astarisborn26.jpg", "astarisborn29.jpg", "astarisborn33.jpg", "astarisborn36.jpg", "astarisborn40.jpg", "astarisborn43.jpg", "astarisborn47.jpg", "astarisborn50.jpg"]], ["A Very Harold & Kumar Christmas", 2011, ["veryharoldandkumar3.jpg", "veryharoldandkumar5.jpg", "veryharoldandkumar7.jpg", "veryharoldandkumar10.jpg", "veryharoldandkumar12.jpg", "veryharoldandkumar14.jpg", "veryharoldandkumar17.jpg", "veryharoldandkumar19.jpg", "veryharoldandkumar21.jpg", "veryharoldandkumar24.jpg", "veryharoldandkumar26.jpg", "veryharoldandkumar28.jpg", "veryharoldandkumar31.jpg", "veryharoldandkumar33.jpg"]], ["Aladdin", 1992, [["aladdin5.jpg", "aladdin5_orig.jpg"], ["aladdin8.jpg", "aladdin8_orig.jpg"], ["aladdin12.jpg", "aladdin12_orig.jpg"], ["aladdin15.jpg", "aladdin15_orig.jpg"], ["aladdin19.jpg", "aladdin19_orig.jpg"], ["aladdin22.jpg", "aladdin22_orig.jpg"], ["aladdin26.jpg", "aladdin26_orig.jpg"], ["aladdin29.jpg", "aladdin29_orig.jpg"], ["aladdin33.jpg", "aladdin33_orig.jpg"], ["aladdin36.jpg", "aladdin36_orig.jpg"], ["aladdin40.jpg", "aladdin40_orig.jpg"], ["aladdin43.jpg", "aladdin43_orig.jpg"], ["aladdin47.jpg", "aladdin47_orig.jpg"], ["aladdin50.jpg", "aladdin50_orig.jpg"]]], ["Alien", 1979, [["alien3.jpg", "alien3_orig.jpg"], ["alien5.jpg", "alien5_orig.jpg"], ["alien7.jpg", "alien7_orig.jpg"], ["alien10.jpg", "alien10_orig.jpg"], ["alien12.jpg", "alien12_orig.jpg"], ["alien14.jpg", "alien14_orig.jpg"], ["alien17.jpg", "alien17_orig.jpg"], ["alien19.jpg", "alien19_orig.jpg"], ["alien21.jpg", "alien21_orig.jpg"], ["alien24.jpg", "alien24_orig.jpg"], ["alien26.jpg", "alien26_orig.jpg"], ["alien28.jpg", "alien28_orig.jpg"], ["alien31.jpg", "alien31_orig.jpg"], ["alien33.jpg", "alien33_orig.jpg"]]], ["Alien&sup3;", 1992, [["alienthree3.jpg", "alienthree3_orig.jpg"], ["alienthree5.jpg", "alienthree5_orig.jpg"], ["alienthree7.jpg", "alienthree7_orig.jpg"], ["alienthree10.jpg", "alienthree10_orig.jpg"], ["alienthree12.jpg", "alienthree12_orig.jpg"], ["alienthree14.jpg", "alienthree14_orig.jpg"], ["alienthree17.jpg", "alienthree17_orig.jpg"], ["alienthree19.jpg", "alienthree19_orig.jpg"], ["alienthree21.jpg", "alienthree21_orig.jpg"], ["alienthree24.jpg", "alienthree24_orig.jpg"], ["alienthree26.jpg", "alienthree26_orig.jpg"], ["alienthree28.jpg", "alienthree28_orig.jpg"], ["alienthree31.jpg", "alienthree31_orig.jpg"], ["alienthree33.jpg", "alienthree33_orig.jpg"]]], ["Alien: Covenant", 2017, [["aliencovenant5.jpg", "aliencovenant5_orig.jpg"], ["aliencovenant9.jpg", "aliencovenant9_orig.jpg"], ["aliencovenant13.jpg", "aliencovenant13_orig.jpg"], ["aliencovenant17.jpg", "aliencovenant17_orig.jpg"], ["aliencovenant21.jpg", "aliencovenant21_orig.jpg"], ["aliencovenant25.jpg", "aliencovenant25_orig.jpg"], ["aliencovenant29.jpg", "aliencovenant29_orig.jpg"], ["aliencovenant33.jpg", "aliencovenant33_orig.jpg"], ["aliencovenant37.jpg", "aliencovenant37_orig.jpg"], ["aliencovenant41.jpg", "aliencovenant41_orig.jpg"], ["aliencovenant45.jpg", "aliencovenant45_orig.jpg"], ["aliencovenant49.jpg", "aliencovenant49_orig.jpg"], ["aliencovenant53.jpg", "aliencovenant53_orig.jpg"], ["aliencovenant57.jpg", "aliencovenant57_orig.jpg"]]], ["Alien: Resurrection", 1997, [["alienres5.jpg", "alienres5_orig.jpg"], ["alienres8.jpg", "alienres8_orig.jpg"], ["alienres12.jpg", "alienres12_orig.jpg"], ["alienres15.jpg", "alienres15_orig.jpg"], ["alienres19.jpg", "alienres19_orig.jpg"], ["alienres22.jpg", "alienres22_orig.jpg"], ["alienres26.jpg", "alienres26_orig.jpg"], ["alienres29.jpg", "alienres29_orig.jpg"], ["alienres33.jpg", "alienres33_orig.jpg"], ["alienres36.jpg", "alienres36_orig.jpg"], ["alienres40.jpg", "alienres40_orig.jpg"], ["alienres43.jpg", "alienres43_orig.jpg"], ["alienres47.jpg", "alienres47_orig.jpg"], ["alienres50.jpg", "alienres50_orig.jpg"]]], ["Alien: Romulus", 2024, [["alienromulus5.jpg", "alienromulus5_orig.jpg"], ["alienromulus9.jpg", "alienromulus9_orig.jpg"], ["alienromulus13.jpg", "alienromulus13_orig.jpg"], ["alienromulus17.jpg", "alienromulus17_orig.jpg"], ["alienromulus21.jpg", "alienromulus21_orig.jpg"], ["alienromulus25.jpg", "alienromulus25_orig.jpg"], ["alienromulus29.jpg", "alienromulus29_orig.jpg"], ["alienromulus33.jpg", "alienromulus33_orig.jpg"], ["alienromulus37.jpg", "alienromulus37_orig.jpg"], ["alienromulus41.jpg", "alienromulus41_orig.jpg"], ["alienromulus45.jpg", "alienromulus45_orig.jpg"], ["alienromulus49.jpg", "alienromulus49_orig.jpg"], ["alienromulus53.jpg", "alienromulus53_orig.jpg"], ["alienromulus57.jpg", "alienromulus57_orig.jpg"]]], ["Aliens", 1986, [["aliens5.jpg", "aliens5_orig.jpg"], ["aliens8.jpg", "aliens8_orig.jpg"], ["aliens12.jpg", "aliens12_orig.jpg"], ["aliens15.jpg", "aliens15_orig.jpg"], ["aliens19.jpg", "aliens19_orig.jpg"], ["aliens22.jpg", "aliens22_orig.jpg"], ["aliens26.jpg", "aliens26_orig.jpg"], ["aliens29.jpg", "aliens29_orig.jpg"], ["aliens33.jpg", "aliens33_orig.jpg"], ["aliens36.jpg", "aliens36_orig.jpg"], ["aliens40.jpg", "aliens40_orig.jpg"], ["aliens43.jpg", "aliens43_orig.jpg"], ["aliens47.jpg", "aliens47_orig.jpg"], ["aliens50.jpg", "aliens50_orig.jpg"]]], ["All Quiet on the Western Front", 1930, [["westernfront3.jpg", "westernfront3_orig.jpg"], ["westernfront5.jpg", "westernfront5_orig.jpg"], ["westernfront7.jpg", "westernfront7_orig.jpg"], ["westernfront10.jpg", "westernfront10_orig.jpg"], ["westernfront12.jpg", "westernfront12_orig.jpg"], ["westernfront14.jpg", "westernfront14_orig.jpg"], ["westernfront17.jpg", "westernfront17_orig.jpg"], ["westernfront19.jpg", "westernfront19_orig.jpg"], ["westernfront21.jpg", "westernfront21_orig.jpg"], ["westernfront24.jpg", "westernfront24_orig.jpg"], ["westernfront26.jpg", "westernfront26_orig.jpg"], ["westernfront28.jpg", "westernfront28_orig.jpg"], ["westernfront31.jpg", "westernfront31_orig.jpg"], ["westernfront33.jpg", "westernfront33_orig.jpg"]]], ["American Hustle", 2013, [["americanhustle5.jpg", "americanhustle5_orig.jpg"], ["americanhustle8.jpg", "americanhustle8_orig.jpg"], ["americanhustle12.jpg", "americanhustle12_orig.jpg"], ["americanhustle15.jpg", "americanhustle15_orig.jpg"], ["americanhustle19.jpg", "americanhustle19_orig.jpg"], ["americanhustle22.jpg", "americanhustle22_orig.jpg"], ["americanhustle26.jpg", "americanhustle26_orig.jpg"], ["americanhustle29.jpg", "americanhustle29_orig.jpg"], ["americanhustle33.jpg", "americanhustle33_orig.jpg"], ["americanhustle36.jpg", "americanhustle36_orig.jpg"], ["americanhustle40.jpg", "americanhustle40_orig.jpg"], ["americanhustle43.jpg", "americanhustle43_orig.jpg"], ["americanhustle47.jpg", "americanhustle47_orig.jpg"], ["americanhustle50.jpg", "americanhustle50_orig.jpg"]]], ["American Psycho", 2e3, [["americanpsycho3.jpg", "americanpsycho3_orig.jpg"], ["americanpsycho5.jpg", "americanpsycho5_orig.jpg"], ["americanpsycho7.jpg", "americanpsycho7_orig.jpg"], ["americanpsycho10.jpg", "americanpsycho10_orig.jpg"], ["americanpsycho12.jpg", "americanpsycho12_orig.jpg"], ["americanpsycho14.jpg", "americanpsycho14_orig.jpg"], ["americanpsycho17.jpg", "americanpsycho17_orig.jpg"], ["americanpsycho19.jpg", "americanpsycho19_orig.jpg"], ["americanpsycho21.jpg", "americanpsycho21_orig.jpg"], ["americanpsycho24.jpg", "americanpsycho24_orig.jpg"], ["americanpsycho26.jpg", "americanpsycho26_orig.jpg"], ["americanpsycho28.jpg", "americanpsycho28_orig.jpg"], ["americanpsycho31.jpg", "americanpsycho31_orig.jpg"], ["americanpsycho33.jpg", "americanpsycho33_orig.jpg"]]], ["American Reunion", 2012, [["americanreunion4.jpg", "americanreunion4_orig.jpg"], ["americanreunion6.jpg", "americanreunion6_orig.jpg"], ["americanreunion9.jpg", "americanreunion9_orig.jpg"], ["americanreunion12.jpg", "americanreunion12_orig.jpg"], ["americanreunion15.jpg", "americanreunion15_orig.jpg"], ["americanreunion18.jpg", "americanreunion18_orig.jpg"], ["americanreunion21.jpg", "americanreunion21_orig.jpg"], ["americanreunion24.jpg", "americanreunion24_orig.jpg"], ["americanreunion27.jpg", "americanreunion27_orig.jpg"], ["americanreunion30.jpg", "americanreunion30_orig.jpg"], ["americanreunion33.jpg", "americanreunion33_orig.jpg"], ["americanreunion36.jpg", "americanreunion36_orig.jpg"], ["americanreunion39.jpg", "americanreunion39_orig.jpg"], ["americanreunion42.jpg", "americanreunion42_orig.jpg"]]], ["Amistad", 1997, [["amistad5.jpg", "amistad5_orig.jpg"], ["amistad8.jpg", "amistad8_orig.jpg"], ["amistad12.jpg", "amistad12_orig.jpg"], ["amistad15.jpg", "amistad15_orig.jpg"], ["amistad19.jpg", "amistad19_orig.jpg"], ["amistad22.jpg", "amistad22_orig.jpg"], ["amistad26.jpg", "amistad26_orig.jpg"], ["amistad29.jpg", "amistad29_orig.jpg"], ["amistad33.jpg", "amistad33_orig.jpg"], ["amistad36.jpg", "amistad36_orig.jpg"], ["amistad40.jpg", "amistad40_orig.jpg"], ["amistad43.jpg", "amistad43_orig.jpg"], ["amistad47.jpg", "amistad47_orig.jpg"], ["amistad50.jpg", "amistad50_orig.jpg"]]], ["An American Werewolf in London", 1981, [["americanwerewolfinlondon4.jpg", "americanwerewolfinlondon4_orig.jpg"], ["americanwerewolfinlondon6.jpg", "americanwerewolfinlondon6_orig.jpg"], ["americanwerewolfinlondon9.jpg", "americanwerewolfinlondon9_orig.jpg"], ["americanwerewolfinlondon12.jpg", "americanwerewolfinlondon12_orig.jpg"], ["americanwerewolfinlondon15.jpg", "americanwerewolfinlondon15_orig.jpg"], ["americanwerewolfinlondon18.jpg", "americanwerewolfinlondon18_orig.jpg"], ["americanwerewolfinlondon21.jpg", "americanwerewolfinlondon21_orig.jpg"], ["americanwerewolfinlondon24.jpg", "americanwerewolfinlondon24_orig.jpg"], ["americanwerewolfinlondon27.jpg", "americanwerewolfinlondon27_orig.jpg"], ["americanwerewolfinlondon30.jpg", "americanwerewolfinlondon30_orig.jpg"], ["americanwerewolfinlondon33.jpg", "americanwerewolfinlondon33_orig.jpg"], ["americanwerewolfinlondon36.jpg", "americanwerewolfinlondon36_orig.jpg"], ["americanwerewolfinlondon39.jpg", "americanwerewolfinlondon39_orig.jpg"], ["americanwerewolfinlondon42.jpg", "americanwerewolfinlondon42_orig.jpg"]]], ["An Officer and a Gentleman", 1982, [["officerandagentleman5.jpg", "officerandagentleman5_orig.jpg"], ["officerandagentleman8.jpg", "officerandagentleman8_orig.jpg"], ["officerandagentleman12.jpg", "officerandagentleman12_orig.jpg"], ["officerandagentleman15.jpg", "officerandagentleman15_orig.jpg"], ["officerandagentleman19.jpg", "officerandagentleman19_orig.jpg"], ["officerandagentleman22.jpg", "officerandagentleman22_orig.jpg"], ["officerandagentleman26.jpg", "officerandagentleman26_orig.jpg"], ["officerandagentleman29.jpg", "officerandagentleman29_orig.jpg"], ["officerandagentleman33.jpg", "officerandagentleman33_orig.jpg"], ["officerandagentleman36.jpg", "officerandagentleman36_orig.jpg"], ["officerandagentleman40.jpg", "officerandagentleman40_orig.jpg"], ["officerandagentleman43.jpg", "officerandagentleman43_orig.jpg"], ["officerandagentleman47.jpg", "officerandagentleman47_orig.jpg"], ["officerandagentleman50.jpg", "officerandagentleman50_orig.jpg"]]], ["Angel Heart", 1987, [["angelheart5.jpg", "angelheart5_orig.jpg"], ["angelheart8.jpg", "angelheart8_orig.jpg"], ["angelheart12.jpg", "angelheart12_orig.jpg"], ["angelheart15.jpg", "angelheart15_orig.jpg"], ["angelheart19.jpg", "angelheart19_orig.jpg"], ["angelheart22.jpg", "angelheart22_orig.jpg"], ["angelheart26.jpg", "angelheart26_orig.jpg"], ["angelheart29.jpg", "angelheart29_orig.jpg"], ["angelheart33.jpg", "angelheart33_orig.jpg"], ["angelheart36.jpg", "angelheart36_orig.jpg"], ["angelheart40.jpg", "angelheart40_orig.jpg"], ["angelheart43.jpg", "angelheart43_orig.jpg"], ["angelheart47.jpg", "angelheart47_orig.jpg"], ["angelheart50.jpg", "angelheart50_orig.jpg"]]], ["Anna Karenina", 2012, [["annakarenina4.jpg", "annakarenina4_orig.jpg"], ["annakarenina6.jpg", "annakarenina6_orig.jpg"], ["annakarenina9.jpg", "annakarenina9_orig.jpg"], ["annakarenina12.jpg", "annakarenina12_orig.jpg"], ["annakarenina15.jpg", "annakarenina15_orig.jpg"], ["annakarenina18.jpg", "annakarenina18_orig.jpg"], ["annakarenina21.jpg", "annakarenina21_orig.jpg"], ["annakarenina24.jpg", "annakarenina24_orig.jpg"], ["annakarenina27.jpg", "annakarenina27_orig.jpg"], ["annakarenina30.jpg", "annakarenina30_orig.jpg"], ["annakarenina33.jpg", "annakarenina33_orig.jpg"], ["annakarenina36.jpg", "annakarenina36_orig.jpg"], ["annakarenina39.jpg", "annakarenina39_orig.jpg"], ["annakarenina42.jpg", "annakarenina42_orig.jpg"]]], ["Apocalypse Now - Redux", 1979, [["apocalypsenow5.jpg", "apocalypsenow5_orig.jpg"], ["apocalypsenow8.jpg", "apocalypsenow8_orig.jpg"], ["apocalypsenow12.jpg", "apocalypsenow12_orig.jpg"], ["apocalypsenow15.jpg", "apocalypsenow15_orig.jpg"], ["apocalypsenow19.jpg", "apocalypsenow19_orig.jpg"], ["apocalypsenow22.jpg", "apocalypsenow22_orig.jpg"], ["apocalypsenow26.jpg", "apocalypsenow26_orig.jpg"], ["apocalypsenow29.jpg", "apocalypsenow29_orig.jpg"], ["apocalypsenow33.jpg", "apocalypsenow33_orig.jpg"], ["apocalypsenow36.jpg", "apocalypsenow36_orig.jpg"], ["apocalypsenow40.jpg", "apocalypsenow40_orig.jpg"], ["apocalypsenow43.jpg", "apocalypsenow43_orig.jpg"], ["apocalypsenow47.jpg", "apocalypsenow47_orig.jpg"], ["apocalypsenow50.jpg", "apocalypsenow50_orig.jpg"]]], ["Aquaman", 2018, [["aquaman5.jpg", "aquaman5_orig.jpg"], ["aquaman8.jpg", "aquaman8_orig.jpg"], ["aquaman12.jpg", "aquaman12_orig.jpg"], ["aquaman15.jpg", "aquaman15_orig.jpg"], ["aquaman19.jpg", "aquaman19_orig.jpg"], ["aquaman22.jpg", "aquaman22_orig.jpg"], ["aquaman26.jpg", "aquaman26_orig.jpg"], ["aquaman29.jpg", "aquaman29_orig.jpg"], ["aquaman33.jpg", "aquaman33_orig.jpg"], ["aquaman36.jpg", "aquaman36_orig.jpg"], ["aquaman40.jpg", "aquaman40_orig.jpg"], ["aquaman43.jpg", "aquaman43_orig.jpg"], ["aquaman47.jpg", "aquaman47_orig.jpg"], ["aquaman50.jpg", "aquaman50_orig.jpg"]]], ["Armageddon", 1998, [["armageddon5.jpg", "armageddon5_orig.jpg"], ["armageddon8.jpg", "armageddon8_orig.jpg"], ["armageddon12.jpg", "armageddon12_orig.jpg"], ["armageddon15.jpg", "armageddon15_orig.jpg"], ["armageddon19.jpg", "armageddon19_orig.jpg"], ["armageddon22.jpg", "armageddon22_orig.jpg"], ["armageddon26.jpg", "armageddon26_orig.jpg"], ["armageddon29.jpg", "armageddon29_orig.jpg"], ["armageddon33.jpg", "armageddon33_orig.jpg"], ["armageddon36.jpg", "armageddon36_orig.jpg"], ["armageddon40.jpg", "armageddon40_orig.jpg"], ["armageddon43.jpg", "armageddon43_orig.jpg"], ["armageddon47.jpg", "armageddon47_orig.jpg"], ["armageddon50.jpg", "armageddon50_orig.jpg"]]], ["Arrival", 2016, [["arrival5.jpg", "arrival5_orig.jpg"], ["arrival8.jpg", "arrival8_orig.jpg"], ["arrival12.jpg", "arrival12_orig.jpg"], ["arrival15.jpg", "arrival15_orig.jpg"], ["arrival19.jpg", "arrival19_orig.jpg"], ["arrival22.jpg", "arrival22_orig.jpg"], ["arrival26.jpg", "arrival26_orig.jpg"], ["arrival29.jpg", "arrival29_orig.jpg"], ["arrival33.jpg", "arrival33_orig.jpg"], ["arrival36.jpg", "arrival36_orig.jpg"], ["arrival40.jpg", "arrival40_orig.jpg"], ["arrival43.jpg", "arrival43_orig.jpg"], ["arrival47.jpg", "arrival47_orig.jpg"], ["arrival50.jpg", "arrival50_orig.jpg"]]], ["Atomic Blonde", 2017, [["atomicblonde5.jpg", "atomicblonde5_orig.jpg"], ["atomicblonde8.jpg", "atomicblonde8_orig.jpg"], ["atomicblonde12.jpg", "atomicblonde12_orig.jpg"], ["atomicblonde15.jpg", "atomicblonde15_orig.jpg"], ["atomicblonde19.jpg", "atomicblonde19_orig.jpg"], ["atomicblonde22.jpg", "atomicblonde22_orig.jpg"], ["atomicblonde26.jpg", "atomicblonde26_orig.jpg"], ["atomicblonde29.jpg", "atomicblonde29_orig.jpg"], ["atomicblonde33.jpg", "atomicblonde33_orig.jpg"], ["atomicblonde36.jpg", "atomicblonde36_orig.jpg"], ["atomicblonde40.jpg", "atomicblonde40_orig.jpg"], ["atomicblonde43.jpg", "atomicblonde43_orig.jpg"], ["atomicblonde47.jpg", "atomicblonde47_orig.jpg"], ["atomicblonde50.jpg", "atomicblonde50_orig.jpg"]]], ["Avatar", 2009, [["avatar5.jpg", "avatar5_orig.jpg"], ["avatar8.jpg", "avatar8_orig.jpg"], ["avatar12.jpg", "avatar12_orig.jpg"], ["avatar15.jpg", "avatar15_orig.jpg"], ["avatar19.jpg", "avatar19_orig.jpg"], ["avatar22.jpg", "avatar22_orig.jpg"], ["avatar26.jpg", "avatar26_orig.jpg"], ["avatar29.jpg", "avatar29_orig.jpg"], ["avatar33.jpg", "avatar33_orig.jpg"], ["avatar36.jpg", "avatar36_orig.jpg"], ["avatar40.jpg", "avatar40_orig.jpg"], ["avatar43.jpg", "avatar43_orig.jpg"], ["avatar47.jpg", "avatar47_orig.jpg"], ["avatar50.jpg", "avatar50_orig.jpg"]]], ["Avengers: Age of Ultron", 2015, [["avengersultron5.jpg", "avengersultron5_orig.jpg"], ["avengersultron8.jpg", "avengersultron8_orig.jpg"], ["avengersultron12.jpg", "avengersultron12_orig.jpg"], ["avengersultron15.jpg", "avengersultron15_orig.jpg"], ["avengersultron19.jpg", "avengersultron19_orig.jpg"], ["avengersultron22.jpg", "avengersultron22_orig.jpg"], ["avengersultron26.jpg", "avengersultron26_orig.jpg"], ["avengersultron29.jpg", "avengersultron29_orig.jpg"], ["avengersultron33.jpg", "avengersultron33_orig.jpg"], ["avengersultron36.jpg", "avengersultron36_orig.jpg"], ["avengersultron40.jpg", "avengersultron40_orig.jpg"], ["avengersultron43.jpg", "avengersultron43_orig.jpg"], ["avengersultron47.jpg", "avengersultron47_orig.jpg"], ["avengersultron50.jpg", "avengersultron50_orig.jpg"]]], ["Avengers: Endgame", 2019, [["avengersendgame5.jpg", "avengersendgame5_orig.jpg"], ["avengersendgame8.jpg", "avengersendgame8_orig.jpg"], ["avengersendgame12.jpg", "avengersendgame12_orig.jpg"], ["avengersendgame15.jpg", "avengersendgame15_orig.jpg"], ["avengersendgame19.jpg", "avengersendgame19_orig.jpg"], ["avengersendgame22.jpg", "avengersendgame22_orig.jpg"], ["avengersendgame26.jpg", "avengersendgame26_orig.jpg"], ["avengersendgame29.jpg", "avengersendgame29_orig.jpg"], ["avengersendgame33.jpg", "avengersendgame33_orig.jpg"], ["avengersendgame36.jpg", "avengersendgame36_orig.jpg"], ["avengersendgame40.jpg", "avengersendgame40_orig.jpg"], ["avengersendgame43.jpg", "avengersendgame43_orig.jpg"], ["avengersendgame47.jpg", "avengersendgame47_orig.jpg"], ["avengersendgame50.jpg", "avengersendgame50_orig.jpg"]]], ["Avengers: Infinity War", 2018, [["avengersinfinity5.jpg", "avengersinfinity5_orig.jpg"], ["avengersinfinity9.jpg", "avengersinfinity9_orig.jpg"], ["avengersinfinity13.jpg", "avengersinfinity13_orig.jpg"], ["avengersinfinity17.jpg", "avengersinfinity17_orig.jpg"], ["avengersinfinity21.jpg", "avengersinfinity21_orig.jpg"], ["avengersinfinity25.jpg", "avengersinfinity25_orig.jpg"], ["avengersinfinity29.jpg", "avengersinfinity29_orig.jpg"], ["avengersinfinity33.jpg", "avengersinfinity33_orig.jpg"], ["avengersinfinity37.jpg", "avengersinfinity37_orig.jpg"], ["avengersinfinity41.jpg", "avengersinfinity41_orig.jpg"], ["avengersinfinity45.jpg", "avengersinfinity45_orig.jpg"], ["avengersinfinity49.jpg", "avengersinfinity49_orig.jpg"], ["avengersinfinity53.jpg", "avengersinfinity53_orig.jpg"], ["avengersinfinity57.jpg", "avengersinfinity57_orig.jpg"]]], ["Baby Driver", 2017, [["babydriver5.jpg", "babydriver5_orig.jpg"], ["babydriver8.jpg", "babydriver8_orig.jpg"], ["babydriver12.jpg", "babydriver12_orig.jpg"], ["babydriver15.jpg", "babydriver15_orig.jpg"], ["babydriver19.jpg", "babydriver19_orig.jpg"], ["babydriver22.jpg", "babydriver22_orig.jpg"], ["babydriver26.jpg", "babydriver26_orig.jpg"], ["babydriver29.jpg", "babydriver29_orig.jpg"], ["babydriver33.jpg", "babydriver33_orig.jpg"], ["babydriver36.jpg", "babydriver36_orig.jpg"], ["babydriver40.jpg", "babydriver40_orig.jpg"], ["babydriver43.jpg", "babydriver43_orig.jpg"], ["babydriver47.jpg", "babydriver47_orig.jpg"], ["babydriver50.jpg", "babydriver50_orig.jpg"]]], ["Back to School", 1986, [["backtoschool3.jpg", "backtoschool3_orig.jpg"], ["backtoschool4.jpg", "backtoschool4_orig.jpg"], ["backtoschool6.jpg", "backtoschool6_orig.jpg"], ["backtoschool8.jpg", "backtoschool8_orig.jpg"], ["backtoschool10.jpg", "backtoschool10_orig.jpg"], ["backtoschool11.jpg", "backtoschool11_orig.jpg"], ["backtoschool13.jpg", "backtoschool13_orig.jpg"], ["backtoschool15.jpg", "backtoschool15_orig.jpg"], ["backtoschool17.jpg", "backtoschool17_orig.jpg"], ["backtoschool19.jpg", "backtoschool19_orig.jpg"], ["backtoschool20.jpg", "backtoschool20_orig.jpg"], ["backtoschool22.jpg", "backtoschool22_orig.jpg"], ["backtoschool24.jpg", "backtoschool24_orig.jpg"], ["backtoschool26.jpg", "backtoschool26_orig.jpg"]]], ["Backdraft", 1991, [["backdraft5.jpg", "backdraft5_orig.jpg"], ["backdraft8.jpg", "backdraft8_orig.jpg"], ["backdraft12.jpg", "backdraft12_orig.jpg"], ["backdraft15.jpg", "backdraft15_orig.jpg"], ["backdraft19.jpg", "backdraft19_orig.jpg"], ["backdraft22.jpg", "backdraft22_orig.jpg"], ["backdraft26.jpg", "backdraft26_orig.jpg"], ["backdraft29.jpg", "backdraft29_orig.jpg"], ["backdraft33.jpg", "backdraft33_orig.jpg"], ["backdraft36.jpg", "backdraft36_orig.jpg"], ["backdraft40.jpg", "backdraft40_orig.jpg"], ["backdraft43.jpg", "backdraft43_orig.jpg"], ["backdraft47.jpg", "backdraft47_orig.jpg"], ["backdraft50.jpg", "backdraft50_orig.jpg"]]], ["Bad Santa", 2003, [["badsanta4.jpg", "badsanta4_orig.jpg"], ["badsanta6.jpg", "badsanta6_orig.jpg"], ["badsanta9.jpg", "badsanta9_orig.jpg"], ["badsanta12.jpg", "badsanta12_orig.jpg"], ["badsanta15.jpg", "badsanta15_orig.jpg"], ["badsanta18.jpg", "badsanta18_orig.jpg"], ["badsanta21.jpg", "badsanta21_orig.jpg"], ["badsanta24.jpg", "badsanta24_orig.jpg"], ["badsanta27.jpg", "badsanta27_orig.jpg"], ["badsanta30.jpg", "badsanta30_orig.jpg"], ["badsanta33.jpg", "badsanta33_orig.jpg"], ["badsanta36.jpg", "badsanta36_orig.jpg"], ["badsanta39.jpg", "badsanta39_orig.jpg"], ["badsanta42.jpg", "badsanta42_orig.jpg"]]], ["Badlands", 1973, [["badlands5.jpg", "badlands5_orig.jpg"], ["badlands8.jpg", "badlands8_orig.jpg"], ["badlands12.jpg", "badlands12_orig.jpg"], ["badlands15.jpg", "badlands15_orig.jpg"], ["badlands19.jpg", "badlands19_orig.jpg"], ["badlands22.jpg", "badlands22_orig.jpg"], ["badlands26.jpg", "badlands26_orig.jpg"], ["badlands29.jpg", "badlands29_orig.jpg"], ["badlands33.jpg", "badlands33_orig.jpg"], ["badlands36.jpg", "badlands36_orig.jpg"], ["badlands40.jpg", "badlands40_orig.jpg"], ["badlands43.jpg", "badlands43_orig.jpg"], ["badlands47.jpg", "badlands47_orig.jpg"], ["badlands50.jpg", "badlands50_orig.jpg"]]], ["Barry Lyndon", 1975, [["barrylyndon5.jpg", "barrylyndon5_orig.jpg"], ["barrylyndon8.jpg", "barrylyndon8_orig.jpg"], ["barrylyndon12.jpg", "barrylyndon12_orig.jpg"], ["barrylyndon15.jpg", "barrylyndon15_orig.jpg"], ["barrylyndon19.jpg", "barrylyndon19_orig.jpg"], ["barrylyndon22.jpg", "barrylyndon22_orig.jpg"], ["barrylyndon26.jpg", "barrylyndon26_orig.jpg"], ["barrylyndon29.jpg", "barrylyndon29_orig.jpg"], ["barrylyndon33.jpg", "barrylyndon33_orig.jpg"], ["barrylyndon36.jpg", "barrylyndon36_orig.jpg"], ["barrylyndon40.jpg", "barrylyndon40_orig.jpg"], ["barrylyndon43.jpg", "barrylyndon43_orig.jpg"], ["barrylyndon47.jpg", "barrylyndon47_orig.jpg"], ["barrylyndon50.jpg", "barrylyndon50_orig.jpg"]]], ["Barton Fink", 1991, [["bartonfink4.jpg", "bartonfink4_orig.jpg"], ["bartonfink6.jpg", "bartonfink6_orig.jpg"], ["bartonfink9.jpg", "bartonfink9_orig.jpg"], ["bartonfink12.jpg", "bartonfink12_orig.jpg"], ["bartonfink15.jpg", "bartonfink15_orig.jpg"], ["bartonfink18.jpg", "bartonfink18_orig.jpg"], ["bartonfink21.jpg", "bartonfink21_orig.jpg"], ["bartonfink24.jpg", "bartonfink24_orig.jpg"], ["bartonfink27.jpg", "bartonfink27_orig.jpg"], ["bartonfink30.jpg", "bartonfink30_orig.jpg"], ["bartonfink33.jpg", "bartonfink33_orig.jpg"], ["bartonfink36.jpg", "bartonfink36_orig.jpg"], ["bartonfink39.jpg", "bartonfink39_orig.jpg"], ["bartonfink42.jpg", "bartonfink42_orig.jpg"]]], ["Beetlejuice", 1988, [["beetlejuice4.jpg", "beetlejuice4_orig.jpg"], ["beetlejuice6.jpg", "beetlejuice6_orig.jpg"], ["beetlejuice9.jpg", "beetlejuice9_orig.jpg"], ["beetlejuice12.jpg", "beetlejuice12_orig.jpg"], ["beetlejuice15.jpg", "beetlejuice15_orig.jpg"], ["beetlejuice18.jpg", "beetlejuice18_orig.jpg"], ["beetlejuice21.jpg", "beetlejuice21_orig.jpg"], ["beetlejuice24.jpg", "beetlejuice24_orig.jpg"], ["beetlejuice27.jpg", "beetlejuice27_orig.jpg"], ["beetlejuice30.jpg", "beetlejuice30_orig.jpg"], ["beetlejuice33.jpg", "beetlejuice33_orig.jpg"], ["beetlejuice36.jpg", "beetlejuice36_orig.jpg"], ["beetlejuice39.jpg", "beetlejuice39_orig.jpg"], ["beetlejuice42.jpg", "beetlejuice42_orig.jpg"]]], ["Ben-Hur", 1959, [["benhur3.jpg", "benhur3_orig.jpg"], ["benhur4.jpg", "benhur4_orig.jpg"], ["benhur6.jpg", "benhur6_orig.jpg"], ["benhur8.jpg", "benhur8_orig.jpg"], ["benhur10.jpg", "benhur10_orig.jpg"], ["benhur11.jpg", "benhur11_orig.jpg"], ["benhur13.jpg", "benhur13_orig.jpg"], ["benhur15.jpg", "benhur15_orig.jpg"], ["benhur17.jpg", "benhur17_orig.jpg"], ["benhur19.jpg", "benhur19_orig.jpg"], ["benhur20.jpg", "benhur20_orig.jpg"], ["benhur22.jpg", "benhur22_orig.jpg"], ["benhur24.jpg", "benhur24_orig.jpg"], ["benhur26.jpg", "benhur26_orig.jpg"]]], ["Beverly Hills Cop", 1984, [["beverlyhillscop3.jpg", "beverlyhillscop3_orig.jpg"], ["beverlyhillscop4.jpg", "beverlyhillscop4_orig.jpg"], ["beverlyhillscop6.jpg", "beverlyhillscop6_orig.jpg"], ["beverlyhillscop8.jpg", "beverlyhillscop8_orig.jpg"], ["beverlyhillscop10.jpg", "beverlyhillscop10_orig.jpg"], ["beverlyhillscop11.jpg", "beverlyhillscop11_orig.jpg"], ["beverlyhillscop13.jpg", "beverlyhillscop13_orig.jpg"], ["beverlyhillscop15.jpg", "beverlyhillscop15_orig.jpg"], ["beverlyhillscop17.jpg", "beverlyhillscop17_orig.jpg"], ["beverlyhillscop19.jpg", "beverlyhillscop19_orig.jpg"], ["beverlyhillscop20.jpg", "beverlyhillscop20_orig.jpg"], ["beverlyhillscop22.jpg", "beverlyhillscop22_orig.jpg"], ["beverlyhillscop24.jpg", "beverlyhillscop24_orig.jpg"], ["beverlyhillscop26.jpg", "beverlyhillscop26_orig.jpg"]]], ["Big Fish", 2003, [["bigfish4.jpg", "bigfish4_orig.jpg"], ["bigfish6.jpg", "bigfish6_orig.jpg"], ["bigfish9.jpg", "bigfish9_orig.jpg"], ["bigfish12.jpg", "bigfish12_orig.jpg"], ["bigfish15.jpg", "bigfish15_orig.jpg"], ["bigfish18.jpg", "bigfish18_orig.jpg"], ["bigfish21.jpg", "bigfish21_orig.jpg"], ["bigfish24.jpg", "bigfish24_orig.jpg"], ["bigfish27.jpg", "bigfish27_orig.jpg"], ["bigfish30.jpg", "bigfish30_orig.jpg"], ["bigfish33.jpg", "bigfish33_orig.jpg"], ["bigfish36.jpg", "bigfish36_orig.jpg"], ["bigfish39.jpg", "bigfish39_orig.jpg"], ["bigfish42.jpg", "bigfish42_orig.jpg"]]], ["Birdman", 2014, [["birdman5.jpg", "birdman5_orig.jpg"], ["birdman8.jpg", "birdman8_orig.jpg"], ["birdman12.jpg", "birdman12_orig.jpg"], ["birdman15.jpg", "birdman15_orig.jpg"], ["birdman19.jpg", "birdman19_orig.jpg"], ["birdman22.jpg", "birdman22_orig.jpg"], ["birdman26.jpg", "birdman26_orig.jpg"], ["birdman29.jpg", "birdman29_orig.jpg"], ["birdman33.jpg", "birdman33_orig.jpg"], ["birdman36.jpg", "birdman36_orig.jpg"], ["birdman40.jpg", "birdman40_orig.jpg"], ["birdman43.jpg", "birdman43_orig.jpg"], ["birdman47.jpg", "birdman47_orig.jpg"], ["birdman50.jpg", "birdman50_orig.jpg"]]], ["Black Narcissus", 1947, [["3blacknarcissus.jpg", "3blacknarcissus_orig.jpg"], ["5blacknarcissus.jpg", "5blacknarcissus_orig.jpg"], ["7blacknarcissus.jpg", "7blacknarcissus_orig.jpg"], ["10blacknarcissus.jpg", "10blacknarcissus_orig.jpg"], ["12blacknarcissus.jpg", "12blacknarcissus_orig.jpg"], ["14blacknarcissus.jpg", "14blacknarcissus_orig.jpg"], ["17blacknarcissus.jpg", "17blacknarcissus_orig.jpg"], ["19blacknarcissus.jpg", "19blacknarcissus_orig.jpg"], ["21blacknarcissus.jpg", "21blacknarcissus_orig.jpg"], ["24blacknarcissus.jpg", "24blacknarcissus_orig.jpg"], ["26blacknarcissus.jpg", "26blacknarcissus_orig.jpg"], ["28blacknarcissus.jpg", "28blacknarcissus_orig.jpg"], ["31blacknarcissus.jpg", "31blacknarcissus_orig.jpg"], ["33blacknarcissus.jpg", "33blacknarcissus_orig.jpg"]]], ["Black Panther", 2018, [["blackpanther5.jpg", "blackpanther5_orig.jpg"], ["blackpanther8.jpg", "blackpanther8_orig.jpg"], ["blackpanther12.jpg", "blackpanther12_orig.jpg"], ["blackpanther15.jpg", "blackpanther15_orig.jpg"], ["blackpanther19.jpg", "blackpanther19_orig.jpg"], ["blackpanther22.jpg", "blackpanther22_orig.jpg"], ["blackpanther26.jpg", "blackpanther26_orig.jpg"], ["blackpanther29.jpg", "blackpanther29_orig.jpg"], ["blackpanther33.jpg", "blackpanther33_orig.jpg"], ["blackpanther36.jpg", "blackpanther36_orig.jpg"], ["blackpanther40.jpg", "blackpanther40_orig.jpg"], ["blackpanther43.jpg", "blackpanther43_orig.jpg"], ["blackpanther47.jpg", "blackpanther47_orig.jpg"], ["blackpanther50.jpg", "blackpanther50_orig.jpg"]]], ["Black Rain", 1989, [["blackrain4.jpg", "blackrain4_orig.jpg"], ["blackrain6.jpg", "blackrain6_orig.jpg"], ["blackrain9.jpg", "blackrain9_orig.jpg"], ["blackrain12.jpg", "blackrain12_orig.jpg"], ["blackrain15.jpg", "blackrain15_orig.jpg"], ["blackrain18.jpg", "blackrain18_orig.jpg"], ["blackrain21.jpg", "blackrain21_orig.jpg"], ["blackrain24.jpg", "blackrain24_orig.jpg"], ["blackrain27.jpg", "blackrain27_orig.jpg"], ["blackrain30.jpg", "blackrain30_orig.jpg"], ["blackrain33.jpg", "blackrain33_orig.jpg"], ["blackrain36.jpg", "blackrain36_orig.jpg"], ["blackrain39.jpg", "blackrain39_orig.jpg"], ["blackrain42.jpg", "blackrain42_orig.jpg"]]], ["Black Swan", 2010, [["blackswan4.jpg", "blackswan4_orig.jpg"], ["blackswan6.jpg", "blackswan6_orig.jpg"], ["blackswan9.jpg", "blackswan9_orig.jpg"], ["blackswan12.jpg", "blackswan12_orig.jpg"], ["blackswan15.jpg", "blackswan15_orig.jpg"], ["blackswan18.jpg", "blackswan18_orig.jpg"], ["blackswan21.jpg", "blackswan21_orig.jpg"], ["blackswan24.jpg", "blackswan24_orig.jpg"], ["blackswan27.jpg", "blackswan27_orig.jpg"], ["blackswan30.jpg", "blackswan30_orig.jpg"], ["blackswan33.jpg", "blackswan33_orig.jpg"], ["blackswan36.jpg", "blackswan36_orig.jpg"], ["blackswan39.jpg", "blackswan39_orig.jpg"], ["blackswan42.jpg", "blackswan42_orig.jpg"]]], ["Blade Runner", 1982, [["bladerunner5.jpg", "bladerunner5_orig.jpg"], ["bladerunner8.jpg", "bladerunner8_orig.jpg"], ["bladerunner12.jpg", "bladerunner12_orig.jpg"], ["bladerunner15.jpg", "bladerunner15_orig.jpg"], ["bladerunner19.jpg", "bladerunner19_orig.jpg"], ["bladerunner22.jpg", "bladerunner22_orig.jpg"], ["bladerunner26.jpg", "bladerunner26_orig.jpg"], ["bladerunner29.jpg", "bladerunner29_orig.jpg"], ["bladerunner33.jpg", "bladerunner33_orig.jpg"], ["bladerunner36.jpg", "bladerunner36_orig.jpg"], ["bladerunner40.jpg", "bladerunner40_orig.jpg"], ["bladerunner43.jpg", "bladerunner43_orig.jpg"], ["bladerunner47.jpg", "bladerunner47_orig.jpg"], ["bladerunner50.jpg", "bladerunner50_orig.jpg"]]], ["Blade Runner 2049", 2017, [["bladerun8.jpg", "bladerun8_orig.jpg"], ["bladerun13.jpg", "bladerun13_orig.jpg"], ["bladerun19.jpg", "bladerun19_orig.jpg"], ["bladerun25.jpg", "bladerun25_orig.jpg"], ["bladerun30.jpg", "bladerun30_orig.jpg"], ["bladerun36.jpg", "bladerun36_orig.jpg"], ["bladerun42.jpg", "bladerun42_orig.jpg"], ["bladerun48.jpg", "bladerun48_orig.jpg"], ["bladerun53.jpg", "bladerun53_orig.jpg"], ["bladerun59.jpg", "bladerun59_orig.jpg"], ["bladerun65.jpg", "bladerun65_orig.jpg"], ["bladerun70.jpg", "bladerun70_orig.jpg"], ["bladerun76.jpg", "bladerun76_orig.jpg"], ["bladerun82.jpg", "bladerun82_orig.jpg"]]], ["Blue Velvet", 1986, [["bluevelvet3.jpg", "bluevelvet3_orig.jpg"], ["bluevelvet5.jpg", "bluevelvet5_orig.jpg"], ["bluevelvet7.jpg", "bluevelvet7_orig.jpg"], ["bluevelvet10.jpg", "bluevelvet10_orig.jpg"], ["bluevelvet12.jpg", "bluevelvet12_orig.jpg"], ["bluevelvet14.jpg", "bluevelvet14_orig.jpg"], ["bluevelvet17.jpg", "bluevelvet17_orig.jpg"], ["bluevelvet19.jpg", "bluevelvet19_orig.jpg"], ["bluevelvet21.jpg", "bluevelvet21_orig.jpg"], ["bluevelvet24.jpg", "bluevelvet24_orig.jpg"], ["bluevelvet26.jpg", "bluevelvet26_orig.jpg"], ["bluevelvet28.jpg", "bluevelvet28_orig.jpg"], ["bluevelvet31.jpg", "bluevelvet31_orig.jpg"], ["bluevelvet33.jpg", "bluevelvet33_orig.jpg"]]], ["Bohemian Rhapsody", 2018, [["bohemianrhapsody5.jpg", "bohemianrhapsody5_orig.jpg"], ["bohemianrhapsody8.jpg", "bohemianrhapsody8_orig.jpg"], ["bohemianrhapsody12.jpg", "bohemianrhapsody12_orig.jpg"], ["bohemianrhapsody15.jpg", "bohemianrhapsody15_orig.jpg"], ["bohemianrhapsody19.jpg", "bohemianrhapsody19_orig.jpg"], ["bohemianrhapsody22.jpg", "bohemianrhapsody22_orig.jpg"], ["bohemianrhapsody26.jpg", "bohemianrhapsody26_orig.jpg"], ["bohemianrhapsody29.jpg", "bohemianrhapsody29_orig.jpg"], ["bohemianrhapsody33.jpg", "bohemianrhapsody33_orig.jpg"], ["bohemianrhapsody36.jpg", "bohemianrhapsody36_orig.jpg"], ["bohemianrhapsody40.jpg", "bohemianrhapsody40_orig.jpg"], ["bohemianrhapsody43.jpg", "bohemianrhapsody43_orig.jpg"], ["bohemianrhapsody47.jpg", "bohemianrhapsody47_orig.jpg"], ["bohemianrhapsody50.jpg", "bohemianrhapsody50_orig.jpg"]]], ["Boogie Nights", 1997, [["boogienights3.jpg", "boogienights3_orig.jpg"], ["boogienights5.jpg", "boogienights5_orig.jpg"], ["boogienights7.jpg", "boogienights7_orig.jpg"], ["boogienights10.jpg", "boogienights10_orig.jpg"], ["boogienights12.jpg", "boogienights12_orig.jpg"], ["boogienights14.jpg", "boogienights14_orig.jpg"], ["boogienights17.jpg", "boogienights17_orig.jpg"], ["boogienights19.jpg", "boogienights19_orig.jpg"], ["boogienights21.jpg", "boogienights21_orig.jpg"], ["boogienights24.jpg", "boogienights24_orig.jpg"], ["boogienights26.jpg", "boogienights26_orig.jpg"], ["boogienights28.jpg", "boogienights28_orig.jpg"], ["boogienights31.jpg", "boogienights31_orig.jpg"], ["boogienights33.jpg", "boogienights33_orig.jpg"]]], ["Bottle Rocket", 1996, [["bottlerocket3.jpg", "bottlerocket3_orig.jpg"], ["bottlerocket5.jpg", "bottlerocket5_orig.jpg"], ["bottlerocket7.jpg", "bottlerocket7_orig.jpg"], ["bottlerocket10.jpg", "bottlerocket10_orig.jpg"], ["bottlerocket12.jpg", "bottlerocket12_orig.jpg"], ["bottlerocket14.jpg", "bottlerocket14_orig.jpg"], ["bottlerocket17.jpg", "bottlerocket17_orig.jpg"], ["bottlerocket19.jpg", "bottlerocket19_orig.jpg"], ["bottlerocket21.jpg", "bottlerocket21_orig.jpg"], ["bottlerocket24.jpg", "bottlerocket24_orig.jpg"], ["bottlerocket26.jpg", "bottlerocket26_orig.jpg"], ["bottlerocket28.jpg", "bottlerocket28_orig.jpg"], ["bottlerocket31.jpg", "bottlerocket31_orig.jpg"], ["bottlerocket33.jpg", "bottlerocket33_orig.jpg"]]], ["Branded to Kill", 1967, [["brandedtokill4.jpg", "brandedtokill4_orig.jpg"], ["brandedtokill6.jpg", "brandedtokill6_orig.jpg"], ["brandedtokill9.jpg", "brandedtokill9_orig.jpg"], ["brandedtokill12.jpg", "brandedtokill12_orig.jpg"], ["brandedtokill15.jpg", "brandedtokill15_orig.jpg"], ["brandedtokill18.jpg", "brandedtokill18_orig.jpg"], ["brandedtokill21.jpg", "brandedtokill21_orig.jpg"], ["brandedtokill24.jpg", "brandedtokill24_orig.jpg"], ["brandedtokill27.jpg", "brandedtokill27_orig.jpg"], ["brandedtokill30.jpg", "brandedtokill30_orig.jpg"], ["brandedtokill33.jpg", "brandedtokill33_orig.jpg"], ["brandedtokill36.jpg", "brandedtokill36_orig.jpg"], ["brandedtokill39.jpg", "brandedtokill39_orig.jpg"], ["brandedtokill42.jpg", "brandedtokill42_orig.jpg"]]], ["Braveheart", 1995, [["braveheart5.jpg", "braveheart5_orig.jpg"], ["braveheart9.jpg", "braveheart9_orig.jpg"], ["braveheart13.jpg", "braveheart13_orig.jpg"], ["braveheart17.jpg", "braveheart17_orig.jpg"], ["braveheart21.jpg", "braveheart21_orig.jpg"], ["braveheart25.jpg", "braveheart25_orig.jpg"], ["braveheart29.jpg", "braveheart29_orig.jpg"], ["braveheart33.jpg", "braveheart33_orig.jpg"], ["braveheart37.jpg", "braveheart37_orig.jpg"], ["braveheart41.jpg", "braveheart41_orig.jpg"], ["braveheart45.jpg", "braveheart45_orig.jpg"], ["braveheart49.jpg", "braveheart49_orig.jpg"], ["braveheart53.jpg", "braveheart53_orig.jpg"], ["braveheart57.jpg", "braveheart57_orig.jpg"]]], ["Brazil", 1985, [["brazil5.jpg", "brazil5_orig.jpg"], ["brazil8.jpg", "brazil8_orig.jpg"], ["brazil12.jpg", "brazil12_orig.jpg"], ["brazil15.jpg", "brazil15_orig.jpg"], ["brazil19.jpg", "brazil19_orig.jpg"], ["brazil22.jpg", "brazil22_orig.jpg"], ["brazil26.jpg", "brazil26_orig.jpg"], ["brazil29.jpg", "brazil29_orig.jpg"], ["brazil33.jpg", "brazil33_orig.jpg"], ["brazil36.jpg", "brazil36_orig.jpg"], ["brazil40.jpg", "brazil40_orig.jpg"], ["brazil43.jpg", "brazil43_orig.jpg"], ["brazil47.jpg", "brazil47_orig.jpg"], ["brazil50.jpg", "brazil50_orig.jpg"]]], ["Bridesmaids", 2011, [["bridesmaids3.jpg", "bridesmaids3_orig.jpg"], ["bridesmaids5.jpg", "bridesmaids5_orig.jpg"], ["bridesmaids7.jpg", "bridesmaids7_orig.jpg"], ["bridesmaids10.jpg", "bridesmaids10_orig.jpg"], ["bridesmaids12.jpg", "bridesmaids12_orig.jpg"], ["bridesmaids14.jpg", "bridesmaids14_orig.jpg"], ["bridesmaids17.jpg", "bridesmaids17_orig.jpg"], ["bridesmaids19.jpg", "bridesmaids19_orig.jpg"], ["bridesmaids21.jpg", "bridesmaids21_orig.jpg"], ["bridesmaids24.jpg", "bridesmaids24_orig.jpg"], ["bridesmaids26.jpg", "bridesmaids26_orig.jpg"], ["bridesmaids28.jpg", "bridesmaids28_orig.jpg"], ["bridesmaids31.jpg", "bridesmaids31_orig.jpg"], ["bridesmaids33.jpg", "bridesmaids33_orig.jpg"]]], ["Bronson", 2008, [["bronson2.jpg", "bronson2_orig.jpg"], ["bronson3.jpg", "bronson3_orig.jpg"], ["bronson4.jpg", "bronson4_orig.jpg"], ["bronson5.jpg", "bronson5_orig.jpg"], ["bronson6.jpg", "bronson6_orig.jpg"], ["bronson8.jpg", "bronson8_orig.jpg"], ["bronson9.jpg", "bronson9_orig.jpg"], ["bronson10.jpg", "bronson10_orig.jpg"], ["bronson11.jpg", "bronson11_orig.jpg"], ["bronson12.jpg", "bronson12_orig.jpg"], ["bronson14.jpg", "bronson14_orig.jpg"], ["bronson15.jpg", "bronson15_orig.jpg"], ["bronson16.jpg", "bronson16_orig.jpg"], ["bronson17.jpg", "bronson17_orig.jpg"]]], ["Bullhead", 2011, [["bullhead3.jpg", "bullhead3_orig.jpg"], ["bullhead5.jpg", "bullhead5_orig.jpg"], ["bullhead7.jpg", "bullhead7_orig.jpg"], ["bullhead10.jpg", "bullhead10_orig.jpg"], ["bullhead12.jpg", "bullhead12_orig.jpg"], ["bullhead14.jpg", "bullhead14_orig.jpg"], ["bullhead17.jpg", "bullhead17_orig.jpg"], ["bullhead19.jpg", "bullhead19_orig.jpg"], ["bullhead21.jpg", "bullhead21_orig.jpg"], ["bullhead24.jpg", "bullhead24_orig.jpg"], ["bullhead26.jpg", "bullhead26_orig.jpg"], ["bullhead28.jpg", "bullhead28_orig.jpg"], ["bullhead31.jpg", "bullhead31_orig.jpg"], ["bullhead33.jpg", "bullhead33_orig.jpg"]]], ["Burke and Hare", 2010, [["burkeandhare3.jpg", "burkeandhare3_orig.jpg"], ["burkeandhare5.jpg", "burkeandhare5_orig.jpg"], ["burkeandhare7.jpg", "burkeandhare7_orig.jpg"], ["burkeandhare10.jpg", "burkeandhare10_orig.jpg"], ["burkeandhare12.jpg", "burkeandhare12_orig.jpg"], ["burkeandhare14.jpg", "burkeandhare14_orig.jpg"], ["burkeandhare17.jpg", "burkeandhare17_orig.jpg"], ["burkeandhare19.jpg", "burkeandhare19_orig.jpg"], ["burkeandhare21.jpg", "burkeandhare21_orig.jpg"], ["burkeandhare24.jpg", "burkeandhare24_orig.jpg"], ["burkeandhare26.jpg", "burkeandhare26_orig.jpg"], ["burkeandhare28.jpg", "burkeandhare28_orig.jpg"], ["burkeandhare31.jpg", "burkeandhare31_orig.jpg"], ["burkeandhare33.jpg", "burkeandhare33_orig.jpg"]]], ["Calvary", 2014, [["calvary5.jpg", "calvary5_orig.jpg"], ["calvary8.jpg", "calvary8_orig.jpg"], ["calvary12.jpg", "calvary12_orig.jpg"], ["calvary15.jpg", "calvary15_orig.jpg"], ["calvary19.jpg", "calvary19_orig.jpg"], ["calvary22.jpg", "calvary22_orig.jpg"], ["calvary26.jpg", "calvary26_orig.jpg"], ["calvary29.jpg", "calvary29_orig.jpg"], ["calvary33.jpg", "calvary33_orig.jpg"], ["calvary36.jpg", "calvary36_orig.jpg"], ["calvary40.jpg", "calvary40_orig.jpg"], ["calvary43.jpg", "calvary43_orig.jpg"], ["calvary47.jpg", "calvary47_orig.jpg"], ["calvary50.jpg", "calvary50_orig.jpg"]]], ["Candyman", 1992, [["candyman5.jpg", "candyman5_orig.jpg"], ["candyman8.jpg", "candyman8_orig.jpg"], ["candyman12.jpg", "candyman12_orig.jpg"], ["candyman15.jpg", "candyman15_orig.jpg"], ["candyman19.jpg", "candyman19_orig.jpg"], ["candyman22.jpg", "candyman22_orig.jpg"], ["candyman26.jpg", "candyman26_orig.jpg"], ["candyman29.jpg", "candyman29_orig.jpg"], ["candyman33.jpg", "candyman33_orig.jpg"], ["candyman36.jpg", "candyman36_orig.jpg"], ["candyman40.jpg", "candyman40_orig.jpg"], ["candyman43.jpg", "candyman43_orig.jpg"], ["candyman47.jpg", "candyman47_orig.jpg"], ["candyman50.jpg", "candyman50_orig.jpg"]]], ["Casablanca", 1942, [["casablanca3.jpg", "casablanca3_orig.jpg"], ["casablanca4.jpg", "casablanca4_orig.jpg"], ["casablanca6.jpg", "casablanca6_orig.jpg"], ["casablanca8.jpg", "casablanca8_orig.jpg"], ["casablanca10.jpg", "casablanca10_orig.jpg"], ["casablanca11.jpg", "casablanca11_orig.jpg"], ["casablanca13.jpg", "casablanca13_orig.jpg"], ["casablanca15.jpg", "casablanca15_orig.jpg"], ["casablanca17.jpg", "casablanca17_orig.jpg"], ["casablanca19.jpg", "casablanca19_orig.jpg"], ["casablanca20.jpg", "casablanca20_orig.jpg"], ["casablanca22.jpg", "casablanca22_orig.jpg"], ["casablanca24.jpg", "casablanca24_orig.jpg"], ["casablanca26.jpg", "casablanca26_orig.jpg"]]], ["Casino Royale", 2006, [["casinoroyale5.jpg", "casinoroyale5_orig.jpg"], ["casinoroyale8.jpg", "casinoroyale8_orig.jpg"], ["casinoroyale12.jpg", "casinoroyale12_orig.jpg"], ["casinoroyale15.jpg", "casinoroyale15_orig.jpg"], ["casinoroyale19.jpg", "casinoroyale19_orig.jpg"], ["casinoroyale22.jpg", "casinoroyale22_orig.jpg"], ["casinoroyale26.jpg", "casinoroyale26_orig.jpg"], ["casinoroyale29.jpg", "casinoroyale29_orig.jpg"], ["casinoroyale33.jpg", "casinoroyale33_orig.jpg"], ["casinoroyale36.jpg", "casinoroyale36_orig.jpg"], ["casinoroyale40.jpg", "casinoroyale40_orig.jpg"], ["casinoroyale43.jpg", "casinoroyale43_orig.jpg"], ["casinoroyale47.jpg", "casinoroyale47_orig.jpg"], ["casinoroyale50.jpg", "casinoroyale50_orig.jpg"]]], ["Catch Me If You Can", 2002, [["catchmeifyoucan4.jpg", "catchmeifyoucan4_orig.jpg"], ["catchmeifyoucan6.jpg", "catchmeifyoucan6_orig.jpg"], ["catchmeifyoucan9.jpg", "catchmeifyoucan9_orig.jpg"], ["catchmeifyoucan12.jpg", "catchmeifyoucan12_orig.jpg"], ["catchmeifyoucan15.jpg", "catchmeifyoucan15_orig.jpg"], ["catchmeifyoucan18.jpg", "catchmeifyoucan18_orig.jpg"], ["catchmeifyoucan21.jpg", "catchmeifyoucan21_orig.jpg"], ["catchmeifyoucan24.jpg", "catchmeifyoucan24_orig.jpg"], ["catchmeifyoucan27.jpg", "catchmeifyoucan27_orig.jpg"], ["catchmeifyoucan30.jpg", "catchmeifyoucan30_orig.jpg"], ["catchmeifyoucan33.jpg", "catchmeifyoucan33_orig.jpg"], ["catchmeifyoucan36.jpg", "catchmeifyoucan36_orig.jpg"], ["catchmeifyoucan39.jpg", "catchmeifyoucan39_orig.jpg"], ["catchmeifyoucan42.jpg", "catchmeifyoucan42_orig.jpg"]]], ["Centurion", 2010, [["centurion3.jpg", "centurion3_orig.jpg"], ["centurion4.jpg", "centurion4_orig.jpg"], ["centurion6.jpg", "centurion6_orig.jpg"], ["centurion8.jpg", "centurion8_orig.jpg"], ["centurion10.jpg", "centurion10_orig.jpg"], ["centurion11.jpg", "centurion11_orig.jpg"], ["centurion13.jpg", "centurion13_orig.jpg"], ["centurion15.jpg", "centurion15_orig.jpg"], ["centurion17.jpg", "centurion17_orig.jpg"], ["centurion19.jpg", "centurion19_orig.jpg"], ["centurion20.jpg", "centurion20_orig.jpg"], ["centurion22.jpg", "centurion22_orig.jpg"], ["centurion24.jpg", "centurion24_orig.jpg"], ["centurion26.jpg", "centurion26_orig.jpg"]]], ["Charade", 1963, [["charade3.jpg", "charade3_orig.jpg"], ["charade5.jpg", "charade5_orig.jpg"], ["charade7.jpg", "charade7_orig.jpg"], ["charade10.jpg", "charade10_orig.jpg"], ["charade12.jpg", "charade12_orig.jpg"], ["charade14.jpg", "charade14_orig.jpg"], ["charade17.jpg", "charade17_orig.jpg"], ["charade19.jpg", "charade19_orig.jpg"], ["charade21.jpg", "charade21_orig.jpg"], ["charade24.jpg", "charade24_orig.jpg"], ["charade26.jpg", "charade26_orig.jpg"], ["charade28.jpg", "charade28_orig.jpg"], ["charade31.jpg", "charade31_orig.jpg"], ["charade33.jpg", "charade33_orig.jpg"]]], ["Chariots of Fire", 1981, [["chariotsoffire5.jpg", "chariotsoffire5_orig.jpg"], ["chariotsoffire8.jpg", "chariotsoffire8_orig.jpg"], ["chariotsoffire12.jpg", "chariotsoffire12_orig.jpg"], ["chariotsoffire15.jpg", "chariotsoffire15_orig.jpg"], ["chariotsoffire19.jpg", "chariotsoffire19_orig.jpg"], ["chariotsoffire22.jpg", "chariotsoffire22_orig.jpg"], ["chariotsoffire26.jpg", "chariotsoffire26_orig.jpg"], ["chariotsoffire29.jpg", "chariotsoffire29_orig.jpg"], ["chariotsoffire33.jpg", "chariotsoffire33_orig.jpg"], ["chariotsoffire36.jpg", "chariotsoffire36_orig.jpg"], ["chariotsoffire40.jpg", "chariotsoffire40_orig.jpg"], ["chariotsoffire43.jpg", "chariotsoffire43_orig.jpg"], ["chariotsoffire47.jpg", "chariotsoffire47_orig.jpg"], ["chariotsoffire50.jpg", "chariotsoffire50_orig.jpg"]]], ["Children of Men", 2006, [["childrenofmen5.jpg", "childrenofmen5_orig.jpg"], ["childrenofmen8.jpg", "childrenofmen8_orig.jpg"], ["childrenofmen12.jpg", "childrenofmen12_orig.jpg"], ["childrenofmen15.jpg", "childrenofmen15_orig.jpg"], ["childrenofmen19.jpg", "childrenofmen19_orig.jpg"], ["childrenofmen22.jpg", "childrenofmen22_orig.jpg"], ["childrenofmen26.jpg", "childrenofmen26_orig.jpg"], ["childrenofmen29.jpg", "childrenofmen29_orig.jpg"], ["childrenofmen33.jpg", "childrenofmen33_orig.jpg"], ["childrenofmen36.jpg", "childrenofmen36_orig.jpg"], ["childrenofmen40.jpg", "childrenofmen40_orig.jpg"], ["childrenofmen43.jpg", "childrenofmen43_orig.jpg"], ["childrenofmen47.jpg", "childrenofmen47_orig.jpg"], ["childrenofmen50.jpg", "childrenofmen50_orig.jpg"]]], ["Chinatown", 1974, [["chinatown4.jpg", "chinatown4_orig.jpg"], ["chinatown6.jpg", "chinatown6_orig.jpg"], ["chinatown9.jpg", "chinatown9_orig.jpg"], ["chinatown12.jpg", "chinatown12_orig.jpg"], ["chinatown15.jpg", "chinatown15_orig.jpg"], ["chinatown18.jpg", "chinatown18_orig.jpg"], ["chinatown21.jpg", "chinatown21_orig.jpg"], ["chinatown24.jpg", "chinatown24_orig.jpg"], ["chinatown27.jpg", "chinatown27_orig.jpg"], ["chinatown30.jpg", "chinatown30_orig.jpg"], ["chinatown33.jpg", "chinatown33_orig.jpg"], ["chinatown36.jpg", "chinatown36_orig.jpg"], ["chinatown39.jpg", "chinatown39_orig.jpg"], ["chinatown42.jpg", "chinatown42_orig.jpg"]]], ["Cinema Paradiso", 1988, ["cinemaparadiso5.jpg", "cinemaparadiso8.jpg", "cinemaparadiso12.jpg", "cinemaparadiso15.jpg", "cinemaparadiso19.jpg", "cinemaparadiso22.jpg", "cinemaparadiso26.jpg", "cinemaparadiso29.jpg", "cinemaparadiso33.jpg", "cinemaparadiso36.jpg", "cinemaparadiso40.jpg", "cinemaparadiso43.jpg", "cinemaparadiso47.jpg", "cinemaparadiso50.jpg"]], ["Citizen Kane", 1941, ["8870728.jpg", "2137905.jpg", "3680018.jpg", "2754449.jpg", "2485248.jpg", "7146488.jpg", "5160301.jpg", "3319446.jpg", "2394054.jpg", "5595220.jpg", "4828860.jpg", "3083948.jpg", "5430301.jpg", "8471702.jpg"]], ["City of God / Cidade de Deus", 2002, [["cityofgod3.jpg", "cityofgod3_orig.jpg"], ["cityofgod5.jpg", "cityofgod5_orig.jpg"], ["cityofgod7.jpg", "cityofgod7_orig.jpg"], ["cityofgod10.jpg", "cityofgod10_orig.jpg"], ["cityofgod12.jpg", "cityofgod12_orig.jpg"], ["cityofgod14.jpg", "cityofgod14_orig.jpg"], ["cityofgod17.jpg", "cityofgod17_orig.jpg"], ["cityofgod19.jpg", "cityofgod19_orig.jpg"], ["cityofgod21.jpg", "cityofgod21_orig.jpg"], ["cityofgod24.jpg", "cityofgod24_orig.jpg"], ["cityofgod26.jpg", "cityofgod26_orig.jpg"], ["cityofgod28.jpg", "cityofgod28_orig.jpg"], ["cityofgod31.jpg", "cityofgod31_orig.jpg"], ["cityofgod33.jpg", "cityofgod33_orig.jpg"]]], ["Clear and Present Danger", 1994, ["clearandpresent4.jpg", "clearandpresent6.jpg", "clearandpresent9.jpg", "clearandpresent12.jpg", "clearandpresent15.jpg", "clearandpresent18.jpg", "clearandpresent21.jpg", "clearandpresent24.jpg", "clearandpresent27.jpg", "clearandpresent30.jpg", "clearandpresent33.jpg", "clearandpresent36.jpg", "clearandpresent39.jpg", "clearandpresent42.jpg"]], ["Close Encounters of the Third Kind", 1977, ["3715877.jpg", "2127850.jpg", "4867251.jpg", "5786317.jpg", "810157.jpg", "8093562.jpg", "8762989.jpg", "2133467.jpg", "1205129.jpg", "1359885.jpg", "4355698.jpg", "9205213.jpg", "1361517.jpg", "2563976.jpg"]], ["Commando", 1985, ["commando4.jpg", "commando6.jpg", "commando9.jpg", "commando12.jpg", "commando15.jpg", "commando18.jpg", "commando21.jpg", "commando24.jpg", "commando27.jpg", "commando30.jpg", "commando33.jpg", "commando36.jpg", "commando39.jpg", "commando42.jpg"]], ["Conclave", 2024, ["conclave5.jpg", "conclave9.jpg", "conclave13.jpg", "conclave17.jpg", "conclave21.jpg", "conclave25.jpg", "conclave29.jpg", "conclave33.jpg", "conclave37.jpg", "conclave41.jpg", "conclave45.jpg", "conclave49.jpg", "conclave53.jpg", "conclave57.jpg"]], ["Cool Hand Luke", 1967, ["coolhandluke4.jpg", "coolhandluke6.jpg", "coolhandluke9.jpg", "coolhandluke12.jpg", "coolhandluke15.jpg", "coolhandluke18.jpg", "coolhandluke21.jpg", "coolhandluke24.jpg", "coolhandluke27.jpg", "coolhandluke30.jpg", "coolhandluke33.jpg", "coolhandluke36.jpg", "coolhandluke39.jpg", "coolhandluke42.jpg"]], ["Cowboys & Aliens", 2011, ["cowboysaliens4.jpg", "cowboysaliens6.jpg", "cowboysaliens9.jpg", "cowboysaliens12.jpg", "cowboysaliens15.jpg", "cowboysaliens18.jpg", "cowboysaliens21.jpg", "cowboysaliens24.jpg", "cowboysaliens27.jpg", "cowboysaliens30.jpg", "cowboysaliens33.jpg", "cowboysaliens36.jpg", "cowboysaliens39.jpg", "cowboysaliens42.jpg"]], ["Crash", 1996, [["crash3.jpg", "crash3_orig.jpg"], ["crash5.jpg", "crash5_orig.jpg"], ["crash7.jpg", "crash7_orig.jpg"], ["crash10.jpg", "crash10_orig.jpg"], ["crash12.jpg", "crash12_orig.jpg"], ["crash14.jpg", "crash14_orig.jpg"], ["crash17.jpg", "crash17_orig.jpg"], ["crash19.jpg", "crash19_orig.jpg"], ["crash21.jpg", "crash21_orig.jpg"], ["crash24.jpg", "crash24_orig.jpg"], ["crash26.jpg", "crash26_orig.jpg"], ["crash28.jpg", "crash28_orig.jpg"], ["crash31.jpg", "crash31_orig.jpg"], ["crash33.jpg", "crash33_orig.jpg"]]], ["Creature from the Black Lagoon", 1954, ["creature3.jpg", "creature5.jpg", "creature7.jpg", "creature10.jpg", "creature12.jpg", "creature14.jpg", "creature17.jpg", "creature19.jpg", "creature21.jpg", "creature24.jpg", "creature26.jpg", "creature28.jpg", "creature31.jpg", "creature33.jpg"]], ["Cronos", 1993, ["cronos3.jpg", "cronos5.jpg", "cronos7.jpg", "cronos10.jpg", "cronos12.jpg", "cronos14.jpg", "cronos17.jpg", "cronos19.jpg", "cronos21.jpg", "cronos24.jpg", "cronos26.jpg", "cronos28.jpg", "cronos31.jpg", "cronos33.jpg"]], ["Cul-de-Sac", 1966, ["culdesac4.jpg", "culdesac6.jpg", "culdesac9.jpg", "culdesac12.jpg", "culdesac15.jpg", "culdesac18.jpg", "culdesac21.jpg", "culdesac24.jpg", "culdesac27.jpg", "culdesac30.jpg", "culdesac33.jpg", "culdesac36.jpg", "culdesac39.jpg", "culdesac42.jpg"]], ["Dangerous Animals", 2025, ["dangerousanimals4.jpg", "dangerousanimals6.jpg", "dangerousanimals9.jpg", "dangerousanimals12.jpg", "dangerousanimals15.jpg", "dangerousanimals18.jpg", "dangerousanimals21.jpg", "dangerousanimals24.jpg", "dangerousanimals27.jpg", "dangerousanimals30.jpg", "dangerousanimals33.jpg", "dangerousanimals36.jpg", "dangerousanimals39.jpg", "dangerousanimals42.jpg"]], ["Dark City", 1998, ["darkcity5.jpg", "darkcity8.jpg", "darkcity12.jpg", "darkcity15.jpg", "darkcity19.jpg", "darkcity22.jpg", "darkcity26.jpg", "darkcity29.jpg", "darkcity33.jpg", "darkcity36.jpg", "darkcity40.jpg", "darkcity43.jpg", "darkcity47.jpg", "darkcity50.jpg"]], ["Dark Shadows", 2012, ["darkshadows4.jpg", "darkshadows6.jpg", "darkshadows9.jpg", "darkshadows12.jpg", "darkshadows15.jpg", "darkshadows18.jpg", "darkshadows21.jpg", "darkshadows24.jpg", "darkshadows27.jpg", "darkshadows30.jpg", "darkshadows33.jpg", "darkshadows36.jpg", "darkshadows39.jpg", "darkshadows42.jpg"]], ["Darkest Hour", 2017, ["darkesthour5.jpg", "darkesthour8.jpg", "darkesthour12.jpg", "darkesthour15.jpg", "darkesthour19.jpg", "darkesthour22.jpg", "darkesthour26.jpg", "darkesthour29.jpg", "darkesthour33.jpg", "darkesthour36.jpg", "darkesthour40.jpg", "darkesthour43.jpg", "darkesthour47.jpg", "darkesthour50.jpg"]], ["Dawn of the Planet of the Apes", 2014, ["3963834.jpg", "8807869.jpg", "9858647.jpg", "7466634.jpg", "6282700.jpg", "2342069.jpg", "5239464.jpg", "7809145.jpg", "6992573.jpg", "2651278.jpg", "4063674.jpg", "1060890.jpg", "821567.jpg", "3554263.jpg"]], ["Days of Heaven", 1978, ["8260763.jpg", "9895650.jpg", "2982604.jpg", "5590703.jpg", "8403933.jpg", "4173155.jpg", "2275585.jpg", "577267.jpg", "6647342.jpg", "2309983.jpg", "1927367.jpg", "8817926.jpg", "7690651.jpg", "6961543.jpg"]], ["Days of Thunder", 1990, ["daysofthunder3.jpg", "daysofthunder5.jpg", "daysofthunder7.jpg", "daysofthunder10.jpg", "daysofthunder12.jpg", "daysofthunder14.jpg", "daysofthunder17.jpg", "daysofthunder19.jpg", "daysofthunder21.jpg", "daysofthunder24.jpg", "daysofthunder26.jpg", "daysofthunder28.jpg", "daysofthunder31.jpg", "daysofthunder33.jpg"]], ["Dazed and Confused", 1993, ["8116799.jpg", "6299347.jpg", "8250396.jpg", "4751327.jpg", "8441192.jpg", "6320586.jpg", "449495.jpg", "4370004.jpg", "4650815.jpg", "2756516.jpg", "9447685.jpg", "1071235.jpg", "3419170.jpg", "6813897.jpg"]], ["Deck the Halls", 2006, ["deckthehalls4.jpg", "deckthehalls6.jpg", "deckthehalls9.jpg", "deckthehalls12.jpg", "deckthehalls15.jpg", "deckthehalls18.jpg", "deckthehalls21.jpg", "deckthehalls24.jpg", "deckthehalls27.jpg", "deckthehalls30.jpg", "deckthehalls33.jpg", "deckthehalls36.jpg", "deckthehalls39.jpg", "deckthehalls42.jpg"]], ["Deep Red / Profondo Rosso", 1975, ["deepred5.jpg", "deepred8.jpg", "deepred12.jpg", "deepred15.jpg", "deepred19.jpg", "deepred22.jpg", "deepred26.jpg", "deepred29.jpg", "deepred33.jpg", "deepred36.jpg", "deepred40.jpg", "deepred43.jpg", "deepred47.jpg", "deepred50.jpg"]], ["Delicatessen", 1991, ["delicatessen3.jpg", "delicatessen5.jpg", "delicatessen7.jpg", "delicatessen10.jpg", "delicatessen12.jpg", "delicatessen14.jpg", "delicatessen17.jpg", "delicatessen19.jpg", "delicatessen21.jpg", "delicatessen24.jpg", "delicatessen26.jpg", "delicatessen28.jpg", "delicatessen31.jpg", "delicatessen33.jpg"]], ["Despicable Me", 2010, ["5722358.jpg", "6326002.jpg", "8043728.jpg", "1949793.jpg", "3804009.jpg", "5596658.jpg", "7453312.jpg", "598767.jpg", "4823156.jpg", "7705157.jpg", "3477183.jpg", "108196.jpg", "8475261.jpg", "2944460.jpg"]], ["Dick Tracy", 1990, ["dicktracy5.jpg", "dicktracy8.jpg", "dicktracy12.jpg", "dicktracy15.jpg", "dicktracy19.jpg", "dicktracy22.jpg", "dicktracy26.jpg", "dicktracy29.jpg", "dicktracy33.jpg", "dicktracy36.jpg", "dicktracy40.jpg", "dicktracy43.jpg", "dicktracy47.jpg", "dicktracy50.jpg"]], ["Django Unchained", 2012, [["djangounchained5.jpg", "djangounchained5_orig.jpg"], ["djangounchained8.jpg", "djangounchained8_orig.jpg"], ["djangounchained12.jpg", "djangounchained12_orig.jpg"], ["djangounchained15.jpg", "djangounchained15_orig.jpg"], ["djangounchained19.jpg", "djangounchained19_orig.jpg"], ["djangounchained22.jpg", "djangounchained22_orig.jpg"], ["djangounchained26.jpg", "djangounchained26_orig.jpg"], ["djangounchained29.jpg", "djangounchained29_orig.jpg"], ["djangounchained33.jpg", "djangounchained33_orig.jpg"], ["djangounchained36.jpg", "djangounchained36_orig.jpg"], ["djangounchained40.jpg", "djangounchained40_orig.jpg"], ["djangounchained43.jpg", "djangounchained43_orig.jpg"], ["djangounchained47.jpg", "djangounchained47_orig.jpg"], ["djangounchained50.jpg", "djangounchained50_orig.jpg"]]], ["Do the Right Thing", 1989, ["do-the-right-thing5.jpg", "do-the-right-thing8.jpg", "do-the-right-thing12.jpg", "do-the-right-thing15.jpg", "do-the-right-thing19.jpg", "do-the-right-thing22.jpg", "do-the-right-thing26.jpg", "do-the-right-thing29.jpg", "do-the-right-thing33.jpg", "do-the-right-thing36.jpg", "do-the-right-thing40.jpg", "do-the-right-thing43.jpg", "do-the-right-thing47.jpg", "do-the-right-thing50.jpg"]], ["Dom Hemingway", 2013, ["domhemingway4.jpg", "domhemingway6.jpg", "domhemingway9.jpg", "domhemingway12.jpg", "domhemingway15.jpg", "domhemingway18.jpg", "domhemingway21.jpg", "domhemingway24.jpg", "domhemingway27.jpg", "domhemingway30.jpg", "domhemingway33.jpg", "domhemingway36.jpg", "domhemingway39.jpg", "domhemingway42.jpg"]], ["Don Jon", 2013, ["497159.jpg", "5974951.jpg", "4585026.jpg", "3782928.jpg", "1492549.jpg", "6049981.jpg", "6438961.jpg", "8265235.jpg", "642883.jpg", "4136565.jpg", "265094.jpg", "7760117.jpg", "7382546.jpg", "1231894.jpg"]], ["Don't Breathe", 2016, ["dontbreathe5.jpg", "dontbreathe8.jpg", "dontbreathe12.jpg", "dontbreathe15.jpg", "dontbreathe19.jpg", "dontbreathe22.jpg", "dontbreathe26.jpg", "dontbreathe29.jpg", "dontbreathe33.jpg", "dontbreathe36.jpg", "dontbreathe40.jpg", "dontbreathe43.jpg", "dontbreathe47.jpg", "dontbreathe50.jpg"]], ["Double Indemnity", 1944, ["doubleindemnity4.jpg", "doubleindemnity6.jpg", "doubleindemnity9.jpg", "doubleindemnity12.jpg", "doubleindemnity15.jpg", "doubleindemnity18.jpg", "doubleindemnity21.jpg", "doubleindemnity24.jpg", "doubleindemnity27.jpg", "doubleindemnity30.jpg", "doubleindemnity33.jpg", "doubleindemnity36.jpg", "doubleindemnity39.jpg", "doubleindemnity42.jpg"]], ["Down by Law", 1986, ["downbylaw3.jpg", "downbylaw5.jpg", "downbylaw7.jpg", "downbylaw10.jpg", "downbylaw12.jpg", "downbylaw14.jpg", "downbylaw17.jpg", "downbylaw19.jpg", "downbylaw21.jpg", "downbylaw24.jpg", "downbylaw26.jpg", "downbylaw28.jpg", "downbylaw31.jpg", "downbylaw33.jpg"]], ["Dr. No", 1962, ["drno2.jpg", "drno3.jpg", "drno4.jpg", "drno5.jpg", "drno6.jpg", "drno8.jpg", "drno9.jpg", "drno10.jpg", "drno11.jpg", "drno12.jpg", "drno14.jpg", "drno15.jpg", "drno16.jpg", "drno17.jpg"]], ["Dr. Strangelove", 1964, [["drstrangelove4.jpg", "drstrangelove4_orig.jpg"], ["drstrangelove6.jpg", "drstrangelove6_orig.jpg"], ["drstrangelove9.jpg", "drstrangelove9_orig.jpg"], ["drstrangelove12.jpg", "drstrangelove12_orig.jpg"], ["drstrangelove15.jpg", "drstrangelove15_orig.jpg"], ["drstrangelove18.jpg", "drstrangelove18_orig.jpg"], ["drstrangelove21.jpg", "drstrangelove21_orig.jpg"], ["drstrangelove24.jpg", "drstrangelove24_orig.jpg"], ["drstrangelove27.jpg", "drstrangelove27_orig.jpg"], ["drstrangelove30.jpg", "drstrangelove30_orig.jpg"], ["drstrangelove34.jpg", "drstrangelove34_orig.jpg"], ["drstrangelove37.jpg", "drstrangelove37_orig.jpg"], ["drstrangelove40.jpg", "drstrangelove40_orig.jpg"], ["drstrangelove43.jpg", "drstrangelove43_orig.jpg"]]], ["Dracula", 1931, ["dracula4.jpg", "dracula6.jpg", "dracula9.jpg", "dracula12.jpg", "dracula15.jpg", "dracula18.jpg", "dracula21.jpg", "dracula24.jpg", "dracula27.jpg", "dracula30.jpg", "dracula33.jpg", "dracula36.jpg", "dracula39.jpg", "dracula42.jpg"]], ["Dredd", 2012, ["3578934.jpg", "2601335.jpg", "8525790.jpg", "3682607.jpg", "7438307.jpg", "6979833.jpg", "6257795.jpg", "9930607.jpg", "8786525.jpg", "9090184.jpg", "2558096.jpg", "4878772.jpg", "8538994.jpg", "6168271.jpg"]], ["Drive", 2011, ["2230783.jpg", "9287878.jpg", "6035909.jpg", "5133651.jpg", "2243588.jpg", "2756096.jpg", "9188108.jpg", "1646910.jpg", "7488083.jpg", "9252410.jpg", "14991.jpg", "9992802.jpg", "656247.jpg", "2173441.jpg"]], ["Dune", 2021, ["dune5.jpg", "dune9.jpg", "dune13.jpg", "dune17.jpg", "dune21.jpg", "dune25.jpg", "dune29.jpg", "dune33.jpg", "dune37.jpg", "dune41.jpg", "dune45.jpg", "dune49.jpg", "dune53.jpg", "dune57.jpg"]], ["Dunkirk", 2017, ["dunkirk5.jpg", "dunkirk9.jpg", "dunkirk13.jpg", "dunkirk17.jpg", "dunkirk21.jpg", "dunkirk25.jpg", "dunkirk29.jpg", "dunkirk33.jpg", "dunkirk37.jpg", "dunkirk41.jpg", "dunkirk45.jpg", "dunkirk49.jpg", "dunkirk53.jpg", "dunkirk57.jpg"]], ["Eastern Promises", 2007, [["easternpromises4.jpg", "easternpromises4_orig.jpg"], ["easternpromises6.jpg", "easternpromises6_orig.jpg"], ["easternpromises9.jpg", "easternpromises9_orig.jpg"], ["easternpromises12.jpg", "easternpromises12_orig.jpg"], ["easternpromises15.jpg", "easternpromises15_orig.jpg"], ["easternpromises18.jpg", "easternpromises18_orig.jpg"], ["easternpromises21.jpg", "easternpromises21_orig.jpg"], ["easternpromises24.jpg", "easternpromises24_orig.jpg"], ["easternpromises27.jpg", "easternpromises27_orig.jpg"], ["easternpromises30.jpg", "easternpromises30_orig.jpg"], ["easternpromises33.jpg", "easternpromises33_orig.jpg"], ["easternpromises36.jpg", "easternpromises36_orig.jpg"], ["easternpromises39.jpg", "easternpromises39_orig.jpg"], ["easternpromises42.jpg", "easternpromises42_orig.jpg"]]], ["Eating Raoul", 1982, ["eatingraoul3.jpg", "eatingraoul5.jpg", "eatingraoul7.jpg", "eatingraoul10.jpg", "eatingraoul12.jpg", "eatingraoul14.jpg", "eatingraoul17.jpg", "eatingraoul19.jpg", "eatingraoul21.jpg", "eatingraoul24.jpg", "eatingraoul26.jpg", "eatingraoul28.jpg", "eatingraoul31.jpg", "eatingraoul33.jpg"]], ["Ed Wood", 1994, ["edwood5.jpg", "edwood8.jpg", "edwood12.jpg", "edwood15.jpg", "edwood19.jpg", "edwood22.jpg", "edwood26.jpg", "edwood29.jpg", "edwood33.jpg", "edwood36.jpg", "edwood40.jpg", "edwood43.jpg", "edwood47.jpg", "edwood50.jpg"]], ["Eden Lake", 2008, ["edenlake3.jpg", "edenlake5.jpg", "edenlake7.jpg", "edenlake10.jpg", "edenlake12.jpg", "edenlake14.jpg", "edenlake17.jpg", "edenlake19.jpg", "edenlake21.jpg", "edenlake24.jpg", "edenlake26.jpg", "edenlake28.jpg", "edenlake31.jpg", "edenlake33.jpg"]], ["Elf", 2003, ["elf3.jpg", "elf5.jpg", "elf7.jpg", "elf10.jpg", "elf12.jpg", "elf14.jpg", "elf17.jpg", "elf19.jpg", "elf21.jpg", "elf24.jpg", "elf26.jpg", "elf28.jpg", "elf31.jpg", "elf33.jpg"]], ["Elysium", 2013, ["elysium4.jpg", "elysium6.jpg", "elysium9.jpg", "elysium12.jpg", "elysium15.jpg", "elysium18.jpg", "elysium21.jpg", "elysium24.jpg", "elysium27.jpg", "elysium30.jpg", "elysium33.jpg", "elysium36.jpg", "elysium39.jpg", "elysium42.jpg"]], ["Empire of the Sun", 1987, ["empireofthesun5.jpg", "empireofthesun8.jpg", "empireofthesun12.jpg", "empireofthesun15.jpg", "empireofthesun19.jpg", "empireofthesun22.jpg", "empireofthesun26.jpg", "empireofthesun29.jpg", "empireofthesun33.jpg", "empireofthesun36.jpg", "empireofthesun40.jpg", "empireofthesun43.jpg", "empireofthesun47.jpg", "empireofthesun50.jpg"]], ["Escape from Alcatraz", 1979, ["escapealcatraz4.jpg", "escapealcatraz6.jpg", "escapealcatraz9.jpg", "escapealcatraz12.jpg", "escapealcatraz15.jpg", "escapealcatraz18.jpg", "escapealcatraz21.jpg", "escapealcatraz24.jpg", "escapealcatraz27.jpg", "escapealcatraz30.jpg", "escapealcatraz33.jpg", "escapealcatraz36.jpg", "escapealcatraz39.jpg", "escapealcatraz42.jpg"]], ["Eternal Sunshine of the Spotless Mind", 2004, ["5335880.jpg", "5138882.jpg", "9695793.jpg", "901520.jpg", "4995269.jpg", "6206081.jpg", "6717829.jpg", "6844007.jpg", "917491.jpg", "8118140.jpg", "4993094.jpg", "2673282.jpg", "6798700.jpg", "3352321.jpg"]], ["Eyes Wide Shut", 1999, [["eyeswideshut3.jpg", "eyeswideshut3_orig.jpg"], ["eyeswideshut4.jpg", "eyeswideshut4_orig.jpg"], ["eyeswideshut6.jpg", "eyeswideshut6_orig.jpg"], ["eyeswideshut8.jpg", "eyeswideshut8_orig.jpg"], ["eyeswideshut10.jpg", "eyeswideshut10_orig.jpg"], ["eyeswideshut11.jpg", "eyeswideshut11_orig.jpg"], ["eyeswideshut13.jpg", "eyeswideshut13_orig.jpg"], ["eyeswideshut15.jpg", "eyeswideshut15_orig.jpg"], ["eyeswideshut17.jpg", "eyeswideshut17_orig.jpg"], ["eyeswideshut19.jpg", "eyeswideshut19_orig.jpg"], ["eyeswideshut20.jpg", "eyeswideshut20_orig.jpg"], ["eyeswideshut22.jpg", "eyeswideshut22_orig.jpg"], ["eyeswideshut24.jpg", "eyeswideshut24_orig.jpg"], ["eyeswideshut26.jpg", "eyeswideshut26_orig.jpg"]]], ["Fantastic Mr. Fox", 2009, ["fantasticmrfox4.jpg", "fantasticmrfox6.jpg", "fantasticmrfox9.jpg", "fantasticmrfox12.jpg", "fantasticmrfox15.jpg", "fantasticmrfox18.jpg", "fantasticmrfox21.jpg", "fantasticmrfox24.jpg", "fantasticmrfox27.jpg", "fantasticmrfox30.jpg", "fantasticmrfox33.jpg", "fantasticmrfox36.jpg", "fantasticmrfox39.jpg", "fantasticmrfox42.jpg"]], ["Fargo", 1996, ["fargo3.jpg", "fargo4.jpg", "fargo6.jpg", "fargo8.jpg", "fargo10.jpg", "fargo11.jpg", "fargo13.jpg", "fargo15.jpg", "fargo17.jpg", "fargo19.jpg", "fargo20.jpg", "fargo22.jpg", "fargo24.jpg", "fargo26.jpg"]], ["Fast Times at Ridgemont High", 1982, [["fasttimes3.jpg", "fasttimes3_orig.jpg"], ["fasttimes4.jpg", "fasttimes4_orig.jpg"], ["fasttimes6.jpg", "fasttimes6_orig.jpg"], ["fasttimes8.jpg", "fasttimes8_orig.jpg"], ["fasttimes10.jpg", "fasttimes10_orig.jpg"], ["fasttimes11.jpg", "fasttimes11_orig.jpg"], ["fasttimes13.jpg", "fasttimes13_orig.jpg"], ["fasttimes15.jpg", "fasttimes15_orig.jpg"], ["fasttimes17.jpg", "fasttimes17_orig.jpg"], ["fasttimes19.jpg", "fasttimes19_orig.jpg"], ["fasttimes20.jpg", "fasttimes20_orig.jpg"], ["fasttimes22.jpg", "fasttimes22_orig.jpg"], ["fasttimes24.jpg", "fasttimes24_orig.jpg"], ["fasttimes26.jpg", "fasttimes26_orig.jpg"]]], ["Field of Dreams", 1989, ["fieldofdreams4.jpg", "fieldofdreams6.jpg", "fieldofdreams9.jpg", "fieldofdreams12.jpg", "fieldofdreams15.jpg", "fieldofdreams18.jpg", "fieldofdreams21.jpg", "fieldofdreams24.jpg", "fieldofdreams27.jpg", "fieldofdreams30.jpg", "fieldofdreams33.jpg", "fieldofdreams36.jpg", "fieldofdreams39.jpg", "fieldofdreams42.jpg"]], ["Fire and Ice", 1983, ["fireandice3.jpg", "fireandice4.jpg", "fireandice6.jpg", "fireandice8.jpg", "fireandice10.jpg", "fireandice11.jpg", "fireandice13.jpg", "fireandice15.jpg", "fireandice17.jpg", "fireandice19.jpg", "fireandice20.jpg", "fireandice22.jpg", "fireandice24.jpg", "fireandice26.jpg"]], ["Flight", 2012, ["flight3.jpg", "flight5.jpg", "flight7.jpg", "flight10.jpg", "flight12.jpg", "flight14.jpg", "flight17.jpg", "flight19.jpg", "flight21.jpg", "flight24.jpg", "flight26.jpg", "flight28.jpg", "flight31.jpg", "flight33.jpg"]], ["Foxcatcher", 2014, ["2723561.jpg", "714508.jpg", "9171425.jpg", "2118292.jpg", "227155.jpg", "520948.jpg", "8884589.jpg", "9053488.jpg", "9628063.jpg", "2995635.jpg", "3507587.jpg", "2851247.jpg", "8009188.jpg", "5732493.jpg"]], ["Frances Ha", 2012, ["francesha5.jpg", "francesha8.jpg", "francesha12.jpg", "francesha15.jpg", "francesha19.jpg", "francesha22.jpg", "francesha26.jpg", "francesha29.jpg", "francesha33.jpg", "francesha36.jpg", "francesha40.jpg", "francesha43.jpg", "francesha47.jpg", "francesha50.jpg"]], ["Frankenstein", 1931, ["frankenstein4.jpg", "frankenstein6.jpg", "frankenstein9.jpg", "frankenstein12.jpg", "frankenstein15.jpg", "frankenstein18.jpg", "frankenstein21.jpg", "frankenstein24.jpg", "frankenstein27.jpg", "frankenstein30.jpg", "frankenstein33.jpg", "frankenstein36.jpg", "frankenstein39.jpg", "frankenstein42.jpg"]], ["Fright Night", 1985, ["frightnight3.jpg", "frightnight4.jpg", "frightnight6.jpg", "frightnight8.jpg", "frightnight10.jpg", "frightnight11.jpg", "frightnight13.jpg", "frightnight15.jpg", "frightnight17.jpg", "frightnight19.jpg", "frightnight20.jpg", "frightnight22.jpg", "frightnight24.jpg", "frightnight26.jpg"]], ["From Here to Eternity", 1953, ["8134736.jpg", "9996478.jpg", "3697363.jpg", "9220859.jpg", "5943245.jpg", "842626.jpg", "886273.jpg", "2985809.jpg", "2715253.jpg", "7126057.jpg", "8389860.jpg", "2684451.jpg", "7404130.jpg", "5005594.jpg"]], ["From Russia with Love", 1963, ["fromrussiawithlove2.jpg", "fromrussiawithlove3.jpg", "fromrussiawithlove4.jpg", "fromrussiawithlove5.jpg", "fromrussiawithlove6.jpg", "fromrussiawithlove8.jpg", "fromrussiawithlove9.jpg", "fromrussiawithlove10.jpg", "fromrussiawithlove11.jpg", "fromrussiawithlove12.jpg", "fromrussiawithlove14.jpg", "fromrussiawithlove15.jpg", "fromrussiawithlove16.jpg", "fromrussiawithlove17.jpg"]], ["Full Metal Jacket", 1987, [["fullmetaljacket4.jpg", "fullmetaljacket4_orig.jpg"], ["fullmetaljacket6.jpg", "fullmetaljacket6_orig.jpg"], ["fullmetaljacket9.jpg", "fullmetaljacket9_orig.jpg"], ["fullmetaljacket12.jpg", "fullmetaljacket12_orig.jpg"], ["fullmetaljacket15.jpg", "fullmetaljacket15_orig.jpg"], ["fullmetaljacket18.jpg", "fullmetaljacket18_orig.jpg"], ["fullmetaljacket21.jpg", "fullmetaljacket21_orig.jpg"], ["fullmetaljacket24.jpg", "fullmetaljacket24_orig.jpg"], ["fullmetaljacket27.jpg", "fullmetaljacket27_orig.jpg"], ["fullmetaljacket30.jpg", "fullmetaljacket30_orig.jpg"], ["fullmetaljacket33.jpg", "fullmetaljacket33_orig.jpg"], ["fullmetaljacket36.jpg", "fullmetaljacket36_orig.jpg"], ["fullmetaljacket39.jpg", "fullmetaljacket39_orig.jpg"], ["fullmetaljacket42.jpg", "fullmetaljacket42_orig.jpg"]]], ["Funny Face", 1957, ["funnyface4.jpg", "funnyface6.jpg", "funnyface9.jpg", "funnyface12.jpg", "funnyface15.jpg", "funnyface18.jpg", "funnyface21.jpg", "funnyface24.jpg", "funnyface27.jpg", "funnyface30.jpg", "funnyface33.jpg", "funnyface36.jpg", "funnyface39.jpg", "funnyface42.jpg"]], ["Fury", 2014, ["795748.jpg", "2911661.jpg", "6734772.jpg", "327288.jpg", "6697567.jpg", "4501711.jpg", "1311739.jpg", "1575686.jpg", "4016176.jpg", "1111494.jpg", "1082089.jpg", "124105.jpg", "1876159.jpg", "8572194.jpg"]], ["Gangster Squad", 2013, [["gangstersquad5.jpg", "gangstersquad5_orig.jpg"], ["gangstersquad8.jpg", "gangstersquad8_orig.jpg"], ["gangstersquad12.jpg", "gangstersquad12_orig.jpg"], ["gangstersquad15.jpg", "gangstersquad15_orig.jpg"], ["gangstersquad19.jpg", "gangstersquad19_orig.jpg"], ["gangstersquad22.jpg", "gangstersquad22_orig.jpg"], ["gangstersquad26.jpg", "gangstersquad26_orig.jpg"], ["gangstersquad29.jpg", "gangstersquad29_orig.jpg"], ["gangstersquad33.jpg", "gangstersquad33_orig.jpg"], ["gangstersquad36.jpg", "gangstersquad36_orig.jpg"], ["gangstersquad40.jpg", "gangstersquad40_orig.jpg"], ["gangstersquad43.jpg", "gangstersquad43_orig.jpg"], ["gangstersquad47.jpg", "gangstersquad47_orig.jpg"], ["gangstersquad50.jpg", "gangstersquad50_orig.jpg"]]], ["Gentlemen Prefer Blondes", 1953, ["gentlemenpreferblondes4.jpg", "gentlemenpreferblondes6.jpg", "gentlemenpreferblondes9.jpg", "gentlemenpreferblondes12.jpg", "gentlemenpreferblondes15.jpg", "gentlemenpreferblondes18.jpg", "gentlemenpreferblondes21.jpg", "gentlemenpreferblondes24.jpg", "gentlemenpreferblondes27.jpg", "gentlemenpreferblondes30.jpg", "gentlemenpreferblondes33.jpg", "gentlemenpreferblondes36.jpg", "gentlemenpreferblondes39.jpg", "gentlemenpreferblondes42.jpg"]], ["Get Out", 2017, ["getout5.jpg", "getout8.jpg", "getout12.jpg", "getout15.jpg", "getout19.jpg", "getout22.jpg", "getout26.jpg", "getout29.jpg", "getout33.jpg", "getout36.jpg", "getout40.jpg", "getout43.jpg", "getout47.jpg", "getout50.jpg"]], ["Ghostbusters", 1984, ["ghostbusters5.jpg", "ghostbusters8.jpg", "ghostbusters12.jpg", "ghostbusters15.jpg", "ghostbusters19.jpg", "ghostbusters22.jpg", "ghostbusters26.jpg", "ghostbusters29.jpg", "ghostbusters33.jpg", "ghostbusters36.jpg", "ghostbusters40.jpg", "ghostbusters43.jpg", "ghostbusters47.jpg", "ghostbusters50.jpg"]], ["Giant", 1956, ["giant4.jpg", "giant6.jpg", "giant9.jpg", "giant12.jpg", "giant15.jpg", "giant18.jpg", "giant21.jpg", "giant24.jpg", "giant27.jpg", "giant30.jpg", "giant33.jpg", "giant36.jpg", "giant39.jpg", "giant42.jpg"]], ["Gladiator", 2e3, ["gladiator4.jpg", "gladiator6.jpg", "gladiator9.jpg", "gladiator12.jpg", "gladiator15.jpg", "gladiator18.jpg", "gladiator21.jpg", "gladiator24.jpg", "gladiator27.jpg", "gladiator30.jpg", "gladiator33.jpg", "gladiator36.jpg", "gladiator39.jpg", "gladiator42.jpg"]], ["Godzilla", 2014, ["godzilla4.jpg", "godzilla6.jpg", "godzilla9.jpg", "godzilla12.jpg", "godzilla15.jpg", "godzilla18.jpg", "godzilla21.jpg", "godzilla24.jpg", "godzilla27.jpg", "godzilla30.jpg", "godzilla33.jpg", "godzilla36.jpg", "godzilla39.jpg", "godzilla42.jpg"]], ["Goldfinger", 1964, ["goldfinger3.jpg", "goldfinger5.jpg", "goldfinger7.jpg", "goldfinger10.jpg", "goldfinger12.jpg", "goldfinger14.jpg", "goldfinger17.jpg", "goldfinger19.jpg", "goldfinger21.jpg", "goldfinger24.jpg", "goldfinger26.jpg", "goldfinger28.jpg", "goldfinger31.jpg", "goldfinger33.jpg"]], ["Gone Girl", 2014, ["2288580.jpg", "7932706.jpg", "6053484.jpg", "9923182.jpg", "7724119.jpg", "7312206.jpg", "7324269.jpg", "8863019.jpg", "346557.jpg", "6417251.jpg", "9411937.jpg", "7782165.jpg", "1342400.jpg", "256777.jpg"]], ["Gravity", 2013, ["gravity4.jpg", "gravity6.jpg", "gravity9.jpg", "gravity12.jpg", "gravity15.jpg", "gravity18.jpg", "gravity21.jpg", "gravity24.jpg", "gravity27.jpg", "gravity30.jpg", "gravity33.jpg", "gravity36.jpg", "gravity39.jpg", "gravity42.jpg"]], ["Guardians of the Galaxy", 2014, ["1957911.jpg", "7872259.jpg", "2203095.jpg", "8391326.jpg", "4499644.jpg", "1693104.jpg", "7828306.jpg", "2562478.jpg", "2101425.jpg", "7627694.jpg", "576608.jpg", "1732619.jpg", "9733307.jpg", "108205.jpg"]], ["Harold and Kumar Escape from Guantanamo Bay", 2008, ["haroldandkumar2.jpg", "haroldandkumar3.jpg", "haroldandkumar4.jpg", "haroldandkumar5.jpg", "haroldandkumar6.jpg", "haroldandkumar8.jpg", "haroldandkumar9.jpg", "haroldandkumar10.jpg", "haroldandkumar11.jpg", "haroldandkumar12.jpg", "haroldandkumar14.jpg", "haroldandkumar15.jpg", "haroldandkumar16.jpg", "haroldandkumar17.jpg"]], ["Harold and Maude", 1971, ["haroldandmaude3.jpg", "haroldandmaude5.jpg", "haroldandmaude7.jpg", "haroldandmaude10.jpg", "haroldandmaude12.jpg", "haroldandmaude14.jpg", "haroldandmaude17.jpg", "haroldandmaude19.jpg", "haroldandmaude21.jpg", "haroldandmaude24.jpg", "haroldandmaude26.jpg", "haroldandmaude28.jpg", "haroldandmaude31.jpg", "haroldandmaude33.jpg"]], ["Harry Potter and the Chamber of Secrets", 2002, ["hpchamber4.jpg", "hpchamber6.jpg", "hpchamber9.jpg", "hpchamber12.jpg", "hpchamber15.jpg", "hpchamber18.jpg", "hpchamber21.jpg", "hpchamber24.jpg", "hpchamber27.jpg", "hpchamber30.jpg", "hpchamber33.jpg", "hpchamber36.jpg", "hpchamber39.jpg", "hpchamber42.jpg"]], ["Harry Potter and the Goblet of Fire", 2005, ["harrypotterandthegobletoffire4.jpg", "harrypotterandthegobletoffire6.jpg", "harrypotterandthegobletoffire9.jpg", "harrypotterandthegobletoffire12.jpg", "harrypotterandthegobletoffire15.jpg", "harrypotterandthegobletoffire18.jpg", "harrypotterandthegobletoffire21.jpg", "harrypotterandthegobletoffire24.jpg", "harrypotterandthegobletoffire27.jpg", "harrypotterandthegobletoffire30.jpg", "harrypotterandthegobletoffire33.jpg", "harrypotterandthegobletoffire36.jpg", "harrypotterandthegobletoffire39.jpg", "harrypotterandthegobletoffire42.jpg"]], ["Harry Potter and the Half-Blood Prince", 2009, ["5269523.jpg", "2420517.jpg", "1613951.jpg", "6719994.jpg", "1429780.jpg", "6858064.jpg", "4822910.jpg", "7837487.jpg", "3075578.jpg", "4044883.jpg", "1357265.jpg", "4997032.jpg", "5478717.jpg", "909068.jpg"]], ["Harry Potter and the Order of the Phoenix", 2007, ["5919775.jpg", "4397808.jpg", "4323903.jpg", "5715217.jpg", "3064134.jpg", "4503296.jpg", "1450597.jpg", "481382.jpg", "1781388.jpg", "2753755.jpg", "2578466.jpg", "9643394.jpg", "3650724.jpg", "7053307.jpg"]], ["Harry Potter and the Philosopher's Stone", 2001, ["hpsorc4.jpg", "hpsorc6.jpg", "hpsorc9.jpg", "hpsorc12.jpg", "hpsorc15.jpg", "hpsorc18.jpg", "hpsorc21.jpg", "hpsorc24.jpg", "hpsorc27.jpg", "hpsorc30.jpg", "hpsorc33.jpg", "hpsorc36.jpg", "hpsorc39.jpg", "hpsorc42.jpg"]], ["Harry Potter and the Prisoner of Azkaban", 2004, ["hpazkaban5.jpg", "hpazkaban8.jpg", "hpazkaban12.jpg", "hpazkaban15.jpg", "hpazkaban19.jpg", "hpazkaban22.jpg", "hpazkaban26.jpg", "hpazkaban29.jpg", "hpazkaban33.jpg", "hpazkaban36.jpg", "hpazkaban40.jpg", "hpazkaban43.jpg", "hpazkaban47.jpg", "hpazkaban50.jpg"]], ["Harvey", 1950, ["harvey3.jpg", "harvey5.jpg", "harvey7.jpg", "harvey10.jpg", "harvey12.jpg", "harvey14.jpg", "harvey17.jpg", "harvey19.jpg", "harvey21.jpg", "harvey24.jpg", "harvey26.jpg", "harvey28.jpg", "harvey31.jpg", "harvey33.jpg"]], ["Headhunters / Hodejegerne", 2011, ["headhunters4.jpg", "headhunters6.jpg", "headhunters9.jpg", "headhunters12.jpg", "headhunters15.jpg", "headhunters18.jpg", "headhunters21.jpg", "headhunters24.jpg", "headhunters27.jpg", "headhunters30.jpg", "headhunters33.jpg", "headhunters36.jpg", "headhunters39.jpg", "headhunters42.jpg"]], ["Heat", 1995, ["heat5.jpg", "heat8.jpg", "heat12.jpg", "heat15.jpg", "heat19.jpg", "heat22.jpg", "heat26.jpg", "heat29.jpg", "heat33.jpg", "heat36.jpg", "heat40.jpg", "heat43.jpg", "heat47.jpg", "heat50.jpg"]], ["Heavy Metal", 1981, ["heavymetal2.jpg", "heavymetal3.jpg", "heavymetal4.jpg", "heavymetal5.jpg", "heavymetal6.jpg", "heavymetal8.jpg", "heavymetal9.jpg", "heavymetal10.jpg", "heavymetal11.jpg", "heavymetal12.jpg", "heavymetal14.jpg", "heavymetal15.jpg", "heavymetal16.jpg", "heavymetal17.jpg"]], ["Hell or High Water", 2016, ["hellorhighwater4.jpg", "hellorhighwater6.jpg", "hellorhighwater9.jpg", "hellorhighwater12.jpg", "hellorhighwater15.jpg", "hellorhighwater18.jpg", "hellorhighwater21.jpg", "hellorhighwater24.jpg", "hellorhighwater27.jpg", "hellorhighwater30.jpg", "hellorhighwater33.jpg", "hellorhighwater36.jpg", "hellorhighwater39.jpg", "hellorhighwater42.jpg"]], ["Her", 2013, ["her5.jpg", "her8.jpg", "her12.jpg", "her15.jpg", "her19.jpg", "her22.jpg", "her26.jpg", "her29.jpg", "her33.jpg", "her36.jpg", "her40.jpg", "her43.jpg", "her47.jpg", "her50.jpg"]], ["Hereditary", 2018, ["hereditary5.jpg", "hereditary9.jpg", "hereditary13.jpg", "hereditary17.jpg", "hereditary21.jpg", "hereditary25.jpg", "hereditary29.jpg", "hereditary33.jpg", "hereditary37.jpg", "hereditary41.jpg", "hereditary45.jpg", "hereditary49_1.jpg", "hereditary53_2.jpg", "hereditary57_1.jpg"]], ["Home Alone", 1990, ["homealone4.jpg", "homealone6.jpg", "homealone9.jpg", "homealone12.jpg", "homealone15.jpg", "homealone18.jpg", "homealone21.jpg", "homealone24.jpg", "homealone27.jpg", "homealone30.jpg", "homealone33.jpg", "homealone36.jpg", "homealone39.jpg", "homealone42.jpg"]], ["Hostiles", 2017, ["hostiles5.jpg", "hostiles9.jpg", "hostiles13.jpg", "hostiles17_3.jpg", "hostiles21.jpg", "hostiles25.jpg", "hostiles29.jpg", "hostiles33.jpg", "hostiles37.jpg", "hostiles41.jpg", "hostiles45.jpg", "hostiles49.jpg", "hostiles53.jpg", "hostiles57.jpg"]], ["Hot Shots!", 1991, ["hotshots4.jpg", "hotshots6.jpg", "hotshots9.jpg", "hotshots12.jpg", "hotshots15.jpg", "hotshots18.jpg", "hotshots21.jpg", "hotshots24.jpg", "hotshots27.jpg", "hotshots30.jpg", "hotshots33.jpg", "hotshots36.jpg", "hotshots39.jpg", "hotshots42.jpg"]], ["Hot Shots! Part Deux", 1993, ["hotshotspartdeux5.jpg", "hotshotspartdeux8.jpg", "hotshotspartdeux12.jpg", "hotshotspartdeux15.jpg", "hotshotspartdeux19.jpg", "hotshotspartdeux22.jpg", "hotshotspartdeux26.jpg", "hotshotspartdeux29.jpg", "hotshotspartdeux33.jpg", "hotshotspartdeux36.jpg", "hotshotspartdeux40.jpg", "hotshotspartdeux43.jpg", "hotshotspartdeux47.jpg", "hotshotspartdeux50.jpg"]], ["Hotel Transylvania", 2012, [["hoteltransylvania4.jpg", "hoteltransylvania4_orig.jpg"], ["hoteltransylvania6.jpg", "hoteltransylvania6_orig.jpg"], ["hoteltransylvania9.jpg", "hoteltransylvania9_orig.jpg"], ["hoteltransylvania12.jpg", "hoteltransylvania12_orig.jpg"], ["hoteltransylvania15.jpg", "hoteltransylvania15_orig.jpg"], ["hoteltransylvania18.jpg", "hoteltransylvania18_orig.jpg"], ["hoteltransylvania21.jpg", "hoteltransylvania21_orig.jpg"], ["hoteltransylvania24.jpg", "hoteltransylvania24_orig.jpg"], ["hoteltransylvania27.jpg", "hoteltransylvania27_orig.jpg"], ["hoteltransylvania30.jpg", "hoteltransylvania30_orig.jpg"], ["hoteltransylvania33.jpg", "hoteltransylvania33_orig.jpg"], ["hoteltransylvania36.jpg", "hoteltransylvania36_orig.jpg"], ["hoteltransylvania39.jpg", "hoteltransylvania39_orig.jpg"], ["hoteltransylvania42.jpg", "hoteltransylvania42_orig.jpg"]]], ["House / Hausu", 1977, ["house4.jpg", "house6.jpg", "house9.jpg", "house12.jpg", "house15.jpg", "house18.jpg", "house21.jpg", "house24.jpg", "house27.jpg", "house30.jpg", "house33.jpg", "house36.jpg", "house39.jpg", "house42.jpg"]], ["Howl's Moving Castle", 2004, ["howlsmovingcastle5.jpg", "howlsmovingcastle8.jpg", "howlsmovingcastle12.jpg", "howlsmovingcastle15.jpg", "howlsmovingcastle19.jpg", "howlsmovingcastle22.jpg", "howlsmovingcastle26.jpg", "howlsmovingcastle29.jpg", "howlsmovingcastle33.jpg", "howlsmovingcastle36.jpg", "howlsmovingcastle40.jpg", "howlsmovingcastle43.jpg", "howlsmovingcastle47.jpg", "howlsmovingcastle50.jpg"]], ["Hugo", 2011, ["hugo3.jpg", "hugo5.jpg", "hugo7.jpg", "hugo10.jpg", "hugo12.jpg", "hugo14.jpg", "hugo17.jpg", "hugo19.jpg", "hugo21.jpg", "hugo24.jpg", "hugo26.jpg", "hugo28.jpg", "hugo31.jpg", "hugo33.jpg"]], ["I Give It a Year", 2013, ["igiveitayear4.jpg", "igiveitayear6.jpg", "igiveitayear9.jpg", "igiveitayear12.jpg", "igiveitayear15.jpg", "igiveitayear18.jpg", "igiveitayear21.jpg", "igiveitayear24.jpg", "igiveitayear27.jpg", "igiveitayear30.jpg", "igiveitayear33.jpg", "igiveitayear36.jpg", "igiveitayear39.jpg", "igiveitayear42.jpg"]], ["I Know What You Did Last Summer", 1997, ["iknowwhatyoudid3.jpg", "iknowwhatyoudid5.jpg", "iknowwhatyoudid7.jpg", "iknowwhatyoudid10.jpg", "iknowwhatyoudid12.jpg", "iknowwhatyoudid14.jpg", "iknowwhatyoudid17.jpg", "iknowwhatyoudid19.jpg", "iknowwhatyoudid21.jpg", "iknowwhatyoudid24.jpg", "iknowwhatyoudid26.jpg", "iknowwhatyoudid28.jpg", "iknowwhatyoudid31.jpg", "iknowwhatyoudid33.jpg"]], ["I Saw the Devil", 2010, ["7935950.jpg", "4971764.jpg", "6663884.jpg", "1458397.jpg", "4124615.jpg", "4463773.jpg", "8734584.jpg", "4224162.jpg", "9410502.jpg", "9659045.jpg", "7042086.jpg", "6159175.jpg", "3354263.jpg", "4064928.jpg"]], ["Ida", 2013, ["3517096.jpg", "1701350.jpg", "4282572.jpg", "2254712.jpg", "2152488.jpg", "6907449.jpg", "2575816.jpg", "2629750.jpg", "4913556.jpg", "9205765.jpg", "7837378.jpg", "6577835.jpg", "3957016.jpg", "3405230.jpg"]], ["In Bruges", 2008, ["inbruges5.jpg", "inbruges8.jpg", "inbruges12.jpg", "inbruges15.jpg", "inbruges19.jpg", "inbruges22.jpg", "inbruges26.jpg", "inbruges29.jpg", "inbruges33.jpg", "inbruges36.jpg", "inbruges40.jpg", "inbruges43.jpg", "inbruges47.jpg", "inbruges50.jpg"]], ["Inception", 2010, [["inception5.jpg", "inception5_orig.jpg"], ["inception8.jpg", "inception8_orig.jpg"], ["inception12.jpg", "inception12_orig.jpg"], ["inception15.jpg", "inception15_orig.jpg"], ["inception19.jpg", "inception19_orig.jpg"], ["inception22.jpg", "inception22_orig.jpg"], ["inception26.jpg", "inception26_orig.jpg"], ["inception29.jpg", "inception29_orig.jpg"], ["inception33.jpg", "inception33_orig.jpg"], ["inception36.jpg", "inception36_orig.jpg"], ["inception40.jpg", "inception40_orig.jpg"], ["inception43.jpg", "inception43_orig.jpg"], ["inception47.jpg", "inception47_orig.jpg"], ["inception50.jpg", "inception50_orig.jpg"]]], ["Indiana Jones and the Kingdom of the Crystal Skull", 2008, ["indianajoneskingdom4.jpg", "indianajoneskingdom6.jpg", "indianajoneskingdom9.jpg", "indianajoneskingdom12.jpg", "indianajoneskingdom15.jpg", "indianajoneskingdom18.jpg", "indianajoneskingdom21.jpg", "indianajoneskingdom24.jpg", "indianajoneskingdom27.jpg", "indianajoneskingdom30.jpg", "indianajoneskingdom33.jpg", "indianajoneskingdom36.jpg", "indianajoneskingdom39.jpg", "indianajoneskingdom42.jpg"]], ["Indiana Jones and the Last Crusade", 1989, ["4indylastcrusade.jpg", "6indylastcrusade.jpg", "9indylastcrusade.jpg", "12indylastcrusade.jpg", "15indylastcrusade.jpg", "18indylastcrusade.jpg", "21indylastcrusade.jpg", "24indylastcrusade.jpg", "27indylastcrusade.jpg", "30indylastcrusade.jpg", "33indylastcrusade.jpg", "36indylastcrusade.jpg", "39indylastcrusade.jpg", "42indylastcrusade.jpg"]], ["Indiana Jones and the Raiders of the Lost Ark", 1981, ["indianajonesraiders4.jpg", "indianajonesraiders6.jpg", "indianajonesraiders9.jpg", "indianajonesraiders12.jpg", "indianajonesraiders15.jpg", "indianajonesraiders18.jpg", "indianajonesraiders21.jpg", "indianajonesraiders24.jpg", "indianajonesraiders27.jpg", "indianajonesraiders30.jpg", "indianajonesraiders33.jpg", "indianajonesraiders36.jpg", "indianajonesraiders39.jpg", "indianajonesraiders42.jpg"]], ["Indiana Jones and the Temple of Doom", 1984, ["indianajonestempleofdoom4.jpg", "indianajonestempleofdoom6.jpg", "indianajonestempleofdoom9.jpg", "indianajonestempleofdoom12.jpg", "indianajonestempleofdoom15.jpg", "indianajonestempleofdoom18.jpg", "indianajonestempleofdoom21.jpg", "indianajonestempleofdoom24.jpg", "indianajonestempleofdoom27.jpg", "indianajonestempleofdoom30.jpg", "indianajonestempleofdoom33.jpg", "indianajonestempleofdoom36.jpg", "indianajonestempleofdoom39.jpg", "indianajonestempleofdoom42.jpg"]], ["Inglourious Basterds", 2009, ["9439393.jpg", "2465129.jpg", "2441645.jpg", "6741612.jpg", "5087692.jpg", "496684.jpg", "5041207.jpg", "4415119.jpg", "6452238.jpg", "3442247.jpg", "348921.jpg", "3993514.jpg", "1967777.jpg", "503340.jpg"]], ["Inherent Vice", 2014, ["6070307.jpg", "3097067.jpg", "433192.jpg", "1751041.jpg", "3196221.jpg", "8077389.jpg", "5337275.jpg", "8055787.jpg", "2386151.jpg", "4238533.jpg", "6149590.jpg", "9752318.jpg", "8912109.jpg", "3344112.jpg"]], ["Inside Llewyn Davis", 2013, ["insidellewyndavis5.jpg", "insidellewyndavis8.jpg", "insidellewyndavis12.jpg", "insidellewyndavis15.jpg", "insidellewyndavis19.jpg", "insidellewyndavis22.jpg", "insidellewyndavis26.jpg", "insidellewyndavis29.jpg", "insidellewyndavis33.jpg", "insidellewyndavis36.jpg", "insidellewyndavis40.jpg", "insidellewyndavis43.jpg", "insidellewyndavis47.jpg", "insidellewyndavis50.jpg"]], ["Interstellar", 2014, ["3588533.jpg", "2297276.jpg", "6673581.jpg", "6274409.jpg", "7873299.jpg", "8913328.jpg", "1723381.jpg", "4782532.jpg", "740394.jpg", "8463618.jpg", "6968472.jpg", "7573406.jpg", "9791900.jpg", "5230613.jpg"]], ["Iron Man 3", 2013, ["5ironmanthree.jpg", "8ironmanthree.jpg", "12ironmanthree.jpg", "15ironmanthree.jpg", "19ironmanthree.jpg", "22ironmanthree.jpg", "26ironmanthree.jpg", "29ironmanthree.jpg", "33ironmanthree.jpg", "36ironmanthree.jpg", "40ironmanthree.jpg", "43ironmanthree.jpg", "47ironmanthree.jpg", "50ironmanthree.jpg"]], ["It", 2017, ["it5.jpg", "it9.jpg", "it13.jpg", "it17.jpg", "it21.jpg", "it25.jpg", "it29.jpg", "it33.jpg", "it37.jpg", "it41.jpg", "it45.jpg", "it49.jpg", "it53.jpg", "it57.jpg"]], ["Ivan's Childhood", 1962, ["9459741.jpg", "5381942.jpg", "7867666.jpg", "6904855.jpg", "1863846.jpg", "3046648.jpg", "4547662.jpg", "4470043.jpg", "8560716.jpg", "2401883.jpg", "745672.jpg", "9127389.jpg", "7420461.jpg", "2314950.jpg"]], ["Jaws", 1975, ["jaws4.jpg", "jaws6.jpg", "jaws9.jpg", "jaws12.jpg", "jaws15.jpg", "jaws18.jpg", "jaws21.jpg", "jaws24.jpg", "jaws27.jpg", "jaws30.jpg", "jaws33.jpg", "jaws36.jpg", "jaws39.jpg", "jaws42.jpg"]], ["John Wick", 2014, ["johnwick5_1.jpg", "johnwick9_1.jpg", "johnwick13.jpg", "johnwick17.jpg", "johnwick21.jpg", "johnwick25.jpg", "johnwick29.jpg", "johnwick33.jpg", "johnwick37.jpg", "johnwick41.jpg", "johnwick45.jpg", "johnwick49.jpg", "johnwick53.jpg", "johnwick57.jpg"]], ["John Wick: Chapter 2", 2017, ["johnwicksec5.jpg", "johnwicksec8.jpg", "johnwicksec12.jpg", "johnwicksec15.jpg", "johnwicksec19.jpg", "johnwicksec22.jpg", "johnwicksec26.jpg", "johnwicksec29.jpg", "johnwicksec33.jpg", "johnwicksec36.jpg", "johnwicksec40.jpg", "johnwicksec43.jpg", "johnwicksec47.jpg", "johnwicksec50.jpg"]], ["Jojo Rabbit", 2019, ["jojorabbit5.jpg", "jojorabbit8.jpg", "jojorabbit12.jpg", "jojorabbit15.jpg", "jojorabbit19.jpg", "jojorabbit22.jpg", "jojorabbit26.jpg", "jojorabbit29.jpg", "jojorabbit33.jpg", "jojorabbit36.jpg", "jojorabbit40.jpg", "jojorabbit43.jpg", "jojorabbit47.jpg", "jojorabbit50.jpg"]], ["Joker", 2019, ["joker5.jpg", "joker9.jpg", "joker13.jpg", "joker17.jpg", "joker21.jpg", "joker25.jpg", "joker29.jpg", "joker33.jpg", "joker37.jpg", "joker41.jpg", "joker45.jpg", "joker49.jpg", "joker53.jpg", "joker57.jpg"]], ["Jurassic Park", 1993, ["jurassicpark5.jpg", "jurassicpark8.jpg", "jurassicpark12.jpg", "jurassicpark15.jpg", "jurassicpark19.jpg", "jurassicpark22.jpg", "jurassicpark26.jpg", "jurassicpark29.jpg", "jurassicpark33.jpg", "jurassicpark36.jpg", "jurassicpark40.jpg", "jurassicpark43.jpg", "jurassicpark47.jpg", "jurassicpark50.jpg"]], ["Jurassic World", 2015, ["jurassicworld5.jpg", "jurassicworld8.jpg", "jurassicworld12.jpg", "jurassicworld15.jpg", "jurassicworld19.jpg", "jurassicworld22.jpg", "jurassicworld26.jpg", "jurassicworld29.jpg", "jurassicworld33.jpg", "jurassicworld36.jpg", "jurassicworld40.jpg", "jurassicworld43.jpg", "jurassicworld47.jpg", "jurassicworld50.jpg"]], ["Kill Bill: Vol 1", 2003, ["1685604.jpg", "2476778.jpg", "4413003.jpg", "29846.jpg", "5218118.jpg", "1410552.jpg", "2085337.jpg", "5589561.jpg", "6265879.jpg", "46785.jpg", "5398447.jpg", "9534177.jpg", "7986754.jpg", "1491583.jpg"]], ["Kill Bill: Vol 2", 2004, ["killbilvol24.jpg", "killbilvol26.jpg", "killbilvol29.jpg", "killbilvol212.jpg", "killbilvol215.jpg", "killbilvol218.jpg", "killbilvol221.jpg", "killbilvol224.jpg", "killbilvol227.jpg", "killbilvol230.jpg", "killbilvol233.jpg", "killbilvol236.jpg", "killbilvol239.jpg", "killbilvol242.jpg"]], ["Killer's Kiss", 1955, [["killerskiss4.jpg", "killerskiss4_orig.jpg"], ["killerskiss6.jpg", "killerskiss6_orig.jpg"], ["killerskiss9.jpg", "killerskiss9_orig.jpg"], ["killerskiss12.jpg", "killerskiss12_orig.jpg"], ["killerskiss15.jpg", "killerskiss15_orig.jpg"], ["killerskiss18.jpg", "killerskiss18_orig.jpg"], ["killerskiss21.jpg", "killerskiss21_orig.jpg"], ["killerskiss24.jpg", "killerskiss24_orig.jpg"], ["killerskiss27.jpg", "killerskiss27_orig.jpg"], ["killerskiss30.jpg", "killerskiss30_orig.jpg"], ["killerskiss33.jpg", "killerskiss33_orig.jpg"], ["killerskiss36.jpg", "killerskiss36_orig.jpg"], ["killerskiss39.jpg", "killerskiss39_orig.jpg"], ["killerskiss42.jpg", "killerskiss42_orig.jpg"]]], ["Killing Them Softly", 2012, ["killingthemsoftly3.jpg", "killingthemsoftly5.jpg", "killingthemsoftly7.jpg", "killingthemsoftly10.jpg", "killingthemsoftly12.jpg", "killingthemsoftly14.jpg", "killingthemsoftly17.jpg", "killingthemsoftly19.jpg", "killingthemsoftly21.jpg", "killingthemsoftly24.jpg", "killingthemsoftly26.jpg", "killingthemsoftly28.jpg", "killingthemsoftly31.jpg", "killingthemsoftly33.jpg"]], ["King Kong", 2005, ["kingkong5.jpg", "kingkong8.jpg", "kingkong12.jpg", "kingkong15.jpg", "kingkong19.jpg", "kingkong22.jpg", "kingkong26.jpg", "kingkong29.jpg", "kingkong33.jpg", "kingkong36.jpg", "kingkong40.jpg", "kingkong43.jpg", "kingkong47.jpg", "kingkong50.jpg"]], ["Kiss Kiss Bang Bang", 2005, ["4kisskissbangbang.jpg", "6kisskissbangbang.jpg", "9kisskissbangbang.jpg", "12kisskissbangbang.jpg", "15kisskissbangbang.jpg", "18kisskissbangbang.jpg", "21kisskissbangbang.jpg", "24kisskissbangbang.jpg", "27kisskissbangbang.jpg", "30kisskissbangbang.jpg", "33kisskissbangbang.jpg", "36kisskissbangbang.jpg", "39kisskissbangbang.jpg", "42kisskissbangbang.jpg"]], ["Knives Out", 2019, ["knivesout4.jpg", "knivesout6.jpg", "knivesout9.jpg", "knivesout12.jpg", "knivesout15.jpg", "knivesout18.jpg", "knivesout21.jpg", "knivesout24.jpg", "knivesout27.jpg", "knivesout30.jpg", "knivesout33.jpg", "knivesout36.jpg", "knivesout39.jpg", "knivesout42.jpg"]], ["L&eacute;on", 1994, ["leon3_3.jpg", "leon5_3.jpg", "leon7_2.jpg", "leon10_2.jpg", "leon12_2.jpg", "leon14_2.jpg", "leon17_2.jpg", "leon19_2.jpg", "leon21_2.jpg", "leon24_2.jpg", "leon26_2.jpg", "leon28_2.jpg", "leon31_2.jpg", "leon33_2.jpg"]], ["L'Avventura", 1960, ["lavventura4.jpg", "lavventura6.jpg", "lavventura9.jpg", "lavventura12.jpg", "lavventura15.jpg", "lavventura18.jpg", "lavventura21.jpg", "lavventura24.jpg", "lavventura27.jpg", "lavventura30.jpg", "lavventura33.jpg", "lavventura36.jpg", "lavventura39.jpg", "lavventura42.jpg"]], ["La La Land", 2016, ["lalaland5.jpg", "lalaland9.jpg", "lalaland13.jpg", "lalaland17.jpg", "lalaland21.jpg", "lalaland25.jpg", "lalaland29.jpg", "lalaland33.jpg", "lalaland37.jpg", "lalaland41.jpg", "lalaland45.jpg", "lalaland49.jpg", "lalaland53.jpg", "lalaland57.jpg"]], ["La Notte", 1961, ["lanotte5.jpg", "lanotte8.jpg", "lanotte12.jpg", "lanotte15.jpg", "lanotte19.jpg", "lanotte22.jpg", "lanotte26.jpg", "lanotte29.jpg", "lanotte33.jpg", "lanotte36.jpg", "lanotte40.jpg", "lanotte43.jpg", "lanotte47.jpg", "lanotte50.jpg"]], ["Laputa: Castle in the Sky", 1986, ["laputa3.jpg", "laputa5.jpg", "laputa7.jpg", "laputa10.jpg", "laputa12.jpg", "laputa14.jpg", "laputa17.jpg", "laputa19.jpg", "laputa21.jpg", "laputa24.jpg", "laputa26.jpg", "laputa28.jpg", "laputa31.jpg", "laputa33.jpg"]], ["Lawless", 2012, ["7472397.jpg", "5494837.jpg", "3914081.jpg", "7962422.jpg", "8429208.jpg", "3092763.jpg", "4305548.jpg", "1354591.jpg", "5582005.jpg", "77598.jpg", "8156725.jpg", "5175806.jpg", "4403157.jpg", "4941765.jpg"]], ["Le M&eacute;pris", 1963, ["lemepris3.jpg", "lemepris5.jpg", "lemepris7.jpg", "lemepris10.jpg", "lemepris12.jpg", "lemepris14.jpg", "lemepris17.jpg", "lemepris19.jpg", "lemepris21.jpg", "lemepris24.jpg", "lemepris26.jpg", "lemepris28.jpg", "lemepris31.jpg", "lemepris33.jpg"]], ["Lemony Snicket's A Series of Unfortunate Events", 2004, ["lemonysnickets4.jpg", "lemonysnickets6.jpg", "lemonysnickets9.jpg", "lemonysnickets12.jpg", "lemonysnickets15.jpg", "lemonysnickets18.jpg", "lemonysnickets21.jpg", "lemonysnickets24.jpg", "lemonysnickets27.jpg", "lemonysnickets30.jpg", "lemonysnickets33.jpg", "lemonysnickets36.jpg", "lemonysnickets39.jpg", "lemonysnickets42.jpg"]], ["Les Mis&eacute;rables", 2012, ["lesmiserables5.jpg", "lesmiserables8.jpg", "lesmiserables12.jpg", "lesmiserables15.jpg", "lesmiserables19.jpg", "lesmiserables22.jpg", "lesmiserables26.jpg", "lesmiserables29.jpg", "lesmiserables33.jpg", "lesmiserables36.jpg", "lesmiserables40.jpg", "lesmiserables43.jpg", "lesmiserables47.jpg", "lesmiserables50.jpg"]], ["Lethal Weapon", 1987, ["lethalweapon3.jpg", "lethalweapon5.jpg", "lethalweapon7.jpg", "lethalweapon10.jpg", "lethalweapon12.jpg", "lethalweapon14.jpg", "lethalweapon17.jpg", "lethalweapon19.jpg", "lethalweapon21.jpg", "lethalweapon24.jpg", "lethalweapon26.jpg", "lethalweapon28.jpg", "lethalweapon31.jpg", "lethalweapon33.jpg"]], ["Licence To Kill", 1989, ["licencetokill4.jpg", "licencetokill6.jpg", "licencetokill9.jpg", "licencetokill12.jpg", "licencetokill15.jpg", "licencetokill18.jpg", "licencetokill21.jpg", "licencetokill24.jpg", "licencetokill27.jpg", "licencetokill30.jpg", "licencetokill33.jpg", "licencetokill36.jpg", "licencetokill39.jpg", "licencetokill42.jpg"]], ["Life of Brian", 1979, ["lifeofbrian4.jpg", "lifeofbrian6.jpg", "lifeofbrian9.jpg", "lifeofbrian12.jpg", "lifeofbrian15.jpg", "lifeofbrian18.jpg", "lifeofbrian21.jpg", "lifeofbrian24.jpg", "lifeofbrian27.jpg", "lifeofbrian30.jpg", "lifeofbrian33.jpg", "lifeofbrian36.jpg", "lifeofbrian39.jpg", "lifeofbrian42.jpg"]], ["Life of Pi", 2012, ["lifeofpi5.jpg", "lifeofpi8.jpg", "lifeofpi12.jpg", "lifeofpi15.jpg", "lifeofpi19.jpg", "lifeofpi22.jpg", "lifeofpi26.jpg", "lifeofpi29.jpg", "lifeofpi33.jpg", "lifeofpi36.jpg", "lifeofpi40.jpg", "lifeofpi43.jpg", "lifeofpi47.jpg", "lifeofpi50.jpg"]], ["Longlegs", 2024, ["longlegs5.jpg", "longlegs8.jpg", "longlegs12.jpg", "longlegs15.jpg", "longlegs19.jpg", "longlegs22.jpg", "longlegs26.jpg", "longlegs29.jpg", "longlegs33.jpg", "longlegs36.jpg", "longlegs40.jpg", "longlegs43.jpg", "longlegs47.jpg", "longlegs50.jpg"]], ["Looper", 2012, ["looper5.jpg", "looper8.jpg", "looper12.jpg", "looper15.jpg", "looper19.jpg", "looper22.jpg", "looper26.jpg", "looper29.jpg", "looper33.jpg", "looper36.jpg", "looper40.jpg", "looper43.jpg", "looper47.jpg", "looper50.jpg"]], ["Lost River", 2014, ["2904736.jpg", "3717947.jpg", "6950193.jpg", "9056022.jpg", "456250.jpg", "7039878.jpg", "9800823.jpg", "8934667.jpg", "5867435.jpg", "7069478.jpg", "1884483.jpg", "498563.jpg", "6437371.jpg", "2113055.jpg"]], ["Lost in Translation", 2003, ["lostintranslation4.jpg", "lostintranslation6.jpg", "lostintranslation9.jpg", "lostintranslation12.jpg", "lostintranslation15.jpg", "lostintranslation18.jpg", "lostintranslation21.jpg", "lostintranslation24.jpg", "lostintranslation27.jpg", "lostintranslation30.jpg", "lostintranslation33.jpg", "lostintranslation36.jpg", "lostintranslation39.jpg", "lostintranslation42.jpg"]], ["Lovelace", 2013, ["1821123.jpg", "714673.jpg", "4479652.jpg", "7713135.jpg", "8895159.jpg", "2601555.jpg", "7762580.jpg", "3114733.jpg", "5309429.jpg", "3936896.jpg", "3338978.jpg", "3030842.jpg", "6195720.jpg", "8323224.jpg"]], ["Mad Max", 1979, ["madmax4.jpg", "madmax6.jpg", "madmax9.jpg", "madmax12.jpg", "madmax15.jpg", "madmax18.jpg", "madmax21.jpg", "madmax24.jpg", "madmax27.jpg", "madmax30.jpg", "madmax33.jpg", "madmax36.jpg", "madmax39.jpg", "madmax42.jpg"]], ["Mad Max: Fury Road", 2015, ["madmaxfury4.jpg", "madmaxfury6.jpg", "madmaxfury9.jpg", "madmaxfury12.jpg", "madmaxfury15.jpg", "madmaxfury18.jpg", "madmaxfury21.jpg", "madmaxfury24.jpg", "madmaxfury27.jpg", "madmaxfury30.jpg", "madmaxfury33.jpg", "madmaxfury36.jpg", "madmaxfury39.jpg", "madmaxfury42.jpg"]], ["Magnolia", 1999, ["magnolia4.jpg", "magnolia6.jpg", "magnolia9.jpg", "magnolia12.jpg", "magnolia15.jpg", "magnolia18.jpg", "magnolia21.jpg", "magnolia24.jpg", "magnolia27.jpg", "magnolia30.jpg", "magnolia33.jpg", "magnolia36.jpg", "magnolia39.jpg", "magnolia42.jpg"]], ["Man of Steel", 2013, ["manofsteel5.jpg", "manofsteel8.jpg", "manofsteel12.jpg", "manofsteel15.jpg", "manofsteel19.jpg", "manofsteel22.jpg", "manofsteel26.jpg", "manofsteel29.jpg", "manofsteel33.jpg", "manofsteel36.jpg", "manofsteel40.jpg", "manofsteel43.jpg", "manofsteel47.jpg", "manofsteel50.jpg"]], ["Mandy", 2018, ["mandy5.jpg", "mandy8.jpg", "mandy12.jpg", "mandy15.jpg", "mandy19.jpg", "mandy22.jpg", "mandy26.jpg", "mandy29.jpg", "mandy33.jpg", "mandy36.jpg", "mandy40.jpg", "mandy43.jpg", "mandy47.jpg", "mandy50.jpg"]], ["Manhunter", 1986, ["8957072.jpg", "9290461.jpg", "329485.jpg", "2817690.jpg", "3076383.jpg", "4254712.jpg", "8257337.jpg", "2375030.jpg", "8363120.jpg", "8732062.jpg", "4560713.jpg", "1800038.jpg", "5299291.jpg", "4726333.jpg"]], ["Marathon Man", 1976, ["marathonman4.jpg", "marathonman6.jpg", "marathonman9.jpg", "marathonman12.jpg", "marathonman15.jpg", "marathonman18.jpg", "marathonman21.jpg", "marathonman24.jpg", "marathonman27.jpg", "marathonman30.jpg", "marathonman33.jpg", "marathonman36.jpg", "marathonman39.jpg", "marathonman42.jpg"]], ["Melancholia", 2011, ["melancholia5.jpg", "melancholia8.jpg", "melancholia12.jpg", "melancholia15.jpg", "melancholia19.jpg", "melancholia22.jpg", "melancholia26.jpg", "melancholia29.jpg", "melancholia33.jpg", "melancholia36.jpg", "melancholia40.jpg", "melancholia43.jpg", "melancholia47.jpg", "melancholia50.jpg"]], ["Memories of Murder", 2003, [["memoriesofmurder4.jpg", "memoriesofmurder4_orig.jpg"], ["memoriesofmurder6.jpg", "memoriesofmurder6_orig.jpg"], ["memoriesofmurder9.jpg", "memoriesofmurder9_orig.jpg"], ["memoriesofmurder12.jpg", "memoriesofmurder12_orig.jpg"], ["memoriesofmurder15.jpg", "memoriesofmurder15_orig.jpg"], ["memoriesofmurder18.jpg", "memoriesofmurder18_orig.jpg"], ["memoriesofmurder21.jpg", "memoriesofmurder21_orig.jpg"], ["memoriesofmurder24.jpg", "memoriesofmurder24_orig.jpg"], ["memoriesofmurder27.jpg", "memoriesofmurder27_orig.jpg"], ["memoriesofmurder30.jpg", "memoriesofmurder30_orig.jpg"], ["memoriesofmurder33.jpg", "memoriesofmurder33_orig.jpg"], ["memoriesofmurder36.jpg", "memoriesofmurder36_orig.jpg"], ["memoriesofmurder39.jpg", "memoriesofmurder39_orig.jpg"], ["memoriesofmurder42.jpg", "memoriesofmurder42_orig.jpg"]]], ["Men in Black", 1997, ["meninblack3.jpg", "meninblack4.jpg", "meninblack6.jpg", "meninblack8.jpg", "meninblack10.jpg", "meninblack11.jpg", "meninblack13.jpg", "meninblack15.jpg", "meninblack17.jpg", "meninblack19.jpg", "meninblack20.jpg", "meninblack22.jpg", "meninblack24.jpg", "meninblack26.jpg"]], ["Men in Black 3", 2012, ["meninblackthree5.jpg", "meninblackthree8.jpg", "meninblackthree12.jpg", "meninblackthree15.jpg", "meninblackthree19.jpg", "meninblackthree22.jpg", "meninblackthree26.jpg", "meninblackthree29.jpg", "meninblackthree33.jpg", "meninblackthree36.jpg", "meninblackthree40.jpg", "meninblackthree43.jpg", "meninblackthree47.jpg", "meninblackthree50.jpg"]], ["Merry Christmas Mr. Lawrence", 1983, ["mrlawrence4.jpg", "mrlawrence6.jpg", "mrlawrence9.jpg", "mrlawrence12.jpg", "mrlawrence15.jpg", "mrlawrence18.jpg", "mrlawrence21.jpg", "mrlawrence24.jpg", "mrlawrence27.jpg", "mrlawrence30.jpg", "mrlawrence33.jpg", "mrlawrence36.jpg", "mrlawrence39.jpg", "mrlawrence42.jpg"]], ["Michael Collins", 1996, ["michaelcollins5.jpg", "michaelcollins8.jpg", "michaelcollins12.jpg", "michaelcollins15.jpg", "michaelcollins19.jpg", "michaelcollins22.jpg", "michaelcollins26.jpg", "michaelcollins29.jpg", "michaelcollins33.jpg", "michaelcollins36.jpg", "michaelcollins40.jpg", "michaelcollins43.jpg", "michaelcollins47.jpg", "michaelcollins50.jpg"]], ["Midsommar", 2019, ["midsommar5.jpg", "midsommar9.jpg", "midsommar13.jpg", "midsommar17.jpg", "midsommar21.jpg", "midsommar25.jpg", "midsommar29.jpg", "midsommar33.jpg", "midsommar37.jpg", "midsommar41.jpg", "midsommar45.jpg", "midsommar49.jpg", "midsommar53.jpg", "midsommar57.jpg"]], ["Miller's Crossing", 1990, [["millerscrossing5.jpg", "millerscrossing5_orig.jpg"], ["millerscrossing8.jpg", "millerscrossing8_orig.jpg"], ["millerscrossing12.jpg", "millerscrossing12_orig.jpg"], ["millerscrossing15.jpg", "millerscrossing15_orig.jpg"], ["millerscrossing19.jpg", "millerscrossing19_orig.jpg"], ["millerscrossing22.jpg", "millerscrossing22_orig.jpg"], ["millerscrossing26.jpg", "millerscrossing26_orig.jpg"], ["millerscrossing29.jpg", "millerscrossing29_orig.jpg"], ["millerscrossing33.jpg", "millerscrossing33_orig.jpg"], ["millerscrossing36.jpg", "millerscrossing36_orig.jpg"], ["millerscrossing40.jpg", "millerscrossing40_orig.jpg"], ["millerscrossing43.jpg", "millerscrossing43_orig.jpg"], ["millerscrossing47.jpg", "millerscrossing47_orig.jpg"], ["millerscrossing50.jpg", "millerscrossing50_orig.jpg"]]], ["Minority Report", 2002, ["3752746.jpg", "5533712.jpg", "4359579.jpg", "974627.jpg", "3773379.jpg", "6161846.jpg", "7195572.jpg", "1938012.jpg", "9933324.jpg", "7599228.jpg", "36783.jpg", "5442506.jpg", "5853412.jpg", "523116.jpg"]], ["Mission: Impossible - Fallout", 2018, ["mifallout5.jpg", "mifallout8.jpg", "mifallout12.jpg", "mifallout15.jpg", "mifallout19.jpg", "mifallout22.jpg", "mifallout26.jpg", "mifallout29.jpg", "mifallout33.jpg", "mifallout36.jpg", "mifallout40.jpg", "mifallout43.jpg", "mifallout47.jpg", "mifallout50.jpg"]], ["Mission: Impossible - Rogue Nation", 2015, ["miroguenation5.jpg", "miroguenation8.jpg", "miroguenation12.jpg", "miroguenation15.jpg", "miroguenation19.jpg", "miroguenation22.jpg", "miroguenation26.jpg", "miroguenation29.jpg", "miroguenation33.jpg", "miroguenation36.jpg", "miroguenation40.jpg", "miroguenation43.jpg", "miroguenation47.jpg", "miroguenation50.jpg"]], ["Mississippi Burning", 1988, ["6034276.jpg", "308847.jpg", "9941610.jpg", "670932.jpg", "4638616.jpg", "918956.jpg", "3634461.jpg", "771198.jpg", "9802547.jpg", "1950105.jpg", "9466494.jpg", "3964541.jpg", "2453808.jpg", "923159.jpg"]], ["Modern Times", 1936, ["moderntimes2.jpg", "moderntimes3.jpg", "moderntimes4.jpg", "moderntimes5.jpg", "moderntimes6.jpg", "moderntimes8.jpg", "moderntimes9.jpg", "moderntimes10.jpg", "moderntimes11.jpg", "moderntimes12.jpg", "moderntimes14.jpg", "moderntimes15.jpg", "moderntimes16.jpg", "moderntimes17.jpg"]], ["Moneyball", 2011, ["3256183.jpg", "3717656.jpg", "8136905.jpg", "8632645.jpg", "5131611.jpg", "4186084.jpg", "7531672.jpg", "8126837.jpg", "6652519.jpg", "7826205.jpg", "1580703.jpg", "592008.jpg", "5989652.jpg", "7356748.jpg"]], ["Mood Indigo", 2013, ["4604744.jpg", "4483250.jpg", "2225396.jpg", "6676051.jpg", "7216182.jpg", "5116687.jpg", "2968861.jpg", "8038735.jpg", "2023592.jpg", "5460605.jpg", "3788564.jpg", "9123950.jpg", "1845291.jpg", "9959279.jpg"]], ["Moonrise Kingdom", 2012, ["moonrisekingdom5.jpg", "moonrisekingdom8.jpg", "moonrisekingdom12.jpg", "moonrisekingdom15.jpg", "moonrisekingdom19.jpg", "moonrisekingdom22.jpg", "moonrisekingdom26.jpg", "moonrisekingdom29.jpg", "moonrisekingdom33.jpg", "moonrisekingdom36.jpg", "moonrisekingdom40.jpg", "moonrisekingdom43.jpg", "moonrisekingdom47.jpg", "moonrisekingdom50.jpg"]], ["National Lampoon's Christmas Vacation", 1989, ["christmasvacation4.jpg", "christmasvacation6.jpg", "christmasvacation9.jpg", "christmasvacation12.jpg", "christmasvacation15.jpg", "christmasvacation18.jpg", "christmasvacation21.jpg", "christmasvacation24.jpg", "christmasvacation27.jpg", "christmasvacation30.jpg", "christmasvacation33.jpg", "christmasvacation36.jpg", "christmasvacation39.jpg", "christmasvacation42.jpg"]], ["Nausica&auml; of the Valley of the Wind", 1984, ["nausicaa3.jpg", "nausicaa5.jpg", "nausicaa7.jpg", "nausicaa10.jpg", "nausicaa12.jpg", "nausicaa14.jpg", "nausicaa17.jpg", "nausicaa19.jpg", "nausicaa21.jpg", "nausicaa24.jpg", "nausicaa26.jpg", "nausicaa28.jpg", "nausicaa31.jpg", "nausicaa33.jpg"]], ["Nebraska", 2013, ["nebraska5.jpg", "nebraska8.jpg", "nebraska12.jpg", "nebraska15.jpg", "nebraska19.jpg", "nebraska22.jpg", "nebraska26.jpg", "nebraska29.jpg", "nebraska33.jpg", "nebraska36.jpg", "nebraska40.jpg", "nebraska43.jpg", "nebraska47.jpg", "nebraska50.jpg"]], ["Network", 1976, ["network3.jpg", "network5.jpg", "network7.jpg", "network10.jpg", "network12.jpg", "network14.jpg", "network17.jpg", "network19.jpg", "network21.jpg", "network24.jpg", "network26.jpg", "network28.jpg", "network31.jpg", "network33.jpg"]], ["Niagara", 1953, ["niagara4.jpg", "niagara6.jpg", "niagara9.jpg", "niagara12.jpg", "niagara15.jpg", "niagara18.jpg", "niagara21.jpg", "niagara24.jpg", "niagara27.jpg", "niagara30.jpg", "niagara33.jpg", "niagara36.jpg", "niagara39.jpg", "niagara42.jpg"]], ["Night of the Creeps", 1986, ["nightofthecreeps3.jpg", "nightofthecreeps5.jpg", "nightofthecreeps7.jpg", "nightofthecreeps10.jpg", "nightofthecreeps12.jpg", "nightofthecreeps14.jpg", "nightofthecreeps17.jpg", "nightofthecreeps19.jpg", "nightofthecreeps21.jpg", "nightofthecreeps24.jpg", "nightofthecreeps26.jpg", "nightofthecreeps28.jpg", "nightofthecreeps31.jpg", "nightofthecreeps33.jpg"]], ["Nightcrawler", 2014, ["9247652.jpg", "9606494.jpg", "9391792.jpg", "6213194.jpg", "1045050.jpg", "2421828.jpg", "160856.jpg", "2487841.jpg", "3791811.jpg", "9942689.jpg", "5868082.jpg", "9136352.jpg", "4650748.jpg", "3377059.jpg"]], ["Nightmare Alley", 2021, ["nightmarealley5.jpg", "nightmarealley9.jpg", "nightmarealley13.jpg", "nightmarealley17.jpg", "nightmarealley21.jpg", "nightmarealley25.jpg", "nightmarealley29.jpg", "nightmarealley33.jpg", "nightmarealley37.jpg", "nightmarealley41.jpg", "nightmarealley45.jpg", "nightmarealley49.jpg", "nightmarealley53.jpg", "nightmarealley57.jpg"]], ["No Country for Old Men", 2007, ["nocountryforoldmen5.jpg", "nocountryforoldmen8.jpg", "nocountryforoldmen12.jpg", "nocountryforoldmen15.jpg", "nocountryforoldmen19.jpg", "nocountryforoldmen22.jpg", "nocountryforoldmen26.jpg", "nocountryforoldmen29.jpg", "nocountryforoldmen33.jpg", "nocountryforoldmen36.jpg", "nocountryforoldmen40.jpg", "nocountryforoldmen43.jpg", "nocountryforoldmen47.jpg", "nocountryforoldmen50.jpg"]], ["No Time to Die", 2021, [["notimetodie6.jpg", "notimetodie6_orig.jpg"], ["notimetodie10.jpg", "notimetodie10_orig.jpg"], ["notimetodie15.jpg", "notimetodie15_orig.jpg"], ["notimetodie19.jpg", "notimetodie19_orig.jpg"], ["notimetodie24.jpg", "notimetodie24_orig.jpg"], ["notimetodie29.jpg", "notimetodie29_orig.jpg"], ["notimetodie33.jpg", "notimetodie33_orig.jpg"], ["notimetodie38.jpg", "notimetodie38_orig.jpg"], ["notimetodie43.jpg", "notimetodie43_orig.jpg"], ["notimetodie47.jpg", "notimetodie47_orig.jpg"], ["notimetodie52.jpg", "notimetodie52_orig.jpg"], ["notimetodie57.jpg", "notimetodie57_orig.jpg"], ["notimetodie61.jpg", "notimetodie61_orig.jpg"], ["notimetodie66.jpg", "notimetodie66_orig.jpg"]]], ["Nocturnal Animals", 2016, ["nocturnalanimals5.jpg", "nocturnalanimals8.jpg", "nocturnalanimals12.jpg", "nocturnalanimals15.jpg", "nocturnalanimals19.jpg", "nocturnalanimals22.jpg", "nocturnalanimals26.jpg", "nocturnalanimals29.jpg", "nocturnalanimals33.jpg", "nocturnalanimals36.jpg", "nocturnalanimals40.jpg", "nocturnalanimals43.jpg", "nocturnalanimals47.jpg", "nocturnalanimals50.jpg"]], ["Nope", 2022, ["nope5.jpg", "nope9.jpg", "nope13.jpg", "nope17.jpg", "nope21.jpg", "nope25.jpg", "nope29.jpg", "nope33.jpg", "nope37.jpg", "nope41.jpg", "nope45.jpg", "nope49.jpg", "nope53.jpg", "nope57.jpg"]], ["North by Northwest", 1959, ["northybynortwest4.jpg", "northybynortwest6.jpg", "northybynortwest9.jpg", "northybynortwest12.jpg", "northybynortwest15.jpg", "northybynortwest18.jpg", "northybynortwest21.jpg", "northybynortwest24.jpg", "northybynortwest27.jpg", "northybynortwest30.jpg", "northybynortwest33.jpg", "northybynortwest36.jpg", "northybynortwest39.jpg", "northybynortwest42.jpg"]], ["Nosferatu", 2024, [["nosferatu5.jpg", "nosferatu5_orig.jpg"], ["nosferatu9.jpg", "nosferatu9_orig.jpg"], ["nosferatu13.jpg", "nosferatu13_orig.jpg"], ["nosferatu17.jpg", "nosferatu17_orig.jpg"], ["nosferatu21.jpg", "nosferatu21_orig.jpg"], ["nosferatu25.jpg", "nosferatu25_orig.jpg"], ["nosferatu29.jpg", "nosferatu29_orig.jpg"], ["nosferatu33.jpg", "nosferatu33_orig.jpg"], ["nosferatu37.jpg", "nosferatu37_orig.jpg"], ["nosferatu41.jpg", "nosferatu41_orig.jpg"], ["nosferatu45.jpg", "nosferatu45_orig.jpg"], ["nosferatu49.jpg", "nosferatu49_orig.jpg"], ["nosferatu53.jpg", "nosferatu53_orig.jpg"], ["nosferatu57.jpg", "nosferatu57_orig.jpg"]]], ["O Brother, Where Art Thou?", 2e3, ["obrother5.jpg", "obrother8.jpg", "obrother12.jpg", "obrother15.jpg", "obrother19.jpg", "obrother22.jpg", "obrother26.jpg", "obrother29.jpg", "obrother33.jpg", "obrother36.jpg", "obrother40.jpg", "obrother43.jpg", "obrother47.jpg", "obrother50.jpg"]], ["OSS 117: Le Caire, Nid D'Espions", 2006, ["oss117caironestofspies3.jpg", "oss117caironestofspies4.jpg", "oss117caironestofspies6.jpg", "oss117caironestofspies8.jpg", "oss117caironestofspies10.jpg", "oss117caironestofspies11.jpg", "oss117caironestofspies13.jpg", "oss117caironestofspies15.jpg", "oss117caironestofspies17.jpg", "oss117caironestofspies19.jpg", "oss117caironestofspies20.jpg", "oss117caironestofspies22.jpg", "oss117caironestofspies24.jpg", "oss117caironestofspies26.jpg"]], ["OSS 117: Rio ne r&eacute;pond plus", 2009, ["oss117rionerepondplus3.jpg", "oss117rionerepondplus4.jpg", "oss117rionerepondplus6.jpg", "oss117rionerepondplus8.jpg", "oss117rionerepondplus10.jpg", "oss117rionerepondplus11.jpg", "oss117rionerepondplus13.jpg", "oss117rionerepondplus15.jpg", "oss117rionerepondplus17.jpg", "oss117rionerepondplus19.jpg", "oss117rionerepondplus20.jpg", "oss117rionerepondplus22.jpg", "oss117rionerepondplus24.jpg", "oss117rionerepondplus26.jpg"]], ["Ocean's Thirteen", 2007, ["3289551.jpg", "306573.jpg", "571112.jpg", "9397359.jpg", "6958563.jpg", "6404114.jpg", "3879643.jpg", "217087.jpg", "1548582.jpg", "328510.jpg", "8361043.jpg", "6681013.jpg", "9667116.jpg", "3600122.jpg"]], ["Oceans", 2009, ["3444136.jpg", "841845.jpg", "4906859.jpg", "1895959.jpg", "6136209.jpg", "5073406.jpg", "704340.jpg", "5970863.jpg", "1285997.jpg", "8980763.jpg", "8525709.jpg", "4467744.jpg", "1373071.jpg", "4793280.jpg"]], ["Oldoby", 2003, ["oldboy4.jpg", "oldboy6.jpg", "oldboy9.jpg", "oldboy12.jpg", "oldboy15.jpg", "oldboy18.jpg", "oldboy21.jpg", "oldboy24.jpg", "oldboy27.jpg", "oldboy30.jpg", "oldboy33.jpg", "oldboy36.jpg", "oldboy39.jpg", "oldboy42.jpg"]], ["One Battle After Another", 2025, [["onebattle6.jpg", "onebattle6_orig.jpg"], ["onebattle10.jpg", "onebattle10_orig.jpg"], ["onebattle15.jpg", "onebattle15_orig.jpg"], ["onebattle19.jpg", "onebattle19_orig.jpg"], ["onebattle24.jpg", "onebattle24_orig.jpg"], ["onebattle29.jpg", "onebattle29_orig.jpg"], ["onebattle33.jpg", "onebattle33_orig.jpg"], ["onebattle38.jpg", "onebattle38_orig.jpg"], ["onebattle43.jpg", "onebattle43_orig.jpg"], ["onebattle47.jpg", "onebattle47_orig.jpg"], ["onebattle52.jpg", "onebattle52_orig.jpg"], ["onebattle57.jpg", "onebattle57_orig.jpg"], ["onebattle61.jpg", "onebattle61_orig.jpg"], ["onebattle66.jpg", "onebattle66_orig.jpg"]]], ["One Flew Over the Cuckoo's Nest", 1975, ["oneflew4.jpg", "oneflew6.jpg", "oneflew9.jpg", "oneflew12.jpg", "oneflew15.jpg", "oneflew18.jpg", "oneflew21.jpg", "oneflew24.jpg", "oneflew27.jpg", "oneflew30.jpg", "oneflew33.jpg", "oneflew36.jpg", "oneflew39.jpg", "oneflew42.jpg"]], ["Only God Forgives", 2013, ["onlygodforgives4.jpg", "onlygodforgives6_1.jpg", "onlygodforgives9.jpg", "onlygodforgives12.jpg", "onlygodforgives15.jpg", "onlygodforgives18.jpg", "onlygodforgives21.jpg", "onlygodforgives24.jpg", "onlygodforgives27.jpg", "onlygodforgives30.jpg", "onlygodforgives33.jpg", "onlygodforgives36.jpg", "onlygodforgives39.jpg", "onlygodforgives42.jpg"]], ["Our Day Will Come", 2010, ["ourdaywillcome4.jpg", "ourdaywillcome6.jpg", "ourdaywillcome9.jpg", "ourdaywillcome12.jpg", "ourdaywillcome15.jpg", "ourdaywillcome18.jpg", "ourdaywillcome21.jpg", "ourdaywillcome24.jpg", "ourdaywillcome27.jpg", "ourdaywillcome30.jpg", "ourdaywillcome33.jpg", "ourdaywillcome36.jpg", "ourdaywillcome39.jpg", "ourdaywillcome42.jpg"]], ["Outland", 1981, ["outland3.jpg", "outland5.jpg", "outland7.jpg", "outland10.jpg", "outland12.jpg", "outland14.jpg", "outland17.jpg", "outland19.jpg", "outland21.jpg", "outland24.jpg", "outland26.jpg", "outland28.jpg", "outland31.jpg", "outland33.jpg"]], ["Pain & Gain", 2013, ["painandgain5.jpg", "painandgain8.jpg", "painandgain12.jpg", "painandgain15.jpg", "painandgain19.jpg", "painandgain22.jpg", "painandgain26.jpg", "painandgain29.jpg", "painandgain33.jpg", "painandgain36.jpg", "painandgain40.jpg", "painandgain43.jpg", "painandgain47.jpg", "painandgain50.jpg"]], ["Pale Rider", 1985, ["1547222.jpg", "1399155.jpg", "752480.jpg", "3055296.jpg", "1965428.jpg", "6890236.jpg", "1277481.jpg", "6860729.jpg", "5229774.jpg", "6578972.jpg", "2891702.jpg", "8749875.jpg", "4782697.jpg", "101725.jpg"]], ["Pandorum", 2009, ["pandorum4.jpg", "pandorum6.jpg", "pandorum9.jpg", "pandorum12.jpg", "pandorum15.jpg", "pandorum18.jpg", "pandorum21.jpg", "pandorum24.jpg", "pandorum27.jpg", "pandorum30.jpg", "pandorum33.jpg", "pandorum36.jpg", "pandorum39.jpg", "pandorum42.jpg"]], ["Parasite", 2019, [["parasite5.jpg", "parasite5_orig.jpg"], ["parasite8.jpg", "parasite8_orig.jpg"], ["parasite12.jpg", "parasite12_orig.jpg"], ["parasite15.jpg", "parasite15_orig.jpg"], ["parasite19.jpg", "parasite19_orig.jpg"], ["parasite22.jpg", "parasite22_orig.jpg"], ["parasite26.jpg", "parasite26_orig.jpg"], ["parasite29.jpg", "parasite29_orig.jpg"], ["parasite33.jpg", "parasite33_orig.jpg"], ["parasite36.jpg", "parasite36_orig.jpg"], ["parasite40.jpg", "parasite40_orig.jpg"], ["parasite43.jpg", "parasite43_orig.jpg"], ["parasite47.jpg", "parasite47_orig.jpg"], ["parasite50.jpg", "parasite50_orig.jpg"]]], ["Paths of Glory", 1957, [["pathsofglory3.jpg", "pathsofglory3_orig.jpg"], ["pathsofglory5.jpg", "pathsofglory5_orig.jpg"], ["pathsofglory7.jpg", "pathsofglory7_orig.jpg"], ["pathsofglory10.jpg", "pathsofglory10_orig.jpg"], ["pathsofglory12.jpg", "pathsofglory12_orig.jpg"], ["pathsofglory14.jpg", "pathsofglory14_orig.jpg"], ["pathsofglory17.jpg", "pathsofglory17_orig.jpg"], ["pathsofglory19.jpg", "pathsofglory19_orig.jpg"], ["pathsofglory21.jpg", "pathsofglory21_orig.jpg"], ["pathsofglory24.jpg", "pathsofglory24_orig.jpg"], ["pathsofglory26.jpg", "pathsofglory26_orig.jpg"], ["pathsofglory28.jpg", "pathsofglory28_orig.jpg"], ["pathsofglory31.jpg", "pathsofglory31_orig.jpg"], ["pathsofglory33.jpg", "pathsofglory33_orig.jpg"]]], ["Patton", 1970, ["patton5.jpg", "patton8.jpg", "patton12.jpg", "patton15.jpg", "patton19.jpg", "patton22.jpg", "patton26.jpg", "patton29.jpg", "patton33.jpg", "patton36.jpg", "patton40.jpg", "patton43.jpg", "patton47.jpg", "patton50.jpg"]], ["Perfect Blue", 1997, ["perfectblue5.jpg", "perfectblue8.jpg", "perfectblue12.jpg", "perfectblue15.jpg", "perfectblue19.jpg", "perfectblue22.jpg", "perfectblue26.jpg", "perfectblue29.jpg", "perfectblue33.jpg", "perfectblue36.jpg", "perfectblue40.jpg", "perfectblue43.jpg", "perfectblue47.jpg", "perfectblue50.jpg"]], ["Persona", 1966, ["persona5.jpg", "persona8.jpg", "persona12.jpg", "persona15.jpg", "persona19.jpg", "persona22.jpg", "persona26.jpg", "persona29.jpg", "persona33.jpg", "persona36.jpg", "persona40.jpg", "persona43.jpg", "persona47.jpg", "persona50.jpg"]], ["Phantom of the Opera", 1943, ["phantomoftheopera4.jpg", "phantomoftheopera6.jpg", "phantomoftheopera9.jpg", "phantomoftheopera12.jpg", "phantomoftheopera15.jpg", "phantomoftheopera18.jpg", "phantomoftheopera21.jpg", "phantomoftheopera24.jpg", "phantomoftheopera27.jpg", "phantomoftheopera30.jpg", "phantomoftheopera33.jpg", "phantomoftheopera36.jpg", "phantomoftheopera39.jpg", "phantomoftheopera42.jpg"]], ["Pirates of the Caribbean: Dead Man's Chest", 2006, ["piratesdeadmanschest4.jpg", "piratesdeadmanschest6.jpg", "piratesdeadmanschest9.jpg", "piratesdeadmanschest12.jpg", "piratesdeadmanschest15.jpg", "piratesdeadmanschest18.jpg", "piratesdeadmanschest21.jpg", "piratesdeadmanschest24.jpg", "piratesdeadmanschest27.jpg", "piratesdeadmanschest30.jpg", "piratesdeadmanschest33.jpg", "piratesdeadmanschest36.jpg", "piratesdeadmanschest39.jpg", "piratesdeadmanschest42.jpg"]], ["Pirates of the Caribbean: On Stranger Tides", 2011, ["piratesstrangertides2.jpg", "piratesstrangertides3.jpg", "piratesstrangertides4.jpg", "piratesstrangertides5.jpg", "piratesstrangertides6.jpg", "piratesstrangertides8.jpg", "piratesstrangertides9.jpg", "piratesstrangertides10.jpg", "piratesstrangertides11.jpg", "piratesstrangertides12.jpg", "piratesstrangertides14.jpg", "piratesstrangertides15.jpg", "piratesstrangertides16.jpg", "piratesstrangertides17.jpg"]], ["Pirates of the Caribbean: The Curse of the Black Pearl", 2003, ["piratesofthecaribbean5.jpg", "piratesofthecaribbean8.jpg", "piratesofthecaribbean12.jpg", "piratesofthecaribbean15.jpg", "piratesofthecaribbean19.jpg", "piratesofthecaribbean22.jpg", "piratesofthecaribbean26.jpg", "piratesofthecaribbean29.jpg", "piratesofthecaribbean33.jpg", "piratesofthecaribbean36.jpg", "piratesofthecaribbean40.jpg", "piratesofthecaribbean43.jpg", "piratesofthecaribbean47.jpg", "piratesofthecaribbean50.jpg"]], ["Pocahontas", 1995, ["pocahontas5.jpg", "pocahontas8.jpg", "pocahontas12.jpg", "pocahontas15.jpg", "pocahontas19.jpg", "pocahontas22.jpg", "pocahontas26.jpg", "pocahontas29.jpg", "pocahontas33.jpg", "pocahontas36.jpg", "pocahontas40.jpg", "pocahontas43.jpg", "pocahontas47.jpg", "pocahontas50.jpg"]], ["Poor Things", 2023, ["poorthings5.jpg", "poorthings8.jpg", "poorthings12.jpg", "poorthings15.jpg", "poorthings19.jpg", "poorthings22.jpg", "poorthings26.jpg", "poorthings29.jpg", "poorthings33.jpg", "poorthings36.jpg", "poorthings40.jpg", "poorthings43.jpg", "poorthings47.jpg", "poorthings50.jpg"]], ["Prey", 2022, [["prey4.jpg", "prey4_orig.jpg"], ["prey6.jpg", "prey6_orig.jpg"], ["prey9.jpg", "prey9_orig.jpg"], ["prey12.jpg", "prey12_orig.jpg"], ["prey15.jpg", "prey15_orig.jpg"], ["prey18.jpg", "prey18_orig.jpg"], ["prey21.jpg", "prey21_orig.jpg"], ["prey24.jpg", "prey24_orig.jpg"], ["prey27.jpg", "prey27_orig.jpg"], ["prey30.jpg", "prey30_orig.jpg"], ["prey33.jpg", "prey33_orig.jpg"], ["prey36.jpg", "prey36_orig.jpg"], ["prey39.jpg", "prey39_orig.jpg"], ["prey42.jpg", "prey42_orig.jpg"]]], ["Prisoners", 2013, ["prisoners5.jpg", "prisoners8.jpg", "prisoners12.jpg", "prisoners15.jpg", "prisoners19.jpg", "prisoners22.jpg", "prisoners26.jpg", "prisoners29.jpg", "prisoners33.jpg", "prisoners36.jpg", "prisoners40.jpg", "prisoners43.jpg", "prisoners47.jpg", "prisoners50.jpg"]], ["Prometheus", 2012, ["prometheus5.jpg", "prometheus8.jpg", "prometheus12.jpg", "prometheus15.jpg", "prometheus19.jpg", "prometheus22.jpg", "prometheus26.jpg", "prometheus29.jpg", "prometheus33.jpg", "prometheus36.jpg", "prometheus40.jpg", "prometheus43.jpg", "prometheus47.jpg", "prometheus50.jpg"]], ["Psycho", 1960, ["psycho4.jpg", "psycho6.jpg", "psycho9.jpg", "psycho12.jpg", "psycho15.jpg", "psycho18.jpg", "psycho21.jpg", "psycho24.jpg", "psycho27.jpg", "psycho30.jpg", "psycho33.jpg", "psycho36.jpg", "psycho39.jpg", "psycho42.jpg"]], ["Pulp Fiction", 1994, ["pulpfiction4.jpg", "pulpfiction6.jpg", "pulpfiction9.jpg", "pulpfiction12.jpg", "pulpfiction15.jpg", "pulpfiction18.jpg", "pulpfiction21.jpg", "pulpfiction24.jpg", "pulpfiction27.jpg", "pulpfiction30.jpg", "pulpfiction33.jpg", "pulpfiction36.jpg", "pulpfiction39.jpg", "pulpfiction42.jpg"]], ["Quantum of Solace", 2008, ["quantumofsolace4.jpg", "quantumofsolace6.jpg", "quantumofsolace9.jpg", "quantumofsolace12.jpg", "quantumofsolace15.jpg", "quantumofsolace18.jpg", "quantumofsolace21.jpg", "quantumofsolace24.jpg", "quantumofsolace27.jpg", "quantumofsolace30.jpg", "quantumofsolace33.jpg", "quantumofsolace36.jpg", "quantumofsolace39.jpg", "quantumofsolace42.jpg"]], ["Raging Bull", 1980, ["7879476.jpg", "9799174.jpg", "1605798.jpg", "763705.jpg", "8621754.jpg", "1128891.jpg", "2471939.jpg", "1040654.jpg", "75721.jpg", "4970279.jpg", "2402860.jpg", "8291838.jpg", "1500745.jpg", "427089.jpg"]], ["Raising Arizona", 1987, ["raisingarizona5.jpg", "raisingarizona8.jpg", "raisingarizona12.jpg", "raisingarizona15.jpg", "raisingarizona19.jpg", "raisingarizona22.jpg", "raisingarizona26.jpg", "raisingarizona29.jpg", "raisingarizona33.jpg", "raisingarizona36.jpg", "raisingarizona40.jpg", "raisingarizona43.jpg", "raisingarizona47.jpg", "raisingarizona50.jpg"]], ["Razorback", 1984, ["razorback4.jpg", "razorback6.jpg", "razorback9.jpg", "razorback12.jpg", "razorback15.jpg", "razorback18.jpg", "razorback21.jpg", "razorback24.jpg", "razorback27.jpg", "razorback30.jpg", "razorback33.jpg", "razorback36.jpg", "razorback39.jpg", "razorback42.jpg"]], ["Rear Window", 1954, ["rearwindow4.jpg", "rearwindow6.jpg", "rearwindow9.jpg", "rearwindow12.jpg", "rearwindow15.jpg", "rearwindow18.jpg", "rearwindow21.jpg", "rearwindow24.jpg", "rearwindow27.jpg", "rearwindow30.jpg", "rearwindow33.jpg", "rearwindow36.jpg", "rearwindow39.jpg", "rearwindow42.jpg"]], ["Road Trip", 2e3, ["roadtrip4.jpg", "roadtrip6.jpg", "roadtrip9.jpg", "roadtrip12.jpg", "roadtrip15.jpg", "roadtrip18.jpg", "roadtrip21.jpg", "roadtrip24.jpg", "roadtrip27.jpg", "roadtrip30.jpg", "roadtrip33.jpg", "roadtrip36.jpg", "roadtrip39.jpg", "roadtrip42.jpg"]], ["Road to Perdition", 2002, ["roadtoperdition5.jpg", "roadtoperdition8.jpg", "roadtoperdition12.jpg", "roadtoperdition15.jpg", "roadtoperdition19.jpg", "roadtoperdition22.jpg", "roadtoperdition26.jpg", "roadtoperdition29.jpg", "roadtoperdition33.jpg", "roadtoperdition36.jpg", "roadtoperdition40.jpg", "roadtoperdition43.jpg", "roadtoperdition47.jpg", "roadtoperdition50.jpg"]], ["Robin Hood", 1973, [["robinhood5.jpg", "robinhood5_orig.jpg"], ["robinhood8.jpg", "robinhood8_orig.jpg"], ["robinhood12.jpg", "robinhood12_orig.jpg"], ["robinhood15.jpg", "robinhood15_orig.jpg"], ["robinhood19.jpg", "robinhood19_orig.jpg"], ["robinhood22.jpg", "robinhood22_orig.jpg"], ["robinhood26.jpg", "robinhood26_orig.jpg"], ["robinhood29.jpg", "robinhood29_orig.jpg"], ["robinhood33.jpg", "robinhood33_orig.jpg"], ["robinhood36.jpg", "robinhood36_orig.jpg"], ["robinhood40.jpg", "robinhood40_orig.jpg"], ["robinhood43.jpg", "robinhood43_orig.jpg"], ["robinhood47.jpg", "robinhood47_orig.jpg"], ["robinhood50.jpg", "robinhood50_orig.jpg"]]], ["RoboCop", 1987, ["robocop4.jpg", "robocop6.jpg", "robocop9.jpg", "robocop12.jpg", "robocop15.jpg", "robocop18.jpg", "robocop21.jpg", "robocop24.jpg", "robocop27.jpg", "robocop30.jpg", "robocop33.jpg", "robocop36.jpg", "robocop39.jpg", "robocop42.jpg"]], ["Roma", 1972, ["roma4.jpg", "roma6.jpg", "roma9.jpg", "roma12.jpg", "roma15.jpg", "roma18.jpg", "roma21.jpg", "roma24.jpg", "roma27.jpg", "roma30.jpg", "roma33.jpg", "roma36.jpg", "roma39.jpg", "roma42.jpg"]], ["Rosemary's Baby", 1968, ["rosemarysbaby5.jpg", "rosemarysbaby8.jpg", "rosemarysbaby12.jpg", "rosemarysbaby15.jpg", "rosemarysbaby19.jpg", "rosemarysbaby22.jpg", "rosemarysbaby26.jpg", "rosemarysbaby29.jpg", "rosemarysbaby33.jpg", "rosemarysbaby36.jpg", "rosemarysbaby40.jpg", "rosemarysbaby43.jpg", "rosemarysbaby47.jpg", "rosemarysbaby50.jpg"]], ["Rush", 2013, ["rush5.jpg", "rush8.jpg", "rush12.jpg", "rush15.jpg", "rush19.jpg", "rush22.jpg", "rush26.jpg", "rush29.jpg", "rush33.jpg", "rush36.jpg", "rush40.jpg", "rush43.jpg", "rush47.jpg", "rush50.jpg"]], ["Rush Hour", 1998, [["rushhour4.jpg", "rushhour4_orig.jpg"], ["rushhour6.jpg", "rushhour6_orig.jpg"], ["rushhour9.jpg", "rushhour9_orig.jpg"], ["rushhour12.jpg", "rushhour12_orig.jpg"], ["rushhour15.jpg", "rushhour15_orig.jpg"], ["rushhour18.jpg", "rushhour18_orig.jpg"], ["rushhour21.jpg", "rushhour21_orig.jpg"], ["rushhour24.jpg", "rushhour24_orig.jpg"], ["rushhour27.jpg", "rushhour27_orig.jpg"], ["rushhour30.jpg", "rushhour30_orig.jpg"], ["rushhour33.jpg", "rushhour33_orig.jpg"], ["rushhour36.jpg", "rushhour36_orig.jpg"], ["rushhour39.jpg", "rushhour39_orig.jpg"], ["rushhour42.jpg", "rushhour42_orig.jpg"]]], ["Rushmore", 1998, ["rushmore2.jpg", "rushmore3.jpg", "rushmore4.jpg", "rushmore5.jpg", "rushmore6.jpg", "rushmore8.jpg", "rushmore9.jpg", "rushmore10.jpg", "rushmore11.jpg", "rushmore12.jpg", "rushmore14.jpg", "rushmore15.jpg", "rushmore16.jpg", "rushmore17.jpg"]], ["Sabrina", 1954, ["sabrina5.jpg", "sabrina8.jpg", "sabrina12.jpg", "sabrina15.jpg", "sabrina19.jpg", "sabrina22.jpg", "sabrina26.jpg", "sabrina29.jpg", "sabrina33.jpg", "sabrina36.jpg", "sabrina40.jpg", "sabrina43.jpg", "sabrina47.jpg", "sabrina50.jpg"]], ["Safety Last!", 1923, ["004.png", "006.png", "009.png", "012.png", "015.png", "018.png", "021.png", "024.png", "027.png", "030.png", "033.png", "036.png", "039.png", "042.png"]], ["Saving Private Ryan", 1998, ["savingprivateryan4.jpg", "savingprivateryan6.jpg", "savingprivateryan9.jpg", "savingprivateryan12.jpg", "savingprivateryan15.jpg", "savingprivateryan18.jpg", "savingprivateryan21.jpg", "savingprivateryan24.jpg", "savingprivateryan27.jpg", "savingprivateryan30.jpg", "savingprivateryan33.jpg", "savingprivateryan36.jpg", "savingprivateryan39.jpg", "savingprivateryan42.jpg"]], ["Scarface", 1983, ["9203793.jpg", "1766223.jpg", "8958574.jpg", "576719.jpg", "2652582.jpg", "7718614.jpg", "2526838.jpg", "8796600.jpg", "5392005.jpg", "4249938.jpg", "1720309.jpg", "4050603.jpg", "2079134.jpg", "492098.jpg"]], ["Scrooged", 1988, ["scrooged2.jpg", "scrooged3.jpg", "scrooged4.jpg", "scrooged5.jpg", "scrooged6.jpg", "scrooged8.jpg", "scrooged9.jpg", "scrooged10.jpg", "scrooged11.jpg", "scrooged12.jpg", "scrooged14.jpg", "scrooged15.jpg", "scrooged16.jpg", "scrooged17.jpg"]], ["Se7en", 1995, ["3070149.jpg", "7853044.jpg", "8104496.jpg", "5088563.jpg", "5292126.jpg", "4372824.jpg", "336982.jpg", "2224958.jpg", "7266701.jpg", "764959.jpg", "8802597.jpg", "3548532.jpg", "6054488.jpg", "1898083.jpg"]], ["Seabiscuit", 2003, ["seabiscuit3.jpg", "seabiscuit5.jpg", "seabiscuit7.jpg", "seabiscuit10.jpg", "seabiscuit12.jpg", "seabiscuit14.jpg", "seabiscuit17.jpg", "seabiscuit19.jpg", "seabiscuit21.jpg", "seabiscuit24.jpg", "seabiscuit26.jpg", "seabiscuit28.jpg", "seabiscuit31.jpg", "seabiscuit33.jpg"]], ["Shadow of a Doubt", 1943, [["shadowofadoubt4.jpg", "shadowofadoubt4_orig.jpg"], ["shadowofadoubt6.jpg", "shadowofadoubt6_orig.jpg"], ["shadowofadoubt9.jpg", "shadowofadoubt9_orig.jpg"], ["shadowofadoubt12.jpg", "shadowofadoubt12_orig.jpg"], ["shadowofadoubt15.jpg", "shadowofadoubt15_orig.jpg"], ["shadowofadoubt18.jpg", "shadowofadoubt18_orig.jpg"], ["shadowofadoubt21.jpg", "shadowofadoubt21_orig.jpg"], ["shadowofadoubt24.jpg", "shadowofadoubt24_orig.jpg"], ["shadowofadoubt27.jpg", "shadowofadoubt27_orig.jpg"], ["shadowofadoubt30.jpg", "shadowofadoubt30_orig.jpg"], ["shadowofadoubt33.jpg", "shadowofadoubt33_orig.jpg"], ["shadowofadoubt36.jpg", "shadowofadoubt36_orig.jpg"], ["shadowofadoubt39.jpg", "shadowofadoubt39_orig.jpg"], ["shadowofadoubt42.jpg", "shadowofadoubt42_orig.jpg"]]], ["Shallow Grave", 1994, ["3873159.jpg", "7029112.jpg", "5900800.jpg", "5304679.jpg", "5390406.jpg", "6716150.jpg", "2726236.jpg", "269747.jpg", "1915795.jpg", "4257736.jpg", "2842452.jpg", "148911.jpg", "5620293.jpg", "6999810.jpg"]], ["Shane", 1953, [["shane5.jpg", "shane5_orig.jpg"], ["shane8.jpg", "shane8_orig.jpg"], ["shane12.jpg", "shane12_orig.jpg"], ["shane15.jpg", "shane15_orig.jpg"], ["shane19.jpg", "shane19_orig.jpg"], ["shane22.jpg", "shane22_orig.jpg"], ["shane26.jpg", "shane26_orig.jpg"], ["shane29.jpg", "shane29_orig.jpg"], ["shane33.jpg", "shane33_orig.jpg"], ["shane36.jpg", "shane36_orig.jpg"], ["shane40.jpg", "shane40_orig.jpg"], ["shane43.jpg", "shane43_orig.jpg"], ["shane47.jpg", "shane47_orig.jpg"], ["shane50.jpg", "shane50_orig.jpg"]]], ["Shark Night 3D", 2011, [["sharknight3.jpg", "sharknight3_orig.jpg"], ["sharknight5.jpg", "sharknight5_orig.jpg"], ["sharknight7.jpg", "sharknight7_orig.jpg"], ["sharknight10.jpg", "sharknight10_orig.jpg"], ["sharknight12.jpg", "sharknight12_orig.jpg"], ["sharknight14.jpg", "sharknight14_orig.jpg"], ["sharknight17.jpg", "sharknight17_orig.jpg"], ["sharknight19.jpg", "sharknight19_orig.jpg"], ["sharknight21.jpg", "sharknight21_orig.jpg"], ["sharknight24.jpg", "sharknight24_orig.jpg"], ["sharknight26.jpg", "sharknight26_orig.jpg"], ["sharknight28.jpg", "sharknight28_orig.jpg"], ["sharknight31.jpg", "sharknight31_orig.jpg"], ["sharknight33.jpg", "sharknight33_orig.jpg"]]], ["Sherlock Holmes: A Game of Shadows", 2011, ["sherlockholmesagame3.jpg", "sherlockholmesagame5.jpg", "sherlockholmesagame7.jpg", "sherlockholmesagame10.jpg", "sherlockholmesagame12.jpg", "sherlockholmesagame14.jpg", "sherlockholmesagame17.jpg", "sherlockholmesagame19.jpg", "sherlockholmesagame21.jpg", "sherlockholmesagame24.jpg", "sherlockholmesagame26.jpg", "sherlockholmesagame28.jpg", "sherlockholmesagame31.jpg", "sherlockholmesagame33.jpg"]], ["Shutter Island", 2010, [["shutterisland5.jpg", "shutterisland5_orig.jpg"], ["shutterisland8.jpg", "shutterisland8_orig.jpg"], ["shutterisland12.jpg", "shutterisland12_orig.jpg"], ["shutterisland15.jpg", "shutterisland15_orig.jpg"], ["shutterisland19.jpg", "shutterisland19_orig.jpg"], ["shutterisland22.jpg", "shutterisland22_orig.jpg"], ["shutterisland26.jpg", "shutterisland26_orig.jpg"], ["shutterisland29.jpg", "shutterisland29_orig.jpg"], ["shutterisland33.jpg", "shutterisland33_orig.jpg"], ["shutterisland36.jpg", "shutterisland36_orig.jpg"], ["shutterisland40.jpg", "shutterisland40_orig.jpg"], ["shutterisland43.jpg", "shutterisland43_orig.jpg"], ["shutterisland47.jpg", "shutterisland47_orig.jpg"], ["shutterisland50.jpg", "shutterisland50_orig.jpg"]]], ["Sicario", 2015, ["sicario5.jpg", "sicario9.jpg", "sicario13.jpg", "sicario17.jpg", "sicario21.jpg", "sicario25.jpg", "sicario29.jpg", "sicario33.jpg", "sicario37.jpg", "sicario41.jpg", "sicario45.jpg", "sicario49.jpg", "sicario53.jpg", "sicario57.jpg"]], ["Sid and Nancy", 1986, ["sidandnancy4.jpg", "sidandnancy6.jpg", "sidandnancy9.jpg", "sidandnancy12.jpg", "sidandnancy15.jpg", "sidandnancy18.jpg", "sidandnancy21.jpg", "sidandnancy24.jpg", "sidandnancy27.jpg", "sidandnancy30.jpg", "sidandnancy33.jpg", "sidandnancy36.jpg", "sidandnancy39.jpg", "sidandnancy42.jpg"]], ["Silver Linings Playbook", 2012, ["silverliningsplaybook4.jpg", "silverliningsplaybook6.jpg", "silverliningsplaybook9.jpg", "silverliningsplaybook12.jpg", "silverliningsplaybook15.jpg", "silverliningsplaybook18.jpg", "silverliningsplaybook21.jpg", "silverliningsplaybook24.jpg", "silverliningsplaybook27.jpg", "silverliningsplaybook30.jpg", "silverliningsplaybook33.jpg", "silverliningsplaybook36.jpg", "silverliningsplaybook39.jpg", "silverliningsplaybook42.jpg"]], ["Sin City", 2005, [["sincity4.jpg", "sincity4_orig.jpg"], ["sincity6.jpg", "sincity6_orig.jpg"], ["sincity9.jpg", "sincity9_orig.jpg"], ["sincity12.jpg", "sincity12_orig.jpg"], ["sincity15.jpg", "sincity15_orig.jpg"], ["sincity18.jpg", "sincity18_orig.jpg"], ["sincity21.jpg", "sincity21_orig.jpg"], ["sincity24.jpg", "sincity24_orig.jpg"], ["sincity27.jpg", "sincity27_orig.jpg"], ["sincity30.jpg", "sincity30_orig.jpg"], ["sincity33.jpg", "sincity33_orig.jpg"], ["sincity36.jpg", "sincity36_orig.jpg"], ["sincity39.jpg", "sincity39_orig.jpg"], ["sincity42.jpg", "sincity42_orig.jpg"]]], ["Sinners", 2025, [["sinners5.jpg", "sinners5_orig.jpg"], ["sinners8.jpg", "sinners8_orig.jpg"], ["sinners12.jpg", "sinners12_orig.jpg"], ["sinners15.jpg", "sinners15_orig.jpg"], ["sinners19.jpg", "sinners19_orig.jpg"], ["sinners22.jpg", "sinners22_orig.jpg"], ["sinners26.jpg", "sinners26_orig.jpg"], ["sinners29.jpg", "sinners29_orig.jpg"], ["sinners33.jpg", "sinners33_orig.jpg"], ["sinners36.jpg", "sinners36_orig.jpg"], ["sinners40.jpg", "sinners40_orig.jpg"], ["sinners43.jpg", "sinners43_orig.jpg"], ["sinners47.jpg", "sinners47_orig.jpg"], ["sinners50.jpg", "sinners50_orig.jpg"]]], ["Skyfall", 2012, ["5435654.jpg", "9482405.jpg", "7947014.jpg", "5992351.jpg", "5784392.jpg", "2255031.jpg", "9269317.jpg", "779351.jpg", "9681586.jpg", "3986913.jpg", "1181324.jpg", "904320.jpg", "2051330.jpg", "4473497.jpg"]], ["Slap Shot", 1977, ["slapshot4.jpg", "slapshot6.jpg", "slapshot9.jpg", "slapshot12.jpg", "slapshot15.jpg", "slapshot18.jpg", "slapshot21.jpg", "slapshot24.jpg", "slapshot27.jpg", "slapshot30.jpg", "slapshot33.jpg", "slapshot36.jpg", "slapshot39.jpg", "slapshot42.jpg"]], ["Smiles of a Summer Night", 1955, [["smilessummer4.jpg", "smilessummer4_orig.jpg"], ["smilessummer6.jpg", "smilessummer6_orig.jpg"], ["smilessummer9.jpg", "smilessummer9_orig.jpg"], ["smilessummer12.jpg", "smilessummer12_orig.jpg"], ["smilessummer15.jpg", "smilessummer15_orig.jpg"], ["smilessummer18.jpg", "smilessummer18_orig.jpg"], ["smilessummer21.jpg", "smilessummer21_orig.jpg"], ["smilessummer24.jpg", "smilessummer24_orig.jpg"], ["smilessummer27.jpg", "smilessummer27_orig.jpg"], ["smilessummer30.jpg", "smilessummer30_orig.jpg"], ["smilessummer33.jpg", "smilessummer33_orig.jpg"], ["smilessummer36.jpg", "smilessummer36_orig.jpg"], ["smilessummer39.jpg", "smilessummer39_orig.jpg"], ["smilessummer42.jpg", "smilessummer42_orig.jpg"]]], ["Snowpiercer", 2013, ["snowpiercer5.jpg", "snowpiercer8.jpg", "snowpiercer12.jpg", "snowpiercer15.jpg", "snowpiercer19.jpg", "snowpiercer22.jpg", "snowpiercer26.jpg", "snowpiercer29.jpg", "snowpiercer33.jpg", "snowpiercer36.jpg", "snowpiercer40.jpg", "snowpiercer43.jpg", "snowpiercer47.jpg", "snowpiercer50.jpg"]], ["Solo: A Star Wars Story", 2018, ["soloastarwarsstory5.jpg", "soloastarwarsstory8.jpg", "soloastarwarsstory12.jpg", "soloastarwarsstory15.jpg", "soloastarwarsstory19.jpg", "soloastarwarsstory22.jpg", "soloastarwarsstory26.jpg", "soloastarwarsstory29.jpg", "soloastarwarsstory33.jpg", "soloastarwarsstory36.jpg", "soloastarwarsstory40.jpg", "soloastarwarsstory43.jpg", "soloastarwarsstory47.jpg", "soloastarwarsstory50.jpg"]], ["Some Like It Hot", 1959, ["somelikeithot4.jpg", "somelikeithot6.jpg", "somelikeithot9.jpg", "somelikeithot12.jpg", "somelikeithot15.jpg", "somelikeithot18.jpg", "somelikeithot21.jpg", "somelikeithot24.jpg", "somelikeithot27.jpg", "somelikeithot30.jpg", "somelikeithot33.jpg", "somelikeithot36.jpg", "somelikeithot39.jpg", "somelikeithot42.jpg"]], ["Sorcerer", 1977, ["sorcerer5.jpg", "sorcerer8.jpg", "sorcerer12.jpg", "sorcerer15.jpg", "sorcerer19.jpg", "sorcerer22.jpg", "sorcerer26.jpg", "sorcerer29.jpg", "sorcerer33.jpg", "sorcerer36.jpg", "sorcerer40.jpg", "sorcerer43.jpg", "sorcerer47.jpg", "sorcerer50.jpg"]], ["Source Code", 2011, [["sourcecode2.jpg", "sourcecode2_orig.jpg"], ["sourcecode3.jpg", "sourcecode3_orig.jpg"], ["sourcecode4.jpg", "sourcecode4_orig.jpg"], ["sourcecode5.jpg", "sourcecode5_orig.jpg"], ["sourcecode6.jpg", "sourcecode6_orig.jpg"], ["sourcecode8.jpg", "sourcecode8_orig.jpg"], ["sourcecode9.jpg", "sourcecode9_orig.jpg"], ["sourcecode10.jpg", "sourcecode10_orig.jpg"], ["sourcecode11.jpg", "sourcecode11_orig.jpg"], ["sourcecode12.jpg", "sourcecode12_orig.jpg"], ["sourcecode14.jpg", "sourcecode14_orig.jpg"], ["sourcecode15.jpg", "sourcecode15_orig.jpg"], ["sourcecode16.jpg", "sourcecode16_orig.jpg"], ["sourcecode17.jpg", "sourcecode17_orig.jpg"]]], ["Spectre", 2015, ["spectre5_2.jpg", "spectre8_2.jpg", "spectre12_2.jpg", "spectre15_2.jpg", "spectre19_2.jpg", "spectre22_2.jpg", "spectre26_2.jpg", "spectre29_2.jpg", "spectre33_2.jpg", "spectre36_2.jpg", "spectre40_2.jpg", "spectre43_2.jpg", "spectre47_2.jpg", "spectre50_2.jpg"]], ["Speed", 1994, [["speed3.jpg", "speed3_orig.jpg"], ["speed5.jpg", "speed5_orig.jpg"], ["speed7.jpg", "speed7_orig.jpg"], ["speed10.jpg", "speed10_orig.jpg"], ["speed12.jpg", "speed12_orig.jpg"], ["speed14.jpg", "speed14_orig.jpg"], ["speed17.jpg", "speed17_orig.jpg"], ["speed19.jpg", "speed19_orig.jpg"], ["speed21.jpg", "speed21_orig.jpg"], ["speed24.jpg", "speed24_orig.jpg"], ["speed26.jpg", "speed26_orig.jpg"], ["speed28.jpg", "speed28_orig.jpg"], ["speed31.jpg", "speed31_orig.jpg"], ["speed33.jpg", "speed33_orig.jpg"]]], ["Spider-Man: Into the Spider-Verse", 2018, ["spiderverse5.jpg", "spiderverse8.jpg", "spiderverse12.jpg", "spiderverse15.jpg", "spiderverse19.jpg", "spiderverse22.jpg", "spiderverse26.jpg", "spiderverse29.jpg", "spiderverse33.jpg", "spiderverse36.jpg", "spiderverse40.jpg", "spiderverse43.jpg", "spiderverse47.jpg", "spiderverse50.jpg"]], ["Spring Breakers", 2012, ["springbreakers5.jpg", "springbreakers8.jpg", "springbreakers12.jpg", "springbreakers15.jpg", "springbreakers19.jpg", "springbreakers22.jpg", "springbreakers26.jpg", "springbreakers29.jpg", "springbreakers33.jpg", "springbreakers36.jpg", "springbreakers40.jpg", "springbreakers43.jpg", "springbreakers47.jpg", "springbreakers50.jpg"]], ["Stalag 17", 1953, [["stalag4.jpg", "stalag4_orig.jpg"], ["stalag6.jpg", "stalag6_orig.jpg"], ["stalag9.jpg", "stalag9_orig.jpg"], ["stalag12.jpg", "stalag12_orig.jpg"], ["stalag15.jpg", "stalag15_orig.jpg"], ["stalag18.jpg", "stalag18_orig.jpg"], ["stalag21.jpg", "stalag21_orig.jpg"], ["stalag24.jpg", "stalag24_orig.jpg"], ["stalag27.jpg", "stalag27_orig.jpg"], ["stalag30.jpg", "stalag30_orig.jpg"], ["stalag33.jpg", "stalag33_orig.jpg"], ["stalag36.jpg", "stalag36_orig.jpg"], ["stalag39.jpg", "stalag39_orig.jpg"], ["stalag42.jpg", "stalag42_orig.jpg"]]], ["Star Trek", 2009, ["startrek5.jpg", "startrek8.jpg", "startrek12.jpg", "startrek15.jpg", "startrek19.jpg", "startrek22.jpg", "startrek26.jpg", "startrek29.jpg", "startrek33.jpg", "startrek36.jpg", "startrek40.jpg", "startrek43.jpg", "startrek47.jpg", "startrek50.jpg"]], ["Starred Up", 2013, ["starredup3.jpg", "starredup5.jpg", "starredup7.jpg", "starredup10.jpg", "starredup12.jpg", "starredup14.jpg", "starredup17.jpg", "starredup19.jpg", "starredup21.jpg", "starredup24.jpg", "starredup26.jpg", "starredup28.jpg", "starredup31.jpg", "starredup33.jpg"]], ["Stoker", 2013, ["214352.jpg", "7558663.jpg", "3386410.jpg", "6634199.jpg", "1833390.jpg", "2804411.jpg", "9277833.jpg", "3016014.jpg", "5531489.jpg", "6691050.jpg", "245847.jpg", "4272889.jpg", "923295.jpg", "3151448.jpg"]], ["Summer with Monika", 1953, ["summerwithmonika5.jpg", "summerwithmonika8.jpg", "summerwithmonika12.jpg", "summerwithmonika15.jpg", "summerwithmonika19.jpg", "summerwithmonika22.jpg", "summerwithmonika26.jpg", "summerwithmonika29.jpg", "summerwithmonika33.jpg", "summerwithmonika36.jpg", "summerwithmonika40.jpg", "summerwithmonika43.jpg", "summerwithmonika47.jpg", "summerwithmonika50.jpg"]], ["Sunshine", 2007, ["sunshine5.jpg", "sunshine8.jpg", "sunshine12.jpg", "sunshine15.jpg", "sunshine19.jpg", "sunshine22.jpg", "sunshine26.jpg", "sunshine29.jpg", "sunshine33.jpg", "sunshine36.jpg", "sunshine40.jpg", "sunshine43.jpg", "sunshine47.jpg", "sunshine50.jpg"]], ["Suspiria", 1977, ["suspiria5.jpg", "suspiria8.jpg", "suspiria12.jpg", "suspiria15.jpg", "suspiria19.jpg", "suspiria22.jpg", "suspiria26.jpg", "suspiria29.jpg", "suspiria33.jpg", "suspiria36.jpg", "suspiria40.jpg", "suspiria43.jpg", "suspiria47.jpg", "suspiria50.jpg"]], ["Tales from Earthsea", 2006, [["talesfromearthsea4.jpg", "talesfromearthsea4_orig.jpg"], ["talesfromearthsea6.jpg", "talesfromearthsea6_orig.jpg"], ["talesfromearthsea9.jpg", "talesfromearthsea9_orig.jpg"], ["talesfromearthsea12.jpg", "talesfromearthsea12_orig.jpg"], ["talesfromearthsea15.jpg", "talesfromearthsea15_orig.jpg"], ["talesfromearthsea18.jpg", "talesfromearthsea18_orig.jpg"], ["talesfromearthsea21.jpg", "talesfromearthsea21_orig.jpg"], ["talesfromearthsea24.jpg", "talesfromearthsea24_orig.jpg"], ["talesfromearthsea27.jpg", "talesfromearthsea27_orig.jpg"], ["talesfromearthsea30.jpg", "talesfromearthsea30_orig.jpg"], ["talesfromearthsea33.jpg", "talesfromearthsea33_orig.jpg"], ["talesfromearthsea36.jpg", "talesfromearthsea36_orig.jpg"], ["talesfromearthsea39.jpg", "talesfromearthsea39_orig.jpg"], ["talesfromearthsea42.jpg", "talesfromearthsea42_orig.jpg"]]], ["Tangled", 2010, [["tangled4.jpg", "tangled4_orig.jpg"], ["tangled6.jpg", "tangled6_orig.jpg"], ["tangled9.jpg", "tangled9_orig.jpg"], ["tangled12.jpg", "tangled12_orig.jpg"], ["tangled15.jpg", "tangled15_orig.jpg"], ["tangled18.jpg", "tangled18_orig.jpg"], ["tangled21.jpg", "tangled21_orig.jpg"], ["tangled24.jpg", "tangled24_orig.jpg"], ["tangled27.jpg", "tangled27_orig.jpg"], ["tangled30.jpg", "tangled30_orig.jpg"], ["tangled33.jpg", "tangled33_orig.jpg"], ["tangled36.jpg", "tangled36_orig.jpg"], ["tangled39.jpg", "tangled39_orig.jpg"], ["tangled42.jpg", "tangled42_orig.jpg"]]], ["Taxi Driver", 1976, [["taxidriver3.jpg", "taxidriver3_orig.jpg"], ["taxidriver5.jpg", "taxidriver5_orig.jpg"], ["taxidriver7.jpg", "taxidriver7_orig.jpg"], ["taxidriver10.jpg", "taxidriver10_orig.jpg"], ["taxidriver12.jpg", "taxidriver12_orig.jpg"], ["taxidriver14.jpg", "taxidriver14_orig.jpg"], ["taxidriver17.jpg", "taxidriver17_orig.jpg"], ["taxidriver19.jpg", "taxidriver19_orig.jpg"], ["taxidriver21.jpg", "taxidriver21_orig.jpg"], ["taxidriver24.jpg", "taxidriver24_orig.jpg"], ["taxidriver26.jpg", "taxidriver26_orig.jpg"], ["taxidriver28.jpg", "taxidriver28_orig.jpg"], ["taxidriver31.jpg", "taxidriver31_orig.jpg"], ["taxidriver33.jpg", "taxidriver33_orig.jpg"]]], ["Ted", 2012, [["ted5.jpg", "ted5_orig.jpg"], ["ted8.jpg", "ted8_orig.jpg"], ["ted12.jpg", "ted12_orig.jpg"], ["ted15.jpg", "ted15_orig.jpg"], ["ted19.jpg", "ted19_orig.jpg"], ["ted22.jpg", "ted22_orig.jpg"], ["ted26.jpg", "ted26_orig.jpg"], ["ted29.jpg", "ted29_orig.jpg"], ["ted33.jpg", "ted33_orig.jpg"], ["ted36.jpg", "ted36_orig.jpg"], ["ted40.jpg", "ted40_orig.jpg"], ["ted43.jpg", "ted43_orig.jpg"], ["ted47.jpg", "ted47_orig.jpg"], ["ted50.jpg", "ted50_orig.jpg"]]], ["Tenet", 2020, [["tenet5.jpg", "tenet5_orig.jpg"], ["tenet9.jpg", "tenet9_orig.jpg"], ["tenet13.jpg", "tenet13_orig.jpg"], ["tenet17.jpg", "tenet17_orig.jpg"], ["tenet21.jpg", "tenet21_orig.jpg"], ["tenet25.jpg", "tenet25_orig.jpg"], ["tenet29.jpg", "tenet29_orig.jpg"], ["tenet33.jpg", "tenet33_orig.jpg"], ["tenet37.jpg", "tenet37_orig.jpg"], ["tenet41.jpg", "tenet41_orig.jpg"], ["tenet45.jpg", "tenet45_orig.jpg"], ["tenet49.jpg", "tenet49_orig.jpg"], ["tenet53.jpg", "tenet53_orig.jpg"], ["tenet57.jpg", "tenet57_orig.jpg"]]], ["The 39 Steps", 1935, [["39steps3.jpg", "39steps3_orig.jpg"], ["39steps5.jpg", "39steps5_orig.jpg"], ["39steps7.jpg", "39steps7_orig.jpg"], ["39steps10.jpg", "39steps10_orig.jpg"], ["39steps12.jpg", "39steps12_orig.jpg"], ["39steps14.jpg", "39steps14_orig.jpg"], ["39steps17.jpg", "39steps17_orig.jpg"], ["39steps19.jpg", "39steps19_orig.jpg"], ["39steps21.jpg", "39steps21_orig.jpg"], ["39steps24.jpg", "39steps24_orig.jpg"], ["39steps26.jpg", "39steps26_orig.jpg"], ["39steps28.jpg", "39steps28_orig.jpg"], ["39steps31.jpg", "39steps31_orig.jpg"], ["39steps33.jpg", "39steps33_orig.jpg"]]], ["The Adventures of Tintin", 2011, [["adventuresoftintin3.jpg", "adventuresoftintin3_orig.jpg"], ["adventuresoftintin5.jpg", "adventuresoftintin5_orig.jpg"], ["adventuresoftintin7.jpg", "adventuresoftintin7_orig.jpg"], ["adventuresoftintin10.jpg", "adventuresoftintin10_orig.jpg"], ["adventuresoftintin12.jpg", "adventuresoftintin12_orig.jpg"], ["adventuresoftintin14.jpg", "adventuresoftintin14_orig.jpg"], ["adventuresoftintin17.jpg", "adventuresoftintin17_orig.jpg"], ["adventuresoftintin19.jpg", "adventuresoftintin19_orig.jpg"], ["adventuresoftintin21.jpg", "adventuresoftintin21_orig.jpg"], ["adventuresoftintin24.jpg", "adventuresoftintin24_orig.jpg"], ["adventuresoftintin26.jpg", "adventuresoftintin26_orig.jpg"], ["adventuresoftintin28.jpg", "adventuresoftintin28_orig.jpg"], ["adventuresoftintin31.jpg", "adventuresoftintin31_orig.jpg"], ["adventuresoftintin33.jpg", "adventuresoftintin33_orig.jpg"]]], ["The African Queen", 1951, [["africanqueen4.jpg", "africanqueen4_orig.jpg"], ["africanqueen6.jpg", "africanqueen6_orig.jpg"], ["africanqueen9.jpg", "africanqueen9_orig.jpg"], ["africanqueen12.jpg", "africanqueen12_orig.jpg"], ["africanqueen15.jpg", "africanqueen15_orig.jpg"], ["africanqueen18.jpg", "africanqueen18_orig.jpg"], ["africanqueen21.jpg", "africanqueen21_orig.jpg"], ["africanqueen24.jpg", "africanqueen24_orig.jpg"], ["africanqueen27.jpg", "africanqueen27_orig.jpg"], ["africanqueen30.jpg", "africanqueen30_orig.jpg"], ["africanqueen33.jpg", "africanqueen33_orig.jpg"], ["africanqueen36.jpg", "africanqueen36_orig.jpg"], ["africanqueen39.jpg", "africanqueen39_orig.jpg"], ["africanqueen42.jpg", "africanqueen42_orig.jpg"]]], ["The Age of Innocence", 1993, [["ageofinnocence5.jpg", "ageofinnocence5_orig.jpg"], ["ageofinnocence8.jpg", "ageofinnocence8_orig.jpg"], ["ageofinnocence12.jpg", "ageofinnocence12_orig.jpg"], ["ageofinnocence15.jpg", "ageofinnocence15_orig.jpg"], ["ageofinnocence19.jpg", "ageofinnocence19_orig.jpg"], ["ageofinnocence22.jpg", "ageofinnocence22_orig.jpg"], ["ageofinnocence26.jpg", "ageofinnocence26_orig.jpg"], ["ageofinnocence29.jpg", "ageofinnocence29_orig.jpg"], ["ageofinnocence33.jpg", "ageofinnocence33_orig.jpg"], ["ageofinnocence36.jpg", "ageofinnocence36_orig.jpg"], ["ageofinnocence40.jpg", "ageofinnocence40_orig.jpg"], ["ageofinnocence43.jpg", "ageofinnocence43_orig.jpg"], ["ageofinnocence47.jpg", "ageofinnocence47_orig.jpg"], ["ageofinnocence50.jpg", "ageofinnocence50_orig.jpg"]]], ["The American", 2010, [["american5.jpg", "american5_orig.jpg"], ["american8.jpg", "american8_orig.jpg"], ["american12.jpg", "american12_orig.jpg"], ["american15.jpg", "american15_orig.jpg"], ["american19.jpg", "american19_orig.jpg"], ["american22.jpg", "american22_orig.jpg"], ["american26.jpg", "american26_orig.jpg"], ["american29.jpg", "american29_orig.jpg"], ["american33.jpg", "american33_orig.jpg"], ["american36.jpg", "american36_orig.jpg"], ["american40.jpg", "american40_orig.jpg"], ["american43.jpg", "american43_orig.jpg"], ["american47.jpg", "american47_orig.jpg"], ["american50.jpg", "american50_orig.jpg"]]], ["The Apartment", 1960, [["apartment3.jpg", "apartment3_orig.jpg"], ["apartment5.jpg", "apartment5_orig.jpg"], ["apartment7.jpg", "apartment7_orig.jpg"], ["apartment10.jpg", "apartment10_orig.jpg"], ["apartment12.jpg", "apartment12_orig.jpg"], ["apartment14.jpg", "apartment14_orig.jpg"], ["apartment17.jpg", "apartment17_orig.jpg"], ["apartment19.jpg", "apartment19_orig.jpg"], ["apartment21.jpg", "apartment21_orig.jpg"], ["apartment24.jpg", "apartment24_orig.jpg"], ["apartment26.jpg", "apartment26_orig.jpg"], ["apartment28.jpg", "apartment28_orig.jpg"], ["apartment31.jpg", "apartment31_orig.jpg"], ["apartment33.jpg", "apartment33_orig.jpg"]]], ["The Artist", 2011, [["artist3.jpg", "artist3_orig.jpg"], ["artist5.jpg", "artist5_orig.jpg"], ["artist7.jpg", "artist7_orig.jpg"], ["artist10.jpg", "artist10_orig.jpg"], ["artist12.jpg", "artist12_orig.jpg"], ["artist14.jpg", "artist14_orig.jpg"], ["artist17.jpg", "artist17_orig.jpg"], ["artist19.jpg", "artist19_orig.jpg"], ["artist21.jpg", "artist21_orig.jpg"], ["artist24.jpg", "artist24_orig.jpg"], ["artist26.jpg", "artist26_orig.jpg"], ["artist28.jpg", "artist28_orig.jpg"], ["artist31.jpg", "artist31_orig.jpg"], ["artist33.jpg", "artist33_orig.jpg"]]], ["The Assassination of Jesse James by the coward Robert Ford", 2007, [["assassin5.jpg", "assassin5_orig.jpg"], ["assassin8.jpg", "assassin8_orig.jpg"], ["assassin12.jpg", "assassin12_orig.jpg"], ["assassin15.jpg", "assassin15_orig.jpg"], ["assassin19.jpg", "assassin19_orig.jpg"], ["assassin22.jpg", "assassin22_orig.jpg"], ["assassin26.jpg", "assassin26_orig.jpg"], ["assassin29.jpg", "assassin29_orig.jpg"], ["assassin33.jpg", "assassin33_orig.jpg"], ["assassin36.jpg", "assassin36_orig.jpg"], ["assassin40.jpg", "assassin40_orig.jpg"], ["assassin43.jpg", "assassin43_orig.jpg"], ["assassin47.jpg", "assassin47_orig.jpg"], ["assassin50.jpg", "assassin50_orig.jpg"]]], ["The Avengers", 2012, [["avengers5.jpg", "avengers5_orig.jpg"], ["avengers8.jpg", "avengers8_orig.jpg"], ["avengers12.jpg", "avengers12_orig.jpg"], ["avengers15.jpg", "avengers15_orig.jpg"], ["avengers19.jpg", "avengers19_orig.jpg"], ["avengers22.jpg", "avengers22_orig.jpg"], ["avengers26.jpg", "avengers26_orig.jpg"], ["avengers29.jpg", "avengers29_orig.jpg"], ["avengers33.jpg", "avengers33_orig.jpg"], ["avengers36.jpg", "avengers36_orig.jpg"], ["avengers40.jpg", "avengers40_orig.jpg"], ["avengers43.jpg", "avengers43_orig.jpg"], ["avengers47.jpg", "avengers47_orig.jpg"], ["avengers50.jpg", "avengers50_orig.jpg"]]], ["The Aviator", 2004, [["aviator5.jpg", "aviator5_orig.jpg"], ["aviator8.jpg", "aviator8_orig.jpg"], ["aviator12.jpg", "aviator12_orig.jpg"], ["aviator15.jpg", "aviator15_orig.jpg"], ["aviator19.jpg", "aviator19_orig.jpg"], ["aviator22.jpg", "aviator22_orig.jpg"], ["aviator26.jpg", "aviator26_orig.jpg"], ["aviator29.jpg", "aviator29_orig.jpg"], ["aviator33.jpg", "aviator33_orig.jpg"], ["aviator36.jpg", "aviator36_orig.jpg"], ["aviator40.jpg", "aviator40_orig.jpg"], ["aviator43.jpg", "aviator43_orig.jpg"], ["aviator47.jpg", "aviator47_orig.jpg"], ["aviator50.jpg", "aviator50_orig.jpg"]]], ["The Baader Meinhof Complex", 2008, [["baadermeinhof3.jpg", "baadermeinhof3_orig.jpg"], ["baadermeinhof4.jpg", "baadermeinhof4_orig.jpg"], ["baadermeinhof6.jpg", "baadermeinhof6_orig.jpg"], ["baadermeinhof8.jpg", "baadermeinhof8_orig.jpg"], ["baadermeinhof10.jpg", "baadermeinhof10_orig.jpg"], ["baadermeinhof11.jpg", "baadermeinhof11_orig.jpg"], ["baadermeinhof13.jpg", "baadermeinhof13_orig.jpg"], ["baadermeinhof15.jpg", "baadermeinhof15_orig.jpg"], ["baadermeinhof17.jpg", "baadermeinhof17_orig.jpg"], ["baadermeinhof19.jpg", "baadermeinhof19_orig.jpg"], ["baadermeinhof20.jpg", "baadermeinhof20_orig.jpg"], ["baadermeinhof22.jpg", "baadermeinhof22_orig.jpg"], ["baadermeinhof24.jpg", "baadermeinhof24_orig.jpg"], ["baadermeinhof26.jpg", "baadermeinhof26_orig.jpg"]]], ["The Batman", 2022, [["batman5.jpg", "batman5_orig.jpg"], ["batman9.jpg", "batman9_orig.jpg"], ["batman13.jpg", "batman13_orig.jpg"], ["batman17.jpg", "batman17_orig.jpg"], ["batman21.jpg", "batman21_orig.jpg"], ["batman25.jpg", "batman25_orig.jpg"], ["batman29.jpg", "batman29_orig.jpg"], ["batman33.jpg", "batman33_orig.jpg"], ["batman37.jpg", "batman37_orig.jpg"], ["batman41.jpg", "batman41_orig.jpg"], ["batman45.jpg", "batman45_orig.jpg"], ["batman49.jpg", "batman49_orig.jpg"], ["batman53.jpg", "batman53_orig.jpg"], ["batman57.jpg", "batman57_orig.jpg"]]], ["The Blues Brothers", 1980, [["bluesbrothers3.jpg", "bluesbrothers3_orig.jpg"], ["bluesbrothers4.jpg", "bluesbrothers4_orig.jpg"], ["bluesbrothers6.jpg", "bluesbrothers6_orig.jpg"], ["bluesbrothers8.jpg", "bluesbrothers8_orig.jpg"], ["bluesbrothers10.jpg", "bluesbrothers10_orig.jpg"], ["bluesbrothers11.jpg", "bluesbrothers11_orig.jpg"], ["bluesbrothers13.jpg", "bluesbrothers13_orig.jpg"], ["bluesbrothers15.jpg", "bluesbrothers15_orig.jpg"], ["bluesbrothers17.jpg", "bluesbrothers17_orig.jpg"], ["bluesbrothers19.jpg", "bluesbrothers19_orig.jpg"], ["bluesbrothers20.jpg", "bluesbrothers20_orig.jpg"], ["bluesbrothers22.jpg", "bluesbrothers22_orig.jpg"], ["bluesbrothers24.jpg", "bluesbrothers24_orig.jpg"], ["bluesbrothers26.jpg", "bluesbrothers26_orig.jpg"]]], ["The Bodyguard", 1992, [["bodyguard3.jpg", "bodyguard3_orig.jpg"], ["bodyguard5.jpg", "bodyguard5_orig.jpg"], ["bodyguard7.jpg", "bodyguard7_orig.jpg"], ["bodyguard10.jpg", "bodyguard10_orig.jpg"], ["bodyguard12.jpg", "bodyguard12_orig.jpg"], ["bodyguard14.jpg", "bodyguard14_orig.jpg"], ["bodyguard17.jpg", "bodyguard17_orig.jpg"], ["bodyguard19.jpg", "bodyguard19_orig.jpg"], ["bodyguard21.jpg", "bodyguard21_orig.jpg"], ["bodyguard24.jpg", "bodyguard24_orig.jpg"], ["bodyguard26.jpg", "bodyguard26_orig.jpg"], ["bodyguard28.jpg", "bodyguard28_orig.jpg"], ["bodyguard31.jpg", "bodyguard31_orig.jpg"], ["bodyguard33.jpg", "bodyguard33_orig.jpg"]]], ["The Cabin in the Woods", 2012, [["cabininthewoods3.jpg", "cabininthewoods3_orig.jpg"], ["cabininthewoods5.jpg", "cabininthewoods5_orig.jpg"], ["cabininthewoods7.jpg", "cabininthewoods7_orig.jpg"], ["cabininthewoods10.jpg", "cabininthewoods10_orig.jpg"], ["cabininthewoods12.jpg", "cabininthewoods12_orig.jpg"], ["cabininthewoods14.jpg", "cabininthewoods14_orig.jpg"], ["cabininthewoods17.jpg", "cabininthewoods17_orig.jpg"], ["cabininthewoods19.jpg", "cabininthewoods19_orig.jpg"], ["cabininthewoods21.jpg", "cabininthewoods21_orig.jpg"], ["cabininthewoods24.jpg", "cabininthewoods24_orig.jpg"], ["cabininthewoods26.jpg", "cabininthewoods26_orig.jpg"], ["cabininthewoods28.jpg", "cabininthewoods28_orig.jpg"], ["cabininthewoods31.jpg", "cabininthewoods31_orig.jpg"], ["cabininthewoods33.jpg", "cabininthewoods33_orig.jpg"]]], ["The Chronicles of Narnia: Prince Caspian", 2008, [["narniaprincecaspian3.jpg", "narniaprincecaspian3_orig.jpg"], ["narniaprincecaspian5.jpg", "narniaprincecaspian5_orig.jpg"], ["narniaprincecaspian7.jpg", "narniaprincecaspian7_orig.jpg"], ["narniaprincecaspian10.jpg", "narniaprincecaspian10_orig.jpg"], ["narniaprincecaspian12.jpg", "narniaprincecaspian12_orig.jpg"], ["narniaprincecaspian14.jpg", "narniaprincecaspian14_orig.jpg"], ["narniaprincecaspian17.jpg", "narniaprincecaspian17_orig.jpg"], ["narniaprincecaspian19.jpg", "narniaprincecaspian19_orig.jpg"], ["narniaprincecaspian21.jpg", "narniaprincecaspian21_orig.jpg"], ["narniaprincecaspian24.jpg", "narniaprincecaspian24_orig.jpg"], ["narniaprincecaspian26.jpg", "narniaprincecaspian26_orig.jpg"], ["narniaprincecaspian28.jpg", "narniaprincecaspian28_orig.jpg"], ["narniaprincecaspian31.jpg", "narniaprincecaspian31_orig.jpg"], ["narniaprincecaspian33.jpg", "narniaprincecaspian33_orig.jpg"]]], ["The Collector", 1965, ["collector5.jpg", "collector8.jpg", "collector12.jpg", "collector15.jpg", "collector19.jpg", "collector22.jpg", "collector26.jpg", "collector29.jpg", "collector33.jpg", "collector36.jpg", "collector40.jpg", "collector43.jpg", "collector47.jpg", "collector50.jpg"]], ["The Conformist / Il Conformista", 1970, ["conformist4.jpg", "conformist6.jpg", "conformist9.jpg", "conformist12.jpg", "conformist15.jpg", "conformist18.jpg", "conformist21.jpg", "conformist24.jpg", "conformist27.jpg", "conformist30.jpg", "conformist33.jpg", "conformist36.jpg", "conformist39.jpg", "conformist42.jpg"]], ["The Conversation", 1974, ["conversation4.jpg", "conversation6.jpg", "conversation9.jpg", "conversation12.jpg", "conversation15.jpg", "conversation18.jpg", "conversation21.jpg", "conversation24.jpg", "conversation27.jpg", "conversation30.jpg", "conversation33.jpg", "conversation36.jpg", "conversation39.jpg", "conversation42.jpg"]], ["The Counselor", 2013, ["counselor4.jpg", "counselor6.jpg", "counselor9.jpg", "counselor12.jpg", "counselor15.jpg", "counselor18.jpg", "counselor21.jpg", "counselor24.jpg", "counselor27.jpg", "counselor30.jpg", "counselor33.jpg", "counselor36.jpg", "counselor39.jpg", "counselor42.jpg"]], ["The Damned United", 2009, ["damnedunited4.jpg", "damnedunited6.jpg", "damnedunited9.jpg", "damnedunited12.jpg", "damnedunited15.jpg", "damnedunited18.jpg", "damnedunited21.jpg", "damnedunited24.jpg", "damnedunited27.jpg", "damnedunited30.jpg", "damnedunited33.jpg", "damnedunited36.jpg", "damnedunited39.jpg", "damnedunited42.jpg"]], ["The Dark Knight", 2008, ["darkknight5_1.jpg", "darkknight8_1.jpg", "darkknight12_1.jpg", "darkknight15_1.jpg", "darkknight19_1.jpg", "darkknight22_1.jpg", "darkknight26_1.jpg", "darkknight29_1.jpg", "darkknight33_1.jpg", "darkknight36_1.jpg", "darkknight40_1.jpg", "darkknight43_1.jpg", "darkknight47_1.jpg", "darkknight50_1.jpg"]], ["The Dark Knight Rises", 2012, ["7209290.jpg", "9785605.jpg", "1790511.jpg", "3836467.jpg", "2564394.jpg", "3748305.jpg", "3234643.jpg", "2498346.jpg", "3033945.jpg", "9939704.jpg", "196265.jpg", "3433038.jpg", "3786348.jpg", "7487034.jpg"]], ["The Departed", 2006, [["departed4.jpg", "departed4_orig.jpg"], ["departed6.jpg", "departed6_orig.jpg"], ["departed9.jpg", "departed9_orig.jpg"], ["departed12.jpg", "departed12_orig.jpg"], ["departed15.jpg", "departed15_orig.jpg"], ["departed18.jpg", "departed18_orig.jpg"], ["departed21.jpg", "departed21_orig.jpg"], ["departed24.jpg", "departed24_orig.jpg"], ["departed27.jpg", "departed27_orig.jpg"], ["departed30.jpg", "departed30_orig.jpg"], ["departed33.jpg", "departed33_orig.jpg"], ["departed36.jpg", "departed36_orig.jpg"], ["departed39.jpg", "departed39_orig.jpg"], ["departed42.jpg", "departed42_orig.jpg"]]], ["The Descendants", 2011, ["descendants5.jpg", "descendants8.jpg", "descendants12.jpg", "descendants15.jpg", "descendants19.jpg", "descendants22.jpg", "descendants26.jpg", "descendants29.jpg", "descendants33.jpg", "descendants36.jpg", "descendants40.jpg", "descendants43.jpg", "descendants47.jpg", "descendants50.jpg"]], ["The Devil's Backbone", 2001, ["devilsbackbone4.jpg", "devilsbackbone6.jpg", "devilsbackbone9.jpg", "devilsbackbone12.jpg", "devilsbackbone15.jpg", "devilsbackbone18.jpg", "devilsbackbone21.jpg", "devilsbackbone24.jpg", "devilsbackbone27.jpg", "devilsbackbone30.jpg", "devilsbackbone33.jpg", "devilsbackbone36.jpg", "devilsbackbone39.jpg", "devilsbackbone42.jpg"]], ["The English Patient", 1996, ["9208579.jpg", "6301543.jpg", "9495657.jpg", "5600088.jpg", "1958305.jpg", "1250650.jpg", "9713922.jpg", "8527760.jpg", "9226928.jpg", "515541.jpg", "4100899.jpg", "9787180.jpg", "6915093.jpg", "9297559.jpg"]], ["The Exorcist", 1973, ["exorcist4.jpg", "exorcist6.jpg", "exorcist9.jpg", "exorcist12.jpg", "exorcist15.jpg", "exorcist18.jpg", "exorcist21.jpg", "exorcist24.jpg", "exorcist27.jpg", "exorcist30.jpg", "exorcist33.jpg", "exorcist36.jpg", "exorcist39.jpg", "exorcist42.jpg"]], ["The Favourite", 2018, ["favourite4.jpg", "favourite6.jpg", "favourite9.jpg", "favourite12.jpg", "favourite15.jpg", "favourite18.jpg", "favourite21.jpg", "favourite24.jpg", "favourite27.jpg", "favourite30.jpg", "favourite33.jpg", "favourite36.jpg", "favourite39.jpg", "favourite42.jpg"]], ["The Fifth Element", 1997, ["fifthelement3_5.jpg", "fifthelement5_5.jpg", "fifthelement7_5.jpg", "fifthelement10_5.jpg", "fifthelement12_4.jpg", "fifthelement14_4.jpg", "fifthelement17_4.jpg", "fifthelement19_4.jpg", "fifthelement21_4.jpg", "fifthelement24_4.jpg", "fifthelement26_4.jpg", "fifthelement28_4.jpg", "fifthelement31_4.jpg", "fifthelement33_4.jpg"]], ["The Game", 1997, [["thegame4.jpg", "thegame4_orig.jpg"], ["thegame6.jpg", "thegame6_orig.jpg"], ["thegame9.jpg", "thegame9_orig.jpg"], ["thegame12.jpg", "thegame12_orig.jpg"], ["thegame15.jpg", "thegame15_orig.jpg"], ["thegame18.jpg", "thegame18_orig.jpg"], ["thegame21.jpg", "thegame21_orig.jpg"], ["thegame24.jpg", "thegame24_orig.jpg"], ["thegame27.jpg", "thegame27_orig.jpg"], ["thegame30.jpg", "thegame30_orig.jpg"], ["thegame33.jpg", "thegame33_orig.jpg"], ["thegame36.jpg", "thegame36_orig.jpg"], ["thegame39.jpg", "thegame39_orig.jpg"], ["thegame42.jpg", "thegame42_orig.jpg"]]], ["The Ghost Writer", 2010, ["9138046.jpg", "871769.jpg", "2425243.jpg", "2774461.jpg", "3715046.jpg", "4626155.jpg", "6068775.jpg", "2800340.jpg", "730397.jpg", "4286278.jpg", "3238365.jpg", "5756026.jpg", "6018673.jpg", "4054687.jpg"]], ["The Girl with the Dragon Tattoo", 2011, ["7648156.jpg", "6182735.jpg", "4428830.jpg", "2612525.jpg", "1110487.jpg", "7538331.jpg", "4968486.jpg", "5189594.jpg", "803050.jpg", "2010468.jpg", "3465245.jpg", "4872758.jpg", "9527650.jpg", "572433.jpg"]], ["The Godfather", 1972, ["godfather5.jpg", "godfather8.jpg", "godfather12.jpg", "godfather15.jpg", "godfather19.jpg", "godfather22.jpg", "godfather26.jpg", "godfather29.jpg", "godfather33.jpg", "godfather36.jpg", "godfather40.jpg", "godfather43.jpg", "godfather47.jpg", "godfather50.jpg"]], ["The Godfather: Part II", 1974, ["godfatherpart25.jpg", "godfatherpart28.jpg", "godfatherpart212.jpg", "godfatherpart215.jpg", "godfatherpart219.jpg", "godfatherpart222.jpg", "godfatherpart226.jpg", "godfatherpart229.jpg", "godfatherpart233.jpg", "godfatherpart236.jpg", "godfatherpart240.jpg", "godfatherpart243.jpg", "godfatherpart247.jpg", "godfatherpart250.jpg"]], ["The Grand Budapest Hotel", 2014, ["4706726.jpg", "5753683.jpg", "5872029.jpg", "6611678.jpg", "5443350.jpg", "7651585.jpg", "8320981.jpg", "2970572.jpg", "4679783.jpg", "5934786.jpg", "6132362.jpg", "3016452.jpg", "6246917.jpg", "3969879.jpg"]], ["The Great Beauty / La Grande Bellezza", 2013, ["4626824.jpg", "2051491.jpg", "3744351.jpg", "9090407.jpg", "4229835.jpg", "2066589.jpg", "6108590.jpg", "6610569.jpg", "7383448.jpg", "8426485.jpg", "5193629.jpg", "5699154.jpg", "990248.jpg", "6665311.jpg"]], ["The Great Dictator", 1940, ["greatdictator5.jpg", "greatdictator8.jpg", "greatdictator12.jpg", "greatdictator15.jpg", "greatdictator19.jpg", "greatdictator22.jpg", "greatdictator26.jpg", "greatdictator29.jpg", "greatdictator33.jpg", "greatdictator36.jpg", "greatdictator40.jpg", "greatdictator43.jpg", "greatdictator47.jpg", "greatdictator50.jpg"]], ["The Great Mouse Detective", 1986, ["greatmouse5.jpg", "greatmouse8.jpg", "greatmouse12.jpg", "greatmouse15.jpg", "greatmouse19.jpg", "greatmouse22.jpg", "greatmouse26.jpg", "greatmouse29.jpg", "greatmouse33.jpg", "greatmouse36.jpg", "greatmouse40.jpg", "greatmouse43.jpg", "greatmouse47.jpg", "greatmouse50.jpg"]], ["The Green Knight", 2021, ["greenknight5.jpg", "greenknight9.jpg", "greenknight13.jpg", "greenknight17.jpg", "greenknight21.jpg", "greenknight25.jpg", "greenknight29.jpg", "greenknight33.jpg", "greenknight37.jpg", "greenknight41.jpg", "greenknight45.jpg", "greenknight49.jpg", "greenknight53.jpg", "greenknight57.jpg"]], ["The Hobbit: An Unexpected Journey", 2012, ["hobbit4.jpg", "hobbit6.jpg", "hobbit9.jpg", "hobbit12.jpg", "hobbit15.jpg", "hobbit18.jpg", "hobbit21.jpg", "hobbit24.jpg", "hobbit27.jpg", "hobbit30.jpg", "hobbit33.jpg", "hobbit36.jpg", "hobbit39.jpg", "hobbit42.jpg"]], ["The Holiday", 2006, ["holiday4.jpg", "holiday6.jpg", "holiday9.jpg", "holiday12.jpg", "holiday15.jpg", "holiday18.jpg", "holiday21.jpg", "holiday24.jpg", "holiday27.jpg", "holiday30.jpg", "holiday33.jpg", "holiday36.jpg", "holiday39.jpg", "holiday42.jpg"]], ["The Homesman", 2014, ["5264249.jpg", "8932555.jpg", "44075.jpg", "5237636.jpg", "4769882.jpg", "9907481.jpg", "6197721.jpg", "5085791.jpg", "6059987.jpg", "7027299.jpg", "7318949.jpg", "1720134.jpg", "2467403.jpg", "3209241.jpg"]], ["The Howling", 1981, ["howling4.jpg", "howling6.jpg", "howling9.jpg", "howling12.jpg", "howling15.jpg", "howling18.jpg", "howling21.jpg", "howling24.jpg", "howling27.jpg", "howling30.jpg", "howling33.jpg", "howling36.jpg", "howling39.jpg", "howling42.jpg"]], ["The Hudsucker Proxy", 1994, ["hudsuckerproxy5.jpg", "hudsuckerproxy8.jpg", "hudsuckerproxy12.jpg", "hudsuckerproxy15.jpg", "hudsuckerproxy19.jpg", "hudsuckerproxy22.jpg", "hudsuckerproxy26.jpg", "hudsuckerproxy29.jpg", "hudsuckerproxy33.jpg", "hudsuckerproxy36.jpg", "hudsuckerproxy40.jpg", "hudsuckerproxy43.jpg", "hudsuckerproxy47.jpg", "hudsuckerproxy50.jpg"]], ["The Hustler", 1961, ["9768570.jpg", "6423608.jpg", "4503581.jpg", "8485873.jpg", "8417479.jpg", "6846525.jpg", "1030818.jpg", "8401795.jpg", "4875235.jpg", "8750330.jpg", "8406658.jpg", "5984146.jpg", "7787062.jpg", "1583944.jpg"]], ["The Internship", 2013, ["internship4.jpg", "internship6.jpg", "internship9.jpg", "internship12.jpg", "internship15.jpg", "internship18.jpg", "internship21.jpg", "internship24.jpg", "internship27.jpg", "internship30.jpg", "internship33.jpg", "internship36.jpg", "internship39.jpg", "internship42.jpg"]], ["The Intouchables", 2011, ["intouchables5.jpg", "intouchables8.jpg", "intouchables12.jpg", "intouchables15.jpg", "intouchables19.jpg", "intouchables22.jpg", "intouchables26.jpg", "intouchables29.jpg", "intouchables33.jpg", "intouchables36.jpg", "intouchables40.jpg", "intouchables43.jpg", "intouchables47.jpg", "intouchables50.jpg"]], ["The Killing", 1956, [["killing4.jpg", "killing4_orig.jpg"], ["killing6.jpg", "killing6_orig.jpg"], ["killing9.jpg", "killing9_orig.jpg"], ["killing12.jpg", "killing12_orig.jpg"], ["killing15.jpg", "killing15_orig.jpg"], ["killing18.jpg", "killing18_orig.jpg"], ["killing21.jpg", "killing21_orig.jpg"], ["killing24.jpg", "killing24_orig.jpg"], ["killing27.jpg", "killing27_orig.jpg"], ["killing30.jpg", "killing30_orig.jpg"], ["killing33.jpg", "killing33_orig.jpg"], ["killing36.jpg", "killing36_orig.jpg"], ["killing39.jpg", "killing39_orig.jpg"], ["killing42.jpg", "killing42_orig.jpg"]]], ["The King of Comedy", 1982, [["kingofcomedy5.jpg", "kingofcomedy5_orig.jpg"], ["kingofcomedy8.jpg", "kingofcomedy8_orig.jpg"], ["kingofcomedy12.jpg", "kingofcomedy12_orig.jpg"], ["kingofcomedy15.jpg", "kingofcomedy15_orig.jpg"], ["kingofcomedy19.jpg", "kingofcomedy19_orig.jpg"], ["kingofcomedy22.jpg", "kingofcomedy22_orig.jpg"], ["kingofcomedy26.jpg", "kingofcomedy26_orig.jpg"], ["kingofcomedy29.jpg", "kingofcomedy29_orig.jpg"], ["kingofcomedy33.jpg", "kingofcomedy33_orig.jpg"], ["kingofcomedy36.jpg", "kingofcomedy36_orig.jpg"], ["kingofcomedy40.jpg", "kingofcomedy40_orig.jpg"], ["kingofcomedy43.jpg", "kingofcomedy43_orig.jpg"], ["kingofcomedy47.jpg", "kingofcomedy47_orig.jpg"], ["kingofcomedy50.jpg", "kingofcomedy50_orig.jpg"]]], ["The King's Speech", 2010, ["kingsspeech5.jpg", "kingsspeech8.jpg", "kingsspeech12.jpg", "kingsspeech15.jpg", "kingsspeech19.jpg", "kingsspeech22.jpg", "kingsspeech26.jpg", "kingsspeech29.jpg", "kingsspeech33.jpg", "kingsspeech36.jpg", "kingsspeech40.jpg", "kingsspeech43.jpg", "kingsspeech47.jpg", "kingsspeech50.jpg"]], ["The Lighthouse", 2019, [["lighthouse5.jpg", "lighthouse5_orig.jpg"], ["lighthouse8.jpg", "lighthouse8_orig.jpg"], ["lighthouse12.jpg", "lighthouse12_orig.jpg"], ["lighthouse15.jpg", "lighthouse15_orig.jpg"], ["lighthouse19.jpg", "lighthouse19_orig.jpg"], ["lighthouse22.jpg", "lighthouse22_orig.jpg"], ["lighthouse26.jpg", "lighthouse26_orig.jpg"], ["lighthouse29.jpg", "lighthouse29_orig.jpg"], ["lighthouse33.jpg", "lighthouse33_orig.jpg"], ["lighthouse36.jpg", "lighthouse36_orig.jpg"], ["lighthouse40.jpg", "lighthouse40_orig.jpg"], ["lighthouse43.jpg", "lighthouse43_orig.jpg"], ["lighthouse47.jpg", "lighthouse47_orig.jpg"], ["lighthouse50.jpg", "lighthouse50_orig.jpg"]]], ["The Lion King", 1994, ["lionking3.jpg", "lionking5.jpg", "lionking7.jpg", "lionking10.jpg", "lionking12.jpg", "lionking14.jpg", "lionking17.jpg", "lionking19.jpg", "lionking21.jpg", "lionking24.jpg", "lionking26.jpg", "lionking28.jpg", "lionking31.jpg", "lionking33.jpg"]], ["The Little Mermaid", 1989, ["littlemermaid4.jpg", "littlemermaid6.jpg", "littlemermaid9.jpg", "littlemermaid12.jpg", "littlemermaid15.jpg", "littlemermaid18.jpg", "littlemermaid21.jpg", "littlemermaid24.jpg", "littlemermaid27.jpg", "littlemermaid30.jpg", "littlemermaid33.jpg", "littlemermaid36.jpg", "littlemermaid39.jpg", "littlemermaid42.jpg"]], ["The Lives of Others", 2006, ["livesofothers3.jpg", "livesofothers5.jpg", "livesofothers7.jpg", "livesofothers10.jpg", "livesofothers12.jpg", "livesofothers14.jpg", "livesofothers17.jpg", "livesofothers19.jpg", "livesofothers21.jpg", "livesofothers24.jpg", "livesofothers26.jpg", "livesofothers28.jpg", "livesofothers31.jpg", "livesofothers33.jpg"]], ["The Lost Boys", 1987, ["lostboys3.jpg", "lostboys4.jpg", "lostboys6.jpg", "lostboys8.jpg", "lostboys10.jpg", "lostboys11.jpg", "lostboys13.jpg", "lostboys15.jpg", "lostboys17.jpg", "lostboys19.jpg", "lostboys20.jpg", "lostboys22.jpg", "lostboys24.jpg", "lostboys26.jpg"]], ["The Magician", 1958, [["magician4.jpg", "magician4_orig.jpg"], ["magician6.jpg", "magician6_orig.jpg"], ["magician9.jpg", "magician9_orig.jpg"], ["magician12.jpg", "magician12_orig.jpg"], ["magician15.jpg", "magician15_orig.jpg"], ["magician18.jpg", "magician18_orig.jpg"], ["magician21.jpg", "magician21_orig.jpg"], ["magician24.jpg", "magician24_orig.jpg"], ["magician27.jpg", "magician27_orig.jpg"], ["magician30.jpg", "magician30_orig.jpg"], ["magician33.jpg", "magician33_orig.jpg"], ["magician36.jpg", "magician36_orig.jpg"], ["magician39.jpg", "magician39_orig.jpg"], ["magician42.jpg", "magician42_orig.jpg"]]], ["The Man with the Golden Gun", 1974, ["manwiththegoldengun5.jpg", "manwiththegoldengun8.jpg", "manwiththegoldengun12.jpg", "manwiththegoldengun15.jpg", "manwiththegoldengun19.jpg", "manwiththegoldengun22.jpg", "manwiththegoldengun26.jpg", "manwiththegoldengun29.jpg", "manwiththegoldengun33.jpg", "manwiththegoldengun36.jpg", "manwiththegoldengun40.jpg", "manwiththegoldengun43.jpg", "manwiththegoldengun47.jpg", "manwiththegoldengun50.jpg"]], ["The Mask", 1994, ["mask3.jpg", "mask5.jpg", "mask7.jpg", "mask10.jpg", "mask12.jpg", "mask14.jpg", "mask17.jpg", "mask19.jpg", "mask21.jpg", "mask24.jpg", "mask26.jpg", "mask28.jpg", "mask31.jpg", "mask33.jpg"]], ["The Master", 2012, ["master5.jpg", "master8.jpg", "master12.jpg", "master15.jpg", "master19.jpg", "master22.jpg", "master26.jpg", "master29.jpg", "master33.jpg", "master36.jpg", "master40.jpg", "master43.jpg", "master47.jpg", "master50.jpg"]], ["The Meg", 2018, ["4meg.jpg", "6meg.jpg", "9meg.jpg", "12meg.jpg", "15meg.jpg", "18meg.jpg", "21meg.jpg", "24meg.jpg", "27meg.jpg", "30meg.jpg", "33meg.jpg", "36meg.jpg", "39meg.jpg", "42meg.jpg"]], ["The Misfits", 1961, ["misfits4.jpg", "misfits6.jpg", "misfits9.jpg", "misfits12.jpg", "misfits15.jpg", "misfits18.jpg", "misfits21.jpg", "misfits24.jpg", "misfits27.jpg", "misfits30.jpg", "misfits33.jpg", "misfits36.jpg", "misfits39.jpg", "misfits42.jpg"]], ["The Mummy", 1999, ["mummy4.jpg", "mummy6.jpg", "mummy9.jpg", "mummy12.jpg", "mummy15.jpg", "mummy18.jpg", "mummy21.jpg", "mummy24.jpg", "mummy27.jpg", "mummy30.jpg", "mummy33.jpg", "mummy36.jpg", "mummy39.jpg", "mummy42.jpg"]], ["The Muppets", 2011, ["muppets3.jpg", "muppets5.jpg", "muppets7.jpg", "muppets10.jpg", "muppets12.jpg", "muppets14.jpg", "muppets17.jpg", "muppets19.jpg", "muppets21.jpg", "muppets24.jpg", "muppets26.jpg", "muppets28.jpg", "muppets31.jpg", "muppets33.jpg"]], ["The Name of the Rose / Der Name der Rose", 1986, ["nameoftherose3.jpg", "nameoftherose5.jpg", "nameoftherose7.jpg", "nameoftherose10.jpg", "nameoftherose12.jpg", "nameoftherose14.jpg", "nameoftherose17.jpg", "nameoftherose19.jpg", "nameoftherose21.jpg", "nameoftherose24.jpg", "nameoftherose26.jpg", "nameoftherose28.jpg", "nameoftherose31.jpg", "nameoftherose33.jpg"]], ["The Night of the Hunter", 1955, ["nightofthehunter5.jpg", "nightofthehunter8.jpg", "nightofthehunter12.jpg", "nightofthehunter15.jpg", "nightofthehunter19.jpg", "nightofthehunter22.jpg", "nightofthehunter26.jpg", "nightofthehunter29.jpg", "nightofthehunter33.jpg", "nightofthehunter36.jpg", "nightofthehunter40.jpg", "nightofthehunter43.jpg", "nightofthehunter47.jpg", "nightofthehunter50.jpg"]], ["The Nightmare Before Christmas", 1993, ["nightmarebeforechristmas4.jpg", "nightmarebeforechristmas6.jpg", "nightmarebeforechristmas9.jpg", "nightmarebeforechristmas12.jpg", "nightmarebeforechristmas15.jpg", "nightmarebeforechristmas18.jpg", "nightmarebeforechristmas21.jpg", "nightmarebeforechristmas24.jpg", "nightmarebeforechristmas27.jpg", "nightmarebeforechristmas30.jpg", "nightmarebeforechristmas33.jpg", "nightmarebeforechristmas36.jpg", "nightmarebeforechristmas39.jpg", "nightmarebeforechristmas42.jpg"]], ["The Northman", 2022, ["northman5.jpg", "northman9.jpg", "northman13.jpg", "northman17.jpg", "northman21.jpg", "northman25.jpg", "northman29.jpg", "northman33.jpg", "northman37.jpg", "northman41.jpg", "northman45.jpg", "northman49.jpg", "northman53.jpg", "northman57.jpg"]], ["The Phantom Carriage / K&ouml;rkarlen", 1921, ["phantomcarriage4.jpg", "phantomcarriage6.jpg", "phantomcarriage9.jpg", "phantomcarriage12.jpg", "phantomcarriage15.jpg", "phantomcarriage18.jpg", "phantomcarriage21.jpg", "phantomcarriage24.jpg", "phantomcarriage27.jpg", "phantomcarriage30.jpg", "phantomcarriage33.jpg", "phantomcarriage36.jpg", "phantomcarriage39.jpg", "phantomcarriage42.jpg"]], ["The Pianist", 2002, ["pianist5.jpg", "pianist8.jpg", "pianist12.jpg", "pianist15.jpg", "pianist19.jpg", "pianist22.jpg", "pianist26.jpg", "pianist29.jpg", "pianist33.jpg", "pianist36.jpg", "pianist40.jpg", "pianist43.jpg", "pianist47.jpg", "pianist50.jpg"]], ["The Piano", 1993, ["piano5.jpg", "piano8.jpg", "piano12.jpg", "piano15.jpg", "piano19.jpg", "piano22.jpg", "piano26.jpg", "piano29.jpg", "piano33.jpg", "piano36.jpg", "piano40.jpg", "piano43.jpg", "piano47.jpg", "piano50.jpg"]], ["The Pope's Exorcist", 2023, ["popesexorcist5.jpg", "popesexorcist8.jpg", "popesexorcist12.jpg", "popesexorcist15.jpg", "popesexorcist19.jpg", "popesexorcist22.jpg", "popesexorcist26.jpg", "popesexorcist29.jpg", "popesexorcist33.jpg", "popesexorcist36.jpg", "popesexorcist40.jpg", "popesexorcist43.jpg", "popesexorcist47.jpg", "popesexorcist50.jpg"]], ["The Prestige", 2006, ["9619645.jpg", "6840305.jpg", "5072819.jpg", "9159200.jpg", "7434838.jpg", "8283213.jpg", "1019600.jpg", "3279297.jpg", "3698646.jpg", "7914536.jpg", "4180969.jpg", "6790215.jpg", "4852871.jpg", "9128417.jpg"]], ["The Quick and the Dead", 1995, [["quickandthedead5.jpg", "quickandthedead5_orig.jpg"], ["quickandthedead8.jpg", "quickandthedead8_orig.jpg"], ["quickandthedead12.jpg", "quickandthedead12_orig.jpg"], ["quickandthedead15.jpg", "quickandthedead15_orig.jpg"], ["quickandthedead19.jpg", "quickandthedead19_orig.jpg"], ["quickandthedead22.jpg", "quickandthedead22_orig.jpg"], ["quickandthedead26.jpg", "quickandthedead26_orig.jpg"], ["quickandthedead29.jpg", "quickandthedead29_orig.jpg"], ["quickandthedead33.jpg", "quickandthedead33_orig.jpg"], ["quickandthedead36.jpg", "quickandthedead36_orig.jpg"], ["quickandthedead40.jpg", "quickandthedead40_orig.jpg"], ["quickandthedead43.jpg", "quickandthedead43_orig.jpg"], ["quickandthedead47.jpg", "quickandthedead47_orig.jpg"], ["quickandthedead50.jpg", "quickandthedead50_orig.jpg"]]], ["The Red Shoes", 1948, ["redshoes5.jpg", "redshoes8.jpg", "redshoes12.jpg", "redshoes15.jpg", "redshoes19.jpg", "redshoes22.jpg", "redshoes26.jpg", "redshoes29.jpg", "redshoes33.jpg", "redshoes36.jpg", "redshoes40.jpg", "redshoes43.jpg", "redshoes47.jpg", "redshoes50.jpg"]], ["The Remains of the Day", 1993, ["remainsoftheday4.jpg", "remainsoftheday6.jpg", "remainsoftheday9.jpg", "remainsoftheday12.jpg", "remainsoftheday15.jpg", "remainsoftheday18.jpg", "remainsoftheday21.jpg", "remainsoftheday24.jpg", "remainsoftheday27.jpg", "remainsoftheday30.jpg", "remainsoftheday33.jpg", "remainsoftheday36.jpg", "remainsoftheday39.jpg", "remainsoftheday42.jpg"]], ["The Right Stuff", 1983, ["rightstuff5.jpg", "rightstuff8.jpg", "rightstuff12.jpg", "rightstuff15.jpg", "rightstuff19.jpg", "rightstuff22.jpg", "rightstuff26.jpg", "rightstuff29.jpg", "rightstuff33.jpg", "rightstuff36.jpg", "rightstuff40.jpg", "rightstuff43.jpg", "rightstuff47.jpg", "rightstuff50.jpg"]], ["The Ring", 2002, ["ring5.jpg", "ring8.jpg", "ring12.jpg", "ring15.jpg", "ring19.jpg", "ring22.jpg", "ring26.jpg", "ring29.jpg", "ring33.jpg", "ring36.jpg", "ring40.jpg", "ring43.jpg", "ring47.jpg", "ring50.jpg"]], ["The Rock", 1996, ["5658957.jpg", "4627896.jpg", "9298388.jpg", "5473279.jpg", "9206718.jpg", "7664033.jpg", "6454040.jpg", "6004634.jpg", "2551002.jpg", "5466959.jpg", "5944797.jpg", "7829422.jpg", "9030600.jpg", "9372024.jpg"]], ["The Royal Tenenbaums", 2001, ["royaltenenbaums5.jpg", "royaltenenbaums8.jpg", "royaltenenbaums12.jpg", "royaltenenbaums15.jpg", "royaltenenbaums19.jpg", "royaltenenbaums22.jpg", "royaltenenbaums26.jpg", "royaltenenbaums29.jpg", "royaltenenbaums33.jpg", "royaltenenbaums36.jpg", "royaltenenbaums40.jpg", "royaltenenbaums43.jpg", "royaltenenbaums47.jpg", "royaltenenbaums50.jpg"]], ["The Rules of the Game / La r&eacute;gle du jeu", 1939, ["rulesofthegame4.jpg", "rulesofthegame6.jpg", "rulesofthegame9.jpg", "rulesofthegame12.jpg", "rulesofthegame15.jpg", "rulesofthegame18.jpg", "rulesofthegame21.jpg", "rulesofthegame24.jpg", "rulesofthegame27.jpg", "rulesofthegame30.jpg", "rulesofthegame33.jpg", "rulesofthegame36.jpg", "rulesofthegame39.jpg", "rulesofthegame42.jpg"]], ["The Running Man", 1987, ["runningman5.jpg", "runningman8.jpg", "runningman12.jpg", "runningman15.jpg", "runningman19.jpg", "runningman22.jpg", "runningman26.jpg", "runningman29.jpg", "runningman33.jpg", "runningman36.jpg", "runningman40.jpg", "runningman43.jpg", "runningman47.jpg", "runningman50.jpg"]], ["The Secret Life of Walter Mitty", 2013, [["secretlifeofwaltermitty4.jpg", "secretlifeofwaltermitty4_orig.jpg"], ["secretlifeofwaltermitty6.jpg", "secretlifeofwaltermitty6_orig.jpg"], ["secretlifeofwaltermitty9.jpg", "secretlifeofwaltermitty9_orig.jpg"], ["secretlifeofwaltermitty12.jpg", "secretlifeofwaltermitty12_orig.jpg"], ["secretlifeofwaltermitty15.jpg", "secretlifeofwaltermitty15_orig.jpg"], ["secretlifeofwaltermitty18.jpg", "secretlifeofwaltermitty18_orig.jpg"], ["secretlifeofwaltermitty21.jpg", "secretlifeofwaltermitty21_orig.jpg"], ["secretlifeofwaltermitty24.jpg", "secretlifeofwaltermitty24_orig.jpg"], ["secretlifeofwaltermitty27.jpg", "secretlifeofwaltermitty27_orig.jpg"], ["secretlifeofwaltermitty30.jpg", "secretlifeofwaltermitty30_orig.jpg"], ["secretlifeofwaltermitty33.jpg", "secretlifeofwaltermitty33_orig.jpg"], ["secretlifeofwaltermitty36.jpg", "secretlifeofwaltermitty36_orig.jpg"], ["secretlifeofwaltermitty39.jpg", "secretlifeofwaltermitty39_orig.jpg"], ["secretlifeofwaltermitty42.jpg", "secretlifeofwaltermitty42_orig.jpg"]]], ["The Secret World of Arrietty", 2010, ["secretworldofarrietty3.jpg", "secretworldofarrietty4.jpg", "secretworldofarrietty6.jpg", "secretworldofarrietty8.jpg", "secretworldofarrietty10.jpg", "secretworldofarrietty11.jpg", "secretworldofarrietty13.jpg", "secretworldofarrietty15.jpg", "secretworldofarrietty17.jpg", "secretworldofarrietty19.jpg", "secretworldofarrietty20.jpg", "secretworldofarrietty22.jpg", "secretworldofarrietty24.jpg", "secretworldofarrietty26.jpg"]], ["The Secret of Kells", 2009, ["secretofkells5.jpg", "secretofkells8.jpg", "secretofkells12.jpg", "secretofkells15.jpg", "secretofkells19.jpg", "secretofkells22.jpg", "secretofkells26.jpg", "secretofkells29.jpg", "secretofkells33.jpg", "secretofkells36.jpg", "secretofkells40.jpg", "secretofkells43.jpg", "secretofkells47.jpg", "secretofkells50.jpg"]], ["The Seventh Seal / Det sjunde inseglet", 1957, ["seventhseal5.jpg", "seventhseal8.jpg", "seventhseal12.jpg", "seventhseal15.jpg", "seventhseal19.jpg", "seventhseal22.jpg", "seventhseal26.jpg", "seventhseal29.jpg", "seventhseal33.jpg", "seventhseal36.jpg", "seventhseal40.jpg", "seventhseal43.jpg", "seventhseal47.jpg", "seventhseal50.jpg"]], ["The Shape of Water", 2017, ["shapeofwater5.jpg", "shapeofwater8.jpg", "shapeofwater12.jpg", "shapeofwater15.jpg", "shapeofwater19.jpg", "shapeofwater22.jpg", "shapeofwater26.jpg", "shapeofwater29.jpg", "shapeofwater33.jpg", "shapeofwater36.jpg", "shapeofwater40.jpg", "shapeofwater43.jpg", "shapeofwater47.jpg", "shapeofwater50.jpg"]], ["The Shining", 1980, [["shining5.jpg", "shining5_orig.jpg"], ["shining8.jpg", "shining8_orig.jpg"], ["shining12.jpg", "shining12_orig.jpg"], ["shining15.jpg", "shining15_orig.jpg"], ["shining19.jpg", "shining19_orig.jpg"], ["shining22.jpg", "shining22_orig.jpg"], ["shining26.jpg", "shining26_orig.jpg"], ["shining29.jpg", "shining29_orig.jpg"], ["shining33.jpg", "shining33_orig.jpg"], ["shining36.jpg", "shining36_orig.jpg"], ["shining40.jpg", "shining40_orig.jpg"], ["shining43.jpg", "shining43_orig.jpg"], ["shining47.jpg", "shining47_orig.jpg"], ["shining50.jpg", "shining50_orig.jpg"]]], ["The Silence of the Lambs", 1991, ["silenceofthelambs5.jpg", "silenceofthelambs8.jpg", "silenceofthelambs12.jpg", "silenceofthelambs15.jpg", "silenceofthelambs19.jpg", "silenceofthelambs22.jpg", "silenceofthelambs26.jpg", "silenceofthelambs29.jpg", "silenceofthelambs33.jpg", "silenceofthelambs36.jpg", "silenceofthelambs40.jpg", "silenceofthelambs43.jpg", "silenceofthelambs47.jpg", "silenceofthelambs50.jpg"]], ["The Skin I Live In", 2011, ["skinilivein3.jpg", "skinilivein5.jpg", "skinilivein7.jpg", "skinilivein10.jpg", "skinilivein12.jpg", "skinilivein14.jpg", "skinilivein17.jpg", "skinilivein19.jpg", "skinilivein21.jpg", "skinilivein24.jpg", "skinilivein26.jpg", "skinilivein28.jpg", "skinilivein31.jpg", "skinilivein33.jpg"]], ["The Snowman", 2017, ["snowman5.jpg", "snowman8.jpg", "snowman12.jpg", "snowman15.jpg", "snowman19.jpg", "snowman22.jpg", "snowman26.jpg", "snowman29.jpg", "snowman33.jpg", "snowman36.jpg", "snowman40.jpg", "snowman43.jpg", "snowman47.jpg", "snowman50.jpg"]], ["The Social Network", 2010, ["5461046.jpg", "471610.jpg", "7932095.jpg", "8236875.jpg", "31355.jpg", "338753.jpg", "8756748.jpg", "5624224.jpg", "7276329.jpg", "3009992.jpg", "6593579.jpg", "4472512.jpg", "1223541.jpg", "4786756.jpg"]], ["The Spy Who Loved Me", 1977, [["spywholovedme5.jpg", "spywholovedme5_orig.jpg"], ["spywholovedme8.jpg", "spywholovedme8_orig.jpg"], ["spywholovedme12.jpg", "spywholovedme12_orig.jpg"], ["spywholovedme15.jpg", "spywholovedme15_orig.jpg"], ["spywholovedme19.jpg", "spywholovedme19_orig.jpg"], ["spywholovedme22.jpg", "spywholovedme22_orig.jpg"], ["spywholovedme26.jpg", "spywholovedme26_orig.jpg"], ["spywholovedme29.jpg", "spywholovedme29_orig.jpg"], ["spywholovedme33.jpg", "spywholovedme33_orig.jpg"], ["spywholovedme36.jpg", "spywholovedme36_orig.jpg"], ["spywholovedme40.jpg", "spywholovedme40_orig.jpg"], ["spywholovedme43.jpg", "spywholovedme43_orig.jpg"], ["spywholovedme47.jpg", "spywholovedme47_orig.jpg"], ["spywholovedme50.jpg", "spywholovedme50_orig.jpg"]]], ["The Sting", 1973, [["sting4.jpg", "sting4_orig.jpg"], ["sting6.jpg", "sting6_orig.jpg"], ["sting9.jpg", "sting9_orig.jpg"], ["sting12.jpg", "sting12_orig.jpg"], ["sting15.jpg", "sting15_orig.jpg"], ["sting18.jpg", "sting18_orig.jpg"], ["sting21.jpg", "sting21_orig.jpg"], ["sting24.jpg", "sting24_orig.jpg"], ["sting27.jpg", "sting27_orig.jpg"], ["sting30.jpg", "sting30_orig.jpg"], ["sting33.jpg", "sting33_orig.jpg"], ["sting36.jpg", "sting36_orig.jpg"], ["sting39.jpg", "sting39_orig.jpg"], ["sting42.jpg", "sting42_orig.jpg"]]], ["The Terminator", 1984, [["terminator5.jpg", "terminator5_orig.jpg"], ["terminator8.jpg", "terminator8_orig.jpg"], ["terminator12.jpg", "terminator12_orig.jpg"], ["terminator15.jpg", "terminator15_orig.jpg"], ["terminator19.jpg", "terminator19_orig.jpg"], ["terminator22.jpg", "terminator22_orig.jpg"], ["terminator26.jpg", "terminator26_orig.jpg"], ["terminator29.jpg", "terminator29_orig.jpg"], ["terminator33.jpg", "terminator33_orig.jpg"], ["terminator36.jpg", "terminator36_orig.jpg"], ["terminator40.jpg", "terminator40_orig.jpg"], ["terminator43.jpg", "terminator43_orig.jpg"], ["terminator47.jpg", "terminator47_orig.jpg"], ["terminator50.jpg", "terminator50_orig.jpg"]]], ["The Texas Chain Saw Massacre", 1974, [["texaschainsawmassacre5.jpg", "texaschainsawmassacre5_orig.jpg"], ["texaschainsawmassacre8.jpg", "texaschainsawmassacre8_orig.jpg"], ["texaschainsawmassacre12.jpg", "texaschainsawmassacre12_orig.jpg"], ["texaschainsawmassacre15.jpg", "texaschainsawmassacre15_orig.jpg"], ["texaschainsawmassacre19.jpg", "texaschainsawmassacre19_orig.jpg"], ["texaschainsawmassacre22.jpg", "texaschainsawmassacre22_orig.jpg"], ["texaschainsawmassacre26.jpg", "texaschainsawmassacre26_orig.jpg"], ["texaschainsawmassacre29.jpg", "texaschainsawmassacre29_orig.jpg"], ["texaschainsawmassacre33.jpg", "texaschainsawmassacre33_orig.jpg"], ["texaschainsawmassacre36.jpg", "texaschainsawmassacre36_orig.jpg"], ["texaschainsawmassacre40.jpg", "texaschainsawmassacre40_orig.jpg"], ["texaschainsawmassacre43.jpg", "texaschainsawmassacre43_orig.jpg"], ["texaschainsawmassacre47.jpg", "texaschainsawmassacre47_orig.jpg"], ["texaschainsawmassacre50.jpg", "texaschainsawmassacre50_orig.jpg"]]], ["The Thin Red Line", 1998, [["thinredline5.jpg", "thinredline5_orig.jpg"], ["thinredline8.jpg", "thinredline8_orig.jpg"], ["thinredline12.jpg", "thinredline12_orig.jpg"], ["thinredline15.jpg", "thinredline15_orig.jpg"], ["thinredline19.jpg", "thinredline19_orig.jpg"], ["thinredline22.jpg", "thinredline22_orig.jpg"], ["thinredline26.jpg", "thinredline26_orig.jpg"], ["thinredline29.jpg", "thinredline29_orig.jpg"], ["thinredline33.jpg", "thinredline33_orig.jpg"], ["thinredline36.jpg", "thinredline36_orig.jpg"], ["thinredline40.jpg", "thinredline40_orig.jpg"], ["thinredline43.jpg", "thinredline43_orig.jpg"], ["thinredline47.jpg", "thinredline47_orig.jpg"], ["thinredline50.jpg", "thinredline50_orig.jpg"]]], ["The Thing", 1982, [["thing5.jpg", "thing5_orig.jpg"], ["thing8.jpg", "thing8_orig.jpg"], ["thing12.jpg", "thing12_orig.jpg"], ["thing15.jpg", "thing15_orig.jpg"], ["thing19.jpg", "thing19_orig.jpg"], ["thing22.jpg", "thing22_orig.jpg"], ["thing26.jpg", "thing26_orig.jpg"], ["thing29.jpg", "thing29_orig.jpg"], ["thing33.jpg", "thing33_orig.jpg"], ["thing36.jpg", "thing36_orig.jpg"], ["thing40.jpg", "thing40_orig.jpg"], ["thing43.jpg", "thing43_orig.jpg"], ["thing47.jpg", "thing47_orig.jpg"], ["thing50.jpg", "thing50_orig.jpg"]]], ["The Third Man", 1949, [["thirdman5.jpg", "thirdman5_orig.jpg"], ["thirdman8.jpg", "thirdman8_orig.jpg"], ["thirdman12.jpg", "thirdman12_orig.jpg"], ["thirdman15.jpg", "thirdman15_orig.jpg"], ["thirdman19.jpg", "thirdman19_orig.jpg"], ["thirdman22.jpg", "thirdman22_orig.jpg"], ["thirdman26.jpg", "thirdman26_orig.jpg"], ["thirdman29.jpg", "thirdman29_orig.jpg"], ["thirdman33.jpg", "thirdman33_orig.jpg"], ["thirdman36.jpg", "thirdman36_orig.jpg"], ["thirdman40.jpg", "thirdman40_orig.jpg"], ["thirdman43.jpg", "thirdman43_orig.jpg"], ["thirdman47.jpg", "thirdman47_orig.jpg"], ["thirdman50.jpg", "thirdman50_orig.jpg"]]], ["The Two Faces of January", 2014, [["twofacesofjan4.jpg", "twofacesofjan4_orig.jpg"], ["twofacesofjan6.jpg", "twofacesofjan6_orig.jpg"], ["twofacesofjan9.jpg", "twofacesofjan9_orig.jpg"], ["twofacesofjan12.jpg", "twofacesofjan12_orig.jpg"], ["twofacesofjan15.jpg", "twofacesofjan15_orig.jpg"], ["twofacesofjan18.jpg", "twofacesofjan18_orig.jpg"], ["twofacesofjan21.jpg", "twofacesofjan21_orig.jpg"], ["twofacesofjan24.jpg", "twofacesofjan24_orig.jpg"], ["twofacesofjan27.jpg", "twofacesofjan27_orig.jpg"], ["twofacesofjan30.jpg", "twofacesofjan30_orig.jpg"], ["twofacesofjan33.jpg", "twofacesofjan33_orig.jpg"], ["twofacesofjan36.jpg", "twofacesofjan36_orig.jpg"], ["twofacesofjan39.jpg", "twofacesofjan39_orig.jpg"], ["twofacesofjan42.jpg", "twofacesofjan42_orig.jpg"]]], ["The Vanishing", 1988, ["vanishing4.jpg", "vanishing6.jpg", "vanishing9.jpg", "vanishing12.jpg", "vanishing15.jpg", "vanishing18.jpg", "vanishing21.jpg", "vanishing24.jpg", "vanishing27.jpg", "vanishing30.jpg", "vanishing33.jpg", "vanishing36.jpg", "vanishing39.jpg", "vanishing42.jpg"]], ["The Wolf of Wall Street", 2013, [["wolfofwallstreet5.jpg", "wolfofwallstreet5_orig.jpg"], ["wolfofwallstreet8.jpg", "wolfofwallstreet8_orig.jpg"], ["wolfofwallstreet12.jpg", "wolfofwallstreet12_orig.jpg"], ["wolfofwallstreet15.jpg", "wolfofwallstreet15_orig.jpg"], ["wolfofwallstreet19.jpg", "wolfofwallstreet19_orig.jpg"], ["wolfofwallstreet22.jpg", "wolfofwallstreet22_orig.jpg"], ["wolfofwallstreet26.jpg", "wolfofwallstreet26_orig.jpg"], ["wolfofwallstreet29.jpg", "wolfofwallstreet29_orig.jpg"], ["wolfofwallstreet33.jpg", "wolfofwallstreet33_orig.jpg"], ["wolfofwallstreet36.jpg", "wolfofwallstreet36_orig.jpg"], ["wolfofwallstreet40.jpg", "wolfofwallstreet40_orig.jpg"], ["wolfofwallstreet43.jpg", "wolfofwallstreet43_orig.jpg"], ["wolfofwallstreet47.jpg", "wolfofwallstreet47_orig.jpg"], ["wolfofwallstreet50.jpg", "wolfofwallstreet50_orig.jpg"]]], ["The Wolfman", 2010, ["wolfman5.jpg", "wolfman8.jpg", "wolfman12.jpg", "wolfman15.jpg", "wolfman19.jpg", "wolfman22.jpg", "wolfman26.jpg", "wolfman29.jpg", "wolfman33.jpg", "wolfman36.jpg", "wolfman40.jpg", "wolfman43.jpg", "wolfman47.jpg", "wolfman50.jpg"]], ["There Will Be Blood", 2007, [["therewillbeblood4.jpg", "therewillbeblood4_orig.jpg"], ["therewillbeblood6.jpg", "therewillbeblood6_orig.jpg"], ["therewillbeblood9.jpg", "therewillbeblood9_orig.jpg"], ["therewillbeblood12.jpg", "therewillbeblood12_orig.jpg"], ["therewillbeblood15.jpg", "therewillbeblood15_orig.jpg"], ["therewillbeblood18.jpg", "therewillbeblood18_orig.jpg"], ["therewillbeblood21.jpg", "therewillbeblood21_orig.jpg"], ["therewillbeblood24.jpg", "therewillbeblood24_orig.jpg"], ["therewillbeblood27.jpg", "therewillbeblood27_orig.jpg"], ["therewillbeblood30.jpg", "therewillbeblood30_orig.jpg"], ["therewillbeblood33.jpg", "therewillbeblood33_orig.jpg"], ["therewillbeblood36.jpg", "therewillbeblood36_orig.jpg"], ["therewillbeblood39.jpg", "therewillbeblood39_orig.jpg"], ["therewillbeblood42.jpg", "therewillbeblood42_orig.jpg"]]], ["There's Something About Mary", 1998, [["theresomethingaboutmary5.jpg", "theresomethingaboutmary5_orig.jpg"], ["theresomethingaboutmary8.jpg", "theresomethingaboutmary8_orig.jpg"], ["theresomethingaboutmary12.jpg", "theresomethingaboutmary12_orig.jpg"], ["theresomethingaboutmary15.jpg", "theresomethingaboutmary15_orig.jpg"], ["theresomethingaboutmary19.jpg", "theresomethingaboutmary19_orig.jpg"], ["theresomethingaboutmary22.jpg", "theresomethingaboutmary22_orig.jpg"], ["theresomethingaboutmary26.jpg", "theresomethingaboutmary26_orig.jpg"], ["theresomethingaboutmary29.jpg", "theresomethingaboutmary29_orig.jpg"], ["theresomethingaboutmary33.jpg", "theresomethingaboutmary33_orig.jpg"], ["theresomethingaboutmary36.jpg", "theresomethingaboutmary36_orig.jpg"], ["theresomethingaboutmary40.jpg", "theresomethingaboutmary40_orig.jpg"], ["theresomethingaboutmary43.jpg", "theresomethingaboutmary43_orig.jpg"], ["theresomethingaboutmary47.jpg", "theresomethingaboutmary47_orig.jpg"], ["theresomethingaboutmary50.jpg", "theresomethingaboutmary50_orig.jpg"]]], ["This Must Be the Place", 2011, [["thismustbe5.jpg", "thismustbe5_orig.jpg"], ["thismustbe8.jpg", "thismustbe8_orig.jpg"], ["thismustbe12.jpg", "thismustbe12_orig.jpg"], ["thismustbe15.jpg", "thismustbe15_orig.jpg"], ["thismustbe19.jpg", "thismustbe19_orig.jpg"], ["thismustbe22.jpg", "thismustbe22_orig.jpg"], ["thismustbe26.jpg", "thismustbe26_orig.jpg"], ["thismustbe29.jpg", "thismustbe29_orig.jpg"], ["thismustbe33.jpg", "thismustbe33_orig.jpg"], ["thismustbe36.jpg", "thismustbe36_orig.jpg"], ["thismustbe40.jpg", "thismustbe40_orig.jpg"], ["thismustbe43.jpg", "thismustbe43_orig.jpg"], ["thismustbe47.jpg", "thismustbe47_orig.jpg"], ["thismustbe50.jpg", "thismustbe50_orig.jpg"]]], ["Thor", 2011, [["thor3.jpg", "thor3_orig.jpg"], ["thor5.jpg", "thor5_orig.jpg"], ["thor7.jpg", "thor7_orig.jpg"], ["thor10.jpg", "thor10_orig.jpg"], ["thor12.jpg", "thor12_orig.jpg"], ["thor14.jpg", "thor14_orig.jpg"], ["thor17.jpg", "thor17_orig.jpg"], ["thor19.jpg", "thor19_orig.jpg"], ["thor21.jpg", "thor21_orig.jpg"], ["thor24.jpg", "thor24_orig.jpg"], ["thor26.jpg", "thor26_orig.jpg"], ["thor28.jpg", "thor28_orig.jpg"], ["thor31.jpg", "thor31_orig.jpg"], ["thor33.jpg", "thor33_orig.jpg"]]], ["Thor: Ragnarok", 2017, [["thorragnarok5.jpg", "thorragnarok5_orig.jpg"], ["thorragnarok9.jpg", "thorragnarok9_orig.jpg"], ["thorragnarok13.jpg", "thorragnarok13_orig.jpg"], ["thorragnarok17.jpg", "thorragnarok17_orig.jpg"], ["thorragnarok21.jpg", "thorragnarok21_orig.jpg"], ["thorragnarok25.jpg", "thorragnarok25_orig.jpg"], ["thorragnarok29.jpg", "thorragnarok29_orig.jpg"], ["thorragnarok33.jpg", "thorragnarok33_orig.jpg"], ["thorragnarok37.jpg", "thorragnarok37_orig.jpg"], ["thorragnarok41.jpg", "thorragnarok41_orig.jpg"], ["thorragnarok45.jpg", "thorragnarok45_orig.jpg"], ["thorragnarok49.jpg", "thorragnarok49_orig.jpg"], ["thorragnarok53.jpg", "thorragnarok53_orig.jpg"], ["thorragnarok57.jpg", "thorragnarok57_orig.jpg"]]], ["Three Billboards Outside Ebbing, Missouri", 2017, [["threebillboards5.jpg", "threebillboards5_orig.jpg"], ["threebillboards8.jpg", "threebillboards8_orig.jpg"], ["threebillboards12.jpg", "threebillboards12_orig.jpg"], ["threebillboards15.jpg", "threebillboards15_orig.jpg"], ["threebillboards19.jpg", "threebillboards19_orig.jpg"], ["threebillboards22.jpg", "threebillboards22_orig.jpg"], ["threebillboards26.jpg", "threebillboards26_orig.jpg"], ["threebillboards29.jpg", "threebillboards29_orig.jpg"], ["threebillboards33.jpg", "threebillboards33_orig.jpg"], ["threebillboards36.jpg", "threebillboards36_orig.jpg"], ["threebillboards40.jpg", "threebillboards40_orig.jpg"], ["threebillboards43.jpg", "threebillboards43_orig.jpg"], ["threebillboards47.jpg", "threebillboards47_orig.jpg"], ["threebillboards50.jpg", "threebillboards50_orig.jpg"]]], ["Thunderbolt and Lightfoot", 1974, [["thunderbolt4.jpg", "thunderbolt4_orig.jpg"], ["thunderbolt6.jpg", "thunderbolt6_orig.jpg"], ["thunderbolt9.jpg", "thunderbolt9_orig.jpg"], ["thunderbolt12.jpg", "thunderbolt12_orig.jpg"], ["thunderbolt15.jpg", "thunderbolt15_orig.jpg"], ["thunderbolt18.jpg", "thunderbolt18_orig.jpg"], ["thunderbolt21.jpg", "thunderbolt21_orig.jpg"], ["thunderbolt24.jpg", "thunderbolt24_orig.jpg"], ["thunderbolt27.jpg", "thunderbolt27_orig.jpg"], ["thunderbolt30.jpg", "thunderbolt30_orig.jpg"], ["thunderbolt33.jpg", "thunderbolt33_orig.jpg"], ["thunderbolt36.jpg", "thunderbolt36_orig.jpg"], ["thunderbolt39.jpg", "thunderbolt39_orig.jpg"], ["thunderbolt42.jpg", "thunderbolt42_orig.jpg"]]], ["Tie Me Up! Tie Me Down!", 1989, [["tiemeuptiemedown4.jpg", "tiemeuptiemedown4_orig.jpg"], ["tiemeuptiemedown6.jpg", "tiemeuptiemedown6_orig.jpg"], ["tiemeuptiemedown9.jpg", "tiemeuptiemedown9_orig.jpg"], ["tiemeuptiemedown12.jpg", "tiemeuptiemedown12_orig.jpg"], ["tiemeuptiemedown15.jpg", "tiemeuptiemedown15_orig.jpg"], ["tiemeuptiemedown18.jpg", "tiemeuptiemedown18_orig.jpg"], ["tiemeuptiemedown21.jpg", "tiemeuptiemedown21_orig.jpg"], ["tiemeuptiemedown24.jpg", "tiemeuptiemedown24_orig.jpg"], ["tiemeuptiemedown27.jpg", "tiemeuptiemedown27_orig.jpg"], ["tiemeuptiemedown30.jpg", "tiemeuptiemedown30_orig.jpg"], ["tiemeuptiemedown33.jpg", "tiemeuptiemedown33_orig.jpg"], ["tiemeuptiemedown36.jpg", "tiemeuptiemedown36_orig.jpg"], ["tiemeuptiemedown39.jpg", "tiemeuptiemedown39_orig.jpg"], ["tiemeuptiemedown42.jpg", "tiemeuptiemedown42_orig.jpg"]]], ["Tim and Eric's Billion Dollar Movie", 2012, [["timanderic3.jpg", "timanderic3_orig.jpg"], ["timanderic5.jpg", "timanderic5_orig.jpg"], ["timanderic7.jpg", "timanderic7_orig.jpg"], ["timanderic10.jpg", "timanderic10_orig.jpg"], ["timanderic12.jpg", "timanderic12_orig.jpg"], ["timanderic14.jpg", "timanderic14_orig.jpg"], ["timanderic17.jpg", "timanderic17_orig.jpg"], ["timanderic19.jpg", "timanderic19_orig.jpg"], ["timanderic21.jpg", "timanderic21_orig.jpg"], ["timanderic24.jpg", "timanderic24_orig.jpg"], ["timanderic26.jpg", "timanderic26_orig.jpg"], ["timanderic28.jpg", "timanderic28_orig.jpg"], ["timanderic31.jpg", "timanderic31_orig.jpg"], ["timanderic33.jpg", "timanderic33_orig.jpg"]]], ["Time Bandits", 1981, [["timebandits4.jpg", "timebandits4_orig.jpg"], ["timebandits6.jpg", "timebandits6_orig.jpg"], ["timebandits9.jpg", "timebandits9_orig.jpg"], ["timebandits12.jpg", "timebandits12_orig.jpg"], ["timebandits15.jpg", "timebandits15_orig.jpg"], ["timebandits18.jpg", "timebandits18_orig.jpg"], ["timebandits21.jpg", "timebandits21_orig.jpg"], ["timebandits24.jpg", "timebandits24_orig.jpg"], ["timebandits27.jpg", "timebandits27_orig.jpg"], ["timebandits30.jpg", "timebandits30_orig.jpg"], ["timebandits33.jpg", "timebandits33_orig.jpg"], ["timebandits36.jpg", "timebandits36_orig.jpg"], ["timebandits39.jpg", "timebandits39_orig.jpg"], ["timebandits42.jpg", "timebandits42_orig.jpg"]]], ["Tinker Tailor Soldier Spy", 2011, [["tinkertailor2.jpg", "tinkertailor2_orig.jpg"], ["tinkertailor3.jpg", "tinkertailor3_orig.jpg"], ["tinkertailor4.jpg", "tinkertailor4_orig.jpg"], ["tinkertailor5.jpg", "tinkertailor5_orig.jpg"], ["tinkertailor6.jpg", "tinkertailor6_orig.jpg"], ["tinkertailor8.jpg", "tinkertailor8_orig.jpg"], ["tinkertailor9.jpg", "tinkertailor9_orig.jpg"], ["tinkertailor10.jpg", "tinkertailor10_orig.jpg"], ["tinkertailor11.jpg", "tinkertailor11_orig.jpg"], ["tinkertailor12.jpg", "tinkertailor12_orig.jpg"], ["tinkertailor14.jpg", "tinkertailor14_orig.jpg"], ["tinkertailor15.jpg", "tinkertailor15_orig.jpg"], ["tinkertailor16.jpg", "tinkertailor16_orig.jpg"], ["tinkertailor17.jpg", "tinkertailor17_orig.jpg"]]], ["To Catch a Thief", 1955, [["tocatchathief5.jpg", "tocatchathief5_orig.jpg"], ["tocatchathief8.jpg", "tocatchathief8_orig.jpg"], ["tocatchathief12.jpg", "tocatchathief12_orig.jpg"], ["tocatchathief15.jpg", "tocatchathief15_orig.jpg"], ["tocatchathief19.jpg", "tocatchathief19_orig.jpg"], ["tocatchathief22.jpg", "tocatchathief22_orig.jpg"], ["tocatchathief26.jpg", "tocatchathief26_orig.jpg"], ["tocatchathief29.jpg", "tocatchathief29_orig.jpg"], ["tocatchathief33.jpg", "tocatchathief33_orig.jpg"], ["tocatchathief36.jpg", "tocatchathief36_orig.jpg"], ["tocatchathief40.jpg", "tocatchathief40_orig.jpg"], ["tocatchathief43.jpg", "tocatchathief43_orig.jpg"], ["tocatchathief47.jpg", "tocatchathief47_orig.jpg"], ["tocatchathief50.jpg", "tocatchathief50_orig.jpg"]]], ["To Kill A Mockingbird", 1962, [["tokillamockingbird3.jpg", "tokillamockingbird3_orig.jpg"], ["tokillamockingbird4.jpg", "tokillamockingbird4_orig.jpg"], ["tokillamockingbird6.jpg", "tokillamockingbird6_orig.jpg"], ["tokillamockingbird8.jpg", "tokillamockingbird8_orig.jpg"], ["tokillamockingbird10.jpg", "tokillamockingbird10_orig.jpg"], ["tokillamockingbird11.jpg", "tokillamockingbird11_orig.jpg"], ["tokillamockingbird13.jpg", "tokillamockingbird13_orig.jpg"], ["tokillamockingbird15.jpg", "tokillamockingbird15_orig.jpg"], ["tokillamockingbird17.jpg", "tokillamockingbird17_orig.jpg"], ["tokillamockingbird19.jpg", "tokillamockingbird19_orig.jpg"], ["tokillamockingbird20.jpg", "tokillamockingbird20_orig.jpg"], ["tokillamockingbird22.jpg", "tokillamockingbird22_orig.jpg"], ["tokillamockingbird24.jpg", "tokillamockingbird24_orig.jpg"], ["tokillamockingbird26.jpg", "tokillamockingbird26_orig.jpg"]]], ["To Live and Die in L.A.", 1985, [["toliveanddieinla4.jpg", "toliveanddieinla4_orig.jpg"], ["toliveanddieinla6.jpg", "toliveanddieinla6_orig.jpg"], ["toliveanddieinla9.jpg", "toliveanddieinla9_orig.jpg"], ["toliveanddieinla12.jpg", "toliveanddieinla12_orig.jpg"], ["toliveanddieinla15.jpg", "toliveanddieinla15_orig.jpg"], ["toliveanddieinla18.jpg", "toliveanddieinla18_orig.jpg"], ["toliveanddieinla21.jpg", "toliveanddieinla21_orig.jpg"], ["toliveanddieinla24.jpg", "toliveanddieinla24_orig.jpg"], ["toliveanddieinla27.jpg", "toliveanddieinla27_orig.jpg"], ["toliveanddieinla30.jpg", "toliveanddieinla30_orig.jpg"], ["toliveanddieinla33.jpg", "toliveanddieinla33_orig.jpg"], ["toliveanddieinla36.jpg", "toliveanddieinla36_orig.jpg"], ["toliveanddieinla39.jpg", "toliveanddieinla39_orig.jpg"], ["toliveanddieinla42.jpg", "toliveanddieinla42_orig.jpg"]]], ["Tokyo Drifter", 1966, [["tokyodrifter4.jpg", "tokyodrifter4_orig.jpg"], ["tokyodrifter6.jpg", "tokyodrifter6_orig.jpg"], ["tokyodrifter9.jpg", "tokyodrifter9_orig.jpg"], ["tokyodrifter12.jpg", "tokyodrifter12_orig.jpg"], ["tokyodrifter15.jpg", "tokyodrifter15_orig.jpg"], ["tokyodrifter18.jpg", "tokyodrifter18_orig.jpg"], ["tokyodrifter21.jpg", "tokyodrifter21_orig.jpg"], ["tokyodrifter24.jpg", "tokyodrifter24_orig.jpg"], ["tokyodrifter27.jpg", "tokyodrifter27_orig.jpg"], ["tokyodrifter30.jpg", "tokyodrifter30_orig.jpg"], ["tokyodrifter33.jpg", "tokyodrifter33_orig.jpg"], ["tokyodrifter36.jpg", "tokyodrifter36_orig.jpg"], ["tokyodrifter39.jpg", "tokyodrifter39_orig.jpg"], ["tokyodrifter42.jpg", "tokyodrifter42_orig.jpg"]]], ["Touch of Evil", 1958, [["touchofevil4.jpg", "touchofevil4_orig.jpg"], ["touchofevil6.jpg", "touchofevil6_orig.jpg"], ["touchofevil9.jpg", "touchofevil9_orig.jpg"], ["touchofevil12.jpg", "touchofevil12_orig.jpg"], ["touchofevil15.jpg", "touchofevil15_orig.jpg"], ["touchofevil18.jpg", "touchofevil18_orig.jpg"], ["touchofevil21.jpg", "touchofevil21_orig.jpg"], ["touchofevil24.jpg", "touchofevil24_orig.jpg"], ["touchofevil27.jpg", "touchofevil27_orig.jpg"], ["touchofevil30.jpg", "touchofevil30_orig.jpg"], ["touchofevil33.jpg", "touchofevil33_orig.jpg"], ["touchofevil36.jpg", "touchofevil36_orig.jpg"], ["touchofevil39.jpg", "touchofevil39_orig.jpg"], ["touchofevil42.jpg", "touchofevil42_orig.jpg"]]], ["Trainspotting", 1996, [["trainspotting5.jpg", "trainspotting5_orig.jpg"], ["trainspotting8.jpg", "trainspotting8_orig.jpg"], ["trainspotting12.jpg", "trainspotting12_orig.jpg"], ["trainspotting15.jpg", "trainspotting15_orig.jpg"], ["trainspotting19.jpg", "trainspotting19_orig.jpg"], ["trainspotting22.jpg", "trainspotting22_orig.jpg"], ["trainspotting26.jpg", "trainspotting26_orig.jpg"], ["trainspotting29.jpg", "trainspotting29_orig.jpg"], ["trainspotting33.jpg", "trainspotting33_orig.jpg"], ["trainspotting36.jpg", "trainspotting36_orig.jpg"], ["trainspotting40.jpg", "trainspotting40_orig.jpg"], ["trainspotting43.jpg", "trainspotting43_orig.jpg"], ["trainspotting47.jpg", "trainspotting47_orig.jpg"], ["trainspotting50.jpg", "trainspotting50_orig.jpg"]]], ["Trance", 2013, [["trance4.jpg", "trance4_orig.jpg"], ["trance6.jpg", "trance6_orig.jpg"], ["trance9.jpg", "trance9_orig.jpg"], ["trance12.jpg", "trance12_orig.jpg"], ["trance15.jpg", "trance15_orig.jpg"], ["trance18.jpg", "trance18_orig.jpg"], ["trance21.jpg", "trance21_orig.jpg"], ["trance24.jpg", "trance24_orig.jpg"], ["trance27.jpg", "trance27_orig.jpg"], ["trance30.jpg", "trance30_orig.jpg"], ["trance33.jpg", "trance33_orig.jpg"], ["trance36.jpg", "trance36_orig.jpg"], ["trance39.jpg", "trance39_orig.jpg"], ["trance42.jpg", "trance42_orig.jpg"]]], ["Tron", 1982, [["tron5.jpg", "tron5_orig.jpg"], ["tron8.jpg", "tron8_orig.jpg"], ["tron12.jpg", "tron12_orig.jpg"], ["tron15.jpg", "tron15_orig.jpg"], ["tron19.jpg", "tron19_orig.jpg"], ["tron22.jpg", "tron22_orig.jpg"], ["tron26.jpg", "tron26_orig.jpg"], ["tron29.jpg", "tron29_orig.jpg"], ["tron33.jpg", "tron33_orig.jpg"], ["tron36.jpg", "tron36_orig.jpg"], ["tron40.jpg", "tron40_orig.jpg"], ["tron43.jpg", "tron43_orig.jpg"], ["tron47.jpg", "tron47_orig.jpg"], ["tron50.jpg", "tron50_orig.jpg"]]], ["True Grit", 2010, [["truegrit5.jpg", "truegrit5_orig.jpg"], ["truegrit8.jpg", "truegrit8_orig.jpg"], ["truegrit12.jpg", "truegrit12_orig.jpg"], ["truegrit15.jpg", "truegrit15_orig.jpg"], ["truegrit19.jpg", "truegrit19_orig.jpg"], ["truegrit22.jpg", "truegrit22_orig.jpg"], ["truegrit26.jpg", "truegrit26_orig.jpg"], ["truegrit29.jpg", "truegrit29_orig.jpg"], ["truegrit33.jpg", "truegrit33_orig.jpg"], ["truegrit36.jpg", "truegrit36_orig.jpg"], ["truegrit40.jpg", "truegrit40_orig.jpg"], ["truegrit43.jpg", "truegrit43_orig.jpg"], ["truegrit47.jpg", "truegrit47_orig.jpg"], ["truegrit50.jpg", "truegrit50_orig.jpg"]]], ["Under the Silver Lake", 2018, ["underthesilverlake5.jpg", "underthesilverlake9.jpg", "underthesilverlake13.jpg", "underthesilverlake17.jpg", "underthesilverlake21.jpg", "underthesilverlake25.jpg", "underthesilverlake29.jpg", "underthesilverlake33.jpg", "underthesilverlake37.jpg", "underthesilverlake41.jpg", "underthesilverlake45.jpg", "underthesilverlake49.jpg", "underthesilverlake53.jpg", "underthesilverlake57.jpg"]], ["Under the Skin", 2013, ["8457782.jpg", "64075.jpg", "3405535.jpg", "2108425.jpg", "1111895.jpg", "3762354.jpg", "6493488.jpg", "1539111.jpg", "8422084.jpg", "6574029.jpg", "1532385.jpg", "4393307.jpg", "9567720.jpg", "497797.jpg"]], ["Unforgiven", 1992, ["9201463.jpg", "8562659.jpg", "4742092.jpg", "4266072.jpg", "465285.jpg", "5118608.jpg", "477944.jpg", "3215733.jpg", "3184923.jpg", "4667411.jpg", "2633443.jpg", "2406105.jpg", "1091089.jpg", "7766715.jpg"]], ["Unhinged", 2020, ["unhinged4.jpg", "unhinged6.jpg", "unhinged9.jpg", "unhinged12.jpg", "unhinged15.jpg", "unhinged18.jpg", "unhinged21.jpg", "unhinged24.jpg", "unhinged27.jpg", "unhinged30.jpg", "unhinged33.jpg", "unhinged36.jpg", "unhinged39.jpg", "unhinged42.jpg"]], ["Unstoppable", 2010, ["unstoppable3.jpg", "unstoppable5.jpg", "unstoppable7.jpg", "unstoppable10.jpg", "unstoppable12.jpg", "unstoppable14.jpg", "unstoppable17.jpg", "unstoppable19.jpg", "unstoppable21.jpg", "unstoppable24.jpg", "unstoppable26.jpg", "unstoppable28.jpg", "unstoppable31.jpg", "unstoppable33.jpg"]], ["Up", 2009, ["up4.jpg", "up6.jpg", "up9.jpg", "up12.jpg", "up15.jpg", "up18.jpg", "up21.jpg", "up24.jpg", "up27.jpg", "up30.jpg", "up33.jpg", "up36.jpg", "up39.jpg", "up42.jpg"]], ["Venom", 2018, ["venom4.jpg", "venom6.jpg", "venom9.jpg", "venom12.jpg", "venom15.jpg", "venom18.jpg", "venom21.jpg", "venom24.jpg", "venom27.jpg", "venom30.jpg", "venom33.jpg", "venom36.jpg", "venom39.jpg", "venom42.jpg"]], ["Vertigo", 1958, ["vertigo5.jpg", "vertigo8.jpg", "vertigo12.jpg", "vertigo15.jpg", "vertigo19.jpg", "vertigo22.jpg", "vertigo26.jpg", "vertigo29.jpg", "vertigo33.jpg", "vertigo36.jpg", "vertigo40.jpg", "vertigo43.jpg", "vertigo47.jpg", "vertigo50.jpg"]], ["Von Ryan's Express", 1965, ["vonryansexpress3.jpg", "vonryansexpress5.jpg", "vonryansexpress7.jpg", "vonryansexpress10.jpg", "vonryansexpress12.jpg", "vonryansexpress14.jpg", "vonryansexpress17.jpg", "vonryansexpress19.jpg", "vonryansexpress21.jpg", "vonryansexpress24.jpg", "vonryansexpress26.jpg", "vonryansexpress28.jpg", "vonryansexpress31.jpg", "vonryansexpress33.jpg"]], ["WALL&middot;E", 2008, ["4115571.jpg", "9634186.jpg", "1255464.jpg", "4691977.jpg", "4553736.jpg", "9026192.jpg", "9209501.jpg", "211898.jpg", "8804695.jpg", "5411188.jpg", "9091469.jpg", "1442217.jpg", "8954687.jpg", "16394.jpg"]], ["Waltz with Bashir", 2008, ["waltzwithbashir4.jpg", "waltzwithbashir6.jpg", "waltzwithbashir9.jpg", "waltzwithbashir12.jpg", "waltzwithbashir15.jpg", "waltzwithbashir18.jpg", "waltzwithbashir21.jpg", "waltzwithbashir24.jpg", "waltzwithbashir27.jpg", "waltzwithbashir30.jpg", "waltzwithbashir33.jpg", "waltzwithbashir36.jpg", "waltzwithbashir39.jpg", "waltzwithbashir42.jpg"]], ["Wanted", 2008, ["wanted3.jpg", "wanted5.jpg", "wanted7.jpg", "wanted10.jpg", "wanted12.jpg", "wanted14.jpg", "wanted17.jpg", "wanted19.jpg", "wanted21.jpg", "wanted24.jpg", "wanted26.jpg", "wanted28.jpg", "wanted31.jpg", "wanted33.jpg"]], ["Water for Elephants", 2011, ["waterforelephants3.jpg", "waterforelephants5.jpg", "waterforelephants7.jpg", "waterforelephants10.jpg", "waterforelephants12.jpg", "waterforelephants14.jpg", "waterforelephants17.jpg", "waterforelephants19.jpg", "waterforelephants21.jpg", "waterforelephants24.jpg", "waterforelephants26.jpg", "waterforelephants28.jpg", "waterforelephants31.jpg", "waterforelephants33.jpg"]], ["What We Do In The Shadows", 2014, ["4331135.jpg", "6305315.jpg", "5843708.jpg", "4007563.jpg", "5971436.jpg", "7594559.jpg", "3690441.jpg", "8336154.jpg", "8532685.jpg", "7351938.jpg", "8600193.jpg", "6620526.jpg", "7979990.jpg", "65708.jpg"]], ["White Christmas", 1954, ["whitechristmas5.jpg", "whitechristmas8.jpg", "whitechristmas12_1.jpg", "whitechristmas15.jpg", "whitechristmas19.jpg", "whitechristmas22.jpg", "whitechristmas26.jpg", "whitechristmas29.jpg", "whitechristmas33.jpg", "whitechristmas36.jpg", "whitechristmas40.jpg", "whitechristmas43.jpg", "whitechristmas47.jpg", "whitechristmas50.jpg"]], ["Wonder Woman", 2017, ["wonderwoman5.jpg", "wonderwoman8.jpg", "wonderwoman12.jpg", "wonderwoman15.jpg", "wonderwoman19.jpg", "wonderwoman22.jpg", "wonderwoman26.jpg", "wonderwoman29.jpg", "wonderwoman33.jpg", "wonderwoman36.jpg", "wonderwoman40.jpg", "wonderwoman43.jpg", "wonderwoman47.jpg", "wonderwoman50.jpg"]], ["X-Men: First Class", 2011, ["xmenfirstclass4.jpg", "xmenfirstclass6.jpg", "xmenfirstclass9.jpg", "xmenfirstclass12.jpg", "xmenfirstclass15.jpg", "xmenfirstclass18.jpg", "xmenfirstclass21.jpg", "xmenfirstclass24.jpg", "xmenfirstclass27.jpg", "xmenfirstclass30.jpg", "xmenfirstclass33.jpg", "xmenfirstclass36.jpg", "xmenfirstclass39.jpg", "xmenfirstclass42.jpg"]], ["X:Men Days of Future Past", 2014, ["xmendaysoffuturepast5.jpg", "xmendaysoffuturepast8.jpg", "xmendaysoffuturepast12.jpg", "xmendaysoffuturepast15.jpg", "xmendaysoffuturepast19.jpg", "xmendaysoffuturepast22.jpg", "xmendaysoffuturepast26.jpg", "xmendaysoffuturepast29.jpg", "xmendaysoffuturepast33.jpg", "xmendaysoffuturepast36.jpg", "xmendaysoffuturepast40.jpg", "xmendaysoffuturepast43.jpg", "xmendaysoffuturepast47.jpg", "xmendaysoffuturepast50.jpg"]], ["Y Tu Mam&aacute; Tambi&eacute;n", 2001, ["ytumamatambien4.jpg", "ytumamatambien6.jpg", "ytumamatambien9.jpg", "ytumamatambien12.jpg", "ytumamatambien15.jpg", "ytumamatambien18.jpg", "ytumamatambien21.jpg", "ytumamatambien24.jpg", "ytumamatambien27.jpg", "ytumamatambien30.jpg", "ytumamatambien33.jpg", "ytumamatambien36.jpg", "ytumamatambien39.jpg", "ytumamatambien42.jpg"]], ["Zero Dark Thirty", 2012, ["1179331.jpg", "1890994.jpg", "8050350.jpg", "10770.jpg", "3235583.jpg", "5714448.jpg", "9056674.jpg", "2470905.jpg", "920574.jpg", "1602723.jpg", "5460728.jpg", "226631.jpg", "7153686.jpg", "7405886.jpg"]], ["Zodiac", 2007, ["6369391.jpg", "7344633.jpg", "6164828.jpg", "8686640.jpg", "7997625.jpg", "4296239.jpg", "5864801.jpg", "3719450.jpg", "5962532.jpg", "4104290.jpg", "4582659.jpg", "7715115.jpg", "2413477.jpg", "8180904.jpg"]]];
+
   // src/gallery-frames.js
   var galleryFramesKey = "minimal_poiskkino_frames_key";
   var frameLimit = 14;
@@ -11939,6 +11942,45 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   var tmdbId = function tmdbId(card) {
     return Number(card.tmdb_id || (["tmdb", "cub"].includes(card.source) ? card.id : 0));
   };
+  var bluArchive = /* @__PURE__ */new Map();
+  for (var _i1 = 0, _bluscreens_frames_de = bluscreens_frames_default; _i1 < _bluscreens_frames_de.length; _i1++) {
+    var _bluscreens_frames_de2 = _slicedToArray(_bluscreens_frames_de[_i1], 3),
+      title = _bluscreens_frames_de2[0],
+      year = _bluscreens_frames_de2[1],
+      images = _bluscreens_frames_de2[2];
+    var _iterator29 = _createForOfIteratorHelper(new Set(title.split(/\s+\/\s+/).map(function (name) {
+        return titleKey(name.replace(/^(.+),\s*(the|a|an)$/i, "$2 $1"));
+      }).filter(Boolean))),
+      _step30;
+    try {
+      for (_iterator29.s(); !(_step30 = _iterator29.n()).done;) {
+        var alias = _step30.value;
+        var key2 = alias + ":" + year;
+        bluArchive.set(key2, bluArchive.has(key2) ? null : images);
+      }
+    } catch (err) {
+      _iterator29.e(err);
+    } finally {
+      _iterator29.f();
+    }
+  }
+  function bluFrames(titles, year) {
+    var matches = _toConsumableArray(new Set(titles.map(function (title) {
+      return bluArchive.get(titleKey(title) + ":" + year);
+    }).filter(Boolean)));
+    if (matches.length !== 1) return [];
+    var base = "https://www.bluscreens.net/uploads/1/4/8/9/14897402/";
+    return matches[0].slice(0, frameLimit).map(function (file) {
+      var _ref3 = Array.isArray(file) ? file : [file, file],
+        _ref4 = _slicedToArray(_ref3, 2),
+        thumbnail = _ref4[0],
+        full = _ref4[1];
+      return {
+        img: base + thumbnail,
+        minimal_still_url: base + full
+      };
+    });
+  }
   function filmGrabFrames(_x, _x2, _x3) {
     return _filmGrabFrames.apply(this, arguments);
   }
@@ -12055,7 +12097,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
   function _movieArchive() {
     _movieArchive = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee7(card, id, readTmdb) {
-      var captures, studio, year, controller, timer, title, english, titles, film, wiki, sources, _t8;
+      var captures, studio, year, controller, timer, _title0, english, titles, film, wiki, sources, _t8;
       return _regenerator().w(function (_context7) {
         while (1) switch (_context7.p = _context7.n) {
           case 0:
@@ -12084,7 +12126,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               return controller.abort();
             }, 4e3);
             _context7.p = 3;
-            title = card.original_title || card.title;
+            _title0 = card.original_title || card.title;
             if (!(card.original_language && card.original_language !== "en" && id > 0)) {
               _context7.n = 5;
               break;
@@ -12099,13 +12141,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             _t8 = null;
           case 6:
             english = _t8;
-            titles = _toConsumableArray(new Set([title, Number(english == null ? void 0 : english.id) === id && english.title].filter(Boolean)));
+            titles = _toConsumableArray(new Set([_title0, Number(english == null ? void 0 : english.id) === id && english.title].filter(Boolean)));
             film = Promise.all(titles.map(function (name) {
               return filmGrabFrames(name, year, controller.signal);
             })).then(function (results) {
               return results.find(function (rows) {
                 return rows.length;
-              }) || [];
+              }) || bluFrames(titles, year);
             });
             wiki = wikiMovies.get(id);
             if (wiki) {
@@ -12120,16 +12162,16 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             sources = [film, wikiFrames(wiki, controller.signal)];
             _context7.n = 9;
             return new Promise(function (resolve) {
-              for (var _i55 = 0, _sources = sources; _i55 < _sources.length; _i55++) {
-                var source = _sources[_i55];
+              for (var _i56 = 0, _sources = sources; _i56 < _sources.length; _i56++) {
+                var source = _sources[_i56];
                 source.then(function (frames) {
                   if (frames.length === frameLimit) resolve(frames);
                 });
               }
-              Promise.all(sources).then(function (_ref86) {
-                var _ref87 = _slicedToArray(_ref86, 2),
-                  filmRows = _ref87[0],
-                  wikiRows = _ref87[1];
+              Promise.all(sources).then(function (_ref88) {
+                var _ref89 = _slicedToArray(_ref88, 2),
+                  filmRows = _ref89[0],
+                  wikiRows = _ref89[1];
                 return resolve(filmRows.length >= wikiRows.length ? filmRows : wikiRows);
               });
             });
@@ -12151,8 +12193,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     return _wikiFrames.apply(this, arguments);
   }
   function _wikiFrames() {
-    _wikiFrames = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9(_ref3, signal) {
-      var _ref88, site, title, _a, _b, _c, identity2, saved, get, _get4, imageUrl, filename, page, data, sections, heading, excluded, names, _iterator162, _step163, _step163$value, block, _iterator164, _step165, line, name, files, sampleCount, sample, images, indexed, _iterator163, _step164, row, item, frames, _t9, _t0;
+    _wikiFrames = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee9(_ref5, signal) {
+      var _ref90, site, title, _a, _b, _c, identity2, saved, get, _get4, imageUrl, filename, page, data, sections, heading, excluded, names, _iterator163, _step164, _step164$value, block, _iterator165, _step166, line, name, files, sampleCount, sample, _images, indexed, _iterator164, _step165, row, item, frames, _t9, _t0;
       return _regenerator().w(function (_context9) {
         while (1) switch (_context9.p = _context9.n) {
           case 0:
@@ -12189,7 +12231,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             get = function _get5(_x19) {
               return _get4.apply(this, arguments);
             };
-            _ref88 = _slicedToArray(_ref3, 2), site = _ref88[0], title = _ref88[1];
+            _ref90 = _slicedToArray(_ref5, 2), site = _ref90[0], title = _ref90[1];
             identity2 = "wiki:" + site + ":" + title, saved = cache2.get(identity2);
             if (!((saved == null ? void 0 : saved.until) > Date.now())) {
               _context9.n = 1;
@@ -12232,27 +12274,27 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           case 5:
             excluded = /(?:trailer|teaser|tv[ _-]*spot|featurette|promo(?:tional)?|deleted[ _-]*scene|behind[ _-]*the[ _-]*scenes|credits?|title[ _-]*card|studio(?:s)?[ _-]*logo)/i;
             names = /* @__PURE__ */new Set();
-            _iterator162 = _createForOfIteratorHelper(sections[heading + 1].matchAll(/<gallery\b[^>]*>([\s\S]*?)<\/gallery>/gi));
+            _iterator163 = _createForOfIteratorHelper(sections[heading + 1].matchAll(/<gallery\b[^>]*>([\s\S]*?)<\/gallery>/gi));
             try {
-              for (_iterator162.s(); !(_step163 = _iterator162.n()).done;) {
-                _step163$value = _slicedToArray(_step163.value, 2), block = _step163$value[1];
-                _iterator164 = _createForOfIteratorHelper(block.split(/\r?\n/));
+              for (_iterator163.s(); !(_step164 = _iterator163.n()).done;) {
+                _step164$value = _slicedToArray(_step164.value, 2), block = _step164$value[1];
+                _iterator165 = _createForOfIteratorHelper(block.split(/\r?\n/));
                 try {
-                  for (_iterator164.s(); !(_step165 = _iterator164.n()).done;) {
-                    line = _step165.value;
+                  for (_iterator165.s(); !(_step166 = _iterator165.n()).done;) {
+                    line = _step166.value;
                     name = filename(line.split("|")[0]);
                     if (/\.(?:png|jpe?g|webp)$/i.test(name) && !excluded.test(line)) names.add(name);
                   }
                 } catch (err) {
-                  _iterator164.e(err);
+                  _iterator165.e(err);
                 } finally {
-                  _iterator164.f();
+                  _iterator165.f();
                 }
               }
             } catch (err) {
-              _iterator162.e(err);
+              _iterator163.e(err);
             } finally {
-              _iterator162.f();
+              _iterator163.f();
             }
             if (names.size) {
               _context9.n = 6;
@@ -12278,17 +12320,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               iiurlwidth: "780"
             });
           case 7:
-            images = _context9.v;
+            _images = _context9.v;
             indexed = /* @__PURE__ */new Map();
-            _iterator163 = _createForOfIteratorHelper(((_b = images.query) == null ? void 0 : _b.pages) || []);
+            _iterator164 = _createForOfIteratorHelper(((_b = _images.query) == null ? void 0 : _b.pages) || []);
             _context9.p = 8;
-            _iterator163.s();
+            _iterator164.s();
           case 9:
-            if ((_step164 = _iterator163.n()).done) {
+            if ((_step165 = _iterator164.n()).done) {
               _context9.n = 12;
               break;
             }
-            row = _step164.value;
+            row = _step165.value;
             item = (_c = row.imageinfo) == null ? void 0 : _c[0];
             if (!(row.imagerepository !== "local" || !item || !(item.width >= 1280 && item.height >= 540 && item.width / item.height >= 1.35) || !imageUrl(item.url))) {
               _context9.n = 10;
@@ -12309,10 +12351,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           case 13:
             _context9.p = 13;
             _t9 = _context9.v;
-            _iterator163.e(_t9);
+            _iterator164.e(_t9);
           case 14:
             _context9.p = 14;
-            _iterator163.f();
+            _iterator164.f();
             return _context9.f(14);
           case 15:
             frames = sample.map(function (name) {
@@ -12358,7 +12400,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
   function _episodeGallery() {
     _episodeGallery = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee10(data, id, readTmdb) {
-      var _a, _b, _c, episodes, known, today2, aired, thumbs, addEpisodes, ordered, first, recent, candidates, paths2, started, remaining, readFrames, _readFrames, sampledSeasons, otherSeasons, extra, previouslyKnown, _iterator166, _step167, book, other, sample, i, _iterator167, _step168, preview;
+      var _a, _b, _c, episodes, known, today2, aired, thumbs, addEpisodes, ordered, first, recent, candidates, paths2, started, remaining, readFrames, _readFrames, sampledSeasons, otherSeasons, extra, previouslyKnown, _iterator167, _step168, book, other, sample, i, _iterator168, _step169, preview;
       return _regenerator().w(function (_context10) {
         while (1) switch (_context10.n) {
           case 0:
@@ -12377,27 +12419,27 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                     case 1:
                       _context1.n = 2;
                       return Promise.all(batch.map(/*#__PURE__*/function () {
-                        var _ref96 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0(_ref95) {
-                          var season, episode, result, _iterator168, _step169, row, path, width;
+                        var _ref98 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee0(_ref97) {
+                          var season, episode, result, _iterator169, _step170, row, path, width;
                           return _regenerator().w(function (_context0) {
                             while (1) switch (_context0.n) {
                               case 0:
-                                season = _ref95.season, episode = _ref95.episode;
+                                season = _ref97.season, episode = _ref97.episode;
                                 _context0.n = 1;
                                 return readGalleryData(readTmdb, "tv/" + id + "/season/" + season + "/episode/" + episode + "/images?include_image_language=null", Math.min(time2, 1e3));
                               case 1:
                                 result = _context0.v;
-                                _iterator168 = _createForOfIteratorHelper(Array.isArray(result == null ? void 0 : result.stills) ? result.stills : []);
+                                _iterator169 = _createForOfIteratorHelper(Array.isArray(result == null ? void 0 : result.stills) ? result.stills : []);
                                 try {
-                                  for (_iterator168.s(); !(_step169 = _iterator168.n()).done;) {
-                                    row = _step169.value;
+                                  for (_iterator169.s(); !(_step170 = _iterator169.n()).done;) {
+                                    row = _step170.value;
                                     path = tmdbPath(row == null ? void 0 : row.file_path), width = Number(row == null ? void 0 : row.width) || 0;
                                     if (path && !thumbs.has(path) && (!width || width >= 480)) paths2.set(path, Math.max(width, paths2.get(path) || 0));
                                   }
                                 } catch (err) {
-                                  _iterator168.e(err);
+                                  _iterator169.e(err);
                                 } finally {
-                                  _iterator168.f();
+                                  _iterator169.f();
                                 }
                               case 2:
                                 return _context0.a(2);
@@ -12405,7 +12447,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                           }, _callee0);
                         }));
                         return function (_x21) {
-                          return _ref96.apply(this, arguments);
+                          return _ref98.apply(this, arguments);
                         };
                       }()));
                     case 2:
@@ -12419,11 +12461,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               return _readFrames.apply(this, arguments);
             };
             addEpisodes = function _addEpisodes(rows) {
-              var _iterator165 = _createForOfIteratorHelper(rows),
-                _step166;
+              var _iterator166 = _createForOfIteratorHelper(rows),
+                _step167;
               try {
-                for (_iterator165.s(); !(_step166 = _iterator165.n()).done;) {
-                  var row = _step166.value;
+                for (_iterator166.s(); !(_step167 = _iterator166.n()).done;) {
+                  var row = _step167.value;
                   var preview = tmdbPath(row == null ? void 0 : row.still_path);
                   if (preview) thumbs.add(preview);
                   var season = Number(row == null ? void 0 : row.season_number),
@@ -12434,9 +12476,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                   });
                 }
               } catch (err) {
-                _iterator165.e(err);
+                _iterator166.e(err);
               } finally {
-                _iterator165.f();
+                _iterator166.f();
               }
             };
             episodes = [(_a = data.episodes) == null ? void 0 : _a.episodes_original, (_b = data.episodes) == null ? void 0 : _b.episodes].filter(Array.isArray).flat();
@@ -12482,24 +12524,24 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           case 2:
             extra = _context10.v;
             previouslyKnown = new Set(known.keys());
-            _iterator166 = _createForOfIteratorHelper(extra);
+            _iterator167 = _createForOfIteratorHelper(extra);
             try {
-              for (_iterator166.s(); !(_step167 = _iterator166.n()).done;) {
-                book = _step167.value;
+              for (_iterator167.s(); !(_step168 = _iterator167.n()).done;) {
+                book = _step168.value;
                 if (Array.isArray(book == null ? void 0 : book.episodes)) addEpisodes(book.episodes);
               }
             } catch (err) {
-              _iterator166.e(err);
+              _iterator167.e(err);
             } finally {
-              _iterator166.f();
+              _iterator167.f();
             }
-            other = _toConsumableArray(known).filter(function (_ref89) {
-              var _ref90 = _slicedToArray(_ref89, 1),
-                key2 = _ref90[0];
+            other = _toConsumableArray(known).filter(function (_ref91) {
+              var _ref92 = _slicedToArray(_ref91, 1),
+                key2 = _ref92[0];
               return !previouslyKnown.has(key2);
-            }).map(function (_ref91) {
-              var _ref92 = _slicedToArray(_ref91, 2),
-                row = _ref92[1];
+            }).map(function (_ref93) {
+              var _ref94 = _slicedToArray(_ref93, 2),
+                row = _ref94[1];
               return row;
             });
             sample = _toConsumableArray(/* @__PURE__ */new Set([other[0], other[Math.floor(other.length / 2)], other.at(-1)])).filter(Boolean);
@@ -12518,23 +12560,23 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             _context10.n = 4;
             break;
           case 6:
-            _iterator167 = _createForOfIteratorHelper(thumbs);
+            _iterator168 = _createForOfIteratorHelper(thumbs);
             try {
-              for (_iterator167.s(); !(_step168 = _iterator167.n()).done;) {
-                preview = _step168.value;
+              for (_iterator168.s(); !(_step169 = _iterator168.n()).done;) {
+                preview = _step169.value;
                 paths2.delete(preview);
               }
             } catch (err) {
-              _iterator167.e(err);
+              _iterator168.e(err);
             } finally {
-              _iterator167.f();
+              _iterator168.f();
             }
             return _context10.a(2, _toConsumableArray(paths2).sort(function (a, b) {
               return b[1] - a[1];
-            }).slice(0, frameLimit).map(function (_ref93) {
-              var _ref94 = _slicedToArray(_ref93, 2),
-                still_path = _ref94[0],
-                width = _ref94[1];
+            }).slice(0, frameLimit).map(function (_ref95) {
+              var _ref96 = _slicedToArray(_ref95, 2),
+                still_path = _ref96[0],
+                width = _ref96[1];
               return {
                 still_path: still_path,
                 width: width
@@ -12558,7 +12600,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
   function _loadDetailGallery() {
     _loadDetailGallery = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee11(L, data, readTmdb) {
-      var card, isSeries, id, provider, archive, _yield$Promise$all, _yield$Promise$all2, primary, optional, unique, _i56, _arr35, row;
+      var card, isSeries, id, provider, archive, _yield$Promise$all, _yield$Promise$all2, primary, optional, unique, _i57, _arr35, row;
       return _regenerator().w(function (_context11) {
         while (1) switch (_context11.n) {
           case 0:
@@ -12586,8 +12628,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             primary = _yield$Promise$all2[0];
             optional = _yield$Promise$all2[1];
             unique = /* @__PURE__ */new Map();
-            for (_i56 = 0, _arr35 = [].concat(_toConsumableArray(primary), _toConsumableArray(optional)); _i56 < _arr35.length; _i56++) {
-              row = _arr35[_i56];
+            for (_i57 = 0, _arr35 = [].concat(_toConsumableArray(primary), _toConsumableArray(optional)); _i57 < _arr35.length; _i57++) {
+              row = _arr35[_i57];
               unique.set(row.still_path || row.minimal_still_url, row);
             }
             return _context11.a(2, _toConsumableArray(unique.values()).slice(0, frameLimit));
@@ -12601,7 +12643,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   } // src/tmdb.js
   function _loadGalleryFrames() {
     _loadGalleryFrames = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee14(L, card) {
-      var _a, _b, _c, key2, isSeries, kp, tmdb, imdb, hasImdb, identity2, saved, controller, timer, get, _get7, _id6, lookup, query, frameTypes, images, stills, frames, _t10, _t11;
+      var _a, _b, _c, key2, isSeries, kp, tmdb, imdb, hasImdb, identity2, saved, controller, timer, get, _get7, _id6, lookup, query, frameTypes, _images2, stills, frames, _t10, _t11;
       return _regenerator().w(function (_context14) {
         while (1) switch (_context14.p = _context14.n) {
           case 0:
@@ -12754,8 +12796,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             _context14.n = 11;
             return get("image", query);
           case 11:
-            images = _context14.v;
-            stills = images.filter(function (row) {
+            _images2 = _context14.v;
+            stills = _images2.filter(function (row) {
               return frameTypes.includes(row.type) && Number(row.movieId) === _id6 && https(row.url);
             }).sort(function (a, b) {
               return (Number(b.width) || 0) - (Number(a.width) || 0);
@@ -13008,21 +13050,21 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       return list.call(this, params, function (json) {
         if (!json || !Array.isArray(json.results)) return ok(json);
         var seen = /* @__PURE__ */new Set();
-        var _iterator29 = _createForOfIteratorHelper(entry),
-          _step30;
+        var _iterator30 = _createForOfIteratorHelper(entry),
+          _step31;
         try {
-          for (_iterator29.s(); !(_step30 = _iterator29.n()).done;) {
-            var _step30$value = _slicedToArray(_step30.value, 2),
-              p = _step30$value[0],
-              ids2 = _step30$value[1];
+          for (_iterator30.s(); !(_step31 = _iterator30.n()).done;) {
+            var _step31$value = _slicedToArray(_step31.value, 2),
+              p = _step31$value[0],
+              ids2 = _step31$value[1];
             if (p < page) ids2.forEach(function (id) {
               return seen.add(id);
             });
           }
         } catch (err) {
-          _iterator29.e(err);
+          _iterator30.e(err);
         } finally {
-          _iterator29.f();
+          _iterator30.f();
         }
         var ids = [];
         var results = json.results.filter(function (card) {
@@ -13265,22 +13307,22 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             return fn(path, studio, logoLanguage);
           });
           if (cache3.size > 64) {
-            var _iterator30 = _createForOfIteratorHelper(cache3),
-              _step31;
+            var _iterator31 = _createForOfIteratorHelper(cache3),
+              _step32;
             try {
-              for (_iterator30.s(); !(_step31 = _iterator30.n()).done;) {
-                var _step31$value = _slicedToArray(_step31.value, 2),
-                  old = _step31$value[0],
-                  _value2 = _step31$value[1];
+              for (_iterator31.s(); !(_step32 = _iterator31.n()).done;) {
+                var _step32$value = _slicedToArray(_step32.value, 2),
+                  old = _step32$value[0],
+                  _value2 = _step32$value[1];
                 if (!_value2.callbacks) {
                   cache3.delete(old);
                   break;
                 }
               }
             } catch (err) {
-              _iterator30.e(err);
+              _iterator31.e(err);
             } finally {
-              _iterator30.f();
+              _iterator31.f();
             }
           }
           done();
@@ -13450,8 +13492,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         try {
           var request = w.indexedDB.open("lampa-view-artwork", 1);
           request.onupgradeneeded = function () {
-            for (var _i1 = 0, _arr4 = ["files", "sizes"]; _i1 < _arr4.length; _i1++) {
-              var store = _arr4[_i1];
+            for (var _i10 = 0, _arr4 = ["files", "sizes"]; _i10 < _arr4.length; _i10++) {
+              var store = _arr4[_i10];
               if (!request.result.objectStoreNames.contains(store)) request.result.createObjectStore(store, {
                 keyPath: "url"
               });
@@ -13536,7 +13578,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     }
     function _flush() {
       _flush = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4() {
-        var database2, pending, rows, tx, store, sizes, _iterator34, _step35, row, request, _t6;
+        var database2, pending, rows, tx, store, sizes, _iterator35, _step36, row, request, _t6;
         return _regenerator().w(function (_context4) {
           while (1) switch (_context4.p = _context4.n) {
             case 0:
@@ -13563,7 +13605,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               _context4.p = 3;
               _context4.n = 4;
               return Promise.all(pending.map(/*#__PURE__*/function () {
-                var _ref5 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3(row) {
+                var _ref7 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3(row) {
                   var _t2, _t3, _t4, _t5;
                   return _regenerator().w(function (_context3) {
                     while (1) switch (_context3.n) {
@@ -13585,7 +13627,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                   }, _callee3);
                 }));
                 return function (_x16) {
-                  return _ref5.apply(this, arguments);
+                  return _ref7.apply(this, arguments);
                 };
               }()));
             case 4:
@@ -13594,10 +13636,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               tx.onerror = function (event) {
                 return event.preventDefault();
               };
-              _iterator34 = _createForOfIteratorHelper(rows);
+              _iterator35 = _createForOfIteratorHelper(rows);
               try {
-                for (_iterator34.s(); !(_step35 = _iterator34.n()).done;) {
-                  row = _step35.value;
+                for (_iterator35.s(); !(_step36 = _iterator35.n()).done;) {
+                  row = _step36.value;
                   store.put(row);
                   sizes.put({
                     url: row.url,
@@ -13606,9 +13648,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                   });
                 }
               } catch (err) {
-                _iterator34.e(err);
+                _iterator35.e(err);
               } finally {
-                _iterator34.f();
+                _iterator35.f();
               }
               request = sizes.getAll();
               request.onsuccess = function () {
@@ -13617,11 +13659,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 });
                 var total = 0,
                   count = 0;
-                var _iterator35 = _createForOfIteratorHelper(values),
-                  _step36;
+                var _iterator36 = _createForOfIteratorHelper(values),
+                  _step37;
                 try {
-                  for (_iterator35.s(); !(_step36 = _iterator35.n()).done;) {
-                    var row = _step36.value;
+                  for (_iterator36.s(); !(_step37 = _iterator36.n()).done;) {
+                    var row = _step37.value;
                     total += row.size;
                     count++;
                     if (total > disk || count > max || Date.now() - row.at >= life) {
@@ -13631,9 +13673,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                     } else stored.add(row.url);
                   }
                 } catch (err) {
-                  _iterator35.e(err);
+                  _iterator36.e(err);
                 } finally {
-                  _iterator35.f();
+                  _iterator36.f();
                 }
               };
               _context4.n = 6;
@@ -13661,13 +13703,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       files.forEach(function (row) {
         return bytes += row.bytes || 0;
       });
-      var _iterator31 = _createForOfIteratorHelper(files),
-        _step32;
+      var _iterator32 = _createForOfIteratorHelper(files),
+        _step33;
       try {
-        for (_iterator31.s(); !(_step32 = _iterator31.n()).done;) {
-          var _step32$value = _slicedToArray(_step32.value, 2),
-            url = _step32$value[0],
-            row = _step32$value[1];
+        for (_iterator32.s(); !(_step33 = _iterator32.n()).done;) {
+          var _step33$value = _slicedToArray(_step33.value, 2),
+            url = _step33$value[0],
+            row = _step33$value[1];
           if (bytes <= memory && files.size <= 120) break;
           if (row.done && !row.users.size) {
             files.delete(url);
@@ -13676,9 +13718,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }
         }
       } catch (err) {
-        _iterator31.e(err);
+        _iterator32.e(err);
       } finally {
-        _iterator31.f();
+        _iterator32.f();
       }
     }
     function load(url, notify) {
@@ -13707,7 +13749,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           if (row.controller) row.controller.abort();
         }, 1e4);
         _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
-          var blob, response, candidate, _iterator32, _step33, token, _t;
+          var blob, response, candidate, _iterator33, _step34, token, _t;
           return _regenerator().w(function (_context) {
             while (1) switch (_context.p = _context.n) {
               case 0:
@@ -13763,16 +13805,16 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 row.bytes = blob ? blob.size : 0;
                 row.done = true;
                 if (!blob) files.delete(url);
-                _iterator32 = _createForOfIteratorHelper(row.users);
+                _iterator33 = _createForOfIteratorHelper(row.users);
                 try {
-                  for (_iterator32.s(); !(_step33 = _iterator32.n()).done;) {
-                    token = _step33.value;
+                  for (_iterator33.s(); !(_step34 = _iterator33.n()).done;) {
+                    token = _step34.value;
                     token.notify(row.src);
                   }
                 } catch (err) {
-                  _iterator32.e(err);
+                  _iterator33.e(err);
                 } finally {
-                  _iterator32.f();
+                  _iterator33.f();
                 }
                 trim();
               case 10:
@@ -13811,8 +13853,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       db().then(function (database2) {
         if (database2) try {
           var tx = database2.transaction(["files", "sizes"], "readwrite");
-          for (var _i10 = 0, _arr5 = ["files", "sizes"]; _i10 < _arr5.length; _i10++) {
-            var store = _arr5[_i10];
+          for (var _i11 = 0, _arr5 = ["files", "sizes"]; _i11 < _arr5.length; _i11++) {
+            var store = _arr5[_i11];
             tx.objectStore(store).delete(url);
           }
           tx.onerror = function (event) {
@@ -13825,17 +13867,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       if (database2) try {
         var request = database2.transaction("sizes").objectStore("sizes").getAll();
         request.onsuccess = function () {
-          var _iterator33 = _createForOfIteratorHelper(request.result || []),
-            _step34;
+          var _iterator34 = _createForOfIteratorHelper(request.result || []),
+            _step35;
           try {
-            for (_iterator33.s(); !(_step34 = _iterator33.n()).done;) {
-              var row = _step34.value;
+            for (_iterator34.s(); !(_step35 = _iterator34.n()).done;) {
+              var row = _step35.value;
               if (Date.now() - row.at < life) stored.add(row.url);
             }
           } catch (err) {
-            _iterator33.e(err);
+            _iterator34.e(err);
           } finally {
-            _iterator33.f();
+            _iterator34.f();
           }
         };
       } catch (_) {}
@@ -13923,13 +13965,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       cache3.forEach(function (entry) {
         return bytes += entry.bytes || 0;
       });
-      var _iterator36 = _createForOfIteratorHelper(cache3),
-        _step37;
+      var _iterator37 = _createForOfIteratorHelper(cache3),
+        _step38;
       try {
-        for (_iterator36.s(); !(_step37 = _iterator36.n()).done;) {
-          var _step37$value = _slicedToArray(_step37.value, 2),
-            url = _step37$value[0],
-            entry = _step37$value[1];
+        for (_iterator37.s(); !(_step38 = _iterator37.n()).done;) {
+          var _step38$value = _slicedToArray(_step38.value, 2),
+            url = _step38$value[0],
+            entry = _step38$value[1];
           if (cache3.size <= 40 && bytes <= 64 * 1048576) break;
           if (entry.done) {
             cache3.delete(url);
@@ -13939,9 +13981,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }
         }
       } catch (err) {
-        _iterator36.e(err);
+        _iterator37.e(err);
       } finally {
-        _iterator36.f();
+        _iterator37.f();
       }
     }
     function schedule(delay) {
@@ -14458,21 +14500,21 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       return date2 && date2.date > today2 ? date2 : null;
     };
     var next = upcoming(card == null ? void 0 : card.next_episode_to_air);
-    if (!next) for (var _i11 = 0, _arr6 = [book == null ? void 0 : book.episodes, book == null ? void 0 : book.episodes_original]; _i11 < _arr6.length; _i11++) {
-      var rows = _arr6[_i11];
+    if (!next) for (var _i12 = 0, _arr6 = [book == null ? void 0 : book.episodes, book == null ? void 0 : book.episodes_original]; _i12 < _arr6.length; _i12++) {
+      var rows = _arr6[_i12];
       if (!Array.isArray(rows)) continue;
-      var _iterator37 = _createForOfIteratorHelper(rows),
-        _step38;
+      var _iterator38 = _createForOfIteratorHelper(rows),
+        _step39;
       try {
-        for (_iterator37.s(); !(_step38 = _iterator37.n()).done;) {
-          var row = _step38.value;
+        for (_iterator38.s(); !(_step39 = _iterator38.n()).done;) {
+          var row = _step39.value;
           var date2 = upcoming(row);
           if (date2 && (!next || date2.iso < next.iso)) next = date2;
         }
       } catch (err) {
-        _iterator37.e(err);
+        _iterator38.e(err);
       } finally {
-        _iterator37.f();
+        _iterator38.f();
       }
     }
     if (!next) return null;
@@ -14617,8 +14659,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     });
     var dismiss = galleryButton("minimal-row-arrow selector", text("Закрыть"), "m6 6 12 12m0-12L6 18", close);
     previous.hidden = next.hidden = frames.length < 2;
-    for (var _i12 = 0, _arr7 = [previous, counter, next, dismiss]; _i12 < _arr7.length; _i12++) {
-      var control = _arr7[_i12];
+    for (var _i13 = 0, _arr7 = [previous, counter, next, dismiss]; _i13 < _arr7.length; _i13++) {
+      var control = _arr7[_i13];
       controls.appendChild(control);
     }
     viewer.appendChild(controls);
@@ -14767,11 +14809,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     function update() {
       var _a2;
       if (!frames.length) return;
-      var _iterator38 = _createForOfIteratorHelper(line.items),
-        _step39;
+      var _iterator39 = _createForOfIteratorHelper(line.items),
+        _step40;
       try {
-        for (_iterator38.s(); !(_step39 = _iterator38.n()).done;) {
-          var item = _step39.value;
+        for (_iterator39.s(); !(_step40 = _iterator39.n()).done;) {
+          var item = _step40.value;
           var node = nodeOf(item);
           if (node && !node.dataset.minimalScreenshot) {
             node.hidden = true;
@@ -14779,9 +14821,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }
         }
       } catch (err) {
-        _iterator38.e(err);
+        _iterator39.e(err);
       } finally {
-        _iterator38.f();
+        _iterator39.f();
       }
       root.classList.add("minimal-detail-screenshots");
       if (heading) heading.textContent = titleFor(card);
@@ -14822,11 +14864,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       if (nav) nav.hidden = frames.length < 2;
     }
     function add(rowsToAdd) {
-      var _iterator39 = _createForOfIteratorHelper(rowsToAdd),
-        _step40;
+      var _iterator40 = _createForOfIteratorHelper(rowsToAdd),
+        _step41;
       try {
         var _loop10 = function _loop10() {
-            var row = _step40.value;
+            var row = _step41.value;
             var path = still(row);
             if (!path || seen.has(path) || frames.length >= frameLimit) return 0; // continue
             var existing = line.items.find(function (item) {
@@ -14842,14 +14884,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             if (line.items.length > before) frame(line.items.at(-1), path);
           },
           _ret5;
-        for (_iterator39.s(); !(_step40 = _iterator39.n()).done;) {
+        for (_iterator40.s(); !(_step41 = _iterator40.n()).done;) {
           _ret5 = _loop10();
           if (_ret5 === 0) continue;
         }
       } catch (err) {
-        _iterator39.e(err);
+        _iterator40.e(err);
       } finally {
-        _iterator39.f();
+        _iterator40.f();
       }
       if (frames.length) rows.splice.apply(rows, [0, rows.length].concat(_toConsumableArray(line.items.filter(function (item) {
         return item !== line.more;
@@ -15007,11 +15049,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }))));
       link.active = Math.max(0, link.items.indexOf(active));
       var anchor = header;
-      var _iterator40 = _createForOfIteratorHelper(retained.slice(at)),
-        _step41;
+      var _iterator41 = _createForOfIteratorHelper(retained.slice(at)),
+        _step42;
       try {
-        for (_iterator40.s(); !(_step41 = _iterator40.n()).done;) {
-          var entry = _step41.value;
+        for (_iterator41.s(); !(_step42 = _iterator41.n()).done;) {
+          var entry = _step42.value;
           var node = nodeOf(entry.item);
           if (!node || !(anchor == null ? void 0 : anchor.parentNode) || (header == null ? void 0 : header.contains(node))) continue;
           if (kind(entry.row) === "discuss") node.classList.add("minimal-comments-native");
@@ -15019,9 +15061,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           anchor = node;
         }
       } catch (err) {
-        _iterator40.e(err);
+        _iterator41.e(err);
       } finally {
-        _iterator40.f();
+        _iterator41.f();
       }
     } finally {
       link._minimalOrdering = false;
@@ -15061,11 +15103,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   function overviewFocus(target) {
     var active = document.activeElement;
     if (active && active.matches(".minimal-overview-action,.minimal-detail-studio") && active !== target && !active.contains(target)) active.blur();
-    var _iterator41 = _createForOfIteratorHelper(overviewControls),
-      _step42;
+    var _iterator42 = _createForOfIteratorHelper(overviewControls),
+      _step43;
     try {
-      for (_iterator41.s(); !(_step42 = _iterator41.n()).done;) {
-        var control = _step42.value;
+      for (_iterator42.s(); !(_step43 = _iterator42.n()).done;) {
+        var control = _step43.value;
         if (!control.isConnected) {
           overviewControls.delete(control);
           continue;
@@ -15074,9 +15116,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (ring) ring.hidden = !(target === control || control.contains(target));
       }
     } catch (err) {
-      _iterator41.e(err);
+      _iterator42.e(err);
     } finally {
-      _iterator41.f();
+      _iterator42.f();
     }
   }
   function readableOverview(L, card, right, link) {
@@ -15102,8 +15144,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     overviewControls.add(control);
     if (overviewDocument !== document) {
       overviewDocument = document;
-      for (var _i13 = 0, _arr8 = ["hover:focus", "hover:hover", "focusin"]; _i13 < _arr8.length; _i13++) {
-        var name = _arr8[_i13];
+      for (var _i14 = 0, _arr8 = ["hover:focus", "hover:hover", "focusin"]; _i14 < _arr8.length; _i14++) {
+        var name = _arr8[_i14];
         document.addEventListener(name, function (event) {
           return overviewFocus(event.target);
         }, true);
@@ -15231,8 +15273,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var key2 = String(person.id || person.name || person.original_name),
           old = seen.get(key2);
         if (old) {
-          for (var _i14 = 0, _arr9 = ["popularity", "episode_count", "total_episode_count"]; _i14 < _arr9.length; _i14++) {
-            var field = _arr9[_i14];
+          for (var _i15 = 0, _arr9 = ["popularity", "episode_count", "total_episode_count"]; _i15 < _arr9.length; _i15++) {
+            var field = _arr9[_i15];
             old[field] = Math.max(Number(old[field]) || 0, Number(person[field]) || 0);
           }
           if (!old.profile_path && person.profile_path) old.profile_path = person.profile_path;
@@ -15337,7 +15379,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       })]);
     }
     var _loop11 = function _loop11() {
-      var _arr0$_i = _slicedToArray(_arr0[_i15], 2),
+      var _arr0$_i = _slicedToArray(_arr0[_i16], 2),
         key2 = _arr0$_i[0],
         label = _arr0$_i[1];
       var supplied = data[key2],
@@ -15350,7 +15392,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         title: title
       })]);
     };
-    for (var _i15 = 0, _arr0 = [["collection", "title_collection"], ["recomend", "title_recomendations"], ["simular", "title_similar"]]; _i15 < _arr0.length; _i15++) {
+    for (var _i16 = 0, _arr0 = [["collection", "title_collection"], ["recomend", "title_recomendations"], ["simular", "title_similar"]]; _i16 < _arr0.length; _i16++) {
       if (_loop11()) continue;
     }
     if (missing.length) (_link$rows2 = link.rows).splice.apply(_link$rows2, [link.items.length, 0].concat(missing));
@@ -15552,10 +15594,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var rows = [[text("Оригинальное название"), card.original_title || card.original_name], [text("Тип"), isAnime(card) ? series ? text("Аниме-сериал") : text("Аниме-фильм") : series ? text("Сериал") : text("Фильм")], [text("Дата релиза"), releaseDate(card)], [series ? text("Длительность серии") : text("Длительность"), technical.duration], [text("Тип релиза"), technical.quality], [text("Рейтинг TMDB"), card.vote_average ? Number(card.vote_average).toFixed(1) : ""], [text("Жанры"), (card.genres || []).map(function (g) {
         return g.name;
       }).join(", ")]];
-      rows.forEach(function (_ref6) {
-        var _ref7 = _slicedToArray(_ref6, 2),
-          name = _ref7[0],
-          value = _ref7[1];
+      rows.forEach(function (_ref8) {
+        var _ref9 = _slicedToArray(_ref8, 2),
+          name = _ref9[0],
+          value = _ref9[1];
         if (!value) return;
         var row = document.createElement("div"),
           key2 = document.createElement("span"),
@@ -15918,7 +15960,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
 
   // package.json
-  var version = "0.5.80";
+  var version = "0.5.81";
 
   // src/inputs.js
   function inputs(L) {
@@ -15989,13 +16031,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var originals = _toConsumableArray(images.values()).filter(function (e) {
         return e.original && e.done;
       }).length;
-      var _iterator42 = _createForOfIteratorHelper(images),
-        _step43;
+      var _iterator43 = _createForOfIteratorHelper(images),
+        _step44;
       try {
         var _loop12 = function _loop12() {
-            var _step43$value = _slicedToArray(_step43.value, 2),
-              url = _step43$value[0],
-              entry = _step43$value[1];
+            var _step44$value = _slicedToArray(_step44.value, 2),
+              url = _step44$value[0],
+              entry = _step44$value[1];
             var crowded = images.size > 24 || bytes > budget;
             if (!crowded && originals <= maximumOriginals) return 0; // break
             if (!crowded && !entry.original) return 1; // continue
@@ -16008,15 +16050,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             }
           },
           _ret6;
-        for (_iterator42.s(); !(_step43 = _iterator42.n()).done;) {
+        for (_iterator43.s(); !(_step44 = _iterator43.n()).done;) {
           _ret6 = _loop12();
           if (_ret6 === 0) break;
           if (_ret6 === 1) continue;
         }
       } catch (err) {
-        _iterator42.e(err);
+        _iterator43.e(err);
       } finally {
-        _iterator42.f();
+        _iterator43.f();
       }
     }
     function fetchImage(url, callback, type, priority, coverPath) {
@@ -16097,21 +16139,21 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }
       current = wrap(i);
       var path = cards[current].backdrop_path;
-      var _iterator43 = _createForOfIteratorHelper(images),
-        _step44;
+      var _iterator44 = _createForOfIteratorHelper(images),
+        _step45;
       try {
-        for (_iterator43.s(); !(_step44 = _iterator43.n()).done;) {
-          var _step44$value = _slicedToArray(_step44.value, 2),
-            url = _step44$value[0],
-            entry = _step44$value[1];
+        for (_iterator44.s(); !(_step45 = _iterator44.n()).done;) {
+          var _step45$value = _slicedToArray(_step45.value, 2),
+            url = _step45$value[0],
+            entry = _step45$value[1];
           if (entry.owner === owner && entry.cover && !entry.background && !entry.done && entry.coverPath !== path && entry.callbacks.every(function (fn) {
             return fn.owner === owner;
           })) remove(url, entry);
         }
       } catch (err) {
-        _iterator43.e(err);
+        _iterator44.e(err);
       } finally {
-        _iterator43.f();
+        _iterator44.f();
       }
     }
     function cover(i, size, callback, background) {
@@ -16224,21 +16266,21 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       clearTimeout(upgradeTimer);
       upgradeWanted = null;
       if (cancelPendingOriginal) {
-        var _iterator44 = _createForOfIteratorHelper(images),
-          _step45;
+        var _iterator45 = _createForOfIteratorHelper(images),
+          _step46;
         try {
-          for (_iterator44.s(); !(_step45 = _iterator44.n()).done;) {
-            var _step45$value = _slicedToArray(_step45.value, 2),
-              url = _step45$value[0],
-              entry = _step45$value[1];
+          for (_iterator45.s(); !(_step46 = _iterator45.n()).done;) {
+            var _step46$value = _slicedToArray(_step46.value, 2),
+              url = _step46$value[0],
+              entry = _step46$value[1];
             if (entry.owner === owner && entry.original && !entry.done && entry.callbacks.every(function (fn) {
               return fn.owner === owner;
             })) remove(url, entry);
           }
         } catch (err) {
-          _iterator44.e(err);
+          _iterator45.e(err);
         } finally {
-          _iterator44.f();
+          _iterator45.f();
         }
       }
     }
@@ -16292,13 +16334,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       document.removeEventListener("minimal:tv-idle", resume);
       document.removeEventListener("visibilitychange", resume);
       pool.active.delete(owner);
-      var _iterator45 = _createForOfIteratorHelper(images),
-        _step46;
+      var _iterator46 = _createForOfIteratorHelper(images),
+        _step47;
       try {
-        for (_iterator45.s(); !(_step46 = _iterator45.n()).done;) {
-          var _step46$value = _slicedToArray(_step46.value, 2),
-            url = _step46$value[0],
-            entry = _step46$value[1];
+        for (_iterator46.s(); !(_step47 = _iterator46.n()).done;) {
+          var _step47$value = _slicedToArray(_step47.value, 2),
+            url = _step47$value[0],
+            entry = _step47$value[1];
           if (!entry.done) {
             entry.callbacks = entry.callbacks.filter(function (fn) {
               return fn.owner !== owner;
@@ -16307,9 +16349,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }
         }
       } catch (err) {
-        _iterator45.e(err);
+        _iterator46.e(err);
       } finally {
-        _iterator45.f();
+        _iterator46.f();
       }
       trim();
       branding2.clear();
@@ -16391,10 +16433,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             var sum = [0, 0, 0];
             var count = 0;
             for (var _y = 0; _y < 6; _y++) for (var _x17 = half * 3; _x17 < half * 3 + 3; _x17++) {
-              var _i17 = (_y * 6 + _x17) * 4;
-              if (pixels[_i17 + 3] < 128) continue;
+              var _i18 = (_y * 6 + _x17) * 4;
+              if (pixels[_i18 + 3] < 128) continue;
               count++;
-              for (var _k2 = 0; _k2 < 3; _k2++) sum[_k2] += pixels[_i17 + _k2];
+              for (var _k2 = 0; _k2 < 3; _k2++) sum[_k2] += pixels[_i18 + _k2];
             }
             if (!count) return {
               v: void 0
@@ -16437,7 +16479,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var light = 0;
         for (var i = 0; i < out.length; i += 4) light += out[i] + out[i + 1] + out[i + 2];
         var gain = Math.min(2.4, Math.max(0.7, 110 / Math.max(1, light / (64 * 36 * 3))));
-        for (var _i16 = 0; _i16 < out.length; _i16++) if (_i16 % 4 !== 3) out[_i16] = Math.min(255, out[_i16] * gain);
+        for (var _i17 = 0; _i17 < out.length; _i17++) if (_i17 % 4 !== 3) out[_i17] = Math.min(255, out[_i17] * gain);
         frame.data.set(out);
         ctx.putImageData(frame, 0, 0);
         var scene = canvas.toDataURL("image/png"),
@@ -16557,11 +16599,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       if (!enabled) return;
       enabled = false;
       restoreHeader();
-      saved.forEach(function (_ref8) {
-        var _ref9 = _slicedToArray(_ref8, 3),
-          name = _ref9[0],
-          value = _ref9[1],
-          priority = _ref9[2];
+      saved.forEach(function (_ref0) {
+        var _ref1 = _slicedToArray(_ref0, 3),
+          name = _ref1[0],
+          value = _ref1[1],
+          priority = _ref1[2];
         if (value) root.style.setProperty(name, value, priority);else root.style.removeProperty(name);
       });
       if (original) original.call(background, native);
@@ -16689,7 +16731,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }
     });
     var _loop14 = function _loop14() {
-      var _arr1$_i = _slicedToArray(_arr1[_i18], 3),
+      var _arr1$_i = _slicedToArray(_arr1[_i19], 3),
         type = _arr1$_i[0],
         name = _arr1$_i[1],
         description = _arr1$_i[2];
@@ -16709,7 +16751,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
       });
     };
-    for (var _i18 = 0, _arr1 = [["ratings", text("Очистить кеш рейтингов"), text("Удалить сохранённые оценки. История и закладки сохранятся.")], ["quality", text("Очистить кеш качества"), text("Удалить сохранённое качество карточек каталога и заново проверить видимые карточки.")]]; _i18 < _arr1.length; _i18++) {
+    for (var _i19 = 0, _arr1 = [["ratings", text("Очистить кеш рейтингов"), text("Удалить сохранённые оценки. История и закладки сохранятся.")], ["quality", text("Очистить кеш качества"), text("Удалить сохранённое качество карточек каталога и заново проверить видимые карточки.")]]; _i19 < _arr1.length; _i19++) {
       _loop14();
     }
   }
@@ -16791,8 +16833,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       if (ratings && Number.isFinite(vote) && vote > 0 && vote <= 10) entry.vote_average = vote;
       if (isAnime(c)) entry.minimal_anime = true;
       if (source(c) === "minimal_shiki") {
-        for (var _i19 = 0, _arr10 = ["episodes", "episodes_aired"]; _i19 < _arr10.length; _i19++) {
-          var field = _arr10[_i19];
+        for (var _i20 = 0, _arr10 = ["episodes", "episodes_aired"]; _i20 < _arr10.length; _i20++) {
+          var field = _arr10[_i20];
           if (Number(c[field]) >= 0) entry[field] = Number(c[field]);
         }
         if (c.status) entry.status = c.status;
@@ -17142,8 +17184,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }
       function expand(meta) {
         if (!alive()) return;
-        for (var _i20 = 0, _arr11 = ["name", "russian", "english", "japanese", "synonyms"]; _i20 < _arr11.length; _i20++) {
-          var field = _arr11[_i20];
+        for (var _i21 = 0, _arr11 = ["name", "russian", "english", "japanese", "synonyms"]; _i21 < _arr11.length; _i21++) {
+          var field = _arr11[_i21];
           var values = meta && meta[field];
           (Array.isArray(values) ? values : [values]).filter(Boolean).slice(0, 2).forEach(function (name) {
             return add(name);
@@ -17276,19 +17318,19 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       return String(value || "").toLowerCase().replace(/ё/g, "е").replace(/[^a-zа-я0-9\u3040-\u30ff\u3400-\u9fff]+/g, " ").trim();
     };
     var matched = false;
-    var _iterator46 = _createForOfIteratorHelper(text2.split(/[\/|]/)),
-      _step47;
+    var _iterator47 = _createForOfIteratorHelper(text2.split(/[\/|]/)),
+      _step48;
     try {
-      for (_iterator46.s(); !(_step47 = _iterator46.n()).done;) {
-        var part = _step47.value;
+      for (_iterator47.s(); !(_step48 = _iterator47.n()).done;) {
+        var part = _step48.value;
         var normalized = " " + normalize(part) + " ";
         var contains = false,
           exact = false;
-        var _iterator47 = _createForOfIteratorHelper(names),
-          _step48;
+        var _iterator48 = _createForOfIteratorHelper(names),
+          _step49;
         try {
-          for (_iterator47.s(); !(_step48 = _iterator47.n()).done;) {
-            var name = _step48.value;
+          for (_iterator48.s(); !(_step49 = _iterator48.n()).done;) {
+            var name = _step49.value;
             var needle = " " + normalize(name) + " ",
               at = normalized.indexOf(needle);
             if (at < 0) continue;
@@ -17297,23 +17339,23 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             if (!tail || /^(?:\d|s\d|season\b|сезон(?:\s|$)|tv\b|bd|blu|web|hd|dvd|uhd|hevc|avc|x26)/.test(tail)) exact = true;
           }
         } catch (err) {
-          _iterator47.e(err);
+          _iterator48.e(err);
         } finally {
-          _iterator47.f();
+          _iterator48.f();
         }
         if (contains && !exact) return false;
         if (exact) matched = true;
       }
     } catch (err) {
-      _iterator46.e(err);
+      _iterator47.e(err);
     } finally {
-      _iterator46.f();
+      _iterator47.f();
     }
     if (!matched) return false;
     if (card.source === "minimal_shiki") {
-      var year = String(card.first_air_date || card.release_date || "").slice(0, 4),
+      var _year = String(card.first_air_date || card.release_date || "").slice(0, 4),
         years = text2.match(/\b(?:19|20)\d{2}\b/g) || [];
-      if (!year || !years.includes(year)) return false;
+      if (!_year || !years.includes(_year)) return false;
       var expected = animeSeasonTitle(card.original_name || card.original_title || card.name || card.title);
       var explicit = animeSeasonTitle(text2),
         short = text2.match(/\bs(\d{1,2})(?:\b|e\d)/i),
@@ -17334,11 +17376,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         return a - b;
       });
     if (numbers.length < 2) return null;
-    var _iterator48 = _createForOfIteratorHelper(numbers.reverse()),
-      _step49;
+    var _iterator49 = _createForOfIteratorHelper(numbers.reverse()),
+      _step50;
     try {
-      for (_iterator48.s(); !(_step49 = _iterator48.n()).done;) {
-        var season = _step49.value;
+      for (_iterator49.s(); !(_step50 = _iterator49.n()).done;) {
+        var season = _step50.value;
         var rows = groups[season],
           aired = rows.filter(function (e) {
             return Number(e.episode_number) > 0 && e.air_date && String(e.air_date).slice(0, 10) <= today2;
@@ -17352,9 +17394,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         };
       }
     } catch (err) {
-      _iterator48.e(err);
+      _iterator49.e(err);
     } finally {
-      _iterator48.f();
+      _iterator49.f();
     }
     return null;
   }
@@ -17394,9 +17436,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     function walk(value, depth) {
       if (!value || _typeof(value) !== "object" || depth > 6 || ++visited > 250) return;
       if (value.uhd === true || value.uhd === 1) add("4K");
-      for (var _i21 = 0, _arr12 = ["quality", "qualitys", "resolution", "max_quality"]; _i21 < _arr12.length; _i21++) {
-        var key2 = _arr12[_i21];
-        var field = value[key2];
+      for (var _i22 = 0, _arr12 = ["quality", "qualitys", "resolution", "max_quality"]; _i22 < _arr12.length; _i22++) {
+        var _key2 = _arr12[_i22];
+        var field = value[_key2];
         if (field && _typeof(field) === "object") Object.keys(field).forEach(add);else add(field);
       }
       if (value.method === "play" || value.method === "call") {
@@ -17405,9 +17447,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }
       if (Array.isArray(value)) value.forEach(function (entry) {
         return walk(entry, depth + 1);
-      });else for (var _i22 = 0, _arr13 = ["data", "results", "items", "list", "playlists"]; _i22 < _arr13.length; _i22++) {
-        var _key2 = _arr13[_i22];
-        walk(value[_key2], depth + 1);
+      });else for (var _i23 = 0, _arr13 = ["data", "results", "items", "list", "playlists"]; _i23 < _arr13.length; _i23++) {
+        var _key3 = _arr13[_i23];
+        walk(value[_key3], depth + 1);
       }
     }
     walk(json, 0);
@@ -17434,11 +17476,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var padding = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 4;
     var gap = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 3;
     var placed = [];
-    var _iterator49 = _createForOfIteratorHelper(badges),
-      _step50;
+    var _iterator50 = _createForOfIteratorHelper(badges),
+      _step51;
     try {
       var _loop16 = function _loop16() {
-          var badge = _step50.value;
+          var badge = _step51.value;
           var w = Math.min(badge.width, Math.max(0, width - padding * 2)),
             h = badge.height;
           if (w <= 0 || h <= 0) return 0; // continue
@@ -17470,14 +17512,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }));
         },
         _ret8;
-      for (_iterator49.s(); !(_step50 = _iterator49.n()).done;) {
+      for (_iterator50.s(); !(_step51 = _iterator50.n()).done;) {
         _ret8 = _loop16();
         if (_ret8 === 0) continue;
       }
     } catch (err) {
-      _iterator49.e(err);
+      _iterator50.e(err);
     } finally {
-      _iterator49.f();
+      _iterator50.f();
     }
     return placed;
   }
@@ -17492,11 +17534,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       if (paused()) return;
       var reads = [];
       var count = 0;
-      var _iterator50 = _createForOfIteratorHelper(pending),
-        _step51;
+      var _iterator51 = _createForOfIteratorHelper(pending),
+        _step52;
       try {
-        for (_iterator50.s(); !(_step51 = _iterator50.n()).done;) {
-          var node = _step51.value;
+        for (_iterator51.s(); !(_step52 = _iterator51.n()).done;) {
+          var node = _step52.value;
           if (document.body.classList.contains("pt-tv") && count++ >= 6) break;
           pending.delete(node);
           if (!node.isConnected) continue;
@@ -17509,15 +17551,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             _height = _view.clientHeight || rect.height,
             scale = rect.width / _width || 1,
             _entries = [];
-          for (var _i24 = 0, _arr14 = [[".card__vote", "br"], [".pt-quality,.card__quality", "tl"], [".pt-kind", "tr"], [".pt-series-status", "tr"], [".card__marker", "bl"], [".card__icon:not(.icon--history)", "bl"], [".card__new-episode", "bl"]]; _i24 < _arr14.length; _i24++) {
-            var _arr14$_i = _slicedToArray(_arr14[_i24], 2),
+          for (var _i25 = 0, _arr14 = [[".card__vote", "br"], [".pt-quality,.card__quality", "tl"], [".pt-kind", "tr"], [".pt-series-status", "tr"], [".card__marker", "bl"], [".card__icon:not(.icon--history)", "bl"], [".card__new-episode", "bl"]]; _i25 < _arr14.length; _i25++) {
+            var _arr14$_i = _slicedToArray(_arr14[_i25], 2),
               selector = _arr14$_i[0],
               corner = _arr14$_i[1];
-            var _iterator52 = _createForOfIteratorHelper(_view.querySelectorAll(selector)),
-              _step53;
+            var _iterator53 = _createForOfIteratorHelper(_view.querySelectorAll(selector)),
+              _step54;
             try {
-              for (_iterator52.s(); !(_step53 = _iterator52.n()).done;) {
-                var el = _step53.value;
+              for (_iterator53.s(); !(_step54 = _iterator53.n()).done;) {
+                var el = _step54.value;
                 if (el.hidden || el.classList.contains("hide") || getComputedStyle(el).display === "none") continue;
                 if (el.classList.contains("pt-series-status")) {
                   el.style.fontSize = "";
@@ -17540,9 +17582,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 });
               }
             } catch (err) {
-              _iterator52.e(err);
+              _iterator53.e(err);
             } finally {
-              _iterator52.f();
+              _iterator53.f();
             }
           }
           reads.push({
@@ -17554,23 +17596,23 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
         }
       } catch (err) {
-        _iterator50.e(err);
+        _iterator51.e(err);
       } finally {
-        _iterator50.f();
+        _iterator51.f();
       }
-      for (var _i23 = 0, _reads = reads; _i23 < _reads.length; _i23++) {
-        var _reads$_i = _reads[_i23],
+      for (var _i24 = 0, _reads = reads; _i24 < _reads.length; _i24++) {
+        var _reads$_i = _reads[_i24],
           view = _reads$_i.view,
           width = _reads$_i.width,
           height = _reads$_i.height,
           entries2 = _reads$_i.entries,
           places = _reads$_i.places;
         view.classList.add("minimal-badge-layout");
-        var _iterator51 = _createForOfIteratorHelper(entries2),
-          _step52;
+        var _iterator52 = _createForOfIteratorHelper(entries2),
+          _step53;
         try {
           var _loop17 = function _loop17() {
-            var entry = _step52.value;
+            var entry = _step53.value;
             var p = places.find(function (p2) {
               return p2.el === entry.el;
             });
@@ -17585,13 +17627,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               bottom: bottom ? Math.round(height - p.y - p.height) + "px" : "auto"
             });
           };
-          for (_iterator51.s(); !(_step52 = _iterator51.n()).done;) {
+          for (_iterator52.s(); !(_step53 = _iterator52.n()).done;) {
             if (_loop17()) continue;
           }
         } catch (err) {
-          _iterator51.e(err);
+          _iterator52.e(err);
         } finally {
-          _iterator51.f();
+          _iterator52.f();
         }
       }
       if (pending.size) frame = requestAnimationFrame(flush);
@@ -17601,8 +17643,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       pending.add(node);
       if (!frame && !paused()) frame = requestAnimationFrame(flush);
     }
-    for (var _i25 = 0, _arr15 = ["minimal:tv-idle", "minimal:wheel-idle", "visibilitychange"]; _i25 < _arr15.length; _i25++) {
-      var event = _arr15[_i25];
+    for (var _i26 = 0, _arr15 = ["minimal:tv-idle", "minimal:wheel-idle", "visibilitychange"]; _i26 < _arr15.length; _i26++) {
+      var event = _arr15[_i26];
       document.addEventListener(event, function () {
         if (pending.size && !frame) frame = requestAnimationFrame(flush);
       });
@@ -17760,17 +17802,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       slot.appendChild(wrap);
     }
     if (!wrap) return;
-    var _iterator53 = _createForOfIteratorHelper(slot.querySelectorAll(".card-watched")),
-      _step54;
+    var _iterator54 = _createForOfIteratorHelper(slot.querySelectorAll(".card-watched")),
+      _step55;
     try {
-      for (_iterator53.s(); !(_step54 = _iterator53.n()).done;) {
-        var other = _step54.value;
+      for (_iterator54.s(); !(_step55 = _iterator54.n()).done;) {
+        var other = _step55.value;
         if (other !== wrap) other.remove();
       }
     } catch (err) {
-      _iterator53.e(err);
+      _iterator54.e(err);
     } finally {
-      _iterator53.f();
+      _iterator54.f();
     }
     if (wrap.parentNode !== slot) slot.appendChild(wrap);
     var row = Array.from(wrap.querySelectorAll(".card-watched__item")).find(function (item) {
@@ -17859,33 +17901,33 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         _episode = match && Number(match[1] || match[2]);
       var table = L.TimeTable && L.TimeTable.get ? L.TimeTable.get(data) || [] : [];
       var _season = 0;
-      var _iterator54 = _createForOfIteratorHelper(table),
-        _step55;
+      var _iterator55 = _createForOfIteratorHelper(table),
+        _step56;
       try {
-        for (_iterator54.s(); !(_step55 = _iterator54.n()).done;) {
-          var ep = _step55.value;
+        for (_iterator55.s(); !(_step56 = _iterator55.n()).done;) {
+          var ep = _step56.value;
           if (Number(ep.episode_number) !== _episode) continue;
-          var _key3 = hash([ep.season_number, ep.season_number > 10 ? ":" : "", _episode, data.original_title].join(""));
-          if (progressHash && String(_key3) !== progressHash) continue;
-          var _time = view(_key3);
+          var _key5 = hash([ep.season_number, ep.season_number > 10 ? ":" : "", _episode, data.original_title].join(""));
+          if (progressHash && String(_key5) !== progressHash) continue;
+          var _time = view(_key5);
           if (_time && (_time.percent || _time.time)) {
             _season = Number(ep.season_number);
             timeline = _time;
           }
         }
       } catch (err) {
-        _iterator54.e(err);
+        _iterator55.e(err);
       } finally {
-        _iterator54.f();
+        _iterator55.f();
       }
       if (!_season && _episode) {
         var _last = L.Storage && L.Storage.get ? L.Storage.get("online_watched_last", "{}") || {} : {};
         var _history = _last[hash(data.original_title)];
         if (_history && Number(_history.episode) === _episode) {
-          var key2 = hash([Number(_history.season), Number(_history.season) > 10 ? ":" : "", _episode, data.original_title].join(""));
-          if (!progressHash || String(key2) === progressHash) {
+          var _key4 = hash([Number(_history.season), Number(_history.season) > 10 ? ":" : "", _episode, data.original_title].join(""));
+          if (!progressHash || String(_key4) === progressHash) {
             _season = Number(_history.season) || 0;
-            timeline = view(key2);
+            timeline = view(_key4);
           }
         }
       }
@@ -17970,17 +18012,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       lifetime = 9e5;
     var saved = L.Storage && L.Storage.get ? L.Storage.get(storage, []) : [];
     if (Array.isArray(saved)) {
-      var _iterator55 = _createForOfIteratorHelper(saved.slice(-80)),
-        _step56;
+      var _iterator56 = _createForOfIteratorHelper(saved.slice(-80)),
+        _step57;
       try {
-        for (_iterator55.s(); !(_step56 = _iterator55.n()).done;) {
-          var pair = _step56.value;
+        for (_iterator56.s(); !(_step57 = _iterator56.n()).done;) {
+          var pair = _step57.value;
           if (Array.isArray(pair) && typeof pair[0] === "string" && pair[1] && pair[1].details && Date.now() - pair[1].at < lifetime) cache3.set(pair[0], pair[1]);
         }
       } catch (err) {
-        _iterator55.e(err);
+        _iterator56.e(err);
       } finally {
-        _iterator55.f();
+        _iterator56.f();
       }
     }
     var cacheKey = function cacheKey(data) {
@@ -17989,9 +18031,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     function save() {
       clearTimeout(saveTimer);
       saveTimer = setTimeout(function () {
-        if (L.Storage && L.Storage.set) L.Storage.set(storage, Array.from(cache3).filter(function (_ref0) {
-          var _ref1 = _slicedToArray(_ref0, 2),
-            entry = _ref1[1];
+        if (L.Storage && L.Storage.set) L.Storage.set(storage, Array.from(cache3).filter(function (_ref10) {
+          var _ref11 = _slicedToArray(_ref10, 2),
+            entry = _ref11[1];
           return entry.details;
         }).slice(-80));
       }, 150);
@@ -18110,17 +18152,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
           if (cache3.size > 80) cache3.delete(cache3.keys().next().value);
           save();
-          var _iterator56 = _createForOfIteratorHelper(task.nodes),
-            _step57;
+          var _iterator57 = _createForOfIteratorHelper(task.nodes),
+            _step58;
           try {
-            for (_iterator56.s(); !(_step57 = _iterator56.n()).done;) {
-              var node = _step57.value;
+            for (_iterator57.s(); !(_step58 = _iterator57.n()).done;) {
+              var node = _step58.value;
               if (node.isConnected && node.matches(".focus,.hover,.pt-card-pointer,.pt-card-touch")) schedule(node);
             }
           } catch (err) {
-            _iterator56.e(err);
+            _iterator57.e(err);
           } finally {
-            _iterator56.f();
+            _iterator57.f();
           }
           pump();
         };
@@ -18167,17 +18209,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     }
     if (L.Listener && L.Listener.follow) L.Listener.follow("state:changed", function (event) {
       if (event.target === "timeline" || event.target === "favorite") {
-        var _iterator57 = _createForOfIteratorHelper(document.querySelectorAll(".card.focus,.card.hover,.card.pt-card-pointer,.card.pt-card-touch")),
-          _step58;
+        var _iterator58 = _createForOfIteratorHelper(document.querySelectorAll(".card.focus,.card.hover,.card.pt-card-pointer,.card.pt-card-touch")),
+          _step59;
         try {
-          for (_iterator57.s(); !(_step58 = _iterator57.n()).done;) {
-            var node = _step58.value;
+          for (_iterator58.s(); !(_step59 = _iterator58.n()).done;) {
+            var node = _step59.value;
             if (cards.has(node)) schedule(node);
           }
         } catch (err) {
-          _iterator57.e(err);
+          _iterator58.e(err);
         } finally {
-          _iterator57.f();
+          _iterator58.f();
         }
       }
     });
@@ -18249,13 +18291,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     }
     function forget(item) {
       deferred.delete(item);
-      var _iterator58 = _createForOfIteratorHelper(tracked),
-        _step59;
+      var _iterator59 = _createForOfIteratorHelper(tracked),
+        _step60;
       try {
-        for (_iterator58.s(); !(_step59 = _iterator58.n()).done;) {
-          var _step59$value = _slicedToArray(_step59.value, 2),
-            node = _step59$value[0],
-            value = _step59$value[1];
+        for (_iterator59.s(); !(_step60 = _iterator59.n()).done;) {
+          var _step60$value = _slicedToArray(_step60.value, 2),
+            node = _step60$value[0],
+            value = _step60$value[1];
           if (value === item) {
             if (observer) observer.unobserve(node);
             visible.delete(node);
@@ -18265,39 +18307,39 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }
         }
       } catch (err) {
-        _iterator58.e(err);
+        _iterator59.e(err);
       } finally {
-        _iterator58.f();
+        _iterator59.f();
       }
     }
     function revisit() {
       if (observer) {
-        var _iterator59 = _createForOfIteratorHelper(visible),
-          _step60;
-        try {
-          for (_iterator59.s(); !(_step60 = _iterator59.n()).done;) {
-            var node = _step60.value;
-            if (node.isConnected) deferred.add(tracked.get(node));
-          }
-        } catch (err) {
-          _iterator59.e(err);
-        } finally {
-          _iterator59.f();
-        }
-      } else {
-        var _iterator60 = _createForOfIteratorHelper(tracked),
+        var _iterator60 = _createForOfIteratorHelper(visible),
           _step61;
         try {
           for (_iterator60.s(); !(_step61 = _iterator60.n()).done;) {
-            var _step61$value = _slicedToArray(_step61.value, 2),
-              _node3 = _step61$value[0],
-              item = _step61$value[1];
-            if (_node3.isConnected) deferred.add(item);
+            var node = _step61.value;
+            if (node.isConnected) deferred.add(tracked.get(node));
           }
         } catch (err) {
           _iterator60.e(err);
         } finally {
           _iterator60.f();
+        }
+      } else {
+        var _iterator61 = _createForOfIteratorHelper(tracked),
+          _step62;
+        try {
+          for (_iterator61.s(); !(_step62 = _iterator61.n()).done;) {
+            var _step62$value = _slicedToArray(_step62.value, 2),
+              _node3 = _step62$value[0],
+              item = _step62$value[1];
+            if (_node3.isConnected) deferred.add(item);
+          }
+        } catch (err) {
+          _iterator61.e(err);
+        } finally {
+          _iterator61.f();
         }
       }
       if (!timer && deferred.size && !document.body.classList.contains("pt-tv-busy")) timer = setTimeout(flush, 100);
@@ -18611,19 +18653,19 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             return node.nodeType === 1 && (node.matches(".card") || node.querySelector(".card"));
           });
         })) {
-          var _iterator61 = _createForOfIteratorHelper(tracked),
-            _step62;
+          var _iterator62 = _createForOfIteratorHelper(tracked),
+            _step63;
           try {
-            for (_iterator61.s(); !(_step62 = _iterator61.n()).done;) {
-              var _step62$value = _slicedToArray(_step62.value, 2),
-                node = _step62$value[0],
-                item = _step62$value[1];
+            for (_iterator62.s(); !(_step63 = _iterator62.n()).done;) {
+              var _step63$value = _slicedToArray(_step63.value, 2),
+                node = _step63$value[0],
+                item = _step63$value[1];
               if (!node.isConnected) forget(item);
             }
           } catch (err) {
-            _iterator61.e(err);
+            _iterator62.e(err);
           } finally {
-            _iterator61.f();
+            _iterator62.f();
           }
         }
       }).observe(document.body, {
@@ -18647,19 +18689,19 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       });
       var limit = document.body.classList.contains("pt-tv") ? 6 : Infinity;
       var count = 0;
-      var _iterator62 = _createForOfIteratorHelper(deferred),
-        _step63;
+      var _iterator63 = _createForOfIteratorHelper(deferred),
+        _step64;
       try {
-        for (_iterator62.s(); !(_step63 = _iterator62.n()).done;) {
-          var item = _step63.value;
+        for (_iterator63.s(); !(_step64 = _iterator63.n()).done;) {
+          var item = _step64.value;
           deferred.delete(item);
           inspect(item);
           if (++count >= limit) break;
         }
       } catch (err) {
-        _iterator62.e(err);
+        _iterator63.e(err);
       } finally {
-        _iterator62.f();
+        _iterator63.f();
       }
       if (deferred.size) timer = setTimeout(flush, 16);
       drain();
@@ -18713,17 +18755,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var caption = document.body.matches(".pt-mobile,.pt-tablet") && event.target.closest && event.target.closest(".card__title,.card__age");
       var selected = caption && caption.closest(".card"),
         open = selected && !selected.classList.contains("pt-card-touch");
-      var _iterator63 = _createForOfIteratorHelper(document.querySelectorAll(".card.pt-card-touch")),
-        _step64;
+      var _iterator64 = _createForOfIteratorHelper(document.querySelectorAll(".card.pt-card-touch")),
+        _step65;
       try {
-        for (_iterator63.s(); !(_step64 = _iterator63.n()).done;) {
-          var card = _step64.value;
+        for (_iterator64.s(); !(_step65 = _iterator64.n()).done;) {
+          var card = _step65.value;
           card.classList.remove("pt-card-touch");
         }
       } catch (err) {
-        _iterator63.e(err);
+        _iterator64.e(err);
       } finally {
-        _iterator63.f();
+        _iterator64.f();
       }
       if (!selected) return;
       event.preventDefault();
@@ -18750,21 +18792,21 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       retries.clear();
       running = 0;
       if (L.Storage && L.Storage.set) L.Storage.set(storage, []);
-      var _iterator64 = _createForOfIteratorHelper(tracked),
-        _step65;
+      var _iterator65 = _createForOfIteratorHelper(tracked),
+        _step66;
       try {
-        for (_iterator64.s(); !(_step65 = _iterator64.n()).done;) {
-          var _step65$value = _slicedToArray(_step65.value, 1),
-            node = _step65$value[0];
+        for (_iterator65.s(); !(_step66 = _iterator65.n()).done;) {
+          var _step66$value = _slicedToArray(_step66.value, 1),
+            node = _step66$value[0];
           node.querySelectorAll(".pt-quality").forEach(function (b) {
             return b.remove();
           });
           node.classList.remove("pt-has-quality");
         }
       } catch (err) {
-        _iterator64.e(err);
+        _iterator65.e(err);
       } finally {
-        _iterator64.f();
+        _iterator65.f();
       }
       revisit();
     });
@@ -18929,7 +18971,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     if (!state.posterFitWrapped) {
       state.posterFitWrapped = true;
       var _loop20 = function _loop20() {
-        var method = _arr16[_i26];
+        var method = _arr16[_i27];
         var original = line.scroll[method];
         if (!original) return 1; // continue
         line.scroll[method] = function (element, center) {
@@ -18943,7 +18985,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           return original.apply(this, arguments);
         };
       };
-      for (var _i26 = 0, _arr16 = ["update", "immediate"]; _i26 < _arr16.length; _i26++) {
+      for (var _i27 = 0, _arr16 = ["update", "immediate"]; _i27 < _arr16.length; _i27++) {
         if (_loop20()) continue;
       }
     }
@@ -19528,10 +19570,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       name: text("Масштаб"),
       icon: ""
     });
-    GROUPS.forEach(function (_ref10) {
-      var _ref11 = _slicedToArray(_ref10, 2),
-        id = _ref11[0],
-        name = _ref11[1];
+    GROUPS.forEach(function (_ref12) {
+      var _ref13 = _slicedToArray(_ref12, 2),
+        id = _ref13[0],
+        name = _ref13[1];
       if (api.addComponent) api.addComponent({
         component: prefix + id,
         name: name,
@@ -19600,17 +19642,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             return item.removeClass("selector").attr("data-name", "lampa_view_version");
           }
         };
-        return GROUPS.filter(function (_ref12) {
-          var _ref13 = _slicedToArray(_ref12, 1),
-            id = _ref13[0];
+        return GROUPS.filter(function (_ref14) {
+          var _ref15 = _slicedToArray(_ref14, 1),
+            id = _ref15[0];
           return available.some(function (d) {
             return groupOf(d) === id;
           });
-        }).map(function (_ref14) {
-          var _ref15 = _slicedToArray(_ref14, 3),
-            id = _ref15[0],
-            title = _ref15[1],
-            description = _ref15[2];
+        }).map(function (_ref16) {
+          var _ref17 = _slicedToArray(_ref16, 3),
+            id = _ref17[0],
+            title = _ref17[1],
+            description = _ref17[2];
           return {
             component: "lampa_view",
             param: {
@@ -19889,11 +19931,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
           if (cache3.size > 40) cache3.delete(cache3.keys().next().value);
         }
-        job.listeners.forEach(function (_ref16) {
-          var _ref17 = _slicedToArray(_ref16, 3),
-            ok = _ref17[0],
-            fail = _ref17[1],
-            params = _ref17[2];
+        job.listeners.forEach(function (_ref18) {
+          var _ref19 = _slicedToArray(_ref18, 3),
+            ok = _ref19[0],
+            fail = _ref19[1],
+            params = _ref19[2];
           return json ? deliver(json, ok, params) : fail();
         });
         pump();
@@ -19984,19 +20026,19 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
           if (metadataCache.size > 80) metadataCache.delete(metadataCache.keys().next().value);
         }
-        var _iterator65 = _createForOfIteratorHelper(listeners),
-          _step66;
+        var _iterator66 = _createForOfIteratorHelper(listeners),
+          _step67;
         try {
-          for (_iterator65.s(); !(_step66 = _iterator65.n()).done;) {
-            var _step66$value = _slicedToArray(_step66.value, 2),
-              success = _step66$value[0],
-              error = _step66$value[1];
+          for (_iterator66.s(); !(_step67 = _iterator66.n()).done;) {
+            var _step67$value = _slicedToArray(_step67.value, 2),
+              success = _step67$value[0],
+              error = _step67$value[1];
             if (json) success(__spreadValues({}, json));else error();
           }
         } catch (err) {
-          _iterator65.e(err);
+          _iterator66.e(err);
         } finally {
-          _iterator65.f();
+          _iterator66.f();
         }
       };
       api("/api/animes/" + id, finish, function () {
@@ -20101,10 +20143,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
           while (franchiseCache.size > 24) franchiseCache.delete(franchiseCache.keys().next().value);
         }
-        callbacks.forEach(function (_ref18) {
-          var _ref19 = _slicedToArray(_ref18, 2),
-            success = _ref19[0],
-            error = _ref19[1];
+        callbacks.forEach(function (_ref20) {
+          var _ref21 = _slicedToArray(_ref20, 2),
+            success = _ref21[0],
+            error = _ref21[1];
           return value ? success(value) : error();
         });
       };
@@ -20147,9 +20189,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var waiters = _toConsumableArray(franchisePending.values());
       franchisePending.clear();
       waiters.forEach(function (rows) {
-        return rows.forEach(function (_ref20) {
-          var _ref21 = _slicedToArray(_ref20, 2),
-            fail = _ref21[1];
+        return rows.forEach(function (_ref22) {
+          var _ref23 = _slicedToArray(_ref22, 2),
+            fail = _ref23[1];
           return fail();
         });
       });
@@ -20213,8 +20255,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     function fields2(json, kind, id) {
       if (!json || Number(json.id) !== Number(id) || !(json.title || json.name)) return null;
       var value = {};
-      for (var _i27 = 0, _arr17 = ["title", "name", "original_title", "original_name", "overview", "poster_path", "backdrop_path", "release_date", "first_air_date", "original_language", "vote_average", "vote_count", "genre_ids", "genres", "origin_country", "production_companies", "networks"]; _i27 < _arr17.length; _i27++) {
-        var name = _arr17[_i27];
+      for (var _i28 = 0, _arr17 = ["title", "name", "original_title", "original_name", "overview", "poster_path", "backdrop_path", "release_date", "first_air_date", "original_language", "vote_average", "vote_count", "genre_ids", "genres", "origin_country", "production_companies", "networks"]; _i28 < _arr17.length; _i28++) {
+        var name = _arr17[_i28];
         if (json[name] != null) value[name] = json[name];
       }
       value.title = json.title || json.name;
@@ -20292,24 +20334,24 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       warm.set(lang, entry);
       var remaining = 3,
         answers = 0;
-      [["trending/all/day", ""], ["movie/popular", "movie"], ["tv/popular", "tv"]].forEach(function (_ref22) {
-        var _ref23 = _slicedToArray(_ref22, 2),
-          path = _ref23[0],
-          type = _ref23[1];
+      [["trending/all/day", ""], ["movie/popular", "movie"], ["tv/popular", "tv"]].forEach(function (_ref24) {
+        var _ref25 = _slicedToArray(_ref24, 2),
+          path = _ref25[0],
+          type = _ref25[1];
         return request(path, lang, function (json) {
           if (json && Array.isArray(json.results)) answers++;
-          var _iterator66 = _createForOfIteratorHelper(json && json.results || []),
-            _step67;
+          var _iterator67 = _createForOfIteratorHelper(json && json.results || []),
+            _step68;
           try {
-            for (_iterator66.s(); !(_step67 = _iterator66.n()).done;) {
-              var row = _step67.value;
+            for (_iterator67.s(); !(_step68 = _iterator67.n()).done;) {
+              var row = _step68.value;
               var kind = type || row.media_type;
               if ((kind === "movie" || kind === "tv") && row.poster_path && row.backdrop_path) remember(lang, kind, row);
             }
           } catch (err) {
-            _iterator66.e(err);
+            _iterator67.e(err);
           } finally {
-            _iterator66.f();
+            _iterator67.f();
           }
           if (! --remaining) {
             if (!answers) unavailableUntil = Date.now() + 6e4;
@@ -21038,18 +21080,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       end: date2.getFullYear()
     }] : []);
     return {
-      sections: SECTIONS.filter(function (_ref24) {
-        var _ref25 = _slicedToArray(_ref24, 1),
-          key2 = _ref25[0];
-        return !["studios", "heroes", "family"].includes(key2) || kind === "cartoon";
-      }).filter(function (_ref26) {
+      sections: SECTIONS.filter(function (_ref26) {
         var _ref27 = _slicedToArray(_ref26, 1),
           key2 = _ref27[0];
+        return !["studios", "heroes", "family"].includes(key2) || kind === "cartoon";
+      }).filter(function (_ref28) {
+        var _ref29 = _slicedToArray(_ref28, 1),
+          key2 = _ref29[0];
         return key2 !== "platforms" || kind !== "movie";
       }),
-      countries: COUNTRIES.filter(function (_ref28) {
-        var _ref29 = _slicedToArray(_ref28, 1),
-          code = _ref29[0];
+      countries: COUNTRIES.filter(function (_ref30) {
+        var _ref31 = _slicedToArray(_ref30, 1),
+          code = _ref31[0];
         return kind !== "dorama" || ASIAN.includes(code);
       }),
       genres: allowedGenres.map(function (g) {
@@ -21373,14 +21415,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var choices = state.sort ? options.sorts.filter(function (v) {
           return v[0] === state.sort;
         }) : options.sorts;
-        choices.filter(function (_ref30) {
-          var _ref31 = _slicedToArray(_ref30, 1),
-            sort = _ref31[0];
+        choices.filter(function (_ref32) {
+          var _ref33 = _slicedToArray(_ref32, 1),
+            sort = _ref33[0];
           return sort !== "revenue" || type === "movie";
-        }).forEach(function (_ref32) {
-          var _ref33 = _slicedToArray(_ref32, 2),
-            sort = _ref33[0],
-            title = _ref33[1];
+        }).forEach(function (_ref34) {
+          var _ref35 = _slicedToArray(_ref34, 2),
+            sort = _ref35[0],
+            title = _ref35[1];
           return add(type + "-" + sort, title, __spreadProps(__spreadValues({}, extra), {
             sort: sort
           }), type);
@@ -21455,13 +21497,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       return rows;
     }
     if (state.section === "countries" && !state.country) {
-      options.countries.filter(function (_ref34) {
-        var _ref35 = _slicedToArray(_ref34, 1),
-          code = _ref35[0];
-        return code !== "UA" || !["movie", "tv"].includes(kind);
-      }).forEach(function (_ref36) {
+      options.countries.filter(function (_ref36) {
         var _ref37 = _slicedToArray(_ref36, 1),
           code = _ref37[0];
+        return code !== "UA" || !["movie", "tv"].includes(kind);
+      }).forEach(function (_ref38) {
+        var _ref39 = _slicedToArray(_ref38, 1),
+          code = _ref39[0];
         return add("country-" + code, countryTitle(code), {
           country: code
         });
@@ -21562,10 +21604,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       feed: "trending"
     }, kind === "cartoon" ? "" : types[0]);
     var lead = [["new", "Новинки"], ["rated", "Высокий рейтинг"], ["popular", "Популярные"], ["votes", "Много голосов"]];
-    lead.forEach(function (_ref38) {
-      var _ref39 = _slicedToArray(_ref38, 2),
-        sort = _ref39[0],
-        title = _ref39[1];
+    lead.forEach(function (_ref40) {
+      var _ref41 = _slicedToArray(_ref40, 2),
+        sort = _ref41[0],
+        title = _ref41[1];
       var extra = {
         sort: sort
       };
@@ -21619,10 +21661,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         country: "CN",
         feed: "active"
       });
-      [["80", "Детективы и криминал"], ["10765", "Фантастика и фэнтези"], ["35", "Комедии"], ["18", "Драмы"]].forEach(function (_ref40) {
-        var _ref41 = _slicedToArray(_ref40, 2),
-          genre = _ref41[0],
-          title = _ref41[1];
+      [["80", "Детективы и криминал"], ["10765", "Фантастика и фэнтези"], ["35", "Комедии"], ["18", "Драмы"]].forEach(function (_ref42) {
+        var _ref43 = _slicedToArray(_ref42, 2),
+          genre = _ref43[0],
+          title = _ref43[1];
         return add("genre-" + genre, title, {
           genre: genre,
           feed: "active"
@@ -22019,23 +22061,23 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             return a.length;
           }))));
           for (var i = 0; i < length; i++) {
-            var _iterator67 = _createForOfIteratorHelper(accepted),
-              _step68;
+            var _iterator68 = _createForOfIteratorHelper(accepted),
+              _step69;
             try {
-              for (_iterator67.s(); !(_step68 = _iterator67.n()).done;) {
-                var rows = _step68.value;
+              for (_iterator68.s(); !(_step69 = _iterator68.n()).done;) {
+                var rows = _step69.value;
                 var card = rows[i];
                 if (!card) continue;
-                var key2 = card.media_type + ":" + card.id;
-                if (!cursor.seen.has(key2)) {
-                  cursor.seen.add(key2);
+                var _key6 = card.media_type + ":" + card.id;
+                if (!cursor.seen.has(_key6)) {
+                  cursor.seen.add(_key6);
                   cursor.buffer.push(card);
                 }
               }
             } catch (err) {
-              _iterator67.e(err);
+              _iterator68.e(err);
             } finally {
-              _iterator67.f();
+              _iterator68.f();
             }
           }
           next();
@@ -22073,10 +22115,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         title: text("Сейчас смотрят"),
         media_type: "tv",
         tmdb: "discover/tv?include_adult=false&" + asian + "sort_by=popularity.desc&air_date.gte=" + day4(-7) + "&air_date.lte=" + day4(0)
-      }].concat(_toConsumableArray([[text("Популярное"), asian + "sort_by=popularity.desc"], [text("Новинки этого года"), asian + "sort_by=popularity.desc&first_air_date.gte=" + year + "-01-01"], [text("С высоким рейтингом"), asian + "sort_by=vote_average.desc&vote_count.gte=100"], [text("Корейские дорамы"), "with_origin_country=KR&without_genres=16,99,10764,10767&sort_by=popularity.desc"], [text("Японские дорамы"), "with_origin_country=JP&without_genres=16,99,10764,10767&sort_by=popularity.desc"], [text("Китайские дорамы"), "with_origin_country=CN|TW&without_genres=16,99,10764,10767&sort_by=popularity.desc"], [text("Тайские дорамы"), "with_origin_country=TH&without_genres=16,99,10764,10767&sort_by=popularity.desc"], [text("Драмы"), asian + "with_genres=18&sort_by=popularity.desc"], [text("Комедии"), asian + "with_genres=35&sort_by=popularity.desc"], [text("Детективы"), asian + "with_genres=9648&sort_by=popularity.desc"]].map(function (_ref42, index2) {
-        var _ref43 = _slicedToArray(_ref42, 2),
-          title = _ref43[0],
-          query = _ref43[1];
+      }].concat(_toConsumableArray([[text("Популярное"), asian + "sort_by=popularity.desc"], [text("Новинки этого года"), asian + "sort_by=popularity.desc&first_air_date.gte=" + year + "-01-01"], [text("С высоким рейтингом"), asian + "sort_by=vote_average.desc&vote_count.gte=100"], [text("Корейские дорамы"), "with_origin_country=KR&without_genres=16,99,10764,10767&sort_by=popularity.desc"], [text("Японские дорамы"), "with_origin_country=JP&without_genres=16,99,10764,10767&sort_by=popularity.desc"], [text("Китайские дорамы"), "with_origin_country=CN|TW&without_genres=16,99,10764,10767&sort_by=popularity.desc"], [text("Тайские дорамы"), "with_origin_country=TH&without_genres=16,99,10764,10767&sort_by=popularity.desc"], [text("Драмы"), asian + "with_genres=18&sort_by=popularity.desc"], [text("Комедии"), asian + "with_genres=35&sort_by=popularity.desc"], [text("Детективы"), asian + "with_genres=9648&sort_by=popularity.desc"]].map(function (_ref44, index2) {
+        var _ref45 = _slicedToArray(_ref44, 2),
+          title = _ref45[0],
+          query = _ref45[1];
         return {
           key: "dorama-" + index2,
           title: title,
@@ -22087,11 +22129,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     }
     if (kind === "tvshow") {
       var shows = "without_genres=16&with_genres=10764|10767&with_original_language=ru&";
-      return [["watch", text("Сейчас смотрят"), shows + "sort_by=popularity.desc&air_date.gte=" + day4(-7) + "&air_date.lte=" + day4(0)], ["popular", text("Популярное"), shows + "sort_by=popularity.desc"], ["year", text("Новинки этого года"), shows + "sort_by=popularity.desc&first_air_date.gte=" + year + "-01-01&first_air_date.lte=" + day4(0)], ["rated", text("С высоким рейтингом"), shows + "sort_by=vote_average.desc&vote_count.gte=100"], ["reality", text("Российские реалити"), "without_genres=16&with_genres=10764&with_original_language=ru&sort_by=popularity.desc"], ["talk", text("Российские ток-шоу"), "without_genres=16&with_genres=10767&with_original_language=ru&sort_by=popularity.desc"], ["russian", text("Семейные и развлекательные"), "without_genres=16&with_genres=10764|10767|10751|35&with_original_language=ru&sort_by=popularity.desc"], ["last-year", text("Прошлый год"), shows + "sort_by=vote_average.desc&vote_count.gte=30&first_air_date.gte=" + (year - 1) + "-01-01&first_air_date.lte=" + (year - 1) + "-12-31"]].map(function (_ref44) {
-        var _ref45 = _slicedToArray(_ref44, 3),
-          key2 = _ref45[0],
-          title = _ref45[1],
-          query = _ref45[2];
+      return [["watch", text("Сейчас смотрят"), shows + "sort_by=popularity.desc&air_date.gte=" + day4(-7) + "&air_date.lte=" + day4(0)], ["popular", text("Популярное"), shows + "sort_by=popularity.desc"], ["year", text("Новинки этого года"), shows + "sort_by=popularity.desc&first_air_date.gte=" + year + "-01-01&first_air_date.lte=" + day4(0)], ["rated", text("С высоким рейтингом"), shows + "sort_by=vote_average.desc&vote_count.gte=100"], ["reality", text("Российские реалити"), "without_genres=16&with_genres=10764&with_original_language=ru&sort_by=popularity.desc"], ["talk", text("Российские ток-шоу"), "without_genres=16&with_genres=10767&with_original_language=ru&sort_by=popularity.desc"], ["russian", text("Семейные и развлекательные"), "without_genres=16&with_genres=10764|10767|10751|35&with_original_language=ru&sort_by=popularity.desc"], ["last-year", text("Прошлый год"), shows + "sort_by=vote_average.desc&vote_count.gte=30&first_air_date.gte=" + (year - 1) + "-01-01&first_air_date.lte=" + (year - 1) + "-12-31"]].map(function (_ref46) {
+        var _ref47 = _slicedToArray(_ref46, 3),
+          key2 = _ref47[0],
+          title = _ref47[1],
+          query = _ref47[2];
         return {
           key: key2,
           title: title,
@@ -22104,11 +22146,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       key: "watch",
       title: text("Сейчас смотрят"),
       cub: "?sort=now_playing&genre=16"
-    }].concat(_toConsumableArray([[text("Популярные мультфильмы"), "movie", "sort_by=popularity.desc"], [text("Новые мультфильмы"), "movie", "sort_by=popularity.desc&primary_release_date.gte=" + year + "-01-01"], [text("Мультфильмы с высоким рейтингом"), "movie", "sort_by=vote_average.desc&vote_count.gte=200"], [text("Популярные мультсериалы"), "tv", "sort_by=popularity.desc"], [text("Мультсериалы с высоким рейтингом"), "tv", "sort_by=vote_average.desc&vote_count.gte=100"], [text("Мультсериалы этого года"), "tv", "sort_by=popularity.desc&first_air_date.gte=" + year + "-01-01"]].map(function (_ref46) {
-      var _ref47 = _slicedToArray(_ref46, 3),
-        title = _ref47[0],
-        media_type = _ref47[1],
-        query = _ref47[2];
+    }].concat(_toConsumableArray([[text("Популярные мультфильмы"), "movie", "sort_by=popularity.desc"], [text("Новые мультфильмы"), "movie", "sort_by=popularity.desc&primary_release_date.gte=" + year + "-01-01"], [text("Мультфильмы с высоким рейтингом"), "movie", "sort_by=vote_average.desc&vote_count.gte=200"], [text("Популярные мультсериалы"), "tv", "sort_by=popularity.desc"], [text("Мультсериалы с высоким рейтингом"), "tv", "sort_by=vote_average.desc&vote_count.gte=100"], [text("Мультсериалы этого года"), "tv", "sort_by=popularity.desc&first_air_date.gte=" + year + "-01-01"]].map(function (_ref48) {
+      var _ref49 = _slicedToArray(_ref48, 3),
+        title = _ref49[0],
+        media_type = _ref49[1],
+        query = _ref49[2];
       return {
         title: title,
         media_type: media_type,
@@ -22123,14 +22165,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var definitions = [["watch", "Сейчас смотрят", "?cat=anime&sort=now_playing" + ("&airdate=" + year), "tv", base2 + "&air_date.gte=" + day4(-90) + "&air_date.lte=" + day4(0), "order=popularity&status=ongoing"], ["ongoing", "Сейчас выходит", "?cat=anime&sort=airing&airdate=" + year, "tv", base2 + "&air_date.gte=" + day4(-7) + "&air_date.lte=" + day4(0), "order=popularity&status=ongoing"], ["season", "Новинки сезона", null, "tv", base2 + "&first_air_date.gte=" + start + "&first_air_date.lte=" + day4(0), "order=popularity&season=" + season + "_" + year], ["popular", "Популярные", "?cat=anime&sort=top&airdate=" + year, "tv", base2 + "&first_air_date.gte=" + (year - 1) + "-01-01", "order=popularity"], ["rated", "Высокий рейтинг", "?cat=anime&sort=top", "tv", base2.replace("popularity.desc", "vote_average.desc") + "&vote_count.gte=200", "order=ranked"], ["completed", "Завершённые", null, "tv", base2 + "&with_status=3", "order=popularity&status=released&kind=tv"], ["features", "Полнометражные", null, "movie", base2 + "&primary_release_date.lte=" + day4(0), "order=popularity&kind=movie"], ["upcoming", "Ожидаемые", null, "tv", base2 + "&first_air_date.gte=" + day4(1) + "&first_air_date.lte=" + day4(365), "order=popularity&status=anons"]];
       var plan = definitions.filter(function (row) {
         return mode !== "shikimori" || row[0] !== "watch";
-      }).map(function (_ref48) {
-        var _ref49 = _slicedToArray(_ref48, 6),
-          key2 = _ref49[0],
-          title = _ref49[1],
-          cub = _ref49[2],
-          media_type = _ref49[3],
-          query = _ref49[4],
-          shiki = _ref49[5];
+      }).map(function (_ref50) {
+        var _ref51 = _slicedToArray(_ref50, 6),
+          key2 = _ref51[0],
+          title = _ref51[1],
+          cub = _ref51[2],
+          media_type = _ref51[3],
+          query = _ref51[4],
+          shiki = _ref51[5];
         return __spreadValues({
           key: key2,
           title: text(title),
@@ -22190,10 +22232,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       add("rated", text("С высоким рейтингом"), "?cat=anime&sort=top&airdate=" + (year - 7) + "-" + (year - 2) + "&vote=8-10", "sort_by=vote_average.desc&vote_average.gte=8&vote_count.gte=200&first_air_date.lte=" + (year - 2) + "-12-31");
     }
     var genres = kind === "movie" ? [[28, text("Боевики")], [35, text("Комедии")], [18, text("Драмы")], [53, text("Триллеры")], [878, text("Фантастика")]] : kind === "anime" ? [[10765, text("Фэнтези")], [10759, text("Приключения")]] : [[18, text("Драмы")], [80, text("Криминал")], [10765, text("Фантастика и фэнтези")], [35, text("Комедии")]];
-    genres.forEach(function (_ref50) {
-      var _ref51 = _slicedToArray(_ref50, 2),
-        id = _ref51[0],
-        title = _ref51[1];
+    genres.forEach(function (_ref52) {
+      var _ref53 = _slicedToArray(_ref52, 2),
+        id = _ref53[0],
+        title = _ref53[1];
       return add("genre-" + id, title, "?cat=" + kind + "&sort=top&genre=" + id, "sort_by=popularity.desc&with_genres=" + id + (kind === "anime" ? ",16" : ""));
     });
     return defs.slice(0, 10);
@@ -22439,28 +22481,28 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   };
   var FEEDS = [[text("Сейчас смотрят"), "trending"], [text("Популярное"), "popular"], [text("Самое просматриваемое за неделю"), "watched/weekly"], [text("В коллекциях за месяц"), "collected/monthly"], [text("Ожидаемые"), "anticipated"]];
   function traktPlan(kind) {
-    if (kind === "dorama") return FEEDS.map(function (_ref52) {
-      var _ref53 = _slicedToArray(_ref52, 2),
-        title = _ref53[0],
-        path = _ref53[1];
-      return {
-        title: title,
-        url: "shows/" + path + "?countries=kr,jp,cn,tw,th&genres=drama,romance,comedy,mystery"
-      };
-    });
-    if (kind === "tvshow") return FEEDS.map(function (_ref54) {
+    if (kind === "dorama") return FEEDS.map(function (_ref54) {
       var _ref55 = _slicedToArray(_ref54, 2),
         title = _ref55[0],
         path = _ref55[1];
       return {
         title: title,
-        url: "shows/" + path + "?genres=reality,talk-show,game-show&languages=ru"
+        url: "shows/" + path + "?countries=kr,jp,cn,tw,th&genres=drama,romance,comedy,mystery"
       };
     });
-    if (!kind) return FEEDS.map(function (_ref56, index2) {
+    if (kind === "tvshow") return FEEDS.map(function (_ref56) {
       var _ref57 = _slicedToArray(_ref56, 2),
         title = _ref57[0],
         path = _ref57[1];
+      return {
+        title: title,
+        url: "shows/" + path + "?genres=reality,talk-show,game-show&languages=ru"
+      };
+    });
+    if (!kind) return FEEDS.map(function (_ref58, index2) {
+      var _ref59 = _slicedToArray(_ref58, 2),
+        title = _ref59[0],
+        path = _ref59[1];
       return __spreadValues({
         title: title,
         url: "mixed/" + path
@@ -22473,10 +22515,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var types = TYPES[kind] ? [TYPES[kind]] : kind === "anime" ? ["shows"] : ["movies", "shows"];
     var filter = kind === "movie" || kind === "tv" ? "?without_genres=animation" : kind === "anime" ? "?genres=animation&languages=ja" : kind === "cartoon" ? "?genres=animation" : "";
     return types.flatMap(function (type) {
-      return FEEDS.map(function (_ref58) {
-        var _ref59 = _slicedToArray(_ref58, 2),
-          title = _ref59[0],
-          path = _ref59[1];
+      return FEEDS.map(function (_ref60) {
+        var _ref61 = _slicedToArray(_ref60, 2),
+          title = _ref61[0],
+          path = _ref61[1];
         return {
           title: kind === "cartoon" && type === "shows" ? text("Мультсериалы") + " \xB7 " + title : title,
           url: type + "/" + path + filter
@@ -22575,10 +22617,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               });
               if (cache3.size > 40) cache3.delete(cache3.keys().next().value);
             }
-            job.callbacks.forEach(function (_ref60) {
-              var _ref61 = _slicedToArray(_ref60, 2),
-                ok = _ref61[0],
-                fail = _ref61[1];
+            job.callbacks.forEach(function (_ref62) {
+              var _ref63 = _slicedToArray(_ref62, 2),
+                ok = _ref63[0],
+                fail = _ref63[1];
               return json ? ok(json) : error(fail, message);
             });
           }
@@ -22630,8 +22672,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       queue.length = 0;
       pending.clear();
       metadata2.clear();
-      for (var _i28 = 0, _Array$from = Array.from(live); _i28 < _Array$from.length; _i28++) {
-        var xhr = _Array$from[_i28];
+      for (var _i29 = 0, _Array$from = Array.from(live); _i29 < _Array$from.length; _i29++) {
+        var xhr = _Array$from[_i29];
         xhr.abort();
       }
     }
@@ -22653,11 +22695,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           var results = [],
             seen = /* @__PURE__ */new Set();
           for (var i = 0; i < 10; i++) {
-            var _iterator68 = _createForOfIteratorHelper(good),
-              _step69;
+            var _iterator69 = _createForOfIteratorHelper(good),
+              _step70;
             try {
-              for (_iterator68.s(); !(_step69 = _iterator68.n()).done;) {
-                var part = _step69.value;
+              for (_iterator69.s(); !(_step70 = _iterator69.n()).done;) {
+                var part = _step70.value;
                 var card = part.results[i];
                 if (card && !seen.has(card.media_type + ":" + card.id)) {
                   seen.add(card.media_type + ":" + card.id);
@@ -22665,9 +22707,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 }
               }
             } catch (err) {
-              _iterator68.e(err);
+              _iterator69.e(err);
             } finally {
-              _iterator68.f();
+              _iterator69.f();
             }
           }
           ok({
@@ -22767,22 +22809,22 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         pending.delete(queue[i].key);
         queue.splice(i, 1);
       }
-      var _iterator69 = _createForOfIteratorHelper(pending),
-        _step70;
+      var _iterator70 = _createForOfIteratorHelper(pending),
+        _step71;
       try {
-        for (_iterator69.s(); !(_step70 = _iterator69.n()).done;) {
-          var _step70$value = _slicedToArray(_step70.value, 2),
-            key2 = _step70$value[0],
-            job = _step70$value[1];
+        for (_iterator70.s(); !(_step71 = _iterator70.n()).done;) {
+          var _step71$value = _slicedToArray(_step71.value, 2),
+            _key7 = _step71$value[0],
+            job = _step71$value[1];
           if (job.path.startsWith("search/")) job.callbacks = [];
         }
       } catch (err) {
-        _iterator69.e(err);
+        _iterator70.e(err);
       } finally {
-        _iterator69.f();
+        _iterator70.f();
       }
-      for (var _i29 = 0, _Array$from2 = Array.from(live); _i29 < _Array$from2.length; _i29++) {
-        var xhr = _Array$from2[_i29];
+      for (var _i30 = 0, _Array$from2 = Array.from(live); _i30 < _Array$from2.length; _i30++) {
+        var xhr = _Array$from2[_i30];
         if ((xhr.minimalTraktPath || "").startsWith("search/")) xhr.abort();
       }
     }
@@ -22923,12 +22965,12 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         clear: clear
       };
     var _loop25 = function _loop25() {
-      var method = _arr18[_i30];
+      var method = _arr18[_i31];
       if (tmdb[method]) adapter[method] = function () {
         return tmdb[method].apply(tmdb, arguments);
       };
     };
-    for (var _i30 = 0, _arr18 = ["full", "person", "seasons", "menu", "menuCategory", "genres", "collections"]; _i30 < _arr18.length; _i30++) {
+    for (var _i31 = 0, _arr18 = ["full", "person", "seasons", "menu", "menuCategory", "genres", "collections"]; _i31 < _arr18.length; _i31++) {
       _loop25();
     }
     L.Api.sources.trakt = adapter;
@@ -23081,10 +23123,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       });
       L.Controller.toggle("minimal_anime_tabs");
     }
-    [["standard", text("Стандартные")], ["shikimori", "Shikimori"]].forEach(function (_ref62, i) {
-      var _ref63 = _slicedToArray(_ref62, 2),
-        value = _ref63[0],
-        title = _ref63[1];
+    [["standard", text("Стандартные")], ["shikimori", "Shikimori"]].forEach(function (_ref64, i) {
+      var _ref65 = _slicedToArray(_ref64, 2),
+        value = _ref65[0],
+        title = _ref65[1];
       var button = document.createElement("button");
       button.type = "button";
       button.className = "minimal-anime-tab pt-hero__action selector";
@@ -23995,8 +24037,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   function yearBounds(f) {
     var from = String(f.year_from || f.year || "").trim(),
       to = String(f.year_to || f.year || "").trim();
-    for (var _i31 = 0, _arr19 = [from, to]; _i31 < _arr19.length; _i31++) {
-      var value = _arr19[_i31];
+    for (var _i32 = 0, _arr19 = [from, to]; _i32 < _arr19.length; _i32++) {
+      var value = _arr19[_i32];
       if (value && (!/^\d{4}$/.test(value) || Number(value) < 1870 || Number(value) > 2100)) throw Error(text("Укажите год от 1870 до 2100"));
     }
     if (from && to && Number(from) > Number(to)) throw Error(text("Начальный год не может быть больше конечного"));
@@ -24130,11 +24172,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       UA: text("Украина")
     };
     if (locale() !== "ru") {
-      var _iterator70 = _createForOfIteratorHelper(Object.keys(countries).filter(Boolean)),
-        _step71;
+      var _iterator71 = _createForOfIteratorHelper(Object.keys(countries).filter(Boolean)),
+        _step72;
       try {
-        for (_iterator70.s(); !(_step71 = _iterator70.n()).done;) {
-          var code = _step71.value;
+        for (_iterator71.s(); !(_step72 = _iterator71.n()).done;) {
+          var code = _step72.value;
           try {
             countries[code] = new Intl.DisplayNames([locale()], {
               type: "region"
@@ -24150,9 +24192,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }
         }
       } catch (err) {
-        _iterator70.e(err);
+        _iterator71.e(err);
       } finally {
-        _iterator70.f();
+        _iterator71.f();
       }
     }
     var values = {
@@ -24206,10 +24248,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var pairs = Object.entries(options).sort(function (a, b) {
         return a[0] === "" ? -1 : b[0] === "" ? 1 : 0;
       });
-      show(title, pairs.map(function (_ref64) {
-        var _ref65 = _slicedToArray(_ref64, 2),
-          id = _ref65[0],
-          title2 = _ref65[1];
+      show(title, pairs.map(function (_ref66) {
+        var _ref67 = _slicedToArray(_ref66, 2),
+          id = _ref67[0],
+          title2 = _ref67[1];
         return {
           id: id,
           title: title2,
@@ -24298,10 +24340,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       if (L.Select.hide) L.Select.hide();else L.Select.close();
       if (state.kind === "anime") {
         var parts = ["order=" + encodeURIComponent(state.animeSort || "popularity")];
-        [["genre", "genre"], ["status", "status"], ["format", "kind"], ["score", "score"], ["query", "search"]].forEach(function (_ref66) {
-          var _ref67 = _slicedToArray(_ref66, 2),
-            key2 = _ref67[0],
-            param = _ref67[1];
+        [["genre", "genre"], ["status", "status"], ["format", "kind"], ["score", "score"], ["query", "search"]].forEach(function (_ref68) {
+          var _ref69 = _slicedToArray(_ref68, 2),
+            key2 = _ref69[0],
+            param = _ref69[1];
           if (state[key2]) parts.push(param + "=" + encodeURIComponent(state[key2]));
         });
         if (range.from || range.to) parts.push("season=" + encodeURIComponent((range.from || "1870") + "_" + (range.to || String((/* @__PURE__ */new Date()).getFullYear() + 5))));
@@ -24374,9 +24416,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           };
           searches.set(p.url, cursor);
           if (searches.size > 8) {
-            var key2 = searches.keys().next().value;
-            searches.get(key2).cancelled = true;
-            searches.delete(key2);
+            var _key8 = searches.keys().next().value;
+            searches.get(_key8).cancelled = true;
+            searches.delete(_key8);
           }
         }
         if (cursor.pages[page - 1]) return ok(cursor.pages[page - 1]);
@@ -24457,17 +24499,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                     return s.length;
                   })));
                 for (var i = 0; i < length; i++) {
-                  var _iterator71 = _createForOfIteratorHelper(streams2),
-                    _step72;
+                  var _iterator72 = _createForOfIteratorHelper(streams2),
+                    _step73;
                   try {
-                    for (_iterator71.s(); !(_step72 = _iterator71.n()).done;) {
-                      var rows = _step72.value;
+                    for (_iterator72.s(); !(_step73 = _iterator72.n()).done;) {
+                      var rows = _step73.value;
                       if (rows[i]) cursor.results.push(rows[i]);
                     }
                   } catch (err) {
-                    _iterator71.e(err);
+                    _iterator72.e(err);
                   } finally {
-                    _iterator71.f();
+                    _iterator72.f();
                   }
                 }
               }
@@ -24608,10 +24650,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (r.id === "genre") return genres();
         if (r.id === "country") return choose("country", text("Страна"), countries);
         if (r.id === "years") {
-          var year = (/* @__PURE__ */new Date()).getFullYear(),
-            periods = discovery_data_default.periods.concat(year > 2025 ? [{
+          var _year2 = (/* @__PURE__ */new Date()).getFullYear(),
+            periods = discovery_data_default.periods.concat(_year2 > 2025 ? [{
               start: 2026,
-              end: year
+              end: _year2
             }] : []).slice().reverse();
           return show(text("Годы выпуска"), [{
             id: "year_from",
@@ -24973,11 +25015,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (options.onBack) options.onBack();
       };
       function refresh() {
-        var _iterator72 = _createForOfIteratorHelper(rendered.get(event.items) || []),
-          _step73;
+        var _iterator73 = _createForOfIteratorHelper(rendered.get(event.items) || []),
+          _step74;
         try {
-          for (_iterator72.s(); !(_step73 = _iterator72.n()).done;) {
-            var row = _step73.value;
+          for (_iterator73.s(); !(_step74 = _iterator73.n()).done;) {
+            var row = _step74.value;
             var view = state.reader(movie)(Number(row.element.season) || 0, Number(row.element.episode) || 0, row.element.timeline && row.element.timeline.hash || row.element.hash);
             if (row.element.timeline) Object.assign(row.element.timeline, {
               percent: view.percent || 0,
@@ -24986,9 +25028,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             });
           }
         } catch (err) {
-          _iterator72.e(err);
+          _iterator73.e(err);
         } finally {
-          _iterator72.f();
+          _iterator73.f();
         }
         if (L.Timeline.read) L.Timeline.read();
       }
@@ -25008,19 +25050,19 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (entry.action === "season") state.setWatchedRows(movie, rows.map(coordinates));
         if (entry.action === "all") state.setAllWatched(movie, refresh);
         if (entry.action === "seasonclear") {
-          var _iterator73 = _createForOfIteratorHelper(rows),
-            _step74;
+          var _iterator74 = _createForOfIteratorHelper(rows),
+            _step75;
           try {
-            for (_iterator73.s(); !(_step74 = _iterator73.n()).done;) {
-              var row = _step74.value;
+            for (_iterator74.s(); !(_step75 = _iterator74.n()).done;) {
+              var row = _step75.value;
               var c = coordinates(row);
               if (row.element.viewed) row.element.viewed(0);
               state.clearProgress(movie, c.season, c.episode, c.hash);
             }
           } catch (err) {
-            _iterator73.e(err);
+            _iterator74.e(err);
           } finally {
-            _iterator73.f();
+            _iterator74.f();
           }
         }
         if (entry.action === "titleclear") state.clearTitleProgress(movie, (rendered.get(event.items) || []).map(function (row) {
@@ -25124,30 +25166,30 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   // src/torrent-episodes.js
   function explicitSeason(path) {
     var expressions = [/\bs(\d{1,2})(?=\b|\.?ep?\d)/i, /\b(\d{1,2})[x-]\d{1,4}\b/i, /(?:season|сезон)\s*(\d{1,2})\b/i, /\b(\d{1,2})\s*(?:season|сезон)\b/i, /(?:^|[^a-zа-я])(?:tv|тв)\s*-\s*(\d{1,2})\b/i];
-    var _iterator74 = _createForOfIteratorHelper(String(path || "").replace(/_/g, " ").split(/[\\/]/).reverse()),
-      _step75;
+    var _iterator75 = _createForOfIteratorHelper(String(path || "").replace(/_/g, " ").split(/[\\/]/).reverse()),
+      _step76;
     try {
-      for (_iterator74.s(); !(_step75 = _iterator74.n()).done;) {
-        var value = _step75.value;
+      for (_iterator75.s(); !(_step76 = _iterator75.n()).done;) {
+        var value = _step76.value;
         if (/\bs\d+\s*-\s*s?\d+\b|(?:season|сезон)\s*\d+\s*-\s*\d+|\d+\s*-\s*\d+\s*(?:season|сезон)/i.test(value)) continue;
-        var _iterator75 = _createForOfIteratorHelper(expressions),
-          _step76;
+        var _iterator76 = _createForOfIteratorHelper(expressions),
+          _step77;
         try {
-          for (_iterator75.s(); !(_step76 = _iterator75.n()).done;) {
-            var expression = _step76.value;
+          for (_iterator76.s(); !(_step77 = _iterator76.n()).done;) {
+            var expression = _step77.value;
             var m = value.match(expression);
             if (m) return Number(m[1]);
           }
         } catch (err) {
-          _iterator75.e(err);
+          _iterator76.e(err);
         } finally {
-          _iterator75.f();
+          _iterator76.f();
         }
       }
     } catch (err) {
-      _iterator74.e(err);
+      _iterator75.e(err);
     } finally {
-      _iterator74.f();
+      _iterator75.f();
     }
     return null;
   }
@@ -25173,18 +25215,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }).map(clean));
       folderFamilies.set(files, anchors);
     }
-    var _iterator76 = _createForOfIteratorHelper(own.reverse()),
-      _step77;
+    var _iterator77 = _createForOfIteratorHelper(own.reverse()),
+      _step78;
     try {
-      for (_iterator76.s(); !(_step77 = _iterator76.n()).done;) {
-        var part = _step77.value;
+      for (_iterator77.s(); !(_step78 = _iterator77.n()).done;) {
+        var part = _step78.value;
         var match = clean(part).match(/^(.+?)\s+([1-9]\d?)(?:-\d{1,2})?$/);
         if (match && Number(match[2]) <= 60 && anchors.has(match[1])) return Number(match[2]);
       }
     } catch (err) {
-      _iterator76.e(err);
+      _iterator77.e(err);
     } finally {
-      _iterator76.f();
+      _iterator77.f();
     }
     return null;
   }
@@ -25348,11 +25390,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       network.silent(url + "/viewed", function (data) {
         busy = false;
         if (!active() || scope !== (0, import_timeline_meta.profileScope)(L) || url !== server() || !Array.isArray(data)) return;
-        var _iterator77 = _createForOfIteratorHelper(files),
-          _step78;
+        var _iterator78 = _createForOfIteratorHelper(files),
+          _step79;
         try {
           var _loop27 = function _loop27() {
-              var row = _step78.value;
+              var row = _step79.value;
               var saved = data.find(function (v) {
                 return Number(v.file_index) === row.index && (!v.hash || v.hash === row.hash);
               });
@@ -25370,14 +25412,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               }));
             },
             _ret9;
-          for (_iterator77.s(); !(_step78 = _iterator77.n()).done;) {
+          for (_iterator78.s(); !(_step79 = _iterator78.n()).done;) {
             _ret9 = _loop27();
             if (_ret9 === 0) continue;
           }
         } catch (err) {
-          _iterator77.e(err);
+          _iterator78.e(err);
         } finally {
-          _iterator77.f();
+          _iterator78.f();
         }
       }, function () {
         busy = false;
@@ -25518,11 +25560,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         };
       });
       var endpoint = null;
-      var _iterator78 = _createForOfIteratorHelper(plugins.concat(scripts)),
-        _step79;
+      var _iterator79 = _createForOfIteratorHelper(plugins.concat(scripts)),
+        _step80;
       try {
-        for (_iterator78.s(); !(_step79 = _iterator78.n()).done;) {
-          var item = _step79.value;
+        for (_iterator79.s(); !(_step80 = _iterator79.n()).done;) {
+          var item = _step80.value;
           if (item && (item.status === 0 || item.status === "0" || item.status === false)) continue;
           var value = typeof item === "string" ? item : item && item.url;
           if (!value) continue;
@@ -25538,9 +25580,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           } catch (error) {}
         }
       } catch (err) {
-        _iterator78.e(err);
+        _iterator79.e(err);
       } finally {
-        _iterator78.f();
+        _iterator79.f();
       }
       if (!endpoint || !$ || typeof $.ajax !== "function") return null;
       var id = String(profile.id),
@@ -25559,17 +25601,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     }
     function reset(ctx) {
       generation++;
-      var _iterator79 = _createForOfIteratorHelper(requests),
-        _step80;
+      var _iterator80 = _createForOfIteratorHelper(requests),
+        _step81;
       try {
-        for (_iterator79.s(); !(_step80 = _iterator79.n()).done;) {
-          var xhr = _step80.value;
+        for (_iterator80.s(); !(_step81 = _iterator80.n()).done;) {
+          var xhr = _step81.value;
           if (xhr && xhr.abort) xhr.abort();
         }
       } catch (err) {
-        _iterator79.e(err);
+        _iterator80.e(err);
       } finally {
-        _iterator79.f();
+        _iterator80.f();
       }
       requests.clear();
       clearTimeout(timer);
@@ -25587,19 +25629,19 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       health.pending = 0;
       health.received = 0;
       if (ctx) {
-        var _iterator80 = _createForOfIteratorHelper(Object.entries(L.Storage.get(ctx.file, {}) || {}).slice(-1e4)),
-          _step81;
+        var _iterator81 = _createForOfIteratorHelper(Object.entries(L.Storage.get(ctx.file, {}) || {}).slice(-1e4)),
+          _step82;
         try {
-          for (_iterator80.s(); !(_step81 = _iterator80.n()).done;) {
-            var _step81$value = _slicedToArray(_step81.value, 2),
-              hash = _step81$value[0],
-              value = _step81$value[1];
+          for (_iterator81.s(); !(_step82 = _iterator81.n()).done;) {
+            var _step82$value = _slicedToArray(_step82.value, 2),
+              hash = _step82$value[0],
+              value = _step82$value[1];
             if (validHash(hash) && road(value).updated > 0) queue(hash, value);
           }
         } catch (err) {
-          _iterator80.e(err);
+          _iterator81.e(err);
         } finally {
-          _iterator80.f();
+          _iterator81.f();
         }
       }
     }
@@ -25685,13 +25727,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     function merge(ctx, rows) {
       var records = __spreadValues({}, L.Storage.get(ctx.file, {}) || {});
       var changed = false;
-      var _iterator81 = _createForOfIteratorHelper(pending),
-        _step82;
+      var _iterator82 = _createForOfIteratorHelper(pending),
+        _step83;
       try {
-        for (_iterator81.s(); !(_step82 = _iterator81.n()).done;) {
-          var _step82$value = _slicedToArray(_step82.value, 2),
-            hash = _step82$value[0],
-            value = _step82$value[1];
+        for (_iterator82.s(); !(_step83 = _iterator82.n()).done;) {
+          var _step83$value = _slicedToArray(_step83.value, 2),
+            hash = _step83$value[0],
+            value = _step83$value[1];
           if (value.updated > road(records[hash]).updated) {
             records[hash] = __spreadProps(__spreadValues(__spreadValues({}, records[hash]), value), {
               profile: number(ctx.id)
@@ -25700,15 +25742,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }
         }
       } catch (err) {
-        _iterator81.e(err);
+        _iterator82.e(err);
       } finally {
-        _iterator81.f();
+        _iterator82.f();
       }
-      var _iterator82 = _createForOfIteratorHelper(rows),
-        _step83;
+      var _iterator83 = _createForOfIteratorHelper(rows),
+        _step84;
       try {
-        for (_iterator82.s(); !(_step83 = _iterator82.n()).done;) {
-          var row = _step83.value;
+        for (_iterator83.s(); !(_step84 = _iterator83.n()).done;) {
+          var row = _step84.value;
           if (!row || !validHash(row.hash)) continue;
           var _hash = String(row.hash),
             _value4 = road(__spreadValues({
@@ -25727,17 +25769,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           if (remote.size > 1e4) remote.delete(remote.keys().next().value);
         }
       } catch (err) {
-        _iterator82.e(err);
+        _iterator83.e(err);
       } finally {
-        _iterator82.f();
+        _iterator83.f();
       }
-      var _iterator83 = _createForOfIteratorHelper(remote),
-        _step84;
+      var _iterator84 = _createForOfIteratorHelper(remote),
+        _step85;
       try {
-        for (_iterator83.s(); !(_step84 = _iterator83.n()).done;) {
-          var _step84$value = _slicedToArray(_step84.value, 2),
-            _hash2 = _step84$value[0],
-            entry = _step84$value[1];
+        for (_iterator84.s(); !(_step85 = _iterator84.n()).done;) {
+          var _step85$value = _slicedToArray(_step85.value, 2),
+            _hash2 = _step85$value[0],
+            entry = _step85$value[1];
           var local = road(records[_hash2]);
           if (records[_hash2] && local.updated > entry.value.updated) {
             queue(_hash2, local);
@@ -25755,24 +25797,24 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           if (waiting && waiting.updated <= entry.value.updated) pending.delete(_hash2);
         }
       } catch (err) {
-        _iterator83.e(err);
+        _iterator84.e(err);
       } finally {
-        _iterator83.f();
+        _iterator84.f();
       }
-      var _iterator84 = _createForOfIteratorHelper(Object.keys(records).slice(-1e4)),
-        _step85;
+      var _iterator85 = _createForOfIteratorHelper(Object.keys(records).slice(-1e4)),
+        _step86;
       try {
-        for (_iterator84.s(); !(_step85 = _iterator84.n()).done;) {
-          var _hash3 = _step85.value;
+        for (_iterator85.s(); !(_step86 = _iterator85.n()).done;) {
+          var _hash3 = _step86.value;
           if (!validHash(_hash3)) continue;
           var _value5 = road(records[_hash3]),
             known = remote.get(_hash3);
           if (!known && (_value5.percent || _value5.time || _value5.updated) || known && _value5.updated > known.value.updated) queue(_hash3, _value5);
         }
       } catch (err) {
-        _iterator84.e(err);
+        _iterator85.e(err);
       } finally {
-        _iterator84.f();
+        _iterator85.f();
       }
       health.pending = pending.size;
       if (changed) store(ctx, records);
@@ -25820,10 +25862,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       pushing = true;
       health.state = "syncing";
       request(ctx, "set", {
-        rows: batch.map(function (_ref68) {
-          var _ref69 = _slicedToArray(_ref68, 2),
-            hash = _ref69[0],
-            value = _ref69[1];
+        rows: batch.map(function (_ref70) {
+          var _ref71 = _slicedToArray(_ref70, 2),
+            hash = _ref71[0],
+            value = _ref71[1];
           return {
             hash: hash,
             card: remoteCard(value),
@@ -25841,13 +25883,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           failed();
           return;
         }
-        var _iterator85 = _createForOfIteratorHelper(batch),
-          _step86;
+        var _iterator86 = _createForOfIteratorHelper(batch),
+          _step87;
         try {
-          for (_iterator85.s(); !(_step86 = _iterator85.n()).done;) {
-            var _step86$value = _slicedToArray(_step86.value, 2),
-              hash = _step86$value[0],
-              sent = _step86$value[1];
+          for (_iterator86.s(); !(_step87 = _iterator86.n()).done;) {
+            var _step87$value = _slicedToArray(_step87.value, 2),
+              hash = _step87$value[0],
+              sent = _step87$value[1];
             var waiting = pending.get(hash);
             if (waiting && fingerprint(waiting) === fingerprint(sent)) pending.delete(hash);
             var known = remote.get(hash);
@@ -25857,9 +25899,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             });
           }
         } catch (err) {
-          _iterator85.e(err);
+          _iterator86.e(err);
         } finally {
-          _iterator85.f();
+          _iterator86.f();
         }
         failures = 0;
         retryAt = 0;
@@ -25948,24 +25990,24 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     };
     var cached = L.Storage && L.Storage.get ? L.Storage.get(bindingKey, []) : [];
     if (Array.isArray(cached)) {
-      var _iterator86 = _createForOfIteratorHelper(cached.slice(-limit)),
-        _step87;
+      var _iterator87 = _createForOfIteratorHelper(cached.slice(-limit)),
+        _step88;
       try {
-        for (_iterator86.s(); !(_step87 = _iterator86.n()).done;) {
-          var row = _step87.value;
+        for (_iterator87.s(); !(_step88 = _iterator87.n()).done;) {
+          var row = _step88.value;
           if (row && /^[a-zA-Z0-9_.:-]{1,128}$/.test(String(row.hash)) && typeof row.scope === "string" && row.meta && /^[a-z0-9_]{1,64}$/.test(row.meta.card || "") && Date.now() - row.at < 7 * 864e5) bindings.set(String(row.hash), row);
         }
       } catch (err) {
-        _iterator86.e(err);
+        _iterator87.e(err);
       } finally {
-        _iterator86.f();
+        _iterator87.f();
       }
     }
     function persist() {
-      if (L.Storage && L.Storage.set) L.Storage.set(bindingKey, Array.from(bindings, function (_ref70) {
-        var _ref71 = _slicedToArray(_ref70, 2),
-          hash = _ref71[0],
-          row = _ref71[1];
+      if (L.Storage && L.Storage.set) L.Storage.set(bindingKey, Array.from(bindings, function (_ref72) {
+        var _ref73 = _slicedToArray(_ref72, 2),
+          hash = _ref73[0],
+          row = _ref73[1];
         return __spreadValues({
           hash: hash
         }, row);
@@ -26075,8 +26117,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         save();
         current = null;
       });
-      for (var _i32 = 0, _arr20 = ["close", "destroy"]; _i32 < _arr20.length; _i32++) {
-        var event = _arr20[_i32];
+      for (var _i33 = 0, _arr20 = ["close", "destroy"]; _i33 < _arr20.length; _i33++) {
+        var event = _arr20[_i33];
         listener.follow(event, function () {
           save();
           current = null;
@@ -26277,10 +26319,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       if (["start", "destroy"].includes(event.type)) update();
     });
     if (L.Controller && L.Controller.listener) L.Controller.listener.follow("toggle", remoteHeading);
-    [[L.Settings, "open"], [L.Select, "open"], [L.Modal, "fullshow"], [L.Modal, "update"]].forEach(function (_ref72) {
-      var _ref73 = _slicedToArray(_ref72, 2),
-        api = _ref73[0],
-        event = _ref73[1];
+    [[L.Settings, "open"], [L.Select, "open"], [L.Modal, "fullshow"], [L.Modal, "update"]].forEach(function (_ref74) {
+      var _ref75 = _slicedToArray(_ref74, 2),
+        api = _ref75[0],
+        event = _ref75[1];
       if (api && api.listener) api.listener.follow(event, overlays);
     });
     update();
@@ -26558,11 +26600,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   function folderSeasons(rows, card) {
     if (!card || !(card.name || card.original_name) || !Array.isArray(rows)) return [];
     var found = /* @__PURE__ */new Map();
-    var _iterator87 = _createForOfIteratorHelper(rows),
-      _step88;
+    var _iterator88 = _createForOfIteratorHelper(rows),
+      _step89;
     try {
-      for (_iterator87.s(); !(_step88 = _iterator87.n()).done;) {
-        var row = _step88.value;
+      for (_iterator88.s(); !(_step89 = _iterator88.n()).done;) {
+        var row = _step89.value;
         if (!row.similar || row.method !== "link" || !/^(?:https?:\/\/|\/)/i.test(row.url || "")) continue;
         var release = providerRelease(row, card);
         if (!release) continue;
@@ -26583,9 +26625,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
       }
     } catch (err) {
-      _iterator87.e(err);
+      _iterator88.e(err);
     } finally {
-      _iterator87.f();
+      _iterator88.f();
     }
     return found.size > 1 ? _toConsumableArray(found.values()).sort(function (a, b) {
       return a.season - b.season;
@@ -26620,11 +26662,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   function seasonNavigation(rows) {
     if (!Array.isArray(rows) || rows.length < 2 || rows.length > 100) return null;
     var links = {};
-    var _iterator88 = _createForOfIteratorHelper(rows),
-      _step89;
+    var _iterator89 = _createForOfIteratorHelper(rows),
+      _step90;
     try {
-      for (_iterator88.s(); !(_step89 = _iterator88.n()).done;) {
-        var row = _step89.value;
+      for (_iterator89.s(); !(_step90 = _iterator89.n()).done;) {
+        var row = _step90.value;
         if (row.method !== "link" || row.similar || !row.url) return null;
         var label = String(row.text || row.title || row.name || "").trim(),
           match = label.match(/^(?:(?:сезон|season)\s*(\d+)|(\d+)\s*(?:сезон|season))(?:\s|$)/i);
@@ -26634,9 +26676,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         links[number3] = row.url;
       }
     } catch (err) {
-      _iterator88.e(err);
+      _iterator89.e(err);
     } finally {
-      _iterator88.f();
+      _iterator89.f();
     }
     return links;
   }
@@ -26661,11 +26703,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       tags = clean.match(/<(?:div|span|a)\b[^>]*>/gi) || [],
       decoder = document.createElement("textarea"),
       rows = [];
-    var _iterator89 = _createForOfIteratorHelper(tags),
-      _step90;
+    var _iterator90 = _createForOfIteratorHelper(tags),
+      _step91;
     try {
-      for (_iterator89.s(); !(_step90 = _iterator89.n()).done;) {
-        var tag = _step90.value;
+      for (_iterator90.s(); !(_step91 = _iterator90.n()).done;) {
+        var tag = _step91.value;
         var cls = tag.match(/\bclass\s*=\s*(["'])([\s\S]*?)\1/i),
           data = tag.match(/\bdata-json\s*=\s*(["'])([\s\S]*?)\1/i);
         if (!cls || !/(^|\s)videos__item(\s|$)/.test(cls[2]) || !data) continue;
@@ -26673,8 +26715,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           decoder.innerHTML = data[2].replace(/</g, "&lt;");
           var row = JSON.parse(decoder.value);
           if (row && /^(play|call)$/.test(row.method)) {
-            for (var _i33 = 0, _arr21 = [["s", "season"], ["e", "episode"]]; _i33 < _arr21.length; _i33++) {
-              var _arr21$_i = _slicedToArray(_arr21[_i33], 2),
+            for (var _i34 = 0, _arr21 = [["s", "season"], ["e", "episode"]]; _i34 < _arr21.length; _i34++) {
+              var _arr21$_i = _slicedToArray(_arr21[_i34], 2),
                 attribute = _arr21$_i[0],
                 field = _arr21$_i[1];
               var value = tag.match(new RegExp("\\s" + attribute + "\\s*=\\s*([\"'])([0-9]+)\\1", "i"));
@@ -26685,9 +26727,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         } catch (error) {}
       }
     } catch (err) {
-      _iterator89.e(err);
+      _iterator90.e(err);
     } finally {
-      _iterator89.f();
+      _iterator90.f();
     }
     return rows;
   }
@@ -26713,9 +26755,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (typeof value.url === "string" && value.url.trim() && !value.similar && /^(play|call|link)$/.test(value.method)) count++;
         if (Array.isArray(value)) value.forEach(function (row) {
           return _walk(row, depth + 1);
-        });else for (var _i34 = 0, _arr22 = ["data", "results", "items", "list", "playlists"]; _i34 < _arr22.length; _i34++) {
-          var key2 = _arr22[_i34];
-          _walk(value[key2], depth + 1);
+        });else for (var _i35 = 0, _arr22 = ["data", "results", "items", "list", "playlists"]; _i35 < _arr22.length; _i35++) {
+          var _key9 = _arr22[_i35];
+          _walk(value[_key9], depth + 1);
         }
       };
       if (json.rch || json.accsdb || json.blocked || json.error || json.error_details) return {
@@ -26760,9 +26802,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     function linkedRecords(card, records) {
       var identity2 = (0, import_timeline_meta3.linkFor)(L, card, 1, 1);
       if (!identity2) return [];
-      return Object.entries(records).filter(function (_ref74) {
-        var _ref75 = _slicedToArray(_ref74, 2),
-          value = _ref75[1];
+      return Object.entries(records).filter(function (_ref76) {
+        var _ref77 = _slicedToArray(_ref76, 2),
+          value = _ref77[1];
         return value && _typeof(value) === "object" && value.card === identity2.card;
       });
     }
@@ -26770,24 +26812,24 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var records = L.Storage.get(file(), {}) || {},
         titles = names(card);
       var linked = /* @__PURE__ */new Map();
-      var _iterator90 = _createForOfIteratorHelper(linkedRecords(card, records)),
-        _step91;
+      var _iterator91 = _createForOfIteratorHelper(linkedRecords(card, records)),
+        _step92;
       try {
-        for (_iterator90.s(); !(_step91 = _iterator90.n()).done;) {
-          var _step91$value = _slicedToArray(_step91.value, 2),
-            key2 = _step91$value[0],
-            value = _step91$value[1];
+        for (_iterator91.s(); !(_step92 = _iterator91.n()).done;) {
+          var _step92$value = _slicedToArray(_step92.value, 2),
+            _key1 = _step92$value[0],
+            value = _step92$value[1];
           var coordinate = number2(value.season) + ":" + number2(value.episode),
             old = linked.get(coordinate);
           if (!old || stamp2(value.updated) > stamp2(old.value.updated)) linked.set(coordinate, {
-            key: key2,
+            key: _key1,
             value: value
           });
         }
       } catch (err) {
-        _iterator90.e(err);
+        _iterator91.e(err);
       } finally {
-        _iterator90.f();
+        _iterator91.f();
       }
       return function () {
         var season = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
@@ -26800,18 +26842,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (match) keys.push(match.key);
         if (explicit) keys.push(explicit);
         var best = null;
-        var _iterator91 = _createForOfIteratorHelper(new Set(keys)),
-          _step92;
+        var _iterator92 = _createForOfIteratorHelper(new Set(keys)),
+          _step93;
         try {
-          for (_iterator91.s(); !(_step92 = _iterator91.n()).done;) {
-            var key2 = _step92.value;
-            var value = records[key2],
+          for (_iterator92.s(); !(_step93 = _iterator92.n()).done;) {
+            var _key0 = _step93.value;
+            var value = records[_key0],
               raw = typeof value === "number" ? {
                 percent: value
               } : value;
             if (!raw || _typeof(raw) !== "object") continue;
             var row = {
-              hash: key2,
+              hash: _key0,
               found: true,
               percent: Math.min(100, number2(raw.percent)),
               time: number2(raw.time),
@@ -26821,9 +26863,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             if (!best || row.updated > best.updated || row.updated === best.updated && row.percent > best.percent) best = row;
           }
         } catch (err) {
-          _iterator91.e(err);
+          _iterator92.e(err);
         } finally {
-          _iterator91.f();
+          _iterator92.f();
         }
         return best || {
           found: false,
@@ -26849,13 +26891,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         seasons = Array.isArray(card.seasons) ? card.seasons : [],
         max = 60;
       var latest = null;
-      var _iterator92 = _createForOfIteratorHelper(linkedRecords(card, records)),
-        _step93;
+      var _iterator93 = _createForOfIteratorHelper(linkedRecords(card, records)),
+        _step94;
       try {
         var _loop29 = function _loop29() {
-          var _step93$value = _slicedToArray(_step93.value, 2),
-            key3 = _step93$value[0],
-            raw = _step93$value[1];
+          var _step94$value = _slicedToArray(_step94.value, 2),
+            key3 = _step94$value[0],
+            raw = _step94$value[1];
           var season = Number(raw.season),
             episode = Number(raw.episode),
             percent = Math.min(100, number2(raw.percent)),
@@ -26879,13 +26921,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             }
           };
         };
-        for (_iterator92.s(); !(_step93 = _iterator92.n()).done;) {
+        for (_iterator93.s(); !(_step94 = _iterator93.n()).done;) {
           if (_loop29()) continue;
         }
       } catch (err) {
-        _iterator92.e(err);
+        _iterator93.e(err);
       } finally {
-        _iterator92.f();
+        _iterator93.f();
       }
       if (Object.keys(records).length) {
         var _loop28 = function _loop28(s) {
@@ -26895,12 +26937,12 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             total = number2(detail2 && detail2.episode_count),
             limit = Math.min(500, Math.max(100, total));
           for (var e = 1; e <= limit; e++) {
-            var _iterator93 = _createForOfIteratorHelper(titles),
-              _step94;
+            var _iterator94 = _createForOfIteratorHelper(titles),
+              _step95;
             try {
-              for (_iterator93.s(); !(_step94 = _iterator93.n()).done;) {
-                var title = _step94.value;
-                var key3 = hash(title, s, e),
+              for (_iterator94.s(); !(_step95 = _iterator94.n()).done;) {
+                var _title = _step95.value;
+                var key3 = hash(_title, s, e),
                   raw = records[key3];
                 if (!raw) continue;
                 var percent = Math.min(100, number2(typeof raw === "number" ? raw : raw.percent)),
@@ -26921,9 +26963,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 };
               }
             } catch (err) {
-              _iterator93.e(err);
+              _iterator94.e(err);
             } finally {
-              _iterator93.f();
+              _iterator94.f();
             }
           }
         };
@@ -26992,8 +27034,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }
       return value;
     }
-    if (L.Timeline && L.Timeline.listener) for (var _i35 = 0, _arr23 = ["update", "read"]; _i35 < _arr23.length; _i35++) {
-      var event = _arr23[_i35];
+    if (L.Timeline && L.Timeline.listener) for (var _i36 = 0, _arr23 = ["update", "read"]; _i36 < _arr23.length; _i36++) {
+      var event = _arr23[_i36];
       L.Timeline.listener.follow(event, function () {
         revision++;
         snapshots.clear();
@@ -27038,22 +27080,22 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var saved = L.Storage.get("online_watched_last", {}) || {},
         next = __spreadValues({}, saved);
       var changed = false;
-      var _iterator94 = _createForOfIteratorHelper(names(card)),
-        _step95;
+      var _iterator95 = _createForOfIteratorHelper(names(card)),
+        _step96;
       try {
-        for (_iterator94.s(); !(_step95 = _iterator94.n()).done;) {
-          var title = _step95.value;
-          var key2 = L.Utils.hash(title),
-            row = saved[key2];
+        for (_iterator95.s(); !(_step96 = _iterator95.n()).done;) {
+          var _title2 = _step96.value;
+          var _key10 = L.Utils.hash(_title2),
+            row = saved[_key10];
           if (row && (season === void 0 || Number(row.season) === Number(season) && Number(row.episode) === Number(episode))) {
-            delete next[key2];
+            delete next[_key10];
             changed = true;
           }
         }
       } catch (err) {
-        _iterator94.e(err);
+        _iterator95.e(err);
       } finally {
-        _iterator94.f();
+        _iterator95.f();
       }
       if (changed) L.Storage.set("online_watched_last", next);
     }
@@ -27068,22 +27110,22 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
       if (explicit) keys.push(explicit);
       clearLast(card, season, episode);
-      var _iterator95 = _createForOfIteratorHelper(new Set(keys)),
-        _step96;
+      var _iterator96 = _createForOfIteratorHelper(new Set(keys)),
+        _step97;
       try {
-        for (_iterator95.s(); !(_step96 = _iterator95.n()).done;) {
-          var key2 = _step96.value;
-          if (records[key2] || key2 === explicit) writeTimeline({
-            hash: key2,
+        for (_iterator96.s(); !(_step97 = _iterator96.n()).done;) {
+          var _key11 = _step97.value;
+          if (records[_key11] || _key11 === explicit) writeTimeline({
+            hash: _key11,
             percent: 0,
             time: 0,
             duration: 0
           });
         }
       } catch (err) {
-        _iterator95.e(err);
+        _iterator96.e(err);
       } finally {
-        _iterator95.f();
+        _iterator96.f();
       }
       revision++;
       snapshots.clear();
@@ -27096,50 +27138,50 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         keys = /* @__PURE__ */new Set();
       if (titles.length) keys.add(hash(titles[0], season, episode));
       if (explicit) keys.add(explicit);
-      var _iterator96 = _createForOfIteratorHelper(titles),
-        _step97;
+      var _iterator97 = _createForOfIteratorHelper(titles),
+        _step98;
       try {
-        for (_iterator96.s(); !(_step97 = _iterator96.n()).done;) {
-          var _title = _step97.value;
-          var _key4 = hash(_title, season, episode);
-          if (records[_key4]) keys.add(_key4);
+        for (_iterator97.s(); !(_step98 = _iterator97.n()).done;) {
+          var _title4 = _step98.value;
+          var _key13 = hash(_title4, season, episode);
+          if (records[_key13]) keys.add(_key13);
         }
       } catch (err) {
-        _iterator96.e(err);
+        _iterator97.e(err);
       } finally {
-        _iterator96.f();
+        _iterator97.f();
       }
       if (watched && season && !batching) {
         var saved = __spreadValues({}, L.Storage.get("online_watched_last", {}) || {});
-        var _iterator97 = _createForOfIteratorHelper(titles.slice(0, 2)),
-          _step98;
+        var _iterator98 = _createForOfIteratorHelper(titles.slice(0, 2)),
+          _step99;
         try {
-          for (_iterator97.s(); !(_step98 = _iterator97.n()).done;) {
-            var title = _step98.value;
-            var key2 = L.Utils.hash(title);
-            saved[key2] = __spreadProps(__spreadValues({}, saved[key2]), {
+          for (_iterator98.s(); !(_step99 = _iterator98.n()).done;) {
+            var _title3 = _step99.value;
+            var _key12 = L.Utils.hash(_title3);
+            saved[_key12] = __spreadProps(__spreadValues({}, saved[_key12]), {
               season: season,
               episode: episode
             });
           }
         } catch (err) {
-          _iterator97.e(err);
+          _iterator98.e(err);
         } finally {
-          _iterator97.f();
+          _iterator98.f();
         }
         L.Storage.set("online_watched_last", saved);
       } else if (!watched) clearLast(card, season, episode);
-      var _iterator98 = _createForOfIteratorHelper(keys),
-        _step99;
+      var _iterator99 = _createForOfIteratorHelper(keys),
+        _step100;
       try {
-        for (_iterator98.s(); !(_step99 = _iterator98.n()).done;) {
-          var _key5 = _step99.value;
-          var raw = records[_key5],
+        for (_iterator99.s(); !(_step100 = _iterator99.n()).done;) {
+          var _key14 = _step100.value;
+          var raw = records[_key14],
             percent = typeof raw === "number" ? raw : number2(raw && raw.percent);
           if (watched || percent >= WATCHED_PERCENT) {
             var duration = number2(raw && raw.duration);
             writeTimeline({
-              hash: _key5,
+              hash: _key14,
               percent: watched ? 100 : 0,
               time: watched ? number2(raw && raw.time) : 0,
               duration: duration
@@ -27147,9 +27189,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }
         }
       } catch (err) {
-        _iterator98.e(err);
+        _iterator99.e(err);
       } finally {
-        _iterator98.f();
+        _iterator99.f();
       }
       revision++;
       snapshots.clear();
@@ -27158,17 +27200,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     function markRows(card, rows) {
       batching++;
       try {
-        var _iterator99 = _createForOfIteratorHelper(rows),
-          _step100;
+        var _iterator100 = _createForOfIteratorHelper(rows),
+          _step101;
         try {
-          for (_iterator99.s(); !(_step100 = _iterator99.n()).done;) {
-            var row = _step100.value;
+          for (_iterator100.s(); !(_step101 = _iterator100.n()).done;) {
+            var row = _step101.value;
             setWatched(card, row.season, row.episode, true, row.hash);
           }
         } catch (err) {
-          _iterator99.e(err);
+          _iterator100.e(err);
         } finally {
-          _iterator99.f();
+          _iterator100.f();
         }
       } finally {
         batching--;
@@ -27176,21 +27218,21 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var last = rows[rows.length - 1];
       if (last) {
         var saved = __spreadValues({}, L.Storage.get("online_watched_last", {}) || {});
-        var _iterator100 = _createForOfIteratorHelper(names(card).slice(0, 2)),
-          _step101;
+        var _iterator101 = _createForOfIteratorHelper(names(card).slice(0, 2)),
+          _step102;
         try {
-          for (_iterator100.s(); !(_step101 = _iterator100.n()).done;) {
-            var title = _step101.value;
-            var key2 = L.Utils.hash(title);
-            saved[key2] = __spreadProps(__spreadValues({}, saved[key2]), {
+          for (_iterator101.s(); !(_step102 = _iterator101.n()).done;) {
+            var _title5 = _step102.value;
+            var _key15 = L.Utils.hash(_title5);
+            saved[_key15] = __spreadProps(__spreadValues({}, saved[_key15]), {
               season: last.season,
               episode: last.episode
             });
           }
         } catch (err) {
-          _iterator100.e(err);
+          _iterator101.e(err);
         } finally {
-          _iterator100.f();
+          _iterator101.f();
         }
         L.Storage.set("online_watched_last", saved);
       }
@@ -27234,24 +27276,24 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           last = full.last_episode_to_air;
         var aired = last && last.air_date && String(last.air_date).slice(0, 10) <= today2 ? last : null;
         var episodes = /* @__PURE__ */new Map();
-        var _iterator101 = _createForOfIteratorHelper(table),
-          _step102;
+        var _iterator102 = _createForOfIteratorHelper(table),
+          _step103;
         try {
-          for (_iterator101.s(); !(_step102 = _iterator101.n()).done;) {
-            var row = _step102.value;
+          for (_iterator102.s(); !(_step103 = _iterator102.n()).done;) {
+            var row = _step103.value;
             if (row.air_date && String(row.air_date).slice(0, 10) <= today2 && Number(row.season_number) > 0) episodes.set(row.season_number + ":" + row.episode_number, row);
           }
         } catch (err) {
-          _iterator101.e(err);
+          _iterator102.e(err);
         } finally {
-          _iterator101.f();
+          _iterator102.f();
         }
         if (aired) {
-          var _iterator102 = _createForOfIteratorHelper(Array.isArray(full.seasons) ? full.seasons : []),
-            _step103;
+          var _iterator103 = _createForOfIteratorHelper(Array.isArray(full.seasons) ? full.seasons : []),
+            _step104;
           try {
-            for (_iterator102.s(); !(_step103 = _iterator102.n()).done;) {
-              var season = _step103.value;
+            for (_iterator103.s(); !(_step104 = _iterator103.n()).done;) {
+              var season = _step104.value;
               var n = Number(season.season_number);
               if (n <= 0 || n > Number(aired.season_number)) continue;
               var count = n === Number(aired.season_number) ? Number(aired.episode_number) : Number(season.episode_count);
@@ -27261,9 +27303,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               });
             }
           } catch (err) {
-            _iterator102.e(err);
+            _iterator103.e(err);
           } finally {
-            _iterator102.f();
+            _iterator103.f();
           }
         }
         markRows(full, Array.from(episodes.values()).map(function (row) {
@@ -27298,92 +27340,92 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           season = number2(season);
           if (season > 0 && season <= 100) limits.set(season, Math.min(5e3, Math.max(100, limits.get(season) || 0, number2(total))));
         };
-        var _iterator103 = _createForOfIteratorHelper(seasons),
-          _step104;
-        try {
-          for (_iterator103.s(); !(_step104 = _iterator103.n()).done;) {
-            var row = _step104.value;
-            remember(row.season_number, row.episode_count);
-          }
-        } catch (err) {
-          _iterator103.e(err);
-        } finally {
-          _iterator103.f();
-        }
-        var table = L.TimeTable && L.TimeTable.get ? L.TimeTable.get(card) || [] : [];
-        var _iterator104 = _createForOfIteratorHelper(table),
+        var _iterator104 = _createForOfIteratorHelper(seasons),
           _step105;
         try {
           for (_iterator104.s(); !(_step105 = _iterator104.n()).done;) {
-            var _row = _step105.value;
-            remember(_row.season_number, _row.episode_number);
+            var row = _step105.value;
+            remember(row.season_number, row.episode_count);
           }
         } catch (err) {
           _iterator104.e(err);
         } finally {
           _iterator104.f();
         }
-        var last = L.Storage.get("online_watched_last", {}) || {};
-        var _iterator105 = _createForOfIteratorHelper(titles),
+        var table = L.TimeTable && L.TimeTable.get ? L.TimeTable.get(card) || [] : [];
+        var _iterator105 = _createForOfIteratorHelper(table),
           _step106;
         try {
           for (_iterator105.s(); !(_step106 = _iterator105.n()).done;) {
-            var _title2 = _step106.value;
-            var _row2 = last[L.Utils.hash(_title2)];
-            if (_row2) remember(_row2.season, _row2.episode);
+            var _row = _step106.value;
+            remember(_row.season_number, _row.episode_number);
           }
         } catch (err) {
           _iterator105.e(err);
         } finally {
           _iterator105.f();
         }
+        var last = L.Storage.get("online_watched_last", {}) || {};
+        var _iterator106 = _createForOfIteratorHelper(titles),
+          _step107;
+        try {
+          for (_iterator106.s(); !(_step107 = _iterator106.n()).done;) {
+            var _title7 = _step107.value;
+            var _row2 = last[L.Utils.hash(_title7)];
+            if (_row2) remember(_row2.season, _row2.episode);
+          }
+        } catch (err) {
+          _iterator106.e(err);
+        } finally {
+          _iterator106.f();
+        }
         var max = Math.min(100, Math.max.apply(Math, [1, number2(card.number_of_seasons)].concat(_toConsumableArray(limits.keys()))));
         for (var season = 1; season <= max; season++) for (var episode = 1; episode <= (limits.get(season) || 100); episode++) {
-          var _iterator106 = _createForOfIteratorHelper(titles),
-            _step107;
+          var _iterator107 = _createForOfIteratorHelper(titles),
+            _step108;
           try {
-            for (_iterator106.s(); !(_step107 = _iterator106.n()).done;) {
-              var title = _step107.value;
-              keys.add(hash(title, season, episode));
+            for (_iterator107.s(); !(_step108 = _iterator107.n()).done;) {
+              var _title6 = _step108.value;
+              keys.add(hash(_title6, season, episode));
             }
           } catch (err) {
-            _iterator106.e(err);
+            _iterator107.e(err);
           } finally {
-            _iterator106.f();
+            _iterator107.f();
           }
         }
       } else {
-        var _iterator107 = _createForOfIteratorHelper(titles),
-          _step108;
+        var _iterator108 = _createForOfIteratorHelper(titles),
+          _step109;
         try {
-          for (_iterator107.s(); !(_step108 = _iterator107.n()).done;) {
-            var _title3 = _step108.value;
-            keys.add(hash(_title3));
+          for (_iterator108.s(); !(_step109 = _iterator108.n()).done;) {
+            var _title8 = _step109.value;
+            keys.add(hash(_title8));
           }
         } catch (err) {
-          _iterator107.e(err);
+          _iterator108.e(err);
         } finally {
-          _iterator107.f();
+          _iterator108.f();
         }
       }
       clearLast(card);
-      var _iterator108 = _createForOfIteratorHelper(keys),
-        _step109;
+      var _iterator109 = _createForOfIteratorHelper(keys),
+        _step110;
       try {
-        for (_iterator108.s(); !(_step109 = _iterator108.n()).done;) {
-          var key2 = _step109.value;
-          var _row3 = records[key2];
+        for (_iterator109.s(); !(_step110 = _iterator109.n()).done;) {
+          var _key16 = _step110.value;
+          var _row3 = records[_key16];
           if (_row3 && (typeof _row3 === "number" ? _row3 : _row3.percent || _row3.time)) writeTimeline({
-            hash: key2,
+            hash: _key16,
             percent: 0,
             time: 0,
             duration: 0
           });
         }
       } catch (err) {
-        _iterator108.e(err);
+        _iterator109.e(err);
       } finally {
-        _iterator108.f();
+        _iterator109.f();
       }
       revision++;
       snapshots.clear();
@@ -27446,11 +27488,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       return Number(row.season) === 1 && positive3(row.episode) && Number(row.episode) <= first.episodes;
     })) return [];
     var output = [];
-    var _iterator109 = _createForOfIteratorHelper(releases.slice(1)),
-      _step110;
+    var _iterator110 = _createForOfIteratorHelper(releases.slice(1)),
+      _step111;
     try {
       var _loop30 = function _loop30() {
-          var release = _step110.value;
+          var release = _step111.value;
           if (!release.aired || release.aired > today() || release.status === "anons" || !release.original) return 0; // continue
           var map = animeEpisodeMap(release.record, release.episodes, card),
             start = map && map[0];
@@ -27484,15 +27526,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
         },
         _ret0;
-      for (_iterator109.s(); !(_step110 = _iterator109.n()).done;) {
+      for (_iterator110.s(); !(_step111 = _iterator110.n()).done;) {
         _ret0 = _loop30();
         if (_ret0 === 0) continue;
         if (_ret0) return _ret0.v;
       }
     } catch (err) {
-      _iterator109.e(err);
+      _iterator110.e(err);
     } finally {
-      _iterator109.f();
+      _iterator110.f();
     }
     return output.length <= 8 ? output : [];
   }
@@ -27512,18 +27554,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   }
   function matchContinuations(parts, rows, base) {
     var entries2 = [];
-    var _iterator110 = _createForOfIteratorHelper(parts),
-      _step111;
+    var _iterator111 = _createForOfIteratorHelper(parts),
+      _step112;
     try {
       var _loop31 = function _loop31() {
-        var part = _step111.value;
+        var part = _step112.value;
         var names = [part.name, part.original].map(titleKey2).filter(Boolean);
         var urls = /* @__PURE__ */new Set();
-        var _iterator111 = _createForOfIteratorHelper(rows),
-          _step112;
+        var _iterator112 = _createForOfIteratorHelper(rows),
+          _step113;
         try {
-          for (_iterator111.s(); !(_step112 = _iterator111.n()).done;) {
-            var row = _step112.value;
+          for (_iterator112.s(); !(_step113 = _iterator112.n()).done;) {
+            var row = _step113.value;
             if (!row.similar || row.method !== "link" || String(row.year || row.start_date || "").slice(0, 4) !== part.year) continue;
             if (!String(row.title || row.name || row.text || "").split(/\s+[\/|]\s+/).some(function (name) {
               return names.includes(titleKey2(name));
@@ -27532,21 +27574,21 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             if (url && url.searchParams.get("pick") && !url.searchParams.has("s")) urls.add(url.href);
           }
         } catch (err) {
-          _iterator111.e(err);
+          _iterator112.e(err);
         } finally {
-          _iterator111.f();
+          _iterator112.f();
         }
         if (urls.size === 1) entries2.push(__spreadProps(__spreadValues({}, part), {
           url: _toConsumableArray(urls)[0]
         }));
       };
-      for (_iterator110.s(); !(_step111 = _iterator110.n()).done;) {
+      for (_iterator111.s(); !(_step112 = _iterator111.n()).done;) {
         _loop31();
       }
     } catch (err) {
-      _iterator110.e(err);
+      _iterator111.e(err);
     } finally {
-      _iterator110.f();
+      _iterator111.f();
     }
     return entries2;
   }
@@ -27586,8 +27628,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           if (!parts.length) return done([]);
           var url = kodikRoute(base),
             query = url.searchParams;
-          for (var _i36 = 0, _arr24 = ["id", "imdb_id", "kinopoisk_id", "tmdb_id", "mal_id", "shikimori_id", "kid", "pick", "s", "t", "e", "rjson", "nojson"]; _i36 < _arr24.length; _i36++) {
-            var key3 = _arr24[_i36];
+          for (var _i37 = 0, _arr24 = ["id", "imdb_id", "kinopoisk_id", "tmdb_id", "mal_id", "shikimori_id", "kid", "pick", "s", "t", "e", "rjson", "nojson"]; _i37 < _arr24.length; _i37++) {
+            var key3 = _arr24[_i37];
             query.delete(key3);
           }
           query.set("title", original);
@@ -27599,8 +27641,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             uid: "lampac_unic_id",
             nws_id: "lampac_nws_id"
           };
-          for (var _i37 = 0, _Object$keys = Object.keys(account); _i37 < _Object$keys.length; _i37++) {
-            var name = _Object$keys[_i37];
+          for (var _i38 = 0, _Object$keys = Object.keys(account); _i38 < _Object$keys.length; _i38++) {
+            var name = _Object$keys[_i38];
             var value2 = L.Storage.get(account[name], "");
             if (value2 && !query.has(name)) query.set(name, value2);
           }
@@ -27687,11 +27729,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     })) return [];
     var first = following[0];
     var offset = 0;
-    var _iterator112 = _createForOfIteratorHelper(following),
-      _step113;
+    var _iterator113 = _createForOfIteratorHelper(following),
+      _step114;
     try {
       var _loop32 = function _loop32() {
-          var release = _step113.value;
+          var release = _step114.value;
           if (Number(release.record.offset || 0) !== offset || !release.original) return 0; // break
           var map = animeEpisodeMap(release.record, release.episodes, card);
           if (!map && Number.isInteger(release.record.season) && release.record.season > 0 && !(release.record.rules || []).length) map = Array.from({
@@ -27733,14 +27775,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           offset += release.episodes;
         },
         _ret1;
-      for (_iterator112.s(); !(_step113 = _iterator112.n()).done;) {
+      for (_iterator113.s(); !(_step114 = _iterator113.n()).done;) {
         _ret1 = _loop32();
         if (_ret1 === 0) break;
       }
     } catch (err) {
-      _iterator112.e(err);
+      _iterator113.e(err);
     } finally {
-      _iterator112.f();
+      _iterator113.f();
     }
     if (result.length < 2 || result.reduce(function (total, p) {
       return total + p.count;
@@ -27869,8 +27911,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var _a, _b;
       var url = kodikRoute(base),
         q = url.searchParams;
-      for (var _i38 = 0, _arr25 = ["id", "imdb_id", "kinopoisk_id", "tmdb_id", "mal_id", "shikimori_id", "kid", "pick", "s", "t", "e", "rjson", "nojson"]; _i38 < _arr25.length; _i38++) {
-        var name = _arr25[_i38];
+      for (var _i39 = 0, _arr25 = ["id", "imdb_id", "kinopoisk_id", "tmdb_id", "mal_id", "shikimori_id", "kid", "pick", "s", "t", "e", "rjson", "nojson"]; _i39 < _arr25.length; _i39++) {
+        var name = _arr25[_i39];
         q.delete(name);
       }
       q.set("clarification", "0");
@@ -27886,17 +27928,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var cacheKey = scope() + "|" + url.href,
           hit = searches.get(cacheKey);
         function accept(rows) {
-          var _iterator113 = _createForOfIteratorHelper(matchProviderParts(parts, rows, base)),
-            _step114;
+          var _iterator114 = _createForOfIteratorHelper(matchProviderParts(parts, rows, base)),
+            _step115;
           try {
-            for (_iterator113.s(); !(_step114 = _iterator113.n()).done;) {
-              var part = _step114.value;
+            for (_iterator114.s(); !(_step115 = _iterator114.n()).done;) {
+              var part = _step115.value;
               found.set(part.original + "|" + part.year, part);
             }
           } catch (err) {
-            _iterator113.e(err);
+            _iterator114.e(err);
           } finally {
-            _iterator113.f();
+            _iterator114.f();
           }
           next();
         }
@@ -27963,8 +28005,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             var u = new URL(row.stream || row.url, base),
               link = u.searchParams.get("link");
             if (link) return link;
-            for (var _i39 = 0, _arr26 = ["title", "original_title", "episode", "play"]; _i39 < _arr26.length; _i39++) {
-              var name = _arr26[_i39];
+            for (var _i40 = 0, _arr26 = ["title", "original_title", "episode", "play"]; _i40 < _arr26.length; _i40++) {
+              var name = _arr26[_i40];
               u.searchParams.delete(name);
             }
             u.searchParams.sort();
@@ -27986,21 +28028,21 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (matches.length !== 1) return done(body, []);
         var kept = [];
         var next = 0;
-        var _iterator114 = _createForOfIteratorHelper(parts.sort(function (a, b) {
+        var _iterator115 = _createForOfIteratorHelper(parts.sort(function (a, b) {
             return a.offset - b.offset;
           })),
-          _step115;
+          _step116;
         try {
-          for (_iterator114.s(); !(_step115 = _iterator114.n()).done;) {
-            var _part = _step115.value;
+          for (_iterator115.s(); !(_step116 = _iterator115.n()).done;) {
+            var _part = _step116.value;
             if (_part.offset !== next) break;
             kept.push(_part);
             next += _part.count;
           }
         } catch (err) {
-          _iterator114.e(err);
+          _iterator115.e(err);
         } finally {
-          _iterator114.f();
+          _iterator115.f();
         }
         if (!kept.includes(matches[0]) || kept.reduce(function (sum, part) {
           return sum + part.files.length;
@@ -28008,27 +28050,27 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var box = document.createElement("div");
         box.innerHTML = body;
         var line = box.querySelector(".videos__line") || box;
-        var _iterator115 = _createForOfIteratorHelper(box.querySelectorAll(".videos__item[data-json]")),
-          _step116;
+        var _iterator116 = _createForOfIteratorHelper(box.querySelectorAll(".videos__item[data-json]")),
+          _step117;
         try {
-          for (_iterator115.s(); !(_step116 = _iterator115.n()).done;) {
-            var _node5 = _step116.value;
+          for (_iterator116.s(); !(_step117 = _iterator116.n()).done;) {
+            var _node5 = _step117.value;
             try {
               if (playable2(JSON.parse(_node5.getAttribute("data-json")))) _node5.remove();
             } catch (error) {}
           }
         } catch (err) {
-          _iterator115.e(err);
+          _iterator116.e(err);
         } finally {
-          _iterator115.f();
+          _iterator116.f();
         }
-        for (var _i40 = 0, _kept = kept; _i40 < _kept.length; _i40++) {
-          var part = _kept[_i40];
-          var _iterator116 = _createForOfIteratorHelper(part.files),
-            _step117;
+        for (var _i41 = 0, _kept = kept; _i41 < _kept.length; _i41++) {
+          var part = _kept[_i41];
+          var _iterator117 = _createForOfIteratorHelper(part.files),
+            _step118;
           try {
-            for (_iterator116.s(); !(_step117 = _iterator116.n()).done;) {
-              var row = _step117.value;
+            for (_iterator117.s(); !(_step118 = _iterator117.n()).done;) {
+              var row = _step118.value;
               var original = originals.get(videoIdentity(row)),
                 file = original ? __spreadProps(__spreadValues({}, original), {
                   season: row.season,
@@ -28044,9 +28086,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               line.appendChild(node);
             }
           } catch (err) {
-            _iterator116.e(err);
+            _iterator117.e(err);
           } finally {
-            _iterator116.f();
+            _iterator117.f();
           }
         }
         done(box.innerHTML, kept.map(function (_a) {
@@ -28137,16 +28179,16 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             });
           });
         })) return done(body, []);
-        var _iterator117 = _createForOfIteratorHelper(parts),
-          _step118;
+        var _iterator118 = _createForOfIteratorHelper(parts),
+          _step119;
         try {
-          for (_iterator117.s(); !(_step118 = _iterator117.n()).done;) {
-            var part = _step118.value;
-            var _iterator118 = _createForOfIteratorHelper(part.files),
-              _step119;
+          for (_iterator118.s(); !(_step119 = _iterator118.n()).done;) {
+            var part = _step119.value;
+            var _iterator119 = _createForOfIteratorHelper(part.files),
+              _step120;
             try {
-              for (_iterator118.s(); !(_step119 = _iterator118.n()).done;) {
-                var row = _step119.value;
+              for (_iterator119.s(); !(_step120 = _iterator119.n()).done;) {
+                var row = _step120.value;
                 var file = __spreadProps(__spreadValues({}, row), {
                     season: bundle.source,
                     lampa_part: part.part
@@ -28160,15 +28202,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 line.appendChild(node);
               }
             } catch (err) {
-              _iterator118.e(err);
+              _iterator119.e(err);
             } finally {
-              _iterator118.f();
+              _iterator119.f();
             }
           }
         } catch (err) {
-          _iterator117.e(err);
+          _iterator118.e(err);
         } finally {
-          _iterator117.f();
+          _iterator118.f();
         }
         done(box.innerHTML, parts.map(function (_a) {
           var _b = _a,
@@ -28201,11 +28243,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       box.innerHTML = body;
       var grouped = /* @__PURE__ */new Map();
       var changed = false;
-      var _iterator119 = _createForOfIteratorHelper(box.querySelectorAll(".videos__item[data-json]")),
-        _step120;
+      var _iterator120 = _createForOfIteratorHelper(box.querySelectorAll(".videos__item[data-json]")),
+        _step121;
       try {
-        for (_iterator119.s(); !(_step120 = _iterator119.n()).done;) {
-          var node = _step120.value;
+        for (_iterator120.s(); !(_step121 = _iterator120.n()).done;) {
+          var node = _step121.value;
           try {
             var row = JSON.parse(node.getAttribute("data-json")),
               source = Number((_a = row.season) != null ? _a : new URL(row.url, location.href).searchParams.get("s")),
@@ -28222,17 +28264,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           } catch (error) {}
         }
       } catch (err) {
-        _iterator119.e(err);
+        _iterator120.e(err);
       } finally {
-        _iterator119.f();
+        _iterator120.f();
       }
-      var _iterator120 = _createForOfIteratorHelper(grouped),
-        _step121;
+      var _iterator121 = _createForOfIteratorHelper(grouped),
+        _step122;
       try {
         var _loop34 = function _loop34() {
-            var _step121$value = _slicedToArray(_step121.value, 2),
-              number3 = _step121$value[0],
-              entries2 = _step121$value[1];
+            var _step122$value = _slicedToArray(_step122.value, 2),
+              number3 = _step122$value[0],
+              entries2 = _step122$value[1];
             if (entries2.length < 2) return 0; // continue
             entries2.sort(function (a, b) {
               return a.mapped.offset - b.mapped.offset;
@@ -28266,29 +28308,29 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             first.mapped.count = offset;
             first.mapped.parts = parts.length;
             changed = true;
-            var _iterator121 = _createForOfIteratorHelper(entries2.slice(1)),
-              _step122;
+            var _iterator122 = _createForOfIteratorHelper(entries2.slice(1)),
+              _step123;
             try {
-              for (_iterator121.s(); !(_step122 = _iterator121.n()).done;) {
-                var entry = _step122.value;
+              for (_iterator122.s(); !(_step123 = _iterator122.n()).done;) {
+                var entry = _step123.value;
                 entry.node.remove();
                 delete layout[entry.source];
               }
             } catch (err) {
-              _iterator121.e(err);
+              _iterator122.e(err);
             } finally {
-              _iterator121.f();
+              _iterator122.f();
             }
           },
           _ret10;
-        for (_iterator120.s(); !(_step121 = _iterator120.n()).done;) {
+        for (_iterator121.s(); !(_step122 = _iterator121.n()).done;) {
           _ret10 = _loop34();
           if (_ret10 === 0) continue;
         }
       } catch (err) {
-        _iterator120.e(err);
+        _iterator121.e(err);
       } finally {
-        _iterator120.f();
+        _iterator121.f();
       }
       return changed ? box.innerHTML : body;
     }
@@ -28301,11 +28343,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       if (!number3) return body;
       var box = document.createElement("div");
       box.innerHTML = body;
-      var _iterator122 = _createForOfIteratorHelper(box.querySelectorAll(".videos__item[data-json]")),
-        _step123;
+      var _iterator123 = _createForOfIteratorHelper(box.querySelectorAll(".videos__item[data-json]")),
+        _step124;
       try {
-        for (_iterator122.s(); !(_step123 = _iterator122.n()).done;) {
-          var node = _step123.value;
+        for (_iterator123.s(); !(_step124 = _iterator123.n()).done;) {
+          var node = _step124.value;
           try {
             var row = JSON.parse(node.getAttribute("data-json"));
             if (playable2(row)) {
@@ -28317,9 +28359,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           } catch (error) {}
         }
       } catch (err) {
-        _iterator122.e(err);
+        _iterator123.e(err);
       } finally {
-        _iterator122.f();
+        _iterator123.f();
       }
       return box.innerHTML;
     };
@@ -28351,11 +28393,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var box = document.createElement("div");
         box.innerHTML = body;
         var line = box.querySelector(".videos__line") || box;
-        var _iterator123 = _createForOfIteratorHelper(parts),
-          _step124;
+        var _iterator124 = _createForOfIteratorHelper(parts),
+          _step125;
         try {
-          for (_iterator123.s(); !(_step124 = _iterator123.n()).done;) {
-            var part = _step124.value;
+          for (_iterator124.s(); !(_step125 = _iterator124.n()).done;) {
+            var part = _step125.value;
             overrides.set(routeKey(part.url), part.sourceNumber);
             var node = document.createElement("div");
             node.className = "videos__item videos__season selector";
@@ -28369,9 +28411,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             line.appendChild(node);
           }
         } catch (err) {
-          _iterator123.e(err);
+          _iterator124.e(err);
         } finally {
-          _iterator123.f();
+          _iterator124.f();
         }
         while (overrides.size > 48) overrides.delete(overrides.keys().next().value);
         done(canonical ? collapseFolders(box.innerHTML, layout, canonical) : box.innerHTML, layout);
@@ -28452,8 +28494,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                       var u = new URL(row.stream || row.url, base);
                       var link = u.searchParams.get("link");
                       if (link) return link;
-                      for (var _i41 = 0, _arr27 = ["title", "original_title", "episode", "play"]; _i41 < _arr27.length; _i41++) {
-                        var name = _arr27[_i41];
+                      for (var _i42 = 0, _arr27 = ["title", "original_title", "episode", "play"]; _i42 < _arr27.length; _i42++) {
+                        var name = _arr27[_i42];
                         u.searchParams.delete(name);
                       }
                       u.searchParams.sort();
@@ -28529,13 +28571,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           })) return finish([], null);
           var layout = {},
             missing = [];
-          var _iterator124 = _createForOfIteratorHelper(existing),
-            _step125;
+          var _iterator125 = _createForOfIteratorHelper(existing),
+            _step126;
           try {
             var _loop36 = function _loop36() {
-                var _step125$value = _slicedToArray(_step125.value, 2),
-                  source = _step125$value[0],
-                  release = _step125$value[1];
+                var _step126$value = _slicedToArray(_step126.value, 2),
+                  source = _step126$value[0],
+                  release = _step126$value[1];
                 var map = animeEpisodeMap(release.record, release.episodes, value);
                 if (!map || !map.every(function (e) {
                   return e.season === map[0].season;
@@ -28550,14 +28592,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                 };
               },
               _ret11;
-            for (_iterator124.s(); !(_step125 = _iterator124.n()).done;) {
+            for (_iterator125.s(); !(_step126 = _iterator125.n()).done;) {
               _ret11 = _loop36();
               if (_ret11) return _ret11.v;
             }
           } catch (err) {
-            _iterator124.e(err);
+            _iterator125.e(err);
           } finally {
-            _iterator124.f();
+            _iterator125.f();
           }
           var used = new Set(numbers),
             represented = new Set(_toConsumableArray(existing.values()).map(function (n) {
@@ -28570,11 +28612,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             used.add(i + 1);
             represented.add(releases[i].id);
           }
-          var _iterator125 = _createForOfIteratorHelper(all),
-            _step126;
+          var _iterator126 = _createForOfIteratorHelper(all),
+            _step127;
           try {
-            for (_iterator125.s(); !(_step126 = _iterator125.n()).done;) {
-              var release = _step126.value;
+            for (_iterator126.s(); !(_step127 = _iterator126.n()).done;) {
+              var release = _step127.value;
               if (!represented.has(release.id)) {
                 var next = max + 1;
                 while (used.has(next)) next++;
@@ -28585,9 +28627,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               }
             }
           } catch (err) {
-            _iterator125.e(err);
+            _iterator126.e(err);
           } finally {
-            _iterator125.f();
+            _iterator126.f();
           }
           if (missing.length > 30) return finish([], null);
           function discover() {
@@ -28676,11 +28718,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var known = /* @__PURE__ */new Set();
     var template = null,
       param = "";
-    var _iterator126 = _createForOfIteratorHelper(rows),
-      _step127;
+    var _iterator127 = _createForOfIteratorHelper(rows),
+      _step128;
     try {
       var _loop37 = function _loop37() {
-          var row = _step127.value;
+          var row = _step128.value;
           if (row.similar || row.method !== "link") return {
             v: []
           };
@@ -28714,14 +28756,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           template = template || url;
         },
         _ret12;
-      for (_iterator126.s(); !(_step127 = _iterator126.n()).done;) {
+      for (_iterator127.s(); !(_step128 = _iterator127.n()).done;) {
         _ret12 = _loop37();
         if (_ret12) return _ret12.v;
       }
     } catch (err) {
-      _iterator126.e(err);
+      _iterator127.e(err);
     } finally {
-      _iterator126.f();
+      _iterator127.f();
     }
     var max = Math.max.apply(Math, _toConsumableArray(known));
     if (max < 2) return [];
@@ -28775,13 +28817,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var box = document.createElement("div");
         box.innerHTML = body;
         var line = box.querySelector(".videos__line") || box;
-        var _iterator127 = _createForOfIteratorHelper(ready.sort(function (a, b) {
+        var _iterator128 = _createForOfIteratorHelper(ready.sort(function (a, b) {
             return a.number - b.number;
           })),
-          _step128;
+          _step129;
         try {
-          for (_iterator127.s(); !(_step128 = _iterator127.n()).done;) {
-            var part = _step128.value;
+          for (_iterator128.s(); !(_step129 = _iterator128.n()).done;) {
+            var part = _step129.value;
             var node = document.createElement("div");
             node.className = "videos__item videos__season selector";
             node.setAttribute("data-json", JSON.stringify({
@@ -28794,9 +28836,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             line.appendChild(node);
           }
         } catch (err) {
-          _iterator127.e(err);
+          _iterator128.e(err);
         } finally {
-          _iterator127.f();
+          _iterator128.f();
         }
         var result = box.innerHTML;
         cache3.set(key2, {
@@ -28866,19 +28908,19 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       collection = data.collection;
     if (!Array.isArray(collection == null ? void 0 : collection.results) || !["tmdb", "cub"].includes(card.source) || !positive4(card.id)) return [];
     var entries2 = /* @__PURE__ */new Map();
-    var _iterator128 = _createForOfIteratorHelper(collection.results),
-      _step129;
+    var _iterator129 = _createForOfIteratorHelper(collection.results),
+      _step130;
     try {
-      for (_iterator128.s(); !(_step129 = _iterator128.n()).done;) {
-        var row = _step129.value;
+      for (_iterator129.s(); !(_step130 = _iterator129.n()).done;) {
+        var row = _step130.value;
         if (!positive4(row.id) || !["movie", "tv"].includes(row.media_type || (row.name ? "tv" : "movie"))) continue;
         var type = row.media_type || (row.name ? "tv" : "movie"),
-          title = row.title || row.name;
-        if (!title) continue;
-        var year = String(row.release_date || row.first_air_date || "").slice(0, 4);
+          _title9 = row.title || row.name;
+        if (!_title9) continue;
+        var _year3 = String(row.release_date || row.first_air_date || "").slice(0, 4);
         entries2.set(type + ":" + row.id, {
-          title: title,
-          subtitle: [year, text(type === "movie" ? "Фильм" : "Сериал")].filter(Boolean).join(" \xB7 "),
+          title: _title9,
+          subtitle: [_year3, text(type === "movie" ? "Фильм" : "Сериал")].filter(Boolean).join(" \xB7 "),
           current: Number(row.id) === Number(card.id) && type === (card.media_type || (card.name ? "tv" : "movie")),
           card: __spreadProps(__spreadValues({}, row), {
             source: card.source,
@@ -28887,9 +28929,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
       }
     } catch (err) {
-      _iterator128.e(err);
+      _iterator129.e(err);
     } finally {
-      _iterator128.f();
+      _iterator129.f();
     }
     var releases = _toConsumableArray(entries2.values());
     return releases.length >= 2 && releases.some(function (row) {
@@ -28926,11 +28968,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     }) || seasons.reduce(function (n, s) {
       return n + Number(s.episode_count || 0);
     }, 0) !== numbers.length) return null;
-    var _iterator129 = _createForOfIteratorHelper(seasons),
-      _step130;
+    var _iterator130 = _createForOfIteratorHelper(seasons),
+      _step131;
     try {
       var _loop39 = function _loop39() {
-          var season = _step130.value;
+          var season = _step131.value;
           var book = books[season.season_number],
             rows = book && (book.episodes_original || book.episodes);
           if (!Array.isArray(rows) || rows.length !== Number(season.episode_count)) return {
@@ -28947,14 +28989,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           episodes.push.apply(episodes, _toConsumableArray(sorted));
         },
         _ret13;
-      for (_iterator129.s(); !(_step130 = _iterator129.n()).done;) {
+      for (_iterator130.s(); !(_step131 = _iterator130.n()).done;) {
         _ret13 = _loop39();
         if (_ret13) return _ret13.v;
       }
     } catch (err) {
-      _iterator129.e(err);
+      _iterator130.e(err);
     } finally {
-      _iterator129.f();
+      _iterator130.f();
     }
     var releases = model.nodes.filter(function (n) {
       return n.record && Number(n.record.tv) === Number(card.tmdb_id || card.id) && ["tv", "ona"].includes(n.kind) && Number.isSafeInteger(n.episodes) && n.episodes > 0 && n.status !== "anons";
@@ -28967,11 +29009,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       })),
       used = /* @__PURE__ */new Set(),
       groups = [];
-    var _iterator130 = _createForOfIteratorHelper(releases),
-      _step131;
+    var _iterator131 = _createForOfIteratorHelper(releases),
+      _step132;
     try {
       var _loop40 = function _loop40() {
-          var release = _step131.value;
+          var release = _step132.value;
           var map = animeEpisodeMap(release.record, release.episodes, card, books);
           if (map && release.aired && release.released && map.some(function (e) {
             return !e.metadata || !inRelease(e.metadata, release);
@@ -29034,14 +29076,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           });
         },
         _ret14;
-      for (_iterator130.s(); !(_step131 = _iterator130.n()).done;) {
+      for (_iterator131.s(); !(_step132 = _iterator131.n()).done;) {
         _ret14 = _loop40();
         if (_ret14) return _ret14.v;
       }
     } catch (err) {
-      _iterator130.e(err);
+      _iterator131.e(err);
     } finally {
-      _iterator130.f();
+      _iterator131.f();
     }
     if (used.size !== episodes.length) return null;
     groups.sort(function (a, b) {
@@ -29080,11 +29122,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   function joinedPartsBook(parts, books) {
     var _a;
     var result = {};
-    var _iterator131 = _createForOfIteratorHelper(parts),
-      _step132;
+    var _iterator132 = _createForOfIteratorHelper(parts),
+      _step133;
     try {
       var _loop41 = function _loop41() {
-        var part = _step132.value;
+        var part = _step133.value;
         var source = books[part.season],
           rows = source && (source.episodes_original || source.episodes) || [];
         var coordinates = Array.isArray(part.episodes) ? part.episodes.filter(function (n) {
@@ -29116,28 +29158,28 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             lampa_grouped: true
           });
         });
-        var _iterator132 = _createForOfIteratorHelper(rows),
-          _step133;
+        var _iterator133 = _createForOfIteratorHelper(rows),
+          _step134;
         try {
-          for (_iterator132.s(); !(_step133 = _iterator132.n()).done;) {
-            var e = _step133.value;
+          for (_iterator133.s(); !(_step134 = _iterator133.n()).done;) {
+            var e = _step134.value;
             if (e.episode_number > part.offset && e.episode_number <= part.offset + part.count && /^\d{4}-\d{2}-\d{2}$/.test(e.air_date || "") && e.air_date > (/* @__PURE__ */new Date()).toISOString().slice(0, 10)) result[e.episode_number] = __spreadProps(__spreadValues({}, e), {
               lampa_grouped: true
             });
           }
         } catch (err) {
-          _iterator132.e(err);
+          _iterator133.e(err);
         } finally {
-          _iterator132.f();
+          _iterator133.f();
         }
       };
-      for (_iterator131.s(); !(_step132 = _iterator131.n()).done;) {
+      for (_iterator132.s(); !(_step133 = _iterator132.n()).done;) {
         _loop41();
       }
     } catch (err) {
-      _iterator131.e(err);
+      _iterator132.e(err);
     } finally {
-      _iterator131.f();
+      _iterator132.f();
     }
     return Object.keys(result).length ? result : null;
   }
@@ -29306,23 +29348,23 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           if (!selected.length || selected.length > 3) return done(null);
           var books = {};
           var left = selected.length;
-          var _iterator133 = _createForOfIteratorHelper(selected),
-            _step134;
+          var _iterator134 = _createForOfIteratorHelper(selected),
+            _step135;
           try {
             var _loop43 = function _loop43() {
-              var season = _step134.value;
+              var season = _step135.value;
               load("tv/" + parent.id + "/season/" + season.season_number, function (book) {
                 books[season.season_number] = book;
                 if (! --left) done(datedReleaseTarget(card, value, books));
               });
             };
-            for (_iterator133.s(); !(_step134 = _iterator133.n()).done;) {
+            for (_iterator134.s(); !(_step135 = _iterator134.n()).done;) {
               _loop43();
             }
           } catch (err) {
-            _iterator133.e(err);
+            _iterator134.e(err);
           } finally {
-            _iterator133.f();
+            _iterator134.f();
           }
         });
       }
@@ -29531,17 +29573,17 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             })) return done(null);
             if (release.status === "ongoing") {
               var complete = animeEpisodeMap(release.record, release.episodes, value, books);
-              var _iterator134 = _createForOfIteratorHelper(complete || []),
-                _step135;
+              var _iterator135 = _createForOfIteratorHelper(complete || []),
+                _step136;
               try {
-                for (_iterator134.s(); !(_step135 = _iterator134.n()).done;) {
-                  var e = _step135.value;
+                for (_iterator135.s(); !(_step136 = _iterator135.n()).done;) {
+                  var e = _step136.value;
                   if (!book[e.number] && ((_a = e.metadata) == null ? void 0 : _a.air_date) > today2 && e.metadata.air_date >= release.aired && (!release.released || e.metadata.air_date <= release.released)) put(e);
                 }
               } catch (err) {
-                _iterator134.e(err);
+                _iterator135.e(err);
               } finally {
-                _iterator134.f();
+                _iterator135.f();
               }
             }
             done(book);
@@ -29594,18 +29636,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }))) return done(book);
         var result = __spreadValues({}, book || {});
         var left = parts.length;
-        var _iterator135 = _createForOfIteratorHelper(parts),
-          _step136;
+        var _iterator136 = _createForOfIteratorHelper(parts),
+          _step137;
         try {
           var _loop44 = function _loop44() {
-            var part = _step136.value;
+            var part = _step137.value;
             var merge = function merge(release) {
-              if (release) for (var _i42 = 0, _Object$entries2 = Object.entries(release); _i42 < _Object$entries2.length; _i42++) {
-                var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i42], 2),
-                  key2 = _Object$entries2$_i[0],
+              if (release) for (var _i43 = 0, _Object$entries2 = Object.entries(release); _i43 < _Object$entries2.length; _i43++) {
+                var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i43], 2),
+                  _key17 = _Object$entries2$_i[0],
                   row = _Object$entries2$_i[1];
-                var number3 = part.offset + Number(key2);
-                if (Number(key2) > part.count || Array.isArray(part.episodes) && !part.episodes.includes(number3)) continue;
+                var number3 = part.offset + Number(_key17);
+                if (Number(_key17) > part.count || Array.isArray(part.episodes) && !part.episodes.includes(number3)) continue;
                 var old = result[number3] || {};
                 result[number3] = __spreadProps(__spreadValues(__spreadValues({}, old), row), {
                   episode_number: number3,
@@ -29618,13 +29660,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             };
             if (part.mal) kino.releaseBook(part.mal, merge);else merge(null);
           };
-          for (_iterator135.s(); !(_step136 = _iterator135.n()).done;) {
+          for (_iterator136.s(); !(_step137 = _iterator136.n()).done;) {
             _loop44();
           }
         } catch (err) {
-          _iterator135.e(err);
+          _iterator136.e(err);
         } finally {
-          _iterator135.f();
+          _iterator136.f();
         }
       };
       canonical(card, function (value) {
@@ -29735,11 +29777,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               });
             });
           }));
-          var _iterator136 = _createForOfIteratorHelper(nativeGroups),
-            _step137;
+          var _iterator137 = _createForOfIteratorHelper(nativeGroups),
+            _step138;
           try {
-            for (_iterator136.s(); !(_step137 = _iterator136.n()).done;) {
-              var group = _step137.value;
+            for (_iterator137.s(); !(_step138 = _iterator137.n()).done;) {
+              var group = _step138.value;
               var entries2 = group.entries.filter(function (entry) {
                 return !represented.has(entry.card.media_type + ":" + entry.card.id);
               });
@@ -29748,9 +29790,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               }));
             }
           } catch (err) {
-            _iterator136.e(err);
+            _iterator137.e(err);
           } finally {
-            _iterator136.f();
+            _iterator137.f();
           }
           if (nativeGroups.length) removeDetailRows(link, function (entry) {
             var _a;
@@ -29861,8 +29903,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                   if (poster && !poster.includes("/missing_")) showArtwork(picture, poster);
                   var info = document.createElement("div");
                   info.className = "minimal-related-info";
-                  for (var _i43 = 0, _arr28 = _toConsumableArray(node.children); _i43 < _arr28.length; _i43++) {
-                    var child = _arr28[_i43];
+                  for (var _i44 = 0, _arr28 = _toConsumableArray(node.children); _i44 < _arr28.length; _i44++) {
+                    var child = _arr28[_i44];
                     info.appendChild(child);
                   }
                   node.appendChild(picture);
@@ -29878,11 +29920,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                   api2 = L.Api.sources.minimal_shiki;
                 if (ids.length && (api2 == null ? void 0 : api2.posters)) api2.posters(ids, function (rows) {
                   var _a, _b;
-                  var _iterator137 = _createForOfIteratorHelper(rows),
-                    _step138;
+                  var _iterator138 = _createForOfIteratorHelper(rows),
+                    _step139;
                   try {
-                    for (_iterator137.s(); !(_step138 = _iterator137.n()).done;) {
-                      var value = _step138.value;
+                    for (_iterator138.s(); !(_step139 = _iterator138.n()).done;) {
+                      var value = _step139.value;
                       var id = String(value.id);
                       if (!ids.includes(id)) continue;
                       var url = ((_a = value.poster) == null ? void 0 : _a.mainUrl) || ((_b = value.poster) == null ? void 0 : _b.originalUrl);
@@ -29892,9 +29934,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
                       if (art) showArtwork(art, url);
                     }
                   } catch (err) {
-                    _iterator137.e(err);
+                    _iterator138.e(err);
                   } finally {
-                    _iterator137.f();
+                    _iterator138.f();
                   }
                 }, function () {});
               },
@@ -29976,11 +30018,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var known = /* @__PURE__ */new Map(),
       seen = /* @__PURE__ */new Set(),
       rows = [];
-    var _iterator138 = _createForOfIteratorHelper(seasons),
-      _step139;
+    var _iterator139 = _createForOfIteratorHelper(seasons),
+      _step140;
     try {
-      for (_iterator138.s(); !(_step139 = _iterator138.n()).done;) {
-        var s = _step139.value;
+      for (_iterator139.s(); !(_step140 = _iterator139.n()).done;) {
+        var s = _step140.value;
         if (!positive5(s.season_number) || !positive5(s.episode_count)) continue;
         var n = Number(s.season_number);
         if (known.has(n)) return null;
@@ -29991,20 +30033,20 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
       }
     } catch (err) {
-      _iterator138.e(err);
+      _iterator139.e(err);
     } finally {
-      _iterator138.f();
+      _iterator139.f();
     }
-    var _iterator139 = _createForOfIteratorHelper(episodes),
-      _step140;
+    var _iterator140 = _createForOfIteratorHelper(episodes),
+      _step141;
     try {
-      for (_iterator139.s(); !(_step140 = _iterator139.n()).done;) {
-        var e = _step140.value;
+      for (_iterator140.s(); !(_step141 = _iterator140.n()).done;) {
+        var e = _step141.value;
         var season = Number(e.season_number),
           number3 = Number(e.tmdb_episode_number),
-          key2 = season + ":" + number3;
-        if (!known.has(season) || !positive5(number3) || seen.has(key2)) return null;
-        seen.add(key2);
+          _key18 = season + ":" + number3;
+        if (!known.has(season) || !positive5(number3) || seen.has(_key18)) return null;
+        seen.add(_key18);
         rows.push({
           season: season,
           number: number3,
@@ -30025,18 +30067,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         });
       }
     } catch (err) {
-      _iterator139.e(err);
+      _iterator140.e(err);
     } finally {
-      _iterator139.f();
+      _iterator140.f();
     }
     rows.sort(function (a, b) {
       return a.season - b.season || a.number - b.number;
     });
-    var _iterator140 = _createForOfIteratorHelper(known.values()),
-      _step141;
+    var _iterator141 = _createForOfIteratorHelper(known.values()),
+      _step142;
     try {
       var _loop45 = function _loop45() {
-          var s = _step141.value;
+          var s = _step142.value;
           if (rows.filter(function (e) {
             return e.season === s.number;
           }).length !== s.count) return {
@@ -30044,14 +30086,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           };
         },
         _ret15;
-      for (_iterator140.s(); !(_step141 = _iterator140.n()).done;) {
+      for (_iterator141.s(); !(_step142 = _iterator141.n()).done;) {
         _ret15 = _loop45();
         if (_ret15) return _ret15.v;
       }
     } catch (err) {
-      _iterator140.e(err);
+      _iterator141.e(err);
     } finally {
-      _iterator140.f();
+      _iterator141.f();
     }
     var groups = _toConsumableArray(known.values()).sort(function (a, b) {
       return a.number - b.number;
@@ -30144,11 +30186,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var rows = payload && payload.data;
     if (!positive5(mal) || !Array.isArray(rows) || !rows.length) return null;
     var book = {};
-    var _iterator141 = _createForOfIteratorHelper(rows),
-      _step142;
+    var _iterator142 = _createForOfIteratorHelper(rows),
+      _step143;
     try {
-      for (_iterator141.s(); !(_step142 = _iterator141.n()).done;) {
-        var row = _step142.value;
+      for (_iterator142.s(); !(_step143 = _iterator142.n()).done;) {
+        var row = _step143.value;
         var n = Number(row.mal_episode_number);
         if (Number(row.mal_id) !== Number(mal) || !positive5(n) || book[n]) return null;
         book[n] = {
@@ -30162,9 +30204,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         };
       }
     } catch (err) {
-      _iterator141.e(err);
+      _iterator142.e(err);
     } finally {
-      _iterator141.f();
+      _iterator142.f();
     }
     return book;
   }
@@ -30483,16 +30525,16 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var _a;
     if (!spec || !["dorama", "tvshow"].includes(spec.kind) || !Array.isArray(spec.countries) || !spec.countries.length) return [];
     var queries = [];
-    var _iterator142 = _createForOfIteratorHelper(spec.countries.slice(0, 2)),
-      _step143;
+    var _iterator143 = _createForOfIteratorHelper(spec.countries.slice(0, 2)),
+      _step144;
     try {
-      for (_iterator142.s(); !(_step143 = _iterator142.n()).done;) {
-        var country = _step143.value;
-        var _iterator143 = _createForOfIteratorHelper((((_a = spec.genres) == null ? void 0 : _a.length) ? spec.genres : [""]).slice(0, 2)),
-          _step144;
+      for (_iterator143.s(); !(_step144 = _iterator143.n()).done;) {
+        var country = _step144.value;
+        var _iterator144 = _createForOfIteratorHelper((((_a = spec.genres) == null ? void 0 : _a.length) ? spec.genres : [""]).slice(0, 2)),
+          _step145;
         try {
-          for (_iterator143.s(); !(_step144 = _iterator143.n()).done;) {
-            var genre = _step144.value;
+          for (_iterator144.s(); !(_step145 = _iterator144.n()).done;) {
+            var genre = _step145.value;
             var p = new URLSearchParams({
               type: "tv",
               country: country,
@@ -30507,15 +30549,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             queries.push("titles?" + p);
           }
         } catch (err) {
-          _iterator143.e(err);
+          _iterator144.e(err);
         } finally {
-          _iterator143.f();
+          _iterator144.f();
         }
       }
     } catch (err) {
-      _iterator142.e(err);
+      _iterator143.e(err);
     } finally {
-      _iterator142.f();
+      _iterator143.f();
     }
     return queries;
   }
@@ -30594,8 +30636,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             })) return fail();
             var seen = /* @__PURE__ */new Set(),
               results = [];
-            for (var i = 0; i < 24; i++) for (var _i44 = 0, _replies = replies; _i44 < _replies.length; _i44++) {
-              var row = _replies[_i44];
+            for (var i = 0; i < 24; i++) for (var _i45 = 0, _replies = replies; _i45 < _replies.length; _i45++) {
+              var row = _replies[_i45];
               var card = catalogueCard(row.data[i], spec, locale());
               if (card && !seen.has(card.id)) {
                 seen.add(card.id);
@@ -30747,12 +30789,12 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     }
     if (L.Reguest && !L.Reguest.lampaViewSources) {
       var Request = function Request() {
-        for (var _len2 = arguments.length, args = new Array(_len2), _key6 = 0; _key6 < _len2; _key6++) {
-          args[_key6] = arguments[_key6];
+        for (var _len2 = arguments.length, args = new Array(_len2), _key19 = 0; _key19 < _len2; _key19++) {
+          args[_key19] = arguments[_key19];
         }
         var request = _construct(Native, args);
         var _loop47 = function _loop47() {
-          var method = _arr29[_i45];
+          var method = _arr29[_i46];
           var send = request[method];
           if (typeof send !== "function") return 1; // continue
           request[method] = function (url, ok) {
@@ -30760,20 +30802,20 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             try {
               discovery = /\/(?:lite\/events|lifeevents)\/?$/.test(new URL(String(url), typeof location === "undefined" ? void 0 : location.href).pathname);
             } catch (error) {}
-            for (var _len3 = arguments.length, rest = new Array(_len3 > 2 ? _len3 - 2 : 0), _key7 = 2; _key7 < _len3; _key7++) {
-              rest[_key7 - 2] = arguments[_key7];
+            for (var _len3 = arguments.length, rest = new Array(_len3 > 2 ? _len3 - 2 : 0), _key20 = 2; _key20 < _len3; _key20++) {
+              rest[_key20 - 2] = arguments[_key20];
             }
             if (!discovery || typeof ok !== "function") return send.call.apply(send, [this, url, ok].concat(rest));
             return send.call.apply(send, [this, url, function (value) {
               remember(value);
-              for (var _len4 = arguments.length, extra = new Array(_len4 > 1 ? _len4 - 1 : 0), _key8 = 1; _key8 < _len4; _key8++) {
-                extra[_key8 - 1] = arguments[_key8];
+              for (var _len4 = arguments.length, extra = new Array(_len4 > 1 ? _len4 - 1 : 0), _key21 = 1; _key21 < _len4; _key21++) {
+                extra[_key21 - 1] = arguments[_key21];
               }
               return ok.call.apply(ok, [this, request.lampaViewInventory ? value : filterSources(value, off())].concat(extra));
             }].concat(rest));
           };
         };
-        for (var _i45 = 0, _arr29 = ["silent", "native"]; _i45 < _arr29.length; _i45++) {
+        for (var _i46 = 0, _arr29 = ["silent", "native"]; _i46 < _arr29.length; _i46++) {
           if (_loop47()) continue;
         }
         return request;
@@ -30815,8 +30857,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           return fn();
         });
       };
-      for (var _i46 = 0, _arr30 = ["serial=0", "serial=1", "serial=1&anime=1"]; _i46 < _arr30.length; _i46++) {
-        var query = _arr30[_i46];
+      for (var _i47 = 0, _arr30 = ["serial=0", "serial=1", "serial=1&anime=1"]; _i47 < _arr30.length; _i47++) {
+        var query = _arr30[_i47];
         var request = new L.Reguest();
         request.lampaViewInventory = true;
         request.timeout(4500);
@@ -31111,9 +31153,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         } catch (error) {}
       }
       if (L && L.Lang && L.Lang.translate) {
-        var key2 = "country_" + code.toLowerCase(),
-          value = L.Lang.translate(key2);
-        if (value && value !== key2) return value;
+        var _key22 = "country_" + code.toLowerCase(),
+          value = L.Lang.translate(_key22);
+        if (value && value !== _key22) return value;
       }
       var short = String(language).slice(0, 2) === "ru" ? {
         JP: text("Япония"),
@@ -31281,10 +31323,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       var bar = root.querySelector(".torrent-filter");
       if (!bar) return;
       bar.classList.add("minimal-torrent-toolbar");
-      [["search", text("Поиск")], ["sort", text("Сортировка")], ["filter", text("Фильтры")]].forEach(function (_ref76) {
-        var _ref77 = _slicedToArray(_ref76, 2),
-          key2 = _ref77[0],
-          label = _ref77[1];
+      [["search", text("Поиск")], ["sort", text("Сортировка")], ["filter", text("Фильтры")]].forEach(function (_ref78) {
+        var _ref79 = _slicedToArray(_ref78, 2),
+          key2 = _ref79[0],
+          label = _ref79[1];
         var button = bar.querySelector(".filter--" + key2);
         if (!button) return;
         var text2 = button.querySelector(".minimal-toolbar-label");
@@ -31340,18 +31382,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     };
     var group, winter;
     function update() {
-      var _iterator144 = _createForOfIteratorHelper(origins),
-        _step145;
+      var _iterator145 = _createForOfIteratorHelper(origins),
+        _step146;
       try {
-        for (_iterator144.s(); !(_step145 = _iterator144.n()).done;) {
-          var _step145$value = _slicedToArray(_step145.value, 1),
-            _button = _step145$value[0];
+        for (_iterator145.s(); !(_step146 = _iterator145.n()).done;) {
+          var _step146$value = _slicedToArray(_step146.value, 1),
+            _button = _step146$value[0];
           if (!_button.isConnected) origins.delete(_button);
         }
       } catch (err) {
-        _iterator144.e(err);
+        _iterator145.e(err);
       } finally {
-        _iterator144.f();
+        _iterator145.f();
       }
       var logo = head.querySelector(".head__logo-icon");
       if (!logo) return;
@@ -31362,8 +31404,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           if (!art) {
             art = document.createElement("span");
             art.className = "pt-holiday-art";
-            for (var _i47 = 0, _Array$from3 = Array.from(logo.children); _i47 < _Array$from3.length; _i47++) {
-              var node = _Array$from3[_i47];
+            for (var _i48 = 0, _Array$from3 = Array.from(logo.children); _i48 < _Array$from3.length; _i48++) {
+              var node = _Array$from3[_i48];
               if (node.classList.contains("head__logo-halloween-fire") || node.classList.contains("head__logo-halloween-svg")) art.appendChild(node);
             }
             logo.insertBefore(art, logo.firstChild);
@@ -31393,11 +31435,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             group.className = "pt-holiday-icons";
           }
           if (group.parentNode !== logo.parentNode || group.nextSibling !== logo) logo.before(group);
-          var _iterator145 = _createForOfIteratorHelper(buttons),
-            _step146;
+          var _iterator146 = _createForOfIteratorHelper(buttons),
+            _step147;
           try {
             var _loop48 = function _loop48() {
-              var button = _step146.value;
+              var button = _step147.value;
               if (!origins.has(button)) {
                 var native = document.createElement("span");
                 native.className = "pt-holiday-native";
@@ -31419,13 +31461,13 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               }
               if (button.parentNode !== group) group.appendChild(button);
             };
-            for (_iterator145.s(); !(_step146 = _iterator145.n()).done;) {
+            for (_iterator146.s(); !(_step147 = _iterator146.n()).done;) {
               _loop48();
             }
           } catch (err) {
-            _iterator145.e(err);
+            _iterator146.e(err);
           } finally {
-            _iterator145.f();
+            _iterator146.f();
           }
           if (snow) {
             if (!winter) {
@@ -31438,18 +31480,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             if (winter.parentNode !== group) group.appendChild(winter);
           } else if (winter) winter.remove();
         } else if (group) group.remove();
-        for (var _i48 = 0, _Array$from4 = Array.from(head.children); _i48 < _Array$from4.length; _i48++) {
-          var _node6 = _Array$from4[_i48];
+        for (var _i49 = 0, _Array$from4 = Array.from(head.children); _i49 < _Array$from4.length; _i49++) {
+          var _node6 = _Array$from4[_i49];
           if (_node6.classList.contains("garland")) logo.appendChild(_node6);
         }
       } else {
-        var _iterator146 = _createForOfIteratorHelper(origins),
-          _step147;
+        var _iterator147 = _createForOfIteratorHelper(origins),
+          _step148;
         try {
-          for (_iterator146.s(); !(_step147 = _iterator146.n()).done;) {
-            var _step147$value = _slicedToArray(_step147.value, 2),
-              button = _step147$value[0],
-              origin = _step147$value[1];
+          for (_iterator147.s(); !(_step148 = _iterator147.n()).done;) {
+            var _step148$value = _slicedToArray(_step148.value, 2),
+              button = _step148$value[0],
+              origin = _step148$value[1];
             origin.icon.remove();
             while (origin.native.firstChild) button.insertBefore(origin.native.firstChild, origin.native);
             origin.native.remove();
@@ -31457,14 +31499,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             if (origin.parent.isConnected) origin.parent.insertBefore(button, origin.next && origin.next.parentNode === origin.parent ? origin.next : null);
           }
         } catch (err) {
-          _iterator146.e(err);
+          _iterator147.e(err);
         } finally {
-          _iterator146.f();
+          _iterator147.f();
         }
         origins.clear();
         if (group) group.remove();
-        for (var _i49 = 0, _Array$from5 = Array.from(logo.children); _i49 < _Array$from5.length; _i49++) {
-          var _node7 = _Array$from5[_i49];
+        for (var _i50 = 0, _Array$from5 = Array.from(logo.children); _i50 < _Array$from5.length; _i50++) {
+          var _node7 = _Array$from5[_i50];
           if (_node7.classList.contains("garland")) head.insertBefore(_node7, head.firstChild);
         }
       }
@@ -31576,8 +31618,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   function personalScale(L) {
     var values = {};
     for (var n = 80; n <= 200; n += 10) values[n] = n + "%";
-    for (var _i50 = 0, _arr31 = [["lampa_view_text_scale", "Размер текста", "Названия, описания и подписи. 100% — обычный размер."], ["lampa_view_cards_scale", "Размер карточек", "Постеры в подборках и превью серий. От 80 до 200%."], ["lampa_view_controls_scale", "Размер кнопок", "Размер значков и отступы элементов управления. Размер текста настраивается отдельно."]]; _i50 < _arr31.length; _i50++) {
-      var _arr31$_i = _slicedToArray(_arr31[_i50], 3),
+    for (var _i51 = 0, _arr31 = [["lampa_view_text_scale", "Размер текста", "Названия, описания и подписи. 100% — обычный размер."], ["lampa_view_cards_scale", "Размер карточек", "Постеры в подборках и превью серий. От 80 до 200%."], ["lampa_view_controls_scale", "Размер кнопок", "Размер значков и отступы элементов управления. Размер текста настраивается отдельно."]]; _i51 < _arr31.length; _i51++) {
+      var _arr31$_i = _slicedToArray(_arr31[_i51], 3),
         name = _arr31$_i[0],
         label = _arr31$_i[1],
         description = _arr31$_i[2];
@@ -31606,9 +31648,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         description: text("Вернуть текст, кнопки и карточки к 100%.")
       },
       onChange: function onChange() {
-        for (var _i51 = 0, _arr32 = ["text", "controls", "cards"]; _i51 < _arr32.length; _i51++) {
-          var key2 = _arr32[_i51];
-          L.Storage.set("lampa_view_" + key2 + "_scale", "100");
+        for (var _i52 = 0, _arr32 = ["text", "controls", "cards"]; _i52 < _arr32.length; _i52++) {
+          var _key23 = _arr32[_i52];
+          L.Storage.set("lampa_view_" + _key23 + "_scale", "100");
         }
         update();
         document.dispatchEvent(new Event("minimal:interface-size"));
@@ -31624,24 +31666,24 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       return Number.isFinite(n) ? Math.max(0.8, Math.min(2, n / 100)) : 1;
     };
     function restore() {
-      var _iterator147 = _createForOfIteratorHelper(applied),
-        _step148;
+      var _iterator148 = _createForOfIteratorHelper(applied),
+        _step149;
       try {
-        for (_iterator147.s(); !(_step148 = _iterator147.n()).done;) {
-          var _step148$value = _step148.value,
-            el = _step148$value.el,
-            prop = _step148$value.prop,
-            old = _step148$value.old,
-            priority = _step148$value.priority,
-            value = _step148$value.value;
+        for (_iterator148.s(); !(_step149 = _iterator148.n()).done;) {
+          var _step149$value = _step149.value,
+            el = _step149$value.el,
+            prop = _step149$value.prop,
+            old = _step149$value.old,
+            priority = _step149$value.priority,
+            value = _step149$value.value;
           if (el.style.getPropertyValue(prop) === value) {
             if (old) el.style.setProperty(prop, old, priority);else el.style.removeProperty(prop);
           }
         }
       } catch (err) {
-        _iterator147.e(err);
+        _iterator148.e(err);
       } finally {
-        _iterator147.f();
+        _iterator148.f();
       }
       applied = [];
     }
@@ -31682,11 +31724,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       }
       function measure(el, props, scale) {
         var css = getComputedStyle(el);
-        var _iterator148 = _createForOfIteratorHelper(props),
-          _step149;
+        var _iterator149 = _createForOfIteratorHelper(props),
+          _step150;
         try {
-          for (_iterator148.s(); !(_step149 = _iterator148.n()).done;) {
-            var prop = _step149.value;
+          for (_iterator149.s(); !(_step150 = _iterator149.n()).done;) {
+            var prop = _step150.value;
             var base = css.getPropertyValue(prop);
             if (!/^\d+(?:\.\d+)?px$/.test(base)) continue;
             var value = (parseFloat(base) * scale).toFixed(2) + "px";
@@ -31699,55 +31741,55 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             });
           }
         } catch (err) {
-          _iterator148.e(err);
-        } finally {
-          _iterator148.f();
-        }
-      }
-      if (text2 !== 1) {
-        var _iterator149 = _createForOfIteratorHelper(select(TEXT)),
-          _step150;
-        try {
-          for (_iterator149.s(); !(_step150 = _iterator149.n()).done;) {
-            var el = _step150.value;
-            if (!el.querySelector(TEXT)) measure(el, ["font-size"], text2);
-          }
-        } catch (err) {
           _iterator149.e(err);
         } finally {
           _iterator149.f();
         }
       }
-      if (controls !== 1) {
-        var _iterator150 = _createForOfIteratorHelper(select(CONTROLS)),
+      if (text2 !== 1) {
+        var _iterator150 = _createForOfIteratorHelper(select(TEXT)),
           _step151;
         try {
           for (_iterator150.s(); !(_step151 = _iterator150.n()).done;) {
-            var _el2 = _step151.value;
-            measure(_el2, ["padding-top", "padding-bottom", "padding-left", "padding-right", "min-height"], controls);
+            var el = _step151.value;
+            if (!el.querySelector(TEXT)) measure(el, ["font-size"], text2);
           }
         } catch (err) {
           _iterator150.e(err);
         } finally {
           _iterator150.f();
         }
-        var _iterator151 = _createForOfIteratorHelper(select(ICONS)),
+      }
+      if (controls !== 1) {
+        var _iterator151 = _createForOfIteratorHelper(select(CONTROLS)),
           _step152;
         try {
           for (_iterator151.s(); !(_step152 = _iterator151.n()).done;) {
-            var _el3 = _step152.value;
-            measure(_el3, ["width", "height", "min-width"], controls);
+            var _el2 = _step152.value;
+            measure(_el2, ["padding-top", "padding-bottom", "padding-left", "padding-right", "min-height"], controls);
           }
         } catch (err) {
           _iterator151.e(err);
         } finally {
           _iterator151.f();
         }
-        var _iterator152 = _createForOfIteratorHelper(select(ACTIONS + ",.head__action,.head__menu-icon,.nova-chip,.nova-btn,.alc-chip,.alc-ap__play")),
+        var _iterator152 = _createForOfIteratorHelper(select(ICONS)),
           _step153;
         try {
+          for (_iterator152.s(); !(_step153 = _iterator152.n()).done;) {
+            var _el3 = _step153.value;
+            measure(_el3, ["width", "height", "min-width"], controls);
+          }
+        } catch (err) {
+          _iterator152.e(err);
+        } finally {
+          _iterator152.f();
+        }
+        var _iterator153 = _createForOfIteratorHelper(select(ACTIONS + ",.head__action,.head__menu-icon,.nova-chip,.nova-btn,.alc-chip,.alc-ap__play")),
+          _step154;
+        try {
           var _loop49 = function _loop49() {
-            var el = _step153.value;
+            var el = _step154.value;
             var height = el.getBoundingClientRect().height;
             if (height) {
               var old = changes.findIndex(function (c) {
@@ -31757,43 +31799,43 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               set(el, "min-height", (height * controls).toFixed(2) + "px");
             }
           };
-          for (_iterator152.s(); !(_step153 = _iterator152.n()).done;) {
-            _loop49();
-          }
-        } catch (err) {
-          _iterator152.e(err);
-        } finally {
-          _iterator152.f();
-        }
-        var _iterator153 = _createForOfIteratorHelper(select(".head,.head__body")),
-          _step154;
-        try {
           for (_iterator153.s(); !(_step154 = _iterator153.n()).done;) {
-            var _el4 = _step154.value;
-            measure(_el4, ["height"], controls);
+            _loop49();
           }
         } catch (err) {
           _iterator153.e(err);
         } finally {
           _iterator153.f();
         }
-        var _iterator154 = _createForOfIteratorHelper(select(".head__action:not(.open--search),.head__menu-icon")),
+        var _iterator154 = _createForOfIteratorHelper(select(".head,.head__body")),
           _step155;
         try {
           for (_iterator154.s(); !(_step155 = _iterator154.n()).done;) {
-            var _el5 = _step155.value;
-            measure(_el5, ["width", "flex-basis"], controls);
+            var _el4 = _step155.value;
+            measure(_el4, ["height"], controls);
           }
         } catch (err) {
           _iterator154.e(err);
         } finally {
           _iterator154.f();
         }
-        var _iterator155 = _createForOfIteratorHelper(select(ACTIONS)),
+        var _iterator155 = _createForOfIteratorHelper(select(".head__action:not(.open--search),.head__menu-icon")),
           _step156;
         try {
           for (_iterator155.s(); !(_step156 = _iterator155.n()).done;) {
-            var _el6 = _step156.value;
+            var _el5 = _step156.value;
+            measure(_el5, ["width", "flex-basis"], controls);
+          }
+        } catch (err) {
+          _iterator155.e(err);
+        } finally {
+          _iterator155.f();
+        }
+        var _iterator156 = _createForOfIteratorHelper(select(ACTIONS)),
+          _step157;
+        try {
+          for (_iterator156.s(); !(_step157 = _iterator156.n()).done;) {
+            var _el6 = _step157.value;
             var size = getComputedStyle(_el6),
               _width2 = _el6.getBoundingClientRect().width;
             if (_width2 && _width2 < _el6.parentElement.clientWidth * 0.5) set(_el6, "min-width", (_width2 * controls).toFixed(2) + "px");
@@ -31801,16 +31843,16 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             set(_el6, "flex-shrink", "0");
           }
         } catch (err) {
-          _iterator155.e(err);
+          _iterator156.e(err);
         } finally {
-          _iterator155.f();
+          _iterator156.f();
         }
         if (!document.body.classList.contains("pt-mobile")) {
-          var _iterator156 = _createForOfIteratorHelper(select(".minimal-detail-identity")),
-            _step157;
+          var _iterator157 = _createForOfIteratorHelper(select(".minimal-detail-identity")),
+            _step158;
           try {
-            for (_iterator156.s(); !(_step157 = _iterator156.n()).done;) {
-              var _el = _step157.value;
+            for (_iterator157.s(); !(_step158 = _iterator157.n()).done;) {
+              var _el = _step158.value;
               var width = Math.min(_el.getBoundingClientRect().width * controls, window.innerWidth * 0.45);
               if (width) {
                 set(_el, "width", width.toFixed(2) + "px");
@@ -31818,18 +31860,18 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               }
             }
           } catch (err) {
-            _iterator156.e(err);
+            _iterator157.e(err);
           } finally {
-            _iterator156.f();
+            _iterator157.f();
           }
         }
       }
       if (cards !== 1) {
-        var _iterator157 = _createForOfIteratorHelper(select(".card,.nova__list--grid .nova-card,.nova__list--row .nova-card")),
-          _step158;
+        var _iterator158 = _createForOfIteratorHelper(select(".card,.nova__list--grid .nova-card,.nova__list--row .nova-card")),
+          _step159;
         try {
-          for (_iterator157.s(); !(_step158 = _iterator157.n()).done;) {
-            var _el7 = _step158.value;
+          for (_iterator158.s(); !(_step159 = _iterator158.n()).done;) {
+            var _el7 = _step159.value;
             if (_el7.closest(".extensions") || _el7.closest(".minimal-fit-posters") || _el7.closest(".pt-hero") || _el7.classList.contains("card--collection")) continue;
             var _width3 = _el7.getBoundingClientRect().width,
               parent = _el7.parentElement.getBoundingClientRect().width;
@@ -31841,34 +31883,34 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             }
           }
         } catch (err) {
-          _iterator157.e(err);
-        } finally {
-          _iterator157.f();
-        }
-        var _iterator158 = _createForOfIteratorHelper(select(".nova__list:not(.nova__list--grid):not(.nova__list--row) .nova-card__thumb")),
-          _step159;
-        try {
-          for (_iterator158.s(); !(_step159 = _iterator158.n()).done;) {
-            var _el8 = _step159.value;
-            measure(_el8, ["width", "height", "min-width"], cards);
-          }
-        } catch (err) {
           _iterator158.e(err);
         } finally {
           _iterator158.f();
         }
+        var _iterator159 = _createForOfIteratorHelper(select(".nova__list:not(.nova__list--grid):not(.nova__list--row) .nova-card__thumb")),
+          _step160;
+        try {
+          for (_iterator159.s(); !(_step160 = _iterator159.n()).done;) {
+            var _el8 = _step160.value;
+            measure(_el8, ["width", "height", "min-width"], cards);
+          }
+        } catch (err) {
+          _iterator159.e(err);
+        } finally {
+          _iterator159.f();
+        }
       }
-      for (var _i52 = 0, _changes = changes; _i52 < _changes.length; _i52++) {
-        var change = _changes[_i52];
+      for (var _i53 = 0, _changes = changes; _i53 < _changes.length; _i53++) {
+        var change = _changes[_i53];
         change.el.style.setProperty(change.prop, change.value, "important");
         change.value = change.el.style.getPropertyValue(change.prop);
       }
       if (text2 > 1 || controls > 1) {
-        var _iterator159 = _createForOfIteratorHelper(select(".pt-hero")),
-          _step160;
+        var _iterator160 = _createForOfIteratorHelper(select(".pt-hero")),
+          _step161;
         try {
-          for (_iterator159.s(); !(_step160 = _iterator159.n()).done;) {
-            var hero = _step160.value;
+          for (_iterator160.s(); !(_step161 = _iterator160.n()).done;) {
+            var hero = _step161.value;
             var body = hero.querySelector(".pt-hero__body");
             if (!body) continue;
             var css = getComputedStyle(body),
@@ -31886,9 +31928,9 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             changes.push(_change);
           }
         } catch (err) {
-          _iterator159.e(err);
+          _iterator160.e(err);
         } finally {
-          _iterator159.f();
+          _iterator160.f();
         }
       }
       applied = applied.concat(changes);
@@ -31921,28 +31963,28 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
     var observer = new MutationObserver(function (records) {
       if (factor("lampa_view_text_scale") === 1 && factor("lampa_view_controls_scale") === 1 && factor("lampa_view_cards_scale") === 1) return;
       var targets = TEXT + "," + CONTROLS + "," + ICONS + ",.card,.nova-card,.nova-card__thumb,.minimal-detail-identity,.head,.head__body,.pt-hero";
-      var _iterator160 = _createForOfIteratorHelper(records),
-        _step161;
+      var _iterator161 = _createForOfIteratorHelper(records),
+        _step162;
       try {
-        for (_iterator160.s(); !(_step161 = _iterator160.n()).done;) {
-          var record = _step161.value;
-          var _iterator161 = _createForOfIteratorHelper(record.addedNodes),
-            _step162;
+        for (_iterator161.s(); !(_step162 = _iterator161.n()).done;) {
+          var record = _step162.value;
+          var _iterator162 = _createForOfIteratorHelper(record.addedNodes),
+            _step163;
           try {
-            for (_iterator161.s(); !(_step162 = _iterator161.n()).done;) {
-              var node = _step162.value;
+            for (_iterator162.s(); !(_step163 = _iterator162.n()).done;) {
+              var node = _step163.value;
               if (node.nodeType === 1 && node.isConnected && (node.matches(targets) || node.querySelector(targets))) inserted.add(node);
             }
           } catch (err) {
-            _iterator161.e(err);
+            _iterator162.e(err);
           } finally {
-            _iterator161.f();
+            _iterator162.f();
           }
         }
       } catch (err) {
-        _iterator160.e(err);
+        _iterator161.e(err);
       } finally {
-        _iterator160.f();
+        _iterator161.f();
       }
       if (inserted.size) schedule(false);
     });
@@ -32156,10 +32198,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       shell = function shell() {
         if (!_$(".pt-topnav").length) {
           var nav = _$(text("<div class=\"pt-topnav\" role=\"navigation\" aria-label=\"Каталог\">"));
-          [["home", text("Главная")], ["movie", text("Фильмы")], ["tv", text("Сериалы")], ["cartoon", text("Мультфильмы")], ["tvshow", text("ТВ-шоу")], ["anime", text("Аниме")]].forEach(function (_ref78) {
-            var _ref79 = _slicedToArray(_ref78, 2),
-              key2 = _ref79[0],
-              label = _ref79[1];
+          [["home", text("Главная")], ["movie", text("Фильмы")], ["tv", text("Сериалы")], ["cartoon", text("Мультфильмы")], ["tvshow", text("ТВ-шоу")], ["anime", text("Аниме")]].forEach(function (_ref80) {
+            var _ref81 = _slicedToArray(_ref80, 2),
+              key2 = _ref81[0],
+              label = _ref81[1];
             pointer(_$('<div class="pt-topnav__item selector" role="button" tabindex="0">').attr("data-section", key2).text(label).on("hover:enter", function () {
               return navigate(key2);
             })).appendTo(nav);
@@ -32168,11 +32210,11 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         }
         if (!_$(".pt-mobile-nav").length) {
           var _nav = _$(text("<nav class=\"pt-mobile-nav\" aria-label=\"Навигация\">"));
-          [["home", text("Главная"), "home"], ["search", text("Поиск"), "search"], ["calendar", text("Расписание"), "calendar"], ["library", text("Медиатека"), "library"], ["settings", text("Настройки"), "settings"]].forEach(function (_ref80) {
-            var _ref81 = _slicedToArray(_ref80, 3),
-              key2 = _ref81[0],
-              label = _ref81[1],
-              glyph = _ref81[2];
+          [["home", text("Главная"), "home"], ["search", text("Поиск"), "search"], ["calendar", text("Расписание"), "calendar"], ["library", text("Медиатека"), "library"], ["settings", text("Настройки"), "settings"]].forEach(function (_ref82) {
+            var _ref83 = _slicedToArray(_ref82, 3),
+              key2 = _ref83[0],
+              label = _ref83[1],
+              glyph = _ref83[2];
             _$('<div class="pt-mobile-nav__item" role="button" tabindex="0">').attr("data-section", key2).html(icon2(glyph) + "<span></span>").find("span").text(label).end().on("click", function () {
               return navigate(key2);
             }).on("keydown", function (e) {
@@ -32252,8 +32294,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }));
           (cartoons || series).after(anime);
         }
-        for (var _i53 = 0, _arr33 = [[anime, "Аниме"], [profile, "Профиль"], [cartoons, "Мультфильмы"]]; _i53 < _arr33.length; _i53++) {
-          var _arr33$_i = _slicedToArray(_arr33[_i53], 2),
+        for (var _i54 = 0, _arr33 = [[anime, "Аниме"], [profile, "Профиль"], [cartoons, "Мультфильмы"]]; _i54 < _arr33.length; _i54++) {
+          var _arr33$_i = _slicedToArray(_arr33[_i54], 2),
             node = _arr33$_i[0],
             label = _arr33$_i[1];
           var text2 = node && node.querySelector(".menu__text"),
@@ -32289,8 +32331,8 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           }));
         }
         var previous = series;
-        for (var _i54 = 0, _arr34 = [dorama, shows, cartoons, anime]; _i54 < _arr34.length; _i54++) {
-          var _node8 = _arr34[_i54];
+        for (var _i55 = 0, _arr34 = [dorama, shows, cartoons, anime]; _i55 < _arr34.length; _i55++) {
+          var _node8 = _arr34[_i55];
           if (previous && _node8) {
             if (previous.nextElementSibling !== _node8) previous.after(_node8);
             previous = _node8;
@@ -32812,12 +32854,12 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         unifiedSettings(L.SettingsApi, L, version);
         var options = [["lampa_view_hero", text("Обложка на главной"), text("Карусель каждые 10 секунд, ручное переключение и жесты."), true]];
         if (L.Platform && L.Platform.desktop && L.Platform.desktop() || ROOT.electronAPI && ROOT.electronAPI.lampa_view) options.push(["lampa_view_metadata", text("Уточнять данные mpv+"), text("Передавать сведения карточки для проверки названия, сезона и серии."), true]);
-        options.forEach(function (_ref82) {
-          var _ref83 = _slicedToArray(_ref82, 4),
-            name = _ref83[0],
-            label = _ref83[1],
-            description = _ref83[2],
-            value = _ref83[3];
+        options.forEach(function (_ref84) {
+          var _ref85 = _slicedToArray(_ref84, 4),
+            name = _ref85[0],
+            label = _ref85[1],
+            description = _ref85[2],
+            value = _ref85[3];
           return L.SettingsApi.addParam({
             component: "lampa_view",
             param: {
@@ -33062,10 +33104,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         if (L.Settings && L.Settings.listener) L.Settings.listener.follow("open", function () {
           setTimeout(trimSections, 0);
         });
-        [[L.Settings, ["open", "close"]], [L.Select, ["fullshow", "close"]], [L.Modal, ["fullshow", "close"]], [L.Player, ["create", "destroy"]], [L.Controller, ["toggle"]]].forEach(function (_ref84) {
-          var _ref85 = _slicedToArray(_ref84, 2),
-            api = _ref85[0],
-            events = _ref85[1];
+        [[L.Settings, ["open", "close"]], [L.Select, ["fullshow", "close"]], [L.Modal, ["fullshow", "close"]], [L.Player, ["create", "destroy"]], [L.Controller, ["toggle"]]].forEach(function (_ref86) {
+          var _ref87 = _slicedToArray(_ref86, 2),
+            api = _ref87[0],
+            events = _ref87[1];
           if (api && api.listener) events.forEach(function (event) {
             return api.listener.follow(event, function () {
               if (carousels.size) setTimeout(refreshCarousels, 0);
@@ -51406,7 +51448,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var deadline = Date.now() + PROBE_BUDGET;
         var index = 0,
           pendingCount = 0;
-        var _step170 = function step() {
+        var _step171 = function step() {
           if (!probe_busy || generation !== probe_generation || owner !== componentNow() || scopeId !== qualityScope()) return;
           if (index >= queue.length) {
             if (!pendingCount) probe_busy = false;
@@ -51433,7 +51475,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             answered = true;
             pendingCount--;
             probeAnswer(entry.key, answer);
-            _step170();
+            _step171();
           };
           try {
             net["native"](probeUrlFor(entry.key), done, function () {
@@ -51445,7 +51487,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             done("");
           }
         };
-        for (var worker = 0; worker < PROBE_PARALLEL; worker++) _step170();
+        for (var worker = 0; worker < PROBE_PARALLEL; worker++) _step171();
       }
       function probeSchedule() {
         if (!probeAllowed() || !movie || !probe_url || probe_busy || (groups.sort || []).length < 2) return;
@@ -51626,7 +51668,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
           voice_seed_net = null;
           if (typeof after === "function") after();
         };
-        var _step171 = function step() {
+        var _step172 = function step() {
           if (!voice_seed_busy) return;
           if (seat >= jobs.length || Date.now() > deadline || !inSkin() || !movie) return finish();
           var job = jobs[seat++];
@@ -51655,7 +51697,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
               } catch (e) {}
             }
             if (voiceListFresh()) return finish();
-            _step171();
+            _step172();
           };
           var guard = setTimeout(function () {
             if (settled) return;
@@ -51676,7 +51718,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             done("");
           }
         };
-        _step171();
+        _step172();
       }
       function voiceLink(url) {
         var value = String(url || "").replace("rjson=", "nojson=");
@@ -51836,7 +51878,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         voice_busy = true;
         var deadline = Date.now() + VOICE_BUDGET;
         var index = 0;
-        var _step172 = function step() {
+        var _step173 = function step() {
           if (!voice_busy || index >= queue.length) return;
           if (Date.now() > deadline || !inSkin()) return voiceStop();
           var entry = queue[index++];
@@ -51875,7 +51917,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             clearTimeout(guard);
             var got = voiceAnswer(entry.name, answer);
             if (!got) retryAlt();
-            _step172();
+            _step173();
           };
           var guard = setTimeout(function () {
             if (settled) return;
@@ -51896,7 +51938,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             done("");
           }
         };
-        for (var worker = 0; worker < VOICE_PARALLEL; worker++) _step172();
+        for (var worker = 0; worker < VOICE_PARALLEL; worker++) _step173();
       }
       function voiceSchedule() {
         if (!voiceWanted()) return;
@@ -53537,7 +53579,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var direct = logoDirect(path);
         if (direct && urls.indexOf(direct) === -1) urls.push(direct);
         var at = 0;
-        var _step173 = function step() {
+        var _step174 = function step() {
           if (at >= urls.length) {
             LOGO_BLIND[src] = true;
             return done("blind");
@@ -53557,7 +53599,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             } catch (e) {
               tone = "";
             }
-            if (tone !== "invert" && tone !== "glow" && tone !== "ok") return _step173();
+            if (tone !== "invert" && tone !== "glow" && tone !== "ok") return _step174();
             var now = cached(LOGO_TONE_KEY, 500, {});
             if (now && _typeof(now) === "object") {
               now[src] = tone;
@@ -53565,10 +53607,10 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
             }
             done(tone);
           };
-          probe.onerror = _step173;
+          probe.onerror = _step174;
           probe.src = url;
         };
-        _step173();
+        _step174();
       }
       function logoKey(target) {
         var card = target || movie;

@@ -171,6 +171,30 @@ async function open(page,movie){
        const image=document.querySelector('.activity--active [data-minimal-screenshot] img');
        return image?.naturalWidth===1920 && image.currentSrc.endsWith('/original.jpg');
       });
+
+      await page.route('https://www.bluscreens.net/uploads/**',route=>route.fulfill({
+       contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450"></svg>'
+      }));
+      await page.evaluate(()=>{
+       Lampa.Storage.set('minimal_poiskkino_frames_key','');
+       window.openArchiveFilm=year=>{
+        const movie={id:year,source:'tmdb',title:'Остров проклятых '+year,original_title:'Shutter Island',release_date:year+'-02-14',
+         production_countries:[],production_companies:[],spoken_languages:[],genres:[]};
+        detailFixture={movie,persons:{cast:[],crew:[]},videos:{results:[]}};
+        Lampa.Activity.push({component:'full',source:'tmdb',id:movie.id,method:'movie',card:movie});
+       };
+       openArchiveFilm(2010);
+      });
+      await recovered.waitFor();
+      assert.equal(await recovered.locator('[data-minimal-screenshot]').count(),14);
+      await page.evaluate(()=>Lampa.Activity.active().activity.component.scroll.immediate(document.querySelector('.activity--active .minimal-detail-screenshots')));
+      await page.waitForFunction(()=>{
+       const image=document.querySelector('.activity--active [data-minimal-screenshot] img');
+       return image?.naturalWidth===800 && image.currentSrc.includes('bluscreens.net');
+      });
+      await page.evaluate(()=>openArchiveFilm(2011));
+      await active.locator('.full-start-new__title').filter({hasText:'Остров проклятых 2011'}).waitFor();
+      assert.equal(await recovered.count(),0);
      }
      assert.deepEqual(errors,[]);
      console.log(engine.name(),mode,'frames and navigation passed');
