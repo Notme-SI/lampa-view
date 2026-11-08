@@ -2,6 +2,7 @@ import {text as t} from './i18n.js';
 // Lampa scrolls by transforms on many desktop hosts. Keep that native Scroll
 // and its lazy-loading callbacks; expose only a thumb for its current range.
 export default function pageScrollbar(L,enabled){
+ if(typeof window.requestAnimationFrame!=='function')return;
  const track=document.createElement('div'),thumb=document.createElement('div');
  track.className='pt-page-scrollbar';track.tabIndex=0;track.hidden=true;track.setAttribute('role','scrollbar');track.setAttribute('aria-label',t('Прокрутка страницы'));track.setAttribute('aria-orientation','vertical');track.setAttribute('aria-valuemin','0');thumb.className='pt-page-scrollbar__thumb';thumb.setAttribute('aria-hidden','true');track.appendChild(thumb);document.body.appendChild(track);
  let root,scroll,resize,mutation,frame=0,range=0,travel=0,drag=null;
