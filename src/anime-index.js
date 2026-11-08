@@ -1,12 +1,24 @@
 import DATA from './anime-index-data.json';
 const positive=n=>Number.isSafeInteger(Number(n)) && Number(n)>0;
-let indexes;
-function index(){if(indexes)return indexes;indexes={mal:new Map(),anilist:new Map(),anidb:new Map(),tv:new Map(),movie:new Map()};
- for(const row of JSON.parse(DATA.packed)){const record={mal:row[0],anilist:row[1],anidb:row[2],kind:row[3],tv:row[4],movies:row[5],imdb:row[6],tvdb:row[7],...(row[8]===null?{}:{season:row[8]}),offset:row[9],absolute:!!row[10],rules:row[11]};for(const name of ['mal','anilist','anidb','tv'])if(positive(record[name])){const key=Number(record[name]),rows=indexes[name].get(key)||[];rows.push(record);indexes[name].set(key,rows);}for(const id of record.movies || []){const rows=indexes.movie.get(id)||[];rows.push(record);indexes.movie.set(id,rows);}}
- return indexes;
+let tuples;
+const indexes=new Map(),records=new Map(),columns={mal:0,anilist:1,anidb:2,tv:4};
+function index(kind){
+ if(indexes.has(kind))return indexes.get(kind);
+ if(!tuples){tuples=JSON.parse(DATA.packed);delete DATA.packed;}
+ const found=new Map();
+ tuples.forEach((row,position)=>{
+  const ids=kind==='movie'?row[5] || []:[row[columns[kind]]];
+  for(const value of ids)if(positive(value)){const id=Number(value),matches=found.get(id) || [];matches.push(position);found.set(id,matches);}
+ });
+ indexes.set(kind,found);return found;
+}
+function record(position){
+ if(records.has(position))return records.get(position);
+ const row=tuples[position],value={mal:row[0],anilist:row[1],anidb:row[2],kind:DATA.schema>=3?DATA.kinds[row[3]]:row[3],tv:row[4] || 0,movies:row[5] || [],imdb:row[6] || [],tvdb:row[7] || 0,...(row[8]==null?{}:{season:row[8]}),offset:row[9] || 0,absolute:!!row[10],rules:row[11] || []};
+ records.set(position,value);return value;
 }
 export function animeRecords(card={}){
- const db=index(),refs=[];
+ const refs=[];
  const add=(name,value)=>{if(positive(value))refs.push([name,Number(value)]);};
  add('mal',card.mal_id);add('mal',card.shikimori_id);add('anilist',card.anilist_id);add('anidb',card.anidb_id);
  if(card.source==='minimal_shiki')add('mal',card.shikimori_id || card.id);
@@ -14,8 +26,8 @@ export function animeRecords(card={}){
  const type=card.media_type || (card.name || card.first_air_date?'tv':'movie');
  if(positive(card.tmdb_id))add(type,card.tmdb_id);else if(!card.source || ['tmdb','cub','trakt'].includes(card.source))add(type,card.id);
  if(!refs.length)return [];
- let rows=null;for(const [kind,id] of refs){const found=db[kind].get(id)||[];rows=rows===null?found:rows.filter(r=>found.includes(r));}
- return (rows || []).slice();
+ let rows=null;for(const [kind,id] of refs){const found=index(kind).get(id)||[];rows=rows===null?found:rows.filter(r=>found.includes(r));if(!rows.length)return [];}
+ return (rows || []).map(record);
 }
 export function animeTargets(record){if(!record)return [];return [...(record.movies || []).map(id=>({id,type:'movie'})),...(record.tv?[{id:record.tv,type:'tv'}]:[])];}
 export function animeTarget(card){

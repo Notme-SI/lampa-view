@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  // «Автопілот / Autopilot» - one button next to Play: asks all online sources at once, merges identical
+  // One button next to Play: asks all online sources at once, merges identical
   // voice-overs (preferred languages first, favourites next, the rest in a sub-menu), picks the
   // best source for the chosen voice and, if playback fails (fatal player error), switches to the
   // next source with the same voice and continues from the saved position.
@@ -652,7 +652,7 @@
 
   // ---------- finding the server (see BASE) ----------
   // The search is the pack's shared one (the [pack server] block below, as in the pack's other plugins);
-  // Autopilot adds its memory of the server found (alc_auto_srv), the «cannot be reached» state
+  // The source coordinator adds its memory of the server found (alc_auto_srv), the «cannot be reached» state
   // (srv.down) and the plugin the server was found by (srv.via). Its packServer() is not used here: the
   // other plugins come to Autopilot's withServer through window.alc_auto_server.
   // [pack server] the same block in alc_auto, alc_ua, alc_trailers, opensubs_menu, skip_segments and

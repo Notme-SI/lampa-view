@@ -1,5 +1,5 @@
 function lampaViewText(source,values){return window.LampaView && window.LampaView.text?window.LampaView.text(source,values):String(source).replace(/\{(\d+)\}/g,function(_,n){return String((values || [])[n]);});}
-// Suggest 1.3.2 by @nikitagk22 — https://nikitagk22.github.io/suggest.js
+// Search suggestions. Provenance: THIRD-PARTY.md.
 // Adapted for Lampa Minimal: unified settings/palette, no extension polling or manifest replacement, safe text, request cleanup.
 (function () {
     'use strict';

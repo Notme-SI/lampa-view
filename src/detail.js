@@ -131,8 +131,13 @@ export default function detail(L,event,loadLogo){
   return;
  }
  if(event && event.type==='start' && event.data){
-  const card=event.data.movie,official=officialBanner(card,artworkSize(L,'detail-backdrop')==='original');
-  if(official)event.data.movie={...card,backdrop_path:official};
+  const card=event.data.movie,size=artworkSize(L,'detail-backdrop');
+  const needed=document.body.classList.contains('pt-tv')?3840:Math.ceil((window.innerWidth || 1920)*Math.min(2,window.devicePixelRatio || 1));
+  const selected=officialBanner(card,size==='original') || detailBackdrop((event.data.images || card.images || {}).backdrops || [],card.backdrop_path,needed,L.Storage?.get?.('language','ru') || 'ru');
+  // Native Full requests the background immediately after this event. Choose
+  // the final scene and resolution now, before it can show another backdrop.
+  const background=selected && (/^https?:\/\//i.test(selected)?selected:L.TMDB.image('/t/p/'+size+selected,{preserveSize:true}));
+  if(background)event.data.movie={...card,backdrop_path:background};
   prepareDetail(event.data);prepareScreenshotRow(event);return;
  }
  if(event && event.type==='build' && event.name==='cards' && event.item)styleSuggestions(L,event);
@@ -298,7 +303,7 @@ export default function detail(L,event,loadLogo){
   if(event.link && event.link.use)event.link.use({onDestroy:()=>{if(resize)resize.disconnect();}});
  }
  if(background && card.backdrop_path){
-  if(/^https:\/\//i.test(card.backdrop_path)){
+  if(/^https?:\/\//i.test(card.backdrop_path)){
    if(!background.getAttribute('src'))background.src=card.backdrop_path;
    background._minimalArtwork=()=>{
     const url=officialBanner(card,artworkSize(L,'detail-backdrop')==='original');

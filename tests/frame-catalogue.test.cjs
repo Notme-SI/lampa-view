@@ -11,6 +11,25 @@ const {parseFilmGrab}=require('../tools/frame-catalogue-sources.cjs');
 const base=path.join(__dirname,'../docs/frames/v1');
 const frame={img:'https://frames.example/thumb.jpg',url:'https://frames.example/original.jpg'};
 
+test('publisher galleries keep original-title and IMDb keys across catalogue updates and exclude posters',()=>{
+ const {parseGallery}=require('../tools/frame-source-kinomail.cjs'),path='/cinema/movies/123_test/';
+ const picture={baseURL:'https://resizer.mail.ru/p/',error:'NO_ERROR',uuid:'e6811e5b-696e-59c1-bd0b-fbb7429dad59',key:'test-key',width:1200,height:675};
+ const data={page_data:{event_info:{url:'https://kino.mail.ru'+path,name:'Название',name_eng:'Original Title',year:2026,imdb_url:'https://www.imdb.com/title/tt1234567/'},gallery:{gallery_id:1,title:'Кадры из фильма «Название»',items:[{galleryId:1,title:'Кадр из фильма «Название»',base:picture,large:picture},{galleryId:1,title:'Постер',base:picture,large:picture},{galleryId:2,title:'Кадр из фильма «Другое»',base:picture,large:picture}]}}};
+ const html='<script id="kinotv-preload-script-event_movie">window.__PRELOADED_STATE__EVENT_MOVIE = '+JSON.stringify(data)+'</script>';
+ const row=parseGallery(html,path);assert.equal(row.frames.length,1);assert.equal(parseGallery(html,'/cinema/movies/999_other/'),null);
+ const record=normalize(row);assert.ok(record.keys.includes('imdb:movie:tt1234567'));assert.ok(record.keys.includes('movie:title:originaltitle:2026'));assert.deepEqual(normalize(record),record);
+ assert.equal(parseGallery(html.replace(JSON.stringify(data),'alert("do not execute")'),path),null);
+});
+
+test('gallery discovery follows the source pagination and retains releases after the first hundred links',()=>{
+ const {discover,discoverPages}=require('../tools/frame-source-kinoafisha.cjs');
+ const links=Array.from({length:160},(_,i)=>'<a href="/movies/'+(i+1)+'/"></a>').join('');
+ assert.equal(discover(links).length,160);
+ const next='<a href="https://www.kinoafisha.info/rating/movies/2026/page-2/">2</a><a href="/rating/movies/2026/page-13/">13</a><a href="/rating/series/ru/page-3/">3</a>';
+ assert.deepEqual(discoverPages(next,'/rating/movies/2026/'),['/rating/movies/2026/page-2/']);
+ assert.deepEqual(discoverPages(next,'/rating/movies/2026/page-2/'),['/rating/movies/2026/page-2/']);
+});
+
 test('Kinoafisha accepts named series and teleshow galleries with their own shots',()=>{
  const {parseGallery,discover}=require('../tools/frame-source-kinoafisha.cjs');
  const origin='https://www.kinoafisha.info',path='/series/show-name/shots/';
@@ -92,6 +111,15 @@ function runtime(fetch,initial={}){
 function shard(record,key){
  return {version,entries:{[key]:[record.id]},records:{[record.id]:record}};
 }
+
+test('a verified IMDb gallery resolves renamed titles and keeps movie and TV identities separate',async()=>{
+ const record=normalize({media:'movie',title:'Источник иначе назвал фильм',year:2026,imdb:'tt1234567',source:'kinomail',origin:'https://frames.example/',frames:[frame]});
+ const key='imdb:movie:tt1234567';
+ const {read,L}=runtime(async url=>({ok:true,json:async()=>url.includes('/'+shardFor(key)+'.json')?shard(record,key):{version,entries:{},records:{}}}));
+ assert.equal((await read(L,{imdb_id:'tt1234567',title:'Совсем другое название',release_date:'2026-01-01'},'movie')).length,1);
+ assert.equal((await read(L,{imdb_id:'tt1234568',title:record.title,release_date:'2026-01-01'},'movie')).length,0);
+ assert.equal((await read(L,{imdb_id:'tt1234567',name:'Не сериал',first_air_date:'2026-01-01'},'tv')).length,0);
+});
 
 test('published shards validate every frame and preserve media and release identities',()=>{
  const identities=new Set();

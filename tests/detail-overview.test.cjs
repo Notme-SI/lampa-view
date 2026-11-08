@@ -1,4 +1,15 @@
 const test=require('node:test'),assert=require('node:assert/strict'),path=require('path'),esbuild=require('esbuild'),native=require('./fixtures/native-lampa.cjs');
+test('native Full receives the final scene and resolution before its first background request',()=>{
+ const {JSDOM}=require('jsdom'),dom=new JSDOM('<body></body>',{runScripts:'outside-only'}),w=dom.window;
+ try{
+  w.eval(esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/detail.js')],bundle:true,write:false,format:'iife',globalName:'Detail'}).outputFiles[0].text);
+  const L={Storage:{get:(key,fallback)=>fallback},TMDB:{image:path=>'https://images.example'+path}};
+  const data={movie:{id:1,title:'Film',backdrop_path:'/small.jpg'},images:{backdrops:[{file_path:'/small.jpg',width:1280,height:720},{file_path:'/large.jpg',width:3840,height:2160}]}};
+  w.Detail.default(L,{type:'start',data,link:{rows:[],items:[]}});
+  assert.equal(data.movie.backdrop_path,'https://images.example/t/p/original/large.jpg');
+  assert.equal(w.document.querySelectorAll('img').length,0,'Selection completes before any native image is mounted');
+ }finally{w.close();}
+});
 test('an unrecognized host header retains its native description instead of deleting it before conversion',()=>{
  const {JSDOM}=require('jsdom'),dom=new JSDOM('<body><div class="host-header"></div><div class="full-descr">Описание хоста</div></body>',{runScripts:'outside-only'}),w=dom.window;
  try{

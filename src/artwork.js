@@ -71,7 +71,7 @@ export default function installArtwork(L,enabled){
   if(!wrappers.has(original)){
    const wrapper=function(src,size){
     if(depth || !enabled() || (size && !/^(?:w\d+(?:_and_h\d+_face)?|original)$/.test(size)))return original.apply(this,arguments);
-    if(typeof src==='string' && /^https:\/\//i.test(src))return src;
+    if(typeof src==='string' && /^https?:\/\//i.test(src))return src;
     // Native MediaLoading asks for original: it is a fullscreen backdrop,
     // never a small portrait. Delegating APIs must not classify the size twice.
     const kind=['w780','w1280','original'].includes(size)?'backdrop':'poster';

@@ -50,7 +50,21 @@ test('native full page places Related after screenshots, restores its focus and 
   L.Api.full=(p,ok)=>ok({movie,minimal_gallery_frames:[{still_path:'/frame.jpg'}],episodes:{name:'Сезон 3',episodes:[{season_number:3,episode_number:1,name:'First',air_date:'2020-01-01',still_path:'/episode-cover.jpg'},{season_number:3,episode_number:2,name:'Next',air_date:'2099-11-13'},{season_number:3,episode_number:3,name:'No still',air_date:'2020-01-08'}]},persons:{crew:[],cast:[]},images:{logos:[]},videos:{results:[]},simular:{results:[{id:2,title:'Other'}]},recomend:{results:[]}});L.Activity.push({component:'full',source:'tmdb',id:85937,method:'tv',card:movie});await new Promise(r=>setTimeout(r,250));const component=L.Activity.active().activity.component;
   assert.equal(component.active,0);assert.equal(component.props.get('movie').id,85937);assert.equal(component.rows.some(r=>Array.isArray(r) && r[1].minimal_anime_collection),false);assert.equal(w.document.querySelector('.minimal-anime-order'),null);
   const gallery=w.document.querySelector('.minimal-detail-screenshots'),button=w.document.querySelector('.minimal-anime-franchise__button');assert.ok(gallery);assert.ok(button);assert.equal(gallery.querySelector('.items-line__title').textContent,'Кадры из сериала');assert.equal(gallery.nextElementSibling,button.parentElement);assert.ok(button.parentElement.nextElementSibling.classList.contains('minimal-comments-native'));assert.deepEqual(Array.from(component.rows,r=>Array.isArray(r)?r[0]:r).filter(x=>['episodes','minimal_related','discuss'].includes(x)),['episodes','minimal_related','discuss']);assert.equal(button.textContent,'Связанные');assert.equal(gallery.querySelectorAll('.full-episode:not([hidden])').length,1);assert.equal(w.document.querySelector('time.minimal-detail-next-episode').dateTime,'2099-11-13');
-  let opened;L.Modal.open=o=>opened=o;L.Modal.opened=()=>false;gallery.querySelector('[data-minimal-screenshot]').click();assert.match(opened.html.find('img').attr('src'),/w1280\/frame.jpg/);
+  // jsdom does not load image bytes: complete the same asynchronous preload
+  // that the real browser verifies in detail-gallery.cjs.
+  const NativeImage=w.Image;
+  w.Image=function(){
+   const image=new NativeImage();
+   Object.defineProperty(image,'src',{
+    get(){return image.getAttribute('src') || '';},
+    set(value){image.setAttribute('src',value);w.queueMicrotask(()=>image.onload?.());}
+   });
+   return image;
+  };
+  let opened;L.Modal.open=o=>opened=o;L.Modal.opened=()=>false;
+  gallery.querySelector('[data-minimal-screenshot]').click();
+  await require('./fixtures/until.cjs')(()=>opened?.html.find('img').attr('src'),'the selected gallery image');
+  assert.match(opened.html.find('img').attr('src'),/w1280\/frame.jpg/);
   const related=component.items.find(i=>i.render(true)===button.parentElement);component.active=component.items.indexOf(related)-1;component.emit('down');assert.equal(component.items[component.active],related);assert.equal(L.Controller.enabled().name,'minimal_franchise');let menu;const show=L.Select.show;L.Select.show=params=>{menu=params;show(params);};button.click();assert.ok(menu.items.some(entry=>entry.card?.id===40456));assert.ok(menu.items.some(entry=>entry.separator));assert.equal(w.document.querySelectorAll('.minimal-anime-franchise__item').length,menu.items.filter(entry=>!entry.separator).length);menu.onBack();assert.equal(component.items[component.active],related);assert.equal(L.Controller.enabled().name,'minimal_franchise');
   let destination;const push=L.Activity.push;L.Activity.push=params=>destination=params;button.click();menu.onSelect(menu.items.find(entry=>entry.card?.id===40456));assert.equal(destination.source,'minimal_shiki');assert.equal(destination.id,40456);assert.equal(destination.method,'movie');assert.equal(destination.card.mal_id,40456);L.Activity.push=push;assert.deepEqual(n.errors,[]);
   let target;L.Api.sources.tmdb.full=(p,ok)=>{target=p;ok({movie:{id:p.id}});};const result=await new Promise((ok,fail)=>L.Api.sources.minimal_shiki.full({card:{id:40456,source:'minimal_shiki',media_type:'movie',title:'Бесконечный поезд'}},ok,fail));assert.equal(target.id,635302);assert.equal(target.method,'movie');assert.equal(result.movie.shikimori_id,40456);

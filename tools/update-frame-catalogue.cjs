@@ -6,17 +6,20 @@ const sources=require('./frame-catalogue-sources.cjs');
 
 const root=path.join(__dirname,'..'),output=path.join(root,'docs','frames','v1');
 const snapshotSources=['filmGrab','bluscreens','ghibli','wiki'];
-const sourceNames=[...snapshotSources,'kinoafisha','kinonews'];
+const sourceNames=[...snapshotSources,'kinoafisha','kinonews','kinomail'];
 
 function normalize(record){
  if(!['movie','tv'].includes(record?.media) || typeof record.title!=='string' || !validUrl(record.origin))return null;
- const keys=titleKeys(record.media,record.title,record.year),frames=validFrames(record.frames);
+ const aliases=(Array.isArray(record.aliases)?record.aliases:[]).filter(title=>typeof title==='string' && title.length<=250).slice(0,7);
+ const keys=[record.title,...aliases].flatMap(title=>titleKeys(record.media,title,record.year)),frames=validFrames(record.frames);
  if(!keys.length || !frames.length || !/^[a-z][a-z0-9-]{1,30}$/.test(record.source || ''))return null;
  const tmdb=Number(record.tmdb);
  if(Number.isSafeInteger(tmdb) && tmdb>0)keys.unshift('tmdb:'+record.media+':'+tmdb);
+ const imdb=/^tt\d{5,12}$/.test(record.imdb || '')?record.imdb:'';
+ if(imdb)keys.unshift('imdb:'+record.media+':'+imdb);
  const titleIdentity=record.media+':'+record.title+':'+record.year;
  const id=crypto.createHash('sha256').update(record.source+'|'+titleIdentity+'|'+(tmdb || '')).digest('hex').slice(0,24);
- return {id,media:record.media,title:record.title,year:Number(record.year),...(tmdb>0?{tmdb}:{}),titleIdentity,
+ return {id,media:record.media,title:record.title,year:Number(record.year),...(aliases.length?{aliases}:{}),...(tmdb>0?{tmdb}:{}),...(imdb?{imdb}:{}),titleIdentity,
   keys:[...new Set(keys)],source:record.source,origin:record.origin,priority:Number(record.priority)||50,frames};
 }
 

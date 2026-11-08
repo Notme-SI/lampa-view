@@ -45,7 +45,14 @@ function parseGallery(html,path,tmdb){
 
 function discover(html){
  return [...new Set(Array.from(html.matchAll(/href="(?:https:\/\/www\.kinoafisha\.info)?(\/(?:movies|series)\/[1-9]\d*\/)(?:(?:music|seasons)\/[^"]*)?"/g),
-  ([,path])=>path+'shots/'))].slice(0,100);
+  ([,path])=>path+'shots/'))].slice(0,1000);
+}
+
+function discoverPages(html,path){
+ const root=path.replace(/page-\d+\/$/,'');
+ if(!lists.includes(root))return [];
+ return [...new Set(Array.from(html.matchAll(/href="(?:https:\/\/www\.kinoafisha\.info)?([^"?#]+\/page-([1-9]\d*)\/)"/g),
+  ([,link,page])=>Number(page)<=12 && link.startsWith(root+'page-')?link:'').filter(Boolean))];
 }
 
 async function load(path){
@@ -57,27 +64,35 @@ async function load(path){
 
 async function collect(seeds){
  const entries=new Map((seeds.kinoafisha || []).filter(([path])=>galleryPath.test(path)));
- const discovery=await Promise.allSettled(lists.map(load));
- for(const result of discovery)if(result.status==='fulfilled'){
-  for(const path of discover(result.value.html || ''))if(!entries.has(path))entries.set(path,undefined);
+ const pages=[...lists],seenPages=new Set(pages);
+ async function discoverWorker(){
+  for(let path;(path=pages.shift());){
+   try{const page=await load(path);if(!page)continue;
+    for(const gallery of discover(page.html))if(!entries.has(gallery))entries.set(gallery,undefined);
+    for(const next of discoverPages(page.html,path))if(!seenPages.has(next)){seenPages.add(next);pages.push(next);}
+   }catch(error){console.warn('Kinoafisha list: '+path+' '+error.message);}
+  }
  }
+ await Promise.all(Array.from({length:3},discoverWorker));
  const records=new Map(),pending=[...entries];
  let errors=0;
  async function worker(){
   for(let next; (next=pending.shift());){
-   const [path,id]=next;
+   const [path,reference]=next;
+   const id=reference && typeof reference==='object'?reference.tmdb:reference;
    try{
     const page=await load(path);
     const row=page && parseGallery(page.html,page.path,id);
-    if(row && (!records.has(row.origin) || id))records.set(row.origin,row);
+    if(row && reference && typeof reference==='object'){row.imdb=reference.imdb;row.aliases=reference.aliases;}
+    if(row && (!records.has(row.origin) || reference))records.set(row.origin,row);
    }catch(error){errors++;}
-   await new Promise(resolve=>setTimeout(resolve,180));
+   await new Promise(resolve=>setTimeout(resolve,350));
   }
  }
- await Promise.all(Array.from({length:4},worker));
+ await Promise.all(Array.from({length:3},worker));
  if(errors)console.warn('Kinoafisha: '+errors+' gallery requests failed');
  if(records.size<5)throw new Error('Incomplete Kinoafisha catalogue');
  return [...records.values()].sort((a,b)=>a.origin.localeCompare(b.origin));
 }
 
-module.exports={collect,parseGallery,discover,preview};
+module.exports={collect,parseGallery,discover,discoverPages,preview};

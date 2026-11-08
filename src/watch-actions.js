@@ -13,7 +13,7 @@ export function watchActions(L,root,card,link){
  function open(){
   const target=onlineButton(root);
   if(target){target.dispatchEvent(new Event('hover:enter',{bubbles:true}));return;}
-  // A standalone Lampa can use Autopilot when no Online provider is installed.
+  // A standalone Lampa can use the bundled source coordinator when no online provider is installed.
   if(window.alc_auto_api && window.alc_auto_api.menu){window.alc_auto_api.menu(card);return;}
   L.Noty.show(lampaViewText("Онлайн-источник не подключён"));
  }

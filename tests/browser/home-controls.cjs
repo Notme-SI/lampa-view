@@ -17,7 +17,7 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
  const previewWidth=await page.locator('.minimal-home-first-row .card').first().evaluate(n=>n.getBoundingClientRect().width);
  await page.keyboard.press('ArrowDown');await page.waitForTimeout(100);assert.ok(await page.locator('.minimal-home-first-row .card.focus').count(),'Down goes directly to Now watching');
  if(mode==='desktop'){
-  await page.waitForTimeout(300);const footer=await page.locator('.minimal-home-first-row .card.focus').evaluate(n=>({bottom:n.getBoundingClientRect().bottom,viewport:innerHeight}));assert.ok(footer.bottom<=footer.viewport+1,'Native focus scroll reveals the full card and its watch footer: '+JSON.stringify(footer));
+  await page.waitForFunction(()=>{const card=document.querySelector('.minimal-home-first-row .card.focus');return card && card.getBoundingClientRect().bottom<=innerHeight+1;},null,{timeout:2000});const footer=await page.locator('.minimal-home-first-row .card.focus').evaluate(n=>({bottom:n.getBoundingClientRect().bottom,viewport:innerHeight}));assert.ok(footer.bottom<=footer.viewport+1,'Native focus scroll reveals the full card and its watch footer: '+JSON.stringify(footer));
  }
  if(mode==='tv'){
   const corners=await page.locator('.minimal-home-first-row .card').first().evaluate(card=>[...card.querySelectorAll('.pt-kind,.card__vote')].map(n=>({kind:n.classList.contains('pt-kind'),left:n.style.left,right:n.style.right,bottom:n.style.bottom})));

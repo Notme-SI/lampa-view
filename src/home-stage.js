@@ -16,18 +16,9 @@ export default function homeStage(hero,root){
  top-=window.scrollY || 0;
  const gap=parseFloat(heroStyle.marginBottom)||0,after=parseFloat(rowStyle.marginBottom)||0;
  const clearance=Math.max(4,after/2);
- // The desktop hero preview prioritizes full poster captions. Its normally
- // reserved watch footer remains in the scrollable row and is revealed by
- // native card focus; no poster is shrunk or rebuilt to enlarge the banner.
- let previewRoom=0;
- if(!tv){
-  const captions=Array.from(root.querySelectorAll('.card__age'));
-  if(captions.length){const rowTop=root.getBoundingClientRect().top;
-   const captionBottom=Math.max(...captions.map(node=>node.getBoundingClientRect().bottom-rowTop));
-   previewRoom=Math.max(0,Math.min(innerHeight*.08,root.offsetHeight-captionBottom-clearance));
-  }
- }
- let height=Math.max(100,Math.floor(innerHeight-top-gap-root.offsetHeight-clearance+previewRoom));
+ // Reserve the entire row, including the watch footer. Native WebKit scroll
+ // bounds cannot reveal a footer deliberately placed outside the viewport.
+ let height=Math.max(100,Math.floor(innerHeight-top-gap-root.offsetHeight-clearance));
  // A tall, narrow window must not reserve more height than its artwork can fill.
  // Cap the inline layout calculation itself; CSS height is overridden below.
  if(!tv){

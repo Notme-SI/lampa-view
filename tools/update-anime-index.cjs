@@ -30,8 +30,13 @@ function generate(fribb,xml,provenance={}){
   // A packed string keeps the full identity catalogue small in the ES5 bundle.
   // Tuple: MAL, AniList, AniDB, kind, TMDB TV, movies, IMDb, TVDB,
   // TMDB season (null means unknown), offset, absolute, explicit rules.
-  const tuples=records.map(r=>[r.mal,r.anilist,r.anidb,r.kind,r.tv||0,r.movies||[],r.imdb||[],r.tvdb||0,r.season==null?null:r.season,r.offset||0,r.absolute?1:0,r.rules||[]]);
-  return {schema:2,sources:provenance,count:records.length,mapped:records.filter(r=>r.tv || r.movies).length,packed:JSON.stringify(tuples)};
+  const kinds=[...new Set(records.map(r=>r.kind))];
+  const tuples=records.map(r=>{
+   const row=[r.mal,r.anilist,r.anidb,kinds.indexOf(r.kind),r.tv||0,r.movies||[],r.imdb||[],r.tvdb||0,r.season==null?null:r.season,r.offset||0,r.absolute?1:0,r.rules||[]];
+   while(row.length>4){const i=row.length-1,v=row[i];if(i===8?v==null:[5,6,11].includes(i)?Array.isArray(v)&&!v.length:v===0)row.pop();else break;}
+   return row;
+  });
+  return {schema:3,sources:provenance,count:records.length,mapped:records.filter(r=>r.tv || r.movies).length,kinds,packed:JSON.stringify(tuples)};
  }finally{dom.window.close();}
 }
 async function main(){

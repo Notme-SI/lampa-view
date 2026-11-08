@@ -1,11 +1,12 @@
 {
   "version": 1,
   "shards": 64,
-  "records": 5119,
+  "records": 5954,
   "sources": {
     "filmgrab": 4140,
-    "kinoafisha": 396,
+    "kinoafisha": 1002,
     "bluscreens": 494,
+    "kinomail": 229,
     "ghibli": 26,
     "kinonews": 54,
     "wiki": 4,
