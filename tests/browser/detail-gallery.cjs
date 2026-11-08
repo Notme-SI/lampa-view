@@ -40,9 +40,9 @@ async function open(page,movie){
  },movie);
  const row=page.locator('.activity--active .minimal-detail-screenshots');
  await row.waitFor();
- assert.equal(await row.locator('[data-minimal-screenshot]').count(),14);
+ assert.equal(await row.locator('[data-minimal-screenshot]').count(),15);
  assert.equal(await row.locator('.items-line__title').textContent(),movie?'Кадры из фильма':'Кадры из сериала');
- assert.ok(await row.locator('.full-episode:not([hidden])').count()<=14);
+ assert.ok(await row.locator('.full-episode:not([hidden])').count()<=15);
  if(movie){
   await page.getByRole('button',{name:'Связанные'}).waitFor();
   assert.equal(await page.getByText('Коллекция',{exact:true}).count(),0);
@@ -80,17 +80,23 @@ async function open(page,movie){
      await page.route('https://film-grab.com/wp-content/uploads/photo-gallery/**',route=>route.fulfill({
       contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"></svg>'
      }));
-     let delayedImage;
+     let delayedImage,selectedPaths;
      if(tv){
       await page.route('https://frames.example/**',route=>route.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"></svg>'}));
-      delayedImage=page.waitForResponse(response=>/\/original\/episode-still2\.jpg(?:\?|$)/.test(response.url()),{timeout:5000});
-      delayedImage.catch(()=>{}); // Report the primary assertion if setup closes the context first.
-      await page.route(/\/original\/episode-still2\.jpg(?:\?|$)/,async route=>{
-       await new Promise(resolve=>setTimeout(resolve,800));
-       await route.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"></svg>'});
-      });
      }
      const row=await open(page,mobile);
+     if(tv){
+      selectedPaths=await page.evaluate(()=>{
+       const link=Lampa.Activity.active().activity.component,at=link.rows.findIndex(row=>row[1]?.minimal_gallery),line=link.items[at];
+       return Array.from(document.querySelectorAll('[data-minimal-screenshot]')).map(node=>line.items.find(item=>item.render(true)===node).data.still_path);
+      });
+      delayedImage=page.waitForResponse(response=>new URL(response.url()).pathname==='/t/p/original'+selectedPaths[1],{timeout:10000});
+      delayedImage.catch(()=>{});
+      await page.route(url=>url.pathname==='/t/p/original'+selectedPaths[1],async route=>{
+       await new Promise(resolve=>setTimeout(resolve,800));
+       await route.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1200"></svg>'});
+      });
+     }
      const stills=row.locator('[data-minimal-screenshot]'),first=stills.first();
      await page.evaluate(()=>Lampa.Activity.active().activity.component.scroll.immediate(document.querySelector('.minimal-detail-screenshots')));
      async function activate(locator){
@@ -122,20 +128,24 @@ async function open(page,movie){
      const viewer=page.locator('.minimal-frame-viewer');
      await viewer.waitFor();
      await page.waitForFunction(()=>{const viewer=document.querySelector('.minimal-frame-viewer'),image=viewer?.querySelector('img');return viewer?.getAttribute('aria-busy')==='false' && image?.complete && image.naturalWidth>0;});
-     if(mobile)assert.match(await viewer.locator('img').getAttribute('src'),/real-frame-0\.jpg/);
-     else assert.ok((await page.evaluate(()=>frameRequests)).includes('/t/p/original/episode-still1.jpg'));
+     if(mobile)assert.match(await viewer.locator('img').getAttribute('src'),/real-frame-\d+\.jpg/);
+     else assert.ok((await page.evaluate(()=>frameRequests)).some(path=>path.startsWith('/t/p/original/')));
      const position=()=>viewer.locator('[aria-live]').textContent();
-     const total=14;
+     const total=15;
      assert.equal(await position(),'1 / '+total);
      for(const theme of ['minimal','glass']){
       await page.evaluate(theme=>Lampa.Storage.set('lampa_view_theme',theme),theme);
       const bounds=await viewer.evaluate(node=>{const r=node.getBoundingClientRect(),close=node.querySelector('.minimal-frame-close').getBoundingClientRect(),next=node.querySelector('.minimal-frame-next').getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:innerWidth,height:innerHeight,inside:r.left>=0 && r.right<=innerWidth+1 && r.top>=0 && r.bottom<=innerHeight+1,separated:close.bottom+8<next.top};});
-      assert.ok(bounds.inside && bounds.separated,'Viewer and separate controls fit '+theme+' '+mode+': '+JSON.stringify(bounds));
+      assert.ok(bounds.inside && (tv || bounds.separated),'Viewer and separate controls fit '+theme+' '+mode+': '+JSON.stringify(bounds));
+      const close=await viewer.locator('.minimal-frame-close').boundingBox(),canvas=await viewer.boundingBox();
+      assert.ok(close.x<canvas.x+canvas.width/2,'Close stays on the left');
+      const space=await page.evaluate(()=>({width:innerWidth,height:innerHeight}));
+      assert.ok(canvas.height>space.height*.85 && canvas.width>space.width*.85,'The image canvas uses the available screen: '+JSON.stringify({canvas,space,viewport}));
      }
      if(tv){
-      const geometry=await viewer.evaluate(node=>{const rect=selector=>node.querySelector(selector).getBoundingClientRect();return {close:rect('.minimal-frame-close').bottom,arrow:rect('.minimal-frame-next').top};});
-      assert.ok(geometry.close+8<geometry.arrow,'Close is separated from the frame navigation');
-      await page.keyboard.press('Enter');
+      assert.equal(await viewer.locator('.minimal-frame-next').isVisible(),false);
+      assert.equal(await viewer.locator('.minimal-frame-prev').isVisible(),false);
+      await page.keyboard.press('ArrowRight');
      }
      else if(mobile)await viewer.evaluate(node=>{
       const event=(name,x)=>{
@@ -152,14 +162,17 @@ async function open(page,movie){
      assert.equal(await position(),'1 / '+total);
      if(tv){
       await page.keyboard.press('ArrowUp');assert.equal(await viewer.locator('.minimal-frame-close.focus').count(),1);
-      await page.keyboard.press('ArrowDown');assert.equal(await viewer.locator('.minimal-frame-next.focus').count(),1);
-      await page.keyboard.press('Enter');assert.equal(await position(),'2 / '+total);
+      await page.keyboard.press('ArrowDown');assert.equal(await viewer.locator('.minimal-frame-close.focus').count(),1);
+      await page.keyboard.press('ArrowRight');assert.equal(await position(),'2 / '+total);
       await page.keyboard.press('ArrowRight');assert.equal(await position(),'3 / '+total);
-      await page.waitForFunction(()=>document.querySelector('.minimal-frame-viewer img')?.getAttribute('src')?.includes('episode-still3.jpg'));
+      await page.waitForFunction(path=>document.querySelector('.minimal-frame-viewer img')?.getAttribute('src')?.endsWith(path),selectedPaths[2]);
       await delayedImage;
       await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
-      assert.match(await viewer.locator('img').getAttribute('src'),/episode-still3\.jpg/,'A slow previous image cannot replace the selected frame');
+      assert.ok((await viewer.locator('img').getAttribute('src')).endsWith(selectedPaths[2]),'A slow previous image cannot replace the selected frame');
+      const canvas=await viewer.boundingBox();
       await page.keyboard.press('ArrowLeft');assert.equal(await position(),'2 / '+total);
+      await page.waitForFunction(path=>document.querySelector('.minimal-frame-viewer img')?.getAttribute('src')?.endsWith(path),selectedPaths[1]);
+      assert.deepEqual(await viewer.boundingBox(),canvas,'Image aspect ratio cannot resize the viewer');
       await page.keyboard.press('ArrowLeft');assert.equal(await position(),'1 / '+total);
      }
      if(tv)await page.keyboard.press('Escape');else await activate(viewer.getByRole('button',{name:'Закрыть'}));
@@ -175,8 +188,8 @@ async function open(page,movie){
       await page.keyboard.press('Enter');await viewer.waitFor({state:'hidden'});
       await stills.evaluateAll(nodes=>nodes.forEach(node=>{node.hidden=false;}));
       await page.keyboard.press('Enter');await viewer.waitFor();
-      await page.keyboard.press('Enter');assert.equal(await position(),'2 / '+total,'OK still advances after closing and reopening');
-      await page.keyboard.press('Escape');await viewer.waitFor({state:'hidden'});
+      await page.keyboard.press('ArrowRight');assert.equal(await position(),'2 / '+total,'The remote still advances after closing and reopening');
+      await page.keyboard.press('Enter');await viewer.waitFor({state:'hidden'});
      }
      if(mobile){
       const related=page.getByRole('button',{name:'Связанные'});

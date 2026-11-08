@@ -1,5 +1,5 @@
 import catalogueFrames from './frame-catalogue-client.js';
-import {frameLimit} from './frame-catalogue.cjs';
+import {frameLimit,stableSample} from './frame-catalogue.cjs';
 export {frameLimit} from './frame-catalogue.cjs';
 
 export const galleryFramesKey='minimal_poiskkino_frames_key';
@@ -18,6 +18,29 @@ function readGalleryData(read,path,timeout){
  });
 }
 
+const cardIdentity=card=>{
+ const media=seriesCard(card)?'tv':'movie',id=tmdbId(card);
+ return media+':'+(id>0?'tmdb:'+id:card.imdb_id || card.external_ids?.imdb_id ||
+  (card.original_title || card.original_name || card.title || card.name)+':'+(card.release_date || card.first_air_date));
+};
+
+export function selectGalleryFrames(rows,seed){
+ const unique=new Map();
+ for(const row of rows){const key=row.still_path || row.minimal_still_url;if(key && !unique.has(key))unique.set(key,row);}
+ const groups=new Map();
+ for(const row of unique.values()){
+  const key=row.minimal_frame_group || 'gallery';
+  if(!groups.has(key))groups.set(key,[]);groups.get(key).push(row);
+ }
+ const queues=stableSample([...groups],seed,groups.size,row=>row[0])
+  .map(([key,frames])=>stableSample(frames,seed+':'+key,frames.length));
+ const selected=[];
+ for(let at=0;selected.length<frameLimit && queues.some(rows=>at<rows.length);at++){
+  for(const rows of queues)if(rows[at] && selected.length<frameLimit)selected.push(rows[at]);
+ }
+ return stableSample(selected,seed);
+}
+
 async function episodeGallery(data,id,readTmdb){
  const episodes=[data.episodes?.episodes_original,data.episodes?.episodes].filter(Array.isArray).flat();
  if(data.movie.last_episode_to_air)episodes.push(data.movie.last_episode_to_air);
@@ -34,11 +57,27 @@ async function episodeGallery(data,id,readTmdb){
   }
  }
  addEpisodes(episodes);
- const ordered=[...known.values()].sort((a,b)=>b.season-a.season || b.episode-a.episode);
- const first=ordered.at(-1),recent=ordered.slice(0,8).filter(row=>row!==first);
- const candidates=recent.slice(0,2).concat(first || [],recent.slice(2));
- const paths=new Map(),started=Date.now();
+ const seed=cardIdentity(data.movie),paths=new Map(),started=Date.now();
  const remaining=()=>3000-(Date.now()-started);
+ // The card usually contains only recent episodes. Read a bounded sample of
+ // actual aired seasons before choosing episodes across the whole work.
+ const seasons=stableSample((data.movie.seasons || []).filter(row=>row.season_number>0 && aired(row.air_date)),seed+':seasons',3,row=>row.season_number);
+ const books=await Promise.all(seasons.filter(row=>{
+  const count=[...known.values()].filter(episode=>episode.season===row.season_number).length;
+  return !count || row.episode_count>count;
+ }).map(row=>readGalleryData(readTmdb,'tv/'+id+'/season/'+row.season_number,Math.min(remaining(),650))));
+ for(const book of books)if(Array.isArray(book?.episodes))addEpisodes(book.episodes);
+ const episodeGroups=new Map();
+ for(const episode of known.values()){
+  if(!episodeGroups.has(episode.season))episodeGroups.set(episode.season,[]);
+  episodeGroups.get(episode.season).push(episode);
+ }
+ const seasonQueues=stableSample([...episodeGroups],seed,episodeGroups.size,row=>row[0])
+  .map(([season,rows])=>stableSample(rows,seed+':season:'+season,rows.length,row=>row.episode));
+ const candidates=[];
+ for(let at=0;candidates.length<9 && seasonQueues.some(rows=>at<rows.length);at++){
+  for(const rows of seasonQueues)if(rows[at] && candidates.length<9)candidates.push(rows[at]);
+ }
  async function readFrames(batch){
   const time=remaining();
   if(time<=0)return;
@@ -46,27 +85,19 @@ async function episodeGallery(data,id,readTmdb){
    const result=await readGalleryData(readTmdb,'tv/'+id+'/season/'+season+'/episode/'+episode+'/images?include_image_language=null',Math.min(time,1000));
    for(const row of Array.isArray(result?.stills)?result.stills:[]){
     const path=tmdbPath(row?.file_path),width=Number(row?.width)||0;
-    if(path && !thumbs.has(path) && (!width || width>=480))paths.set(path,Math.max(width,paths.get(path) || 0));
+    if(path && !thumbs.has(path) && (!width || width>=480)){
+     const group='episode:'+season+':'+episode,old=paths.get(path);
+     paths.set(path,{still_path:path,width:Math.max(width,old?.width || 0),minimal_frame_group:old && old.minimal_frame_group<group?old.minimal_frame_group:group});
+    }
    }
   }));
  }
- await readFrames(candidates.slice(0,3));
- if(paths.size<frameLimit && remaining()>0){
-  // The detail card can contain only a handful of recent episodes.
-  const sampledSeasons=new Set(candidates.map(row=>row.season));
-  const otherSeasons=(data.movie.seasons || []).filter(row=>Number.isSafeInteger(row?.season_number) &&
-   row.season_number>0 && aired(row.air_date) && !sampledSeasons.has(row.season_number))
-   .sort((a,b)=>a.season_number-b.season_number);
-  const extra=await Promise.all(otherSeasons.slice(0,2).map(row=>readGalleryData(readTmdb,'tv/'+id+'/season/'+row.season_number,Math.min(remaining(),850))));
-  const previouslyKnown=new Set(known.keys());
-  for(const book of extra)if(Array.isArray(book?.episodes))addEpisodes(book.episodes);
-  const other=[...known].filter(([key])=>!previouslyKnown.has(key)).map(([,row])=>row);
-  const sample=[...new Set([other[0],other[Math.floor(other.length/2)],other.at(-1)])].filter(Boolean);
-  candidates.splice(3,0,...sample);
+ for(let i=0;i<candidates.length && remaining()>0;i+=3){
+  if(i>=6 && paths.size>=frameLimit)break;
+  await readFrames(candidates.slice(i,i+3));
  }
- for(let i=3;i<candidates.length && paths.size<frameLimit && remaining()>0;i+=3)await readFrames(candidates.slice(i,i+3));
  for(const preview of thumbs)paths.delete(preview);
- return [...paths].sort((a,b)=>b[1]-a[1]).slice(0,frameLimit).map(([still_path,width])=>({still_path,width}));
+ return selectGalleryFrames([...paths.values()],seed);
 }
 
 export function hasGallerySource(L,data){
@@ -81,14 +112,9 @@ export async function loadDetailGallery(L,data,readTmdb){
  if(!hasGallerySource(L,data))return [];
  const isSeries=seriesCard(card),id=tmdbId(card);
  let frames=await catalogueFrames(L,card,isSeries?'tv':'movie',readTmdb);
- if(frames.length<frameLimit && isSeries && id>0)frames=frames.concat(await episodeGallery(data,id,readTmdb));
+ if(isSeries && id>0)frames=frames.concat(await episodeGallery(data,id,readTmdb));
  if(frames.length<frameLimit)frames=frames.concat(await loadGalleryFrames(L,card));
- const unique=new Map();
- for(const row of frames){
-  const key=row.still_path || row.minimal_still_url;
-  if(key && !unique.has(key))unique.set(key,row);
- }
- return [...unique.values()].slice(0,frameLimit);
+ return selectGalleryFrames(frames,cardIdentity(card));
 }
 
 export async function loadGalleryFrames(L,card){
@@ -132,7 +158,7 @@ export async function loadGalleryFrames(L,card){
   const images=await get('image',query);
   const stills=images.filter(row=>frameTypes.includes(row.type) && Number(row.movieId)===id && https(row.url))
    .sort((a,b)=>(Number(b.width)||0)-(Number(a.width)||0));
-  const frames=[...new Map(stills.map(row=>[row.url,{img:https(row.previewUrl)?row.previewUrl:row.url,minimal_still_url:row.url}])).values()].slice(0,frameLimit);
+  const frames=selectGalleryFrames(stills.map(row=>({img:https(row.previewUrl)?row.previewUrl:row.url,minimal_still_url:row.url})),cardIdentity(card));
   if(cache.size>=80)cache.delete(cache.keys().next().value);
   cache.set(identity,{frames,until:Date.now()+1800000});
   return frames;

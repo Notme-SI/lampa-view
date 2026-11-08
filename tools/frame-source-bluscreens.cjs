@@ -1,7 +1,7 @@
 const origin='https://www.bluscreens.net';
 const uploads='/uploads/1/4/8/9/14897402/';
 const directory='/screen-captures-a-z--updates.html';
-const {frameLimit:maxFrames}=require('../src/frame-catalogue.cjs');
+const {frameLimit:maxFrames,stableSample}=require('../src/frame-catalogue.cjs');
 const decode=value=>value.replace(/&(?:amp|quot|apos|nbsp);|&#(?:x[\da-f]+|\d+);/gi,entity=>{
  const named={'&amp;':'&','&quot;':'"','&apos;':"'",'&nbsp;':' '};
  if(entity in named)return named[entity];
@@ -35,7 +35,7 @@ function publishedGallery(html){
  // Skip the first few captures and sample distinct parts of the published gallery.
  const images=[...frames].slice(Math.floor(frames.size*0.07),Math.ceil(frames.size*0.87));
  const count=Math.min(maxFrames,images.length);
- const sample=Array.from({length:count},(_,i)=>images[Math.floor(i*images.length/count)])
+ const sample=stableSample(images,parsed[1]+':'+parsed[2],count,row=>row[1])
   .map(([img,full])=>img===full?img:[img,full]);
  return [parsed[1],Number(parsed[2]),sample];
 }

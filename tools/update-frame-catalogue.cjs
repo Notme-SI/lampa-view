@@ -1,7 +1,7 @@
 const fs=require('node:fs/promises');
 const path=require('node:path');
 const crypto=require('node:crypto');
-const {version,shardCount,titleKeys,shardFor,validFrames,validUrl}=require('../src/frame-catalogue.cjs');
+const {version,shardCount,titleKeys,shardFor,sampleFrames,validUrl}=require('../src/frame-catalogue.cjs');
 const sources=require('./frame-catalogue-sources.cjs');
 
 const root=path.join(__dirname,'..'),output=path.join(root,'docs','frames','v1');
@@ -11,7 +11,7 @@ const sourceNames=[...snapshotSources,'kinoafisha','kinonews','kinomail'];
 function normalize(record){
  if(!['movie','tv'].includes(record?.media) || typeof record.title!=='string' || !validUrl(record.origin))return null;
  const aliases=(Array.isArray(record.aliases)?record.aliases:[]).filter(title=>typeof title==='string' && title.length<=250).slice(0,7);
- const keys=[record.title,...aliases].flatMap(title=>titleKeys(record.media,title,record.year)),frames=validFrames(record.frames);
+ const keys=[record.title,...aliases].flatMap(title=>titleKeys(record.media,title,record.year)),frames=sampleFrames(record.frames,record.origin);
  if(!keys.length || !frames.length || !/^[a-z][a-z0-9-]{1,30}$/.test(record.source || ''))return null;
  const tmdb=Number(record.tmdb);
  if(Number.isSafeInteger(tmdb) && tmdb>0)keys.unshift('tmdb:'+record.media+':'+tmdb);

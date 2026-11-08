@@ -1,4 +1,4 @@
-import {version,titleKeys,shardFor,validFrames} from './frame-catalogue.cjs';
+import {version,titleKeys,shardFor,validFrames,sampleFrames} from './frame-catalogue.cjs';
 import {version as pluginVersion} from '../package.json';
 
 const base='https://notme-si.github.io/lampa-view/frames/v1/';
@@ -81,7 +81,8 @@ export default async function catalogueFrames(L,card,media,readTmdb){
   const identities=new Set([...matches.values()].map(row=>row.tmdb?'tmdb:'+row.tmdb:row.titleIdentity));
   if(identities.size>1)return [];
   const rows=[...matches.values()].sort((a,b)=>a.priority-b.priority || a.id.localeCompare(b.id));
-  return validFrames(rows.flatMap(row=>row.frames)).map(row=>({img:row.img,minimal_still_url:row.url,width:row.width}));
+  return sampleFrames(rows.flatMap(row=>row.frames),media+':'+(id>0?id:imdb || original[0] || localized[0]))
+   .map(row=>({img:row.img,minimal_still_url:row.url,width:row.width}));
  }
  await Promise.all([...new Set(unique.map(shardFor))].map(async name=>shards.set(name,await pool(L).read(name))));
  const direct=exact.length?await find(exact):[];
