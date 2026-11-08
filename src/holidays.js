@@ -58,6 +58,7 @@ export default function holidays(L,enabled){
    origins.clear();if(group)group.remove();
    for(const node of Array.from(logo.children))if(node.classList.contains('garland'))head.insertBefore(node,head.firstChild);
   }
+  document.dispatchEvent(new Event('minimal:holidays'));
  }
  if(window.MutationObserver){
   const observer=new MutationObserver(update);observer.observe(head,{childList:true});

@@ -20,6 +20,7 @@ const {setup}=require('../fixtures/native-browser.cjs');
     const root=document.querySelector('.activity--active .minimal-torrent-view'),banner=root.querySelector('.minimal-torrent-banner'),files=root.querySelector('.explorer__files');
     const rect=el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,height:r.height};};
     const buttons=[...root.querySelectorAll('.minimal-torrent-toolbar .simple-button')].filter(el=>getComputedStyle(el).display!=='none');
+    for(const button of buttons){if(button.querySelectorAll('svg').length!==1)throw new Error('One toolbar glyph per action');const a=button.querySelector('svg').getBoundingClientRect(),b=button.querySelector('.minimal-toolbar-label').getBoundingClientRect();if(a.right>b.left+1 || Math.abs(a.top+a.height/2-b.top-b.height/2)>1)throw new Error('Toolbar icon and text must share a line');}
     const history=root.querySelector('.watched-history');history.classList.add('focus');
     return {banner:rect(banner),files:rect(files),buttons:buttons.map(rect),labels:buttons.map(el=>el.innerText),historyFocus:getComputedStyle(history,'::after').display};
    });

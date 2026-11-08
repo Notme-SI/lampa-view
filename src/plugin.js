@@ -10,6 +10,7 @@ import heroAssets from './hero-assets.js';
 import BASE_CSS from './theme.css';
 import ONLINE_CSS from './online-layout.css';
 import TV_CSS from './tv-layout.css';
+import NAV_CSS from './navigation.css';
 const CSS=BASE_CSS+'\n'+ONLINE_CSS+'\n'+TV_CSS;
 import appearance,{darkAccentSetting} from './appearance.js';
 import BOOT from './boot.css';
@@ -122,6 +123,7 @@ if (!ROOT.LampaView) {
     document.body.classList.remove('pt-reduce-motion');
     if (!document.getElementById('lampa_view-lampa-style')) $('<style id="lampa_view-lampa-style">').text(CSS).appendTo('head');
     if(!appearanceTheme)appearanceTheme=appearance(L);
+    if(!document.getElementById('lampa-view-navigation'))$('<style id="lampa-view-navigation">').text(NAV_CSS).appendTo('head');
     const enabled = yes('lampa_view_enabled');
     const headActions=document.querySelector('.head__actions');
     if(headActions && !headActions.querySelector('.open--profile') && L.Account && L.Account.Profile){
@@ -192,17 +194,24 @@ if (!ROOT.LampaView) {
     $('.head__menu-icon').addClass('selector').attr({role:'button',tabindex:'0','aria-label':lampaViewText("Меню")})
       .off('hover:enter.minimal').on('hover:enter.minimal',()=>L.Controller.toggle('menu'));
     const menu=$('.head__menu-icon');
+    menu.each(function(){if(this._lampaViewMenuPointer)return;this._lampaViewMenuPointer=true;
+      // Native mobile mousedown opens a second Select menu. Route all devices
+      // through the same native sidebar controller, once per activation.
+      this.addEventListener('mousedown',event=>{if(yes('lampa_view_enabled'))event.stopImmediatePropagation();},true);
+      $(this).on('click.lampaViewMenu',event=>{if(!yes('lampa_view_enabled'))return;event.preventDefault();event.stopImmediatePropagation();$(this).trigger('hover:enter');});
+    });
     if(!menu.find('[data-pt-menu]').length)menu.html(icon('menu')).find('svg').attr('data-pt-menu','');
     setTheme();
     updateRoute();
   }
   function trimSections(){
+    const savedOrder=L.Storage.get('menu_sort',[]),customOrder=Array.isArray(savedOrder) && savedOrder.length>0 || !!document.querySelector('.menu-edit-list');
     const home=document.querySelector('.menu__item[data-action="main"] .menu__text');
     const source=L.Storage.get('source','cub') || 'cub',sourceName={cub:'CUB',tmdb:'TMDB',trakt:'Trakt'}[source] || String(source);
     const homeLabel=lampaViewText("Главная")+' - '+sourceName;
     if(home && home.textContent!==homeLabel)home.textContent=homeLabel;
     const homeItem=home && home.closest('.menu__item'),movies=document.querySelector('.menu__item[data-action="movie"]');
-    if(homeItem && movies && movies.previousElementSibling!==homeItem)movies.before(homeItem);
+    if(!customOrder && homeItem && movies && movies.previousElementSibling!==homeItem)movies.before(homeItem);
     const torrents=document.querySelector('.menu__item[data-action="mytorrents"] .menu__ico');
     if(torrents && !torrents.querySelector('[data-minimal-magnet]')){torrents.innerHTML=icon('magnet');torrents.querySelector('svg').setAttribute('data-minimal-magnet','');}
     const settings=document.querySelector('.menu__item[data-action="settings"]');
@@ -216,7 +225,7 @@ if (!ROOT.LampaView) {
         else $('.head .open--profile').trigger('hover:enter');
       }));
     }
-    if(settings && profile && settings.previousElementSibling!==profile)settings.before(profile);
+    if(settings && profile && !profile.isConnected)settings.before(profile);
     const series=document.querySelector('.menu__item[data-action="tv"]');
     let cartoons=document.querySelector('.menu__item[data-action="cartoon"]');
     if(!cartoons && series){
@@ -248,7 +257,7 @@ if (!ROOT.LampaView) {
     if(shows && !shows.dataset.minimalShows){shows.dataset.minimalShows='1';pointer($(shows).off('hover:enter').on('hover:enter.minimalShows',event=>{event.stopImmediatePropagation();navigate('tvshow');}));}
     // Move only out-of-order nodes: the native menu observer must settle.
     let previous=series;
-    for(const node of [dorama,shows,cartoons,anime])if(previous && node){if(previous.nextElementSibling!==node)previous.after(node);previous=node;}
+    for(const node of [dorama,shows,cartoons,anime])if(previous && node){if(!node.isConnected || !customOrder && previous.nextElementSibling!==node)previous.after(node);previous=node;}
     document.querySelectorAll('.menu__item,.settings-folder').forEach(node=>{
       const label=(node.querySelector('.menu__text,.settings-folder__name') || node).textContent.trim();
       node.classList.toggle('pt-removed-section',node.dataset.action==='dorama' || /^(shots|спорт|расписание)$/i.test(label));
@@ -259,6 +268,7 @@ if (!ROOT.LampaView) {
         if(/shot|sport|timetable/i.test(key))L.SettingsApi.removeComponent(key);
       });
     }
+    if(pinnedMenu)pinnedMenu.groups();
   }
   function updateRoute() {
     const active = L.Activity.active() || {};
@@ -268,6 +278,7 @@ if (!ROOT.LampaView) {
     }
     const section = active.component === 'main' ? 'home' : active.url || active.component;
     document.body.classList.toggle('pt-home',active.component==='main');
+    document.body.classList.toggle('pt-full',active.component==='full');
     document.body.classList.toggle('pt-favorites',/^(favorite|bookmarks)$/.test(active.component || ''));
     $('.pt-topnav__item,.pt-mobile-nav__item').each(function() {this.classList.toggle('active', this.getAttribute('data-section') === section);});
   }
@@ -509,6 +520,7 @@ if (!ROOT.LampaView) {
     if(L.Platform && L.Platform.desktop && L.Platform.desktop() || ROOT.electronAPI && ROOT.electronAPI.lampa_view) options.push(['lampa_view_metadata',lampaViewText("Уточнять данные mpv+"),lampaViewText("Передавать сведения карточки для проверки названия, сезона и серии."),true]);
     options.forEach(([name,label,description,value]) => L.SettingsApi.addParam({component:'lampa_view',param:{name,type:'trigger',default:value},field:{name:label,description},onChange:setTheme}));
     L.SettingsApi.addParam({component:'lampa_view',param:{name:'lampa_view_theme',type:'select',values:{minimal:lampaViewText('Тёмная'),glass:lampaViewText('Стекло')},default:'minimal'},field:{name:lampaViewText("Тема интерфейса"),description:lampaViewText("Оформление всей Lampa. Переключается сразу, данные просмотра сохраняются.")},onChange:()=>{if(appearanceTheme)appearanceTheme.update();}});
+    L.SettingsApi.addParam({component:'lampa_view',param:{name:'menu_always',type:'trigger',default:false},field:{name:lampaViewText('Закрепить боковое меню'),description:lampaViewText('Иконки слева. Меню раскрывается при наведении или выборе пультом.')},onChange:()=>pinnedMenu && pinnedMenu.update()});
     darkAccentSetting(L);
     L.SettingsApi.addParam({component:'lampa_view',param:{name:'lampa_view_layout',type:'select',values:{auto:lampaViewText("Автоматически"),tv:lampaViewText("Телевизор"),mobile:lampaViewText("Телефон"),tablet:lampaViewText("Планшет"),desktop:lampaViewText("Компьютер")},default:'auto'},field:{name:lampaViewText("Тип устройства"),description:lampaViewText("Авто использует режим экрана Lampa. Планшет — сенсорное управление и адаптация к ширине окна.")},onChange:setTheme});
     L.SettingsApi.addParam({component:'lampa_view',param:{name:'lampa_view_detail_art',type:'select',values:{logo:'Логотип названия',poster:'Постер'},default:'logo'},field:{name:'Карточка фильма: изображение',description:'Что показывать над кнопками «Смотреть» и «Торренты».'},onChange:setTheme});

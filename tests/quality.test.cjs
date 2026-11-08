@@ -67,7 +67,7 @@ test('custom quality owns one visible slot before and after native rendering',()
  dom.window.close();
 });
 
-test('anime films and series receive one anime badge without labelling ordinary animated films',()=>{
+test('all four media types receive one accurate monochrome badge',()=>{
  const dom=new JSDOM('<body></body>',{runScripts:'outside-only'}),w=dom.window;
  w.eval(esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/quality.js')],bundle:true,write:false,format:'iife',globalName:'Quality'}).outputFiles[0].text);
  let listener,requests=0;
@@ -76,8 +76,8 @@ test('anime films and series receive one anime badge without labelling ordinary 
   [{title:'Anime movie',media_type:'movie',genre_ids:[16],original_language:'ja'},'Аниме'],
   [{name:'Anime series',media_type:'tv',genre_ids:[16],original_language:'ja'},'Аниме'],
   [{title:'Shikimori movie',media_type:'movie',source:'minimal_shiki'},'Аниме'],
-  [{title:'Animated movie',media_type:'movie',genre_ids:[16],original_language:'en'},null],
-  [{title:'Live action movie',media_type:'movie',original_language:'ja'},null],
+  [{title:'Animated movie',media_type:'movie',genre_ids:[16],original_language:'en'},'Мультфильм'],
+  [{title:'Live action movie',media_type:'movie',original_language:'ja'},'Фильм'],
   [{name:'Live action series',media_type:'tv'},'Сериал']
  ];
  try{

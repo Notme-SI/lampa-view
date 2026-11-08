@@ -4087,6 +4087,10 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     var box = $('<div class="nova-chip selector"></div>');
     box.attr('data-nova-focus', key);
     if (extra && extra.icon) box.append(extra.icon);
+    else if(key==='source' || key==='voice' || key==='movievoice'){
+      var glyph=key==='source'?'<rect x="3" y="4" width="18" height="14" rx="3"/><path d="M8 22h8m-4-4v4"/>':'<path d="m11 4-6 5H2v6h3l6 5ZM16 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/>';
+      box.append('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+glyph+'</svg>');
+    }
     if (extra && extra.badge) box.append($('<span class="nova-chip__badge"></span>').text(extra.badge));
     box.append($('<span class="nova-chip__label"></span>').text(value || ''));
     if (!(extra && extra.plain)) box.append(ICON.chevron);

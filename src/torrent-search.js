@@ -34,6 +34,11 @@ export default function torrentSearch(L){
    let text=button.querySelector('.minimal-toolbar-label');
    if(!text){text=document.createElement('span');text.className='minimal-toolbar-label';text.textContent=label;button.appendChild(text);}
    button.setAttribute('aria-label',label);
+   if(!button.querySelector('.pt-toolbar-icon')){
+    Array.from(button.children).filter(node=>node.tagName.toLowerCase()==='svg').forEach(node=>node.remove());
+    const glyph={search:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/>',sort:'<path d="M8 3v18m-4-4 4 4 4-4M16 21V3m-4 4 4-4 4 4"/>',filter:'<path d="M4 6h16M4 12h16M4 18h16"/><path d="M8 3v6m8 0v6m-8 0v6"/>'}[key];
+    button.insertAdjacentHTML('afterbegin','<svg class="pt-toolbar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+glyph+'</svg>');
+   }
    const value=button.querySelector('div:not(.hide)');button.title=value?label+': '+value.textContent:label;
   });
  }

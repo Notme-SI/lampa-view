@@ -35,7 +35,7 @@ export default function badgeLayout(status){
    const view=node.querySelector('.card__view');if(!view)continue;const rect=view.getBoundingClientRect();
    if(!rect.width || !rect.height || rect.bottom<0 || rect.top>window.innerHeight || rect.right<0 || rect.left>window.innerWidth)continue;
    const width=view.clientWidth || rect.width,height=view.clientHeight || rect.height,scale=rect.width/width || 1,entries=[];
-   for(const [selector,corner] of [['.card__vote','br'],['.pt-quality,.card__quality','tl'],['.pt-kind','tr'],['.pt-series-status','tr'],['.card__marker','bl'],['.card__icon:not(.icon--history)','bl'],['.card__new-episode','bl']])for(const el of view.querySelectorAll(selector)){
+   for(const [selector,corner] of [['.card__vote','br'],['.pt-quality,.card__quality','tr'],['.pt-kind','tl'],['.pt-series-status','tl'],['.card__marker','bl'],['.card__icon:not(.icon--history)','bl'],['.card__new-episode','bl']])for(const el of view.querySelectorAll(selector)){
     if(el.hidden || el.classList.contains('hide') || getComputedStyle(el).display==='none')continue;
     if(el.classList.contains('pt-series-status')){
      el.style.fontSize='';el.style.transform='none';

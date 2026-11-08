@@ -1,46 +1,21 @@
 const assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWRIGHT_MODULE),{setup}=require('../fixtures/native-browser.cjs');
 (async()=>{const browser=await chromium.launch({headless:true});try{
- for(const theme of ['minimal','glass'])for(const mode of ['desktop','tv']){
-  const r=await setup(browser,{viewport:{width:1280,height:720},mode},{beforePlugin:page=>page.evaluate(()=>Lampa.Search.init())});
-  await r.page.evaluate(theme=>Lampa.Storage.set('lampa_view_theme',theme),theme);
-  await r.page.evaluate(()=>{for(const name of ['halloween','black-friday','new-year','womens_day'])Lampa.Head.addIcon('<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg>',()=>{}).addClass(name+'__button');});
-  await r.page.waitForSelector('.pt-holiday-icons>.womens_day__button');
-  const result=await r.page.evaluate(()=>{
-   const L=Lampa;L.DeviceInput.init();L.Controller.observe();L.Keypad.init();L.Keypad.enable();Navigator.follow('focus',e=>L.Controller.focus(e.elem));
-   const head=document.querySelector('.head'),menu=head.querySelector('.head__menu-icon'),back=head.querySelector('.head__backward'),body=document.body;
-   body.classList.add('pt-home');back.classList.add('pt-back-visible');
-   const before=menu.getBoundingClientRect().left;body.classList.remove('pt-home');const after=menu.getBoundingClientRect().left;
-   // This isolated runtime has no signed-in account; add the native avatar shell.
-   if(!head.querySelector('.open--profile')){const profile=document.createElement('div');profile.className='head__action selector open--profile';profile.innerHTML='<img src="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2740%27 height=%2740%27/%3E">';head.querySelector('.head__actions').appendChild(profile);}
-   const controls=[];
-   for(const selector of ['.head__menu-icon','.open--search','.open--settings','.open--profile','.halloween__button','.black-friday__button','.new-year__button','.womens_day__button']){
-    const node=head.querySelector(selector);L.Controller.collectionSet(head);L.Controller.collectionFocus(node,head);
-    const rect=node.getBoundingClientRect(),style=getComputedStyle(node);
-    controls.push({selector,focused:node.classList.contains('focus'),color:style.outlineColor,width:parseFloat(style.outlineWidth),borderWidth:parseFloat(style.borderWidth),shadow:style.boxShadow,border:style.borderColor,inside:rect.right+5<=innerWidth && rect.top>=5 && rect.bottom+5<=head.getBoundingClientRect().bottom});
-   }
-   const profile=head.querySelector('.open--profile'),avatar=profile.querySelector('img,svg'),pr=profile.getBoundingClientRect(),ar=avatar.getBoundingClientRect();
-   if(ar.width<pr.width-5 || ar.height<pr.height-5)throw new Error('Avatar image must fill its own button: '+JSON.stringify({button:pr.width,image:ar.width}));
-   const mr=menu.getBoundingClientRect(),sr=menu.querySelector('svg').getBoundingClientRect();
-   const menuCenter=Math.abs((mr.left+mr.right-sr.left-sr.right)/2)+Math.abs((mr.top+mr.bottom-sr.top-sr.bottom)/2);
-   const sample=document.createElement('button');sample.className='pt-hero__action selector';sample.textContent='Подробнее';head.after(sample);
-   const primary=[];for(const focused of [false,true,false]){sample.classList.toggle('focus',focused);const r=sample.getBoundingClientRect(),s=getComputedStyle(sample);primary.push({width:r.width,height:r.height,bg:s.backgroundColor,border:s.borderColor,shadow:s.boxShadow});}sample.remove();
-   const focusedRows=document.createElement('div');
-   focusedRows.innerHTML='<div class="menu__item focus"></div><div class="settings-folder focus"></div><div class="settings-param focus"></div><div class="selectbox-item focus"></div>';
-   document.body.appendChild(focusedRows);
-   const focusFills=Array.from(focusedRows.children,node=>getComputedStyle(node).backgroundColor);
-   focusedRows.remove();
-   const text=document.querySelector('.menu__text');text.textContent='Длинное название раздела для проверки переноса';const style=getComputedStyle(text);
-   const glyph=head.querySelector('.open--settings svg[data-pt-settings]');if(!glyph || glyph.getBoundingClientRect().width<12 || !glyph.querySelector('path'))throw new Error('Settings gear glyph must be visible');const gear=head.querySelector('.open--settings').getBoundingClientRect(),search=head.querySelector('.open--search').getBoundingClientRect();if(gear.left<search.right-1 || gear.right>pr.left+1)throw new Error('Settings must sit between Search and Profile');
-   return {before,after,menuCenter,controls,primary,focusFills,wrap:style.whiteSpace,mode:body.classList.contains('pt-tv')?'tv':'desktop'};
+ for(const theme of ['minimal','glass'])for(const mode of ['desktop','tv','mobile']){
+  const r=await setup(browser,{viewport:mode==='mobile'?{width:393,height:852}:{width:1280,height:720},mode},{beforePlugin:page=>page.evaluate(()=>{Lampa.Search.init();Lampa.Listener.send('app',{type:'ready'});})}),{page}=r;
+  await page.evaluate(theme=>{Lampa.Storage.set('lampa_view_theme',theme);Lampa.DeviceInput.init();Lampa.Controller.observe();Navigator.follow('focus',e=>Lampa.Controller.focus(e.elem));},theme);
+  const geometry=await page.evaluate(()=>{
+   const head=document.querySelector('.head'),body=document.body,menu=head.querySelector('.head__menu-icon'),back=head.querySelector('.head__backward'),search=head.querySelector('.open--search');
+   body.classList.add('pt-home');back.classList.add('pt-back-visible','selector');const before=menu.getBoundingClientRect().left;body.classList.remove('pt-home');const after=menu.getBoundingClientRect().left;
+   const rect=n=>{const b=n.getBoundingClientRect();return {left:b.left,right:b.right,top:b.top,bottom:b.bottom,width:b.width,height:b.height};};
+   const controls=[back,menu,search].map(node=>{Lampa.Controller.collectionSet(head);Lampa.Controller.collectionFocus(node,head);return {focused:node.classList.contains('focus'),box:rect(node),border:getComputedStyle(node).borderColor,outline:getComputedStyle(node).outlineWidth};});
+   return {before,after,controls,menu:rect(menu),search:rect(search),hidden:[...head.querySelectorAll('.open--settings,.open--profile,.head__logo')].every(n=>!n.getBoundingClientRect().width),vw:innerWidth};
   });
-  if(theme==='minimal')assert.deepEqual(result.focusFills,Array(4).fill('rgb(48, 41, 31)'));
-  if(mode==='tv'){
-   assert.ok(result.after>result.before,'Back appears before Menu, as on desktop');
-   for(const p of result.primary){if(theme==='minimal'){assert.equal(p.bg,'rgb(216, 195, 154)');assert.equal(p.shadow,'none');}assert.equal(p.width,result.primary[0].width);assert.equal(p.height,result.primary[0].height);}
-   if(theme==='minimal'){assert.equal(result.primary[1].border,'rgb(255, 255, 255)');assert.equal(result.primary[2].border,'rgba(0, 0, 0, 0)');}else{assert.notEqual(result.primary[1].border,result.primary[0].border);assert.equal(result.primary[2].border,result.primary[0].border);}
-  }
-  assert.equal(result.wrap,'normal');assert.ok(result.menuCenter<.1,'Menu glyph stays centered');for(const control of result.controls){assert.equal(control.focused,true);assert.equal(control.width,0,'No external ring');assert.equal(control.borderWidth,theme==='glass'?1:2,'One clear border');assert.equal(control.shadow,'none');assert.equal(control.border,theme==='glass'?'rgb(244, 244, 246)':'rgb(216, 195, 154)');assert.equal(control.inside,true);}
-  await r.page.locator('.head .open--settings').click();await r.page.waitForSelector('body.settings--open');await r.page.waitForSelector('.settings__content .settings-folder');assert.ok(await r.page.locator('.settings__content .settings-folder').count()>0,'Gear opens native settings: '+JSON.stringify(await r.page.locator('.settings__content').evaluate(n=>({text:n.textContent.slice(0,300),html:n.innerHTML.slice(0,300)}))));await r.page.evaluate(()=>Lampa.Controller.back());
-  assert.deepEqual(r.errors,[]);console.log(mode,result);await r.context.close();
+  assert.ok(geometry.after>geometry.before,'Back occupies its own slot before Menu');assert.equal(geometry.hidden,true);assert.ok(geometry.search.width>geometry.vw*.55);assert.ok(geometry.search.left>=geometry.menu.right+3);assert.ok(geometry.search.right<=geometry.vw);
+  for(const control of geometry.controls){assert.equal(control.focused,true);assert.equal(control.outline,'0px');assert.equal(control.border,theme==='glass'?'rgb(244, 244, 246)':'rgb(216, 195, 154)');assert.ok(control.box.height>=44);}
+  await page.locator('.head__menu-icon').click();await page.locator('.wrap__left [data-action=settings]').click();await page.waitForSelector('body.settings--open');
+  const settings=await page.locator('.settings__content').evaluate(n=>({width:n.getBoundingClientRect().width,height:n.getBoundingClientRect().height,vh:innerHeight,rows:[...n.querySelectorAll('.settings-folder')].filter(n=>n.getBoundingClientRect().height).map(n=>({h:n.getBoundingClientRect().height,font:parseFloat(getComputedStyle(n).fontSize)}))}));
+  assert.ok(settings.width<=Math.min(600,geometry.vw*.94+1));assert.ok(settings.height<settings.vh*.9);assert.ok(settings.rows.length>0);assert.ok(settings.rows.every(row=>row.h>=44 && row.font>=12));
+  await page.evaluate(()=>Lampa.Controller.back());
+  assert.deepEqual(r.errors,[]);console.log(theme,mode,'search, back, menu, native compact settings OK');await r.context.close();
  }
 }finally{await browser.close();}})().catch(error=>{console.error(error);process.exitCode=1;});

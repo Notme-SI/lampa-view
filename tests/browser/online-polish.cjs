@@ -31,11 +31,15 @@ async function holiday(page,name){
   const art=logo.querySelector('.pt-holiday-art'),brand=logo.querySelector('.pt-brand');
   return {head:rect(head),logo:rect(logo),art:art&&rect(art),brand:brand&&rect(brand),word:brand&&brand.textContent,cap:cap&&getComputedStyle(cap).display!=='none'?rect(cap.querySelector('svg')):null,winter:head.querySelector('.pt-holiday-winter')&&rect(head.querySelector('.pt-holiday-winter')),menu:rect(menu),button:button&&rect(button),buttonDisplay:button&&getComputedStyle(button).display,garland:head.querySelector('.garland')&&getComputedStyle(head.querySelector('.garland')).pointerEvents,width:innerWidth};
  },name);
- if(box.cap){assert.ok(box.cap.top>=-1 && box.cap.bottom<=box.head.bottom+1);assert.ok(box.cap.left>box.menu.right,'hat does not cover the menu');assert.equal(box.garland,'none');}
- if(name==='snow'){assert.ok(box.winter && box.winter.left>box.menu.right && box.winter.right<box.brand.left);assert.equal(box.cap,null,'Old hat is replaced by the compact seasonal glyph');}
- if(box.button){assert.equal(await page.locator('.head .'+name.replace('womens-day','womens_day')+'__button > .pt-holiday-svg').count(),1,'One original Lampa View glyph replaces the visible native art');assert.equal(box.buttonDisplay,'flex');assert.ok(Math.abs(box.button.height-box.menu.height)<1);assert.ok(box.button.right<=box.width && box.button.top>=0 && box.button.bottom<=box.head.bottom+1);}
- assert.ok(box.logo.bottom<=box.head.bottom+1);
- if(name==='halloween'){assert.equal(box.word,'LAMPA');assert.equal(box.art.width,0,'colored logo artwork is hidden');assert.ok(box.button.right<box.brand.left,'native holiday button is beside the wordmark');assert.ok(box.brand.right<=box.width);}
+ // The search header deliberately has no wordmark or seasonal actions.
+ assert.equal(box.logo.width,0,'Seasonal branding cannot shrink the search pill');
+ if(box.button){
+  assert.equal(box.button.width,0,'Seasonal actions reserve no header space');
+  const row=page.locator('.pt-menu-seasonal').filter({hasText:await page.locator('.head .'+name.replace('womens-day','womens_day')+'__button').getAttribute('aria-label')});
+  assert.equal(await row.count(),1,'Seasonal action stays available in the native sidebar');
+  assert.equal(await row.locator('.pt-holiday-svg').count(),1);
+ }
+
 }
 (async()=>{
  for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]){
@@ -50,7 +54,7 @@ async function holiday(page,name){
       await page.evaluate(size=>Lampa.Storage.set('interface_size',size),size);await page.waitForTimeout(30);
       widths.push(await page.locator('.head__logo-icon').evaluate(node=>{const head=node.closest('.head').getBoundingClientRect();for(const item of node.parentElement.querySelectorAll('.pt-holiday-icons>.head__action,.pt-holiday-winter,.head__logo-icon,.head__logo-cap svg')){if(!item.getClientRects().length)continue;const r=item.getBoundingClientRect();if(r.left<0 || r.right>innerWidth+1 || r.top< -1 || r.bottom>head.bottom+1)throw new Error('Seasonal artwork exceeds the header');}return node.getBoundingClientRect().width;}));
      }
-     assert.ok(widths[0]<widths[1] && widths[1]<widths[2],'holiday wordmark scales with native sizes');
+     assert.deepEqual(widths,[0,0,0],'Hidden wordmark reserves no width at any scale');
      await page.evaluate(()=>Lampa.Storage.set('interface_size','normal'));
      if(output)await page.screenshot({path:path.join(output,name+'-'+mode+'-'+event+'.png'),clip:{x:0,y:0,width:mode==='mobile'?393:1440,height:100}});
     }

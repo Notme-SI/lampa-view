@@ -19,7 +19,7 @@ test('native legacy history/filter cards restore anime metadata, saved favorites
   // Metadata is asynchronous; a loaded test worker may process its timers late.
   const deadline=Date.now()+3000;
   while(Date.now()<deadline && [series,film].some(node=>node.querySelector('.pt-kind')?.textContent!=='Аниме'))await wait(20);
-  assert.equal(series.querySelector('.pt-kind').textContent,'Аниме');assert.equal(film.querySelector('.pt-kind').textContent,'Аниме');assert.equal(live.querySelector('.pt-kind'),null);
+  assert.equal(series.querySelector('.pt-kind').textContent,'Аниме');assert.equal(film.querySelector('.pt-kind').textContent,'Аниме');assert.equal(live.querySelector('.pt-kind').textContent,'Фильм');
   assert.equal(series.querySelector('.pt-quality').textContent,'1080p');assert.equal(film.querySelector('.pt-quality').textContent,'WEB-DL');
   assert.equal(series.querySelector('.card__vote').textContent,'8.9');assert.equal(film.querySelector('.card__vote').textContent,'9.3');assert.equal(live.querySelector('.card__vote'),null);
   const continued=legacy({id:605,name:'Continue series',first_air_date:'2025-01-01',source:'tmdb',genre_ids:[18],vote_average:8.4},true);const ratingDeadline=Date.now()+3000;while(Date.now()<ratingDeadline && !continued.querySelector('.card__vote'))await wait(20);assert.equal(continued.querySelector('.card__vote').textContent,'8.4','Restore a known score when the continuation template omitted the badge');
