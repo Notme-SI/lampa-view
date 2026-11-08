@@ -160,7 +160,7 @@ function showFrames(L,line,frames,start){
  });
  // Native Modal centers its initial selector before the viewer styling exists.
  // The fixed image canvas owns navigation and must start without that offset.
- L.Modal.scroll?.().immediate?.(viewer);
+ L.Modal.scroll?.()?.immediate?.(viewer);
 }
 
 export function styleScreenshots(L,event){
