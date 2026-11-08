@@ -75,49 +75,92 @@ function galleryButton(className,label,path,action){
 }
 const previousPath='m14 6-6 6 6 6',nextPath='m10 6 6 6-6 6';
 function showFrames(L,line,frames,start){
- const $=window.jQuery;
- const viewer=document.createElement('div');viewer.className='minimal-frame-viewer';
- const image=document.createElement('img');image.className='minimal-screenshot-preview';image.draggable=false;
+ const $=window.jQuery,viewer=document.createElement('div'),image=document.createElement('img');
+ viewer.className='minimal-frame-viewer';image.className='minimal-screenshot-preview';image.draggable=false;image.referrerPolicy='no-referrer';
  const controls=document.createElement('div');controls.className='minimal-frame-controls';
- const counter=document.createElement('span');counter.setAttribute('aria-live','polite');
- let index=start,touch=null;
+ const counter=document.createElement('span');counter.className='minimal-frame-position';counter.setAttribute('aria-live','polite');
+ const cache=new Map();let index=start,touch=null,serial=0,disposed=false,focused,controller,original;
+ const wrap=n=>(n+frames.length)%frames.length;
+ function dispose(){
+  if(disposed)return;disposed=true;serial++;
+  for(const entry of cache.values()){entry.image.onload=entry.image.onerror=null;entry.image.removeAttribute('src');}cache.clear();image.removeAttribute('src');
+  if(controller && original)for(const key of Object.keys(original)){if(original[key]===undefined)delete controller[key];else controller[key]=original[key];}
+  L.Modal.listener?.remove?.('close',dispose);
+ }
  const close=()=>{
-  L.Modal.close();
+  if(disposed)return;L.Modal.close();dispose();
   const node=frames[index]?.node;
   if(node?.isConnected){line.last=node;line.active=line.items.findIndex(item=>nodeOf(item)===node);line.toggle();node.focus?.({preventScroll:true});}
  };
- const move=step=>{index=(index+step+frames.length)%frames.length;draw();};
- const previous=galleryButton('minimal-row-arrow selector',t('Предыдущий кадр'),previousPath,()=>move(-1));
- const next=galleryButton('minimal-row-arrow selector',t('Следующий кадр'),nextPath,()=>move(1));
- const dismiss=galleryButton('minimal-row-arrow selector',t('Закрыть'),'m6 6 12 12m0-12L6 18',close);
+ const focus=control=>{focused=control;L.Controller.collectionFocus(control,$(viewer));control.focus?.({preventScroll:true});};
+ const move=step=>{if(!disposed && frames.length>1){index=wrap(index+step);draw();}};
+ const previous=galleryButton('minimal-frame-control minimal-frame-prev selector',t('Предыдущий кадр'),previousPath,()=>{focus(previous);move(-1);});
+ const next=galleryButton('minimal-frame-control minimal-frame-next selector',t('Следующий кадр'),nextPath,()=>{focus(next);move(1);});
+ const dismiss=galleryButton('minimal-frame-control minimal-frame-close selector',t('Закрыть'),'m6 6 12 12m0-12L6 18',close);
  previous.hidden=next.hidden=frames.length<2;
- for(const control of [previous,counter,next,dismiss])controls.appendChild(control);
- viewer.appendChild(controls);viewer.appendChild(image);
+ for(const control of [previous,next,dismiss,counter])controls.appendChild(control);
+ viewer.appendChild(image);viewer.appendChild(controls);
+ function resource(number){
+  if(cache.has(number))return cache.get(number).promise;
+  const frame=frames[number],preload=new Image(),entry={image:preload};
+  entry.promise=new Promise(resolve=>loadFrameImage(preload,[...frameUrls(L,frame.path,frame.width>1280?'original':'w1280'),frame.image.currentSrc],()=>resolve(preload),()=>resolve(null)));
+  cache.set(number,entry);return entry.promise;
+ }
  function draw(){
-  const frame=frames[index],label=frame.node.getAttribute('aria-label');
-  image.alt=label;
-  const size=frame.width>1280?'original':'w1280';
-  loadFrameImage(image,[...frameUrls(L,frame.path,size),frame.image.currentSrc],()=>{},()=>{});
-  counter.textContent=(index+1)+' / '+frames.length;
+  const request=++serial,selected=index,frame=frames[index],label=frame.node.getAttribute('aria-label');
+  image.alt=label;viewer.setAttribute('aria-busy','true');counter.textContent=(index+1)+' / '+frames.length;
   if(L.Modal.opened())L.Modal.title?.(label);
+  const nearby=new Set([index,wrap(index-1),wrap(index+1)]);
+  for(const [number,entry] of cache)if(!nearby.has(number)){entry.image.onload=entry.image.onerror=null;entry.image.removeAttribute('src');cache.delete(number);}
+  resource(index).then(loaded=>{
+   if(disposed || request!==serial || selected!==index)return;
+   if(loaded)image.src=loaded.currentSrc || loaded.src;
+   viewer.setAttribute('aria-busy','false');
+   if(loaded && frames.length>1){resource(wrap(index+1));resource(wrap(index-1));}
+  });
  }
  viewer.addEventListener('touchstart',event=>{
   if(event.touches.length!==1 || event.target.closest('button')){touch=null;return;}
   const point=event.touches[0];touch=[point.clientX,point.clientY];
  },{passive:true});
  viewer.addEventListener('touchcancel',()=>{touch=null;},{passive:true});
+ viewer.addEventListener('touchmove',event=>{
+  if(!touch || !event.touches.length)return;
+  const point=event.touches[0],dx=point.clientX-touch[0],dy=point.clientY-touch[1];
+  if(Math.abs(dx)>12 && Math.abs(dx)>Math.abs(dy)*1.4){event.preventDefault();event.stopPropagation();}
+ },{passive:false});
  viewer.addEventListener('touchend',event=>{
   if(!touch || !event.changedTouches.length)return;
   const point=event.changedTouches[0],dx=point.clientX-touch[0],dy=point.clientY-touch[1];touch=null;
   if(frames.length>1 && Math.abs(dx)>45 && Math.abs(dx)>Math.abs(dy)*1.4){event.preventDefault();move(dx<0?1:-1);}
  },{passive:false});
  draw();
- L.Modal.open({title:image.alt,size:'large',html:$(viewer),select:dismiss,onBack:close});
- const controller=L.Controller?.enabled?.();
- if(controller?.name==='modal' && controller.controller){
-  controller.controller.left=()=>move(-1);
-  controller.controller.right=()=>move(1);
+ L.Modal.open({title:image.alt,size:'large',html:$(viewer),select:frames.length>1?next:dismiss,onBack:close});
+ viewer.closest('.modal')?.classList.add('minimal-frame-modal');
+ L.Modal.listener?.follow?.('close',dispose);
+ const active=L.Controller?.enabled?.();
+ if(active?.name==='modal' && active.controller){
+  controller=active.controller;original={};
+  for(const key of ['left','right','up','down','enter'])original[key]=controller[key];
+  $(controls).find('.selector').off('hover:focus').on('hover:focus',event=>{focused=event.currentTarget;});
+  controller.left=()=>{if(frames.length>1){focus(previous);move(-1);}};
+  controller.right=()=>{if(frames.length>1){focus(next);move(1);}};
+  controller.up=()=>focus(dismiss);
+  controller.down=()=>focus(frames.length>1?next:dismiss);
+  controller.enter=()=>focused===dismiss?close():move(focused===previous?-1:1);
  }
+ focused=frames.length>1?next:dismiss;
+ // DOM focus must leave the thumbnail too: after reopening, its Enter handler
+ // otherwise consumes the remote OK before it reaches the modal controller.
+ focused.focus?.({preventScroll:true});
+ viewer.addEventListener('keydown',event=>{
+  // Native Keypad owns remote input. Suppress only the button's synthetic
+  // Enter click, otherwise OK would advance once via Keypad and once via click.
+  if(event.key==='Enter')event.preventDefault();
+ });
+ // Native Modal centers its initial selector before the viewer styling exists.
+ // The fixed image canvas owns navigation and must start without that offset.
+ L.Modal.scroll?.().immediate?.(viewer);
 }
 
 export function styleScreenshots(L,event){
@@ -171,7 +214,10 @@ export function styleScreenshots(L,event){
   window.jQuery(node).off('hover:enter').on('hover:enter',open);
   node.addEventListener('hover:enter',open);
   node.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();open();});
-  node.addEventListener('keydown',e=>{if(e.key==='Enter' || e.key===' '){e.preventDefault();e.stopPropagation();open();}});
+  node.addEventListener('keydown',e=>{if(e.key==='Enter' || e.key===' ')e.preventDefault();});
+  // Keypad activates on key release. Opening on keydown would let that same
+  // release activate the new modal's focused button, especially after reopen.
+  node.addEventListener('keyup',e=>{if(e.key==='Enter' || e.key===' '){e.preventDefault();e.stopPropagation();open();}});
  }
  function update(){
   if(!frames.length)return;

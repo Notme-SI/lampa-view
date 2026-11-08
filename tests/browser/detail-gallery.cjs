@@ -64,9 +64,10 @@ async function open(page,movie){
    for(const mode of ['desktop','tv','mobile']){
     const mobile=mode==='mobile',tv=mode==='tv';
     const viewport=mobile?{width:390,height:844}:tv?{width:960,height:540}:{width:1280,height:800};
-    const {page,context,errors}=await setup(browser,{mode,viewport,hasTouch:mobile},{beforePlugin:page=>page.evaluate(()=>{
+    const {page,context,errors}=await setup(browser,{mode,viewport,hasTouch:mobile},{beforePlugin:page=>page.evaluate(tv=>{
      Lampa.Api.full=(p,done)=>done(window.detailFixture);
-    })});
+     if(tv)Lampa.TMDB.image=path=>'https://frames.example'+path;
+    },tv)});
     try{
      await page.route('https://notme-si.github.io/lampa-view/frames/v1/*.json',route=>{
       const name=new URL(route.request().url()).pathname.split('/').at(-1);
@@ -79,6 +80,16 @@ async function open(page,movie){
      await page.route('https://film-grab.com/wp-content/uploads/photo-gallery/**',route=>route.fulfill({
       contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"></svg>'
      }));
+     let delayedImage;
+     if(tv){
+      await page.route('https://frames.example/**',route=>route.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"></svg>'}));
+      delayedImage=page.waitForResponse(response=>/\/original\/episode-still2\.jpg(?:\?|$)/.test(response.url()),{timeout:5000});
+      delayedImage.catch(()=>{}); // Report the primary assertion if setup closes the context first.
+      await page.route(/\/original\/episode-still2\.jpg(?:\?|$)/,async route=>{
+       await new Promise(resolve=>setTimeout(resolve,800));
+       await route.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"></svg>'});
+      });
+     }
      const row=await open(page,mobile);
      const stills=row.locator('[data-minimal-screenshot]'),first=stills.first();
      await page.evaluate(()=>Lampa.Activity.active().activity.component.scroll.immediate(document.querySelector('.minimal-detail-screenshots')));
@@ -110,12 +121,22 @@ async function open(page,movie){
      }
      const viewer=page.locator('.minimal-frame-viewer');
      await viewer.waitFor();
+     await page.waitForFunction(()=>{const viewer=document.querySelector('.minimal-frame-viewer'),image=viewer?.querySelector('img');return viewer?.getAttribute('aria-busy')==='false' && image?.complete && image.naturalWidth>0;});
      if(mobile)assert.match(await viewer.locator('img').getAttribute('src'),/real-frame-0\.jpg/);
      else assert.ok((await page.evaluate(()=>frameRequests)).includes('/t/p/original/episode-still1.jpg'));
      const position=()=>viewer.locator('[aria-live]').textContent();
      const total=14;
      assert.equal(await position(),'1 / '+total);
-     if(tv)await page.keyboard.press('ArrowRight');
+     for(const theme of ['minimal','glass']){
+      await page.evaluate(theme=>Lampa.Storage.set('lampa_view_theme',theme),theme);
+      const bounds=await viewer.evaluate(node=>{const r=node.getBoundingClientRect(),close=node.querySelector('.minimal-frame-close').getBoundingClientRect(),next=node.querySelector('.minimal-frame-next').getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:innerWidth,height:innerHeight,inside:r.left>=0 && r.right<=innerWidth+1 && r.top>=0 && r.bottom<=innerHeight+1,separated:close.bottom+8<next.top};});
+      assert.ok(bounds.inside && bounds.separated,'Viewer and separate controls fit '+theme+' '+mode+': '+JSON.stringify(bounds));
+     }
+     if(tv){
+      const geometry=await viewer.evaluate(node=>{const rect=selector=>node.querySelector(selector).getBoundingClientRect();return {close:rect('.minimal-frame-close').bottom,arrow:rect('.minimal-frame-next').top};});
+      assert.ok(geometry.close+8<geometry.arrow,'Close is separated from the frame navigation');
+      await page.keyboard.press('Enter');
+     }
      else if(mobile)await viewer.evaluate(node=>{
       const event=(name,x)=>{
        const touch={identifier:1,target:node,clientX:x,clientY:100};
@@ -129,9 +150,34 @@ async function open(page,movie){
      assert.equal(await position(),'2 / '+total);
      if(tv)await page.keyboard.press('ArrowLeft');else await activate(viewer.getByRole('button',{name:'Предыдущий кадр'}));
      assert.equal(await position(),'1 / '+total);
+     if(tv){
+      await page.keyboard.press('ArrowUp');assert.equal(await viewer.locator('.minimal-frame-close.focus').count(),1);
+      await page.keyboard.press('ArrowDown');assert.equal(await viewer.locator('.minimal-frame-next.focus').count(),1);
+      await page.keyboard.press('Enter');assert.equal(await position(),'2 / '+total);
+      await page.keyboard.press('ArrowRight');assert.equal(await position(),'3 / '+total);
+      await page.waitForFunction(()=>document.querySelector('.minimal-frame-viewer img')?.getAttribute('src')?.includes('episode-still3.jpg'));
+      await delayedImage;
+      await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+      assert.match(await viewer.locator('img').getAttribute('src'),/episode-still3\.jpg/,'A slow previous image cannot replace the selected frame');
+      await page.keyboard.press('ArrowLeft');assert.equal(await position(),'2 / '+total);
+      await page.keyboard.press('ArrowLeft');assert.equal(await position(),'1 / '+total);
+     }
      if(tv)await page.keyboard.press('Escape');else await activate(viewer.getByRole('button',{name:'Закрыть'}));
      await viewer.waitFor({state:'hidden'});
      assert.ok(await first.evaluate(node=>node.classList.contains('focus') || document.activeElement===node));
+     if(tv){
+      await stills.evaluateAll(nodes=>nodes.forEach((node,index)=>{node.hidden=index>0;}));
+      await page.keyboard.press('Enter');await viewer.waitFor();
+      assert.equal(await position(),'1 / 1');
+      assert.equal(await viewer.locator('.minimal-frame-next').isVisible(),false);
+      await page.keyboard.press('ArrowRight');await page.keyboard.press('ArrowLeft');
+      assert.equal(await viewer.locator('.minimal-frame-close.focus').count(),1,'Single-frame navigation never focuses hidden arrows');
+      await page.keyboard.press('Enter');await viewer.waitFor({state:'hidden'});
+      await stills.evaluateAll(nodes=>nodes.forEach(node=>{node.hidden=false;}));
+      await page.keyboard.press('Enter');await viewer.waitFor();
+      await page.keyboard.press('Enter');assert.equal(await position(),'2 / '+total,'OK still advances after closing and reopening');
+      await page.keyboard.press('Escape');await viewer.waitFor({state:'hidden'});
+     }
      if(mobile){
       const related=page.getByRole('button',{name:'Связанные'});
       await page.evaluate(()=>Lampa.Activity.active().activity.component.scroll.immediate(document.querySelector('.minimal-anime-franchise')));

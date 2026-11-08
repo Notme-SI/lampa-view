@@ -398,12 +398,6 @@ if (!ROOT.LampaView) {
           if(event.line && event.line.minimalPosterRefresh)event.line.minimalPosterRefresh();else requestHeroLayout();
           const active=L.Activity.active() || {},controller=L.Controller.enabled && L.Controller.enabled(),scroll=activity.component && activity.component.scroll;
           const restore=keepHeroPosition;keepHeroPosition=false;if(restore && active.activity===activity && controller && controller.name==='lampa_view_hero' && scroll && scroll.immediate)scroll.immediate(element[0]);
-          // Late fonts or a watch footer can grow after native focus scrolled.
-          // Reuse that scroll only when the focused first-row card is clipped.
-          if(active.activity===activity && controller?.name==='content' && scroll?.update){
-            const focused=line[0].querySelector('.card.focus');
-            if(focused && focused.getBoundingClientRect().bottom>window.innerHeight-8)scroll.update(focused);
-          }
         });
       };
       const resized=()=>{keepHeroPosition=true;settleGeometry();};
