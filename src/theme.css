@@ -66,7 +66,7 @@ body.lampa_view .menu__ico {width:1.15em;height:1.15em;min-width:1.15em;margin-r
 body.lampa_view .menu__ico svg {width:100%;height:100%}
 body.lampa_view .menu__item.focus,body.lampa_view .menu__item.hover,body.lampa_view .menu__item.traverse {background:var(--pt-high);color:#fff;box-shadow:none}
 body.lampa_view .menu__split {display:none!important}
-body.lampa_view .menu__item[data-action="edit"],body.lampa_view .menu__item[data-action="feed"],body.lampa_view .menu__item[data-action="relise"],body.lampa_view .menu__item[data-action="myperson"],body.lampa_view .menu__item[data-action="subscribes"],body.lampa_view .menu__item[data-action="catalog"],body.lampa_view .menu__item[data-action="filter"] {display:none}
+body.lampa_view .menu__item.hidden {display:none!important}
 body.lampa_view .items-line {margin-bottom:.8em;padding-bottom:.7em}
 body.lampa_view .items-line__head {margin-bottom:1em}
 body.lampa_view .items-line__title {font-size:1.12em;font-weight:600;letter-spacing:-.02em}
@@ -265,8 +265,7 @@ body.lampa_view .pt-topnav,body.lampa_view .pt-mobile-nav {display:none!importan
 body.lampa_view .head__actions>.head__action:not(.open--search):not(.open--settings):not(.open--profile) {display:none!important}
 body.lampa_view .head__action.open--profile {width:2.4em!important;height:2.4em!important;min-width:2.4em;flex:0 0 2.4em;padding:0!important;border-radius:50%!important;overflow:hidden}
 body.lampa_view .head__action.open--profile img,body.lampa_view .head__action.open--profile svg {width:100%!important;height:100%!important;display:block;max-width:none;max-height:none;flex:1 0 auto;object-fit:cover;border-radius:50%!important;aspect-ratio:1}
-body.lampa_view .menu__item[data-action="movie"],body.lampa_view .menu__item[data-action="tv"],body.lampa_view .menu__item[data-action="anime"],body.lampa_view .menu__item[data-action="main"] {display:flex!important}
-body.lampa_view .menu__item[data-action="timetable"],body.lampa_view .menu__item[data-action*="sport"],body.lampa_view .menu__item[data-action*="shot"],body.lampa_view .pt-removed-section {display:none!important}
+body.lampa_view .pt-removed-section {display:none!important}
 body.lampa_view .settings {z-index:60!important}
 body.lampa_view .settings__head {padding:1.4em 1.5em 1em;flex-shrink:0}
 body.lampa_view .card__type {display:none!important}

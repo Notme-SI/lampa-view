@@ -2,6 +2,26 @@ import {text as t} from './i18n.js';
 // Keep the catalogue list intact: native extensions and the menu editor own it.
 export default function menuLayout(L,enabled){
  const $=window.jQuery;
+ const excludedActions=/^(feed|dorama|catalog|myperson|relise|releases?|(?:my)?sports?|(?:my)?shots?)$/i;
+ const excludedLabels=['Лента','Дорамы','Каталог','Персоны','Релизы','Спорт','Shots'];
+ const removed=new Map();
+ function exclude(){
+  const menu=document.querySelector('.menu');if(!menu)return;
+  for(const [node,anchor] of removed){
+   if(!enabled() && anchor.isConnected)anchor.replaceWith(node);
+   if(!anchor.isConnected)removed.delete(node);
+  }
+  if(!enabled())return;
+  const labels=excludedLabels.flatMap(label=>[label.toLowerCase(),t(label).toLowerCase()]);
+  for(const node of menu.querySelectorAll('.menu__item')){
+   const label=node.querySelector('.menu__text')?.textContent.trim().toLowerCase();
+   if(!excludedActions.test(node.dataset.action || '') && !labels.includes(label))continue;
+   // The editor counts even CSS-hidden rows. A comment preserves the spot
+   // when the theme is disabled without becoming a neighbour for Move Up/Down.
+   const anchor=document.createComment('Lampa View menu');
+   node.replaceWith(anchor);removed.set(node,anchor);
+  }
+ }
  function groups(){
   const menu=document.querySelector('.menu'),profile=document.querySelector('[data-action="minimal_profile"]');if(!menu || !profile)return;
   if(!menu._lampaViewPointer){menu._lampaViewPointer=true;menu.addEventListener('click',event=>{
@@ -58,5 +78,5 @@ export default function menuLayout(L,enabled){
  if(L.Notice && L.Notice.listener)L.Notice.listener.follow('viewed',groups);
  if(L.Notice && L.Notice.drawCount){const draw=L.Notice.drawCount;L.Notice.drawCount=function(){const result=draw.apply(this,arguments);groups();return result;};}
  document.addEventListener('minimal:holidays',groups);
- return {update,groups};
+ return {update,groups,exclude};
 }

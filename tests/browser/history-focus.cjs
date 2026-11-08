@@ -72,11 +72,15 @@ const {setup}=require('../fixtures/native-browser.cjs'),{stage}=require('../fixt
   const runtime=await page.locator('.nova-hero__runtime').evaluate(node=>{const r=node.getBoundingClientRect(),m=node.closest('.nova-hero__meta').getBoundingClientRect(),h=node.closest('.nova-hero').getBoundingClientRect();return {gap:r.top-m.bottom,right:r.right,edge:h.right,bottom:r.bottom,height:h.bottom};});
   assert.ok(runtime.gap>=2,'Runtime has a real gap below facts: '+JSON.stringify(runtime));assert.ok(runtime.right<=runtime.edge && runtime.bottom<=runtime.height);
   await page.evaluate(()=>{qaRoot.remove();document.querySelector('.nova-plus-root')?.remove();});
-  await stage(page,true,2);await page.evaluate(()=>jQuery('[data-nova-focus=direction]').last().trigger('hover:enter'));
+  await stage(page,true,2,false,12);await page.evaluate(()=>jQuery('[data-nova-focus=direction]').last().trigger('hover:enter'));
   const arrows=page.locator('.nova-episode-nav button');
   if(mode==='desktop'){
-   await arrows.first().hover();assert.equal(await arrows.first().evaluate(n=>getComputedStyle(n).borderColor),'rgb(216, 195, 154)');
-   await page.mouse.move(0,0);await page.keyboard.press('Tab');await arrows.last().focus();assert.equal(await arrows.last().evaluate(n=>getComputedStyle(n).borderColor),'rgb(216, 195, 154)');
+   assert.equal(await arrows.first().isVisible(),false);
+   await arrows.last().waitFor({state:'visible'});
+   for(let i=0;i<12 && await arrows.last().isVisible();i++)await arrows.last().click();
+   assert.equal(await arrows.last().isVisible(),false);
+   assert.equal(await arrows.first().isVisible(),true);
+   await arrows.first().click();assert.equal(await arrows.last().isVisible(),true);
   }else {const nav=page.locator('.nova-episode-nav');assert.ok(await nav.count()===0 || await nav.evaluate(n=>getComputedStyle(n).display)==='none');}
   assert.deepEqual(r.errors,[]);await r.context.close();console.log(mode+': localized history, year ordering, compact release badge, focus, runtime spacing and episode arrows passed');
  }

@@ -6444,6 +6444,14 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     wideRefit();
   }
 
+  function wideSyncEpisodeArrows(row, position) {
+    if (!row || !row.hasClass('nova__list--row')) return;
+    var arrows = row.parent().children('.nova-episode-nav')[0];
+    if (!arrows) return;
+    arrows.firstElementChild.hidden = position >= -2;
+    arrows.lastElementChild.hidden = position <= wideDragLimit(row, 'x') + 2;
+  }
+
   function wideRowShift(row, value) {
     if (!row || !row.length) return;
     row.attr('data-nova-x', value);
@@ -6452,6 +6460,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       row[0].style['-webkit-transform'] = css;
       row[0].style.transform = css;
     } catch (e) {}
+    wideSyncEpisodeArrows(row, value);
   }
 
   function wideRowFollow(node) {
@@ -6785,6 +6794,12 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
         }
       }
       wideNoteFit();
+      if (ui.list && ui.list.hasClass('nova__list--row')) {
+        var position = wideDragNow(ui.list, 'x');
+        var clamped = wideDragClamp(ui.list, 'x', position);
+        if (position !== clamped) wideRowShift(ui.list, clamped);
+        else wideSyncEpisodeArrows(ui.list, position);
+      }
     } catch (e) {}
   }
 
@@ -7619,9 +7634,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       else if (box.right + pad > frame.right) next = shift - (box.right - frame.right) - pad;
       next = Math.round(Math.max(limit, Math.min(0, next)));
       if (next === shift) return true;
-      ui.list.attr('data-nova-x', next);
-      ui.list[0].style['-webkit-transform'] = 'translate3d(' + next + 'px,0,0)';
-      ui.list[0].style.transform = 'translate3d(' + next + 'px,0,0)';
+      wideRowShift(ui.list, next);
     } catch (e) {}
     return true;
   }
@@ -7634,15 +7647,25 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     strip.children('.nova-episode-nav').remove();
     if(ui.list.hasClass('nova__list--row') && !document.body.classList.contains('pt-tv')){
       var arrows=$('<div class="nova-episode-nav"></div>');
-      [-1,1].forEach(function(direction){$('<button type="button"></button>').attr('aria-label',direction<0?lampaViewText("Предыдущие серии"):lampaViewText("Следующие серии")).html('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="'+(direction<0?'m14 6-6 6 6 6':'m10 6 6 6-6 6')+'"/></svg>').on('click',function(event){event.preventDefault();event.stopImmediatePropagation();var width=strip[0].clientWidth,limit=Math.min(0,width-ui.list[0].scrollWidth),next=Math.max(limit,Math.min(0,(parseFloat(ui.list.attr('data-nova-x')) || 0)-direction*width*.9));ui.list.attr('data-nova-x',next).css('transform','translate3d('+next+'px,0,0)');}).appendTo(arrows);});
+      [-1, 1].forEach(function (direction) {
+        var label = direction < 0 ? lampaViewText("Предыдущие серии") : lampaViewText("Следующие серии");
+        var path = direction < 0 ? 'm14 6-6 6 6 6' : 'm10 6 6 6-6 6';
+        $('<button type="button" hidden></button>').attr('aria-label', label)
+          .html('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="' + path + '"/></svg>')
+          .on('click', function (event) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            var position = wideDragNow(ui.list, 'x') - direction * strip[0].clientWidth * .9;
+            wideRowShift(ui.list, wideDragClamp(ui.list, 'x', position));
+          }).appendTo(arrows);
+      });
       strip.prepend(arrows);
     }
     if (ui.list.hasClass('nova__list--row')) {
       wideDragBind(ui.list, 'x');
       strip.addClass('nova-plus__strip--clip');
     } else strip.removeClass('nova-plus__strip--clip');
-    ui.list.attr('data-nova-x', 0);
-    try { ui.list[0].style['-webkit-transform'] = ''; ui.list[0].style.transform = ''; } catch (e) {}
+    wideRowShift(ui.list, 0);
   }
 
   function wideSettings() {

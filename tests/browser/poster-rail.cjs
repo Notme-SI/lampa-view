@@ -45,8 +45,8 @@ async function settled(page,label){
       if(device.mode==='desktop'){
        const arrows=page.locator('.activity--active .items-line .minimal-row-arrow');
        await arrows.last().click();await page.waitForTimeout(420);whole(await geometry(page),label+' next page');
-       for(let i=0;i<3;i++){await arrows.last().click();await page.waitForTimeout(420);}whole(await geometry(page),label+' last page');
-       for(let i=0;i<4;i++){await arrows.first().click();await page.waitForTimeout(420);}whole(await geometry(page),label+' previous page');
+       for(let i=0;i<3 && await arrows.last().isVisible();i++){await arrows.last().click();await page.waitForTimeout(420);}whole(await geometry(page),label+' last page');
+       for(let i=0;i<4 && await arrows.first().isVisible();i++){await arrows.first().click();await page.waitForTimeout(420);}whole(await geometry(page),label+' previous page');
        await page.locator('.activity--active .items-line').hover();await page.mouse.wheel(267,0);await page.waitForTimeout(1000);whole(await geometry(page),label+' wheel settled');
       }
      }

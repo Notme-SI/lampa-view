@@ -55,6 +55,7 @@ import holidayLayout from './holidays.js';
 import interfaceSize from './interface-size.js';
 import personalScale from './personal-scale.js';
 import menuLayout from './menu-layout.js';
+import notices from './notices.js';
 import pageScrollbar from './page-scrollbar.js';
 
 const ROOT = window;
@@ -206,6 +207,9 @@ if (!ROOT.LampaView) {
     updateRoute();
   }
   function trimSections(){
+    const enabled=yes('lampa_view_enabled');
+    if(pinnedMenu)pinnedMenu.exclude();
+    if(!enabled)return;
     // Lampa saves even its untouched initial order. Migrate that default once;
     // thereafter both automatic Editor.observe and user edits own the order.
     const nativeActions=['main','feed','movie','cartoon','tv','myperson','catalog','filter','relise','anime','favorite','history','subscribes','timetable','mytorrents'];
@@ -215,7 +219,14 @@ if (!ROOT.LampaView) {
     const home=document.querySelector('.menu__item[data-action="main"] .menu__text');
     const source=L.Storage.get('source','cub') || 'cub',sourceName={cub:'CUB',tmdb:'TMDB',trakt:'Trakt'}[source] || String(source);
     const homeLabel=lampaViewText("Главная")+' - '+sourceName;
-    if(home && home.textContent!==homeLabel)home.textContent=homeLabel;
+    if(home && home.textContent!==homeLabel){
+      const previous=home.textContent.trim();
+      home.textContent=homeLabel;
+      for(const key of ['menu_sort','menu_hide']){
+        const saved=L.Storage.get(key,[]);
+        if(Array.isArray(saved) && saved.includes(previous))L.Storage.set(key,saved.map(label=>label===previous?homeLabel:label));
+      }
+    }
     const homeItem=home && home.closest('.menu__item'),movies=document.querySelector('.menu__item[data-action="movie"]');
     if(!customOrder && homeItem && movies && movies.previousElementSibling!==homeItem)movies.before(homeItem);
     const torrents=document.querySelector('.menu__item[data-action="mytorrents"] .menu__ico');
@@ -249,12 +260,6 @@ if (!ROOT.LampaView) {
       const text=node && node.querySelector('.menu__text'),translated=lampaViewText(label);
       if(text && text.textContent!==translated)text.textContent=translated;
     }
-    let dorama=document.querySelector('.menu__item[data-action="dorama"]');
-    if(!dorama && (anime || cartoons || series)){
-      dorama=document.createElement('li');dorama.className='menu__item selector';dorama.dataset.action='dorama';
-      dorama.innerHTML=lampaViewText("<div class=\"menu__ico\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 20s-8-4.8-8-10a4.4 4.4 0 0 1 8-2.5A4.4 4.4 0 0 1 20 10c0 5.2-8 10-8 10Z\"/><path d=\"m18 2 .6 1.8L20.5 4l-1.9.6L18 6.5l-.6-1.9L15.5 4l1.9-.2Z\"/></svg></div><div class=\"menu__text\">Дорамы</div>");
-    }
-    if(dorama && !dorama.dataset.minimalDorama){dorama.dataset.minimalDorama='1';pointer($(dorama).off('hover:enter').on('hover:enter.minimalDorama',event=>{event.stopImmediatePropagation();navigate('dorama');}));}
     let shows=document.querySelector('.menu__item[data-action="tvshow"]');
     if(!shows && series){
       shows=document.createElement('li');shows.className='menu__item selector';shows.dataset.action='tvshow';
@@ -263,10 +268,10 @@ if (!ROOT.LampaView) {
     if(shows && !shows.dataset.minimalShows){shows.dataset.minimalShows='1';pointer($(shows).off('hover:enter').on('hover:enter.minimalShows',event=>{event.stopImmediatePropagation();navigate('tvshow');}));}
     // Move only out-of-order nodes: the native menu observer must settle.
     let previous=series;
-    for(const node of [dorama,shows,cartoons,anime])if(previous && node){if(!node.isConnected || !customOrder && previous.nextElementSibling!==node)previous.after(node);previous=node;}
+    for(const node of [shows,cartoons,anime])if(previous && node){if(!node.isConnected || !customOrder && previous.nextElementSibling!==node)previous.after(node);previous=node;}
     document.querySelectorAll('.menu__item,.settings-folder').forEach(node=>{
       const label=(node.querySelector('.menu__text,.settings-folder__name') || node).textContent.trim();
-      node.classList.toggle('pt-removed-section',node.dataset.action==='dorama' || /^(shots|спорт|расписание)$/i.test(label));
+      node.classList.toggle('pt-removed-section',node.matches('.settings-folder') && /^(shots|спорт|расписание)$/i.test(label));
     });
     if(L.SettingsApi.allComponents && L.SettingsApi.removeComponent){
       const components=L.SettingsApi.allComponents();
@@ -555,11 +560,12 @@ if (!ROOT.LampaView) {
     torrentSearch(L);
     settings(); bridge(); shell();back=installBack(L,$,()=>yes('lampa_view_enabled'));holidays=holidayLayout(L,()=>yes('lampa_view_enabled'));artwork.refresh();
     tvPerformance(()=>yes('lampa_view_enabled'));
+    notices(L,()=>yes('lampa_view_enabled'));
     pinnedMenu=menuLayout(L,()=>yes('lampa_view_enabled'));
     pageScrollbar(L,()=>yes('lampa_view_enabled'));
-    on('menu',event=>{if(yes('lampa_view_enabled') && event.type==='action' && ['cartoon','dorama','tvshow'].includes(event.action)){if(event.abort)event.abort();navigate(event.action);}});
+    on('menu',event=>{if(yes('lampa_view_enabled') && event.type==='action' && ['cartoon','tvshow'].includes(event.action)){if(event.abort)event.abort();navigate(event.action);}});
     trimSections();
-    if(L.Storage.listener)L.Storage.listener.follow('change',event=>{if(event.name==='source' || event.name==='language')trimSections();if(event.name==='lampa_view_enabled')setTheme();});
+    if(L.Storage.listener)L.Storage.listener.follow('change',event=>{if(event.name==='source' || event.name==='language')trimSections();if(event.name==='lampa_view_enabled'){setTheme();trimSections();}});
     const menu=document.querySelector('.menu');
     if(menu && ROOT.MutationObserver)new ROOT.MutationObserver(trimSections).observe(menu,{childList:true,subtree:true});
     quality(L,$);cacheSettings(L);

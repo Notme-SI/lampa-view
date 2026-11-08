@@ -242,10 +242,11 @@ export function styleScreenshots(L,event){
      line.scroll.update(target,false);
     };
     nav=document.createElement('div');nav.className='minimal-row-nav minimal-frame-nav';
-    nav.appendChild(galleryButton('minimal-row-arrow',t('Предыдущая страница'),previousPath,()=>page(-1)));
-    nav.appendChild(galleryButton('minimal-row-arrow',t('Следующая страница'),nextPath,()=>page(1)));
+    const previous=galleryButton('minimal-row-arrow',t('Предыдущая страница'),previousPath,()=>page(-1));
+    const next=galleryButton('minimal-row-arrow',t('Следующая страница'),nextPath,()=>page(1));
+    nav.appendChild(previous);nav.appendChild(next);
     head.appendChild(nav);
-    const overlay=rowOverlay(root,viewport);line.use?.({onDestroy:()=>overlay.destroy()});
+    const overlay=rowOverlay(root,viewport,[previous,next]);line.use?.({onDestroy:()=>overlay.destroy()});
    }
   }
   if(nav)nav.hidden=frames.length<2;

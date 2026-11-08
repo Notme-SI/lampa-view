@@ -28,7 +28,7 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
   }
   await page.evaluate(()=>{Lampa.Api.person=(p,ok)=>ok({person:{id:p.id,name:'Native director',birthday:'1968-09-10',place_of_birth:'England',profile_path:'/director.jpg',biography:'Biography'},credits:{knownFor:[{name:'Directing',credits:Array.from({length:27},(_,i)=>({id:91+i,title:'Film '+i,release_date:'2025-01-01',poster_path:'/p'+i+'.jpg'}))}]}});Lampa.Activity.push({component:'actor',id:90,source:'tmdb'});});
   await page.waitForSelector('.activity--active .person-start');
-  await page.waitForSelector('.activity--active .items-line .minimal-row-arrow',{state:mode==='tv'?'attached':'visible'});
+  await page.waitForSelector('.activity--active .items-line .minimal-row-arrow',{state:'attached'});
   const actorLine=page.locator('.activity--active .items-line').filter({has:page.locator('.card')}).first();
   if(mode!=='tv'){
    const right=actorLine.locator('.minimal-row-arrow').last();await right.click();await page.waitForTimeout(400);const shifted=await page.evaluate(()=>Lampa.Activity.active().activity.component.items.find(line=>line.data.results.length===27).active);assert.ok(shifted>0,'Pointer can leave the first filmography page');

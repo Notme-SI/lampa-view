@@ -2,10 +2,12 @@
 export function placeBadges(width,height,badges,padding=4,gap=3){
  const placed=[];
  for(const badge of badges){
-  const w=Math.min(badge.width,Math.max(0,width-padding*2)),h=badge.height;
+  const w=Math.min(badge.width,Math.max(0,width-2*(badge.inset ?? padding))),h=badge.height;
   if(w<=0 || h<=0)continue;
   const bottom=badge.corner[0]==='b',right=badge.corner[1]==='r';
-  let x=right?width-padding-w:padding,y=bottom?height-padding-h:padding;
+  const inset=badge.inset ?? padding;
+  const left=badge.flushLeft?0:inset;
+  let x=right?width-inset-w:left,y=bottom?height-inset-h:inset;
   for(let i=0;i<=placed.length*2;i++){
    const conflict=placed.find(p=>x<p.x+p.width+gap && x+w+gap>p.x && y<p.y+p.height+gap && y+h+gap>p.y);
    if(!conflict)break;
@@ -45,7 +47,7 @@ export default function badgeLayout(status){
      const available=Math.max(1,Math.min(width-8,parseFloat(style.maxWidth)||width)-border);
      if(natural>available)el.style.fontSize=(parseFloat(style.fontSize)*Math.max(1,available-1)/natural).toFixed(2)+'px';
     }
-    const r=el.getBoundingClientRect();if(r.width && r.height)entries.push({el,corner,flow:el.classList.contains('card__icon')?'row':undefined,width:r.width/scale,height:r.height/scale});
+    const r=el.getBoundingClientRect();if(r.width && r.height)entries.push({el,corner,inset:corner[1]==='r' || el.classList.contains('pt-kind')?8:undefined,flushLeft:el.classList.contains('pt-kind'),flow:el.classList.contains('card__icon')?'row':undefined,width:r.width/scale,height:r.height/scale});
    }
    reads.push({view,width,height,entries,places:placeBadges(width,height,entries)});
   }
