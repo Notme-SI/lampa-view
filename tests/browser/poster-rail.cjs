@@ -3,10 +3,10 @@ const {chromium,webkit}=require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const {setup}=require('../fixtures/native-browser.cjs');
 const output=process.env.LAMPA_QA_OUTPUT;
 async function geometry(page){return page.locator('.activity--active .minimal-posters-sized').first().evaluate(root=>{
- const view=root.querySelector('.scroll--horizontal').getBoundingClientRect(),cards=[...root.querySelectorAll('.card')].map(node=>{const r=node.querySelector('.card__view').getBoundingClientRect();return {left:r.left,right:r.right,width:r.width};});
+ const view=root.querySelector('.scroll--horizontal').getBoundingClientRect(),cards=[...root.querySelectorAll('.card,.minimal-row-more')].map(node=>{const r=(node.querySelector('.card__view') || node).getBoundingClientRect();return {left:r.left,right:r.right,width:r.width};});
  const visible=cards.filter(r=>r.right>view.left+1 && r.left<view.right-1);
  const component=Lampa.Activity.active().activity.component,line=component.items.find(item=>item.render(true)===root),fit=line.scroll.minimalPosterFit;
- return {fit,view:{left:view.left,right:view.right,width:view.width},visible,partial:visible.filter(r=>r.left<view.left-1 || r.right>view.right+1),active:line.active,position:line.scroll.position(),scrollLeft:root.querySelector('.scroll--horizontal').scrollLeft,focused:[...root.querySelectorAll('.card.focus,.card.hover')].map(n=>[...root.querySelectorAll('.card')].indexOf(n)),total:cards.length,results:line.data.results.length};
+ return {fit,view:{left:view.left,right:view.right,width:view.width},visible,partial:visible.filter(r=>r.left<view.left-1 || r.right>view.right+1),active:line.active,position:line.scroll.position(),scrollLeft:root.querySelector('.scroll--horizontal').scrollLeft,focused:[...root.querySelectorAll('.card.focus,.card.hover')].map(n=>[...root.querySelectorAll('.card')].indexOf(n)),total:cards.length,results:line.data.results.length+Number(!!root.querySelector('.minimal-row-more'))};
 });}
 function whole(result,label){assert.deepEqual(result.partial,[],label+' crops a poster: '+JSON.stringify(result));assert.equal(result.visible.length,Math.min(result.fit.count,result.results),label+' must show a complete row: '+JSON.stringify(result));}
 // Wait for actual geometry to settle: WebKit animation frames can lag behind

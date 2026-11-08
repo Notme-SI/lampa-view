@@ -43,7 +43,8 @@ export default function fitRail(line,root,card,state,enabled){
  root.classList.remove('minimal-posters-sized','minimal-home-first-row');
  root.style.removeProperty('--minimal-poster-width');
  const target=parseFloat(getComputedStyle(card).width),padding=getComputedStyle(content),second=card.nextElementSibling;
- const gap=second?(parseFloat(getComputedStyle(second).marginLeft)||0)+(parseFloat(getComputedStyle(card).marginRight)||0):font;
+ const trailingMargin=parseFloat(getComputedStyle(card).marginRight)||0;
+ const gap=second?.matches('.card')?(parseFloat(getComputedStyle(second).marginLeft)||0)+trailingMargin:font;
  const inset=parseFloat(padding.paddingLeft)||0,available=viewWidth-inset-(parseFloat(padding.paddingRight)||0);
  if(!target || available<=0)return;
  let count=Math.max(1,Math.min(24,Math.round((available+gap)/(target+gap))));
@@ -55,6 +56,7 @@ export default function fitRail(line,root,card,state,enabled){
  const width=Math.floor((available-(count-1)*gap)/count*64)/64;
  if(width<=0)return;
  root.style.setProperty('--minimal-poster-width',width+'px');
+ root.style.setProperty('--pt-more-gap',Math.max(0,gap-trailingMargin)+'px');
  root.classList.add('minimal-posters-sized');
  if(home)homeStage(hero,root);
  state.posterFitKey=key;

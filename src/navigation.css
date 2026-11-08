@@ -50,9 +50,12 @@ body.lampa_view .card .card__view .icon--history {top:60%;width:2.65em;height:2.
 body.lampa_view .card .card__view .icon--history:before {display:block;content:'';width:0;height:0;padding:0;margin:0;position:absolute;top:50%;left:53%;transform:translate(-50%,-50%);border:0;border-top:.46em solid transparent;border-bottom:.46em solid transparent;border-left:.7em solid #fff;border-radius:.1em;background:none}
 body.lampa_view .card .card__icon:not(.icon--history) {box-sizing:border-box;width:1.65em;height:1.65em;border-radius:50%;border:1px solid #ffffff48;background-color:var(--pt-poster-badge);background-size:65%;box-shadow:none}
 body.lampa_view .card .card__marker {background:var(--pt-poster-badge);border-radius:.45em;border:1px solid #ffffff24;padding:.25em .4em;max-width:calc(100% - 4em);color:#fff!important}
-body.lampa_view .pt-hero .pt-hero__dots {left:50%;right:auto;transform:translateX(-50%);width:max-content;max-width:80%;display:flex;gap:.3em;align-items:center;justify-content:center;padding:.4em .65em;border:1px solid #ffffff24;border-radius:2em;background:#b9b9be28;box-shadow:inset 0 1px 0 #ffffff20;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
-body.lampa_view .pt-hero .pt-hero__dot {box-sizing:border-box;flex:0 0 .3em;width:.3em;height:.3em;padding:0;margin:0;border:0;border-radius:1em;background:#ffffff5c;transition:width .15s,flex-basis .15s}
-body.lampa_view .pt-hero .pt-hero__dot.active {flex-basis:1.3em;width:1.3em;background:#fff;box-shadow:0 0 .4em #ffffff55}
+body.lampa_view .pt-hero .pt-hero__dots {left:50%!important;right:auto!important;transform:translateX(-50%);width:max-content;max-width:80%;display:flex;gap:0;align-items:center;justify-content:center;padding:.12em .45em;border:1px solid #ffffff24;border-radius:2em;background:#b9b9be28;box-shadow:inset 0 1px 0 #ffffff20;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+body.lampa_view .pt-hero .pt-hero__dot,body.lampa_view .pt-hero .pt-hero__dot.active {box-sizing:border-box;display:grid;place-items:center;flex:0 0 .95em;width:.95em;height:1.1em;padding:0;margin:0;border:1px solid transparent;border-radius:1em;background:transparent}
+body.lampa_view .pt-hero .pt-hero__dot:after {position:static;inset:auto;width:.3em;height:.3em;border-radius:1em;background:#ffffff5c;pointer-events:none}
+body.lampa_view .pt-hero .pt-hero__dot.active {flex-basis:1.55em;width:1.55em}
+body.lampa_view .pt-hero .pt-hero__dot.active:after {width:1.05em;background:#fff;box-shadow:0 0 .4em #ffffff55}
+body.lampa_view .pt-hero .pt-hero__dot:focus-visible,body.lampa_view .pt-hero .pt-hero__dot.focus {border-color:var(--pt-accent)}
 /* The fixed header floats over the full card artwork, not a separate strip. */
 body.lampa_view.pt-full .wrap__content {padding-top:0!important}
 body.lampa_view.pt-full:not(.pt-mobile) .minimal-detail-header,body.lampa_view.pt-full.card--no-cover .minimal-detail-header {padding-top:var(--pt-header-space)}
@@ -88,7 +91,7 @@ body.lampa_view .pt-overlay-row .minimal-row-arrow,body.lampa_view .pt-overlay-r
 body.lampa_view .pt-overlay-row .minimal-row-arrow:first-child,body.lampa_view .pt-overlay-row .minimal-comments-arrow:first-child {left:var(--pt-row-left,4px)}
 body.lampa_view .pt-overlay-row .minimal-row-arrow:last-child,body.lampa_view .pt-overlay-row .minimal-comments-arrow:last-child {right:var(--pt-row-right,4px)}
 body.lampa_view .pt-overlay-row .minimal-row-arrow svg,body.lampa_view .pt-overlay-row .minimal-comments-arrow svg {width:1.2em;height:1.2em;stroke-width:2.2}
-body.lampa_view .pt-overlay-row .scroll__body>.minimal-row-more {display:inline-flex;flex:0 0 var(--pt-more-width,9em);width:var(--pt-more-width,9em);height:var(--pt-more-height,14em);min-width:0;padding:1em;box-sizing:border-box;flex-direction:column;gap:.6em;vertical-align:top;margin:0 0 0 .75em;border:1px solid var(--pt-shell-border);border-radius:1em;background:var(--pt-shell-surface);color:var(--pt-text);white-space:normal}
+body.lampa_view .pt-overlay-row .scroll__body>.minimal-row-more {display:inline-flex;flex:0 0 var(--minimal-poster-width,var(--pt-more-width,9em));width:var(--minimal-poster-width,var(--pt-more-width,9em));height:var(--pt-more-height,14em);min-width:0;padding:1em;box-sizing:border-box;flex-direction:column;gap:.6em;vertical-align:top;margin:0 0 0 var(--pt-more-gap,.75em);border:1px solid var(--pt-shell-border);border-radius:1em;background:var(--pt-shell-surface);color:var(--pt-text);white-space:normal}
 body.lampa_view .pt-overlay-row .scroll__body>.minimal-row-more svg {width:2em;height:2em}
 body.lampa_view .pt-overlay-row .scroll__body>.minimal-row-more span {font-size:.9em}
 body.lampa_view.pt-mobile .pt-overlay-row .minimal-row-arrow,body.lampa_view.pt-mobile .pt-overlay-row .minimal-comments-arrow {min-width:44px;min-height:44px}
