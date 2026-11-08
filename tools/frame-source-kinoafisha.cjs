@@ -3,6 +3,7 @@ const {frameLimit,validFrames}=require('../src/frame-catalogue.cjs');
 const base='https://www.kinoafisha.info';
 const lists=['/rating/movies/ru/','/rating/series/ru/','/movies/','/series/'];
 const galleryPath=/^\/(movies|series)\/([1-9]\d*)\/shots\/$/;
+const preview=url=>url.replace('/1920x1080/','/1280x720/');
 
 function decode(text){
  const names={amp:'&',quot:'"',apos:"'",nbsp:' ',laquo:'«',raquo:'»'};
@@ -31,7 +32,10 @@ function parseGallery(html,path,tmdb){
   images.add(url);
  }
  const all=[...images],count=Math.min(frameLimit,all.length);
- const frames=validFrames(Array.from({length:count},(_,index)=>({url:all[Math.floor(index*all.length/count)]})));
+ const frames=validFrames(Array.from({length:count},(_,index)=>{
+  const url=all[Math.floor(index*all.length/count)];
+  return {img:preview(url),url};
+ }));
  if(!frames.length)return null;
  return {media:type==='movies'?'movie':'tv',title,year,tmdb,source:'kinoafisha',priority:25,origin:base+path,frames};
 }
@@ -72,4 +76,4 @@ async function collect(seeds){
  return records.sort((a,b)=>a.origin.localeCompare(b.origin));
 }
 
-module.exports={collect,parseGallery,discover};
+module.exports={collect,parseGallery,discover,preview};

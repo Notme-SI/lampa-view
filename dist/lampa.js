@@ -1,4 +1,4 @@
-/*! Lampa View 0.5.83 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.5.84 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -11953,7 +11953,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   var import_frame_catalogue = __toESM(require_frame_catalogue());
 
   // package.json
-  var version = "0.5.83";
+  var version = "0.5.84";
 
   // src/frame-catalogue-client.js
   var base = "https://notme-si.github.io/lampa-view/frames/v1/";
