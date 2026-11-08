@@ -142,7 +142,10 @@ async function open(page,movie){
       const close=await viewer.locator('.minimal-frame-close').boundingBox(),canvas=await viewer.boundingBox();
       assert.ok(close.x<canvas.x+canvas.width/2,'Close stays on the left');
       const space=await page.evaluate(()=>({width:innerWidth,height:innerHeight}));
-      assert.ok(canvas.height>space.height*.85 && canvas.width>space.width*.85,'The image canvas uses the available screen: '+JSON.stringify({canvas,space,viewport}));
+      const width=Math.min(space.width*(mobile?.95:.5),space.height*8/9);
+      assert.ok(canvas.width<=width+3 && canvas.width>width*.82 && canvas.height<=space.height*.5+3,'The centered viewer stays within the compact size: '+JSON.stringify({canvas,space,viewport}));
+      assert.ok(Math.abs(canvas.x+canvas.width/2-space.width/2)<3);
+      assert.equal(await viewer.locator('.minimal-frame-control[title]').count(),0);
      }
      if(tv){
       assert.equal(await viewer.locator('.minimal-frame-next').isVisible(),false);

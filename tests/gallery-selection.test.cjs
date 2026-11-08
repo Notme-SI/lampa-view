@@ -20,7 +20,7 @@ function runtime(){
  vm.createContext(context);vm.runInContext(code,context);return context.module.exports;
 }
 
-test('series sample distinct aired episodes and seasons before filling the limit; network order cannot change the result',async()=>{
+test('series prefer the latest aired season and diversify its episodes regardless of network order',async()=>{
  async function run(reverse){
   const {loadDetailGallery}=runtime(),requests=[],storage=new Map();
   const card={source:'tmdb',id:991,name:'Series',first_air_date:'2020-01-01',seasons:Array.from({length:4},(_,i)=>({season_number:i+1,episode_count:12,air_date:'2020-01-01'}))};
@@ -41,8 +41,9 @@ test('series sample distinct aired episodes and seasons before filling the limit
   assert.equal(result.length,15);assert.equal(new Set(result.map(r=>r.still_path)).size,15);
   assert.ok(result.every(row=>!row.still_path.includes('cover') && row.still_path!=='/banner.jpg'));
   assert.ok(new Set(result.map(row=>row.minimal_frame_group)).size>=6,'An episode with many images cannot crowd out other sampled episodes');
-  assert.ok(new Set(result.map(row=>row.still_path.match(/^\/s(\d+)/)[1])).size>=3);
-  assert.ok(requests.length<=12,'At most three season books and nine episode galleries');
+  assert.ok(result.every(row=>row.minimal_frame_season===4));
+  assert.ok(requests.every(route=>route.startsWith('tv/991/season/4')),requests.join(' '));
+  assert.equal(requests.length,7,'One season book and a batch of six episode galleries');
   return JSON.parse(JSON.stringify(result));
  }
  assert.deepEqual(await run(false),await run(true));
@@ -56,4 +57,28 @@ test('a large single-source gallery cannot crowd all episode groups out of the f
  assert.equal(result.length,15);
  assert.equal(new Set(result.map(row=>row.minimal_frame_group || 'gallery')).size,7);
  assert.deepEqual(JSON.parse(JSON.stringify(selectGalleryFrames(rows.reverse(),'tv:991'))),JSON.parse(JSON.stringify(result)));
+});
+
+test('a sparse latest season checks further episodes before supplementing from older seasons',async()=>{
+ const {loadDetailGallery}=runtime(),calls=[];
+ const seasons=[1,2,3].map(season_number=>({season_number,episode_count:10,air_date:'2020-01-01'}));
+ const movie={id:991,source:'tmdb',name:'Series',first_air_date:'2020-01-01',seasons};
+ const episodes=season=>Array.from({length:10},(_,i)=>({season_number:season,episode_number:i+1,air_date:i===9?'2099-01-01':'2020-01-01',still_path:'/s'+season+'e'+(i+1)+'-cover.jpg'}));
+ const read=(route,done)=>{
+  calls.push(route);
+  const [,s,e]=route.match(/season\/(\d+)(?:\/episode\/(\d+))?/),season=Number(s),episode=Number(e);
+  if(!e)return done({episodes:episodes(season)});
+  assert.notEqual(episode,10);
+  const preview={file_path:'/s'+s+'e'+e+'-cover.jpg',width:1280};
+  const count=season===3?Number(episode%2===0):4;
+  return done({stills:[preview,...Array.from({length:count},(_,i)=>({file_path:'/s'+s+'e'+e+'-scene'+i+'.jpg',width:1280}))]});
+ };
+ const rows=await loadDetailGallery({}, {movie},read);
+ assert.equal(rows.length,15);
+ assert.deepEqual(Array.from(rows,row=>row.minimal_frame_season),[...Array(4).fill(3),...Array(11).fill(2)]);
+ assert.ok(rows.every(row=>!row.still_path.includes('cover')));
+ const latest=calls.filter(path=>path.startsWith('tv/991/season/3/episode/'));
+ assert.equal(latest.length,9);
+ assert.equal(calls.indexOf('tv/991/season/2'),10);
+ assert.ok(calls.every(path=>!path.startsWith('tv/991/season/1')));
 });

@@ -2,7 +2,7 @@ import tmdbGet from './tmdb.js';
 import {locale,text as t} from './i18n.js';
 import {isAnime} from './metadata.js';
 import {animeRecords,animeTarget,animeTargets,animeSeed,animeEpisodeMap,animeIndexInfo,datedReleaseTarget} from './anime-index.js';
-import {franchiseModel,franchiseCatalogueRows,franchiseMenuGroups} from './anime-franchise.js';
+import {franchiseModel,franchiseCatalogueRows,franchiseMenuGroups,franchiseViewingOrder} from './anime-franchise.js';
 import {seasonName} from './episode-metadata.js';
 import {mountRelatedRow,removeDetailRows} from './detail-gallery.js';
 const positive=n=>Number.isSafeInteger(Number(n)) && Number(n)>0;
@@ -45,6 +45,13 @@ export function releaseGroups(card,files,model,books){
   const book={};selected.forEach(e=>book[e.number]={...e.metadata,lampa_grouped:true,lampa_season_name:release.name});groups.push({number:0,name:release.name,count:selected.length,episodes:selected.map(e=>e.number),book,mal_id:release.id,anime_release:true});
  }
  if(used.size!==episodes.length)return null;groups.sort((a,b)=>a.episodes[0]-b.episodes[0]);groups.forEach((g,i)=>g.number=i+1);return groups;
+}
+export function galleryReleaseSeasons(card,model,season,book){
+ const order=new Map(franchiseViewingOrder(model).filter(step=>step.season).map(step=>[step.id,step.season]));
+ const nodes=model.nodes.filter(node=>order.has(node.id)),count=Number(card.seasons?.find(row=>Number(row.season_number)===season)?.episode_count);
+ if(nodes.length<2 || !Number.isSafeInteger(count) || count<2 || count>3000)return null;
+ const groups=releaseGroups(card,Array.from({length:count},(_,i)=>i+1),{nodes},{[season]:book});
+ return groups && new Map(groups.flatMap(group=>Object.values(group.book).map(row=>[Number(row.episode_number),order.get(group.mal_id)])));
 }
 const genericEpisodeName=value=>!String(value || '').trim() || /^(?:episode|серия|эпизод|folge|episodio|épisode)\s*\d+$/i.test(String(value).trim());
 export function completeEpisodeData(data,fallback){
@@ -138,7 +145,7 @@ export default function animeCatalogue(L,kino){
  function partsBook(card,parts,done){
   const finish=book=>{if(!kino?.enabled() || !kino.releaseBook || !parts?.some(p=>p.mal))return done(book);const result={...(book || {})};let left=parts.length;for(const part of parts){const merge=release=>{if(release)for(const [key,row] of Object.entries(release)){const number=part.offset+Number(key);if(Number(key)>part.count || (Array.isArray(part.episodes) && !part.episodes.includes(number)))continue;const old=result[number] || {};result[number]={...old,...row,episode_number:number,name:row.name || old.name || '',overview:row.overview || old.overview || '',still_path:row.still_path || old.still_path || ''};}if(!--left)done(Object.keys(result).length?result:null);};if(part.mal)kino.releaseBook(part.mal,merge);else merge(null);}};
   canonical(card,value=>{if(!value || !parts?.length)return finish(null);const numbers=[...new Set(parts.map(p=>p.season).concat(parts.some(p=>['special','tv_special'].includes(p.kind))?[0]:[]))],books={};let left=numbers.length;numbers.forEach(number=>load('tv/'+value.id+'/season/'+number,book=>{books[number]=book;if(!--left)finish(joinedPartsBook(parts,books));}));});}
- const api={info:animeIndexInfo,records:animeRecords,target:animeTarget,resolveTarget,canonical,collection,groups,providerBook,partsBook,seasonBook:(card,number,done)=>load('tv/'+(card.tmdb_id || card.id)+'/season/'+number,done),status,clear};
+ const api={info:animeIndexInfo,records:animeRecords,target:animeTarget,resolveTarget,canonical,collection,groups,providerBook,partsBook,galleryReleaseSeasons,seasonBook:(card,number,done)=>load('tv/'+(card.tmdb_id || card.id)+'/season/'+number,done),status,clear};
  if(L.Api){L.Api.sources=L.Api.sources || {};L.Api.sources.minimal_anime_collection={clear,list(params,ok,fail=()=>{}){let query;try{query=JSON.parse(params.url);}catch(error){return fail();}if(!positive(query.seed) || !['story','alternatives','related','announced'].includes(query.row))return fail();collection({source:'minimal_shiki',id:Number(query.seed)},model=>{if(!model)return fail();const row=franchiseCatalogueRows(model).find(r=>r.key===query.row),results=row && row.results || [],page=Math.max(1,Number(params.page)||1);ok({results:results.slice((page-1)*20,page*20),page,total_pages:Math.max(1,Math.ceil(results.length/20))});});},full(params,ok,fail){const source=L.Api.sources.minimal_shiki;if(source && source.full)return source.full(params,ok,fail);if(fail)fail();}};}
  function mount(event){const link=event && event.link,card=event && event.data && event.data.movie;if(!link || !card || card.adult || card.blocked || link._minimalAnimePending || link._minimalAnimeMounted || !Array.isArray(link.rows) || !Array.isArray(link.items))return;
   const anime=isAnime(card),nativeGroups=collectionMenu(event.data);
