@@ -24,10 +24,16 @@ const assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWR
    const menuCenter=Math.abs((mr.left+mr.right-sr.left-sr.right)/2)+Math.abs((mr.top+mr.bottom-sr.top-sr.bottom)/2);
    const sample=document.createElement('button');sample.className='pt-hero__action selector';sample.textContent='Подробнее';head.after(sample);
    const primary=[];for(const focused of [false,true,false]){sample.classList.toggle('focus',focused);const r=sample.getBoundingClientRect(),s=getComputedStyle(sample);primary.push({width:r.width,height:r.height,bg:s.backgroundColor,border:s.borderColor,shadow:s.boxShadow});}sample.remove();
+   const focusedRows=document.createElement('div');
+   focusedRows.innerHTML='<div class="menu__item focus"></div><div class="settings-folder focus"></div><div class="settings-param focus"></div><div class="selectbox-item focus"></div>';
+   document.body.appendChild(focusedRows);
+   const focusFills=Array.from(focusedRows.children,node=>getComputedStyle(node).backgroundColor);
+   focusedRows.remove();
    const text=document.querySelector('.menu__text');text.textContent='Длинное название раздела для проверки переноса';const style=getComputedStyle(text);
    const glyph=head.querySelector('.open--settings svg[data-pt-settings]');if(!glyph || glyph.getBoundingClientRect().width<12 || !glyph.querySelector('path'))throw new Error('Settings gear glyph must be visible');const gear=head.querySelector('.open--settings').getBoundingClientRect(),search=head.querySelector('.open--search').getBoundingClientRect();if(gear.left<search.right-1 || gear.right>pr.left+1)throw new Error('Settings must sit between Search and Profile');
-   return {before,after,menuCenter,controls,primary,wrap:style.whiteSpace,mode:body.classList.contains('pt-tv')?'tv':'desktop'};
+   return {before,after,menuCenter,controls,primary,focusFills,wrap:style.whiteSpace,mode:body.classList.contains('pt-tv')?'tv':'desktop'};
   });
+  if(theme==='minimal')assert.deepEqual(result.focusFills,Array(4).fill('rgb(48, 41, 31)'));
   if(mode==='tv'){
    assert.ok(result.after>result.before,'Back appears before Menu, as on desktop');
    for(const p of result.primary){if(theme==='minimal'){assert.equal(p.bg,'rgb(216, 195, 154)');assert.equal(p.shadow,'none');}assert.equal(p.width,result.primary[0].width);assert.equal(p.height,result.primary[0].height);}

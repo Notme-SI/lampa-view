@@ -34,7 +34,7 @@ test('menu and settings share readable colours, descriptions do not fade twice, 
  const r=await native(),{w}=r;
  try{
   const node=w.document.createElement('div');node.innerHTML='<div class="menu__split"></div><div class="menu__item focus"></div><div class="settings-folder focus"></div><div class="settings-param focus"><div class="settings-param__descr">Описание</div></div><div class="selectbox-item focus"></div>';w.document.body.appendChild(node);
-  assert.equal(w.getComputedStyle(node.firstChild).display,'none');const items=[...node.querySelectorAll('.menu__item,.settings-folder,.settings-param,.selectbox-item')],styles=items.map(item=>w.getComputedStyle(item));for(const style of styles){assert.equal(style.color,styles[0].color);assert.equal(style.backgroundColor,'rgb(32, 39, 46)');}assert.equal(w.getComputedStyle(node.querySelector('.settings-param__descr')).opacity,'1');
+  assert.equal(w.getComputedStyle(node.firstChild).display,'none');const items=[...node.querySelectorAll('.menu__item,.settings-folder,.settings-param,.selectbox-item')],styles=items.map(item=>w.getComputedStyle(item));for(const style of styles)assert.equal(style.color,styles[0].color);assert.equal(w.getComputedStyle(node.querySelector('.settings-param__descr')).opacity,'1');
   assert.equal(w.document.title,'L A M P A');assert.equal(w.document.documentElement.lang,'ru');assert.ok(w.document.querySelector('link[rel="icon"]').href.startsWith('data:image/svg+xml'));assert.deepEqual(r.errors,[]);
  }finally{r.close();}
 });
