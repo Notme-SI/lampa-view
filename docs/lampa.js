@@ -1,4 +1,4 @@
-/*! Lampa View 0.5.85 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.5.86 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Potok
@@ -11953,7 +11953,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   var import_frame_catalogue = __toESM(require_frame_catalogue());
 
   // package.json
-  var version = "0.5.85";
+  var version = "0.5.86";
 
   // src/frame-catalogue-client.js
   var base = "https://notme-si.github.io/lampa-view/frames/v1/";
@@ -13114,6 +13114,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         var publish = function publish() {
           return frames ? frames.then(function (rows) {
             return ok(__spreadProps(__spreadValues({}, data), {
+              minimal_gallery_eligible: true,
               minimal_gallery_frames: rows
             }));
           }, function () {
@@ -14581,7 +14582,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
   function prepareScreenshotRow(event) {
     var data = event.data,
       link = event.link;
-    if (!(data == null ? void 0 : data.movie) || data.movie.adult || data.movie.blocked || !Array.isArray(link == null ? void 0 : link.rows)) return;
+    if (!(data == null ? void 0 : data.movie) || data.movie.adult && !data.minimal_gallery_eligible || data.movie.blocked || !Array.isArray(link == null ? void 0 : link.rows)) return;
     var results = (data.minimal_gallery_frames || []).filter(still).slice(0, import_frame_catalogue3.frameLimit).map(function (row) {
       return __spreadValues({}, row);
     }).reverse();
@@ -25340,7 +25341,7 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       return typeof url === "string" ? url.trim().replace(/\/+$/, "") : "";
     }
     var active = function active() {
-      return !stopped && enabled() && L.Storage.field("torrserver_tracktimecode") && network;
+      return !stopped && enabled() && (L.Storage.field ? L.Storage.field("torrserver_tracktimecode") : L.Storage.get("torrserver_tracktimecode", false)) && network;
     };
     function remember(video) {
       if (!video || !video.torrent_hash || !video.timeline || !video.timeline.hash) return;

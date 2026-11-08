@@ -104,7 +104,9 @@ export function installFullGuard(L){
   return full.call(this,params,data=>{
    if(!data || !data.movie)return error();
    const frames=hasGallerySource(L,data) && loadDetailGallery(L,data,(path,done,failed)=>tmdbGet(L,path,{},done,failed,{life:21600000}));
-   const publish=()=>frames?frames.then(rows=>ok({...data,minimal_gallery_frames:rows}),()=>ok(data)):ok(data);
+   // Remember catalogue eligibility before native Full classifies keywords.
+   // Native `adult` can later mean a mainstream title contains nudity.
+   const publish=()=>frames?frames.then(rows=>ok({...data,minimal_gallery_eligible:true,minimal_gallery_frames:rows}),()=>ok(data)):ok(data);
    const anime=typeof window!=='undefined' && window.LampaView && window.LampaView.animeBase;
    if(!anime || !isAnime(data.movie) || !anime.collection || !anime.canonical)return publish();
    let complete=false,resolved=data.movie;

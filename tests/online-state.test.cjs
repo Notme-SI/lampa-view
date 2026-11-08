@@ -1,5 +1,6 @@
 const test=require('node:test'),assert=require('node:assert/strict'),path=require('node:path'),esbuild=require('esbuild'),{JSDOM}=require('jsdom'),native=require('./fixtures/native-lampa.cjs');
 const code=esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/online-state.js')],bundle:true,write:false,format:'iife',globalName:'OnlineState'}).outputFiles[0].text;
+const until=require('./fixtures/until.cjs');
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 function selectMovie(s,L,index){s.root.find('[data-nova-focus=movievoice]').trigger('hover:enter');L.Select.render().find('.selectbox-item').eq(index).trigger('hover:enter');}
 const tag=row=>'<div class="videos__item" data-json="'+JSON.stringify(row).replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'"></div>';
@@ -545,7 +546,7 @@ test('split-season captions survive conflicting current files and delayed metada
   },25);};
   s=screen(n,{id:1800,season:2,episodes:[1,2,3,4,5,6,7]});Object.assign(s.movie,{number_of_seasons:3,number_of_episodes:25,networks:[{id:213}],seasons:[{season_number:1,episode_count:10},{season_number:2,episode_count:7},{season_number:3,episode_count:8}]});
   const choose=season=>s.filter.set('filter',[{stype:'season',title:'Сезон',subtitle:'Сезон '+season,items:[1,2,3,4].map(i=>({title:'Сезон '+i,selected:i===season}))},{stype:'voice',title:'Озвучка',items:[{title:'TVShows',selected:true}]}]);choose(2);
-  const timeline=JSON.stringify(L.Storage.get('file_view',{}));await wait(850);
+  const timeline=JSON.stringify(L.Storage.get('file_view',{}));await until(()=>s.root.find('[data-nova-group=season] .nova-chip__sub').length===4,'split-season captions');
   const captions=()=>Array.from(s.root.find('[data-nova-group=season] .nova-chip__sub').map((i,n)=>n.textContent).get());
   assert.deepEqual(captions(),['5 эпизодов','7 эпизодов','7 эпизодов','8 эпизодов'],'catalog counts do not disappear when the current provider list conflicts with the group');
   // The host completes replacing its previous list after updating the filter.

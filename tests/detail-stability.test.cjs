@@ -1,5 +1,18 @@
 const test=require('node:test'),assert=require('node:assert/strict'),path=require('path'),esbuild=require('esbuild'),{JSDOM}=require('jsdom'),native=require('./fixtures/native-lampa.cjs');
 function mod(name,w={}){const code=esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/'+name+'.js')],bundle:true,write:false,format:'cjs',platform:'node'}).outputFiles[0].text,module={exports:{}};new Function('module','exports','window','document',code)(module,module.exports,w,w.document);return module.exports;}
+
+test('gallery eligibility does not bypass original catalogue restrictions',async()=>{
+ const {installFullGuard}=mod('tmdb'),{prepareScreenshotRow}=mod('detail-gallery');
+ for(const restriction of ['adult','blocked']){
+  const movie={id:91,source:'tmdb',[restriction]:true};
+  const L={Api:{full:(params,ok)=>ok({movie})}};installFullGuard(L);
+  const data=await new Promise(resolve=>L.Api.full({},resolve));
+  assert.equal(data.minimal_gallery_eligible,undefined);
+  const link={rows:[]};prepareScreenshotRow({data:{...data,minimal_gallery_frames:[{still_path:'/scene.jpg'}]},link});
+  assert.equal(link.rows.length,0);
+ }
+ const link={rows:[]};prepareScreenshotRow({data:{movie:{blocked:true},minimal_gallery_eligible:true,minimal_gallery_frames:[{still_path:'/scene.jpg'}]},link});assert.equal(link.rows.length,0);
+});
 test('catalogue sorter never attaches to the shared Main class used by full and person screens',()=>{
  function Main(){}const registered=[];
  const L={Storage:{get:(k,d)=>d,set(){}},SettingsApi:{addParam(){}},Api:{main(){}},Maker:{get:()=>Main},Utils:{createInstance:(Base,object)=>({use:()=>registered.push(object.component)})}};
@@ -31,10 +44,11 @@ test('keyword-restricted full cards restore supplied cast/comments and omit dupl
  try{
   L.Storage.set('adult_content_view',false);
   const card={id:91,name:'Сериал',original_name:'Show',first_air_date:'2021-01-01',production_countries:[],production_companies:[],spoken_languages:[],genres:[],source:'tmdb',keywords:{results:[{id:1,name:'nudity'}]}};
-  L.Api.full=(p,ok)=>ok({movie:card,persons:{crew:[],cast:[{id:100,name:'Актёр',profile_path:'/person.jpg',character:'Role'}]},discuss:{result:[]},images:{logos:[]},videos:{results:[]},collection:{results:[{id:401,title:'Коллекция',poster_path:'/poster.jpg'}]},simular:{results:[{id:402,title:'Похожий сериал',poster_path:'/poster.jpg'}]},recomend:{results:[{id:403,title:'Рекомендация',poster_path:'/poster.jpg'}]}});
+  L.Api.full=(p,ok)=>ok({movie:card,minimal_gallery_eligible:true,minimal_gallery_frames:[{still_path:'/scene.jpg'}],persons:{crew:[],cast:[{id:100,name:'Актёр',profile_path:'/person.jpg',character:'Role'}]},discuss:{result:[]},images:{logos:[]},videos:{results:[]},collection:{results:[{id:401,title:'Коллекция',poster_path:'/poster.jpg'}]},simular:{results:[{id:402,title:'Похожий сериал',poster_path:'/poster.jpg'}]},recomend:{results:[{id:403,title:'Рекомендация',poster_path:'/poster.jpg'}]}});
   L.Activity.push({component:'full',id:91,method:'tv',source:'tmdb',card});await new Promise(resolve=>setTimeout(resolve,120));
   const link=L.Activity.active().activity.component,root=link.render(true);
   assert.equal(card.adult,true,'Exercise the native keyword classification');
+  assert.equal(link.rows.filter(row=>Array.isArray(row) && row[1]?.minimal_gallery).length,1,'Catalogue-eligible frames survive native keyword classification');
   assert.ok(root.querySelector('.minimal-cast-native'));assert.ok(root.querySelector('.minimal-comments-native'));
   for(const title of ['title_collection','title_recomendations','title_similar'])assert.equal(link.rows.filter(row=>Array.isArray(row) && row[0]==='cards' && row[1].title===L.Lang.translate(title)).length,1);
   assert.ok(link.items.length>=5,'Poster rows stay reachable below the restored cast/comments');
