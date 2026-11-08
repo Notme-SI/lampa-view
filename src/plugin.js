@@ -603,7 +603,11 @@ if (!ROOT.LampaView) {
     }
     function visibleHero(){
       const active=L.Activity.active() || {},activity=active.activity,link=activity && activity.component;
-      if(active.component!=='main' || !link || activity.render().find('.pt-hero').length)return;
+      if(active.component!=='main' || !link)return;
+      if(activity.render().find('.pt-hero').length){
+        document.dispatchEvent(new Event('minimal:hero-layout'));
+        return;
+      }
       const line=(link.items || []).find(item=>item.data && Array.isArray(item.data.results));
       if(line){(link.items || []).forEach(item=>{if(item.data && Array.isArray(item.data.results))fill.track(item,item.data);});hero({type:'visible',params:{object:active},line,data:line.data});}
     }

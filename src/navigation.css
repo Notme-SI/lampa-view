@@ -91,6 +91,7 @@ body.lampa_view .pt-overlay-row .minimal-row-arrow,body.lampa_view .pt-overlay-r
 body.lampa_view .pt-overlay-row .minimal-row-arrow:first-child,body.lampa_view .pt-overlay-row .minimal-comments-arrow:first-child {left:var(--pt-row-left,4px)}
 body.lampa_view .pt-overlay-row .minimal-row-arrow:last-child,body.lampa_view .pt-overlay-row .minimal-comments-arrow:last-child {right:var(--pt-row-right,4px)}
 body.lampa_view .pt-overlay-row .minimal-row-arrow svg,body.lampa_view .pt-overlay-row .minimal-comments-arrow svg {width:1.2em;height:1.2em;stroke-width:2.2}
+body:not(.lampa_view) .pt-overlay-row .minimal-row-more {display:none}
 body.lampa_view .pt-overlay-row .scroll__body>.minimal-row-more {display:inline-flex;flex:0 0 var(--minimal-poster-width,var(--pt-more-width,9em));width:var(--minimal-poster-width,var(--pt-more-width,9em));height:var(--pt-more-height,14em);min-width:0;padding:1em;box-sizing:border-box;flex-direction:column;gap:.6em;vertical-align:top;margin:0 0 0 var(--pt-more-gap,.75em);border:1px solid var(--pt-shell-border);border-radius:1em;background:var(--pt-shell-surface);color:var(--pt-text);white-space:normal}
 body.lampa_view .pt-overlay-row .scroll__body>.minimal-row-more svg {width:2em;height:2em}
 body.lampa_view .pt-overlay-row .scroll__body>.minimal-row-more span {font-size:.9em}

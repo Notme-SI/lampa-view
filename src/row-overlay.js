@@ -7,7 +7,9 @@ export default function rowOverlay(root,viewport){
   const r=root.getBoundingClientRect(),v=view.getBoundingClientRect(),scale=r.width/(root.offsetWidth || r.width) || 1;
   const visual=Array.from(view.querySelectorAll('.card__view,.full-person__photo,.full-episode__img,.full-review,.full-review-add')).find(item=>item.offsetHeight>0);
   const box=visual?visual.getBoundingClientRect():v;
-  const values={'--pt-row-center':(box.top+box.height/2-r.top)/scale+'px','--pt-row-left':Math.max(4,(v.left-r.left)/scale+4)+'px','--pt-row-right':Math.max(4,(r.right-v.right)/scale+4)+'px','--pt-more-width':(visual?.closest('.card')?.getBoundingClientRect().width || box.width)/scale+'px','--pt-more-height':box.height/scale+'px'};
+  const card=visual?.closest('.card');
+  // The TV preview animates poster transforms. The More tile must use layout dimensions.
+  const values={'--pt-row-center':(box.top+box.height/2-r.top)/scale+'px','--pt-row-left':Math.max(4,(v.left-r.left)/scale+4)+'px','--pt-row-right':Math.max(4,(r.right-v.right)/scale+4)+'px','--pt-more-width':(card?.offsetWidth || visual?.offsetWidth || view.offsetWidth)+'px','--pt-more-height':(visual?.offsetHeight || view.offsetHeight)+'px'};
   for(const [key,value]of Object.entries(values))if(root.style.getPropertyValue(key)!==value)root.style.setProperty(key,value);
  }
  function refresh(){if(!disposed && !frame)frame=requestAnimationFrame(measure);}
