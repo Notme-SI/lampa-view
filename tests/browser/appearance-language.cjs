@@ -27,7 +27,7 @@ const {setup}=require('../fixtures/native-browser.cjs'),{stage}=require('../fixt
 
   }
 
-  if(mode==='mobile'){const settings=page.locator('.head .open--settings');assert.ok(await settings.isVisible());await settings.click();await page.waitForSelector('body.settings--open');await page.evaluate(()=>Lampa.Controller.back());}
+  if(mode==='mobile'){assert.equal(await page.locator('.head .open--settings').isVisible(),false);await page.evaluate(()=>Lampa.Menu.ready());await page.locator('.head__menu-icon').click();await page.locator('.menu__item[data-action=settings]').click();await page.waitForSelector('body.settings--open');await page.evaluate(()=>Lampa.Controller.back());}
 
   assert.equal(await page.locator('meta[name=apple-mobile-web-app-status-bar-style]').getAttribute('content'),'default','Safari keeps native status-bar geometry without forced translucency');
   await page.evaluate(()=>{Lampa.Layer.init();Lampa.DeviceInput.init();Lampa.Controller.observe();Lampa.Keypad.init();Lampa.Keypad.enable();document.body.appendChild(Lampa.Search.render(true));Lampa.Search.open();});await page.waitForSelector('.main-search .search');
