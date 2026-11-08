@@ -67,7 +67,7 @@ async function main() {
   acorn.parse(production, {
     ecmaVersion: 5
   });
-  const banner = '/*! Lampa View ' + require('../package.json').version + ' | Original code: MIT; component licenses: THIRD-PARTY.md\n' + fs.readFileSync(path.join(root, 'LICENSE'), 'utf8').split('\nApplies to original files')[0].replace(/\r\n/g, '\n').replace(/\*\//g, '* /') + '\n*/\n';
+  const banner = '/*! Lampa View ' + require('../package.json').version + ' | Original code: MIT; component licenses: THIRD-PARTY.md\n' + fs.readFileSync(path.join(root, 'LICENSE'), 'utf8').replace(/\r\n?/g, '\n').split('\nApplies to original files')[0].replace(/\*\//g, '* /') + '\n*/\n';
   fs.writeFileSync(path.join(out, 'lampa.js'), banner + production);
   console.log('dist/lampa.js: ' + fs.statSync(path.join(out, 'lampa.js')).size + ' bytes');
   const boot = (await esbuild.build({
