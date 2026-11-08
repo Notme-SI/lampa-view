@@ -1188,8 +1188,10 @@ body.lampa_view .minimal-franchise-menu .selectbox-item[aria-current="true"]:not
 body.lampa_view .minimal-franchise-menu .selectbox-item__checkbox {display:none!important}
 body.lampa_view .minimal-franchise-menu .minimal-anime-franchise__item {display:flex;align-items:center;gap:1em;min-height:5.6em;padding:.65em 1em}
 body.lampa_view .minimal-related-info {min-width:0;flex:1}
-body.lampa_view .minimal-related-info .selectbox-item__title {font-weight:600;line-height:1.35}
+body.lampa_view .minimal-related-info .selectbox-item__title {font-weight:600;line-height:1.35;overflow-wrap:anywhere}
 body.lampa_view .minimal-related-info .selectbox-item__subtitle {white-space:normal;line-height:1.45;font-size:.85em;opacity:.8}
+body.lampa_view .minimal-related-mark {display:grid;place-items:center;flex:0 0 1.3em;height:1.3em}
+body.lampa_view [aria-current="true"] > .minimal-related-mark::before {content:"";box-sizing:border-box;width:.55em;height:1em;border:solid currentColor;border-width:0 .15em .15em 0;transform:translateY(-.12em) rotate(45deg)}
 @media(max-width:500px){body.lampa_view .minimal-related-art {width:3em}}
 
 body.lampa_view .minimal-related-info .selectbox-item__title {color:inherit}

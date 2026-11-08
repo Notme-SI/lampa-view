@@ -1,4 +1,5 @@
 import {version,titleKeys,shardFor,validFrames} from './frame-catalogue.cjs';
+import {version as pluginVersion} from '../package.json';
 
 const base='https://notme-si.github.io/lampa-view/frames/v1/';
 const pools=new WeakMap(),storageKey='minimal_frame_catalogue_v1',life=21600000;
@@ -16,17 +17,17 @@ function pool(L){
  }
  async function read(key){
   const old=memory.get(key);
-  if(old?.at>Date.now()-life || old?.retry>Date.now())return old.data;
+  if((old?.release===pluginVersion && old.at>Date.now()-life) || old?.retry>Date.now())return old.data;
   if(pending.has(key))return pending.get(key);
   if(typeof fetch!=='function' || typeof AbortController!=='function')return old?.data || null;
   const task=(async()=>{
    const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),1700);
    try{
-    const response=await fetch(base+key+'.json',{signal:controller.signal,credentials:'omit'});
+    const response=await fetch(base+key+'.json',{signal:controller.signal,credentials:'omit',cache:'no-cache'});
     if(!response.ok)throw new Error('Frame catalogue unavailable');
     const data=await response.json();
     if(!validShard(data))throw new Error('Invalid frame catalogue');
-    memory.delete(key);memory.set(key,{at:Date.now(),data});
+    memory.delete(key);memory.set(key,{at:Date.now(),release:pluginVersion,data});
     while(memory.size>8)memory.delete(memory.keys().next().value);
     persist();
     return data;
@@ -51,9 +52,10 @@ function validShard(data){
 export default async function catalogueFrames(L,card,media,readTmdb){
  const id=Number(card.tmdb_id || (['tmdb','cub'].includes(card.source)?card.id:0));
  const year=String(media==='tv'?card.first_air_date:card.release_date).slice(0,4);
- const titles=[card.original_title,card.original_name,card.title,card.name].filter(Boolean);
- const keys=[...(id>0?['tmdb:'+media+':'+id]:[]),...titles.flatMap(title=>titleKeys(media,title,year))];
- const unique=[...new Set(keys)],shards=new Map();
+ const exact=id>0?['tmdb:'+media+':'+id]:[];
+ const original=[card.original_title,card.original_name].flatMap(title=>titleKeys(media,title,year));
+ const localized=[card.title,card.name].flatMap(title=>titleKeys(media,title,year));
+ const unique=[...new Set([...exact,...original,...localized])],shards=new Map();
  async function find(lookup){
   const names=[...new Set(lookup.map(shardFor))];
   await Promise.all(names.map(async name=>{if(!shards.has(name))shards.set(name,await pool(L).read(name));}));
@@ -76,11 +78,11 @@ export default async function catalogueFrames(L,card,media,readTmdb){
   const rows=[...matches.values()].sort((a,b)=>a.priority-b.priority || a.id.localeCompare(b.id));
   return validFrames(rows.flatMap(row=>row.frames)).map(row=>({img:row.img,minimal_still_url:row.url,width:row.width}));
  }
- const exact=unique.filter(key=>key.startsWith('tmdb:'));
  await Promise.all([...new Set(unique.map(shardFor))].map(async name=>shards.set(name,await pool(L).read(name))));
  const direct=exact.length?await find(exact):[];
  if(direct.length)return direct;
- const named=await find(unique.filter(key=>!key.startsWith('tmdb:')));
+ const canonical=await find(original);
+ const named=canonical.length?canonical:await find(localized);
  if(named.length || media!=='movie' || !(id>0) || !card.original_language || card.original_language==='en')return named;
  const english=await new Promise(resolve=>{
   const timer=setTimeout(()=>resolve(null),900);
