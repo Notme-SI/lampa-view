@@ -11,14 +11,55 @@ export default function torrserverProgress(L,enabled){
   return typeof url==='string'?url.trim().replace(/\/+$/,''):'';
  }
  const active=()=>!stopped && enabled() && (L.Storage.field?L.Storage.field('torrserver_tracktimecode'):L.Storage.get('torrserver_tracktimecode',false)) && network;
+ function fileIndex(video){
+  try{
+   const indexes=new URL(video.url,window.location.href).searchParams.getAll('index');
+   const index=indexes.length===1?Number(indexes[0]):0;
+   return Number.isSafeInteger(index) && index>0?index:0;
+  }catch(error){return 0;}
+ }
  function remember(video){
   if(!video || !video.torrent_hash || !video.timeline || !video.timeline.hash)return;
-  let index;try{index=Number(new URL(video.url).searchParams.get('index'));}catch(e){return;}
+  const index=fileIndex(video);
   const card=video.card,meta=linkFor(L,card,video.season,video.episode);
-  if(!meta || !Number.isInteger(index) || index<1)return;
+  if(!meta || !index)return;
   const scope=profileScope(L),url=server();if(!url)return;
   rows=rows.filter(r=>!(r.scope===scope && r.server===url && r.hash===video.torrent_hash && r.index===index));
   rows.push({scope,server:url,hash:video.torrent_hash,index,timeline:String(video.timeline.hash),duration:Number(video.timeline.duration)||0,meta,at:Date.now()});rows=rows.slice(-400);
+ }
+ const android=L.Android;
+ if(typeof android?.openPlayer==='function' && typeof android.timeCall==='function' && L.Platform?.is?.('android')){
+  const open=android.openPlayer,timeCall=android.timeCall;
+  let session=null;
+  android.openPlayer=function(url,video){
+   session=null;
+   if(!stopped && enabled() && video?.torrent_hash){
+    const files=new Map(), scope=profileScope(L), endpoint=server();
+    for(const item of [video,...(Array.isArray(video.playlist)?video.playlist:[])]){
+     if(item?.torrent_hash!==video.torrent_hash || !item.timeline?.hash)continue;
+     const index=fileIndex(item),hash=String(item.timeline.hash);
+     if(!index)continue;
+     // One native hash shared by different files is ambiguous.
+     if(files.has(hash) && files.get(hash)!==index)files.set(hash,0);
+     else files.set(hash,index);
+    }
+    if(endpoint && files.size)session={files,scope,endpoint,torrent:video.torrent_hash};
+   }
+   return open.apply(this,arguments);
+  };
+  android.timeCall=function(progress){
+   const current=session,hash=String(progress?.hash || ''),index=current?.files.get(hash);
+   if(index && current.scope!==profileScope(L))return;
+   const result=timeCall.apply(this,arguments);
+   if(!index || !active() || current.endpoint!==server() || typeof L.Torserver.viewedSet!=='function')return result;
+   const time=Number(progress.time),duration=Number(progress.duration);
+   if(Number.isFinite(time) && time>0 && Number.isFinite(duration) && duration>0 && time<=duration+2){
+    // The Android host records its result in Timeline. Mirror the measured
+    // seconds to the actual torrent file for other devices that use TrackTimecode.
+    L.Torserver.viewedSet(current.torrent,index,Math.round(Math.min(time,duration)));
+   }
+   return result;
+  };
  }
  function launched(video){
   if(stopped || !enabled() || !video)return;remember(video);

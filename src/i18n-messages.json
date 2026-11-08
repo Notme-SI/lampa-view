@@ -2196,18 +2196,19 @@
   "ro": "O singură voce",
   "pl": "Jeden głos"
  },
- "Оригинал": {
-  "en": "Original",
-  "uk": "Оригінал",
-  "be": "Арыгінал",
-  "zh": "原始",
-  "pt": "Original",
-  "bg": "Оригинал",
-  "he": "מקורי",
-  "cs": "Originál",
-  "ro": "Originală",
-  "fr": "Originale",
-  "pl": "Oryginał"
+ "Тёмная": {
+  "en": "Dark",
+  "uk": "Темна",
+  "be": "Цёмная",
+  "zh": "深色",
+  "pt": "Escuro",
+  "bg": "Тъмна",
+  "he": "כהה",
+  "cs": "Tmavý",
+  "ro": "Întunecată",
+  "fr": "Sombre",
+  "pl": "Ciemny",
+  "es": "Oscuro"
  },
  "Субтитры": {
   "en": "Subtitles",

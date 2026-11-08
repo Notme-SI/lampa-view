@@ -10,3 +10,30 @@ test('server checkpoints survive restart, map next episode and reject stale/prof
  api=w.Mod.default(L,()=>true);api.refresh();scope='p2';requests.at(-1).ok([{file_index:8,timecode:1800}]);assert.equal(records.ep8.time,1500);api.stop();
  }finally{w.close();}
 });
+
+test('Android return saves measured position to the exact torrent file for cross-device history',async()=>{
+ const native=require('./fixtures/native-lampa.cjs'),sent=[],viewed=[];
+ const f=await native({prepare(w,L){
+  const is=L.Platform.is;
+  L.Platform.is=name=>name==='android' || is.call(L.Platform,name);
+  w.AndroidJS={appVersion:()=> '1.13.3-999',openPlayer:(url,data)=>sent.push({url,data:JSON.parse(data)})};
+  L.Torserver.url=()=> 'http://server:8090';
+  L.Torserver.viewedSet=(...args)=>viewed.push(args);
+  L.Storage.set('torrserver_tracktimecode',true);
+ }});
+ try{
+  const {L}=f,hash='a'.repeat(40),card={id:41,name:'Series',source:'tmdb'};
+  const file=(index,episode)=>({url:'/ts/stream/file.mkv?link='+hash+'&index='+index+'&play',torrent_hash:hash,
+   timeline:L.Timeline.view('ep'+episode),season:1,episode,card});
+  const first=file(7,1),second=file(11,2);
+  L.Android.openPlayer(first.url,{...first,playlist:[first,second]});
+  assert.equal(sent.length,1);assert.equal(viewed.length,0,'Opening a torrent never creates playback progress');
+  L.Android.timeCall({hash:'unrelated',time:120,duration:3000,percent:4});
+  assert.equal(viewed.length,0);
+  L.Android.timeCall({hash:'ep2',time:1250,duration:2500,percent:50});
+  assert.equal(L.Timeline.view('ep2').time,1250);
+  assert.deepEqual(viewed,[[hash,11,1250]]);
+  assert.equal(L.Timeline.view('ep1').time,0);
+  assert.deepEqual(f.errors,[]);
+ }finally{f.close();}
+});

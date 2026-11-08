@@ -20,7 +20,7 @@ function fixture(options={}){
 }
 function context(args){const opt=args[0];assert.match(opt,/^--script-opts-append=mpv_plus_lampa_context=[a-f0-9]+$/);return JSON.parse(Buffer.from(opt.split('=')[2],'hex').toString('utf8'));}
 test('unmodified Desktop launch passes Unicode card data without an environment or changed stream URL',()=>{
- const f=fixture(),video={url:'http://server/stream?link=abc&index=2&preload',season:3,episode:2};
+ const f=fixture(),video={url:'http://server/stream?link=abc&index=2&preload',torrent_hash:'abc',season:3,episode:2};
  assert.equal(f.play(video),true);assert.equal(f.calls.length,0);
  f.L.Player.playlist([video,{...video,url:'http://server/stream?link=abc&index=3&preload',episode:3}]);f.tick();
  assert.equal(f.calls.length,1);const [exe,args,opts]=f.calls[0];assert.equal(exe,'C:\\Players\\mpv.exe');assert.equal(opts,undefined);
@@ -48,7 +48,24 @@ test('launch does not wait for filesystem IPC or timer tasks and retains the syn
  await Promise.resolve();
  assert.equal(f.calls.length,1,'spawn must be reached before advancing any timer tasks');
  const data=context(f.calls[0][1]);assert.equal(data.entries.length,2);assert.equal(data.entries[1].identity.episode,3);
+ assert.deepEqual(f.calls[0][1].slice(-2),[video.url,'https://host/episode-3.mkv']);
  f.tick();assert.equal(f.calls.length,1,'the old timer route must not duplicate the launch');
+});
+test('online resolver fills lazy episodes before launch, keeps selected first and ignores stale completion',()=>{
+ const f=fixture();
+ let resolved,done;
+ const episode=n=>({url:'https://host/episode-'+n+'.mkv',season:1,episode:n});
+ const selected={...episode(2),playlist:[episode(1),episode(2),{...episode(3),url(){}}],
+  minimalExternalPlaylist(callback){done=callback;return {list:()=>resolved};}};
+ f.play(selected);
+ f.tick(); // The bounded timeout falls back to the available selected episode.
+ assert.deepEqual(f.calls[0][1].filter(v=>v.startsWith('https://')),[episode(2).url]);
+ resolved=[episode(1),episode(2),episode(3),episode(4)];done();
+ assert.equal(f.calls.length,1);
+ f.play({...selected,minimalExternalPlaylist(callback){callback();return {list:()=>resolved};}});f.tick();
+ const args=f.calls[1][1];
+ assert.deepEqual(args.slice(-3),[episode(2).url,episode(3).url,episode(4).url]);
+ assert.deepEqual(context(args).entries.map(item=>item.identity.episode),[2,3,4]);
 });
 test('spawn failure returns to native playback once; a superseded pending launch never starts',()=>{
  const failed=fixture({spawnError:true});failed.play({url:'https://host/a.mkv'});failed.tick();assert.equal(failed.fallback.length,1);

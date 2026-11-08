@@ -11,18 +11,18 @@
 ## Скриншоты
 
 <table>
-  <tr><th>Оригинал</th><th>Стекло</th></tr>
-  <tr><td><a href="docs/screenshots/original-home.jpg"><img src="docs/screenshots/original-home.jpg" alt="Главная — Оригинал" width="600"></a><br>Главная</td><td><a href="docs/screenshots/glass-home.jpg"><img src="docs/screenshots/glass-home.jpg" alt="Главная — Стекло" width="600"></a><br>Главная</td></tr>
-  <tr><td><a href="docs/screenshots/original-detail.jpg"><img src="docs/screenshots/original-detail.jpg" alt="Карточка сериала — Оригинал" width="600"></a><br>Карточка сериала</td><td><a href="docs/screenshots/glass-detail.jpg"><img src="docs/screenshots/glass-detail.jpg" alt="Карточка сериала — Стекло" width="600"></a><br>Карточка сериала</td></tr>
-  <tr><td><a href="docs/screenshots/original-online.jpg"><img src="docs/screenshots/original-online.jpg" alt="Онлайн: серии и описания — Оригинал" width="600"></a><br>Онлайн: серии и описания</td><td><a href="docs/screenshots/glass-online.jpg"><img src="docs/screenshots/glass-online.jpg" alt="Онлайн: серии и описания — Стекло" width="600"></a><br>Онлайн: серии и описания</td></tr>
+  <tr><th>Тёмная</th><th>Стекло</th></tr>
+  <tr><td><a href="docs/screenshots/original-home.jpg"><img src="docs/screenshots/original-home.jpg" alt="Главная — Тёмная" width="600"></a><br>Главная</td><td><a href="docs/screenshots/glass-home.jpg"><img src="docs/screenshots/glass-home.jpg" alt="Главная — Стекло" width="600"></a><br>Главная</td></tr>
+  <tr><td><a href="docs/screenshots/original-detail.jpg"><img src="docs/screenshots/original-detail.jpg" alt="Карточка сериала — Тёмная" width="600"></a><br>Карточка сериала</td><td><a href="docs/screenshots/glass-detail.jpg"><img src="docs/screenshots/glass-detail.jpg" alt="Карточка сериала — Стекло" width="600"></a><br>Карточка сериала</td></tr>
+  <tr><td><a href="docs/screenshots/original-online.jpg"><img src="docs/screenshots/original-online.jpg" alt="Онлайн: серии и описания — Тёмная" width="600"></a><br>Онлайн: серии и описания</td><td><a href="docs/screenshots/glass-online.jpg"><img src="docs/screenshots/glass-online.jpg" alt="Онлайн: серии и описания — Стекло" width="600"></a><br>Онлайн: серии и описания</td></tr>
 </table>
 
 ### Дополнительно: телефонный вид
 
 <table>
-  <tr><th>Оригинал</th><th>Стекло</th></tr>
-  <tr><td><a href="docs/screenshots/original-mobile-home.jpg"><img src="docs/screenshots/original-mobile-home.jpg" alt="Главная на телефоне — Оригинал" width="260"></a><br>Главная</td><td><a href="docs/screenshots/glass-mobile-home.jpg"><img src="docs/screenshots/glass-mobile-home.jpg" alt="Главная на телефоне — Стекло" width="260"></a><br>Главная</td></tr>
-  <tr><td><a href="docs/screenshots/original-mobile-online.jpg"><img src="docs/screenshots/original-mobile-online.jpg" alt="Онлайн на телефоне — Оригинал" width="260"></a><br>Онлайн</td><td><a href="docs/screenshots/glass-mobile-online.jpg"><img src="docs/screenshots/glass-mobile-online.jpg" alt="Онлайн на телефоне — Стекло" width="260"></a><br>Онлайн</td></tr>
+  <tr><th>Тёмная</th><th>Стекло</th></tr>
+  <tr><td><a href="docs/screenshots/original-mobile-home.jpg"><img src="docs/screenshots/original-mobile-home.jpg" alt="Главная на телефоне — Тёмная" width="260"></a><br>Главная</td><td><a href="docs/screenshots/glass-mobile-home.jpg"><img src="docs/screenshots/glass-mobile-home.jpg" alt="Главная на телефоне — Стекло" width="260"></a><br>Главная</td></tr>
+  <tr><td><a href="docs/screenshots/original-mobile-online.jpg"><img src="docs/screenshots/original-mobile-online.jpg" alt="Онлайн на телефоне — Тёмная" width="260"></a><br>Онлайн</td><td><a href="docs/screenshots/glass-mobile-online.jpg"><img src="docs/screenshots/glass-mobile-online.jpg" alt="Онлайн на телефоне — Стекло" width="260"></a><br>Онлайн</td></tr>
 </table>
 
 ## Установить плагин
