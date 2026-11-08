@@ -46,7 +46,6 @@ body.lampa_view.pt-theme-glass .card__title {font-weight:550;letter-spacing:-.01
 body.lampa_view.pt-theme-glass .card__view,body.lampa_view.pt-theme-glass .card__img {border-radius:1.05em}
 body.lampa_view.pt-theme-glass .card.focus .card__view,body.lampa_view.pt-theme-glass .card.hover .card__view {box-shadow:0 0 .65em #ffffff3b,0 7px 20px #00000055!important}
 body.lampa_view.pt-theme-glass .card.focus .card__view:after,body.lampa_view.pt-theme-glass .card.hover .card__view:after {border-radius:1.05em!important;border-color:#f7f7fa!important}
-body.lampa_view.pt-theme-glass .pt-quality,body.lampa_view.pt-theme-glass .pt-kind,body.lampa_view.pt-theme-glass .pt-series-status,body.lampa_view.pt-theme-glass .card__vote {background:#18181c9c;border-radius:.6em;border-color:#ffffff45;color:#fff}
 
 /* Artwork sits behind a compact, readable glass information pane. */
 body.lampa_view.pt-theme-glass .pt-hero {display:flex;align-items:center;--pt-hero-panel:linear-gradient(165deg,#ffffff18,transparent 45%,#ffffff05),rgba(18,18,18,.10);--pt-hero-panel-border:var(--pt-glass-border);--pt-hero-panel-shadow:var(--pt-glass-edge),0 12px 38px #0000002e;--pt-hero-panel-filter:blur(8px) saturate(1.35);background:#101113f0!important;border-radius:1.8em;overflow:hidden;-webkit-clip-path:inset(0 round 1.8em);clip-path:inset(0 round 1.8em);box-shadow:0 18px 50px #00000024}
