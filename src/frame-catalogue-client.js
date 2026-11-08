@@ -53,9 +53,11 @@ export default async function catalogueFrames(L,card,media,readTmdb){
  const id=Number(card.tmdb_id || (['tmdb','cub'].includes(card.source)?card.id:0));
  const year=String(media==='tv'?card.first_air_date:card.release_date).slice(0,4);
  const exact=id>0?['tmdb:'+media+':'+id]:[];
+ const imdb=String(card.imdb_id || card.external_ids?.imdb_id || '');
+ const external=/^tt\d{5,12}$/.test(imdb)?['imdb:'+media+':'+imdb]:[];
  const original=[card.original_title,card.original_name].flatMap(title=>titleKeys(media,title,year));
  const localized=[card.title,card.name].flatMap(title=>titleKeys(media,title,year));
- const unique=[...new Set([...exact,...original,...localized])],shards=new Map();
+ const unique=[...new Set([...exact,...external,...original,...localized])],shards=new Map();
  async function find(lookup){
   const names=[...new Set(lookup.map(shardFor))];
   await Promise.all(names.map(async name=>{if(!shards.has(name))shards.set(name,await pool(L).read(name));}));
@@ -68,6 +70,7 @@ export default async function catalogueFrames(L,card,media,readTmdb){
     if(row?.media!==media || !row.keys?.includes(key) || !validFrames(row.frames).length)continue;
     if(row.tmdb && id>0 && row.tmdb!==id)continue;
     if(key.startsWith('tmdb:') && row.tmdb!==id)continue;
+    if(key.startsWith('imdb:') && row.imdb!==imdb)continue;
     matches.set(identity,row);
    }
   }
@@ -81,6 +84,8 @@ export default async function catalogueFrames(L,card,media,readTmdb){
  await Promise.all([...new Set(unique.map(shardFor))].map(async name=>shards.set(name,await pool(L).read(name))));
  const direct=exact.length?await find(exact):[];
  if(direct.length)return direct;
+ const identified=external.length?await find(external):[];
+ if(identified.length)return identified;
  const canonical=await find(original);
  const named=canonical.length?canonical:await find(localized);
  if(named.length || media!=='movie' || !(id>0) || !card.original_language || card.original_language==='en')return named;

@@ -33,6 +33,28 @@
     [
       "/series/14852/shots/",
       299981
+    ],
+    [
+      "/movies/8376239/shots/",
+      {
+        "imdb": "tt32093575",
+        "aliases": [
+          "Очень страшное кино",
+          "Scary Movie"
+        ]
+      }
+    ],
+    [
+      "/movies/8384889/shots/",
+      null
+    ],
+    [
+      "/series/13894/shots/",
+      null
+    ],
+    [
+      "/series/12120/shots/",
+      null
     ]
   ],
   "kinonews": [
@@ -446,5 +468,11 @@
       "君たちはどう生きるか",
       "kimitachi"
     ]
+  ],
+  "kinomail": [
+    "/cinema/movies/954681_priyatel/",
+    "/cinema/movies/956427_voennaya_mashina/",
+    "/tvshow_942973_bolshoi_kush_bangkok/",
+    "/cinema/movies/960353_zhenskii_shaolinskii_futbol/"
   ]
 }

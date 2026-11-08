@@ -6,7 +6,6 @@
 | --- | --- |
 | Закусь TV / Автопилот | [Плагин](https://hub.alcopa.cc/hub/u/YXblJI9HT) |
 | AGNative — основа Автопилота | [Llowmikee](https://github.com/Llowmikee), [appletv_agnative.js](https://llowmikee.github.io/AppleTVAGNativeNG/appletv_agnative.js) |
-| Дизайн Potok | [potok.rip](https://potok.rip/), [potok-media](https://github.com/potok-media) |
 | Nova Plus | [amikdn](https://github.com/amikdn/amikdn.github.io), [nova_plus.js](https://amikdn.github.io/nova_plus.js), [card_overlay.js](https://amikdn.github.io/card_overlay.js) |
 | Структура подборок SURS | [aviamovie / surs.js](https://aviamovie.github.io/surs.js), [основной модуль](https://aviamovie.github.io/v3/surs.js), [выбор подборок](https://aviamovie.github.io/surs_select.js) |
 | Кадры фильмов о Человеке-пауке | [MCU Wiki](https://marvelcinematicuniverse.fandom.com/wiki/Spider-Man:_Brand_New_Day/Gallery#Screenshots), [Movie Screencaps](https://movie-screencaps.com/tag/spider-man/) |
@@ -21,7 +20,7 @@
 В 0.5.21 семейства подборок SURS реализованы заново в `src/discovery-*`: использованы названия групп, поисковые фразы и проверенные идентификаторы TMDB. Код SURS, его SVG и профили не включены; исходные неподходящие TV-параметры и неверные ID исправлены. Оформление и управление принадлежат существующему интерфейсу Lampa View. Сети и студии проверены через TMDB; API, карточки и метаданные предоставляются [The Movie Database](https://www.themoviedb.org/).
 
 Оригинальный интерфейс и новые модули передачи метаданных находятся в `src/` и `desktop/`.
-Сведения об источниках визуальных решений находятся в `licenses/NOTICE.txt`.
+Лицензия собственного интерфейса: MIT, см. LICENSE. Уведомления о включённых сторонних компонентах находятся в `licenses/NOTICE.txt`.
 Сервером остаётся настроенный пользователем Lampac.
 
 В единый `dist/lampa.js` включены следующие предоставленные пользователем адаптеры:
@@ -55,7 +54,7 @@ Snack TV 0.8.10 и ObsiView 2.11 изучены как примеры интег
 - TheIntroDB, IntroDB, SkipDB и AniSkip: существующие в mpv+ источники пропуска фрагментов. Изменён выбор идентификаторов, а не базы таймкодов.
 - jQuery, MIT: тестовая копия из Lampa в `tests/fixtures/jquery.js`; заголовок лицензии сохранён.
 
-Лицензия исходного интерфейса сохранена в `licenses/Reference-UI-MIT.txt`. Для адаптеров без указанной лицензии MIT этого проекта не заявляется. Перед распространением собственной изменённой сборки учитывайте условия каждого включённого компонента.
+Для адаптеров без указанной лицензии MIT этого проекта не заявляется. Перед распространением собственной изменённой сборки учитывайте условия каждого включённого компонента.
 
 Новый модуль не запрашивает токен Kodik: источники Lampac уже используют свои серверные интеграции.
 Японские и русские названия аниме сопоставляются через данные карточки, альтернативные названия и существующую базу mpv+.

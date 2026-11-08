@@ -15,13 +15,13 @@ async function main() {
   fs.mkdirSync(out, {
     recursive: true
   });
-  const readableCss = {
-    name: 'readable-css',
+  const compactCss = {
+    name: 'compact-css',
     setup(build) {
       build.onLoad({
         filter: /\.css$/
       }, args => ({
-        contents: 'export default ' + JSON.stringify(fs.readFileSync(args.path, 'utf8').split('\n')) + '.join("\\n");',
+        contents: 'export default ' + JSON.stringify(esbuild.transformSync(fs.readFileSync(args.path,'utf8'),{loader:'css',minifyWhitespace:true}).code) + ';',
         loader: 'js'
       }));
     }
@@ -31,7 +31,7 @@ async function main() {
     bundle: true,
     minify: false,
     target: ['es2017'],
-    plugins: [readableCss],
+    plugins: [compactCss],
     write: false
   });
   const vendors = ['torrent-catalogue', 'pars', 'torrent-button', 'alc-auto', 'nova-plus', 'suggest'].map(name => {
@@ -44,7 +44,7 @@ async function main() {
   // Every adapter waits for the host; loading a single .js before appready is supported.
   const deferred = '(function(){if(window.lampa_viewAdaptersScheduled)return;window.lampa_viewAdaptersScheduled=true;var done=false;function start(){if(done)return;done=true;' + vendors + '}function ready(){if(!window.Lampa)return false;if(window.appready)start();else Lampa.Listener.follow("app",function(e){if(e.type==="ready")start();});return true;}if(!ready()){var count=0,t=setInterval(function(){if(ready()||++count>=150)clearInterval(t);},200);}})();';
   const source = result.outputFiles[0].text + '\n' + deferred;
-  // Publish readable source too: formatting must survive every rebuild.
+  // Keep maintainable modules in src/; publish compact ES5 for older hosts.
   const legacy = babel.transformSync(source, {
     presets: [[require('@babel/preset-env').default, {
       targets: {
@@ -63,18 +63,19 @@ async function main() {
       }
     }
   }).code;
-  acorn.parse(legacy, {
+  const production=esbuild.transformSync(legacy,{minify:true,target:'es5',charset:'utf8',legalComments:'inline'}).code;
+  acorn.parse(production, {
     ecmaVersion: 5
   });
-  const banner = '/*! Lampa View ' + require('../package.json').version + ' | Original code: MIT; component licenses: THIRD-PARTY.md\n' + fs.readFileSync(path.join(root, 'licenses/Reference-UI-MIT.txt'), 'utf8').replace(/\r\n/g, '\n').replace(/\*\//g, '* /') + '\n*/\n';
-  fs.writeFileSync(path.join(out, 'lampa.js'), banner + legacy);
+  const banner = '/*! Lampa View ' + require('../package.json').version + ' | Original code: MIT; component licenses: THIRD-PARTY.md\n' + fs.readFileSync(path.join(root, 'LICENSE'), 'utf8').split('\nApplies to original files')[0].replace(/\r\n/g, '\n').replace(/\*\//g, '* /') + '\n*/\n';
+  fs.writeFileSync(path.join(out, 'lampa.js'), banner + production);
   console.log('dist/lampa.js: ' + fs.statSync(path.join(out, 'lampa.js')).size + ' bytes');
   const boot = (await esbuild.build({
     entryPoints: [path.join(root, 'src/boot.js')],
     bundle: true,
     minify: false,
     target: ['es2017'],
-    plugins: [readableCss],
+    plugins: [compactCss],
     write: false
   })).outputFiles[0].text;
   const bootLegacy = babel.transformSync(boot, {
@@ -95,10 +96,11 @@ async function main() {
       }
     }
   }).code;
-  acorn.parse(bootLegacy, {
+  const bootProduction=esbuild.transformSync(bootLegacy,{minify:true,target:'es5',charset:'utf8',legalComments:'inline'}).code;
+  acorn.parse(bootProduction, {
     ecmaVersion: 5
   });
-  fs.writeFileSync(path.join(out, 'lampa-minimal.boot.js'), bootLegacy);
+  fs.writeFileSync(path.join(out, 'lampa-minimal.boot.js'), bootProduction);
   fs.writeFileSync(path.join(out, 'lampa-minimal.svg'), require(path.join(root, 'src/favicon.cjs')).replace(/\r\n/g, '\n'));
   // ICO embeds four PNG resolutions, preserving the original vector mark.
   const {

@@ -3,7 +3,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
 (function () {
     'use strict';
     if (window.mpv_plus_companion) return;
-    window.mpv_plus_companion = {name: lampaViewText("Парс"), version: '1.4.0'};
+    window.mpv_plus_companion = {name: "Lampa View", version: '1.4.0'};
 
     function enabled(name) { var key = 'mpv_plus_' + name, value = Lampa.Storage.value ? Lampa.Storage.value(key, '') : Lampa.Storage.get(key, true); return value !== false && value !== 'false' && value !== 0 && value !== '0'; }
     function anime(card) {

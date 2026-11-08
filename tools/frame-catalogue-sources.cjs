@@ -117,4 +117,4 @@ async function wiki(seeds){
  return records;
 }
 
-module.exports={filmGrab,bluscreens,ghibli,wiki,kinoafisha,kinonews,parseFilmGrab,publishedGallery};
+module.exports={filmGrab,bluscreens,ghibli,wiki,kinoafisha,kinonews,kinomail:require('./frame-source-kinomail.cjs').collect,parseFilmGrab,publishedGallery};

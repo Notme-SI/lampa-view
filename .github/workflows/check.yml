@@ -11,7 +11,21 @@ permissions:
   contents: read
 jobs:
   check:
+    name: ${{ matrix.group }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        include:
+          - group: unit
+            checks: ""
+          - group: playback
+            checks: "torrent-layout torrent-files-layout mpvplus-preload torrent-native-playback button-focus episode-focus hero-proxy torrent-tv-controls remote-navigation discovery-rows trakt-interface"
+          - group: online
+            checks: "voice-initial online-polish history-focus interface-size poster-rail home-stage header-focus tv-captions timeline-devices quiet-sync watch-menu"
+          - group: catalogue
+            checks: "artwork-cache torrent-watch-menu appearance-language home-controls detail-artwork carousel-return detail-gallery catalogue-controls catalogue-metadata poster-prefetch"
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: actions/setup-node@v7.1.0
@@ -22,152 +36,20 @@ jobs:
           version: 11.25.0
       - run: pnpm install --frozen-lockfile --ignore-scripts
       - run: pnpm run build
-      - run: pnpm test
+      - name: Unit and native-host tests
+        if: matrix.group == 'unit'
+        run: pnpm test
       - name: Install browser layout checks
+        if: matrix.group != 'unit'
         run: |
           npm install --prefix "$RUNNER_TEMP/lampa-browser-check" --ignore-scripts playwright@1.62.1
           "$RUNNER_TEMP/lampa-browser-check/node_modules/.bin/playwright" install --with-deps chromium webkit
-      - name: Torrent layout
+      - name: Browser checks
+        if: matrix.group != 'unit'
         env:
           PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
-        run: node tests/browser/torrent-layout.cjs
-      - name: Torrent file layout
-        env:
-          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
-        run: node tests/browser/torrent-files-layout.cjs
-      - name: Player preload
-        env:
-          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
-        run: node tests/browser/mpvplus-preload.cjs
-      - name: Native torrent playback
-        env:
-          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
-        run: node tests/browser/torrent-native-playback.cjs
-      - name: Button focus
-        env:
-          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
-        run: node tests/browser/button-focus.cjs
-      - name: Episode focus
-        env:
-          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
-        run: node tests/browser/episode-focus.cjs
-      - name: Banner proxy
-        env:
-          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
-        run: node tests/browser/hero-proxy.cjs
-      - name: TV torrent controls
-        env:
-          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
-        run: node tests/browser/torrent-tv-controls.cjs
-      - name: Remote navigation
-        env:
-          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
-        run: node tests/browser/remote-navigation.cjs
-      - name: Native discovery rows
-        env:
-          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
-        run: node tests/browser/discovery-rows.cjs
-      - name: Trakt catalogue
-        env:
-          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
-        run: node tests/browser/trakt-interface.cjs
-      - name: Initial dubbing
-        env:
-          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
-        run: node tests/browser/voice-initial.cjs
-      - name: Online interface
-        env:
-          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
-        run: node tests/browser/online-polish.cjs
-      - name: Watch history and focus
-        env:
-          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
-        run: node tests/browser/history-focus.cjs
-      - name: Interface sizes
-        env:
-          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
-        run: node tests/browser/interface-size.cjs
-      - name: Poster rails
-        env:
-          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
-        run: node tests/browser/poster-rail.cjs
-      - name: Home first screen
-        env:
-          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
-        run: node tests/browser/home-stage.cjs
-      - run: python3 server/test-bootstrap.py
-      - run: python3 server/test-online.py
-      - name: Check published files match source
-        run: git diff --exit-code -- lampa.js dist docs
-
-      - name: Check header focus
-        env:
-          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
-        run: node tests/browser/header-focus.cjs
-
-      - name: TV title flow
-        env:
-          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
-        run: node tests/browser/tv-captions.cjs
-      - name: Timeline between devices
-        env:
-          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
-        run: node tests/browser/timeline-devices.cjs
-
-      - name: Silent background synchronization
-        env:
-          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
-        run: node tests/browser/quiet-sync.cjs
-
-      - name: Watch menu and stable completed season
-        env:
-          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
-        run: node tests/browser/watch-menu.cjs
-
-      - name: Downloaded artwork cache and persistent reuse
-        env:
-          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
-        run: node tests/browser/artwork-cache.cjs
-      - name: Torrent watch menu
-        env:
-          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
-        run: node tests/browser/torrent-watch-menu.cjs
-
-      - name: Appearance themes and languages
-        env:
-          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
-        run: node tests/browser/appearance-language.cjs
-
-      - name: Hero navigation and decorative studio
-        env:
-          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
-        run: node tests/browser/home-controls.cjs
-
-      - name: Full-card backdrop and native credits
-        env:
-          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
-        run: node tests/browser/detail-artwork.cjs
-
-      - name: Carousel artwork and return geometry
-        env:
-          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
-        run: node tests/browser/carousel-return.cjs
-
-      - name: Detail gallery navigation
-        env:
-          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
-        run: node tests/browser/detail-gallery.cjs
-
-      - name: Studio heading, description focus and filter controls
-        env:
-          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
-        run: node tests/browser/catalogue-controls.cjs
-      - name: Catalogue metadata and touch details
-        env:
-          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
-        run: node tests/browser/catalogue-metadata.cjs
-
-      - name: Posters prepare during fast scrolling
-        env:
-          PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
-        run: node tests/browser/poster-prefetch.cjs
+          CHECKS: ${{ matrix.checks }}
+        run: |
+          for check in $CHECKS; do
+            node "tests/browser/$check.cjs"
+          done

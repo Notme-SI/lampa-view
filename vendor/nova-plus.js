@@ -1,8 +1,5 @@
 function lampaViewText(source,values){return window.LampaView && window.LampaView.text?window.LampaView.text(source,values):String(source).replace(/\{(\d+)\}/g,function(_,n){return String((values || [])[n]);});}
-/* Nova Plus - amikdn; source: https://amikdn.github.io/nova_plus.js
- * Snapshot: 2026-10-20. Lampa View bundles the readable interface only.
- * The trailing encoded poster-replacement script is excluded.
- */
+/* Online interface adapter. Provenance: THIRD-PARTY.md. */
 (function () {
   'use strict';
   var jQuery = window.jQuery;

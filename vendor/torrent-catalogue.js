@@ -1,4 +1,4 @@
-/* Torrent Catalogue 0.3.0. Pure metadata routines; no network or downloads. */
+/* Release metadata and matching; no network or downloads. */
 (function (root, factory) {
     if (typeof module === 'object' && module.exports) module.exports = factory();
     else root.TorrentCatalogueCore = factory();
