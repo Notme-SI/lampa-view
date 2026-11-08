@@ -46,12 +46,14 @@ export default function rowNavigation(L,line,enabled){
  }
  function page(direction){
   if(!enabled() || tv())return;
-  const g=geometry(),start=pageStart===null?g.start:pageStart,index=Math.max(0,Math.min(Math.max(0,total()+(more?1:0)-g.count),start+direction*g.count));
+  const g=geometry(),start=pageStart===null?g.start:pageStart;
+  const tileCount=total()+Number(Boolean(more));
+  const index=Math.max(0,Math.min(Math.max(0,tileCount-g.count),start+direction*g.count));
   stop();line.active=Math.min(index,total()-1);line.emit('scroll');mountMore();const target=index>=total()?more:node(line.items[index]);if(!target)return;
   line.last=target;
   const position=line.scroll.position?line.scroll.position():0;
   let to=index===0?0:position-(target.getBoundingClientRect().left-(g.view.left+g.inset));
-  if(index>0 && index+g.count>=total()){
+  if(index>0 && index+g.count>=tileCount){
    const last=more || node(line.items[total()-1]);
    if(last)to=Math.min(to,position-(last.getBoundingClientRect().right-(g.view.right-g.inset)));
   }
