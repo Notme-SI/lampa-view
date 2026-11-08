@@ -5341,15 +5341,45 @@
  },
  "Акцент тёмной темы": {
   "en": "Dark theme accent",
-  "uk": "Акцент темної теми"
+  "uk": "Акцент темної теми",
+  "be": "Акцэнт цёмнай тэмы",
+  "zh": "深色主题强调色",
+  "pt": "Cor de destaque do tema escuro",
+  "bg": "Акцент на тъмната тема",
+  "he": "צבע הדגשה לערכת הנושא הכהה",
+  "cs": "Barva zvýraznění tmavého motivu",
+  "ro": "Culoare de accent pentru tema întunecată",
+  "fr": "Couleur d’accent du thème sombre",
+  "pl": "Kolor akcentu ciemnego motywu",
+  "es": "Color de acento del tema oscuro"
  },
  "Код HEX. Пустое поле возвращает {0}.": {
   "en": "HEX code. Leave blank to restore {0}.",
-  "uk": "Код HEX. Порожнє поле відновлює {0}."
+  "uk": "Код HEX. Порожнє поле відновлює {0}.",
+  "be": "Код HEX. Пустое поле аднаўляе {0}.",
+  "zh": "HEX 颜色代码。留空可恢复 {0}。",
+  "pt": "Código HEX. Deixe em branco para repor {0}.",
+  "bg": "HEX код. Оставете полето празно, за да възстановите {0}.",
+  "he": "קוד HEX. השארת השדה ריק תשחזר את {0}.",
+  "cs": "Kód HEX. Prázdné pole obnoví {0}.",
+  "ro": "Cod HEX. Lăsați câmpul gol pentru a restabili {0}.",
+  "fr": "Code HEX. Laissez le champ vide pour rétablir {0}.",
+  "pl": "Kod HEX. Puste pole przywraca {0}.",
+  "es": "Código HEX. Deja el campo vacío para restaurar {0}."
  },
  "Введите цвет в формате #RRGGBB.": {
   "en": "Enter a color in #RRGGBB format.",
-  "uk": "Введіть колір у форматі #RRGGBB."
+  "uk": "Введіть колір у форматі #RRGGBB.",
+  "be": "Увядзіце колер у фармаце #RRGGBB.",
+  "zh": "请输入 #RRGGBB 格式的颜色。",
+  "pt": "Introduza uma cor no formato #RRGGBB.",
+  "bg": "Въведете цвят във формат #RRGGBB.",
+  "he": "יש להזין צבע בתבנית #RRGGBB.",
+  "cs": "Zadejte barvu ve formátu #RRGGBB.",
+  "ro": "Introduceți o culoare în formatul #RRGGBB.",
+  "fr": "Saisissez une couleur au format #RRGGBB.",
+  "pl": "Wpisz kolor w formacie #RRGGBB.",
+  "es": "Introduce un color en formato #RRGGBB."
  },
  "Тема интерфейса": {
   "en": "Interface theme",
