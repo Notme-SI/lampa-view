@@ -3267,6 +3267,7 @@
       if (self.session.serial && episodes && episodes.length > 1) {
         playlist = self.buildPlaylist(episodes, episode, first);
         first.playlist = playlist;
+        hidden(first, 'minimalExternalPlaylist', function (done) { return extPlaylist(first, done); });
       }
       setMulti(self, episode);
       hidden(first, 'alc_pb', self);   // an external player gets the season's links (extPlaylist)
