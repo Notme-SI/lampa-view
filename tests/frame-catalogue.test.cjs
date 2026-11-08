@@ -34,7 +34,7 @@ test('Kinoafisha imports release-specific stills and rejects posters and other e
  assert.equal(row.media,'tv');
  assert.equal(row.title,'Один & два');
  assert.equal(row.year,2023);
- assert.deepEqual(row.frames.map(frame=>frame.url),[base+'8248/frame.jpg']);
+ assert.deepEqual(row.frames,[{img:base.replace('1920x1080','1280x720')+'8248/frame.jpg',url:base+'8248/frame.jpg'}]);
  assert.equal(parseGallery(html,'/series/8249/shots/'),null);
  assert.deepEqual(discover('<a href="/movies/10/"><a href="/movies/10/"><a href="/series/12/"><a href="/movies/12/posters/">'),
   ['/movies/10/shots/','/series/12/shots/']);
