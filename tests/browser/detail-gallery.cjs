@@ -1,6 +1,9 @@
 const assert=require('node:assert/strict');
+const fs=require('node:fs'),path=require('node:path');
 const {chromium,webkit}=require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const {setup}=require('../fixtures/native-browser.cjs');
+const {shardFor}=require('../../src/frame-catalogue.cjs');
+const {normalize}=require('../../tools/update-frame-catalogue.cjs');
 
 async function open(page,movie){
  await page.evaluate(movie=>{
@@ -64,10 +67,12 @@ async function open(page,movie){
      Lampa.Api.full=(p,done)=>done(window.detailFixture);
     })});
     try{
-     await page.route('https://film-grab.com/wp-json/wp/v2/**',route=>{
-      const search=route.request().url().includes('/search?');
-      const data=search?[{id:91,title:'Gallery Film'}]:{content:{rendered:'<p>Year: <span>2025</span></p>'+
-       Array.from({length:25},(_,i)=>'<a href="https://film-grab.com/wp-content/uploads/photo-gallery/real-frame-'+i+'.jpg"></a>').join('')}};
+     await page.route('https://notme-si.github.io/lampa-view/frames/v1/*.json',route=>{
+      const name=new URL(route.request().url()).pathname.split('/').at(-1);
+      const data=JSON.parse(fs.readFileSync(path.join(__dirname,'../../docs/frames/v1',name),'utf8'));
+      const fixture=normalize({media:'movie',tmdb:91,title:'Gallery Film',year:2025,source:'test',priority:1,origin:'https://frames.example/',
+       frames:Array.from({length:25},(_,i)=>({url:'https://film-grab.com/wp-content/uploads/photo-gallery/real-frame-'+i+'.jpg'}))});
+      for(const key of fixture.keys)if(shardFor(key)+'.json'===name){data.entries[key]=[fixture.id];data.records[fixture.id]=fixture;}
       return route.fulfill({json:data,headers:{'Access-Control-Allow-Origin':'*'}});
      });
      await page.route('https://film-grab.com/wp-content/uploads/photo-gallery/**',route=>route.fulfill({
@@ -178,12 +183,12 @@ async function open(page,movie){
       await page.evaluate(()=>{
        Lampa.Storage.set('minimal_poiskkino_frames_key','');
        window.openArchiveFilm=year=>{
-        const movie={id:year,source:'tmdb',title:'Остров проклятых '+year,original_title:'Shutter Island',release_date:year+'-02-14',
+        const movie={id:year,source:'tmdb',title:'Опасные животные '+year,original_title:'Dangerous Animals',release_date:year+'-02-14',
          production_countries:[],production_companies:[],spoken_languages:[],genres:[]};
         detailFixture={movie,persons:{cast:[],crew:[]},videos:{results:[]}};
         Lampa.Activity.push({component:'full',source:'tmdb',id:movie.id,method:'movie',card:movie});
        };
-       openArchiveFilm(2010);
+       openArchiveFilm(2025);
       });
       await recovered.waitFor();
       assert.equal(await recovered.locator('[data-minimal-screenshot]').count(),14);
@@ -192,8 +197,8 @@ async function open(page,movie){
        const image=document.querySelector('.activity--active [data-minimal-screenshot] img');
        return image?.naturalWidth===800 && image.currentSrc.includes('bluscreens.net');
       });
-      await page.evaluate(()=>openArchiveFilm(2011));
-      await active.locator('.full-start-new__title').filter({hasText:'Остров проклятых 2011'}).waitFor();
+      await page.evaluate(()=>openArchiveFilm(2024));
+      await active.locator('.full-start-new__title').filter({hasText:'Опасные животные 2024'}).waitFor();
       assert.equal(await recovered.count(),0);
      }
      assert.deepEqual(errors,[]);

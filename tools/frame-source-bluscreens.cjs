@@ -1,11 +1,7 @@
-const fs=require('node:fs/promises');
-const path=require('node:path');
-
 const origin='https://www.bluscreens.net';
 const uploads='/uploads/1/4/8/9/14897402/';
 const directory='/screen-captures-a-z--updates.html';
-const maxFrames=14;
-const output=path.join(__dirname,'..','src','bluscreens-frames.json');
+const {frameLimit:maxFrames}=require('../src/frame-catalogue.cjs');
 const decode=value=>value.replace(/&(?:amp|quot|apos|nbsp);|&#(?:x[\da-f]+|\d+);/gi,entity=>{
  const named={'&amp;':'&','&quot;':'"','&apos;':"'",'&nbsp;':' '};
  if(entity in named)return named[entity];
@@ -44,7 +40,7 @@ function publishedGallery(html){
  return [parsed[1],Number(parsed[2]),sample];
 }
 
-async function update(){
+async function collect(){
  const root=await page(directory);
  const letters=matches(root,/href=['"](\/(?:[a-z]|page)\.html)['"]/gi);
  const found=new Set(matches(root,/href=['"](\/[\w-]{2,}\.html)['"]/gi));
@@ -66,9 +62,7 @@ async function update(){
  }
  if(rows.length<100 || failures.length>routes.length/10)throw new Error('Incomplete archive refresh: '+rows.length+' galleries, '+failures.length+' failed requests');
  rows.sort((a,b)=>a[0]<b[0]?-1:a[0]>b[0]?1:a[1]-b[1]);
- await fs.writeFile(output,'[\n'+rows.map(row=>JSON.stringify(row)).join(',\n')+'\n]\n');
- console.log('Indexed '+rows.length+' galleries from '+routes.length+' title pages.');
- if(failures.length)console.warn(failures.join('\n'));
+ return rows;
 }
 
-update().catch(error=>{console.error(error.message);process.exitCode=1;});
+module.exports={collect,publishedGallery};

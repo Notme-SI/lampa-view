@@ -1,0 +1,40 @@
+name: Update frame catalogue
+on:
+  schedule:
+    - cron: '23 3 * * *'
+  workflow_dispatch:
+concurrency:
+  group: frame-catalogue
+  cancel-in-progress: false
+permissions:
+  contents: write
+  pages: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          ref: main
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version: '24'
+      - uses: pnpm/action-setup@v6.1.0
+        with:
+          version: 11.25.0
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - run: node tools/update-frame-catalogue.cjs
+      - run: node --test tests/frame-catalogue.test.cjs
+      - name: Publish catalogue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git add docs/frames/v1
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Update verified frame catalogue"
+          git pull --rebase origin main
+          git push origin HEAD:main
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds"
