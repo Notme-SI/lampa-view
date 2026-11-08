@@ -135,6 +135,8 @@ async function open(page,movie){
      assert.equal(await position(),'1 / '+total);
      for(const theme of ['minimal','glass']){
       await page.evaluate(theme=>Lampa.Storage.set('lampa_view_theme',theme),theme);
+      // Measure the settled modal after Lampa finishes its opening animation.
+      await viewer.evaluate(node=>Promise.allSettled(node.closest('.modal__content').getAnimations().map(animation=>animation.finished)));
       const bounds=await viewer.evaluate(node=>{const r=node.getBoundingClientRect(),close=node.querySelector('.minimal-frame-close').getBoundingClientRect(),next=node.querySelector('.minimal-frame-next').getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:innerWidth,height:innerHeight,inside:r.left>=0 && r.right<=innerWidth+1 && r.top>=0 && r.bottom<=innerHeight+1,separated:close.bottom+8<next.top};});
       assert.ok(bounds.inside && (tv || bounds.separated),'Viewer and separate controls fit '+theme+' '+mode+': '+JSON.stringify(bounds));
       const close=await viewer.locator('.minimal-frame-close').boundingBox(),canvas=await viewer.boundingBox();
