@@ -161,6 +161,7 @@ body.lampa_view .modal__content,body.lampa_view .selectbox__content,body.lampa_v
 body.lampa_view .modal__title,body.lampa_view .selectbox__title,body.lampa_view .settings__title {font-weight:650;letter-spacing:-.025em}
 body.lampa_view .settings-param {border-radius:.5em;border-bottom:1px solid var(--pt-line);font-size:.9em}
 body.lampa_view .settings-param__descr {color:var(--pt-muted);opacity:1;font-size:.8em;line-height:1.5}
+body.lampa_view .minimal-settings .settings-param__descr {font-size:.9em}
 body.lampa_view .settings-param.focus,body.lampa_view .selectbox-item.focus,body.lampa_view .settings-folder.focus {background:var(--pt-high)!important;color:white;box-shadow:inset 3px 0 var(--pt-accent)}
 body.lampa_view .settings-param__value {color:var(--pt-accent)}
 body.lampa_view .selectbox-item {border-radius:.45em;font-size:.9em}
