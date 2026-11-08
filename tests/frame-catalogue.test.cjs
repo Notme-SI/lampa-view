@@ -117,7 +117,7 @@ test('a verified IMDb gallery resolves renamed titles and keeps movie and TV ide
  const key='imdb:movie:tt1234567';
  const {read,L}=runtime(async url=>({ok:true,json:async()=>url.includes('/'+shardFor(key)+'.json')?shard(record,key):{version,entries:{},records:{}}}));
  assert.equal((await read(L,{imdb_id:'tt1234567',title:'Совсем другое название',release_date:'2026-01-01'},'movie')).length,1);
- assert.equal((await read(L,{imdb_id:'tt1234568',title:'Другой фильм',release_date:'2026-01-01'},'movie')).length,0);
+ assert.equal((await read(L,{imdb_id:'tt1234568',title:record.title,release_date:'2026-01-01'},'movie')).length,0);
  assert.equal((await read(L,{imdb_id:'tt1234567',name:'Не сериал',first_air_date:'2026-01-01'},'tv')).length,0);
 });
 

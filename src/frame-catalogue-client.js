@@ -69,12 +69,14 @@ export default async function catalogueFrames(L,card,media,readTmdb){
     const row=data.records[identity];
     if(row?.media!==media || !row.keys?.includes(key) || !validFrames(row.frames).length)continue;
     if(row.tmdb && id>0 && row.tmdb!==id)continue;
+    if(row.imdb && imdb && row.imdb!==imdb)continue;
     if(key.startsWith('tmdb:') && row.tmdb!==id)continue;
     if(key.startsWith('imdb:') && row.imdb!==imdb)continue;
     matches.set(identity,row);
    }
   }
   if(!matches.size)return [];
+  if(new Set([...matches.values()].map(row=>row.imdb).filter(Boolean)).size>1)return [];
   // Multiple sources for one release share an identity. Ambiguous names stay empty.
   const identities=new Set([...matches.values()].map(row=>row.tmdb?'tmdb:'+row.tmdb:row.titleIdentity));
   if(identities.size>1)return [];
