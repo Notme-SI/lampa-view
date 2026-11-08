@@ -37,7 +37,7 @@ const {setup}=require('../fixtures/native-browser.cjs');
    await page.waitForSelector('.search-box');
    const overlay=await page.locator('.search-box').evaluate(el=>{const css=getComputedStyle(el),r=el.getBoundingClientRect();return {color:css.backgroundColor,zIndex:Number(css.zIndex),left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:innerWidth,height:innerHeight,bodyZoom:getComputedStyle(document.body).zoom,rootZoom:getComputedStyle(document.documentElement).zoom,cssWidth:css.width,viewport:visualViewport.width};});
    if(process.env.LAMPA_QA_OUTPUT)await page.screenshot({path:path.join(process.env.LAMPA_QA_OUTPUT,name+'-tv-search.png')});
-   assert.equal(overlay.color,'rgb(8, 11, 16)');assert.ok(overlay.zIndex>70);assert.ok(Math.abs(overlay.left)<1 && overlay.right>=overlay.width-1 && Math.abs(overlay.top)<1 && overlay.bottom>=overlay.height-1,JSON.stringify(overlay));
+   assert.equal(overlay.color,'rgb(18, 16, 12)');assert.ok(overlay.zIndex>70);assert.ok(Math.abs(overlay.left)<1 && overlay.right>=overlay.width-1 && Math.abs(overlay.top)<1 && overlay.bottom>=overlay.height-1,JSON.stringify(overlay));
    await page.evaluate(()=>Lampa.Controller.back());assert.equal(await page.locator('.search-box').count(),0);
    assert.deepEqual(r.errors,[]);await r.context.close();
    console.log(name+': TV banner containment, compact toolbar, multilingual search and opaque input overlay passed');

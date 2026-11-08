@@ -75,8 +75,8 @@ const {setup}=require('../fixtures/native-browser.cjs'),{stage}=require('../fixt
   await stage(page,true,2);await page.evaluate(()=>jQuery('[data-nova-focus=direction]').last().trigger('hover:enter'));
   const arrows=page.locator('.nova-episode-nav button');
   if(mode==='desktop'){
-   await arrows.first().hover();assert.equal(await arrows.first().evaluate(n=>getComputedStyle(n).borderColor),'rgb(173, 217, 229)');
-   await page.mouse.move(0,0);await page.keyboard.press('Tab');await arrows.last().focus();assert.equal(await arrows.last().evaluate(n=>getComputedStyle(n).borderColor),'rgb(173, 217, 229)');
+   await arrows.first().hover();assert.equal(await arrows.first().evaluate(n=>getComputedStyle(n).borderColor),'rgb(216, 195, 154)');
+   await page.mouse.move(0,0);await page.keyboard.press('Tab');await arrows.last().focus();assert.equal(await arrows.last().evaluate(n=>getComputedStyle(n).borderColor),'rgb(216, 195, 154)');
   }else {const nav=page.locator('.nova-episode-nav');assert.ok(await nav.count()===0 || await nav.evaluate(n=>getComputedStyle(n).display)==='none');}
   assert.deepEqual(r.errors,[]);await r.context.close();console.log(mode+': localized history, year ordering, compact release badge, focus, runtime spacing and episode arrows passed');
  }

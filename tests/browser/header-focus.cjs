@@ -24,16 +24,22 @@ const assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWR
    const menuCenter=Math.abs((mr.left+mr.right-sr.left-sr.right)/2)+Math.abs((mr.top+mr.bottom-sr.top-sr.bottom)/2);
    const sample=document.createElement('button');sample.className='pt-hero__action selector';sample.textContent='Подробнее';head.after(sample);
    const primary=[];for(const focused of [false,true,false]){sample.classList.toggle('focus',focused);const r=sample.getBoundingClientRect(),s=getComputedStyle(sample);primary.push({width:r.width,height:r.height,bg:s.backgroundColor,border:s.borderColor,shadow:s.boxShadow});}sample.remove();
+   const focusedRows=document.createElement('div');
+   focusedRows.innerHTML='<div class="menu__item focus"></div><div class="settings-folder focus"></div><div class="settings-param focus"></div><div class="selectbox-item focus"></div>';
+   document.body.appendChild(focusedRows);
+   const focusFills=Array.from(focusedRows.children,node=>getComputedStyle(node).backgroundColor);
+   focusedRows.remove();
    const text=document.querySelector('.menu__text');text.textContent='Длинное название раздела для проверки переноса';const style=getComputedStyle(text);
    const glyph=head.querySelector('.open--settings svg[data-pt-settings]');if(!glyph || glyph.getBoundingClientRect().width<12 || !glyph.querySelector('path'))throw new Error('Settings gear glyph must be visible');const gear=head.querySelector('.open--settings').getBoundingClientRect(),search=head.querySelector('.open--search').getBoundingClientRect();if(gear.left<search.right-1 || gear.right>pr.left+1)throw new Error('Settings must sit between Search and Profile');
-   return {before,after,menuCenter,controls,primary,wrap:style.whiteSpace,mode:body.classList.contains('pt-tv')?'tv':'desktop'};
+   return {before,after,menuCenter,controls,primary,focusFills,wrap:style.whiteSpace,mode:body.classList.contains('pt-tv')?'tv':'desktop'};
   });
+  if(theme==='minimal')assert.deepEqual(result.focusFills,Array(4).fill('rgb(48, 41, 31)'));
   if(mode==='tv'){
    assert.ok(result.after>result.before,'Back appears before Menu, as on desktop');
-   for(const p of result.primary){if(theme==='minimal'){assert.equal(p.bg,'rgb(173, 217, 229)');assert.equal(p.shadow,'none');}assert.equal(p.width,result.primary[0].width);assert.equal(p.height,result.primary[0].height);}
+   for(const p of result.primary){if(theme==='minimal'){assert.equal(p.bg,'rgb(216, 195, 154)');assert.equal(p.shadow,'none');}assert.equal(p.width,result.primary[0].width);assert.equal(p.height,result.primary[0].height);}
    if(theme==='minimal'){assert.equal(result.primary[1].border,'rgb(255, 255, 255)');assert.equal(result.primary[2].border,'rgba(0, 0, 0, 0)');}else{assert.notEqual(result.primary[1].border,result.primary[0].border);assert.equal(result.primary[2].border,result.primary[0].border);}
   }
-  assert.equal(result.wrap,'normal');assert.ok(result.menuCenter<.1,'Menu glyph stays centered');for(const control of result.controls){assert.equal(control.focused,true);assert.equal(control.width,0,'No external ring');assert.equal(control.borderWidth,theme==='glass'?1:2,'One clear border');assert.equal(control.shadow,'none');assert.equal(control.border,theme==='glass'?'rgb(244, 244, 246)':'rgb(173, 217, 229)');assert.equal(control.inside,true);}
+  assert.equal(result.wrap,'normal');assert.ok(result.menuCenter<.1,'Menu glyph stays centered');for(const control of result.controls){assert.equal(control.focused,true);assert.equal(control.width,0,'No external ring');assert.equal(control.borderWidth,theme==='glass'?1:2,'One clear border');assert.equal(control.shadow,'none');assert.equal(control.border,theme==='glass'?'rgb(244, 244, 246)':'rgb(216, 195, 154)');assert.equal(control.inside,true);}
   await r.page.locator('.head .open--settings').click();await r.page.waitForSelector('body.settings--open');await r.page.waitForSelector('.settings__content .settings-folder');assert.ok(await r.page.locator('.settings__content .settings-folder').count()>0,'Gear opens native settings: '+JSON.stringify(await r.page.locator('.settings__content').evaluate(n=>({text:n.textContent.slice(0,300),html:n.innerHTML.slice(0,300)}))));await r.page.evaluate(()=>Lampa.Controller.back());
   assert.deepEqual(r.errors,[]);console.log(mode,result);await r.context.close();
  }

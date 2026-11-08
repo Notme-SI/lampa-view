@@ -17,7 +17,7 @@ test('poster transitions override native no-animation without changing global se
  const n=await native(),{w,L}=n;
  try{
   L.Storage.set('animation',false);w.document.body.classList.add('no--animation','advanced--animation');const card=w.document.createElement('div');card.className='card';card.innerHTML='<div class="card__view"></div>';w.document.body.appendChild(card);
-  const before=w.getComputedStyle(card.firstChild);assert.ok(before.transition.includes('.24s'));card.classList.add('focus');const after=w.getComputedStyle(card.firstChild);assert.ok(after.transition.includes('.24s'));assert.ok(after.transform.includes('scale(1.045)'));assert.match(after.boxShadow,/rgba\(173,\s*217,\s*229,\s*(?:0)?\.4\)/);assert.equal(L.Storage.value('animation'),'false');assert.ok(w.document.body.classList.contains('no--animation'));assert.deepEqual(n.errors,[]);
+  const before=w.getComputedStyle(card.firstChild);assert.ok(before.transition.includes('.24s'));card.classList.add('focus');const after=w.getComputedStyle(card.firstChild);assert.ok(after.transition.includes('.24s'));assert.ok(after.transform.includes('scale(1.045)'));assert.match(after.boxShadow,/rgba\(var\(--pt-tint-rgb,[^)]+\),\s*(?:0)?\.4\)/);assert.equal(L.Storage.value('animation'),'false');assert.ok(w.document.body.classList.contains('no--animation'));assert.deepEqual(n.errors,[]);
  }finally{n.close();}
 });
 test('full detail shows studio before the year with a supplied title logo, hides broken studios and accepts studio-only loader results',async()=>{

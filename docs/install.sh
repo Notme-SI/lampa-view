@@ -44,7 +44,8 @@ def download(destination, opener=urllib.request.urlopen):
         expected = hashes[name]
         if not isinstance(expected, str) or not re.fullmatch('[a-f0-9]{64}', expected):
             raise ValueError('Invalid installer checksum')
-        content = read(BASE + url + '?v=' + expected, 2 * 1024 * 1024)
+        limit = (4 if name == 'dist/lampa.js' else 2) * 1024 * 1024
+        content = read(BASE + url + '?v=' + expected, limit)
         if hashlib.sha256(content).hexdigest() != expected:
             raise ValueError('Installer checksum mismatch; retry after a minute')
         verified[name] = content
