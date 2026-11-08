@@ -11,6 +11,48 @@ const {parseFilmGrab}=require('../tools/frame-catalogue-sources.cjs');
 const base=path.join(__dirname,'../docs/frames/v1');
 const frame={img:'https://frames.example/thumb.jpg',url:'https://frames.example/original.jpg'};
 
+test('a plugin update revalidates a fresh shard that missed the release before publication',async()=>{
+ const key='tmdb:movie:91',record=normalize({media:'movie',tmdb:91,title:'Gallery Film',year:2025,source:'test',origin:'https://frames.example/',frames:[frame]});
+ const initial={minimal_frame_catalogue_v1:{[shardFor(key)]:{at:Date.now(),data:{version,entries:{},records:{}}}}};
+ const {read,L}=runtime(async(_url,options)=>{
+  assert.equal(options.cache,'no-cache');
+  return {ok:true,json:async()=>shard(record,key)};
+ },initial);
+ assert.equal((await read(L,{id:91,source:'tmdb'},'movie'))[0].minimal_still_url,frame.url);
+});
+
+test('Kinoafisha imports release-specific stills and rejects posters and other editions',()=>{
+ const {parseGallery,discover}=require('../tools/frame-source-kinoafisha.cjs');
+ const origin='https://www.kinoafisha.info',path='/series/8248/shots/';
+ const base='https://static.kinoafisha.info/k/series_shots/1920x1080/upload/series/frames/8/4/2/';
+ const anchor=url=>'<a class="stillsList_item" href="'+url+'"></a>';
+ const html='<link rel="canonical" href="'+origin+path+'"><h1 class="universalHat_title">Кадры из сериала «Один &amp; два»</h1>'+
+  '<meta property="og:image:alt" content="Кадр из сериала «Один &amp; два» (2023)">'+
+  anchor(base+'8248/frame.jpg')+anchor(base+'8248/frame.jpg')+anchor(base+'8249/unrelated.jpg')+
+  anchor(base.replace('series_shots','posters')+'8248/poster.jpg');
+ const row=parseGallery(html,path);
+ assert.equal(row.media,'tv');
+ assert.equal(row.title,'Один & два');
+ assert.equal(row.year,2023);
+ assert.deepEqual(row.frames.map(frame=>frame.url),[base+'8248/frame.jpg']);
+ assert.equal(parseGallery(html,'/series/8249/shots/'),null);
+ assert.deepEqual(discover('<a href="/movies/10/"><a href="/movies/10/"><a href="/series/12/"><a href="/movies/12/posters/">'),
+  ['/movies/10/shots/','/series/12/shots/']);
+});
+
+test('original and localized archive titles do not make a verified original ambiguous',async()=>{
+ const original=normalize({media:'movie',title:'English Title',year:2025,source:'test',origin:'https://frames.example/',frames:[frame]});
+ const localized=normalize({media:'movie',title:'Русское название',year:2025,source:'kinoafisha',origin:'https://frames.example/ru',frames:[{url:'https://frames.example/ru.jpg'}]});
+ const data=new Map();
+ for(const row of [original,localized])for(const key of row.keys){
+  const name=shardFor(key),current=data.get(name) || {version,entries:{},records:{}};
+  Object.assign(current.entries,shard(row,key).entries);current.records[row.id]=row;data.set(name,current);
+ }
+ const {read,L}=runtime(async url=>({ok:true,json:async()=>data.get(url.split('/').at(-1).split('.')[0])}));
+ const rows=await read(L,{original_title:original.title,title:localized.title,release_date:'2025-01-01'},'movie');
+ assert.deepEqual(Array.from(rows,row=>row.minimal_still_url),[frame.url]);
+});
+
 function runtime(fetch,initial={}){
  const storage=new Map(Object.entries(initial));
  const context={module:{exports:{}},exports:{},fetch,URL,AbortController,setTimeout,clearTimeout};

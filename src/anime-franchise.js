@@ -125,6 +125,6 @@ export function franchiseMenuGroups(model,canonical={}){
    const destination=parent && !node?.record?.tv?{...card,minimal_franchise_parent:parent,minimal_franchise_release:{aired:node?.aired,released:node?.released,episodes:node?.episodes}}:card;
    return {card:destination,title:heading,subtitle:[String(card.release_date || card.first_air_date || '').slice(0,4),format,season?t('Сезон {0}',[season]):'',count>0?pluralSource(['%s серия','%s серии','%s серий'],count):'',status].filter(Boolean).join(' · '),icon:kind==='movie'?'▷':kind==='ova'?'◇':['special','tv_special'].includes(kind)?'✦':'▤'};
   });
-  return {title:row.key==='story'?t('Порядок просмотра'):row.title,entries};
+  return {key:row.key,title:row.key==='story'?t('Порядок просмотра'):row.title,entries};
  }).filter(group=>group.entries.length);
 }

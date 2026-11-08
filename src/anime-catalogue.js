@@ -9,18 +9,23 @@ const positive=n=>Number.isSafeInteger(Number(n)) && Number(n)>0;
 function collectionMenu(data){
  const card=data.movie,collection=data.collection;
  if(!Array.isArray(collection?.results) || !['tmdb','cub'].includes(card.source) || !positive(card.id))return [];
- const entries=new Map();
+ const entries=new Map(),today=new Date().toISOString().slice(0,10);
  for(const row of collection.results){
   if(!positive(row.id) || !['movie','tv'].includes(row.media_type || (row.name?'tv':'movie')))continue;
   const type=row.media_type || (row.name?'tv':'movie'),title=row.title || row.name;
   if(!title)continue;
-  const year=String(row.release_date || row.first_air_date || '').slice(0,4);
-  entries.set(type+':'+row.id,{title,subtitle:[year,t(type==='movie'?'Фильм':'Сериал')].filter(Boolean).join(' · '),
+  const date=String(row.release_date || row.first_air_date || ''),year=date.slice(0,4);
+  const announced=['planned','in production','post production','anons'].includes(String(row.status || '').toLowerCase()) ||
+   (/^\d{4}-\d{2}-\d{2}$/.test(date) && Number.isFinite(Date.parse(date)) && date>today) ||
+   (/^\d{4}$/.test(date) && date>today.slice(0,4));
+  entries.set(type+':'+row.id,{title,subtitle:[year,t(type==='movie'?'Фильм':'Сериал'),announced?t('Анонс'):''].filter(Boolean).join(' · '),announced,
    current:Number(row.id)===Number(card.id) && type===(card.media_type || (card.name?'tv':'movie')),
    card:{...row,source:card.source,media_type:type}});
  }
  const releases=[...entries.values()];
- return releases.length>=2 && releases.some(row=>row.current)?[{title:t('Коллекция'),entries:releases}]:[];
+ if(releases.length<2 || !releases.some(row=>row.current))return [];
+ return [{key:'collection',title:t('Коллекция'),entries:releases.filter(row=>!row.announced)},
+  {key:'announced',title:t('Продолжения и анонсы'),entries:releases.filter(row=>row.announced)}].filter(group=>group.entries.length);
 }
 const day=value=>String(value || '').slice(0,10),time=value=>Date.parse(day(value)+'T00:00:00Z');
 function inRelease(episode,release){const aired=time(episode.air_date),from=time(release.aired),until=time(release.released || (['ongoing','released'].includes(release.status)?new Date().toISOString().slice(0,10):''));return Number.isFinite(aired) && Number.isFinite(from) && Number.isFinite(until) && aired>=from-86400000 && aired<=until+86400000;}
@@ -149,7 +154,9 @@ export default function animeCatalogue(L,kino){
     animeTargets(model.nodes.find(node=>node.id===entry.card.id)?.record).map(target=>target.type+':'+target.id))));
    for(const group of nativeGroups){
     const entries=group.entries.filter(entry=>!represented.has(entry.card.media_type+':'+entry.card.id));
-    if(entries.length)groups.push({...group,entries});
+    if(!entries.length)continue;
+    const existing=groups.find(row=>row.key===group.key);
+    if(existing)existing.entries.push(...entries);else groups.push({...group,entries});
    }
    if(nativeGroups.length)removeDetailRows(link,entry=>Array.isArray(entry) && entry[0]==='cards' &&
     (entry[1]===event.data.collection || entry[1]?.title===L.Lang.translate('title_collection')));
@@ -176,13 +183,14 @@ export default function animeCatalogue(L,kino){
      }
      nodes.each((index,node)=>{
       const entry=releases[index];if(!entry)return;
-      if(entry.selected){node.setAttribute('aria-current','true');node.querySelector('.selectbox-item__checkbox')?.remove();}
+      if(entry.selected){node.setAttribute('aria-current','true');node.classList.add('nomark');node.querySelector('.selectbox-item__checkbox')?.remove();}
       const picture=document.createElement('div');picture.className='minimal-related-art';picture.setAttribute('aria-hidden','true');
       picture.dataset.release=String(entry.card.id);const poster=posterCache.get(String(entry.card.id)) || entry.card.img || (entry.card.poster_path && L.Api.img(entry.card.poster_path,'w300'));
       if(poster && !poster.includes('/missing_'))showArtwork(picture,poster);
       const info=document.createElement('div');info.className='minimal-related-info';
       for(const child of [...node.children])info.appendChild(child);
-      node.appendChild(picture);node.appendChild(info);
+      const mark=document.createElement('span');mark.className='minimal-related-mark';mark.setAttribute('aria-hidden','true');
+      node.appendChild(picture);node.appendChild(info);node.appendChild(mark);
      });
      const ids=releases.filter(entry=>entry.card.source==='minimal_shiki').map(entry=>String(entry.card.id)).filter(id=>!posterCache.has(id)).slice(0,12),api=L.Api.sources.minimal_shiki;
      if(ids.length && api?.posters)api.posters(ids,rows=>{

@@ -1,5 +1,6 @@
 const {frameLimit,validFrames}=require('../src/frame-catalogue.cjs');
 const {publishedGallery,collect:collectBluscreens}=require('./frame-source-bluscreens.cjs');
+const {collect:kinoafisha}=require('./frame-source-kinoafisha.cjs');
 
 const strip=html=>String(html || '').replace(/<[^>]*>/g,'').replace(/&nbsp;|\u00a0/g,' ').trim();
 const decode=value=>value.replace(/&#(x[\da-f]+|\d+);|&(amp|quot|apos|nbsp);/gi,(all,code,name)=>{
@@ -115,4 +116,4 @@ async function wiki(seeds){
  return records;
 }
 
-module.exports={filmGrab,bluscreens,ghibli,wiki,parseFilmGrab,publishedGallery};
+module.exports={filmGrab,bluscreens,ghibli,wiki,kinoafisha,parseFilmGrab,publishedGallery};

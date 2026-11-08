@@ -28,10 +28,11 @@ async function open(page,movie){
   };
   const artwork=Array.from({length:movie?25:6},(_,i)=>({file_path:'/art'+i+'.jpg',width:1280,aspect_ratio:16/9}));
   const card={id:91,source:'tmdb',backdrop_path:'/art0.jpg',production_countries:[],production_companies:[],spoken_languages:[],genres:[],
-   ...(movie?{title:'Проверка фильма',original_title:'Gallery Film',release_date:'2025-01-01'}:
+   ...(movie?{title:'Новый Человек-паук: Высокое напряжение',original_title:'Gallery Film',release_date:'2025-01-01'}:
     {name:'Проверка сериала',first_air_date:'2024-01-01',seasons:[{season_number:1,air_date:'2024-01-01'},{season_number:2,air_date:'2025-01-01'}]})};
   window.detailFixture={movie:card,persons:{cast:[],crew:[]},images:{backdrops:artwork},videos:{results:[]},
-   ...(movie?{collection:{results:[card,{id:92,title:'Фильм 2',release_date:'2026-01-01'}]}}:
+   ...(movie?{collection:{results:[card,{id:92,title:'Фильм 2',release_date:'2025-02-01'},
+    {id:96,title:'Продолжение',release_date:'2099-01-01'}]}}:
     {episodes:{name:'Суперсезон',episodes:[
      ...Array.from({length:5},(_,i)=>({season_number:2,episode_number:i+1,air_date:'2025-01-01',still_path:i===0?'/episode-cover.jpg':null})),
      {season_number:2,episode_number:6,air_date:'2099-11-13'}]}})};
@@ -131,6 +132,28 @@ async function open(page,movie){
      if(tv)await page.keyboard.press('Escape');else await activate(viewer.getByRole('button',{name:'Закрыть'}));
      await viewer.waitFor({state:'hidden'});
      assert.ok(await first.evaluate(node=>node.classList.contains('focus') || document.activeElement===node));
+     if(mobile){
+      const related=page.getByRole('button',{name:'Связанные'});
+      await page.evaluate(()=>Lampa.Activity.active().activity.component.scroll.immediate(document.querySelector('.minimal-anime-franchise')));
+      await activate(related);
+      const menu=page.locator('.minimal-franchise-menu');
+      const current=menu.locator('[aria-current="true"]');
+      await current.waitFor();
+      const geometry=await current.evaluate(node=>{
+       const info=node.querySelector('.minimal-related-info').getBoundingClientRect();
+       const mark=node.querySelector('.minimal-related-mark');
+       const bounds=mark.getBoundingClientRect(),row=node.getBoundingClientRect();
+       return {right:info.right,left:bounds.left,center:bounds.top+bounds.height/2,rowCenter:row.top+row.height/2,
+        native:getComputedStyle(node,'::after').content,own:getComputedStyle(mark,'::before').content};
+      });
+      assert.ok(geometry.right<geometry.left && Math.abs(geometry.center-geometry.rowCenter)<1);
+      assert.equal(geometry.native,'none');
+      assert.notEqual(geometry.own,'none');
+      const headings=await menu.locator('.minimal-season-section,.selectbox-item__title').allTextContents();
+      assert.ok(headings.indexOf('Фильм 2')<headings.indexOf('Продолжения и анонсы'));
+      assert.ok(headings.indexOf('Продолжение')>headings.indexOf('Продолжения и анонсы'));
+      assert.match(await menu.locator('.selectbox-item').filter({hasText:'Продолжение'}).textContent(),/2099.*Анонс/);
+     }
      if(mode==='desktop'){
       await page.evaluate(()=>{
        Lampa.Api.sources.tmdb.get=(path,p,done)=>done({stills:[{file_path:'/episode-cover.jpg'}]});
