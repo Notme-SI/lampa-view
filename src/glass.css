@@ -40,7 +40,7 @@ body.lampa_view.pt-theme-glass .settings__content,body.lampa_view.pt-theme-glass
 body.lampa_view.pt-theme-glass .settings__layer,body.lampa_view.pt-theme-glass .selectbox__layer {background:transparent}
 body.lampa_view.pt-theme-glass .modal__layer {background:#00000052}
 body.lampa_view.pt-theme-glass .menu__item {border-radius:1.05em;padding:.85em 1em;color:#e2e1e6}
-body.lampa_view.pt-theme-glass .wrap__left .menu__item:is(.focus,.hover,.traverse) {background:linear-gradient(165deg,#ffffff08,transparent),rgba(0,0,0,.24)!important;color:white!important;border-radius:.7em!important;border-color:transparent!important;box-shadow:none!important;outline:none!important}
+body.lampa_view.pt-theme-glass .wrap__left .menu__item:is(.focus,.hover,.traverse) {background:var(--pt-row-focus)!important;color:white!important;border-radius:.7em!important;border-color:transparent!important;box-shadow:inset 0 0 0 1px var(--pt-row-edge)!important;outline:none!important}
 body.lampa_view.pt-theme-glass .wrap__left .menu__item:is(.focus,.hover,.traverse):before {content:none!important;display:none!important}
 body.lampa_view.pt-theme-glass .items-line__title,body.lampa_view.pt-theme-glass .category-full__title {font-weight:650;letter-spacing:-.025em}
 body.lampa_view.pt-theme-glass .card__title {font-weight:550;letter-spacing:-.015em;color:#eeeef1}
@@ -78,7 +78,7 @@ body.lampa_view.pt-theme-glass .minimal-detail-header .full-start-new__reactions
 body.lampa_view.pt-theme-glass .minimal-torrent-banner__meta {background:var(--pt-glass-button);border:1px solid var(--pt-glass-border);box-shadow:var(--pt-glass-edge)}
 body.lampa_view.pt-theme-glass .settings-folder,body.lampa_view.pt-theme-glass .settings-param,body.lampa_view.pt-theme-glass .selectbox-item {border-radius:1.1em;border-color:transparent}
 body.lampa_view.pt-theme-glass .settings-folder,body.lampa_view.pt-theme-glass .settings-param,body.lampa_view.pt-theme-glass .selectbox:not(.minimal-franchise-menu) .selectbox-item:not(.focus) {background:transparent!important}
-body.lampa_view.pt-theme-glass .settings-folder.focus,body.lampa_view.pt-theme-glass .settings-param.focus,body.lampa_view.pt-theme-glass .selectbox-item.focus {background:var(--pt-glass-button)!important;color:white!important;box-shadow:inset 0 1px 0 #ffffff35!important}
+body.lampa_view.pt-theme-glass .settings-folder.focus,body.lampa_view.pt-theme-glass .settings-param.focus,body.lampa_view.pt-theme-glass .selectbox-item.focus {background:var(--pt-row-focus)!important;color:white!important;box-shadow:inset 0 0 0 1px var(--pt-row-edge)!important}
 body.lampa_view.pt-theme-glass .settings-folder.focus .settings-folder__icon,body.lampa_view.pt-theme-glass .selectbox-item.focus .selectbox-item__checkbox,body.lampa_view.pt-theme-glass .settings-param.focus .selectbox-item__checkbox {filter:none;-webkit-filter:none}
 body.lampa_view.pt-theme-glass .selectbox-item.focus:after {border-color:#f5f5f7}
 body.lampa_view.pt-theme-glass .settings-param__value {color:#e2e1e6}

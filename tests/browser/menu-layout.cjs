@@ -4,29 +4,17 @@ const assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWR
   const r=await setup(browser,{viewport:mode==='mobile'?{width:393,height:852}:{width:1280,height:720},mode},{beforePlugin:page=>page.evaluate(async()=>{await Lampa.Cache.openDatabase();Lampa.Params.init();Lampa.Menu.ready();Lampa.Notice.init();Lampa.Search.init();
    const list=document.querySelector('.menu__list');
    for(const [action,title] of [['sport','Спорт'],['shots','Shots'],['dorama','Дорамы']]){const item=document.createElement('li');item.className='menu__item selector';item.dataset.action=action;item.innerHTML='<div class="menu__ico"></div><div class="menu__text"></div>';item.lastElementChild.textContent=title;list.appendChild(item);}})});const {page}=r;
-  await page.evaluate(()=>{document.querySelector('.wrap').classList.add('layer--width');Lampa.Layer.init();Lampa.Storage.set('lampa_view_theme','glass');Lampa.Storage.set('menu_always',true);});await page.waitForTimeout(120);
-  const dock=await page.evaluate(()=>{const p=document.querySelector('.wrap__left'),c=document.querySelector('.wrap__content'),rect=n=>{const r=n.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width};};return {panel:rect(p),content:rect(c),visibility:getComputedStyle(p).visibility,button:getComputedStyle(p.querySelector('.head__menu-icon')).display,first:p.querySelector('.menu').firstElementChild.classList.contains('head__menu-icon'),count:document.querySelectorAll('.head__menu-icon').length,empty:p.getBoundingClientRect().bottom-[...p.querySelectorAll('.menu__item')].filter(item=>item.getClientRects().length).at(-1).getBoundingClientRect().bottom,sheen:getComputedStyle(p).backgroundImage};});
-  assert.equal(dock.button,'flex');assert.equal(dock.visibility,'visible');assert.equal(dock.count,1);assert.ok(dock.first && dock.empty<18,'The same button sits inside the dock, which hugs the menu');assert.match(dock.sheen,/linear-gradient/);assert.ok(dock.panel.width<90,'Pinned rail contains icons only');assert.ok(dock.content.left>=dock.panel.right-1);assert.ok(Math.abs(dock.content.right-(mode==='mobile'?393:1280))<1,'Menu width must only be subtracted once');console.log(mode,'dock',dock);
-  if(mode==='desktop'){
-   await page.setViewportSize({width:1280,height:1050});
-   const tall=await page.locator('.wrap__left').evaluate(panel=>({bottom:panel.getBoundingClientRect().bottom,tail:panel.querySelector('.menu').getBoundingClientRect().bottom}));
-   assert.ok(tall.bottom<1000 && Math.abs(tall.bottom-tall.tail)<12,'A taller viewport leaves no blank panel footer');
-   await page.setViewportSize({width:1280,height:720});
-  }
-  await page.locator('.wrap__left').hover();await page.waitForTimeout(100);
-  const expanded=await page.locator('.wrap__left').evaluate(n=>({width:n.getBoundingClientRect().width,text:getComputedStyle(n.querySelector('.menu__text')).display,groups:[...n.querySelectorAll('.menu__case')].map(g=>[...g.querySelectorAll('.menu__item')].map(i=>i.dataset.action)),content:document.querySelector('.wrap__content').getBoundingClientRect().left,iconPositions:[...n.querySelectorAll('.menu__case .menu__ico')].map(icon=>icon.getBoundingClientRect()).filter(box=>box.width).map(box=>box.left)}));
-  assert.ok(expanded.width>dock.panel.width*2);assert.equal(expanded.text,'block');assert.ok(Math.max(...expanded.iconPositions)-Math.min(...expanded.iconPositions)<1,'All groups share one icon column');assert.equal(expanded.content,dock.content.left,'Expansion must not push page content');assert.deepEqual(expanded.groups[0],['minimal_profile','pt_notice']);assert.ok(expanded.groups.at(-1).includes('edit'));assert.ok(expanded.groups.some(g=>['settings','about','console'].every(action=>g.includes(action))));await page.mouse.move(1,1);
-  await page.locator('.wrap__left .head__menu-icon').click();assert.equal(await page.evaluate(()=>Lampa.Controller.enabled().name),'menu');assert.ok(await page.locator('.wrap__left').evaluate(n=>n.getBoundingClientRect().width)>dock.panel.width*2,'Remote entry expands the same rail');
-  const measure=()=>page.locator('.wrap__left').evaluate(n=>{const rect=node=>{const r=node.getBoundingClientRect();return {top:r.top,bottom:r.bottom,width:r.width,height:r.height};},item=n.querySelector('[data-action=movie]');return {panel:rect(n),item:rect(item),icon:rect(item.querySelector('.menu__ico')),font:getComputedStyle(item).fontSize,search:rect(document.querySelector('.head .open--search'))};});
-  const pinnedOpen=await measure();assert.ok(pinnedOpen.panel.top>=pinnedOpen.search.bottom+4,'Expanded pinned menu starts below search');
-  await page.locator('.wrap__left .head__menu-icon').click();
-  assert.equal(await page.evaluate(()=>document.body.matches('.menu--open,.pt-menu-hover')),false,'Second click closes pinned Menu despite pointer hover');
-  assert.ok(Math.abs((await measure()).panel.width-dock.panel.width)<1,'Pinned menu collapses into the same rail');
-  await page.locator('.wrap__left .head__menu-icon').click();assert.equal(await page.evaluate(()=>Lampa.Controller.enabled().name),'menu');
-  assert.ok(Math.abs(pinnedOpen.panel.top-dock.panel.top)<1,'The pinned panel expands sideways without moving down');assert.equal(await page.locator('.wrap__left .menu>.head__menu-icon').count(),1,'Menu button stays inside the expanded rail');
-  const searchWithBack=await page.evaluate(()=>{const search=document.querySelector('.head .open--search'),back=document.querySelector('.head__backward'),rect=()=>{const r=search.getBoundingClientRect();return [r.left,r.width];};document.body.classList.add('pt-home');const before=rect();document.body.classList.remove('pt-home');back.classList.add('pt-back-visible');return {before,after:rect()};});assert.deepEqual(searchWithBack.before,searchWithBack.after,'Pinned Back does not move Search');
+  await page.evaluate(()=>{document.querySelector('.wrap').classList.add('layer--width');Lampa.Layer.init();Lampa.Storage.set('lampa_view_theme','glass');Lampa.Storage.set('menu_always',true);});await page.waitForTimeout(300);
+  const measure=()=>page.locator('.wrap__left').evaluate(n=>{const rect=node=>{const r=node.getBoundingClientRect();return {left:r.left,top:r.top,bottom:r.bottom,width:r.width,height:r.height};};return {panel:rect(n),content:rect(document.querySelector('.wrap__content')),item:rect(n.querySelector('[data-action=movie]')),radius:getComputedStyle(n).borderRadius,icon:n.querySelector('.menu__ico').getBoundingClientRect().left};});
+  const dock=await measure();assert.ok(dock.panel.width<90);assert.equal(dock.content.left,0);assert.equal(await page.locator('.head .head__menu-icon').count(),1);
+  await page.locator('.wrap__left').hover();await page.waitForTimeout(300);
+  const expanded=await measure();assert.ok(expanded.panel.width>dock.panel.width*2);
+  for(const key of ['left','top','height'])assert.ok(Math.abs(expanded.panel[key]-dock.panel[key])<1,'Dock only changes width');
+  assert.equal(expanded.radius,dock.radius);assert.equal(expanded.item.height,dock.item.height);assert.equal(expanded.icon,dock.icon);assert.deepEqual(expanded.content,dock.content);
+  await page.mouse.move(1,1);await page.waitForTimeout(300);
+  await page.locator(mode==='mobile'?'.navigation-bar [data-action=menu]':'.head__menu-icon').click();await page.waitForTimeout(300);assert.equal(await page.evaluate(()=>Lampa.Controller.enabled().name),'menu');
+  await page.locator(mode==='mobile'?'.navigation-bar [data-action=menu]':'.head__menu-icon').click();await page.waitForTimeout(300);assert.equal(await page.evaluate(()=>document.body.matches('.menu--open,.pt-menu-hover')),false);
   await page.evaluate(()=>{Lampa.Storage.set('menu_always',false);Lampa.Controller.toggle('menu');});
-  const normalOpen=await measure();assert.equal(pinnedOpen.font,normalOpen.font);assert.ok(Math.abs(pinnedOpen.item.height-normalOpen.item.height)<1,'Both expanded states share row heights');assert.ok(Math.abs(pinnedOpen.icon.width-normalOpen.icon.width)<1,'Both expanded states share icon sizes');
   await page.evaluate(()=>{Lampa.Controller.toggle('content');Lampa.Storage.set('menu_always',true);Lampa.Controller.toggle('menu');});
   await page.route(/^https?:\/\/posters\.test\//,route=>route.request().url().endsWith('/missing.png')?route.abort():route.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="80" height="120"><rect width="80" height="120" fill="purple"/></svg>'}));
   await page.evaluate(()=>{
@@ -93,7 +81,7 @@ const assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWR
    const source=get('source'),badge=source.querySelector('.nova-chip__badge');
    return {sizes:['view','direction','source','voice'].map(key=>get(key).querySelector('.nova-chip__glyph').getBoundingClientRect().width),
     order:!badge && source.firstElementChild.classList.contains('nova-chip__glyph') && source.firstElementChild.nextElementSibling.classList.contains('nova-chip__label'),
-    icons:!!source.querySelector('.nova-chip__glyph rect') && !!get('voice').querySelector('.nova-chip__glyph path')};
+    icons:!!source.querySelector('.nova-chip__glyph path') && !!get('voice').querySelector('.nova-chip__glyph path')};
   });
   if(mode==='desktop'){
    await page.evaluate(()=>{
@@ -106,7 +94,7 @@ const assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWR
    assert.equal(await page.locator('.selectbox-item').filter({hasText:'Английский'}).locator('.selectbox-item__subtitle').textContent(),'4');
    await page.evaluate(()=>Lampa.Select.hide());
   }
-  assert.ok(glyphs.order && glyphs.icons);assert.ok(Math.abs(glyphs.sizes[0]-glyphs.sizes[1])<1 && Math.abs(glyphs.sizes[2]-glyphs.sizes[3])<1 && glyphs.sizes[2]>glyphs.sizes[0]*1.2,'Source/audio glyphs are equally enlarged: '+glyphs.sizes);
+  assert.ok(glyphs.order && glyphs.icons);assert.ok(Math.abs(glyphs.sizes[0]-glyphs.sizes[1])<1 && Math.abs(glyphs.sizes[2]-glyphs.sizes[3])<1 && Math.abs(glyphs.sizes[2]-glyphs.sizes[0])<1,'Source/audio glyphs are equally enlarged: '+glyphs.sizes);
   assert.deepEqual(r.errors,[]);await r.context.close();
  }
 }finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

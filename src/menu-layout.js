@@ -5,20 +5,35 @@ export default function menuLayout(L,enabled){
  const excludedActions=/^(feed|dorama|catalog|myperson|relise|releases?|(?:my)?sports?|(?:my)?shots?)$/i;
  const excludedLabels=['Лента','Дорамы','Каталог','Персоны','Релизы','Спорт','Shots'];
  const removed=new Map();
- let menuButton,buttonSlot;
- function placeButton(menu){
-  if(!document.body.classList.contains('pt-menu-pinned')){
-   if(buttonSlot?.isConnected)buttonSlot.replaceWith(menuButton);
-   menuButton=null;buttonSlot=null;
+ let mobileControl=null,generatedBar=null;
+ function mobileBar(){
+  const mobile=enabled() && document.body.classList.contains('pt-mobile');
+  if(!mobile){
+   if(mobileControl){const {node,html,next}=mobileControl;$(node).off('.lampaViewMenu').attr('data-action','search').data('action','search').html(html);if(next?.isConnected)next.before(node);mobileControl=null;}
+   if(generatedBar){generatedBar.remove();generatedBar=null;}
    return;
   }
-  if(!menuButton){
-   menuButton=document.querySelector('.head .head__menu-icon');
-   if(!menuButton)return;
-   buttonSlot=document.createComment('Lampa View menu button');
-   menuButton.before(buttonSlot);
+  let bar=document.querySelector('.navigation-bar');
+  if(!bar && L.Template){
+   const view=L.Template.get('navigation_bar',{});bar=view[0];generatedBar=bar;view.appendTo(document.body);
+   view.find('.navigation-bar__item').on('click.lampaViewBar',function(){
+    const action=this.dataset.action;
+    if(action==='back')L.Controller.back();
+    else if(action==='main')L.Activity.push({component:'main',source:L.Storage.get('source','cub'),page:1,title:t('Главная')});
+    else if(action==='settings')L.Controller.toggle('settings');
+   });
   }
-  if(menu.firstElementChild!==menuButton)menu.prepend(menuButton);
+  if(!bar)return;
+  const search=bar.querySelector('[data-action=search]');
+  if(search){
+   mobileControl={node:search,html:search.innerHTML,next:search.nextElementSibling};
+   $(search).attr('data-action','menu').data('action','menu').attr({'role':'button','tabindex':'0','aria-label':t('Меню')});
+   search.querySelector('.navigation-bar__icon').innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>';
+   search.querySelector('.navigation-bar__label').textContent=t('Меню');
+   bar.querySelector('[data-action=back]')?.after(search);
+   const toggle=()=>{document.body.classList.remove('pt-menu-hover');if(L.Menu?.toggle)L.Menu.toggle();else L.Controller.toggle(document.body.classList.contains('menu--open')?'content':'menu');};
+   $(search).on('click.lampaViewMenu',toggle).on('keydown.lampaViewMenu',event=>{if(event.key==='Enter' || event.key===' '){event.preventDefault();event.stopImmediatePropagation();toggle();}});
+  }
  }
  function exclude(){
   const menu=document.querySelector('.menu');if(!menu)return;
@@ -69,7 +84,6 @@ export default function menuLayout(L,enabled){
    const text=document.createElement('div');text.className='menu__text';text.textContent=button.getAttribute('aria-label') || '';item.appendChild(text);
    $(item).on('hover:enter',()=>$(button).trigger('hover:enter'));catalogue.appendChild(item);
   }
-  placeButton(menu);
  }
  let panel;
  function bind(){
@@ -87,7 +101,7 @@ export default function menuLayout(L,enabled){
    if(changed && L.Controller.enabled().name==='menu')L.Controller.toggle('content');
   }
   if(changed && L.Layer && L.Layer.update)L.Layer.update();
-  bind();groups();
+  mobileBar();bind();groups();
  }
  update();
  if(L.Storage.listener)L.Storage.listener.follow('change',e=>{if(e.name==='menu_always' || e.name==='lampa_view_enabled')update();});

@@ -61,9 +61,9 @@ Snack TV 0.8.10 и ObsiView 2.11 изучены как примеры интег
 
 0.4.20: присланный LME Shikimori 0.3 изучен как пример цепочки размеров постера. Его код целиком, ключ TMDB и компонент не включены. Обработка modern GraphQL poster fields реализована в собственном адаптере.
 
-### Lucide Magnet
+### Lucide icons
 
-[Magnet](https://lucide.dev/icons/magnet) is used in the torrent menu and detail button.
+[Magnet](https://lucide.dev/icons/magnet) is used in the torrent menu and detail button. [Layout Grid](https://lucide.dev/icons/layout-grid), [Clapperboard](https://lucide.dev/icons/clapperboard), and [Audio Lines](https://lucide.dev/icons/audio-lines) are used in the online toolbar.
 
 Copyright (c) 2026 Lucide Icons and Contributors
 

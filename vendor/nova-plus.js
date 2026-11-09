@@ -195,9 +195,9 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     chevron: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"></path></svg>',
     search: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4" stroke-linecap="round"></path></svg>',
     refresh: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 11a8 8 0 10-2.3 5.7" stroke-linecap="round"></path><path d="M20 4v7h-7" stroke-linecap="round" stroke-linejoin="round"></path></svg>',
-    source: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m10 9 5 3-5 3z"/></svg>',
-    voice: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11v2m4-5v8m4-11v14m4-11v8m4-5v2"/></svg>',
-    grid: '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><rect x="3" y="3" width="8" height="8" rx="1.6"></rect><rect x="13" y="3" width="8" height="8" rx="1.6"></rect><rect x="3" y="13" width="8" height="8" rx="1.6"></rect><rect x="13" y="13" width="8" height="8" rx="1.6"></rect></svg>',
+    source: '<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="m12.296 3.464 3.02 3.956" /> <path d="M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3z" /> <path d="M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /> <path d="m6.18 5.276 3.1 3.899" /> </svg>',
+    voice: '<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M2 10v3" /> <path d="M6 6v11" /> <path d="M10 3v18" /> <path d="M14 8v7" /> <path d="M18 5v13" /> <path d="M22 10v3" /> </svg>',
+    grid: '<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <rect width="7" height="7" x="3" y="3" rx="1" /> <rect width="7" height="7" x="14" y="3" rx="1" /> <rect width="7" height="7" x="14" y="14" rx="1" /> <rect width="7" height="7" x="3" y="14" rx="1" /> </svg>',
     list: '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><rect x="3" y="4" width="18" height="4" rx="1.4"></rect><rect x="3" y="10" width="18" height="4" rx="1.4"></rect><rect x="3" y="16" width="18" height="4" rx="1.4"></rect></svg>',
     eye: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="12" cy="12" r="2.6"></circle></svg>'
   };
@@ -2445,9 +2445,43 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     }
     probeStop(); probe_done_for = 0; probe_url = '';
     var availabilityGeneration=0,requestSource='',folderChain=[],parsing=false;
+    var activeObject=Lampa.Activity.active();
+    var lookupCard=object && (object.movie || object.card) || activeObject && activeObject.activity && activeObject.activity.component===comp && (activeObject.movie || activeObject.card);
+    var missingTitle='Фильм не найден';
+    var lookupTitle=lookupCard && [lookupCard.name,lookupCard.title].find(function(title){return title && title!==missingTitle;});
+    function restoreLookupTitle(){
+      // The details component can seed movie.title with a placeholder even for
+      // TV cards. Lampac prefers it over name and can echo it into discovery.
+      if(!lookupTitle)return;
+      if(lookupCard.name===missingTitle)lookupCard.name=lookupTitle;
+      if(lookupCard.title===missingTitle)lookupCard.title=lookupTitle;
+    }
+    function fixLookupUrl(url){
+      if(!lookupTitle || typeof url!=='string')return url;
+      return url.replace(/([?&]title=)([^&#]*)/g,function(match,prefix,value){
+        try {
+          return decodeURIComponent(value.replace(/\+/g,' '))===missingTitle?prefix+encodeURIComponent(lookupTitle):match;
+        } catch(e) { return match; }
+      });
+    }
     var continuationApi=window.LampaView && window.LampaView.animeContinuations;
     var continuation={base:'',parts:[],selected:null,groups:null,baseSelection:0,count:0,started:false};
     var providerUrl=String(object && object.url || ''),providerPart=null;
+    var releaseRoutes=[],releasePicks=null;
+    function releaseSeason(url){
+      try {
+        var current=new URL(url,location.href);
+        var matched=releaseRoutes.filter(function(entry){
+          var target=new URL(entry.url,location.href);
+          if(target.origin!==current.origin || target.pathname!==current.pathname)return false;
+          var keys=['pick','uri','news','postid','animeid','releases','link','id'].filter(function(key){return target.searchParams.has(key);});
+          return keys.length && keys.every(function(key){return target.searchParams.get(key)===current.searchParams.get(key);});
+        });
+        if(matched.length===1)return matched[0].season;
+      } catch(e) {}
+      var target=releasePicks && continuationApi && continuationApi.route(url);
+      return target && releasePicks[target.origin+target.pathname+'|'+target.searchParams.get('pick')] || 0;
+    }
     var initialSource=providerUrl.match(/\/lite\/([^\/?#]+)/i);if(initialSource)comp.lampaViewSource=initialSource[1];
     if(continuationApi)comp.lampaViewContinuations=continuation;
     function readContinuations(str,card,folders){
@@ -2503,7 +2537,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       }
       comp.draw=function(files,params){
         var card=object && (object.movie || object.card) || movie,ownFilter=activeFilter(typeof comp.render==='function'?comp.render():root),ownGroups=readGroups(ownFilter),seasons=ownGroups.season && ownGroups.season.items || [];
-        episodeContext={card:card,files:(files || []).map(function(file){return Number(file.episode);}),seasons:seasons.map(function(s){return sourceSeason(s);}),similar:params && params.similars,part:providerPart};
+        episodeContext={card:card,files:(files || []).map(function(file){return Number(file.episode);}),seasons:seasons.map(function(s){return sourceSeason(s);}),similar:params && params.similars,part:providerPart,release:releaseSeason(providerUrl)};
         return nativeDraw.apply(comp,arguments);
       };
       comp.getEpisodes=function(season,done){
@@ -2516,16 +2550,18 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
             var own=readGroups(activeFilter(typeof comp.render==='function'?comp.render():root));
             context.seasons=(own.season && own.season.items || []).map(function(s){return sourceSeason(s);});
             function current(){return !comp.destroyed && episodeContext===context;}
+            function providerMetadata(book){
+              return metadataRows(book).filter(function(row){return context.files.indexOf(row.episode_number)>=0;});
+            }
             function canonical(){
               if(tmdbId(context.card) && Number(season)>=0){
                 var part=context.part;
                 return wideJoinedBook(season,function(book){
                   if(!current())return;
-                  var rows=metadataRows(book);
                   // The native renderer pads short playlists with remaining
-                  // metadata rows. Keep actual files and confirmed future dates;
-                  // a separately selected continuation owns only its files.
-                  done(api.availableMetadata?api.availableMetadata(rows,context.files,season,!part):rows.filter(function(row){return context.files.indexOf(row.episode_number)>=0;}));
+                  // metadata rows. A selected provider release can cover only
+                  // part of the catalogue season, so keep just its own files.
+                  done(part || context.release || !api.availableMetadata?providerMetadata(book):api.availableMetadata(metadataRows(book),context.files,season));
                 },context.card,comp);
               }
               return nativeEpisodes.call(comp,season,function(){if(current())done.apply(this,arguments);});
@@ -2534,7 +2570,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
             if(Number(season)!==0 && !context.part && context.seasons.length && (comp.lampaViewProviderSeasons || api.alternate(context.card,context.seasons))){
               var handled=api.book(context.card,season,context.seasons,context.files.length,function(book,grouped){
                 if(!current())return;
-                if(book || grouped)done(metadataRows(book));
+                if(book || grouped)done(context.release?providerMetadata(book):metadataRows(book));
                 else canonical();
               },context.files,false,comp.lampaViewProviderSeasons);
               if(handled)return;
@@ -2555,6 +2591,9 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     if (typeof comp.request === 'function') {
       var request = comp.request;
       comp.request = function (url) {
+        restoreLookupTitle();
+        url=fixLookupUrl(url);
+        arguments[0]=url;
         if(!parsing)folderChain=[];
         folderChain.push(String(url || ''));
         var source=String(url || '').match(/\/lite\/([^\/?#]+)/i);
@@ -2570,7 +2609,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     }
 
     if(typeof comp.parseJsonDate==='function'){
-      var parseRows=comp.parseJsonDate,seasonLinks=null,releasePicks=null,countScope='',counts={},countDone={},countWaiters={},countQueue=[],countBusy=false;
+      var parseRows=comp.parseJsonDate,seasonLinks=null,countScope='',counts={},countDone={},countWaiters={},countQueue=[],countBusy=false;
       comp.parseJsonDate=function(body,selector){
         var rows=parseRows.apply(this,arguments);
         var card=object && (object.movie || object.card) || movie,state=onlineState(),metadata=window.LampaView && window.LampaView.episodeMetadata;
@@ -2593,10 +2632,6 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
           return /^https?:$/.test(target.protocol) && target.origin===base.origin && target.pathname===base.pathname &&
             /\/lite\/[^/]+$/.test(target.pathname) && !target.username && !target.password?target.href:'';
         }catch(e){return '';}
-      }
-      function releaseSeason(url){
-        var target=releasePicks && continuationApi && continuationApi.route(url);
-        return target && releasePicks[target.origin+target.pathname+'|'+target.searchParams.get('pick')] || 0;
       }
       function loadSeasonList(url,done,followed){
         var target=url && sameList(url);
@@ -2768,6 +2803,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
           var seasonTarget=seasons && seasons.find(function(row){return row.season===seasonNumberWanted;}) || seasons && seasons[0];
           if(folderChain.length>=6 || seasonTarget && folderChain.indexOf(seasonTarget.url)>=0)seasons=[];
           if(seasons && seasons.length){
+            releaseRoutes=seasons.map(function(row){return {url:row.url,season:row.season};});
             // Let the native parser retain its season URLs and selection state.
             // Skipping this page would open episodes but leave no season picker.
             if(continuationApi && episodeApi && episodeApi.isAnime(card)){
@@ -2809,7 +2845,8 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       var reqparams = comp.requestParams;
       comp.nova_rp_hooked = true;
       comp.requestParams = function (url) {
-        var out = reqparams.apply(comp, arguments);
+        restoreLookupTitle();
+        var out = fixLookupUrl(reqparams.apply(comp, arguments));
         try { learnUrl(out); } catch (e) {}
         return out;
       };
@@ -2836,7 +2873,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       // selection for the destination source; never copy another source's dub.
       comp.lampaViewManualSeason=undefined;
       comp.lampaViewProviderSeasons=null;comp.lampaViewJoinedParts=null;
-      seasonLinks=null;releasePicks=null;countScope='';counts={};countDone={};countQueue=[];
+      seasonLinks=null;releasePicks=null;releaseRoutes=[];countScope='';counts={};countDone={};countQueue=[];
       if (!inplace || !reloadable(comp)) return real.apply(comp, arguments);
 
       inplaceStop();
