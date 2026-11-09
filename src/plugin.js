@@ -447,8 +447,11 @@ if (!ROOT.LampaView) {
       }
       const nativeLine=event.line,tvStage=tvHomeStage(line[0],nativeLine,activity);
       if(L.Controller && nativeLine && nativeLine.use && nativeLine.toggle){
+        let firstFocus=true;
         const enterHero=()=>{
           if(!yes('lampa_view_enabled') || !yes('lampa_view_hero'))return L.Controller.toggle('head');
+          // Returning after a native activity rebuild also consumes the initial entry.
+          firstFocus=false;
           const focusControl=()=>L.Controller.collectionFocus(controls.eq(focus),element);
           L.Controller.add('lampa_view_hero',{
             toggle:()=>{
@@ -464,7 +467,6 @@ if (!ROOT.LampaView) {
             back:()=>L.Controller.toggle('head')
           });L.Controller.toggle('lampa_view_hero');
         };
-        let firstFocus=true;
         nativeLine.use({onlyUp:enterHero,onToggle:()=>{if(firstFocus){firstFocus=false;focus=0;setTimeout(()=>{if((L.Activity.active() || {}).activity===activity && !document.body.matches('.settings--open,.selectbox--open,.menu--open'))enterHero();},0);}else if(tvStage)tvStage.expand();}});
         if(activity.component && activity.component.use){
           activity.component.use({onStart:()=>{if(P.layout!=='mobile')setTimeout(()=>{if((L.Activity.active() || {}).activity===activity)enterHero();},0);}});

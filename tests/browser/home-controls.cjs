@@ -3,7 +3,7 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
  await page.evaluate(()=>{Lampa.DeviceInput.init();Lampa.Controller.observe();Lampa.Keypad.init();Lampa.Keypad.enable();Navigator.follow('focus',e=>Lampa.Controller.focus(e.elem));});await page.waitForSelector('.activity--active .pt-hero');assert.equal(await page.locator('.activity--active .pt-hero').count(),1,'Late plugin startup decorates the existing home without rebuilding it');await page.waitForTimeout(450);
  for(const pinned of [false,true]){
   await page.evaluate(pinned=>Lampa.Storage.set('menu_always',pinned),pinned);
-  const edges=await page.evaluate(()=>{const hero=document.querySelector('.activity--active .pt-hero').getBoundingClientRect(),search=document.querySelector('.head .open--search').getBoundingClientRect();return [hero.left-search.left,hero.right-search.right];});
+  const edges=await page.evaluate(()=>{const hero=document.querySelector('.activity--active .pt-hero').getBoundingClientRect(),search=document.querySelector('.head .open--search').getBoundingClientRect();const row=document.querySelector('.activity--active .pt-hero').nextElementSibling.getBoundingClientRect();return [hero.left-search.left,hero.right-search.right,hero.left-row.left,hero.right-row.right];});
   assert.ok(edges.every(delta=>Math.abs(delta)<1),'Search spans the hero '+JSON.stringify({mode,pinned,edges}));
  }
  await page.evaluate(()=>Lampa.Storage.set('menu_always',false));
@@ -13,22 +13,44 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
   const material=await page.evaluate(()=>{const hero=document.querySelector('.activity--active .pt-hero'),pane=hero.querySelector('.pt-hero__body'),row=hero.nextElementSibling,viewport=row.querySelector('.scroll--horizontal').getBoundingClientRect(),cards=[...row.querySelectorAll('.card')].filter(n=>{const b=n.getBoundingClientRect();return b.left>=viewport.left-1 && b.right<=viewport.right+1;}),h=hero.getBoundingClientRect(),p=pane.getBoundingClientRect();return {overflow:document.documentElement.scrollWidth>innerWidth+1,canvas:getComputedStyle(document.querySelector('.wrap')).backgroundColor,headerRadius:parseFloat(getComputedStyle(document.querySelector('.head .open--search')).borderRadius),headerHeight:document.querySelector('.head .open--search').getBoundingClientRect().height,paneTop:p.top-h.top,paneBottom:p.bottom-h.top,heroHeight:h.height,cardBottom:Math.max(...cards.map(n=>(document.body.classList.contains('pt-tv')?n:n.querySelector('.card__age')).getBoundingClientRect().bottom)),viewport:innerHeight,posterBlur:getComputedStyle(cards[0].querySelector('.card__view')).backdropFilter};});
   assert.equal(material.overflow,false);assert.match(material.canvas,/rgba\(0, 0, 0, 0\)/,'Glass is not covered by the opaque Minimal canvas');assert.ok(material.headerRadius>=material.headerHeight/2-1);assert.ok(material.paneTop>=-1 && material.paneBottom<=material.heroHeight+1,'Glass hero information fits: '+JSON.stringify({mode,size,material}));assert.ok(material.cardBottom<=material.viewport-1,'Glass still fits posters and captions: '+JSON.stringify({mode,size,material}));assert.equal(material.posterBlur,'none','No per-poster blur on a scrolling row');
  }
- await page.evaluate(()=>Lampa.Storage.set('interface_size','normal'));await page.waitForTimeout(300);
+ // Native settings rebuild the activity after a 1 s debounce and 400 ms delay.
+ // Finish that rebuild before exercising remote focus in the same activity.
+ await page.evaluate(()=>Lampa.Storage.set('interface_size','normal'));await page.waitForTimeout(1800);
+ await page.waitForSelector('.activity--active .pt-hero');
  await page.evaluate(()=>{Lampa.Controller.toggle('lampa_view_hero');});assert.ok(await page.locator('.pt-hero__action.focus').count());
  const slide=()=>page.locator('.pt-hero__dot[aria-pressed="true"]').evaluate(n=>[...n.parentElement.children].indexOf(n));
  const initialSlide=await slide(),slideCount=await page.locator('.pt-hero__dot').count();assert.ok(slideCount>1);
  await page.keyboard.press('ArrowRight');await page.waitForTimeout(80);assert.equal(await slide(),(initialSlide+1)%slideCount,'Right advances the slide directly');assert.ok(await page.locator('.pt-hero__action.focus').count(),'Watch keeps focus');
  await page.keyboard.press('ArrowLeft');await page.waitForTimeout(80);assert.equal(await slide(),initialSlide,'Left returns to the previous slide');
- const heroHeight=await page.locator('.pt-hero').evaluate(n=>n.offsetHeight);
+ await page.waitForFunction(()=>{
+  const hero=document.querySelector('.activity--active .pt-hero');
+  return hero && hero.style.height && !document.body.classList.contains('pt-tv-busy');
+ });
+ const heroHeight=await page.locator('.activity--active .pt-hero').evaluate(hero=>new Promise((resolve,reject)=>{
+  let previous,stable=0;const deadline=performance.now()+3000;
+  function check(){
+   const row=hero.nextElementSibling,value=hero.offsetHeight+':'+row.offsetHeight+':'+row.querySelector('.card').offsetWidth;
+   if(value===previous && !document.body.classList.contains('pt-tv-busy'))stable++;else stable=0;
+   previous=value;
+   if(stable>=8)resolve(hero.offsetHeight);
+   else if(performance.now()>deadline)reject(new Error('Hero layout did not settle'));
+   else requestAnimationFrame(check);
+  }
+  check();
+ }));
  const previewWidth=await page.locator('.minimal-home-first-row .card').first().evaluate(n=>n.getBoundingClientRect().width);
  await page.keyboard.press('ArrowDown');await page.waitForTimeout(100);assert.ok(await page.locator('.minimal-home-first-row .card.focus').count(),'Down goes directly to Now watching');
  if(mode==='desktop'){
   await page.waitForFunction(()=>{const card=document.querySelector('.minimal-home-first-row .card.focus');return card && card.getBoundingClientRect().bottom<=innerHeight+1;},null,{timeout:2000});const footer=await page.locator('.minimal-home-first-row .card.focus').evaluate(n=>({bottom:n.getBoundingClientRect().bottom,viewport:innerHeight}));assert.ok(footer.bottom<=footer.viewport+1,'Native focus scroll reveals the full card and its watch footer: '+JSON.stringify(footer));
  }
  if(mode==='tv'){
-  const corners=await page.locator('.minimal-home-first-row .card').first().evaluate(card=>[...card.querySelectorAll('.pt-kind,.card__vote')].map(n=>({kind:n.classList.contains('pt-kind'),left:n.style.left,right:n.style.right,bottom:n.style.bottom})));
-  assert.equal(corners.length,2);for(const b of corners){if(b.kind){assert.equal(b.left,'4px','Type badge leaves space for its rounded corners');assert.equal(b.right,'auto','Type stays left of quality');}else{assert.equal(b.left,'auto','Rating stays anchored to the right');assert.equal(b.right,'8px');assert.equal(b.bottom,'8px');}}
-  assert.equal(await page.locator('.pt-hero').evaluate(n=>n.offsetHeight),heroHeight,'Only cards change size on entry');await page.waitForTimeout(300);assert.equal(await page.locator('.minimal-hero-preview').count(),0,'Entering a collection restores its full profile');assert.ok(await page.locator('.minimal-home-first-row .card').first().evaluate(n=>n.getBoundingClientRect().width)>previewWidth+5,'TV cards grow on entry');await page.keyboard.press('ArrowUp');await page.waitForTimeout(300);assert.equal(await page.locator('.minimal-hero-preview').count(),1,'Returning to hero restores the compact preview');}
+  await page.waitForFunction(()=>!document.body.classList.contains('pt-tv-busy'));
+  const corners=await page.locator('.minimal-home-first-row .card').first().evaluate(card=>{
+   const view=card.querySelector('.card__view'),r=view.getBoundingClientRect(),scale=r.width/view.offsetWidth;
+   return [...view.querySelectorAll('.pt-kind,.card__vote')].map(n=>{const b=n.getBoundingClientRect();return {kind:n.classList.contains('pt-kind'),left:(b.left-r.left)/scale,right:(r.right-b.right)/scale,bottom:(r.bottom-b.bottom)/scale};});
+  });
+  assert.equal(corners.length,2);for(const b of corners){if(b.kind){assert.ok(Math.abs(b.left-4)<1,'Type badge leaves space for its rounded corners');}else{assert.ok(Math.abs(b.right-8)<1,'Rating stays anchored to the right');assert.ok(Math.abs(b.bottom-8)<1,'Rating stays above the lower corner');}}
+  assert.equal(await page.locator('.pt-hero').evaluate(n=>n.offsetHeight),heroHeight,'Only cards change size on entry');await page.waitForFunction(width=>{const card=document.querySelector('.minimal-home-first-row .card');return !document.querySelector('.minimal-hero-preview') && card && card.getBoundingClientRect().width>width+5;},previewWidth,{timeout:3000});await page.keyboard.press('ArrowUp');await page.waitForSelector('.minimal-hero-preview');}
 
  await page.locator('.pt-hero__studio').evaluate(n=>n.dispatchEvent(new Event('load')));const studio=await page.locator('.pt-hero__studio').evaluate(n=>({selector:n.classList.contains('selector'),role:n.getAttribute('role'),pointer:getComputedStyle(n).pointerEvents,alt:n.alt}));assert.equal(studio.selector,mode!=='tv');assert.equal(studio.role,mode==='tv'?null:'button');assert.equal(studio.pointer,mode==='tv'?'none':'auto');assert.equal(studio.alt,'Test studio');
  if(mode==='desktop'){await page.evaluate(()=>{Lampa.Api.company=(p,ok)=>ok({company:{id:7,name:'Test studio',logo_path:'/s.png'},lines:[]});});await page.locator('.pt-hero__studio').click();await page.waitForSelector('.activity--active .minimal-studio-heading img');assert.equal(await page.evaluate(()=>Lampa.Activity.active().component),'company');await page.evaluate(()=>Lampa.Activity.backward());await page.waitForSelector('.activity--active .pt-hero');}
