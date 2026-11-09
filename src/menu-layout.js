@@ -5,16 +5,7 @@ export default function menuLayout(L,enabled){
  const excludedActions=/^(feed|dorama|catalog|myperson|relise|releases?|(?:my)?sports?|(?:my)?shots?)$/i;
  const excludedLabels=['Лента','Дорамы','Каталог','Персоны','Релизы','Спорт','Shots'];
  const removed=new Map();
- let menuButton,buttonSlot,hoverTimer;
- const expanded=()=>document.body.classList.contains('menu--open') || document.body.classList.contains('pt-menu-hover');
- function hover(open){
-  clearTimeout(hoverTimer);
-  if(open){if(enabled())document.body.classList.add('pt-menu-hover');groups();}
-  else hoverTimer=setTimeout(()=>{
-   if(panel?.matches(':hover') || menuButton?.matches(':hover'))return;
-   document.body.classList.remove('pt-menu-hover');groups();
-  },180);
- }
+ let menuButton,buttonSlot;
  function placeButton(menu){
   if(!document.body.classList.contains('pt-menu-pinned')){
    if(buttonSlot?.isConnected)buttonSlot.replaceWith(menuButton);
@@ -26,11 +17,8 @@ export default function menuLayout(L,enabled){
    if(!menuButton)return;
    buttonSlot=document.createComment('Lampa View menu button');
    menuButton.before(buttonSlot);
-   if(!menuButton._lampaViewHover){menuButton._lampaViewHover=true;menuButton.addEventListener('pointerenter',()=>{if(document.body.classList.contains('pt-menu-pinned'))hover(true);});menuButton.addEventListener('pointerleave',()=>hover(false));}
   }
-  if(expanded()){
-   if(buttonSlot.isConnected && menuButton.previousSibling!==buttonSlot)buttonSlot.after(menuButton);
-  }else if(menu.firstElementChild!==menuButton)menu.prepend(menuButton);
+  if(menu.firstElementChild!==menuButton)menu.prepend(menuButton);
  }
  function exclude(){
   const menu=document.querySelector('.menu');if(!menu)return;
@@ -86,8 +74,8 @@ export default function menuLayout(L,enabled){
  let panel;
  function bind(){
   const next=document.querySelector('.wrap__left');if(next===panel || !next)return;panel=next;
-  panel.addEventListener('pointerenter',()=>hover(true));
-  panel.addEventListener('pointerleave',()=>hover(false));
+  panel.addEventListener('pointerenter',()=>{if(enabled())document.body.classList.add('pt-menu-hover');});
+  panel.addEventListener('pointerleave',()=>document.body.classList.remove('pt-menu-hover'));
  }
  function update(){
   const value=L.Storage.get('menu_always',false),pinned=enabled() && [true,'true',1,'1','yes'].includes(value);
@@ -102,7 +90,6 @@ export default function menuLayout(L,enabled){
   bind();groups();
  }
  update();
- if(L.Controller && L.Controller.listener)L.Controller.listener.follow('toggle',()=>{if(document.body.classList.contains('pt-menu-pinned'))groups();});
  if(L.Storage.listener)L.Storage.listener.follow('change',e=>{if(e.name==='menu_always' || e.name==='lampa_view_enabled')update();});
  if(L.Notice && L.Notice.listener)L.Notice.listener.follow('viewed',groups);
  if(L.Notice && L.Notice.drawCount){const draw=L.Notice.drawCount;L.Notice.drawCount=function(){const result=draw.apply(this,arguments);groups();return result;};}

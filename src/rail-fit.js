@@ -1,4 +1,5 @@
 import homeStage from './home-stage.js';
+import {layoutProfile} from './layout-profile.js';
 
 // Whole-slot rounding can otherwise keep the same count in Bigger and make
 // posters slightly smaller because only the gaps grew. Measure the normal CSS
@@ -51,7 +52,17 @@ export default function fitRail(line,root,card,state,enabled){
  if(document.body.classList.contains('pt-tv')){
   // Explicit slots prevent round-to-nearest from making adjacent TV sizes equal.
   count=(parseInt(columns,10) || count)+(preview?2:0);
- }else if(scale>1){const normal=normalSlots(root,font,viewWidth,scale);if(normal>2)count=document.body.classList.contains('pt-mobile')?Math.min(count,normal-1):Math.max(2,Math.round(normal/scale));}
+ }else if(scale>1){
+  const normal=normalSlots(root,font,viewWidth,scale);
+  if(normal>2){
+   if(document.body.classList.contains('pt-mobile'))count=Math.min(count,normal-1);
+   else{
+    count=Math.max(2,Math.round(normal/scale));
+    const normalScale=layoutProfile(false,'normal').scale,middle=Math.max(2,Math.round(normal/normalScale));
+    if(scale>normalScale && middle>2)count=Math.min(count,middle-1);
+   }
+  }
+ }
  count=Math.max(1,Math.round(count/cards));
  const width=Math.floor((available-(count-1)*gap)/count*64)/64;
  if(width<=0)return;

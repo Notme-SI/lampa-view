@@ -5,7 +5,7 @@ test('home always hides Back with a deep activity stack and menu/back have ident
  try{
   let component='main';L.Activity.active=()=>({component});L.Activity.all=()=>[{},{},{}];
   const back=w.document.querySelector('.head__backward'),menu=w.document.querySelector('.head__menu-icon');
-  L.Listener.send('activity',{type:'start'});assert.equal(w.getComputedStyle(back).display,'none');assert.equal(back.getAttribute('aria-hidden'),'true');assert.ok(!back.classList.contains('selector'));
+  L.Listener.send('activity',{type:'start'});assert.equal(w.getComputedStyle(back).visibility,'hidden');assert.equal(back.getAttribute('aria-hidden'),'true');assert.ok(!back.classList.contains('selector'));
   component='category';L.Listener.send('activity',{type:'start'});assert.equal(w.getComputedStyle(back).display,'flex');
   for(const focused of [false,true]){
    back.classList.toggle('focus',focused);menu.classList.toggle('focus',focused);
@@ -14,7 +14,7 @@ test('home always hides Back with a deep activity stack and menu/back have ident
    for(const button of nav.children){button.classList.toggle('focus',focused);const actual=w.getComputedStyle(button);assert.equal(actual.outline,'none');if(focused)assert.match(actual.boxShadow,/inset/);}
    assert.equal(parseFloat(b.outlineWidth)||0,0);assert.equal(b.boxShadow,'none');nav.remove();
   }
-  component='main';L.Listener.send('activity',{type:'start'});assert.equal(w.getComputedStyle(back).display,'none');assert.equal(back.tabIndex,-1);assert.deepEqual(r.errors,[]);
+  component='main';L.Listener.send('activity',{type:'start'});assert.equal(w.getComputedStyle(back).visibility,'hidden');assert.equal(back.tabIndex,-1);assert.deepEqual(r.errors,[]);
  }finally{r.close();}
 });
 test('cartoons menu sits below series and opens bounded film/TV animation rows through mouse and remote',async()=>{
