@@ -28,7 +28,7 @@ export default function menuLayout(L,enabled){
   if(search){
    mobileControl={node:search,html:search.innerHTML,next:search.nextElementSibling};
    $(search).attr('data-action','menu').data('action','menu').attr({'role':'button','tabindex':'0','aria-label':t('Меню')});
-   search.querySelector('.navigation-bar__icon').innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>';
+   search.querySelector('.navigation-bar__icon').innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M2 5h20M2 12h20M2 19h20"/></svg>';
    search.querySelector('.navigation-bar__label').textContent=t('Меню');
    bar.querySelector('[data-action=back]')?.after(search);
    const toggle=()=>{document.body.classList.remove('pt-menu-hover');if(L.Menu?.toggle)L.Menu.toggle();else L.Controller.toggle(document.body.classList.contains('menu--open')?'content':'menu');};

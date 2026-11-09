@@ -10,6 +10,8 @@ test('Kodik TV part labels keep the Apothecary release in its third season',()=>
  try{w.eval(code);const card={name:'Монолог фармацевта',original_name:'Kusuriya no Hitorigoto',first_air_date:'2023-10-22'};
  const rows=[1,2,3].map(n=>({title:'Записки аптекаря [ТВ-'+n+(n===3?', часть 1':'')+'] / Kusuriya no Hitorigoto'+(n>1?' ('+(n===2?2025:2026)+')':''),method:'link',similar:true,url:'/lite/kodik?pick='+n}));
  assert.deepEqual(Array.from(w.OnlineState.folderSeasons(rows,card),r=>r.season),[1,2,3]);
+ const animevost=[['Монолог фармацевта / Kusuriya no Hitorigoto [1-24 из 24]',2023],['Монолог фармацевта (второй сезон) / Kusuriya no Hitorigoto 2nd Season [1-24 из 24]',2025],['Монолог фармацевта (третий сезон) / Kusuriya no Hitorigoto 3rd Season [1-6 из 12+] [7 серия - 13 ноября]',2026]].map(([title,year],i)=>({title,year,method:'link',similar:true,season:i===1?2:1,url:'/lite/animevost?uri='+i}));
+ assert.deepEqual(Array.from(w.OnlineState.folderSeasons(animevost,{...card,original_name:'薬屋のひとりごと'}),r=>r.season),[1,2,3]);
  }finally{w.close();}
 });
 
@@ -339,6 +341,9 @@ test('Lampac discovery and provider routes use the card title when Lampa supplie
   comp.request(comp.requestParams(inherited));
   const provider=params(requests[0]);assert.deepEqual(provider.getAll('title'),[title,title]);assert.equal(provider.get('kinopoisk_id'),'5258557');assert.equal(provider.get('pick'),'');assert.equal(s.movie.name,title);
   const manual='/lite/ailiberty?title=Other%20title&clarification=1';comp.request(manual);assert.equal(requests[1],manual);assert.deepEqual(n.errors,[]);
+  comp.request('/lite/animevost?title='+encodeURIComponent(title)+'&year=2023');
+  assert.equal(params(requests.at(-1)).get('similar'),'true','Animevost asks for the full release search before accepting a year match');
+  const release='/lite/animevost?uri=third&s=1';comp.request(release);assert.equal(requests.at(-1),release);
  }finally{if(s)s.close();n.close();}
 });
 
@@ -519,8 +524,9 @@ test('default background checks start before opening the source menu, share two 
   L.Reguest=function(){const net=new Real(),nativeRequest=net.native;net.native=(url,ok,fail,...rest)=>{if(!/\/lite\/(one|two|three|other)\?/.test(url))return nativeRequest.call(net,url,ok,fail,...rest);running++;maximum=Math.max(maximum,running);let done=false;requests.push({url,ok(body){if(done)return;done=true;running--;ok(body);},fail(){if(done)return;done=true;running--;fail();}});};return net;};
   const comp={request(){},parse(){},changeBalanser(){}};s=screen(n,{id:1701,component:comp});
   const sources=[{title:'Test',source:'test',selected:true},...['one','two','three'].map(source=>({title:source,source}))];s.filter.set('sort',sources);
-  comp.request('https://online.example.test/lite/test?id=1701&s=2&voice=old');await wait(1800);
+  comp.request('https://online.example.test/lite/test?id=1701&s=2&voice=old&pick=release&kid=dub&uri=provider-slug');await wait(1800);
   assert.equal(requests.length,2,'No menu or provider switch is needed to start checking');assert.equal(L.Select.opened(),false);assert.equal(s.played(),0);
+  for(const {url} of requests){const params=new URL(url).searchParams;assert.equal(params.get('id'),'1701');for(const key of ['s','voice','pick','kid','uri'])assert.equal(params.has(key),false);}
   s.root.find('[data-nova-focus=source]').trigger('hover:enter');assert.equal(requests.length,2,'Opening the menu does not restart active work');
   requests[0].ok(tag({method:'play',url:'/file',name:'1080p'}));assert.equal(requests.length,3);requests[1].ok(tag({method:'play',url:'/file'}));requests[2].ok(tag({method:'play',url:'/file'}));
   assert.equal(maximum,2);assert.equal(L.Select.render().find('.nova-source-option__status').length,4);L.Select.hide();
@@ -534,10 +540,11 @@ test('default background checks start before opening the source menu, share two 
 test('source menu leaves the last playback source and native playback saving untouched, ignoring legacy manual preferences',async()=>{
  const n=await native({built:true}),{L}=n;let s;try{
   L.Storage.set('online_last_balanser',{'1703':'watched'});L.Storage.set('lampa_view_source_choice',{'file_view|last':'old-manual'});
-  const legacy=JSON.stringify(L.Storage.get('lampa_view_source_choice',{})),saved=[],selected=[],update=key=>saved.push(key),comp={changeBalanser(){},updateBalanser:update};
+  const legacy=JSON.stringify(L.Storage.get('lampa_view_source_choice',{})),saved=[],selected=[],switches=[],update=key=>saved.push(key),comp={changeBalanser(source){switches.push(source);},updateBalanser:update};
   s=screen(n,{id:1703,component:comp});s.filter.onSelect=(type,item)=>selected.push(item.source);await wait(180);
   s.root.find('[data-nova-focus=source]').trigger('hover:enter');L.Select.render().find('[data-nova-provider=other]').trigger('hover:enter');await wait(40);
   assert.deepEqual(selected,['other']);assert.deepEqual(saved,[],'Choosing a source does not pretend playback occurred');assert.equal(comp.updateBalanser,update,'Native playback saving is preserved');assert.equal(L.Storage.get('online_last_balanser',{})['1703'],'watched');assert.equal(JSON.stringify(L.Storage.get('lampa_view_source_choice',{})),legacy);assert.equal(s.played(),0);
+  comp.changeBalanser('fallback',true);assert.deepEqual(switches,[],'A native fallback cannot replace the explicit source');
   const card=s.movie;s.close();L.Component.add('online_preference_qa',function(object){this.changeBalanser=function(){};this.object=object;});
   const create=(movie,extra={})=>L.Component.create({component:'online_preference_qa',movie,...extra}).object;
   assert.equal(create(card).lampac_auto_select,undefined);assert.equal(create({...card,id:1704}).lampac_auto_select,undefined);

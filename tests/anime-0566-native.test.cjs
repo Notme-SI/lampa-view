@@ -10,7 +10,10 @@ test('non-Kodik release folders retain all six episodes and dub options with loc
    const key=source==='animedia'?'news':'uri',release=base+'?'+key+'=release-3';
    await scene(n,movie,[1,2,3],[1],comp);
    comp.request(base+'?title=test');
-   comp.parse([1,2,3].map(s=>tag({title:'Монолог фармацевта '+s,method:'link',similar:true,url:base+'?'+key+'=release-'+s})).join(''));
+   const folders=[1,2,3].map(s=>tag({title:'Монолог фармацевта '+s,method:'link',similar:true,url:base+'?'+key+'=release-'+s}));
+   if(source==='animelib')folders.push(tag({title:'Монолог фармацевта 3. Часть 2 / The Apothecary Diaries Season 3 Part 2',method:'link',similar:true,url:release+'-part-2'}));
+   comp.parse(folders.join(''));
+   if(source==='animelib')assert.equal(rendered.at(-1).files.filter(row=>row.similar).length,4,'Both parts remain separate, selectable release folders');
    comp.request(release+'&t=dub');
    const files=Array.from({length:6},(_,i)=>({method:'call',url:base+'/video?id='+i,stream:base+'/video?id='+i+'&play=true'}));
    const body=files.map((row,i)=>tag(row,'s="1" e="'+(i+1)+'"')).join('')+tag({method:'link',name:'Dub A',url:release+'&t=a'},'','videos__button')+tag({method:'link',name:'Dub B',url:release+'&t=b'},'','videos__button');
@@ -18,6 +21,7 @@ test('non-Kodik release folders retain all six episodes and dub options with loc
    const result=rendered.at(-1);
    assert.deepEqual(Array.from(result.files,r=>[r.season,r.episode,r.url]),files.map((r,i)=>[3,i+1,r.url]),source+' uses the selected release season without dropping episode six');
    assert.equal(result.voices.length,2,'Dub navigation survives the release mapping');
+   assert.equal(comp.lampaViewSelectedRelease.season,3);
    assert.deepEqual(n.errors,[]);
   }finally{n.close();}
  }
@@ -58,7 +62,7 @@ test('native Kodik picker keeps separate TV release coordinates through nested s
   comp.parse(tag({title:'1 сезон',method:'link',season:1,url:base+'?pick=2&s=1'},'videos__item videos__season'));
   assert.equal(requested.at(-1),base+'?pick=2&s=1');
   comp.request(base+'?pick=2&s=1&t=voice');
-  comp.parse(tag({method:'call',season:1,episode:1,url:base+'?play=one'})+tag({method:'call',title:'Dub option',url:base+'?dub=two'}));
+  comp.parse(tag({method:'call',season:1,episode:1,url:base+'?play=one'})+tag({method:'call',title:'Dub option',url:base+'?dub=two'})+tag({method:'link',title:'Dub option',url:base+'?dub=two'},'videos__button'));
   assert.deepEqual(Array.from(rendered.at(-1),r=>[r.season,r.episode,r.url]),[[2,1,base+'?play=one']]);
   assert.deepEqual(n.errors,[]);
  }finally{n.close();}

@@ -1184,7 +1184,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
   function seasonNumber() {
     var part=currentContinuation();
     if(part)return part.part.season;
-    if(!groups.season)return 1;
+    if(!groups.season){var comp=componentNow();return comp && comp.lampaViewSelectedRelease?comp.lampaViewSelectedRelease.season:1;}
     var selected=groups.season.items.filter(function(item){return item.selected;})[0];
     return selected?sourceSeason(selected):digits(groups.season.subtitle);
   }
@@ -1726,9 +1726,19 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
 
   function probeUrlFor(key) {
     if (!probe_url || !key) return '';
-    var url = probe_url.replace(/(\/lite\/)[^\/?&]+/, '$1' + encodeURIComponent(key));
-    ['s','e','t','voice','translation','season','episode','rjson','checksearch','balancer','origid'].forEach(function(name){url=voiceDropParam(url,name);});
-    return url;
+    try {
+      var url=new URL(probe_url,location.href);
+      url.pathname=url.pathname.replace(/(\/lite\/)[^/]+$/, '$1'+encodeURIComponent(key));
+      // The last request may point to a dub or a release known only to its provider.
+      var titleKeys=['id','tmdb_id','imdb_id','kinopoisk_id','shikimori_id','mal_id','title','original_title','year','serial','anime','original_language','source','clarification','similar','cub_id','account_email','uid','token','rchtype','nws_id'];
+      Array.from(url.searchParams.keys()).forEach(function(name){if(titleKeys.indexOf(name)<0)url.searchParams.delete(name);});
+      if(movie){
+        var title=movie.name || movie.title || movie.original_name || movie.original_title;
+        if(title && (!url.searchParams.get('title') || url.searchParams.get('title')==='Фильм не найден'))url.searchParams.set('title',title);
+        if(!url.searchParams.has('serial'))url.searchParams.set('serial',tmdbKind(movie)==='tv'?'1':'0');
+      }
+      return url.href;
+    } catch(e) { return ''; }
   }
 
   function probeStop() {
@@ -2436,6 +2446,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     if (typeof comp.changeBalanser !== 'function') return;
 
     comp.nova_host_hooked = true;
+    if(object && object.lampac_custom_select)comp.lampaViewManualSource=true;
     if(typeof comp.contextMenu==='function'){
       var nativeContextMenu=comp.contextMenu;
       comp.contextMenu=function(params){
@@ -2468,7 +2479,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     var continuation={base:'',parts:[],selected:null,groups:null,baseSelection:0,count:0,started:false};
     var providerUrl=String(object && object.url || ''),providerPart=null;
     var releaseRoutes=[],releasePicks=null;
-    function releaseSeason(url){
+    function selectedRelease(url){
       try {
         var current=new URL(url,location.href);
         var matched=releaseRoutes.filter(function(entry){
@@ -2477,11 +2488,13 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
           var keys=['pick','uri','news','postid','animeid','releases','link','id'].filter(function(key){return target.searchParams.has(key);});
           return keys.length && keys.every(function(key){return target.searchParams.get(key)===current.searchParams.get(key);});
         });
-        if(matched.length===1)return matched[0].season;
+        if(matched.length===1)return matched[0];
       } catch(e) {}
       var target=releasePicks && continuationApi && continuationApi.route(url);
-      return target && releasePicks[target.origin+target.pathname+'|'+target.searchParams.get('pick')] || 0;
+      var season=target && releasePicks[target.origin+target.pathname+'|'+target.searchParams.get('pick')];
+      return season?{season:season}:null;
     }
+    function releaseSeason(url){var release=selectedRelease(url);return release?release.season:0;}
     var initialSource=providerUrl.match(/\/lite\/([^\/?#]+)/i);if(initialSource)comp.lampaViewSource=initialSource[1];
     if(continuationApi)comp.lampaViewContinuations=continuation;
     function readContinuations(str,card,folders){
@@ -2537,7 +2550,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       }
       comp.draw=function(files,params){
         var card=object && (object.movie || object.card) || movie,ownFilter=activeFilter(typeof comp.render==='function'?comp.render():root),ownGroups=readGroups(ownFilter),seasons=ownGroups.season && ownGroups.season.items || [];
-        episodeContext={card:card,files:(files || []).map(function(file){return Number(file.episode);}),seasons:seasons.map(function(s){return sourceSeason(s);}),similar:params && params.similars,part:providerPart,release:releaseSeason(providerUrl)};
+        episodeContext={card:card,files:(files || []).filter(function(file){return !file.lampa_unassigned_episode;}).map(function(file){return Number(file.episode);}),seasons:seasons.map(function(s){return sourceSeason(s);}),similar:params && params.similars,part:providerPart,release:selectedRelease(providerUrl)};
         return nativeDraw.apply(comp,arguments);
       };
       comp.getEpisodes=function(season,done){
@@ -2549,6 +2562,8 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
             if(comp.destroyed || episodeContext!==context)return;
             var own=readGroups(activeFilter(typeof comp.render==='function'?comp.render():root));
             context.seasons=(own.season && own.season.items || []).map(function(s){return sourceSeason(s);});
+            if(context.release && comp.lampaViewReleaseNumbers && !context.seasons.length)context.seasons=comp.lampaViewReleaseNumbers;
+            if(context.release && context.release.part>1)return done([]);
             function current(){return !comp.destroyed && episodeContext===context;}
             function providerMetadata(book){
               return metadataRows(book).filter(function(row){return context.files.indexOf(row.episode_number)>=0;});
@@ -2593,6 +2608,17 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       comp.request = function (url) {
         restoreLookupTitle();
         url=fixLookupUrl(url);
+        // Animevost's year match redirects straight to the original release.
+        // Ask the same provider for its search folders before choosing a season.
+        if(lookupCard && tmdbKind(lookupCard)==='tv' && /\/lite\/animevost(?:\?|$)/i.test(url)){
+          try{
+            var catalogueUrl=new URL(url,location.href);
+            if(!catalogueUrl.searchParams.get('uri') && catalogueUrl.searchParams.get('similar')!=='true'){
+              catalogueUrl.searchParams.set('similar','true');
+              url=catalogueUrl.href;
+            }
+          }catch(e){}
+        }
         arguments[0]=url;
         if(!parsing)folderChain=[];
         folderChain.push(String(url || ''));
@@ -2600,7 +2626,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
         resetAvailability(source ? source[1] : currentSourceKey());
         if(source)comp.lampaViewSource=source[1];
         if(source && source[1].toLowerCase()!=='kodik' && source[1].toLowerCase()!=='kodik_snack')comp.lampaViewProviderSeasons=null;
-        providerUrl=String(url || '');comp.lampaViewJoinedParts=null;
+        providerUrl=String(url || '');comp.lampaViewJoinedParts=null;comp.lampaViewSelectedRelease=selectedRelease(providerUrl);
         var target=continuationApi && continuation.base && continuationApi.route(providerUrl,continuation.base);
         providerPart=continuation.selected && target && target.searchParams.get('pick')===new URL(continuation.selected.url).searchParams.get('pick')?continuation.selected:null;
         try { learnUrl(url); } catch (e) {}
@@ -2613,9 +2639,10 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       comp.parseJsonDate=function(body,selector){
         var rows=parseRows.apply(this,arguments);
         var card=object && (object.movie || object.card) || movie,state=onlineState(),metadata=window.LampaView && window.LampaView.episodeMetadata;
-        if(selector==='.videos__item' && rows && state && state.episodeRows && card && tmdbKind(card)==='tv' && metadata && metadata.isAnime(card)){
-          rows=state.episodeRows(rows);
-          var number=releaseSeason(providerUrl);
+        if(selector==='.videos__item' && rows && state && state.episodeRows && card && tmdbKind(card)==='tv'){
+          var mixed=rows.some(function(row){return /^(play|call)$/.test(row.method) && row.episode==null;});
+          rows=state.episodeRows(rows,mixed?parseRows.call(this,body,'.videos__button'):[]);
+          var number=metadata && metadata.isAnime(card) && releaseSeason(providerUrl);
           if(number)rows=rows.map(function(row){return /^(play|call)$/.test(row.method) && row.episode!=null?Object.assign({},row,{season:number}):row;});
         }
         if(providerPart && selector==='.videos__item' && rows && rows.length)return continuationApi.files(providerPart,rows);
@@ -2688,7 +2715,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       }
       comp.lampaViewSeasonCount=function(number,voice){
         var source=currentSourceKey();
-        if(!seasonLinks || source!==seasonLinks.source || !seasonLinks.links[number])return 0;
+        if(!seasonLinks || source!==seasonLinks.source || !seasonLinks.links[number])return;
         var scope=[tmdbId(),source,voice,providerSeasonNumbers().join(',')].join('|');
         if(scope!==countScope){countScope=scope;counts={};countDone={};countQueue=[];}
         if(counts[number]===undefined){
@@ -2792,18 +2819,26 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
             if(relevant.length!==folders.length){
               // An empty exact-title result belongs to the native no-results flow.
               // Do not offer unrelated fuzzy provider search hits as this title.
-              str=relevant.length?relevant.map(function(row){return '<div class="videos__item" data-json="'+JSON.stringify(row).replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'"></div>';}).join(''):'<div class="videos__line"></div>';
+              str=relevant.length?relevant.map(function(row){
+                return $('<div class="videos__item videos__season"></div>').attr('data-json',JSON.stringify(row)).text(row.text || row.title || row.name || '')[0].outerHTML;
+              }).join(''):'<div class="videos__line"></div>';
               arguments[0]=str;folders=relevant;
             }
           }
-          var seasons=card && folderState && folderState.folderSeasons(folders,card);
+          var seasons=card && folderState && folderState.folderSeasons(folders,card),discovered=[];
+          if(card && episodeApi && episodeApi.isAnime(card) && folderState && folders && folders.length){
+            discovered=folderState.folderReleases(folders,card);
+            if(discovered.length){
+              releaseRoutes=discovered;
+              comp.lampaViewReleaseNumbers=Array.from(new Set(discovered.map(function(row){return row.season;}))).sort(function(a,b){return a-b;});
+            }
+          }
           var releaseSeason=card && card.minimal_anime_release && card.minimal_anime_release.season;
           if(comp.lampaViewManualSeason===undefined && releaseSeason>0){var mapping=comp.lampaViewProviderSeasons || {},matched=Object.keys(mapping).filter(function(key){return mapping[key].number===releaseSeason;});comp.lampaViewManualSeason=matched.length===1?Number(matched[0]):releaseSeason;}
           var desiredSeason=comp.lampaViewManualSeason!==undefined?comp.lampaViewManualSeason:folders && folders.length && folderState.resume(card || {}),seasonNumberWanted=desiredSeason && typeof desiredSeason==='object'?desiredSeason.season:desiredSeason!==false && desiredSeason!==null && desiredSeason!==undefined?desiredSeason:1;
           var seasonTarget=seasons && seasons.find(function(row){return row.season===seasonNumberWanted;}) || seasons && seasons[0];
           if(folderChain.length>=6 || seasonTarget && folderChain.indexOf(seasonTarget.url)>=0)seasons=[];
           if(seasons && seasons.length){
-            releaseRoutes=seasons.map(function(row){return {url:row.url,season:row.season};});
             // Let the native parser retain its season URLs and selection state.
             // Skipping this page would open episodes but leave no season picker.
             if(continuationApi && episodeApi && episodeApi.isAnime(card)){
@@ -2814,7 +2849,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
             arguments[0]=str;folders=[];
           }
           var resume=folders && folders.length && folderState.resume(card || {});
-          var folder=card && folders && folders.length && folderState.folderTarget(folders,card,comp.lampaViewManualSeason!==undefined?comp.lampaViewManualSeason:resume?resume.season:1);
+          var folder=card && folders && folders.length && discovered.length<2 && folderState.folderTarget(folders,card,comp.lampaViewManualSeason!==undefined?comp.lampaViewManualSeason:resume?resume.season:1);
           if(folder && folderChain.length<6 && folderChain.indexOf(folder)<0){
             parsing=true;
             try { if(typeof comp.reset==='function')comp.reset();return comp.request(folder); }
@@ -2857,6 +2892,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       comp.doesNotAnswer=function(){
         var failedSource=requestSource || currentSourceKey();
         var result=noAnswer.apply(comp,arguments);
+        if((comp.lampaViewManualSource || comp.lampaViewManualNavigation) && typeof comp.render==='function')hostTimerStop({node:$(comp.render())});
         comp.lampaViewAvailability='error';comp.lampaViewAvailabilitySource=failedSource;
         if(movie && componentNow()===comp && failedSource && !comp.lampaViewManualNavigation)probeSave(qualityScope(),failedSource,'error',0);
         return result;
@@ -2866,6 +2902,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     var real = comp.changeBalanser;
 
     comp.changeBalanser = function () {
+      if(arguments[1]===true && (comp.lampaViewManualSource || comp.lampaViewManualNavigation))return;
       continuation.selected=null;
       resetAvailability(typeof arguments[0]==='string' ? arguments[0] : '');
       probeStop(); probe_done_for = 0;
@@ -2873,7 +2910,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       // selection for the destination source; never copy another source's dub.
       comp.lampaViewManualSeason=undefined;
       comp.lampaViewProviderSeasons=null;comp.lampaViewJoinedParts=null;
-      seasonLinks=null;releasePicks=null;releaseRoutes=[];countScope='';counts={};countDone={};countQueue=[];
+      seasonLinks=null;releasePicks=null;releaseRoutes=[];comp.lampaViewSelectedRelease=null;comp.lampaViewReleaseNumbers=null;countScope='';counts={};countDone={};countQueue=[];
       if (!inplace || !reloadable(comp)) return real.apply(comp, arguments);
 
       inplaceStop();
@@ -3058,11 +3095,12 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     }
 
     var soon = soonCard(origin);
-    var nativeAction=origin.data('nova-native-actions'),nativeValue=nativeAction && nativeAction.element && nativeAction.element.episode,nativeEpisode=Number(nativeValue);
+    var nativeAction=origin.data('nova-native-actions'),nativeFile=nativeAction && nativeAction.element,nativeValue=nativeFile && nativeFile.episode,nativeEpisode=Number(nativeValue);
+    var unassigned=!!(nativeFile && nativeFile.lampa_unassigned_episode);
     var episodeText=origin.find('.' + px + 'online-prestige__episode-number').text();
-    var episodeNum = nativeValue!=null && Number.isInteger(nativeEpisode) && nativeEpisode>=0?nativeEpisode:/\d/.test(episodeText)?digits(episodeText):index+1;
+    var episodeNum = unassigned?null:nativeValue!=null && Number.isInteger(nativeEpisode) && nativeEpisode>=0?nativeEpisode:/\d/.test(episodeText)?digits(episodeText):index+1;
     var isSeries = !!(movie && (movie.name || movie.original_name || movie.number_of_seasons || movie.media_type === 'tv'));
-    var progress = progressReader()(isSeries ? (seasonNumber()) : 0, isSeries ? episodeNum : 0, hash);
+    var progress = unassigned?{}:progressReader()(isSeries ? (seasonNumber()) : 0, isSeries ? episodeNum : 0, hash);
     if (progress.found) percent = progress.percent;
 
     return {
@@ -3070,6 +3108,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       index: index,
       px: px,
       folder: origin.hasClass(px + 'online-prestige--folder'),
+      unassigned: unassigned,
       soon: soon,
       percent: percent,
       position: progress.time || 0,
@@ -3135,7 +3174,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
 
   function seasonSeen(list, planned) {
     var seen=0,total=0,max=0,unique={},read=progressReader(),season=seasonNumber();
-    list.forEach(function(item){max=Math.max(max,item.num || 0);if(item.soon || unique[item.num])return;unique[item.num]=item;total++;});
+    list.forEach(function(item){max=Math.max(max,item.num || 0);if(item.soon || item.unassigned || unique[item.num])return;unique[item.num]=item;total++;});
     var details=movie && Array.isArray(movie.seasons) ? movie.seasons : [],detail=details.filter(function(row){return Number(row.season_number)===season;})[0];
     planned=Math.max(planned || 0,detail && Number(detail.episode_count) || 0,max,total);
     for(var e=1;e<=Math.min(500,planned);e++){var record=read(season,e);if(unique[e] && isSeen(unique[e]) || record.found && record.percent>=SEEN_PERCENT)seen++;}
@@ -3148,7 +3187,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     if (!full || !full.length) return null;
 
     var list = full.filter(function (item) {
-      return !item.soon && (serial || nav || !item.folder);
+      return !item.soon && !item.unassigned && (serial || nav || !item.folder);
     });
     if (!list.length) return null;
 
@@ -3434,7 +3473,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     var body = card.find('.nova-card__body');
 
     var head = item.title || movie.title || movie.name || '';
-    card.find('.nova-card__title').text(serial && !item.folder ? episodeTitle(item, head) : head);
+    card.find('.nova-card__title').text(serial && !item.folder && !item.unassigned ? episodeTitle(item, head) : head);
 
     var meta = metaTrim(item.meta, head);
     if (item.percent > 0 && item.percent < SEEN_PERCENT && item.time) {
@@ -3445,7 +3484,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       return '<span>' + esc(part) + '</span>';
     }).join('<span class="nova-dot">\u25cf</span>'));
 
-    if (serial && !item.folder) {
+    if (serial && !item.folder && !item.unassigned) {
       var slot = card.find('.nova-card__num > span');
       slot.text(item.num===0?lampaViewText("Дополнительный выпуск"):episodeNumber(item.num));
       if (!item.numbered) watchNumber(item, slot);
@@ -3478,7 +3517,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       card.find('.nova-card__line').remove();
       card.append('<div class="nova-card__go">' + ICON.chevron + '</div>');
     } else {
-      var officialShow = serial && !!officialHeroArt();
+      var officialShow = serial && !item.unassigned && !!officialHeroArt();
       var art = officialShow
         ? window.LampaView.officialEpisodePreview(movie, seasonNumber(), item.num)
         : ownArt(item);
@@ -4150,7 +4189,9 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     } catch (e) {}
   }
 
-  function chooseSource(item) {
+  function chooseSource(item, automatic) {
+    var owner=componentNow();
+    if(owner)owner.lampaViewManualSource=!automatic;
     if (wideOn()) return wideChooseSource(item, focusKey(item));
     if (!filter || typeof filter.onSelect !== 'function') return;
     var host_filter = filter;
@@ -4262,11 +4303,9 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
   }
 
   function sourceActive(item, state) {
-    if (state === 'ok') return true;
-    if (state === 'empty' || state === 'error' || item.ghost) return false;
-    // An untested provider is not a failed provider. Quality badges alone
-    // cannot determine whether a source has this film.
-    return true;
+    // A probe of one release or an error in one dub must not hide a source
+    // that discovery offers. Keep the current choice visible on error too.
+    return !!item.selected || state === 'ok' || !item.ghost;
   }
 
   function onlineChoiceDraw(node,entry){
@@ -5032,7 +5071,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
 
     var next = (groups.sort || []).length > 1 ? nextSource() : null;
     var owner=componentNow();
-    var auto = !!next && autoSwitchOn() && !(owner && owner.lampaViewManualNavigation);
+    var auto = !!next && autoSwitchOn() && !(owner && (owner.lampaViewManualNavigation || owner.lampaViewManualSource));
 
     if (next) {
       addAction(text('nova_try_source', 'nova_plus_try_source')
@@ -5079,7 +5118,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
         render();
         if (tic > 0) return;
         hopStop();
-        chooseSource(next);
+        chooseSource(next,true);
       }, 1000);
     } else if (!next && (groups.sort || []).length > 1) {
       note.find('.nova-note__text').text(text('nova_dead_all', 'nova_plus_dead_all'));
@@ -5890,7 +5929,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
 
   function wideFiles() {
     var count = 0;
-    items.forEach(function (item) { if (!item.folder && !item.soon) count++; });
+    items.forEach(function (item) { if (!item.folder && !item.soon && !item.unassigned) count++; });
     return count;
   }
 
@@ -5901,7 +5940,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     if(number===undefined || number===null)return '';
     var key=wideCountKey(number),fileKey=wideFileCountKey(number);
     var active=Number(seasonNumber()),owner=root && root[0];
-    var actual=items.filter(function(item){return !item.folder && !item.soon;}),zero=actual.some(function(item){return Number(episodeNumber(item.num))===0;});
+    var actual=items.filter(function(item){return !item.folder && !item.soon && !item.unassigned;}),zero=actual.some(function(item){return Number(episodeNumber(item.num))===0;});
     var nodes=actual.map(function(item){return item.origin[0];});
     var activeKey=wideFileCountKey(active);
     var changed=wideObserved.owner!==owner || nodes.length!==wideObserved.nodes.length ||
@@ -5910,7 +5949,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     if(number===active && wideObserved.key===activeKey && nodes.length)wide_file_counts[fileKey]=actual.filter(function(item){return Number(episodeNumber(item.num))>0;}).length;
     if(wide_file_counts[fileKey])return wideCount(wide_file_counts[fileKey])+(number===active && zero?' + '+lampaViewText('Серия {0}',[0]):'');
     var comp=componentNow(),exact=comp && comp.lampaViewSeasonCount && comp.lampaViewSeasonCount(number,wideVoiceName());
-    if(exact)return wideCount(exact);
+    if(exact!==undefined)return exact?wideCount(exact):'';
     var season=(movie && movie.seasons || []).filter(function(row){return Number(row.season_number)===displaySeason(number);})[0];
     var count=wide_counts[key] || Number(season && season.episode_count);
     var moreParts=alternateSeasons() && providerSeasonNumbers().filter(function(n){return n>0;}).length>Number(movie.number_of_seasons);
@@ -5930,10 +5969,10 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
   function wideAnimePrefix(){return [movie && (movie.tmdb_id || movie.id),currentSourceKey(),seasonNumber() || 0].join('|');}
   function wideAnimeCurrent(){return wide_anime.groups && wide_anime.prefix===wideAnimePrefix()?wide_anime.groups.filter(function(g){return g.number===wide_anime.selected;})[0]:null;}
   function wideAnimePending(){return wide_anime.pending && wide_anime.prefix===wideAnimePrefix();}
-  function wideAnimeFilter(list){var group=wideAnimeCurrent();return group?list.filter(function(item){return !item.folder && group.episodes.indexOf(Number(episodeNumber(item.num)))>=0;}):list;}
+  function wideAnimeFilter(list){var group=wideAnimeCurrent();return group?list.filter(function(item){return !item.folder && (item.unassigned || group.episodes.indexOf(Number(episodeNumber(item.num)))>=0);}):list;}
   function wideAnimePrepare(list){
     var view=window.LampaView,api=view && view.episodeMetadata && view.episodeMetadata.groups?view.episodeMetadata:view && view.kinoapi;if(seasonNumber()===0 || currentContinuation() || !serial || nav || !wideMeta() || !api || !api.groups || api.enabled && !api.enabled())return;
-    var files=list.filter(function(item){return !item.folder && !item.soon;}).map(function(item){return Number(episodeNumber(item.num));});
+    var files=list.filter(function(item){return !item.folder && !item.soon && !item.unassigned;}).map(function(item){return Number(episodeNumber(item.num));});
     var prefix=wideAnimePrefix(),labels=providerSeasonNumbers(),key=prefix+'|'+labels.join(',')+'|'+files.join(',');if(wide_anime.key===key)return;
     wide_anime={key:key,prefix:prefix,groups:null,selected:0,pending:true};var owner=root && root[0];
     var preparing = true,finished=false;
@@ -5959,20 +5998,21 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     },{number:seasonNumber(),numbers:labels});
     preparing = false;
   }
-  function providerSeasonNumbers(){return (groups.season && groups.season.items || []).map(function(item){return sourceSeason(item);});}
+  function providerSeasonNumbers(){var comp=componentNow();return groups.season?groups.season.items.map(function(item){return sourceSeason(item);}):comp && comp.lampaViewSelectedRelease && comp.lampaViewReleaseNumbers || [];}
   function alternateSeasons(){var api=window.LampaView && window.LampaView.episodeMetadata,comp=componentNow();return !!(comp && comp.lampaViewProviderSeasons) || api && api.alternate(movie,providerSeasonNumbers());}
   function wideBook(number, done, countOnly) {
     var callback=done,metadataApi=window.LampaView && window.LampaView.episodeMetadata;
     done=function(book,grouped){callback(metadataApi && metadataApi.localizeBook?metadataApi.localizeBook(book):book,grouped);};
     var api=window.LampaView && window.LampaView.episodeMetadata,arc=wideAnimeCurrent();
-    var joined=componentNow() && componentNow().lampaViewJoinedParts;
+    var comp=componentNow(),joined=comp && comp.lampaViewJoinedParts;
+    if(comp && comp.lampaViewSelectedRelease && comp.lampaViewSelectedRelease.part>1)return done(null,true);
     if(joined && joined.season===number && joined.parts.length)return wideJoinedBook(number,done);
     var continuation=currentContinuation();
     if(continuation)return wideCanonicalBook(continuation.part.season,function(book){done(book,true);});
     if(number===0)return wideCanonicalBook(0,done);
     if(arc && arc.anime_release && arc.book)return done(arc.book,true);
     if(arc && arc.native && api && api.groupBook)return wideCanonicalBook(arc.number,function(book){done(api.groupBook(book,arc),true);});
-    if(api && movie && wideMeta() && api.book(movie,number,providerSeasonNumbers(),!countOnly && Number(number)===Number(seasonNumber())?wideFiles():0,function(book,grouped){if(book || grouped)return done(book,grouped);wideJoinedBook(number,done);},!countOnly?items.filter(function(item){return !item.folder && !item.soon;}).map(function(item){return Number(episodeNumber(item.num));}):[],!!arc,componentNow() && componentNow().lampaViewProviderSeasons))return;
+    if(api && movie && wideMeta() && api.book(movie,number,providerSeasonNumbers(),!countOnly && Number(number)===Number(seasonNumber())?wideFiles():0,function(book,grouped){if(book || grouped)return done(book,grouped);wideJoinedBook(number,done);},!countOnly?items.filter(function(item){return !item.folder && !item.soon && !item.unassigned;}).map(function(item){return Number(episodeNumber(item.num));}):[],!!arc,componentNow() && componentNow().lampaViewProviderSeasons))return;
     wideJoinedBook(number,done);
   }
   function wideJoinedBook(number,done,target,comp){
@@ -6215,7 +6255,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       return card;
     }
 
-    if (!serial) return card;
+    if (!serial || item.unassigned) return card;
 
     if (viewMode() === 'list') return wideDressList(card, item, readEpisodeBook);
 

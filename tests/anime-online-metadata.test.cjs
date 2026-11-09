@@ -23,7 +23,7 @@ test('native online metadata obeys the complete coordinate guard before construc
 test('a named provider release does not inherit future episodes from the combined catalogue season',async()=>{
  const n=await native({built:true}),{w,L}=n,$=w.jQuery;
  try{
-  const root=$('<div>').appendTo(w.document.body),movie={id:220542,name:'Монолог фармацевта',minimal_anime:true,number_of_seasons:3};
+  const root=$('<div>').appendTo(w.document.body),movie={id:220542,name:'Монолог фармацевта',minimal_anime:true,number_of_seasons:3,seasons:[{season_number:1,episode_count:24}]};
   const base='https://lampac.test/lite/ailiberty',first=base+'?uri=first';
   const comp={render:()=>root,changeBalanser(){},request(){},parse(){},parseJsonDate(){return [];},getEpisodes(){throw new Error('Use checked metadata');},draw(rows,done){this.getEpisodes(rows[0].season,done);}};
   L.Component.add('provider_release_metadata_test',function(){return comp;});L.Component.create({component:'provider_release_metadata_test',movie});
