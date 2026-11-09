@@ -1,6 +1,8 @@
 // Desktop gives the carousel the remaining first-screen height. Poster sizing belongs
 // to the common rail fitter, so the first and subsequent collections match.
 export default function homeStage(hero,root){
+ // A covered activity can have different native padding and scroll offsets.
+ if(!document.body.classList.contains('pt-home') || !root.closest('.activity--active'))return;
  const tv=document.body.classList.contains('pt-tv');
  // Expanded collections use native scrolling. Retain the preview's hero
  // height so entry/return only animates cards, never the banner itself.

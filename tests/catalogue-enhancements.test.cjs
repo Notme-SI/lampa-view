@@ -1,13 +1,16 @@
 const test=require('node:test'),assert=require('node:assert/strict'),path=require('node:path'),esbuild=require('esbuild'),{JSDOM}=require('jsdom'),native=require('./fixtures/native-lampa.cjs');
 const code=esbuild.buildSync({stdin:{contents:"export {default as quality} from './src/quality.js';export {default as info} from './src/card-info.js';export {default as cache} from './src/cache-control.js';export {providerQuality} from './src/online-quality.js';export {placeBadges} from './src/badge-layout.js';",resolveDir:path.join(__dirname,'..')},bundle:true,write:false,format:'iife',globalName:'Features'}).outputFiles[0].text;
-test('favorite badges share the lower edge and wrap clear of rating and status',()=>{
+test('status moves above the CSS favorites row without moving the rating',()=>{
  const dom=new JSDOM('',{runScripts:'outside-only'}),w=dom.window;w.eval(code);
- try{for(const width of [65,100,180]){
-  const out=w.Features.placeBadges(width,240,[{id:'rating',corner:'br',width:25,height:18},...['book','like','later'].map(id=>({id,corner:'bl',flow:'row',width:19,height:19}))]);
-  assert.equal(out.length,4);assert.equal(out[1].y,217);
-  if(width===180){assert.equal(out[2].y,out[1].y);assert.ok(out[2].x>out[1].x);}
-  for(const a of out){assert.ok(a.x>=4&&a.x+a.width<=width-4&&a.y>=4);for(const b of out)if(a!==b)assert.ok(a.x+a.width<=b.x||b.x+b.width<=a.x||a.y+a.height<=b.y||b.y+b.height<=a.y);}
- }}finally{w.close();}
+ try{
+  const favorites=[{x:4,y:212,width:24,height:20},{x:32,y:212,width:24,height:20}];
+  const [rating,status]=w.Features.placeBadges(110,240,[
+   {id:'rating',corner:'br',inset:8,width:36,height:28},
+   {id:'status',corner:'bl',width:57,height:18}
+  ],favorites);
+  assert.equal(rating.x,66);assert.equal(rating.y,204);
+  assert.ok(status.y+status.height<=favorites[0].y-3);
+ }finally{w.close();}
 });
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 test('provider quality uses explicit metadata and never invents HD from an unknown description',()=>{

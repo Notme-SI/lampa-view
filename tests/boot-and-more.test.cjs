@@ -11,10 +11,12 @@ test('boot theme loads before appready and does not replace native loading or er
 });
 test('More on discover rows uses TMDB explicitly and normalizes legacy lang parameter',()=>{
  const dom=new JSDOM('<head></head><body><div class="head__title"></div></body>',{runScripts:'outside-only'}),w=dom.window;
- w.eval(fs.readFileSync(path.join(__dirname,'fixtures/jquery.js'),'utf8'));const events={},pushes=[];w.appready=true;
- w.Lampa={Storage:{get:(k,d)=>d,set(){}},SettingsApi:{addComponent(){},addParam(){}},Activity:{active:()=>({component:'other',source:'cub'}),push:v=>pushes.push(v),replace(){}},Player:{listener:{follow(){}},playlist(){}},Listener:{follow:(key,fn)=>(events[key] ||= []).push(fn)}};
- w.eval(bundle());let hook;const line={use:v=>hook=v};events.line.forEach(fn=>fn({type:'create',line,data:{title:'Новые сериалы',url:'discover/tv?lang=ru&sort_by=popularity.desc'}}));hook.onlyMore();
- assert.equal(pushes.length,1);assert.equal(pushes[0].component,'category_full');assert.equal(pushes[0].source,'tmdb');assert.equal(pushes[0].url,'discover/tv?language=ru&sort_by=popularity.desc');assert.equal(pushes[0].page,1);dom.window.close();
+ try{
+  w.eval(fs.readFileSync(path.join(__dirname,'fixtures/jquery.js'),'utf8'));const events={},pushes=[];w.appready=true;
+  w.Lampa={Storage:{get:(k,d)=>d,set(){}},SettingsApi:{addComponent(){},addParam(){}},Activity:{active:()=>({component:'other',source:'cub'}),push:v=>pushes.push(v),replace(){}},Player:{listener:{follow(){}},playlist(){}},Listener:{follow:(key,fn)=>(events[key] ||= []).push(fn)}};
+  w.eval(bundle());let hook;const line={use:v=>hook=v};events.line.forEach(fn=>fn({type:'create',line,data:{title:'Новые сериалы',url:'discover/tv?lang=ru&sort_by=popularity.desc'}}));hook.onlyMore();
+  assert.equal(pushes.length,1);assert.equal(pushes[0].component,'category_full');assert.equal(pushes[0].source,'tmdb');assert.equal(pushes[0].url,'discover/tv?language=ru&sort_by=popularity.desc');assert.equal(pushes[0].page,1);
+ }finally{dom.window.close();}
 });
 
 

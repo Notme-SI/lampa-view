@@ -6,7 +6,7 @@
   "zh": "俄语",
   "pt": "Russo",
   "bg": "руски",
-  "he": "Russian",
+  "he": "רוסית",
   "cs": "Ruština",
   "ro": "Rusă",
   "fr": "Russe",
@@ -23,7 +23,8 @@
   "cs": "Sledovat",
   "ro": "Vizionează",
   "fr": "Regarder",
-  "pl": "Oglądaj"
+  "pl": "Oglądaj",
+  "es": "Ver"
  },
  "Воспроизведение": {
   "en": "Playback",
@@ -4349,7 +4350,8 @@
   "he": "על הכותר",
   "cs": "O titulu",
   "ro": "Despre acest titlu",
-  "pl": "O tym tytule"
+  "pl": "O tym tytule",
+  "es": "Acerca de la obra"
  },
  "Оригинальное название": {
   "en": "Original title",
@@ -4362,7 +4364,8 @@
   "he": "שם מקורי",
   "cs": "Původní název",
   "ro": "Titlu original",
-  "pl": "Tytuł oryginalny"
+  "pl": "Tytuł oryginalny",
+  "es": "Título original"
  },
  "Тип": {
   "en": "Type of",
@@ -4375,7 +4378,8 @@
   "cs": "Typ",
   "ro": "Tip",
   "fr": "Type",
-  "pl": "Typ"
+  "pl": "Typ",
+  "es": "Tipo"
  },
  "Аниме-сериал": {
   "en": "Anime series",
@@ -4388,7 +4392,8 @@
   "he": "סדרת אנימה",
   "cs": "Anime seriál",
   "ro": "Serial anime",
-  "pl": "Serial anime"
+  "pl": "Serial anime",
+  "es": "Serie de anime"
  },
  "Аниме-фильм": {
   "en": "Anime movie",
@@ -4401,10 +4406,11 @@
   "he": "סרט אנימה",
   "cs": "Anime film",
   "ro": "Film anime",
-  "pl": "Film anime"
+  "pl": "Film anime",
+  "es": "Película de anime"
  },
  "Сериал": {
-  "en": "TV series",
+  "en": "TV",
   "fr": "Série TV",
   "uk": "Серіал",
   "be": "Серыял",
@@ -4414,7 +4420,22 @@
   "he": "סדרה",
   "cs": "Seriál",
   "ro": "Serial",
-  "pl": "Serial"
+  "pl": "Serial",
+  "es": "TV"
+ },
+ "Мультфильм": {
+  "en": "Cartoon",
+  "fr": "Dessin animé",
+  "uk": "Мультфільм",
+  "be": "Мультфільм",
+  "zh": "动画片",
+  "pt": "Desenho animado",
+  "bg": "Анимационен филм",
+  "he": "סרט מצויר",
+  "cs": "Animovaný film",
+  "ro": "Film de animație",
+  "pl": "Film animowany",
+  "es": "Película de animación"
  },
  "Фильм": {
   "en": "Movie",
@@ -4427,7 +4448,8 @@
   "he": "סרט",
   "cs": "Film",
   "ro": "Film",
-  "pl": "Film"
+  "pl": "Film",
+  "es": "Película"
  },
  "Дата релиза": {
   "en": "date of release",
@@ -4440,7 +4462,8 @@
   "cs": "Datum vydání",
   "ro": "Data lansării",
   "fr": "Date de sortie",
-  "pl": "Data premiery"
+  "pl": "Data premiery",
+  "es": "Fecha de estreno"
  },
  "Длительность серии": {
   "en": "Episode runtime",
@@ -4453,7 +4476,8 @@
   "he": "משך פרק",
   "cs": "Délka dílu",
   "ro": "Durata episodului",
-  "pl": "Długość odcinka"
+  "pl": "Długość odcinka",
+  "es": "Duración del episodio"
  },
  "Длительность": {
   "en": "Runtime",
@@ -4466,7 +4490,8 @@
   "he": "משך",
   "cs": "Délka",
   "ro": "Durată",
-  "pl": "Czas trwania"
+  "pl": "Czas trwania",
+  "es": "Duración"
  },
  "Тип релиза": {
   "en": "Release type",
@@ -4479,7 +4504,8 @@
   "he": "סוג הפצה",
   "cs": "Typ vydání",
   "ro": "Tip lansare",
-  "pl": "Typ wydania"
+  "pl": "Typ wydania",
+  "es": "Tipo de versión"
  },
  "Рейтинг TMDB": {
   "en": "TMDB rating",
@@ -4492,7 +4518,8 @@
   "he": "דירוג TMDB",
   "cs": "Hodnocení TMDB",
   "ro": "Evaluare TMDB",
-  "pl": "Ocena TMDB"
+  "pl": "Ocena TMDB",
+  "es": "Puntuación TMDB"
  },
  "Жанры": {
   "en": "Genres",
@@ -4505,7 +4532,8 @@
   "he": "ז׳אנרים",
   "cs": "Žánry",
   "ro": "Genuri",
-  "pl": "Gatunki"
+  "pl": "Gatunki",
+  "es": "Géneros"
  },
  "Проекты {0}": {
   "en": "Titles by {0}",
@@ -5233,7 +5261,8 @@
   "he": "תפריט",
   "cs": "Nabídka",
   "ro": "Meniu",
-  "pl": "Menu"
+  "pl": "Menu",
+  "es": "Menú"
  },
  "Обложка {0}: {1}": {
   "en": "Cover {0}: {1}",
@@ -6667,7 +6696,8 @@
   "he": "לא מחובר מקור מקוון",
   "cs": "Není připojen online zdroj",
   "ro": "Nicio sursă online conectată",
-  "pl": "Brak połączonego źródła online"
+  "pl": "Brak połączonego źródła online",
+  "es": "No hay ninguna fuente en línea conectada"
  },
  "Все сезоны сериала. Будущие серии не отмечаются.": {
   "en": "All seasons of the series. Future episodes are excluded.",
@@ -9534,5 +9564,257 @@
   "fr": "Image suivante",
   "pl": "Następny kadr",
   "es": "Fotograma siguiente"
+ },
+ "Коллекция": {
+  "en": "Collection",
+  "uk": "Колекція",
+  "be": "Калекцыя",
+  "zh": "系列",
+  "pt": "Coleção",
+  "bg": "Колекция",
+  "he": "אוסף",
+  "cs": "Kolekce",
+  "ro": "Colecție",
+  "fr": "Collection",
+  "pl": "Kolekcja",
+  "es": "Colección"
+ },
+ "Закрыть": {
+  "en": "Close",
+  "uk": "Закрити",
+  "be": "Закрыць",
+  "zh": "关闭",
+  "pt": "Fechar",
+  "bg": "Затвори",
+  "he": "סגירה",
+  "cs": "Zavřít",
+  "ro": "Închide",
+  "fr": "Fermer",
+  "pl": "Zamknij",
+  "es": "Cerrar"
+ },
+ "Метаданные аниме и кадры ТВ-шоу.": {
+  "en": "Anime metadata and TV show stills.",
+  "uk": "Метадані аніме та кадри телешоу.",
+  "be": "Метаданыя анімэ і кадры тэлешоу.",
+  "zh": "动画元数据和电视节目剧照。",
+  "pt": "Metadados de anime e imagens de programas de TV.",
+  "bg": "Метаданни за аниме и кадри от ТВ предавания.",
+  "he": "נתוני אנימה ותמונות מתוכניות טלוויזיה.",
+  "cs": "Metadata anime a snímky z televizních pořadů.",
+  "ro": "Metadate anime și imagini din emisiuni TV.",
+  "fr": "Métadonnées des anime et images des émissions TV.",
+  "pl": "Metadane anime i kadry z programów TV.",
+  "es": "Metadatos de anime e imágenes de programas de TV."
+ },
+ "Уведомления": {
+  "en": "Notifications",
+  "uk": "Сповіщення",
+  "be": "Апавяшчэнні",
+  "zh": "通知",
+  "pt": "Notificações",
+  "bg": "Известия",
+  "he": "התראות",
+  "cs": "Oznámení",
+  "ro": "Notificări",
+  "fr": "Notifications",
+  "pl": "Powiadomienia",
+  "es": "Notificaciones"
+ },
+ "Редактор меню": {
+  "en": "Menu editor",
+  "uk": "Редактор меню",
+  "be": "Рэдактар меню",
+  "zh": "菜单编辑器",
+  "pt": "Editor de menu",
+  "bg": "Редактор на менюто",
+  "he": "עריכת התפריט",
+  "cs": "Editor nabídky",
+  "ro": "Editor de meniu",
+  "fr": "Éditeur du menu",
+  "pl": "Edytor menu",
+  "es": "Editor de menú"
+ },
+ "Прокрутка страницы": {
+  "en": "Page scrolling",
+  "uk": "Прокручування сторінки",
+  "be": "Пракрутка старонкі",
+  "zh": "页面滚动",
+  "pt": "Rolagem da página",
+  "bg": "Превъртане на страницата",
+  "he": "גלילת הדף",
+  "cs": "Posouvání stránky",
+  "ro": "Derularea paginii",
+  "fr": "Défilement de la page",
+  "pl": "Przewijanie strony",
+  "es": "Desplazamiento de página"
+ },
+ "Сброс масштаба": {
+  "en": "Reset scale",
+  "uk": "Скинути масштаб",
+  "be": "Скінуць маштаб",
+  "zh": "重置缩放",
+  "pt": "Redefinir escala",
+  "bg": "Нулиране на мащаба",
+  "he": "איפוס קנה המידה",
+  "cs": "Obnovit měřítko",
+  "ro": "Resetare scară",
+  "fr": "Réinitialiser l’échelle",
+  "pl": "Resetuj skalę",
+  "es": "Restablecer escala"
+ },
+ "Вернуть текст, кнопки и карточки к 100%.": {
+  "en": "Restore text, buttons and cards to 100%.",
+  "uk": "Повернути текст, кнопки та картки до 100%.",
+  "be": "Вярнуць тэкст, кнопкі і карткі да 100%.",
+  "zh": "将文字、按钮和卡片恢复为 100%。",
+  "pt": "Restaurar texto, botões e cartões para 100%.",
+  "bg": "Върнете текста, бутоните и картите на 100%.",
+  "he": "החזרת הטקסט, הכפתורים והכרטיסים ל־100%.",
+  "cs": "Vrátit text, tlačítka a karty na 100 %.",
+  "ro": "Restabilește textul, butoanele și cardurile la 100%.",
+  "fr": "Rétablir le texte, les boutons et les fiches à 100 %.",
+  "pl": "Przywróć tekst, przyciski i karty do 100%.",
+  "es": "Restaurar texto, botones y tarjetas al 100%."
+ },
+ "Закрепить боковое меню": {
+  "en": "Pin sidebar",
+  "uk": "Закріпити бічне меню",
+  "be": "Замацаваць бакавое меню",
+  "zh": "固定侧边栏",
+  "pt": "Fixar menu lateral",
+  "bg": "Закрепване на страничното меню",
+  "he": "הצמדת תפריט הצד",
+  "cs": "Připnout boční nabídku",
+  "ro": "Fixează meniul lateral",
+  "fr": "Épingler le menu latéral",
+  "pl": "Przypnij menu boczne",
+  "es": "Fijar menú lateral"
+ },
+ "Иконки слева. Меню раскрывается при наведении или выборе пультом.": {
+  "en": "Icons on the left. Expand the menu by hovering or selecting it with the remote.",
+  "uk": "Іконки ліворуч. Меню розгортається при наведенні або виборі пультом.",
+  "be": "Значкі злева. Меню раскрываецца пры навядзенні або выбары пультам.",
+  "zh": "图标位于左侧。悬停或使用遥控器选择可展开菜单。",
+  "pt": "Ícones à esquerda. O menu se expande ao passar o cursor ou selecioná-lo com o controle remoto.",
+  "bg": "Иконите са вляво. Менюто се разгръща при посочване или избор с дистанционното.",
+  "he": "סמלים משמאל. התפריט נפתח בריחוף או בבחירה באמצעות השלט.",
+  "cs": "Ikony vlevo. Nabídka se rozbalí při najetí nebo výběru ovladačem.",
+  "ro": "Pictograme în stânga. Meniul se extinde la trecerea cursorului sau la selectarea cu telecomanda.",
+  "fr": "Icônes à gauche. Le menu se déploie au survol ou à la sélection avec la télécommande.",
+  "pl": "Ikony po lewej. Menu rozwija się po najechaniu lub wybraniu pilotem.",
+  "es": "Iconos a la izquierda. El menú se expande al pasar el cursor o seleccionarlo con el mando."
+ },
+ "Планшет": {
+  "en": "Tablet",
+  "uk": "Планшет",
+  "be": "Планшэт",
+  "zh": "平板电脑",
+  "pt": "Tablet",
+  "bg": "Таблет",
+  "he": "טאבלט",
+  "cs": "Tablet",
+  "ro": "Tabletă",
+  "fr": "Tablette",
+  "pl": "Tablet",
+  "es": "Tableta"
+ },
+ "Авто использует режим экрана Lampa. Планшет — сенсорное управление и адаптация к ширине окна.": {
+  "en": "Auto uses Lampa’s screen mode. Tablet enables touch controls and adapts to the window width.",
+  "uk": "Авто використовує режим екрана Lampa. Планшет: сенсорне керування та адаптація до ширини вікна.",
+  "be": "Аўта выкарыстоўвае рэжым экрана Lampa. Планшэт: сэнсарнае кіраванне і адаптацыя да шырыні акна.",
+  "zh": "自动模式使用 Lampa 的屏幕模式。平板模式启用触控并适应窗口宽度。",
+  "pt": "Automático usa o modo de tela do Lampa. Tablet ativa os controles de toque e se adapta à largura da janela.",
+  "bg": "Авто използва екранния режим на Lampa. Таблет: сензорно управление и адаптация към ширината на прозореца.",
+  "he": "המצב האוטומטי משתמש במצב המסך של Lampa. מצב טאבלט מאפשר שליטה במגע ומתאים את הממשק לרוחב החלון.",
+  "cs": "Automatický režim používá režim obrazovky Lampa. Tablet umožňuje dotykové ovládání a přizpůsobení šířce okna.",
+  "ro": "Auto folosește modul de ecran Lampa. Modul tabletă permite controlul tactil și adaptarea la lățimea ferestrei.",
+  "fr": "Auto utilise le mode d’écran de Lampa. Tablette active les commandes tactiles et s’adapte à la largeur de la fenêtre.",
+  "pl": "Auto używa trybu ekranu Lampa. Tablet włącza sterowanie dotykowe i dopasowanie do szerokości okna.",
+  "es": "Auto usa el modo de pantalla de Lampa. Tableta activa los controles táctiles y se adapta al ancho de la ventana."
+ },
+ "ПоискКино · ключ для кадров": {
+  "en": "PoiskKino: stills API key",
+  "uk": "ПошукКіно: ключ для кадрів",
+  "be": "ПошукКіно: ключ для кадраў",
+  "zh": "PoiskKino：剧照 API 密钥",
+  "pt": "PoiskKino: chave de API para imagens",
+  "bg": "PoiskKino: ключ за кадри",
+  "he": "PoiskKino: מפתח API לתמונות",
+  "cs": "PoiskKino: klíč API pro snímky",
+  "ro": "PoiskKino: cheie API pentru imagini",
+  "fr": "PoiskKino : clé API pour les images",
+  "pl": "PoiskKino: klucz API do kadrów",
+  "es": "PoiskKino: clave API para imágenes"
+ },
+ "Кадры из фильмов и сериалов. Пустой ключ отключает источник.": {
+  "en": "Stills from movies and TV series. An empty key disables the source.",
+  "uk": "Кадри з фільмів і серіалів. Порожній ключ вимикає джерело.",
+  "be": "Кадры з фільмаў і серыялаў. Пусты ключ адключае крыніцу.",
+  "zh": "电影和剧集的剧照。清空密钥可禁用此来源。",
+  "pt": "Imagens de filmes e séries. Uma chave vazia desativa a fonte.",
+  "bg": "Кадри от филми и сериали. Празният ключ изключва източника.",
+  "he": "תמונות מסרטים וסדרות. מפתח ריק משבית את המקור.",
+  "cs": "Snímky z filmů a seriálů. Prázdný klíč zdroj vypne.",
+  "ro": "Imagini din filme și seriale. O cheie goală dezactivează sursa.",
+  "fr": "Images de films et de séries. Une clé vide désactive la source.",
+  "pl": "Kadry z filmów i seriali. Pusty klucz wyłącza źródło.",
+  "es": "Imágenes de películas y series. Una clave vacía desactiva la fuente."
+ },
+ "Ключ API ПоискКино": {
+  "en": "PoiskKino API key",
+  "uk": "Ключ API ПошукКіно",
+  "be": "Ключ API ПошукКіно",
+  "zh": "PoiskKino API 密钥",
+  "pt": "Chave API PoiskKino",
+  "bg": "API ключ за PoiskKino",
+  "he": "מפתח API של PoiskKino",
+  "cs": "Klíč API PoiskKino",
+  "ro": "Cheie API PoiskKino",
+  "fr": "Clé API PoiskKino",
+  "pl": "Klucz API PoiskKino",
+  "es": "Clave API de PoiskKino"
+ },
+ "Ещё": {
+  "en": "More",
+  "uk": "Ще",
+  "be": "Яшчэ",
+  "zh": "更多",
+  "pt": "Mais",
+  "bg": "Още",
+  "he": "עוד",
+  "cs": "Více",
+  "ro": "Mai multe",
+  "fr": "Plus",
+  "pl": "Więcej",
+  "es": "Más"
+ },
+ "Масштаб": {
+  "en": "Scale",
+  "uk": "Масштаб",
+  "be": "Маштаб",
+  "zh": "缩放",
+  "pt": "Escala",
+  "bg": "Мащаб",
+  "he": "קנה מידה",
+  "cs": "Měřítko",
+  "ro": "Scară",
+  "fr": "Échelle",
+  "pl": "Skala",
+  "es": "Escala"
+ },
+ "Текст, кнопки и карточки · 80–200%": {
+  "en": "Text, buttons and cards: 80-200%",
+  "uk": "Текст, кнопки та картки: 80-200%",
+  "be": "Тэкст, кнопкі і карткі: 80-200%",
+  "zh": "文字、按钮和卡片：80-200%",
+  "pt": "Texto, botões e cartões: 80-200%",
+  "bg": "Текст, бутони и карти: 80-200%",
+  "he": "טקסט, כפתורים וכרטיסים: 80-200%",
+  "cs": "Text, tlačítka a karty: 80-200 %",
+  "ro": "Text, butoane și carduri: 80-200%",
+  "fr": "Texte, boutons et fiches : 80-200 %",
+  "pl": "Tekst, przyciski i karty: 80-200%",
+  "es": "Texto, botones y tarjetas: 80-200%"
  }
 }

@@ -23,9 +23,9 @@ jobs:
           - group: playback
             checks: "torrent-layout torrent-files-layout mpvplus-preload torrent-native-playback button-focus episode-focus hero-proxy torrent-tv-controls remote-navigation discovery-rows trakt-interface"
           - group: online
-            checks: "voice-initial online-polish history-focus interface-size poster-rail home-stage header-focus tv-captions timeline-devices quiet-sync watch-menu"
+            checks: "voice-initial online-polish history-focus interface-size poster-rail home-stage header-focus menu-layout poster-chrome row-overlay tv-captions timeline-devices quiet-sync watch-menu"
           - group: catalogue
-            checks: "artwork-cache torrent-watch-menu appearance-language home-controls detail-artwork carousel-return detail-gallery catalogue-controls catalogue-metadata poster-prefetch"
+            checks: "artwork-cache torrent-watch-menu appearance-language card-languages home-controls detail-artwork carousel-return detail-gallery catalogue-controls catalogue-metadata poster-prefetch"
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: actions/setup-node@v7.1.0

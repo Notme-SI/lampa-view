@@ -31,11 +31,15 @@ async function holiday(page,name){
   const art=logo.querySelector('.pt-holiday-art'),brand=logo.querySelector('.pt-brand');
   return {head:rect(head),logo:rect(logo),art:art&&rect(art),brand:brand&&rect(brand),word:brand&&brand.textContent,cap:cap&&getComputedStyle(cap).display!=='none'?rect(cap.querySelector('svg')):null,winter:head.querySelector('.pt-holiday-winter')&&rect(head.querySelector('.pt-holiday-winter')),menu:rect(menu),button:button&&rect(button),buttonDisplay:button&&getComputedStyle(button).display,garland:head.querySelector('.garland')&&getComputedStyle(head.querySelector('.garland')).pointerEvents,width:innerWidth};
  },name);
- if(box.cap){assert.ok(box.cap.top>=-1 && box.cap.bottom<=box.head.bottom+1);assert.ok(box.cap.left>box.menu.right,'hat does not cover the menu');assert.equal(box.garland,'none');}
- if(name==='snow'){assert.ok(box.winter && box.winter.left>box.menu.right && box.winter.right<box.brand.left);assert.equal(box.cap,null,'Old hat is replaced by the compact seasonal glyph');}
- if(box.button){assert.equal(await page.locator('.head .'+name.replace('womens-day','womens_day')+'__button > .pt-holiday-svg').count(),1,'One original Lampa View glyph replaces the visible native art');assert.equal(box.buttonDisplay,'flex');assert.ok(Math.abs(box.button.height-box.menu.height)<1);assert.ok(box.button.right<=box.width && box.button.top>=0 && box.button.bottom<=box.head.bottom+1);}
- assert.ok(box.logo.bottom<=box.head.bottom+1);
- if(name==='halloween'){assert.equal(box.word,'LAMPA');assert.equal(box.art.width,0,'colored logo artwork is hidden');assert.ok(box.button.right<box.brand.left,'native holiday button is beside the wordmark');assert.ok(box.brand.right<=box.width);}
+ // The search header deliberately has no wordmark or seasonal actions.
+ assert.equal(box.logo.width,0,'Seasonal branding cannot shrink the search pill');
+ if(box.button){
+  assert.equal(box.button.width,0,'Seasonal actions reserve no header space');
+  const row=page.locator('.pt-menu-seasonal').filter({hasText:await page.locator('.head .'+name.replace('womens-day','womens_day')+'__button').getAttribute('aria-label')});
+  assert.equal(await row.count(),1,'Seasonal action stays available in the native sidebar');
+  assert.equal(await row.locator('.pt-holiday-svg').count(),1);
+ }
+
 }
 (async()=>{
  for(const [name,engine] of [['chromium',chromium],['webkit',webkit]]){
@@ -50,7 +54,7 @@ async function holiday(page,name){
       await page.evaluate(size=>Lampa.Storage.set('interface_size',size),size);await page.waitForTimeout(30);
       widths.push(await page.locator('.head__logo-icon').evaluate(node=>{const head=node.closest('.head').getBoundingClientRect();for(const item of node.parentElement.querySelectorAll('.pt-holiday-icons>.head__action,.pt-holiday-winter,.head__logo-icon,.head__logo-cap svg')){if(!item.getClientRects().length)continue;const r=item.getBoundingClientRect();if(r.left<0 || r.right>innerWidth+1 || r.top< -1 || r.bottom>head.bottom+1)throw new Error('Seasonal artwork exceeds the header');}return node.getBoundingClientRect().width;}));
      }
-     assert.ok(widths[0]<widths[1] && widths[1]<widths[2],'holiday wordmark scales with native sizes');
+     assert.deepEqual(widths,[0,0,0],'Hidden wordmark reserves no width at any scale');
      await page.evaluate(()=>Lampa.Storage.set('interface_size','normal'));
      if(output)await page.screenshot({path:path.join(output,name+'-'+mode+'-'+event+'.png'),clip:{x:0,y:0,width:mode==='mobile'?393:1440,height:100}});
     }
@@ -64,7 +68,22 @@ async function holiday(page,name){
      assert.ok(toolbar.height<=50,'mobile toolbar fits one row');assert.ok(toolbar.inside,JSON.stringify(toolbar));assert.ok(toolbar.labels);assert.equal(toolbar.overflow,false);
     }
     await page.evaluate(()=>{Lampa.DeviceInput.init();Lampa.Controller.observe();window.qaBacks=0;Lampa.Controller.add('content',{toggle(){Lampa.Controller.collectionSet(qaRoot[0]);},back(){qaBacks++;}});Lampa.Controller.toggle('content');});
-    const center=await page.locator('[data-nova-focus=view]').evaluate(node=>{const a=node.getBoundingClientRect(),b=node.querySelector('svg').getBoundingClientRect();return [Math.abs(a.x+a.width/2-b.x-b.width/2),Math.abs(a.y+a.height/2-b.y-b.height/2)];});assert.ok(center.every(value=>value<=1),'layout icon centered: '+center);
+    for(const theme of ['minimal','glass']){
+     await page.evaluate(theme=>Lampa.Storage.set('lampa_view_theme',theme),theme);
+     const controls=await page.locator('.nova-plus__bar>.nova-chip').evaluateAll(nodes=>nodes.map(node=>{const a=node.getBoundingClientRect(),b=node.querySelector('.nova-chip__glyph').getBoundingClientRect(),s=getComputedStyle(node);return {key:node.dataset.novaFocus,w:a.width,h:a.height,icon:b.width,font:parseFloat(s.fontSize),center:[Math.abs(a.x+a.width/2-b.x-b.width/2),Math.abs(a.y+a.height/2-b.y-b.height/2)],radius:s.borderRadius,badges:node.querySelectorAll('.nova-chip__badge').length};}));
+     const view=controls.find(n=>n.key==='view');
+     for(const control of controls){assert.ok(control.icon>=control.font*1.15,'Vendor max-width must not shrink the glyph');if(['view','direction'].includes(control.key)){assert.ok(Math.abs(control.icon-view.icon)<1);assert.ok(Math.abs(control.w-control.h)<1);assert.equal(control.radius,'50%');assert.ok(control.center.every(value=>value<1),'Icon is centered in its circle');}else{assert.ok(control.icon>view.icon*1.2,'Source/audio glyphs are larger than the view glyph');assert.ok(control.icon<control.h,'Larger glyph fits inside its pill');}}
+     assert.equal(controls.find(n=>n.key==='source').badges,0,'The selected source omits quality');
+    }
+    await page.evaluate(()=>Lampa.Storage.set('lampa_view_theme','minimal'));
+    const quality=await page.evaluate(()=>{
+     const poster=document.createElement('div');poster.className='card';poster.innerHTML='<span class="pt-quality">4K</span>';document.body.appendChild(poster);
+     const material=n=>{const style=getComputedStyle(n);return [style.backgroundImage,style.backgroundColor,style.color,style.borderColor,style.fontWeight,style.backdropFilter];};
+     const reference=material(poster.firstElementChild);poster.remove();
+     return {reference,badges:[...document.querySelectorAll('.nova-hero__quality,.nova-chip__badge,.nova-card__quality')].map(material)};
+    });
+    assert.ok(quality.badges.length>=2);
+    for(const badge of quality.badges)assert.deepEqual(badge,quality.reference);
     const meta=await page.locator('.nova-hero__meta').evaluate(node=>({bg:getComputedStyle(node).backgroundColor,color:getComputedStyle(node).color}));assert.match(meta.bg,/0\.52/);assert.equal(meta.color,'rgb(245, 247, 250)');
     const season=await page.locator('.nova-hero__season-label').evaluate(node=>{const meta=node.closest('.nova-hero__meta'),a=node.getBoundingClientRect(),b=meta.getBoundingClientRect();return {top:a.top,bottom:b.bottom,parent:node.parentNode.className,metaParent:node.parentNode.parentNode.className,bg:getComputedStyle(node).backgroundColor,height:b.height,font:parseFloat(getComputedStyle(meta).fontSize)};});
     assert.equal(season.parent,'nova-hero__seasons');assert.equal(season.metaParent,'nova-hero__meta');assert.match(season.bg,/0\.78/);assert.ok(season.top>season.bottom,'season has its own separate plate');assert.ok(season.height<season.font*2.4,'main facts stay one compact line');

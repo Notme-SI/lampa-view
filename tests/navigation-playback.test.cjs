@@ -1,6 +1,6 @@
 const test=require('node:test'),assert=require('node:assert/strict'),native=require('./fixtures/native-lampa.cjs');
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
-test('native cast returns all the way left despite failed spatial navigation, and mouse buttons use the same row',async()=>{
+test('native cast returns all the way left despite failed spatial navigation',async()=>{
  const n=await native(),{w,L}=n;
  try{
   const screen=L.Platform.screen;L.Platform.screen=type=>type==='tv'?true:screen(type);
@@ -13,8 +13,7 @@ test('native cast returns all the way left despite failed spatial navigation, an
   row.toggle();w.Navigator.canmove=()=>false;w.Navigator.move=()=>false;
   for(let i=1;i<20;i++){L.Controller.enabled().controller.right();assert.equal(row.active,i);}
   assert.equal(row.items.length,20);assert.equal(row.data.results.length,20,'Only the main cast belongs in the finite row');for(let i=18;i>=0;i--){L.Controller.enabled().controller.left();assert.equal(row.active,i);}
-  assert.equal(row.last,row.items[0].render(true));assert.equal(root.querySelectorAll('.minimal-row-nav').length,1);
-  const [left,right]=root.querySelectorAll('.minimal-row-arrow');assert.equal(left.disabled,false);right.click();assert.equal(row.active,8);await wait(400);left.click();assert.equal(row.active,0);await wait(400);row.scroll.shift(1000);assert.equal(row.scroll.position(),-1000);right.click();assert.equal(row.active,12,'mouse arrow must continue from the scrolled viewport');assert.deepEqual(n.errors,[]);
+  assert.equal(row.last,row.items[0].render(true));assert.equal(root.querySelectorAll('.minimal-row-nav').length,0);assert.deepEqual(n.errors,[]);
  }finally{n.close();}
 });
 test('movie release names merge as unknown voices without dropping stream variants, known studios infer language and filters apply',async()=>{

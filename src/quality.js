@@ -119,9 +119,13 @@ export default function quality(L,$){
       const view=node.querySelector('.card__view');
       if(view && !view.querySelector('.card__vote')){const rating=document.createElement('div');rating.className='card__vote';rating.textContent=vote===10?'10':vote.toFixed(1);view.appendChild(rating);}
     }
-    if(tv || anime){
+    {
       const view=node.querySelector('.card__view');
-      if(view){let badge=view.querySelector('.pt-kind');if(!badge){badge=document.createElement('span');badge.className='pt-kind';view.appendChild(badge);}const text=anime?lampaViewText("Аниме"):lampaViewText("Сериал");if(badge.textContent!==text)badge.textContent=text;}
+      const animation=[...(data.genre_ids || []),...(data.genres || [])].some(g=>Number(g.id || g)===16);
+      if(view){
+       const rating=view.querySelector('.card__vote');if(rating)rating.dataset.ratingSource=data.source==='minimal_shiki'?'Shikimori':data.cub_hundred_rating?'CUB':data.minimal_trakt?'Trakt':'TMDB';
+       let badge=view.querySelector('.pt-kind');if(!badge){badge=document.createElement('span');badge.className='pt-kind';view.appendChild(badge);}const text=lampaViewText(anime?'Аниме':animation?'Мультфильм':tv?'Сериал':'Фильм');if(badge.textContent!==text)badge.textContent=text;
+      }
     }
     badges.schedule(node);
     if(!node.isConnected)return;

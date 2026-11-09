@@ -4,11 +4,26 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
  try{
   await page.evaluate(()=>{Lampa.Params.init();Lampa.Layer.init();Lampa.DeviceInput.init();Lampa.Controller.observe();Lampa.Keypad.init();Lampa.Keypad.enable();Navigator.follow('focus',e=>Lampa.Controller.focus(e.elem));Lampa.Api.full=(p,ok)=>ok({movie:{id:91,name:'Series',original_name:'Series',overview:'A readable series description.',backdrop_path:'/background.jpg',first_air_date:'2025-01-01',production_countries:[],production_companies:[{id:7,name:'Test studio',logo_path:'/studio.png'}],spoken_languages:[],runtime:60,number_of_seasons:3,number_of_episodes:25,seasons:[{season_number:1,name:"Сезон 1",episode_count:10},{season_number:2,name:"Часть 3",episode_count:7},{season_number:3,name:"Часть 4",episode_count:8}],vote_average:8,genres:[],source:'tmdb'},persons:{crew:[{id:90,name:'Native director',profile_path:'/director.jpg',job:'Director'}],cast:Array.from({length:18},(_,i)=>({id:100+i,name:'Native actor '+i,profile_path:'/person.jpg',character:'Role'}))},discuss:{result:[]},images:{logos:[]},videos:{results:[{site:'YouTube',key:'qa',name:'Trailer'}]},simular:{results:[]},recomend:{results:[]}});Lampa.Activity.push({component:'full',id:91,method:'tv',source:'tmdb',card:{id:91,name:'Series'}});});
   await page.waitForSelector('.minimal-detail-columns');
+  if(mode==='desktop'){
+   const alignment=await page.evaluate(()=>{
+    Lampa.Storage.set('menu_always',true);
+    const header=document.querySelector('.minimal-detail-header'),columns=header.querySelector('.minimal-detail-columns');
+    const gallery=document.createElement('div');gallery.className='items-line minimal-detail-screenshots';header.after(gallery);
+    const cast=columns.querySelector('.minimal-cast-native').getBoundingClientRect();
+    const facts=columns.querySelector('.minimal-detail-facts').getBoundingClientRect();
+    const rail=gallery.getBoundingClientRect(),gap=parseFloat(getComputedStyle(columns).columnGap);
+    const bg=header.closest('.activity').querySelector('.full-start__background').getBoundingClientRect();
+    gallery.remove();
+    Lampa.Storage.set('menu_always',false);
+    return {left:cast.left-rail.left,right:facts.right-rail.right,gap:facts.left-cast.right-gap,backdropLeft:bg.left,backdropRight:bg.right-innerWidth};
+   });
+   assert.ok(Object.values(alignment).every(delta=>Math.abs(delta)<1),'Pinned menu preserves the detail grid: '+JSON.stringify(alignment));
+  }
   if(mode!=='mobile'){const counters=await page.locator('.activity--active .full-start-new__details').textContent();assert.ok(counters.includes('Сезоны: 4') && counters.includes('25'),counters);assert.ok((await page.locator('.activity--active .minimal-detail-facts').textContent()).includes('01:00'),'Season counter does not replace native runtime');}
 
   for(const theme of ['minimal','glass']){
    await page.evaluate(theme=>Lampa.Storage.set('lampa_view_theme',theme),theme);await page.waitForTimeout(450);
-   const value=await page.locator('.activity--active').evaluate(root=>{const background=root.querySelector('.full-start__background');if(!background)return {nativeBackground:false};const b=background.getBoundingClientRect(),cast=root.querySelector('.minimal-detail-columns').getBoundingClientRect(),header=root.querySelector('.minimal-detail-header').getBoundingClientRect();return {backgroundBottom:b.bottom,backgroundWidth:b.width,backgroundHeight:b.height,castTop:cast.top,castBottom:cast.bottom,headerBottom:header.bottom,headerTop:header.top,first:root.querySelector('.full-person__name').textContent,mask:getComputedStyle(root.querySelector('.full-start__background')).maskImage};});
+   const value=await page.locator('.activity--active').evaluate(root=>{const background=root.querySelector('.full-start__background');if(!background)return {nativeBackground:false};const b=background.getBoundingClientRect(),cast=root.querySelector('.minimal-detail-columns').getBoundingClientRect(),header=root.querySelector('.minimal-detail-header').getBoundingClientRect();return {backgroundTop:b.top,backgroundBottom:b.bottom,backgroundWidth:b.width,backgroundHeight:b.height,castTop:cast.top,castBottom:cast.bottom,headerBottom:header.bottom,headerTop:header.top,first:root.querySelector('.full-person__name').textContent,mask:getComputedStyle(root.querySelector('.full-start__background')).maskImage};});
    if(value.nativeBackground===false){assert.equal(mode,'mobile','Only the native mobile template may omit its backdrop');continue;}
    if(mode==='mobile'){
     assert.ok(Math.abs(value.backgroundWidth*9/16-value.backgroundHeight)<2,'Mobile cover keeps its 16:9 ratio: '+JSON.stringify(value));
@@ -17,7 +32,7 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
     assert.equal(await page.locator('.activity--active .minimal-detail-shade').evaluate(n=>getComputedStyle(n).display),'none');
     continue;
    }
-   assert.ok(value.backgroundBottom>=value.castBottom-1,'Backdrop reaches beneath the complete cast/facts block: '+JSON.stringify({mode,theme,value}));assert.ok(value.backgroundBottom<=value.headerBottom+2,'Backdrop fades before comments/recommendations');assert.equal(value.first,'Native director');assert.equal(await page.locator('.activity--active .full-start-new__description,.activity--active .minimal-detail-overview').first().evaluate(n=>getComputedStyle(n).color),'rgb(255, 255, 255)','Detail overview remains readable white');assert.ok(value.mask.includes('gradient'));const shade=await page.locator('.activity--active .minimal-detail-shade').evaluate(n=>({display:getComputedStyle(n).display,pointer:getComputedStyle(n).pointerEvents,bg:getComputedStyle(n).backgroundImage,height:n.getBoundingClientRect().height,imageHeight:n.previousElementSibling.getBoundingClientRect().height}));if(theme==='glass'){assert.ok(shade.bg.includes('gradient'));assert.equal(shade.pointer,'none');assert.ok(Math.abs(shade.height-shade.imageHeight)<2,'Contrast shade tracks the complete backdrop');}else assert.equal(shade.display,'none');
+   assert.ok(value.backgroundTop<=1,'Detail artwork reaches the top of the viewport');assert.ok(value.backgroundBottom>=value.castBottom-1,'Backdrop reaches beneath the complete cast/facts block: '+JSON.stringify({mode,theme,value}));assert.ok(value.backgroundBottom<=value.headerBottom+2,'Backdrop fades before comments/recommendations');assert.equal(value.first,'Native director');assert.equal(await page.locator('.activity--active .full-start-new__description,.activity--active .minimal-detail-overview').first().evaluate(n=>getComputedStyle(n).color),'rgb(255, 255, 255)','Detail overview remains readable white');assert.ok(value.mask.includes('gradient'));const shade=await page.locator('.activity--active .minimal-detail-shade').evaluate(n=>({display:getComputedStyle(n).display,pointer:getComputedStyle(n).pointerEvents,bg:getComputedStyle(n).backgroundImage,height:n.getBoundingClientRect().height,imageHeight:n.previousElementSibling.getBoundingClientRect().height}));if(theme==='glass'){assert.ok(shade.bg.includes('gradient'));assert.equal(shade.pointer,'none');assert.ok(Math.abs(shade.height-shade.imageHeight)<2,'Contrast shade tracks the complete backdrop');}else assert.equal(shade.display,'none');
   }
   if(mode!=='mobile'){
    await page.waitForSelector('.activity--active .minimal-detail-studio:not([hidden])');
@@ -28,10 +43,11 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
   }
   await page.evaluate(()=>{Lampa.Api.person=(p,ok)=>ok({person:{id:p.id,name:'Native director',birthday:'1968-09-10',place_of_birth:'England',profile_path:'/director.jpg',biography:'Biography'},credits:{knownFor:[{name:'Directing',credits:Array.from({length:27},(_,i)=>({id:91+i,title:'Film '+i,release_date:'2025-01-01',poster_path:'/p'+i+'.jpg'}))}]}});Lampa.Activity.push({component:'actor',id:90,source:'tmdb'});});
   await page.waitForSelector('.activity--active .person-start');
-  await page.waitForSelector('.activity--active .items-line .minimal-row-nav',{state:mode==='tv'?'attached':'visible'});
+  await page.waitForSelector('.activity--active .items-line .card');
   const actorLine=page.locator('.activity--active .items-line').filter({has:page.locator('.card')}).first();
   if(mode!=='tv'){
-   const right=actorLine.locator('.minimal-row-arrow').last();await right.click();await page.waitForTimeout(400);const shifted=await page.evaluate(()=>Lampa.Activity.active().activity.component.items.find(line=>line.data.results.length===27).active);assert.ok(shifted>0,'Pointer can leave the first filmography page');
+   await actorLine.locator('.scroll--horizontal').hover();await page.mouse.wheel(360,0);
+   await actorLine.locator('.scroll--horizontal').evaluate(node=>new Promise((resolve,reject)=>{const end=Date.now()+2000;function check(){if(node.Scroll.position()<0)resolve();else if(Date.now()>end)reject(new Error('Filmography did not scroll'));else requestAnimationFrame(check);}check();}));
   }
   await page.evaluate(()=>{const line=Lampa.Activity.active().activity.component.items.find(line=>line.data.results.length===27);line.toggle();});
   for(let i=0;i<30;i++)await page.keyboard.press('ArrowRight');await page.waitForFunction(()=>{const line=Lampa.Activity.active().activity.component.items.find(line=>line.data.results.length===27),r=line.items[26]?.render(true).getBoundingClientRect();return !document.body.classList.contains('pt-tv-busy') && r && r.left>=0 && r.right<=innerWidth+2;},{},{timeout:3000});

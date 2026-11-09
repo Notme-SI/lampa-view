@@ -2,7 +2,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {chromium,webkit}=require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const {setup}=require('../fixtures/native-browser.cjs'),{stage}=require('../fixtures/online-browser.cjs');
 (async()=>{for(const engine of [chromium,webkit]){const browser=await engine.launch({headless:true});try{for(const mode of ['desktop','tv','mobile']){
- const r=await setup(browser,{viewport:mode==='tv'?{width:960,height:540}:mode==='mobile'?{width:390,height:844}:{width:1440,height:900},deviceScaleFactor:mode==='tv'?2:1,mode,userAgent:mode==='mobile'?'Mozilla/5.0 (iPhone; CPU iPhone OS 27_0 like Mac OS X) AppleWebKit/605.1.15 Version/27.0 Mobile/15E148 Safari/604.1':undefined}),{page}=r;
+ const r=await setup(browser,{viewport:mode==='tv'?{width:960,height:540}:mode==='mobile'?{width:390,height:844}:{width:1440,height:900},deviceScaleFactor:mode==='tv'?2:1,mode,userAgent:mode==='mobile'?'Mozilla/5.0 (iPhone; CPU iPhone OS 27_0 like Mac OS X) AppleWebKit/605.1.15 Version/27.0 Mobile/15E148 Safari/604.1':undefined},{beforePlugin:page=>page.evaluate(()=>Lampa.Search.init())}),{page}=r;
  try{
   assert.equal(await page.evaluate(()=>document.body.classList.contains('pt-theme-glass')),false,'Previous theme is the default');
   await page.evaluate(()=>Lampa.Storage.set('lampa_view_theme','apple'));assert.equal(await page.evaluate(()=>Lampa.Storage.get('lampa_view_theme')),'glass','Legacy Apple selection migrates to Glass');await page.evaluate(()=>Lampa.Storage.set('lampa_view_theme','minimal'));
@@ -27,7 +27,7 @@ const {setup}=require('../fixtures/native-browser.cjs'),{stage}=require('../fixt
 
   }
 
-  if(mode==='mobile'){const settings=page.locator('.head .open--settings');assert.ok(await settings.isVisible());await settings.click();await page.waitForSelector('body.settings--open');await page.evaluate(()=>Lampa.Controller.back());}
+  if(mode==='mobile'){assert.equal(await page.locator('.head .open--settings').isVisible(),false);await page.evaluate(()=>Lampa.Menu.ready());await page.locator('.head__menu-icon').click();await page.locator('.menu__item[data-action=settings]').click();await page.waitForSelector('body.settings--open');await page.evaluate(()=>Lampa.Controller.back());}
 
   assert.equal(await page.locator('meta[name=apple-mobile-web-app-status-bar-style]').getAttribute('content'),'default','Safari keeps native status-bar geometry without forced translucency');
   await page.evaluate(()=>{Lampa.Layer.init();Lampa.DeviceInput.init();Lampa.Controller.observe();Lampa.Keypad.init();Lampa.Keypad.enable();document.body.appendChild(Lampa.Search.render(true));Lampa.Search.open();});await page.waitForSelector('.main-search .search');
@@ -36,7 +36,7 @@ const {setup}=require('../fixtures/native-browser.cjs'),{stage}=require('../fixt
   await page.evaluate(()=>Lampa.Search.close());
   await page.evaluate(()=>{const card=Lampa.Utils.createInstance(Lampa.Maker.get('Card',{}),{id:4400,title:'Glass load',poster_path:'/glass.jpg',vote_average:8});card.create();document.body.appendChild(card.render(true));window.qaGlassCard=card;});
   const filters=await page.locator('.head__body,.head__action,.card__vote,.card__icons-inner,.card__marker,.card-watched').evaluateAll(es=>es.map(n=>({name:n.className,filter:getComputedStyle(n).backdropFilter})));
-  if(mode==='tv')assert.ok(filters.every(n=>n.filter==='none'),'TV has no permanent live backdrop blur for the header or each poster badge: '+JSON.stringify(filters));else assert.ok(filters.find(n=>n.name==='head__body').filter.includes('blur('));
+  if(mode==='tv')assert.ok(filters.every(n=>n.filter==='none'),'TV has no permanent live backdrop blur for the header or each poster badge: '+JSON.stringify(filters));else{assert.equal(filters.find(n=>n.name==='head__body').filter,'none');assert.ok(filters.find(n=>n.name.includes('open--search')).filter.includes('blur('),'Only the search surface blurs the page');}
   await page.evaluate(()=>{const n=qaGlassCard.render(true);qaGlassCard.destroy();n.remove();});
   const after=await page.evaluate(()=>({history:JSON.stringify(Lampa.Storage.get('favorite',{})),timeline:JSON.stringify(Lampa.Storage.get('file_view',{}))}));assert.deepEqual(after,before,'Changing style preserves viewing data');
   await page.evaluate(()=>{const get=Lampa.Api.sources.tmdb.get;window.qaEpisodeRequests=0;Lampa.Api.sources.tmdb.get=(url,p,ok,fail)=>{if(/^tv\/799\/season\/1/.test(url)){qaEpisodeRequests++;return setTimeout(()=>ok({episodes:[1,2].map(n=>({episode_number:n,name:'Canonical episode '+n,overview:'Русское описание '+n+' из общего каталога серий.',air_date:'2020-01-01',vote_average:8}))}),0);}return get.call(Lampa.Api.sources.tmdb,url,p,ok,fail);};});

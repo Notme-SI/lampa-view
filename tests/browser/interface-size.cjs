@@ -17,7 +17,7 @@ const {setup}=require('../fixtures/native-browser.cjs'),{stage}=require('../fixt
       const cols=[...root.querySelectorAll('.nova-card--wide')].map(rect);
       return {size:Lampa.Storage.get('interface_size'),font:parseFloat(getComputedStyle(document.body).fontSize),icon:rect(head.querySelector('.head__menu-icon svg')),menu:rect(head.querySelector('.head__menu-icon')),head:rect(head),poster:rect(document.querySelector('#qa-scale-rail .card')),bar:rect(bar),buttons:[...bar.querySelectorAll('.nova-chip')].map(rect),root:rect(root),cols};
      });
-     assert.ok(value.font>0 && value.menu.right<=device.width+1);assert.ok(value.menu.bottom<=value.head.bottom+1);
+     assert.ok(value.font>0 && value.menu.right<=device.width+1);assert.ok(value.menu.bottom<=value.head.bottom+1,'Menu stays within header: '+JSON.stringify({device,size,menu:value.menu,head:value.head}));
      for(const button of value.buttons)assert.ok(button.left>=value.root.left-1 && button.right<=value.root.right+1,'toolbar stays inside '+JSON.stringify({device,size,value}));
      for(const col of value.cols)assert.ok(col.right<=value.root.right+1 && col.width>0,'episode grid stays inside '+JSON.stringify({device,size,value}));
      if(device.mode==='mobile')assert.ok(value.buttons.every(button=>button.height>=43.5),'touch targets retain their minimum '+JSON.stringify({device,size,buttons:value.buttons}));
@@ -27,7 +27,7 @@ const {setup}=require('../fixtures/native-browser.cjs'),{stage}=require('../fixt
      await page.evaluate(()=>{Lampa.Controller.back();Lampa.Controller.toggle('content');});
     }
     assert.ok(values[0].font<values[1].font && values[1].font<values[2].font,'native font sizes increase');
-    assert.ok(values[0].icon.width<values[1].icon.width && values[1].icon.width<values[2].icon.width,'icons scale');
+    assert.ok(values.every(v=>Math.abs(v.icon.width-values[0].icon.width)<1 && v.icon.width<v.menu.width),'Header icons retain their compact size inside the shared search-height controls');
     assert.ok(values[0].poster.width<values[1].poster.width && values[1].poster.width<values[2].poster.width,'catalogue covers scale '+JSON.stringify(values.map(v=>({font:v.font,width:v.poster.width}))));
     assert.ok(values[0].settings.font<values[1].settings.font && values[1].settings.font<values[2].settings.font,'settings scale');
     if(process.env.LAMPA_QA_OUTPUT){fs.mkdirSync(process.env.LAMPA_QA_OUTPUT,{recursive:true});await page.screenshot({path:path.join(process.env.LAMPA_QA_OUTPUT,engineName+'-'+device.mode+'-'+device.width+'-bigger.png')});}

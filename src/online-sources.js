@@ -1,10 +1,11 @@
 import {text as t} from './i18n.js';
-export const sourceKey=row=>String(typeof row==='string'?row:row && (row.balanser || row.source || row.name) || '').split(' ')[0].toLowerCase().replace(/_snack$/,'');
+export const sourceKey=row=>String(typeof row==='string'?row:row && (row.balanser || row.source || row.name) || '').trim().split(/\s+/)[0].toLowerCase().replace(/_snack$/,'');
 const russian=new Set('filmix pizdatoehd kinobase phantom aladin rudub kinogo leproduction veoveo collaps hdvb rutubemovie vkmovie kinoteatrkg lordfilm vibix kinotochka kodik ailiberty aniliberty animelib animedia animevost dreamerscast animebesst anidub zetflix alloha hdrezka'.split(' '));
 export function sourceLanguage(row){
- const key=sourceKey(row),label=String(row.name || row),raw=String(row.voice_lang || row.lang || '').toLowerCase(),explicit=({eng:'en',rus:'ru',ukr:'uk',english:'en'})[raw] || raw.split(/[-_]/)[0];
+ const key=sourceKey(row),label=String(row?.name || row?.title || row || ''),raw=String(row?.voice_lang || row?.lang || '').toLowerCase(),explicit=({eng:'en',rus:'ru',ukr:'uk',english:'en'})[raw] || raw.split(/[-_]/)[0];
+ if(/\beng\b|англий|english/i.test(label))return 'en';
  if(/^(ru|en|uk|ka|uz|it|fr)$/.test(explicit))return explicit;
- if(/\beng\b|англий|english/i.test(label) || /^(videasy|movpi|vidsrc(?:[._-]?(?:to|me|cc|xyz|vip))?|vidlink|vidfast)$/.test(key))return 'en';
+ if(/^(videasy|movpi|vidsrc(?:[._-]?(?:to|me|cc|xyz|vip))?|vidlink|vidfast)$/.test(key))return 'en';
  if(/укра|ukrain/i.test(label) || /^(uafilm|eneyida|uakino|uaserials|uaflix|kinoukr|franko|starlight|oneplusone|anitube|unimay|mikai|bamboo|animeon)$/.test(key))return 'uk';
  if(/грузин|georg/i.test(label) || /^(geosaitebi|kinoflix)$/.test(key))return 'ka';
  if(/узбек|uzbek/i.test(label))return 'uz';if(/итальян|italian/i.test(label))return 'it';if(/француз|french/i.test(label))return 'fr';
@@ -17,13 +18,31 @@ export function filterSources(value,off){
  return value;
 }
 export default function onlineSources(L){
- const OFF='alc_auto_src_off',KNOWN='minimal_online_sources_v1';let revision=0,loading=false,waiters=[],until=0;
+ const OFF='alc_auto_src_off',KNOWN='minimal_online_sources_v1';let revision=0,loading=false,waiters=[],until=0,lastVisible;
  const off=()=>{const value=L.Storage.get(OFF,[]);return Array.isArray(value)?value.map(sourceKey):[];};
  const known=()=>{const value=L.Storage.get(KNOWN,[]);return Array.isArray(value)?value:[];};
- function remember(value){const list=Array.isArray(value)?value:value && value.online;if(!Array.isArray(list))return;
-  const entries=new Map(known().map(row=>[sourceKey(row),row]));
-  list.forEach(row=>{const id=sourceKey(row);if(row && row.service!==true && row.url && /^[a-z0-9][a-z0-9_.-]{0,39}$/.test(id) && !/^(alc_?auto|auto|ossubs|kpid|animeid|subsx|alcmedia|alcstats)$/.test(id))entries.set(id,{balanser:id,name:String(row.name || id),lang:row.voice_lang || row.lang || ''});});
-  const next=[...entries.values()].slice(0,200);if(JSON.stringify(next)!==JSON.stringify(known()))L.Storage.set(KNOWN,next);
+ function merge(list,visible){
+  if(!Array.isArray(list))return;
+  const saved=known(),entries=new Map(saved.map(row=>[sourceKey(row),row]));
+  for(const row of list){
+   if(!row || row.service===true || (visible?!row.source:!row.url))continue;
+   const id=sourceKey(row);
+   if(!/^[a-z0-9][a-z0-9_.-]{0,39}$/.test(id) || /^(alc_?auto|auto|ossubs|kpid|animeid|subsx|alcmedia|alcstats)$/.test(id))continue;
+   const previous=entries.get(id);
+   const name=String((visible?row.title:row.name) || previous?.name || id);
+   const lang=row.voice_lang || row.lang || previous?.lang || '';
+   // Discovery can return a bare name after the actual menu has shown a locale.
+   const entry={balanser:id,name,lang};
+   if(!visible && previous && sourceLanguage(previous)==='en' && sourceLanguage(entry)!=='en')entry.name=previous.name;
+   entries.set(id,entry);
+  }
+  const next=[...entries.values()].slice(0,200);
+  if(JSON.stringify(next)!==JSON.stringify(saved))L.Storage.set(KNOWN,next);
+ }
+ function remember(value){merge(Array.isArray(value)?value:value?.online,false);}
+ function rememberVisible(list){
+  if(!list || list===lastVisible)return;
+  lastVisible=list;merge(list,true);
  }
  // Preserve the native transport, authentication, abort handles and callbacks.
  // Only discovery responses are filtered. Individual playback requests are untouched.
@@ -48,5 +67,5 @@ export default function onlineSources(L){
  function group(language){const disabled=off(),items=known().filter(row=>sourceLanguage(row)===language).map(row=>({title:row.name,src:sourceKey(row),checkbox:true,checked:!disabled.includes(sourceKey(row))}));L.Select.show({title:t(labels[language]),items:items.length?items:[{title:t('Нет доступных источников'),subtitle:t('Сервер не вернул источники на этом языке.'),noenter:true}],onCheck:item=>{if(!item.src)return;const next=off().filter(id=>id!==item.src);if(!item.checked)next.push(item.src);L.Storage.set(OFF,next);revision++;},onBack:menu});}
  function menu(){const rows=known();L.Select.show({title:t('Источники онлайна'),items:Object.keys(labels).filter(lang=>lang==='en' || rows.some(row=>sourceLanguage(row)===lang)).map(lang=>({title:t(labels[lang]),subtitle:String(rows.filter(row=>sourceLanguage(row)===lang).length),lang})).concat([{title:t('Обновить список'),refresh:true}]),onSelect:item=>{if(item.refresh){until=0;refresh(menu);}else group(item.lang);},onBack:back});}
  if(L.SettingsApi)L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_online_sources',type:'button'},field:{name:t('Источники онлайна'),description:t('Включение по языкам. Изменения при следующем открытии онлайн.')},onChange:()=>refresh(menu)});
- return {off,remember,menu,revision:()=>revision};
+ return {off,remember,rememberVisible,menu,revision:()=>revision};
 }

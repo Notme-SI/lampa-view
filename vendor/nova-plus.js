@@ -195,6 +195,8 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     chevron: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"></path></svg>',
     search: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4" stroke-linecap="round"></path></svg>',
     refresh: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 11a8 8 0 10-2.3 5.7" stroke-linecap="round"></path><path d="M20 4v7h-7" stroke-linecap="round" stroke-linejoin="round"></path></svg>',
+    source: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m10 9 5 3-5 3z"/></svg>',
+    voice: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11v2m4-5v8m4-11v14m4-11v8m4-5v2"/></svg>',
     grid: '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><rect x="3" y="3" width="8" height="8" rx="1.6"></rect><rect x="13" y="3" width="8" height="8" rx="1.6"></rect><rect x="3" y="13" width="8" height="8" rx="1.6"></rect><rect x="13" y="13" width="8" height="8" rx="1.6"></rect></svg>',
     list: '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><rect x="3" y="4" width="18" height="4" rx="1.4"></rect><rect x="3" y="10" width="18" height="4" rx="1.4"></rect><rect x="3" y="16" width="18" height="4" rx="1.4"></rect></svg>',
     eye: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="12" cy="12" r="2.6"></circle></svg>'
@@ -835,6 +837,9 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
   }
 
   function scrollTo(element, gentle) {
+    // Pointer hover must not re-center a page the user is scrolling by hand.
+    // Directional remote navigation explicitly calls pressMark().
+    if (handNow() && !pressNow()) return;
     if (wideOn() && wideFollow(element)) return;
     var node = element instanceof jQuery ? element[0] : element;
     if (!node) return;
@@ -1293,7 +1298,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
   }
 
   function handWatch() {
-    var names = ['touchmove', 'wheel', 'mousewheel'];
+    var names = ['touchmove', 'wheel', 'mousewheel', 'pointermove', 'pointerdown'];
     names.forEach(function (name) {
       try {
         window.addEventListener(name, handMark, { passive: true, capture: true });
@@ -1754,10 +1759,10 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     chip.find('.nova-chip__dot').remove();
 
     var value = knownQuality(key);
-    if (value) {
+    if (value && chip.attr('data-nova-focus') !== 'source') {
       var badge = chip.find('.nova-chip__badge');
       if (badge.length) badge.text(value);
-      else chip.prepend($('<span class="nova-chip__badge"></span>').text(value));
+      else chip.find('.nova-chip__label').before($('<span class="nova-chip__badge"></span>').text(value));
     }
 
     if (state === 'empty' || state === 'error') {
@@ -3894,9 +3899,9 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
 
   function heroMetadata(target) {
     var meta = ui.hero.find('.nova-hero__meta').empty();
-    ui.hero.find('.nova-hero__runtime').remove();
+    ui.hero.children('.nova-hero__quality').remove();
     var badge = target ? shortQuality(target.quality) : '';
-    if (badge) meta.append($('<div class="nova-badge"></div>').text(badge));
+    if (badge) ui.hero.append($('<div class="nova-badge nova-hero__quality"></div>').text(badge));
     if (movie.vote_average) meta.append($('<div class="nova-hero__rating"></div>').text(parseFloat(movie.vote_average + '').toFixed(1)));
     var year = String(movie.release_date || movie.first_air_date || '').slice(0, 4);
     var countries = '';
@@ -4086,8 +4091,9 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
   function chip(key, value, extra) {
     var box = $('<div class="nova-chip selector"></div>');
     box.attr('data-nova-focus', key);
-    if (extra && extra.icon) box.append(extra.icon);
-    if (extra && extra.badge) box.append($('<span class="nova-chip__badge"></span>').text(extra.badge));
+    var glyph=extra && extra.icon || (key==='source'?ICON.source:key==='voice' || key==='movievoice'?ICON.voice:'');
+    if(glyph)box.append($(glyph).addClass('nova-chip__glyph'));
+    if (key !== 'source' && extra && extra.badge) box.append($('<span class="nova-chip__badge"></span>').text(extra.badge));
     box.append($('<span class="nova-chip__label"></span>').text(value || ''));
     if (!(extra && extra.plain)) box.append(ICON.chevron);
     if (extra && extra.active) box.addClass('nova-chip--active');
@@ -4104,12 +4110,6 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       var parts = splitSourceName(item.title || '');
       box.addClass('nova-chip--busy');
       box.find('.nova-chip__label').text(parts.name || item.title || '');
-      var badge = box.find('.nova-chip__badge');
-      var value = knownQuality(item.source || item.title) || parts.badge;
-      if (value) {
-        if (badge.length) badge.text(value);
-        else box.prepend($('<span class="nova-chip__badge"></span>').text(value));
-      } else badge.remove();
     } catch (e) {}
   }
 
@@ -4434,14 +4434,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     var sort = groups.sort || [];
     if (sort.length) {
       var parts = splitSourceName(sourceTitle());
-      var current = null;
-      sort.forEach(function (item) {
-        if (item.selected) current = item;
-      });
-      var key = current ? (current.source || current.title) : '';
-      addChip('source', text('nova_source', 'nova_plus_source'), parts.name, {
-        badge: knownQuality(key) || parts.badge
-      });
+      addChip('source', text('nova_source', 'nova_plus_source'), parts.name, {});
     }
 
     if (groups.season && groups.season.items.length > 0) {
@@ -5121,6 +5114,8 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     patchHost(componentNow());
     filter = activeFilter(root) || filter;
     groups = readGroups(filter);
+    var inventory=window.LampaView && window.LampaView.onlineSources;
+    if(inventory && groups.sort)inventory.rememberVisible(groups.sort);
     probeSchedule();
     extras = readExtras();
 
@@ -6417,17 +6412,9 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
 
     var source = wideSourceChip();
     if (source) {
-      var current = null;
-      (groups.sort || []).forEach(function (item) { if (item.selected) current = item; });
       var parts = splitSourceName(sourceTitle());
-      var value = knownQuality(current ? (current.source || current.title) : '') || parts.badge;
       source.removeClass('nova-chip--busy');
       source.find('.nova-chip__label').text(parts.name || '');
-      var badge = source.find('.nova-chip__badge');
-      if (value) {
-        if (badge.length) badge.text(value);
-        else source.prepend($('<span class="nova-chip__badge"></span>').text(value));
-      } else badge.remove();
     }
 
     ui.rows.find('.nova-plus__bar .nova-chip').each(function () {
@@ -6562,6 +6549,42 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     var when = 0;
     var speed = 0;
 
+    var pointer = null;
+    var ignoreClickUntil = 0;
+    box.on('pointerdown', function (event) {
+      var raw = event.originalEvent || event;
+      if (raw.pointerType !== 'mouse' || raw.button !== 0 || !wideDragLimit(box, axis)) return;
+      pointer = {id:raw.pointerId,x:raw.clientX,y:raw.clientY,base:wideDragNow(box,axis),moved:false};
+    });
+    box.on('pointermove', function (event) {
+      var raw = event.originalEvent || event;
+      if (!pointer || raw.pointerId !== pointer.id) return;
+      var delta = axis === 'x' ? raw.clientX-pointer.x : raw.clientY-pointer.y;
+      if (!pointer.moved) {
+        if (Math.abs(delta)<7) return;
+        var cross = axis === 'x' ? raw.clientY-pointer.y : raw.clientX-pointer.x;
+        if (Math.abs(cross)>Math.abs(delta)) {pointer=null;return;}
+        pointer.moved=true;
+        if (box[0].setPointerCapture) box[0].setPointerCapture(raw.pointerId);
+        box.attr('data-nova-manual','1').attr('data-nova-dragging','1');
+        wideDragEase(box,axis,false);
+      }
+      event.preventDefault();
+      wideDragMove(box,axis,wideDragClamp(box,axis,pointer.base+delta));
+    });
+    box.on('pointerup pointercancel lostpointercapture', function () {
+      if (!pointer) return;
+      if (pointer.moved) ignoreClickUntil=Date.now()+350;
+      pointer=null;
+      box.removeAttr('data-nova-dragging');
+      wideDragEase(box,axis,true);
+    });
+    box.on('dragstart', function (event) {if(pointer)event.preventDefault();});
+    box[0].addEventListener('click',function(event){
+      if(Date.now()>=ignoreClickUntil)return;
+      event.preventDefault();event.stopImmediatePropagation();
+    },true);
+
     box.on('touchstart', function (event) {
       var point = wideDragSpot(event, axis);
       if (point === null) return;
@@ -6626,7 +6649,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
 
     box.on('wheel mousewheel', function (event) {
       var raw = event.originalEvent || event;
-      var delta = raw.deltaY || raw.deltaX || (raw.wheelDelta ? -raw.wheelDelta : 0);
+      var delta = axis === 'x' ? raw.deltaX || (raw.shiftKey ? raw.deltaY || -raw.wheelDelta : 0) : raw.deltaY || (raw.wheelDelta ? -raw.wheelDelta : 0);
       if (!delta) return;
       var from = wideDragNow(box, axis);
       var next = wideDragClamp(box, axis, from - delta * 2.4);
@@ -6781,6 +6804,11 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
         }
       }
       wideNoteFit();
+      if (ui.list && ui.list.hasClass('nova__list--row')) {
+        var position = wideDragNow(ui.list, 'x');
+        var clamped = wideDragClamp(ui.list, 'x', position);
+        if (position !== clamped) wideRowShift(ui.list, clamped);
+      }
     } catch (e) {}
   }
 
@@ -7615,9 +7643,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       else if (box.right + pad > frame.right) next = shift - (box.right - frame.right) - pad;
       next = Math.round(Math.max(limit, Math.min(0, next)));
       if (next === shift) return true;
-      ui.list.attr('data-nova-x', next);
-      ui.list[0].style['-webkit-transform'] = 'translate3d(' + next + 'px,0,0)';
-      ui.list[0].style.transform = 'translate3d(' + next + 'px,0,0)';
+      wideRowShift(ui.list, next);
     } catch (e) {}
     return true;
   }
@@ -7627,18 +7653,11 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     if (wideRowOn() && !nav && list.length > 0) ui.list.addClass('nova__list--row');
     else ui.list.removeClass('nova__list--row');
     var strip = ui.list.parent();
-    strip.children('.nova-episode-nav').remove();
-    if(ui.list.hasClass('nova__list--row') && !document.body.classList.contains('pt-tv')){
-      var arrows=$('<div class="nova-episode-nav"></div>');
-      [-1,1].forEach(function(direction){$('<button type="button"></button>').attr('aria-label',direction<0?lampaViewText("Предыдущие серии"):lampaViewText("Следующие серии")).html('<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="'+(direction<0?'m14 6-6 6 6 6':'m10 6 6 6-6 6')+'"/></svg>').on('click',function(event){event.preventDefault();event.stopImmediatePropagation();var width=strip[0].clientWidth,limit=Math.min(0,width-ui.list[0].scrollWidth),next=Math.max(limit,Math.min(0,(parseFloat(ui.list.attr('data-nova-x')) || 0)-direction*width*.9));ui.list.attr('data-nova-x',next).css('transform','translate3d('+next+'px,0,0)');}).appendTo(arrows);});
-      strip.prepend(arrows);
-    }
     if (ui.list.hasClass('nova__list--row')) {
       wideDragBind(ui.list, 'x');
       strip.addClass('nova-plus__strip--clip');
     } else strip.removeClass('nova-plus__strip--clip');
-    ui.list.attr('data-nova-x', 0);
-    try { ui.list[0].style['-webkit-transform'] = ''; ui.list[0].style.transform = ''; } catch (e) {}
+    wideRowShift(ui.list, 0);
   }
 
   function wideSettings() {

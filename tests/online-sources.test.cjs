@@ -18,5 +18,12 @@ test('native request transport, return handles, errors and callback context surv
  api.menu();config.onSelect({lang:'ru'});assert.equal(config.items.length,2);assert.equal(config.items[0].checked,false);config.onCheck({src:'filmix',checked:true});assert.deepEqual(api.off(),[]);assert.equal(api.revision(),1);
  api.menu();assert.ok(config.items.some(row=>row.lang==='en'));config.onSelect({lang:'en'});assert.equal(config.items.length,1);assert.equal(config.items[0].noenter,true);
  api.remember([{balanser:'vidsrc.cc',name:'VidSrc.cc',url:'/lite/vidsrc'}]);api.menu();config.onSelect({lang:'en'});assert.equal(config.items[0].src,'vidsrc.cc');config.onCheck({src:'vidsrc.cc',checked:false});assert.ok(api.off().includes('vidsrc.cc'));
+ const providers=['VidSrc.cc','VidLink','Videasy','MovPI','AnotherProvider'];
+ api.rememberVisible(providers.map(name=>({source:name.toLowerCase(),title:name+' (ENG)',lang:'ru'})));
+ api.remember([{balanser:'anotherprovider',name:'AnotherProvider',url:'/lite/anotherprovider',lang:'ru'}]);
+ api.menu();
+ assert.equal(config.items.find(row=>row.lang==='en').subtitle,'5');
+ config.onSelect({lang:'en'});
+ assert.deepEqual(config.items.map(row=>row.title),providers.map(name=>name+' (ENG)'));
  const count=params.length;install(L);assert.equal(L.Reguest.lampaViewSources,true);assert.equal(count,1);
 });

@@ -48,7 +48,7 @@ test('back in a quality selection closes the selection without leaving the activ
 test('back button follows the native stack, closes the current controller once and is created when the host omitted it',async()=>{
  const n=await native({built:true}),{w,L}=n;
  try{
-  const $=w.jQuery;let button=w.document.querySelector('.head__backward.minimal-back');assert.ok(button);assert.equal(w.getComputedStyle(button).display,'none');
+  const $=w.jQuery;let button=w.document.querySelector('.head__backward.minimal-back');assert.ok(button);assert.equal(w.getComputedStyle(button).visibility,'hidden');
   L.Api.category=(p,ok)=>w.setTimeout(()=>ok([{title:p.title,url:p.url,source:'cub',results:[{id:1,title:'Фильм'}]}]),0);
   L.Activity.push({component:'category',url:'movie',source:'cub',title:'Фильмы'});await wait(100);
   button=w.document.querySelector('.head__backward.minimal-back');assert.equal(w.getComputedStyle(button).display,'flex');assert.equal(button.getAttribute('aria-label'),'Назад');
@@ -58,7 +58,7 @@ test('back button follows the native stack, closes the current controller once a
   button.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Enter',bubbles:true,cancelable:true}));assert.equal(closes,2);
   $(button).trigger('hover:enter');assert.equal(closes,3);
   button.remove();L.Listener.send('activity',{type:'start'});button=w.document.querySelector('.head__backward.minimal-back');assert.ok(button && button.isConnected);assert.equal(w.document.querySelectorAll('.head__backward.minimal-back').length,1);
-  L.Controller.toggle('head');button.click();await wait(250);assert.equal(L.Activity.all().length,stack-1);assert.equal(w.getComputedStyle(button).display,'none');
+  L.Controller.toggle('head');button.click();await wait(250);assert.equal(L.Activity.all().length,stack-1);assert.equal(w.getComputedStyle(button).visibility,'hidden');
   assert.deepEqual(n.errors,[]);
  }finally{n.close();}
 });

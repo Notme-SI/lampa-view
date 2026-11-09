@@ -4,6 +4,7 @@ const GROUPS=[['appearance',lampaViewText("Оформление"),lampaViewText(
 export function cleanText(text){return typeof text==='string'?text.replace(/[\u2013\u2014]/g,'-').replace(/<a\b[^>]*>[\s\S]*?<\/a>/gi,'').replace(/https?:\/\/(?:t\.me|telegram\.(?:me|org))\/[^\s<]*/gi,'').replace(/Lampa Minimal|Закус[ььи](?: TV)?|Alcopa|ALC Auto|Автопилот|Lampa View|mpv.plus/gi,'').replace(/\s{2,}/g,' ').trim():text;}
 function groupOf(d){
  const n=d.param && d.param.name || '',g=d.snack_g;
+ if(n==='menu_always')return 'appearance';
  if(n==='minimal_clear_quality' || n==='minimal_clear_ratings')return 'cache';
  if(n==='minimal_quality_fallback')return 'parser';
  if(n==='lampa_view_metadata')return 'playback';
