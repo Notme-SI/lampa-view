@@ -22,7 +22,7 @@ export function watchActions(L,root,card,link){
  function update(){
   buttons.querySelectorAll('.button--alc-auto,.button--priority').forEach(button=>button.remove());
   play.classList.remove('minimal-source-hidden','hide');play.classList.add('selector');play.removeAttribute('aria-hidden');play.title=lampaViewText("Смотреть");play.setAttribute('aria-label',lampaViewText("Смотреть"));
-  const label=play.querySelector('span');if(label && label.textContent!=='Смотреть')label.textContent=lampaViewText("Смотреть");
+  const label=play.querySelector('span'),title=lampaViewText("Смотреть");if(label && label.textContent!==title)label.textContent=title;
   $(play).off('hover:enter').on('hover:enter.lampaViewWatch',open);
  }
  update();play.addEventListener('click',click,true);play.addEventListener('hover:enter',enter,true);

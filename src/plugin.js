@@ -199,7 +199,11 @@ if (!ROOT.LampaView) {
     // Keep Lampa's original menu, settings, account and bookmark handlers.
     // Only the native menu's presentation changes to an anchored popover.
     $('.head__menu-icon').addClass('selector').attr({role:'button',tabindex:'0','aria-label':lampaViewText("Меню")})
-      .off('hover:enter.minimal').on('hover:enter.minimal',()=>L.Controller.toggle('menu'));
+      .off('hover:enter.minimal').on('hover:enter.minimal',()=>{
+        const closing=document.body.classList.contains('menu--open');
+        if(closing)document.body.classList.remove('pt-menu-hover');
+        if(L.Menu && L.Menu.toggle)L.Menu.toggle();else L.Controller.toggle(closing?'content':'menu');
+      });
     const menu=$('.head__menu-icon');
     menu.each(function(){if(this._lampaViewMenuPointer)return;this._lampaViewMenuPointer=true;
       // Native mobile mousedown opens a second Select menu. Route all devices
