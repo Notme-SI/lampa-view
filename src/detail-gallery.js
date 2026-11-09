@@ -77,13 +77,16 @@ const previousPath='m14 6-6 6 6 6',nextPath='m10 6 6 6-6 6';
 function showFrames(L,line,frames,start){
  const $=window.jQuery,viewer=document.createElement('div'),image=document.createElement('img');
  const tv=document.body.classList.contains('pt-tv');
- viewer.className='minimal-frame-viewer'+(tv?' selector':'');if(tv)viewer.tabIndex=0;image.className='minimal-screenshot-preview';image.draggable=false;image.referrerPolicy='no-referrer';
+ const mobile=document.body.classList.contains('pt-mobile'),bare=tv || mobile;
+ viewer.className='minimal-frame-viewer'+(bare?' selector':'');if(bare)viewer.tabIndex=0;image.className='minimal-screenshot-preview';image.draggable=false;image.referrerPolicy='no-referrer';
  const controls=document.createElement('div');controls.className='minimal-frame-controls';
  const counter=document.createElement('span');counter.className='minimal-frame-position';counter.setAttribute('aria-live','polite');
- const cache=new Map();let index=start,touch=null,serial=0,disposed=false,focused,controller,original;
+ const cache=new Map();let index=start,touch=null,serial=0,disposed=false,focused,controller,original,modal;
+ const outside=event=>{if(mobile && !viewer.contains(event.target))close();};
  const wrap=n=>(n+frames.length)%frames.length;
  function dispose(){
   if(disposed)return;disposed=true;serial++;
+  document.body.classList.remove('pt-frame-open');modal?.removeEventListener('click',outside);
   for(const entry of cache.values()){entry.image.onload=entry.image.onerror=null;entry.image.removeAttribute('src');}cache.clear();image.removeAttribute('src');
   if(controller && original)for(const key of Object.keys(original)){if(original[key]===undefined)delete controller[key];else controller[key]=original[key];}
   L.Modal.listener?.remove?.('close',dispose);
@@ -98,8 +101,8 @@ function showFrames(L,line,frames,start){
  const previous=galleryButton('minimal-frame-control minimal-frame-prev selector',t('Предыдущий кадр'),previousPath,()=>{focus(previous);move(-1);});
  const next=galleryButton('minimal-frame-control minimal-frame-next selector',t('Следующий кадр'),nextPath,()=>{focus(next);move(1);});
  const dismiss=galleryButton('minimal-frame-control minimal-frame-close selector',t('Закрыть'),'m6 6 12 12m0-12L6 18',close);
- previous.hidden=next.hidden=tv || frames.length<2;
- if(tv){dismiss.hidden=true;for(const button of [previous,next,dismiss])button.classList.remove('selector');}
+ previous.hidden=next.hidden=bare || frames.length<2;
+ if(bare){dismiss.hidden=true;for(const button of [previous,next,dismiss])button.classList.remove('selector');}
  for(const control of [previous,next,dismiss,counter])controls.appendChild(control);
  viewer.appendChild(image);viewer.appendChild(controls);
  function resource(number){
@@ -137,21 +140,22 @@ function showFrames(L,line,frames,start){
   if(frames.length>1 && Math.abs(dx)>45 && Math.abs(dx)>Math.abs(dy)*1.4){event.preventDefault();move(dx<0?1:-1);}
  },{passive:false});
  draw();
- L.Modal.open({title:image.alt,size:'large',html:$(viewer),select:tv?viewer:frames.length>1?next:dismiss,onBack:close});
- viewer.closest('.modal')?.classList.add('minimal-frame-modal');
+ document.body.classList.add('pt-frame-open');
+ L.Modal.open({title:image.alt,size:'large',html:$(viewer),select:bare?viewer:frames.length>1?next:dismiss,onBack:close});
+ modal=viewer.closest('.modal');modal?.classList.add('minimal-frame-modal');modal?.addEventListener('click',outside);
  L.Modal.listener?.follow?.('close',dispose);
  const active=L.Controller?.enabled?.();
  if(active?.name==='modal' && active.controller){
   controller=active.controller;original={};
   for(const key of ['left','right','up','down','enter'])original[key]=controller[key];
   $(controls).find('.selector').off('hover:focus').on('hover:focus',event=>{focused=event.currentTarget;});
-  controller.left=()=>{if(frames.length>1){if(!tv)focus(previous);move(-1);}};
-  controller.right=()=>{if(frames.length>1){if(!tv)focus(next);move(1);}};
-  controller.up=()=>{if(!tv)focus(dismiss);};
-  controller.down=()=>{if(!tv)focus(frames.length>1?next:dismiss);};
-  controller.enter=()=>tv || focused===dismiss?close():move(focused===previous?-1:1);
+  controller.left=()=>{if(frames.length>1){if(!bare)focus(previous);move(-1);}};
+  controller.right=()=>{if(frames.length>1){if(!bare)focus(next);move(1);}};
+  controller.up=()=>{if(!bare)focus(dismiss);};
+  controller.down=()=>{if(!bare)focus(frames.length>1?next:dismiss);};
+  controller.enter=()=>bare || focused===dismiss?close():move(focused===previous?-1:1);
  }
- focused=tv?viewer:frames.length>1?next:dismiss;
+ focused=bare?viewer:frames.length>1?next:dismiss;
  // DOM focus must leave the thumbnail too: after reopening, its Enter handler
  // otherwise consumes the remote OK before it reaches the modal controller.
  focused.focus?.({preventScroll:true});

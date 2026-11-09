@@ -149,9 +149,9 @@ async function open(page,movie){
       // Measure the settled modal after Lampa finishes its opening animation.
       await viewer.evaluate(node=>Promise.allSettled(node.closest('.modal__content').getAnimations().map(animation=>animation.finished)));
       const bounds=await viewer.evaluate(node=>{const r=node.getBoundingClientRect(),close=node.querySelector('.minimal-frame-close').getBoundingClientRect(),next=node.querySelector('.minimal-frame-next').getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:innerWidth,height:innerHeight,inside:r.left>=0 && r.right<=innerWidth+1 && r.top>=0 && r.bottom<=innerHeight+1,separated:close.bottom+8<next.top};});
-      assert.ok(bounds.inside && (tv || bounds.separated),'Viewer and separate controls fit '+theme+' '+mode+': '+JSON.stringify(bounds));
+      assert.ok(bounds.inside && (tv || mobile || bounds.separated),'Viewer and separate controls fit '+theme+' '+mode+': '+JSON.stringify(bounds));
       const close=await viewer.locator('.minimal-frame-close').boundingBox(),canvas=await viewer.boundingBox();
-      if(tv)assert.equal(close,null,'TV has no on-screen close button');else assert.ok(close.x<canvas.x+canvas.width/2,'Close stays on the left');
+      if(tv || mobile)assert.equal(close,null,'TV and phone have no on-screen close button');else assert.ok(close.x<canvas.x+canvas.width/2,'Close stays on the left');
       const space=await page.evaluate(()=>({width:innerWidth,height:innerHeight}));
       const width=Math.min(space.width*(mobile?.95:.5),space.height*8/9);
       assert.ok(canvas.width<=width+3 && canvas.width>width*.82 && canvas.height<=space.height*.5+3,'The centered viewer stays within the compact size: '+JSON.stringify({canvas,space,viewport}));
@@ -174,7 +174,7 @@ async function open(page,movie){
      });
      else await viewer.getByRole('button',{name:'Следующий кадр'}).click();
      assert.equal(await position(),'2 / '+total);
-     if(tv)await page.keyboard.press('ArrowLeft');else await activate(viewer.getByRole('button',{name:'Предыдущий кадр'}));
+     if(tv || mobile)await page.keyboard.press('ArrowLeft');else await activate(viewer.getByRole('button',{name:'Предыдущий кадр'}));
      assert.equal(await position(),'1 / '+total);
      if(tv){
       await page.keyboard.press('ArrowUp');assert.equal(await viewer.locator('.minimal-frame-close.focus').count(),0);
@@ -191,8 +191,9 @@ async function open(page,movie){
       assert.deepEqual(await viewer.boundingBox(),canvas,'Image aspect ratio cannot resize the viewer');
       await page.keyboard.press('ArrowLeft');assert.equal(await position(),'1 / '+total);
      }
-     if(tv)await page.keyboard.press('Escape');else await activate(viewer.getByRole('button',{name:'Закрыть'}));
+     if(tv)await page.keyboard.press('Escape');else if(mobile){assert.equal(await viewer.locator('button:visible').count(),0);assert.equal(await page.locator('.navigation-bar').isVisible(),false);await page.locator('.modal').click({position:{x:5,y:5}});}else await activate(viewer.getByRole('button',{name:'Закрыть'}));
      await viewer.waitFor({state:'hidden'});
+     assert.equal(await page.locator('body.pt-frame-open').count(),0,'Closing restores the normal mobile navigation state');
      assert.ok(await first.evaluate(node=>node.classList.contains('focus') || document.activeElement===node));
      if(tv){
       await stills.evaluateAll(nodes=>nodes.forEach((node,index)=>{node.hidden=index>0;}));

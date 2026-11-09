@@ -9,19 +9,19 @@ const assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWR
   const geometry=await page.evaluate(()=>{
    const head=document.querySelector('.head'),menu=head.querySelector('.head__menu-icon'),search=head.querySelector('.open--search'),back=head.querySelector('.head__backward');
    const rect=n=>{const b=n.getBoundingClientRect();return {left:b.left,right:b.right,top:b.top,bottom:b.bottom,width:b.width,height:b.height};};
-   const controls=[back,menu,search].map(node=>{Lampa.Controller.collectionSet(head);Lampa.Controller.collectionFocus(node,head);return {focused:node.classList.contains('focus'),box:rect(node),border:getComputedStyle(node).borderColor,outline:getComputedStyle(node).outlineWidth};});
+   const settings=head.querySelector(".open--settings");const controls=[back,menu,search,...(settings.getBoundingClientRect().width?[settings]:[])].map(node=>{Lampa.Controller.collectionSet(head);Lampa.Controller.collectionFocus(node,head);return {focused:node.classList.contains('focus'),box:rect(node),fill:getComputedStyle(node).backgroundColor,shadow:getComputedStyle(node).boxShadow,border:getComputedStyle(node).borderColor,outline:getComputedStyle(node).outlineWidth};});
    return {controls,menu:rect(menu),search:rect(search),vw:innerWidth};
   });
   assert.ok(geometry.controls[0].box.right<geometry.menu.left,'Back appears before Menu');
   assert.ok(geometry.menu.left>home.menu+geometry.controls[0].box.width*.8 && geometry.search.left>home.left+geometry.controls[0].box.width*.8,'Back moves Menu and shrinks Search');
   assert.ok(Math.abs(geometry.search.right-home.right)<1,'Search keeps its right edge');assert.ok(geometry.search.width<home.width);
   assert.ok(geometry.search.right<=geometry.vw && geometry.search.width>geometry.vw*.4);
-  for(const control of geometry.controls){assert.equal(control.focused,true);assert.equal(control.outline,'0px');assert.equal(control.border,theme==='glass'?'rgb(244, 244, 246)':'rgb(216, 195, 154)');}
-  await page.locator('.head__menu-icon').click();
+  for(const control of geometry.controls){assert.equal(control.focused,true);assert.equal(control.outline,'0px');assert.equal(control.border,theme==='glass'?'rgba(255, 255, 255, 0.61)':'rgb(216, 195, 154)');}
+  assert.equal(new Set(geometry.controls.map(n=>n.fill)).size,1,'Header controls share focus fill');assert.equal(new Set(geometry.controls.map(n=>n.shadow)).size,1,'Header controls share focus edge');await page.locator('.head__menu-icon').click();
   const menuPanel=await page.locator('.wrap__left').evaluate(n=>{const r=n.getBoundingClientRect();return {left:r.left,top:r.top,width:r.width};});
   assert.ok(menuPanel.left<home.menu && menuPanel.left>=8,'Menu opens near the outer edge');
-  await page.locator('.head__menu-icon').click();assert.equal(await page.evaluate(()=>document.body.classList.contains('menu--open')),false,'Second click closes Menu');
-  await page.locator('.head__menu-icon').click();await page.locator('.wrap__left [data-action=settings]').click();await page.waitForSelector('body.settings--open');
+  assert.equal(new Set(geometry.controls.map(n=>n.fill)).size,1,'Header controls share focus fill');assert.equal(new Set(geometry.controls.map(n=>n.shadow)).size,1,'Header controls share focus edge');await page.locator('.head__menu-icon').click();assert.equal(await page.evaluate(()=>document.body.classList.contains('menu--open')),false,'Second click closes Menu');
+  assert.equal(new Set(geometry.controls.map(n=>n.fill)).size,1,'Header controls share focus fill');assert.equal(new Set(geometry.controls.map(n=>n.shadow)).size,1,'Header controls share focus edge');await page.locator('.head__menu-icon').click();await page.locator('.wrap__left [data-action=settings]').click();await page.waitForSelector('body.settings--open');
   const mirrored=await page.locator('.settings__content').evaluate(n=>{const r=n.getBoundingClientRect();return {inset:innerWidth-r.right,top:r.top,width:r.width};});
   assert.ok(Math.abs(mirrored.top-menuPanel.top)<1 && Math.abs(mirrored.width-menuPanel.width)<1 && Math.abs(mirrored.inset-menuPanel.left)<1,'Settings mirror Menu on the right');
   const settings=await page.locator('.settings__content').evaluate(n=>({width:n.getBoundingClientRect().width,height:n.getBoundingClientRect().height,vh:innerHeight,rows:[...n.querySelectorAll('.settings-folder')].filter(n=>n.getBoundingClientRect().height).map(n=>({h:n.getBoundingClientRect().height,font:parseFloat(getComputedStyle(n).fontSize)}))}));
