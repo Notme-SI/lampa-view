@@ -113,9 +113,18 @@ async function open(page,movie){
      }
      if(!tv){
       const start=await first.evaluate(node=>node.getBoundingClientRect().left);
-      await activate(row.getByRole('button',{name:'Следующая страница'}));
+      assert.equal(await row.getByRole('button',{name:'Следующая страница'}).count(),0);
+      const scroll=row.locator('.scroll--horizontal');
+      async function swipe(direction){
+       if(!mobile){await scroll.hover();await page.mouse.wheel(direction*300,0);return;}
+       assert.equal(await scroll.evaluate(node=>getComputedStyle(node).overflowX),'auto','Touch devices use native horizontal overflow');
+       // Synthetic touch events do not invoke browser-native scrolling.
+       await scroll.evaluate((node,direction)=>{node.scrollLeft+=direction*200;},direction);
+      }
+      await swipe(1);
       await page.waitForFunction(start=>document.querySelector('[data-minimal-screenshot]').getBoundingClientRect().left<start-10,start);
-      await activate(row.getByRole('button',{name:'Предыдущая страница'}));
+      await page.waitForFunction(()=>!document.body.classList.contains('pt-wheel-active'));
+      await swipe(-1);
       await page.waitForFunction(start=>document.querySelector('[data-minimal-screenshot]').getBoundingClientRect().left>=start-3,start);
       await activate(first);
      }else{
