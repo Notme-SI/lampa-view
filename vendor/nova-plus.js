@@ -350,12 +350,14 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
 
   function probeSave(id, name, state, count) {
     if (!id || !name) return;
-    probe_saves++;
     var all = cached('nova_probe', 2000, {});
-    var mine = probeCache(id);
-    mine.list[name] = { s: state, c: count || 0, t: Date.now(), v: 3 };
-    all[id] = mine;
-    save('nova_probe', all);
+    var mine = probeCache(id), now = Date.now(), previous = mine.list[name], amount = count || 0;
+    if (!previous || previous.v !== 3 || previous.s !== state || previous.c !== amount || now - (previous.t || 0) >= 60000) {
+      probe_saves++;
+      mine.list[name] = { s: state, c: amount, t: now, v: 3 };
+      all[id] = mine;
+      save('nova_probe', all);
+    }
     refreshSourceIndicators(name,state);
   }
 
@@ -5377,9 +5379,12 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     list.forEach(function (item) { item.card = null; });
     var button = buildHero();
     var readEpisodeBook = wideEpisodeReader();
+    var cardBatch = document.createDocumentFragment();
     displayList.forEach(function (item) {
-      ui.list.append(buildCard(item, compact && !grid, grid, readEpisodeBook));
+      var node = buildCard(item, compact && !grid, grid, readEpisodeBook);
+      if (node && node[0]) cardBatch.appendChild(node[0]);
     });
+    ui.list[0].appendChild(cardBatch);
     listFree();
     buildRows();
 
