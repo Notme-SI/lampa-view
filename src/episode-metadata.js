@@ -2,11 +2,15 @@ import {isAnime} from './metadata.js';
 import {locale,text as t} from './i18n.js';
 export function metadataText(value,language=locale()){
  const text=String(value || '').trim().replace(/[\u2013\u2014]/g,'-');
- return language==='ru' && /[a-z]/i.test(text) && !/[а-яё]/i.test(text) && text.length>1?'':text;
+ return ['ru','uk','be','bg'].includes(language) && /[a-z\u0590-\u08ff\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af]/i.test(text) && !/[\u0400-\u04ff]/.test(text) && text.length>1?'':text;
 }
 export function localizedEpisodeBook(book,language=locale()){
- if(!book)return book;const result={};
- Object.keys(book).forEach(key=>{const row=book[key];result[key]={...row,name:(language==='ru' && /^(?:episode|эпизод|серия)\s*\d+$/i.test(String(row.name || '').trim())?'':metadataText(row.name,language)) || t('Серия {0}',[key],language),overview:metadataText(row.overview,language),...(row.lampa_season_name!==undefined?{lampa_season_name:metadataText(row.lampa_season_name,language)}:{})};});return result;
+ if(!book)return book;const result={},requested=locale(language);
+ const localized=(value,actual)=>actual && actual!==requested?'':metadataText(value,requested);
+ Object.keys(book).forEach(key=>{
+  const row=book[key],generic=/^(?:episode|эпизод|серия|folge|episodio|épisode)\s*\d+$/i.test(String(row.name || '').trim());
+  result[key]={...row,name:(!generic && localized(row.name,row.lampa_name_language)) || t('Серия {0}',[key],requested),overview:localized(row.overview,row.lampa_overview_language),...(row.lampa_season_name!==undefined?{lampa_season_name:metadataText(row.lampa_season_name,requested)}:{})};
+ });return result;
 }
 function plannedSeason(card,season,today){
  const valid=d=>/^\d{4}-\d{2}-\d{2}$/.test(String(d || ''));

@@ -6,14 +6,16 @@ const assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWR
    for(const [action,title] of [['sport','Спорт'],['shots','Shots'],['dorama','Дорамы']]){const item=document.createElement('li');item.className='menu__item selector';item.dataset.action=action;item.innerHTML='<div class="menu__ico"></div><div class="menu__text"></div>';item.lastElementChild.textContent=title;list.appendChild(item);}})});const {page}=r;
   await page.evaluate(()=>{document.querySelector('.wrap').classList.add('layer--width');Lampa.Layer.init();Lampa.Storage.set('lampa_view_theme','glass');Lampa.Storage.set('menu_always',true);});await page.waitForTimeout(300);
   const measure=()=>page.locator('.wrap__left').evaluate(n=>{const rect=node=>{const r=node.getBoundingClientRect();return {left:r.left,top:r.top,bottom:r.bottom,width:r.width,height:r.height};};return {panel:rect(n),content:rect(document.querySelector('.wrap__content')),item:rect(n.querySelector('[data-action=movie]')),radius:getComputedStyle(n).borderRadius,icon:n.querySelector('.menu__ico').getBoundingClientRect().left};});
-  const dock=await measure();assert.ok(dock.panel.width<90);assert.equal(dock.content.left,0);assert.equal(await page.locator('.head .head__menu-icon').count(),1);
+  const dock=await measure();assert.ok(dock.panel.width<90);assert.equal(dock.content.left,0);assert.equal(await page.locator('.head .head__menu-icon').isVisible(),false);
   await page.locator('.wrap__left').hover();await page.waitForTimeout(300);
   const expanded=await measure();assert.ok(expanded.panel.width>dock.panel.width*2);
   for(const key of ['left','top','height'])assert.ok(Math.abs(expanded.panel[key]-dock.panel[key])<1,'Dock only changes width');
   assert.equal(expanded.radius,dock.radius);assert.equal(expanded.item.height,dock.item.height);assert.equal(expanded.icon,dock.icon);assert.deepEqual(expanded.content,dock.content);
   await page.mouse.move(1,1);await page.waitForTimeout(300);
-  await page.locator(mode==='mobile'?'.navigation-bar [data-action=menu]':'.head__menu-icon').click();await page.waitForTimeout(300);assert.equal(await page.evaluate(()=>Lampa.Controller.enabled().name),'menu');
-  await page.locator(mode==='mobile'?'.navigation-bar [data-action=menu]':'.head__menu-icon').click();await page.waitForTimeout(300);assert.equal(await page.evaluate(()=>document.body.matches('.menu--open,.pt-menu-hover')),false);
+  if(mode==='mobile'){
+   await page.locator('.navigation-bar [data-action=menu]').click();await page.waitForTimeout(300);assert.equal(await page.evaluate(()=>Lampa.Controller.enabled().name),'menu');
+   await page.locator('.navigation-bar [data-action=menu]').click();await page.waitForTimeout(300);assert.equal(await page.evaluate(()=>document.body.matches('.menu--open,.pt-menu-hover')),false);
+  }
   await page.evaluate(()=>{Lampa.Storage.set('menu_always',false);Lampa.Controller.toggle('menu');});
   await page.evaluate(()=>{Lampa.Controller.toggle('content');Lampa.Storage.set('menu_always',true);Lampa.Controller.toggle('menu');});
   await page.route(/^https?:\/\/posters\.test\//,route=>route.request().url().endsWith('/missing.png')?route.abort():route.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="80" height="120"><rect width="80" height="120" fill="purple"/></svg>'}));

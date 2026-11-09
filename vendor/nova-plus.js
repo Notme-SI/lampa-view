@@ -1726,9 +1726,19 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
 
   function probeUrlFor(key) {
     if (!probe_url || !key) return '';
-    var url = probe_url.replace(/(\/lite\/)[^\/?&]+/, '$1' + encodeURIComponent(key));
-    ['s','e','t','voice','translation','season','episode','rjson','checksearch','balancer','origid'].forEach(function(name){url=voiceDropParam(url,name);});
-    return url;
+    try {
+      var url=new URL(probe_url,location.href);
+      url.pathname=url.pathname.replace(/(\/lite\/)[^/]+$/, '$1'+encodeURIComponent(key));
+      // The last request may point to a dub or a release known only to its provider.
+      var titleKeys=['id','tmdb_id','imdb_id','kinopoisk_id','shikimori_id','mal_id','title','original_title','year','serial','anime','original_language','source','clarification','similar','cub_id','account_email','uid','token','rchtype','nws_id'];
+      Array.from(url.searchParams.keys()).forEach(function(name){if(titleKeys.indexOf(name)<0)url.searchParams.delete(name);});
+      if(movie){
+        var title=movie.name || movie.title || movie.original_name || movie.original_title;
+        if(title && (!url.searchParams.get('title') || url.searchParams.get('title')==='Фильм не найден'))url.searchParams.set('title',title);
+        if(!url.searchParams.has('serial'))url.searchParams.set('serial',tmdbKind(movie)==='tv'?'1':'0');
+      }
+      return url.href;
+    } catch(e) { return ''; }
   }
 
   function probeStop() {
@@ -2436,6 +2446,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     if (typeof comp.changeBalanser !== 'function') return;
 
     comp.nova_host_hooked = true;
+    if(object && object.lampac_custom_select)comp.lampaViewManualSource=true;
     if(typeof comp.contextMenu==='function'){
       var nativeContextMenu=comp.contextMenu;
       comp.contextMenu=function(params){
@@ -2613,9 +2624,10 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       comp.parseJsonDate=function(body,selector){
         var rows=parseRows.apply(this,arguments);
         var card=object && (object.movie || object.card) || movie,state=onlineState(),metadata=window.LampaView && window.LampaView.episodeMetadata;
-        if(selector==='.videos__item' && rows && state && state.episodeRows && card && tmdbKind(card)==='tv' && metadata && metadata.isAnime(card)){
-          rows=state.episodeRows(rows);
-          var number=releaseSeason(providerUrl);
+        if(selector==='.videos__item' && rows && state && state.episodeRows && card && tmdbKind(card)==='tv'){
+          var mixed=rows.some(function(row){return /^(play|call)$/.test(row.method) && row.episode==null;});
+          rows=state.episodeRows(rows,mixed?parseRows.call(this,body,'.videos__button'):[]);
+          var number=metadata && metadata.isAnime(card) && releaseSeason(providerUrl);
           if(number)rows=rows.map(function(row){return /^(play|call)$/.test(row.method) && row.episode!=null?Object.assign({},row,{season:number}):row;});
         }
         if(providerPart && selector==='.videos__item' && rows && rows.length)return continuationApi.files(providerPart,rows);
@@ -2792,7 +2804,9 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
             if(relevant.length!==folders.length){
               // An empty exact-title result belongs to the native no-results flow.
               // Do not offer unrelated fuzzy provider search hits as this title.
-              str=relevant.length?relevant.map(function(row){return '<div class="videos__item" data-json="'+JSON.stringify(row).replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'"></div>';}).join(''):'<div class="videos__line"></div>';
+              str=relevant.length?relevant.map(function(row){
+                return $('<div class="videos__item videos__season"></div>').attr('data-json',JSON.stringify(row)).text(row.text || row.title || row.name || '')[0].outerHTML;
+              }).join(''):'<div class="videos__line"></div>';
               arguments[0]=str;folders=relevant;
             }
           }
@@ -2857,6 +2871,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       comp.doesNotAnswer=function(){
         var failedSource=requestSource || currentSourceKey();
         var result=noAnswer.apply(comp,arguments);
+        if((comp.lampaViewManualSource || comp.lampaViewManualNavigation) && typeof comp.render==='function')hostTimerStop({node:$(comp.render())});
         comp.lampaViewAvailability='error';comp.lampaViewAvailabilitySource=failedSource;
         if(movie && componentNow()===comp && failedSource && !comp.lampaViewManualNavigation)probeSave(qualityScope(),failedSource,'error',0);
         return result;
@@ -2866,6 +2881,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     var real = comp.changeBalanser;
 
     comp.changeBalanser = function () {
+      if(arguments[1]===true && (comp.lampaViewManualSource || comp.lampaViewManualNavigation))return;
       continuation.selected=null;
       resetAvailability(typeof arguments[0]==='string' ? arguments[0] : '');
       probeStop(); probe_done_for = 0;
@@ -4150,7 +4166,9 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     } catch (e) {}
   }
 
-  function chooseSource(item) {
+  function chooseSource(item, automatic) {
+    var owner=componentNow();
+    if(owner)owner.lampaViewManualSource=!automatic;
     if (wideOn()) return wideChooseSource(item, focusKey(item));
     if (!filter || typeof filter.onSelect !== 'function') return;
     var host_filter = filter;
@@ -4262,11 +4280,9 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
   }
 
   function sourceActive(item, state) {
-    if (state === 'ok') return true;
-    if (state === 'empty' || state === 'error' || item.ghost) return false;
-    // An untested provider is not a failed provider. Quality badges alone
-    // cannot determine whether a source has this film.
-    return true;
+    // A probe of one release or an error in one dub must not hide a source
+    // that discovery offers. Keep the current choice visible on error too.
+    return !!item.selected || state === 'ok' || !item.ghost;
   }
 
   function onlineChoiceDraw(node,entry){
@@ -5032,7 +5048,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
 
     var next = (groups.sort || []).length > 1 ? nextSource() : null;
     var owner=componentNow();
-    var auto = !!next && autoSwitchOn() && !(owner && owner.lampaViewManualNavigation);
+    var auto = !!next && autoSwitchOn() && !(owner && (owner.lampaViewManualNavigation || owner.lampaViewManualSource));
 
     if (next) {
       addAction(text('nova_try_source', 'nova_plus_try_source')
@@ -5079,7 +5095,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
         render();
         if (tic > 0) return;
         hopStop();
-        chooseSource(next);
+        chooseSource(next,true);
       }, 1000);
     } else if (!next && (groups.sort || []).length > 1) {
       note.find('.nova-note__text').text(text('nova_dead_all', 'nova_plus_dead_all'));

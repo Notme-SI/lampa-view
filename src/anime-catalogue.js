@@ -54,10 +54,17 @@ export function galleryReleaseSeasons(card,model,season,book){
  return groups && new Map(groups.flatMap(group=>Object.values(group.book).map(row=>[Number(row.episode_number),order.get(group.mal_id)])));
 }
 const genericEpisodeName=value=>!String(value || '').trim() || /^(?:episode|серия|эпизод|folge|episodio|épisode)\s*\d+$/i.test(String(value).trim());
-export function completeEpisodeData(data,fallback){
+export function completeEpisodeData(data,fallback,language){
  if(!data || !fallback || Number(data.season_number)!==Number(fallback.season_number))return data;
  const rows=fallback.episodes_original || fallback.episodes || [];
- const merge=e=>{const other=rows.find(v=>Number(v.episode_number)===Number(e.episode_number) && (!v.id || !e.id || v.id===e.id));if(!other)return e;return {...e,...(genericEpisodeName(e.name) && !genericEpisodeName(other.name)?{name:other.name}:{}),...(!e.overview && other.overview?{overview:other.overview}:{}),...(!e.still_path && other.still_path?{still_path:other.still_path}:{})};};
+ const merge=e=>{
+  const other=rows.find(v=>Number(v.episode_number)===Number(e.episode_number) && (!v.id || !e.id || v.id===e.id));if(!other)return e;
+  const result={...e};
+  if(genericEpisodeName(e.name) && !genericEpisodeName(other.name)){result.name=other.name;if(language)result.lampa_name_language=language;}
+  if(!e.overview && other.overview){result.overview=other.overview;if(language)result.lampa_overview_language=language;}
+  if(!e.still_path && other.still_path)result.still_path=other.still_path;
+  return result;
+ };
  return {...data,...(data.episodes?{episodes:data.episodes.map(merge)}:{}),...(data.episodes_original?{episodes_original:data.episodes_original.map(merge)}:{})};
 }
 // A joined video list can end with full-length TV specials stored in season 0.
@@ -77,10 +84,20 @@ export function joinedPartsBook(parts,books){
 }
 export default function animeCatalogue(L,kino){
  const cache=new Map(),pending=new Map(),queue=[],models=new Map(),modelPending=new Map(),live=new Set();let active=0,revision=0;
- function load(path,done){const key=locale()+'|'+path,hit=cache.get(key);if(hit && Date.now()-hit.at<900000)return done(hit.value);if(pending.has(key)){pending.get(key).push(done);return;}if(queue.length>=24)return done(null);const listeners=[done];pending.set(key,listeners);queue.push({path,key,listeners,revision});pump();}
+ function load(path,done){const language=locale(),key=language+'|'+path,hit=cache.get(key);if(hit && Date.now()-hit.at<900000)return done(hit.value);if(pending.has(key)){pending.get(key).push(done);return;}if(queue.length>=24)return done(null);const listeners=[done];pending.set(key,listeners);queue.push({path,key,listeners,revision,language});pump();}
  function pump(){while(active<2 && queue.length){const job=queue.shift();active++;live.add(job);let settled=false;const timer=setTimeout(()=>finish(job.fallback || null),12000);
   function finish(value){if(settled)return;settled=true;clearTimeout(timer);active--;live.delete(job);if(pending.get(job.key)===job.listeners)pending.delete(job.key);if(job.revision===revision){if(value){cache.set(job.key,{at:Date.now(),value});while(cache.size>48)cache.delete(cache.keys().next().value);}job.listeners.splice(0).forEach(fn=>fn(value));}pump();}
-  job.finish=finish;try{tmdbGet(L,job.path,{},json=>{const valid=json && (Array.isArray(json.seasons) || Array.isArray(json.episodes) || Array.isArray(json.movie_results) && Array.isArray(json.tv_results));if(!valid)return finish(null);const requested=job.path.match(/tv\/(\d+)\/season\/(\d+)/),returned=String(json.url || '').match(/tv\/(\d+)\/season\/(\d+)/);if(requested && (returned && (requested[1]!==returned[1] || requested[2]!==returned[2]) || json.season_number!=null && Number(json.season_number)!==Number(requested[2])))return finish(null);const rows=json.episodes_original || json.episodes;if(requested && Array.isArray(rows) && rows.some(e=>e.season_number!=null && Number(e.season_number)!==Number(requested[2])))return finish(null);if(/season\/\d+(?:\?|$)/.test(job.path) && !/[?&]language=en(?:&|$)/.test(job.path) && locale()!=='en' && Array.isArray(rows) && rows.some(e=>genericEpisodeName(e.name))){job.fallback=json;const path=job.path.split('?')[0]+'?language=en';return tmdbGet(L,path,{langs:'en'},fallback=>finish(completeEpisodeData(json,fallback)),()=>finish(json));}finish(json);},()=>finish(null));}catch(error){finish(null);}
+  job.finish=finish;try{tmdbGet(L,job.path,{langs:job.language},json=>{
+   const valid=json && (Array.isArray(json.seasons) || Array.isArray(json.episodes) || Array.isArray(json.movie_results) && Array.isArray(json.tv_results));if(!valid)return finish(null);
+   const requested=job.path.match(/tv\/(\d+)\/season\/(\d+)/),returned=String(json.url || '').match(/tv\/(\d+)\/season\/(\d+)/);
+   if(requested && (returned && (requested[1]!==returned[1] || requested[2]!==returned[2]) || json.season_number!=null && Number(json.season_number)!==Number(requested[2])))return finish(null);
+   const rows=json.episodes_original || json.episodes;if(requested && Array.isArray(rows) && rows.some(e=>e.season_number!=null && Number(e.season_number)!==Number(requested[2])))return finish(null);
+   if(requested && job.language!=='en' && Array.isArray(rows) && rows.some(e=>genericEpisodeName(e.name))){
+    job.fallback=json;const path=job.path.split('?')[0]+'?language=en';
+    return tmdbGet(L,path,{langs:'en'},fallback=>finish(completeEpisodeData(json,fallback,'en')),()=>finish(json));
+   }
+   finish(json);
+  },()=>finish(null));}catch(error){finish(null);}
  }}
  function canonical(card,done){const mapped=card.source==='minimal_shiki'?animeTarget(card):null,id=Number(card.tmdb_id || mapped && mapped.type==='tv' && mapped.id || card.id);if(!positive(id) || card.media_type==='movie' || card.source==='minimal_shiki' && (!mapped || mapped.type!=='tv'))return done(null);
   if(Array.isArray(card.seasons) && Number(card.id)===id)return done(card);
@@ -110,29 +127,30 @@ export default function animeCatalogue(L,kino){
  function clear(){revision++;cache.clear();models.clear();queue.splice(0);pending.forEach(rows=>rows.splice(0).forEach(fn=>fn(null)));pending.clear();modelPending.forEach(rows=>rows.forEach(fn=>fn(null)));modelPending.clear();Array.from(live).forEach(job=>job.finish(null));}
  function status(card,book,done){const number=Number((card.seasons || []).find(s=>s.season_number>0)?.season_number),rows=book && (book.episodes_original || book.episodes);if(!rows || !number)return done(null);groups(card,Array.from({length:rows.length},(_,i)=>i+1),values=>{if(!values)return done(null);const today=new Date().toISOString().slice(0,10),available=values.map(g=>({group:g,aired:Object.values(g.book).filter(e=>e.air_date && day(e.air_date)<=today)})).filter(v=>v.aired.length);if(!available.length)return done(null);const last=available[available.length-1];done({season:last.group.number,count:last.aired.length,total:last.group.count});},{[number]:book});}
  function providerBook(card,number,numbers,files,done,layout=null){
-  if(!isAnime(card) || !files.length || files.length>3000 || !files.map(Number).sort((a,b)=>a-b).every((n,i)=>n===i+1))return done(null);
+  if(!isAnime(card) || !files.length || files.length>3000)return done(null);
+  const requested=new Set(files.map(Number)),last=Math.max(...requested);
+  if(requested.size!==files.length || last>3000 || ![...requested].every(positive))return done(null);
   const labels=[...new Set(numbers.map(Number))].filter(n=>n>0).sort((a,b)=>a-b);if(!layout && labels.length!==1 && !labels.every((n,i)=>n===i+1) || labels.length>60)return done(null);
   canonical(card,value=>{if(!value)return done(null);collection({...value,source:'tmdb',media_type:'tv',minimal_anime:true},model=>{
    if(!model || !model.complete)return done(null);const today=new Date().toISOString().slice(0,10),story=model.rows.find(r=>r.key==='story'),ids=new Set(story && story.results.map(r=>r.id)),eligible=n=>n.record && Number(n.record.tv)===Number(value.id) && ['tv','ona'].includes(n.kind) && n.episodes>0 && n.status!=='anons' && n.aired && n.aired<=today;
    const main=model.nodes.filter(n=>ids.has(n.id) && eligible(n)).sort((a,b)=>a.aired.localeCompare(b.aired)),all=model.nodes.filter(eligible).filter(n=>ids.has(n.id) || model.edges.some(e=>e.relation==='alternative_version' && (e.from===n.id || e.to===n.id))).sort((a,b)=>a.aired.localeCompare(b.aired));
    const specified=layout && layout[number] && model.nodes.find(n=>Number(n.id)===Number(layout[number].mal) && eligible(n));
-   const schemes=[main,all].filter((rows,i,a)=>rows.length===labels.length && !a.slice(0,i).some(old=>old.map(n=>n.id).join()===rows.map(n=>n.id).join()));if(!specified && schemes.length!==1)return done(null);const release=specified || schemes[0][labels.length===1?0:Number(number)-1];if(!release || files.length>release.episodes || release.episodes!==files.length && release.status!=='ongoing')return done(null);
+   const schemes=[main,all].filter((rows,i,a)=>rows.length===labels.length && !a.slice(0,i).some(old=>old.map(n=>n.id).join()===rows.map(n=>n.id).join()));if(!specified && schemes.length!==1)return done(null);const release=specified || schemes[0][labels.length===1?0:Number(number)-1];if(!release || last>release.episodes || release.episodes!==files.length && release.status!=='ongoing' && !specified)return done(null);
    const seasons=(value.seasons || []).filter(s=>s.season_number>0),books={};if(!seasons.length || seasons.length>100)return done(null);
    function loadSeasons(numbers,next){const unread=numbers.filter(n=>!Object.prototype.hasOwnProperty.call(books,n));let left=unread.length;if(!left)return next();unread.forEach(n=>load('tv/'+value.id+'/season/'+n,response=>{books[n]=response;if(!--left)next();}));}
    function finish(map){
-    const book={},put=e=>book[e.number]={...e.metadata,lampa_grouped:true,lampa_source_season:Number(number),lampa_season_name:seasonName({seasons:[{season_number:number,name:release.name}]},number,{...card,lampa_series_names:[main[0]?.name,main[0]?.original]})};map.forEach(put);
+    const book={},put=e=>book[e.number]={...e.metadata,lampa_grouped:true,lampa_source_season:Number(number),lampa_season_name:seasonName({seasons:[{season_number:number,name:release.name}]},number,{...card,lampa_series_names:[main[0]?.name,main[0]?.original]})};map.filter(e=>requested.has(e.number)).forEach(put);
     if(files.some(n=>!book[n]))return done(null);
-    // The released prefix proves the map; retain dated future rows from that
-    // same mapped release separately from the provider's playable files.
+    // Only the mapped release can contribute dated future rows.
     if(release.status==='ongoing'){
      const complete=animeEpisodeMap(release.record,release.episodes,value,books);
      for(const e of complete || [])if(!book[e.number] && e.metadata?.air_date>today && e.metadata.air_date>=release.aired && (!release.released || e.metadata.air_date<=release.released))put(e);
     }
     done(book);
    }
-   const mapped=animeEpisodeMap(release.record,files.length,value);
+   const mapped=animeEpisodeMap(release.record,last,value);
    loadSeasons(mapped?[...new Set(mapped.map(e=>e.season))]:[],()=>{
-    const map=mapped && animeEpisodeMap(release.record,files.length,value,books);
+    const map=mapped && animeEpisodeMap(release.record,last,value,books);
     if(map && map.every(e=>e.metadata && inRelease(e.metadata,release)))return finish(map);
     if(files.length!==release.episodes)return done(null);
     const sorted=seasons.slice().sort((a,b)=>a.season_number-b.season_number),from=time(release.aired),until=time(release.released);

@@ -12,24 +12,26 @@ const titleClean=value=>String(value || '').normalize('NFKC').toLowerCase().repl
 function providerRelease(row,card){
  const title=String(row.title || row.name || row.text || ''),names=[card.name,card.title,card.original_name,card.original_title].filter(Boolean),family=new Set(names.flatMap(v=>String(v).split(/\s+[\/|]\s+/).map(titleClean)));
  const marker=title.match(/\[(?:тв|tv)(?:\s*[- ]\s*(\d+))?(?:\s*,[^\]]*)?\]/i),explicit=title.match(/(?:сезон|season)\s*(\d+)|(\d+)\s*(?:сезон|season)|\bs(\d+)\b/i);
- let season=Number(row.season || (marker && marker[1]) || (explicit && (explicit[1] || explicit[2] || explicit[3]))) || 0;
- if((card.name || card.original_name) && !family.has(titleClean(title)) && /\b(?:ova|ona[- ]?special|movie|film|special)\b|спецвыпуск|фильм/i.test(title))return null;
- const base=title.replace(/\[(?:тв|tv)(?:\s*[- ]\s*\d+)?(?:\s*,[^\]]*)?\]/gi,' ').replace(/(?:сезон|season)\s*\d+|\d+\s*(?:сезон|season)|\bs\d+\b/gi,' ').replace(/\b(?:19|20)\d{2}\b/g,' ');
- const match=base.split(/\s+[\/|]\s+/).some(value=>{
+ const exact=family.has(titleClean(title));
+ const part=exact?0:Number((title.match(/(?:часть|part|cour)\s*(\d+)/i) || [])[1]) || 0;
+ let season=Number((marker && marker[1]) || (explicit && (explicit[1] || explicit[2] || explicit[3])) || row.season) || 0;
+ if((card.name || card.original_name) && !exact && /\b(?:ova|ona[- ]?special|movie|film|special)\b|спецвыпуск|фильм/i.test(title))return null;
+ const base=title.replace(/\[(?:тв|tv)(?:\s*[- ]\s*\d+)?(?:\s*,[^\]]*)?\]/gi,' ').replace(/(?:сезон|season)\s*\d+|\d+\s*(?:сезон|season)|\bs\d+\b/gi,' ').replace(/(?:часть|part|cour)\s*\d+(?=[\s.)]*(?:[\/|]|$))/gi,' ').replace(/\b(?:19|20)\d{2}\b/g,' ');
+ const match=exact || base.split(/\s+[\/|]\s+/).some(value=>{
   let name=titleClean(value);if(family.has(name))return true;
   const roman=value.match(/\s+(II|III|IV|V|VI|VII|VIII|IX|X)\s*$/i);if(roman){name=titleClean(value.slice(0,roman.index));if(family.has(name)){if(!season)season=({II:2,III:3,IV:4,V:5,VI:6,VII:7,VIII:8,IX:9,X:10})[roman[1].toUpperCase()];return true;}}
   return [...family].some(alias=>{const tail=name.startsWith(alias+' ')?name.slice(alias.length+1):'';if(!/^[1-9]\d?$/.test(tail) || Number(tail)>60)return false;if(!season)season=Number(tail);return true;});
  });
  if(!match)return null;
  const param=String(row.url || '').match(/[?&](?:s|season)=(\d+)/);season=season || Number(param && param[1]) || 1;
- const year=Number(String(card.first_air_date || card.release_date || '').slice(0,4)),ownYear=Number(String(row.year || row.start_date || '').slice(0,4)) || Number((title.match(/\b(?:19|20)\d{2}\b/) || [])[0]);
+ const year=Number(String(card.first_air_date || card.release_date || '').slice(0,4)),ownYear=Number(String(row.year || row.start_date || '').slice(0,4)) || (!exact && Number((title.match(/\b(?:19|20)\d{2}\b/) || [])[0]));
  if(year && ownYear && (season===1?Math.abs(year-ownYear)>1:ownYear<year))return null;
- return {season,explicit:!!marker || !!explicit};
+ return {season,part,explicit:!!marker || !!explicit};
 }
 export function folderTarget(rows,card,season=1){
  if(!card || !Array.isArray(rows) || rows.some(row=>/^(play|call)$/.test(row.method)))return '';
  const matches=rows.filter(row=>row.method==='link' && /^(?:https?:\/\/|\/)/i.test(row.url || '')).map(row=>({row,release:providerRelease(row,card)})).filter(v=>v.release?.season===Number(season)),strong=matches.filter(v=>v.release.explicit),choice=strong.length?strong:matches;
- return choice.length===1?choice[0].row.url:'';
+ return choice.length===1 && new Set(matches.map(v=>v.release.part)).size<=1?choice[0].row.url:'';
 }
 export function folderSeasons(rows,card){
  if(!card || !(card.name || card.original_name) || !Array.isArray(rows))return [];
@@ -37,10 +39,10 @@ export function folderSeasons(rows,card){
  for(const row of rows){
   if(!row.similar || row.method!=='link' || !/^(?:https?:\/\/|\/)/i.test(row.url || ''))continue;
   const release=providerRelease(row,card);if(!release)continue;
-  const old=found.get(release.season);if(old){if(old.url===row.url)continue;if(old.explicit && !release.explicit)continue;if(!old.explicit && release.explicit){found.delete(release.season);}else return [];}
-  found.set(release.season,{season:release.season,title:'Сезон '+release.season,method:'link',url:row.url,explicit:release.explicit});
+  const old=found.get(release.season);if(old){if(old.url===row.url)continue;if(old.part!==release.part)return [];if(old.explicit && !release.explicit)continue;if(!old.explicit && release.explicit){found.delete(release.season);}else return [];}
+  found.set(release.season,{season:release.season,title:'Сезон '+release.season,method:'link',url:row.url,explicit:release.explicit,part:release.part});
  }
- return found.size>1?[...found.values()].sort((a,b)=>a.season-b.season).map(({explicit,...row})=>row):[];
+ return found.size>1?[...found.values()].sort((a,b)=>a.season-b.season).map(({explicit,part,...row})=>row):[];
 }
 // Preserve native voice/file responses and filter only provider search folders.
 export function relevantFolders(rows,card){
@@ -49,10 +51,21 @@ export function relevantFolders(rows,card){
 }
 // Some provider replies mix dub choices and actual episodes. Coordinates
 // come from the provider, never from the card's position in the returned list.
-export function episodeRows(rows){
+export function episodeRows(rows,voices=[]){
  const video=row=>row.method==='call' || row.method==='play';
- const episode=row=>row.episode!=null && row.episode!=='' && Number.isInteger(Number(row.episode)) && Number(row.episode)>=0;
- return rows.some(row=>video(row) && episode(row))?rows.filter(row=>!video(row) || episode(row)):rows;
+ const coordinate=value=>value!=null && value!=='' && Number.isSafeInteger(Number(value)) && Number(value)>=0;
+ const normalized=rows.map(row=>{
+  if(!video(row))return row;
+  const label=String(row.text || row.name || row.title || '').trim();
+  const match=label.match(/^(?:(?:серия|эпизод|episode)\s+(\d+)|(\d+)\s+(?:серия|эпизод|episode))(?=\s|$|[:.])/i);
+  const episode=coordinate(row.episode)?row.episode:coordinate(row.e)?Number(row.e):match?Number(match[1] || match[2]):undefined;
+  const season=coordinate(row.season)?row.season:coordinate(row.s)?Number(row.s):undefined;
+  return episode!==row.episode || season!==row.season?{...row,episode,season}:row;
+ });
+ if(!normalized.some(row=>video(row) && coordinate(row.episode)))return normalized;
+ const voiceName=row=>String(row.text || row.name || row.title || '').trim().toLowerCase();
+ const controls=new Set(voices.filter(row=>row.method==='link').map(voiceName).filter(Boolean));
+ return normalized.filter(row=>!video(row) || coordinate(row.episode) || row.url && !controls.has(voiceName(row)));
 }
 // Native season navigation is shared by every source. Digits in a studio name
 // or a translation URL do not identify a season.
