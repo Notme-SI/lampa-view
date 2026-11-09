@@ -5,6 +5,7 @@ import studioCatalogue from './studio-catalogue.js';
 import installI18n from './i18n.js';
 import {version} from '../package.json';
 import inputs from './inputs.js';
+import searchHistory from './search-history.js';
 import {installTmdb,installFullGuard,installListGuard} from './tmdb.js';
 import heroAssets from './hero-assets.js';
 import BASE_CSS from './theme.css';
@@ -22,6 +23,8 @@ import fillRows from './rows.js';
 import unifiedSettings from './settings.js';
 import shikimori from './shikimori.js';
 import collections from './collections.js';
+import catalogueBrowser from './catalogue-browser.js';
+import projectBrowser from './project-browser.js';
 import branding from './branding.js';
 import startup from './startup.js';
 import shikimoriPosters from './shikimori-posters.js';
@@ -133,13 +136,13 @@ if (!ROOT.LampaView) {
       pointer($(profile).on('hover:enter',()=>L.Account.Profile.select(()=>L.Controller.toggle('head'))));headActions.appendChild(profile);
     }
     document.querySelectorAll('.head__action.open--search').forEach(node=>{
-      node.setAttribute('data-pt-placeholder',lampaViewText('Поиск…'));
+      node.setAttribute('data-pt-placeholder',lampaViewText('Поиск'));
       if(!node.querySelector('[data-pt-search]')){
         node.innerHTML=icon('search');
         node.firstElementChild.setAttribute('data-pt-search','');
       }
     });
-    document.querySelectorAll('.head__actions .open--settings').forEach(node=>{node.setAttribute('aria-label',lampaViewText('Настройки'));if(!node.querySelector('[data-pt-settings]')){node.innerHTML=icon('settings');node.firstElementChild.setAttribute('data-pt-settings','');}if(!node._minimalSettingsPointer){pointer($(node));node._minimalSettingsPointer=true;}const search=node.parentElement.querySelector('.open--search');if(search && search.nextElementSibling!==node)search.after(node);const profile=node.parentElement.querySelector('.open--profile');if(profile && node.nextElementSibling!==profile)profile.before(node);});
+    document.querySelectorAll('.head__actions .open--settings').forEach(node=>{node.setAttribute('aria-label',lampaViewText('Настройки'));node.setAttribute('role','button');if(!node.querySelector('[data-pt-settings]')){node.innerHTML=icon('settings');node.firstElementChild.setAttribute('data-pt-settings','');}if(!node._minimalSettingsPointer){pointer($(node));node._minimalSettingsPointer=true;}const search=node.parentElement.querySelector('.open--search');if(search && search.nextElementSibling!==node)search.after(node);const profile=node.parentElement.querySelector('.open--profile');if(profile && node.nextElementSibling!==profile)profile.before(node);});
     $('.minimal-detail-logo.loaded').each(function(){
       $(this).siblings('.full-start-new__title').toggleClass('pt-hidden',enabled);
     });
@@ -202,7 +205,7 @@ if (!ROOT.LampaView) {
     $('.head__menu-icon').addClass('selector').attr({role:'button',tabindex:'0','aria-label':lampaViewText("Меню")})
       .off('hover:enter.minimal').on('hover:enter.minimal',()=>{
         const closing=document.body.classList.contains('menu--open');
-        if(closing)document.body.classList.remove('pt-menu-hover');
+        if(closing){document.body.classList.remove('pt-menu-hover');const hero=document.querySelector('.activity--active .pt-hero'),rect=hero && hero.getBoundingClientRect();if(P.layout!=='mobile' && rect && rect.top>=-24 && rect.bottom>innerHeight*.2 && hero._minimalHeroEnter)hero._minimalHeroEnter();else{L.Controller.toggle('head');const target=document.querySelector('.head__menu-icon');if(target)L.Controller.collectionFocus(target,document.querySelector('.head'));}return;}
         if(L.Menu && L.Menu.toggle)L.Menu.toggle();else L.Controller.toggle(closing?'content':'menu');
       });
     const menu=$('.head__menu-icon');
@@ -538,7 +541,7 @@ if (!ROOT.LampaView) {
   }
   function settings() {
     L.SettingsApi.addComponent({component:'lampa_view',name:'L A M P A',icon:icon('play'),before:'account'});
-    unifiedSettings(L.SettingsApi,L,version);
+    P.searchHistory=searchHistory(L);unifiedSettings(L.SettingsApi,L,version);
     const options=[
       ['lampa_view_hero',lampaViewText("Обложка на главной"),lampaViewText("Карусель каждые 10 секунд, ручное переключение и жесты."),true]
     ];
@@ -584,7 +587,7 @@ if (!ROOT.LampaView) {
     quality(L,$);cacheSettings(L);
     if(L.Api && L.Api.sources && L.Utils && L.Utils.createInstance && L.Maker){
       installTrakt(L);
-      P.kinoCatalogue=kinoCatalogue(L,P.kinoapi);const anime=shikimori(L);shikimoriPosters(L,anime);collections(L,anime,P.kinoapi,P.kinoCatalogue);
+      P.kinoCatalogue=kinoCatalogue(L,P.kinoapi);const anime=shikimori(L);shikimoriPosters(L,anime);collections(L,anime,P.kinoapi,P.kinoCatalogue);catalogueBrowser(L);projectBrowser(L);
     }
     installWheel(L,()=>yes('lampa_view_enabled'));
     on('line',event=>{

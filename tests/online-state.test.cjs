@@ -76,6 +76,17 @@ test('clearing a timecode clears title aliases in the active profile without tou
  }finally{w.close();}
 });
 
+test('repeated confirmed availability skips storage writes but changed episode counts update the cache immediately',async()=>{
+ const n=await native({built:true}),{L}=n;let s;try{const comp={request(){},parse(){},changeBalanser(){}};s=screen(n,{id:2011,component:comp});await wait(180);const set=L.Storage.set,writes=[];L.Storage.set=function(key,value){if(key==='nova_probe')writes.push(value);return set.apply(this,arguments);};
+ comp.request('https://online.example.test/lite/other?id=2011');const one=tag({method:'play',url:'/file',episode:1});comp.parse(one);assert.equal(writes.length,1);comp.parse(one);assert.equal(writes.length,1,'Same confirmed answer must not rewrite the whole probe cache');
+ comp.parse(one+tag({method:'play',url:'/second',episode:2}));assert.equal(writes.length,2);assert.equal(L.Storage.get('nova_probe',{})['tmdb:tv:2011'].list.other.c,2);assert.deepEqual(n.errors,[]);
+ }finally{if(s)s.close();n.close();}
+});
+test('online redraw inserts a complete card batch at once and retains the original playback handler',async()=>{
+ const n=await native({built:true}),{w}=n;let s;try{s=screen(n,{id:2012});await until(()=>s.root.find('.nova-card').length===3,'initial list');const list=s.root.find('.nova__list')[0],added=[];const observer=new w.MutationObserver(records=>records.forEach(r=>{const cards=[...r.addedNodes].filter(n=>n.classList && n.classList.contains('nova-card'));if(cards.length)added.push(cards.length);}));observer.observe(list,{childList:true});let played=0;
+ w.jQuery('<div class="online-prestige online-prestige--full selector"><div class="online-prestige__title">Серия 4</div><div class="online-prestige__episode-number">4</div></div>').on('hover:enter',()=>played++).appendTo(s.body);await until(()=>s.root.find('.nova-card').length===4,'appended provider episode');observer.disconnect();assert.deepEqual(added,[4]);s.root.find('.nova-card').last().trigger('hover:enter');assert.equal(played,1);assert.deepEqual(n.errors,[]);
+ }finally{if(s)s.close();n.close();}
+});
 function screen(n,{id=900,season=1,episodes=[1,2,3],serial=true,voices=true,component={},card={}}={}){
  const {w,L}=n,$=w.jQuery,root=$('<div class="explorer"><div class="explorer__files"><div class="explorer__files-head"></div><div class="explorer__files-body"><div class="scroll"><div class="scroll__body"></div></div></div></div></div>').appendTo(w.document.body),body=root.find('.scroll__body'),filter=new L.Filter({search:false,sort:true,filter:true});root.find('.explorer__files-head').append(filter.render());filter.set('sort',[{title:'Test',source:'test',selected:true},{title:'Other',source:'other',ghost:false}]);filter.set('filter',serial?[{stype:'season',title:'Сезон',items:[{title:'Сезон '+season,selected:true}]},...(voices?[{stype:'voice',title:'Озвучка',items:[{title:'TVShows',selected:true}]}]:[])]:[]);
  const movie={id,title:'Русское название',original_title:'Original',...(serial?{name:'Сериал',original_name:'Original',number_of_seasons:2,seasons:[{season_number:1,episode_count:3},{season_number:2,episode_count:3}]}:{}),source:'tmdb',...card};let played=0;

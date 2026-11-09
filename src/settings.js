@@ -1,11 +1,11 @@
 import {text as lampaViewText} from './i18n.js';
 import flag from './storage-flag.js';
-const GROUPS=[['appearance',lampaViewText("Оформление"),lampaViewText("Тема, обложки и устройство")],['catalogue',lampaViewText("Каталог и поиск"),lampaViewText("Подборки, аниме и фильтры")],['playback',lampaViewText("Воспроизведение"),lampaViewText("Запуск, источники и озвучки")],['languages',lampaViewText("Языки и субтитры"),lampaViewText("Предпочтения дорожек и субтитров")],['parser',lampaViewText("Торренты и поиск релизов"),lampaViewText("Названия, раздачи и параметры поиска")],['server',lampaViewText("Подключение"),lampaViewText("Адрес сервера онлайн-источников")],['cache',lampaViewText("Кеш"),lampaViewText("Очистка сохранённых рейтингов и качества карточек")]];
+const GROUPS=[['appearance',lampaViewText("Оформление"),lampaViewText("Тема, обложки и устройство")],['catalogue',lampaViewText("Каталог и поиск"),lampaViewText("Главная, аниме, сервисы метаданных и сброс фильтров")],['playback',lampaViewText("Воспроизведение"),lampaViewText("Запуск, источники и озвучки")],['languages',lampaViewText("Языки и субтитры"),lampaViewText("Предпочтения дорожек и субтитров")],['parser',lampaViewText("Торренты и поиск релизов"),lampaViewText("Названия, раздачи и параметры поиска")],['server',lampaViewText("Подключение"),lampaViewText("Адрес сервера онлайн-источников")],['cache',lampaViewText("Кеш"),lampaViewText("История поиска, сохранённые рейтинги и качество карточек")]];
 export function cleanText(text){return typeof text==='string'?text.replace(/[\u2013\u2014]/g,'-').replace(/<a\b[^>]*>[\s\S]*?<\/a>/gi,'').replace(/https?:\/\/(?:t\.me|telegram\.(?:me|org))\/[^\s<]*/gi,'').replace(/Lampa Minimal|Закус[ььи](?: TV)?|Alcopa|ALC Auto|Автопилот|Lampa View|mpv.plus/gi,'').replace(/\s{2,}/g,' ').trim():text;}
 function groupOf(d){
  const n=d.param && d.param.name || '',g=d.snack_g;
  if(n==='menu_always')return 'appearance';
- if(n==='minimal_clear_quality' || n==='minimal_clear_ratings')return 'cache';
+ if(n==='minimal_clear_quality' || n==='minimal_clear_ratings' || n==='minimal_clear_search_history')return 'cache';
  if(n==='minimal_quality_fallback')return 'parser';
  if(n==='lampa_view_metadata')return 'playback';
  if(/^lampa_view_/.test(n) || n==='card_interfice_cover')return 'appearance';
@@ -54,6 +54,10 @@ export default function unifiedSettings(api,L,version=''){
    const rows=params().filter(d=>prefix+groupOf(d)===name && !isScale(d)).map(d=>({...d,component:name}));
    if(name===prefix+'appearance'){
     const order=['lampa_view_theme','lampa_view_dark_accent','lampa_view_layout','lampa_view_hero','lampa_view_detail_art','card_interfice_cover','minimal_banner_quality'];
+    const rank=d=>{const i=order.indexOf(d.param.name);return i<0?order.length:i;};rows.sort((a,b)=>rank(a)-rank(b));
+   }
+   if(name===prefix+'catalogue'){
+    const order=['minimal_rows','minimal_catalogue_filters_reset','minimal_anime_catalogue','minimal_kinoapi_enabled','minimal_kinoapi','minimal_trakt_enabled','minimal_trakt_client_id'];
     const rank=d=>{const i=order.indexOf(d.param.name);return i<0?order.length:i;};rows.sort((a,b)=>rank(a)-rank(b));
    }
    if(name===prefix+'appearance' && params().some(isScale)){

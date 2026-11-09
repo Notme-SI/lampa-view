@@ -68,7 +68,7 @@ export function discoveryQuery(spec,date=new Date()){
  if(active && type==='tv'){const start=new Date(date);start.setDate(start.getDate()-(spec.feed==='airing'?7:spec.feed==='current'?90:365));p.set('air_date.gte',day(start));p.set('air_date.lte',today);p.set('sort_by','popularity.desc');}
  if(spec.kind==='dorama' && !spec.period && !active && !completed)p.set('first_air_date.gte',(date.getFullYear()-3)+'-01-01');
  if(spec.kind==='tvshow' && !spec.period && !active){const floor=(date.getFullYear()-8)+'-01-01';if(!p.get('first_air_date.gte') || p.get('first_air_date.gte')<floor)p.set('first_air_date.gte',floor);}
- if(spec.feed==='recent'){const start=new Date(date);start.setDate(start.getDate()-180);p.set(field+'.gte',day(start));}
+ if(spec.feed==='recent' && !spec.period){const start=new Date(date);start.setDate(start.getDate()-180);p.set(field+'.gte',day(start));}
  if(completed && type==='tv'){p.set('with_status','3');p.delete('first_air_date.gte');}
  const local=spec.country==='RU' || spec.country==='UA' || DATA.networks.some(v=>v.id===spec.network && v.country==='RU');
  p.set('vote_count.gte',String(spec.kind==='tvshow'?(sort==='rated'?2:0):sort==='rated'?(local?10:type==='movie'?500:100):sort==='new'?2:sort==='votes'?10:spec.kind==='dorama'?10:0));
