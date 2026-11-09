@@ -1,6 +1,5 @@
 import {locale,text as t} from './i18n.js';
 import {frameLimit} from './gallery-frames.js';
-import rowOverlay from './row-overlay.js';
 
 function airDate(value){
  const match=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || ''));if(!match)return null;
@@ -170,7 +169,7 @@ export function styleScreenshots(L,event){
  if(!event.data?.minimal_gallery || !root || !Array.isArray(rows) || !Array.isArray(line.items))return;
  const card=event.data.movie,heading=root.querySelector('.items-line__title');
  const candidates=rows.slice(),frames=[],seen=new Set();
- let nav;
+
  function frame(item,path){
   const node=nodeOf(item);
   if(!node?.classList.contains('full-episode') || !path || seen.has(path) || frames.length>=frameLimit){
@@ -229,27 +228,6 @@ export function styleScreenshots(L,event){
   }
   root.classList.add('minimal-detail-screenshots');
   if(heading)heading.textContent=titleFor(card);
-  if(!nav){
-   const head=root.querySelector('.items-line__head'),viewport=line.scroll?.render(true);
-   if(head && viewport){
-    const page=step=>{
-     const nodes=frames.filter(item=>!item.node.hidden).map(item=>item.node),bounds=viewport.getBoundingClientRect();
-     if(!nodes.length)return;
-     const visible=nodes.findIndex(node=>node.getBoundingClientRect().right>bounds.left+2);
-     const count=Math.max(1,Math.floor(bounds.width/(nodes[0].getBoundingClientRect().width || bounds.width || 1)));
-     const target=nodes[Math.max(0,Math.min(nodes.length-1,Math.max(0,visible)+step*count))];
-     line.last=target;line.active=line.items.findIndex(item=>nodeOf(item)===target);
-     line.scroll.update(target,false);
-    };
-    nav=document.createElement('div');nav.className='minimal-row-nav minimal-frame-nav';
-    const previous=galleryButton('minimal-row-arrow',t('Предыдущая страница'),previousPath,()=>page(-1));
-    const next=galleryButton('minimal-row-arrow',t('Следующая страница'),nextPath,()=>page(1));
-    nav.appendChild(previous);nav.appendChild(next);
-    head.appendChild(nav);
-    const overlay=rowOverlay(root,viewport,[previous,next]);line.use?.({onDestroy:()=>overlay.destroy()});
-   }
-  }
-  if(nav)nav.hidden=frames.length<2;
  }
  function add(rowsToAdd){
   for(const row of rowsToAdd){

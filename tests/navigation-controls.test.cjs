@@ -10,7 +10,7 @@ test('home always hides Back with a deep activity stack and menu/back have ident
   for(const focused of [false,true]){
    back.classList.toggle('focus',focused);menu.classList.toggle('focus',focused);
    const a=w.getComputedStyle(back),b=w.getComputedStyle(menu);for(const prop of ['width','height','border','borderRadius','color','backgroundColor','outline','outlineOffset'])assert.equal(a[prop],b[prop],prop);
-   const nav=w.document.createElement('div');nav.innerHTML='<button class="minimal-row-arrow"></button><button class="minimal-row-more selector"></button><button class="minimal-comments-arrow"></button>';w.document.body.appendChild(nav);
+   const nav=w.document.createElement('div');nav.innerHTML='<button class="minimal-row-more selector"></button>';w.document.body.appendChild(nav);
    for(const button of nav.children){button.classList.toggle('focus',focused);const actual=w.getComputedStyle(button);assert.equal(actual.outline,'none');if(focused)assert.match(actual.boxShadow,/inset/);}
    assert.equal(parseFloat(b.outlineWidth)||0,0);assert.equal(b.boxShadow,'none');nav.remove();
   }
@@ -39,19 +39,19 @@ test('TV rows replace arrows with More that can be focused from the last card an
   w.Navigator.follow('focus',event=>L.Controller.focus(event.elem));
   L.Api.sources.tmdb.get=(url,params,ok)=>w.setTimeout(()=>ok({results:[{id:601,title:'Animation',genre_ids:[16],original_language:'en'}],page:1,total_pages:2}),0);
   w.jQuery(w.document.querySelector('[data-action="cartoon"]')).trigger('hover:enter');for(let tries=0;tries<100 && !L.Activity.active().activity.component.items.length;tries++)await wait(20);
-  const row=L.Activity.active().activity.component.items[0],root=row.render(true),button=root.querySelector('.minimal-row-more');assert.ok(button);assert.equal(w.getComputedStyle(button).display,'inline-flex');for(const arrow of root.querySelectorAll('.minimal-row-arrow'))assert.equal(w.getComputedStyle(arrow).display,'none');
+  const row=L.Activity.active().activity.component.items[0],root=row.render(true),button=root.querySelector('.minimal-row-more');assert.ok(button);assert.equal(w.getComputedStyle(button).display,'inline-flex');assert.equal(root.querySelectorAll('.minimal-row-arrow').length,0);
   row.toggle();for(let i=0;i<row.data.results.length;i++)L.Controller.enabled().controller.right();assert.equal(row.last,button);assert.ok(button.classList.contains('focus'),'Remote cannot highlight More');
   button.dispatchEvent(new w.Event('hover:enter'));await wait(100);assert.equal(L.Activity.active().component,'category_full');assert.equal(JSON.parse(L.Activity.active().url).kind,'cartoon');assert.equal(L.Activity.active().source,'minimal_discovery');
   L.Activity.backward();await wait(100);button.click();await wait(100);assert.equal(L.Activity.active().component,'category_full');assert.deepEqual(r.errors,[]);
  }finally{r.close();}
 });
-test('cast has only paging arrows on desktop and no header controls on TV',async()=>{
+test('cast has no paging controls and actor selection still works',async()=>{
  const r=await native({built:true}),{w,L}=r;
  try{
   L.Api.full=(p,ok)=>ok({movie:{id:710,title:'Film',source:'tmdb',production_countries:[],production_companies:[],spoken_languages:[],genres:[]},persons:{cast:Array.from({length:30},(_,id)=>({id:id+900,name:'Actor '+id,profile_path:'/person.jpg',character:'Role '+id})),crew:[]},discuss:{result:[]},images:{logos:[]},videos:{results:[]},simular:{results:[]},recomend:{results:[]}});
   L.Activity.push({component:'full',id:710,method:'movie',source:'tmdb',card:{id:710,title:'Film',source:'tmdb'}});await wait(120);
-  const root=L.Activity.active().activity.render(true).querySelector('.minimal-cast-native');assert.equal(root.querySelector('.minimal-row-more'),null);assert.equal(root.querySelectorAll('.minimal-row-arrow').length,2);assert.ok([...root.querySelectorAll('.minimal-row-arrow')].every(b=>!b.disabled));
-  w.document.body.classList.add('pt-tv');assert.equal(w.getComputedStyle(root.querySelector('.minimal-row-nav')).display,'none');w.document.body.classList.remove('pt-tv');root.querySelector('.full-person').dispatchEvent(new w.Event('hover:enter'));await wait(50);assert.equal(L.Activity.active().component,'actor');assert.equal(L.Activity.active().id,900);assert.deepEqual(r.errors,[]);
+  const root=L.Activity.active().activity.render(true).querySelector('.minimal-cast-native');assert.equal(root.querySelector('.minimal-row-more'),null);assert.equal(root.querySelectorAll('.minimal-row-arrow').length,0);
+  root.querySelector('.full-person').dispatchEvent(new w.Event('hover:enter'));await wait(50);assert.equal(L.Activity.active().component,'actor');assert.equal(L.Activity.active().id,900);assert.deepEqual(r.errors,[]);
  }finally{r.close();}
 });
 
@@ -79,9 +79,9 @@ test('dorama is integrated as poster rows in series and has no visible separate 
 test('native menu_always switches a single native menu between dock and popover and restores the button',async()=>{
  const r=await native({built:true}),{w,L}=r;try{
   const button=w.document.querySelector('.head__menu-icon'),panel=w.document.querySelector('.wrap__left');
-  L.Storage.set('menu_always',true);assert.ok(w.document.body.classList.contains('pt-menu-pinned'));assert.equal(w.getComputedStyle(button).display,'flex');assert.equal(w.getComputedStyle(panel).visibility,'visible');
+  L.Storage.set('menu_always',true);assert.ok(w.document.body.classList.contains('pt-menu-pinned'));await wait(100);assert.equal(button.parentElement.className,'menu');assert.equal(w.getComputedStyle(panel).visibility,'visible');
   L.Controller.toggle('menu');L.Controller.toggle('content');await wait(330);assert.equal(w.getComputedStyle(panel).visibility,'visible');assert.equal(w.document.querySelectorAll('.menu').length,1);
-  L.Storage.set('menu_always',false);assert.ok(!w.document.body.classList.contains('pt-menu-pinned'));assert.equal(w.getComputedStyle(button).display,'flex');assert.equal(w.getComputedStyle(panel).visibility,'hidden');
+  L.Storage.set('menu_always',false);assert.ok(!w.document.body.classList.contains('pt-menu-pinned'));await wait(100);assert.ok(button.closest('.head'));assert.equal(w.getComputedStyle(button).display,'flex');assert.equal(w.getComputedStyle(panel).visibility,'hidden');
   L.Storage.set('menu_always',true);L.Storage.set('lampa_view_enabled',false);assert.ok(!w.document.body.classList.contains('pt-menu-pinned'));assert.deepEqual(r.errors,[]);
  }finally{r.close();}
 });

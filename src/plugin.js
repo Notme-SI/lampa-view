@@ -22,7 +22,6 @@ import fillRows from './rows.js';
 import unifiedSettings from './settings.js';
 import shikimori from './shikimori.js';
 import collections from './collections.js';
-import filters from './filters.js';
 import branding from './branding.js';
 import startup from './startup.js';
 import shikimoriPosters from './shikimori-posters.js';
@@ -132,7 +131,13 @@ if (!ROOT.LampaView) {
       const profile=document.createElement('div');profile.className='head__action selector open--profile';profile.innerHTML=icon('profile');profile.setAttribute('aria-label',lampaViewText('Профиль'));
       pointer($(profile).on('hover:enter',()=>L.Account.Profile.select(()=>L.Controller.toggle('head'))));headActions.appendChild(profile);
     }
-    document.querySelectorAll('.head__action.open--search').forEach(node=>node.setAttribute('data-pt-placeholder',lampaViewText('Поиск…')));
+    document.querySelectorAll('.head__action.open--search').forEach(node=>{
+      node.setAttribute('data-pt-placeholder',lampaViewText('Поиск…'));
+      if(!node.querySelector('[data-pt-search]')){
+        node.innerHTML=icon('search');
+        node.firstElementChild.setAttribute('data-pt-search','');
+      }
+    });
     document.querySelectorAll('.head__actions .open--settings').forEach(node=>{node.setAttribute('aria-label',lampaViewText('Настройки'));if(!node.querySelector('[data-pt-settings]')){node.innerHTML=icon('settings');node.firstElementChild.setAttribute('data-pt-settings','');}if(!node._minimalSettingsPointer){pointer($(node));node._minimalSettingsPointer=true;}const search=node.parentElement.querySelector('.open--search');if(search && search.nextElementSibling!==node)search.after(node);const profile=node.parentElement.querySelector('.open--profile');if(profile && node.nextElementSibling!==profile)profile.before(node);});
     $('.minimal-detail-logo.loaded').each(function(){
       $(this).siblings('.full-start-new__title').toggleClass('pt-hidden',enabled);
@@ -571,7 +576,7 @@ if (!ROOT.LampaView) {
     quality(L,$);cacheSettings(L);
     if(L.Api && L.Api.sources && L.Utils && L.Utils.createInstance && L.Maker){
       installTrakt(L);
-      P.kinoCatalogue=kinoCatalogue(L,P.kinoapi);const anime=shikimori(L);shikimoriPosters(L,anime);collections(L,anime,P.kinoapi,P.kinoCatalogue);filters(L,anime);
+      P.kinoCatalogue=kinoCatalogue(L,P.kinoapi);const anime=shikimori(L);shikimoriPosters(L,anime);collections(L,anime,P.kinoapi,P.kinoCatalogue);
     }
     installWheel(L,()=>yes('lampa_view_enabled'));
     on('line',event=>{
@@ -594,7 +599,7 @@ if (!ROOT.LampaView) {
     let resizeTimer;
     ROOT.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(layout,180);});
     const fill=fillRows(L,()=>yes('lampa_view_enabled'));
-    on('full',event=>{full(event);if(yes('lampa_view_enabled')){detail(L,event,loadLogo);if(event.type==='build' && event.name==='persons' && event.item)fill.track(event.item,event.data);}}); on('line',event=>{hero(event);fill(event);});
+    on('full',event=>{full(event);if(yes('lampa_view_enabled')){detail(L,event,loadLogo);if(event.type==='build' && ['persons','discuss'].includes(event.name) && event.item)fill.track(event.item,event.data);}}); on('line',event=>{hero(event);fill(event);});
     function visibleDetail(){
       const active=L.Activity.active() || {},activity=active.activity,link=activity && activity.component;
       if(active.component!=='full' || !link || !link.props || typeof link.props.all!=='function')return;
@@ -604,7 +609,7 @@ if (!ROOT.LampaView) {
       const node=body && (body.nodeType?body:body[0]);if(!node || node.querySelector('.minimal-detail-header'))return;
       // Extensions can arrive after the cached full-page response, including
       // on Safari. Replay decoration from native props without refetching it.
-      (link.items || []).forEach((item,index)=>{const row=(link.rows || [])[index],name=Array.isArray(row)?row[0]:row;if(name==='persons' || name==='discuss'){const value=Array.isArray(row)?row[1]:data;detail(L,{type:'build',name,item,data:value,body},loadLogo);if(name==='persons')fill.track(item,value);}});
+      (link.items || []).forEach((item,index)=>{const row=(link.rows || [])[index],name=Array.isArray(row)?row[0]:row;if(name==='persons' || name==='discuss'){const value=Array.isArray(row)?row[1]:data;detail(L,{type:'build',name,item,data:value,body},loadLogo);fill.track(item,value);}});
       detail(L,{type:'complite',object:active,data,body,link},loadLogo);
     }
     function visibleHero(){

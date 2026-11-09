@@ -14,10 +14,6 @@ test('neighbour covers and logos are decoded once and reused when selected',asyn
  await new Promise(resolve=>setTimeout(resolve,1250));assert.equal(images.filter(i=>i.url.includes('w780')).length,2);assert.equal(logoRequests,2);
  let url;assets.cover(1,'w780',v=>url=v);const selected=images.find(i=>i.url.includes('w780/cover1.jpg'));selected.onload();await new Promise(resolve=>setTimeout(resolve,0));assert.ok(url.endsWith('/cover1.jpg'));const count=images.length;assets.cover(1,'w780',v=>url=v);assert.equal(images.length,count);assert.equal(images.filter(i=>i.url.includes('/original/cover')).length,0,'prefetch must not download original-size backdrops');assets.dispose();dom.window.close();
 });
-test('rating sorting uses a vote threshold, with an explicit opt-out',()=>{
- const dom=new JSDOM('<body></body>',{runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window;bundle(w,'filters','Filters');assert.ok(w.Filters.discoverUrl({kind:'movie',sort:'vote_average.desc',score:'8'}).includes('vote_count.gte=500'));assert.ok(!w.Filters.discoverUrl({kind:'movie',sort:'vote_average.desc',votes:'0'}).includes('vote_count.gte'));assert.equal(w.Filters.minimumVotes({kind:'tv',sort:'vote_average.desc'}),200);dom.window.close();
-});
-
 test('choosing or cancelling an ambiguous anime match does not reenter Select.close',()=>{
  const dom=new JSDOM('<body></body>',{runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window;bundle(w,'shikimori','Shiki');let select,failures=0,opened=0,hidden=0;
  const L={Activity:{backward(){}},Api:{sources:{tmdb:{get:(p,params,ok)=>ok({results:[{id:1,title:'Example',release_date:'2001-01-01'},{id:2,title:'Example',release_date:'2010-01-01'}]}),full:()=>opened++}}},Select:{show:o=>select=o,hide:()=>hidden++,close:()=>{throw Error('close invokes onBack recursively');}},Noty:{show(){}}};

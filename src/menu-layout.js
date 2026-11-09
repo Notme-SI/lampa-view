@@ -5,6 +5,21 @@ export default function menuLayout(L,enabled){
  const excludedActions=/^(feed|dorama|catalog|myperson|relise|releases?|(?:my)?sports?|(?:my)?shots?)$/i;
  const excludedLabels=['Лента','Дорамы','Каталог','Персоны','Релизы','Спорт','Shots'];
  const removed=new Map();
+ let menuButton,buttonSlot;
+ function placeButton(menu){
+  if(!document.body.classList.contains('pt-menu-pinned')){
+   if(buttonSlot?.isConnected)buttonSlot.replaceWith(menuButton);
+   menuButton=null;buttonSlot=null;
+   return;
+  }
+  if(!menuButton){
+   menuButton=document.querySelector('.head .head__menu-icon');
+   if(!menuButton)return;
+   buttonSlot=document.createComment('Lampa View menu button');
+   menuButton.before(buttonSlot);
+  }
+  if(menu.firstElementChild!==menuButton)menu.prepend(menuButton);
+ }
  function exclude(){
   const menu=document.querySelector('.menu');if(!menu)return;
   for(const [node,anchor] of removed){
@@ -34,7 +49,7 @@ export default function menuLayout(L,enabled){
   let notice=list.querySelector('[data-action="pt_notice"]');
   if(!notice){
    notice=document.createElement('li');notice.className='menu__item selector';notice.dataset.action='pt_notice';
-   notice.innerHTML='<div class="menu__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg></div><div class="menu__text"></div><span class="pt-menu-notices"></span>';
+   notice.innerHTML='<div class="menu__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 0 0-12 0c0 5-1.1 6.4-2.1 7.5-.4.4-.1 1 .4 1h15.4c.5 0 .8-.6.4-1C19.1 15.4 18 14 18 9ZM10.4 20.5a1.8 1.8 0 0 0 3.2 0"/></svg></div><div class="menu__text"></div><span class="pt-menu-notices"></span>';
    $(notice).on('hover:enter',()=>{if(L.Notice && L.Notice.open)L.Notice.open();}).on('click',e=>{e.preventDefault();e.stopImmediatePropagation();$(notice).trigger('hover:enter');});list.appendChild(notice);
   }
   const label=notice.querySelector('.menu__text');if(label.textContent!==t('Уведомления'))label.textContent=t('Уведомления');
@@ -54,6 +69,7 @@ export default function menuLayout(L,enabled){
    const text=document.createElement('div');text.className='menu__text';text.textContent=button.getAttribute('aria-label') || '';item.appendChild(text);
    $(item).on('hover:enter',()=>$(button).trigger('hover:enter'));catalogue.appendChild(item);
   }
+  placeButton(menu);
  }
  let panel;
  function bind(){

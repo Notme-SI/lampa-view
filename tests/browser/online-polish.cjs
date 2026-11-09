@@ -69,6 +69,14 @@ async function holiday(page,name){
     }
     await page.evaluate(()=>{Lampa.DeviceInput.init();Lampa.Controller.observe();window.qaBacks=0;Lampa.Controller.add('content',{toggle(){Lampa.Controller.collectionSet(qaRoot[0]);},back(){qaBacks++;}});Lampa.Controller.toggle('content');});
     const center=await page.locator('[data-nova-focus=view]').evaluate(node=>{const a=node.getBoundingClientRect(),b=node.querySelector('svg').getBoundingClientRect();return [Math.abs(a.x+a.width/2-b.x-b.width/2),Math.abs(a.y+a.height/2-b.y-b.height/2)];});assert.ok(center.every(value=>value<=1),'layout icon centered: '+center);
+    const quality=await page.evaluate(()=>{
+     const poster=document.createElement('div');poster.className='card';poster.innerHTML='<span class="pt-quality">4K</span>';document.body.appendChild(poster);
+     const material=n=>{const style=getComputedStyle(n);return [style.backgroundImage,style.backgroundColor,style.color,style.borderColor,style.fontWeight,style.backdropFilter];};
+     const reference=material(poster.firstElementChild);poster.remove();
+     return {reference,badges:[...document.querySelectorAll('.nova-hero__quality,.nova-chip__badge,.nova-card__quality')].map(material)};
+    });
+    assert.ok(quality.badges.length>2);
+    for(const badge of quality.badges)assert.deepEqual(badge,quality.reference);
     const meta=await page.locator('.nova-hero__meta').evaluate(node=>({bg:getComputedStyle(node).backgroundColor,color:getComputedStyle(node).color}));assert.match(meta.bg,/0\.52/);assert.equal(meta.color,'rgb(245, 247, 250)');
     const season=await page.locator('.nova-hero__season-label').evaluate(node=>{const meta=node.closest('.nova-hero__meta'),a=node.getBoundingClientRect(),b=meta.getBoundingClientRect();return {top:a.top,bottom:b.bottom,parent:node.parentNode.className,metaParent:node.parentNode.parentNode.className,bg:getComputedStyle(node).backgroundColor,height:b.height,font:parseFloat(getComputedStyle(meta).fontSize)};});
     assert.equal(season.parent,'nova-hero__seasons');assert.equal(season.metaParent,'nova-hero__meta');assert.match(season.bg,/0\.78/);assert.ok(season.top>season.bottom,'season has its own separate plate');assert.ok(season.height<season.font*2.4,'main facts stay one compact line');

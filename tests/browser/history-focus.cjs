@@ -23,7 +23,7 @@ const {setup}=require('../fixtures/native-browser.cjs'),{stage}=require('../fixt
    const icons=await page.locator('#qa-history-card .card__view').evaluate(view=>{const v=view.getBoundingClientRect();return [...view.querySelectorAll('.card__icon:not(.icon--history)')].map(icon=>{const r=icon.getBoundingClientRect(),s=getComputedStyle(icon);return {left:r.left-v.left,right:r.right-v.left,top:r.top-v.top,bottom:r.bottom-v.top,width:r.width,height:r.height,image:s.backgroundImage,bg:s.backgroundColor};});});
    const overlay=await page.locator('#qa-history-card .card__view').evaluate(view=>{const v=view.getBoundingClientRect(),play=view.querySelector('.icon--history').getBoundingClientRect();return {width:v.width,height:v.height,playX:(play.left+play.right)/2-v.left,playY:(play.top+play.bottom)/2-v.top,layers:[...view.querySelectorAll('.card__icons,.card__icons-inner')].map(node=>{const s=getComputedStyle(node);return {background:s.backgroundColor,filter:s.filter,backdrop:s.backdropFilter || s.webkitBackdropFilter || 'none',shadow:s.boxShadow};})};});
    for(const layer of overlay.layers){assert.equal(layer.backdrop,'none','Native glass must not blur a full-width icon wrapper: '+JSON.stringify({theme,mode,overlay}));assert.equal(layer.background,'rgba(0, 0, 0, 0)');assert.equal(layer.filter,'none');assert.equal(layer.shadow,'none');}
-   assert.ok(Math.abs(overlay.playX-overlay.width*.5)<1 && Math.abs(overlay.playY-overlay.height*.62)<1,'Play marker is positioned against the poster, never a filtered icon wrapper: '+JSON.stringify({theme,mode,overlay}));
+   assert.ok(Math.abs(overlay.playX-overlay.width*.5)<1 && Math.abs(overlay.playY-overlay.height*.60)<1,'Play marker is positioned against the poster, never a filtered icon wrapper: '+JSON.stringify({theme,mode,overlay}));
    assert.equal(icons.length,3);for(let i=0;i<icons.length;i++){assert.ok(icons[i].left>=0 && icons[i].right<=overlay.width+1 && icons[i].top>overlay.height*.7 && icons[i].bottom<=overlay.height+1,'Favorite markers stay along the lower edge: '+JSON.stringify({mode,theme,icons}));if(!i)assert.ok(icons[i].left<overlay.width*.15,'The first mark starts at the left');assert.ok(Math.abs(icons[i].width-icons[i].height)<.5,'Square favorite markers: '+JSON.stringify({mode,theme,icons}));assert.ok(icons[i].image.includes('data:image/svg+xml'));assert.notEqual(icons[i].bg,'rgba(0, 0, 0, 0)');for(const prior of icons.slice(0,i))assert.ok(icons[i].left>=prior.right-1 || icons[i].right<=prior.left+1 || icons[i].top>=prior.bottom-1 || icons[i].bottom<=prior.top+1,'Favorite markers never overlap');}
   }
   await page.evaluate(()=>Lampa.Storage.set('lampa_view_theme','minimal'));
@@ -73,15 +73,16 @@ const {setup}=require('../fixtures/native-browser.cjs'),{stage}=require('../fixt
   assert.ok(runtime.gap>=2,'Runtime has a real gap below facts: '+JSON.stringify(runtime));assert.ok(runtime.right<=runtime.edge && runtime.bottom<=runtime.height);
   await page.evaluate(()=>{qaRoot.remove();document.querySelector('.nova-plus-root')?.remove();});
   await stage(page,true,2,false,12);await page.evaluate(()=>jQuery('[data-nova-focus=direction]').last().trigger('hover:enter'));
-  const arrows=page.locator('.nova-episode-nav button');
+  assert.equal(await page.locator('.nova-episode-nav').count(),0);
   if(mode==='desktop'){
-   assert.equal(await arrows.first().isVisible(),false);
-   await arrows.last().waitFor({state:'visible'});
-   for(let i=0;i<12 && await arrows.last().isVisible();i++)await arrows.last().click();
-   assert.equal(await arrows.last().isVisible(),false);
-   assert.equal(await arrows.first().isVisible(),true);
-   await arrows.first().click();assert.equal(await arrows.last().isVisible(),true);
-  }else {const nav=page.locator('.nova-episode-nav');assert.ok(await nav.count()===0 || await nav.evaluate(n=>getComputedStyle(n).display)==='none');}
-  assert.deepEqual(r.errors,[]);await r.context.close();console.log(mode+': localized history, year ordering, compact release badge, focus, runtime spacing and episode arrows passed');
+   const strip=page.locator('.nova-plus__strip--clip');const box=await strip.boundingBox();
+   await page.mouse.move(box.x+box.width*.5,Math.min(box.y+40,720));
+   await page.mouse.wheel(400,0);
+   await page.waitForFunction(()=>Number(document.querySelector('.nova-plus__strip--clip .nova__list').dataset.novaX)<0);
+   const x=await strip.locator('.nova__list').getAttribute('data-nova-x');
+   await page.mouse.down();await page.mouse.move(box.x+box.width*.2,Math.min(box.y+40,720),{steps:6});await page.mouse.up();
+   assert.ok(Number(await strip.locator('.nova__list').getAttribute('data-nova-x'))<Number(x),'Mouse drag advances the episode strip');
+  }
+  assert.deepEqual(r.errors,[]);await r.context.close();console.log(mode+': localized history, year ordering, compact release badge, focus, runtime spacing and episode scroll passed');
  }
 }finally{await browser.close();}}})().catch(e=>{console.error(e);process.exitCode=1;});

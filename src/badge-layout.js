@@ -1,6 +1,6 @@
 // Corner-aware placement and batched measurements, adapted from card_overlay.js.
-export function placeBadges(width,height,badges,padding=4,gap=3){
- const placed=[];
+export function placeBadges(width,height,badges,occupied=[],padding=4,gap=3){
+ const placed=occupied.slice();
  for(const badge of badges){
   const w=Math.min(badge.width,Math.max(0,width-2*(badge.inset ?? padding))),h=badge.height;
   if(w<=0 || h<=0)continue;
@@ -11,18 +11,13 @@ export function placeBadges(width,height,badges,padding=4,gap=3){
   for(let i=0;i<=placed.length*2;i++){
    const conflict=placed.find(p=>x<p.x+p.width+gap && x+w+gap>p.x && y<p.y+p.height+gap && y+h+gap>p.y);
    if(!conflict)break;
-   if(badge.flow==='row' && bottom && !right){
-    const next=conflict.x+conflict.width+gap;
-    if(next+w<=width-padding){x=next;continue;}
-    x=padding;
-   }
    y=bottom?conflict.y-gap-h:conflict.y+conflict.height+gap;
   }
   // Very short thumbnails keep their scores/quality; secondary markers can wait.
   if(y<padding || y+h>height-padding)continue;
   placed.push({...badge,x,y,width:w,height:h});
  }
- return placed;
+ return placed.slice(occupied.length);
 }
 export default function badgeLayout(status){
  const pending=new Set();let frame=0;
@@ -37,7 +32,7 @@ export default function badgeLayout(status){
    const view=node.querySelector('.card__view');if(!view)continue;const rect=view.getBoundingClientRect();
    if(!rect.width || !rect.height || rect.bottom<0 || rect.top>window.innerHeight || rect.right<0 || rect.left>window.innerWidth)continue;
    const width=view.clientWidth || rect.width,height=view.clientHeight || rect.height,scale=rect.width/width || 1,entries=[];
-   for(const [selector,corner] of [['.card__vote','br'],['.pt-quality,.card__quality','tr'],['.pt-kind','tl'],['.pt-series-status','tl'],['.card__marker','bl'],['.card__icon:not(.icon--history)','bl'],['.card__new-episode','bl']])for(const el of view.querySelectorAll(selector)){
+   for(const [selector,corner] of [['.card__vote','br'],['.pt-quality,.card__quality','tr'],['.pt-kind','tl'],['.pt-series-status','tl'],['.card__marker','bl'],['.card__new-episode','bl']])for(const el of view.querySelectorAll(selector)){
     if(el.hidden || el.classList.contains('hide') || getComputedStyle(el).display==='none')continue;
     if(el.classList.contains('pt-series-status')){
      el.style.fontSize='';el.style.transform='none';
@@ -47,9 +42,12 @@ export default function badgeLayout(status){
      const available=Math.max(1,Math.min(width-8,parseFloat(style.maxWidth)||width)-border);
      if(natural>available)el.style.fontSize=(parseFloat(style.fontSize)*Math.max(1,available-1)/natural).toFixed(2)+'px';
     }
-    const r=el.getBoundingClientRect();if(r.width && r.height)entries.push({el,corner,inset:corner[1]==='r'?8:undefined,verticalInset:el.classList.contains('pt-kind')?12:undefined,flow:el.classList.contains('card__icon')?'row':undefined,width:r.width/scale,height:r.height/scale});
+    const r=el.getBoundingClientRect();if(r.width && r.height)entries.push({el,corner,inset:corner[1]==='r'?8:undefined,verticalInset:el.classList.contains('pt-kind')?12:undefined,width:r.width/scale,height:r.height/scale});
    }
-   reads.push({view,width,height,entries,places:placeBadges(width,height,entries)});
+   // CSS keeps favorites left of the rating even before the next measurement.
+   const occupied=[...view.querySelectorAll('.card__icon:not(.icon--history)')].map(el=>el.getBoundingClientRect())
+    .filter(box=>box.width && box.height).map(box=>({x:(box.left-rect.left)/scale,y:(box.top-rect.top)/scale,width:box.width/scale,height:box.height/scale}));
+   reads.push({view,width,height,entries,places:placeBadges(width,height,entries,occupied)});
   }
   // Read every card before writing styles; held remote navigation never enters here.
   for(const {view,width,height,entries,places} of reads){view.classList.add('minimal-badge-layout');for(const entry of entries){
