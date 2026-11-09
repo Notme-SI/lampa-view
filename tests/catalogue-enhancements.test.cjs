@@ -72,7 +72,7 @@ test('Alloha reserve reads only catalogue metadata on the configured server and 
 
 test('cache actions have one settings folder and inapplicable online controls are omitted',async()=>{
  const n=await native({built:true}),{L,w}=n;try{
-  const cache=L.SettingsApi.getParam('minimal_settings_cache');assert.deepEqual(Array.from(cache,p=>p.param.name).sort(),['minimal_clear_quality','minimal_clear_ratings']);assert.ok(cache.every(p=>typeof p.onChange==='function'));
+  const cache=L.SettingsApi.getParam('minimal_settings_cache');assert.deepEqual(Array.from(cache,p=>p.param.name).sort(),['minimal_clear_quality','minimal_clear_ratings','minimal_clear_search_history']);assert.ok(cache.every(p=>typeof p.onChange==='function'));
   for(const group of ['appearance','catalogue','playback','languages','parser','server'])assert.ok(!L.SettingsApi.getParam('minimal_settings_'+group).some(p=>p.param.name.startsWith('minimal_clear_')),group);
   assert.ok(L.SettingsApi.getParam('lampa_view').some(p=>p.field.name==='Кеш'));L.Settings.create('minimal_settings_cache');const body=w.document.querySelector('.settings__body');assert.ok(body.textContent.includes('Очистить кеш рейтингов'));assert.ok(body.textContent.includes('Очистить кеш качества'));
   const playback=()=>L.SettingsApi.getParam('minimal_settings_playback');assert.equal(playback().find(p=>p.param.name==='nova_plus_meta').field.name,'Данные серий');assert.doesNotMatch(playback().find(p=>p.param.name==='nova_plus_meta').field.description,/описан/);assert.match(playback().find(p=>p.param.name==='nova_plus_quality').field.name,/встроенном/);
