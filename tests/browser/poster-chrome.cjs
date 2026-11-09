@@ -17,7 +17,12 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
    return {type:kind?.textContent,kind:kind&&rect(kind),quality:quality&&rect(quality),vote:vote&&rect(vote),kindStyle:['borderTopLeftRadius','borderTopRightRadius','borderBottomLeftRadius','borderBottomRightRadius'].map(key=>parseFloat(getComputedStyle(kind)[key])),kindFont:getComputedStyle(kind).fontSize,qualityFont:getComputedStyle(quality).fontSize,kindFill:getComputedStyle(kind).backgroundColor,qualityFill:getComputedStyle(quality).backgroundColor,voteFill:getComputedStyle(vote).backgroundColor,voteText:getComputedStyle(vote).color,voteSheen:getComputedStyle(vote).backgroundImage,voteFilter:getComputedStyle(vote).backdropFilter,playFill:card.querySelector('.icon--history') && getComputedStyle(card.querySelector('.icon--history')).backgroundColor,source:vote?.dataset.ratingSource,label:vote&&getComputedStyle(vote,':after').content,view:rect(view),icons:[...card.querySelectorAll('.card__icon:not(.icon--history)')].map(rect),play:card.querySelector('.icon--history')&&rect(card.querySelector('.icon--history'))};
   }));
   assert.deepEqual(badges.map(b=>b.type),['Фильм','Сериал','Мультфильм','Аниме']);
-  for(const b of badges){assert.ok(b.kind && b.quality && b.vote);assert.equal(b.source,'TMDB');assert.equal(b.label,'"TMDB"');assert.ok(b.kind.left>b.view.left && b.kind.left-b.view.left<9,'Kind badge sits next to the left edge');assert.ok(b.kindStyle.every(radius=>radius>0),'All four corners are rounded');assert.equal(b.kindFill,b.voteFill);assert.equal(b.qualityFill,b.voteFill);assert.match(b.voteFill,theme==='glass'?/^rgba\(18, 18, 18, 0\.24/:/^rgba\(25, 23, 21, 0\.9/);assert.equal(b.voteText,'rgb(255, 255, 255)');assert.equal(b.voteSheen.startsWith('linear-gradient'),theme==='glass');assert.equal(b.voteFilter,'none');assert.ok(b.quality.left>b.kind.right);assert.equal(b.qualityFont,b.kindFont,"Type and quality use the same text size");assert.ok(Math.abs(b.quality.height-b.kind.height)<1,"Type and quality use the same height");assert.ok(Math.abs(b.quality.top-b.kind.top)<1,"Type and quality share a top edge");assert.ok(b.view.right-b.quality.right>=6);assert.ok(b.view.bottom-b.vote.bottom>=6);assert.ok(b.vote.top>b.view.top+b.view.height/2);}
+  for(const b of badges){
+   assert.ok(b.kind && b.quality && b.vote);assert.equal(b.source,'TMDB');assert.equal(b.label,'"TMDB"');assert.ok(b.kind.left>b.view.left && b.kind.left-b.view.left<9,'Kind badge sits next to the left edge');assert.ok(b.kindStyle.every(radius=>radius>0),'All four corners are rounded');assert.equal(b.kindFill,b.voteFill);assert.equal(b.qualityFill,b.voteFill);
+   assert.match(b.voteFill,theme==='glass'?(mode==='tv'?/^rgba\(18, 18, 18, 0\.9/:/^rgba\(18, 18, 18, 0\.38/):/^rgba\(22, 21, 19, 0\.9/);
+   assert.equal(b.voteText,'rgb(255, 255, 255)');assert.equal(b.voteSheen.startsWith('linear-gradient'),theme==='glass');assert.equal(b.voteFilter,'none');assert.ok(b.quality.left>b.kind.right);assert.equal(b.qualityFont,b.kindFont,"Type and quality use the same text size");assert.ok(Math.abs(b.quality.height-b.kind.height)<1,"Type and quality use the same height");assert.ok(Math.abs(b.quality.top-b.kind.top)<1,"Type and quality share a top edge");
+   const inset=mode==='tv'?parseFloat(b.kindFont)*.35:6;assert.ok(b.view.right-b.quality.right>=inset);assert.ok(b.view.bottom-b.vote.bottom>=inset);assert.ok(b.vote.top>b.view.top+b.view.height/2);
+  }
   assert.equal(badges[1].icons.length,3);for(const icon of badges[1].icons)assert.ok(icon.right<badges[1].vote.left && icon.bottom<=badges[1].view.bottom+1);assert.ok(badges[1].play.width>10);assert.equal(badges[1].playFill,badges[1].voteFill,'The play button uses the same tint as the score');
   if(theme==='glass'){
    const surfaces=await page.evaluate(()=>{
@@ -25,11 +30,11 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
     const surface=node=>{const s=getComputedStyle(node);return [s.backgroundImage,s.backgroundColor,s.borderColor,s.boxShadow,s.backdropFilter];};
     const reaction=surface(sample.querySelector('.reaction')),badges=[...document.querySelectorAll('#qa-posters .pt-kind,#qa-posters .pt-quality,#qa-posters .card__vote,#qa-posters .pt-series-status')].map(surface);sample.remove();return {reaction,badges};
    });
-   for(const badge of surfaces.badges){assert.deepEqual([badge[0],...badge.slice(2)],[surfaces.reaction[0],...surfaces.reaction.slice(2)],'Badges retain the reaction sheen and edge');assert.equal(badge[1],'rgba(18, 18, 18, 0.24)','Poster tags have a darker transparent tint');}
+   for(const badge of surfaces.badges){assert.deepEqual([badge[0],...badge.slice(2)],[surfaces.reaction[0],...surfaces.reaction.slice(2)],'Badges retain the reaction sheen and edge');assert.equal(badge[1],mode==='tv'?'rgba(18, 18, 18, 0.9)':'rgba(18, 18, 18, 0.38)','Poster tags use the device-specific readable tint');}
   }
   const narrow=await page.locator('#qa-posters .card').nth(1).evaluate(card=>{
    document.body.classList.add('pt-wheel-active');
-   card.style.width='107px';
+   card.style.width=(parseFloat(getComputedStyle(card).fontSize)*6.7)+'px';
    const view=card.querySelector('.card__view'),score=view.querySelector('.card__vote').getBoundingClientRect();
    const icons=[...view.querySelectorAll('.card__icon:not(.icon--history)')].map(icon=>icon.getBoundingClientRect());
    const clear=icons.every(icon=>score.left-icon.right>=5);

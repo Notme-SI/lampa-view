@@ -151,7 +151,7 @@ async function open(page,movie){
       const bounds=await viewer.evaluate(node=>{const r=node.getBoundingClientRect(),close=node.querySelector('.minimal-frame-close').getBoundingClientRect(),next=node.querySelector('.minimal-frame-next').getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:innerWidth,height:innerHeight,inside:r.left>=0 && r.right<=innerWidth+1 && r.top>=0 && r.bottom<=innerHeight+1,separated:close.bottom+8<next.top};});
       assert.ok(bounds.inside && (tv || bounds.separated),'Viewer and separate controls fit '+theme+' '+mode+': '+JSON.stringify(bounds));
       const close=await viewer.locator('.minimal-frame-close').boundingBox(),canvas=await viewer.boundingBox();
-      assert.ok(close.x<canvas.x+canvas.width/2,'Close stays on the left');
+      if(tv)assert.equal(close,null,'TV has no on-screen close button');else assert.ok(close.x<canvas.x+canvas.width/2,'Close stays on the left');
       const space=await page.evaluate(()=>({width:innerWidth,height:innerHeight}));
       const width=Math.min(space.width*(mobile?.95:.5),space.height*8/9);
       assert.ok(canvas.width<=width+3 && canvas.width>width*.82 && canvas.height<=space.height*.5+3,'The centered viewer stays within the compact size: '+JSON.stringify({canvas,space,viewport}));
@@ -177,8 +177,8 @@ async function open(page,movie){
      if(tv)await page.keyboard.press('ArrowLeft');else await activate(viewer.getByRole('button',{name:'Предыдущий кадр'}));
      assert.equal(await position(),'1 / '+total);
      if(tv){
-      await page.keyboard.press('ArrowUp');assert.equal(await viewer.locator('.minimal-frame-close.focus').count(),1);
-      await page.keyboard.press('ArrowDown');assert.equal(await viewer.locator('.minimal-frame-close.focus').count(),1);
+      await page.keyboard.press('ArrowUp');assert.equal(await viewer.locator('.minimal-frame-close.focus').count(),0);
+      await page.keyboard.press('ArrowDown');assert.equal(await viewer.locator('.minimal-frame-close.focus').count(),0);
       await page.keyboard.press('ArrowRight');assert.equal(await position(),'2 / '+total);
       await page.keyboard.press('ArrowRight');assert.equal(await position(),'3 / '+total);
       await page.waitForFunction(path=>document.querySelector('.minimal-frame-viewer img')?.getAttribute('src')?.endsWith(path),selectedPaths[2]);
@@ -200,7 +200,8 @@ async function open(page,movie){
       assert.equal(await position(),'1 / 1');
       assert.equal(await viewer.locator('.minimal-frame-next').isVisible(),false);
       await page.keyboard.press('ArrowRight');await page.keyboard.press('ArrowLeft');
-      assert.equal(await viewer.locator('.minimal-frame-close.focus').count(),1,'Single-frame navigation never focuses hidden arrows');
+      assert.equal(await viewer.locator('.minimal-frame-close.focus').count(),0,'TV never focuses a hidden close button');
+      assert.equal(await viewer.locator('.minimal-frame-control:visible').count(),0,'Single-frame TV viewer has no on-screen controls');
       await page.keyboard.press('Enter');await viewer.waitFor({state:'hidden'});
       await stills.evaluateAll(nodes=>nodes.forEach(node=>{node.hidden=false;}));
       await page.keyboard.press('Enter');await viewer.waitFor();

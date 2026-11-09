@@ -9,10 +9,10 @@ test('home always hides Back with a deep activity stack and menu/back have ident
   component='category';L.Listener.send('activity',{type:'start'});assert.equal(w.getComputedStyle(back).display,'flex');
   for(const focused of [false,true]){
    back.classList.toggle('focus',focused);menu.classList.toggle('focus',focused);
-   const a=w.getComputedStyle(back),b=w.getComputedStyle(menu);for(const prop of ['width','height','border','borderRadius','color','backgroundColor','outline','outlineOffset'])assert.equal(a[prop],b[prop],prop);
+   const a=w.getComputedStyle(back),b=w.getComputedStyle(menu);for(const prop of ['width','height','border','borderRadius','color','backgroundColor','outline','outlineOffset','boxShadow'])assert.equal(a[prop],b[prop],prop);
    const nav=w.document.createElement('div');nav.innerHTML='<button class="minimal-row-more selector"></button>';w.document.body.appendChild(nav);
    for(const button of nav.children){button.classList.toggle('focus',focused);const actual=w.getComputedStyle(button);assert.equal(actual.outline,'none');if(focused)assert.match(actual.boxShadow,/inset/);}
-   assert.equal(parseFloat(b.outlineWidth)||0,0);assert.equal(b.boxShadow,'none');nav.remove();
+   assert.equal(parseFloat(b.outlineWidth)||0,0);if(focused)assert.match(b.boxShadow,/inset 0 0 0 1px/);else assert.equal(b.boxShadow,'none');nav.remove();
   }
   component='main';L.Listener.send('activity',{type:'start'});assert.equal(w.getComputedStyle(back).visibility,'hidden');assert.equal(back.tabIndex,-1);assert.deepEqual(r.errors,[]);
  }finally{r.close();}

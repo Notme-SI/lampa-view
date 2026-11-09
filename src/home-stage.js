@@ -35,7 +35,7 @@ export default function homeStage(hero,root){
   body.style.fontSize='';body.style.bottom='';
   const style=getComputedStyle(body),font=parseFloat(style.fontSize)||16;
   const glass=document.body.classList.contains('pt-theme-glass');
-  const minBottom=font*(glass?2:tv?1.5:3),topInset=font*(tv?1:1.25);
+  const minBottom=font*(glass && tv?3.8:glass?2:tv?3.2:3),topInset=font*(tv?1:1.25);
   if(document.body.classList.contains('pt-personal-enlarged')){
    height=Math.max(height,Math.ceil(body.offsetHeight+minBottom+topInset));
    hero.style.height=height+'px';

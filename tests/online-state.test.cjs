@@ -40,6 +40,8 @@ test('linked native timelines identify opaque hashes and newer active episodes w
 test('source availability checks real entries, excludes similar titles and distinguishes access failures from empty catalogues',()=>{
  const dom=new JSDOM('',{runScripts:'outside-only'}),w=dom.window;try{w.eval(code);const state=w.OnlineState.availability;
  assert.equal(state(tag({method:'play',url:'/file'})).state,'ok');assert.equal(state(tag({method:'call',url:'/call',similar:true})).state,'empty');assert.equal(state('<div class="videos__line"></div>').state,'empty');assert.equal(state('<html><h1>Access denied</h1></html>').state,'unknown');assert.equal(state('').state,'unknown');assert.equal(state(JSON.stringify({accsdb:true})).state,'unknown');assert.equal(state({data:[{method:'call',url:'/film'}]}).state,'ok');assert.equal(state({data:[]}).state,'empty');assert.equal(state('<script>'+tag({method:'play',url:'/fake'})+'</script>').state,'unknown');assert.equal(state('<div class="videos__item">No valid data</div>').state,'empty');
+ assert.equal(state(tag({method:'link',similar:true,url:'/lite/test?pick=1',title:'Сериал'})).state,'unknown','Search results cannot erase a confirmed provider as an empty catalogue');
+ assert.equal(state({data:[{method:'link',similar:true,url:'/lite/test?pick=1'}]}).state,'unknown');
  }finally{w.close();}
 });
 test('native progress picks the latest title alias, advances completed seasons and isolates profiles without writing records',()=>{
@@ -537,6 +539,19 @@ test('default background checks start before opening the source menu, share two 
  }finally{if(s)s.close();n.close();}
 });
 
+test('background availability follows matching release folders and checks providers beyond the old twelve-source limit',async()=>{
+ const n=await native({built:true}),{L,w}=n;let s;try{
+  const calls=[],Real=L.Reguest;L.Reguest=function(){const net=new Real(),send=net.native;net.native=(url,ok,fail,...rest)=>{
+   if(!/\/lite\/probe\d+\?/.test(url))return send.call(net,url,ok,fail,...rest);
+   calls.push(url);const route=new URL(url);w.setTimeout(()=>ok(route.searchParams.has('pick')?tag({method:'play',url:'/video',episode:1}):tag({method:'link',similar:true,title:'Сериал 1 сезон',url:route.origin+route.pathname+'?pick=matched'})+tag({method:'link',similar:true,title:'Другой сериал',url:route.origin+route.pathname+'?pick=foreign'})),1);
+  };return net;};
+  const comp={request(){},parse(){},changeBalanser(){}};s=screen(n,{id:1911,component:comp});
+  s.filter.set('sort',[{title:'Test',source:'test',selected:true},...Array.from({length:14},(_,i)=>({title:'Probe '+i,source:'probe'+i}))]);comp.request('https://online.example.test/lite/test?id=1911');
+  await until(()=>calls.length===28 && Object.keys(L.Storage.get('nova_probe',{})['tmdb:tv:1911']?.list || {}).length>=15,'all matching provider releases',6000);
+  s.root.find('[data-nova-focus=source]').trigger('hover:enter');assert.equal(L.Select.render().find('.nova-source-option__status').length,15);assert.ok(calls.every(url=>!url.includes('foreign')));assert.equal(s.played(),0);assert.deepEqual(n.errors,[]);
+ }finally{if(s)s.close();n.close();}
+});
+
 test('source menu leaves the last playback source and native playback saving untouched, ignoring legacy manual preferences',async()=>{
  const n=await native({built:true}),{L}=n;let s;try{
   L.Storage.set('online_last_balanser',{'1703':'watched'});L.Storage.set('lampa_view_source_choice',{'file_view|last':'old-manual'});
@@ -638,7 +653,7 @@ test('season captions read the selected dub before opening a season',async()=>{
   const lists={
    root:{items:[1,2].map(season=>({season,method:'link',url:base+'?s='+season}))},
    default:{voices:[{text:'Other',active:true},{text:'TVShows',url:base+'?s=2&t=5'}]},
-   selected:{items:[1,2,3].map(episode=>({season:2,episode,method:'call'}))}
+   selected:{items:[1,2,3].map(episode=>({season:1,episode,method:'call'}))}
   };
   const comp={changeBalanser(){},request(){},parse(){},parseJsonDate(name,selector){
    const value=lists[name] || {};return selector==='.videos__item'?value.items || []:value.voices || [];
@@ -663,6 +678,14 @@ test('season captions read the selected dub before opening a season',async()=>{
   await wait(300);
   assert.deepEqual(calls,[base+'?s=2',base+'?s=2&t=5']);
   assert.equal(s.root.find('[data-nova-focus="season:1"] .nova-chip__sub').text(),'3 эпизода');
+  lists.default={items:[1,2,3,4].map(episode=>({season:1,episode,method:'call'}))};
+  s.filter.set('filter',[{stype:'season',title:'Сезон',subtitle:'Сезон 1',items:[1,2].map(season=>({title:'Сезон '+season,selected:season===1}))},{stype:'voice',title:'Озвучка',subtitle:'Solo',items:[{title:'Solo',selected:true}]}]);
+  await wait(300);assert.equal(s.root.find('[data-nova-focus="season:1"] .nova-chip__sub').text(),'4 эпизода','A season without a separate dub picker still contributes its files');
+  L.Storage.set('lampac_nws_id','old-session');let registrations=0;const rchCalls=[];
+  comp.rch=(json,done)=>{assert.equal(json.rch,true);registrations++;L.Storage.set('lampac_nws_id','new-session');done();};
+  L.Reguest=function(){const net=new Request();net.native=(url,ok,fail)=>{const query=new URL(url);if(query.searchParams.get('s')!=='2')return fail();rchCalls.push(url);setTimeout(()=>ok(query.searchParams.get('nws_id')==='new-session'?'selected':JSON.stringify({rch:true,nws:'wss://online.example.test/ws'})),5);};return net;};
+  s.filter.set('filter',[{stype:'season',title:'Сезон',subtitle:'Сезон 1',items:[1,2].map(season=>({title:'Сезон '+season,selected:season===1}))},{stype:'voice',title:'Озвучка',subtitle:'RCH',items:[{title:'RCH',selected:true}]}]);
+  await wait(300);assert.equal(registrations,1);assert.equal(rchCalls.length,2);assert.equal(s.root.find('[data-nova-focus="season:1"] .nova-chip__sub').text(),'3 эпизода','Background requests reuse the host RCH session without opening the season');
   assert.equal(s.played(),0);
   assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}

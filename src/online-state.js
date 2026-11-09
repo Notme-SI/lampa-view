@@ -114,22 +114,22 @@ function htmlRows(body){
 }
 export function catalogueRows(body){return htmlRows(body).filter(row=>!row.similar);}
 export function availability(body){
- let json=body,count=0,visited=0;
+ let json=body,count=0,visited=0,searchFolders=false;
  if(typeof body==='string'){try{json=JSON.parse(body);}catch(error){json=null;}}
  if(json && typeof json==='object'){
   if(json.rch || json.accsdb || json.blocked || json.error || json.error_details)return {state:'unknown',count:0};
   function walk(value,depth){
    if(!value || typeof value!=='object' || depth>6 || ++visited>500)return;
-   if(typeof value.url==='string' && value.url.trim() && !value.similar && /^(play|call|link)$/.test(value.method))count++;
+   if(typeof value.url==='string' && value.url.trim()){if(value.similar && value.method==='link')searchFolders=true;else if(!value.similar && /^(play|call|link)$/.test(value.method))count++;}
    if(Array.isArray(value))value.forEach(row=>walk(row,depth+1));else for(const key of ['data','results','items','list','playlists'])walk(value[key],depth+1);
   }
-  walk(json,0);return {state:count?'ok':Array.isArray(json) || Array.isArray(json.data) || Array.isArray(json.results)?'empty':'unknown',count};
+  walk(json,0);return {state:count?'ok':searchFolders?'unknown':Array.isArray(json) || Array.isArray(json.data) || Array.isArray(json.results)?'empty':'unknown',count};
  }
  if(typeof body!=='string' || !body.trim())return {state:'unknown',count:0};
  // Inspect attributes without inserting provider HTML or starting image/iframe loads.
- count=catalogueRows(body).length;
+ const rows=htmlRows(body);count=rows.filter(row=>!row.similar).length;searchFolders=rows.some(row=>row.similar && row.method==='link');
  const clean=body.replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,'');
- return {state:count?'ok':/\bvideos__(?:item|line|empty|body)\b/.test(clean)?'empty':'unknown',count};
+ return {state:count?'ok':searchFolders?'unknown':/\bvideos__(?:item|line|empty|body)\b/.test(clean)?'empty':'unknown',count};
 }
 export default function onlineState(L){
  let revision=0,batching=0;const snapshots=new Map();

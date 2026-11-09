@@ -465,13 +465,14 @@ if (!ROOT.LampaView) {
               if(component && component.scroll && component.scroll.update)component.scroll.update(element[0]);
               L.Controller.collectionSet(element);focusControl();
             },
-            left:()=>{show(index-1);focus=controls.index(details);focusControl();},
-            right:()=>{show(index+1);focus=controls.index(details);focusControl();},
-            up:()=>{if(focus>0){focus=0;focusControl();}else L.Controller.toggle('head');},
+            left:()=>{if(controls.eq(focus).is('.pt-hero__dot')){show(index-1);focus=controls.index(dots.children().eq(index));focusControl();}},
+            right:()=>{if(controls.eq(focus).is('.pt-hero__dot'))show(index+1);focus=controls.index(dots.children().eq(index));focusControl();},
+            up:()=>{if(controls.eq(focus).is('.pt-hero__dot')){focus=controls.index(details);focusControl();}else L.Controller.toggle('head');},
             down:()=>nativeLine.toggle(),
             back:()=>L.Controller.toggle('head')
           });L.Controller.toggle('lampa_view_hero');
         };
+        element[0]._minimalHeroEnter=()=>{focus=controls.index(details);enterHero();};
         nativeLine.use({onlyUp:enterHero,onToggle:()=>{if(firstFocus){firstFocus=false;focus=0;setTimeout(()=>{if((L.Activity.active() || {}).activity===activity && !document.body.matches('.settings--open,.selectbox--open,.menu--open'))enterHero();},0);}else if(tvStage)tvStage.expand();}});
         if(activity.component && activity.component.use){
           activity.component.use({onStart:()=>{if(P.layout!=='mobile')setTimeout(()=>{if((L.Activity.active() || {}).activity===activity)enterHero();},0);}});
@@ -602,6 +603,19 @@ if (!ROOT.LampaView) {
     });
     [[L.Settings,['open','close']],[L.Select,['fullshow','close']],[L.Modal,['fullshow','close']],[L.Player,['create','destroy']],[L.Controller,['toggle']]].forEach(([api,events])=>{
       if(api && api.listener)events.forEach(event=>api.listener.follow(event,()=>{if(carousels.size)setTimeout(refreshCarousels,0);}));
+    });
+    // Native Head.down returns to the last collection. A home hero is the
+    // first content stop on every entry from Back, Menu or Search instead.
+    if(L.Controller && L.Controller.listener)L.Controller.listener.follow('toggle',event=>{
+      if(event.name!=='head')return;
+      const active=L.Controller.enabled(),head=active && active.controller;
+      if(!head || head._minimalHeroDown)return;
+      const down=head.down;head._minimalHeroDown=true;
+      head.down=function(){
+        const hero=yes('lampa_view_enabled') && yes('lampa_view_hero') && document.querySelector('.activity--active .pt-hero:not(.pt-hidden)');
+        if(hero && hero._minimalHeroEnter)return hero._minimalHeroEnter();
+        if(down)return down.apply(this,arguments);
+      };
     });
     let resizeTimer;
     ROOT.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(layout,180);});
