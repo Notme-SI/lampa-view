@@ -20,10 +20,10 @@ html,body {background:#000!important}
   0%,100% {opacity:.35;transform:scaleX(.35)}
   50% {opacity:1;transform:scaleX(1)}
 }
-@keyframes minimal-boot-glow {
-  0%,100% {opacity:.6}
-  50% {opacity:1}
+@keyframes minimal-boot-breathe-reduced {
+  0%,100% {opacity:.6;transform:scaleX(.65)}
+  50% {opacity:1;transform:scaleX(1)}
 }
 @media (prefers-reduced-motion:reduce) {
-  .welcome:after {animation-name:minimal-boot-glow;transform:scaleX(.65)}
+  .welcome:after {animation-name:minimal-boot-breathe-reduced;animation-duration:4s}
 }
