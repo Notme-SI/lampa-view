@@ -11,7 +11,7 @@ export default function searchHistory(L){
  storage.set=function(name,value,silent){
   if(name==='search_history' && Array.isArray(value)){
    const input=typeof document!=='undefined' && document.querySelector('.search__input.filled'),query=input && input.textContent.trim();
-   if(!silent && query && document.body.classList.contains('search--open'))allow(query);
+   if(!silent && query && value.includes(query) && document.body.classList.contains('search--open'))allow(query);
    value=value.filter(v=>!deleted().includes(v));
   }
   return set.call(this,name,value,silent,arguments[3]);

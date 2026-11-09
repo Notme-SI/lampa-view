@@ -9,3 +9,8 @@ test('explicit search deletion survives reload and a late CUB merge, isolated fr
 test('clear affects only search history and uses its native synchronization clean operation',()=>{
  const f=fixture();f.storage.set('search_history',['A','B']);f.storage.set('favorite',{history:[1]});f.storage.set('file_view',{id:50});f.api.clear();assert.deepEqual(f.cleaned,['search_history']);assert.deepEqual(f.storage.get('search_history'),[]);f.storage.set('search_history',['A','B','C'],true);assert.deepEqual(f.storage.get('search_history'),['C']);assert.deepEqual(f.storage.get('favorite'),{history:[1]});assert.deepEqual(f.storage.get('file_view'),{id:50});
 });
+test('clearing over an open search does not re-add the unchanged input after synchronization',()=>{
+ const f=fixture();f.storage.set('search_history',['A','B']);const before=global.document;
+ try{global.document={querySelector:()=>({textContent:'A'}),body:{classList:{contains:()=>true}}};f.api.clear();f.storage.set('search_history',['A','B'],true);assert.deepEqual(f.storage.get('search_history'),[]);}
+ finally{if(before===undefined)delete global.document;else global.document=before;}
+});
