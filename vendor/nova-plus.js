@@ -2445,6 +2445,25 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     }
     probeStop(); probe_done_for = 0; probe_url = '';
     var availabilityGeneration=0,requestSource='',folderChain=[],parsing=false;
+    var activeObject=Lampa.Activity.active();
+    var lookupCard=object && (object.movie || object.card) || activeObject && activeObject.activity && activeObject.activity.component===comp && (activeObject.movie || activeObject.card);
+    var missingTitle='Фильм не найден';
+    var lookupTitle=lookupCard && [lookupCard.name,lookupCard.title].find(function(title){return title && title!==missingTitle;});
+    function restoreLookupTitle(){
+      // The details component can seed movie.title with a placeholder even for
+      // TV cards. Lampac prefers it over name and can echo it into discovery.
+      if(!lookupTitle)return;
+      if(lookupCard.name===missingTitle)lookupCard.name=lookupTitle;
+      if(lookupCard.title===missingTitle)lookupCard.title=lookupTitle;
+    }
+    function fixLookupUrl(url){
+      if(!lookupTitle || typeof url!=='string')return url;
+      return url.replace(/([?&]title=)([^&#]*)/g,function(match,prefix,value){
+        try {
+          return decodeURIComponent(value.replace(/\+/g,' '))===missingTitle?prefix+encodeURIComponent(lookupTitle):match;
+        } catch(e) { return match; }
+      });
+    }
     var continuationApi=window.LampaView && window.LampaView.animeContinuations;
     var continuation={base:'',parts:[],selected:null,groups:null,baseSelection:0,count:0,started:false};
     var providerUrl=String(object && object.url || ''),providerPart=null;
@@ -2555,6 +2574,9 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     if (typeof comp.request === 'function') {
       var request = comp.request;
       comp.request = function (url) {
+        restoreLookupTitle();
+        url=fixLookupUrl(url);
+        arguments[0]=url;
         if(!parsing)folderChain=[];
         folderChain.push(String(url || ''));
         var source=String(url || '').match(/\/lite\/([^\/?#]+)/i);
@@ -2600,7 +2622,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
           var matched=releaseRoutes.filter(function(entry){
             var target=new URL(entry.url,location.href);
             if(target.origin!==current.origin || target.pathname!==current.pathname)return false;
-            var keys=['pick','uri','news','postid','animeid','link','id'].filter(function(key){return target.searchParams.has(key);});
+            var keys=['pick','uri','news','postid','animeid','releases','link','id'].filter(function(key){return target.searchParams.has(key);});
             return keys.length && keys.every(function(key){return target.searchParams.get(key)===current.searchParams.get(key);});
           });
           if(matched.length===1)return matched[0].season;
@@ -2820,7 +2842,8 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       var reqparams = comp.requestParams;
       comp.nova_rp_hooked = true;
       comp.requestParams = function (url) {
-        var out = reqparams.apply(comp, arguments);
+        restoreLookupTitle();
+        var out = fixLookupUrl(reqparams.apply(comp, arguments));
         try { learnUrl(out); } catch (e) {}
         return out;
       };
@@ -2847,7 +2870,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       // selection for the destination source; never copy another source's dub.
       comp.lampaViewManualSeason=undefined;
       comp.lampaViewProviderSeasons=null;comp.lampaViewJoinedParts=null;
-      seasonLinks=null;releasePicks=null;countScope='';counts={};countDone={};countQueue=[];
+      seasonLinks=null;releasePicks=null;releaseRoutes=[];countScope='';counts={};countDone={};countQueue=[];
       if (!inplace || !reloadable(comp)) return real.apply(comp, arguments);
 
       inplaceStop();

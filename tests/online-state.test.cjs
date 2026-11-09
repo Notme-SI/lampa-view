@@ -72,9 +72,9 @@ test('clearing a timecode clears title aliases in the active profile without tou
  }finally{w.close();}
 });
 
-function screen(n,{id=900,season=1,episodes=[1,2,3],serial=true,voices=true,component={}}={}){
+function screen(n,{id=900,season=1,episodes=[1,2,3],serial=true,voices=true,component={},card={}}={}){
  const {w,L}=n,$=w.jQuery,root=$('<div class="explorer"><div class="explorer__files"><div class="explorer__files-head"></div><div class="explorer__files-body"><div class="scroll"><div class="scroll__body"></div></div></div></div></div>').appendTo(w.document.body),body=root.find('.scroll__body'),filter=new L.Filter({search:false,sort:true,filter:true});root.find('.explorer__files-head').append(filter.render());filter.set('sort',[{title:'Test',source:'test',selected:true},{title:'Other',source:'other',ghost:false}]);filter.set('filter',serial?[{stype:'season',title:'Сезон',items:[{title:'Сезон '+season,selected:true}]},...(voices?[{stype:'voice',title:'Озвучка',items:[{title:'TVShows',selected:true}]}]:[])]:[]);
- const movie={id,title:'Русское название',original_title:'Original',...(serial?{name:'Сериал',original_name:'Original',number_of_seasons:2,seasons:[{season_number:1,episode_count:3},{season_number:2,episode_count:3}]}:{}),source:'tmdb'};let played=0;
+ const movie={id,title:'Русское название',original_title:'Original',...(serial?{name:'Сериал',original_name:'Original',number_of_seasons:2,seasons:[{season_number:1,episode_count:3},{season_number:2,episode_count:3}]}:{}),source:'tmdb',...card};let played=0;
  for(const num of episodes)$('<div class="online-prestige online-prestige--full selector"><div class="online-prestige__img"><img src="https://image.example.test/frame.jpg"></div><div class="online-prestige__title">Серия '+num+'</div>'+(serial?'<div class="online-prestige__episode-number">'+num+'</div>':'')+'<div class="online-prestige__quality">1080p</div><div class="online-prestige__info"><span>TVShows</span></div><div class="time-line"><div style="width:0%"></div></div></div>').on('hover:enter',()=>played=num).appendTo(body);
  Object.assign(component,{render:()=>root});L.Activity.active=()=>({component:'online_test',movie,activity:{render:()=>root,component}});L.Listener.send('activity',{type:'start'});return {root,body,movie,filter,component,played:()=>played,close(){L.Listener.send('activity',{type:'destroy'});root.remove();}};
 }
@@ -323,6 +323,22 @@ test('online host follows native bilingual search HTML to the title without an i
   comp.request('/lite/provider/search');comp.parse(seasonBody);assert.equal(requests.at(-1),'/lite/provider?season=1','Native season folders do not require the similar flag');
   comp.request('/lite/provider/search');comp.parse(tag({method:'link',similar:true,title:'Посторонний фильм',url:'/wrong'}));assert.equal(parsed.at(-1),'<div class="videos__line"></div>');assert.notEqual(requests.at(-1),'/wrong');
   const episode=tag({method:'play',url:'/test.mp4',title:'Серия 1'});comp.parse(episode);assert.equal(parsed.at(-1),episode);assert.equal(s.played(),0);assert.deepEqual(n.errors,[]);
+ }finally{if(s)s.close();n.close();}
+});
+
+test('Lampac discovery and provider routes use the card title when Lampa supplies the missing-film label',async()=>{
+ const n=await native({built:true});let s;
+ try{
+  const requests=[],missing='Фильм не найден',title='Монолог фармацевта';
+  const comp={changeBalanser(){},request(url){requests.push(url);},requestParams(url){return url+'&title='+encodeURIComponent(s.movie.title || s.movie.name);}};
+  s=screen(n,{component:comp,card:{name:title,title:missing,original_name:'薬屋のひとりごと'}});await wait(180);
+  const params=url=>new URL(url,'https://lampac.test').searchParams;
+  assert.equal(params(comp.requestParams('/lite/events?life=true')).get('title'),title);
+  s.movie.name=s.movie.title=missing;
+  const inherited='/lite/ailiberty?title='+encodeURIComponent(missing).replace(/%20/g,'+')+'&kinopoisk_id=5258557&pick=';
+  comp.request(comp.requestParams(inherited));
+  const provider=params(requests[0]);assert.deepEqual(provider.getAll('title'),[title,title]);assert.equal(provider.get('kinopoisk_id'),'5258557');assert.equal(provider.get('pick'),'');assert.equal(s.movie.name,title);
+  const manual='/lite/ailiberty?title=Other%20title&clarification=1';comp.request(manual);assert.equal(requests[1],manual);assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}
 });
 
