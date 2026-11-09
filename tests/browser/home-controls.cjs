@@ -9,6 +9,7 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
  await page.evaluate(()=>Lampa.Storage.set('menu_always',false));
  const dots=await page.locator('.pt-hero__dots').evaluate(n=>{const s=getComputedStyle(n);return {background:s.backgroundColor,image:s.backgroundImage,border:s.borderColor,shadow:s.boxShadow,blur:s.backdropFilter};});
  if(theme==='minimal'){assert.equal(dots.background,'rgba(0, 0, 0, 0)');assert.equal(dots.image,'none');assert.equal(dots.border,'rgba(0, 0, 0, 0)');assert.equal(dots.shadow,'none');assert.equal(dots.blur,'none');}
+ if(theme==='minimal')for(const dot of await page.locator('.pt-hero__dot').all()){const round=await dot.evaluate(n=>{const s=getComputedStyle(n,'::after');return Math.abs(parseFloat(s.width)-parseFloat(s.height))<.1 && s.borderRadius==='50%';});assert.ok(round,'All dark carousel indicators, including the active one, are circles');}
  const inactiveDot=page.locator('.pt-hero__dot:not(.active)').first();await inactiveDot.hover();
  const glow=await inactiveDot.evaluate(n=>({border:getComputedStyle(n).borderColor,shadow:getComputedStyle(n,'::after').boxShadow,color:getComputedStyle(n,'::after').backgroundColor}));
  assert.equal(glow.border,'rgba(0, 0, 0, 0)');assert.equal(glow.color,'rgb(255, 255, 255)');assert.notEqual(glow.shadow,'none');await page.mouse.move(1,1);

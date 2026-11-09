@@ -20,6 +20,18 @@ test('native online metadata obeys the complete coordinate guard before construc
  }finally{n.close();}
 });
 
+test('a confirmed matching release keeps its dated schedule without adding files or unrelated episode numbers',async()=>{
+ const n=await native({built:true}),{w,L}=n,$=w.jQuery;try{
+  const root=$('<div>').appendTo(w.document.body),movie={id:220542,name:'Монолог фармацевта',minimal_anime:true,number_of_seasons:3,seasons:[1,2,3].map(n=>({season_number:n,episode_count:n===3?12:24}))},base='https://lampac.test/lite/animedia';
+  const comp={render:()=>root,changeBalanser(){},request(){},parse(){},parseJsonDate(){return [];},getEpisodes(){throw Error('Expected checked metadata');},draw(rows,done){this.getEpisodes(rows[0].season,done);}};
+  L.Component.add('scheduled_release_test',function(){return comp;});L.Component.create({component:'scheduled_release_test',movie});L.Activity.active=()=>({movie,activity:{component:comp,render:()=>root}});
+  comp.request(base);comp.parse([1,2,3].map(n=>'<div class="videos__item videos__season" data-json=\''+JSON.stringify({method:'link',similar:true,title:movie.name+' '+n,url:base+'?news=release-'+n})+'\'></div>').join(''));
+  w.LampaView.animeBase.seasonBook=(card,season,done)=>done({season_number:3,episodes:[{season_number:3,episode_number:1,name:'Кузнечики'},{season_number:3,episode_number:7,air_date:'2099-01-01',name:'Будущая серия'},{season_number:3,episode_number:55,air_date:'2099-01-01',name:'Чужая серия'}]});
+  const files=[{method:'play',season:3,episode:1,url:'/real-file'}],before=JSON.stringify(files);comp.request(base+'?news=release-3');const rows=await new Promise(done=>comp.draw(files,done));
+  assert.deepEqual(Array.from(rows,row=>row.episode_number),[1,7]);assert.equal(JSON.stringify(files),before);assert.deepEqual(n.errors,[]);
+ }finally{n.close();}
+});
+
 test('a named provider release does not inherit future episodes from the combined catalogue season',async()=>{
  const n=await native({built:true}),{w,L}=n,$=w.jQuery;
  try{

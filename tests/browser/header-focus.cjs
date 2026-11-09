@@ -19,11 +19,11 @@ const assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWR
   for(const control of geometry.controls){assert.equal(control.focused,true);assert.equal(control.outline,'0px');assert.equal(control.border,theme==='glass'?'rgb(244, 244, 246)':'rgb(216, 195, 154)');}
   await page.locator('.head__menu-icon').click();
   const menuPanel=await page.locator('.wrap__left').evaluate(n=>{const r=n.getBoundingClientRect();return {left:r.left,top:r.top,width:r.width};});
-  assert.ok(Math.abs(menuPanel.left-home.menu)<1,'Menu opens directly under its button');
+  assert.ok(menuPanel.left<home.menu && menuPanel.left>=8,'Menu opens near the outer edge');
   await page.locator('.head__menu-icon').click();assert.equal(await page.evaluate(()=>document.body.classList.contains('menu--open')),false,'Second click closes Menu');
   await page.locator('.head__menu-icon').click();await page.locator('.wrap__left [data-action=settings]').click();await page.waitForSelector('body.settings--open');
   const mirrored=await page.locator('.settings__content').evaluate(n=>{const r=n.getBoundingClientRect();return {inset:innerWidth-r.right,top:r.top,width:r.width};});
-  assert.ok(Math.abs(mirrored.top-menuPanel.top)<1 && Math.abs(mirrored.width-menuPanel.width)<1,'Settings mirror Menu on the right');
+  assert.ok(Math.abs(mirrored.top-menuPanel.top)<1 && Math.abs(mirrored.width-menuPanel.width)<1 && Math.abs(mirrored.inset-menuPanel.left)<1,'Settings mirror Menu on the right');
   const settings=await page.locator('.settings__content').evaluate(n=>({width:n.getBoundingClientRect().width,height:n.getBoundingClientRect().height,vh:innerHeight,rows:[...n.querySelectorAll('.settings-folder')].filter(n=>n.getBoundingClientRect().height).map(n=>({h:n.getBoundingClientRect().height,font:parseFloat(getComputedStyle(n).fontSize)}))}));
   assert.ok(settings.width<=Math.min(600,geometry.vw*.94+1));assert.ok(settings.height<settings.vh*.9);assert.ok(settings.rows.length>0);assert.ok(settings.rows.every(row=>row.h>=44 && row.font>=12));
   const buttons=await page.evaluate(()=>{
@@ -65,6 +65,7 @@ const assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWR
    return {title:size(title),value:size(subtitle),group:size(group),gap:Math.abs(center(checkbox)-center(checkbox.parentElement)),footer:n.getBoundingClientRect().bottom-checkbox.parentElement.getBoundingClientRect().bottom};
   });
   assert.ok(action.value<action.title && action.group<action.title && action.gap<1);assert.ok(action.footer<20,'Short actions end at the last row');
+  const inset=await page.locator('.selectbox__content').evaluate(n=>{const panel=n.getBoundingClientRect(),row=n.querySelector('.selectbox-item').getBoundingClientRect();return row.left-panel.left>5 && panel.right-row.right>5 && panel.bottom-row.bottom>5;});assert.ok(inset,'Selection rows leave room for the outer panel corners');
   if(theme==='glass'){
    const panels=await page.evaluate(()=>{const material=selector=>{const s=getComputedStyle(document.querySelector(selector));return [s.backgroundImage,s.backgroundColor,s.borderColor,s.backdropFilter];};return {menu:material('.wrap__left'),actions:material('.selectbox__content')};});assert.deepEqual(panels.actions,panels.menu,'Actions share the menu glass material');
   }

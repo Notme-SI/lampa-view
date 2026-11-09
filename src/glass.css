@@ -72,7 +72,8 @@ body.lampa_view.pt-theme-glass .full-start-new__rate-line>div,body.lampa_view.pt
 /* Reuse the scene below; no live blur layer per comment or reaction. */
 body.lampa_view.pt-theme-glass .person-start {background:var(--pt-glass-button);border:1px solid var(--pt-glass-border);border-radius:1.5em;box-shadow:var(--pt-glass-edge);padding:1em;box-sizing:border-box}
 body.lampa_view.pt-theme-glass .full-review,body.lampa_view.pt-theme-glass .full-review-add,
-body.lampa_view.pt-theme-glass .minimal-detail-header .full-start-new__reactions .reaction {background:var(--pt-glass-button);border:1px solid var(--pt-glass-border);box-shadow:var(--pt-glass-edge);color:var(--pt-text)}
+body.lampa_view.pt-theme-glass .minimal-detail-header .full-start-new__reactions .reaction,
+body.lampa_view.pt-theme-glass .minimal-detail-header :is(.full-start__rate,.full-start__pg,.full-start__status) {background:var(--pt-glass-button);border:1px solid var(--pt-glass-border);box-shadow:var(--pt-glass-edge);color:var(--pt-text);border-radius:.45em}
 body.lampa_view.pt-theme-glass .full-review.focus,body.lampa_view.pt-theme-glass .full-review-add.focus,
 body.lampa_view.pt-theme-glass .minimal-detail-header .full-start-new__reactions .reaction.focus {background:linear-gradient(165deg,#ffffff30,#ffffff0a);border-color:var(--pt-accent);color:var(--pt-text)}
 body.lampa_view.pt-theme-glass .minimal-torrent-banner__meta {background:var(--pt-glass-button);border:1px solid var(--pt-glass-border);box-shadow:var(--pt-glass-edge)}
