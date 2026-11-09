@@ -211,7 +211,7 @@ body.lampa_view.pt-menu-pinned .wrap__left .menu__text {display:block!important;
 body.lampa_view.pt-menu-pinned:is(.menu--open,.pt-menu-hover) .wrap__left .menu__text {opacity:1}
 body.lampa_view.pt-menu-pinned .wrap__left .menu__ico,body.lampa_view.pt-menu-pinned:is(.menu--open,.pt-menu-hover) .wrap__left .menu__ico {margin:0!important}
 body.lampa_view .settings .settings__body,body.lampa_view .selectbox:not(.minimal-franchise-menu) .selectbox__body {flex:0 1 auto;height:auto!important;min-height:0!important;padding-block:0!important;overflow:hidden}
-body.lampa_view .settings .settings__body>.scroll,body.lampa_view .selectbox:not(.minimal-franchise-menu) .selectbox__body>.scroll {display:flex;flex-direction:column;height:auto!important;min-height:0!important}
+body.lampa_view .settings .settings__body>.scroll,body.lampa_view .selectbox:not(.minimal-franchise-menu) .selectbox__body>.scroll {display:flex;flex-direction:column;height:auto!important;min-height:0!important;max-height:none!important}
 body.lampa_view .settings .scroll__content,body.lampa_view .selectbox:not(.minimal-franchise-menu) .scroll__content {height:auto!important;min-height:0!important;padding-block:0!important}
 body.lampa_view .wrap__left .menu__item.focus,body.lampa_view .settings .settings-folder.focus,body.lampa_view .settings .settings-param.focus,body.lampa_view .selectbox .selectbox-item.focus {background:var(--pt-row-focus)!important;color:var(--pt-text)!important;border-radius:.7em!important;box-shadow:inset 0 0 0 1px var(--pt-row-edge)!important}
 body.lampa_view .wrap__left .menu__item.focus:before {display:none!important}
@@ -228,6 +228,7 @@ body.lampa_view.pt-mobile .navigation-bar__item {flex:1 1 0;min-width:0}
 body.lampa_view.pt-mobile .wrap__left,body.lampa_view.pt-mobile.pt-menu-pinned .wrap__left {left:var(--pt-shell-inset)!important;bottom:auto!important;height:auto!important;max-height:var(--pt-panel-room)!important}
 body.lampa_view.pt-mobile .wrap__left>.scroll,body.lampa_view.pt-mobile .wrap__left>.scroll>.scroll__content {max-height:calc(var(--pt-panel-room) - 10px)!important}
 body.lampa_view.pt-mobile .settings,body.lampa_view.pt-mobile .selectbox,body.lampa_view.pt-mobile .modal {z-index:120!important}
+body.lampa_view.pt-mobile .settings__layer,body.lampa_view.pt-mobile .selectbox:not(.minimal-franchise-menu) .selectbox__layer {height:calc(var(--pt-panel-room) + var(--pt-header-space));backdrop-filter:none;-webkit-backdrop-filter:none}
 body.lampa_view.pt-mobile .pt-hero {height:auto!important;min-height:0!important;max-height:none!important}
 body.lampa_view.pt-mobile .pt-hero__branding {height:4.5em;min-height:4.5em;margin-bottom:.7em}
 body.lampa_view.pt-mobile .pt-hero__branding>.pt-hero__logo {height:3.4em;max-height:3.4em}

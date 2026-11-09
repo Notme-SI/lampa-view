@@ -58,7 +58,7 @@ test('native Kodik picker keeps separate TV release coordinates through nested s
   comp.parse(tag({title:'1 сезон',method:'link',season:1,url:base+'?pick=2&s=1'},'videos__item videos__season'));
   assert.equal(requested.at(-1),base+'?pick=2&s=1');
   comp.request(base+'?pick=2&s=1&t=voice');
-  comp.parse(tag({method:'call',season:1,episode:1,url:base+'?play=one'})+tag({method:'call',title:'Dub option',url:base+'?dub=two'}));
+  comp.parse(tag({method:'call',season:1,episode:1,url:base+'?play=one'})+tag({method:'call',title:'Dub option',url:base+'?dub=two'})+tag({method:'link',title:'Dub option',url:base+'?dub=two'},'videos__button'));
   assert.deepEqual(Array.from(rendered.at(-1),r=>[r.season,r.episode,r.url]),[[2,1,base+'?play=one']]);
   assert.deepEqual(n.errors,[]);
  }finally{n.close();}

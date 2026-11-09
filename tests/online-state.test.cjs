@@ -519,8 +519,9 @@ test('default background checks start before opening the source menu, share two 
   L.Reguest=function(){const net=new Real(),nativeRequest=net.native;net.native=(url,ok,fail,...rest)=>{if(!/\/lite\/(one|two|three|other)\?/.test(url))return nativeRequest.call(net,url,ok,fail,...rest);running++;maximum=Math.max(maximum,running);let done=false;requests.push({url,ok(body){if(done)return;done=true;running--;ok(body);},fail(){if(done)return;done=true;running--;fail();}});};return net;};
   const comp={request(){},parse(){},changeBalanser(){}};s=screen(n,{id:1701,component:comp});
   const sources=[{title:'Test',source:'test',selected:true},...['one','two','three'].map(source=>({title:source,source}))];s.filter.set('sort',sources);
-  comp.request('https://online.example.test/lite/test?id=1701&s=2&voice=old');await wait(1800);
+  comp.request('https://online.example.test/lite/test?id=1701&s=2&voice=old&pick=release&kid=dub&uri=provider-slug');await wait(1800);
   assert.equal(requests.length,2,'No menu or provider switch is needed to start checking');assert.equal(L.Select.opened(),false);assert.equal(s.played(),0);
+  for(const {url} of requests){const params=new URL(url).searchParams;assert.equal(params.get('id'),'1701');for(const key of ['s','voice','pick','kid','uri'])assert.equal(params.has(key),false);}
   s.root.find('[data-nova-focus=source]').trigger('hover:enter');assert.equal(requests.length,2,'Opening the menu does not restart active work');
   requests[0].ok(tag({method:'play',url:'/file',name:'1080p'}));assert.equal(requests.length,3);requests[1].ok(tag({method:'play',url:'/file'}));requests[2].ok(tag({method:'play',url:'/file'}));
   assert.equal(maximum,2);assert.equal(L.Select.render().find('.nova-source-option__status').length,4);L.Select.hide();
@@ -534,10 +535,11 @@ test('default background checks start before opening the source menu, share two 
 test('source menu leaves the last playback source and native playback saving untouched, ignoring legacy manual preferences',async()=>{
  const n=await native({built:true}),{L}=n;let s;try{
   L.Storage.set('online_last_balanser',{'1703':'watched'});L.Storage.set('lampa_view_source_choice',{'file_view|last':'old-manual'});
-  const legacy=JSON.stringify(L.Storage.get('lampa_view_source_choice',{})),saved=[],selected=[],update=key=>saved.push(key),comp={changeBalanser(){},updateBalanser:update};
+  const legacy=JSON.stringify(L.Storage.get('lampa_view_source_choice',{})),saved=[],selected=[],switches=[],update=key=>saved.push(key),comp={changeBalanser(source){switches.push(source);},updateBalanser:update};
   s=screen(n,{id:1703,component:comp});s.filter.onSelect=(type,item)=>selected.push(item.source);await wait(180);
   s.root.find('[data-nova-focus=source]').trigger('hover:enter');L.Select.render().find('[data-nova-provider=other]').trigger('hover:enter');await wait(40);
   assert.deepEqual(selected,['other']);assert.deepEqual(saved,[],'Choosing a source does not pretend playback occurred');assert.equal(comp.updateBalanser,update,'Native playback saving is preserved');assert.equal(L.Storage.get('online_last_balanser',{})['1703'],'watched');assert.equal(JSON.stringify(L.Storage.get('lampa_view_source_choice',{})),legacy);assert.equal(s.played(),0);
+  comp.changeBalanser('fallback',true);assert.deepEqual(switches,[],'A native fallback cannot replace the explicit source');
   const card=s.movie;s.close();L.Component.add('online_preference_qa',function(object){this.changeBalanser=function(){};this.object=object;});
   const create=(movie,extra={})=>L.Component.create({component:'online_preference_qa',movie,...extra}).object;
   assert.equal(create(card).lampac_auto_select,undefined);assert.equal(create({...card,id:1704}).lampac_auto_select,undefined);

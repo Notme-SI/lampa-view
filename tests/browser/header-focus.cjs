@@ -49,13 +49,22 @@ const assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWR
    return {name:px('.settings-param__name'),value:px('.settings-param__value'),group:px('.settings-param-title>span')};
   });
   assert.ok(fonts.value<fonts.name && fonts.group<fonts.name,'Values and group labels are smaller than the setting name');
+  const qr=await page.locator('.settings__content').evaluate(panel=>{
+   const block=document.createElement('div');block.className='ad-server';
+   block.innerHTML='<div class="ad-server__text"><div>https://cub.black/really-long-address-without-spaces</div>Синхронизация закладок и истории</div><div class="ad-server__qr"><svg width="180" height="180" viewBox="0 0 180 180"></svg></div>';
+   panel.querySelector('.settings__body').prepend(block);
+   const outer=panel.getBoundingClientRect(),picture=block.querySelector('svg').getBoundingClientRect(),text=block.firstElementChild;
+   const fits=picture.left>=outer.left && picture.right<=outer.right && Math.abs(picture.width-picture.height)<1 && text.scrollWidth<=text.clientWidth+1;
+   block.remove();return fits;
+  });
+  assert.ok(qr,'QR and long addresses fit inside the compact settings pane');
   await page.evaluate(()=>{Lampa.Controller.back();Lampa.Controller.back();Lampa.Select.show({title:'Действие',items:[{title:'Избранное',separator:true},{title:'Нравится',subtitle:'Выбрано',checkbox:true}]});});
   const action=await page.locator('.selectbox__content').evaluate(n=>{
    const title=n.querySelector('.selectbox-item__title'),subtitle=n.querySelector('.selectbox-item__subtitle'),group=n.querySelector('.settings-param-title>span'),checkbox=n.querySelector('.selectbox-item__checkbox');
    const size=el=>parseFloat(getComputedStyle(el).fontSize),center=el=>{const r=el.getBoundingClientRect();return r.top+r.height/2;};
-   return {title:size(title),value:size(subtitle),group:size(group),gap:Math.abs(center(checkbox)-center(checkbox.parentElement))};
+   return {title:size(title),value:size(subtitle),group:size(group),gap:Math.abs(center(checkbox)-center(checkbox.parentElement)),footer:n.getBoundingClientRect().bottom-checkbox.parentElement.getBoundingClientRect().bottom};
   });
-  assert.ok(action.value<action.title && action.group<action.title && action.gap<1);
+  assert.ok(action.value<action.title && action.group<action.title && action.gap<1);assert.ok(action.footer<20,'Short actions end at the last row');
   if(theme==='glass'){
    const panels=await page.evaluate(()=>{const material=selector=>{const s=getComputedStyle(document.querySelector(selector));return [s.backgroundImage,s.backgroundColor,s.borderColor,s.backdropFilter];};return {menu:material('.wrap__left'),actions:material('.selectbox__content')};});assert.deepEqual(panels.actions,panels.menu,'Actions share the menu glass material');
   }

@@ -63,9 +63,11 @@ export function episodeRows(rows,voices=[]){
   return episode!==row.episode || season!==row.season?{...row,episode,season}:row;
  });
  if(!normalized.some(row=>video(row) && coordinate(row.episode)))return normalized;
- const voiceName=row=>String(row.text || row.name || row.title || '').trim().toLowerCase();
- const controls=new Set(voices.filter(row=>row.method==='link').map(voiceName).filter(Boolean));
- return normalized.filter(row=>!video(row) || coordinate(row.episode) || row.url && !controls.has(voiceName(row)));
+ const controls=new Set(voices.filter(row=>row.method==='link' && row.url).map(row=>row.url));
+ return normalized.flatMap(row=>{
+  if(!video(row) || coordinate(row.episode))return [row];
+  return row.url && !controls.has(row.url)?[{...row,lampa_unassigned_episode:true}]:[];
+ });
 }
 // Native season navigation is shared by every source. Digits in a studio name
 // or a translation URL do not identify a season.

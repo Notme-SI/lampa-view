@@ -105,7 +105,7 @@ test('Kodik TV markers preserve the season selector and reject dubs as episodes'
  const extra={method:'play',title:'Бонус',url:'/bonus'};
  const late={method:'call',title:'6 серия',url:'/episode6',s:3};
  const control={method:'call',title:'AniDUB',url:'/voice'};
- assert.deepEqual(episodeRows([...episodes,extra,late,control],[{method:'link',title:'AniDUB',url:'/voice'}]).slice(-2),[extra,{...late,episode:6,season:3}]);
+ assert.deepEqual(episodeRows([...episodes,extra,late,control],[{method:'link',title:'AniDUB',url:'/voice'}]).slice(-2),[{...extra,lampa_unassigned_episode:true},{...late,episode:6,season:3}]);
 });
 
 test('Russian episode cards preserve local text and images without substituting English',()=>{
