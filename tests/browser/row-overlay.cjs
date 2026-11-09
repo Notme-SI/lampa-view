@@ -22,6 +22,8 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
  }
  const bar=page.locator('.pt-page-scrollbar');
  if(mode==='desktop'){
+  // The online explorer places a hidden vertical source rail before its visible episode scroll.
+  await page.evaluate(()=>{const hidden=new Lampa.Scroll({over:true}),active=document.querySelector('.activity--active');hidden.render(true).style.display='none';active.prepend(hidden.render(true));Lampa.Listener.send('activity',{type:'start'});});
   await bar.waitFor({state:'visible'});const thumb=page.locator('.pt-page-scrollbar__thumb'),box=await thumb.boundingBox(),track=await bar.boundingBox();
   const before=await bar.getAttribute('aria-valuenow');await page.mouse.move(box.x+box.width/2,box.y+box.height/2);await page.mouse.down();await page.mouse.move(box.x+box.width/2,Math.min(track.y+track.height-4,box.y+box.height/2+track.height*.4),{steps:8});await page.mouse.up();await page.waitForTimeout(120);
   assert.ok(Number(await bar.getAttribute('aria-valuenow'))>Number(before),'Dragging controls the native page scroll');await bar.focus();await page.keyboard.press('Home');await page.waitForTimeout(120);assert.equal(await bar.getAttribute('aria-valuenow'),'0');

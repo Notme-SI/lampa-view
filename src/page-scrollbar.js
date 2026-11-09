@@ -7,7 +7,7 @@ export default function pageScrollbar(L,enabled){
  track.className='pt-page-scrollbar';track.tabIndex=0;track.hidden=true;track.setAttribute('role','scrollbar');track.setAttribute('aria-label',t('Прокрутка страницы'));track.setAttribute('aria-orientation','vertical');track.setAttribute('aria-valuemin','0');thumb.className='pt-page-scrollbar__thumb';thumb.setAttribute('aria-hidden','true');track.appendChild(thumb);document.body.appendChild(track);
  let root,scroll,resize,mutation,frame=0,range=0,travel=0,drag=null;
  function draw(){
-  frame=0;const active=enabled() && document.body.classList.contains('pt-desktop'),next=active && document.querySelector('.activity--active .scroll:not(.scroll--horizontal)');
+  frame=0;const active=enabled() && document.body.classList.contains('pt-desktop'),next=active && [...document.querySelectorAll('.activity--active .scroll:not(.scroll--horizontal)')].find(node=>node.clientWidth>0 && node.clientHeight>0 && node.Scroll);
   if(next!==root){
    if(resize)resize.disconnect();if(mutation)mutation.disconnect();if(root)root.removeEventListener('scroll',schedule);
    root=next;scroll=root && root.Scroll;
@@ -17,6 +17,7 @@ export default function pageScrollbar(L,enabled){
     if(window.MutationObserver && body){mutation=new MutationObserver(schedule);mutation.observe(body,{attributes:true,attributeFilter:['style']});}
    }
   }
+  scroll=root && root.Scroll;
   if(!scroll || !scroll.vieport){track.hidden=true;return;}
   const view=scroll.vieport(),content=root.querySelector('.scroll__content'),padding=content?parseInt(getComputedStyle(content).paddingTop,10)||0:0;
   range=Math.max(0,view.body+padding*2-view.content);track.hidden=!active || range<2;if(track.hidden)return;

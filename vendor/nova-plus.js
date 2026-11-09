@@ -837,6 +837,9 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
   }
 
   function scrollTo(element, gentle) {
+    // Pointer hover must not re-center a page the user is scrolling by hand.
+    // Directional remote navigation explicitly calls pressMark().
+    if (handNow() && !pressNow()) return;
     if (wideOn() && wideFollow(element)) return;
     var node = element instanceof jQuery ? element[0] : element;
     if (!node) return;
@@ -1295,7 +1298,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
   }
 
   function handWatch() {
-    var names = ['touchmove', 'wheel', 'mousewheel'];
+    var names = ['touchmove', 'wheel', 'mousewheel', 'pointermove', 'pointerdown'];
     names.forEach(function (name) {
       try {
         window.addEventListener(name, handMark, { passive: true, capture: true });
