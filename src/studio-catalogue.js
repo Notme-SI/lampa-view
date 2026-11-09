@@ -5,7 +5,7 @@ export default function studioCatalogue(L){
  function decorate(){
   const active=L.Activity.active() || {},key=active.component==='company'?'company:'+active.id:active.networks?'network:'+active.networks:active.companies?'company:'+active.companies:'',studio=active.minimal_studio || known.get(key),activity=active.activity;
   if(studio && key){known.delete(key);known.set(key,studio);if(known.size>32)known.delete(known.keys().next().value);}
-  if(!studio || !['company','category_full'].includes(active.component) || !/^\/[^\s]+\.(png|webp|svg)$/i.test(studio.path || '') || !activity)return;
+  if(active.minimal_projects || !studio || !['company','category_full'].includes(active.component) || !/^\/[^\s]+\.(png|webp|svg)$/i.test(studio.path || '') || !activity)return;
   const root=activity.render(true);if(!root || root.querySelector('.minimal-studio-heading'))return;
   function mount(){
    const body=root.querySelector('.scroll__body');if(!body)return false;

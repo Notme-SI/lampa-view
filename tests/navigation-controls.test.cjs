@@ -24,11 +24,11 @@ test('cartoons menu sits below series and opens bounded film/TV animation rows t
   const response=require('./fixtures/discovery-response.cjs');L.Api.sources.tmdb.get=(url,params,ok)=>{requests.push(url);w.setTimeout(()=>ok(response(url,params.page)),0);};
   w.jQuery(item).trigger('hover:enter');
   const activity=L.Activity.active().activity,root=activity.render(true),rows=activity.component;
-  for(let attempt=0;attempt<50 && !root.textContent.includes('Новинки');attempt++)await wait(20);
-  assert.equal(L.Activity.active().url,'cartoon');assert.ok(requests.length>=6 && requests.length<=10,'The first three mixed rows use bounded movie and TV requests');
-  assert.ok(requests.some(path=>path.startsWith('trending/movie/')));assert.ok(requests.some(path=>path.startsWith('trending/tv/')));
+  for(let attempt=0;attempt<50 && !root.querySelector('.card');attempt++)await wait(20);
+  assert.equal(L.Activity.active().url,'cartoon');assert.ok(requests.length===2,'One mixed grid uses one movie and one TV request');
+  assert.ok(requests.some(path=>path.startsWith('discover/movie?')));assert.ok(requests.some(path=>path.startsWith('discover/tv?')));
   for(const path of requests){if(/^trending\/(?:movie|tv)\//.test(path))continue;const query=new URLSearchParams(path.split('?')[1]);assert.match(path,/^discover\/(?:movie|tv)\?/);assert.ok(query.get('with_genres').split(',').includes('16'));if(!query.has('with_companies') && !query.has('with_networks'))assert.equal(query.get('without_keywords'),'210024');}
-  assert.match(root.textContent,/Новинки/);assert.ok(!rows.items.concat(rows.loaded.flat()).some(row=>/мультфильмы|мультсериалы/i.test((row.data||row).title)));assert.ok(rows.items.length+rows.loaded.length<=12);
+  assert.equal(root.querySelectorAll('.minimal-catalogue-control').length,4);assert.equal(rows.items.length,20);assert.equal(new Set(rows.items.map(item=>item.data.media_type+':'+item.data.id)).size,20);
   assert.deepEqual(r.errors,[]);
  }finally{r.close();}
 });
@@ -37,11 +37,12 @@ test('TV rows replace arrows with More that can be focused from the last card an
  try{
   Object.defineProperty(w.HTMLElement.prototype,'offsetParent',{get(){return this.isConnected?w.document.body:null;},configurable:true});
   w.Navigator.follow('focus',event=>L.Controller.focus(event.elem));
-  L.Api.sources.tmdb.get=(url,params,ok)=>w.setTimeout(()=>ok({results:[{id:601,title:'Animation',genre_ids:[16],original_language:'en'}],page:1,total_pages:2}),0);
-  w.jQuery(w.document.querySelector('[data-action="cartoon"]')).trigger('hover:enter');for(let tries=0;tries<100 && !L.Activity.active().activity.component.items.length;tries++)await wait(20);
+  L.Api.sources.tmdb.get=(url,params,ok)=>w.setTimeout(()=>ok({results:[{id:601,title:'Передача',name:'Передача',genre_ids:[10764],origin_country:['RU'],poster_path:'/p.jpg'}],page:1,total_pages:2}),0);
+  L.Api.category=(p,ok)=>ok([{title:'Подборка',url:JSON.stringify({kind:'tvshow',type:'tv',sort:'popular',country:'RU'}),source:'minimal_discovery',results:[{id:601,name:'Передача',poster_path:'/p.jpg'}],page:1,total_pages:2}]);
+  w.jQuery(w.document.querySelector('[data-action="tvshow"]')).trigger('hover:enter');for(let tries=0;tries<100 && !L.Activity.active().activity.component.items.length;tries++)await wait(20);
   const row=L.Activity.active().activity.component.items[0],root=row.render(true),button=root.querySelector('.minimal-row-more');assert.ok(button);assert.equal(w.getComputedStyle(button).display,'inline-flex');assert.equal(root.querySelectorAll('.minimal-row-arrow').length,0);
   row.toggle();for(let i=0;i<row.data.results.length;i++)L.Controller.enabled().controller.right();assert.equal(row.last,button);assert.ok(button.classList.contains('focus'),'Remote cannot highlight More');
-  button.dispatchEvent(new w.Event('hover:enter'));await wait(100);assert.equal(L.Activity.active().component,'category_full');assert.equal(JSON.parse(L.Activity.active().url).kind,'cartoon');assert.equal(L.Activity.active().source,'minimal_discovery');
+  button.dispatchEvent(new w.Event('hover:enter'));await wait(100);assert.equal(L.Activity.active().component,'category_full');assert.equal(JSON.parse(L.Activity.active().url).kind,'tvshow');assert.equal(L.Activity.active().source,'minimal_discovery');
   L.Activity.backward();await wait(100);button.click();await wait(100);assert.equal(L.Activity.active().component,'category_full');assert.deepEqual(r.errors,[]);
  }finally{r.close();}
 });
@@ -60,8 +61,8 @@ test('held TV navigation scrolls once per card, builds the next lazy batch and h
  try{
   Object.defineProperty(w.HTMLElement.prototype,'offsetParent',{get(){return this.isConnected && !this.classList.contains('card-more')?w.document.body:null;},configurable:true});
   w.Navigator.follow('focus',event=>L.Controller.focus(event.elem));
-  L.Api.sources.tmdb.get=(url,p,ok)=>w.setTimeout(()=>ok({results:Array.from({length:20},(_,i)=>({id:600+i,title:'Фильм '+i,poster_path:'/poster.jpg',source:'tmdb'})),page:1,total_pages:3}),0);
-  L.Activity.push({component:'category',url:'movie',source:'tmdb',title:'Фильмы'});for(let tries=0;tries<100 && !L.Activity.active().activity.component.items.length;tries++)await wait(20);
+  L.Api.sources.tmdb.get=(url,p,ok)=>w.setTimeout(()=>ok({results:Array.from({length:20},(_,i)=>({id:600+i,name:'Передача '+i,genre_ids:[10764],origin_country:['RU'],poster_path:'/poster.jpg',source:'tmdb'})),page:1,total_pages:3}),0);
+  L.Activity.push({component:'category',url:'tvshow',source:'tmdb',title:'ТВ-шоу'});for(let tries=0;tries<100 && !L.Activity.active().activity.component.items.length;tries++)await wait(20);
   const row=L.Activity.active().activity.component.items[0],root=row.render(true);row.toggle();
   const update=row.scroll.update;let updates=0;row.scroll.update=function(){updates++;return update.apply(this,arguments);};
   for(let i=1;i<20;i++){updates=0;L.Controller.enabled().controller.right();assert.equal(row.active,i);assert.equal(updates,1,'Only native focus should position the rail');}
@@ -74,7 +75,7 @@ test('held TV navigation scrolls once per card, builds the next lazy batch and h
 });
 
 
-test('dorama is integrated as poster rows in series and has no visible separate menu',async()=>{const r=await native({built:true}),{w,L}=r;try{assert.equal(w.document.querySelector('.menu__item[data-action=dorama]'),null);L.Menu.ready();L.Storage.set('source','tmdb');const item=w.document.querySelector('.menu__item[data-action=tv]');const response=require('./fixtures/discovery-response.cjs');L.Api.sources.tmdb.get=(url,p,ok)=>w.setTimeout(()=>ok(response(url,p.page)),0);item.click();await wait(250);assert.equal(L.Activity.active().url,'tv');const list=L.Activity.active().activity.component,rows=list.items.map(r=>r.data);for(let i=0;i<4 && !rows.some(r=>r.title==='Корейские дорамы');i++)await new Promise((ok,fail)=>list.emit('next',batch=>{rows.push(...batch);ok();},fail));assert.ok(rows.some(r=>r.title==='Корейские дорамы'));assert.ok(!w.document.querySelector('.minimal-section-open,.minimal-section-tile'));assert.deepEqual(r.errors,[]);}finally{r.close();}});
+test('dorama remains available as a series collection without a separate menu',async()=>{const r=await native({built:true}),{w,L}=r;try{assert.equal(w.document.querySelector('.menu__item[data-action=dorama]'),null);L.Menu.ready();L.Storage.set('source','tmdb');const item=w.document.querySelector('.menu__item[data-action=tv]'),requests=[],response=require('./fixtures/discovery-response.cjs');L.Api.sources.tmdb.get=(url,p,ok)=>{requests.push(url);w.setTimeout(()=>ok(response(url,p.page)),0);};item.click();await wait(250);assert.equal(L.Activity.active().url,'tv');const button=L.Activity.active().activity.render(true).querySelector('.minimal-catalogue-control');button.click();await wait(50);const korean=[...w.document.querySelectorAll('.selectbox-item')].find(n=>n.textContent.includes('Корейские дорамы'));assert.ok(korean);korean.dispatchEvent(new w.Event('hover:enter'));await wait(100);assert.equal(L.Activity.active().minimal_browse.collection,'country-KR');assert.ok(requests.at(-1).includes('with_origin_country=KR'));assert.deepEqual(r.errors,[]);}finally{r.close();}});
 
 test('native menu_always switches a single native menu between dock and popover and restores the button',async()=>{
  const r=await native({built:true}),{w,L}=r;try{

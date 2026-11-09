@@ -11,7 +11,7 @@ export function discoverySpec(value){
  if(value.sort==='revenue' && value.type!=='movie')return null;
  let period=state.period;
  if(value.period){const match=String(value.period).match(/^(\d{4})-(\d{4})$/);if(!match || Number(match[1])<1870 || Number(match[2])<Number(match[1]) || Number(match[2])>new Date().getFullYear())return null;period=value.period;}
- return {kind:value.kind,type:value.type,country:state.country,genre:state.genre,network:state.network,company:state.company,period,sort:state.sort || 'popular',hero:state.hero,...(['airing','current','active','completed','trending','recent','upcoming'].includes(value.feed)?{feed:value.feed}:{}),...(value.kind==='cartoon' && value.family?{family:true}:{})};
+ return {...(value.ordered?{ordered:true}:{}),kind:value.kind,type:value.type,country:state.country,genre:state.genre,network:state.network,company:state.company,period,sort:state.sort || 'popular',hero:state.hero,...(['airing','current','active','completed','trending','recent','upcoming'].includes(value.feed)?{feed:value.feed}:{}),...(value.kind==='cartoon' && value.family?{family:true}:{})};
 }
 export default function discoverySource(L){
  const cache=new Map(),pending=new Map(),queue=[],cursors=new Map(),live=new Set();let active=0,generation=0;
@@ -45,7 +45,7 @@ export default function discoverySource(L){
   if(!cursor || Date.now()-cursor.at>300000){if(cursor)cursor.cancelled=true;cursor={at:Date.now(),spec,streams:discoverySpecs(spec).map(s=>({...s,next:1,total:1,finished:false})),pages:[],buffer:[],seen:new Set(),waiters:[],busy:false,cancelled:false};cursors.set(key,cursor);while(cursors.size>32){const first=cursors.keys().next().value;cursors.get(first).cancelled=true;cursors.delete(first);}}
   if(!cursor.streams.length || page>cursor.pages.length+2)return fail(error());
   if(cursor.pages[page-1])return ok(cursor.pages[page-1]);
-  if(cursor.pages.length && cursor.streams.every(s=>s.finished) && !cursor.buffer.length)return ok({results:[],page,total_pages:cursor.pages.length});
+  if(cursor.pages.length && cursor.streams.every(s=>s.finished && !(s.buffer || []).length) && !cursor.buffer.length)return ok({results:[],page,total_pages:cursor.pages.length});
   cursor.waiters.push({page,ok,fail,cancelled:params.minimal_cancelled || (()=>false)});load(cursor);
  }};
  function load(cursor){
@@ -53,7 +53,7 @@ export default function discoverySource(L){
   let rounds=0,building=cursor.pages.length+1;
   function finishPage(){
    if(cursor.cancelled)return;
-   const results=cursor.buffer.splice(0,20),ended=cursor.streams.every(s=>s.finished) && !cursor.buffer.length;
+   const results=cursor.buffer.splice(0,20),ended=cursor.streams.every(s=>s.finished && !(s.buffer || []).length) && !cursor.buffer.length;
    const json={results,page:building,total_pages:ended?building:building+1};cursor.pages.push(json);cursor.at=Date.now();cursor.busy=false;
    const ready=cursor.waiters.filter(w=>w.page<=cursor.pages.length);cursor.waiters=cursor.waiters.filter(w=>w.page>cursor.pages.length);ready.forEach(w=>w.ok(cursor.pages[w.page-1]));load(cursor);
   }
@@ -62,7 +62,16 @@ export default function discoverySource(L){
    if(cursor.cancelled)return;
    cursor.waiters=cursor.waiters.filter(w=>!w.cancelled());
    if(!cursor.waiters.length){cursor.busy=false;return;}
-   const available=cursor.streams.filter(s=>!s.finished);
+   const ordered=cursor.spec.ordered;
+   if(ordered){
+    cursor.streams.forEach(s=>{if(!s.buffer)s.buffer=[];});
+    const score=card=>cursor.spec.sort==='rated'?Number(card.vote_average)||0:cursor.spec.sort==='new'?String(card.media_type==='movie'?card.release_date:card.first_air_date):Number(card.popularity)||0;
+    while(cursor.buffer.length<20 && !cursor.streams.some(s=>!s.finished && !s.buffer.length)){
+     const candidates=cursor.streams.filter(s=>s.buffer.length);if(!candidates.length)break;
+     candidates.sort((a,b)=>{const x=score(a.buffer[0]),y=score(b.buffer[0]);return x===y?0:x>y?-1:1;});const card=candidates[0].buffer.shift(),key=card.media_type+':'+card.id;if(!cursor.seen.has(key)){cursor.seen.add(key);cursor.buffer.push(card);}
+    }
+   }
+   const available=cursor.streams.filter(s=>!s.finished && (!ordered || !s.buffer.length));
    // A display page owns its accepted rows. Partial pages never make the next
    // page skip accepted cards, and sparse foreign feeds have a bounded scan.
    if(cursor.buffer.length>=20 || !available.length || rounds>=4)return finishPage();rounds++;
@@ -74,6 +83,7 @@ export default function discoverySource(L){
      stream.total=Math.min(500,Math.max(1,Number(json.total_pages)||1));stream.next++;stream.finished=stream.next>stream.total || !json.results.length;
      return rows.filter(card=>Number.isSafeInteger(Number(card.id)) && Number(card.id)>0 && discoveryAccepts(card,{...cursor.spec,type:stream.type})).map(card=>({...card,source:'tmdb',media_type:stream.type}));
     });
+    if(ordered){accepted.forEach((rows,i)=>available[i].buffer.push(...rows));return next();}
     const length=Math.max(0,...accepted.map(a=>a.length));for(let i=0;i<length;i++)for(const rows of accepted){const card=rows[i];if(!card)continue;const key=card.media_type+':'+card.id;if(!cursor.seen.has(key)){cursor.seen.add(key);cursor.buffer.push(card);}}
     next();
    }

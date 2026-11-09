@@ -62,13 +62,13 @@ test('clearing discovery releases old slots immediately and late results cannot 
  pending[0]({page:1,total_pages:1,results:[show(1)]});pending[1]({page:1,total_pages:1,results:[show(2)]});assert.equal(old,0);assert.deepEqual((await next).results.map(c=>c.id),[2]);assert.deepEqual((await read(api,spec)).results.map(c=>c.id),[2]);assert.equal(pending.length,2);
 });
 
-test('native categories render three rows first and append the remaining visible rows on demand',async()=>{
+test('TV show catalogue keeps lazy native rows while film and series categories use grids',async()=>{
  const native=require('./fixtures/native-lampa.cjs'),response=require('./fixtures/discovery-response.cjs'),wait=ms=>new Promise(r=>setTimeout(r,ms)),n=await native({built:true}),{w,L}=n;
  try{const requests=[];L.Api.sources.tmdb.get=(url,p,ok)=>{requests.push(url);w.setTimeout(()=>ok(response(url,p.page)),0);};const originalNetwork=w.testNetwork;w.testNetwork=(url,ok,fail)=>{const u=new URL(url),match=u.pathname.match(/\/(discover\/(?:movie|tv))$/);if(!match)return originalNetwork(url,ok,fail);const path=match[1]+u.search;requests.push(path);w.setTimeout(()=>ok(response(path,Number(u.searchParams.get('page'))||1)),0);};
- L.Activity.push({component:'category',url:'tv',source:'tmdb',title:'Сериалы'});await wait(200);const c=L.Activity.active().activity.component,root=c.render(true);
+ L.Activity.push({component:'category',url:'tvshow',source:'tmdb',title:'Сериалы'});await wait(200);const c=L.Activity.active().activity.component,root=c.render(true);
  assert.equal(requests.length,3);assert.ok(!root.querySelector('.minimal-section-open,.minimal-section-tile,.minimal-discovery-controls'));const rows=c.items.map(i=>i.data).concat(c.loaded.flat());assert.equal(rows.length,3);assert.ok(rows.every(row=>row.results[0].poster_path));
  let ended=false;for(let i=0;i<8 && !ended;i++){await new Promise(resolve=>c.emit('next',more=>{rows.push(...more);resolve();},()=>{ended=true;resolve();}));}
- const plan=model.discoveryPlan('tv').filter(row=>!row.minimal_default_hidden);assert.equal(requests.length,plan.length);assert.equal(rows.length,plan.length);assert.equal(new Set(rows.map(r=>r.minimal_row_id)).size,rows.length);assert.ok(rows.some(row=>row.title==='Корейские дорамы'));assert.ok(rows.some(row=>row.title==='Завершённые'));assert.ok(rows.every(r=>r.results.length===20));assert.deepEqual(n.errors,[]);
+ const plan=model.discoveryPlan('tvshow').filter(row=>!row.minimal_default_hidden);assert.equal(requests.length,plan.length);assert.equal(rows.length,plan.length);assert.equal(new Set(rows.map(r=>r.minimal_row_id)).size,rows.length);assert.ok(rows.some(row=>row.title==='Реалити и соревнования'));assert.ok(rows.some(row=>row.title==='Ток-шоу'));assert.ok(rows.every(r=>r.results.length===20));assert.deepEqual(n.errors,[]);
  }finally{n.close();}
 });
 

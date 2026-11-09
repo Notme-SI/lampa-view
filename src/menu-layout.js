@@ -31,7 +31,7 @@ export default function menuLayout(L,enabled){
    search.querySelector('.navigation-bar__icon').innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M2 5h20M2 12h20M2 19h20"/></svg>';
    search.querySelector('.navigation-bar__label').textContent=t('Меню');
    bar.querySelector('[data-action=back]')?.after(search);
-   const toggle=()=>{document.body.classList.remove('pt-menu-hover');if(L.Menu?.toggle)L.Menu.toggle();else L.Controller.toggle(document.body.classList.contains('menu--open')?'content':'menu');};
+   const toggle=()=>{document.body.classList.remove('pt-menu-hover');if(document.body.classList.contains('menu--open')){L.Controller.toggle('head');return;}if(L.Menu?.toggle)L.Menu.toggle();else L.Controller.toggle(document.body.classList.contains('menu--open')?'content':'menu');};
    $(search).on('click.lampaViewMenu',toggle).on('keydown.lampaViewMenu',event=>{if(event.key==='Enter' || event.key===' '){event.preventDefault();event.stopImmediatePropagation();toggle();}});
   }
  }
