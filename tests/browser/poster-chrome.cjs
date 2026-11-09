@@ -19,7 +19,7 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
   assert.deepEqual(badges.map(b=>b.type),['Фильм','Сериал','Мультфильм','Аниме']);
   for(const b of badges){
    assert.ok(b.kind && b.quality && b.vote);assert.equal(b.source,'TMDB');assert.equal(b.label,'"TMDB"');assert.ok(b.kind.left>b.view.left && b.kind.left-b.view.left<9,'Kind badge sits next to the left edge');assert.ok(b.kindStyle.every(radius=>radius>0),'All four corners are rounded');assert.equal(b.kindFill,b.voteFill);assert.equal(b.qualityFill,b.voteFill);
-   assert.match(b.voteFill,theme==='glass'?(mode==='tv'?/^rgba\(18, 18, 18, 0\.85/:/^rgba\(18, 18, 18, 0\.24/):/^rgba\(25, 23, 21, 0\.9/);
+   assert.match(b.voteFill,theme==='glass'?(mode==='tv'?/^rgba\(18, 18, 18, 0\.9/:/^rgba\(18, 18, 18, 0\.38/):/^rgba\(22, 21, 19, 0\.9/);
    assert.equal(b.voteText,'rgb(255, 255, 255)');assert.equal(b.voteSheen.startsWith('linear-gradient'),theme==='glass');assert.equal(b.voteFilter,'none');assert.ok(b.quality.left>b.kind.right);assert.equal(b.qualityFont,b.kindFont,"Type and quality use the same text size");assert.ok(Math.abs(b.quality.height-b.kind.height)<1,"Type and quality use the same height");assert.ok(Math.abs(b.quality.top-b.kind.top)<1,"Type and quality share a top edge");
    const inset=mode==='tv'?parseFloat(b.kindFont)*.35:6;assert.ok(b.view.right-b.quality.right>=inset);assert.ok(b.view.bottom-b.vote.bottom>=inset);assert.ok(b.vote.top>b.view.top+b.view.height/2);
   }
@@ -30,7 +30,7 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
     const surface=node=>{const s=getComputedStyle(node);return [s.backgroundImage,s.backgroundColor,s.borderColor,s.boxShadow,s.backdropFilter];};
     const reaction=surface(sample.querySelector('.reaction')),badges=[...document.querySelectorAll('#qa-posters .pt-kind,#qa-posters .pt-quality,#qa-posters .card__vote,#qa-posters .pt-series-status')].map(surface);sample.remove();return {reaction,badges};
    });
-   for(const badge of surfaces.badges){assert.deepEqual([badge[0],...badge.slice(2)],[surfaces.reaction[0],...surfaces.reaction.slice(2)],'Badges retain the reaction sheen and edge');assert.equal(badge[1],mode==='tv'?'rgba(18, 18, 18, 0.85)':'rgba(18, 18, 18, 0.24)','Poster tags use the device-specific readable tint');}
+   for(const badge of surfaces.badges){assert.deepEqual([badge[0],...badge.slice(2)],[surfaces.reaction[0],...surfaces.reaction.slice(2)],'Badges retain the reaction sheen and edge');assert.equal(badge[1],mode==='tv'?'rgba(18, 18, 18, 0.9)':'rgba(18, 18, 18, 0.38)','Poster tags use the device-specific readable tint');}
   }
   const narrow=await page.locator('#qa-posters .card').nth(1).evaluate(card=>{
    document.body.classList.add('pt-wheel-active');
