@@ -29,7 +29,7 @@ async function check(browser, reducedMotion) {
       }) };
     });
     const reduced = reducedMotion === 'reduce';
-    assert.equal(duration, reduced ? 4000 : 2000);
+    assert.equal(duration, 2000);
     assert.deepEqual([values[0].width, values[2].width, values[4].width], reduced ? [65, 100, 65] : [35, 100, 35]);
     assert.ok(values[1].width > values[0].width && values[1].width < values[2].width, 'The bar smoothly expands');
     assert.ok(values[3].width < values[2].width && values[3].width > values[4].width, 'The bar smoothly contracts');

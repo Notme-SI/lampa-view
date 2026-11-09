@@ -25,5 +25,5 @@ html,body {background:#000!important}
   50% {opacity:1;transform:scaleX(1)}
 }
 @media (prefers-reduced-motion:reduce) {
-  .welcome:after {animation-name:minimal-boot-breathe-reduced;animation-duration:4s}
+  .welcome:after {animation-name:minimal-boot-breathe-reduced}
 }
