@@ -9,16 +9,21 @@ const stamp=value=>typeof value==='string' && !/^\d+$/.test(value)?Date.parse(va
 // Resolve a provider's search folder only when it identifies this title.
 // Ambiguous results and a different season remain a manual choice.
 const titleClean=value=>String(value || '').normalize('NFKC').toLowerCase().replace(/ё/g,'е').replace(/[^a-zа-я0-9\u3040-\u30ff\u3400-\u9fff]+/g,' ').trim();
+const seasonWords=['первый','второй','третий','четвертый','пятый','шестой','седьмой','восьмой','девятый','десятый'];
 function providerRelease(row,card){
  const title=String(row.title || row.name || row.text || ''),names=[card.name,card.title,card.original_name,card.original_title].filter(Boolean),family=new Set(names.flatMap(v=>String(v).split(/\s+[\/|]\s+/).map(titleClean)));
  const marker=title.match(/\[(?:тв|tv)(?:\s*[- ]\s*(\d+))?(?:\s*,[^\]]*)?\]/i);
  const seasonLabel=/(?:сезон|season)\s*(\d+)|(\d+)(?:st|nd|rd|th|[-–]й)?\s*(?:сезон|season)|\bs(\d+)\b/gi;
  const explicit=seasonLabel.exec(title);
+ const wordLabel=/\((первый|второй|третий|четв[её]ртый|пятый|шестой|седьмой|восьмой|девятый|десятый)\s+сезон\)/gi;
+ const named=wordLabel.exec(title),namedSeason=named?seasonWords.indexOf(named[1].toLowerCase().replace(/ё/g,'е'))+1:0;
  const exact=family.has(titleClean(title));
  const part=exact?0:Number((title.match(/(?:часть|part|cour)\s*(\d+)/i) || [])[1]) || 0;
- let season=Number((marker && marker[1]) || (explicit && (explicit[1] || explicit[2] || explicit[3])) || row.season) || 0;
+ let season=Number((marker && marker[1]) || (explicit && (explicit[1] || explicit[2] || explicit[3])) || namedSeason || row.season) || 0;
  if((card.name || card.original_name) && !exact && /\b(?:ova|ona[- ]?special|movie|film|special)\b|спецвыпуск|фильм/i.test(title))return null;
- const base=title.replace(/\[(?:тв|tv)(?:\s*[- ]\s*\d+)?(?:\s*,[^\]]*)?\]/gi,' ').replace(seasonLabel,' ').replace(/(?:часть|part|cour)\s*\d+(?=[\s.)]*(?:[\/|]|$))/gi,' ').replace(/\b(?:19|20)\d{2}\b/g,' ');
+ const base=title.replace(/\[(?:тв|tv)(?:\s*[- ]\s*\d+)?(?:\s*,[^\]]*)?\]/gi,' ')
+  .replace(seasonLabel,' ').replace(wordLabel,' ').replace(/\[\s*\d+(?:\s*[-–]\s*\d+)?\s*(?:из\s*\d+\+?|(?:серия|эпизод)\s*[-–][^\]]+)\s*\]/gi,' ')
+  .replace(/(?:часть|part|cour)\s*\d+(?=[\s.)]*(?:[\/|]|$))/gi,' ').replace(/\b(?:19|20)\d{2}\b/g,' ');
  const match=exact || base.split(/\s+[\/|]\s+/).some(value=>{
   let name=titleClean(value);if(family.has(name))return true;
   const roman=value.match(/\s+(II|III|IV|V|VI|VII|VIII|IX|X)\s*$/i);if(roman){name=titleClean(value.slice(0,roman.index));if(family.has(name)){if(!season)season=({II:2,III:3,IV:4,V:5,VI:6,VII:7,VIII:8,IX:9,X:10})[roman[1].toUpperCase()];return true;}}
@@ -28,7 +33,7 @@ function providerRelease(row,card){
  const param=String(row.url || '').match(/[?&](?:s|season)=(\d+)/);season=season || Number(param && param[1]) || 1;
  const year=Number(String(card.first_air_date || card.release_date || '').slice(0,4)),ownYear=Number(String(row.year || row.start_date || '').slice(0,4)) || (!exact && Number((title.match(/\b(?:19|20)\d{2}\b/) || [])[0]));
  if(year && ownYear && (season===1?Math.abs(year-ownYear)>1:ownYear<year))return null;
- return {season,part,explicit:!!marker || !!explicit};
+ return {season,part,explicit:!!marker || !!explicit || !!named};
 }
 export function folderTarget(rows,card,season=1){
  if(!card || !Array.isArray(rows) || rows.some(row=>/^(play|call)$/.test(row.method)))return '';

@@ -10,6 +10,8 @@ test('Kodik TV part labels keep the Apothecary release in its third season',()=>
  try{w.eval(code);const card={name:'Монолог фармацевта',original_name:'Kusuriya no Hitorigoto',first_air_date:'2023-10-22'};
  const rows=[1,2,3].map(n=>({title:'Записки аптекаря [ТВ-'+n+(n===3?', часть 1':'')+'] / Kusuriya no Hitorigoto'+(n>1?' ('+(n===2?2025:2026)+')':''),method:'link',similar:true,url:'/lite/kodik?pick='+n}));
  assert.deepEqual(Array.from(w.OnlineState.folderSeasons(rows,card),r=>r.season),[1,2,3]);
+ const animevost=[['Монолог фармацевта / Kusuriya no Hitorigoto [1-24 из 24]',2023],['Монолог фармацевта (второй сезон) / Kusuriya no Hitorigoto 2nd Season [1-24 из 24]',2025],['Монолог фармацевта (третий сезон) / Kusuriya no Hitorigoto 3rd Season [1-6 из 12+] [7 серия - 13 ноября]',2026]].map(([title,year],i)=>({title,year,method:'link',similar:true,season:i===1?2:1,url:'/lite/animevost?uri='+i}));
+ assert.deepEqual(Array.from(w.OnlineState.folderSeasons(animevost,{...card,original_name:'薬屋のひとりごと'}),r=>r.season),[1,2,3]);
  }finally{w.close();}
 });
 
