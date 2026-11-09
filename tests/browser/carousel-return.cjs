@@ -77,6 +77,10 @@ const {chromium,webkit}=require(process.env.PLAYWRIGHT_MODULE || 'playwright'),{
    await page.keyboard.press('ArrowUp');assert.equal(await page.locator('.activity--active .pt-hero__action.focus').count(),1);
    await page.keyboard.press('ArrowDown');assert.notEqual(await page.evaluate(()=>Lampa.Controller.enabled().name),'lampa_view_hero','Down from Details enters the first collection');
   }
+  await page.evaluate(()=>{Lampa.Storage.set('lampa_view_hero',false);Lampa.Controller.toggle('head');});
+  await page.keyboard.press('ArrowDown');await page.waitForTimeout(50);
+  assert.notEqual(await page.evaluate(()=>Lampa.Controller.enabled().name),'head','Disabling the cover keeps native Header Down navigation');
+  await page.evaluate(()=>Lampa.Storage.set('lampa_view_hero',true));
   if(process.env.LAMPA_QA_OUTPUT){fs.mkdirSync(process.env.LAMPA_QA_OUTPUT,{recursive:true});await page.screenshot({path:path.join(process.env.LAMPA_QA_OUTPUT,'return-'+engine.name()+'-'+mode+'.png')});}
   const layers=await page.locator('.activity--active .pt-hero').evaluate(h=>({image:getComputedStyle(h.querySelector('.pt-hero__image')).zIndex,shade:getComputedStyle(h,':before').zIndex,body:getComputedStyle(h.querySelector('.pt-hero__body')).zIndex}));assert.deepEqual(layers,{image:'0',shade:'1',body:'2'},'Artwork, shade and content use explicit layers');
   assert.match(await page.locator('.activity--active .pt-hero').evaluate(n=>getComputedStyle(n).clipPath),/inset\(/,'Scaled artwork is clipped at the compositor boundary');

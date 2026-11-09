@@ -612,7 +612,7 @@ if (!ROOT.LampaView) {
       if(!head || head._minimalHeroDown)return;
       const down=head.down;head._minimalHeroDown=true;
       head.down=function(){
-        const hero=yes('lampa_view_enabled') && document.querySelector('.activity--active .pt-hero');
+        const hero=yes('lampa_view_enabled') && yes('lampa_view_hero') && document.querySelector('.activity--active .pt-hero:not(.pt-hidden)');
         if(hero && hero._minimalHeroEnter)return hero._minimalHeroEnter();
         if(down)return down.apply(this,arguments);
       };
