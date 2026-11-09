@@ -1,4 +1,5 @@
 const assert=require('node:assert/strict');
+const fs=require('node:fs'),path=require('node:path');
 const {chromium,webkit}=require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const {setup}=require('../fixtures/native-browser.cjs');
 (async()=>{for(const engine of [chromium,webkit]){
@@ -29,6 +30,7 @@ const {setup}=require('../fixtures/native-browser.cjs');
      if(theme==='glass'){assert.ok(value.dots.top>=value.panel.bottom+2,'TV dots do not overlap large description: '+JSON.stringify({width,size,value}));assert.equal(value.blur,false,'TV does not use live backdrop filtering');}
      for(const tag of value.tags)assert.ok(tag.left>=value.poster.left && tag.right<=value.poster.right+1,'Tags fit narrow TV posters');
      assert.ok(value.tags[0].right<=value.tags[1].left+1,'Type and quality do not overlap: '+JSON.stringify({width,size,theme,value}));
+     if(process.env.LAMPA_QA_OUTPUT && width===960 && theme==='glass' && size==='normal'){fs.mkdirSync(process.env.LAMPA_QA_OUTPUT,{recursive:true});await r.page.screenshot({path:path.join(process.env.LAMPA_QA_OUTPUT,engine.name()+'-tv-minimum-font.png')});}
     }
    }
    assert.deepEqual(r.errors,[]);console.log(engine.name()+' TV '+width+': compact shell, Settings, badges and carousel in both themes and all sizes passed');
