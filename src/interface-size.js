@@ -6,6 +6,8 @@ export default function interfaceSize(L){
   const mode=L.Storage.get('lampa_view_layout','auto'),tv=mode==='tv' || mode==='auto' && document.body.classList.contains('pt-tv');
   const value=L.Storage.get('interface_size','normal'),profile=layoutProfile(tv,value,mode==='mobile' || (mode==='auto' || mode==='tablet') && document.body.classList.contains('pt-mobile'));
   document.body.style.setProperty('--pt-interface-scale',String(profile.scale));
+  document.body.style.setProperty('--pt-tv-badge-paint',String(window.innerWidth/3840*profile.scale));
+  document.body.style.setProperty('--pt-tv-inset-scale',String(window.innerWidth/1920));
   document.body.style.setProperty('--pt-native-interface-scale',value==='small'?'.9':value==='bigger'?'1.05':'1');
   document.body.style.setProperty('--pt-poster-columns',String(profile.posters || 0));
   if(tv)document.body.style.setProperty('--pt-episode-columns',String(profile.episodes));
@@ -16,6 +18,7 @@ export default function interfaceSize(L){
   if(!tv)(window.requestAnimationFrame || (fn=>setTimeout(fn,16)))(()=>document.dispatchEvent(new Event('minimal:hero-layout')));
  }
  update();
+ window.addEventListener('resize',update);
  if(L.Storage.listener)L.Storage.listener.follow('change',event=>{if(['interface_size','lampa_view_layout'].includes(event.name))update();});
  return {update};
 }

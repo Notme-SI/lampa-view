@@ -32,6 +32,7 @@ export default function badgeLayout(status){
    const view=node.querySelector('.card__view');if(!view)continue;const rect=view.getBoundingClientRect();
    if(!rect.width || !rect.height || rect.bottom<0 || rect.top>window.innerHeight || rect.right<0 || rect.left>window.innerWidth)continue;
    const width=view.clientWidth || rect.width,height=view.clientHeight || rect.height,scale=rect.width/width || 1,entries=[];
+   const insetScale=document.body.classList.contains('pt-tv')?window.innerWidth/1920:1;
    for(const [selector,corner] of [['.card__vote','br'],['.pt-quality,.card__quality','tr'],['.pt-kind','tl'],['.pt-series-status','tl'],['.card__marker','bl'],['.card__new-episode','bl']])for(const el of view.querySelectorAll(selector)){
     if(el.hidden || el.classList.contains('hide') || getComputedStyle(el).display==='none')continue;
     if(el.classList.contains('pt-series-status')){
@@ -42,12 +43,12 @@ export default function badgeLayout(status){
      const available=Math.max(1,Math.min(width-8,parseFloat(style.maxWidth)||width)-border);
      if(natural>available)el.style.fontSize=(parseFloat(style.fontSize)*Math.max(1,available-1)/natural).toFixed(2)+'px';
     }
-    const r=el.getBoundingClientRect();if(r.width && r.height)entries.push({el,corner,inset:corner[1]==='r'?8:undefined,verticalInset:corner[0]==='t' && (el.matches('.pt-kind,.pt-quality,.card__quality'))?12:undefined,width:r.width/scale,height:r.height/scale});
+    const r=el.getBoundingClientRect();if(r.width && r.height)entries.push({el,corner,inset:(corner[1]==='r'?8:4)*insetScale,verticalInset:corner[0]==='t' && (el.matches('.pt-kind,.pt-quality,.card__quality'))?12*insetScale:undefined,width:r.width/scale,height:r.height/scale});
    }
    // CSS keeps favorites left of the rating even before the next measurement.
    const occupied=[...view.querySelectorAll('.card__icon:not(.icon--history)')].map(el=>el.getBoundingClientRect())
     .filter(box=>box.width && box.height).map(box=>({x:(box.left-rect.left)/scale,y:(box.top-rect.top)/scale,width:box.width/scale,height:box.height/scale}));
-   reads.push({view,width,height,entries,places:placeBadges(width,height,entries,occupied)});
+   reads.push({view,width,height,entries,places:placeBadges(width,height,entries,occupied,4*insetScale,3*insetScale)});
   }
   // Read every card before writing styles; held remote navigation never enters here.
   for(const {view,width,height,entries,places} of reads){view.classList.add('minimal-badge-layout');for(const entry of entries){
