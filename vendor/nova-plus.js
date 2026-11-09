@@ -1184,7 +1184,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
   function seasonNumber() {
     var part=currentContinuation();
     if(part)return part.part.season;
-    if(!groups.season)return 1;
+    if(!groups.season){var comp=componentNow();return comp && comp.lampaViewSelectedRelease?comp.lampaViewSelectedRelease.season:1;}
     var selected=groups.season.items.filter(function(item){return item.selected;})[0];
     return selected?sourceSeason(selected):digits(groups.season.subtitle);
   }
@@ -2479,7 +2479,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     var continuation={base:'',parts:[],selected:null,groups:null,baseSelection:0,count:0,started:false};
     var providerUrl=String(object && object.url || ''),providerPart=null;
     var releaseRoutes=[],releasePicks=null;
-    function releaseSeason(url){
+    function selectedRelease(url){
       try {
         var current=new URL(url,location.href);
         var matched=releaseRoutes.filter(function(entry){
@@ -2488,11 +2488,13 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
           var keys=['pick','uri','news','postid','animeid','releases','link','id'].filter(function(key){return target.searchParams.has(key);});
           return keys.length && keys.every(function(key){return target.searchParams.get(key)===current.searchParams.get(key);});
         });
-        if(matched.length===1)return matched[0].season;
+        if(matched.length===1)return matched[0];
       } catch(e) {}
       var target=releasePicks && continuationApi && continuationApi.route(url);
-      return target && releasePicks[target.origin+target.pathname+'|'+target.searchParams.get('pick')] || 0;
+      var season=target && releasePicks[target.origin+target.pathname+'|'+target.searchParams.get('pick')];
+      return season?{season:season}:null;
     }
+    function releaseSeason(url){var release=selectedRelease(url);return release?release.season:0;}
     var initialSource=providerUrl.match(/\/lite\/([^\/?#]+)/i);if(initialSource)comp.lampaViewSource=initialSource[1];
     if(continuationApi)comp.lampaViewContinuations=continuation;
     function readContinuations(str,card,folders){
@@ -2548,7 +2550,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       }
       comp.draw=function(files,params){
         var card=object && (object.movie || object.card) || movie,ownFilter=activeFilter(typeof comp.render==='function'?comp.render():root),ownGroups=readGroups(ownFilter),seasons=ownGroups.season && ownGroups.season.items || [];
-        episodeContext={card:card,files:(files || []).filter(function(file){return !file.lampa_unassigned_episode;}).map(function(file){return Number(file.episode);}),seasons:seasons.map(function(s){return sourceSeason(s);}),similar:params && params.similars,part:providerPart,release:releaseSeason(providerUrl)};
+        episodeContext={card:card,files:(files || []).filter(function(file){return !file.lampa_unassigned_episode;}).map(function(file){return Number(file.episode);}),seasons:seasons.map(function(s){return sourceSeason(s);}),similar:params && params.similars,part:providerPart,release:selectedRelease(providerUrl)};
         return nativeDraw.apply(comp,arguments);
       };
       comp.getEpisodes=function(season,done){
@@ -2560,6 +2562,8 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
             if(comp.destroyed || episodeContext!==context)return;
             var own=readGroups(activeFilter(typeof comp.render==='function'?comp.render():root));
             context.seasons=(own.season && own.season.items || []).map(function(s){return sourceSeason(s);});
+            if(context.release && comp.lampaViewReleaseNumbers && !context.seasons.length)context.seasons=comp.lampaViewReleaseNumbers;
+            if(context.release && context.release.part>1)return done([]);
             function current(){return !comp.destroyed && episodeContext===context;}
             function providerMetadata(book){
               return metadataRows(book).filter(function(row){return context.files.indexOf(row.episode_number)>=0;});
@@ -2622,7 +2626,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
         resetAvailability(source ? source[1] : currentSourceKey());
         if(source)comp.lampaViewSource=source[1];
         if(source && source[1].toLowerCase()!=='kodik' && source[1].toLowerCase()!=='kodik_snack')comp.lampaViewProviderSeasons=null;
-        providerUrl=String(url || '');comp.lampaViewJoinedParts=null;
+        providerUrl=String(url || '');comp.lampaViewJoinedParts=null;comp.lampaViewSelectedRelease=selectedRelease(providerUrl);
         var target=continuationApi && continuation.base && continuationApi.route(providerUrl,continuation.base);
         providerPart=continuation.selected && target && target.searchParams.get('pick')===new URL(continuation.selected.url).searchParams.get('pick')?continuation.selected:null;
         try { learnUrl(url); } catch (e) {}
@@ -2821,14 +2825,20 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
               arguments[0]=str;folders=relevant;
             }
           }
-          var seasons=card && folderState && folderState.folderSeasons(folders,card);
+          var seasons=card && folderState && folderState.folderSeasons(folders,card),discovered=[];
+          if(card && episodeApi && episodeApi.isAnime(card) && folderState && folders && folders.length){
+            discovered=folderState.folderReleases(folders,card);
+            if(discovered.length){
+              releaseRoutes=discovered;
+              comp.lampaViewReleaseNumbers=Array.from(new Set(discovered.map(function(row){return row.season;}))).sort(function(a,b){return a-b;});
+            }
+          }
           var releaseSeason=card && card.minimal_anime_release && card.minimal_anime_release.season;
           if(comp.lampaViewManualSeason===undefined && releaseSeason>0){var mapping=comp.lampaViewProviderSeasons || {},matched=Object.keys(mapping).filter(function(key){return mapping[key].number===releaseSeason;});comp.lampaViewManualSeason=matched.length===1?Number(matched[0]):releaseSeason;}
           var desiredSeason=comp.lampaViewManualSeason!==undefined?comp.lampaViewManualSeason:folders && folders.length && folderState.resume(card || {}),seasonNumberWanted=desiredSeason && typeof desiredSeason==='object'?desiredSeason.season:desiredSeason!==false && desiredSeason!==null && desiredSeason!==undefined?desiredSeason:1;
           var seasonTarget=seasons && seasons.find(function(row){return row.season===seasonNumberWanted;}) || seasons && seasons[0];
           if(folderChain.length>=6 || seasonTarget && folderChain.indexOf(seasonTarget.url)>=0)seasons=[];
           if(seasons && seasons.length){
-            releaseRoutes=seasons.map(function(row){return {url:row.url,season:row.season};});
             // Let the native parser retain its season URLs and selection state.
             // Skipping this page would open episodes but leave no season picker.
             if(continuationApi && episodeApi && episodeApi.isAnime(card)){
@@ -2839,7 +2849,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
             arguments[0]=str;folders=[];
           }
           var resume=folders && folders.length && folderState.resume(card || {});
-          var folder=card && folders && folders.length && folderState.folderTarget(folders,card,comp.lampaViewManualSeason!==undefined?comp.lampaViewManualSeason:resume?resume.season:1);
+          var folder=card && folders && folders.length && discovered.length<2 && folderState.folderTarget(folders,card,comp.lampaViewManualSeason!==undefined?comp.lampaViewManualSeason:resume?resume.season:1);
           if(folder && folderChain.length<6 && folderChain.indexOf(folder)<0){
             parsing=true;
             try { if(typeof comp.reset==='function')comp.reset();return comp.request(folder); }
@@ -2900,7 +2910,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       // selection for the destination source; never copy another source's dub.
       comp.lampaViewManualSeason=undefined;
       comp.lampaViewProviderSeasons=null;comp.lampaViewJoinedParts=null;
-      seasonLinks=null;releasePicks=null;releaseRoutes=[];countScope='';counts={};countDone={};countQueue=[];
+      seasonLinks=null;releasePicks=null;releaseRoutes=[];comp.lampaViewSelectedRelease=null;comp.lampaViewReleaseNumbers=null;countScope='';counts={};countDone={};countQueue=[];
       if (!inplace || !reloadable(comp)) return real.apply(comp, arguments);
 
       inplaceStop();
@@ -5988,13 +5998,14 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     },{number:seasonNumber(),numbers:labels});
     preparing = false;
   }
-  function providerSeasonNumbers(){return (groups.season && groups.season.items || []).map(function(item){return sourceSeason(item);});}
+  function providerSeasonNumbers(){var comp=componentNow();return groups.season?groups.season.items.map(function(item){return sourceSeason(item);}):comp && comp.lampaViewSelectedRelease && comp.lampaViewReleaseNumbers || [];}
   function alternateSeasons(){var api=window.LampaView && window.LampaView.episodeMetadata,comp=componentNow();return !!(comp && comp.lampaViewProviderSeasons) || api && api.alternate(movie,providerSeasonNumbers());}
   function wideBook(number, done, countOnly) {
     var callback=done,metadataApi=window.LampaView && window.LampaView.episodeMetadata;
     done=function(book,grouped){callback(metadataApi && metadataApi.localizeBook?metadataApi.localizeBook(book):book,grouped);};
     var api=window.LampaView && window.LampaView.episodeMetadata,arc=wideAnimeCurrent();
-    var joined=componentNow() && componentNow().lampaViewJoinedParts;
+    var comp=componentNow(),joined=comp && comp.lampaViewJoinedParts;
+    if(comp && comp.lampaViewSelectedRelease && comp.lampaViewSelectedRelease.part>1)return done(null,true);
     if(joined && joined.season===number && joined.parts.length)return wideJoinedBook(number,done);
     var continuation=currentContinuation();
     if(continuation)return wideCanonicalBook(continuation.part.season,function(book){done(book,true);});

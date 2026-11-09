@@ -43,13 +43,19 @@ export function folderTarget(rows,card,season=1){
 export function folderSeasons(rows,card){
  if(!card || !(card.name || card.original_name) || !Array.isArray(rows))return [];
  const found=new Map();
- for(const row of rows){
-  if(!row.similar || row.method!=='link' || !/^(?:https?:\/\/|\/)/i.test(row.url || ''))continue;
-  const release=providerRelease(row,card);if(!release)continue;
-  const old=found.get(release.season);if(old){if(old.url===row.url)continue;if(old.part!==release.part)return [];if(old.explicit && !release.explicit)continue;if(!old.explicit && release.explicit){found.delete(release.season);}else return [];}
-  found.set(release.season,{season:release.season,title:'Сезон '+release.season,method:'link',url:row.url,explicit:release.explicit,part:release.part});
+ for(const release of folderReleases(rows,card)){
+  const old=found.get(release.season);if(old){if(old.url===release.url)continue;if(old.part!==release.part)return [];if(old.explicit && !release.explicit)continue;if(!old.explicit && release.explicit){found.delete(release.season);}else return [];}
+  found.set(release.season,{...release,title:'Сезон '+release.season,method:'link'});
  }
  return found.size>1?[...found.values()].sort((a,b)=>a.season-b.season).map(({explicit,part,...row})=>row):[];
+}
+export function folderReleases(rows,card){
+ if(!card || !Array.isArray(rows))return [];
+ return rows.flatMap(row=>{
+  if(!row.similar || row.method!=='link' || !/^(?:https?:\/\/|\/)/i.test(row.url || ''))return [];
+  const release=providerRelease(row,card);
+  return release?[{...release,url:row.url}]:[];
+ });
 }
 // Preserve native voice/file responses and filter only provider search folders.
 export function relevantFolders(rows,card){
@@ -316,5 +322,5 @@ export default function onlineState(L){
   if(L.Timeline.read)L.Timeline.read();
  }
 
- return {availability,reader,resume,seasonIndex,folderTarget,folderRows,seasonNavigation,folderSeasons,relevantFolders,episodeRows,clearProgress,clearTitleProgress,setWatched,setAllWatched,setPreviousWatched,setWatchedRows:markRows,lastWatched,seasonWatched};
+ return {availability,reader,resume,seasonIndex,folderTarget,folderRows,seasonNavigation,folderSeasons,folderReleases,relevantFolders,episodeRows,clearProgress,clearTitleProgress,setWatched,setAllWatched,setPreviousWatched,setWatchedRows:markRows,lastWatched,seasonWatched};
 }
