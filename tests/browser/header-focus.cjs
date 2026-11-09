@@ -13,7 +13,7 @@ const assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWR
    return {controls,menu:rect(menu),search:rect(search),vw:innerWidth};
   });
   assert.ok(geometry.controls[0].box.right<geometry.menu.left,'Back appears before Menu');
-  assert.ok(geometry.menu.left>home.menu+30 && geometry.search.left>home.left+30,'Back moves Menu and shrinks Search');
+  assert.ok(geometry.menu.left>home.menu+geometry.controls[0].box.width*.8 && geometry.search.left>home.left+geometry.controls[0].box.width*.8,'Back moves Menu and shrinks Search');
   assert.ok(Math.abs(geometry.search.right-home.right)<1,'Search keeps its right edge');assert.ok(geometry.search.width<home.width);
   assert.ok(geometry.search.right<=geometry.vw && geometry.search.width>geometry.vw*.4);
   for(const control of geometry.controls){assert.equal(control.focused,true);assert.equal(control.outline,'0px');assert.equal(control.border,theme==='glass'?'rgb(244, 244, 246)':'rgb(216, 195, 154)');}

@@ -3,7 +3,7 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
  await page.evaluate(()=>{Lampa.DeviceInput.init();Lampa.Controller.observe();Lampa.Keypad.init();Lampa.Keypad.enable();Navigator.follow('focus',e=>Lampa.Controller.focus(e.elem));});await page.waitForSelector('.activity--active .pt-hero');assert.equal(await page.locator('.activity--active .pt-hero').count(),1,'Late plugin startup decorates the existing home without rebuilding it');await page.waitForTimeout(450);
  for(const pinned of [false,true]){
   await page.evaluate(pinned=>Lampa.Storage.set('menu_always',pinned),pinned);
-  const edges=await page.evaluate(()=>{const header=document.querySelector('.head__body').getBoundingClientRect();const hero=document.querySelector('.activity--active .pt-hero').getBoundingClientRect(),search=document.querySelector('.head .open--search').getBoundingClientRect();const row=document.querySelector('.activity--active .pt-hero').nextElementSibling.getBoundingClientRect();return [hero.left-header.left,hero.right-search.right,hero.left-row.left,hero.right-row.right,(hero.left+hero.right)/2-innerWidth/2];});
+  const edges=await page.evaluate(()=>{const header=document.querySelector('.head__body').getBoundingClientRect();const hero=document.querySelector('.activity--active .pt-hero').getBoundingClientRect(),search=document.querySelector('.head .open--search').getBoundingClientRect();const row=document.querySelector('.activity--active .pt-hero').nextElementSibling.getBoundingClientRect();return [hero.left-header.left,hero.right-header.right,hero.left-row.left,hero.right-row.right,(hero.left+hero.right)/2-innerWidth/2];});
   assert.ok(edges.every(delta=>Math.abs(delta)<1),'Header and centered rows share the hero edges '+JSON.stringify({mode,pinned,edges}));
  }
  await page.evaluate(()=>Lampa.Storage.set('menu_always',false));
@@ -26,7 +26,7 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
  await page.evaluate(()=>{Lampa.Controller.toggle('lampa_view_hero');});assert.ok(await page.locator('.pt-hero__action.focus').count());
  const slide=()=>page.locator('.pt-hero__dot[aria-pressed="true"]').evaluate(n=>[...n.parentElement.children].indexOf(n));
  const initialSlide=await slide(),slideCount=await page.locator('.pt-hero__dot').count();assert.ok(slideCount>1);
- await page.keyboard.press('ArrowRight');await page.waitForTimeout(80);assert.equal(await slide(),(initialSlide+1)%slideCount,'Right advances the slide directly');assert.ok(await page.locator('.pt-hero__action.focus').count(),'Watch keeps focus');
+ await page.keyboard.press('ArrowRight');assert.equal(await slide(),initialSlide,'Right from Details enters carousel controls');assert.ok(await page.locator('.pt-hero__dot.focus').count());await page.keyboard.press('ArrowRight');await page.waitForTimeout(80);assert.equal(await slide(),(initialSlide+1)%slideCount,'Right within the carousel advances the slide');
  await page.keyboard.press('ArrowLeft');await page.waitForTimeout(80);assert.equal(await slide(),initialSlide,'Left returns to the previous slide');
  await page.waitForFunction(()=>{
   const hero=document.querySelector('.activity--active .pt-hero');
