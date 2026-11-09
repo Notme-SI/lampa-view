@@ -489,6 +489,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
             var historyKeys = getSetting('search_history', '[]');
             if (typeof historyKeys === 'string') historyKeys = JSON.parse(historyKeys);
             if (Array.isArray(historyKeys)) {
+                if(window.LampaView && window.LampaView.searchHistory)window.LampaView.searchHistory.allow(title);
                 var inx = historyKeys.indexOf(title);
                 if (inx !== -1) historyKeys.splice(inx, 1);
                 historyKeys.push(title);

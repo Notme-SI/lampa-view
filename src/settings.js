@@ -5,7 +5,7 @@ export function cleanText(text){return typeof text==='string'?text.replace(/[\u2
 function groupOf(d){
  const n=d.param && d.param.name || '',g=d.snack_g;
  if(n==='menu_always')return 'appearance';
- if(n==='minimal_clear_quality' || n==='minimal_clear_ratings')return 'cache';
+ if(n==='minimal_clear_quality' || n==='minimal_clear_ratings' || n==='minimal_clear_search_history')return 'cache';
  if(n==='minimal_quality_fallback')return 'parser';
  if(n==='lampa_view_metadata')return 'playback';
  if(/^lampa_view_/.test(n) || n==='card_interfice_cover')return 'appearance';

@@ -5,6 +5,7 @@ import studioCatalogue from './studio-catalogue.js';
 import installI18n from './i18n.js';
 import {version} from '../package.json';
 import inputs from './inputs.js';
+import searchHistory from './search-history.js';
 import {installTmdb,installFullGuard,installListGuard} from './tmdb.js';
 import heroAssets from './hero-assets.js';
 import BASE_CSS from './theme.css';
@@ -540,7 +541,7 @@ if (!ROOT.LampaView) {
   }
   function settings() {
     L.SettingsApi.addComponent({component:'lampa_view',name:'L A M P A',icon:icon('play'),before:'account'});
-    unifiedSettings(L.SettingsApi,L,version);
+    P.searchHistory=searchHistory(L);unifiedSettings(L.SettingsApi,L,version);
     const options=[
       ['lampa_view_hero',lampaViewText("Обложка на главной"),lampaViewText("Карусель каждые 10 секунд, ручное переключение и жесты."),true]
     ];
