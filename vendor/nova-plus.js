@@ -340,7 +340,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       var entry = list[key] || {};
       var stamp = entry.t || mine.time || 0;
       var ttl = entry.s === 'ok' ? PROBE_TTL_OK : entry.s === 'error' ? 120000 : PROBE_TTL_EMPTY;
-      if (now - stamp > ttl || entry.s !== 'ok' && entry.v !== 2) delete list[key];
+      if (now - stamp > ttl || entry.s !== 'ok' && entry.v !== 3) delete list[key];
     }
     mine.list = list;
     return mine;
@@ -353,7 +353,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     probe_saves++;
     var all = cached('nova_probe', 2000, {});
     var mine = probeCache(id);
-    mine.list[name] = { s: state, c: count || 0, t: Date.now(), v: 2 };
+    mine.list[name] = { s: state, c: count || 0, t: Date.now(), v: 3 };
     all[id] = mine;
     save('nova_probe', all);
     refreshSourceIndicators(name,state);
@@ -1813,6 +1813,31 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     probeMark(key, 'empty');
   }
 
+  // Use the host's existing account and RCH session for catalogue requests too.
+  // rch(json, callback) registers transport without resetting the visible page.
+  function providerFetch(url,done,active){
+    var owner=componentNow(),finished=false,retried=false,timer=setTimeout(function(){finish('');},PROBE_TIMEOUT);
+    function current(){return !finished && owner===componentNow() && (!active || active());}
+    function finish(body){if(finished)return;finished=true;clearTimeout(timer);done(body);}
+    function send(){
+      if(!current())return finish('');
+      try{
+        var target=new URL(url,location.href),base=new URL(probe_url || url,location.href);
+        if(target.origin!==base.origin || !/^\/lite\//.test(target.pathname))return finish('');
+        [['account_email','account_email'],['uid','lampac_unic_id'],['nws_id','lampac_nws_id']].forEach(function(pair){var value=get(pair[1],'') || base.searchParams.get(pair[0]);if(value && (!target.searchParams.has(pair[0]) || pair[0]==='nws_id'))target.searchParams.set(pair[0],value);});
+        if(!target.searchParams.has('token') && base.searchParams.has('token'))target.searchParams.set('token',base.searchParams.get('token'));
+        var net=new Lampa.Reguest(),kit=get('kit_aesgcmkey','');net.nova_probe=true;if(active)probe_nets.push(net);net.timeout(PROBE_TIMEOUT);
+        net['native'](target.href,function(body){
+          if(!current())return finish('');
+          var json=body;try{if(typeof body==='string')json=JSON.parse(body);}catch(e){}
+          if(json && json.rch && !retried && owner && typeof owner.rch==='function'){retried=true;return owner.rch(json,send);}
+          finish(body);
+        },function(){finish('');},false,{dataType:'text',headers:kit?{'X-Kit-AesGcm':kit}:{}});
+      }catch(e){finish('');}
+    }
+    send();
+  }
+
   // Search folders identify releases, not an empty catalogue. Follow only this
   // title's folders inside the same provider, without touching playback URLs.
   function probeRead(url, done, active) {
@@ -1821,8 +1846,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       if(!active())return;
       try{target=new URL(target,origin);var provider=(origin.pathname.match(/^(\/lite\/[^/]+)(?:\/|$)/) || [])[1];if(target.origin!==origin.origin || !provider || target.pathname!==provider && target.pathname.indexOf(provider+'/')!==0 || target.username || target.password || seen[target.href] || depth>4 || reads>=8)return complete('');}catch(e){return complete('');}
       seen[target.href]=true;reads++;
-      var net=new Lampa.Reguest();net.nova_probe=true;probe_nets.push(net);net.timeout(PROBE_TIMEOUT);
-      net['native'](target.href,function(body){
+      providerFetch(target.href,function(body){
         if(!active())return;
         var state=onlineState(),folders=state && state.folderRows(body),links=[];
         if(folders && folders.length){
@@ -1839,7 +1863,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
           read(links[index++].url,depth+1,next);
         }
         next('<div class="videos__line"></div>');
-      },function(){complete('');},false,{dataType:'text'});
+      },active);
     }
     read(url,0,done);
   }
@@ -2687,16 +2711,14 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
         var target=url && sameList(url);
         if(!target)return done('');
         try{
-          var net=new Lampa.Reguest();
-          net.timeout(4000);
-          net['native'](target,function(body){
+          providerFetch(target,function(body){
             var join=window.LampaView && window.LampaView.animeProviderParts;
             if(!followed && releaseSeason(target)){
               var rows=onlineState().folderRows(body),child=rows.length===1 && !rows[0].similar && sameList(rows[0].url);
               if(child && child!==target && releaseSeason(child)===releaseSeason(target))return loadSeasonList(child,done,true);
             }
             done(join && join.rewrite?join.rewrite(target,body):body);
-          },function(){done('');},false,{dataType:'text'});
+          });
         }catch(e){done('');}
       }
       function pumpCounts(){

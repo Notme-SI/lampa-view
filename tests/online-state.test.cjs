@@ -40,6 +40,8 @@ test('linked native timelines identify opaque hashes and newer active episodes w
 test('source availability checks real entries, excludes similar titles and distinguishes access failures from empty catalogues',()=>{
  const dom=new JSDOM('',{runScripts:'outside-only'}),w=dom.window;try{w.eval(code);const state=w.OnlineState.availability;
  assert.equal(state(tag({method:'play',url:'/file'})).state,'ok');assert.equal(state(tag({method:'call',url:'/call',similar:true})).state,'empty');assert.equal(state('<div class="videos__line"></div>').state,'empty');assert.equal(state('<html><h1>Access denied</h1></html>').state,'unknown');assert.equal(state('').state,'unknown');assert.equal(state(JSON.stringify({accsdb:true})).state,'unknown');assert.equal(state({data:[{method:'call',url:'/film'}]}).state,'ok');assert.equal(state({data:[]}).state,'empty');assert.equal(state('<script>'+tag({method:'play',url:'/fake'})+'</script>').state,'unknown');assert.equal(state('<div class="videos__item">No valid data</div>').state,'empty');
+ assert.equal(state(tag({method:'link',similar:true,url:'/lite/test?pick=1',title:'Сериал'})).state,'unknown','Search results cannot erase a confirmed provider as an empty catalogue');
+ assert.equal(state({data:[{method:'link',similar:true,url:'/lite/test?pick=1'}]}).state,'unknown');
  }finally{w.close();}
 });
 test('native progress picks the latest title alias, advances completed seasons and isolates profiles without writing records',()=>{
@@ -679,6 +681,11 @@ test('season captions read the selected dub before opening a season',async()=>{
   lists.default={items:[1,2,3,4].map(episode=>({season:1,episode,method:'call'}))};
   s.filter.set('filter',[{stype:'season',title:'Сезон',subtitle:'Сезон 1',items:[1,2].map(season=>({title:'Сезон '+season,selected:season===1}))},{stype:'voice',title:'Озвучка',subtitle:'Solo',items:[{title:'Solo',selected:true}]}]);
   await wait(300);assert.equal(s.root.find('[data-nova-focus="season:1"] .nova-chip__sub').text(),'4 эпизода','A season without a separate dub picker still contributes its files');
+  L.Storage.set('lampac_nws_id','old-session');let registrations=0;const rchCalls=[];
+  comp.rch=(json,done)=>{assert.equal(json.rch,true);registrations++;L.Storage.set('lampac_nws_id','new-session');done();};
+  L.Reguest=function(){const net=new Request();net.native=(url,ok,fail)=>{const query=new URL(url);if(query.searchParams.get('s')!=='2')return fail();rchCalls.push(url);setTimeout(()=>ok(query.searchParams.get('nws_id')==='new-session'?'selected':JSON.stringify({rch:true,nws:'wss://online.example.test/ws'})),5);};return net;};
+  s.filter.set('filter',[{stype:'season',title:'Сезон',subtitle:'Сезон 1',items:[1,2].map(season=>({title:'Сезон '+season,selected:season===1}))},{stype:'voice',title:'Озвучка',subtitle:'RCH',items:[{title:'RCH',selected:true}]}]);
+  await wait(300);assert.equal(registrations,1);assert.equal(rchCalls.length,2);assert.equal(s.root.find('[data-nova-focus="season:1"] .nova-chip__sub').text(),'3 эпизода','Background requests reuse the host RCH session without opening the season');
   assert.equal(s.played(),0);
   assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}

@@ -59,6 +59,7 @@ const {chromium,webkit}=require(process.env.PLAYWRIGHT_MODULE || 'playwright'),{
      for(const key of ['panel','brand','meta','overview','action','dots'])for(const axis of ['top','height'])assert.ok(Math.abs(sample[key][axis]-first[key][axis])<=1,`${engine.name()} ${theme} ${width}: ${key}.${axis} stays fixed after ${sample.variant}: `+JSON.stringify(samples));
      assert.ok(Math.abs(sample.row-first.row)<=1 && Math.abs(sample.hero-first.hero)<=1,'Content and late logo decode do not move the collection');
      assert.ok(sample.padding>=1.4*sample.font,'Logo has a modest, consistent gap from the image');
+     assert.ok(sample.dots.top>=sample.panel.top+sample.panel.height+4,'Phone carousel controls stay below the whole description pane');
     }
    }
    await page.setViewportSize(viewport);await page.waitForTimeout(160);

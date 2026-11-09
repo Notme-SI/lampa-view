@@ -253,4 +253,5 @@ body.lampa_view.pt-mobile .pt-hero__branding>.pt-hero__logo {height:3.4em;max-he
 body.lampa_view.pt-mobile .pt-hero__branding>.pt-hero__logo--translated {height:2em;max-height:2em}
 body.lampa_view.pt-mobile .pt-hero__body,body.lampa_view.pt-theme-glass.pt-mobile .pt-hero__body {padding:1.5em 1em 1em;margin:.4em .7em 3em;min-height:0}
 body.lampa_view.pt-mobile .pt-hero__meta {margin-bottom:.65em}
+body.lampa_view.pt-mobile .pt-hero .pt-hero__dots {bottom:.85em!important}
 body.lampa_view.pt-mobile .pt-hero__overview {height:4.65em;min-height:4.65em;line-height:1.55}
