@@ -19,3 +19,28 @@ test('native online metadata obeys the complete coordinate guard before construc
   comp.draw(files);await new Promise(r=>setTimeout(r,20));comp.draw(files);await new Promise(r=>setTimeout(r,20));callbacks[0]({1:{episode_number:41,season_number:5,name:'Stale'}},true);assert.equal(result[0].name,'Правильная серия четвёртого сезона');callbacks[1]({1:{episode_number:41,season_number:5,name:'Подтверждённая серия'}},true);assert.equal(result[0].name,'Подтверждённая серия');assert.equal(result[0].episode_number,1,'Only the metadata lookup is rekeyed to the provider number');assert.equal(result[0].season_number,5);assert.equal(nativeReads,0);assert.equal(JSON.stringify(files),before);assert.deepEqual(n.errors,[]);
  }finally{n.close();}
 });
+
+test('a named provider release does not inherit future episodes from the combined catalogue season',async()=>{
+ const n=await native({built:true}),{w,L}=n,$=w.jQuery;
+ try{
+  const root=$('<div>').appendTo(w.document.body),movie={id:220542,name:'Монолог фармацевта',minimal_anime:true,number_of_seasons:3};
+  const base='https://lampac.test/lite/ailiberty',first=base+'?uri=first';
+  const comp={render:()=>root,changeBalanser(){},request(){},parse(){},parseJsonDate(){return [];},getEpisodes(){throw new Error('Use checked metadata');},draw(rows,done){this.getEpisodes(rows[0].season,done);}};
+  L.Component.add('provider_release_metadata_test',function(){return comp;});L.Component.create({component:'provider_release_metadata_test',movie});
+  L.Activity.active=()=>({movie,activity:{component:comp,render:()=>root}});
+  comp.request(base);comp.parse([first,base+'?uri=second'].map((url,i)=>{
+   const folder={method:'link',url,similar:true,title:movie.name+(i?' 2':'')};
+   return '<div class="videos__item videos__season" data-json=\''+JSON.stringify(folder)+'\'></div>';
+  }).join(''));
+  w.LampaView.animeBase.seasonBook=(card,season,done)=>done({season_number:1,episodes:[
+   {season_number:1,episode_number:1,name:'Маомао'},
+   {season_number:1,episode_number:55,name:'Эпизод 55',air_date:'2099-01-01'}
+  ]});
+  const files=[{method:'play',season:1,episode:1,url:'/first'}];
+  comp.request(first+'&voice=1');const scoped=await new Promise(done=>comp.draw(files,done));
+  assert.deepEqual(Array.from(scoped,row=>row.episode_number),[1]);
+  comp.changeBalanser('other');comp.request(base.replace('ailiberty','other'));
+  const unscoped=await new Promise(done=>comp.draw(files,done));assert.deepEqual(Array.from(unscoped,row=>row.episode_number),[1,55]);
+  assert.deepEqual(n.errors,[]);
+ }finally{n.close();}
+});

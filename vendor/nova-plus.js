@@ -2467,6 +2467,21 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     var continuationApi=window.LampaView && window.LampaView.animeContinuations;
     var continuation={base:'',parts:[],selected:null,groups:null,baseSelection:0,count:0,started:false};
     var providerUrl=String(object && object.url || ''),providerPart=null;
+    var releaseRoutes=[],releasePicks=null;
+    function releaseSeason(url){
+      try {
+        var current=new URL(url,location.href);
+        var matched=releaseRoutes.filter(function(entry){
+          var target=new URL(entry.url,location.href);
+          if(target.origin!==current.origin || target.pathname!==current.pathname)return false;
+          var keys=['pick','uri','news','postid','animeid','releases','link','id'].filter(function(key){return target.searchParams.has(key);});
+          return keys.length && keys.every(function(key){return target.searchParams.get(key)===current.searchParams.get(key);});
+        });
+        if(matched.length===1)return matched[0].season;
+      } catch(e) {}
+      var target=releasePicks && continuationApi && continuationApi.route(url);
+      return target && releasePicks[target.origin+target.pathname+'|'+target.searchParams.get('pick')] || 0;
+    }
     var initialSource=providerUrl.match(/\/lite\/([^\/?#]+)/i);if(initialSource)comp.lampaViewSource=initialSource[1];
     if(continuationApi)comp.lampaViewContinuations=continuation;
     function readContinuations(str,card,folders){
@@ -2522,7 +2537,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       }
       comp.draw=function(files,params){
         var card=object && (object.movie || object.card) || movie,ownFilter=activeFilter(typeof comp.render==='function'?comp.render():root),ownGroups=readGroups(ownFilter),seasons=ownGroups.season && ownGroups.season.items || [];
-        episodeContext={card:card,files:(files || []).map(function(file){return Number(file.episode);}),seasons:seasons.map(function(s){return sourceSeason(s);}),similar:params && params.similars,part:providerPart};
+        episodeContext={card:card,files:(files || []).map(function(file){return Number(file.episode);}),seasons:seasons.map(function(s){return sourceSeason(s);}),similar:params && params.similars,part:providerPart,release:releaseSeason(providerUrl)};
         return nativeDraw.apply(comp,arguments);
       };
       comp.getEpisodes=function(season,done){
@@ -2535,16 +2550,18 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
             var own=readGroups(activeFilter(typeof comp.render==='function'?comp.render():root));
             context.seasons=(own.season && own.season.items || []).map(function(s){return sourceSeason(s);});
             function current(){return !comp.destroyed && episodeContext===context;}
+            function providerMetadata(book){
+              return metadataRows(book).filter(function(row){return context.files.indexOf(row.episode_number)>=0;});
+            }
             function canonical(){
               if(tmdbId(context.card) && Number(season)>=0){
                 var part=context.part;
                 return wideJoinedBook(season,function(book){
                   if(!current())return;
-                  var rows=metadataRows(book);
                   // The native renderer pads short playlists with remaining
-                  // metadata rows. Keep actual files and confirmed future dates;
-                  // a separately selected continuation owns only its files.
-                  done(api.availableMetadata?api.availableMetadata(rows,context.files,season,!part):rows.filter(function(row){return context.files.indexOf(row.episode_number)>=0;}));
+                  // metadata rows. A selected provider release can cover only
+                  // part of the catalogue season, so keep just its own files.
+                  done(part || context.release || !api.availableMetadata?providerMetadata(book):api.availableMetadata(metadataRows(book),context.files,season));
                 },context.card,comp);
               }
               return nativeEpisodes.call(comp,season,function(){if(current())done.apply(this,arguments);});
@@ -2553,7 +2570,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
             if(Number(season)!==0 && !context.part && context.seasons.length && (comp.lampaViewProviderSeasons || api.alternate(context.card,context.seasons))){
               var handled=api.book(context.card,season,context.seasons,context.files.length,function(book,grouped){
                 if(!current())return;
-                if(book || grouped)done(metadataRows(book));
+                if(book || grouped)done(context.release?providerMetadata(book):metadataRows(book));
                 else canonical();
               },context.files,false,comp.lampaViewProviderSeasons);
               if(handled)return;
@@ -2592,7 +2609,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     }
 
     if(typeof comp.parseJsonDate==='function'){
-      var parseRows=comp.parseJsonDate,seasonLinks=null,releasePicks=null,releaseRoutes=[],countScope='',counts={},countDone={},countWaiters={},countQueue=[],countBusy=false;
+      var parseRows=comp.parseJsonDate,seasonLinks=null,countScope='',counts={},countDone={},countWaiters={},countQueue=[],countBusy=false;
       comp.parseJsonDate=function(body,selector){
         var rows=parseRows.apply(this,arguments);
         var card=object && (object.movie || object.card) || movie,state=onlineState(),metadata=window.LampaView && window.LampaView.episodeMetadata;
@@ -2615,20 +2632,6 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
           return /^https?:$/.test(target.protocol) && target.origin===base.origin && target.pathname===base.pathname &&
             /\/lite\/[^/]+$/.test(target.pathname) && !target.username && !target.password?target.href:'';
         }catch(e){return '';}
-      }
-      function releaseSeason(url){
-        try {
-          var current=new URL(url,location.href);
-          var matched=releaseRoutes.filter(function(entry){
-            var target=new URL(entry.url,location.href);
-            if(target.origin!==current.origin || target.pathname!==current.pathname)return false;
-            var keys=['pick','uri','news','postid','animeid','releases','link','id'].filter(function(key){return target.searchParams.has(key);});
-            return keys.length && keys.every(function(key){return target.searchParams.get(key)===current.searchParams.get(key);});
-          });
-          if(matched.length===1)return matched[0].season;
-        } catch(e) {}
-        var target=releasePicks && continuationApi && continuationApi.route(url);
-        return target && releasePicks[target.origin+target.pathname+'|'+target.searchParams.get('pick')] || 0;
       }
       function loadSeasonList(url,done,followed){
         var target=url && sameList(url);
