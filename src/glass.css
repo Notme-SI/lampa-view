@@ -117,8 +117,10 @@ body.lampa_view.pt-theme-glass.pt-mobile .pt-hero__body {position:relative;left:
 body.lampa_view.pt-theme-glass.pt-mobile .navigation-bar__body {border:1px solid var(--pt-glass-border);border-radius:2.5em;background:var(--pt-glass-button);box-shadow:var(--pt-glass-edge),0 10px 28px #00000055;backdrop-filter:blur(var(--pt-glass-blur)) saturate(1.4);-webkit-backdrop-filter:blur(var(--pt-glass-blur)) saturate(1.4)}
 body.lampa_view.pt-theme-glass.pt-mobile .navigation-bar__item {border-radius:2em}
 body.lampa_view.pt-theme-glass.pt-mobile .navigation-bar__item.active {background:#ffffff15}
-body.lampa_view.pt-theme-glass.pt-tv {--pt-glass-blur:10px}
-body.lampa_view.pt-theme-glass.pt-tv .pt-hero {--pt-hero-panel:linear-gradient(165deg,#ffffff18,transparent 45%,#ffffff05),#10121838;--pt-hero-panel-filter:none}
+body.lampa_view.pt-theme-glass.pt-tv {--pt-glass-blur:0px;--pt-glass-button:var(--pt-glass-sheen),rgba(18,18,18,.78);--pt-navigation-panel:var(--pt-glass-sheen),rgba(24,24,24,.94);--pt-poster-badge:rgba(18,18,18,.85)}
+body.lampa_view.pt-theme-glass.pt-tv .pt-hero {--pt-hero-panel:linear-gradient(165deg,#ffffff18,transparent 45%,#ffffff05),#101218b8;--pt-hero-panel-filter:none}
+/* No live backdrop surfaces on the TV compositor, including open overlays. */
+body.lampa_view.pt-theme-glass.pt-tv *,body.lampa_view.pt-theme-glass.pt-tv *:before,body.lampa_view.pt-theme-glass.pt-tv *:after {backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
 body.lampa_view.pt-theme-glass.pt-tv .nova-plus-root .nova-plus__bar>.nova-chip,body.lampa_view.pt-theme-glass.pt-tv .nova-plus-root [data-nova-group=season] .nova-chip,body.lampa_view.pt-theme-glass.pt-tv .full-start__button {backdrop-filter:none;-webkit-backdrop-filter:none}
 /* Reuse the cached, preblurred scene on TV instead of filtering a moving catalogue. */
 body.lampa_view.pt-theme-glass.pt-tv .head__body {

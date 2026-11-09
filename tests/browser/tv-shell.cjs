@@ -1,0 +1,36 @@
+const assert=require('node:assert/strict');
+const {chromium,webkit}=require(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const {setup}=require('../fixtures/native-browser.cjs');
+(async()=>{for(const engine of [chromium,webkit]){
+ const browser=await engine.launch({headless:true});try{for(const width of [960,1920,3840]){
+  const r=await setup(browser,{mode:'tv',viewport:{width,height:width*9/16}},{beforePlugin:page=>page.evaluate(()=>{
+   const L=Lampa;L.Params.init();L.Layer.init();L.Search.init();
+   L.Api.main=(o,ok)=>ok(['Сейчас смотрят','Популярное'].map((title,row)=>({title,url:'qa/'+row,results:Array.from({length:20},(_,i)=>({id:row*100+i+1,title:'Название фильма',overview:'Длинное описание фильма для проверки большого интерфейса. '.repeat(6),poster_path:'/p.jpg',backdrop_path:'/b.jpg',release_date:'2025-01-01',source:'tmdb'}))})));
+  })});try{
+   for(const theme of ['minimal','glass']){
+    await r.page.evaluate(theme=>Lampa.Storage.set('lampa_view_theme',theme),theme);
+    await r.page.evaluate(()=>Lampa.Activity.push({component:'main',source:'tmdb'}));await r.page.waitForSelector('.minimal-home-first-row');
+    for(const size of ['small','normal','bigger']){
+     await r.page.evaluate(size=>Lampa.Storage.set('interface_size',size),size);await r.page.waitForTimeout(500);
+     const value=await r.page.evaluate(()=>{
+      const rect=n=>{const b=n.getBoundingClientRect();return {left:b.left,right:b.right,top:b.top,bottom:b.bottom,width:b.width,height:b.height};};
+      const hero=document.querySelector('.activity--active .pt-hero'),body=hero.querySelector('.pt-hero__body'),dots=hero.querySelector('.pt-hero__dots');
+      const poster=hero.nextElementSibling.querySelector('.card__view');
+      const quality=document.createElement('span');quality.className='pt-quality';quality.textContent='WEB-DL';poster.appendChild(quality);
+      const type=document.createElement('span');type.className='pt-kind';type.textContent='Мультфильм';poster.appendChild(type);
+      const result={width:innerWidth,menu:rect(document.querySelector('.head .head__menu-icon')),settings:rect(document.querySelector('.head .open--settings')),search:rect(document.querySelector('.head .open--search')),hero:rect(hero),panel:rect(body),dots:rect(dots),poster:rect(poster),tags:[rect(type),rect(quality)],blur:[...document.querySelectorAll('.head *, .pt-hero *, .wrap__left')].some(n=>getComputedStyle(n).backdropFilter!=='none' && getComputedStyle(n).backdropFilter!==undefined)};
+      quality.remove();type.remove();return result;
+     });
+     assert.ok(value.menu.height/value.width<.02,'Compact header at density two: '+JSON.stringify({width,size,value}));
+     assert.ok(Math.abs(value.menu.height-value.settings.height)<1,'Settings mirrors Menu');
+     assert.ok(value.settings.left>=value.search.right-1 && value.settings.right<=width,'Search leaves room for Settings');
+     assert.ok(value.hero.width>value.width*.9,'Main area uses the TV width: '+JSON.stringify({engine:engine.name(),width,theme,size,value}));
+     if(theme==='glass'){assert.ok(value.dots.top>=value.panel.bottom+2,'TV dots do not overlap large description: '+JSON.stringify({width,size,value}));assert.equal(value.blur,false,'TV does not use live backdrop filtering');}
+     for(const tag of value.tags)assert.ok(tag.left>=value.poster.left && tag.right<=value.poster.right+1,'Tags fit narrow TV posters');
+     assert.ok(value.tags[0].right<=value.tags[1].left+1,'Type and quality do not overlap');
+    }
+   }
+   assert.deepEqual(r.errors,[]);console.log(engine.name()+' TV '+width+': compact shell, Settings, badges and carousel in both themes and all sizes passed');
+  }finally{await r.context.close();}
+ }}finally{await browser.close();}
+}})().catch(e=>{console.error(e);process.exitCode=1;});

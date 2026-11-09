@@ -254,4 +254,19 @@ body.lampa_view.pt-mobile .pt-hero__branding>.pt-hero__logo--translated {height:
 body.lampa_view.pt-mobile .pt-hero__body,body.lampa_view.pt-theme-glass.pt-mobile .pt-hero__body {padding:1.5em 1em 1em;margin:.4em .7em 3em;min-height:0}
 body.lampa_view.pt-mobile .pt-hero__meta {margin-bottom:.65em}
 body.lampa_view.pt-mobile .pt-hero .pt-hero__dots {bottom:.85em!important}
+/* Android TV commonly has a 960 CSS-pixel viewport on a 1080p output.
+   Scale chrome with the viewport, independently of the user's text size. */
+body.lampa_view.pt-tv {--pt-tv-unit:.703125vw;--pt-shell-inset:calc(1.2 * var(--pt-tv-unit));--pt-shell-top:var(--pt-shell-inset);--pt-header-control:calc(2.4 * var(--pt-tv-unit));--pt-header-space:calc(4.5 * var(--pt-tv-unit));--pt-header-gap:calc(.5 * var(--pt-tv-unit));--pt-shell-icon:calc(1.1 * var(--pt-tv-unit));--pt-rail-panel:calc(2.6 * var(--pt-tv-unit));--pt-menu-row:calc(2.5 * var(--pt-tv-unit));--pt-menu-icon:var(--pt-shell-icon);--pt-score-width:2.1em;--pt-score-inset:.4em;--pt-score-gap:.3em}
+body.lampa_view.pt-tv .head .head__action.open--search:after {font-size:var(--pt-tv-unit)}
+body.lampa_view.pt-tv .head .head__actions>.head__action.open--settings {display:flex!important;align-items:center;justify-content:center;flex:0 0 var(--pt-header-control);width:var(--pt-header-control);height:100%;min-width:0;min-height:0;margin:0 0 0 var(--pt-header-gap);padding:0;box-sizing:border-box;border:1px solid var(--pt-shell-border)!important;border-radius:50%;background:var(--pt-shell-surface)!important}
+body.lampa_view.pt-tv .head .head__action.open--settings svg {width:var(--pt-shell-icon);height:var(--pt-shell-icon)}
+body.lampa_view.pt-tv .wrap__left .menu__item {min-height:var(--pt-menu-row)}
+body.lampa_view.pt-tv.pt-menu-pinned .wrap__left .menu__item,body.lampa_view.pt-tv.pt-menu-pinned:is(.menu--open,.pt-menu-hover) .wrap__left .menu__item,body.lampa_view.pt-tv.pt-menu-pinned:not(.menu--open):not(.pt-menu-hover) .wrap__left .menu__item {height:var(--pt-menu-row);min-height:var(--pt-menu-row);padding:.25em .4em!important}
+body.lampa_view.pt-tv.pt-menu-pinned .wrap__left {padding:.2em!important;border-radius:.9em!important}
+body.lampa_view.pt-tv .card .pt-kind,body.lampa_view.pt-tv .card .pt-quality,body.lampa_view.pt-tv .card .card__quality {top:.5em;font-size:.62em;max-width:45%;box-sizing:border-box;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.lampa_view.pt-tv .card .pt-kind {left:.4em}
+body.lampa_view.pt-tv .card .pt-quality,body.lampa_view.pt-tv .card .card__quality {right:.4em}
+body.lampa_view.pt-tv .card .pt-series-status {font-size:.65em;max-width:calc(100% - .8em);overflow:hidden;text-overflow:ellipsis}
+body.lampa_view.pt-tv .pt-hero .pt-hero__dots {bottom:.8em}
+body.lampa_view.pt-tv.pt-theme-glass .pt-hero {box-sizing:border-box;padding-bottom:3.8em}
 body.lampa_view.pt-mobile .pt-hero__overview {height:4.65em;min-height:4.65em;line-height:1.55}
