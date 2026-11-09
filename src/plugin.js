@@ -104,6 +104,7 @@ if (!ROOT.LampaView) {
     document.body.classList.toggle('pt-tablet',selected==='tablet');
     P.layout=selected==='tablet' ? (ROOT.innerWidth<700?'mobile':'desktop') : selected==='auto' ? (tv ? 'tv' : mobile || ROOT.innerWidth<=650 ? 'mobile' : 'desktop') : selected;
     ['mobile','tv','desktop'].forEach(mode=>document.body.classList.toggle('pt-'+mode,P.layout===mode));
+    if(previous!==P.layout && pinnedMenu)pinnedMenu.update();
     if(previous!==P.layout && interfaceLayout)interfaceLayout.update();
     if(previous!==P.layout && P.layout==='mobile')document.querySelectorAll('.pt-hero').forEach(hero=>{
       // A desktop frame height must not constrain the mobile image/panel flow.

@@ -5,6 +5,14 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 function selectMovie(s,L,index){s.root.find('[data-nova-focus=movievoice]').trigger('hover:enter');L.Select.render().find('.selectbox-item').eq(index).trigger('hover:enter');}
 const tag=row=>'<div class="videos__item" data-json="'+JSON.stringify(row).replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'"></div>';
 
+test('Kodik TV part labels keep the Apothecary release in its third season',()=>{
+ const dom=new JSDOM('',{runScripts:'outside-only'}),w=dom.window;
+ try{w.eval(code);const card={name:'Монолог фармацевта',original_name:'Kusuriya no Hitorigoto',first_air_date:'2023-10-22'};
+ const rows=[1,2,3].map(n=>({title:'Записки аптекаря [ТВ-'+n+(n===3?', часть 1':'')+'] / Kusuriya no Hitorigoto'+(n>1?' ('+(n===2?2025:2026)+')':''),method:'link',similar:true,url:'/lite/kodik?pick='+n}));
+ assert.deepEqual(Array.from(w.OnlineState.folderSeasons(rows,card),r=>r.season),[1,2,3]);
+ }finally{w.close();}
+});
+
 test('provider folders resolve only a unique matching title and requested season, never another film or sequel',()=>{
  const dom=new JSDOM('',{runScripts:'outside-only'}),w=dom.window;try{w.eval(code);const pick=w.OnlineState.folderTarget,card={name:'Гангстерленд',original_name:'MobLand',first_air_date:'2025-01-01'};
  const row=(text,url='/lite/source/season')=>({text,url,method:'link',similar:true});

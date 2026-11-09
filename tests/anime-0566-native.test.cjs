@@ -1,4 +1,27 @@
 const test=require('node:test'),assert=require('node:assert/strict'),native=require('./fixtures/native-lampa.cjs'),wait=ms=>new Promise(r=>setTimeout(r,ms));
+
+test('non-Kodik release folders retain all six episodes and dub options with local season one',async()=>{
+ for(const source of ['animedia','animelib']){
+  const n=await native({built:true}),{w}=n;
+  try{
+   const base='http://lampa.example.invalid/lite/'+source,rendered=[],tag=(data,attrs='',cls='videos__item')=>'<div class="'+cls+'" '+attrs+' data-json=\''+JSON.stringify(data)+'\'></div>';
+   const comp={changeBalanser(){},reset(){},request(){},parseJsonDate(body,selector){return Array.from(w.jQuery('<div>').html(body).find(selector),node=>{const row=JSON.parse(node.getAttribute('data-json'));if(node.hasAttribute('s'))row.season=Number(node.getAttribute('s'));if(node.hasAttribute('e'))row.episode=Number(node.getAttribute('e'));return row;});},parse(body){rendered.push({files:this.parseJsonDate(body,'.videos__item'),voices:this.parseJsonDate(body,'.videos__button')});}};
+   const movie={id:220542,name:'Монолог фармацевта',original_name:'Kusuriya no Hitorigoto',first_air_date:'2023-10-22',minimal_anime:true,source:'tmdb',number_of_seasons:3};
+   const key=source==='animedia'?'news':'uri',release=base+'?'+key+'=release-3';
+   await scene(n,movie,[1,2,3],[1],comp);
+   comp.request(base+'?title=test');
+   comp.parse([1,2,3].map(s=>tag({title:'Монолог фармацевта '+s,method:'link',similar:true,url:base+'?'+key+'=release-'+s})).join(''));
+   comp.request(release+'&t=dub');
+   const files=Array.from({length:6},(_,i)=>({method:'call',url:base+'/video?id='+i,stream:base+'/video?id='+i+'&play=true'}));
+   const body=files.map((row,i)=>tag(row,'s="1" e="'+(i+1)+'"')).join('')+tag({method:'link',name:'Dub A',url:release+'&t=a'},'','videos__button')+tag({method:'link',name:'Dub B',url:release+'&t=b'},'','videos__button');
+   comp.parse(body);await wait(30);
+   const result=rendered.at(-1);
+   assert.deepEqual(Array.from(result.files,r=>[r.season,r.episode,r.url]),files.map((r,i)=>[3,i+1,r.url]),source+' uses the selected release season without dropping episode six');
+   assert.equal(result.voices.length,2,'Dub navigation survives the release mapping');
+   assert.deepEqual(n.errors,[]);
+  }finally{n.close();}
+ }
+});
 async function scene(n,movie,labels,values,comp={}){
  const {w,L}=n,$=w.jQuery,root=$('<div class="explorer"><div class="explorer__files"><div class="explorer__files-head"></div><div class="explorer__files-body"><div class="scroll"><div class="scroll__body"></div></div></div></div>').appendTo(w.document.body),filter=new L.Filter({search:false,sort:true,filter:true});
  root.find('.explorer__files-head').append(filter.render());filter.set('sort',[{title:'Kodik',source:'kodik',selected:true}]);filter.set('filter',[{stype:'season',title:'Сезон',items:labels.map((n,i)=>({title:'Сезон '+n,selected:i===0}))}]);let played;

@@ -79,7 +79,7 @@ test('dorama is integrated as poster rows in series and has no visible separate 
 test('native menu_always switches a single native menu between dock and popover and restores the button',async()=>{
  const r=await native({built:true}),{w,L}=r;try{
   const button=w.document.querySelector('.head__menu-icon'),panel=w.document.querySelector('.wrap__left');
-  L.Storage.set('menu_always',true);assert.ok(w.document.body.classList.contains('pt-menu-pinned'));await wait(100);assert.equal(button.parentElement.className,'menu');assert.equal(w.getComputedStyle(panel).visibility,'visible');
+  L.Storage.set('menu_always',true);assert.ok(w.document.body.classList.contains('pt-menu-pinned'));await wait(100);assert.equal(button.parentElement.className,'head__body');assert.equal(w.getComputedStyle(panel).visibility,'visible');
   L.Controller.toggle('menu');L.Controller.toggle('content');await wait(330);assert.equal(w.getComputedStyle(panel).visibility,'visible');assert.equal(w.document.querySelectorAll('.menu').length,1);
   L.Storage.set('menu_always',false);assert.ok(!w.document.body.classList.contains('pt-menu-pinned'));await wait(100);assert.ok(button.closest('.head'));assert.equal(w.getComputedStyle(button).display,'flex');assert.equal(w.getComputedStyle(panel).visibility,'hidden');
   L.Storage.set('menu_always',true);L.Storage.set('lampa_view_enabled',false);assert.ok(!w.document.body.classList.contains('pt-menu-pinned'));assert.deepEqual(r.errors,[]);

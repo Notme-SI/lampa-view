@@ -195,9 +195,9 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     chevron: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"></path></svg>',
     search: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4" stroke-linecap="round"></path></svg>',
     refresh: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 11a8 8 0 10-2.3 5.7" stroke-linecap="round"></path><path d="M20 4v7h-7" stroke-linecap="round" stroke-linejoin="round"></path></svg>',
-    source: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m10 9 5 3-5 3z"/></svg>',
-    voice: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11v2m4-5v8m4-11v14m4-11v8m4-5v2"/></svg>',
-    grid: '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><rect x="3" y="3" width="8" height="8" rx="1.6"></rect><rect x="13" y="3" width="8" height="8" rx="1.6"></rect><rect x="3" y="13" width="8" height="8" rx="1.6"></rect><rect x="13" y="13" width="8" height="8" rx="1.6"></rect></svg>',
+    source: '<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="m12.296 3.464 3.02 3.956" /> <path d="M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3z" /> <path d="M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /> <path d="m6.18 5.276 3.1 3.899" /> </svg>',
+    voice: '<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M2 10v3" /> <path d="M6 6v11" /> <path d="M10 3v18" /> <path d="M14 8v7" /> <path d="M18 5v13" /> <path d="M22 10v3" /> </svg>',
+    grid: '<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <rect width="7" height="7" x="3" y="3" rx="1" /> <rect width="7" height="7" x="14" y="3" rx="1" /> <rect width="7" height="7" x="14" y="14" rx="1" /> <rect width="7" height="7" x="3" y="14" rx="1" /> </svg>',
     list: '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><rect x="3" y="4" width="18" height="4" rx="1.4"></rect><rect x="3" y="10" width="18" height="4" rx="1.4"></rect><rect x="3" y="16" width="18" height="4" rx="1.4"></rect></svg>',
     eye: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="12" cy="12" r="2.6"></circle></svg>'
   };
@@ -2570,7 +2570,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     }
 
     if(typeof comp.parseJsonDate==='function'){
-      var parseRows=comp.parseJsonDate,seasonLinks=null,releasePicks=null,countScope='',counts={},countDone={},countWaiters={},countQueue=[],countBusy=false;
+      var parseRows=comp.parseJsonDate,seasonLinks=null,releasePicks=null,releaseRoutes=[],countScope='',counts={},countDone={},countWaiters={},countQueue=[],countBusy=false;
       comp.parseJsonDate=function(body,selector){
         var rows=parseRows.apply(this,arguments);
         var card=object && (object.movie || object.card) || movie,state=onlineState(),metadata=window.LampaView && window.LampaView.episodeMetadata;
@@ -2595,6 +2595,16 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
         }catch(e){return '';}
       }
       function releaseSeason(url){
+        try {
+          var current=new URL(url,location.href);
+          var matched=releaseRoutes.filter(function(entry){
+            var target=new URL(entry.url,location.href);
+            if(target.origin!==current.origin || target.pathname!==current.pathname)return false;
+            var keys=['pick','uri','news','postid','animeid','link','id'].filter(function(key){return target.searchParams.has(key);});
+            return keys.length && keys.every(function(key){return target.searchParams.get(key)===current.searchParams.get(key);});
+          });
+          if(matched.length===1)return matched[0].season;
+        } catch(e) {}
         var target=releasePicks && continuationApi && continuationApi.route(url);
         return target && releasePicks[target.origin+target.pathname+'|'+target.searchParams.get('pick')] || 0;
       }
@@ -2768,6 +2778,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
           var seasonTarget=seasons && seasons.find(function(row){return row.season===seasonNumberWanted;}) || seasons && seasons[0];
           if(folderChain.length>=6 || seasonTarget && folderChain.indexOf(seasonTarget.url)>=0)seasons=[];
           if(seasons && seasons.length){
+            releaseRoutes=seasons.map(function(row){return {url:row.url,season:row.season};});
             // Let the native parser retain its season URLs and selection state.
             // Skipping this page would open episodes but leave no season picker.
             if(continuationApi && episodeApi && episodeApi.isAnime(card)){
