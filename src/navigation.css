@@ -225,7 +225,7 @@ body.lampa_view.pt-mobile .settings .settings__content,body.lampa_view.pt-mobile
 body.lampa_view.pt-mobile .settings .settings__body,body.lampa_view.pt-mobile .selectbox:not(.minimal-franchise-menu) .selectbox__body {flex:1 1 auto;min-height:0;overflow:hidden}
 body.lampa_view.pt-mobile .settings .settings__body>.scroll,body.lampa_view.pt-mobile .selectbox:not(.minimal-franchise-menu) .selectbox__body>.scroll {height:100%!important;max-height:100%!important}
 body.lampa_view.pt-mobile .settings .scroll__content,body.lampa_view.pt-mobile .selectbox:not(.minimal-franchise-menu) .scroll__content {height:100%!important;max-height:100%!important}
-body.lampa_view.pt-mobile .settings,body.lampa_view.pt-mobile .selectbox {z-index:120!important}
+body.lampa_view.pt-mobile .settings,body.lampa_view.pt-mobile .selectbox,body.lampa_view.pt-mobile .modal {z-index:120!important}
 body.lampa_view.pt-mobile .pt-hero {height:auto!important;min-height:0!important;max-height:none!important}
 body.lampa_view.pt-mobile .pt-hero__branding {height:auto!important;min-height:0!important;margin-bottom:.7em}
 body.lampa_view.pt-mobile .pt-hero__branding>.pt-hero__logo {height:auto;max-height:3.4em}
