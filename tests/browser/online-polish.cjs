@@ -68,14 +68,21 @@ async function holiday(page,name){
      assert.ok(toolbar.height<=50,'mobile toolbar fits one row');assert.ok(toolbar.inside,JSON.stringify(toolbar));assert.ok(toolbar.labels);assert.equal(toolbar.overflow,false);
     }
     await page.evaluate(()=>{Lampa.DeviceInput.init();Lampa.Controller.observe();window.qaBacks=0;Lampa.Controller.add('content',{toggle(){Lampa.Controller.collectionSet(qaRoot[0]);},back(){qaBacks++;}});Lampa.Controller.toggle('content');});
-    const center=await page.locator('[data-nova-focus=view]').evaluate(node=>{const a=node.getBoundingClientRect(),b=node.querySelector('svg').getBoundingClientRect();return [Math.abs(a.x+a.width/2-b.x-b.width/2),Math.abs(a.y+a.height/2-b.y-b.height/2)];});assert.ok(center.every(value=>value<=1),'layout icon centered: '+center);
+    for(const theme of ['minimal','glass']){
+     await page.evaluate(theme=>Lampa.Storage.set('lampa_view_theme',theme),theme);
+     const controls=await page.locator('.nova-plus__bar>.nova-chip').evaluateAll(nodes=>nodes.map(node=>{const a=node.getBoundingClientRect(),b=node.querySelector('.nova-chip__glyph').getBoundingClientRect(),s=getComputedStyle(node);return {key:node.dataset.novaFocus,w:a.width,h:a.height,icon:b.width,font:parseFloat(s.fontSize),center:[Math.abs(a.x+a.width/2-b.x-b.width/2),Math.abs(a.y+a.height/2-b.y-b.height/2)],radius:s.borderRadius,badges:node.querySelectorAll('.nova-chip__badge').length};}));
+     const view=controls.find(n=>n.key==='view');
+     for(const control of controls){assert.ok(Math.abs(control.icon-view.icon)<1,'Source/audio icons match the view icon');assert.ok(control.icon>=control.font*1.15,'Vendor max-width must not shrink the glyph');if(['view','direction'].includes(control.key)){assert.ok(Math.abs(control.w-control.h)<1);assert.equal(control.radius,'50%');assert.ok(control.center.every(value=>value<1),'Icon is centered in its circle');}}
+     assert.equal(controls.find(n=>n.key==='source').badges,0,'The selected source omits quality');
+    }
+    await page.evaluate(()=>Lampa.Storage.set('lampa_view_theme','minimal'));
     const quality=await page.evaluate(()=>{
      const poster=document.createElement('div');poster.className='card';poster.innerHTML='<span class="pt-quality">4K</span>';document.body.appendChild(poster);
      const material=n=>{const style=getComputedStyle(n);return [style.backgroundImage,style.backgroundColor,style.color,style.borderColor,style.fontWeight,style.backdropFilter];};
      const reference=material(poster.firstElementChild);poster.remove();
      return {reference,badges:[...document.querySelectorAll('.nova-hero__quality,.nova-chip__badge,.nova-card__quality')].map(material)};
     });
-    assert.ok(quality.badges.length>2);
+    assert.ok(quality.badges.length>=2);
     for(const badge of quality.badges)assert.deepEqual(badge,quality.reference);
     const meta=await page.locator('.nova-hero__meta').evaluate(node=>({bg:getComputedStyle(node).backgroundColor,color:getComputedStyle(node).color}));assert.match(meta.bg,/0\.52/);assert.equal(meta.color,'rgb(245, 247, 250)');
     const season=await page.locator('.nova-hero__season-label').evaluate(node=>{const meta=node.closest('.nova-hero__meta'),a=node.getBoundingClientRect(),b=meta.getBoundingClientRect();return {top:a.top,bottom:b.bottom,parent:node.parentNode.className,metaParent:node.parentNode.parentNode.className,bg:getComputedStyle(node).backgroundColor,height:b.height,font:parseFloat(getComputedStyle(meta).fontSize)};});

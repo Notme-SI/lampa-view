@@ -610,7 +610,7 @@ body.lampa_view .card__view.minimal-badge-layout>.card__vote,body.lampa_view .ca
 /* Shared controls for both online layouts. */
 body.lampa_view .nova-plus-root .nova-btn,body.lampa_view .nova-plus-root .nova-chip,body.lampa_view .nova-plus-root .nova-group {background:#171717!important;color:var(--pt-text)!important;border:1px solid var(--pt-line)!important;border-radius:.625em!important;box-shadow:none!important;outline:none!important}
 body.lampa_view .nova-plus-root .nova-btn {padding:.75em 1.15em;font-weight:600}
-body.lampa_view .nova-plus-root .nova-chip--view-icon {display:inline-flex;align-items:center;justify-content:center;flex:0 0 2.65em;width:2.65em;min-width:2.65em;height:2.65em;box-sizing:border-box;padding:0!important;gap:0;line-height:1}
+body.lampa_view .nova-plus-root .nova-chip--view-icon {display:inline-flex;align-items:center;justify-content:center;flex:0 0 2.4em;width:2.4em;min-width:2.4em;height:2.4em;box-sizing:border-box;padding:0!important;border-radius:50%!important;gap:0;line-height:1}
 body.lampa_view .nova-plus-root .nova-chip--view-icon>.nova-chip__label {display:none}
 body.lampa_view .nova-plus-root .nova-chip>.nova-chip__glyph {display:block;flex:none;width:1.1em;height:1.1em;margin:0!important;align-self:center}
 body.lampa_view .nova-plus-root .nova-chip--active,body.lampa_view .nova-plus-root .nova-group--open {background:var(--pt-high)!important;border-color:rgba(var(--pt-tint-rgb,173,217,229),.376)!important}

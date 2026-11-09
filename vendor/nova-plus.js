@@ -1756,7 +1756,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     chip.find('.nova-chip__dot').remove();
 
     var value = knownQuality(key);
-    if (value) {
+    if (value && chip.attr('data-nova-focus') !== 'source') {
       var badge = chip.find('.nova-chip__badge');
       if (badge.length) badge.text(value);
       else chip.find('.nova-chip__label').before($('<span class="nova-chip__badge"></span>').text(value));
@@ -4090,7 +4090,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     box.attr('data-nova-focus', key);
     var glyph=extra && extra.icon || (key==='source'?ICON.source:key==='voice' || key==='movievoice'?ICON.voice:'');
     if(glyph)box.append($(glyph).addClass('nova-chip__glyph'));
-    if (extra && extra.badge) box.append($('<span class="nova-chip__badge"></span>').text(extra.badge));
+    if (key !== 'source' && extra && extra.badge) box.append($('<span class="nova-chip__badge"></span>').text(extra.badge));
     box.append($('<span class="nova-chip__label"></span>').text(value || ''));
     if (!(extra && extra.plain)) box.append(ICON.chevron);
     if (extra && extra.active) box.addClass('nova-chip--active');
@@ -4107,12 +4107,6 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       var parts = splitSourceName(item.title || '');
       box.addClass('nova-chip--busy');
       box.find('.nova-chip__label').text(parts.name || item.title || '');
-      var badge = box.find('.nova-chip__badge');
-      var value = knownQuality(item.source || item.title) || parts.badge;
-      if (value) {
-        if (badge.length) badge.text(value);
-        else box.find('.nova-chip__label').before($('<span class="nova-chip__badge"></span>').text(value));
-      } else badge.remove();
     } catch (e) {}
   }
 
@@ -4437,14 +4431,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     var sort = groups.sort || [];
     if (sort.length) {
       var parts = splitSourceName(sourceTitle());
-      var current = null;
-      sort.forEach(function (item) {
-        if (item.selected) current = item;
-      });
-      var key = current ? (current.source || current.title) : '';
-      addChip('source', text('nova_source', 'nova_plus_source'), parts.name, {
-        badge: knownQuality(key) || parts.badge
-      });
+      addChip('source', text('nova_source', 'nova_plus_source'), parts.name, {});
     }
 
     if (groups.season && groups.season.items.length > 0) {
@@ -6422,17 +6409,9 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
 
     var source = wideSourceChip();
     if (source) {
-      var current = null;
-      (groups.sort || []).forEach(function (item) { if (item.selected) current = item; });
       var parts = splitSourceName(sourceTitle());
-      var value = knownQuality(current ? (current.source || current.title) : '') || parts.badge;
       source.removeClass('nova-chip--busy');
       source.find('.nova-chip__label').text(parts.name || '');
-      var badge = source.find('.nova-chip__badge');
-      if (value) {
-        if (badge.length) badge.text(value);
-        else source.find('.nova-chip__label').before($('<span class="nova-chip__badge"></span>').text(value));
-      } else badge.remove();
     }
 
     ui.rows.find('.nova-plus__bar .nova-chip').each(function () {
