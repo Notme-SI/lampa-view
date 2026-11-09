@@ -74,7 +74,9 @@ async function open(page,movie){
       const data=JSON.parse(fs.readFileSync(path.join(__dirname,'../../docs/frames/v1',name),'utf8'));
       const fixture=normalize({media:'movie',tmdb:91,title:'Gallery Film',year:2025,source:'test',priority:1,origin:'https://frames.example/',
        frames:Array.from({length:25},(_,i)=>({url:'https://film-grab.com/wp-content/uploads/photo-gallery/real-frame-'+i+'.jpg'}))});
-      for(const key of fixture.keys)if(shardFor(key)+'.json'===name){data.entries[key]=[fixture.id];data.records[fixture.id]=fixture;}
+      const archive=normalize({media:'movie',title:'QA Archive Film',year:2025,source:'bluscreens',priority:40,origin:'https://www.bluscreens.net/',
+       frames:Array.from({length:14},(_,i)=>({url:'https://www.bluscreens.net/uploads/qa-frame-'+i+'.jpg'}))});
+      for(const entry of [fixture,archive])for(const key of entry.keys)if(shardFor(key)+'.json'===name){data.entries[key]=[entry.id];data.records[entry.id]=entry;}
       return route.fulfill({json:data,headers:{'Access-Control-Allow-Origin':'*'}});
      });
      await page.route('https://film-grab.com/wp-content/uploads/photo-gallery/**',route=>route.fulfill({
@@ -279,7 +281,7 @@ async function open(page,movie){
       await page.evaluate(()=>{
        Lampa.Storage.set('minimal_poiskkino_frames_key','');
        window.openArchiveFilm=year=>{
-        const movie={id:year,source:'tmdb',title:'Опасные животные '+year,original_title:'Dangerous Animals',release_date:year+'-02-14',
+        const movie={id:year,source:'tmdb',title:'Архивный фильм '+year,original_title:'QA Archive Film',release_date:year+'-02-14',
          production_countries:[],production_companies:[],spoken_languages:[],genres:[]};
         detailFixture={movie,persons:{cast:[],crew:[]},videos:{results:[]}};
         Lampa.Activity.push({component:'full',source:'tmdb',id:movie.id,method:'movie',card:movie});
@@ -294,7 +296,7 @@ async function open(page,movie){
        return image?.naturalWidth===800 && image.currentSrc.includes('bluscreens.net');
       });
       await page.evaluate(()=>openArchiveFilm(2024));
-      await active.locator('.full-start-new__title').filter({hasText:'Опасные животные 2024'}).waitFor();
+      await active.locator('.full-start-new__title').filter({hasText:'Архивный фильм 2024'}).waitFor();
       assert.equal(await recovered.count(),0);
      }
      assert.deepEqual(errors,[]);

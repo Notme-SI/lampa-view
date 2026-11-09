@@ -226,8 +226,9 @@ body.lampa_view.pt-mobile .settings .settings__body>.scroll,body.lampa_view.pt-m
 body.lampa_view.pt-mobile .settings .scroll__content,body.lampa_view.pt-mobile .selectbox:not(.minimal-franchise-menu) .scroll__content {height:100%!important;max-height:100%!important}
 body.lampa_view.pt-mobile .settings,body.lampa_view.pt-mobile .selectbox,body.lampa_view.pt-mobile .modal {z-index:120!important}
 body.lampa_view.pt-mobile .pt-hero {height:auto!important;min-height:0!important;max-height:none!important}
-body.lampa_view.pt-mobile .pt-hero__branding {height:auto!important;min-height:0!important;margin-bottom:.7em}
-body.lampa_view.pt-mobile .pt-hero__branding>.pt-hero__logo {height:auto;max-height:3.4em}
-body.lampa_view.pt-mobile .pt-hero__body,body.lampa_view.pt-theme-glass.pt-mobile .pt-hero__body {padding:1em;margin:.4em .7em 3em;min-height:0}
-body.lampa_view.pt-mobile .pt-hero__meta {height:auto;min-height:0;max-height:3em;margin-bottom:.65em}
-body.lampa_view.pt-mobile .pt-hero__overview {height:auto;min-height:0;max-height:4.65em;line-height:1.55}
+body.lampa_view.pt-mobile .pt-hero__branding {height:4.5em;min-height:4.5em;margin-bottom:.7em}
+body.lampa_view.pt-mobile .pt-hero__branding>.pt-hero__logo {height:3.4em;max-height:3.4em}
+body.lampa_view.pt-mobile .pt-hero__branding>.pt-hero__logo--translated {height:2em;max-height:2em}
+body.lampa_view.pt-mobile .pt-hero__body,body.lampa_view.pt-theme-glass.pt-mobile .pt-hero__body {padding:1.5em 1em 1em;margin:.4em .7em 3em;min-height:0}
+body.lampa_view.pt-mobile .pt-hero__meta {margin-bottom:.65em}
+body.lampa_view.pt-mobile .pt-hero__overview {height:4.65em;min-height:4.65em;line-height:1.55}
