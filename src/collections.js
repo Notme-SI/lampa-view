@@ -102,9 +102,9 @@ export default function collections(L,shiki,kino,kinoFeeds){
    },()=>edit(ctx));
   },menu);
  }
- function menu(){select(lampaViewText("Подборки (изменения при следующем открытии)"),['main:','category:tvshow','category:anime:standard','category:anime:shikimori'].map(id=>({id,title:contextName(id)})),r=>edit(r.id));}
- L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_catalogue_filters_reset',type:'button'},field:{name:lampaViewText('Сбросить фильтры каталогов'),description:lampaViewText('Подборка, жанр, сортировка и годы фильмов, сериалов и мультфильмов. История и подборки главной сохраняются.')},onChange(){['movie','tv','cartoon'].forEach(kind=>L.Storage.set('minimal_catalogue_filters_'+kind,{}));L.Noty.show(lampaViewText('Фильтры каталогов сброшены'));}});
- L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_rows',type:'button'},field:{name:lampaViewText("Подборки главной и аниме"),description:lampaViewText("Порядок и видимость рядов главной, ТВ-шоу и двух каталогов аниме. Фильмы, сериалы и мультфильмы настраиваются фильтрами внутри разделов.")},onChange:menu});
+ function menu(){select(lampaViewText("Подборки (изменения при следующем открытии)"),['main:','category:anime:standard','category:anime:shikimori'].map(id=>({id,title:contextName(id)})),r=>edit(r.id));}
+ L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_catalogue_filters_reset',type:'button'},field:{name:lampaViewText('Сбросить фильтры каталогов'),description:lampaViewText('Подборка, жанр, сортировка и годы фильмов, сериалов, мультфильмов и ТВ-шоу. История и подборки главной сохраняются.')},onChange(){['movie','tv','cartoon','tvshow'].forEach(kind=>L.Storage.set('minimal_catalogue_filters_'+kind,{}));L.Noty.show(lampaViewText('Фильтры каталогов сброшены'));}});
+ L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_rows',type:'button'},field:{name:lampaViewText("Подборки главной и аниме"),description:lampaViewText("Порядок и видимость рядов главной и двух каталогов аниме. Фильмы, сериалы, мультфильмы и ТВ-шоу настраиваются фильтрами внутри разделов.")},onChange:menu});
  const main=L.Api.main;
  L.Api.main=function(object,ok,fail){
   const ctx=context(object),compact=(!object.component || object.component==='main');
