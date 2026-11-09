@@ -2604,6 +2604,17 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       comp.request = function (url) {
         restoreLookupTitle();
         url=fixLookupUrl(url);
+        // Animevost's year match redirects straight to the original release.
+        // Ask the same provider for its search folders before choosing a season.
+        if(lookupCard && tmdbKind(lookupCard)==='tv' && /\/lite\/animevost(?:\?|$)/i.test(url)){
+          try{
+            var catalogueUrl=new URL(url,location.href);
+            if(!catalogueUrl.searchParams.get('uri') && catalogueUrl.searchParams.get('similar')!=='true'){
+              catalogueUrl.searchParams.set('similar','true');
+              url=catalogueUrl.href;
+            }
+          }catch(e){}
+        }
         arguments[0]=url;
         if(!parsing)folderChain=[];
         folderChain.push(String(url || ''));

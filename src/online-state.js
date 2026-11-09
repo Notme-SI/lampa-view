@@ -11,12 +11,14 @@ const stamp=value=>typeof value==='string' && !/^\d+$/.test(value)?Date.parse(va
 const titleClean=value=>String(value || '').normalize('NFKC').toLowerCase().replace(/ё/g,'е').replace(/[^a-zа-я0-9\u3040-\u30ff\u3400-\u9fff]+/g,' ').trim();
 function providerRelease(row,card){
  const title=String(row.title || row.name || row.text || ''),names=[card.name,card.title,card.original_name,card.original_title].filter(Boolean),family=new Set(names.flatMap(v=>String(v).split(/\s+[\/|]\s+/).map(titleClean)));
- const marker=title.match(/\[(?:тв|tv)(?:\s*[- ]\s*(\d+))?(?:\s*,[^\]]*)?\]/i),explicit=title.match(/(?:сезон|season)\s*(\d+)|(\d+)\s*(?:сезон|season)|\bs(\d+)\b/i);
+ const marker=title.match(/\[(?:тв|tv)(?:\s*[- ]\s*(\d+))?(?:\s*,[^\]]*)?\]/i);
+ const seasonLabel=/(?:сезон|season)\s*(\d+)|(\d+)(?:st|nd|rd|th|[-–]й)?\s*(?:сезон|season)|\bs(\d+)\b/gi;
+ const explicit=seasonLabel.exec(title);
  const exact=family.has(titleClean(title));
  const part=exact?0:Number((title.match(/(?:часть|part|cour)\s*(\d+)/i) || [])[1]) || 0;
  let season=Number((marker && marker[1]) || (explicit && (explicit[1] || explicit[2] || explicit[3])) || row.season) || 0;
  if((card.name || card.original_name) && !exact && /\b(?:ova|ona[- ]?special|movie|film|special)\b|спецвыпуск|фильм/i.test(title))return null;
- const base=title.replace(/\[(?:тв|tv)(?:\s*[- ]\s*\d+)?(?:\s*,[^\]]*)?\]/gi,' ').replace(/(?:сезон|season)\s*\d+|\d+\s*(?:сезон|season)|\bs\d+\b/gi,' ').replace(/(?:часть|part|cour)\s*\d+(?=[\s.)]*(?:[\/|]|$))/gi,' ').replace(/\b(?:19|20)\d{2}\b/g,' ');
+ const base=title.replace(/\[(?:тв|tv)(?:\s*[- ]\s*\d+)?(?:\s*,[^\]]*)?\]/gi,' ').replace(seasonLabel,' ').replace(/(?:часть|part|cour)\s*\d+(?=[\s.)]*(?:[\/|]|$))/gi,' ').replace(/\b(?:19|20)\d{2}\b/g,' ');
  const match=exact || base.split(/\s+[\/|]\s+/).some(value=>{
   let name=titleClean(value);if(family.has(name))return true;
   const roman=value.match(/\s+(II|III|IV|V|VI|VII|VIII|IX|X)\s*$/i);if(roman){name=titleClean(value.slice(0,roman.index));if(family.has(name)){if(!season)season=({II:2,III:3,IV:4,V:5,VI:6,VII:7,VIII:8,IX:9,X:10})[roman[1].toUpperCase()];return true;}}

@@ -339,6 +339,9 @@ test('Lampac discovery and provider routes use the card title when Lampa supplie
   comp.request(comp.requestParams(inherited));
   const provider=params(requests[0]);assert.deepEqual(provider.getAll('title'),[title,title]);assert.equal(provider.get('kinopoisk_id'),'5258557');assert.equal(provider.get('pick'),'');assert.equal(s.movie.name,title);
   const manual='/lite/ailiberty?title=Other%20title&clarification=1';comp.request(manual);assert.equal(requests[1],manual);assert.deepEqual(n.errors,[]);
+  comp.request('/lite/animevost?title='+encodeURIComponent(title)+'&year=2023');
+  assert.equal(params(requests.at(-1)).get('similar'),'true','Animevost asks for the full release search before accepting a year match');
+  const release='/lite/animevost?uri=third&s=1';comp.request(release);assert.equal(requests.at(-1),release);
  }finally{if(s)s.close();n.close();}
 });
 
