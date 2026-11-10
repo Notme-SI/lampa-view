@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium,webkit}=require(process.env.PLAYWRIGHT_MODULE || 'playwright'),{setup}=require('../fixtures/native-browser.cjs');
-(async()=>{for(const engine of [chromium,webkit]){const browser=await engine.launch({headless:true});try{for(const mode of ['desktop','tv','mobile'])for(const theme of mode==='mobile'?['minimal','glass']:['minimal']){
+(async()=>{for(const engine of [chromium,webkit]){const browser=await engine.launch({headless:true});try{for(const mode of ['desktop','tv','mobile'])for(const theme of mode==='desktop'?['minimal']:['minimal','glass']){
  const viewport=mode==='mobile'?{width:390,height:844}:mode==='tv'?{width:960,height:540}:{width:2559,height:1410};
  const r=await setup(browser,{viewport,mode},{beforePlugin:page=>page.evaluate(()=>{
   const profile=document.createElement('div');profile.className='head__action selector open--profile';profile.innerHTML='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/></svg>';document.querySelector('.head__actions').appendChild(profile);const L=Lampa;L.Params.init();L.Layer.init();L.Search.init();L.DeviceInput.init();L.Controller.observe();L.Keypad.init();L.Keypad.enable();Navigator.follow('focus',e=>L.Controller.focus(e.elem));
@@ -84,7 +84,9 @@ const {chromium,webkit}=require(process.env.PLAYWRIGHT_MODULE || 'playwright'),{
   await page.evaluate(()=>Lampa.Storage.set('lampa_view_hero',true));
   if(process.env.LAMPA_QA_OUTPUT){fs.mkdirSync(process.env.LAMPA_QA_OUTPUT,{recursive:true});await page.screenshot({path:path.join(process.env.LAMPA_QA_OUTPUT,'return-'+engine.name()+'-'+mode+'.png')});}
   const layers=await page.locator('.activity--active .pt-hero').evaluate(h=>({image:getComputedStyle(h.querySelector('.pt-hero__image')).zIndex,shade:getComputedStyle(h,':before').zIndex,body:getComputedStyle(h.querySelector('.pt-hero__body')).zIndex}));assert.deepEqual(layers,{image:'0',shade:'1',body:'2'},'Artwork, shade and content use explicit layers');
-  assert.match(await page.locator('.activity--active .pt-hero').evaluate(n=>getComputedStyle(n).clipPath),/inset\(/,'Scaled artwork is clipped at the compositor boundary');
+  const clipping=await page.locator('.activity--active .pt-hero').evaluate(n=>({path:getComputedStyle(n).clipPath,overflow:getComputedStyle(n).overflow}));
+  if(mode==='tv'||theme==='glass'){assert.equal(clipping.path,'none','Matte glass and TV avoid an extra clipping render pass');assert.equal(clipping.overflow,'hidden','The hero still contains its zoomed artwork');}
+  else assert.match(clipping.path,/inset\(/,'Scaled artwork is clipped at the compositor boundary');
   assert.deepEqual(r.errors,[]);console.log(engine.name()+' '+mode+' '+theme+': gently zoomed artwork, ancestor animation and main/full/Back/slide keep identical geometry');
  }finally{await r.context.close();}
 }}finally{await browser.close();}}})().catch(e=>{console.error(e);process.exitCode=1;});

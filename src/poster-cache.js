@@ -11,7 +11,7 @@ export default function posterCache(L,enabled,highQuality){
  let running=0,timer;
  const maximum=()=>enabled();
  const tv=()=>document.body.classList.contains('pt-tv');
- const aheadY=Math.min(1800,Math.max(540,(window.innerHeight || 540)*2)),aheadX=Math.min(1920,Math.max(360,(window.innerWidth || 960)));
+ const aheadY=Math.min(1800,Math.max(540,(window.innerHeight || 540)*(tv()?1.5:2))),aheadX=Math.min(1920,Math.max(360,(window.innerWidth || 960)*(tv()?.5:1)));
  const paused=()=>document.hidden;
  const observer=typeof window.IntersectionObserver==='function'?new window.IntersectionObserver(entries=>entries.forEach(entry=>{
   if(entry.isIntersecting){const callback=callbacks.get(entry.target);if(callback)callback();}

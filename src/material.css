@@ -47,3 +47,19 @@ body.lampa_view[data-lampa-theme] :is(.head__action,.menu__item,.full-start__but
 body.lampa_view[data-lampa-theme].no--animation .card .card__view,body.lampa_view[data-lampa-theme].no--animation .nova-plus-root .nova__list--grid .nova-card__thumb {transition:none!important;-webkit-transition:none!important;transform:none!important;-webkit-transform:none!important}
 @media(prefers-reduced-motion:reduce){body.lampa_view[data-lampa-theme] .card .card__view,body.lampa_view[data-lampa-theme] .nova-plus-root .nova__list--grid .nova-card__thumb {transition:none!important;-webkit-transition:none!important;transform:none!important;-webkit-transform:none!important}}
 @media(prefers-reduced-transparency:reduce){body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] {--pt-matte-alpha:1;--pt-glass-blur:0px}}
+/* On TV a scrolling fullscreen bitmap needs no extra alpha-mask render pass.
+   Static shades provide the same readable edges over the shared page color. */
+body.lampa_view.pt-tv .pt-hero {clip-path:none;-webkit-clip-path:none}
+body.lampa_view.pt-tv .pt-hero .pt-hero__artwork,body.lampa_view.pt-tv .pt-hero .pt-hero__image {mask-image:none!important;-webkit-mask-image:none!important}
+body.lampa_view.pt-tv .pt-hero .pt-hero__artwork:after {content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(0deg,var(--pt-bg),transparent 40%)}
+body.lampa_view.pt-tv .pt-hero:before {background:linear-gradient(90deg,var(--pt-bg) 0%,var(--pt-bg) 13%,transparent 76%)}
+/* The hero is page content. Keep its distance-readable TV layout in both
+   themes; the open overlays and controls retain their matte material. */
+body.lampa_view.pt-tv.pt-theme-glass[data-lampa-theme="glass"] .pt-hero {display:block;border-radius:0;background:var(--pt-bg)!important}
+body.lampa_view.pt-tv.pt-theme-glass[data-lampa-theme="glass"] .pt-hero__body {position:absolute;left:3em;top:auto;bottom:4em;max-width:31em;padding:0 1em 0 0;transform:none;border:0;border-radius:0;background:none;box-shadow:none}
+/* Glass belongs to controls and overlays, not three transparent fullscreen
+   roots that make the compositor blend the whole scrolling catalogue. */
+body.lampa_view.pt-tv.pt-theme-glass[data-lampa-theme="glass"] :is(.app,.wrap) {background:var(--pt-bg)!important}
+body.lampa_view.pt-tv.pt-theme-glass[data-lampa-theme="glass"] {--pt-poster-surface:var(--pt-poster-badge);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+body.lampa_view.pt-tv.pt-theme-glass[data-lampa-theme="glass"] .card__title {font-weight:500;letter-spacing:normal}
+body.lampa_view.pt-tv.pt-theme-glass[data-lampa-theme="glass"] :is(.card__view,.card__img) {border-radius:.5em}

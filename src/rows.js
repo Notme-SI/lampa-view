@@ -26,6 +26,7 @@ export default function fillRows(L,enabled){
       if(!box.width)return;
       const nearby=first || box.bottom>=0 && box.top<=window.innerHeight+ahead;
       const card=root.querySelector('.card,.full-person');if(!card)return;
+      if(!nearby)return;
       if(document.body.classList.contains('pt-tv') && root.classList.contains('minimal-cast-native')){
         const viewport=line.scroll && line.scroll.render(true),content=viewport && viewport.querySelector('.scroll__content');
         if(content){
@@ -36,12 +37,12 @@ export default function fillRows(L,enabled){
         }
       }
       fitRail(line,root,card,state,enabled);
-      if(!nearby)return;
       const size=card.getBoundingClientRect().width;if(!size)return;
       const style=window.getComputedStyle(card),gap=(parseFloat(style.marginLeft)||0)+(parseFloat(style.marginRight)||0);
-      // Mount one viewport plus half a viewport ahead. The poster observer
-      // can then fetch/decode the next cards before focus scrolls to them.
-      const desired=Math.min(state.data.results.length,30,Math.ceil(box.width/(size+gap)*(card.matches('.card')?1.5:1))+1);
+      // TV prepares a complete viewport plus one card in every nearby row.
+      // Pointer layouts retain an extra half viewport for faster wheel input.
+      const extra=card.matches('.card') && !document.body.classList.contains('pt-tv')?1.5:1;
+      const desired=Math.min(state.data.results.length,30,Math.ceil(box.width/(size+gap)*extra)+1);
       const count=root.querySelectorAll('.card,.full-person').length;
       if(desired<=Number(line.view || 0) && count>=Math.min(desired,state.data.results.length))return;
       // Lampa builds seven cards by default. Match its lazy batch to actual CSS size.

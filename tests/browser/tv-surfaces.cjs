@@ -6,6 +6,7 @@ const alpha=value=>{const numbers=value.match(/[\d.]+/g);return numbers.length==
  const r=await setup(browser,{mode,viewport:mode==='tv'?{width:960,height:540}:mode==='mobile'?{width:390,height:844}:mode==='tablet'?{width:834,height:1194}:{width:1440,height:900}},{beforePlugin:p=>p.evaluate(()=>{Lampa.Params.init();Lampa.Layer.init();Lampa.Search.init();})}),{page}=r;
  try{
   await page.evaluate(()=>{Lampa.Storage.set('lampa_view_theme','glass');document.body.classList.add('advanced--animation');});
+  if(mode==='tv')assert.equal((await material(page,'.wrap')).bg,'rgb(20, 21, 23)','TV glass has an opaque catalogue canvas below its matte overlays');
   for(const opacity of ['easy','medium','blacked']){
    await page.evaluate(opacity=>Lampa.Storage.set('glass_opacity',opacity),opacity);
    for(const selector of ['.wrap__left','.settings__content','.head .open--search','.head .open--settings']){const m=await material(page,selector);assert.ok(alpha(m.bg)>=.75 && alpha(m.bg)<1,JSON.stringify({mode,opacity,selector,m}));if(mode==='tv'||selector.startsWith('.head')||selector==='.wrap__left')assert.equal(m.blur,'none');else assert.match(m.blur,/blur\(/);}
