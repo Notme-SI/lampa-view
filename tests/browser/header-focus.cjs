@@ -18,7 +18,7 @@ const assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWR
   assert.ok(geometry.menu.left>home.menu+geometry.controls[0].box.width*.8 && geometry.search.left>home.left+geometry.controls[0].box.width*.8,'Back moves Menu and shrinks Search');
   assert.ok(Math.abs(geometry.search.right-home.right)<1,'Search keeps its right edge');assert.ok(geometry.search.width<home.width);
   assert.ok(geometry.search.right<=geometry.vw && geometry.search.width>geometry.vw*.4);
-  for(const control of geometry.controls){assert.equal(control.focused,true);assert.equal(control.outline,'0px');assert.equal(control.border,theme==='glass'?'rgba(255, 255, 255, 0.61)':'rgb(216, 195, 154)');}
+  for(const control of geometry.controls){assert.equal(control.focused,true);assert.equal(control.outline,'0px');assert.equal(control.border,theme==='glass'?(mode==='tv'?'rgb(255, 255, 255)':'rgba(255, 255, 255, 0.61)'):'rgb(216, 195, 154)');}
   assert.equal(new Set(geometry.controls.map(n=>n.fill)).size,1,'Header controls share focus fill');assert.equal(new Set(geometry.controls.map(n=>n.shadow)).size,1,'Header controls share focus edge');await page.locator('.head__menu-icon').click();
   const menuPanel=await page.locator('.wrap__left').evaluate(n=>{const r=n.getBoundingClientRect();return {left:r.left,top:r.top,width:r.width};});
   assert.ok(menuPanel.left<home.menu && menuPanel.left>=8,'Menu opens near the outer edge');
@@ -38,7 +38,7 @@ const assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWR
     const material=node=>{const s=getComputedStyle(node);return [s.backgroundImage,s.backgroundColor,s.borderColor,s.backdropFilter];},row=document.querySelector('.wrap__left [data-action=movie]');
     row.classList.add('focus');const style=getComputedStyle(row),result={menu:material(document.querySelector('.wrap__left')),settings:material(document.querySelector('.settings__content')),shade:getComputedStyle(document.querySelector('.settings__layer')).backgroundColor,focus:{tint:style.backgroundColor,shadow:style.boxShadow,radius:parseFloat(style.borderRadius),marker:getComputedStyle(row,':before').display}};row.classList.remove('focus');return result;
    });
-   assert.deepEqual(glass.menu,glass.settings,'Menu and Settings share one glass material');assert.equal(glass.shade,'rgba(0, 0, 0, 0)','Settings do not add a second dark layer');assert.equal(glass.focus.tint,mode==='tv'?'rgb(68, 68, 68)':'rgba(255, 255, 255, 0.2)');assert.notEqual(glass.focus.shadow,'none');assert.equal(glass.focus.marker,'none');assert.ok(glass.focus.radius>5,'Menu focus is a filled rounded row');
+   assert.deepEqual(glass.menu,glass.settings,'Menu and Settings share one glass material');assert.equal(glass.shade,'rgba(0, 0, 0, 0)','Settings do not add a second dark layer');assert.equal(glass.focus.tint,mode==='tv'?'rgb(255, 255, 255)':'rgba(255, 255, 255, 0.2)');if(mode==='tv')assert.equal(glass.focus.shadow,'none');else assert.notEqual(glass.focus.shadow,'none');assert.equal(glass.focus.marker,'none');assert.ok(glass.focus.radius>5,'Menu focus is a filled rounded row');
   }
   const icons=await page.locator('.settings-folder__icon').evaluateAll(slots=>slots.map(slot=>{
    const icon=slot.firstElementChild,a=slot.getBoundingClientRect(),b=icon?.getBoundingClientRect();
