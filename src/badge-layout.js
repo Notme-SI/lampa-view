@@ -43,7 +43,7 @@ export default function badgeLayout(status){
      const available=Math.max(1,Math.min(width-8,parseFloat(style.maxWidth)||width)-border);
      if(natural>available)el.style.fontSize=(parseFloat(style.fontSize)*Math.max(1,available-1)/natural).toFixed(2)+'px';
     }
-    const r=el.getBoundingClientRect();if(r.width && r.height)entries.push({el,corner,inset:(corner[1]==='r'?8:4)*insetScale,verticalInset:corner[0]==='t' && (el.matches('.pt-kind,.pt-quality,.card__quality'))?12*insetScale:undefined,width:r.width/scale,height:r.height/scale});
+    const topTag=el.matches('.pt-kind,.pt-quality,.card__quality'),r=el.getBoundingClientRect();if(r.width && r.height)entries.push({el,corner,inset:(topTag || corner[1]!=='r'?4:8)*insetScale,verticalInset:topTag?6*insetScale:undefined,width:r.width/scale,height:r.height/scale});
    }
    // CSS keeps favorites left of the rating even before the next measurement.
    const occupied=[...view.querySelectorAll('.card__icon:not(.icon--history)')].map(el=>el.getBoundingClientRect())
