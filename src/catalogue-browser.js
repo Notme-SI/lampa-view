@@ -3,10 +3,10 @@ import {cataloguePlan} from './catalogue.js';
 import {discoveryOptions} from './discovery-model.js';
 import {DISCOVERY_SOURCE} from './discovery-source.js';
 
-export const BROWSE_KINDS=['movie','tv','cartoon'];
+export const BROWSE_KINDS=['movie','tv','cartoon','tvshow'];
 export function browseOptions(kind,date=new Date()){
  const options=discoveryOptions(kind,date);
- return {collections:cataloguePlan(kind,'standard',date).filter(row=>!row.key.startsWith('genre-')),genres:options.genres.filter(g=>kind==='movie'?g.genre!==16:kind==='tv'?![16,99,10762,10763,10764,10767].includes(g.genre):true)};
+ return {collections:cataloguePlan(kind,'standard',date).filter(row=>!row.key.startsWith('genre-') && !(kind==='tvshow' && row.discovery.genre)),genres:options.genres.filter(g=>kind==='movie'?g.genre!==16:kind==='tv'?![16,99,10762,10763,10764,10767].includes(g.genre):true)};
 }
 export function yearRange(value,date=new Date()){
  const match=String(value || '').trim().match(/^(\d{4})(?:\s*[-–—:]\s*(\d{4}))?$/);
@@ -20,7 +20,7 @@ export function browseState(kind,value={},date=new Date()){
 }
 export function browseSpec(kind,value={},date=new Date()){
  const state=browseState(kind,value,date),row=browseOptions(kind,date).collections.find(r=>r.key===state.collection);
- const spec={ordered:true,kind,type:kind==='cartoon'?'':kind,country:'',genre:'',network:0,company:0,hero:'',...(row && row.discovery || {})};
+ const spec={ordered:true,kind,type:kind==='cartoon'?'':kind==='movie'?'movie':'tv',country:kind==='tvshow'?'RU':'',genre:'',network:0,company:0,hero:'',...(row && row.discovery || {})};
  spec.sort=state.sort || spec.sort || 'popular';
  if(state.genre)spec.genre=state.genre;
  // A year filter must include archives, not inherit the old four-year TV feed.

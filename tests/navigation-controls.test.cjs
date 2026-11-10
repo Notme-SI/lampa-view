@@ -37,12 +37,12 @@ test('TV rows replace arrows with More that can be focused from the last card an
  try{
   Object.defineProperty(w.HTMLElement.prototype,'offsetParent',{get(){return this.isConnected?w.document.body:null;},configurable:true});
   w.Navigator.follow('focus',event=>L.Controller.focus(event.elem));
-  L.Api.sources.tmdb.get=(url,params,ok)=>w.setTimeout(()=>ok({results:[{id:601,title:'Передача',name:'Передача',genre_ids:[10764],origin_country:['RU'],poster_path:'/p.jpg'}],page:1,total_pages:2}),0);
-  L.Api.category=(p,ok)=>ok([{title:'Подборка',url:JSON.stringify({kind:'tvshow',type:'tv',sort:'popular',country:'RU'}),source:'minimal_discovery',results:[{id:601,name:'Передача',poster_path:'/p.jpg'}],page:1,total_pages:2}]);
-  w.jQuery(w.document.querySelector('[data-action="tvshow"]')).trigger('hover:enter');for(let tries=0;tries<100 && !L.Activity.active().activity.component.items.length;tries++)await wait(20);
+  L.Api.sources.tmdb.get=(url,params,ok)=>w.setTimeout(()=>ok({results:[{id:601,title:'Передача',name:'Передача',genre_ids:[18],origin_country:['KR'],poster_path:'/p.jpg'}],page:1,total_pages:2}),0);
+  L.Api.category=(p,ok)=>ok([{title:'Подборка',url:JSON.stringify({kind:'dorama',type:'tv',sort:'popular',country:'KR'}),source:'minimal_discovery',results:[{id:601,name:'Передача',poster_path:'/p.jpg'}],page:1,total_pages:2}]);
+  L.Activity.push({component:'category',url:'dorama',source:'tmdb'});for(let tries=0;tries<100 && !L.Activity.active().activity.component.items.length;tries++)await wait(20);
   const row=L.Activity.active().activity.component.items[0],root=row.render(true),button=root.querySelector('.minimal-row-more');assert.ok(button);assert.equal(w.getComputedStyle(button).display,'inline-flex');assert.equal(root.querySelectorAll('.minimal-row-arrow').length,0);
   row.toggle();for(let i=0;i<row.data.results.length;i++)L.Controller.enabled().controller.right();assert.equal(row.last,button);assert.ok(button.classList.contains('focus'),'Remote cannot highlight More');
-  button.dispatchEvent(new w.Event('hover:enter'));await wait(100);assert.equal(L.Activity.active().component,'category_full');assert.equal(JSON.parse(L.Activity.active().url).kind,'tvshow');assert.equal(L.Activity.active().source,'minimal_discovery');
+  button.dispatchEvent(new w.Event('hover:enter'));await wait(100);assert.equal(L.Activity.active().component,'category_full');assert.equal(JSON.parse(L.Activity.active().url).kind,'dorama');assert.equal(L.Activity.active().source,'minimal_discovery');
   L.Activity.backward();await wait(100);button.click();await wait(100);assert.equal(L.Activity.active().component,'category_full');assert.deepEqual(r.errors,[]);
  }finally{r.close();}
 });
@@ -61,8 +61,8 @@ test('held TV navigation scrolls once per card, builds the next lazy batch and h
  try{
   Object.defineProperty(w.HTMLElement.prototype,'offsetParent',{get(){return this.isConnected && !this.classList.contains('card-more')?w.document.body:null;},configurable:true});
   w.Navigator.follow('focus',event=>L.Controller.focus(event.elem));
-  L.Api.sources.tmdb.get=(url,p,ok)=>w.setTimeout(()=>ok({results:Array.from({length:20},(_,i)=>({id:600+i,name:'Передача '+i,genre_ids:[10764],origin_country:['RU'],poster_path:'/poster.jpg',source:'tmdb'})),page:1,total_pages:3}),0);
-  L.Activity.push({component:'category',url:'tvshow',source:'tmdb',title:'ТВ-шоу'});for(let tries=0;tries<100 && !L.Activity.active().activity.component.items.length;tries++)await wait(20);
+  L.Api.sources.tmdb.get=(url,p,ok)=>w.setTimeout(()=>ok({results:Array.from({length:20},(_,i)=>({id:600+i,name:'Передача '+i,genre_ids:[18],origin_country:['KR'],poster_path:'/poster.jpg',source:'tmdb'})),page:1,total_pages:3}),0);
+  L.Activity.push({component:'category',url:'dorama',source:'tmdb',title:'Дорамы'});for(let tries=0;tries<100 && !L.Activity.active().activity.component.items.length;tries++)await wait(20);
   const row=L.Activity.active().activity.component.items[0],root=row.render(true);row.toggle();
   const update=row.scroll.update;let updates=0;row.scroll.update=function(){updates++;return update.apply(this,arguments);};
   for(let i=1;i<20;i++){updates=0;L.Controller.enabled().controller.right();assert.equal(row.active,i);assert.equal(updates,1,'Only native focus should position the rail');}
@@ -88,15 +88,12 @@ test('native menu_always switches a single native menu between dock and popover 
 });
 
 
-test('TV shows follow series in the native menu, open bounded feeds and preserve genre filters on More',async()=>{
+test('TV shows open a single filtered native grid and preserve scope on later pages',async()=>{
  const r=await native({built:true}),{w,L}=r,requests=[];try{
-  L.Storage.set('source','tmdb');const series=w.document.querySelector('.menu__item[data-action="tv"]'),shows=series.nextElementSibling;
-  assert.equal(shows.dataset.action,'tvshow');assert.equal(shows.querySelector('.menu__text').textContent,'ТВ-шоу');
-  const response=require('./fixtures/discovery-response.cjs');L.Api.sources.tmdb.get=(url,params,ok)=>{requests.push(url);w.setTimeout(()=>ok(response(url,params.page)),0);};
-  shows.click();await wait(220);assert.equal(L.Activity.active().url,'tvshow');assert.equal(requests.length,3,'Only the first batch loads before scrolling');
-  for(const url of requests){const q=new URLSearchParams(url.split('?')[1]);assert.match(url,/^discover\/tv\?/);assert.match(q.get('with_genres'),/10764|10767/);assert.equal(q.get('without_genres'),'16,99,18,80,10766');assert.equal(q.get('with_origin_country'),'RU');}
-  const row=L.Activity.active().activity.component.items[0];assert.equal(row.data.title,'Сейчас смотрят');
-  row.render(true).querySelector('.minimal-row-more').dispatchEvent(new w.Event('hover:enter'));await wait(120);
-  assert.equal(L.Activity.active().component,'category_full');assert.equal(L.Activity.active().source,'minimal_discovery');assert.equal(JSON.parse(L.Activity.active().url).kind,'tvshow');assert.deepEqual(r.errors,[]);
+  L.Storage.set('source','tmdb');const shows=w.document.querySelector('.menu__item[data-action=tv]').nextElementSibling;assert.equal(shows.dataset.action,'tvshow');
+  const response=require('./fixtures/discovery-response.cjs');L.Api.sources.tmdb.get=(url,p,ok)=>{requests.push(url);w.setTimeout(()=>ok(response(url,p.page)),0);};shows.click();await wait(220);
+  let c=L.Activity.active().activity.component;assert.equal(c.items.length,20);assert.equal(c.render(true).querySelectorAll('.minimal-catalogue-control').length,4);assert.equal(c.render(true).querySelectorAll('.items-line').length,0);assert.equal(requests.length,1);
+  c.render(true).querySelectorAll('.minimal-catalogue-control')[1].click();await wait(30);const talk=[...w.document.querySelectorAll('.selectbox-item')].find(n=>n.textContent.includes('Ток'));assert.ok(talk);talk.dispatchEvent(new w.Event('hover:enter'));await wait(100);c=L.Activity.active().activity.component;c.object.page=2;const json=await new Promise((ok,fail)=>c.emit('next',ok,fail));assert.equal(json.results.length,20);
+  const q=new URLSearchParams(requests.at(-1).split('?')[1]);assert.equal(q.get('with_origin_country'),'RU');assert.equal(q.get('with_genres'),'10767');assert.equal(q.get('without_genres'),'16,99,18,80,10766');assert.deepEqual(r.errors,[]);
  }finally{r.close();}
 });
