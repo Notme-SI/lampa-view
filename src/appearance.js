@@ -68,8 +68,8 @@ export default function appearance(L){
   document.body.style.setProperty('--pt-glass-alpha',String(({easy:.16,medium:.30,blacked:.58})[opacity] || .32));
   // Older Android WebViews cannot reliably evaluate typed calc arithmetic
   // in an rgba alpha channel. Supply the final number instead.
-  const matte=({easy:.84,medium:.88,blacked:.94})[opacity] || .88;
-  document.body.style.setProperty('--pt-matte-alpha',String(document.body.classList.contains('pt-tv')?Math.max(.93,matte):matte));
+  const opacityAlpha=({easy:.42,medium:.58,blacked:.78})[opacity] || .58;
+  document.body.style.setProperty('--pt-matte-alpha',String(opacityAlpha));
   for(const name of ['--pt-glass-scene','--pt-glass-tone-a','--pt-glass-tone-b'])document.body.style.removeProperty(name);
   chrome.update(active && !document.body.classList.contains('pt-tv'));
   document.dispatchEvent(new Event('minimal:interface-size'));document.dispatchEvent(new Event('minimal:hero-layout'));

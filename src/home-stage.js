@@ -35,18 +35,19 @@ export default function homeStage(hero,root){
   body.style.fontSize='';body.style.bottom='';
   const style=getComputedStyle(body),font=parseFloat(style.fontSize)||16;
   const glass=document.body.classList.contains('pt-theme-glass');
+  const anchored=style.position==='absolute';
   const minBottom=font*(glass && tv?3.8:glass?2:tv?3.2:3),topInset=font*(tv?1:1.25);
   if(document.body.classList.contains('pt-personal-enlarged')){
    height=Math.max(height,Math.ceil(body.offsetHeight+minBottom+topInset));
    hero.style.height=height+'px';
-   if(!glass)body.style.bottom=minBottom+'px';
+   if(anchored)body.style.bottom=minBottom+'px';
    root.classList.add('minimal-home-first-row');return;
   }
   const room=Math.max(1,height-minBottom-topInset),natural=body.offsetHeight;
   if((glass || !tv) && natural>room)body.style.fontSize=(font*Math.max(.65,room/natural))+'px';
-  // Glass uses normal flex centering; a relative bottom offset would move it
-  // above the hero after adaptive sizing. Minimal retains its anchored layout.
-  if(!glass){const bottom=Math.min(parseFloat(style.bottom)||font*7,height-body.offsetHeight-topInset);
+  // Both desktop themes anchor their text directly over the artwork. Mobile
+  // retains normal flow, so a bottom offset must never shift its text panel.
+  if(anchored){const bottom=Math.min(parseFloat(style.bottom)||font*7,height-body.offsetHeight-topInset);
    body.style.bottom=Math.max(minBottom,bottom)+'px';}
  }
  root.classList.add('minimal-home-first-row');

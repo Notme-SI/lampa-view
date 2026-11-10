@@ -1,39 +1,63 @@
-/* One material per theme on every device. Matte tint, no sampled artwork,
-   fixed background texture, animated shadow or blur on individual controls. */
+/* Watched reference: dark optical tint, fine white edge and real backdrop
+   diffusion. One filter per reading surface, never per poster or actor. */
 body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] {
- --pt-bg:#141517;--pt-side:#292a2d;--pt-panel:#292a2d;--pt-high:#3b3c3f;
+ --pt-bg:#0a0a0a;--pt-side:rgba(18,20,28,.3);--pt-panel:rgba(18,20,28,.5);--pt-high:#ffffff24;
  --pt-accent:#f4f4f6;--pt-accent-ink:#111;--pt-tint-rgb:244,244,246;
- --pt-selection:#454545;--pt-selection-rgb:69,70,73;--pt-row-focus:#454545;--pt-row-edge:#ffffff65;
- --pt-glass-border:#ffffff29;--pt-glass-edge:none;--pt-glass-sheen:linear-gradient(145deg,#ffffff08,transparent 65%);
- --pt-matte-alpha:.86;
- --pt-navigation-panel:var(--pt-glass-sheen),rgba(38,38,38,var(--pt-matte-alpha));
- --pt-glass-button:rgba(62,62,62,.78);--pt-glass-blur:10px;
- --pt-poster-badge:rgba(38,38,38,.88);--pt-poster-badge-edge:none;--pt-poster-badge-filter:none;
- background:#141517!important;background-attachment:scroll!important;
+ --pt-selection:#ffffff1f;--pt-selection-rgb:244,244,246;--pt-row-focus:#ffffff24;--pt-row-edge:#ffffff99;
+ --pt-glass-border:#ffffff1f;--pt-glass-edge:inset 0 1px 0 #ffffff0d;--pt-glass-sheen:linear-gradient(165deg,#ffffff08,transparent 55%);
+ --pt-matte-alpha:.58;
+ --pt-navigation-panel:rgba(18,20,28,var(--pt-matte-alpha));
+ --pt-glass-button:rgba(18,20,28,.3);--pt-glass-blur:28px;
+ --pt-glass-filter:blur(var(--pt-glass-blur)) saturate(1.5);
+ --pt-poster-badge:rgba(18,20,28,.72);--pt-poster-badge-edge:none;--pt-poster-badge-filter:none;
+ background:var(--pt-bg)!important;background-attachment:scroll!important;
 }
 body.lampa_view.pt-theme-glass[data-lampa-theme="glass"].pt-tv {
- --pt-matte-alpha:.93;
- --pt-glass-button:rgba(62,62,62,.94);--pt-glass-blur:0px;
+ --pt-glass-blur:16px;
 }
+/* Clear inherited filters first. Explicit groups below own the glass layer. */
 body.lampa_view[data-lampa-theme] *,body.lampa_view[data-lampa-theme] *:before,body.lampa_view[data-lampa-theme] *:after {backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
 body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] :is(.wrap__left,.settings__content,.selectbox__content,.settings-input__content,.modal__content,.extensions,.main-search .search,.settings-input--free) {
- background:var(--pt-navigation-panel)!important;border-color:var(--pt-glass-border)!important;box-shadow:none!important;
+ background:var(--pt-navigation-panel)!important;border-color:var(--pt-glass-border)!important;box-shadow:var(--pt-glass-edge),0 8px 30px #00000047!important;
 }
-/* Only an open overlay blurs. TV uses the same matte material with a denser
-   tint, so even a fullscreen search needs no live backdrop render pass. */
-body.lampa_view.pt-theme-glass[data-lampa-theme="glass"]:not(.pt-tv) :is(.settings__content,.selectbox__content,.modal__content,.extensions,.main-search .search,.settings-input--free),
-body.lampa_view.pt-theme-glass[data-lampa-theme="glass"]:not(.pt-tv):is(.menu--open,.pt-menu-hover) .wrap__left {
- backdrop-filter:blur(var(--pt-glass-blur))!important;-webkit-backdrop-filter:blur(var(--pt-glass-blur))!important;
+body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] :is(.settings__content,.selectbox__content,.settings-input__content,.modal__content,.extensions,.main-search .search,.settings-input--free,.navigation-bar__body),
+body.lampa_view.pt-theme-glass[data-lampa-theme="glass"]:is(.menu--open,.pt-menu-hover) .wrap__left,
+body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .head .head__body :is(.head__menu-icon,.head__backward,.head__action.open--search,.head__action.open--settings) {
+ backdrop-filter:var(--pt-glass-filter)!important;-webkit-backdrop-filter:var(--pt-glass-filter)!important;
 }
 body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] :is(.settings,.selectbox,.modal,.settings-input) :is(.scroll,.scroll__content,.scroll__body,.settings__body,.selectbox__body) {background:transparent!important}
-body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .settings-input--free .settings-input__content {background:transparent!important}
+body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .settings-input--free .settings-input__content {background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
 body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] :is(.extensions__item,.extensions__block-add,.extensions__item-icon,.extensions__block-title,.extensions__item-status,.settings-input__input,.settings-input__links) {background:var(--pt-glass-button)!important;border-color:var(--pt-glass-border)!important}
 body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] :is(.settings-folder,.settings-param,.selectbox-item):not(.focus):not(.hover) {background:transparent!important}
 body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] :is(.settings-folder,.settings-param,.selectbox-item,.extensions__item,.extensions__block-add):is(.focus,.hover) {background:var(--pt-row-focus)!important;color:#fff!important;border-color:var(--pt-row-edge)!important;box-shadow:none!important}
-body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .pt-hero {--pt-hero-panel:var(--pt-navigation-panel);--pt-hero-panel-shadow:none;--pt-hero-panel-filter:none;box-shadow:none;clip-path:none;-webkit-clip-path:none}
-body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .pt-hero__image {mask-image:none;-webkit-mask-image:none}
-body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .pt-hero:before {background:linear-gradient(90deg,#14151780,transparent 75%)}
+/* Actors, production facts and project headers are reading panes too. Their
+   common dark tint and edge stay visible even over a nearly black backdrop. */
+body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] :is(.minimal-detail-facts,.minimal-detail-cast>.minimal-cast-native,.person-start,.minimal-project-header) {
+ background:var(--pt-glass-sheen),var(--pt-panel)!important;border:1px solid var(--pt-glass-border);border-radius:1.5em;box-shadow:var(--pt-glass-edge);
+ backdrop-filter:var(--pt-glass-filter)!important;-webkit-backdrop-filter:var(--pt-glass-filter)!important;
+}
+body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .minimal-project-header {padding:1em}
+/* Full-width artwork belongs to the page, with no outer card or text box.
+   Unscaled static shades blend all edges into the same page canvas. */
+body.lampa_view.pt-home.pt-theme-glass[data-lampa-theme="glass"] .wrap__content:has(.activity--active .pt-hero:not(.pt-hidden)) {padding-top:0!important}
+body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .activity--active .pt-hero {display:block;width:100%!important;margin-inline:0!important;border-radius:0;padding-bottom:0;background:var(--pt-bg)!important;box-shadow:none;clip-path:none;-webkit-clip-path:none}
+body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .pt-hero .pt-hero__artwork {mask-image:none!important;-webkit-mask-image:none!important}
+body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .pt-hero .pt-hero__image {width:100%;max-width:none;object-fit:cover;mask-image:none!important;-webkit-mask-image:none!important}
+body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .pt-hero .pt-hero__artwork:after {content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(0deg,var(--pt-bg),#0a0a0a99 13%,transparent 48%)}
+body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .pt-hero:before {background:linear-gradient(90deg,#0a0a0abf, #0a0a0a66 36%,transparent 78%)}
+body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .pt-hero__body {padding:0 1em 0 0;border:0;border-radius:0;background:none;box-shadow:none}
+body.lampa_view.pt-theme-glass[data-lampa-theme="glass"]:not(.pt-mobile) .pt-hero__body {position:absolute;top:auto;left:max(var(--pt-content-inset),3em);bottom:3em;max-width:34em;transform:none}
+body.lampa_view.pt-theme-glass[data-lampa-theme="glass"].pt-tv .pt-hero__body {left:3em;bottom:4em;max-width:31em}
+body.lampa_view.pt-theme-glass[data-lampa-theme="glass"].pt-mobile .activity--active .pt-hero {display:flex}
+body.lampa_view.pt-theme-glass[data-lampa-theme="glass"].pt-mobile .pt-hero:before {background:none}
+body.lampa_view.pt-theme-glass[data-lampa-theme="glass"].pt-mobile .pt-hero__body {padding:1.5em 1em 1em}
 body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] :is(.pt-hero__action,.simple-button,.full-start__button,.nova-btn,.nova-chip,.nova-group):is(.focus,.hover) {background:var(--pt-row-focus)!important;box-shadow:none!important}
+/* The primary action and selected navigation use Watched's white pill. */
+body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .pt-hero .pt-hero__action,
+body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .head .head__body :is(.head__menu-icon,.head__backward,.head__action.open--search,.head__action.open--settings):is(.focus,.hover,:focus-visible),
+body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .navigation-bar__item.active {background:#fff!important;color:#0b0e14!important;border-color:#fff!important;box-shadow:0 1px 4px #00000033!important}
+body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .head .head__body .head__action.open--search:is(.focus,.hover,:focus-visible):after {color:inherit}
+body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .pt-hero .pt-hero__action:is(.focus,.hover,:focus-visible) {outline:2px solid #fff;outline-offset:3px}
 /* OLED: backgrounds remain black even when the native glass preference is on. */
 body.lampa_view[data-lampa-theme="minimal"] {--pt-bg:#000;--pt-side:#000;--pt-panel:#000;--pt-search-surface:#000;--pt-shell-surface:#000;--pt-poster-badge:#000;--pt-poster-surface:#000;background:#000!important}
 body.lampa_view[data-lampa-theme="minimal"] :is(.app,.wrap,.head,.wrap__left,.settings__content,.selectbox__content,.settings-input__content,.settings-input--free,.modal__content,.extensions,.main-search .search,.navigation-bar__body,.player-panel,.player-info) {background:#000!important;box-shadow:none!important}
@@ -46,17 +70,13 @@ body.lampa_view[data-lampa-theme] .nova-plus-root .nova__list--grid .nova-card:i
 body.lampa_view[data-lampa-theme] :is(.head__action,.menu__item,.full-start__button,.simple-button,.full-review,.full-review-add):is(.focus,.hover) {animation:none!important;-webkit-animation:none!important}
 body.lampa_view[data-lampa-theme].no--animation .card .card__view,body.lampa_view[data-lampa-theme].no--animation .nova-plus-root .nova__list--grid .nova-card__thumb {transition:none!important;-webkit-transition:none!important;transform:none!important;-webkit-transform:none!important}
 @media(prefers-reduced-motion:reduce){body.lampa_view[data-lampa-theme] .card .card__view,body.lampa_view[data-lampa-theme] .nova-plus-root .nova__list--grid .nova-card__thumb {transition:none!important;-webkit-transition:none!important;transform:none!important;-webkit-transform:none!important}}
-@media(prefers-reduced-transparency:reduce){body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] {--pt-matte-alpha:1;--pt-glass-blur:0px}}
+@media(prefers-reduced-transparency:reduce){body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] {--pt-matte-alpha:1!important;--pt-glass-filter:none!important;--pt-glass-button:#12141c;--pt-panel:#12141c}}
 /* On TV a scrolling fullscreen bitmap needs no extra alpha-mask render pass.
    Static shades provide the same readable edges over the shared page color. */
 body.lampa_view.pt-tv .pt-hero {clip-path:none;-webkit-clip-path:none}
 body.lampa_view.pt-tv .pt-hero .pt-hero__artwork,body.lampa_view.pt-tv .pt-hero .pt-hero__image {mask-image:none!important;-webkit-mask-image:none!important}
 body.lampa_view.pt-tv .pt-hero .pt-hero__artwork:after {content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(0deg,var(--pt-bg),transparent 40%)}
-body.lampa_view.pt-tv .pt-hero:before {background:linear-gradient(90deg,var(--pt-bg) 0%,var(--pt-bg) 13%,transparent 76%)}
-/* The hero is page content. Keep its distance-readable TV layout in both
-   themes; the open overlays and controls retain their matte material. */
-body.lampa_view.pt-tv.pt-theme-glass[data-lampa-theme="glass"] .pt-hero {display:block;border-radius:0;background:var(--pt-bg)!important}
-body.lampa_view.pt-tv.pt-theme-glass[data-lampa-theme="glass"] .pt-hero__body {position:absolute;left:3em;top:auto;bottom:4em;max-width:31em;padding:0 1em 0 0;transform:none;border:0;border-radius:0;background:none;box-shadow:none}
+body.lampa_view.pt-tv:not(.pt-theme-glass) .pt-hero:before {background:linear-gradient(90deg,var(--pt-bg) 0%,var(--pt-bg) 13%,transparent 76%)}
 /* Glass belongs to controls and overlays, not three transparent fullscreen
    roots that make the compositor blend the whole scrolling catalogue. */
 body.lampa_view.pt-tv.pt-theme-glass[data-lampa-theme="glass"] :is(.app,.wrap) {background:var(--pt-bg)!important}

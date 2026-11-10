@@ -5,7 +5,7 @@ export default function iosChrome(L){
  const root=document.documentElement,properties=['background-color','--pt-chrome-edge'],saved=properties.map(name=>[name,root.style.getPropertyValue(name),root.style.getPropertyPriority(name)]);
  const existing=document.querySelector('meta[name="theme-color"]'),initial=existing && existing.content;
  const background=L.Background,original=background && background.theme;
- let enabled=false,suspended=false,shade='rgb(30,28,28)',native=initial || '#000000',created,header,headerStyle;
+ let enabled=false,suspended=false,shade='rgb(10,10,10)',native=initial || '#000000',created,header,headerStyle;
  function normalize(color){return color==='black'?'#000000':color==='reset'?'#1d1f20':color;}
  function paint(color){
   // Give the existing full-width fixed header an explicit, almost clear

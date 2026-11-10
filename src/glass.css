@@ -1,5 +1,4 @@
-/* Clear glass reveals a bounded, preblurred scene from decoded artwork.
-   Original posters remain sharp. Only navigation and open overlays blur live. */
+/* Glass geometry. Material and filter ownership are defined in material.css. */
 body.lampa_view.pt-theme-glass {
  --pt-bg:#101113;--pt-side:rgba(42,42,42,.22);--pt-panel:rgba(255,255,255,.06);--pt-high:rgba(255,255,255,.14);
  --pt-text:#f8f8fa;--pt-muted:#c2c1c6;--pt-line:#ffffff29;--pt-accent:#f4f4f6;--pt-dim:#ffffff13;
@@ -9,8 +8,8 @@ body.lampa_view.pt-theme-glass {
  --pt-glass-button:var(--pt-glass-sheen),rgba(18,18,18,.07);
  --pt-navigation-panel:linear-gradient(135deg,#ffffff12,transparent 50%,#ffffff06),rgba(24,24,24,.34);
  --pt-glass-edge:inset 0 1px 0 #ffffff70,inset 1px 0 0 #ffffff20,inset 0 -1px 0 #00000035;
- background:var(--pt-chrome-edge,linear-gradient(180deg,#080808b3,#080808a8 55%,#080808d9)),var(--pt-glass-scene,radial-gradient(ellipse at 15% 10%,rgba(var(--pt-glass-tone-a),.7),rgba(var(--pt-glass-tone-b),.5))) center/cover!important;
- background-attachment:fixed!important;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI Variable','Segoe UI',Roboto,sans-serif;letter-spacing:0;
+ background:#0a0a0a!important;
+ font-family:-apple-system,BlinkMacSystemFont,'Segoe UI Variable','Segoe UI',Roboto,sans-serif;letter-spacing:0;
 }
 /* The old opaque canvas hid the glass background even when the theme was active. */
 body.lampa_view.pt-theme-glass .app,body.lampa_view.pt-theme-glass .wrap,body.lampa_view.pt-theme-glass .explorer,body.lampa_view.pt-theme-glass .explorer__files,body.lampa_view.pt-theme-glass .explorer__files-body {background:transparent!important}
@@ -48,14 +47,12 @@ body.lampa_view.pt-theme-glass .card__view,body.lampa_view.pt-theme-glass .card_
 body.lampa_view.pt-theme-glass .card.focus .card__view,body.lampa_view.pt-theme-glass .card.hover .card__view {box-shadow:0 0 .65em #ffffff3b,0 7px 20px #00000055!important}
 body.lampa_view.pt-theme-glass .card.focus .card__view:after,body.lampa_view.pt-theme-glass .card.hover .card__view:after {border-radius:1.05em!important;border-color:#f7f7fa!important}
 
-/* Artwork sits behind a compact, readable glass information pane. */
-body.lampa_view.pt-theme-glass .pt-hero {display:flex;align-items:center;--pt-hero-panel:linear-gradient(165deg,#ffffff18,transparent 45%,#ffffff05),rgba(18,18,18,.10);--pt-hero-panel-border:var(--pt-glass-border);--pt-hero-panel-shadow:var(--pt-glass-edge),0 12px 38px #0000002e;--pt-hero-panel-filter:blur(8px) saturate(1.35);background:#101113f0!important;border-radius:1.8em;overflow:hidden;-webkit-clip-path:inset(0 round 1.8em);clip-path:inset(0 round 1.8em);box-shadow:0 18px 50px #00000024}
+/* Branding belongs directly over the page artwork rather than inside a card. */
+body.lampa_view.pt-theme-glass .pt-hero {display:block;background:var(--pt-bg)!important;border-radius:0;overflow:hidden;-webkit-clip-path:none;clip-path:none;box-shadow:none}
 body.lampa_view.pt-theme-glass .pt-hero:before {background:linear-gradient(90deg,#10111320,transparent 70%)}
 body.lampa_view.pt-theme-glass:not(.pt-mobile) .pt-hero__image {-webkit-mask-image:linear-gradient(90deg,transparent 0%,#0000000d 8%,#00000033 17%,#00000080 30%,#000000d1 43%,#000 55%);mask-image:linear-gradient(90deg,transparent 0%,#0000000d 8%,#00000033 17%,#00000080 30%,#000000d1 43%,#000 55%)}
 body.lampa_view.pt-theme-glass .pt-hero__body {
- position:relative;top:auto;bottom:auto;transform:none;padding:1em 1.3em;box-sizing:border-box;border:1px solid var(--pt-glass-border);border-radius:1.6em;
- background:var(--pt-hero-panel);box-shadow:var(--pt-hero-panel-shadow);
- backdrop-filter:var(--pt-hero-panel-filter);-webkit-backdrop-filter:var(--pt-hero-panel-filter);
+ transform:none;box-sizing:border-box;border:0;border-radius:0;background:none;box-shadow:none;
 }
 body.lampa_view.pt-theme-glass .pt-hero__title {font-weight:700;letter-spacing:-.04em}
 body.lampa_view.pt-theme-glass .pt-hero__overview {color:#e1e0e6}
@@ -117,14 +114,7 @@ body.lampa_view.pt-theme-glass.pt-mobile .pt-hero__body {position:relative;left:
 body.lampa_view.pt-theme-glass.pt-mobile .navigation-bar__body {border:1px solid var(--pt-glass-border);border-radius:2.5em;background:var(--pt-glass-button);box-shadow:var(--pt-glass-edge),0 10px 28px #00000055;backdrop-filter:blur(var(--pt-glass-blur)) saturate(1.4);-webkit-backdrop-filter:blur(var(--pt-glass-blur)) saturate(1.4)}
 body.lampa_view.pt-theme-glass.pt-mobile .navigation-bar__item {border-radius:2em}
 body.lampa_view.pt-theme-glass.pt-mobile .navigation-bar__item.active {background:#ffffff15}
-/* TV has no live blur: give reading surfaces their own dense tint instead. */
-body.lampa_view.pt-theme-glass.pt-tv {--pt-glass-blur:0px;--pt-row-focus:#444444;--pt-glass-button:var(--pt-glass-sheen),rgba(24,24,24,.94);--pt-navigation-panel:linear-gradient(135deg,#ffffff12,transparent 50%,#ffffff06),rgba(24,24,24,.97)}
-body.lampa_view.pt-theme-glass.pt-tv .main-search .search {background:#161616!important}
 body.lampa_view.pt-theme-glass.pt-tv :is(.full-review,.full-review-add,.simple-button,.full-start__button,.pt-hero__action):is(.focus,.hover) {background:var(--pt-row-focus)!important}
-body.lampa_view.pt-theme-glass.pt-tv .pt-hero {--pt-hero-panel-filter:none}
-/* No live backdrop surfaces on the TV compositor, including open overlays. */
-body.lampa_view.pt-theme-glass.pt-tv *,body.lampa_view.pt-theme-glass.pt-tv *:before,body.lampa_view.pt-theme-glass.pt-tv *:after {backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
-body.lampa_view.pt-theme-glass.pt-tv .nova-plus-root .nova-plus__bar>.nova-chip,body.lampa_view.pt-theme-glass.pt-tv .nova-plus-root [data-nova-group=season] .nova-chip,body.lampa_view.pt-theme-glass.pt-tv .full-start__button {backdrop-filter:none;-webkit-backdrop-filter:none}
 /* Keep the focus contour without blurred shadows over a moving catalogue. */
 body.lampa_view.pt-theme-glass.pt-tv .card:is(.focus,.hover) .card__view {box-shadow:none!important}
 body.lampa_view.pt-theme-glass.pt-tv :is(.wrap__left,.settings__content,.selectbox__content,.settings-input__content,.modal__content) {box-shadow:var(--pt-glass-edge),0 4px 12px #0005}
@@ -132,7 +122,7 @@ body.lampa_view.pt-theme-glass.pt-tv .head__action,body.lampa_view.pt-theme-glas
 @media(prefers-reduced-motion:reduce){body.lampa_view.pt-theme-glass .minimal-anime-tab,body.lampa_view.pt-theme-glass .menu__item {transition:none!important}}
 @media(prefers-reduced-transparency:reduce){body.lampa_view.pt-theme-glass {--pt-glass-alpha:1;--pt-glass-blur:0px;--pt-glass-button:#24262b;--pt-navigation-panel:#24262b;--pt-glass-scene:none}body.lampa_view.pt-theme-glass .head__body {background:#242426}body.lampa_view.pt-theme-glass .pt-hero {--pt-hero-panel:#202023;--pt-hero-panel-filter:none}body.lampa_view.pt-theme-glass .nova-plus-root .nova-chip,body.lampa_view.pt-theme-glass .full-start__button,body.lampa_view.pt-theme-glass .navigation-bar__body {backdrop-filter:none!important;-webkit-backdrop-filter:none!important}}
 
-/* Mobile soft artwork edge belongs to Minimal; Glass keeps its existing pane overlap. */
+/* Touch branding keeps its established dimensions and centered logo. */
 body.lampa_view.pt-theme-glass.pt-mobile .pt-hero__image {-webkit-mask-image:none;mask-image:none}
 body.lampa_view.pt-theme-glass.pt-mobile .pt-hero__branding {align-items:center}
 body.lampa_view.pt-theme-glass.pt-mobile .pt-hero__branding>.pt-hero__logo {object-position:center top}

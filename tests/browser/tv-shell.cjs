@@ -27,7 +27,7 @@ const {setup}=require('../fixtures/native-browser.cjs');
      assert.ok(Math.abs(value.menu.height-value.settings.height)<1,'Settings mirrors Menu');
      assert.ok(value.settings.left>=value.search.right-1 && value.settings.right<=width,'Search leaves room for Settings');
      assert.ok(value.hero.width>value.width*.9,'Main area uses the TV width: '+JSON.stringify({engine:engine.name(),width,theme,size,value}));
-     if(theme==='glass'){assert.ok(value.dots.top>=value.panel.bottom+2,'TV dots do not overlap large description: '+JSON.stringify({width,size,value}));assert.equal(value.blur,false,'TV does not use live backdrop filtering');}
+     if(theme==='glass'){assert.ok(value.dots.top>=value.panel.bottom+2,'TV dots do not overlap large description: '+JSON.stringify({width,size,value}));assert.equal(value.blur,true,'Glass header uses optical backdrop filtering');}
      for(const tag of value.tags)assert.ok(tag.left>=value.poster.left && tag.right<=value.poster.right+1,'Tags fit narrow TV posters');
      assert.ok(value.tags[0].right<=value.tags[1].left+1,'Type and quality do not overlap: '+JSON.stringify({width,size,theme,value}));
      if(process.env.LAMPA_QA_OUTPUT && width===960 && theme==='glass' && size==='normal'){fs.mkdirSync(process.env.LAMPA_QA_OUTPUT,{recursive:true});await r.page.screenshot({path:path.join(process.env.LAMPA_QA_OUTPUT,engine.name()+'-tv-minimum-font.png')});}
