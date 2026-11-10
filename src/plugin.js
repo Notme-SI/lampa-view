@@ -575,7 +575,7 @@ if (!ROOT.LampaView) {
     torrentBanner(L,loadLogo);
     torrentSearch(L);
     settings(); bridge(); shell();back=installBack(L,$,()=>yes('lampa_view_enabled'));holidays=holidayLayout(L,()=>yes('lampa_view_enabled'));artwork.refresh();
-    tvPerformance(()=>yes('lampa_view_enabled'));
+    tvPerformance(()=>yes('lampa_view_enabled'),L);
     notices(L,()=>yes('lampa_view_enabled'));
     pinnedMenu=menuLayout(L,()=>yes('lampa_view_enabled'));
     pageScrollbar(L,()=>yes('lampa_view_enabled'));

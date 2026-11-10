@@ -16,7 +16,11 @@ const {setup}=require('../tests/fixtures/native-browser.cjs');
      await page.evaluate(()=>{
       Lampa.Platform.tv=()=>true;
       Lampa.TMDB.image=p=>'http://images.example.invalid'+p;
-      window.qaCounts={rect:0,writes:0};
+      Lampa.Params.init();Lampa.Storage.set('background',true);
+      window.qaCounts={rect:0,writes:0,background:0,canvasDraws:0};
+      for(const name of ['change','immediately','update']){const fn=Lampa.Background[name];Lampa.Background[name]=function(){qaCounts.background++;return fn.apply(this,arguments);};}
+      const draw=CanvasRenderingContext2D.prototype.drawImage;
+      CanvasRenderingContext2D.prototype.drawImage=function(){if(this.canvas.className.startsWith('background__'))qaCounts.canvasDraws++;return draw.apply(this,arguments);};
       const rect=Element.prototype.getBoundingClientRect;
       Element.prototype.getBoundingClientRect=function(){qaCounts.rect++;return rect.apply(this,arguments);};
       const set=Lampa.Storage.set;
@@ -50,7 +54,7 @@ const {setup}=require('../tests/fixtures/native-browser.cjs');
    await page.waitForTimeout(1800);
    const initial=await page.evaluate(()=>({rect:qaCounts.rect,writes:qaCounts.writes,longTasks:qaLongTasks.length}));
    await page.evaluate(()=>{
-    qaCounts={rect:0,writes:0};qaLongTasks=[];
+    qaCounts={rect:0,writes:0,background:0,canvasDraws:0};qaLongTasks=[];
     // Unrelated controls should never trigger a whole-catalogue layout pass.
     const button=document.querySelector('.pt-hero__action');
     for(let i=0;i<30;i++)button.dispatchEvent(new Event('transitionend',{bubbles:true}));
@@ -58,12 +62,15 @@ const {setup}=require('../tests/fixtures/native-browser.cjs');
    await page.waitForTimeout(450);
    const idle=await page.evaluate(()=>({...qaCounts,longTasks:qaLongTasks.length}));
    await page.evaluate(()=>{
-    qaCounts={rect:0,writes:0};qaLongTasks=[];
+    qaCounts={rect:0,writes:0,background:0,canvasDraws:0};qaLongTasks=[];
     for(let i=0;i<30;i++)qaCards[i%10].render(true).dispatchEvent(new Event('hover:focus',{bubbles:true}));
    });
    await page.waitForTimeout(950);
    const focus=await page.evaluate(()=>({...qaCounts,longTasks:qaLongTasks.length}));
-   console.log(JSON.stringify({plugin:path.basename(plugin),trial,initial,idle,focus,originals:urls.filter(url=>url.includes('/original/')).length,requests:urls.length,errors:r.errors}));
+   await page.evaluate(()=>{qaCounts={rect:0,writes:0,background:0,canvasDraws:0};qaLongTasks=[];Lampa.Background.change('http://images.example.invalid/w1280/qa-native-background.jpg');});
+   await page.waitForTimeout(2200);
+   const background=await page.evaluate(()=>({...qaCounts,longTasks:qaLongTasks.length}));
+   console.log(JSON.stringify({plugin:path.basename(plugin),trial,initial,idle,focus,background,originals:urls.filter(url=>url.includes('/original/')).length,requests:urls.length,errors:r.errors}));
    await r.context.close();
   }
  }finally{await browser.close();}

@@ -1,4 +1,8 @@
 /* TV presentation: distance-readable type and artwork. No Android mode changes. */
+/* A crisp focus ring avoids repainting broad shadows on every remote step. */
+body.lampa_view.pt-tv .card__view {transition:transform .12s ease!important;-webkit-transition:-webkit-transform .12s ease!important}
+body.lampa_view.pt-tv .card:is(.focus,.hover) .card__view {box-shadow:none!important}
+body.lampa_view.pt-tv :is(.head__action,.menu__item,.full-start__button,.simple-button,.full-review,.full-review-add):is(.focus,.hover) {animation:none!important;-webkit-animation:none!important}
 body.lampa_view.pt-tv {--pt-ui-font:calc(.703125vw * var(--pt-interface-scale,1));font-size:var(--pt-ui-font)!important;--pt-banner-unit:calc(.703125vw * 1.12)}
 body.lampa_view.pt-tv .pt-hero {max-width:90vw;margin:0 auto .9em}
 body.lampa_view.pt-tv .pt-hero__body {font-size:max(8px,1em);left:3em;bottom:3em;max-width:31em;padding-right:1em}
