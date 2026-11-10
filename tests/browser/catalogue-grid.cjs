@@ -18,7 +18,7 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
    assert.ok(await page.evaluate(()=>Lampa.Activity.active().activity.component.items.every(i=>i.data.media_type==='tv')));
    await page.evaluate(()=>Lampa.Activity.backward());await page.waitForSelector('.activity--active .minimal-catalogue-controls');
   }
-  await page.evaluate(()=>Lampa.Activity.push({component:'category_full',source:'tmdb',url:'discover/tv',networks:7,title:'Канал',minimal_studio:{name:'Канал',kind:'network',id:7}}));await page.waitForSelector('.activity--active .minimal-project-note');const before=await page.evaluate(()=>qaRequests.length);await page.locator('.activity--active').getByRole('button',{name:'Сериалы',exact:true}).click();await page.waitForSelector('.activity--active .card');assert.ok((await page.evaluate(()=>qaRequests.at(-1))).includes('with_networks=7'));assert.ok(await page.evaluate(()=>qaRequests.length)>before);
+  await page.evaluate(()=>Lampa.Activity.push({component:'category_full',source:'tmdb',url:'discover/tv',networks:7,title:'Канал',minimal_studio:{name:'Канал',kind:'network',id:7}}));await page.waitForSelector('.activity--active .card');assert.equal(await page.locator('.activity--active .minimal-project-tabs button[aria-pressed=true]').innerText(),'Сериалы');assert.ok(await page.evaluate(()=>qaRequests.some(url=>url.includes('with_networks=7'))));
   assert.deepEqual(r.errors,[]);console.log(engine.name()+' '+mode+': single grid, filters, archives, remote focus, full actor pagination and studio media tabs PASS');
  }finally{await r.context.close();}
 }}finally{await browser.close();}}})().catch(e=>{console.error(e);process.exitCode=1;});

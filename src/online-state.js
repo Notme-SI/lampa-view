@@ -140,20 +140,20 @@ export default function onlineState(L){
  function linkedRecords(card,records){
   const identity=linkFor(L,card,1,1);
   if(!identity)return [];
-  return Object.entries(records).filter(([,value])=>value && typeof value==='object' && value.card===identity.card);
+  return Object.entries(records).filter(([key,value])=>value && typeof value==='object' && value.card===identity.card && String(key)!==String(hash('',number(value.season),number(value.episode))));
  }
  function reader(card){
-  const records=L.Storage.get(file(),{}) || {},titles=names(card);
+  const records=L.Storage.get(file(),{}) || {},titles=names(card),identity=linkFor(L,card,1,1);
   const linked=new Map();
   for(const [key,value] of linkedRecords(card,records)){
    const coordinate=number(value.season)+':'+number(value.episode),old=linked.get(coordinate);
    if(!old || stamp(value.updated)>stamp(old.value.updated))linked.set(coordinate,{key,value});
   }
   return (season=0,episode=0,explicit)=>{
-   const keys=titles.map(title=>hash(title,season,episode)),match=linked.get(season+':'+episode);if(match)keys.push(match.key);if(explicit)keys.push(explicit);let best=null;
+   const keys=titles.map(title=>hash(title,season,episode)),match=linked.get(season+':'+episode);if(match)keys.push(match.key);if(explicit && String(explicit)!==String(hash('',season,episode)))keys.push(explicit);let best=null;
    for(const key of new Set(keys)){
     const value=records[key],raw=typeof value==='number'?{percent:value}:value;
-    if(!raw || typeof raw!=='object')continue;
+    if(!raw || typeof raw!=='object' || raw.card && identity && raw.card!==identity.card)continue;
     const row={hash:key,found:true,percent:Math.min(100,number(raw.percent)),time:number(raw.time),duration:number(raw.duration),updated:stamp(raw.updated)};
     if(!best || row.updated>best.updated || row.updated===best.updated && row.percent>best.percent)best=row;
    }
@@ -179,7 +179,7 @@ export default function onlineState(L){
   if(Object.keys(records).length)for(let s=1;s<=max;s++){
    const detail=seasons.find(row=>Number(row.season_number)===s),total=number(detail && detail.episode_count),limit=Math.min(500,Math.max(100,total));
    for(let e=1;e<=limit;e++)for(const title of titles){
-    const key=hash(title,s,e),raw=records[key];if(!raw)continue;
+    const key=hash(title,s,e),raw=records[key];if(!raw || raw.card && linkFor(L,card,1,1)?.card && raw.card!==linkFor(L,card,1,1).card)continue;
     const percent=Math.min(100,number(typeof raw==='number'?raw:raw.percent)),time=number(raw.time);if(!percent && !time)continue;
     const updated=stamp(raw.updated);
     if(!latest || updated>latest.record.updated || updated===latest.record.updated && (s>latest.season || s===latest.season && (e>latest.episode || e===latest.episode && percent>latest.record.percent)))latest={season:s,episode:e,total,record:{hash:key,percent,time,duration:number(raw.duration),updated}};

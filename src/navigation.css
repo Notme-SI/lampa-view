@@ -5,7 +5,7 @@ body.lampa_view.pt-mobile,body.lampa_view.pt-tablet {--pt-header-space:68px;--pt
 body.lampa_view.pt-tv {--pt-header-space:92px;--pt-header-control:44px;--pt-menu-row:clamp(32px,1.35vw,52px);--pt-menu-icon:clamp(18px,.85vw,28px);--pt-expanded-menu-width:min(max(16.5em,280px),88vw)}
 body.lampa_view .head,body.lampa_view.pt-mobile .head,body.lampa_view.pt-theme-glass .head,body.lampa_view.pt-theme-glass.pt-mobile .head {height:var(--pt-header-space)!important;background:transparent!important;border:0;box-shadow:none}
 body.lampa_view .head .head__body,body.lampa_view.pt-mobile .head .head__body,body.lampa_view.pt-theme-glass .head .head__body {display:flex;width:calc(100% - 2 * var(--pt-shell-inset));max-width:none;height:var(--pt-header-control);margin:var(--pt-shell-top) auto 0;padding:0;gap:var(--pt-header-gap);background:none!important;border:0!important;border-radius:0;box-shadow:none!important;backdrop-filter:none;-webkit-backdrop-filter:none;box-sizing:border-box}
-body.lampa_view .head .head__logo,body.lampa_view .head .head__logo-icon,body.lampa_view .head .head__title,body.lampa_view .head .pt-topnav {display:none!important}
+body.lampa_view .head .head__logo,body.lampa_view .head .head__logo-icon,body.lampa_view .head .head__title,body.lampa_view .head .head__navigator,body.lampa_view .head .pt-topnav {display:none!important}
 body.lampa_view .head .head__actions {display:flex;flex:1 1 auto;min-width:0;margin:0;height:100%;gap:0}
 body.lampa_view .head .head__actions>.head__action:not(.open--search),body.lampa_view .head .pt-holiday-icons {display:none!important}
 body.lampa_view .head .head__action.open--search {display:flex!important;flex:1 1 auto;width:100%!important;max-width:none!important;height:100%;min-height:0;margin:0;padding:0 .8em;justify-content:flex-start;gap:.52em;border-radius:999px!important;background:var(--pt-shell-surface)!important;border:1px solid var(--pt-shell-border)!important;box-sizing:border-box;box-shadow:none}
@@ -79,7 +79,7 @@ body.lampa_view.pt-home .head .head__body {padding-inline:0;gap:var(--pt-header-
 body.lampa_view .card .pt-kind,body.lampa_view .card .pt-quality,body.lampa_view .card .card__quality,body.lampa_view .card .pt-series-status,body.lampa_view .card .card__vote,body.lampa_view .card .card__marker,body.lampa_view .nova-plus-root .nova-hero>.nova-hero__quality,body.lampa_view .nova-plus-root .nova-card__quality,body.lampa_view .nova-plus-root .nova-chip>.nova-chip__badge,body.lampa_view .nova-source-option__quality {background:var(--pt-poster-surface)!important;color:#fff!important;border:1px solid var(--pt-poster-badge-border);box-shadow:var(--pt-poster-badge-edge);text-shadow:0 1px 2px #0006;backdrop-filter:var(--pt-poster-badge-filter);-webkit-backdrop-filter:var(--pt-poster-badge-filter)}
 body.lampa_view .card .pt-kind {top:6px;left:4px;right:auto;border-radius:.6em;padding:.24em .48em;font-size:.62em;font-weight:500;line-height:1.22}
 body.lampa_view .card .pt-quality,body.lampa_view .card .card__quality {top:6px;right:4px;left:auto;font-size:.62em;line-height:1.22;padding:.24em .48em;border-radius:.6em;font-weight:500}
-body.lampa_view .card .pt-series-status {left:.4em;right:auto;top:2.9em;border-radius:.4em;font-weight:450}
+body.lampa_view .card .pt-series-status {left:.4em;right:auto;top:2.9em;border-radius:.6em;font-size:.62em;line-height:1.22;padding:.24em .48em;font-weight:500}
 body.lampa_view .card .card__vote {right:var(--pt-score-inset);bottom:var(--pt-score-inset);width:var(--pt-score-width);box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.15em;min-width:0;padding:.38em .2em;font-size:.72em;line-height:1.1;border-radius:.45em;font-weight:500}
 body.lampa_view .card .card__vote[data-rating-source]:after {content:attr(data-rating-source);font-size:.48em;line-height:1.2;font-weight:500;letter-spacing:.04em;opacity:.8}
 body.lampa_view .card .card__view .icon--history {top:60%;width:2.12em;height:2.12em;border-radius:50%;border:1px solid var(--pt-poster-badge-border);background:var(--pt-poster-surface);box-shadow:var(--pt-poster-badge-edge);transform:translate(-50%,-50%);backdrop-filter:var(--pt-poster-badge-filter);-webkit-backdrop-filter:var(--pt-poster-badge-filter)}
@@ -268,13 +268,14 @@ body.lampa_view.pt-tv.pt-menu-pinned .wrap__left {padding:.2em!important;border-
 body.lampa_view.pt-tv .card .pt-kind,body.lampa_view.pt-tv .card .pt-quality,body.lampa_view.pt-tv .card .card__quality {top:.5em;font-size:.62em;max-width:45%;box-sizing:border-box;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 body.lampa_view.pt-tv .card .pt-kind {left:.4em}
 body.lampa_view.pt-tv .card .pt-quality,body.lampa_view.pt-tv .card .card__quality {right:.4em}
-body.lampa_view.pt-tv .card .pt-series-status {font-size:.65em;max-width:calc(100% - .8em);overflow:hidden;text-overflow:ellipsis}
+body.lampa_view.pt-tv .card .pt-series-status {font-size:.62em;max-width:calc(100% - .8em);overflow:hidden;text-overflow:ellipsis}
 body.lampa_view.pt-tv .pt-hero .pt-hero__dots {bottom:.8em}
 body.lampa_view.pt-tv.pt-theme-glass .pt-hero {box-sizing:border-box;padding-bottom:3.8em}
 body.lampa_view.pt-mobile .pt-hero__overview {height:4.65em;min-height:4.65em;line-height:1.55}
 /* Paint TV badges from a larger text box, then scale the whole badge. This
    preserves the PC proportions even when Android clamps small glyphs to 8px. */
-body.lampa_view.pt-tv .card .pt-kind,body.lampa_view.pt-tv .card .pt-quality,body.lampa_view.pt-tv .card .card__quality,body.lampa_view.pt-tv .card .card__vote {font-size:25px;max-width:none;transform:scale(var(--pt-tv-badge-paint,.5));border-width:2px;overflow:visible}
+body.lampa_view.pt-tv .card .pt-kind,body.lampa_view.pt-tv .card .pt-quality,body.lampa_view.pt-tv .card .card__quality,body.lampa_view.pt-tv .card .pt-series-status,body.lampa_view.pt-tv .card .card__vote {font-size:25px;max-width:none;transform:scale(var(--pt-tv-badge-paint,.5));border-width:2px;overflow:visible}
+body.lampa_view.pt-tv .card .pt-series-status {transform-origin:top left}
 body.lampa_view.pt-tv .card .pt-kind,body.lampa_view.pt-tv .card .pt-quality,body.lampa_view.pt-tv .card .card__quality {top:calc(6px * var(--pt-tv-inset-scale,1));max-width:176px;overflow:hidden;box-sizing:border-box}
 body.lampa_view.pt-tv .card .pt-kind {left:calc(4px * var(--pt-tv-inset-scale,1));transform-origin:top left}
 body.lampa_view.pt-tv .card .pt-quality,body.lampa_view.pt-tv .card .card__quality {right:calc(4px * var(--pt-tv-inset-scale,1));transform-origin:top right}
@@ -292,6 +293,11 @@ body.lampa_view .minimal-catalogue-control[aria-pressed=true]{background:var(--p
 body.lampa_view .minimal-project-tabs{width:max-content;max-width:90vw;margin:0 auto 1em 5vw;padding:.2em;gap:.2em;border:1px solid var(--pt-line,rgba(255,255,255,.18));border-radius:3em;background:rgba(25,25,25,.5)}
 body.lampa_view .minimal-project-tabs .minimal-catalogue-control{border:0;min-height:2.5em;padding:.55em 1.4em}
 body.lampa_view .minimal-project-title{font-size:1.6em;width:100%;max-width:90vw;box-sizing:border-box;padding:.5em .4em;margin:0 auto;line-height:1.25}
+body.lampa_view .minimal-project-header{display:flex;align-items:center;gap:1em;width:90vw;box-sizing:border-box;margin:0 auto;padding:.8em 0 1em;min-height:3.5em}
+body.lampa_view .minimal-project-header .minimal-project-title{width:auto;max-width:100%;margin:0;padding:0;overflow-wrap:anywhere}
+body.lampa_view .minimal-project-art{display:block;width:auto;height:4em;max-width:min(22em,80vw);object-fit:contain}
+body.lampa_view .minimal-project-art[hidden]{display:none}
+body.lampa_view .minimal-project-art--person{flex:none;width:5em;height:6.5em;max-width:30vw;object-fit:cover;border-radius:1em}
 body.lampa_view .minimal-project-note{width:100%;max-width:90vw;box-sizing:border-box;margin:0 auto;padding:.5em;opacity:.75;line-height:1.5}
 body.lampa_view.pt-mobile .minimal-catalogue-controls:not(.minimal-project-tabs){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.5em;padding:.5em 0 1em}
 

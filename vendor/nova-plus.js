@@ -2511,6 +2511,11 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       if(!lookupTitle)return;
       if(lookupCard.name===missingTitle)lookupCard.name=lookupTitle;
       if(lookupCard.title===missingTitle)lookupCard.title=lookupTitle;
+      // Native Online hashes original_title even for TV. With an empty field
+      // every such show shares hashes like hash('31') and inherits its marks.
+      // Supply the same fallback already used by provider searches before the
+      // native parser creates timelines; keep existing nonempty keys intact.
+      if(!String(lookupCard.original_title || '').trim())lookupCard.original_title=lookupCard.original_name || lookupTitle;
     }
     function fixLookupUrl(url){
       if(!lookupTitle || typeof url!=='string')return url;

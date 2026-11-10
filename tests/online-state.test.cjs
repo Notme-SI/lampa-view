@@ -37,6 +37,26 @@ test('linked native timelines identify opaque hashes and newer active episodes w
   assert.equal(state.reader(card)(1,6).time,240);assert.equal(state.resume(card).episode,6);
  }finally{w.close();}
 });
+test('empty-title native hashes and records explicitly linked to another title cannot supply progress',()=>{
+ const dom=new JSDOM('',{runScripts:'outside-only'}),w=dom.window;try{w.eval(code);
+  const records={'31':{card:'tv_283166',season:3,episode:1,percent:100,time:1400},'31Секретный артист':{card:'tv_99',season:3,episode:1,percent:94,time:1300}};
+  const L={Utils:{hash:v=>v},Storage:{get:(key,fallback)=>key==='file_view'?records:fallback},Timeline:{filename:()=> 'file_view'}},state=w.OnlineState.default(L),card={id:283166,name:'Секретный артист',original_name:'Секретный артист',media_type:'tv'};
+  assert.equal(state.reader(card)(3,1,'31').found,false);assert.equal(state.lastWatched(card),null);
+  records['31Секретный артист']={card:'tv_283166',season:3,episode:1,percent:24,time:360};
+  assert.equal(state.reader(card)(3,1,'31').time,360);assert.equal(records['31'].percent,100,'Do not erase ambiguous legacy history');
+ }finally{w.close();}
+});
+
+test('native Online fills an empty original title before parsing and keeps existing timeline keys',async()=>{
+ const n=await native({built:true}),{L}=n;let s;try{
+  const comp={changeBalanser(){},request(){},parse(){}};s=screen(n,{id:283166,component:comp,card:{title:'Секретный артист',name:'Секретный артист',original_title:'',original_name:'Секретный артист'}});
+  L.Component.add('lampa_view_blank_title_fixture',function(){return comp;});L.Component.create({component:'lampa_view_blank_title_fixture',movie:s.movie});
+  comp.request('https://online.example.test/lite/aladin');assert.equal(s.movie.original_title,'Секретный артист');
+  const key=L.Utils.hash('31'+s.movie.original_title);assert.notEqual(key,L.Utils.hash('31'));
+  s.movie.original_title='Existing key';comp.request('https://online.example.test/lite/aladin');assert.equal(s.movie.original_title,'Existing key');assert.deepEqual(n.errors,[]);
+ }finally{if(s)s.close();n.close();}
+});
+
 test('source availability checks real entries, excludes similar titles and distinguishes access failures from empty catalogues',()=>{
  const dom=new JSDOM('',{runScripts:'outside-only'}),w=dom.window;try{w.eval(code);const state=w.OnlineState.availability;
  assert.equal(state(tag({method:'play',url:'/file'})).state,'ok');assert.equal(state(tag({method:'call',url:'/call',similar:true})).state,'empty');assert.equal(state('<div class="videos__line"></div>').state,'empty');assert.equal(state('<html><h1>Access denied</h1></html>').state,'unknown');assert.equal(state('').state,'unknown');assert.equal(state(JSON.stringify({accsdb:true})).state,'unknown');assert.equal(state({data:[{method:'call',url:'/film'}]}).state,'ok');assert.equal(state({data:[]}).state,'empty');assert.equal(state('<script>'+tag({method:'play',url:'/fake'})+'</script>').state,'unknown');assert.equal(state('<div class="videos__item">No valid data</div>').state,'empty');

@@ -124,7 +124,7 @@ export default function quality(L,$){
       const animation=[...(data.genre_ids || []),...(data.genres || [])].some(g=>Number(g.id || g)===16);
       if(view){
        const rating=view.querySelector('.card__vote');if(rating)rating.dataset.ratingSource=data.source==='minimal_shiki'?'Shikimori':data.cub_hundred_rating?'CUB':data.minimal_trakt?'Trakt':'TMDB';
-       let badge=view.querySelector('.pt-kind');if(!badge){badge=document.createElement('span');badge.className='pt-kind';view.appendChild(badge);}const text=lampaViewText(anime?'Аниме':animation?'Мультфильм':tv?'Сериал':'Фильм');if(badge.textContent!==text)badge.textContent=text;
+       let badge=view.querySelector('.pt-kind');if(!badge){badge=document.createElement('span');badge.className='pt-kind';view.appendChild(badge);}const text=lampaViewText(anime?'Аниме':animation?(tv?'Мультсериал':'Мультфильм'):tv?'Сериал':'Фильм');if(badge.textContent!==text)badge.textContent=text;
       }
     }
     badges.schedule(node);

@@ -21,11 +21,11 @@ jobs:
           - group: unit
             checks: ""
           - group: playback
-            checks: "torrent-layout torrent-files-layout mpvplus-preload torrent-native-playback button-focus episode-focus hero-proxy torrent-tv-controls remote-navigation catalogue-grid trakt-interface"
+            checks: "torrent-layout torrent-files-layout mpvplus-preload torrent-native-playback button-focus episode-focus hero-proxy torrent-tv-controls remote-navigation catalogue-grid project-header trakt-interface"
           - group: online
             checks: "voice-initial online-polish history-focus interface-size poster-rail home-stage header-focus menu-layout search-layout mobile-shell poster-chrome row-overlay tv-captions timeline-devices quiet-sync watch-menu"
           - group: catalogue
-            checks: "startup-animation artwork-cache torrent-watch-menu appearance-language card-languages home-controls detail-artwork carousel-return detail-gallery tv-shell catalogue-controls catalogue-metadata poster-prefetch"
+            checks: "startup-animation artwork-cache torrent-watch-menu appearance-language card-languages home-controls detail-artwork carousel-return detail-gallery tv-shell tv-surfaces catalogue-controls catalogue-metadata poster-prefetch"
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: actions/setup-node@v7.1.0

@@ -31,12 +31,13 @@ const {setup}=require('../fixtures/native-browser.cjs');
     Lampa.Controller.add('qa-cards',{toggle(){Lampa.Controller.collectionSet(root);Lampa.Controller.collectionFocus(root.children[0],root);},left(){Navigator.move('left');},right(){Navigator.move('right');},back(){}});Lampa.Controller.toggle('qa-cards');
     root.children[0].classList.add('hover');
    });
-   const first=await page.locator('#qa-selection .card').nth(0).screenshot();
+   const settled=()=>page.waitForFunction(()=>[...document.querySelectorAll('#qa-selection .card__view')].every(n=>n.getAnimations().every(a=>a.playState!=='running')));
+   await settled();const first=await page.locator('#qa-selection .card').nth(0).screenshot();
    for(let i=0;i<8;i++){await page.keyboard.press('ArrowRight');await page.keyboard.press('ArrowLeft');}
    const focus=await page.locator('#qa-selection .card').evaluateAll(nodes=>nodes.map(n=>{const s=getComputedStyle(n.querySelector('.card__view'),'::after'),t=getComputedStyle(n.querySelector('.card__title'));return {focus:n.classList.contains('focus'),border:s.borderWidth,borderColor:s.borderColor,shadow:s.boxShadow,title:t.backgroundColor,color:t.color,transform:getComputedStyle(n.querySelector('.card__view')).transform};}));
    assert.equal(focus.filter(n=>n.focus).length,1);assert.equal(focus[0].border,'2px');assert.equal(focus[0].title,'rgba(0, 0, 0, 0)');assert.equal(focus[0].color,'rgb(216, 195, 154)');assert.notEqual(focus[0].transform,'none');
    assert.ok(Number(await page.locator('#qa-selection .card.focus .card__view').evaluate(n=>getComputedStyle(n,'::after').zIndex))>0,'The ring must render above the poster rather than behind it');
-   assert.equal(Buffer.compare(first,await page.locator('#qa-selection .card').nth(0).screenshot()),0,'Rapid remote navigation leaves no residual ring pixels');
+   await settled();assert.equal(Buffer.compare(first,await page.locator('#qa-selection .card').nth(0).screenshot()),0,'Rapid remote navigation leaves no residual ring pixels');
    await page.keyboard.press('ArrowRight');assert.equal(await page.locator('#qa-selection .card.focus').count(),1);
    const old=await page.locator('#qa-selection .card').nth(0).evaluate(n=>({color:getComputedStyle(n.querySelector('.card__view'),'::after').borderColor,background:getComputedStyle(n.querySelector('.card__title')).backgroundColor}));assert.equal(old.color,'rgba(0, 0, 0, 0)');assert.equal(old.background,'rgba(0, 0, 0, 0)');
    if(process.env.LAMPA_QA_OUTPUT){fs.mkdirSync(process.env.LAMPA_QA_OUTPUT,{recursive:true});await page.screenshot({path:path.join(process.env.LAMPA_QA_OUTPUT,name+'-tv-selection.png')});}

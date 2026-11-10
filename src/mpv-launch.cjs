@@ -33,7 +33,7 @@ function install(L, root, cardFor, enabled) {
     return typeof path === 'string' && /(?:^|[\\/])mpv(?:\+)?\.exe$/i.test(path) ? path : '';
   }
   function create(event) {
-    if (pending) { pending.cancelled = true; pending = null; }
+    if (pending) { pending.cancelled = true; pending.cancel?.(); pending = null; }
     const video = event.data,
       path = target(video);
     if (bypass || !path || !event.abort) return;
@@ -86,24 +86,33 @@ function install(L, root, cardFor, enabled) {
           fallback();
           return;
         }
-        const playlist = (resolved || launch.items).slice(0, 80).filter(Boolean).map(prepare);
-        const queue = [selected];
         const selectedIdentity = C.identity(card, selected);
+        const raw = (resolved || launch.items).filter(Boolean);
+        const matches = item => item.url === video.url || item.url === selected.url ||
+          selectedIdentity.episode != null && C.identity(card, item).episode === selectedIdentity.episode &&
+          C.identity(card, item).season === selectedIdentity.season;
+        const rawAt = !video.torrent_hash && selectedIdentity.kind === 'tv' ? raw.findIndex(matches) : -1;
+        const playlist = raw.slice(Math.max(0, rawAt - 39), Math.max(0, rawAt - 39) + 80).map(prepare);
+        let queue = [selected], start = 0;
         if (!video.torrent_hash && selectedIdentity.kind === 'tv') {
-          const at = playlist.findIndex(item => item.url === selected.url || item.episode != null &&
-            item.episode === selected.episode && item.season === selected.season);
-          const following = at >= 0 ? playlist.slice(at + 1) : playlist.filter(item => {
+          const at = playlist.findIndex(matches);
+          const side = before => at >= 0 ? playlist.slice(before ? 0 : at + 1, before ? at : undefined) : playlist.filter(item => {
             const identity = C.identity(card, item);
-            return identity.season === selectedIdentity.season && identity.episode > selectedIdentity.episode;
+            return identity.season === selectedIdentity.season && (before ? identity.episode < selectedIdentity.episode : identity.episode > selectedIdentity.episode);
           });
           const urls = new Set([selected.url]);
-          let length = encodeURI(selected.url).length;
-          for (const item of following) {
-            if (!C.mediaURL(item.url) || urls.has(item.url)) continue;
-            length += encodeURI(item.url).length + 3;
-            if (length > 12000 || queue.length >= 40) break;
-            urls.add(item.url);
-            queue.push(item);
+          const playable = items => items.filter(item => {
+            if (!C.mediaURL(item.url) || urls.has(item.url)) return false;
+            urls.add(item.url);return true;
+          });
+          const before = playable(side(true)), after = playable(side(false));
+          queue = [...before, selected, ...after];start = before.length;
+          let length = queue.reduce((sum,item)=>sum + encodeURI(item.url).length + 3,0);
+          // Bound the command line around the selection, retaining both directions.
+          while (queue.length > 1 && (queue.length > 40 || length > 12000)) {
+            const remove = start >= queue.length - start - 1 ? 0 : queue.length - 1;
+            length -= encodeURI(queue[remove].url).length + 3;
+            queue.splice(remove,1);if(remove === 0)start--;
           }
         }
         const context = C.context(launch.card, selected, video.torrent_hash ? playlist : queue);
@@ -112,7 +121,7 @@ function install(L, root, cardFor, enabled) {
         const urls = queue.map(item => encodeURI(item.url));
         if (path.length + urls.join(' ').length + metadata.length > 28000) metadata = '';
         const progress = progressChannel(L, root, video.torrent_hash ? [selected, ...playlist] : queue, enabled);
-        const args = [...(metadata ? [metadata] : []), ...progress.args, ...urls];
+        const args = [...(metadata ? [metadata] : []), ...progress.args, ...(start ? ['--playlist-start=' + start] : []), ...urls];
         const child = spawn(path, args);
         progress.attach(child);
         started = true;
@@ -137,11 +146,13 @@ function install(L, root, cardFor, enabled) {
         if (timeout != null) root.clearTimeout?.(timeout);
         let items;
         try { items = resolver?.list(); } catch (error) {}
+        try { resolver?.cancel?.(); } catch (error) {}
         launchPending(items);
       };
       // Reuse the source adapter's bounded resolver. Internal playlist cells
       // may contain functions and are not directly playable outside Lampa.
       try { resolver = video.minimalExternalPlaylist(finish); } catch (error) {}
+      launch.cancel = () => { done = true; if (timeout != null) root.clearTimeout?.(timeout);try { resolver?.cancel?.(); } catch (error) {} };
       ready = true;
       if (!resolver || requested) finish();
       else timeout = root.setTimeout(finish, 2500);

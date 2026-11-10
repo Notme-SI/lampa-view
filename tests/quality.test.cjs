@@ -77,6 +77,7 @@ test('all four media types receive one accurate monochrome badge',()=>{
   [{name:'Anime series',media_type:'tv',genre_ids:[16],original_language:'ja'},'Аниме'],
   [{title:'Shikimori movie',media_type:'movie',source:'minimal_shiki'},'Аниме'],
   [{title:'Animated movie',media_type:'movie',genre_ids:[16],original_language:'en'},'Мультфильм'],
+  [{name:'Animated series',media_type:'tv',genre_ids:[16],original_language:'en',number_of_episodes:1},'Мультсериал'],
   [{title:'Live action movie',media_type:'movie',original_language:'ja'},'Фильм'],
   [{name:'Live action series',media_type:'tv'},'Сериал']
  ];
