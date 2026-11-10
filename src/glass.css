@@ -118,8 +118,8 @@ body.lampa_view.pt-theme-glass.pt-mobile .navigation-bar__body {border:1px solid
 body.lampa_view.pt-theme-glass.pt-mobile .navigation-bar__item {border-radius:2em}
 body.lampa_view.pt-theme-glass.pt-mobile .navigation-bar__item.active {background:#ffffff15}
 /* TV has no live blur: give reading surfaces their own dense tint instead. */
-body.lampa_view.pt-theme-glass.pt-tv {--pt-glass-blur:0px;--pt-row-focus:#44474d;--pt-glass-button:var(--pt-glass-sheen),rgba(25,27,31,.94);--pt-navigation-panel:linear-gradient(135deg,#ffffff12,transparent 50%,#ffffff06),rgba(24,26,30,.97)}
-body.lampa_view.pt-theme-glass.pt-tv .main-search .search {background:#14161a!important}
+body.lampa_view.pt-theme-glass.pt-tv {--pt-glass-blur:0px;--pt-row-focus:#444444;--pt-glass-button:var(--pt-glass-sheen),rgba(24,24,24,.94);--pt-navigation-panel:linear-gradient(135deg,#ffffff12,transparent 50%,#ffffff06),rgba(24,24,24,.97)}
+body.lampa_view.pt-theme-glass.pt-tv .main-search .search {background:#161616!important}
 body.lampa_view.pt-theme-glass.pt-tv :is(.full-review,.full-review-add,.simple-button,.full-start__button,.pt-hero__action):is(.focus,.hover) {background:var(--pt-row-focus)!important}
 body.lampa_view.pt-theme-glass.pt-tv .pt-hero {--pt-hero-panel-filter:none}
 /* No live backdrop surfaces on the TV compositor, including open overlays. */
