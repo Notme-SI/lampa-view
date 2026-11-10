@@ -1,0 +1,29 @@
+/* The host owns glass colors, transparency and the single open-panel blur.
+   Custom header/menu nodes reuse that material without adding per-button blur. */
+body.lampa_view.pt-native-glass {
+ --pt-shell-surface:var(--pt-native-glass-background,var(--pt-panel));
+ --pt-poster-surface:var(--pt-native-glass-background,var(--pt-panel));
+ --pt-poster-badge-edge:none;--pt-poster-badge-filter:none;
+ --pt-accent:#fff;--pt-accent-ink:#000;--pt-row-focus:#fff;--pt-row-edge:#fff;
+}
+body.lampa_view.pt-tv.pt-native-glass .wrap__left {
+ background:var(--pt-native-glass-background,var(--pt-panel))!important;
+ backdrop-filter:var(--pt-native-glass-filter,none);-webkit-backdrop-filter:var(--pt-native-glass-filter,none);
+}
+body.lampa_view.pt-native-glass.pt-menu-pinned:not(.menu--open):not(.pt-menu-hover) .wrap__left {backdrop-filter:none;-webkit-backdrop-filter:none}
+body.lampa_view.pt-native-glass :is(.wrap__left,.settings__content,.selectbox__content,.settings-input__content,.modal__content) {border-color:var(--pt-line)!important;box-shadow:none!important}
+body.lampa_view.pt-native-glass .settings :is(.settings-folder,.settings-param):not(.focus),
+body.lampa_view.pt-native-glass .selectbox .selectbox-item:not(.focus) {background:transparent!important}
+body.lampa_view.pt-native-glass .wrap__left .menu__item:is(.focus,.hover,.traverse),
+body.lampa_view.pt-native-glass .head .head__body :is(.head__menu-icon,.head__backward,.head__action.open--search,.head__action.open--settings):is(.focus,:focus-visible) {background:#fff!important;color:#000!important;border-color:#fff!important;box-shadow:none!important}
+body.lampa_view.pt-native-glass .settings :is(.settings-param,.settings-folder).focus,
+body.lampa_view.pt-native-glass .selectbox .selectbox-item.focus {box-shadow:none!important}
+body.lampa_view.pt-native-glass .settings :is(.settings-param,.settings-folder).focus :is(.settings-param__value,.settings-param__descr),
+body.lampa_view.pt-native-glass .selectbox .selectbox-item.focus .selectbox-item__subtitle {color:inherit}
+body.lampa_view.pt-native-glass .wrap__left .menu__item:is(.focus,.hover,.traverse):before {content:none!important;display:none!important}
+body.lampa_view.pt-native-glass .main-search :is(.search-source,.search-history-key,.simple-keyboard-mic):is(.focus,:focus-visible,:hover) {background:#fff!important;color:#000!important}
+body.lampa_view.pt-native-glass .minimal-detail-header :is(.reaction,.full-start__rate,.full-start__pg,.full-start__status) {background:var(--pt-poster-surface);border-color:var(--pt-poster-badge-border);box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+/* Metadata badges and header buttons stay flat on Android, as in native Lampa. */
+body.lampa_view.pt-native-glass .head .head__body :is(.head__menu-icon,.head__backward,.head__action),
+body.lampa_view.pt-native-glass.pt-tv .card .card__view :is(.pt-kind,.pt-quality,.card__quality,.pt-series-status,.card__vote,.card__marker,.card__icons-inner),
+body.lampa_view.pt-native-glass.pt-tv .card .pt-card-watch .card-watched {backdrop-filter:none!important;-webkit-backdrop-filter:none!important}

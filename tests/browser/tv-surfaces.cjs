@@ -8,13 +8,14 @@ const alpha=value=>{const numbers=value.match(/[\d.]+/g);return numbers.length==
   await page.evaluate(()=>{Lampa.Storage.set('lampa_view_theme','glass');document.body.classList.add('advanced--animation');});
   for(const opacity of ['easy','medium','blacked']){
    await page.evaluate(opacity=>Lampa.Storage.set('glass_opacity',opacity),opacity);
-   for(const selector of ['.wrap__left','.settings__content','.head .open--search','.head .open--settings']){const m=await material(page,selector);assert.ok(mode==='tv'?alpha(m.bg)>=.9:alpha(m.bg)<.5,JSON.stringify({mode,opacity,selector,m}));if(mode==='tv')assert.equal(m.blur,'none');}
+   const native=mode==='tv'?await page.evaluate(()=>{document.body.classList.remove('lampa_view');const bg=getComputedStyle(document.querySelector('.settings__content')).backgroundColor;document.body.classList.add('lampa_view');return bg;}):null;
+   for(const selector of ['.wrap__left','.settings__content','.head .open--search','.head .open--settings']){const m=await material(page,selector);if(mode==='tv'){assert.equal(m.bg,native,'Use native glass opacity: '+selector);if(selector.startsWith('.head'))assert.equal(m.blur,'none');else assert.match(m.blur,/blur\(/);}else assert.ok(alpha(m.bg)<.5,JSON.stringify({mode,opacity,selector,m}));}
   }
   if(mode==='tv')for(const selector of ['.head .open--search','.head .open--settings','.head__menu-icon']){await page.locator(selector).first().evaluate(n=>n.classList.add('focus'));assert.ok(alpha((await material(page,selector)).bg)>=.9,'Focused TV header stays dense: '+selector);await page.locator(selector).first().evaluate(n=>n.classList.remove('focus'));}
   await page.evaluate(()=>{Lampa.Controller.toggle('settings');Lampa.Settings.create('lampa_view');});await page.waitForSelector('.settings--open .settings__content',{state:'visible'});
   if(mode==='tv' && process.env.LAMPA_QA_OUTPUT){fs.mkdirSync(process.env.LAMPA_QA_OUTPUT,{recursive:true});await page.screenshot({path:path.join(process.env.LAMPA_QA_OUTPUT,engine.name()+'-tv-settings.png')});}
   await page.evaluate(()=>{Lampa.Controller.back();Lampa.Select.show({title:'Действие',items:[{title:'Избранное',separator:true},{title:'Нравится',checkbox:true}]});});await page.waitForSelector('.selectbox-item');
-  const panel=await material(page,'.selectbox__content');assert.ok(mode==='tv'?alpha(panel.bg)>=.9:alpha(panel.bg)<.5);if(mode==='tv')assert.equal(panel.blur,'none');
+  const panel=await material(page,'.selectbox__content');assert.ok(mode==='tv'?alpha(panel.bg)===.7:alpha(panel.bg)<.5);if(mode==='tv')assert.match(panel.blur,/blur\(/);
   await page.evaluate(()=>{Lampa.Controller.back();document.body.appendChild(Lampa.Search.render(true));Lampa.Search.open({sources:[{title:'CUB',params:{},search(p,ok){ok([]);}}]});});await page.waitForSelector('.main-search .search');
   const search=await material(page,'.main-search .search');if(mode==='tv'){assert.equal(alpha(search.bg),1);assert.equal(search.blur,'none');}
   if(mode==='tv' && process.env.LAMPA_QA_OUTPUT)await page.screenshot({path:path.join(process.env.LAMPA_QA_OUTPUT,engine.name()+'-tv-search.png')});
