@@ -79,7 +79,7 @@ body.lampa_view.pt-home .head .head__body {padding-inline:0;gap:var(--pt-header-
 body.lampa_view .card .pt-kind,body.lampa_view .card .pt-quality,body.lampa_view .card .card__quality,body.lampa_view .card .pt-series-status,body.lampa_view .card .card__vote,body.lampa_view .card .card__marker,body.lampa_view .nova-plus-root .nova-hero>.nova-hero__quality,body.lampa_view .nova-plus-root .nova-card__quality,body.lampa_view .nova-plus-root .nova-chip>.nova-chip__badge,body.lampa_view .nova-source-option__quality {background:var(--pt-poster-surface)!important;color:#fff!important;border:1px solid var(--pt-poster-badge-border);box-shadow:var(--pt-poster-badge-edge);text-shadow:0 1px 2px #0006;backdrop-filter:var(--pt-poster-badge-filter);-webkit-backdrop-filter:var(--pt-poster-badge-filter)}
 body.lampa_view .card .pt-kind {top:6px;left:4px;right:auto;border-radius:.6em;padding:.24em .48em;font-size:.62em;font-weight:500;line-height:1.22}
 body.lampa_view .card .pt-quality,body.lampa_view .card .card__quality {top:6px;right:4px;left:auto;font-size:.62em;line-height:1.22;padding:.24em .48em;border-radius:.6em;font-weight:500}
-body.lampa_view .card .pt-series-status {left:.4em;right:auto;top:2.9em;border-radius:.4em;font-weight:450}
+body.lampa_view .card .pt-series-status {left:.4em;right:auto;top:2.9em;border-radius:.6em;font-size:.62em;line-height:1.22;padding:.24em .48em;font-weight:500}
 body.lampa_view .card .card__vote {right:var(--pt-score-inset);bottom:var(--pt-score-inset);width:var(--pt-score-width);box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.15em;min-width:0;padding:.38em .2em;font-size:.72em;line-height:1.1;border-radius:.45em;font-weight:500}
 body.lampa_view .card .card__vote[data-rating-source]:after {content:attr(data-rating-source);font-size:.48em;line-height:1.2;font-weight:500;letter-spacing:.04em;opacity:.8}
 body.lampa_view .card .card__view .icon--history {top:60%;width:2.12em;height:2.12em;border-radius:50%;border:1px solid var(--pt-poster-badge-border);background:var(--pt-poster-surface);box-shadow:var(--pt-poster-badge-edge);transform:translate(-50%,-50%);backdrop-filter:var(--pt-poster-badge-filter);-webkit-backdrop-filter:var(--pt-poster-badge-filter)}
@@ -268,13 +268,14 @@ body.lampa_view.pt-tv.pt-menu-pinned .wrap__left {padding:.2em!important;border-
 body.lampa_view.pt-tv .card .pt-kind,body.lampa_view.pt-tv .card .pt-quality,body.lampa_view.pt-tv .card .card__quality {top:.5em;font-size:.62em;max-width:45%;box-sizing:border-box;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 body.lampa_view.pt-tv .card .pt-kind {left:.4em}
 body.lampa_view.pt-tv .card .pt-quality,body.lampa_view.pt-tv .card .card__quality {right:.4em}
-body.lampa_view.pt-tv .card .pt-series-status {font-size:.65em;max-width:calc(100% - .8em);overflow:hidden;text-overflow:ellipsis}
+body.lampa_view.pt-tv .card .pt-series-status {font-size:.62em;max-width:calc(100% - .8em);overflow:hidden;text-overflow:ellipsis}
 body.lampa_view.pt-tv .pt-hero .pt-hero__dots {bottom:.8em}
 body.lampa_view.pt-tv.pt-theme-glass .pt-hero {box-sizing:border-box;padding-bottom:3.8em}
 body.lampa_view.pt-mobile .pt-hero__overview {height:4.65em;min-height:4.65em;line-height:1.55}
 /* Paint TV badges from a larger text box, then scale the whole badge. This
    preserves the PC proportions even when Android clamps small glyphs to 8px. */
-body.lampa_view.pt-tv .card .pt-kind,body.lampa_view.pt-tv .card .pt-quality,body.lampa_view.pt-tv .card .card__quality,body.lampa_view.pt-tv .card .card__vote {font-size:25px;max-width:none;transform:scale(var(--pt-tv-badge-paint,.5));border-width:2px;overflow:visible}
+body.lampa_view.pt-tv .card .pt-kind,body.lampa_view.pt-tv .card .pt-quality,body.lampa_view.pt-tv .card .card__quality,body.lampa_view.pt-tv .card .pt-series-status,body.lampa_view.pt-tv .card .card__vote {font-size:25px;max-width:none;transform:scale(var(--pt-tv-badge-paint,.5));border-width:2px;overflow:visible}
+body.lampa_view.pt-tv .card .pt-series-status {transform-origin:top left}
 body.lampa_view.pt-tv .card .pt-kind,body.lampa_view.pt-tv .card .pt-quality,body.lampa_view.pt-tv .card .card__quality {top:calc(6px * var(--pt-tv-inset-scale,1));max-width:176px;overflow:hidden;box-sizing:border-box}
 body.lampa_view.pt-tv .card .pt-kind {left:calc(4px * var(--pt-tv-inset-scale,1));transform-origin:top left}
 body.lampa_view.pt-tv .card .pt-quality,body.lampa_view.pt-tv .card .card__quality {right:calc(4px * var(--pt-tv-inset-scale,1));transform-origin:top right}

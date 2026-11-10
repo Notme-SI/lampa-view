@@ -36,11 +36,12 @@ export default function badgeLayout(status){
    for(const [selector,corner] of [['.card__vote','br'],['.pt-quality,.card__quality','tr'],['.pt-kind','tl'],['.pt-series-status','tl'],['.card__marker','bl'],['.card__new-episode','bl']])for(const el of view.querySelectorAll(selector)){
     if(el.hidden || el.classList.contains('hide') || getComputedStyle(el).display==='none')continue;
     if(el.classList.contains('pt-series-status')){
-     el.style.fontSize='';el.style.transform='none';
+     el.style.fontSize='';el.style.transform='';
+     const paint=document.body.classList.contains('pt-tv')?parseFloat(getComputedStyle(document.body).getPropertyValue('--pt-tv-badge-paint')) || .5:1;
      const style=getComputedStyle(el),border=(parseFloat(style.borderLeftWidth)||0)+(parseFloat(style.borderRightWidth)||0);
      const range=document.createRange();range.selectNodeContents(el);
-     const natural=range.getBoundingClientRect().width/scale+(parseFloat(style.paddingLeft)||0)+(parseFloat(style.paddingRight)||0);
-     const available=Math.max(1,Math.min(width-8,parseFloat(style.maxWidth)||width)-border);
+     const natural=range.getBoundingClientRect().width/scale+((parseFloat(style.paddingLeft)||0)+(parseFloat(style.paddingRight)||0))*paint;
+     const available=Math.max(1,Math.min(width-8*insetScale,(parseFloat(style.maxWidth)||width/paint)*paint)-border*paint);
      if(natural>available)el.style.fontSize=(parseFloat(style.fontSize)*Math.max(1,available-1)/natural).toFixed(2)+'px';
     }
     const topTag=el.matches('.pt-kind,.pt-quality,.card__quality'),r=el.getBoundingClientRect();if(r.width && r.height)entries.push({el,corner,inset:(topTag || corner[1]!=='r'?4:8)*insetScale,verticalInset:topTag?6*insetScale:undefined,width:r.width/scale,height:r.height/scale});
