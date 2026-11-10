@@ -20,7 +20,7 @@ test('movie release names merge as unknown voices without dropping stream varian
  const n=await native(),{w,L}=n;
  try{
   assert.ok(!L.SettingsApi.getParam('minimal_settings_appearance').some(p=>p.param.name==='lampa_view_motion'));
-  const poster=w.document.createElement('div');poster.className='card focus';poster.innerHTML='<div class="card__view"></div>';w.document.body.appendChild(poster);const style=w.getComputedStyle(poster.firstChild);assert.ok(style.transform.includes('scale(1.045)'));assert.ok(style.boxShadow.includes('rgba'));poster.remove();
+  const poster=w.document.createElement('div');poster.className='card focus';poster.innerHTML='<div class="card__view"></div>';w.document.body.appendChild(poster);const style=w.getComputedStyle(poster.firstChild);assert.ok(style.transform.includes('translateY(-.2em)'));assert.equal(style.boxShadow,'none');poster.remove();
   const A=w.alc_auto_debug,movie={id:1202,title:'Человек-паук: Новый день',original_title:'Spider-Man: Brand New Day',genres:[{id:28,name:'боевик'},{id:878,name:'фантастика'}]},s=new A.Session(movie);
   const stream=(name,id)=>({method:'play',name,url:'https://example.test/'+id});
   const originals=[stream('Человек-паук: Новый день 2026 4K',1),stream('Spider-Man.Brand.New.Day.2026.2160p.WEB-DL.HDR.',2),stream('4K) Фантастика',3),stream('TVShows',4),stream('TVShows 1080p',5),stream('Украинская озвучка',6)];

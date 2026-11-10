@@ -39,7 +39,9 @@ export default function fillRows(L,enabled){
       if(!nearby)return;
       const size=card.getBoundingClientRect().width;if(!size)return;
       const style=window.getComputedStyle(card),gap=(parseFloat(style.marginLeft)||0)+(parseFloat(style.marginRight)||0);
-      const desired=Math.min(state.data.results.length,24,Math.ceil(box.width/(size+gap))+1);
+      // Mount one viewport plus half a viewport ahead. The poster observer
+      // can then fetch/decode the next cards before focus scrolls to them.
+      const desired=Math.min(state.data.results.length,30,Math.ceil(box.width/(size+gap)*(card.matches('.card')?1.5:1))+1);
       const count=root.querySelectorAll('.card,.full-person').length;
       if(desired<=Number(line.view || 0) && count>=Math.min(desired,state.data.results.length))return;
       // Lampa builds seven cards by default. Match its lazy batch to actual CSS size.

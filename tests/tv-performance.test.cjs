@@ -2,7 +2,7 @@ const test=require('node:test'),assert=require('node:assert/strict'),native=requ
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const prepare=(w,L)=>{L.Platform.tv=()=>true;L.Platform.screen=type=>type==='tv';};
 
-test('TV skips the hidden native background while desktop and disabled plugin retain its API and saved preference',async()=>{
+test('all plugin layouts skip the hidden native background while disabling restores its API and saved preference',async()=>{
  const calls=[];
  const n=await native({built:true,prepare(w,L){prepare(w,L);for(const name of ['change','immediately','update'])L.Background[name]=function(...args){calls.push({name,args,receiver:this===L.Background});return name+' forwarded';};}}),{L}=n;
  try{
@@ -10,11 +10,11 @@ test('TV skips the hidden native background while desktop and disabled plugin re
   for(const name of ['change','immediately','update'])L.Background[name]('test-bg');
   assert.deepEqual(calls,[]);assert.equal(L.Storage.get('background'),saved);
   n.w.document.body.classList.replace('pt-tv','pt-desktop');
-  for(const name of ['change','immediately','update'])assert.equal(L.Background[name]('desktop-bg'),name+' forwarded');
-  assert.ok(calls.every(c=>c.receiver && c.args[0]==='desktop-bg'));assert.equal(calls.length,3);
+  for(const name of ['change','immediately','update'])L.Background[name]('desktop-bg');
+  assert.equal(calls.length,0);
   n.w.document.body.classList.replace('pt-desktop','pt-tv');L.Storage.set('lampa_view_enabled',false);calls.length=0;
   for(const name of ['change','immediately','update'])assert.equal(L.Background[name]('native-bg'),name+' forwarded');
-  assert.equal(calls.length,3);assert.equal(L.Storage.get('background'),saved);assert.deepEqual(n.errors,[]);
+  assert.equal(calls.length,3);assert.ok(calls.every(c=>c.receiver && c.args[0]==='native-bg'));assert.equal(L.Storage.get('background'),saved);assert.deepEqual(n.errors,[]);
  }finally{n.close();}
 });
 

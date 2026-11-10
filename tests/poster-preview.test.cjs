@@ -21,7 +21,8 @@ test('posters appear at final quality, share cached originals and cancel stale q
   const pending=loaders[2].onload;
   L.Storage.set('minimal_banner_quality','medium');
   L.SettingsApi.getParam('minimal_settings_appearance').find(p=>p.param.name==='minimal_banner_quality').onChange();
-  pending();assert.match(cards[2].img.src,/\/w500\//,'An old request must not overwrite a new quality setting');
+  pending();assert.ok(!cards[2].img.src.includes('/w780/'),'An old request must not overwrite a new quality setting');
+  await wait(50);const medium=loaders.find(l=>/\/w500\/poster2.jpg/.test(l.url));assert.ok(medium,'Medium uses the same decode queue');medium.onload();assert.match(cards[2].img.src,/\/w500\//);
   cards.forEach(c=>c.destroy());assert.deepEqual(n.errors,[]);
  }finally{n.close();}
 });

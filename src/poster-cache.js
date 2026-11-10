@@ -9,9 +9,9 @@ export default function posterCache(L,enabled,highQuality){
  // decoder can reject the old truncated placeholder as a broken cover.
  const blank='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
  let running=0,timer;
- const maximum=()=>enabled() && highQuality();
+ const maximum=()=>enabled();
  const tv=()=>document.body.classList.contains('pt-tv');
- const aheadY=Math.min(1600,Math.max(540,(window.innerHeight || 540)*(tv()?1.5:2))),aheadX=Math.min(720,Math.max(360,(window.innerWidth || 960)/2));
+ const aheadY=Math.min(1800,Math.max(540,(window.innerHeight || 540)*2)),aheadX=Math.min(1920,Math.max(360,(window.innerWidth || 960)));
  const paused=()=>document.hidden;
  const observer=typeof window.IntersectionObserver==='function'?new window.IntersectionObserver(entries=>entries.forEach(entry=>{
   if(entry.isIntersecting){const callback=callbacks.get(entry.target);if(callback)callback();}
@@ -28,7 +28,7 @@ export default function posterCache(L,enabled,highQuality){
  // The artwork API already chose the source resolution. Preserve it through decoding.
  function fit(image,url){
   // High on a TV must not be downgraded from its CSS viewport dimensions.
-  if(tv())return url.replace(/(\/t\/p\/)w(\d+)(\/)/,(all,prefix,size,suffix)=>Number(size)<780?prefix+'w780'+suffix:all);
+  if(tv() && highQuality())return url.replace(/(\/t\/p\/)w(\d+)(\/)/,(all,prefix,size,suffix)=>Number(size)<780?prefix+'w780'+suffix:all);
   return url;
  }
  function trim(){
@@ -48,12 +48,14 @@ export default function posterCache(L,enabled,highQuality){
   // Cached covers paint immediately. Visible requests take priority over a
   // bounded look-ahead. Movement must not serialize the next row behind one
   // slow cover; visible work still owns the remaining network slots.
-  const visibleJobs=new Map(queue.map(job=>[job,visible(job.image)]));
+  const bounds=new Map();
+  const visibleJobs=new Map(queue.map(job=>{const box=(job.image.closest('.card') || job.image).getBoundingClientRect();bounds.set(job,box);return [job,(!tv() && !box.width && !box.height) || box.width>0 && box.bottom>0 && box.top<window.innerHeight && box.right>0 && box.left<window.innerWidth];}));
   queue.sort((a,b)=>Number(visibleJobs.get(b))-Number(visibleJobs.get(a)));
   // Cached and shared in-flight images do not consume another network slot.
   for(let remaining=queue.length;remaining>0;remaining--){
    const job=queue.shift();if(!job.alive()){job.finished=true;continue;}
-   if(!visibleJobs.get(job) && !nearby(job.image)){job.finished=true;continue;}
+   const box=bounds.get(job);
+   if(!visibleJobs.get(job) && !(box.width>0 && box.bottom> -aheadY && box.top<window.innerHeight+aheadY && box.right> -aheadX && box.left<window.innerWidth+aheadX)){job.finished=true;continue;}
    job.url=job.resolve();
    let entry=cache.get(job.url);
    if(entry){

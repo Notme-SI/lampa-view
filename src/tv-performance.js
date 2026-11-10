@@ -1,11 +1,16 @@
 // Let native navigation finish before doing optional artwork and layout work.
 export default function tvPerformance(enabled,L){
- // Our TV artwork replaces the native background, which CSS already hides.
+ // Native enter effects add a timer and animated class for every OK press.
+ // Keep basic scrolling and the saved preference; bypass only this optional
+ // layer while our own focus treatment is active.
+ const field=L.Storage?.field;
+ if(typeof field==='function')L.Storage.field=function(name){if(name==='advanced_animation' && enabled())return false;return field.apply(this,arguments);};
+ // Our artwork replaces the native background on every layout; CSS hides it.
  // Do not download, blur and crossfade three full-screen canvases behind it.
  // Keep the saved native preference and forward normally outside this layout.
  for(const name of ['change','immediately','update']){
   const original=L?.Background?.[name];if(typeof original!=='function')continue;
-  L.Background[name]=function(){if(enabled() && document.body.matches('.lampa_view.pt-tv'))return;return original.apply(this,arguments);};
+  L.Background[name]=function(){if(enabled() && document.body.matches('.lampa_view'))return;return original.apply(this,arguments);};
  }
  let timer;
  function finish(){
