@@ -1724,7 +1724,7 @@
   }
 
   function timelineHash(movie, season, episode) {
-    var ot = movie.original_title;
+    var ot = movie.original_title || movie.original_name || movie.title || movie.name || ['lampa',movie.source || 'tmdb',movie.id].join(':');
     return Lampa.Utils.hash(season ? [season, season > 10 ? ':' : '', episode, ot].join('') : ot);
   }
   // Lampa's watch progress of an episode (a movie: 0, 0); watched = WATCHED % or more
@@ -3267,7 +3267,7 @@
       if (self.session.serial && episodes && episodes.length > 1) {
         playlist = self.buildPlaylist(episodes, episode, first);
         first.playlist = playlist;
-        hidden(first, 'minimalExternalPlaylist', function (done) { return extPlaylist(first, done); });
+        hidden(first, 'minimalExternalPlaylist', function (done) { return extPlaylist(first, done, { previous: true }); });
       }
       setMulti(self, episode);
       hidden(first, 'alc_pb', self);   // an external player gets the season's links (extPlaylist)
@@ -4172,26 +4172,29 @@
   }
   // null: not a series of ours; else {list(): the playlist with the links known by then}; done() once
   // every link asked has answered
-  function extPlaylist(data, done) {
+  function extPlaylist(data, done, options) {
     var pb = data.alc_pb;
     if (!pb || !pb.session || !pb.session.serial || !pb.episodes || pb.episodes.length < 2) return null;
     var cur = data.episode, eps = pb.episodes.filter(function (ep) { return !ep.shared || ep.e === cur; });
-    var got = {}, jobs = [], ahead = 0;
-    eps.forEach(function (ep) {
+    var both = options && options.previous, got = {}, jobs = [], ahead = 0;
+    // Desktop mpv can start in the middle of a playlist. Resolve nearest links
+    // on both sides within its 40-entry budget; Android keeps its existing lookahead.
+    var ordered = both ? eps.slice().sort(function (a, b) { return Math.abs(a.e - cur) - Math.abs(b.e - cur) || a.e - b.e; }) : eps;
+    ordered.forEach(function (ep) {
       if (ep.e === cur) return;
-      var x = extItem(pb, ep.e, data.alc_src, ep.e > cur && ahead < EXT_PL_AHEAD);
+      var x = extItem(pb, ep.e, data.alc_src, (both || ep.e > cur) && ahead < (both ? 39 : EXT_PL_AHEAD));
       if (!x) return;
       if (x.it.method === 'call') { ahead++; jobs.push({ ep: ep, it: x.it }); return; }
       resolveItem(x.it, function (r) { if (r.url) got[ep.e] = extCell(pb, ep, r); }, function () {});
     });
-    var left = jobs.length, running = 0;
+    var left = jobs.length, running = 0, cancelled = false;
     var pump = function () {
-      while (running < EXT_PL_PAR && jobs.length) {
+      while (!cancelled && running < EXT_PL_PAR && jobs.length) {
         (function (j) {
           running++;
-          var fin = function () { running--; if (--left === 0) done(); else pump(); };
+          var fin = function () { running--; if (cancelled) return; if (--left === 0) done(); else pump(); };
           resolveItem(j.it, function (r) { if (r.url) got[j.ep.e] = extCell(pb, j.ep, r); fin(); }, function (st, x, to, text, thr) {
-            if (thr && !j.again) { j.again = true; jobs.push(j); running--; pump(); return; }   // a busy server: once more after the others
+            if (!cancelled && thr && !j.again) { j.again = true; jobs.push(j); running--; pump(); return; }   // a busy server: once more after the others
             fin();
           });
         })(jobs.shift());
@@ -4199,6 +4202,7 @@
     };
     if (!left) setTimeout(done, 0); else pump();
     return {
+      cancel: function () { cancelled = true; jobs = []; },
       list: function () {
         var now = isArr(data.playlist) ? data.playlist : [];
         var mine = now.filter(function (p) { return p && p.url === data.url; })[0] || now.filter(function (p) { return p && p.episode === cur; })[0];

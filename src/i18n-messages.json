@@ -4423,6 +4423,20 @@
   "pl": "Serial",
   "es": "TV"
  },
+ "Мультсериал": {
+  "en": "Animated series",
+  "uk": "Мультсеріал",
+  "be": "Мультсерыял",
+  "zh": "动画剧集",
+  "pt": "Série animada",
+  "bg": "Анимационен сериал",
+  "he": "סדרת אנימציה",
+  "cs": "Animovaný seriál",
+  "ro": "Serial animat",
+  "fr": "Série animée",
+  "pl": "Serial animowany",
+  "es": "Serie animada"
+ },
  "Мультфильм": {
   "en": "Cartoon",
   "fr": "Dessin animé",

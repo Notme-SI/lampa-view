@@ -3,7 +3,7 @@ const messages=require('../src/i18n-messages.json'),codes=['en','uk','be','zh','
 const code=esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/i18n.js')],bundle:true,write:false,format:'iife',globalName:'I18n'}).outputFiles[0].text;
 const placeholders=s=>[...s.matchAll(/\{[^{}]+\}|%s/g)].map(m=>m[0]).sort();
 test('poster types and recent navigation labels are translated in every advertised locale',()=>{
- assert.equal(messages['Сериал'].en,'TV');assert.equal(messages['Мультфильм'].en,'Cartoon');assert.equal(messages['Мультфильмы'].en,'Cartoons');
+ assert.equal(messages['Сериал'].en,'TV');assert.equal(messages['Мультфильм'].en,'Cartoon');assert.equal(messages['Мультфильмы'].en,'Cartoons');assert.equal(messages['Мультсериал'].en,'Animated series');
  for(const source of ['Сериал','Мультфильм','Мультфильмы','Коллекция','Закрыть','Уведомления','Редактор меню','Прокрутка страницы','Сброс масштаба','Закрепить боковое меню','Планшет','Ещё','Масштаб'])for(const code of [...codes,'es'])assert.ok(messages[source]?.[code],source+': '+code);
 });
 test('every fixed UI message has all 12 Lampa languages and preserves interpolation slots',()=>{assert.ok(Object.keys(messages).length>580);for(const [source,row]of Object.entries(messages))for(const language of codes){assert.equal(typeof row[language],'string',language+': '+source);assert.ok(row[language].length,language+': '+source);assert.deepEqual(placeholders(row[language]),placeholders(source),language+': '+source);}});

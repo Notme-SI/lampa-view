@@ -21,7 +21,7 @@ jobs:
           - group: unit
             checks: ""
           - group: playback
-            checks: "torrent-layout torrent-files-layout mpvplus-preload torrent-native-playback button-focus episode-focus hero-proxy torrent-tv-controls remote-navigation catalogue-grid trakt-interface"
+            checks: "torrent-layout torrent-files-layout mpvplus-preload torrent-native-playback button-focus episode-focus hero-proxy torrent-tv-controls remote-navigation catalogue-grid project-header trakt-interface"
           - group: online
             checks: "voice-initial online-polish history-focus interface-size poster-rail home-stage header-focus menu-layout search-layout mobile-shell poster-chrome row-overlay tv-captions timeline-devices quiet-sync watch-menu"
           - group: catalogue

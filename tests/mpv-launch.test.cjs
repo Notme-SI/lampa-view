@@ -51,21 +51,40 @@ test('launch does not wait for filesystem IPC or timer tasks and retains the syn
  assert.deepEqual(f.calls[0][1].slice(-2),[video.url,'https://host/episode-3.mkv']);
  f.tick();assert.equal(f.calls.length,1,'the old timer route must not duplicate the launch');
 });
-test('online resolver fills lazy episodes before launch, keeps selected first and ignores stale completion',()=>{
+test('online resolver retains both directions, starts at the selection and ignores stale completion',()=>{
  const f=fixture();
- let resolved,done;
+ let resolved,done,cancelled=0;
  const episode=n=>({url:'https://host/episode-'+n+'.mkv',season:1,episode:n});
  const selected={...episode(2),playlist:[episode(1),episode(2),{...episode(3),url(){}}],
-  minimalExternalPlaylist(callback){done=callback;return {list:()=>resolved};}};
+  minimalExternalPlaylist(callback){done=callback;return {list:()=>resolved,cancel(){cancelled++;}};}};
  f.play(selected);
  f.tick(); // The bounded timeout falls back to the available selected episode.
- assert.deepEqual(f.calls[0][1].filter(v=>v.startsWith('https://')),[episode(2).url]);
+ assert.deepEqual(f.calls[0][1].filter(v=>v.startsWith('https://')),[episode(1).url,episode(2).url]);
+ assert.ok(f.calls[0][1].includes('--playlist-start=1'));
+ assert.equal(cancelled,1,'The deadline stops unused queued link requests');
  resolved=[episode(1),episode(2),episode(3),episode(4)];done();
  assert.equal(f.calls.length,1);
  f.play({...selected,minimalExternalPlaylist(callback){callback();return {list:()=>resolved};}});f.tick();
  const args=f.calls[1][1];
- assert.deepEqual(args.slice(-3),[episode(2).url,episode(3).url,episode(4).url]);
- assert.deepEqual(context(args).entries.map(item=>item.identity.episode),[2,3,4]);
+ assert.deepEqual(args.slice(-4),[episode(1).url,episode(2).url,episode(3).url,episode(4).url]);
+ assert.ok(args.includes('--playlist-start=1'));
+ assert.deepEqual(context(args).entries.map(item=>item.identity.episode),[2,1,3,4]);
+});
+
+test('a late selected episode keeps its nearest previous/next entries inside the Windows argument budget',()=>{
+ for(const padding of [0,900]){
+  const f=fixture(),items=Array.from({length:200},(_,i)=>({url:'https://host/episode-'+(i+1)+'.mkv'+(padding?'?token='+'x'.repeat(padding):''),season:1,episode:i+1}));
+  f.play({...items[149],playlist:items});f.tick();const args=f.calls[0][1],urls=args.filter(s=>s.startsWith('https://'));
+  const start=Number(args.find(s=>s.startsWith('--playlist-start=')).split('=')[1]);
+  assert.equal(urls[start],items[149].url);assert.ok(urls.includes(items[148].url));assert.ok(urls.includes(items[150].url));
+  assert.ok(urls.length<=40);assert.ok(urls.join(' ').length<12000);if(!padding)assert.equal(context(args).entries[0].identity.episode,150);
+ }
+});
+
+test('a missing selected entry is inserted between known episodes without mutating native cells',()=>{
+ const f=fixture(),items=[1,3].map(n=>({url:'https://host/'+n+'.mkv',season:'1',episode:String(n)})),before=JSON.stringify(items);
+ f.play({url:'https://host/2.mkv',season:1,episode:2,playlist:[items[0],items[0],{url(){},season:1,episode:4},items[1]]});f.tick();
+ const args=f.calls[0][1];assert.deepEqual(args.filter(s=>s.startsWith('https://')),['https://host/1.mkv','https://host/2.mkv','https://host/3.mkv']);assert.ok(args.includes('--playlist-start=1'));assert.equal(JSON.stringify(items),before);
 });
 test('spawn failure returns to native playback once; a superseded pending launch never starts',()=>{
  const failed=fixture({spawnError:true});failed.play({url:'https://host/a.mkv'});failed.tick();assert.equal(failed.fallback.length,1);
