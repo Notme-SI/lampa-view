@@ -37,19 +37,33 @@ body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] :is(.minimal-detail-fac
  backdrop-filter:var(--pt-glass-filter)!important;-webkit-backdrop-filter:var(--pt-glass-filter)!important;
 }
 body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .minimal-project-header {padding:1em}
-/* Full-width artwork belongs to the page, with no outer card or text box.
-   Unscaled static shades blend all edges into the same page canvas. */
+/* One page-wide stage, with room for the text on the left.
+   Put the fades on the artwork frame so they start at the image edges. */
 body.lampa_view.pt-home.pt-theme-glass[data-lampa-theme="glass"] .wrap__content:has(.activity--active .pt-hero:not(.pt-hidden)) {padding-top:0!important}
 body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .activity--active .pt-hero {display:block;width:100%!important;margin-inline:0!important;border-radius:0;padding-bottom:0;background:var(--pt-bg)!important;box-shadow:none;clip-path:none;-webkit-clip-path:none}
 body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .pt-hero .pt-hero__artwork {mask-image:none!important;-webkit-mask-image:none!important}
-body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .pt-hero .pt-hero__image {width:100%;max-width:none;object-fit:cover;mask-image:none!important;-webkit-mask-image:none!important}
+body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .pt-hero .pt-hero__image {width:100%;max-width:none;object-fit:contain;transform:none;mask-image:none!important;-webkit-mask-image:none!important}
 body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .pt-hero .pt-hero__artwork:after {content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(0deg,var(--pt-bg),#0a0a0a99 13%,transparent 48%)}
-body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .pt-hero:before {background:linear-gradient(90deg,#0a0a0abf, #0a0a0a66 36%,transparent 78%)}
+body.lampa_view.pt-theme-glass[data-lampa-theme="glass"]:not(.pt-mobile) .pt-hero__artwork {left:auto;width:72%}
+body.lampa_view.pt-theme-glass[data-lampa-theme="glass"]:not(.pt-mobile) .pt-hero .pt-hero__artwork:after {
+ background:linear-gradient(90deg,var(--pt-bg),#0a0a0ad9 12%,#0a0a0a59 34%,transparent 58%),
+            linear-gradient(0deg,var(--pt-bg),#0a0a0a99 13%,transparent 48%);
+}
+/* Size the frame to the loaded aspect ratio so a contained image has no
+   letterbox between its left edge and the gradient on current browsers. */
+@supports (width:1cqh) and (container-type:size) {
+ body.lampa_view.pt-theme-glass[data-lampa-theme="glass"]:not(.pt-mobile) .pt-hero {container-type:size}
+ body.lampa_view.pt-theme-glass[data-lampa-theme="glass"]:not(.pt-mobile) .pt-hero__artwork {
+  bottom:auto;
+  width:min(72%,calc(100cqh * var(--pt-hero-art-ratio,1.77778)));
+  aspect-ratio:var(--pt-hero-art-ratio,1.77778);
+ }
+}
+body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .pt-hero:before {background:none}
 body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .pt-hero__body {padding:0 1em 0 0;border:0;border-radius:0;background:none;box-shadow:none}
-body.lampa_view.pt-theme-glass[data-lampa-theme="glass"]:not(.pt-mobile) .pt-hero__body {position:absolute;top:auto;left:max(var(--pt-content-inset),3em);bottom:3em;max-width:34em;transform:none}
+body.lampa_view.pt-theme-glass[data-lampa-theme="glass"]:not(.pt-mobile) .pt-hero__body {position:absolute;top:auto;left:max(var(--pt-content-inset),3em);bottom:3em;width:46%;max-width:34em;transform:none}
 body.lampa_view.pt-theme-glass[data-lampa-theme="glass"].pt-tv .pt-hero__body {left:3em;bottom:4em;max-width:31em}
 body.lampa_view.pt-theme-glass[data-lampa-theme="glass"].pt-mobile .activity--active .pt-hero {display:flex}
-body.lampa_view.pt-theme-glass[data-lampa-theme="glass"].pt-mobile .pt-hero:before {background:none}
 body.lampa_view.pt-theme-glass[data-lampa-theme="glass"].pt-mobile .pt-hero__body {padding:1.5em 1em 1em}
 body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] :is(.pt-hero__action,.simple-button,.full-start__button,.nova-btn,.nova-chip,.nova-group):is(.focus,.hover) {background:var(--pt-row-focus)!important;box-shadow:none!important}
 /* The primary action and selected navigation use Watched's white pill. */

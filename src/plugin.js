@@ -332,6 +332,10 @@ if (!ROOT.LampaView) {
       const element=$(lampaViewText("<section class=\"pt-hero\" aria-label=\"Подборка фильмов и сериалов\">"));
       const artworkFrame=$('<div class="pt-hero__artwork" aria-hidden="true">').appendTo(element);
       const image=$('<img class="pt-hero__image" alt="" decoding="async">').appendTo(artworkFrame);
+      image.on('load',event=>{
+        const {naturalWidth,naturalHeight}=event.currentTarget;
+        if(naturalWidth && naturalHeight)element[0].style.setProperty('--pt-hero-art-ratio',String(naturalWidth/naturalHeight));
+      });
       const body=$('<div class="pt-hero__body">').appendTo(element);
       const brandingSlot=$('<div class="pt-hero__branding">').appendTo(body);
       const logo=$('<img class="pt-hero__logo pt-hidden" decoding="async">').appendTo(brandingSlot);
