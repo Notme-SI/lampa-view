@@ -97,6 +97,19 @@ test('device synchronization preserves stable episode links alongside opaque nat
  }finally{a.close();b.close();}
 });
 
+test('TimeCode 4 imports a fresh edit of an old watch without uploading stale local progress',async()=>{
+ const server=backend(),a=client(server);
+ try{
+  a.store.file_view_7={episode:{percent:20,time:200,duration:1000,updated:200}};
+  server.inject('viewer@example.test',7,'episode',{percent:90,position:900,duration:1000,watched_at:100,changed_at:300});
+  a.sync.refresh();await wait(400);
+  assert.equal(a.records().episode.time,900);assert.equal(a.records().episode.updated,300);
+  assert.equal(server.requests.filter(r=>r.method.endsWith('/set')).length,0,'The newer server edit must not be overwritten');
+  server.inject('viewer@example.test',7,'episode',{percent:40,position:400,duration:1000,watched_at:400,changed_at:0});
+  a.sync.refresh();await wait(30);assert.equal(a.records().episode.time,400);assert.equal(a.records().episode.updated,400,'Zero changed_at retains legacy watched_at semantics');
+ }finally{a.close();}
+});
+
 test('measured playback writes can reach another device while general refresh stays deferred',async()=>{
  const server=backend(),a=client(server),b=client(server);
  try{

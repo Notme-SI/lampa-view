@@ -100,7 +100,9 @@ export default function sharedTimeline(L,enabled){
   }
   for(const row of rows){
    if(!row || !validHash(row.hash))continue;
-   const hash=String(row.hash),value=road({percent:row.deleted?0:row.percent,time:row.deleted?0:row.position,duration:row.duration,updated:row.watched_at,...remoteMetadata(row.card)});
+   // TimeCode 4 distinguishes editing a record from when it was watched.
+   // Preserve legacy servers, whose rows have no changed_at value.
+   const hash=String(row.hash),value=road({percent:row.deleted?0:row.percent,time:row.deleted?0:row.position,duration:row.duration,updated:number(row.changed_at) || row.watched_at,...remoteMetadata(row.card)});
    const old=remote.get(hash),server=number(row.updated_at);
    if(old && (old.value.updated>value.updated || old.value.updated===value.updated && old.server>server))continue;
    remote.set(hash,{value,server});

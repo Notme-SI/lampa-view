@@ -1,3 +1,8 @@
+## 0.5.127
+
+- Read TimeCode 4's `changed_at` when merging progress, so a new edit of an old watch on another client is not overwritten by stale local progress. Retain `watched_at` fallback for older Lampac versions and legacy records.
+- Keep all interface and performance changes from 0.5.126.
+
 ## 0.5.126
 
 - Restore desktop glass colors, opacity preferences, poster rounding and banner fades on TV; use a smaller TV blur radius and combine the banner fades on one artwork layer.
