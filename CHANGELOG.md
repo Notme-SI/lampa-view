@@ -1,3 +1,10 @@
+## 0.5.126
+
+- Restore desktop glass colors, opacity preferences, poster rounding and banner fades on TV; use a smaller TV blur radius and combine the banner fades on one artwork layer.
+- Replace Recommendations and Similar poster rails with separate compact pickers, like Related. Preserve ordering, source, navigation and return focus, and create poster thumbnails only after opening a picker.
+- Add desktop spacing between cast/facts and frames, and between comments and the suggestion pickers.
+- Reuse the efficient fixed-shadow opacity animation on desktop as well as TV, preserving the visible lift and glow.
+
 ## 0.5.124
 
 - Avoid full-row style recalculation when focus changes on TV, and batch poster metadata updates so browsing does not queue a separate layout pass for each card.

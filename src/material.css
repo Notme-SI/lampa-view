@@ -15,9 +15,9 @@ body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] {
  background:var(--pt-bg)!important;background-attachment:scroll!important;
 }
 body.lampa_view.pt-theme-glass[data-lampa-theme="glass"].pt-tv {
- --pt-glass-filter:none;--pt-glass-blur:0px;
- --pt-matte-alpha:.88!important;--pt-header-glass:rgba(24,24,24,.84);
- --pt-panel:rgba(30,30,30,.88);--pt-glass-button:rgba(30,30,30,.78);
+ /* Share the desktop material and saved opacity. Limit the TV filter radius
+    rather than replacing the design with almost opaque reading panes. */
+ --pt-glass-blur:12px;
 }
 /* Clear inherited filters first. Explicit groups below own the glass layer. */
 body.lampa_view[data-lampa-theme] *,body.lampa_view[data-lampa-theme] *:before,body.lampa_view[data-lampa-theme] *:after {backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
@@ -135,23 +135,24 @@ body.lampa_view[data-lampa-theme] .nova-plus-root .nova__list--grid .nova-card .
  -webkit-transform:var(--pt-card-lift,none)!important;
  box-shadow:var(--pt-card-glow,none)!important;
 }
-/* Paint the TV halo once and fade that surface. Animating the blur radius or
+/* Paint the halo once and fade that surface. Animating the blur radius or
    border color repaints the selected poster on each frame of the native scroll.
    No permanent compositor hint is assigned to offscreen posters. */
-body.lampa_view.pt-tv[data-lampa-theme] .card .card__view,
-body.lampa_view.pt-tv[data-lampa-theme] .nova-plus-root .nova__list--grid .nova-card .nova-card__thumb {
+body.lampa_view[data-lampa-theme] .card .card__view,
+body.lampa_view[data-lampa-theme] .nova-plus-root .nova__list--grid .nova-card .nova-card__thumb {
  transition:transform .22s cubic-bezier(.16,1,.3,1)!important;
  -webkit-transition:-webkit-transform .22s cubic-bezier(.16,1,.3,1)!important;
  box-shadow:none!important;overflow:visible;
 }
-body.lampa_view.pt-tv[data-lampa-theme] .nova-plus-root .nova__list--grid .nova-card__thumb>img {border-radius:inherit}
-body.lampa_view.pt-tv[data-lampa-theme] :is(.card .card__view,.nova-plus-root .nova__list--grid .nova-card__thumb)::after {
+body.lampa_view[data-lampa-theme] .nova-plus-root .nova__list--grid .nova-card__thumb>img {border-radius:inherit}
+body.lampa_view[data-lampa-theme] :is(.card .card__view,.nova-plus-root .nova__list--grid .nova-card__thumb)::after {
  border-color:rgba(255,255,255,.12)!important;
  box-shadow:0 0 22px rgba(255,255,255,.18)!important;
  opacity:var(--pt-card-halo-opacity,0);
  transition:opacity .22s ease!important;-webkit-transition:opacity .22s ease!important;
 }
-body.lampa_view.pt-tv[data-lampa-theme]:not(.pt-touch-captions) :is(.card,.nova-plus-root .nova__list--grid .nova-card):is(.focus,:focus-visible) {
+body.lampa_view[data-lampa-theme]:not(.pt-touch-captions) :is(.card,.nova-plus-root .nova__list--grid .nova-card):is(.focus,:focus-visible),
+body.lampa_view[data-lampa-theme]:not(.pt-tv):not(.pt-touch-captions):not(.pt-arrow-navigation) :is(.card,.nova-plus-root .nova__list--grid .nova-card):is(.hover,:hover,.pt-card-pointer) {
  --pt-card-halo-opacity:1;
 }
 /* Extend the clipping surface, not the rail/hit boxes: the first and last
@@ -186,9 +187,7 @@ body.lampa_view.pt-tv .pt-hero {clip-path:none;-webkit-clip-path:none}
 /* Glass belongs to controls and overlays, not three transparent fullscreen
    roots that make the compositor blend the whole scrolling catalogue. */
 body.lampa_view.pt-tv.pt-theme-glass[data-lampa-theme="glass"] :is(.app,.wrap) {background:var(--pt-bg)!important}
-body.lampa_view.pt-tv.pt-theme-glass[data-lampa-theme="glass"] {--pt-poster-surface:var(--pt-poster-badge);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
-body.lampa_view.pt-tv.pt-theme-glass[data-lampa-theme="glass"] .card__title {font-weight:500;letter-spacing:normal}
-body.lampa_view.pt-tv.pt-theme-glass[data-lampa-theme="glass"] :is(.card__view,.card__img) {border-radius:.5em}
+body.lampa_view.pt-tv.pt-theme-glass[data-lampa-theme="glass"] {--pt-poster-surface:var(--pt-poster-badge)}
 
 /* Continue the current artwork with its sampled color below the banner. */
 body.lampa_view[data-pt-scene] {
@@ -203,10 +202,10 @@ body.lampa_view.pt-tv.pt-theme-glass[data-pt-scene] .wrap {
  background-repeat:no-repeat!important;
 }
 @supports ((mask-image:linear-gradient(#000,transparent)) or (-webkit-mask-image:linear-gradient(#000,transparent))) {
- body.lampa_view.pt-home.pt-theme-glass:not(.pt-tv)[data-pt-scene="catalogue"] .activity--active .pt-hero {
+ body.lampa_view.pt-home.pt-theme-glass[data-pt-scene="catalogue"] .activity--active .pt-hero {
   background:transparent!important;
  }
- body.lampa_view.pt-home:not(.pt-tv)[data-lampa-theme] .pt-hero .pt-hero__artwork {
+ body.lampa_view.pt-home[data-lampa-theme] .pt-hero .pt-hero__artwork {
   mask-image:linear-gradient(to bottom,#000 32%,#000d 57%,#0005 80%,transparent 98%)!important;
   -webkit-mask-image:linear-gradient(to bottom,#000 32%,#000d 57%,#0005 80%,transparent 98%)!important;
  }
@@ -218,7 +217,14 @@ body.lampa_view.pt-tv.pt-theme-glass[data-pt-scene] .wrap {
   mask-image:linear-gradient(to right,transparent 0%,#0001 8%,#0005 19%,#000c 34%,#000 50%)!important;
   -webkit-mask-image:linear-gradient(to right,transparent 0%,#0001 8%,#0005 19%,#000c 34%,#000 50%)!important;
  }
- body.lampa_view.pt-home:not(.pt-tv)[data-lampa-theme] .pt-hero .pt-hero__artwork::after {content:none}
+ /* The same edge fades share one TV artwork layer, rather than nesting two
+    masked layers while the remote scroll compositor is active. */
+ body.lampa_view.pt-home.pt-tv[data-lampa-theme] .pt-hero .pt-hero__artwork {
+  mask-image:linear-gradient(to right,transparent 0%,#0001 8%,#0005 19%,#000c 34%,#000 50%),linear-gradient(to bottom,#000 32%,#000d 57%,#0005 80%,transparent 98%)!important;
+  -webkit-mask-image:linear-gradient(to right,transparent 0%,#0001 8%,#0005 19%,#000c 34%,#000 50%),linear-gradient(to bottom,#000 32%,#000d 57%,#0005 80%,transparent 98%)!important;
+  -webkit-mask-composite:source-in;mask-composite:intersect;
+ }
+ body.lampa_view.pt-home[data-lampa-theme] .pt-hero .pt-hero__artwork::after {content:none}
 }
 @supports not ((mask-image:linear-gradient(#000,transparent)) or (-webkit-mask-image:linear-gradient(#000,transparent))) {
  body.lampa_view.pt-home[data-lampa-theme][data-pt-scene="catalogue"] .wrap {background-image:none!important}

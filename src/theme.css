@@ -1183,6 +1183,10 @@ body.lampa_view .minimal-franchise-menu .selectbox__layer {backdrop-filter:none}
 /* Detail content shares the header edge; discovery rows start after a clear break. */
 body.lampa_view .minimal-detail-suggestions {box-sizing:border-box;width:90%!important;max-width:90%!important;margin:0 auto var(--pt-section-gap);--minimal-poster-gutter:0px!important}
 body.lampa_view .minimal-detail-suggestions--first {padding-top:var(--pt-section-gap)}
+/* Separate complete sections, including whichever header column is taller. */
+body.lampa_view.pt-desktop .minimal-detail-screenshots {margin-top:2.5em}
+body.lampa_view .minimal-suggestions-choice {padding-top:0}
+body.lampa_view.pt-desktop .minimal-comments-native+.minimal-suggestions-choice {margin-top:2.5em}
 body.lampa_view .mapping--grid>.card {padding-bottom:.6em}
 body.lampa_view .minimal-detail-suggestions>.items-line__head {padding-left:0!important;padding-right:0!important}
 body.lampa_view .minimal-detail-suggestions>.items-line__body>.scroll--horizontal>.scroll__content {padding-left:0!important;padding-right:0!important}

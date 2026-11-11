@@ -7,6 +7,7 @@ import comments from './comments.js';
 import {artworkSize,logoSize,detailBackdrop,officialBanner} from './artwork.js';
 import {onlineButton,watchActions} from './watch-actions.js';
 import {prepareScreenshotRow,styleScreenshots,nextDetailEpisode,orderDetailSections,styleSuggestions,removeDetailRows} from './detail-gallery.js';
+import installSuggestions from './detail-suggestions.js';
 export function releaseDate(card){
  const raw=String(card.release_date || card.first_air_date || ''),match=/^(\d{4})-(\d{2})-(\d{2})$/.exec(raw);
  if(!match)return /^\d{4}$/.test(raw) && Number(raw)>0?raw:'';
@@ -131,6 +132,7 @@ export default function detail(L,event,loadLogo){
   return;
  }
  if(event && event.type==='start' && event.data){
+  installSuggestions(L,event.link);
   const card=event.data.movie,size=artworkSize(L,'detail-backdrop');
   const needed=document.body.classList.contains('pt-tv')?3840:Math.ceil((window.innerWidth || 1920)*Math.min(2,window.devicePixelRatio || 1));
   const selected=officialBanner(card,size==='original') || detailBackdrop((event.data.images || card.images || {}).backdrops || [],card.backdrop_path,needed,L.Storage?.get?.('language','ru') || 'ru');
@@ -160,6 +162,7 @@ export default function detail(L,event,loadLogo){
  removeDescription(event.link);
  removeDetailRows(event.link,row=>Array.isArray(row) && row[0]==='episodes' && !row[1]?.minimal_gallery);
  restoreDetailRows(L,event.link,event.data);
+ installSuggestions(L,event.link);
  const technical=moveTechnicalDetails(L,card,right,event.data.episodes);
  const animeBase=window.LampaView && window.LampaView.animeBase;
  if(isAnime(card)){

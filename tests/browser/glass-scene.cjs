@@ -211,7 +211,7 @@ async function run(engine, browser, mode) {
     await page.waitForTimeout(260);
     const after = await card.evaluate((n,view)=>{
      const art=n.querySelector(view), face=getComputedStyle(art,'::after');
-     return {outer:n.offsetTop,art:art.getBoundingClientRect().y-n.getBoundingClientRect().y,transform:getComputedStyle(art).transform,halo:getComputedStyle(art).boxShadow,indicator:face.backgroundImage,edge:face.borderTopColor};
+     return {outer:n.offsetTop,art:art.getBoundingClientRect().y-n.getBoundingClientRect().y,transform:getComputedStyle(art).transform,halo:face.boxShadow,opacity:face.opacity,indicator:face.backgroundImage,edge:face.borderTopColor};
     },view);
     assert.equal(after.outer,before.outer,target);
     assert.ok(Math.abs(after.art-before.art+3)<.1,JSON.stringify({before,after,theme,target}));
@@ -219,6 +219,7 @@ async function run(engine, browser, mode) {
     assert.equal(after.indicator,'none','The edge layer has no playback glyph');
     assert.equal(await card.locator('.icon--history').count(),0);
     assert.match(after.halo,/rgba\(255, 255, 255, 0.18\)/);
+    assert.equal(after.opacity,'1');
     assert.equal(after.edge,'rgba(255, 255, 255, 0.12)');
     await card.evaluate(n=>n.classList.remove('focus'));
    }
@@ -238,7 +239,7 @@ async function run(engine, browser, mode) {
    await page.emulateMedia({reducedMotion:'reduce'});
    for(const motion of ['on','system','off','on']){
     await page.evaluate(motion=>Lampa.Storage.set('lampa_view_card_motion',motion),motion);await page.waitForTimeout(260);
-    const style=await face.evaluate(node=>{const s=getComputedStyle(node);return {transform:s.transform,duration:s.transitionDuration,halo:s.boxShadow,edge:getComputedStyle(node,'::after').borderColor};});
+    const style=await face.evaluate(node=>{const s=getComputedStyle(node),halo=getComputedStyle(node,'::after');return {transform:s.transform,duration:s.transitionDuration,halo:halo.boxShadow,edge:halo.borderColor};});
     if(motion==='on'){assert.match(style.transform,/matrix\(1, 0, 0, 1, 0, -3\)/);assert.notEqual(style.duration,'0s');}
     else{assert.equal(style.transform,'none');assert.equal(style.duration,'0s');}
     assert.equal(style.edge,'rgba(255, 255, 255, 0.12)');

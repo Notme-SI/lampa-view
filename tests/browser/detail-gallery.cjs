@@ -40,6 +40,10 @@ async function open(page,movie){
  },movie);
  const row=page.locator('.activity--active .minimal-detail-screenshots');
  await row.waitFor();
+ if(await page.locator('body.pt-desktop').count()){
+  const gap=await page.evaluate(()=>{const cast=document.querySelector('.minimal-detail-columns').getBoundingClientRect(),frames=document.querySelector('.minimal-detail-screenshots').getBoundingClientRect();return {distance:frames.top-cast.bottom,font:parseFloat(getComputedStyle(document.body).fontSize)};});
+  assert.ok(gap.distance>=gap.font*2,JSON.stringify(gap));
+ }
  assert.equal(await row.locator('[data-minimal-screenshot]').count(),15);
  assert.equal(await row.locator('.items-line__title').textContent(),movie?'Кадры из фильма':'Кадры из сериала');
  assert.ok(await row.locator('.full-episode:not([hidden])').count()<=15);

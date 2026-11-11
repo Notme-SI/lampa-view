@@ -9,11 +9,12 @@ const alpha=value=>{const numbers=value.match(/[\d.]+/g);return numbers.length==
   if(mode==='tv')assert.equal((await material(page,'.wrap')).bg,'rgb(10, 10, 10)','TV glass keeps an opaque page canvas under its optical surfaces');
   for(const opacity of ['easy','medium','blacked']){
    await page.evaluate(opacity=>Lampa.Storage.set('glass_opacity',opacity),opacity);
-   for(const selector of ['.wrap__left','.settings__content']){const m=await material(page,selector);assert.ok(alpha(m.bg)>=(mode==='tv'?.8:.3) && alpha(m.bg)<1,JSON.stringify({mode,opacity,selector,m}));if(selector==='.wrap__left' || mode==='tv')assert.equal(m.blur,'none');else assert.match(m.blur,/blur\(/);}
+   for(const selector of ['.wrap__left','.settings__content']){const m=await material(page,selector);assert.ok(Math.abs(alpha(m.bg)-({easy:.36,medium:.52,blacked:.72})[opacity])<.01,JSON.stringify({mode,opacity,selector,m}));if(selector==='.wrap__left')assert.equal(m.blur,'none');else assert.match(m.blur,/blur\(/);}
   }
   const capsule=await material(page,'.head .head__body');
   assert.ok(alpha(capsule.bg)>0 && alpha(capsule.bg)<1,'The glass capsule is translucent');
-  if(mode==='tv'){assert.ok(alpha(capsule.bg)>=.8,'TV tint supplies contrast without live blur');assert.equal(capsule.blur,'none');}else {assert.ok(alpha(capsule.bg)<=.35);assert.match(capsule.blur,/blur\(/);}
+  assert.ok(alpha(capsule.bg)<=.35);assert.match(capsule.blur,/blur\(/);
+  assert.match(capsule.blur,mode==='tv'?/blur\(12px\)/:/blur\(24px\)/);
   for(const selector of ['.head .open--search','.head .open--settings']){
    const control=await material(page,selector);
    assert.equal(alpha(control.bg),0);
@@ -23,9 +24,9 @@ const alpha=value=>{const numbers=value.match(/[\d.]+/g);return numbers.length==
   await page.evaluate(()=>{Lampa.Controller.toggle('settings');Lampa.Settings.create('lampa_view');});await page.waitForSelector('.settings--open .settings__content',{state:'visible'});
   if(mode==='tv' && process.env.LAMPA_QA_OUTPUT){fs.mkdirSync(process.env.LAMPA_QA_OUTPUT,{recursive:true});await page.screenshot({path:path.join(process.env.LAMPA_QA_OUTPUT,engine.name()+'-tv-settings.png')});}
   await page.evaluate(()=>{Lampa.Controller.back();Lampa.Select.show({title:'Действие',items:[{title:'Избранное',separator:true},{title:'Нравится',checkbox:true}]});});await page.waitForSelector('.selectbox-item');
-  const panel=await material(page,'.selectbox__content');assert.ok(alpha(panel.bg)>=.4 && alpha(panel.bg)<1);if(mode==='tv')assert.equal(panel.blur,'none');else assert.match(panel.blur,/blur\(/);
+  const panel=await material(page,'.selectbox__content');assert.ok(alpha(panel.bg)>=.4 && alpha(panel.bg)<1);assert.match(panel.blur,/blur\(/);
   await page.evaluate(()=>{Lampa.Controller.back();document.body.appendChild(Lampa.Search.render(true));Lampa.Search.open({sources:[{title:'CUB',params:{},search(p,ok){ok([]);}}]});});await page.waitForSelector('.main-search .search');
-  const search=await material(page,'.main-search .search');assert.ok(alpha(search.bg)>=.4 && alpha(search.bg)<1);if(mode==='tv')assert.equal(search.blur,'none');else assert.match(search.blur,/blur\(/);
+  const search=await material(page,'.main-search .search');assert.ok(alpha(search.bg)>=.4 && alpha(search.bg)<1);assert.match(search.blur,/blur\(/);
   if(mode==='tv' && process.env.LAMPA_QA_OUTPUT)await page.screenshot({path:path.join(process.env.LAMPA_QA_OUTPUT,engine.name()+'-tv-search.png')});
   await page.evaluate(()=>{Lampa.Search.close();const row=document.createElement('div');row.className='mapping--line';row.appendChild(Lampa.Template.get('full_review',{text:'Комментарий',like_count:1})[0]);row.insertAdjacentHTML('beforeend','<div class="full-review-add selector"></div><div class="full-review-all selector">Все комментарии</div>');document.querySelector('.wrap__content').appendChild(row);});
   for(const theme of ['minimal','glass']){await page.evaluate(theme=>Lampa.Storage.set('lampa_view_theme',theme),theme);if(theme==='minimal'){for(const selector of ['.wrap__left','.settings__content','.selectbox__content'])assert.equal((await material(page,selector)).bg,'rgb(0, 0, 0)');}for(const selector of ['.full-review','.full-review-add','.full-review-all']){let m=await material(page,selector);assert.ok(m.radius>=1,JSON.stringify({mode,theme,selector,m}));await page.locator(selector).first().evaluate(n=>n.classList.add('focus'));m=await material(page,selector);assert.ok(m.radius>=1);if(mode==='tv' && selector!=='.full-review-all')assert.equal(m.animation,'none');}}
