@@ -1,3 +1,9 @@
+## 0.5.124
+
+- Avoid full-row style recalculation when focus changes on TV, and batch poster metadata updates so browsing does not queue a separate layout pass for each card.
+- Fit the TV home banner and first row inside the actual scroll viewport so titles, years and viewing progress are visible.
+- Support mouse dragging in desktop Extensions rows, preserving ordinary clicks and independent row scrolling.
+
 ## 0.5.123
 
 - Give poster motion an explicit On / System / Off choice. The enabled mode retains the requested lift and halo transitions even when the OS advertises reduced motion; System follows that preference and Off keeps a static selection.

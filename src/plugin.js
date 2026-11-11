@@ -657,7 +657,7 @@ if (!ROOT.LampaView) {
     ROOT.addEventListener('keydown',event=>{
       if(!yes('lampa_view_enabled') || !/^Arrow/.test(event.key || '') ||
         event.target.closest?.('input,textarea,[contenteditable=true]'))return;
-      document.body.classList.add('pt-arrow-navigation');
+      if(!document.body.classList.contains('pt-arrow-navigation'))document.body.classList.add('pt-arrow-navigation');
       document.querySelectorAll('.head .hover').forEach(node=>node.classList.remove('hover'));
       document.querySelectorAll('.card.pt-card-pointer').forEach(node=>node.classList.remove('pt-card-pointer'));
       if(document.activeElement?.closest('.head'))document.activeElement.blur();

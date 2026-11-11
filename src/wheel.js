@@ -92,7 +92,9 @@ export default function installWheel(L,enabled){
     suppressClick=null;
     if(!enabled() || !event.isPrimary)return;
     const node=event.target.closest?.('.scroll--horizontal');
-    if(!node?.closest('.items-line') || !node.Scroll?.shift)return;
+    const extensions=document.body.classList.contains('pt-desktop') && node?.closest('.extensions__block');
+    if((!node?.closest('.items-line') && !extensions) || !node.Scroll?.shift)return;
+    if(extensions && event.target.closest('button,a,input,textarea,select,[contenteditable="true"]'))return;
     if(event.pointerType==='touch'){
       node.Scroll.minimalPointerFill?.();
       if(!rowOverflows(node))notify({node});
@@ -102,6 +104,7 @@ export default function installWheel(L,enabled){
   });
   document.addEventListener('pointermove',event=>{
     if(!drag || event.pointerId!==drag.id)return;
+    if(!enabled() || !drag.node.isConnected){finishDrag(event);return;}
     const delta=drag.x-event.clientX;
     if(!drag.moved){
       if(Math.abs(delta)<7)return;

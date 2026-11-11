@@ -34,6 +34,34 @@ for(const mode of ['wheel','tv'])test('quality requests and layout reads wait un
  w.document.body.classList.remove(mode==='tv'?'pt-tv-busy':'pt-wheel-active');w.document.dispatchEvent(new w.Event('minimal:'+mode+'-idle'));
  assert.equal(reads,1,'deferred items were not deduplicated');assert.equal(requests,1);dom.window.close();
 });
+test('TV card batches finish decorations before the first layout read',()=>{
+ const dom=new JSDOM('<body class="pt-tv pt-tv-busy"></body>',{runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window;
+ const source=esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/quality.js')],bundle:true,write:false,format:'iife',globalName:'Quality'}).outputFiles[0].text;
+ w.eval(source);
+ let listener,reads=0;
+ w.Quality.default({Listener:{follow:(key,fn)=>listener=fn},Storage:{get:(key,fallback)=>fallback}},null);
+ const items=Array.from({length:4},(_,i)=>{
+  const node=w.document.createElement('div');
+  node.className='card';
+  node.innerHTML='<div class="card__view"></div>';
+  w.document.body.appendChild(node);
+  node.getBoundingClientRect=()=>{
+   reads++;
+   assert.equal(w.document.querySelectorAll('.pt-kind').length,4);
+   return {width:100,top:0,bottom:150,left:0,right:100};
+  };
+  return {data:{id:i+1,title:'Film '+i,release_date:'2020-01-01'},render:()=>node};
+ });
+ listener({type:'visible',items});
+ assert.equal(reads,0);
+ w.document.body.classList.remove('pt-tv-busy');
+ w.document.dispatchEvent(new w.Event('minimal:tv-idle'));
+ assert.equal(reads,4);
+ w.document.dispatchEvent(new w.Event('minimal:tv-idle'));
+ assert.equal(reads,4,'An idle event does not remeasure already processed posters');
+ w.close();
+});
+
 test('series get their own type marker and quality from later-season releases',()=>{
  const dom=new JSDOM('<body><div class="card card--tv"><div class="card__view"></div></div></body>',{runScripts:'outside-only'}),w=dom.window;
  const bundle=esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/quality.js')],bundle:true,write:false,format:'iife',globalName:'Quality'}).outputFiles[0].text;w.eval(bundle);

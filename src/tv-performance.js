@@ -22,7 +22,9 @@ export default function tvPerformance(enabled,L){
  }
  function moving(){
   if(!enabled() || !document.body.classList.contains('pt-tv'))return;
-  document.body.classList.add('pt-tv-busy');
+  // Re-assigning the same body class still invalidates descendant selectors
+  // in TV WebViews. A held remote gesture has just one busy/idle boundary.
+  if(!document.body.classList.contains('pt-tv-busy'))document.body.classList.add('pt-tv-busy');
   clearTimeout(timer);timer=setTimeout(finish,360);
  }
  document.addEventListener('keydown',event=>{

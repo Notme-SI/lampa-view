@@ -9,8 +9,9 @@ export default function rowOverlay(root,viewport,update){
   if(disposed || !root.isConnected)return;
   const view=viewport(),poster=view?.querySelector('.card__view'),card=poster?.closest('.card');
   if(!poster || !card)return;
-  root.style.setProperty('--pt-more-width',card.offsetWidth+'px');
-  root.style.setProperty('--pt-more-height',poster.offsetHeight+'px');
+  const width=card.offsetWidth+'px',height=poster.offsetHeight+'px';
+  if(root.style.getPropertyValue('--pt-more-width')!==width)root.style.setProperty('--pt-more-width',width);
+  if(root.style.getPropertyValue('--pt-more-height')!==height)root.style.setProperty('--pt-more-height',height);
   update(view,card);
  }
  function refresh(){if(!disposed && !frame)frame=request(measure);}

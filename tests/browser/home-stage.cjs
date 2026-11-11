@@ -7,6 +7,11 @@ const {setup}=require('../fixtures/native-browser.cjs');
    for(const device of [{mode:'desktop',width:1280,height:720},{mode:'desktop',width:1920,height:1080},{mode:'desktop',width:2048,height:1070},{mode:'desktop',width:2559,height:1338},{mode:'tv',width:960,height:540},{mode:'tv',width:1280,height:720},{mode:'tv',width:1920,height:1080},{mode:'tv',width:3840,height:2160}]){
     const r=await setup(browser,{viewport:{width:device.width,height:device.height},mode:device.mode},{beforePlugin:page=>page.evaluate(()=>{
      const L=Lampa;L.Params.init();L.Layer.init();L.Storage.set('lampa_view_hero',true);
+     if(document.body.classList.contains('pt-tv') || L.Storage.get('lampa_view_layout')==='tv'){
+      document.querySelector('.wrap').classList.add('layer--height','layer--width');
+      document.querySelector('.wrap__content').classList.add('layer--height');
+      L.Layer.update();
+     }
      L.Api.main=(o,ok)=>ok(['Сейчас смотрят','Популярное'].map((title,row)=>({title,url:'qa/'+row,results:Array.from({length:20},(_,i)=>({id:row*100+i+1,title:'Очень длинное название фильма '+(i+1),overview:'Описание фильма для проверки первого экрана.',poster_path:'/poster'+i+'.jpg',backdrop_path:'/backdrop'+i+'.jpg',release_date:'2025-01-01',source:'tmdb'}))})));
     })}),{page}=r;
     await page.evaluate(()=>Lampa.Activity.push({component:'main',source:'tmdb'}));const frames=[];
@@ -18,11 +23,14 @@ const {setup}=require('../fixtures/native-browser.cjs');
      const value=await page.locator('.activity--active .pt-hero').evaluate(hero=>{
       const first=hero.nextElementSibling,second=first.nextElementSibling,view=first.querySelector('.scroll--horizontal').getBoundingClientRect(),rect=hero.getBoundingClientRect();
       const cards=[...first.querySelectorAll('.card')].filter(n=>{const r=n.getBoundingClientRect();return r.left>=view.left-1 && r.right<=view.right+1;});
-      const b=hero.querySelector('.pt-hero__body').getBoundingClientRect();return {bodyTop:b.top-rect.top,bodyBottom:b.bottom-rect.top,posterWidth:parseFloat(getComputedStyle(first.querySelector('.card')).width),secondPosterWidth:second && parseFloat(getComputedStyle(second.querySelector('.card')).width),secondFitted:second && second.classList.contains('minimal-posters-sized'),hero:{top:rect.top,width:rect.width,height:rect.height},row:{top:first.getBoundingClientRect().top,bottom:first.getBoundingClientRect().bottom},secondTop:second&&second.getBoundingClientRect().top,maxCaptionBottom:Math.max(...cards.map(n=>n.querySelector('.card__age').getBoundingClientRect().bottom)),maxCardBottom:Math.max(...cards.map(n=>n.getBoundingClientRect().bottom)),viewport:innerHeight,count:cards.length};
+      const b=hero.querySelector('.pt-hero__body').getBoundingClientRect();
+      const clip=first.closest('.scroll:not(.scroll--horizontal)');
+      const clipBottom=clip?Math.min(innerHeight,clip.getBoundingClientRect().bottom):innerHeight;
+      return {bodyTop:b.top-rect.top,bodyBottom:b.bottom-rect.top,posterWidth:parseFloat(getComputedStyle(first.querySelector('.card')).width),secondPosterWidth:second && parseFloat(getComputedStyle(second.querySelector('.card')).width),secondFitted:second && second.classList.contains('minimal-posters-sized'),hero:{top:rect.top,width:rect.width,height:rect.height},row:{top:first.getBoundingClientRect().top,bottom:first.getBoundingClientRect().bottom},secondTop:second&&second.getBoundingClientRect().top,maxCaptionBottom:Math.max(...cards.map(n=>n.querySelector('.card__age').getBoundingClientRect().bottom)),maxCardBottom:Math.max(...cards.map(n=>n.getBoundingClientRect().bottom)),viewport:innerHeight,clipBottom,count:cards.length};
      });
      assert.ok(value.hero.top>= -1,'Banner must remain at the top of the first screen: '+JSON.stringify(value));
      assert.ok(value.maxCaptionBottom<=value.viewport-2,'Posters, titles and year fit the first screen: '+JSON.stringify({device,size,value}));
-     if(device.mode==='tv'){assert.ok(value.bodyTop>=-1 && value.bodyBottom<=value.hero.height+1,'TV carousel branding stays inside its frame at the WebView font floor: '+JSON.stringify({device,size,value}));}else {
+     if(device.mode==='tv'){assert.ok(value.maxCaptionBottom<=value.clipBottom-2,'TV captions must fit inside the native scroll viewport: '+JSON.stringify({device,size,value}));assert.ok(value.bodyTop>=-1 && value.bodyBottom<=value.hero.height+1,'TV carousel branding stays inside its frame at the WebView font floor: '+JSON.stringify({device,size,value}));}else {
      assert.ok(value.maxCaptionBottom<=value.viewport-2,'First row captions must fit vertically: '+JSON.stringify({device,size,value}));
      assert.ok(value.secondTop===null || value.secondTop>=value.viewport,'Next collection must not show a strip: '+JSON.stringify({device,size,value}));
      }

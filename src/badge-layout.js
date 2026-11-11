@@ -20,16 +20,31 @@ export function placeBadges(width,height,badges,occupied=[],padding=4,gap=3){
  return placed.slice(occupied.length);
 }
 export default function badgeLayout(status){
- const pending=new Set();let frame=0;
+ const pending=new Set(),measured=new WeakMap();let frame=0;
  const paused=()=>document.body.matches('.pt-wheel-active,.pt-tv-busy') || document.hidden;
  function flush(){
   frame=0;if(paused())return;
-  const reads=[];let count=0;
+  const reads=[],batch=[],tv=document.body.classList.contains('pt-tv');
   for(const node of pending){
-   if(document.body.classList.contains('pt-tv') && count++>=6)break;
-   pending.delete(node);if(!node.isConnected)continue;
-   if(status)status.paint(node);
-   const view=node.querySelector('.card__view');if(!view)continue;const rect=view.getBoundingClientRect();
+   if(tv && batch.length>=6)break;
+   pending.delete(node);
+   if(node.isConnected)batch.push(node);
+  }
+  // Metadata can update text and visibility. Finish those writes before
+  // measuring the layout of any badge in the current frame.
+  if(status)batch.forEach(node=>status.paint(node));
+  for(const node of batch){
+   const view=node.querySelector('.card__view');if(!view)continue;
+   // Focus changes only the composited poster position. Re-measuring all its
+   // unchanged corner labels forces layout after every remote pause. Include
+   // content, native markers, viewport and scale so late data still invalidates.
+   const labels=tv?[...view.querySelectorAll('.card__vote,.pt-quality,.card__quality,.pt-kind,.pt-series-status,.card__marker,.card__new-episode,.card__icon')]:[];
+   const key=tv?[view.clientWidth,view.clientHeight,innerWidth,innerHeight,
+    document.body.className.replace(/\b(?:pt-tv-busy|pt-arrow-navigation)\b/g,''),document.body.style.cssText,
+    node.matches('.focus,.hover,.pt-card-pointer,.pt-card-touch'),
+    ...labels.map(el=>el.className+':'+el.textContent+':'+el.hidden)].join('|'):null;
+   if(tv && measured.get(node)===key)continue;
+   const rect=view.getBoundingClientRect();
    if(!rect.width || !rect.height || rect.bottom<0 || rect.top>window.innerHeight || rect.right<0 || rect.left>window.innerWidth)continue;
    const width=view.clientWidth || rect.width,height=view.clientHeight || rect.height,scale=rect.width/width || 1,entries=[];
    const insetScale=document.body.classList.contains('pt-tv')?window.innerWidth/1920:1;
@@ -49,20 +64,20 @@ export default function badgeLayout(status){
    // CSS keeps favorites left of the rating even before the next measurement.
    const occupied=[...view.querySelectorAll('.card__icon:not(.icon--history)')].map(el=>el.getBoundingClientRect())
     .filter(box=>box.width && box.height).map(box=>({x:(box.left-rect.left)/scale,y:(box.top-rect.top)/scale,width:box.width/scale,height:box.height/scale}));
-   reads.push({view,width,height,entries,places:placeBadges(width,height,entries,occupied,4*insetScale,3*insetScale)});
+   reads.push({node,key,view,width,height,entries,places:placeBadges(width,height,entries,occupied,4*insetScale,3*insetScale)});
   }
   // Read every card before writing styles; held remote navigation never enters here.
-  for(const {view,width,height,entries,places} of reads){view.classList.add('minimal-badge-layout');for(const entry of entries){
+  for(const {node,key,view,width,height,entries,places} of reads){view.classList.add('minimal-badge-layout');for(const entry of entries){
    const p=places.find(p=>p.el===entry.el);entry.el.style.visibility=p?'':'hidden';if(!p)continue;
    // Corners follow their poster immediately, even while remote navigation
    // pauses measurements. Never freeze a right/bottom badge at old left/top.
    const right=p.corner[1]==='r',bottom=p.corner[0]==='b';
    Object.assign(entry.el.style,{top:bottom?'auto':Math.round(p.y)+'px',left:right?'auto':Math.round(p.x)+'px',right:right?Math.round(width-p.x-p.width)+'px':'auto',bottom:bottom?Math.round(height-p.y-p.height)+'px':'auto'});
-  }}
+  }if(key!==null)measured.set(node,key);}
   if(pending.size)frame=requestAnimationFrame(flush);
  }
  function schedule(node){if(!node)return;pending.add(node);if(!frame && !paused())frame=requestAnimationFrame(flush);}
  for(const event of ['minimal:tv-idle','minimal:wheel-idle','visibilitychange'])document.addEventListener(event,()=>{if(pending.size && !frame)frame=requestAnimationFrame(flush);});
  const resize=window.ResizeObserver?new ResizeObserver(entries=>entries.forEach(entry=>schedule(entry.target))):null;
- return {track(node){if(resize)resize.observe(node);schedule(node);},schedule,forget(node){pending.delete(node);if(resize)resize.unobserve(node);}};
+ return {track(node){if(resize)resize.observe(node);schedule(node);},schedule,forget(node){pending.delete(node);measured.delete(node);if(resize)resize.unobserve(node);}};
 }

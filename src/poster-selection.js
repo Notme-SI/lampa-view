@@ -2,6 +2,6 @@
 // Selection is painted on the poster; native history and click/OK actions stay intact.
 export default function posterSelection(node){
  const view=node.querySelector('.card__view');if(!view)return;
- node.classList.add('pt-poster-ready');
+ node.classList.toggle('pt-poster-ready',true);
  view.querySelector('.pt-poster-selection')?.remove();
 }

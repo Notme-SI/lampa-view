@@ -135,10 +135,10 @@ body.lampa_view[data-lampa-theme] .nova-plus-root .nova__list--grid .nova-card .
 }
 /* Extend the clipping surface, not the rail/hit boxes: the first and last
    posters need the same halo room as cards in the middle of a row. */
-body.lampa_view[data-lampa-theme]:not(.pt-touch-captions) .minimal-fit-posters>.items-line__body:has(.mapping--line>.card:first-child:is(.focus,.hover,.pt-card-pointer)) {
+body.lampa_view[data-lampa-theme]:not(.pt-touch-captions) .minimal-fit-posters>.items-line__body.pt-poster-edge-start {
  padding-inline-start:20px;margin-inline-start:-20px;
 }
-body.lampa_view[data-lampa-theme]:not(.pt-touch-captions) .minimal-fit-posters>.items-line__body:has(.mapping--line>.card:last-child:is(.focus,.hover,.pt-card-pointer)) {
+body.lampa_view[data-lampa-theme]:not(.pt-touch-captions) .minimal-fit-posters>.items-line__body.pt-poster-edge-end {
  padding-inline-end:20px;margin-inline-end:-20px;
 }
 body.lampa_view[data-lampa-theme] .minimal-fit-posters>.items-line__body>.scroll--horizontal {

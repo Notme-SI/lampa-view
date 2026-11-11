@@ -39,30 +39,35 @@ export default function quality(L,$){
   function paintCaption(node,data){
     const title=node.querySelector('.card__title'),text=data.title || data.name || '';
     if(title && text && title.textContent!==text)title.textContent=text;
-    if(title){
-      if(document.body.matches('.pt-tv.pt-tv-caption-flow')){
-        // Round the actual scaled font to whole pixels so the caption box
-        // contains two complete lines after native text-size clamping.
-        const line=Math.ceil(parseFloat(window.getComputedStyle(title).fontSize)*1.4);
-        if(line>0 && title.style.getPropertyValue('--pt-caption-line')!==line+'px')title.style.setProperty('--pt-caption-line',line+'px');
-      }else title.style.removeProperty('--pt-caption-line');
-    }
-    const year=releaseYear(data);if(!year || !title)return;
+    const year=releaseYear(data);if(!year || !title)return title;
     let age=node.querySelector('.card__age');
     if(!age){age=document.createElement('div');age.className='card__age';}
     // Late metadata belongs before the reserved watch footer, not after it.
     if(age.parentNode!==title.parentNode || age.previousElementSibling!==title)title.parentNode.insertBefore(age,title.nextSibling);
     if(age.textContent!==year)age.textContent=year;
+    return title;
+  }
+  function measureCaption(title,clamp){
+    return title && clamp?Math.ceil(parseFloat(window.getComputedStyle(title).fontSize)*1.4):0;
+  }
+  function sizeCaption(title,line){
+    if(!title)return;
+    const value=line>0?line+'px':'';
+    if(title.style.getPropertyValue('--pt-caption-line')!==value){
+      if(value)title.style.setProperty('--pt-caption-line',value);
+      else title.style.removeProperty('--pt-caption-line');
+    }
   }
   function paint(node,q){
     if(!q || !node.isConnected)return;
     const view=node.querySelector('.card__view');if(!view)return;
     // Native quality may be rendered before or after our asynchronous result.
     // Claim the slot so CSS also suppresses native badges inserted later.
-    node.classList.add('pt-has-quality');
+    node.classList.toggle('pt-has-quality',true);
     let badge=view.querySelector('.pt-quality');
     if(!badge){badge=document.createElement('span');badge.className='pt-quality';view.appendChild(badge);}
-    if(badge.textContent!==q)badge.textContent=q;badge.title=lampaViewText("Качество доступного релиза");
+    if(badge.textContent!==q)badge.textContent=q;
+    const title=lampaViewText("Качество доступного релиза");if(badge.title!==title)badge.title=title;
     badges.schedule(node);
   }
   function drain(){
@@ -105,12 +110,12 @@ export default function quality(L,$){
       next();
     }
   }
-  function inspect(item){
+  function inspect(item,checks){
     const raw=item.data || {};info.remember(raw);
     const data=info.read(raw),render=item.render && item.render(true),node=render && (render.nodeType?render:render[0]);
     if(!node || !node.classList.contains('card') || (!data.title && !data.original_title && !data.name && !data.original_name))return;
     node._minimalCardData=data;track(item,node);status.track(node,data);
-    paintCaption(node,data);
+    const title=paintCaption(node,data);
     posterSelection(node);
     const tv=data.media_type==='movie'?false:data.media_type==='tv' || !!data.original_name || !!data.first_air_date || node.classList.contains('card--tv');
     const anime=isAnime(data);
@@ -125,13 +130,24 @@ export default function quality(L,$){
       const view=node.querySelector('.card__view');
       const animation=[...(data.genre_ids || []),...(data.genres || [])].some(g=>Number(g.id || g)===16);
       if(view){
-       const rating=view.querySelector('.card__vote');if(rating)rating.dataset.ratingSource=data.source==='minimal_shiki'?'Shikimori':data.cub_hundred_rating?'CUB':data.minimal_trakt?'Trakt':'TMDB';
+       const rating=view.querySelector('.card__vote'),source=data.source==='minimal_shiki'?'Shikimori':data.cub_hundred_rating?'CUB':data.minimal_trakt?'Trakt':'TMDB';
+       if(rating && rating.dataset.ratingSource!==source)rating.dataset.ratingSource=source;
        let badge=view.querySelector('.pt-kind');if(!badge){badge=document.createElement('span');badge.className='pt-kind';view.appendChild(badge);}const text=lampaViewText(anime?'Аниме':animation?(tv?'Мультсериал':'Мультфильм'):tv?'Сериал':'Фильм');if(badge.textContent!==text)badge.textContent=text;
       }
     }
     badges.schedule(node);
-    if(!node.isConnected)return;
-    const rect=node.getBoundingClientRect();if(rect.width===0 || rect.bottom< -200 || rect.top>ROOTHEIGHT()+200 || rect.right< -200 || rect.left>window.innerWidth+200)return;
+    if(checks)checks.push({item,data,node,tv,title});
+    else{
+      sizeCaption(title,measureCaption(title,document.body.matches('.pt-tv.pt-tv-caption-flow')));
+      if(inView(node))inspectRelease(item,data,node,tv);
+    }
+  }
+  function inView(node){
+    if(!node.isConnected)return false;
+    const rect=node.getBoundingClientRect();
+    return !(rect.width===0 || rect.bottom< -200 || rect.top>ROOTHEIGHT()+200 || rect.right< -200 || rect.left>window.innerWidth+200);
+  }
+  function inspectRelease(item,data,node,tv){
     if(!hydrating.has(node) && (info.incomplete(data) || node.matches('.focus,.hover,.pt-card-pointer'))){hydrating.add(node);info.fetch(data,result=>{if(result && node.isConnected)schedule(item);},()=>node.isConnected);}
     const native=label(data.quality || data.release_quality);if(native){paint(node,native);return;}
     const nativeNode=node.querySelector('.card__quality'),nativeLabel=nativeNode && label(nativeNode.textContent);
@@ -183,8 +199,20 @@ export default function quality(L,$){
     if(document.body.classList.contains('pt-wheel-active')){timer=setTimeout(flush,180);return;}
     const waiting=Array.from(retries);retries.clear();waiting.forEach(next=>next());
     // Bound each TV task instead of annotating a whole catalogue in one turn.
-    const limit=document.body.classList.contains('pt-tv')?6:Infinity;
-    let count=0;for(const item of deferred){deferred.delete(item);inspect(item);if(++count>=limit)break;}
+    const television=document.body.classList.contains('pt-tv');
+    const limit=television?6:Infinity,checks=television?[]:null;
+    let count=0;for(const item of deferred){deferred.delete(item);inspect(item,checks);if(++count>=limit)break;}
+    if(checks?.length){
+      // Commit the card decorations as a group before any geometry reads.
+      // A forced style update for each new poster stalls TV input after a burst.
+      const clamp=document.body.classList.contains('pt-tv-caption-flow');
+      const measurements=checks.map(check=>({line:measureCaption(check.title,clamp),visible:inView(check.node)}));
+      checks.forEach(({item,data,node,tv,title},i)=>{
+        const {line,visible}=measurements[i];
+        sizeCaption(title,line);
+        if(visible)inspectRelease(item,data,node,tv);
+      });
+    }
     if(deferred.size)timer=setTimeout(flush,16);
     drain();
   }
@@ -196,11 +224,13 @@ export default function quality(L,$){
       if(!timer && !document.body.classList.contains('pt-tv-busy'))timer=setTimeout(flush,180);return;
     }
     if(document.body.classList.contains('pt-tv'))(event.items || []).forEach(schedule);
-    else (event.items || []).forEach(inspect);
+    else (event.items || []).forEach(item=>inspect(item));
     drain();
   });
   document.addEventListener('minimal:wheel-idle',()=>{revisit();flush();});
-  document.addEventListener('minimal:tv-idle',()=>{revisit();flush();});
+  // Focus/visibility events already queued the cards that actually changed.
+  // A remote pause is not a reason to re-annotate every visible poster.
+  document.addEventListener('minimal:tv-idle',flush);
   // Native visibility fires once, sometimes before a grid is attached. Keep
   // observing cards as pointer scrolling and pagination bring them into view.
   // IntersectionObserver already follows viewport changes, including transforms.

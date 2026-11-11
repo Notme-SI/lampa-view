@@ -30,7 +30,12 @@ export default function homeStage(hero,root){
  const clearance=Math.max(4,after/2);
  // Reserve the entire row, including the watch footer. Native WebKit scroll
  // bounds cannot reveal a footer deliberately placed outside the viewport.
- let height=Math.max(100,Math.floor(innerHeight-top-gap-root.offsetHeight-clearance));
+ // Native TV activities can reserve the floating header in their own Scroll
+ // height. The window bottom is then below the real clipping viewport.
+ // Budget against that viewport so captions and the watch footer remain visible.
+ const bottom=tv && outer && outer.clientHeight?
+  Math.min(innerHeight,outer.getBoundingClientRect().top+outer.clientHeight):innerHeight;
+ let height=Math.max(100,Math.floor(bottom-top-gap-root.offsetHeight-clearance));
  // A tall, narrow window must not reserve more height than its artwork can fill.
  // Cap the inline layout calculation itself; CSS height is overridden below.
  if(!tv){

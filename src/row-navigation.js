@@ -82,8 +82,37 @@ export default function rowNavigation(L,line,enabled){
  }
  const overlay=more?rowOverlay(root,viewport,measureMore):null;
  if(overlay)line.minimalMoreRefresh=overlay.refresh;
- function mountMore(){const body=viewport().querySelector('.scroll__body');if(more && body && body.lastElementChild!==more)body.appendChild(more);overlay?.refresh();}
- mountMore();line.use({onAppend:mountMore,onVisible:mountMore,onDestroy:()=>overlay?.destroy()});
+ // Watching the two edges avoids :has(.focus) invalidating a rail's styles
+ // whenever the remote moves between two cards in the middle of the row.
+ const clip=root.querySelector('.items-line__body');
+ let firstEdge,lastEdge;
+ const selected=card=>!!card?.matches('.focus,.hover,.pt-card-pointer');
+ function updateEdges(){
+  clip.classList.toggle('pt-poster-edge-start',selected(firstEdge));
+  clip.classList.toggle('pt-poster-edge-end',selected(lastEdge));
+ }
+ const edgeObserver=clip && window.MutationObserver?new MutationObserver(updateEdges):null;
+ function watchEdges(body){
+  if(!edgeObserver)return;
+  const first=body?.firstElementChild,last=body?.lastElementChild;
+  const start=first?.matches('.card')?first:null,end=last?.matches('.card')?last:null;
+  if(start===firstEdge && end===lastEdge)return;
+  edgeObserver.disconnect();
+  firstEdge=start;lastEdge=end;
+  for(const edge of new Set([start,end]))if(edge)edgeObserver.observe(edge,{attributes:true,attributeFilter:['class']});
+  updateEdges();
+ }
+ function mountMore(){
+  const body=viewport().querySelector('.scroll__body');
+  if(more && body && body.lastElementChild!==more)body.appendChild(more);
+  watchEdges(body);
+  overlay?.refresh();
+ }
+ mountMore();
+ line.use({onAppend:mountMore,onVisible:mountMore,onDestroy(){
+  overlay?.destroy();
+  edgeObserver?.disconnect();
+ }});
  line.use({onController(controller){const left=controller.left,right=controller.right,toggle=controller.toggle;controller.left=()=>move(-1,left);controller.right=()=>move(1,right);controller.toggle=function(){const result=toggle && toggle.apply(this,arguments);if(tv() && visibleMore())L.Controller.collectionAppend(more);return result;};},onDestroy(){disposed=true;document.removeEventListener('minimal:tv-idle',idle);}});
  document.addEventListener('minimal:tv-idle',idle);
 }

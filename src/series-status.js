@@ -39,7 +39,10 @@ const clock=value=>{
 function watchFooter(L,node,data,series){
  const slot=node.querySelector('.pt-card-watch');let wrap=node.querySelector('.card-watched');
  if(!slot)return;
- slot.classList.remove('pt-card-watch--has-progress','pt-card-watch--complete');
+ function clearProgress(){
+  slot.classList.toggle('pt-card-watch--has-progress',false);
+  slot.classList.toggle('pt-card-watch--complete',false);
+ }
  const state=window.LampaView && window.LampaView.online;
  const shared=series && state && state.lastWatched?state.lastWatched(data):null;
  const target=shared;
@@ -47,7 +50,7 @@ function watchFooter(L,node,data,series){
  const targetHash=target && (target.season!==shared.season || target.episode!==shared.episode)?L.Utils.hash([target.season,target.season>10?':':'',target.episode,title].join('')):shared && shared.hash;
  // Manual completion and native playback use the same persisted timeline.
  // They must remain visible even when native timetable has no watched overlay.
- if(series && state && state.lastWatched && !shared){if(wrap)wrap.classList.add('pt-card-watch--empty');return;}
+ if(series && state && state.lastWatched && !shared){if(wrap)wrap.classList.toggle('pt-card-watch--empty',true);clearProgress();return;}
  const hash=value=>L.Utils && L.Utils.hash?L.Utils.hash(value):value;
  const view=key=>{
   // A cached native card/timeline can outlive a cleared storage record.
@@ -69,7 +72,7 @@ function watchFooter(L,node,data,series){
  const movieMarked=marks && (marks.wath || marks.viewed);
  const movieTime=movieMarked?{hash:hash(title),percent:100,time:0,duration:0}:movieSaved && (movieSaved.percent || movieSaved.time)?movieSaved:null;
  if((shared || movieTime) && !wrap){wrap=document.createElement('div');wrap.className='card-watched';wrap.innerHTML='<div class="card-watched__inner"><div class="card-watched__body"></div></div>';slot.appendChild(wrap);}
- if(!wrap)return;
+ if(!wrap){clearProgress();return;}
  for(const other of slot.querySelectorAll('.card-watched'))if(other!==wrap)other.remove();
  // Move the original timeline, keeping its native updates and destroy lifecycle.
  if(wrap.parentNode!==slot)slot.appendChild(wrap);
@@ -94,7 +97,7 @@ function watchFooter(L,node,data,series){
    }
   }
  }
- if(!row){wrap.classList.add('pt-card-watch--empty');return;}
+ if(!row){wrap.classList.toggle('pt-card-watch--empty',true);clearProgress();return;}
  wrap.querySelectorAll('.card-watched__item').forEach(item=>item.classList.toggle('pt-card-watch__current',item===row));
  let summary=row.querySelector('.pt-card-watch__row');
  if(!summary){summary=document.createElement('div');summary.className='pt-card-watch__row';summary.innerHTML='<span class="pt-card-watch__label"></span><span class="pt-card-watch__time"></span>';row.insertBefore(summary,row.firstChild);}
@@ -125,9 +128,9 @@ function watchFooter(L,node,data,series){
   else if(!progressHash)timeline=L.Timeline && L.Timeline.filename?view(hash(data.original_title)):L.Timeline && L.Timeline.watched?L.Timeline.watched(data,true):view(hash(data.original_title));
   if(Array.isArray(timeline))timeline=view(hash(data.original_title));
  }
- if(!timeline || !(Number(timeline.percent)>0 || Number(timeline.time)>0)){wrap.classList.add('pt-card-watch--empty');return;}
- wrap.classList.remove('pt-card-watch--empty');
- slot.classList.add('pt-card-watch--has-progress');
+ if(!timeline || !(Number(timeline.percent)>0 || Number(timeline.time)>0)){wrap.classList.toggle('pt-card-watch--empty',true);clearProgress();return;}
+ wrap.classList.toggle('pt-card-watch--empty',false);
+ slot.classList.toggle('pt-card-watch--has-progress',true);
  const seasonDetail=series && shared && (Array.isArray(data.seasons)?data.seasons:[]).find(season=>Number(season.season_number)===shared.season);
  const seasonTotal=Number(seasonDetail && seasonDetail.episode_count) || shared && shared.total || 0;
  const next=data.next_episode_to_air;
@@ -146,8 +149,9 @@ function watchFooter(L,node,data,series){
  if(!meter){meter=document.createElement('div');meter.className='pt-card-watch__meter';row.appendChild(meter);}
  if(line.parentNode!==meter)meter.appendChild(line);
  const timestamp=row.querySelector('.pt-card-watch__time');if(timestamp.parentNode!==meter)meter.appendChild(timestamp);
- line.classList.remove('hide');
- const fill=row.querySelector('.time-line>div');if(fill)fill.style.width=Math.min(100,Math.max(0,Number(shown.percent)||0))+'%';
+ line.classList.toggle('hide',false);
+ const fill=row.querySelector('.time-line>div'),width=Math.min(100,Math.max(0,Number(shown.percent)||0))+'%';
+ if(fill && fill.style.width!==width)fill.style.width=width;
  const time=hideProgress || !Number(shown.time)?'':clock(shown.time),name=summary.firstElementChild,stamp=row.querySelector('.pt-card-watch__time');
  const action=Number(shown.time)>0 || Number(shown.percent)>0?lampaViewText("Просмотрено: "):lampaViewText("Смотреть: ");
  if(name.dataset.label!==label || name.dataset.action!==action){
@@ -160,7 +164,8 @@ function watchFooter(L,node,data,series){
   }else name.textContent=label;
  }
  if(stamp.textContent!==time)stamp.textContent=time;
- summary.title=label+(time?', '+time:'');
+ const summaryTitle=label+(time?', '+time:'');
+ if(summary.title!==summaryTitle)summary.title=summaryTitle;
 }
 // Metadata is requested only for a focused series, with bounded shared cache.
 // Native timetable data and native watch history remain authoritative.
@@ -187,7 +192,7 @@ export default function seriesStatus(L,schedule){
   // intermediate episode caption. Partial episodes are immediately usable.
   if(fetchable && data.source!=='minimal_shiki' && !fresh && last && last.percent>=WATCHED_PERCENT && !known){
    const slot=node.querySelector('.pt-card-watch'),wrap=node.querySelector('.card-watched');
-   if(slot){slot.classList.remove('pt-card-watch--has-progress');if(wrap && wrap.parentNode!==slot)slot.appendChild(wrap);}
+   if(slot){slot.classList.toggle('pt-card-watch--has-progress',false);slot.classList.toggle('pt-card-watch--complete',false);if(wrap && wrap.parentNode!==slot)slot.appendChild(wrap);}
   }else watchFooter(L,node,historyData,series);
   if(!series)return;
   const table=L.TimeTable && L.TimeTable.get?L.TimeTable.get(data) || []:[];
@@ -201,7 +206,8 @@ export default function seriesStatus(L,schedule){
    const seasonName=available.season?lampaViewText("Сезон {0}",[published || available.season]):'',prefix=seasonName?seasonName+" • ":'';
    const episodes=(partial?lampaViewText("Серия "):lampaViewText("Серий "))+released,text=prefix+episodes;
    if(box.textContent!==text){box.firstElementChild.textContent=prefix;box.lastElementChild.textContent=episodes;}
-   box.title=available.season?lampaViewText("Сезон {0}: вышло {1}. История просмотра — под обложкой.", [available.season,released]).replace(lampaViewText("Сезон {0}",[available.season]),seasonName):text;
+   const tooltip=available.season?lampaViewText("Сезон {0}: вышло {1}. История просмотра — под обложкой.", [available.season,released]).replace(lampaViewText("Сезон {0}",[available.season]),seasonName):text;
+   if(box.title!==tooltip)box.title=tooltip;
   }else if(box)box.remove();
   // Release metadata stays independent of the native watch timeline below the cover.
   if(!fresh && !pending.has(key) && fetchable && queue.length<8){const task={key,data,nodes:new Set([node])};pending.set(key,task);queue.push(task);pump();}
