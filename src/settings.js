@@ -53,7 +53,7 @@ export default function unifiedSettings(api,L,version=''){
   if(ids.includes(name)){
    const rows=params().filter(d=>prefix+groupOf(d)===name && !isScale(d)).map(d=>({...d,component:name}));
    if(name===prefix+'appearance'){
-    const order=['lampa_view_theme','lampa_view_dark_accent','lampa_view_layout','lampa_view_hero','lampa_view_detail_art','card_interfice_cover','minimal_banner_quality'];
+    const order=['lampa_view_theme','lampa_view_dark_accent','lampa_view_card_motion','lampa_view_layout','lampa_view_hero','lampa_view_detail_art','card_interfice_cover','minimal_banner_quality'];
     const rank=d=>{const i=order.indexOf(d.param.name);return i<0?order.length:i;};rows.sort((a,b)=>rank(a)-rank(b));
    }
    if(name===prefix+'catalogue'){

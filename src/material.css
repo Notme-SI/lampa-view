@@ -119,7 +119,7 @@ body.lampa_view[data-lampa-theme] :is(.card .card__view,.nova-plus-root .nova__l
  border:1px solid var(--pt-card-edge,rgba(255,255,255,.05))!important;border-radius:inherit!important;
  background:none!important;
  box-shadow:none!important;outline:none!important;
- transition:border-color .22s ease!important;
+ transition:border-color .22s ease!important;-webkit-transition:border-color .22s ease!important;
 }
 body.lampa_view[data-lampa-theme]:not(.pt-touch-captions) :is(.card,.nova-plus-root .nova__list--grid .nova-card):is(.focus,:focus-visible),
 body.lampa_view[data-lampa-theme]:not(.pt-tv):not(.pt-touch-captions):not(.pt-arrow-navigation) :is(.card,.nova-plus-root .nova__list--grid .nova-card):is(.hover,:hover,.pt-card-pointer) {
@@ -149,8 +149,11 @@ body.lampa_view[data-lampa-theme] :is(.full-review,.full-review-add):is(.focus,.
 body.lampa_view[data-lampa-theme] :is(.full-review,.full-review-add):is(.focus,.hover)::after {box-shadow:none!important;outline:none!important}
 body.lampa_view[data-lampa-theme] .minimal-comment-reader .modal__content {width:min(42rem,calc(100vw - 2em))!important;max-width:94vw}
 body.lampa_view .minimal-comment-text {padding:.35em .6em 1em;font-size:1.1em;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere}
-@media(prefers-reduced-motion:reduce){body.lampa_view[data-lampa-theme] .card .card__view,body.lampa_view[data-lampa-theme] .nova-plus-root .nova__list--grid .nova-card .nova-card__thumb {transition:none!important;-webkit-transition:none!important;transform:none!important;-webkit-transform:none!important}}
-@media(prefers-reduced-motion:reduce){body.lampa_view[data-lampa-theme] :is(.card .card__view,.nova-plus-root .nova__list--grid .nova-card__thumb)::after {transition:none!important}}
+/* The explicit plugin choice affects poster motion only, not the OS or host. */
+body.lampa_view[data-lampa-theme][data-pt-card-motion="off"] .card .card__view,body.lampa_view[data-lampa-theme][data-pt-card-motion="off"] .nova-plus-root .nova__list--grid .nova-card .nova-card__thumb {transition:none!important;-webkit-transition:none!important;transform:none!important;-webkit-transform:none!important}
+body.lampa_view[data-lampa-theme][data-pt-card-motion="off"] :is(.card .card__view,.nova-plus-root .nova__list--grid .nova-card__thumb)::after {transition:none!important;-webkit-transition:none!important}
+@media(prefers-reduced-motion:reduce){body.lampa_view[data-lampa-theme]:not([data-pt-card-motion="on"]) .card .card__view,body.lampa_view[data-lampa-theme]:not([data-pt-card-motion="on"]) .nova-plus-root .nova__list--grid .nova-card .nova-card__thumb {transition:none!important;-webkit-transition:none!important;transform:none!important;-webkit-transform:none!important}}
+@media(prefers-reduced-motion:reduce){body.lampa_view[data-lampa-theme]:not([data-pt-card-motion="on"]) :is(.card .card__view,.nova-plus-root .nova__list--grid .nova-card__thumb)::after {transition:none!important;-webkit-transition:none!important}}
 /* Keep the panels neutral on devices without backdrop filters. */
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) {
  body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] {

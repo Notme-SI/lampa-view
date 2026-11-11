@@ -1,3 +1,8 @@
+## 0.5.123
+
+- Give poster motion an explicit On / System / Off choice. The enabled mode retains the requested lift and halo transitions even when the OS advertises reduced motion; System follows that preference and Off keeps a static selection.
+- Scope the setting to poster motion without changing OS preferences, host animation, touch caption behavior or iOS layout.
+
 ## 0.5.122
 
 - Restore visible poster lift and a soft animated selection halo for pointer, keyboard and TV focus in both themes.

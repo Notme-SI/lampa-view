@@ -200,7 +200,9 @@ async function run(engine, browser, mode) {
    await page.locator('#qa-native-history').evaluate(n=>n.classList.remove('focus'));
    for (const [target,view] of [['#qa-native-unwatched','.card__view'],['#qa-nova-preview .nova-card','.nova-card__thumb']]) {
     const card = page.locator(target).first();
+    await page.mouse.move(2,2);
     await card.evaluate(n=>n.classList.remove('focus','hover'));
+    await card.evaluate((node,view)=>new Promise(resolve=>{function settled(){const n=node.querySelector(view),s=getComputedStyle(n);if(!n.getAnimations().some(a=>a.playState==='running') && s.transform==='none')resolve();else requestAnimationFrame(settled);}settled();}),view);
     const before = await card.evaluate((n,view)=>({outer:n.offsetTop,art:n.querySelector(view).getBoundingClientRect().y-n.getBoundingClientRect().y}),view);
     await card.evaluate(n=>n.classList.add('focus'));
     await page.waitForTimeout(35);
@@ -230,17 +232,21 @@ async function run(engine, browser, mode) {
    }
    await page.locator('#qa-native-unwatched').evaluate(node=>node.classList.add('focus'));
    await page.waitForTimeout(260);
-   for(const reduction of ['native','system']){
-    if(reduction==='native')await page.evaluate(()=>Lampa.Storage.set('animation','false'));
-    else await page.emulateMedia({reducedMotion:'reduce'});
-    const style=await face.evaluate(node=>{const s=getComputedStyle(node);return {transform:s.transform,duration:s.transitionDuration,halo:s.boxShadow,edge:getComputedStyle(node,'::after').borderColor,body:document.body.className};});
-    if(reduction==='native'){assert.notEqual(style.transform,'none');assert.notEqual(style.duration,'0s');}
+   const nativeAnimation=await page.evaluate(()=>Lampa.Storage.get('animation'));
+   await page.evaluate(()=>Lampa.Storage.set('animation',false));
+   const stoppedNativeAnimation=await page.evaluate(()=>Lampa.Storage.get('animation'));
+   await page.emulateMedia({reducedMotion:'reduce'});
+   for(const motion of ['on','system','off','on']){
+    await page.evaluate(motion=>Lampa.Storage.set('lampa_view_card_motion',motion),motion);await page.waitForTimeout(260);
+    const style=await face.evaluate(node=>{const s=getComputedStyle(node);return {transform:s.transform,duration:s.transitionDuration,halo:s.boxShadow,edge:getComputedStyle(node,'::after').borderColor};});
+    if(motion==='on'){assert.match(style.transform,/matrix\(1, 0, 0, 1, 0, -3\)/);assert.notEqual(style.duration,'0s');}
     else{assert.equal(style.transform,'none');assert.equal(style.duration,'0s');}
     assert.equal(style.edge,'rgba(255, 255, 255, 0.12)');
-    assert.match(style.halo,/rgba\(255, 255, 255, 0.18\)/,'Reduced motion preserves a static readable glow');
-    if(reduction==='native')await page.evaluate(()=>Lampa.Storage.set('animation',true));
-    else await page.emulateMedia({reducedMotion:'no-preference'});
+    assert.match(style.halo,/rgba\(255, 255, 255, 0.18\)/,'All card motion modes preserve the readable glow');
+    assert.equal(await page.evaluate(()=>Lampa.Storage.get('animation')),stoppedNativeAnimation,'The plugin mode does not change the host preference');
    }
+   await page.evaluate(value=>Lampa.Storage.set('animation',value),nativeAnimation);
+   await page.emulateMedia({reducedMotion:'no-preference'});
    await page.locator('#qa-native-unwatched').evaluate(node=>node.classList.remove('focus'));
   }
   assert.deepEqual(errors,[]);

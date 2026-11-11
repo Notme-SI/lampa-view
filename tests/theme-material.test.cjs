@@ -18,3 +18,18 @@ test('all layouts use the selected material without sampling artwork or changing
   assert.deepEqual(writes,[]);assert.equal(values.glass_style,true);assert.equal(values.glass_opacity,'blacked');
  }finally{w.close();}
 });
+
+
+test('poster motion has its own live setting and cleans up without changing host preferences',()=>{
+ const d=new JSDOM('<body class="lampa_view"></body>',{runScripts:'outside-only',pretendToBeVisual:true}),w=d.window;
+ const values={lampa_view_enabled:true,animation:false,advanced_animation:false},writes=[],params=[];let change;
+ const L={Storage:{get:(k,f)=>values[k]??f,field:k=>values[k],set:(k,v)=>{writes.push(k);values[k]=v;},listener:{follow:(name,fn)=>change=fn}},SettingsApi:{addParam:p=>params.push(p)}};
+ w.eval(code);try{
+  w.Appearance.cardMotionSetting(L);const p=params[0];assert.equal(p.param.default,'on');assert.deepEqual(Object.keys(p.param.values),['on','system','off']);
+  const api=w.Appearance.default(L);assert.equal(w.document.body.dataset.ptCardMotion,'on');
+  for(const mode of ['system','off','on']){values.lampa_view_card_motion=mode;change({name:'lampa_view_card_motion'});assert.equal(w.document.body.dataset.ptCardMotion,mode);}
+  values.lampa_view_card_motion='invalid';api.update();assert.equal(w.document.body.dataset.ptCardMotion,'on');
+  values.lampa_view_enabled=false;change({name:'lampa_view_enabled'});assert.equal(w.document.body.hasAttribute('data-pt-card-motion'),false);
+  assert.equal(values.animation,false);assert.equal(values.advanced_animation,false);assert.deepEqual(writes,[]);
+ }finally{w.close();}
+});

@@ -13,7 +13,7 @@ import ONLINE_CSS from './online-layout.css';
 import TV_CSS from './tv-layout.css';
 import NAV_CSS from './navigation.css';
 const CSS=BASE_CSS+'\n'+ONLINE_CSS+'\n'+TV_CSS;
-import appearance,{darkAccentSetting} from './appearance.js';
+import appearance,{darkAccentSetting,cardMotionSetting} from './appearance.js';
 import BOOT from './boot.css';
 import C from './identity.cjs';
 import quality from './quality.js';
@@ -580,7 +580,7 @@ if (!ROOT.LampaView) {
     options.forEach(([name,label,description,value]) => L.SettingsApi.addParam({component:'lampa_view',param:{name,type:'trigger',default:value},field:{name:label,description},onChange:setTheme}));
     L.SettingsApi.addParam({component:'lampa_view',param:{name:'lampa_view_theme',type:'select',values:{minimal:lampaViewText('Тёмная'),glass:lampaViewText('Стекло')},default:'minimal'},field:{name:lampaViewText("Тема интерфейса"),description:lampaViewText("Оформление всей Lampa. Переключается сразу, данные просмотра сохраняются.")},onChange:()=>{if(appearanceTheme)appearanceTheme.update();}});
     L.SettingsApi.addParam({component:'lampa_view',param:{name:'menu_always',type:'trigger',default:false},field:{name:lampaViewText('Закрепить боковое меню'),description:lampaViewText('Иконки слева. Меню раскрывается при наведении или выборе пультом.')},onChange:()=>pinnedMenu && pinnedMenu.update()});
-    darkAccentSetting(L);
+    darkAccentSetting(L);cardMotionSetting(L);
     L.SettingsApi.addParam({component:'lampa_view',param:{name:'lampa_view_layout',type:'select',values:{auto:lampaViewText("Автоматически"),tv:lampaViewText("Телевизор"),mobile:lampaViewText("Телефон"),tablet:lampaViewText("Планшет"),desktop:lampaViewText("Компьютер")},default:'auto'},field:{name:lampaViewText("Тип устройства"),description:lampaViewText("Авто использует режим экрана Lampa. Планшет — сенсорное управление и адаптация к ширине окна.")},onChange:setTheme});
     L.SettingsApi.addParam({component:'lampa_view',param:{name:'lampa_view_detail_art',type:'select',values:{logo:'Логотип названия',poster:'Постер'},default:'logo'},field:{name:'Карточка фильма: изображение',description:'Что показывать над кнопками «Смотреть» и «Торренты».'},onChange:setTheme});
     L.SettingsApi.addParam({component:'lampa_view',param:{name:'card_interfice_cover',type:'trigger',default:true},field:{name:'Карточка фильма: фон',description:'Баннер фильма за названием, описанием и кнопками.'},onChange:()=>document.body.classList.toggle('card--no-cover',!yes('card_interfice_cover'))});

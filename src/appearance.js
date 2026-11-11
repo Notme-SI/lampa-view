@@ -3,6 +3,11 @@ import MATERIAL from './material.css';
 import iosChrome from './ios-chrome.js';
 import {text as t} from './i18n.js';
 const accentKey='lampa_view_dark_accent',defaultAccent='#d8c39a';
+const cardMotionKey='lampa_view_card_motion';
+export const cardMotionValue=value=>['on','off','system'].includes(value)?value:'on';
+export function cardMotionSetting(L){
+ L.SettingsApi.addParam({component:'lampa_view',param:{name:cardMotionKey,type:'select',values:{on:t('Включена'),system:t('По системе'),off:t('Выключена')},default:'on'},field:{name:t('Анимация карточек'),description:t('Плавный подъём и свечение при выборе. «По системе» учитывает уменьшение движения на устройстве.') }});
+}
 
 function normalizeAccent(value){
  const hex=String(value ?? '').trim().toLowerCase().replace(/^#/,'');
@@ -63,7 +68,10 @@ export default function appearance(L){
  }
  function nativeValue(name,fallback){try{return L.Storage.field?L.Storage.field(name):L.Storage.get(name,fallback);}catch(error){return fallback;}}
  function update(){
-  const stored=L.Storage.get('lampa_view_theme','minimal'),value=themeValue(stored),active=value==='glass' && yes(L.Storage.get('lampa_view_enabled',true));
+  const enabled=yes(L.Storage.get('lampa_view_enabled',true));
+  if(enabled)document.body.dataset.ptCardMotion=cardMotionValue(L.Storage.get(cardMotionKey,'on'));
+  else delete document.body.dataset.ptCardMotion;
+  const stored=L.Storage.get('lampa_view_theme','minimal'),value=themeValue(stored),active=value==='glass' && enabled;
   if(stored==='apple')L.Storage.set('lampa_view_theme','glass');
   document.body.classList.remove('pt-theme-apple','pt-native-glass');document.body.classList.toggle('pt-theme-glass',active);document.body.dataset.lampaTheme=value;
   // The selected plugin theme owns the material. Restore the host preference
@@ -81,6 +89,6 @@ export default function appearance(L){
   updateChrome();
   document.dispatchEvent(new Event('minimal:interface-size'));document.dispatchEvent(new Event('minimal:hero-layout'));
  }
- applyDarkAccent(L);update();if(L.Storage.listener)L.Storage.listener.follow('change',event=>{if(event.name===accentKey)applyDarkAccent(L);if(['lampa_view_theme','lampa_view_enabled','glass_style','glass_opacity'].includes(event.name))update();});
+ applyDarkAccent(L);update();if(L.Storage.listener)L.Storage.listener.follow('change',event=>{if(event.name===accentKey)applyDarkAccent(L);if(['lampa_view_theme','lampa_view_enabled','glass_style','glass_opacity',cardMotionKey].includes(event.name))update();});
  return {update,chromePalette(color){if(color!==artworkColor){artworkColor=color;updateChrome();}}};
 }
