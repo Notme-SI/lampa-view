@@ -1,8 +1,6 @@
 /* TV presentation: distance-readable type and artwork. No Android mode changes. */
-/* Keep the page compositor layer; horizontal rails only need their own layer
-   while actually animating. Avoid retaining unnecessary offscreen textures
-   as more rows enter the page. */
-body.lampa_view.pt-tv .scroll--horizontal>.scroll__content>.scroll__body {will-change:auto}
+/* Native compositor hints keep mounted rails ready for remote scrolling.
+   Removing their layers makes the TV repaint posters during navigation. */
 body.lampa_view.pt-tv :is(.head__action,.menu__item,.full-start__button,.simple-button,.full-review,.full-review-add):is(.focus,.hover) {animation:none!important;-webkit-animation:none!important}
 body.lampa_view.pt-tv {--pt-ui-font:calc(.703125vw * var(--pt-interface-scale,1));font-size:var(--pt-ui-font)!important;--pt-banner-unit:calc(.703125vw * 1.12)}
 body.lampa_view.pt-tv .pt-hero {max-width:90vw;margin:0 auto .9em}

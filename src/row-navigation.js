@@ -32,7 +32,10 @@ export default function rowNavigation(L,line,enabled){
  const hasNext=()=>Number(line.data.total_pages)>Number(line.data.page || 1) || line.data.minimal_has_more===true;
  function idle(){if(!disposed && enabled() && tv() && root.isConnected && L.Controller.own(line) && line.minimalPosterRefresh)line.minimalPosterRefresh();}
  function focus(target){
-  L.Controller.collectionSet(viewport());
+  // The active row already owns its native collection. Keep its current focus
+  // until native hover:focus positions the next poster, including lazy appends.
+  if(L.Controller.own(line))L.Controller.collectionAppend(target);
+  else L.Controller.collectionSet(viewport());
   if(tv() && visibleMore())L.Controller.collectionAppend(more);
   L.Controller.collectionFocus(target,viewport());
  }

@@ -550,7 +550,7 @@ body.lampa_view.pt-tv .settings-param__value {font-size:.95em}
 
 /* TV geometry is separate from desktop sizes and the rest of the interface. */
 body.lampa_view.pt-tv .items-line {max-width:90vw;margin-left:auto;margin-right:auto}
-body.lampa_view.pt-tv .card,body.lampa_view.pt-mobile .settings-folder {will-change:auto}
+body.lampa_view.pt-mobile .settings-folder {will-change:auto}
 /* Clip TV rails without an extra full-width gradient compositing layer. */
 body.lampa_view.pt-tv .items-line__body {-webkit-mask-image:none;mask-image:none}
 body.lampa_view.pt-tv .minimal-paged-row .scroll--horizontal>.scroll__content>.scroll__body {transition:transform .12s linear;-webkit-transition:-webkit-transform .12s linear}

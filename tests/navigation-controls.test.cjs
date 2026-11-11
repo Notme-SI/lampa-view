@@ -64,12 +64,24 @@ test('held TV navigation scrolls once per card, builds the next lazy batch and h
   L.Api.sources.tmdb.get=(url,p,ok)=>w.setTimeout(()=>ok({results:Array.from({length:20},(_,i)=>({id:600+i,name:'Передача '+i,genre_ids:[18],origin_country:['KR'],poster_path:'/poster.jpg',source:'tmdb'})),page:1,total_pages:3}),0);
   L.Activity.push({component:'category',url:'dorama',source:'tmdb',title:'Дорамы'});for(let tries=0;tries<100 && !L.Activity.active().activity.component.items.length;tries++)await wait(20);
   const row=L.Activity.active().activity.component.items[0],root=row.render(true);row.toggle();
+  const collectionSet=L.Controller.collectionSet,collectionAppend=L.Controller.collectionAppend;
+  let resets=0;const appended=[];
+  L.Controller.collectionSet=function(){resets++;return collectionSet.apply(this,arguments);};
+  L.Controller.collectionAppend=function(target){appended.push(target);return collectionAppend.apply(this,arguments);};
+  const initialCount=row.items.length;
   const update=row.scroll.update;let updates=0;row.scroll.update=function(){updates++;return update.apply(this,arguments);};
   for(let i=1;i<20;i++){updates=0;L.Controller.enabled().controller.right();assert.equal(row.active,i);assert.equal(updates,1,'Only native focus should position the rail');}
+  assert.equal(resets,0,'Moving inside the owned row preserves the native collection and current focus');
+  assert.ok(initialCount<20 && row.items.length>=20,'Navigation builds the next native lazy batch');
+  assert.ok(appended.includes(row.items[19].render(true)),'A lazily appended target joins the owned native collection');
   const tail=root.querySelector('.card-more');assert.ok(tail);assert.equal(w.getComputedStyle(tail).display,'none');
   const more=root.querySelector('.minimal-row-more');L.Controller.enabled().controller.right();assert.equal(row.last,more);assert.ok(more.classList.contains('focus'));
   L.Controller.enabled().controller.left();assert.equal(row.active,19);
   for(let i=18;i>=0;i--){updates=0;L.Controller.enabled().controller.left();assert.equal(row.active,i);assert.equal(updates,1,'Returning to the first card must also scroll exactly once');}
+  assert.equal(resets,0,'Returning from More and moving left never resets the owned row');
+  row.toggle();assert.equal(resets,1,'Native entry still initializes the row collection');
+  assert.equal(root.querySelectorAll('.card.focus').length,1,'Reentry restores one native focused card');
+  L.Controller.collectionSet=collectionSet;L.Controller.collectionAppend=collectionAppend;
   assert.deepEqual(r.errors,[]);
  }finally{r.close();}
 });

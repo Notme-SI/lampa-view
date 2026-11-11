@@ -50,17 +50,21 @@ async function run(browser,mode,theme){
   assert.equal(await page.evaluate(()=>document.body.dataset.ptCardMotion),'on','The requested card motion is enabled by default even with an OS reduction preference');
   const frames=await film.evaluate(node=>new Promise(resolve=>{
    const view=node.querySelector('.card__view'),frames=[],start=performance.now();
-   function sample(){const s=getComputedStyle(view);frames.push({t:performance.now()-start,y:s.transform==='none'?0:new DOMMatrix(s.transform).m42,shadow:s.boxShadow,animations:view.getAnimations().filter(a=>a.playState==='running').length});if(performance.now()-start<280)requestAnimationFrame(sample);else resolve(frames);}
+   function sample(){const s=getComputedStyle(view),halo=getComputedStyle(view,'::after');frames.push({t:performance.now()-start,y:s.transform==='none'?0:new DOMMatrix(s.transform).m42,shadow:s.boxShadow,haloShadow:halo.boxShadow,haloOpacity:Number(halo.opacity),animations:view.getAnimations().filter(a=>a.playState==='running').length});if(performance.now()-start<280)requestAnimationFrame(sample);else resolve(frames);}
    sample();Lampa.Controller.toggle('qa-cards');
   }));
   assert.ok(frames.some(f=>f.y<0 && f.y>-3 && f.animations>0),'Actual rendered frames show a gradual lift: '+JSON.stringify(frames));
-  assert.ok(frames.some(f=>f.shadow.includes('rgba(255, 255, 255,') && !f.shadow.includes('0.18)') && f.animations>0),'The halo grows across frames, not just the final CSS state');
+  if(mode==='tv'){
+   assert.ok(frames.some(f=>f.haloOpacity>0 && f.haloOpacity<1),'TV halo fades across rendered frames');
+   assert.ok(frames.every(f=>f.shadow==='none'),'TV does not repaint an animated poster shadow');
+   assert.equal(new Set(frames.map(f=>f.haloShadow)).size,1,'TV halo uses one fixed shadow throughout the fade');
+  }else assert.ok(frames.some(f=>f.shadow.includes('rgba(255, 255, 255,') && !f.shadow.includes('0.18)') && f.animations>0),'The halo grows across frames, not just the final CSS state');
   assert.equal(frames.at(-1).y,-3);
   const hostAnimation=await page.evaluate(()=>Lampa.Storage.get('animation'));
   for(const motion of ['system','off']){
    await page.evaluate(motion=>Lampa.Storage.set('lampa_view_card_motion',motion),motion);
    await page.waitForFunction(motion=>document.body.dataset.ptCardMotion===motion,motion);
-   const stopped=await film.locator('.card__view').evaluate(n=>{const s=getComputedStyle(n);return {transform:s.transform,transition:s.transitionDuration,shadow:s.boxShadow};});
+   const stopped=await film.locator('.card__view').evaluate((n,mode)=>{const s=getComputedStyle(n),halo=getComputedStyle(n,'::after');return {transform:s.transform,transition:s.transitionDuration,shadow:mode==='tv'?halo.boxShadow:s.boxShadow};},mode);
    assert.equal(stopped.transform,'none',motion+' stops movement with OS reduction');assert.equal(stopped.transition,'0s');assert.match(stopped.shadow,/rgba\(255, 255, 255, 0.18\)/,'The static halo stays visible');
   }
   await page.evaluate(()=>Lampa.Storage.set('lampa_view_card_motion','on'));
@@ -74,7 +78,7 @@ async function run(browser,mode,theme){
   assert.equal(await page.evaluate(()=>Lampa.Storage.get('animation')),hostAnimation,'The poster setting never changes the host animation preference');
   assert.equal(await film.locator('.card__age').textContent(),'2020');
   assert.equal(await film.locator('.card__vote').evaluate(n=>getComputedStyle(n).opacity),'1','Our own rating remains visible');
-  const paint=await film.locator('.card__view').evaluate(n=>({shadow:getComputedStyle(n).boxShadow,edge:getComputedStyle(n,'::after').borderColor}));
+  const paint=await film.locator('.card__view').evaluate((n,mode)=>({shadow:getComputedStyle(n,mode==='tv'?'::after':null).boxShadow,edge:getComputedStyle(n,'::after').borderColor}),mode);
   assert.match(paint.shadow,/rgba\(255, 255, 255, 0.18\).*22px/);
   assert.equal(paint.edge,'rgba(255, 255, 255, 0.12)','The edge stays quieter than the diffuse halo');
   assert.equal(await film.locator('.icon--history').evaluate(n=>getComputedStyle(n).opacity),'1','Selection never hides the native continuation marker');
@@ -83,6 +87,7 @@ async function run(browser,mode,theme){
   await page.keyboard.press('ArrowRight');
   await page.waitForTimeout(330);
   assert.equal(await film.locator('.card__view').evaluate(n=>getComputedStyle(n).boxShadow),'none','The previous halo disappears after moving focus');
+  if(mode==='tv')assert.equal(await film.locator('.card__view').evaluate(n=>getComputedStyle(n,'::after').opacity),'0','Previous TV halo fades out completely');
   assert.equal(await series.locator('.card__view').evaluate(n=>getComputedStyle(n).transform),'matrix(1, 0, 0, 1, 0, -3)');
   await page.waitForFunction(()=>{
    const label=document.querySelector('#qa-input .card:nth-child(2) .pt-series-status');

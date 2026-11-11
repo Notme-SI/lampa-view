@@ -15,7 +15,9 @@ body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] {
  background:var(--pt-bg)!important;background-attachment:scroll!important;
 }
 body.lampa_view.pt-theme-glass[data-lampa-theme="glass"].pt-tv {
- --pt-glass-blur:16px;
+ --pt-glass-filter:none;--pt-glass-blur:0px;
+ --pt-matte-alpha:.88!important;--pt-header-glass:rgba(24,24,24,.84);
+ --pt-panel:rgba(30,30,30,.88);--pt-glass-button:rgba(30,30,30,.78);
 }
 /* Clear inherited filters first. Explicit groups below own the glass layer. */
 body.lampa_view[data-lampa-theme] *,body.lampa_view[data-lampa-theme] *:before,body.lampa_view[data-lampa-theme] *:after {backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
@@ -133,6 +135,25 @@ body.lampa_view[data-lampa-theme] .nova-plus-root .nova__list--grid .nova-card .
  -webkit-transform:var(--pt-card-lift,none)!important;
  box-shadow:var(--pt-card-glow,none)!important;
 }
+/* Paint the TV halo once and fade that surface. Animating the blur radius or
+   border color repaints the selected poster on each frame of the native scroll.
+   No permanent compositor hint is assigned to offscreen posters. */
+body.lampa_view.pt-tv[data-lampa-theme] .card .card__view,
+body.lampa_view.pt-tv[data-lampa-theme] .nova-plus-root .nova__list--grid .nova-card .nova-card__thumb {
+ transition:transform .22s cubic-bezier(.16,1,.3,1)!important;
+ -webkit-transition:-webkit-transform .22s cubic-bezier(.16,1,.3,1)!important;
+ box-shadow:none!important;overflow:visible;
+}
+body.lampa_view.pt-tv[data-lampa-theme] .nova-plus-root .nova__list--grid .nova-card__thumb>img {border-radius:inherit}
+body.lampa_view.pt-tv[data-lampa-theme] :is(.card .card__view,.nova-plus-root .nova__list--grid .nova-card__thumb)::after {
+ border-color:rgba(255,255,255,.12)!important;
+ box-shadow:0 0 22px rgba(255,255,255,.18)!important;
+ opacity:var(--pt-card-halo-opacity,0);
+ transition:opacity .22s ease!important;-webkit-transition:opacity .22s ease!important;
+}
+body.lampa_view.pt-tv[data-lampa-theme]:not(.pt-touch-captions) :is(.card,.nova-plus-root .nova__list--grid .nova-card):is(.focus,:focus-visible) {
+ --pt-card-halo-opacity:1;
+}
 /* Extend the clipping surface, not the rail/hit boxes: the first and last
    posters need the same halo room as cards in the middle of a row. */
 body.lampa_view[data-lampa-theme]:not(.pt-touch-captions) .minimal-fit-posters>.items-line__body.pt-poster-edge-start {
@@ -182,10 +203,10 @@ body.lampa_view.pt-tv.pt-theme-glass[data-pt-scene] .wrap {
  background-repeat:no-repeat!important;
 }
 @supports ((mask-image:linear-gradient(#000,transparent)) or (-webkit-mask-image:linear-gradient(#000,transparent))) {
- body.lampa_view.pt-home.pt-theme-glass[data-pt-scene="catalogue"] .activity--active .pt-hero {
+ body.lampa_view.pt-home.pt-theme-glass:not(.pt-tv)[data-pt-scene="catalogue"] .activity--active .pt-hero {
   background:transparent!important;
  }
- body.lampa_view.pt-home[data-lampa-theme] .pt-hero .pt-hero__artwork {
+ body.lampa_view.pt-home:not(.pt-tv)[data-lampa-theme] .pt-hero .pt-hero__artwork {
   mask-image:linear-gradient(to bottom,#000 32%,#000d 57%,#0005 80%,transparent 98%)!important;
   -webkit-mask-image:linear-gradient(to bottom,#000 32%,#000d 57%,#0005 80%,transparent 98%)!important;
  }
@@ -193,11 +214,11 @@ body.lampa_view.pt-tv.pt-theme-glass[data-pt-scene] .wrap {
   mask-image:linear-gradient(to bottom,transparent 0%,#0006 5%,#000d 11%,#000 17%,#000 32%,#000d 57%,#0005 80%,transparent 98%)!important;
   -webkit-mask-image:linear-gradient(to bottom,transparent 0%,#0006 5%,#000d 11%,#000 17%,#000 32%,#000d 57%,#0005 80%,transparent 98%)!important;
  }
- body.lampa_view.pt-home[data-lampa-theme]:not(.pt-mobile) .pt-hero .pt-hero__image {
+ body.lampa_view.pt-home[data-lampa-theme]:not(.pt-mobile):not(.pt-tv) .pt-hero .pt-hero__image {
   mask-image:linear-gradient(to right,transparent 0%,#0001 8%,#0005 19%,#000c 34%,#000 50%)!important;
   -webkit-mask-image:linear-gradient(to right,transparent 0%,#0001 8%,#0005 19%,#000c 34%,#000 50%)!important;
  }
- body.lampa_view.pt-home[data-lampa-theme] .pt-hero .pt-hero__artwork::after {content:none}
+ body.lampa_view.pt-home:not(.pt-tv)[data-lampa-theme] .pt-hero .pt-hero__artwork::after {content:none}
 }
 @supports not ((mask-image:linear-gradient(#000,transparent)) or (-webkit-mask-image:linear-gradient(#000,transparent))) {
  body.lampa_view.pt-home[data-lampa-theme][data-pt-scene="catalogue"] .wrap {background-image:none!important}
