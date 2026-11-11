@@ -28,7 +28,7 @@ test('cartoons menu sits below series and opens bounded film/TV animation rows t
   assert.equal(L.Activity.active().url,'cartoon');assert.ok(requests.length===2,'One mixed grid uses one movie and one TV request');
   assert.ok(requests.some(path=>path.startsWith('discover/movie?')));assert.ok(requests.some(path=>path.startsWith('discover/tv?')));
   for(const path of requests){if(/^trending\/(?:movie|tv)\//.test(path))continue;const query=new URLSearchParams(path.split('?')[1]);assert.match(path,/^discover\/(?:movie|tv)\?/);assert.ok(query.get('with_genres').split(',').includes('16'));if(!query.has('with_companies') && !query.has('with_networks'))assert.equal(query.get('without_keywords'),'210024');}
-  assert.equal(root.querySelectorAll('.minimal-catalogue-control').length,4);assert.equal(rows.items.length,20);assert.equal(new Set(rows.items.map(item=>item.data.media_type+':'+item.data.id)).size,20);
+  assert.equal(root.querySelectorAll('.minimal-catalogue-control').length,5);assert.equal(rows.items.length,20);assert.equal(new Set(rows.items.map(item=>item.data.media_type+':'+item.data.id)).size,20);
   assert.deepEqual(r.errors,[]);
  }finally{r.close();}
 });
@@ -75,7 +75,27 @@ test('held TV navigation scrolls once per card, builds the next lazy batch and h
 });
 
 
-test('dorama remains available as a series collection without a separate menu',async()=>{const r=await native({built:true}),{w,L}=r;try{assert.equal(w.document.querySelector('.menu__item[data-action=dorama]'),null);L.Menu.ready();L.Storage.set('source','tmdb');const item=w.document.querySelector('.menu__item[data-action=tv]'),requests=[],response=require('./fixtures/discovery-response.cjs');L.Api.sources.tmdb.get=(url,p,ok)=>{requests.push(url);w.setTimeout(()=>ok(response(url,p.page)),0);};item.click();await wait(250);assert.equal(L.Activity.active().url,'tv');const button=L.Activity.active().activity.render(true).querySelector('.minimal-catalogue-control');button.click();await wait(50);const korean=[...w.document.querySelectorAll('.selectbox-item')].find(n=>n.textContent.includes('Корейские дорамы'));assert.ok(korean);korean.dispatchEvent(new w.Event('hover:enter'));await wait(100);assert.equal(L.Activity.active().minimal_browse.collection,'country-KR');assert.ok(requests.at(-1).includes('with_origin_country=KR'));assert.deepEqual(r.errors,[]);}finally{r.close();}});
+test('Korean series remain available through the country filter',async()=>{
+ const r=await native({built:true}),{w,L}=r;
+ try{
+  assert.equal(w.document.querySelector('.menu__item[data-action=dorama]'),null);
+  L.Menu.ready();L.Storage.set('source','tmdb');
+  const item=w.document.querySelector('.menu__item[data-action=tv]'),requests=[],response=require('./fixtures/discovery-response.cjs');
+  L.Api.sources.tmdb.get=(url,p,ok)=>{requests.push(url);w.setTimeout(()=>ok(response(url,p.page)),0);};
+  item.click();await wait(250);
+  assert.equal(L.Activity.active().url,'tv');
+  const buttons=L.Activity.active().activity.render(true).querySelectorAll('.minimal-catalogue-control');
+  buttons[0].click();await wait(50);
+  const choices=()=>[...w.document.querySelectorAll('.selectbox-item')];
+  assert.ok(choices().every(n=>!n.textContent.includes('Корейские дорамы')));
+  L.Select.hide();buttons[4].click();await wait(50);
+  const korea=choices().find(n=>n.textContent.includes('Корея'));
+  assert.ok(korea);korea.dispatchEvent(new w.Event('hover:enter'));await wait(100);
+  assert.equal(L.Activity.active().minimal_browse.country,'KR');
+  assert.ok(requests.at(-1).includes('with_origin_country=KR'));
+  assert.deepEqual(r.errors,[]);
+ }finally{r.close();}
+});
 
 test('native menu_always switches a single native menu between dock and popover and restores the button',async()=>{
  const r=await native({built:true}),{w,L}=r;try{
@@ -92,8 +112,8 @@ test('TV shows open a single filtered native grid and preserve scope on later pa
  const r=await native({built:true}),{w,L}=r,requests=[];try{
   L.Storage.set('source','tmdb');const shows=w.document.querySelector('.menu__item[data-action=tv]').nextElementSibling;assert.equal(shows.dataset.action,'tvshow');
   const response=require('./fixtures/discovery-response.cjs');L.Api.sources.tmdb.get=(url,p,ok)=>{requests.push(url);w.setTimeout(()=>ok(response(url,p.page)),0);};shows.click();await wait(220);
-  let c=L.Activity.active().activity.component;assert.equal(c.items.length,20);assert.equal(c.render(true).querySelectorAll('.minimal-catalogue-control').length,4);assert.equal(c.render(true).querySelectorAll('.items-line').length,0);assert.equal(requests.length,1);
+  let c=L.Activity.active().activity.component;assert.equal(c.items.length,20);assert.equal(c.render(true).querySelectorAll('.minimal-catalogue-control').length,5);assert.equal(c.render(true).querySelectorAll('.items-line').length,0);assert.equal(requests.length,1);
   c.render(true).querySelectorAll('.minimal-catalogue-control')[1].click();await wait(30);const talk=[...w.document.querySelectorAll('.selectbox-item')].find(n=>n.textContent.includes('Ток'));assert.ok(talk);talk.dispatchEvent(new w.Event('hover:enter'));await wait(100);c=L.Activity.active().activity.component;c.object.page=2;const json=await new Promise((ok,fail)=>c.emit('next',ok,fail));assert.equal(json.results.length,20);
-  const q=new URLSearchParams(requests.at(-1).split('?')[1]);assert.equal(q.get('with_origin_country'),'RU');assert.equal(q.get('with_genres'),'10767');assert.equal(q.get('without_genres'),'16,99,18,80,10766');assert.deepEqual(r.errors,[]);
+  const q=new URLSearchParams(requests.at(-1).split('?')[1]);assert.equal(q.get('with_origin_country'),null);assert.equal(q.get('with_genres'),'10767');assert.equal(q.get('without_genres'),'16,99,18,80,10766');assert.deepEqual(r.errors,[]);
  }finally{r.close();}
 });

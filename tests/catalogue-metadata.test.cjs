@@ -32,7 +32,7 @@ test('cartoon rows and native More pages exclude anime while other catalogues an
   if(row.cub)cub.list({url:row.cub,page:2},check);
   else {source.get(row.tmdb,{page:2},check);source.list({url:row.tmdb,page:2},check);}
  }
- source.list({url:'discover/tv?with_genres=16&with_original_language=ja',page:2},result=>assert.equal(result,json));
+ source.list({url:'tv/airing_today',page:2},result=>assert.equal(result,json));
  assert.equal(json.results.length,6,'Do not mutate shared TMDB cache entries');
 });
 

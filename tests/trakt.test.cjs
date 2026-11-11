@@ -11,7 +11,7 @@ function setup(){
  const tmdb={full(p,ok){ok({id:p.id});}},L={Storage:{get:(k,d)=>storage[k] ?? d,set:(k,v)=>storage[k]=v},Api:{sources:{tmdb}},Params:{values:{source:{tmdb:'TMDB',cub:'CUB',custom:'Custom'}},select(k,v){this.values[k]=v;}},SettingsApi:{addParam:p=>settings.push(p)}};
  const api=w.Trakt.default(L);return {w,L,api,storage,sent,settings,close:()=>w.close()};
 }
-const movie=(id,title)=>({title,year:2026,ids:{tmdb:id,trakt:id+10000},rating:8.3,images:{poster:['media.trakt.tv/images/movies/'+id+'/poster.webp']}});
+const movie=(id,title)=>({title,overview:'Русское описание',year:2026,ids:{tmdb:id,trakt:id+10000},rating:8.3,images:{poster:['media.trakt.tv/images/movies/'+id+'/poster.webp']}});
 test('Trakt is disabled by default, prompts for Client ID on enable and uses the native main-source setting',()=>{
  const r=setup();try{
   assert.equal(r.L.Params.values.source.trakt,undefined);assert.equal(r.L.Params.values.source.custom,'Custom');let message;
@@ -29,11 +29,11 @@ test('empty or cancelled Client ID input leaves Trakt disabled and does not requ
 test('Trakt preserves ranking, verified TMDB identities, images and pagination; coalesces and caches public requests',()=>{
  const r=setup();try{
   r.storage.minimal_trakt_enabled=true;r.storage.minimal_trakt_client_id='own-public-client-id';const results=[];
-  for(let i=0;i<2;i++)r.api.list({url:'movies/trending',page:3},v=>results.push(v),assert.fail);
-  assert.equal(r.sent.length,1);const req=r.sent[0];assert.equal(req.headers['trakt-api-key'],'own-public-client-id');assert.equal(req.headers['trakt-api-version'],'2');assert.equal(req.headers.Authorization,undefined);assert.match(req.url,/^https:\/\/api\.trakt\.tv\/movies\/trending\?extended=full&limit=20&page=3$/);
+  for(let i=0;i<2;i++)r.api.list({url:'movies/trending',page:1},v=>results.push(v),assert.fail);
+  assert.equal(r.sent.length,1);const req=r.sent[0];assert.equal(req.headers['trakt-api-key'],'own-public-client-id');assert.equal(req.headers['trakt-api-version'],'2');assert.equal(req.headers.Authorization,undefined);assert.match(req.url,/^https:\/\/api\.trakt\.tv\/movies\/trending\?extended=full&limit=20&page=1$/);
   req.reply([{movie:movie(22,'First')},{movie:movie(11,'Second')},{movie:movie(22,'Duplicate')},{movie:{title:'Missing TMDB ID',ids:{trakt:99}}}]);
-  assert.equal(results.length,2);assert.equal(results[0].page,3);assert.equal(results[0].total_pages,9);assert.deepEqual(Array.from(results[0].results,v=>v.id),[22,11]);assert.equal(results[0].results[0].source,'tmdb');assert.equal(results[0].results[0].trakt_id,10022);assert.match(results[0].results[0].img,/^https:\/\/media.trakt.tv\//);
-  r.api.list({url:'movies/trending',page:3},()=>{},assert.fail);assert.equal(r.sent.length,1);
+  assert.equal(results.length,2);assert.equal(results[0].page,1);assert.equal(results[0].total_pages,2);assert.deepEqual(Array.from(results[0].results,v=>v.id),[22,11]);assert.equal(results[0].results[0].source,'tmdb');assert.equal(results[0].results[0].trakt_id,10022);assert.match(results[0].results[0].img,/^https:\/\/media.trakt.tv\//);
+  r.api.list({url:'movies/trending',page:1},()=>{},assert.fail);assert.equal(r.sent.length,1);
   let full;r.api.full({id:22},v=>full=v);assert.equal(full.id,22);
  }finally{r.close();}
 });
@@ -61,17 +61,19 @@ test('Trakt categories expose five genuine public feeds, retain animation filter
  const r=setup();try{
   r.storage.minimal_trakt_enabled=true;r.storage.minimal_trakt_client_id='own-id';
   for(const kind of ['movie','tv','anime','cartoon']){
-   const plan=r.w.Trakt.traktPlan(kind);assert.equal(plan.length,kind==='cartoon'?10:5);
+   const plan=r.w.Trakt.traktPlan(kind);assert.equal(plan.length,kind==='cartoon'?10:kind==='anime'?6:5);
    assert.ok(plan.some(row=>row.url.includes('/watched/weekly')));assert.ok(plan.some(row=>row.url.includes('/collected/monthly')));assert.ok(plan.some(row=>row.url.includes('/anticipated')));
-   if(kind==='anime')assert.ok(plan.every(row=>row.url.endsWith('?genres=animation&languages=ja')));
+   if(kind==='anime'){assert.equal(plan[1].source,'tmdb');assert.ok(plan.filter(row=>!row.source).every(row=>row.url.endsWith('?genres=animation&languages=ja')));}
    if(kind==='cartoon'){assert.ok(plan.every(row=>row.url.endsWith('?genres=animation')));assert.ok(plan.filter(row=>row.url.startsWith('movies/')).every(row=>!/мультфильм/i.test(row.title)));assert.ok(plan.filter(row=>row.url.startsWith('shows/')).every(row=>row.title.startsWith('Мультсериалы · ')));}
   }
   let answer;r.api.category({url:'movie'},rows=>answer=rows,assert.fail);
   for(let i=0;i<r.sent.length;i++)r.sent[i].reply([{movie:movie(i+1,'Ranked '+i)}]);
   assert.equal(answer.length,5);assert.deepEqual(Array.from(answer,row=>row.results[0].id),[1,2,3,4,5]);
   for(const url of ['movies/watched/weekly','shows/collected/monthly?genres=animation&languages=ja','movies/anticipated']){
-   let result;r.api.list({url,page:2},v=>result=v,assert.fail);const request=r.sent.at(-1);assert.equal(new URL(request.url).searchParams.get('page'),'2');
-   request.reply([{[url.startsWith('shows')?'show':'movie']:movie(99,'Next')}]);assert.equal(result.page,2);assert.equal(result.total_pages,9);assert.equal(result.results[0].id,99);
+   let result;
+   if(!url.startsWith('movies/')){r.api.list({url,page:1},()=>{},assert.fail);r.sent.at(-1).reply([{show:movie(98,'First')}]);}
+   r.api.list({url,page:2},v=>result=v,assert.fail);const request=r.sent.at(-1);assert.equal(new URL(request.url).searchParams.get('page'),'2');
+   request.reply([{[url.startsWith('shows')?'show':'movie']:movie(99,'Next')}]);assert.equal(result.page,2);assert.equal(result.total_pages,3);assert.equal(result.results[0].id,99);
   }
   const count=r.sent.length;for(const url of ['movies/watched/weekly?api_key=bad','movies/anticipated?redirect=https://evil.invalid','movies/watched/../users/me'])r.api.list({url},assert.fail,()=>{});assert.equal(r.sent.length,count);
  }finally{r.close();}
@@ -83,11 +85,14 @@ test('Trakt dorama and Russian TV shows use their own filters and preserve them 
   r.storage.minimal_trakt_enabled=true;r.storage.minimal_trakt_client_id='own-id';
   for(const kind of ['dorama','tvshow']){
    const plan=r.w.Trakt.traktPlan(kind);assert.equal(plan.length,5);assert.equal(plan[0].title,'Сейчас смотрят');assert.ok(plan.every(row=>row.url.startsWith('shows/')));
-   let result;r.api.list({url:plan[0].url,page:2},v=>result=v,assert.fail);const req=r.sent.at(-1),q=new URL(req.url).searchParams;
+   const url=plan[0].url;
+   r.api.list({url,page:1},()=>{},assert.fail);
+   r.sent.at(-1).reply([{show:{...movie(99,'Первая страница'),country:'kr',language:'ru',genres:['drama']}}]);
+   let result;r.api.list({url,page:2},v=>result=v,assert.fail);const req=r.sent.at(-1),q=new URL(req.url).searchParams;
    assert.equal(q.get('page'),'2');assert.equal(q.get('genres'),kind==='tvshow'?'reality,talk-show,game-show':'drama,romance,comedy,mystery');
    if(kind==='tvshow'){assert.equal(q.get('languages'),'ru');req.reply([{show:{...movie(1,'Шоу'),language:'ru'}},{show:{...movie(2,'Foreign'),language:'en'}}]);assert.deepEqual(Array.from(result.results,c=>c.id),[1]);}
-   else{assert.equal(q.get('countries'),'kr,jp,cn,tw,th');req.reply([{show:{...movie(3,'Дорама'),country:'kr',genres:['drama']}},{show:{...movie(4,'Anime'),genres:['animation']}},{show:{...movie(5,'Untranslated'),country:'kr',genres:['drama']}}]);assert.deepEqual(Array.from(result.results,c=>c.id),[3]);}
-   assert.equal(result.page,2);assert.equal(result.total_pages,9);
+   else{assert.equal(q.get('countries'),'kr,jp,cn,tw,th');req.reply([{show:{...movie(3,'Дорама'),country:'kr',genres:['drama']}},{show:{...movie(4,'Anime'),genres:['animation']}},{show:{...movie(5,'Untranslated'),overview:'English only',country:'kr',genres:['drama']}}]);assert.deepEqual(Array.from(result.results,c=>c.id),[3]);}
+   assert.equal(result.page,2);assert.equal(result.total_pages,3);
   }
  }finally{r.close();}
 });

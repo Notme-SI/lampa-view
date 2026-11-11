@@ -24,6 +24,6 @@ test('anime source follows selection, never interface language; shared Discover 
   const rows=cataloguePlan('anime','standard',new Date(2026,10,6)).map(job=>catalogueRow(job,'anime',source,true));
   assert.equal(rows[0].source,source);assert.equal(rows[1].source,source);
   const routes=rows.map(row=>[row.source,row.url]);if(snapshots[source])assert.deepEqual(routes,snapshots[source]);else snapshots[source]=routes;
- }for(const kind of ['movie','tv','cartoon']){const job=cataloguePlan(kind)[0];assert.deepEqual(catalogueRow(job,kind,'cub'),catalogueRow(job,kind,'tmdb'));}}
+ }for(const kind of ['movie','tv','cartoon']){const job=cataloguePlan(kind)[0];const {minimal_catalogue_fallback,...row}=catalogueRow(job,kind,'cub');assert.equal(minimal_catalogue_fallback,true);assert.deepEqual(row,catalogueRow(job,kind,'tmdb'));}}
  }finally{delete global.window;}
 });

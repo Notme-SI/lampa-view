@@ -3,14 +3,19 @@ import {locale} from './i18n.js';
 import {publishedSeasonCount,publishedEpisodeCount} from './episode-metadata.js';
 import {franchiseViewingOrder} from './anime-franchise.js';
 import {hasGallerySource,loadDetailGallery} from './gallery-frames.js';
+import cataloguePages from './catalogue-pages.js';
 
 // Explicitly missing artwork is not a useful catalogue preview. Unknown image
 // metadata may still be supplied by a provider, so do not discard it here.
 export function presentableCards(cards,russian=false){
  return cards.filter(card=>{
+  if(!card)return false;
   if(Object.prototype.hasOwnProperty.call(card,'poster_path') && !card.poster_path && !card.img)return false;
-  return !russian || /[а-яё]/i.test(String(card.title || card.name || ''));
+  return !russian || [card.title,card.name,card.overview].some(value=>/[а-яё]/i.test(String(value || '')));
  });
+}
+export function catalogueCards(cards,russian=locale()==='ru'){
+ return presentableCards(cards,russian).filter(card=>[card.poster_path,card.img].some(value=>typeof value==='string' && value.trim()));
 }
 // The same scoped exclusion must survive More and subsequent native pages.
 export function catalogueResults(path,json){
@@ -56,8 +61,15 @@ export function installTmdb(L){
  source._minimalNormalized=true;
  if(source.get){const get=source.get;source.get=function(path,params,ok,fail,options){const clean=normalizeTmdb(path,params);return get.call(this,clean.path,clean.params,json=>ok(catalogueResults(clean.path,json)),fail,options);};}
  if(source.list){const list=source.list;source.list=function(params,ok,fail){const clean=normalizeTmdb(params.url,params),q=new URLSearchParams(clean.path.split('?')[1] || '');
-  if(/^discover\/(tv|movie)\?/.test(clean.path) && q.get('with_original_language')==='ja' && (q.get('first_air_date.gte') || q.get('primary_release_date.gte') || '')>new Date().toISOString().slice(0,10))return tmdbGet(L,clean.path,clean.params,ok,fail,{unreleased:true});
+  if(/^discover\/(tv|movie)\?/.test(clean.path) && q.get('with_original_language')==='ja' && (q.get('with_genres') || '').split(',').includes('16'))return animePages({...clean.params,url:clean.path},ok,fail);
   return list.call(this,{...clean.params,url:clean.path},json=>ok(catalogueResults(clean.path,json)),fail);};}
+ const animePages=cataloguePages((params,ok,fail)=>{
+  const q=new URLSearchParams(params.url.split('?')[1] || '');
+  const unreleased=(q.get('first_air_date.gte') || q.get('primary_release_date.gte') || '')>new Date().toISOString().slice(0,10);
+  const type=params.url.startsWith('discover/movie?')?'movie':'tv';
+  return tmdbGet(L,params.url,{page:params.page},json=>ok({...json,results:(json?.results || []).map(card=>({...card,source:'tmdb',media_type:type,minimal_anime:true}))}),fail,{unreleased});
+ },cards=>catalogueCards(cards),locale);
+ source._minimalAnimeFeed=!!source.list;
  // Aggregate credits supplement missing directors, never replace the main cast
  // with every guest performer across all seasons.
  ['tmdb','cub'].forEach(name=>{

@@ -9,9 +9,17 @@ const alpha=value=>{const numbers=value.match(/[\d.]+/g);return numbers.length==
   if(mode==='tv')assert.equal((await material(page,'.wrap')).bg,'rgb(10, 10, 10)','TV glass keeps an opaque page canvas under its optical surfaces');
   for(const opacity of ['easy','medium','blacked']){
    await page.evaluate(opacity=>Lampa.Storage.set('glass_opacity',opacity),opacity);
-   for(const selector of ['.wrap__left','.settings__content','.head .open--search','.head .open--settings']){const m=await material(page,selector);assert.ok(alpha(m.bg)>=.3 && alpha(m.bg)<1,JSON.stringify({mode,opacity,selector,m}));if(selector==='.wrap__left')assert.equal(m.blur,'none');else assert.match(m.blur,/blur\(/);}
+   for(const selector of ['.wrap__left','.settings__content']){const m=await material(page,selector);assert.ok(alpha(m.bg)>=.3 && alpha(m.bg)<1,JSON.stringify({mode,opacity,selector,m}));if(selector==='.wrap__left')assert.equal(m.blur,'none');else assert.match(m.blur,/blur\(/);}
   }
-  if(mode==='tv')for(const selector of ['.head .open--search','.head .open--settings','.head__menu-icon']){await page.locator(selector).first().evaluate(n=>n.classList.add('focus'));assert.ok(alpha((await material(page,selector)).bg)>=.9,'Focused TV header stays dense: '+selector);await page.locator(selector).first().evaluate(n=>n.classList.remove('focus'));}
+  const capsule=await material(page,'.head .head__body');
+  assert.ok(alpha(capsule.bg)>0 && alpha(capsule.bg)<=.35,'The glass capsule is translucent');
+  assert.match(capsule.blur,/blur\(/);
+  for(const selector of ['.head .open--search','.head .open--settings']){
+   const control=await material(page,selector);
+   assert.equal(alpha(control.bg),0);
+   assert.equal(control.blur,'none');
+  }
+  if(mode==='tv')for(const selector of ['.head .open--search','.head .open--settings','.head__menu-icon']){await page.locator(selector).first().evaluate(n=>n.classList.add('focus'));const a=alpha((await material(page,selector)).bg);assert.ok(a>0 && a<.5,'Focused glass TV header stays translucent: '+selector);await page.locator(selector).first().evaluate(n=>n.classList.remove('focus'));}
   await page.evaluate(()=>{Lampa.Controller.toggle('settings');Lampa.Settings.create('lampa_view');});await page.waitForSelector('.settings--open .settings__content',{state:'visible'});
   if(mode==='tv' && process.env.LAMPA_QA_OUTPUT){fs.mkdirSync(process.env.LAMPA_QA_OUTPUT,{recursive:true});await page.screenshot({path:path.join(process.env.LAMPA_QA_OUTPUT,engine.name()+'-tv-settings.png')});}
   await page.evaluate(()=>{Lampa.Controller.back();Lampa.Select.show({title:'Действие',items:[{title:'Избранное',separator:true},{title:'Нравится',checkbox:true}]});});await page.waitForSelector('.selectbox-item');

@@ -1,11 +1,12 @@
 import {text as lampaViewText} from './i18n.js';
-import {presentableCards} from './tmdb.js';
+import {catalogueCards,presentableCards} from './tmdb.js';
+import cataloguePages from './catalogue-pages.js';
 import traktMetadata from './trakt-metadata.js';
 import {locale} from './i18n.js';
 import catalogue,{animeMode,cataloguePlan,catalogueRow} from './catalogue.js';
 import {traktPlan} from './trakt.js';
 import animeTabs from './anime-tabs.js';
-import continueWatching,{CONTINUE,isWatching} from './continue-watching.js';
+import continueWatching,{CONTINUE,ANIME_HISTORY,isWatching} from './continue-watching.js';
 import discoverySource from './discovery-source.js';
 import {DISCOVERY_KINDS,discoveryState,discoverySelected} from './discovery-model.js';
 export function rowKey(row){return String(row.minimal_row_id || row.url || row.title || lampaViewText("Без названия"));}
@@ -45,7 +46,16 @@ export default function collections(L,shiki,kino,kinoFeeds){
  const cubSource=L.Api.sources && L.Api.sources.cub;
  if(cubSource && cubSource.list && !cubSource._minimalLocalized){
   const list=cubSource.list;cubSource._minimalLocalized=true;
-  cubSource.list=function(params,ok,fail){return list.call(this,params,json=>{
+  const animePages=cataloguePages((params,ok,fail)=>list.call(cubSource,params,json=>{
+   if(!Array.isArray(json?.results))return fail();
+   const ready=cards=>ok({...json,results:cards});
+   const cards=json.results.map(card=>({...card,media_type:card.media_type || (card.name || card.first_air_date?'tv':'movie')}));
+   if(locale()==='ru' && catalogueCards(cards,true).length===cards.length)return ready(cards);
+   localized.enrich(cards,ready,{language:locale(),prime:false,timeout:8000});
+  },fail),cards=>catalogueCards(cards).map(card=>({...card,source:'cub',minimal_anime:true})),locale);
+  cubSource.list=function(params,ok,fail){
+   if(/^\?/.test(params.url || '') && new URLSearchParams(params.url).get('cat')==='anime')return animePages(params,ok,fail);
+   return list.call(this,params,json=>{
    if(locale()==='ru' || !json || !Array.isArray(json.results))return ok(json);
    const lang=locale(),cards=json.results.map(card=>({...card,media_type:card.media_type || (card.name || card.first_air_date?'tv':'movie')}));
    localized.enrich(cards,results=>ok({...json,results}),{language:lang,prime:false,timeout:8000});
@@ -72,7 +82,11 @@ export default function collections(L,shiki,kino,kinoFeeds){
    const watch=cataloguePlan(kind).find(row=>row.key==='now-watching');
    if(watch){p.order=[rowKey(watch),...p.order.filter(id=>!matchesRow(watch,id))];p.watching_first_revision=1;save(ctx,p);}
   }
-  if(ctx!=='main:' || !(p.order || []).length || p.order.includes(CONTINUE))return p;
+  if(!(p.order || []).length)return p;
+  if(ctx.startsWith('category:anime:') && !p.order.includes(ANIME_HISTORY)){
+   const order=p.order.slice();order.splice(1,0,ANIME_HISTORY);return {...p,order};
+  }
+  if(ctx!=='main:' || p.order.includes(CONTINUE))return p;
   const rows=known()[ctx] || [],watch=rows.find(isWatching),order=p.order.slice(),index=watch?order.findIndex(id=>matchesRow({url:watch.id,title:watch.title,minimal_row_aliases:watch.aliases},id)):-1;
   order.splice(index+1,0,CONTINUE);return {...p,order};
  }
@@ -86,6 +100,7 @@ export default function collections(L,shiki,kino,kinoFeeds){
   const plan=trakt?traktPlan(ctx==='main:'?undefined:kind):['movie','tv','cartoon','tvshow','anime'].includes(kind)?cataloguePlan(kind,mode).map(job=>catalogueRow(job,kind,source,!!(L.Api.sources && L.Api.sources.cub))):null;
   let definitions=plan && plan.map(row=>({id:rowKey(row),title:row.title,aliases:row.minimal_row_aliases || [],minimal_default_hidden:row.minimal_default_hidden}));
   if(ctx==='main:' && definitions)definitions.splice(1,0,{id:CONTINUE,title:lampaViewText('История просмотра')});
+  if(kind==='anime' && definitions)definitions.splice(1,0,{id:ANIME_HISTORY,title:lampaViewText('История аниме')});
   if(ctx==='main:' && (known()[ctx+source] || []).length)definitions=known()[ctx+source].slice();
   const p=prefs(ctx),rows=(definitions || (known()[ctx==='main:'?ctx+source:ctx] || []).slice()).filter(row=>ctx!=='main:' || !removedHomeRow(row)),order=p.order || [];
   const matches=(r,id)=>matchesRow({minimal_row_id:r.id,minimal_row_aliases:r.aliases,title:r.title},id),hidden=r=>(p.hidden || []).some(id=>matches(r,id)) || defaultHidden({minimal_row_id:r.id,minimal_row_aliases:r.aliases,minimal_default_hidden:r.minimal_default_hidden},p),position=r=>{const index=order.findIndex(id=>matches(r,id));return index<0?10000:index;};
@@ -108,46 +123,91 @@ export default function collections(L,shiki,kino,kinoFeeds){
  const main=L.Api.main;
  L.Api.main=function(object,ok,fail){
   const ctx=context(object),compact=(!object.component || object.component==='main');
-  function process(rows){if(compact)return homeRows.ready(()=>render(rows));render(rows);}
-  function render(rows){if(compact){mainSource=object.source || L.Storage.get('source','cub');rows=rows.filter(row=>!/недавние.*(?:эпизод|сери)|recent.*episode/i.test(String(row.title || '')));}rows=rows.map(row=>({...row,results:isMyShowsUnwatched(row)?(row.results || []):presentableCards(row.results || [])}));const selected=compact?homeOrder(homeRows(homeOrder(rows))):rows;remember(ctx,selected);const visible=arrange(selected,prefs(ctx)).filter(row=>!row.minimal_empty);
+  function process(rows){if(compact)return homeRows.preview(CONTINUE,preview=>render(rows,preview));render(rows);}
+  function render(rows,preview){if(compact){mainSource=object.source || L.Storage.get('source','cub');rows=rows.filter(row=>!/недавние.*(?:эпизод|сери)|recent.*episode/i.test(String(row.title || '')));}rows=rows.map(row=>({...row,results:isMyShowsUnwatched(row)?(row.results || []):presentableCards(row.results || [])}));const selected=compact?homeOrder(homeRows(homeOrder(rows),preview)):rows;remember(ctx,selected);const visible=arrange(selected,prefs(ctx)).filter(row=>!row.minimal_empty);
    if(locale()==='ru')return ok(visible);
    const cards=visible.flatMap(row=>isMyShowsUnwatched(row)?[]:(row.results || []).filter(card=>!card.source || ['cub','tmdb','trakt','minimal_continue'].includes(card.source)).map(card=>({...card,media_type:card.media_type || (card.name || card.first_air_date?'tv':'movie')})));
    localized.enrich(cards,translated=>{const byId=new Map(translated.map(card=>[card.media_type+':'+card.id,card]));ok(visible.map(row=>isMyShowsUnwatched(row)?row:{...row,results:(row.results || []).map(card=>{const value=byId.get((card.media_type || (card.name || card.first_air_date?'tv':'movie'))+':'+card.id);return value?{...card,...value}:card;})}));});}
   const next=main.call(this,object,process,fail);
   return !compact && typeof next==='function'?function(resolve,reject){return next(rows=>{remember(ctx,rows,true);resolve(arrange(rows,prefs(ctx)));},reject);}:undefined;
  };
- // CUB bookmarks can arrive after the cached home has rendered. Refresh only
- // when membership changed, and never take focus from an open actions menu.
- let historyTimer;
- if(L.Listener && L.Listener.follow)L.Listener.follow('state:changed',event=>{
-  if(event.target!=='favorite' || event.reason==='sync')return;
+ // Recheck the visible history after local changes and when returning to an
+ // archived activity that was opened under a different profile.
+ let historyTimer,profileRefresh=false;
+ const activityProfiles=new WeakMap();
+ function activeHistory(active){
+  if(active.component==='main')return CONTINUE;
+  if(active.component==='category' && (active.url || active.cat)==='anime')return ANIME_HISTORY;
+  if(active.component==='category_full' && active.source==='minimal_continue')return active.url;
+ }
+ function refreshHistory(profileChanged=false){
+  profileRefresh=profileRefresh || profileChanged;
   clearTimeout(historyTimer);
   const refresh=()=>{
    const active=L.Activity && L.Activity.active && L.Activity.active();
-   if(!active || active.component!=='main')return;
+   const url=active && activeHistory(active);
+   if(!url || !L.Activity.replace){profileRefresh=false;return;}
    if(L.Select && L.Select.opened && L.Select.opened()){historyTimer=setTimeout(refresh,500);return;}
+   if(profileRefresh){
+    profileRefresh=false;activityProfiles.set(active,homeRows.profile());return L.Activity.replace({page:1});
+   }
+   if(active.component==='category_full' || (prefs(context(active)).hidden || []).includes(url))return;
    const component=active.activity && active.activity.component,items=component && component.items;
    if(!items)return;
-   const row=items.find(item=>item.data && item.data.url===CONTINUE);
-   const signature=cards=>(cards || []).map(card=>(card.source || '')+':'+card.id).join('|');
-   if(signature(row && row.data.results)!==signature(homeRows.cards().slice(0,20)) && L.Activity.replace)L.Activity.replace({component:'main',source:active.source,url:active.url || '',page:1});
+   const row=items.find(item=>item.data && item.data.url===url);
+   const signature=data=>JSON.stringify([(data?.results || []).map(card=>[card.source,card.media_type || (card.name?'tv':'movie'),card.id]),(data?.total_pages || 1)>1]);
+   homeRows.preview(url,preview=>{
+    if(L.Activity.active()===active && !(L.Select && L.Select.opened && L.Select.opened()) && signature(row?.data)!==signature(preview))L.Activity.replace({page:1});
+   });
   };
   historyTimer=setTimeout(refresh,400);
- });
+ }
+ if(L.Listener && L.Listener.follow){
+  L.Listener.follow('state:changed',event=>{if(event.target==='favorite' && event.reason!=='sync')refreshHistory(event.reason==='profile');});
+  L.Listener.follow('activity',event=>{
+   const active=event.object;
+   if(event.type!=='start' || !active || !activeHistory(active))return;
+   const profile=homeRows.profile(),previous=activityProfiles.get(active);activityProfiles.set(active,profile);
+   if(previous!==undefined && previous!==profile)refreshHistory(true);
+  });
+ }
  const category=L.Api.category;
  if(category)L.Api.category=function(object,ok,fail){
   const kind=object.url || object.cat,ctx=context({...object,component:'category'});
   if(!['movie','tv','cartoon','anime','dorama','tvshow'].includes(kind))return category.apply(this,arguments);
+  function withAnimeHistory(rows,accept){
+   if(kind!=='anime' || (prefs(ctx).hidden || []).includes(ANIME_HISTORY))return accept(rows);
+   homeRows.preview(ANIME_HISTORY,row=>{
+    if(object.minimal_catalogue_cancelled)return;
+    if(!row.minimal_empty){rows=rows.slice();rows.splice(1,0,row);}
+    accept(rows);
+   });
+  }
   const selected=DISCOVERY_KINDS.includes(kind) && discoverySelected(discoveryState(kind,object.minimal_discovery || {}));
   if(!selected && (object.source || L.Storage.get('source','cub'))==='trakt' && !['dorama','tvshow'].includes(kind) && !(kind==='anime' && animeMode(L,object)==='shikimori')){
    const status=object.minimal_catalogue_status={state:'loading'};
-   function accept(rows){status.state=rows.some(row=>row.results && row.results.length)?'ready':'empty';remember(ctx,rows);ok(arrange(rows,prefs(ctx)));}
-   return category.call(this,{...object,source:'trakt'},accept,error=>{status.state='error';if(fail)fail(error);});
+   function accept(rows){withAnimeHistory(rows,initial=>{status.state=initial.some(row=>row.results && row.results.length)?'ready':'empty';remember(ctx,initial);ok(arrange(initial,prefs(ctx)));});}
+   function reject(error){withAnimeHistory([],initial=>{status.state='error';if(initial.length){remember(ctx,initial);ok(initial);}else if(fail)fail(error);});}
+   return category.call(this,{...object,source:'trakt'},accept,reject);
   }
-  let cursor=0,busy=false,finished=false,remembered=false,waiters=[];
+  let cursor=0,busy=false,finished=false,remembered=false,delivered=false,waiters=[];
   const load=(resolve,reject,append)=>{if(finished || object.minimal_catalogue_cancelled){if(reject)reject();return;}waiters.push({resolve,reject});if(busy)return;busy=true;
    function batch(){object.minimal_catalogue_offset=cursor;object.minimal_catalogue_limit=kind==='anime' && animeMode(L,object)==='shikimori'?7:3;object.minimal_catalogue_order=prefs(ctx).order || [];
-    catalogue(L,shiki,object,hiddenIds(ctx,object),rows=>{if(object.minimal_catalogue_cancelled)return;cursor=object.minimal_catalogue_next;finished=cursor>=object.minimal_catalogue_total;remember(ctx,rows,remembered);remembered=true;const visible=arrange(rows.filter(row=>!row.minimal_hidden),prefs(ctx));if(!visible.length && !finished && object.minimal_catalogue_status.state!=='error')return batch();busy=false;const ready=waiters.splice(0);ready.forEach(w=>{if(visible.length || !append)w.resolve(visible);else if(w.reject)w.reject();});});
+    catalogue(L,shiki,object,hiddenIds(ctx,object),rows=>{
+     if(object.minimal_catalogue_cancelled)return;
+     cursor=object.minimal_catalogue_next;finished=cursor>=object.minimal_catalogue_total;
+     remember(ctx,rows,remembered);remembered=true;
+     const visible=arrange(rows.filter(row=>!row.minimal_hidden),prefs(ctx)),status=object.minimal_catalogue_status;
+     if(!visible.length && !finished && status.state!=='error')return batch();
+     function emit(initial){
+      const history=initial.find(row=>row.url===ANIME_HISTORY);
+      if(history){remember(ctx,[history],true);if(status.state!=='error')status.state='ready';}
+      delivered=true;busy=false;
+      const ready=waiters.splice(0);ready.forEach(w=>{if(initial.length || !append)w.resolve(initial);else if(w.reject)w.reject();});
+     }
+     if(delivered)return emit(visible);
+     withAnimeHistory(visible,initial=>emit(arrange(initial,prefs(ctx))));
+    });
    }batch();
   };
   load(ok,fail,false);return (resolve,reject)=>load(resolve,reject,true);

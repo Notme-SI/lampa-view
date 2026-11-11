@@ -59,7 +59,7 @@ test('future seasons do not inflate the released header and anime classification
 
 test('native Shikimori grid advances beyond its initial two-page boundary and stops at the first short page',async()=>{
  const n=await require('./fixtures/native-lampa.cjs')({built:true,requestPipeline:true}),{w,L}=n;try{
-  const requests=[],network=w.testNetwork;w.testNetwork=(url,ok,fail)=>{if(!/shikimori\.(io|one)\/api\/animes\?/.test(url))return network(url,ok,fail);const page=Number(new URL(url).searchParams.get('page'));requests.push(page);setTimeout(()=>ok(Array.from({length:page<4?24:2},(_,i)=>({id:page*100+i,name:'Anime',kind:'tv',image:{original:'/p.jpg'}}))),0);};
+  const requests=[],network=w.testNetwork;w.testNetwork=(url,ok,fail)=>{if(!/shikimori\.(io|one)\/api\/animes\?/.test(url))return network(url,ok,fail);const page=Number(new URL(url).searchParams.get('page'));requests.push(page);setTimeout(()=>ok(Array.from({length:page<4?24:2},(_,i)=>({id:page*100+i,name:'Anime',russian:'Аниме',kind:'tv',image:{original:'/p.jpg'}}))),0);};
   L.Activity.push({component:'category_full',source:'minimal_shiki',url:'order=popularity',page:1,title:'All'});await wait(60);const grid=L.Activity.active().activity.component;assert.equal(grid.total_pages,2);
   for(let page=2;page<=4;page++){grid.object.page=page;const result=await new Promise((ok,fail)=>grid.emit('next',ok,fail));assert.equal(result.page,page);assert.equal(grid.total_pages,page<4?page+1:4);}
   assert.deepEqual(requests,[1,2,3,4]);assert.deepEqual(n.errors,[]);

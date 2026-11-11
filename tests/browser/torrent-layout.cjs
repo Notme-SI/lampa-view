@@ -52,6 +52,23 @@ async function verify(page,mobile){
     L.Activity.push({component:'torrents',movie:{id:99,title:'Гангстерленд',name:'Гангстерленд',original_name:'MobLand',number_of_seasons:1,seasons:[{season_number:1,episode_count:40}],source:'tmdb',first_air_date:'2025-01-01',genres:[]},search:'MobLand',url:'',page:1});L.Layer.update();
    },mobile);
    await page.waitForTimeout(350);
+   const unpinned=await verify(page,mobile);
+   await page.evaluate(()=>{Lampa.Storage.set('menu_always',true);Lampa.Layer.update();});
+   await page.waitForTimeout(300);
+   const pinned=await page.evaluate(()=>{
+    const box=node=>node.getBoundingClientRect().toJSON();
+    const root=document.querySelector('.activity--active .minimal-torrent-view');
+    return {rail:box(document.querySelector('.wrap__left')),banner:box(root.querySelector('.minimal-torrent-banner')),
+     list:box(root.querySelector('.explorer__files-body>.scroll')),buttons:[...root.querySelectorAll('.minimal-torrent-toolbar .simple-button')].filter(n=>n.offsetWidth).map(box),width:innerWidth};
+   });
+   assert.ok(pinned.banner.left>pinned.rail.right,JSON.stringify(pinned));
+   if(mobile)assert.ok(pinned.banner.width<unpinned.banner.width);
+   else assert.ok(Math.abs(pinned.banner.left-unpinned.banner.left)<=1 && Math.abs(pinned.banner.width-unpinned.banner.width)<=1);
+   assert.ok(pinned.list.height>90 && pinned.list.left>pinned.rail.right && pinned.list.right<=pinned.width+1);
+   assert.equal(pinned.buttons.length,3);
+   assert.ok(pinned.buttons.every(button=>button.left>pinned.rail.right && button.right<=pinned.width+1));
+   await page.evaluate(()=>{Lampa.Storage.set('menu_always',false);Lampa.Layer.update();});
+   await page.waitForTimeout(300);
    await verify(page,mobile);
    const sequence=await page.locator('.activity--active .torrent-item .tc-row').first().evaluate(row=>({classes:[...row.children].map(n=>n.className),head:row.querySelector('.tc-head').getBoundingClientRect().bottom,title:row.querySelector('.tc-release-name').getBoundingClientRect().top,technical:row.querySelector('.tc-technical-tags').getBoundingClientRect().top,languages:row.querySelector('.tc-language-tags').getBoundingClientRect().top}));
    assert.equal(sequence.classes[0],'tc-head');assert.equal(sequence.classes[1],'tc-release-name');assert.ok(sequence.title>=sequence.head-1);assert.ok(sequence.technical>=sequence.languages);

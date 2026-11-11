@@ -1,12 +1,12 @@
-import tmdbGet,{presentableCards} from './tmdb.js';
+import tmdbGet,{catalogueCards} from './tmdb.js';
 import catalogueCache from './catalogue-cache.js';
 import {locale,text as t} from './i18n.js';
-import {DISCOVERY_KINDS,discoveryState,discoverySpecs,discoveryAccepts} from './discovery-model.js';
+import {DISCOVERY_KINDS,canonicalCountry,discoveryState,discoverySpecs,discoveryAccepts} from './discovery-model.js';
 export const DISCOVERY_SOURCE='minimal_discovery';
 export function discoverySpec(value){
  if(!value || !DISCOVERY_KINDS.includes(value.kind) || !['movie','tv',''].includes(value.type))return null;
  const state=discoveryState(value.kind,{...value,section:'overview'});
- if(value.genre && state.genre!==String(value.genre) || value.network && state.network!==Number(value.network) || value.company && state.company!==Number(value.company) || value.hero && state.hero!==String(value.hero) || value.country && state.country!==value.country || value.sort && (value.hero?value.sort!=='popular':state.sort!==value.sort) || value.feed && !['airing','current','active','completed','trending','recent','upcoming'].includes(value.feed))return null;
+ if(value.genre && state.genre!==String(value.genre) || value.network && state.network!==Number(value.network) || value.company && state.company!==Number(value.company) || value.hero && state.hero!==String(value.hero) || value.country && state.country!==canonicalCountry(value.country) || value.sort && (value.hero?value.sort!=='popular':state.sort!==value.sort) || value.feed && !['airing','current','active','completed','trending','recent','upcoming'].includes(value.feed))return null;
  if(value.kind!=='cartoon' && value.type!==(value.kind==='movie'?'movie':'tv') || !value.type && value.kind!=='cartoon')return null;
  if(value.sort==='revenue' && value.type!=='movie')return null;
  let period=state.period;
@@ -43,7 +43,8 @@ export default function discoverySource(L){
   let parsed;try{parsed=JSON.parse(params.url);}catch(e){return fail(error());}const spec=discoverySpec(parsed);if(!spec)return fail(error());
   const page=Math.max(1,Math.min(500,Number(params.page)||1)),key=endpoint()+'|'+locale()+'|'+JSON.stringify(spec);let cursor=cursors.get(key);
   if(!cursor || Date.now()-cursor.at>300000){if(cursor)cursor.cancelled=true;cursor={at:Date.now(),spec,streams:discoverySpecs(spec).map(s=>({...s,next:1,total:1,finished:false})),pages:[],buffer:[],seen:new Set(),waiters:[],busy:false,cancelled:false};cursors.set(key,cursor);while(cursors.size>32){const first=cursors.keys().next().value;cursors.get(first).cancelled=true;cursors.delete(first);}}
-  if(!cursor.streams.length || page>cursor.pages.length+2)return fail(error());
+  if(!cursor.streams.length)return ok({results:[],page,total_pages:1});
+  if(page>cursor.pages.length+2)return fail(error());
   if(cursor.pages[page-1])return ok(cursor.pages[page-1]);
   if(cursor.pages.length && cursor.streams.every(s=>s.finished && !(s.buffer || []).length) && !cursor.buffer.length)return ok({results:[],page,total_pages:cursor.pages.length});
   cursor.waiters.push({page,ok,fail,cancelled:params.minimal_cancelled || (()=>false)});load(cursor);
@@ -74,18 +75,30 @@ export default function discoverySource(L){
    const available=cursor.streams.filter(s=>!s.finished && (!ordered || !s.buffer.length));
    // A display page owns its accepted rows. Partial pages never make the next
    // page skip accepted cards, and sparse foreign feeds have a bounded scan.
-   if(cursor.buffer.length>=20 || !available.length || rounds>=4)return finishPage();rounds++;
+   if(cursor.buffer.length>=20 || !available.length || rounds>=4 && cursor.buffer.length)return finishPage();
+   // Native grids stop at an empty display page. Scan through sparse source
+   // pages, yielding between batches so other rows can use the request queue.
+   if(rounds>=4){rounds=0;setTimeout(fetchNext,0);return;}
+   fetchNext();
+   function fetchNext(){
+   if(cursor.cancelled)return;
+   if(!cursor.waiters.some(w=>!w.cancelled())){next();return;}
+   rounds++;
    const replies=new Array(available.length);let left=available.length,failed=false;
    available.forEach((stream,index)=>request(stream.path,stream.next,json=>{if(cursor.cancelled)return;replies[index]=json;complete();},()=>{failed=true;complete();},cursor.spec.feed==='upcoming'));
    function complete(){if(--left)return;if(cursor.cancelled)return;if(failed)return failPage();
     const accepted=available.map((stream,i)=>{
-     const json=replies[i],strict=['movie','tv','dorama','tvshow'].includes(cursor.spec.kind),russian=strict && locale()==='ru',rows=presentableCards(json.results.map(card=>{const name=[card.title,card.name].find(v=>/[а-яё]/i.test(v || ''));return russian && name?{...card,title:name,...(stream.type==='tv'?{name}:{})}:card;}),russian).filter(card=>!strict || !!(card.poster_path || card.img) && (!Object.prototype.hasOwnProperty.call(card,'backdrop_path') || !!card.backdrop_path));
-     stream.total=Math.min(500,Math.max(1,Number(json.total_pages)||1));stream.next++;stream.finished=stream.next>stream.total || !json.results.length;
+     const json=replies[i],russian=locale()==='ru',rows=catalogueCards(json.results,russian).map(card=>{
+      const name=[card.title,card.name].find(value=>/[а-яё]/i.test(value || ''));
+      return russian && name?{...card,title:name,...(stream.type==='tv'?{name}:{})}:card;
+     });
+     stream.total=Math.min(500,Math.max(1,Number(json.total_pages)||1));stream.next++;stream.finished=stream.next>stream.total;
      return rows.filter(card=>Number.isSafeInteger(Number(card.id)) && Number(card.id)>0 && discoveryAccepts(card,{...cursor.spec,type:stream.type})).map(card=>({...card,source:'tmdb',media_type:stream.type}));
     });
     if(ordered){accepted.forEach((rows,i)=>available[i].buffer.push(...rows));return next();}
     const length=Math.max(0,...accepted.map(a=>a.length));for(let i=0;i<length;i++)for(const rows of accepted){const card=rows[i];if(!card)continue;const key=card.media_type+':'+card.id;if(!cursor.seen.has(key)){cursor.seen.add(key);cursor.buffer.push(card);}}
     next();
+   }
    }
   }
   next();

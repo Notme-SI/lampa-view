@@ -1,16 +1,48 @@
 import {text as t} from './i18n.js';
+import iosFrame from './ios-frame.js';
 // Keep the catalogue list intact: native extensions and the menu editor own it.
-export default function menuLayout(L,enabled){
+export default function menuLayout(L,enabled,icon){
  const $=window.jQuery;
  const excludedActions=/^(feed|dorama|catalog|myperson|relise|releases?|(?:my)?sports?|(?:my)?shots?)$/i;
  const excludedLabels=['Лента','Дорамы','Каталог','Персоны','Релизы','Спорт','Shots'];
- const removed=new Map();
+ const removed=new Map(),navigationIcons=new Map();
+ const frame=iosFrame(enabled);
+ let observedBar,viewportFrame;
+ function measureNavigation(){
+  const height=observedBar?.getBoundingClientRect().height;
+  if(height && enabled() && document.body.classList.contains('pt-mobile'))document.body.style.setProperty('--pt-mobile-nav-height',Math.ceil(height)+'px');
+  else document.body.style.removeProperty('--pt-mobile-nav-height');
+  frame.update(height || 0);
+ }
+ function viewportChanged(){if(!viewportFrame)viewportFrame=requestAnimationFrame(()=>{viewportFrame=0;measureNavigation();});}
+ const resize=window.ResizeObserver?new ResizeObserver(measureNavigation):null;
+ function observeNavigation(bar){
+  if(bar!==observedBar){resize?.disconnect();observedBar=bar;if(bar)resize?.observe(bar);}
+  measureNavigation();
+ }
+ function updateIcons(){
+  for(const [node,original] of navigationIcons){
+   if(enabled() && node.isConnected)continue;
+   if(node.isConnected)node.innerHTML=original;
+   navigationIcons.delete(node);
+  }
+  if(!enabled() || !icon)return;
+  for(const [action,glyph] of [['main','home'],['settings','settings']]){
+   const selector='.menu [data-action='+action+'] .menu__ico,.navigation-bar [data-action='+action+'] .navigation-bar__icon';
+   for(const node of document.querySelectorAll(selector)){
+    if(navigationIcons.has(node))continue;
+    navigationIcons.set(node,node.innerHTML);
+    node.innerHTML=icon(glyph);
+   }
+  }
+ }
  let mobileControl=null,generatedBar=null;
  function mobileBar(){
   const mobile=enabled() && document.body.classList.contains('pt-mobile');
   if(!mobile){
    if(mobileControl){const {node,html,next}=mobileControl;$(node).off('.lampaViewMenu').attr('data-action','search').data('action','search').html(html);if(next?.isConnected)next.before(node);mobileControl=null;}
    if(generatedBar){generatedBar.remove();generatedBar=null;}
+   observeNavigation(null);
    return;
   }
   let bar=document.querySelector('.navigation-bar');
@@ -24,6 +56,7 @@ export default function menuLayout(L,enabled){
    });
   }
   if(!bar)return;
+  observeNavigation(bar);
   const search=bar.querySelector('[data-action=search]');
   if(search){
    mobileControl={node:search,html:search.innerHTML,next:search.nextElementSibling};
@@ -32,7 +65,8 @@ export default function menuLayout(L,enabled){
    search.querySelector('.navigation-bar__label').textContent=t('Меню');
    bar.querySelector('[data-action=back]')?.after(search);
    const toggle=()=>{document.body.classList.remove('pt-menu-hover');if(document.body.classList.contains('menu--open')){L.Controller.toggle('head');return;}if(L.Menu?.toggle)L.Menu.toggle();else L.Controller.toggle(document.body.classList.contains('menu--open')?'content':'menu');};
-   $(search).on('click.lampaViewMenu',toggle).on('keydown.lampaViewMenu',event=>{if(event.key==='Enter' || event.key===' '){event.preventDefault();event.stopImmediatePropagation();toggle();}});
+   // Native Menu closes on outside mousedown before this button's click.
+   $(search).on('mousedown.lampaViewMenu',event=>event.stopPropagation()).on('click.lampaViewMenu',toggle).on('keydown.lampaViewMenu',event=>{if(event.key==='Enter' || event.key===' '){event.preventDefault();event.stopImmediatePropagation();toggle();}});
   }
  }
  function exclude(){
@@ -53,6 +87,7 @@ export default function menuLayout(L,enabled){
   }
  }
  function groups(){
+  updateIcons();
   const menu=document.querySelector('.menu'),profile=document.querySelector('[data-action="minimal_profile"]');if(!menu || !profile)return;
   if(!menu._lampaViewPointer){menu._lampaViewPointer=true;menu.addEventListener('click',event=>{
    if(!enabled())return;const item=event.target.closest('.menu__item');if(!item || !menu.contains(item))return;
@@ -90,6 +125,8 @@ export default function menuLayout(L,enabled){
   const next=document.querySelector('.wrap__left');if(next===panel || !next)return;panel=next;
   panel.addEventListener('pointerenter',()=>{if(enabled())document.body.classList.add('pt-menu-hover');});
   panel.addEventListener('pointerleave',()=>document.body.classList.remove('pt-menu-hover'));
+  // The native outside-click check assumes the dock starts at x=0.
+  panel.addEventListener('mousedown',event=>{if(enabled())event.stopPropagation();});
  }
  function update(){
   const value=L.Storage.get('menu_always',false),pinned=enabled() && [true,'true',1,'1','yes'].includes(value);
@@ -104,6 +141,14 @@ export default function menuLayout(L,enabled){
   mobileBar();bind();groups();
  }
  update();
+ window.addEventListener('resize',viewportChanged);
+ window.addEventListener('pageshow',viewportChanged);
+ window.visualViewport?.addEventListener('resize',viewportChanged);
+ window.visualViewport?.addEventListener('scroll',viewportChanged);
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)viewportChanged();});
+ document.addEventListener('focusin',viewportChanged);
+ document.addEventListener('focusout',viewportChanged);
+ document.addEventListener('minimal:interface-size',measureNavigation);
  if(L.Storage.listener)L.Storage.listener.follow('change',e=>{if(e.name==='menu_always' || e.name==='lampa_view_enabled')update();});
  if(L.Notice && L.Notice.listener)L.Notice.listener.follow('viewed',groups);
  if(L.Notice && L.Notice.drawCount){const draw=L.Notice.drawCount;L.Notice.drawCount=function(){const result=draw.apply(this,arguments);groups();return result;};}

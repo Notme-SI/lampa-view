@@ -29,7 +29,7 @@ const {setup}=require('../fixtures/native-browser.cjs'),{stage}=require('../fixt
 
   if(mode==='mobile'){assert.equal(await page.locator('.head .open--settings').isVisible(),false);await page.evaluate(()=>Lampa.Menu.ready());await page.locator('.navigation-bar [data-action=menu]').click();await page.locator('.menu__item[data-action=settings]').click();await page.waitForSelector('body.settings--open');await page.evaluate(()=>Lampa.Controller.back());}
 
-  assert.equal(await page.locator('meta[name=apple-mobile-web-app-status-bar-style]').getAttribute('content'),'default','Safari keeps native status-bar geometry without forced translucency');
+  assert.equal(await page.locator('meta[name=apple-mobile-web-app-status-bar-style]').getAttribute('content'),mode==='mobile'?'black-translucent':'default');
   await page.evaluate(()=>{Lampa.Layer.init();Lampa.DeviceInput.init();Lampa.Controller.observe();Lampa.Keypad.init();Lampa.Keypad.enable();document.body.appendChild(Lampa.Search.render(true));Lampa.Search.open();});await page.waitForSelector('.main-search .search');
   const searchMaterial=await page.locator('.main-search .search').evaluate(n=>({bg:getComputedStyle(n).backgroundColor,blur:getComputedStyle(n).backdropFilter,height:n.getBoundingClientRect().height,viewport:innerHeight}));
   assert.ok(Number(searchMaterial.bg.match(/[\d.]+/g)[3] ?? 1)>=.4,'The entire search overlay has a reading tint: '+JSON.stringify(searchMaterial));assert.match(searchMaterial.blur,/blur\(/,'The open search diffuses artwork behind it');assert.ok(searchMaterial.height>=searchMaterial.viewport-2,'The tinted surface covers the viewport');

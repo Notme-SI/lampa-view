@@ -117,7 +117,10 @@ const usesCub=(job,kind,source,hasCub)=>!!(!job.discovery && !['dorama','tvshow'
 // Settings and loading share the same IDs, aliases, titles and source routes.
 export function catalogueRow(job,kind,source='tmdb',hasCub=true){
  const cub=usesCub(job,kind,source,hasCub),scoped=['dorama','tvshow'].includes(kind);
- return {minimal_default_hidden:!!job.minimal_default_hidden,title:cub?job.title:job.tmdb_title || job.title,url:job.discovery?JSON.stringify(job.discovery):job.shiki || (cub?job.cub:job.tmdb || job.cub),source:job.discovery?DISCOVERY_SOURCE:job.shiki?'minimal_shiki':cub || !job.tmdb?'cub':'tmdb',...(!cub && job.tmdb && job.key?{minimal_row_id:job.minimal_row_id || 'minimal:tmdb:'+kind+':'+job.key,minimal_row_aliases:[job.tmdb,...(scoped && job.cub?[job.cub]:[]),...(job.minimal_row_aliases || [])]}:{}),results:[]};
+ const feedSource=job.discovery?DISCOVERY_SOURCE:job.shiki?'minimal_shiki':cub || !job.tmdb?'cub':'tmdb';
+ return {minimal_default_hidden:!!job.minimal_default_hidden,title:cub?job.title:job.tmdb_title || job.title,url:job.discovery?JSON.stringify(job.discovery):job.shiki || (cub?job.cub:job.tmdb || job.cub),source:feedSource,
+  ...(source!=='tmdb' && [DISCOVERY_SOURCE,'tmdb'].includes(feedSource)?{minimal_catalogue_fallback:true}:{}),
+  ...(!cub && job.tmdb && job.key?{minimal_row_id:job.minimal_row_id || 'minimal:tmdb:'+kind+':'+job.key,minimal_row_aliases:[job.tmdb,...(scoped && job.cub?[job.cub]:[]),...(job.minimal_row_aliases || [])]}:{}),results:[]};
 }
 export default function catalogue(L,shiki,object,hidden,ok){
  const kind=object.url || object.cat;
@@ -142,6 +145,7 @@ export default function catalogue(L,shiki,object,hidden,ok){
    else if(job.discovery)finish(null);
    else if(job.shiki)shiki.list({url:job.shiki,page:1},finish,()=>finish(null));
    else if(useCub(job))cub.call(L.Api.sources.cub,{...object,url:job.cub,page:1},finish,()=>finish(null));
+   else if(kind==='anime' && L.Api.sources.tmdb?._minimalAnimeFeed)L.Api.sources.tmdb.list({url:job.tmdb,page:1,source:'tmdb'},finish,()=>finish(null));
    else if(job.tmdb)tmdbGet(L,job.tmdb,{page:1},finish,()=>finish(null),{unreleased:job.key==='upcoming'});
    else finish(null);
   }
@@ -150,19 +154,16 @@ export default function catalogue(L,shiki,object,hidden,ok){
  pump();
 }
 
-// A title may qualify for several feeds. Keep it in the first preview only;
-// More still opens the full, unmodified feed with native pagination and rank.
-// Use the plan order, not response arrival order, without extra API requests.
+// Deduplicate within a feed. Preview membership must match its full list.
 export function uniquePreviews(rows){
- const seen=new Set();
  return rows.map(row=>{
   if(row.minimal_hidden)return row;
+  const seen=new Set();
   const results=row.results.filter(card=>{
    const type=card.media_type || (/^(?:discover\/)?movie(?:\/|\?)/.test(row.url)?'movie':/^(?:discover\/)?tv(?:\/|\?)/.test(row.url)?'tv':card.name?'tv':'movie');
    const id=Number(card.id);if(!Number.isSafeInteger(id) || id<=0)return true;
    const key=type+':'+id,duplicate=seen.has(key);seen.add(key);
-   const scoped=/^discover\/tv\?/.test(row.url) && /with_origin_country=|with_original_language=ru/.test(row.url);
-   return row.source!=='tmdb' || scoped || !duplicate;
+   return !duplicate;
   });
   return {...row,results};
  }).filter(row=>row.minimal_hidden || row.results.length);

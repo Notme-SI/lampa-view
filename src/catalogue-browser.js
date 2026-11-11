@@ -1,12 +1,12 @@
-import {text as t} from './i18n.js';
+import {locale,text as t} from './i18n.js';
 import {cataloguePlan} from './catalogue.js';
-import {discoveryOptions} from './discovery-model.js';
+import {canonicalCountry,countryTitle,discoveryOptions} from './discovery-model.js';
 import {DISCOVERY_SOURCE} from './discovery-source.js';
 
 export const BROWSE_KINDS=['movie','tv','cartoon','tvshow'];
 export function browseOptions(kind,date=new Date()){
  const options=discoveryOptions(kind,date);
- return {collections:cataloguePlan(kind,'standard',date).filter(row=>!row.key.startsWith('genre-') && !(kind==='tvshow' && row.discovery.genre)),genres:options.genres.filter(g=>kind==='movie'?g.genre!==16:kind==='tv'?![16,99,10762,10763,10764,10767].includes(g.genre):true)};
+ return {collections:cataloguePlan(kind,'standard',date).filter(row=>!row.key.startsWith('genre-') && !row.minimal_default_hidden && row.key!=='popular' && row.key!=='mixed-popular' && !(kind==='tvshow' && row.key==='watch')),countries:options.countries,genres:options.genres.filter(g=>kind==='movie'?g.genre!==16:kind==='tv'?![16,99,10762,10763,10764,10767].includes(g.genre):true)};
 }
 export function yearRange(value,date=new Date()){
  const match=String(value || '').trim().match(/^(\d{4})(?:\s*[-–—:]\s*(\d{4}))?$/);
@@ -14,19 +14,26 @@ export function yearRange(value,date=new Date()){
  const from=Number(match[1]),to=Number(match[2] || match[1]);
  return from>=1870 && to>=from && to<=date.getFullYear()?from+'-'+to:'';
 }
+function genresForCollection(options,collection){
+ const type=collection?.discovery.type;
+ return type?options.genres.filter(genre=>genre.formats.includes(type)):options.genres;
+}
 export function browseState(kind,value={},date=new Date()){
  const options=browseOptions(kind,date);
- return {collection:options.collections.some(r=>r.key===value.collection)?value.collection:'',genre:options.genres.some(g=>g.id===String(value.genre))?String(value.genre):'',sort:['popular','rated','new'].includes(value.sort)?value.sort:'',period:yearRange(value.period,date)};
+ const selectedCountry=canonicalCountry(value.country || /^country-([A-Z]{2})$/.exec(value.collection || '')?.[1]);
+ const country=options.countries.some(([code])=>code===selectedCountry)?selectedCountry:'';
+ const collection=options.collections.find(r=>r.key===value.collection);
+ return {collection:collection?.key || '',genre:genresForCollection(options,collection).some(g=>g.id===String(value.genre))?String(value.genre):'',sort:['popular','rated','new'].includes(value.sort)?value.sort:'',period:yearRange(value.period,date),country};
 }
 export function browseSpec(kind,value={},date=new Date()){
  const state=browseState(kind,value,date),row=browseOptions(kind,date).collections.find(r=>r.key===state.collection);
- const spec={ordered:true,kind,type:kind==='cartoon'?'':kind==='movie'?'movie':'tv',country:kind==='tvshow'?'RU':'',genre:'',network:0,company:0,hero:'',...(row && row.discovery || {})};
+ const spec={ordered:true,kind,type:kind==='cartoon'?'':kind==='movie'?'movie':'tv',country:'',genre:'',network:0,company:0,hero:'',...(row && row.discovery || {})};
  spec.sort=state.sort || spec.sort || 'popular';
  if(state.genre)spec.genre=state.genre;
- // A year filter must include archives, not inherit the old four-year TV feed.
- spec.period=state.period || (!['recent','upcoming','trending'].includes(spec.feed) && spec.sort!=='new'?'1870-'+date.getFullYear():'');
+ if(state.country)spec.country=state.country;
+ spec.period=state.period;
  // Trending endpoints cannot filter or sort. Use Discover once parameters change.
- if(spec.feed==='trending' && (state.genre || state.period || state.sort))delete spec.feed;
+ if(spec.feed==='trending' && (state.country || state.genre || state.period || state.sort))delete spec.feed;
  return spec;
 }
 
@@ -51,22 +58,63 @@ export function gridControls(L,item,object,buttons,{className='minimal-catalogue
 export default function catalogueBrowser(L){
  if(!L.Component || !L.Component.get)return;
  const Category=L.Component.get('category'),Full=L.Component.get('category_full'),list=L.Api.list;
- L.Api.list=function(params,ok,fail){if(!params.minimal_browse_kind)return list.apply(this,arguments);return L.Api.sources[DISCOVERY_SOURCE].list({url:JSON.stringify(browseSpec(params.minimal_browse_kind,params.minimal_browse)),page:params.page,minimal_cancelled:()=>!!params.minimal_browse_cancelled},json=>{if(params.minimal_browse_cancelled)return;const active=L.Activity.active(),grid=active && active.activity && active.activity.component;if(grid && grid.object===params)grid.total_pages=json.total_pages;ok(json);},fail);};
+ L.Api.list=function(params,ok,fail){
+  if(!params.minimal_browse_kind && params.source!==DISCOVERY_SOURCE)return list.apply(this,arguments);
+  const url=params.minimal_browse_kind?JSON.stringify(browseSpec(params.minimal_browse_kind,params.minimal_browse)):params.url;
+  return L.Api.sources[DISCOVERY_SOURCE].list({url,page:params.page,minimal_cancelled:()=>!!params.minimal_browse_cancelled},json=>{
+   if(params.minimal_browse_cancelled)return;
+   const active=L.Activity.active(),grid=active?.activity?.component;
+   if(grid?.object===params)grid.total_pages=json.total_pages;
+   ok(json);
+  },fail);
+ };
+ function alphabetical(values){
+  const collator=new Intl.Collator(locale(),{sensitivity:'base'});
+  return values.sort((a,b)=>collator.compare(a.title,b.title));
+ }
+ const sortTitles=()=>({popular:t('Популярные'),rated:t('Рейтинг'),new:t('Новые')});
+ L.Component.add('category_full',function(object){
+  const item=new Full(object);
+  if(object.source!==DISCOVERY_SOURCE)return item;
+  let spec;try{spec=JSON.parse(object.url);}catch(error){return item;}
+  if(spec.kind!=='dorama')return item;
+  const sort=sortTitles();
+  const controls=gridControls(L,item,object,[{title:sort[spec.sort] || sort.popular,choose(){
+   L.Select.show({title:t('Сортировка'),items:alphabetical(Object.keys(sort).map(value=>({value,title:sort[value],selected:value===spec.sort}))),
+    onSelect({value}){L.Activity.replace({url:JSON.stringify({...spec,sort:value}),page:1,minimal_browse_cancelled:false});},
+    onBack:()=>controls.toggle()});
+  }}],{focusStart:false});
+  item.use({onDestroy(){object.minimal_browse_cancelled=true;}});
+  return item;
+ });
  L.Component.add('category',function(object){
   const kind=object.url || object.cat;if(!BROWSE_KINDS.includes(kind))return new Category(object);
   object.minimal_browse_kind=kind;object.minimal_browse_cancelled=false;object.minimal_browse=browseState(kind,object.minimal_browse || L.Storage.get('minimal_catalogue_filters_'+kind,{}));
   const item=new Full(object),state=object.minimal_browse,options=browseOptions(kind),spec=browseSpec(kind,state);
-  function apply(change,index){const next=browseState(kind,{...state,...change});L.Storage.set('minimal_catalogue_filters_'+kind,next);L.Activity.replace({minimal_browse:next,minimal_filter_focus:index,page:1});}
-  function select(title,values,key,index){L.Select.show({title,items:values.map(v=>({...v,selected:v.value===(key==='sort'?spec.sort:state[key])})),onSelect:value=>apply({[key]:value.value},index),onBack:()=>controls.toggle()});}
-  function years(index){const year=new Date().getFullYear(),values=[{title:t('Все годы'),value:''},...Array.from({length:8},(_,i)=>({title:String(year-i),value:(year-i)+'-'+(year-i)})),...discoveryOptions(kind).periods.filter(p=>p.start!==p.end).slice().reverse().map(p=>({title:p.start+'–'+p.end,value:p.start+'-'+p.end})),{title:t('Свой диапазон'),value:'custom'}];
+  function apply(change,index){
+   const next=browseState(kind,{...state,...change});
+   L.Storage.set('minimal_catalogue_filters_'+kind,next);
+   L.Activity.replace({minimal_browse:next,minimal_filter_focus:index,page:1});
+  }
+  function select(title,values,key,index){
+   const reset=values[0]?.value===''?values.shift():null;
+   alphabetical(values);
+   if(reset)values.unshift(reset);
+   L.Select.show({title,items:values.map(v=>({...v,selected:v.value===(key==='sort'?spec[key]:state[key])})),onSelect:value=>apply({[key]:value.value},index),onBack:()=>controls.toggle()});
+  }
+  function years(index){
+   const year=new Date().getFullYear(),periods=discoveryOptions(kind).periods.filter(p=>p.start!==p.end);
+   const ranges=periods.concat(Array.from({length:8},(_,i)=>({start:year-i,end:year-i}))).sort((a,b)=>a.start-b.start || a.end-b.end);
+   const values=[{title:t('Все годы'),value:''},...ranges.map(({start,end})=>({title:start===end?String(start):start+'–'+end,value:start+'-'+end})),{title:t('Свой диапазон'),value:'custom'}];
    L.Select.show({title:t('Годы'),items:values.map(v=>({...v,selected:v.value===state.period})),onSelect:value=>{if(value.value!=='custom')return apply({period:value.value},index);setTimeout(()=>{if(object.minimal_browse_cancelled)return;L.Input.edit({title:t('Годы: от–до'),value:state.period,nosave:true,free:true},value=>{const period=yearRange(value);if(!period){L.Noty.show(t('Укажите годы от 1870 до {0}: например, 1990–2005',[year]));return years(index);}apply({period},index);});},100);},onBack:()=>controls.toggle()});
   }
-  const collection=options.collections.find(row=>row.key===state.collection),genre=options.genres.find(g=>g.id===state.genre),sort={popular:t('Популярные'),rated:t('Рейтинг'),new:t('Новые')};
+  const collection=options.collections.find(row=>row.key===state.collection),genre=options.genres.find(g=>g.id===state.genre),sort=sortTitles();
   const controls=gridControls(L,item,object,[
    {title:collection?collection.title:t('Все подборки'),choose:i=>select(t('Подборки'),[{title:t('Все подборки'),value:''},...options.collections.map(row=>({title:row.title,value:row.key}))],'collection',i)},
-   {title:genre?t(genre.name):t('Все жанры'),choose:i=>select(t('Жанры'),[{title:t('Все жанры'),value:''},...options.genres.map(g=>({title:t(g.name),value:g.id}))],'genre',i)},
+   {title:genre?t(genre.name):t('Все жанры'),choose:i=>select(t('Жанры'),[{title:t('Все жанры'),value:''},...genresForCollection(options,collection).map(g=>({title:t(g.name),value:g.id}))],'genre',i)},
    {title:sort[spec.sort] || sort.popular,choose:i=>select(t('Сортировка'),Object.keys(sort).map(value=>({title:sort[value],value})),'sort',i)},
-   {title:state.period?state.period.replace('-','–'):t('Все годы'),choose:years}
+   {title:state.period?state.period.replace('-','–'):t('Все годы'),choose:years},
+   {title:spec.country?countryTitle(spec.country):t('Все страны'),choose:i=>select(t('Страны'),[{title:t('Все страны'),value:''},...options.countries.map(([code])=>({title:countryTitle(code),value:code}))],'country',i)}
   ]);
   item.use({onDestroy(){object.minimal_browse_cancelled=true;}});return item;
  });

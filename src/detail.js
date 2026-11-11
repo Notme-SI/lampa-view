@@ -142,10 +142,10 @@ export default function detail(L,event,loadLogo){
  }
  if(event && event.type==='build' && event.name==='cards' && event.item)styleSuggestions(L,event);
  if(event && event.type==='build' && event.name==='episodes' && event.item){styleScreenshots(L,event);return;}
- if(event && event.type==='build' && event.name==='discuss' && event.item){const render=event.item.render(true),node=render && (render.nodeType?render:render[0]);comments(node);}
+ if(event && event.type==='build' && event.name==='discuss' && event.item){const render=event.item.render(true),node=render && (render.nodeType?render:render[0]);comments(L,node);}
  if(event && event.type==='build' && event.name==='persons' && event.item && event.data && (event.data.title===L.Lang.translate('title_actors') || (event.data.results || []).some(p=>Object.prototype.hasOwnProperty.call(p,'character')))){
   const render=event.item.render(true),node=render && (render.nodeType?render:render[0]);
-  if(node){node.classList.add('minimal-cast-native');const count=(event.data.results || []).filter(p=>p.minimal_director).length,heading=node.querySelector('.items-line__title');if(count && heading)heading.textContent=count>1?lampaViewText("Актёры и режиссёры"):lampaViewText("Актёры и режиссёр");const container=event.body && event.body[0] && event.body[0].querySelector('.minimal-detail-columns');mountCast(container,node);}
+  if(node){node.classList.add('minimal-cast-native');const heading=node.querySelector('.items-line__title');if(heading)heading.textContent=lampaViewText("Режиссёры и актёры");const container=event.body && event.body[0] && event.body[0].querySelector('.minimal-detail-columns');mountCast(container,node);}
   return;
  }
 
@@ -294,6 +294,7 @@ export default function detail(L,event,loadLogo){
   background.onload=()=>background.classList.add('loaded');start.prepend(background);
  }
  if(background && start){
+  start.classList.add('minimal-detail-backdrop');
   let shade=body.querySelector('.minimal-detail-shade');
   if(!shade){shade=document.createElement('div');shade.className='minimal-detail-shade';shade.setAttribute('aria-hidden','true');background.after(shade);}
   // This image is a sibling of the header. Follow the complete header,

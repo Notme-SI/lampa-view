@@ -15,28 +15,45 @@ def restore_mobile_meta(match):
     saved = re.search(r'<!-- lampa-minimal:mobile ([A-Za-z0-9+/=]+) -->', match[0])
     return base64.b64decode(saved[1]).decode('utf-8') if saved else ''
 
+def strip_bootstrap(text, restore_ios=True):
+    # Keep whitespace outside the early block. Restoring its saved meta tags
+    # during another patch would consume the following host indentation.
+    text = re.sub(r'<!-- lampa-minimal:ios-start -->.*?<!-- lampa-minimal:ios-end -->\n?',
+                  restore_mobile_meta if restore_ios else '', text, flags=re.S)
+    return re.sub(r'<!-- lampa-minimal:start -->.*?<!-- lampa-minimal:end -->\s*',
+                  restore_mobile_meta, text, flags=re.S)
+
 
 def patch_html(text, revision):
-    if '</head>' not in text.lower():
-        raise ValueError('index.html has no closing head; leave it unchanged')
+    head_start = r'<head(?:\s[^>]*)?>\s*(?:<meta\b(?=[^>]*\bcharset\s*=)[^>]*>)?'
+    if not re.search(head_start, text, re.I) or '</head>' not in text.lower():
+        raise ValueError('index.html has no complete head; leave it unchanged')
     text = re.sub(r'<style\b[^>]*\bid=["\']lampa-minimal-boot["\'][^>]*>.*?</style>\s*', '', text, flags=re.S | re.I)
-    text = re.sub(r'<!-- lampa-minimal:start -->.*?<!-- lampa-minimal:end -->\s*', restore_mobile_meta, text, flags=re.S)
+    previous_ios = re.search(r'<!-- lampa-minimal:ios-start -->.*?<!-- lampa-minimal:ios-end -->', text, flags=re.S)
+    saved_mobile = restore_mobile_meta(previous_ios) if previous_ios else ''
+    text = strip_bootstrap(text, restore_ios=False)
     # An old icon declared earlier can appear before the runtime branding loads.
     text = re.sub(r'<link\b[^>]*\brel\s*=\s*(["\'])(?:shortcut\s+icon|icon|mask-icon)\1[^>]*>\s*', '', text, flags=re.I)
     text = re.sub(r'<title>.*?</title>', '<title>L A M P A</title>', text, flags=re.S | re.I)
     text = re.sub(r'(<html\b[^>]*\blang=)(["\']).*?\2', lambda m: m[1] + m[2] + 'ru' + m[2], text, flags=re.I)
     mobile_pattern = r'<meta\b(?=[^>]*\bname\s*=\s*["\'](?:viewport|apple-mobile-web-app-capable|apple-mobile-web-app-status-bar-style)["\'])[^>]*>\s*'
     originals = re.findall(mobile_pattern, text, flags=re.I)
+    if not originals and previous_ios:
+        originals = re.findall(mobile_pattern, saved_mobile, flags=re.I)
     text = re.sub(mobile_pattern, '', text, flags=re.I)
     viewport = next((tag for tag in originals if re.search(r'name\s*=\s*["\']viewport["\']', tag, re.I)), '')
     found = re.search(r'content\s*=\s*(["\'])(.*?)\1', viewport, re.I)
     options = found[2] if found else 'width=device-width, initial-scale=1'
     options = ', '.join([part.strip() for part in options.split(',') if part.strip() and not re.match(r'viewport-fit\s*=', part.strip(), re.I)] + ['viewport-fit=cover'])
-    mobile = ('<!-- lampa-minimal:mobile ' + base64.b64encode(''.join(originals).encode('utf-8')).decode('ascii') + ' -->\n'
+    fallback_theme = '' if re.search(r'<meta\b[^>]*\bname\s*=\s*["\']theme-color["\']', text, re.I) else '<meta name="theme-color" content="#101113">\n'
+    mobile = ('<!-- lampa-minimal:ios-start -->\n'
               '<meta name="viewport" content="' + options + '">\n'
               '<meta name="apple-mobile-web-app-capable" content="yes">\n'
-              '<meta name="apple-mobile-web-app-status-bar-style" content="default">\n')
-    block = ('<!-- lampa-minimal:start -->\n' + mobile +
+              '<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">\n' + fallback_theme +
+              '<!-- lampa-minimal:mobile ' + base64.b64encode(''.join(originals).encode('utf-8')).decode('ascii') + ' -->\n'
+              '<!-- lampa-minimal:ios-end -->\n')
+    text = re.sub(head_start, lambda match: match[0] + mobile, text, count=1, flags=re.I)
+    block = ('<!-- lampa-minimal:start -->\n' +
              '<link rel="icon" type="image/x-icon" href="/plugins/lampa.ico?v=' + revision + '">\n'
              '<link rel="icon" type="image/svg+xml" sizes="any" href="/plugins/lampa-minimal.svg?v=' + revision + '">\n'
              '<script src="/plugins/lampa-minimal.boot.js?v=' + revision + '"></script>\n'
@@ -45,7 +62,7 @@ def patch_html(text, revision):
 
 
 def remove_html(text):
-    text = re.sub(r'<!-- lampa-minimal:start -->.*?<!-- lampa-minimal:end -->\s*', restore_mobile_meta, text, flags=re.S)
+    text = strip_bootstrap(text)
     return text.replace('<title>L A M P A</title>', '<title>Lampa</title>')
 
 

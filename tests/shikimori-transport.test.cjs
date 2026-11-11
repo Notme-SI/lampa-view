@@ -2,7 +2,7 @@ const test=require('node:test'),assert=require('node:assert/strict'),path=requir
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 function adapter(){const code=esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/shikimori.js')],bundle:true,write:false,format:'cjs',platform:'node'}).outputFiles[0].text,module={exports:{}};new Function('module','exports',code)(module,module.exports);return module.exports.default;}
 test('Shikimori rejects HTML, switches to the official fallback, remembers it and preserves the poster host',async()=>{
- const calls=[],L={Api:{sources:{}},Reguest:function(){this.timeout=()=>{};this.silent=(url,ok)=>{calls.push(url);if(url.startsWith('https://shikimori.io'))ok('<!doctype html>');else ok([{id:1,kind:'tv',name:'Anime',image:{original:'/poster.jpg'}}]);};}},shiki=adapter()(L);
+ const calls=[],L={Api:{sources:{}},Reguest:function(){this.timeout=()=>{};this.silent=(url,ok)=>{calls.push(url);if(url.startsWith('https://shikimori.io'))ok('<!doctype html>');else ok([{id:1,kind:'tv',name:'Anime',russian:'Аниме',image:{original:'/poster.jpg'}}]);};}},shiki=adapter()(L);
  const first=await new Promise((ok,fail)=>shiki.list({url:'order=popularity'},ok,fail));assert.equal(calls.length,2);assert.equal(first.results[0].img,'https://shikimori.one/poster.jpg');const second=await new Promise((ok,fail)=>shiki.list({url:'order=ranked'},ok,fail));assert.equal(calls.length,3);assert.ok(calls[2].startsWith('https://shikimori.one'));assert.equal(second.results.length,1);
 });
 test('an older failing Shikimori request cannot repeat a host or suppress a concurrent success',async()=>{

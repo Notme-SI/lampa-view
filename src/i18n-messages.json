@@ -4092,6 +4092,20 @@
   "pl": "Historia oglądania",
   "es": "Historial de visualización"
  },
+ "История аниме": {
+  "en": "Anime watch history",
+  "fr": "Historique de visionnage des anime",
+  "uk": "Історія перегляду аніме",
+  "be": "Гісторыя прагляду анімэ",
+  "zh": "动画观看历史",
+  "pt": "Histórico de animes assistidos",
+  "bg": "История на гледаните анимета",
+  "he": "היסטוריית צפייה באנימה",
+  "cs": "Historie sledování anime",
+  "ro": "Istoricul vizionării de anime",
+  "pl": "Historia oglądania anime",
+  "es": "Historial de anime visto"
+ },
  "января": {
   "en": "January",
   "uk": "Січня",
@@ -4299,6 +4313,9 @@
   "ro": "Producător",
   "fr": "Producteur",
   "pl": "Reżyser"
+ },
+ "Режиссёры и актёры": {
+  "en":"Directors and cast","uk":"Режисери й актори","be":"Рэжысёры і акцёры","zh":"导演与演员","pt":"Diretores e elenco","bg":"Режисьори и актьори","he":"במאים ושחקנים","cs":"Režiséři a herci","ro":"Regizori și actori","fr":"Réalisation et distribution","pl":"Reżyserzy i obsada","es":"Dirección y reparto"
  },
  "Актёры и режиссёры": {
   "en": "Cast and directors",
@@ -8315,6 +8332,8 @@
   "fr": "Période",
   "pl": "Okres"
  },
+ "Страны": {"en":"Countries","uk":"Країни","be":"Краіны","zh":"国家","pt":"Países","bg":"Държави","he":"מדינות","cs":"Země","ro":"Țări","fr":"Pays","pl":"Kraje","es":"Países"},
+ "Источник подборки": {"en":"Collection source","uk":"Джерело добірки","be":"Крыніца падборкі","zh":"片单来源","pt":"Fonte da coleção","bg":"Източник на подборката","he":"מקור האוסף","cs":"Zdroj kolekce","ro":"Sursa colecției","fr":"Source de la sélection","pl":"Źródło kolekcji","es":"Fuente de la colección"},
  "Все страны": {
   "en": "All countries",
   "uk": "Усі країни",

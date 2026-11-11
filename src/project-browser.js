@@ -38,20 +38,20 @@ export default function projectBrowser(L){
   const item=new Full(object);
   const controls=gridControls(L,item,object,[['movie',t('Фильмы')],['tv',t('Сериалы')]].map(([value,title])=>({title,selected:object.minimal_project_type===value,choose:i=>{if(value===object.minimal_project_type)return controls.toggle();L.Activity.replace({minimal_project_type:value,minimal_filter_focus:i,page:1});}})),{className:'minimal-catalogue-controls minimal-project-tabs',focusStart:false});
   item.use({onCreate(){
-   const header=document.createElement('header'),heading=document.createElement('div'),image=document.createElement('img'),person=project.kind==='person';
+   const header=document.createElement('header'),identity=document.createElement('div'),heading=document.createElement('div'),image=document.createElement('img'),person=project.kind==='person';
    heading.setAttribute('role','heading');heading.setAttribute('aria-level','1');
-   header.className='minimal-project-header';heading.className='minimal-project-title';image.className='minimal-project-art'+(person?' minimal-project-art--person':'');image.hidden=true;image.decoding='async';
-   heading.textContent=object.minimal_studio && object.minimal_studio.name || object.minimal_project_name || object.title || t('Проекты');header.appendChild(image);header.appendChild(heading);controls.bar.before(header);
+   header.className='minimal-project-header';identity.className='minimal-project-identity';heading.className='minimal-project-title';image.className='minimal-project-art'+(person?' minimal-project-art--person':'');image.hidden=true;image.decoding='async';
+   heading.textContent=object.minimal_studio && object.minimal_studio.name || object.minimal_project_name || object.title || t('Проекты');identity.appendChild(image);identity.appendChild(heading);controls.bar.before(header);header.appendChild(identity);header.appendChild(controls.bar);
    const update=item.scroll.update;
    item.scroll.update=function(element,center){const target=element && (element.nodeType?element:element[0]),card=target && target.closest('.card'),first=item.items[0] && item.items[0].render(true);if(target===controls.bar || card && first && card.offsetTop===first.offsetTop)return update.call(this,header,false);return update.apply(this,arguments);};
-   image.onload=()=>{if(object.minimal_projects_cancelled)return;image.hidden=false;if(!person){studioContrast(image);heading.hidden=true;}if(item.last)item.scroll.update(item.last);};
-   image.onerror=()=>{image.hidden=true;heading.hidden=false;};
+   image.onload=()=>{if(object.minimal_projects_cancelled)return;image.hidden=false;if(!person)studioContrast(image);if(item.last)item.scroll.update(item.last);};
+   image.onerror=()=>{image.hidden=true;};
    const show=profile=>{
     if(object.minimal_projects_cancelled)return;
     if(profile.name){heading.textContent=profile.name;object.minimal_project_name=profile.name;}
     const path=person?profile.profile_path:profile.logo_path || profile.path;
     if(!/^\/[^\s?#]+\.(png|webp|svg|jpe?g)$/i.test(path || ''))return;
-    image.alt=heading.textContent;image.src=L.TMDB.image('/t/p/'+(person?'w185':'w500')+path);
+    image.alt='';image.src=L.TMDB.image('/t/p/w500'+path,{preserveSize:true});
    };
    const key=locale()+':'+project.kind+':'+project.id,known=object.minimal_project_profile || profiles.get(key) || object.minimal_studio || {};
    show(known);

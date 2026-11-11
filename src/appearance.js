@@ -54,6 +54,13 @@ const yes=value=>![false,'false',0,'0','no'].includes(value);
 export default function appearance(L){
  if(!document.getElementById('lampa-view-glass-style')){const style=document.createElement('style');style.id='lampa-view-glass-style';style.textContent=GLASS+'\n'+MATERIAL;(document.head || document.documentElement).appendChild(style);}
  const chrome=iosChrome(L);
+ let artworkColor='';
+ function updateChrome(){
+  const active=yes(L.Storage.get('lampa_view_enabled',true)) && !document.body.classList.contains('pt-tv');
+  chrome.palette(artworkColor);
+  chrome.update(active && (themeValue(L.Storage.get('lampa_view_theme','minimal'))==='glass' ||
+   !!artworkColor && document.body.classList.contains('pt-mobile')));
+ }
  function nativeValue(name,fallback){try{return L.Storage.field?L.Storage.field(name):L.Storage.get(name,fallback);}catch(error){return fallback;}}
  function update(){
   const stored=L.Storage.get('lampa_view_theme','minimal'),value=themeValue(stored),active=value==='glass' && yes(L.Storage.get('lampa_view_enabled',true));
@@ -68,12 +75,12 @@ export default function appearance(L){
   document.body.style.setProperty('--pt-glass-alpha',String(({easy:.16,medium:.30,blacked:.58})[opacity] || .32));
   // Older Android WebViews cannot reliably evaluate typed calc arithmetic
   // in an rgba alpha channel. Supply the final number instead.
-  const opacityAlpha=({easy:.42,medium:.58,blacked:.78})[opacity] || .58;
+  const opacityAlpha=({easy:.36,medium:.52,blacked:.72})[opacity] || .52;
   document.body.style.setProperty('--pt-matte-alpha',String(opacityAlpha));
   for(const name of ['--pt-glass-scene','--pt-glass-tone-a','--pt-glass-tone-b'])document.body.style.removeProperty(name);
-  chrome.update(active && !document.body.classList.contains('pt-tv'));
+  updateChrome();
   document.dispatchEvent(new Event('minimal:interface-size'));document.dispatchEvent(new Event('minimal:hero-layout'));
  }
  applyDarkAccent(L);update();if(L.Storage.listener)L.Storage.listener.follow('change',event=>{if(event.name===accentKey)applyDarkAccent(L);if(['lampa_view_theme','lampa_view_enabled','glass_style','glass_opacity'].includes(event.name))update();});
- return {update};
+ return {update,chromePalette(color){if(color!==artworkColor){artworkColor=color;updateChrome();}}};
 }

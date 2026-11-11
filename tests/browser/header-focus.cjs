@@ -17,17 +17,20 @@ const assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWR
   assert.ok(geometry.controls[0].box.right<geometry.menu.left,'Back appears before Menu');
   assert.ok(geometry.menu.left>home.menu+geometry.controls[0].box.width*.8 && geometry.search.left>home.left+geometry.controls[0].box.width*.8,'Back moves Menu and shrinks Search');
   assert.ok(Math.abs(geometry.search.right-home.right)<1,'Search keeps its right edge');assert.ok(geometry.search.width<home.width);
-  assert.ok(geometry.search.right<=geometry.vw && geometry.search.width>geometry.vw*.4);
-  for(const control of geometry.controls){assert.equal(control.focused,true);assert.equal(control.outline,'0px');assert.equal(control.border,theme==='glass'?(mode==='tv'?'rgb(255, 255, 255)':'rgba(255, 255, 255, 0.61)'):'rgb(216, 195, 154)');}
+  const head=await page.locator('.head__body').evaluate(node=>node.getBoundingClientRect().toJSON());
+  assert.ok(Math.abs(head.left+head.right-geometry.vw)<1,'The compact header is centered');
+  assert.ok(head.width<geometry.vw*.65 && geometry.search.width>100,'Search stays usable inside the compact header');
+  for(const control of geometry.controls){assert.equal(control.focused,true);assert.equal(control.outline,'0px');if(theme==='glass'){assert.match(control.fill,/^rgba\(/,'Glass focus keeps a translucent fill');assert.match(control.border,/^rgba\(/);}else{assert.match(control.fill,/^rgb\(/,'Dark focus stays opaque');assert.equal(control.border,'rgb(216, 195, 154)');}}
   assert.equal(new Set(geometry.controls.map(n=>n.fill)).size,1,'Header controls share focus fill');assert.equal(new Set(geometry.controls.map(n=>n.shadow)).size,1,'Header controls share focus edge');await page.locator('.head__menu-icon').click();
   const menuPanel=await page.locator('.wrap__left').evaluate(n=>{const r=n.getBoundingClientRect();return {left:r.left,top:r.top,width:r.width};});
-  assert.ok(menuPanel.left<home.menu && menuPanel.left>=8,'Menu opens near the outer edge');
+  assert.ok(menuPanel.left>=8 && menuPanel.left+menuPanel.width<=head.left,'Menu stays to the left of the controls');
+  assert.ok(Math.abs(menuPanel.top-head.top)<1,'Menu starts at the same height as the controls');
   assert.equal(new Set(geometry.controls.map(n=>n.fill)).size,1,'Header controls share focus fill');assert.equal(new Set(geometry.controls.map(n=>n.shadow)).size,1,'Header controls share focus edge');await page.locator('.head__menu-icon').click();assert.equal(await page.evaluate(()=>document.body.classList.contains('menu--open')),false,'Second click closes Menu');
   assert.equal(new Set(geometry.controls.map(n=>n.fill)).size,1,'Header controls share focus fill');assert.equal(new Set(geometry.controls.map(n=>n.shadow)).size,1,'Header controls share focus edge');await page.locator('.head__menu-icon').click();await page.locator('.wrap__left [data-action=settings]').click();await page.waitForSelector('body.settings--open');
   const mirrored=await page.locator('.settings__content').evaluate(n=>{const r=n.getBoundingClientRect();return {inset:innerWidth-r.right,top:r.top,width:r.width};});
-  assert.ok(Math.abs(mirrored.top-menuPanel.top)<1 && Math.abs(mirrored.width-menuPanel.width)<1 && Math.abs(mirrored.inset-menuPanel.left)<1,'Settings mirror Menu on the right');
+  assert.ok(Math.abs(mirrored.top-menuPanel.top)<1 && mirrored.width>menuPanel.width+35 && Math.abs(mirrored.inset-menuPanel.left)<1,'Wider Settings align with the menu and mirror its inset');
   const settings=await page.locator('.settings__content').evaluate(n=>({width:n.getBoundingClientRect().width,height:n.getBoundingClientRect().height,vh:innerHeight,rows:[...n.querySelectorAll('.settings-folder')].filter(n=>n.getBoundingClientRect().height).map(n=>({h:n.getBoundingClientRect().height,font:parseFloat(getComputedStyle(n).fontSize)}))}));
-  assert.ok(settings.width<=Math.min(600,geometry.vw*.94+1));assert.ok(settings.height<settings.vh*.9);assert.ok(settings.rows.length>0);assert.ok(settings.rows.every(row=>row.h>=44 && row.font>=12));
+  assert.ok(settings.width>=330 && settings.width<=Math.min(600,geometry.vw*.94+1));assert.ok(settings.height<settings.vh*.9);assert.ok(settings.rows.length>0);assert.ok(settings.rows.every(row=>row.h>=44 && row.font>=12));
   const buttons=await page.evaluate(()=>{
    const size=selector=>{const n=document.querySelector(selector),r=n.getBoundingClientRect(),s=getComputedStyle(n);return {width:r.width,height:r.height,background:s.backgroundImage,tint:s.backgroundColor,border:s.borderColor,shadow:s.boxShadow};};
    return {back:size('.head__backward'),menu:size('.head__menu-icon'),search:size('.head .open--search')};
@@ -38,7 +41,7 @@ const assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWR
     const material=node=>{const s=getComputedStyle(node);return [s.backgroundImage,s.backgroundColor,s.borderColor,s.backdropFilter];},row=document.querySelector('.wrap__left [data-action=movie]');
     row.classList.add('focus');const style=getComputedStyle(row),result={menu:material(document.querySelector('.wrap__left')),settings:material(document.querySelector('.settings__content')),shade:getComputedStyle(document.querySelector('.settings__layer')).backgroundColor,focus:{tint:style.backgroundColor,shadow:style.boxShadow,radius:parseFloat(style.borderRadius),marker:getComputedStyle(row,':before').display}};row.classList.remove('focus');return result;
    });
-   assert.deepEqual(glass.menu,glass.settings,'Menu and Settings share one glass material');assert.equal(glass.shade,'rgba(0, 0, 0, 0)','Settings do not add a second dark layer');assert.equal(glass.focus.tint,mode==='tv'?'rgb(255, 255, 255)':'rgba(255, 255, 255, 0.2)');if(mode==='tv')assert.equal(glass.focus.shadow,'none');else assert.notEqual(glass.focus.shadow,'none');assert.equal(glass.focus.marker,'none');assert.ok(glass.focus.radius>5,'Menu focus is a filled rounded row');
+   assert.deepEqual(glass.menu.slice(0,3),glass.settings.slice(0,3),'Menu and Settings share the same tint and edge');assert.equal(glass.menu[3],'none','Closed menus do not blur the page');assert.match(glass.settings[3],/blur\(/);assert.equal(glass.shade,'rgba(0, 0, 0, 0)','Settings do not add a second dark layer');assert.match(glass.focus.tint,/^rgba?\(255, 255, 255/);assert.equal(glass.focus.marker,'none');assert.ok(glass.focus.radius>5,'Menu focus is a filled rounded row');
   }
   const icons=await page.locator('.settings-folder__icon').evaluateAll(slots=>slots.map(slot=>{
    const icon=slot.firstElementChild,a=slot.getBoundingClientRect(),b=icon?.getBoundingClientRect();
@@ -57,10 +60,19 @@ const assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWR
    panel.querySelector('.settings__body').prepend(block);
    const outer=panel.getBoundingClientRect(),picture=block.querySelector('svg').getBoundingClientRect(),text=block.firstElementChild;
    const fits=picture.left>=outer.left && picture.right<=outer.right && Math.abs(picture.width-picture.height)<1 && text.scrollWidth<=text.clientWidth+1;
-   block.remove();return fits;
+      const usesFullWidth=block.querySelector('.ad-server__qr').getBoundingClientRect().top>=text.getBoundingClientRect().bottom;
+   const row=document.createElement('div');row.className='settings-param';row.dataset.name='torrserver_url';
+   row.innerHTML='<div class="settings-param__name">Основная ссылка</div><span class="settings-param__status active"></span>';
+   block.after(row);
+   const status=row.querySelector('.settings-param__status').getBoundingClientRect();
+   const label=row.querySelector('.settings-param__name').getBoundingClientRect();
+   const separated=status.left>=label.right && status.right<=outer.right;
+   row.remove();block.remove();return fits && usesFullWidth && separated;
   });
   assert.ok(qr,'QR and long addresses fit inside the compact settings pane');
   await page.evaluate(()=>{Lampa.Controller.back();Lampa.Controller.back();Lampa.Select.show({title:'Действие',items:[{title:'Избранное',separator:true},{title:'Нравится',subtitle:'Выбрано',checkbox:true}]});});
+  const actionPanel=await page.locator('.selectbox__content').evaluate(node=>node.getBoundingClientRect().toJSON());
+  assert.ok(Math.abs(actionPanel.top-menuPanel.top)<1 && Math.abs(actionPanel.width-mirrored.width)<1,'Actions align with the menu and match Settings width');
   const action=await page.locator('.selectbox__content').evaluate(n=>{
    const title=n.querySelector('.selectbox-item__title'),subtitle=n.querySelector('.selectbox-item__subtitle'),group=n.querySelector('.settings-param-title>span'),checkbox=n.querySelector('.selectbox-item__checkbox');
    const size=el=>parseFloat(getComputedStyle(el).fontSize),center=el=>{const r=el.getBoundingClientRect();return r.top+r.height/2;};
@@ -69,9 +81,47 @@ const assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWR
   assert.ok(action.value<action.title && action.group<action.title && action.gap<1);assert.ok(action.footer<20,'Short actions end at the last row');
   const inset=await page.locator('.selectbox__content').evaluate(n=>{const panel=n.getBoundingClientRect(),row=n.querySelector('.selectbox-item').getBoundingClientRect();return row.left-panel.left>5 && panel.right-row.right>5 && panel.bottom-row.bottom>5;});assert.ok(inset,'Selection rows leave room for the outer panel corners');
   if(theme==='glass'){
-   const panels=await page.evaluate(()=>{const material=selector=>{const s=getComputedStyle(document.querySelector(selector));return [s.backgroundImage,s.backgroundColor,s.borderColor,s.backdropFilter];};return {menu:material('.wrap__left'),actions:material('.selectbox__content')};});assert.deepEqual(panels.actions,panels.menu,'Actions share the menu glass material');
+   const panels=await page.evaluate(()=>{const material=selector=>{const s=getComputedStyle(document.querySelector(selector));return [s.backgroundImage,s.backgroundColor,s.borderColor,s.backdropFilter];};return {menu:material('.wrap__left'),actions:material('.selectbox__content')};});assert.deepEqual(panels.actions.slice(0,3),panels.menu.slice(0,3),'Actions share the menu tint and edge');assert.match(panels.actions[3],/blur\(/);
   }
   await page.evaluate(()=>Lampa.Select.hide());
-  assert.deepEqual(r.errors,[]);console.log(theme,mode,'search, back, menu, native compact settings OK');await r.context.close();
+  await page.evaluate(()=>{
+   Lampa.Api.main=(p,ok)=>ok([{url:'qa',title:'QA',results:[{id:2000000100,title:'QA',source:'tmdb'}]}]);
+   Lampa.Api.category=(p,ok)=>ok([]);
+   Lampa.Activity.push({component:'main',source:'cub'});
+   window.openTestCategory=()=>Lampa.Activity.push({component:'category',url:'qa',source:'cub'});
+   openTestCategory();
+  });
+  const homeButton=page.getByRole('button',{name:'Главная',exact:true});
+  assert.equal(await homeButton.count(),1);
+  assert.ok(await homeButton.evaluate(node=>{
+   const menu=document.querySelector('.head .head__menu-icon');
+   return menu.getBoundingClientRect().right<=node.getBoundingClientRect().left && node.nextElementSibling.classList.contains('open--search');
+  }));
+  await homeButton.click();
+  await page.waitForFunction(()=>Lampa.Activity.active().component==='main' && Lampa.Activity.active().source==='tmdb');
+  const count=await page.evaluate(()=>Lampa.Activity.all().length);
+  assert.equal(await homeButton.isVisible(),false);assert.equal(await page.evaluate(()=>Lampa.Activity.all().length),count);
+  await page.evaluate(()=>{Lampa.Storage.set('menu_always',true);openTestCategory();});
+  await page.waitForTimeout(320);
+  assert.equal(await page.locator('.head .head__menu-icon').isVisible(),false);
+  assert.ok(await homeButton.evaluate(node=>document.querySelector('.head .head__backward').getBoundingClientRect().right<=node.getBoundingClientRect().left));
+  if(mode==='tv'){
+   await page.evaluate(()=>{
+    document.activeElement.blur();Lampa.Keypad.init();Lampa.Keypad.enable();Lampa.Controller.toggle('head');
+    Lampa.Controller.collectionFocus(document.querySelector('.head .open--search'),document.querySelector('.head'));
+   });
+   await page.keyboard.press('ArrowLeft');
+   assert.ok(await homeButton.evaluate(node=>node.classList.contains('focus')));
+   await page.keyboard.press('Enter');
+  }else{
+   await page.locator('.head .head__backward').focus();await page.keyboard.press('Tab');
+   assert.ok(await homeButton.evaluate(node=>document.activeElement===node));
+   await page.keyboard.press('Space');
+   await page.waitForFunction(()=>Lampa.Activity.active().component==='main');
+   await page.evaluate(()=>openTestCategory());
+   await homeButton.press('Enter');
+  }
+  await page.waitForFunction(()=>Lampa.Activity.active().component==='main' && Lampa.Activity.active().source==='tmdb');
+  assert.deepEqual(r.errors,[]);console.log(theme,mode,'header order, Home activation, search and compact settings passed');await r.context.close();
  }
 }finally{await browser.close();}})().catch(error=>{console.error(error);process.exitCode=1;});

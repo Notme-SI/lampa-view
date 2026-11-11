@@ -37,6 +37,7 @@ export default function fillRows(L,enabled){
         }
       }
       fitRail(line,root,card,state,enabled);
+      line.minimalMoreRefresh?.();
       const size=card.getBoundingClientRect().width;if(!size)return;
       const style=window.getComputedStyle(card),gap=(parseFloat(style.marginLeft)||0)+(parseFloat(style.marginRight)||0);
       // TV prepares a complete viewport plus one card in every nearby row.

@@ -1,5 +1,5 @@
 // Measure the native poster so the final More tile shares its dimensions.
-export default function rowOverlay(root,viewport){
+export default function rowOverlay(root,viewport,update){
  root.classList.add('pt-overlay-row');
  let frame=0,disposed=false;
  const request=window.requestAnimationFrame?.bind(window) || window.setTimeout.bind(window);
@@ -11,6 +11,7 @@ export default function rowOverlay(root,viewport){
   if(!poster || !card)return;
   root.style.setProperty('--pt-more-width',card.offsetWidth+'px');
   root.style.setProperty('--pt-more-height',poster.offsetHeight+'px');
+  update(view,card);
  }
  function refresh(){if(!disposed && !frame)frame=request(measure);}
  const resize=window.ResizeObserver?new ResizeObserver(refresh):null;

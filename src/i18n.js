@@ -37,6 +37,9 @@ export default function installI18n(L,P){
   if(L.Storage.get('tmdb_lang','')!==code)L.Storage.set('tmdb_lang',code);
   document.body.classList.toggle('pt-rtl',code==='he');
   document.querySelectorAll('.head__action.open--search').forEach(node=>node.setAttribute('data-pt-placeholder',text('Поиск…')));
+  document.querySelectorAll('.head__action.open--home').forEach(node=>{
+   node.title=text('Главная');node.setAttribute('aria-label',node.title);
+  });
  }
  update();if(L.Storage.listener)L.Storage.listener.follow('change',event=>{if(event.name==='language')update();});
  return {update};

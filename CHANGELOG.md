@@ -1,3 +1,99 @@
+## 0.5.121
+
+- Use one CSS canvas height for iOS Home Screen page layers, scrolling, and the navigation dock, preserving the artwork-colored top while restoring the full lower content area.
+- Override the host's fixed body only inside the enabled iOS mobile plugin layout; restore native styles when the plugin is disabled.
+- Use the smaller visual viewport for an open text keyboard, then return to the full canvas on dismissal and foreground return.
+
+## 0.5.120
+
+- Anchor the iOS Home Screen navigation dock to the visible viewport rectangle instead of a potentially stale fixed-bottom anchor.
+- Refresh its position on viewport changes, foreground return and dock resizing; retain the native pinch-zoom behavior and a single safe-area inset.
+
+## 0.5.119
+
+- Let the iOS Home Screen scene canvas start at the viewport edge, reserving search space inside the home and title covers instead of outside the page.
+- Remove the screen-height heuristic that forced a black status-bar edge and stop tinting a full-width header strip.
+- Use the same floating Glass search material on Home and title details while retaining safe-area offsets for controls.
+
+## 0.5.118
+
+- Align desktop and TV banner copy with the poster content edge, including the rail's focus gutter.
+- Give the Glass carousel switcher the same tint, blur and inset edge as the top navigation bar.
+
+## 0.5.117
+
+- Match the measured Watched poster motion: a 3px lift, soft white halo and a Play overlay fading/sliding into the centre over 300ms.
+- Keep Lampa's existing year, rating, episode tags and watch statistics; add no duplicate metadata pill.
+- Apply the selection effect to pointer and keyboard/remote focus in both themes, preserving native card actions and touch caption behavior.
+
+## 0.5.116
+
+- Set iOS web app metadata before host scripts and soften the upper edge of mobile banners in both themes.
+- Extend desktop scrolling below the home and title artwork and let catalogue grids fill the available width.
+- Merge RU and SU in country filters, order filter choices, remove country-only collections and hide the catalogue source label.
+- Move the cast and facts panels lower on desktop artwork and hide the header Home button on Home.
+- Preserve the touch navigation on phones and tablets through rotation, fix the collapsed landscape page width and draw the page to the lower screen edge.
+- Match the phone Settings and action panel width to the side menu.
+- Keep one header selection during arrow navigation and restrict caption taps to touch devices.
+
+## 0.5.115
+
+- Tighten vertical spacing in catalogue rows, project grids and title details.
+- Lower the Directors and Cast and About panels on the backdrop, and show up to five lines of the title overview.
+- Reuse the header Home and Settings icons in the side menu and mobile navigation.
+- Fit the mobile page to the measured navigation bar, place banner artwork below Search, and pass the artwork color to iOS browser chrome.
+- Keep caption taps and poster taps separate, including when iOS retargets a compatibility click.
+- Align the top edge of Settings and actions with the side menu.
+
+## 0.5.114
+
+- Add production-country filters to Movies, Series, TV Shows and Cartoons. Let Korean drama collections include the archive and sort the full list by rating.
+- Keep seasonal anime previews in the same order as the full feed. Hide More when the entire row fits and has no continuation.
+- Require a poster and, in the Russian catalogue, a Russian title or description. Continue loading after sparse source pages.
+- Animate poster focus, open comments in a separate reader, and widen Settings and action panels.
+
+## 0.5.113
+
+- Increase the saturation and strength of the artwork-derived background color.
+- Enlarge actor portraits and place project artwork above the actor, studio or channel name.
+- Keep dark monochrome studio and channel logos legible on the project page.
+
+
+## 0.5.112
+
+- Inset the Torrents banner with either menu mode and add a Home button before Search on desktop and TV.
+- Blend the home banner into its background and make the poster lift easier to see on hover and focus.
+- Split anime into its own viewing-history row in the Anime catalogue.
+- Keep the torrent file list inside the viewport when the desktop window is resized.
+
+
+## 0.5.111
+
+- Extend the home frame and blend its left and bottom edges into the page.
+- Share a single translucent glass surface across the header controls.
+- Enlarge project artwork, compact catalogue filters and reserve the small Play icon for viewing history.
+
+
+## 0.5.110
+
+- Continue the banner with a color gradient and carry the originating title color into playback and related projects.
+- Extend detail artwork under the header, enlarge project artwork and simplify tab focus.
+- Widen the side panels, move the TorrServer status beside its setting and lighten glass surfaces.
+
+
+## 0.5.109
+
+- Keep the dark header controls opaque and give glass controls a softer focus treatment.
+- Add the same poster lift, glow and selection glyph to both themes.
+- Carry the glass banner into the catalogue and use the active film artwork in online and torrent lists.
+- Smooth the bottom of the hero and make person, studio and network headings compact.
+
+## 0.5.108
+
+- After a Lampac proxy error, retry affected CUB images at their original public URL.
+- Keep the current page position when leaving the header panels and make the entire side menu clickable.
+- Share the home banner layout across both themes, keep the film backdrop behind the header, and use a glass Details button.
+
 ## 0.5.107
 
 - В теме «Стекло» на ПК, ТВ и широком планшете кадр расположен справа и занимает до 72% ширины баннера. Исходные пропорции и края кадра сохраняются. Статические градиенты сводят изображение с тёмным фоном слева и снизу.

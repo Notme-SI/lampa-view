@@ -22,19 +22,19 @@ async function check(page,mobile){
 (async()=>{
  for(const [name,engine]of [['chromium',chromium],['webkit',webkit]].filter(v=>!process.env.QA_ENGINE||v[0]===process.env.QA_ENGINE)){
   const browser=await engine.launch({headless:true});
-  try{for(const [mobile,virtual] of (process.env.QA_MOBILE?[[true,Boolean(process.env.QA_VIRTUAL)]]:[[true,false],[true,true],[false,false]])){
-   const r=await setup(browser,mobile?{viewport:{width:393,height:852},isMobile:true,hasTouch:true,userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Mobile/15E148 Safari/604.1',mode:'mobile'}:{viewport:{width:1440,height:900},mode:'desktop'}),{page}=r;
+  try{for(const [mobile,virtual] of (process.env.QA_MOBILE?[[true,Boolean(process.env.QA_VIRTUAL)]]:[[true,false],[true,true],[false,false],[false,true]])){
+   const r=await setup(browser,mobile?{viewport:{width:393,height:852},isMobile:true,hasTouch:true,userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Mobile/15E148 Safari/604.1',mode:'mobile'}:{viewport:virtual?{width:960,height:540}:{width:1440,height:900},mode:virtual?'tv':'desktop'}),{page}=r;
    await page.evaluate(({mobile,virtual})=>{
-    const L=Lampa;L.DeviceInput.init();L.Controller.observe();
+    const L=Lampa;L.DeviceInput.init();L.Controller.observe();L.Keypad.init();L.Keypad.enable();Navigator.follow('focus',event=>L.Controller.focus(event.elem));
     if(mobile){const screen=L.Platform.screen;L.Platform.screen=type=>type==='tv'?virtual:type==='mobile' || screen(type);document.body.classList.add('true--mobile','touch-device','orientation--portrait');L.NavigationBar.init();}
-    const movie={id:99,name:'Гангстерленд',original_name:'MobLand',original_title:'MobLand',source:'tmdb',first_air_date:'2025-03-30',number_of_seasons:1,seasons:[{season_number:1,episode_count:12}],genres:[]};
-    const row={Title:'Гангстерленд / MobLand (2025) S01 WEB-DL 1080p TVShows',Tracker:'test',Size:4520453079,Seeders:50,Peers:10,MagnetUri:'magnet:?xt=urn:btih:0123456789012345678901234567890123456789'};
+    const movie={id:99,name:'Тёмная материя',original_name:'Dark Matter',original_title:'Dark Matter',source:'tmdb',first_air_date:'2024-05-08',number_of_seasons:2,seasons:[{season_number:2,episode_count:10}],genres:[]};
+    const row={Title:'Тёмная материя (2 сезон: 1-9 серии из 10) / Dark Matter / 2026 / WEB-DL (2160p)',Tracker:'test',Size:4520453079,Seeders:50,Peers:10,MagnetUri:'magnet:?xt=urn:btih:0123456789012345678901234567890123456789'};
     L.Parser.get=(p,ok)=>setTimeout(()=>ok({Results:[row]}),0);L.Activity.push({component:'torrents',movie,search:'MobLand',url:'',page:1});
     L.Torserver.url=()=>true;L.Torserver.connected=ok=>ok();L.Torserver.hash=(p,ok)=>ok({hash:'0123456789012345678901234567890123456789'});
-    L.Torserver.files=(hash,ok)=>ok({file_stats:Array.from({length:12},(_,i)=>({id:i+1,path:'MobLand.2025.S01.WEB-DL.1080p.TVShows/MobLand.S01E'+String(i+1).padStart(2,'0')+'.mkv',length:4520453079}))});
+    L.Torserver.files=(hash,ok)=>ok({file_stats:Array.from({length:9},(_,i)=>({id:i+1,path:'Dark.Matter.2026.S02.WEB-DL.2160p/Dark.Matter.S02E'+String(i+1).padStart(2,'0')+'.mkv',length:4520453079}))});
     L.Torserver.viewed=(hash,ok)=>ok([]);L.Torserver.stream=(file,hash,id)=>'http://localhost/stream?link='+hash+'&index='+id+'&play';
     const image='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180"><rect width="320" height="180" fill="#28454d"/></svg>');
-    L.Api.seasons=(card,seasons,ok)=>ok({1:{episodes:Array.from({length:12},(_,i)=>({season_number:1,episode_number:i+1,name:i===0?'Пан или пропал: длинное название серии для проверки мобильного экрана':'Серия '+(i+1),air_date:'2025-03-30',runtime:60,img:image,vote_average:8.4,overview:'Описание серии из каталога. Достаточно места для нескольких строк текста.'}))}});
+    L.Api.seasons=(card,seasons,ok)=>ok({2:{episodes:Array.from({length:8},(_,i)=>({season_number:2,episode_number:i+1,name:i===0?'Пан или пропал: длинное название серии для проверки мобильного экрана':'Серия '+(i+1),air_date:'2026-09-30',runtime:60,img:image,vote_average:8.4,overview:'Описание серии из каталога. Достаточно места для нескольких строк текста.'}))}});
     window.qaPlayed=[];window.qaPlaylist=[];L.Player.play=data=>qaPlayed.push({season:data.season,episode:data.episode,url:data.url});L.Player.playlist=data=>window.qaPlaylist=data;L.Player.callback=()=>{};
     window.qaStartFiles=()=>L.Torrent.start(row,movie);
    },{mobile,virtual});
@@ -42,7 +42,8 @@ async function check(page,mobile){
    await page.waitForSelector('.torrent-files .torrent-serial',{timeout:7000});await page.waitForTimeout(150);
    await page.evaluate(()=>document.querySelectorAll('.torrent-serial').forEach(row=>jQuery(row).trigger('visible')));
    for(const theme of ['minimal','glass']){await page.evaluate(theme=>Lampa.Storage.set('lampa_view_theme',theme),theme);await page.waitForTimeout(180);await check(page,mobile);}
-   assert.equal(await page.locator('.minimal-episode-overview').count(),12);assert.equal(await page.locator('.minimal-episode-rating').first().textContent(),'8.4');
+   assert.equal(await page.locator('.torrent-files .torrent-serial').count(),9,'Files survive missing episode metadata');
+   assert.equal(await page.locator('.minimal-episode-overview').count(),8);assert.equal(await page.locator('.minimal-episode-rating').first().textContent(),'8.4');
    if(output)await page.screenshot({path:path.join(output,name+(mobile?'-phone'+(virtual?'-virtual':''):'-desktop')+'-files.png')});
    if(mobile){
     await page.setViewportSize({width:320,height:640});await page.waitForTimeout(150);await check(page,true);
@@ -50,6 +51,23 @@ async function check(page,mobile){
     await page.setViewportSize({width:393,height:852});await page.waitForTimeout(400);
    }
    const last=page.locator('.torrent-files .torrent-serial').last();
+   if(!mobile){
+    await page.setViewportSize(virtual?{width:960,height:420}:{width:1440,height:720});await page.waitForTimeout(250);
+    await check(page,false);
+    const area=await page.locator('.modal__body .scroll').boundingBox();
+    await page.mouse.move(area.x+area.width/2,area.y+30);
+    for(let i=0;i<12;i++){await page.mouse.wheel(0,250);await page.waitForTimeout(230);}
+    const reachable=await last.evaluate(el=>{
+     const r=el.getBoundingClientRect(),modal=el.closest('.modal__content').getBoundingClientRect();
+     return {top:r.top,bottom:r.bottom,modalBottom:modal.bottom,viewport:innerHeight};
+    });
+    assert.ok(reachable.top<Math.min(reachable.modalBottom,reachable.viewport)-20 && reachable.bottom<=Math.min(reachable.modalBottom,reachable.viewport)+1,'Wheel reaches the ninth file: '+JSON.stringify(reachable));
+    if(virtual){
+     await page.evaluate(()=>Lampa.Controller.collectionFocus(document.querySelector('.torrent-serial'),Lampa.Modal.scroll().render()));
+     for(let i=0;i<8;i++){await page.keyboard.press('ArrowDown');await page.waitForTimeout(80);}
+     assert.ok(await last.evaluate(node=>node.classList.contains('focus')),'Remote reaches the ninth file');
+    }
+   }
    if(mobile && name==='chromium'){
     const client=await r.context.newCDPSession(page);
     const area=await page.locator('.modal__body .scroll').evaluate(el=>{const r=el.getBoundingClientRect();return {x:r.left+r.width/2,y:r.bottom-35,top:r.top+35,height:el.clientHeight,total:el.scrollHeight};});
@@ -65,14 +83,17 @@ async function check(page,mobile){
     assert.ok(await last.evaluate(el=>{const r=el.getBoundingClientRect(),s=el.closest('.scroll').getBoundingClientRect();return r.top<s.bottom && r.bottom>s.top;}),'swiping reaches the last episode');
     await client.detach();await page.waitForTimeout(700);
    }
-   if(mobile && !virtual)await last.scrollIntoViewIfNeeded();else if(name!=='chromium' || !mobile)await last.evaluate(row=>{const scroll=Lampa.Modal.scroll();scroll.immediate(row);Lampa.Layer.visible(scroll.render(true));});
+   if(mobile && !virtual)await last.scrollIntoViewIfNeeded();else if(mobile && name!=='chromium')await last.evaluate(row=>{const scroll=Lampa.Modal.scroll();scroll.immediate(row);Lampa.Layer.visible(scroll.render(true));});
    await page.waitForTimeout(180); // Allow native scroll/compositor hit testing to settle before the real touch.
+   if(output)await page.screenshot({path:path.join(output,name+(mobile?'-phone'+(virtual?'-virtual':''):virtual?'-tv':'-desktop')+'-last-file.png')});
    const point=await last.evaluate(row=>{const r=row.getBoundingClientRect(),s=row.closest('.scroll').getBoundingClientRect();return {x:r.left+r.width/2,y:(Math.max(r.top,s.top)+Math.min(r.bottom,s.bottom))/2};});
    // Windows WebKit reports a fractional native DPR and its touch protocol uses device pixels.
    const scale=mobile && name==='webkit' && process.platform==='win32'?await page.evaluate(()=>devicePixelRatio):1;
-   if(mobile && name==='webkit')await page.touchscreen.tap(point.x*scale,point.y*scale);else {await page.mouse.move(point.x,point.y);await page.mouse.click(point.x,point.y);}await page.waitForTimeout(500);
-   const played=await page.evaluate(()=>({played:qaPlayed,playlist:qaPlaylist.map(v=>v.episode)}));assert.equal(played.played.length,1);assert.equal(played.played[0].episode,12);assert.equal(played.played[0].season,1);assert.match(played.played[0].url,/index=12/);assert.equal(played.playlist.length,12);
-   assert.deepEqual(r.errors,[]);await r.context.close();console.log(name+' '+(mobile?'phone'+(virtual?' with virtual scroll':''):'desktop')+': native file layout, scrolling, playback and playlist passed');
+   if(!mobile && virtual)await page.keyboard.press('Enter');
+   else if(mobile && name==='webkit')await page.touchscreen.tap(point.x*scale,point.y*scale);
+   else {await page.mouse.move(point.x,point.y);await page.mouse.click(point.x,point.y);}await page.waitForTimeout(500);
+   const played=await page.evaluate(()=>({played:qaPlayed,playlist:qaPlaylist.map(v=>v.episode)}));assert.equal(played.played.length,1);assert.equal(played.played[0].episode,9);assert.equal(played.played[0].season,2);assert.match(played.played[0].url,/index=9/);assert.equal(played.playlist.length,9);
+   assert.deepEqual(r.errors,[]);await r.context.close();console.log(name+' '+(mobile?'phone'+(virtual?' with virtual scroll':''):virtual?'TV':'desktop')+': native file layout, scrolling, playback and playlist passed');
   }}finally{await browser.close();}
  }
 })().catch(error=>{console.error(error);process.exitCode=1;});

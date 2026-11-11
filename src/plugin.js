@@ -58,6 +58,9 @@ import interfaceSize from './interface-size.js';
 import personalScale from './personal-scale.js';
 import menuLayout from './menu-layout.js';
 import notices from './notices.js';
+import installCubImages from './cub-images.js';
+import preservePanelPosition from './panel-return.js';
+import glassScene from './glass-scene.js';
 import pageScrollbar from './page-scrollbar.js';
 
 const ROOT = window;
@@ -99,14 +102,25 @@ if (!ROOT.LampaView) {
   function yes(key, fallback = true) { const value = L.Storage.value ? L.Storage.value(key,'') : L.Storage.get(key, fallback); return value === '' || value == null ? fallback : ![false,'false',0,'0','no'].includes(value); }
   function layout() {
     const previous=P.layout,selected=L.Storage.get('lampa_view_layout','auto') || 'auto';
+    const agent=ROOT.navigator && ROOT.navigator.userAgent || '';
+    const coarse=ROOT.matchMedia?.('(any-pointer:coarse)').matches;
+    const touch=ROOT.navigator.maxTouchPoints>0 || 'ontouchstart' in ROOT || coarse;
+    const touchMac=/Macintosh/.test(agent) && (ROOT.navigator.maxTouchPoints>1 || coarse);
+    const portable=/Android|iPhone|iPad|iPod|Mobile|Tablet/i.test(agent) ||
+      touchMac;
     const screen=L.Platform && L.Platform.screen;
     const mobile=screen ? screen.call(L.Platform,'mobile') : ROOT.innerWidth<=600;
     // Lampa's screen('tv') also describes desktop browsers. Use its physical
     // TV detector when available, including an explicit false result.
-    const tv=L.Platform && typeof L.Platform.tv==='function' ? !!L.Platform.tv() : screen ? screen.call(L.Platform,'tv') : false;
-    document.body.classList.toggle('pt-tablet',selected==='tablet');
-    P.layout=selected==='tablet' ? (ROOT.innerWidth<700?'mobile':'desktop') : selected==='auto' ? (tv ? 'tv' : mobile || ROOT.innerWidth<=650 ? 'mobile' : 'desktop') : selected;
+    const detectedTv=L.Platform && typeof L.Platform.tv==='function' ? !!L.Platform.tv() : screen ? screen.call(L.Platform,'tv') : false;
+    const tv=detectedTv && !(portable && touch &&
+      !/googletv|google tv|mibox|mitv|smart ?tv|android tv|tizen|webos/i.test(agent));
+    const tablet=/iPad|Tablet|Android(?!.*Mobile)/i.test(agent) ||
+      touchMac;
+    document.body.classList.toggle('pt-tablet',selected==='tablet' || selected==='auto' && !tv && tablet);
+    P.layout=selected==='tablet' ? 'mobile' : selected==='auto' ? (tv ? 'tv' : portable || mobile || ROOT.innerWidth<=650 ? 'mobile' : 'desktop') : selected;
     ['mobile','tv','desktop'].forEach(mode=>document.body.classList.toggle('pt-'+mode,P.layout===mode));
+    document.body.classList.toggle('pt-touch-captions',P.layout==='mobile' && touch);
     if(previous!==P.layout && appearanceTheme)appearanceTheme.update();
     if(previous!==P.layout && pinnedMenu)pinnedMenu.update();
     if(previous!==P.layout && interfaceLayout)interfaceLayout.update();
@@ -115,7 +129,6 @@ if (!ROOT.LampaView) {
       hero.style.height='';const body=hero.querySelector('.pt-hero__body');
       if(body){body.style.fontSize='';body.style.bottom='';}
     });
-    const agent=ROOT.navigator && ROOT.navigator.userAgent || '';
     document.body.classList.toggle('pt-safari',/Safari\//.test(agent) && !/(?:Chrome|Chromium|Edg|OPR|Android)\//.test(agent));
   }
   function setTheme() {
@@ -132,6 +145,20 @@ if (!ROOT.LampaView) {
     if(!document.getElementById('lampa-view-navigation'))$('<style id="lampa-view-navigation">').text(NAV_CSS).appendTo('head');
     const enabled = yes('lampa_view_enabled');
     const headActions=document.querySelector('.head__actions');
+    const searchAction=headActions && headActions.querySelector('.open--search');
+    let homeAction=headActions && headActions.querySelector('.open--home');
+    if(enabled && searchAction){
+      if(!homeAction){
+        homeAction=document.createElement('button');
+        homeAction.type='button';
+        homeAction.className='head__action selector open--home';
+        homeAction.innerHTML=icon('home');
+        pointer($(homeAction).on('hover:enter',()=>navigate('home')));
+      }
+      homeAction.setAttribute('aria-label',lampaViewText('Главная'));
+      homeAction.title=lampaViewText('Главная');
+      if(homeAction.nextElementSibling!==searchAction)searchAction.before(homeAction);
+    }else if(homeAction)homeAction.remove();
     if(headActions && !headActions.querySelector('.open--profile') && L.Account && L.Account.Profile){
       const profile=document.createElement('div');profile.className='head__action selector open--profile';profile.innerHTML=icon('profile');profile.setAttribute('aria-label',lampaViewText('Профиль'));
       pointer($(profile).on('hover:enter',()=>L.Account.Profile.select(()=>L.Controller.toggle('head'))));headActions.appendChild(profile);
@@ -168,7 +195,10 @@ if (!ROOT.LampaView) {
     if(section==='dorama')section='tv';
     if (section === 'search') return $('.head .open--search').trigger('hover:enter');
     if (section === 'settings') return $('.head .open--settings').trigger('hover:enter');
-    if (section === 'home') return L.Activity.push({url:'', title:lampaViewText("Главная"), component:'main', source:L.Storage.get('source','cub') || 'cub', page:1});
+    if (section === 'home') {
+      if(L.Activity.active()?.component==='main')return;
+      return L.Activity.push({url:'', title:lampaViewText("Главная"), component:'main', source:L.Storage.get('source','cub') || 'cub', page:1});
+    }
     if (section === 'library') {
       const native = $('.menu__item[data-action="favorite"]');
       if (native.length) native.trigger('hover:enter');
@@ -206,7 +236,7 @@ if (!ROOT.LampaView) {
     $('.head__menu-icon').addClass('selector').attr({role:'button',tabindex:'0','aria-label':lampaViewText("Меню")})
       .off('hover:enter.minimal').on('hover:enter.minimal',()=>{
         const closing=document.body.classList.contains('menu--open');
-        if(closing){document.body.classList.remove('pt-menu-hover');const hero=document.querySelector('.activity--active .pt-hero'),rect=hero && hero.getBoundingClientRect();if(P.layout!=='mobile' && rect && rect.top>=-24 && rect.bottom>innerHeight*.2 && hero._minimalHeroEnter)hero._minimalHeroEnter();else{L.Controller.toggle('head');const target=document.querySelector('.head__menu-icon');if(target)L.Controller.collectionFocus(target,document.querySelector('.head'));}return;}
+        if(closing){document.body.classList.remove('pt-menu-hover');L.Controller.toggle('head');return;}
         if(L.Menu && L.Menu.toggle)L.Menu.toggle();else L.Controller.toggle(closing?'content':'menu');
       });
     const menu=$('.head__menu-icon');
@@ -332,10 +362,6 @@ if (!ROOT.LampaView) {
       const element=$(lampaViewText("<section class=\"pt-hero\" aria-label=\"Подборка фильмов и сериалов\">"));
       const artworkFrame=$('<div class="pt-hero__artwork" aria-hidden="true">').appendTo(element);
       const image=$('<img class="pt-hero__image" alt="" decoding="async">').appendTo(artworkFrame);
-      image.on('load',event=>{
-        const {naturalWidth,naturalHeight}=event.currentTarget;
-        if(naturalWidth && naturalHeight)element[0].style.setProperty('--pt-hero-art-ratio',String(naturalWidth/naturalHeight));
-      });
       const body=$('<div class="pt-hero__body">').appendTo(element);
       const brandingSlot=$('<div class="pt-hero__branding">').appendTo(body);
       const logo=$('<img class="pt-hero__logo pt-hidden" decoding="async">').appendTo(brandingSlot);
@@ -581,8 +607,11 @@ if (!ROOT.LampaView) {
     torrentSearch(L);
     settings(); bridge(); shell();back=installBack(L,$,()=>yes('lampa_view_enabled'));holidays=holidayLayout(L,()=>yes('lampa_view_enabled'));artwork.refresh();
     tvPerformance(()=>yes('lampa_view_enabled'),L);
+    glassScene(L,()=>yes('lampa_view_enabled'),color=>appearanceTheme?.chromePalette(color));
+    installCubImages(()=>yes('lampa_view_enabled'));
+    preservePanelPosition(L,()=>yes('lampa_view_enabled'));
     notices(L,()=>yes('lampa_view_enabled'));
-    pinnedMenu=menuLayout(L,()=>yes('lampa_view_enabled'));
+    pinnedMenu=menuLayout(L,()=>yes('lampa_view_enabled'),icon);
     pageScrollbar(L,()=>yes('lampa_view_enabled'));
     on('menu',event=>{if(yes('lampa_view_enabled') && event.type==='action' && ['cartoon','tvshow'].includes(event.action)){if(event.abort)event.abort();navigate(event.action);}});
     trimSections();
@@ -624,6 +653,22 @@ if (!ROOT.LampaView) {
         if(hero && hero._minimalHeroEnter)return hero._minimalHeroEnter();
         if(down)return down.apply(this,arguments);
       };
+    });
+    ROOT.addEventListener('keydown',event=>{
+      if(!yes('lampa_view_enabled') || !/^Arrow/.test(event.key || '') ||
+        event.target.closest?.('input,textarea,[contenteditable=true]'))return;
+      document.body.classList.add('pt-arrow-navigation');
+      document.querySelectorAll('.head .hover').forEach(node=>node.classList.remove('hover'));
+      document.querySelectorAll('.card.pt-card-pointer').forEach(node=>node.classList.remove('pt-card-pointer'));
+      if(document.activeElement?.closest('.head'))document.activeElement.blur();
+    },true);
+    ROOT.addEventListener('pointermove',event=>{
+      if(event.pointerType==='touch')return;
+      document.body.classList.remove('pt-arrow-navigation');
+    },{passive:true});
+    $(document).on('hover:focus.lampaViewHeader','.head .selector',function(){
+      document.querySelectorAll('.head .focus,.head .hover').forEach(node=>{if(node!==this)node.classList.remove('focus','hover');});
+      if(document.activeElement!==this && document.activeElement?.closest('.head'))document.activeElement.blur();
     });
     let resizeTimer;
     ROOT.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(layout,180);});

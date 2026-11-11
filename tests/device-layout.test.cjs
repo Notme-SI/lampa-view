@@ -1,15 +1,15 @@
 const test=require('node:test'),assert=require('node:assert/strict'),native=require('./fixtures/native-lampa.cjs');
 
-test('desktop Chrome restores cover space while Safari and TV keep compact detail spacing',async()=>{
+test('desktop Chrome restores cover space while Safari and TV keep a compact header',async()=>{
  for(const [agent,safari]of [['Mozilla/5.0 AppleWebKit/537.36 Chrome/130.0.0.0 Safari/537.36',false],['Mozilla/5.0 (Macintosh) AppleWebKit/605.1.15 Version/18.6 Safari/605.1.15',true]]){
   const n=await native({built:true,initialStorage:{lampa_view_layout:'desktop'},prepare(w){Object.defineProperty(w.navigator,'userAgent',{value:agent,configurable:true});}}),{w}=n;
   try{
    // JSDOM cannot resolve the viewport/custom-property root calc. Real sizes are checked in browser/interface-size.cjs.
    w.document.body.style.setProperty('font-size','16px','important');
    assert.equal(w.document.body.classList.contains('pt-safari'),safari);
-   const root=w.document.createElement('div');root.className='minimal-detail-header';root.innerHTML='<div class="full-start-new__body"></div><section class="minimal-detail-columns"></section>';w.document.body.appendChild(root);
-   const body=root.firstElementChild,columns=root.lastElementChild,font=parseFloat(w.getComputedStyle(body).fontSize);assert.equal(parseFloat(w.getComputedStyle(body).minHeight),safari?0:24*font);assert.ok(Math.abs(parseFloat(w.getComputedStyle(columns).marginTop)-(safari?.7:1.5)*font)<.01);
-   w.document.body.classList.replace('pt-desktop','pt-tv');assert.equal(parseFloat(w.getComputedStyle(body).minHeight),0);assert.ok(Math.abs(parseFloat(w.getComputedStyle(columns).marginTop)-.7*font)<.01);assert.deepEqual(n.errors,[]);
+   const root=w.document.createElement('div');root.className='minimal-detail-header';root.innerHTML='<div class="full-start-new__body"></div>';w.document.body.appendChild(root);
+   const body=root.firstElementChild,font=parseFloat(w.getComputedStyle(body).fontSize);assert.equal(parseFloat(w.getComputedStyle(body).minHeight),safari?0:24*font);
+   w.document.body.classList.replace('pt-desktop','pt-tv');assert.equal(parseFloat(w.getComputedStyle(body).minHeight),0);assert.deepEqual(n.errors,[]);
   }finally{n.close();}
  }
 });

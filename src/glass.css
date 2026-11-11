@@ -44,8 +44,6 @@ body.lampa_view.pt-theme-glass .wrap__left .menu__item:is(.focus,.hover,.travers
 body.lampa_view.pt-theme-glass .items-line__title,body.lampa_view.pt-theme-glass .category-full__title {font-weight:650;letter-spacing:-.025em}
 body.lampa_view.pt-theme-glass .card__title {font-weight:550;letter-spacing:-.015em;color:#eeeef1}
 body.lampa_view.pt-theme-glass .card__view,body.lampa_view.pt-theme-glass .card__img {border-radius:1.05em}
-body.lampa_view.pt-theme-glass .card.focus .card__view,body.lampa_view.pt-theme-glass .card.hover .card__view {box-shadow:0 0 .65em #ffffff3b,0 7px 20px #00000055!important}
-body.lampa_view.pt-theme-glass .card.focus .card__view:after,body.lampa_view.pt-theme-glass .card.hover .card__view:after {border-radius:1.05em!important;border-color:#f7f7fa!important}
 
 /* Branding belongs directly over the page artwork rather than inside a card. */
 body.lampa_view.pt-theme-glass .pt-hero {display:block;background:var(--pt-bg)!important;border-radius:0;overflow:hidden;-webkit-clip-path:none;clip-path:none;box-shadow:none}
@@ -92,7 +90,6 @@ body.lampa_view.pt-theme-glass .nova-plus-root .nova-btn,body.lampa_view.pt-them
 body.lampa_view.pt-theme-glass .nova-plus-root .nova-plus__bar>.nova-chip,body.lampa_view.pt-theme-glass .nova-plus-root [data-nova-group=season] .nova-chip,body.lampa_view.pt-theme-glass .full-start__button,body.lampa_view.pt-theme-glass.pt-mobile .navigation-bar__body {backdrop-filter:blur(10px) saturate(1.45);-webkit-backdrop-filter:blur(10px) saturate(1.45)}
 body.lampa_view.pt-theme-glass .nova-plus-root .nova-chip--active,body.lampa_view.pt-theme-glass .nova-plus-root .nova-chip.focus,body.lampa_view.pt-theme-glass .nova-plus-root .nova-group.focus {background:linear-gradient(150deg,#ffffff26,#ffffff0a)!important;border-color:#ffffffa6!important}
 body.lampa_view.pt-theme-glass .nova-plus-root .nova-card__thumb,body.lampa_view.pt-theme-glass .nova-plus-root .nova-card__thumb img {border-radius:1.15em}
-body.lampa_view.pt-theme-glass .nova-plus-root .nova__list--grid .nova-card.focus .nova-card__thumb,body.lampa_view.pt-theme-glass .nova-plus-root .nova__list--grid .nova-card.hover .nova-card__thumb {box-shadow:0 0 .7em #ffffff3b,0 8px 20px #00000044!important}
 body.lampa_view.pt-theme-glass .nova-plus-root .nova-card__overview {color:#d2d2d5}
 body.lampa_view.pt-theme-glass .nova-plus-root .nova-card--rowlist {background:#ffffff09;border:1px solid #ffffff25;border-radius:1.3em}
 body.lampa_view.pt-theme-glass .nova-plus-root .nova-hero .nova-btn {border-radius:2em!important;background:var(--pt-glass-button)!important;color:#f5f5f5!important}
@@ -115,8 +112,6 @@ body.lampa_view.pt-theme-glass.pt-mobile .navigation-bar__body {border:1px solid
 body.lampa_view.pt-theme-glass.pt-mobile .navigation-bar__item {border-radius:2em}
 body.lampa_view.pt-theme-glass.pt-mobile .navigation-bar__item.active {background:#ffffff15}
 body.lampa_view.pt-theme-glass.pt-tv :is(.full-review,.full-review-add,.simple-button,.full-start__button,.pt-hero__action):is(.focus,.hover) {background:var(--pt-row-focus)!important}
-/* Keep the focus contour without blurred shadows over a moving catalogue. */
-body.lampa_view.pt-theme-glass.pt-tv .card:is(.focus,.hover) .card__view {box-shadow:none!important}
 body.lampa_view.pt-theme-glass.pt-tv :is(.wrap__left,.settings__content,.selectbox__content,.settings-input__content,.modal__content) {box-shadow:var(--pt-glass-edge),0 4px 12px #0005}
 body.lampa_view.pt-theme-glass.pt-tv .head__action,body.lampa_view.pt-theme-glass.pt-tv .card__icons-inner,body.lampa_view.pt-theme-glass.pt-tv .card__marker,body.lampa_view.pt-theme-glass.pt-tv .card__vote,body.lampa_view.pt-theme-glass.pt-tv .card-watched {backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
 @media(prefers-reduced-motion:reduce){body.lampa_view.pt-theme-glass .minimal-anime-tab,body.lampa_view.pt-theme-glass .menu__item {transition:none!important}}

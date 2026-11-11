@@ -4,8 +4,8 @@ const model=mod('discovery-model'),{default:install,discoverySpec,DISCOVERY_SOUR
 const show=(id,origin=['US'],genres=[10764])=>({id,name:'Название '+id,origin_country:origin,genre_ids:genres,poster_path:'/poster.jpg',original_language:'ru'});
 const read=(api,spec,page=1)=>new Promise((resolve,reject)=>api.list({url:JSON.stringify(spec),page},resolve,reject));
 test('movie and series feeds omit untranslated and missing artwork cards on every page while retaining a Russian name alias',async()=>{
- const L={Api:{sources:{tmdb:{get(path,p,ok){ok({results:[{id:1,title:'English',poster_path:'/p.jpg'},{id:2,name:'Без картинки'},{id:4,title:'Без баннера',poster_path:'/p.jpg',backdrop_path:null},{id:3,title:'English',name:'Русское название',poster_path:'/p.jpg',genre_ids:[18],origin_country:['RU']}],page:p.page,total_pages:2});}}}}},api=install(L);
- for(const kind of ['movie','tv']){const spec={kind,type:kind==='movie'?'movie':'tv',sort:'popular'},first=await read(api,spec);assert.deepEqual(first.results.map(c=>c.id),[3]);assert.equal(first.results[0].title,'Русское название');const second=await read(api,spec,2);assert.ok(second.results.every(c=>c.id===3));}
+ const L={Api:{sources:{tmdb:{get(path,p,ok){ok({results:[{id:1,title:'English',poster_path:'/p.jpg'},{id:2,name:'Без картинки'},{id:4,title:'English',overview:'Русское описание',poster_path:'/p.jpg',backdrop_path:null},{id:3,title:'English',name:'Русское название',poster_path:'/p.jpg',genre_ids:[18],origin_country:['RU']}],page:p.page,total_pages:2});}}}}},api=install(L);
+ for(const kind of ['movie','tv']){const spec={kind,type:kind==='movie'?'movie':'tv',sort:'popular'},first=await read(api,spec);assert.deepEqual(first.results.map(c=>c.id),[4,3]);assert.equal(first.results[1].title,'Русское название');const second=await read(api,spec,2);assert.deepEqual(second.results,[]);}
 });
 
 test('SURS families are accessible with verified networks, corrected NTV and Disney Junior, studios and every child collection',()=>{
@@ -25,7 +25,13 @@ test('movie and TV queries use supported type-specific genres, sorts, country fi
  const romance=model.discoveryPlan('dorama',{genre:'k9840'},date)[0],q=new URLSearchParams(romance.tmdb.split('?')[1]);assert.equal(q.get('with_keywords'),'9840');assert.equal(q.get('with_genres'),null);assert.match(q.get('without_genres'),/16/);
  const russian=model.discoveryPlan('tv',{country:'RU'},date)[0];assert.equal(new URLSearchParams(russian.tmdb.split('?')[1]).get('with_origin_country'),'RU');assert.equal(discoverySpec({...russian.discovery,type:'tv',sort:'revenue'}),null);
  const watch=model.discoveryPlan('tv',{},date).find(r=>r.key==='watch');assert.equal(new URLSearchParams(watch.tmdb.split('?')[1]).get('air_date.gte'),'2026-10-28');
- const shows=model.discoveryPlan('tvshow',{},date);assert.ok(shows.every(row=>row.discovery.country==='RU'));for(const key of ['watch','new','russian-reality']){const q=new URLSearchParams(shows.find(r=>r.key===key).tmdb.split('?')[1]);assert.equal(q.get('vote_count.gte'),'0');assert.equal(q.get('with_origin_country'),'RU');if(key==='new')assert.equal(q.get('first_air_date.gte'),'2026-05-08');else {assert.equal(q.has('first_air_date.gte'),false);assert.equal(q.get('air_date.gte'),'2025-11-04');};}assert.ok(model.discoveryPlan('tv',{},date).some(r=>r.discovery.kind==='dorama'));
+ const shows=model.discoveryPlan('tvshow',{},date);assert.ok(shows.every(row=>!row.discovery.country));for(const key of ['watch','new','russian-reality']){const q=new URLSearchParams(shows.find(r=>r.key===key).tmdb.split('?')[1]);assert.equal(q.get('vote_count.gte'),'0');assert.equal(q.get('with_origin_country'),null);if(key==='new')assert.equal(q.get('first_air_date.gte'),'2026-05-08');else assert.equal(q.has('first_air_date.gte'),false);}
+ for(const sort of ['popular','rated']){
+  const spec={kind:'tv',type:'tv',country:'KR',sort},q=new URLSearchParams(model.discoveryQuery(spec,date).split('?')[1]);
+  assert.equal(q.get('with_origin_country'),'KR');assert.equal(q.has('first_air_date.gte'),false);assert.equal(q.has('air_date.gte'),false);
+  assert.ok(model.discoveryAccepts({...show(93405,['KR'],[18]),first_air_date:'2021-09-17'},spec));
+  assert.ok(model.discoveryAccepts({...show(156484,['KR'],[18]),first_air_date:'2024-05-17'},spec));
+ }
  for(const [type,field,id] of [['movie','with_companies','2348'],['tv','with_networks','13']]){const path=model.discoveryQuery({kind:'cartoon',type,company:2348},date);assert.equal(new URLSearchParams(path.split('?')[1]).get(field),id);}
  assert.deepEqual(model.discoverySpecs({kind:'cartoon',type:'tv',genre:'28'}),[]);assert.equal(model.discoveryState('cartoon',{network:213,genre:'28'}).genre,'');assert.equal(model.discoveryState('cartoon',{format:'tv',sort:'revenue'}).sort,'');
 });
@@ -41,6 +47,15 @@ test('partial filtered pages preserve every accepted card across More without in
  const first=await read(api,spec);assert.equal(first.results.length,4);assert.equal(first.total_pages,2);assert.deepEqual(first.results.map(c=>c.id),[101,102,103,104]);assert.equal(calls.length,4,'Sparse feeds have a fixed scan budget');
  const second=await read(api,spec,2);assert.deepEqual(second.results.map(c=>c.id),Array.from({length:20},(_,i)=>200+i));assert.equal(second.total_pages,2);assert.deepEqual(calls,[1,2,3,4,5]);assert.equal(L.Api.sources[DISCOVERY_SOURCE],api);
  const cached=await read(api,spec);assert.deepEqual(cached,first);assert.equal(calls.length,5);
+});
+
+test('a filtered gap does not make the native catalogue stop before a later eligible page',async()=>{
+ const calls=[],L={Api:{sources:{tmdb:{get(path,p,ok){
+  calls.push(p.page);
+  ok({page:p.page,total_pages:6,results:p.page<6?[{id:p.page,name:'Untranslated',poster_path:'/p.jpg'}]:[show(93405,['KR'],[18]),show(156484,['KR'],[18])]});
+ }}}}},api=install(L);
+ const result=await read(api,{kind:'dorama',type:'tv',country:'KR',sort:'rated',ordered:true});
+ assert.deepEqual(calls,[1,2,3,4,5,6]);assert.deepEqual(result.results.map(card=>card.id),[93405,156484]);assert.equal(result.total_pages,1);
 });
 
 test('hero collections combine movie and TV search, deduplicate aliases by media identity and delegate exact detail coordinates',async()=>{
@@ -72,9 +87,9 @@ test('Dorama catalogue keeps lazy native rows while film and series categories u
  }finally{n.close();}
 });
 
-test('mixed animation feeds preserve movie/TV identities through More; series reject old and unscripted programmes',async()=>{
+test('mixed animation feeds preserve movie/TV identities through More; series retain archives and exclude unscripted programmes',async()=>{
  const L={Api:{sources:{tmdb:{get(url,p,ok){ok({page:p.page,total_pages:2,results:Array.from({length:12},(_,i)=>({id:p.page*100+i,title:'Название '+i,name:'Название '+i,poster_path:'/p.jpg',genre_ids:[16],original_language:'en'}))});}}}}},api=install(L),spec={kind:'cartoon',type:'',sort:'popular'},first=await read(api,spec),second=await read(api,spec,2),third=await read(api,spec,3);
  assert.equal(first.results.length,20);assert.deepEqual(first.results.slice(0,2).map(c=>[c.id,c.media_type]),[[100,'movie'],[100,'tv']]);assert.equal(new Set(first.results.concat(second.results,third.results).map(c=>c.media_type+':'+c.id)).size,48);assert.equal(third.total_pages,3);
- const rows=model.discoveryPlan('cartoon');assert.equal(new Set(rows.map(r=>r.title)).size,rows.length);assert.ok(rows.filter(r=>!['country-RU','series'].includes(r.key)).every(r=>!/мультфильмы|мультсериалы/i.test(r.title)));assert.equal(rows.find(r=>r.key==='country-RU').title,'Российские мультфильмы');assert.ok(!rows.some(r=>r.key==='country-US'));assert.equal(rows.find(r=>r.key==='series').media_type,'tv');assert.equal(rows.find(r=>r.key==='series').title,'Мультсериалы');assert.equal(discoverySpec({...spec,type:'invalid'}),null);
- const series={kind:'tv',type:'tv'},year=new Date().getFullYear();for(const card of [{first_air_date:(year-6)+'-01-01',genre_ids:[18]},{first_air_date:year+'-01-01',genre_ids:[10764]},{first_air_date:year+'-01-01',genre_ids:[35],type:'Talk Show'}])assert.equal(model.discoveryAccepts(card,series),false);assert.equal(model.discoveryAccepts({first_air_date:year+'-01-01',genre_ids:[18],type:'Scripted'},series),true);
+ const rows=model.discoveryPlan('cartoon');assert.equal(new Set(rows.map(r=>r.title)).size,rows.length);assert.ok(rows.filter(r=>r.key!=='series').every(r=>!/мультфильмы|мультсериалы/i.test(r.title)));assert.ok(rows.every(r=>!r.discovery.country));assert.equal(rows.find(r=>r.key==='series').media_type,'tv');assert.equal(rows.find(r=>r.key==='series').title,'Мультсериалы');assert.equal(discoverySpec({...spec,type:'invalid'}),null);
+ const series={kind:'tv',type:'tv'},year=new Date().getFullYear();for(const card of [{first_air_date:year+'-01-01',genre_ids:[10764]},{first_air_date:year+'-01-01',genre_ids:[35],type:'Talk Show'}])assert.equal(model.discoveryAccepts(card,series),false);assert.equal(model.discoveryAccepts({first_air_date:(year-6)+'-01-01',genre_ids:[18],type:'Scripted'},series),true);
 });

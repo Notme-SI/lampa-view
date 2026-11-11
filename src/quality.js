@@ -8,6 +8,7 @@ import cacheControl from './cache-control.js';
 import badgeLayout from './badge-layout.js';
 import flag from './storage-flag.js';
 import seriesStatus from './series-status.js';
+import posterSelection from './poster-selection.js';
 // Visible cards only, two requests at a time, bounded cache; use the user's parser.
 export default function quality(L,$){
   const info=cardInfo(L),hydrating=new WeakSet(),status=seriesStatus(L,node=>badges.schedule(node)),badges=badgeLayout(status);
@@ -110,6 +111,7 @@ export default function quality(L,$){
     if(!node || !node.classList.contains('card') || (!data.title && !data.original_title && !data.name && !data.original_name))return;
     node._minimalCardData=data;track(item,node);status.track(node,data);
     paintCaption(node,data);
+    posterSelection(node);
     const tv=data.media_type==='movie'?false:data.media_type==='tv' || !!data.original_name || !!data.first_air_date || node.classList.contains('card--tv');
     const anime=isAnime(data);
     // Some native history/continue cards omit the rating module even though
@@ -210,14 +212,47 @@ export default function quality(L,$){
   // Lampa sends these custom events through jQuery.trigger, not dispatchEvent.
   // Delegation also covers legacy/history cards without a Maker onFocus hook.
   if(typeof $==='function')$(document).on('hover:focus.lampaViewQuality hover:hover.lampaViewQuality hover:touch.lampaViewQuality','.card',function(){const item=tracked.get(this);if(item)schedule(item);});
-  // Touching the caption reveals details; the poster retains native opening and hold actions.
-  document.addEventListener('click',event=>{
-    const caption=document.body.matches('.pt-mobile,.pt-tablet') && event.target.closest && event.target.closest('.card__title,.card__age');
-    const selected=caption && caption.closest('.card'),open=selected && !selected.classList.contains('pt-card-touch');
-    for(const card of document.querySelectorAll('.card.pt-card-touch'))card.classList.remove('pt-card-touch');
-    if(!selected)return;
-    event.preventDefault();event.stopImmediatePropagation();
-    if(open){selected.classList.add('pt-card-touch');legacy(selected);const item=tracked.get(selected);if(item)schedule(item);}
+  const captionCard=target=>document.body.matches('.lampa_view.pt-touch-captions') &&
+    target.closest?.('.card__title,.card__age')?.closest('.card');
+  let captionTouch,captionClick;
+  function revealCaption(card){
+    const open=card && !card.classList.contains('pt-card-touch');
+    for(const previous of document.querySelectorAll('.card.pt-card-touch'))previous.classList.remove('pt-card-touch');
+    if(open){card.classList.add('pt-card-touch');legacy(card);const item=tracked.get(card);if(item)schedule(item);}
+  }
+  document.addEventListener('touchstart',event=>{
+    captionClick=null;
+    const card=captionCard(event.target),touch=event.changedTouches[0];
+    captionTouch=card && event.touches.length===1 && touch ?
+      {card,id:touch.identifier,x:touch.clientX,y:touch.clientY,start:Date.now(),moved:false}:null;
+  },{capture:true,passive:true});
+  document.addEventListener('touchmove',event=>{
+    const touch=captionTouch && Array.from(event.touches).find(t=>t.identifier===captionTouch.id);
+    if(touch && Math.hypot(touch.clientX-captionTouch.x,touch.clientY-captionTouch.y)>10)captionTouch.moved=true;
+  },{capture:true,passive:true});
+  document.addEventListener('touchcancel',()=>{captionTouch=null;captionClick=null;},true);
+  document.addEventListener('touchend',event=>{
+    const gesture=captionTouch,touch=gesture && Array.from(event.changedTouches).find(t=>t.identifier===gesture.id);
+    if(!touch)return;
+    captionTouch=null;
+    if(!gesture.card.isConnected)return;
+    // The compatibility click can be retargeted to the poster after a scroll
+    // or layout change. The next physical touch starts an independent action.
+    captionClick={card:gesture.card,x:touch.clientX,y:touch.clientY,until:Date.now()+650};
+    if(event.cancelable)event.preventDefault();
+    const hit=document.elementFromPoint(touch.clientX,touch.clientY);
+    if(!gesture.moved && Math.hypot(touch.clientX-gesture.x,touch.clientY-gesture.y)<=10 &&
+       Date.now()-gesture.start<700 && hit && captionCard(hit)===gesture.card)revealCaption(gesture.card);
+  },{capture:true,passive:false});
+  window.addEventListener('click',event=>{
+    const touch=event.pointerType==='touch' || event.sourceCapabilities?.firesTouchEvents;
+    const card=touch && captionCard(event.target),guard=captionClick && Date.now()<captionClick.until;
+    if(guard && (event.target.closest?.('.card')===captionClick.card ||
+      event.detail && Math.hypot(event.clientX-captionClick.x,event.clientY-captionClick.y)<18)){
+      event.preventDefault();event.stopImmediatePropagation();captionClick=null;return;
+    }
+    revealCaption(card);
+    if(card){event.preventDefault();event.stopImmediatePropagation();}
   },true);
   window.addEventListener('resize',revisit);
   document.addEventListener('minimal:interface-size',revisit);

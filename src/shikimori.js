@@ -1,11 +1,13 @@
 import {locale} from './i18n.js';
 import shikimoriMatch from './shikimori-match.js';
 import shikiSeason from './shiki-season.js';
+import cataloguePages from './catalogue-pages.js';
+import {catalogueCards} from './tmdb.js';
 const BASE='https://shikimori.io';
 export const SHIKI_ALL='minimal:shikimori:all';
 export function shikiCard(a,base=BASE){
  const title=locale()==='ru'?(a.russian || a.name):(a.name || a.russian);
- const tv=a.kind!=='movie',date=a.aired_on || '',img=a.image && a.image.original || '';
+ const tv=a.kind!=='movie',date=a.aired_on || '',img=a.image && (a.image.original || a.image.preview) || '';
  const url=value=>value?(value.startsWith('http')?value:base+value):'';
  const posterSources={high:url(img),medium:url(img || a.image && a.image.preview)};
  return {id:a.id,shikimori_id:a.id,episodes:Number(a.episodes)||0,episodes_aired:Number(a.episodes_aired)||0,status:a.status || '',title,original_title:a.name,...(tv?{name:title,original_name:a.name,first_air_date:date}:{release_date:date}),media_type:tv?'tv':'movie',source:'minimal_shiki',img:url(img),minimalPosterSources:posterSources,vote_average:Number(a.score) || 0};
@@ -32,12 +34,8 @@ export default function shikimori(L){
   }
   send();
  }
- function deliver(json,ok,params){
+ function deliver(json,ok){
   ok({...json,results:json.results.map(card=>({...card}))});
-  // Native Full.Next keeps the initial total_pages and ignores later responses.
-  // Advance its boundary after every real page; stop at the first short page.
-  const active=L.Activity && L.Activity.active && L.Activity.active(),grid=active && active.component==='category_full' && active.source==='minimal_shiki' && active.activity && active.activity.component;
-  if(params && grid && grid.object && String(grid.object.url || '')===String(params.url || '') && Number(grid.object.page)===json.page)grid.total_pages=json.total_pages;
  }
  function pump(){
   if(timer!==null || !queue.length || running>=2)return;
@@ -48,13 +46,14 @@ export default function shikimori(L){
    finish({results:json.map(card=>shikiCard(card,base)),page:job.page,total_pages:json.length===24?job.page+1:job.page});
   },()=>finish(null));pump();
  }
- function list(params,ok,fail){
+ function rawList(params,ok,fail){
   // Keep All independently configurable but share unfiltered popularity pages.
   const query=params.url===SHIKI_ALL?'order=popularity':String(params.url || 'order=popularity').replace(/^\?/,''),page=Math.max(1,Number(params.page)||1),key=locale()+'|'+query+'|'+page,cached=cache.get(key);
   if(cached && Date.now()-cached.time<900000)return deliver(cached.json,ok,params);
   cache.delete(key);const listener=[ok,fail || (()=>{}),params];if(pending.has(key)){pending.get(key).listeners.push(listener);return;}
   const job={key,query,page,params,listeners:[listener]};pending.set(key,job);queue.push(job);pump();
  }
+ const list=cataloguePages(rawList,cards=>catalogueCards(cards),locale,24);
  const full=shikimoriMatch(L,(id,ok,fail)=>/^\d+$/.test(id)?api('/api/animes/'+id,ok,fail,null,json=>!!(json && Number(json.id)===Number(id))):fail());
  function retry(){retryVersion++;unavailableUntil=0;preferred=0;}
  function genres(ok,fail){api('/api/genres',ok,fail);}
@@ -96,7 +95,7 @@ export default function shikimori(L){
    }next();
   });
  }
- function clear(){franchiseRevision++;franchiseBusy=false;franchiseLast=0;franchiseCache.clear();franchiseQueue.splice(0);const waiters=[...franchisePending.values()];franchisePending.clear();waiters.forEach(rows=>rows.forEach(([,fail])=>fail()));}
+ function clear(){list.clear();franchiseRevision++;franchiseBusy=false;franchiseLast=0;franchiseCache.clear();franchiseQueue.splice(0);const waiters=[...franchisePending.values()];franchisePending.clear();waiters.forEach(rows=>rows.forEach(([,fail])=>fail()));}
  L.Api.sources.minimal_shiki={list,full,genres,posters,metadata,release,franchise,retry,clear};
  return {list,genres,posters,metadata,franchise,retry,clear};
 }

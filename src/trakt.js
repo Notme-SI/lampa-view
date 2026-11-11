@@ -1,5 +1,7 @@
-import {text as lampaViewText} from './i18n.js';
-import {presentableCards} from './tmdb.js';
+import {locale,text as lampaViewText} from './i18n.js';
+import {catalogueCards,presentableCards} from './tmdb.js';
+import cataloguePages from './catalogue-pages.js';
+import {cataloguePlan} from './catalogue.js';
 // Trakt determines list membership and order. TMDB IDs keep native Lampa
 // details, online providers and torrent search interoperable with these cards.
 import flag from './storage-flag.js';
@@ -19,7 +21,12 @@ export function traktPlan(kind){
  if(!kind)return FEEDS.map(([title,path],index)=>({title,url:'mixed/'+path,...(index===0?{minimal_row_aliases:['?sort=now_playing','movie/now_playing','movies/trending','shows/trending']}:index===1?{minimal_row_aliases:['movie/popular','tv/popular','movies/popular','shows/popular']}:{})}));
  const types=TYPES[kind]?[TYPES[kind]]:kind==='anime'?['shows']:['movies','shows'];
  const filter=kind==='movie' || kind==='tv'?'?without_genres=animation':kind==='anime'?'?genres=animation&languages=ja':kind==='cartoon'?'?genres=animation':'';
- return types.flatMap(type=>FEEDS.map(([title,path])=>({title:kind==='cartoon' && type==='shows'?lampaViewText("Мультсериалы")+' · '+title:title,url:type+'/'+path+filter})));
+ const rows=types.flatMap(type=>FEEDS.map(([title,path])=>({title:kind==='cartoon' && type==='shows'?lampaViewText("Мультсериалы")+' · '+title:title,url:type+'/'+path+filter})));
+ if(kind==='anime'){
+  const season=cataloguePlan('anime').find(row=>row.key==='season');
+  rows.splice(1,0,{title:season.title+' · TMDB',url:season.tmdb,source:'tmdb',minimal_row_id:'minimal:tmdb:anime:season'});
+ }
+ return rows;
 }
 function image(value){
  const url=Array.isArray(value)?value[0]:'';
@@ -70,15 +77,15 @@ export default function installTrakt(L){
    try{xhr.send();}catch(e){finish(null,lampaViewText("Не удалось подключиться к Trakt"));}
   }
  }
- function clear(){generation++;queue.length=0;pending.clear();metadata.clear();for(const xhr of Array.from(live))xhr.abort();}
- function list(params,ok,fail){
+ function clear(){generation++;queue.length=0;pending.clear();metadata.clear();catalogueList.clear();for(const xhr of Array.from(live))xhr.abort();}
+ function rawList(params,ok,fail){
   if(!enabled())return error(fail,lampaViewText("Включите Trakt в настройках каталога L A M P A"));
   const id=client();if(!id)return error(fail,lampaViewText("Добавьте Client ID в Настройки → L A M P A → Каталог и поиск → Trakt"));
   if(id!==lastKey){clear();cache.clear();lastKey=id;}
   const mixed=String(params.url || '').match(/^mixed\/(trending|popular|watched\/weekly|collected\/monthly|anticipated)$/);
   if(mixed){
    const parts=new Array(2);let left=2,reason;
-   ['movies','shows'].forEach((type,index)=>list({...params,url:type+'/'+mixed[1],minimal_limit:10},json=>{parts[index]=json;finish();},e=>{reason=e;finish();}));
+   ['movies','shows'].forEach((type,index)=>rawList({...params,url:type+'/'+mixed[1],minimal_limit:10},json=>{parts[index]=json;finish();},e=>{reason=e;finish();}));
    function finish(){if(--left)return;const good=parts.filter(Boolean);if(!good.length)return error(fail,reason && reason.status_message || lampaViewText("Trakt недоступен"));
     const results=[],seen=new Set();for(let i=0;i<10;i++)for(const part of good){const card=part.results[i];if(card && !seen.has(card.media_type+':'+card.id)){seen.add(card.media_type+':'+card.id);results.push(card);}}
     ok({results,page:good[0].page,total_pages:Math.max(...good.map(part=>part.total_pages))});
@@ -107,6 +114,14 @@ export default function installTrakt(L){
   const saved=cache.get(key);if(saved && Date.now()-saved.at<600000)return done(saved.value);
   if(pending.has(key)){pending.get(key).callbacks.push([done,fail]);return;}
   const job={key,path:route,client:id,generation,callbacks:[[done,fail]]};pending.set(key,job);queue.push(job);pump();
+ }
+ const catalogueList=cataloguePages(rawList,catalogueCards,locale,20,false);
+ function list(params,ok,fail){
+  if(String(params.url || '').startsWith('search/'))return rawList(params,ok,fail);
+  const id=client();
+  if(!enabled() || !id)return rawList(params,ok,fail);
+  if(id!==lastKey){clear();cache.clear();lastKey=id;}
+  return catalogueList(params,ok,fail);
  }
  function cancelSearch(){
   searchRevision++;
@@ -141,7 +156,12 @@ export default function installTrakt(L){
  function rows(object,ok,fail){
   const plan=traktPlan(object.url || object.cat),output=new Array(plan.length);let left=plan.length,failures=0,reason;
   function finish(){if(--left)return;const result=output.filter(Boolean);if(!result.length && failures)return error(fail,reason || lampaViewText("Trakt недоступен"));ok(result);}
-  plan.forEach((row,index)=>list({url:row.url,page:1},json=>{output[index]={...json,...row,source:'trakt'};finish();},e=>{failures++;reason=e.status_message;finish();}));
+  plan.forEach((row,index)=>{
+   const source=row.source || 'trakt';
+   const load=source==='tmdb'?L.Api.sources.tmdb?.list:list;
+   if(!load){finish();return;}
+   load.call(L.Api.sources[source],{url:row.url,page:1,source},json=>{if(json.results.length)output[index]={...json,...row,source};finish();},e=>{failures++;reason=e?.status_message;finish();});
+  });
  }
  const tmdb=L.Api.sources.tmdb,adapter={main:rows,category:rows,list,clear};
  // Details always use a verified TMDB ID, never the unrelated Trakt ID.

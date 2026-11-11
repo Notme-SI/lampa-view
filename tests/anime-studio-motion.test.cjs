@@ -4,7 +4,7 @@ test('categories load a bounded first batch, retain lazy continuation and keep a
  const catalogueApi=mod('catalogue'),response=require('./fixtures/discovery-response.cjs');
  for(const kind of ['movie','tv','anime'])for(const source of ['cub','tmdb'])for(const mode of ['standard','shikimori']){
   const data={minimal_home_compact:false,minimal_anime_home:true,minimal_anime_shikimori:true,minimal_anime_catalogue:mode},pending=[],requests=[];let active=0,max=0,nativeCalls=0,answer,calls=0;
-  function request(url,ok){requests.push(url);const start=requests.length*100;active++;max=Math.max(max,active);pending.push(()=>{active--;ok(kind!=='anime'?response(url,1):{results:Array.from({length:30},(_,id)=>({id:start+id,title:'Title'}))});});}
+  function request(url,ok){requests.push(url);const start=requests.length*100;active++;max=Math.max(max,active);pending.push(()=>{active--;ok(kind!=='anime'?response(url,1):{results:Array.from({length:30},(_,id)=>({id:start+id,title:'Аниме',poster_path:'/p.jpg'}))});});}
   const rows=[{title:'Сейчас смотрят',url:'watch',results:[{id:1}]},{title:'Другое',url:'other',results:[{id:2}]}],L={Storage:{get:(k,d)=>data[k]===undefined?d:data[k],set:(k,v)=>data[k]=v},Lang:{translate:()=> 'Сейчас смотрят'},SettingsApi:{addParam(){}},Api:{main:(p,ok)=>ok(rows),category(){nativeCalls++;},sources:{cub:{list:(p,ok)=>request(p.url,ok)},tmdb:{get:(url,p,ok)=>request(url,ok)}}},Utils:{createInstance(){}},Maker:{get(){}}};
   mod('collections').default(L,{list:(p,ok)=>request(p.url,ok)});L.Api.main({component:'main'},r=>answer=r);assert.deepEqual(answer,rows);assert.equal(requests.length,0);
   const expected=kind==='anime' && mode==='shikimori'?7:3;const next=L.Api.category({component:'category',url:kind,source},r=>{answer=r;calls++;});assert.equal(typeof next,'function');assert.equal(pending.length,3);while(pending.length)pending.shift()();assert.equal(calls,1);assert.equal(nativeCalls,0);assert.equal(requests.length,expected);assert.ok(max<=3);assert.equal(answer.length,expected);assert.ok(answer.every(row=>row.results.length===20));assert.equal(data.minimal_collection_rows_v2['category:'+kind+(kind==='anime'?':'+mode:'')].length,expected);
@@ -13,11 +13,11 @@ test('categories load a bounded first batch, retain lazy continuation and keep a
  }
  const {cataloguePlan}=mod('catalogue');assert.deepEqual(cataloguePlan('anime','shikimori').slice(-4).map(r=>r.title),['Высокий рейтинг','Завершённые','Полнометражные','Ожидаемые']);for(const row of cataloguePlan('anime'))if(row.tmdb)assert.equal(new URLSearchParams(row.tmdb.split('?')[1]).getAll('with_genres').length,1);
 });
-test('poster focus respects native no-animation without changing global settings',async()=>{
+test('poster focus still moves when native page animations are disabled without changing the preference',async()=>{
  const n=await native(),{w,L}=n;
  try{
   L.Storage.set('animation',false);w.document.body.classList.add('no--animation','advanced--animation');const card=w.document.createElement('div');card.className='card';card.innerHTML='<div class="card__view"></div>';w.document.body.appendChild(card);
-  const before=w.getComputedStyle(card.firstChild);assert.equal(before.transition,'none');card.classList.add('focus');const after=w.getComputedStyle(card.firstChild);assert.equal(after.transition,'none');assert.equal(after.transform,'none');assert.equal(after.boxShadow,'none');assert.equal(L.Storage.value('animation'),'false');assert.ok(w.document.body.classList.contains('no--animation'));assert.deepEqual(n.errors,[]);
+  card.classList.add('focus');const after=w.getComputedStyle(card.firstChild);assert.match(after.transition,/transform/);assert.notEqual(after.transform,'none');assert.equal(L.Storage.value('animation'),'false');assert.ok(w.document.body.classList.contains('no--animation'));assert.deepEqual(n.errors,[]);
  }finally{n.close();}
 });
 test('full detail shows studio before the year with a supplied title logo, hides broken studios and accepts studio-only loader results',async()=>{
@@ -54,8 +54,8 @@ test('native anime screen stays within ten rows and does not invoke the unbounde
  const n=await native(),{w,L}=n;
  try{
   const calls=[];L.Api.sources.cub.category=()=>assert.fail('unbounded category factory called');L.Api.sources.cub.list=(p,ok)=>{calls.push(p.url);w.setTimeout(()=>ok({results:Array.from({length:24},(_,id)=>({id:id+1,name:'Аниме '+id,original_name:'Anime '+id,first_air_date:'2025-01-01',source:'cub',genre_ids:[16]}))}),0);};
-  L.Api.sources.tmdb.get=(url,p,ok)=>{calls.push(url);w.setTimeout(()=>ok({results:[{id:900,name:'Сезонное аниме',genre_ids:[16],original_language:'ja'}]}),0);};
-  const network=w.testNetwork;w.testNetwork=(url,ok,fail)=>{if(url.includes('/discover/tv') && url.includes('first_air_date.gte')){calls.push(url);w.setTimeout(()=>ok({results:[{id:901,name:'Ожидаемое аниме',genre_ids:[16],original_language:'ja'}]}),0);}else if(url.includes('shikimori.one/api/animes')){calls.push(url);w.setTimeout(()=>ok(Array.from({length:24},(_,id)=>({id:id+100,kind:'tv',name:'Anime '+id,russian:'Аниме '+id,aired_on:'2025-01-01',score:'8',image:{original:'/poster.jpg'}}))),0);}else network(url,ok,fail);};
+  L.Api.sources.tmdb.get=(url,p,ok)=>{calls.push(url);w.setTimeout(()=>ok({results:[{id:900,name:'Сезонное аниме',poster_path:'/p.jpg',genre_ids:[16],original_language:'ja'}]}),0);};
+  const network=w.testNetwork;w.testNetwork=(url,ok,fail)=>{if(url.includes('/discover/tv') && url.includes('first_air_date.gte')){calls.push(url);w.setTimeout(()=>ok({results:[{id:901,name:'Ожидаемое аниме',poster_path:'/p.jpg',genre_ids:[16],original_language:'ja'}]}),0);}else if(url.includes('shikimori.one/api/animes')){calls.push(url);w.setTimeout(()=>ok(Array.from({length:24},(_,id)=>({id:id+100,kind:'tv',name:'Anime '+id,russian:'Аниме '+id,aired_on:'2025-01-01',score:'8',image:{original:'/poster.jpg'}}))),0);}else network(url,ok,fail);};
   L.Activity.push({component:'category',url:'anime',source:'cub',title:'Аниме'});await new Promise(r=>setTimeout(r,220));const link=L.Activity.active().activity.component;
   assert.equal(calls.length,3);assert.equal(link.loaded.length+link.items.length,3);for(let i=0;i<4;i++){await new Promise(resolve=>link.emit('next',resolve,resolve));}assert.equal(calls.length,8);assert.ok(link.items.length<=8);const known=L.Storage.get('minimal_collection_rows_v2',{})['category:anime:standard'];assert.equal(known.length,8);assert.equal(known[0].title,'Сейчас смотрят');assert.equal(known[1].title,'Сейчас выходит');assert.equal(known[2].title,'Новинки сезона');assert.deepEqual(n.errors,[]);
  }finally{n.close();}

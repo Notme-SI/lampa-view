@@ -42,18 +42,18 @@ test('discovery separates recent airings, rating, popularity and years while pre
   assert.ok(by('rated').minimal_row_aliases.includes('minimal:tmdb:'+kind+':uhd'));assert.ok(by('new').minimal_row_aliases.includes('minimal:tmdb:'+kind+':year'));
   assert.ok(plan.every(row=>row.discovery));assert.equal(new Set(plan.map(row=>row.tmdb)).size,plan.length);
  }
- const lead=['Новинки','Высокий рейтинг','Популярные','Много голосов'];
+ const lead=['Новинки','Популярные','Высокий рейтинг','Много голосов'];
  for(const kind of ['movie','tv','cartoon'])assert.deepEqual(cataloguePlan(kind).filter(row=>row.key!=='watch').slice(1,5).map(row=>row.title),lead);
  const tv=cataloguePlan('tv');
  assert.ok(tv.every(row=>!row.discovery.network && (!row.discovery.period || row.key==='new')));
- assert.deepEqual(tv.filter(row=>row.key.startsWith('country-')).map(row=>row.title),['Российские сериалы','Корейские дорамы','Турецкие сериалы','Китайские дорамы']);
- assert.deepEqual(tv.filter(row=>row.key!=='watch').slice(1,5).map(row=>row.discovery.sort),['new','rated','popular','votes']);
+ for(const kind of ['movie','tv','cartoon','tvshow'])assert.ok(cataloguePlan(kind).every(row=>!row.discovery.country),'Default collections do not duplicate the country filter');
+ assert.deepEqual(tv.filter(row=>row.key!=='watch').slice(1,5).map(row=>row.discovery.sort),['new','popular','rated','votes']);
 });
 
 test('preview deduplication keeps media identities, rank, full-feed URLs and native pagination without mutating cached data',()=>{
  const a={id:1,title:'A'},b={id:2,title:'B'},c={id:3,title:'C'},show={id:1,name:'Different series'};
  const rows=[{source:'tmdb',url:'discover/movie?sort_by=popularity.desc',results:[a,a,b],total_pages:50},{source:'tmdb',url:'discover/movie?sort_by=vote_average.desc',results:[b,c],total_pages:80},{source:'tmdb',url:'discover/tv?sort_by=popularity.desc',results:[show],total_pages:5}];
- const result=uniquePreviews(rows);assert.deepEqual(result.map(row=>row.results.map(card=>card.id)),[[1,2],[3],[1]]);
+ const result=uniquePreviews(rows);assert.deepEqual(result.map(row=>row.results.map(card=>card.id)),[[1,2],[2,3],[1]]);
  assert.deepEqual(result.map(row=>row.total_pages),[50,80,5]);assert.deepEqual(result.map(row=>row.url),rows.map(row=>row.url));assert.equal(rows[1].results.length,2);
  assert.equal(uniquePreviews([{...rows[0],minimal_hidden:true},rows[1]])[1].results.length,2,'Hidden rows must not consume preview titles');
 });
@@ -72,11 +72,11 @@ test('rebuilt dorama and TV shows separate countries, genres and programmes with
  const date=new Date(2026,9,30),dorama=cataloguePlan('dorama','standard',date),shows=cataloguePlan('tvshow','standard',date);
  const watching=shows[0],watchQuery=new URLSearchParams(watching.tmdb.split('?')[1]);
  assert.equal(watching.title,'Сейчас смотрят');assert.equal(watching.key,'now-watching');
- assert.equal(watchQuery.get('with_origin_country'),'RU');assert.equal(watchQuery.get('with_genres'),'10764|10767');
+ assert.equal(watchQuery.get('with_origin_country'),null);assert.equal(watchQuery.get('with_genres'),'10764|10767');
  assert.equal(watchQuery.get('sort_by'),'popularity.desc');assert.equal(watchQuery.get('air_date.gte'),'2026-08-01');assert.equal(watchQuery.get('air_date.lte'),'2026-10-30');
- for(const plan of [dorama,shows]){const first=plan.find(r=>r.key==='watch');assert.equal(first.key,'watch');assert.equal(first.title,plan===shows?'Популярное':'Сейчас выходит');const q=new URLSearchParams(first.tmdb.split('?')[1]);assert.equal(q.get('air_date.gte'),plan===shows?'2025-10-30':'2026-10-23');assert.equal(q.get('air_date.lte'),'2026-10-30');assert.equal(new Set(plan.map(row=>row.tmdb)).size,plan.length);assert.ok(plan.every(row=>row.media_type==='tv'));}
+ for(const plan of [dorama,shows]){const first=plan.find(r=>r.key==='watch');assert.equal(first.title,plan===shows?'Популярное':'Сейчас выходит');const q=new URLSearchParams(first.tmdb.split('?')[1]);assert.equal(q.get('air_date.gte'),plan===shows?null:'2026-10-23');assert.equal(q.get('air_date.lte'),plan===shows?null:'2026-10-30');assert.equal(new Set(plan.map(row=>row.tmdb)).size,plan.length);assert.ok(plan.every(row=>row.media_type==='tv'));}
  assert.equal(dorama.length,15);assert.equal(shows.length,6);assert.ok(dorama.find(r=>r.key==='country-KR').minimal_row_aliases.includes('minimal:kino:dorama:korea'));
- assert.ok(shows.every(row=>row.discovery.country==='RU')); assert.ok(shows.some(row=>row.discovery.country==='RU'));assert.ok(shows.every(row=>new URLSearchParams(row.tmdb.split('?')[1]).get('with_original_language')===null));
+ assert.ok(shows.every(row=>!row.discovery.country));assert.ok(shows.every(row=>new URLSearchParams(row.tmdb.split('?')[1]).get('with_original_language')===null));
 });
 
 test('CUB-selected regional sections use the same complete discovery source and keep exact IDs for details and More',()=>{

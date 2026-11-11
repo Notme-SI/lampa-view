@@ -3,9 +3,6 @@
    while actually animating. Avoid retaining unnecessary offscreen textures
    as more rows enter the page. */
 body.lampa_view.pt-tv .scroll--horizontal>.scroll__content>.scroll__body {will-change:auto}
-/* A crisp focus ring avoids repainting broad shadows on every remote step. */
-body.lampa_view.pt-tv .card__view {transition:transform .12s ease!important;-webkit-transition:-webkit-transform .12s ease!important}
-body.lampa_view.pt-tv .card:is(.focus,.hover) .card__view {box-shadow:none!important}
 body.lampa_view.pt-tv :is(.head__action,.menu__item,.full-start__button,.simple-button,.full-review,.full-review-add):is(.focus,.hover) {animation:none!important;-webkit-animation:none!important}
 body.lampa_view.pt-tv {--pt-ui-font:calc(.703125vw * var(--pt-interface-scale,1));font-size:var(--pt-ui-font)!important;--pt-banner-unit:calc(.703125vw * 1.12)}
 body.lampa_view.pt-tv .pt-hero {max-width:90vw;margin:0 auto .9em}
@@ -16,7 +13,6 @@ body.lampa_view.pt-tv .pt-hero__logo {max-height:7em;max-width:100%;margin-botto
 body.lampa_view.pt-tv .pt-hero__overview {-webkit-line-clamp:2;line-height:1.65}
 body.lampa_view.pt-tv .pt-hero__actions {margin-top:1.6em}
 body.lampa_view.pt-tv .pt-hero__dots {left:45%;bottom:1.5em}
-body.lampa_view.pt-tv .items-line {margin-bottom:.8em;padding-bottom:.7em}
 body.lampa_view.pt-tv .items-line .card:not(.card--wide):not(.card--collection) {width:clamp(8.4em,calc((90vw - 10em / var(--pt-interface-scale,1)) / 10 * var(--pt-interface-scale,1)),11.1em)!important}
 body.lampa_view.pt-tv .items-line.minimal-posters-sized .card:not(.card--wide):not(.card--collection) {width:var(--minimal-poster-width)!important}
 body.lampa_view.pt-tv .items-line>.items-line__head {padding-left:1.1em}

@@ -11,7 +11,7 @@ const {setup}=require('../fixtures/native-browser.cjs');
    if(device==='Windows')window.require=name=>name==='fs'?{existsSync:()=>{qaFsChecks++;return true;}}:name==='child_process'?{spawn:(path,args)=>{qaLaunches.push({path,args,at:performance.now()});return {on(){}};}}:{};
   },device)}),{page}=r;
   await page.evaluate(device=>{
-   const L=Lampa;L.DeviceInput.init();L.Controller.observe();Navigator.follow('focus',event=>L.Controller.focus(event.elem));L.Storage.set('player_torrent',device==='Windows'?'other':'android');L.Storage.set('player_nw_path','C:\\Player\\mpv.exe');L.Storage.set('internal_torrclient',true);
+   const L=Lampa;L.DeviceInput.init();L.Controller.observe();Navigator.follow('focus',event=>L.Controller.focus(event.elem));L.Storage.set('menu_always',true);L.Storage.set('player_torrent',device==='Windows'?'other':'android');L.Storage.set('player_nw_path','C:\\Player\\mpv.exe');L.Storage.set('internal_torrclient',true);
    L.Android.openPlayer=(url,data)=>qaLaunches.push({url,episode:data.episode,at:performance.now()});
    const movie={id:99,name:'MobLand',original_name:'MobLand',original_title:'MobLand',first_air_date:'2025-03-30',number_of_seasons:1,seasons:[{season_number:1,episode_count:2}],genres:[]};
    const row={Title:'MobLand S01 WEB-DL 1080p',Tracker:'test',Size:1e9,Seeders:50,MagnetUri:'magnet:?xt=urn:btih:'+'a'.repeat(40)};

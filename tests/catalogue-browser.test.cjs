@@ -12,12 +12,43 @@ test('single category list includes all non-genre collections, accepts archives 
  const spec=browse.browseSpec('tv',{});assert.ok(model.discoveryAccepts({id:1,name:'Архив',first_air_date:'1980-01-01',genre_ids:[18]},spec));
  const changed=browse.browseSpec('movie',{collection:'now-watching',genre:'28'});assert.ok(model.discoverySpecs(changed)[0].path.startsWith('discover/'));
  const recent=browse.browseSpec('movie',{collection:'new',period:'1990-2005'});assert.equal(new URLSearchParams(model.discoverySpecs(recent)[0].path.split('?')[1]).get('primary_release_date.gte'),'1990-01-01');
+ const series=browse.browseSpec('cartoon',{collection:'series',genre:'28'});assert.equal(series.type,'tv');assert.equal(series.genre,'');assert.equal(model.discoverySpecs(series).length,1);
+ assert.deepEqual(model.discoverySpecs(browse.browseSpec('movie',{collection:'upcoming',period:'1990-2005'})),[]);
 });
 
-test('TV-show filters retain Russian reality/talk scope, archives and separate genre choices',()=>{
- const options=browse.browseOptions('tvshow');assert.deepEqual(options.collections.map(r=>r.key),['now-watching','new','watch','rated']);assert.deepEqual(options.genres.map(g=>g.id),['10764','10767']);
- const spec=browse.browseSpec('tvshow',{genre:'10767',period:'1990-2005',sort:'rated'}),q=new URLSearchParams(model.discoverySpecs(spec)[0].path.split('?')[1]);assert.equal(spec.type,'tv');assert.ok(discoverySpec(spec));assert.equal(q.get('with_origin_country'),'RU');assert.equal(q.get('with_genres'),'10767');assert.equal(q.get('first_air_date.gte'),'1990-01-01');
+test('TV-show filters compose country, genre, archived years and rating',()=>{
+ const options=browse.browseOptions('tvshow');assert.deepEqual(options.collections.map(r=>r.key),['now-watching','new','rated','russian-reality','russian-talk']);assert.deepEqual(options.genres.map(g=>g.id),['10764','10767']);
+ const spec=browse.browseSpec('tvshow',{country:'FR',genre:'10767',period:'1990-2005',sort:'rated'}),q=new URLSearchParams(model.discoverySpecs(spec)[0].path.split('?')[1]);assert.equal(spec.type,'tv');assert.ok(discoverySpec(spec));assert.equal(q.get('with_origin_country'),'FR');assert.equal(q.get('with_genres'),'10767');assert.equal(q.get('first_air_date.gte'),'1990-01-01');assert.equal(q.get('sort_by'),'vote_average.desc');
  const base=browse.browseSpec('tvshow');assert.ok(model.discoveryAccepts({id:1,name:'Архивное ток-шоу',first_air_date:'1995-01-01',genre_ids:[10767],origin_country:['RU']},base));assert.equal(model.discoveryAccepts({id:2,name:'Драма',genre_ids:[18],origin_country:['RU']},base),false);
+});
+test('Russia combines modern and historical countries in a single ordered result',async()=>{
+ for(const kind of browse.BROWSE_KINDS){
+  assert.deepEqual(browse.browseOptions(kind).countries.filter(([code])=>['RU','SU'].includes(code)).map(([code])=>code),['RU']);
+  assert.equal(browse.browseState(kind,{country:'SU'}).country,'RU');
+  assert.equal(browse.browseState(kind,{collection:'country-RU'}).country,'RU');
+  assert.equal(browse.browseState(kind,{collection:'country-RU'}).collection,'');
+ }
+ assert.equal(browse.browseState('tv',{collection:'country-KR'}).country,'KR');
+ const calls=[],spec=browse.browseSpec('tv',{country:'SU',sort:'rated'});
+ const card=(id,country,rating)=>({id,name:'Сериал '+id,origin_country:[country],genre_ids:[18],poster_path:'/p.jpg',vote_average:rating});
+ const L={Api:{sources:{tmdb:{get(path,{page},ok){
+  const country=new URLSearchParams(path.split('?')[1]).get('with_origin_country');
+  calls.push(country+':'+page);
+  const offset=(page-1)*15;
+  const results=Array.from({length:15},(_,i)=>card(1+offset+i+(country==='SU'?100:0),country,10-(offset+i)*.2-(country==='SU'?.1:0)));
+  if(country==='SU' && page===1)results.unshift(card(1,country,10));
+  ok({results,page,total_pages:2});
+ }}}}};
+ const api=mod('discovery-source').default(L),cards=[];
+ for(let page=1;page<=3;page++){
+  const data=await new Promise((ok,fail)=>api.list({url:JSON.stringify(spec),page},ok,fail));
+  cards.push(...data.results);
+ }
+ assert.deepEqual(calls.sort(),['RU:1','RU:2','SU:1','SU:2']);
+ assert.equal(cards.length,60);
+ assert.equal(new Set(cards.map(c=>c.id)).size,60);
+ assert.ok(cards.every((c,i)=>!i || c.vote_average<=cards[i-1].vote_average));
+ assert.equal(discoverySpec({...spec,country:'SU'}).country,'RU');
 });
 test('actor projects merge cast and crew once per media identity without clipping the full filmography',()=>{
  const {personProjects}=mod('project-browser'),cast=Array.from({length:67},(_,i)=>({id:i+1,title:'Проект '+i,popularity:67-i,poster_path:'/p.jpg'}));

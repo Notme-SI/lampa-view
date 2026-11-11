@@ -12,9 +12,10 @@ test('Trakt enable prompts for ID, keeps the native main-source selector and hid
 });
 test('Trakt category reports ready state to anime tabs and preserves collection customization',async()=>{
  const n=await native({built:true}),{L,w}=n;try{
-  w.XMLHttpRequest=class{open(){}setRequestHeader(){}send(){w.setTimeout(()=>{this.status=200;this.responseText=JSON.stringify([{show:{title:'Anime',language:'ja',year:2022,ids:{tmdb:123,trakt:456}}}]);this.onload();},0);}getResponseHeader(){return '2';}abort(){this.onabort();}};
+  w.XMLHttpRequest=class{open(){}setRequestHeader(){}send(){w.setTimeout(()=>{this.status=200;this.responseText=JSON.stringify([{show:{title:'Аниме',language:'ja',year:2022,ids:{tmdb:123,trakt:456},images:{poster:['media.trakt.tv/poster.jpg']}}}]);this.onload();},0);}getResponseHeader(){return '2';}abort(){this.onabort();}};
+  L.Api.sources.tmdb.get=(path,p,ok)=>ok({results:path.startsWith('discover/tv?')?[{id:124,name:'Новое аниме',poster_path:'/season.jpg',genre_ids:[16],original_language:'ja'}]:[],total_pages:1});
   L.Storage.set('minimal_trakt_enabled',true);L.Storage.set('minimal_trakt_client_id','public-test-id');L.Storage.set('minimal_anime_catalogue','standard');
-  const object={source:'trakt',url:'anime'},rows=await new Promise((resolve,reject)=>L.Api.category(object,resolve,reject));assert.equal(object.minimal_catalogue_status.state,'ready');assert.equal(rows.length,5);assert.equal(rows[0].source,'trakt');assert.equal(rows[0].results[0].id,123);assert.ok(L.Storage.get('minimal_collection_rows_v2',{})['category:anime:standard'].some(row=>row.id.includes('shows/trending')));assert.deepEqual(n.errors,[]);
+  const object={source:'trakt',url:'anime'},rows=await new Promise((resolve,reject)=>L.Api.category(object,resolve,reject));assert.equal(object.minimal_catalogue_status.state,'ready');assert.equal(rows.length,6);assert.equal(rows[0].source,'trakt');assert.equal(rows[0].results[0].id,123);assert.equal(rows[1].source,'tmdb');assert.equal(rows[1].results[0].id,124);assert.ok(L.Storage.get('minimal_collection_rows_v2',{})['category:anime:standard'].some(row=>row.id.includes('shows/trending')));assert.deepEqual(n.errors,[]);
  }finally{n.close();}
 });
 
@@ -26,7 +27,7 @@ test('CUB and Trakt use the full TMDB TV-show catalogue without a sparse regiona
   const requests=[],response=require('./fixtures/discovery-response.cjs');L.Api.sources.tmdb.get=(url,p,ok)=>{requests.push(url);ok(response(url,p.page));};
   for(const source of ['cub','trakt']){
    L.Storage.set('minimal_catalogue_cache_v1',[]);L.Api.sources.minimal_discovery.clear();requests.length=0;const object={source,url:'tvshow'},rows=[];let more;await new Promise((resolve,reject)=>{more=L.Api.category(object,first=>{rows.push(...first);resolve();},reject);});assert.equal(rows.length,3);await new Promise((resolve,reject)=>more(next=>{rows.push(...next);resolve();},reject));
-   assert.equal(rows.length,5);assert.equal(requests.length,source==='cub'?5:0,'The second source reuses public TMDB cache');
+   assert.equal(rows.length,6);assert.equal(requests.length,source==='cub'?6:0,'The second source reuses public TMDB cache');
    assert.ok(rows.every(row=>row.source==='minimal_discovery' && !row.title.endsWith(' · TMDB') && row.results.length===20 && row.total_pages===2 && JSON.parse(row.url).kind==='tvshow' && row.results.every(c=>c.source==='tmdb' && c.media_type==='tv')));assert.equal(object.minimal_catalogue_status.state,'ready');
   }
   assert.deepEqual(n.errors,[]);

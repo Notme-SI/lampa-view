@@ -10,21 +10,23 @@ const {setup}=require('../fixtures/native-browser.cjs');
    const r=await setup(browser,{viewport:{width:1280,height:720},mode:'tv'}),{page}=r;
    await page.waitForTimeout(180);
    await page.evaluate(()=>{
-    const L=Lampa;L.DeviceInput.init();L.Controller.observe();L.Storage.set('keyboard_type','system');document.body.style.fontSize='24px';
+    const L=Lampa;L.DeviceInput.init();L.Controller.observe();L.Storage.set('keyboard_type','system');L.Storage.set('menu_always',true);document.body.style.fontSize='24px';
     L.Parser.get=(p,ok)=>setTimeout(()=>ok({Results:[{Title:'Киберпанк / Cyberpunk: Edgerunners (1 сезон, 1-10 из 10) 1080p',Tracker:'kinozal',Seeders:10,Size:1e9}]}),0);
     const movie={id:105248,name:'Киберпанк: Бегущие по краю',title:'Cyberpunk: Edgerunners',original_name:'サイバーパンク エッジランナーズ',original_title:'Cyberpunk: Edgerunners',backdrop_path:'/backdrop.jpg',first_air_date:'2022-09-13',number_of_seasons:1,genres:[],source:'tmdb'};
     L.Activity.push({component:'torrents',movie,search:'Cyberpunk: Edgerunners',search_one:'Cyberpunk: Edgerunners',search_two:'Cyberpunk: Edgerunners',url:''});
    });
    await page.waitForSelector('.minimal-toolbar-label');
+   await page.waitForFunction(()=>document.querySelector('.wrap__left').getAnimations().every(animation=>animation.playState!=='running'));
    const layout=await page.evaluate(()=>{
     const root=document.querySelector('.activity--active .minimal-torrent-view'),banner=root.querySelector('.minimal-torrent-banner'),files=root.querySelector('.explorer__files');
     const rect=el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,height:r.height};};
     const buttons=[...root.querySelectorAll('.minimal-torrent-toolbar .simple-button')].filter(el=>getComputedStyle(el).display!=='none');
     for(const button of buttons){if(button.querySelectorAll('svg').length!==1)throw new Error('One toolbar glyph per action');const a=button.querySelector('svg').getBoundingClientRect(),b=button.querySelector('.minimal-toolbar-label').getBoundingClientRect();if(a.right>b.left+1 || Math.abs(a.top+a.height/2-b.top-b.height/2)>1)throw new Error('Toolbar icon and text must share a line');}
     const history=root.querySelector('.watched-history');history.classList.add('focus');
-    return {banner:rect(banner),files:rect(files),buttons:buttons.map(rect),labels:buttons.map(el=>el.innerText),historyFocus:getComputedStyle(history,'::after').display};
+    return {rail:rect(document.querySelector('.wrap__left')),banner:rect(banner),files:rect(files),buttons:buttons.map(rect),labels:buttons.map(el=>el.innerText),historyFocus:getComputedStyle(history,'::after').display};
    });
    assert.ok(layout.banner.right<=layout.files.left+1,'The banner must not intrude into search or release rows: '+JSON.stringify(layout));
+   assert.ok(layout.banner.left>layout.rail.right,'The banner starts after the fixed rail: '+JSON.stringify(layout));
    assert.deepEqual(layout.labels,['Поиск','Сортировка','Фильтры']);
    assert.ok(Math.max(...layout.buttons.map(b=>b.height))-Math.min(...layout.buttons.map(b=>b.height))<1);
    for(const button of layout.buttons)assert.ok(button.left>=layout.files.left-1 && button.right<=1280);
@@ -38,7 +40,7 @@ const {setup}=require('../fixtures/native-browser.cjs');
    await page.waitForSelector('.search-box');
    const overlay=await page.locator('.search-box').evaluate(el=>{const css=getComputedStyle(el),r=el.getBoundingClientRect();return {color:css.backgroundColor,zIndex:Number(css.zIndex),left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:innerWidth,height:innerHeight,bodyZoom:getComputedStyle(document.body).zoom,rootZoom:getComputedStyle(document.documentElement).zoom,cssWidth:css.width,viewport:visualViewport.width};});
    if(process.env.LAMPA_QA_OUTPUT)await page.screenshot({path:path.join(process.env.LAMPA_QA_OUTPUT,name+'-tv-search.png')});
-   assert.equal(overlay.color,'rgb(18, 16, 12)');assert.ok(overlay.zIndex>70);assert.ok(Math.abs(overlay.left)<1 && overlay.right>=overlay.width-1 && Math.abs(overlay.top)<1 && overlay.bottom>=overlay.height-1,JSON.stringify(overlay));
+   assert.equal(overlay.color,'rgb(0, 0, 0)');assert.ok(overlay.zIndex>70);assert.ok(Math.abs(overlay.left)<1 && overlay.right>=overlay.width-1 && Math.abs(overlay.top)<1 && overlay.bottom>=overlay.height-1,JSON.stringify(overlay));
    await page.evaluate(()=>Lampa.Controller.back());assert.equal(await page.locator('.search-box').count(),0);
    assert.deepEqual(r.errors,[]);await r.context.close();
    console.log(name+': TV banner containment, compact toolbar, multilingual search and opaque input overlay passed');

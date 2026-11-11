@@ -4,6 +4,16 @@ export default function homeStage(hero,root){
  // A covered activity can have different native padding and scroll offsets.
  if(!document.body.classList.contains('pt-home') || !root.closest('.activity--active'))return;
  const tv=document.body.classList.contains('pt-tv');
+ // Rows reserve a focus gutter inside their outer margin. Align the banner
+ // copy to that content edge, independently of horizontal rail scrolling.
+ if(!document.body.classList.contains('pt-mobile')){
+  const content=root.querySelector('.items-line__body>.scroll--horizontal>.scroll__content');
+  if(content){
+   const left=root.getBoundingClientRect().left-hero.getBoundingClientRect().left+(parseFloat(getComputedStyle(content).paddingLeft)||0);
+   const value=left.toFixed(3)+'px';
+   if(hero.style.getPropertyValue('--pt-home-copy-left')!==value)hero.style.setProperty('--pt-home-copy-left',value);
+  }
+ }
  // Expanded collections use native scrolling. Retain the preview's hero
  // height so entry/return only animates cards, never the banner itself.
  if(tv && !root.classList.contains('minimal-hero-preview')){root.classList.add('minimal-home-first-row');return;}
@@ -34,9 +44,8 @@ export default function homeStage(hero,root){
  if(body){
   body.style.fontSize='';body.style.bottom='';
   const style=getComputedStyle(body),font=parseFloat(style.fontSize)||16;
-  const glass=document.body.classList.contains('pt-theme-glass');
   const anchored=style.position==='absolute';
-  const minBottom=font*(glass && tv?3.8:glass?2:tv?3.2:3),topInset=font*(tv?1:1.25);
+  const minBottom=font*(tv?3.8:2),topInset=font*(tv?1:1.25);
   if(document.body.classList.contains('pt-personal-enlarged')){
    height=Math.max(height,Math.ceil(body.offsetHeight+minBottom+topInset));
    hero.style.height=height+'px';
@@ -44,7 +53,7 @@ export default function homeStage(hero,root){
    root.classList.add('minimal-home-first-row');return;
   }
   const room=Math.max(1,height-minBottom-topInset),natural=body.offsetHeight;
-  if((glass || !tv) && natural>room)body.style.fontSize=(font*Math.max(.65,room/natural))+'px';
+  if(natural>room)body.style.fontSize=(font*Math.max(.65,room/natural))+'px';
   // Both desktop themes anchor their text directly over the artwork. Mobile
   // retains normal flow, so a bottom offset must never shift its text panel.
   if(anchored){const bottom=Math.min(parseFloat(style.bottom)||font*7,height-body.offsetHeight-topInset);
