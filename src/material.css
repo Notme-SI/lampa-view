@@ -107,8 +107,8 @@ body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .pt-hero .pt-hero__acti
 body.lampa_view[data-lampa-theme="minimal"] {--pt-bg:#000;--pt-side:#000;--pt-panel:#000;--pt-search-surface:#000;--pt-shell-surface:#000;--pt-poster-badge:#000;--pt-poster-surface:#000;background:#000!important}
 body.lampa_view[data-lampa-theme="minimal"] :is(.app,.wrap,.wrap__left,.settings__content,.selectbox__content,.settings-input__content,.settings-input--free,.modal__content,.extensions,.main-search .search,.navigation-bar__body,.player-panel,.player-info) {background:#000!important;box-shadow:none!important}
 body.lampa_view[data-lampa-theme="minimal"] :is(.settings-folder,.settings-param,.selectbox-item,.extensions__item,.extensions__block-add,.simple-keyboard-input,.settings-input__input):not(.focus):not(.hover) {background:#000!important}
-/* Watched reference: 3px lift (220ms), soft halo, and the centre play icon
-   fading/sliding up from 8px (300ms). Keep the native hit box stable. */
+/* Watched reference: a 3px lift and diffuse halo over 220ms. Keep the native
+   hit box stable and let Lampa own its existing playback/history markers. */
 body.lampa_view[data-lampa-theme] .card .card__view,
 body.lampa_view[data-lampa-theme] .nova-plus-root .nova__list--grid .nova-card__thumb {
  transition:transform .22s cubic-bezier(.16,1,.3,1),box-shadow .22s ease!important;
@@ -116,18 +116,16 @@ body.lampa_view[data-lampa-theme] .nova-plus-root .nova__list--grid .nova-card__
 }
 body.lampa_view[data-lampa-theme] :is(.card .card__view,.nova-plus-root .nova__list--grid .nova-card__thumb)::after {
  content:'';position:absolute;inset:0!important;z-index:5;pointer-events:none;
- border:1px solid var(--pt-card-edge,transparent)!important;border-radius:inherit!important;
+ border:1px solid var(--pt-card-edge,rgba(255,255,255,.05))!important;border-radius:inherit!important;
  background:none!important;
  box-shadow:none!important;outline:none!important;
+ transition:border-color .22s ease!important;
 }
 body.lampa_view[data-lampa-theme]:not(.pt-touch-captions) :is(.card,.nova-plus-root .nova__list--grid .nova-card):is(.focus,:focus-visible),
 body.lampa_view[data-lampa-theme]:not(.pt-tv):not(.pt-touch-captions):not(.pt-arrow-navigation) :is(.card,.nova-plus-root .nova__list--grid .nova-card):is(.hover,:hover,.pt-card-pointer) {
  --pt-card-lift:translateY(-3px);
- --pt-card-glow:0 0 22px rgba(255,255,255,.12);
- --pt-card-selected:1;--pt-card-overlay-y:0px;--pt-card-marker-opacity:0;
-}
-body.lampa_view[data-lampa-theme]:not(.pt-touch-captions) :is(.card,.nova-plus-root .nova__list--grid .nova-card):is(.focus,:focus-visible) {
- --pt-card-edge:rgba(255,255,255,.74);
+ --pt-card-glow:0 0 22px rgba(255,255,255,.18);
+ --pt-card-edge:rgba(255,255,255,.12);
 }
 body.lampa_view[data-lampa-theme] .card .card__view,
 body.lampa_view[data-lampa-theme] .nova-plus-root .nova__list--grid .nova-card .nova-card__thumb {
@@ -135,19 +133,14 @@ body.lampa_view[data-lampa-theme] .nova-plus-root .nova__list--grid .nova-card .
  -webkit-transform:var(--pt-card-lift,none)!important;
  box-shadow:var(--pt-card-glow,none)!important;
 }
-body.lampa_view[data-lampa-theme] .card .pt-poster-selection {
- position:absolute;inset:0;z-index:6;display:flex;flex-direction:column;align-items:center;justify-content:center;
- padding:0 12px;pointer-events:none;opacity:var(--pt-card-selected,0);transform:translateY(var(--pt-card-overlay-y,8px));
- transition:opacity .3s ease,transform .3s ease!important;-webkit-transition:opacity .3s ease,-webkit-transform .3s ease!important;
+/* Extend the clipping surface, not the rail/hit boxes: the first and last
+   posters need the same halo room as cards in the middle of a row. */
+body.lampa_view[data-lampa-theme]:not(.pt-touch-captions) .minimal-fit-posters>.items-line__body:has(.mapping--line>.card:first-child:is(.focus,.hover,.pt-card-pointer)) {
+ padding-inline-start:20px;margin-inline-start:-20px;
 }
-body.lampa_view[data-lampa-theme] .pt-poster-selection__play {
- display:flex;align-items:center;justify-content:center;flex:none;box-sizing:border-box;width:44px;height:44px;
- border:1px solid rgba(255,255,255,.55);border-radius:50%;background:rgba(255,255,255,.16);color:#fff;box-shadow:0 6px 20px rgba(0,0,0,.4);
- backdrop-filter:blur(10px) saturate(1.2)!important;-webkit-backdrop-filter:blur(10px) saturate(1.2)!important;
+body.lampa_view[data-lampa-theme]:not(.pt-touch-captions) .minimal-fit-posters>.items-line__body:has(.mapping--line>.card:last-child:is(.focus,.hover,.pt-card-pointer)) {
+ padding-inline-end:20px;margin-inline-end:-20px;
 }
-body.lampa_view[data-lampa-theme] .pt-poster-selection__play svg {display:block;width:22px;height:22px;fill:currentColor}
-body.lampa_view[data-lampa-theme] .card.pt-poster-ready .icon--history {opacity:var(--pt-card-marker-opacity,1)}
-body.lampa_view[data-lampa-theme].pt-touch-captions .pt-poster-selection {display:none}
 body.lampa_view[data-lampa-theme] .minimal-fit-posters>.items-line__body>.scroll--horizontal {
  padding-top:1em;margin-top:-1em;
 }
@@ -157,7 +150,7 @@ body.lampa_view[data-lampa-theme] :is(.full-review,.full-review-add):is(.focus,.
 body.lampa_view[data-lampa-theme] .minimal-comment-reader .modal__content {width:min(42rem,calc(100vw - 2em))!important;max-width:94vw}
 body.lampa_view .minimal-comment-text {padding:.35em .6em 1em;font-size:1.1em;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere}
 @media(prefers-reduced-motion:reduce){body.lampa_view[data-lampa-theme] .card .card__view,body.lampa_view[data-lampa-theme] .nova-plus-root .nova__list--grid .nova-card .nova-card__thumb {transition:none!important;-webkit-transition:none!important;transform:none!important;-webkit-transform:none!important}}
-@media(prefers-reduced-motion:reduce){body.lampa_view[data-lampa-theme] .card .pt-poster-selection {transition:none!important;-webkit-transition:none!important;transform:none!important}}
+@media(prefers-reduced-motion:reduce){body.lampa_view[data-lampa-theme] :is(.card .card__view,.nova-plus-root .nova__list--grid .nova-card__thumb)::after {transition:none!important}}
 /* Keep the panels neutral on devices without backdrop filters. */
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) {
  body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] {
@@ -176,10 +169,10 @@ body.lampa_view.pt-tv.pt-theme-glass[data-lampa-theme="glass"] :is(.card__view,.
 /* Continue the current artwork with its sampled color below the banner. */
 body.lampa_view[data-pt-scene] {
  --pt-scene-color:var(--pt-scene-rgb,105,105,105);
- --pt-scene-strength:.38;
+ --pt-scene-strength:.44;
  --pt-scene-background:radial-gradient(ellipse at 62% 6%,rgba(var(--pt-scene-color),var(--pt-scene-strength)),transparent 76%);
 }
-body.lampa_view.pt-theme-glass[data-pt-scene] {--pt-scene-strength:.52}
+body.lampa_view.pt-theme-glass[data-pt-scene] {--pt-scene-strength:.60}
 body.lampa_view[data-lampa-theme][data-pt-scene] .wrap,
 body.lampa_view.pt-tv.pt-theme-glass[data-pt-scene] .wrap {
  background-image:var(--pt-scene-background)!important;

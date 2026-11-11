@@ -24,7 +24,7 @@ async function run(browser,mode,theme){
    data.forEach(data=>{
     const card=Lampa.Utils.createInstance(Lampa.Maker.get('Card',{}),data);
     card.use({onEnter(){qaEnters++;}});card.create();
-    const node=card.render(true);node.style.width='180px';root.appendChild(node);
+    const node=card.render(true);node.style.width='180px';root.appendChild(node);if(data.id===8801)node.querySelector('.card__icons-inner').insertAdjacentHTML('beforeend','<div class="card__icon icon--history"></div>');
    });
    Lampa.Controller.add('qa-cards',{
     toggle(){Lampa.Controller.collectionSet(root);Lampa.Controller.collectionFocus(root.firstElementChild,root);},
@@ -32,35 +32,40 @@ async function run(browser,mode,theme){
    });
   },theme);
   const film=page.locator('#qa-input .card').nth(0),series=page.locator('#qa-input .card').nth(1);
-  await film.locator('.pt-poster-selection').waitFor({state:'attached'});
+  await film.waitFor({state:'attached'});
+  await page.waitForFunction(()=>document.querySelector('#qa-input .card.pt-poster-ready'));
+  assert.equal(await page.locator('#qa-input .pt-poster-selection').count(),0,'No added Play layer on any poster');
+  assert.equal(await film.locator('.icon--history').count(),1,'Keep the native continuation marker');
   await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
   if(mode==='desktop'){
    await film.hover();
    await page.waitForFunction(()=>{const label=document.querySelector('#qa-input .pt-card-watch');return label && getComputedStyle(label).visibility==='visible';});
    await page.waitForTimeout(330);
-   assert.equal(await film.locator('.pt-poster-selection').evaluate(n=>getComputedStyle(n).opacity),'1');
+   assert.equal(await film.locator('.card__view').evaluate(n=>getComputedStyle(n).transform),'matrix(1, 0, 0, 1, 0, -3)');
    await page.mouse.move(2,2);
    await page.waitForTimeout(330);
-   assert.equal(await film.locator('.pt-poster-selection').evaluate(n=>getComputedStyle(n).opacity),'0');
+   assert.equal(await film.locator('.card__view').evaluate(n=>getComputedStyle(n).transform),'none');
   }
-  await page.evaluate(()=>Lampa.Controller.toggle('qa-cards'));
-  await page.waitForTimeout(35);
-  assert.equal(await film.locator('.pt-poster-selection').evaluate(n=>n.getAnimations().some(a=>a.playState==='running')),true,'The play layer animates over real frames');
-  const entering=await film.locator('.pt-poster-selection').evaluate(n=>({opacity:Number(getComputedStyle(n).opacity),transform:getComputedStyle(n).transform}));
-  assert.ok(entering.opacity>0 && entering.opacity<1,JSON.stringify(entering));
-  await page.waitForTimeout(330);
-  assert.equal(await film.locator('.pt-poster-selection__meta').count(),0);
+  const frames=await film.evaluate(node=>new Promise(resolve=>{
+   const view=node.querySelector('.card__view'),frames=[],start=performance.now();
+   function sample(){const s=getComputedStyle(view);frames.push({t:performance.now()-start,y:s.transform==='none'?0:new DOMMatrix(s.transform).m42,shadow:s.boxShadow,animations:view.getAnimations().filter(a=>a.playState==='running').length});if(performance.now()-start<280)requestAnimationFrame(sample);else resolve(frames);}
+   sample();Lampa.Controller.toggle('qa-cards');
+  }));
+  assert.ok(frames.some(f=>f.y<0 && f.y>-3 && f.animations>0),'Actual rendered frames show a gradual lift: '+JSON.stringify(frames));
+  assert.ok(frames.some(f=>f.shadow.includes('rgba(255, 255, 255,') && !f.shadow.includes('0.18)') && f.animations>0),'The halo grows across frames, not just the final CSS state');
+  assert.equal(frames.at(-1).y,-3);
   assert.equal(await film.locator('.card__age').textContent(),'2020');
   assert.equal(await film.locator('.card__vote').evaluate(n=>getComputedStyle(n).opacity),'1','Our own rating remains visible');
-  assert.equal(await film.locator('.pt-poster-selection').evaluate(n=>getComputedStyle(n).opacity),'1');
-  assert.equal(await film.locator('.pt-poster-selection').evaluate(n=>getComputedStyle(n).transform),'matrix(1, 0, 0, 1, 0, 0)');
-  assert.equal(await film.locator('.card__view').evaluate(n=>getComputedStyle(n).transform),'matrix(1, 0, 0, 1, 0, -3)');
-  await page.waitForFunction(()=>{const label=document.querySelector('#qa-input .pt-card-watch');return label && getComputedStyle(label).visibility==='visible';});
+  const paint=await film.locator('.card__view').evaluate(n=>({shadow:getComputedStyle(n).boxShadow,edge:getComputedStyle(n,'::after').borderColor}));
+  assert.match(paint.shadow,/rgba\(255, 255, 255, 0.18\).*22px/);
+  assert.equal(paint.edge,'rgba(255, 255, 255, 0.12)','The edge stays quieter than the diffuse halo');
+  assert.equal(await film.locator('.icon--history').evaluate(n=>getComputedStyle(n).opacity),'1','Selection never hides the native continuation marker');
+  await page.waitForFunction(()=>{const label=document.querySelector('#qa-input .pt-card-watch');return label && getComputedStyle(label).visibility==='visible';},null,{timeout:4000}).catch(async e=>{throw Error(e.message+' '+JSON.stringify(await page.evaluate(()=>({body:document.body.className,node:document.querySelector('#qa-input .card').outerHTML}))));});
   assert.equal(await film.locator('.pt-card-watch__time').textContent(),'15:15');
   await page.keyboard.press('ArrowRight');
   await page.waitForTimeout(330);
-  assert.equal(await film.locator('.pt-poster-selection').evaluate(n=>getComputedStyle(n).opacity),'0','The old overlay disappears after moving focus');
-  assert.equal(await series.locator('.pt-poster-selection').evaluate(n=>getComputedStyle(n).opacity),'1');
+  assert.equal(await film.locator('.card__view').evaluate(n=>getComputedStyle(n).boxShadow),'none','The previous halo disappears after moving focus');
+  assert.equal(await series.locator('.card__view').evaluate(n=>getComputedStyle(n).transform),'matrix(1, 0, 0, 1, 0, -3)');
   await page.waitForFunction(()=>{
    const label=document.querySelector('#qa-input .card:nth-child(2) .pt-series-status');
    return label && getComputedStyle(label).display!=='none' && getComputedStyle(label).visibility==='visible';

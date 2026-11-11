@@ -80,6 +80,7 @@ async function run(engine, browser, mode) {
      const s=getComputedStyle(document.querySelector(selector));return {color:s.backgroundColor,image:s.backgroundImage,filter:s.backdropFilter || s.webkitBackdropFilter,shadow:s.boxShadow};
     }));
     assert.deepEqual(surfaces[1],surfaces[0],'The carousel switcher uses the same Glass material as the header');
+    console.log(engine,mode,'matching carousel/header material',JSON.stringify(surfaces[0]));
     if(process.env.LAMPA_QA_OUTPUT)await page.screenshot({path:require('node:path').join(process.env.LAMPA_QA_OUTPUT,engine+'-'+mode+'-home.png')});
    }
    for(const image of [original,'http://scene.example.invalid/dark-home.jpg']){
@@ -213,10 +214,10 @@ async function run(engine, browser, mode) {
     assert.equal(after.outer,before.outer,target);
     assert.ok(Math.abs(after.art-before.art+3)<.1,JSON.stringify({before,after,theme,target}));
     assert.match(after.transform,/matrix\(1, 0, 0, 1, 0, -3\)/);
-    assert.equal(after.indicator,'none','The ring layer does not duplicate the separate Play overlay');
+    assert.equal(after.indicator,'none','The edge layer has no playback glyph');
     assert.equal(await card.locator('.icon--history').count(),0);
-    assert.match(after.halo,/rgba\(255, 255, 255, 0.12\)/);
-    assert.equal(after.edge,'rgba(255, 255, 255, 0.74)');
+    assert.match(after.halo,/rgba\(255, 255, 255, 0.18\)/);
+    assert.equal(after.edge,'rgba(255, 255, 255, 0.12)');
     await card.evaluate(n=>n.classList.remove('focus'));
    }
    const face=page.locator('#qa-native-unwatched .card__view');
@@ -228,13 +229,15 @@ async function run(engine, browser, mode) {
     await page.mouse.move(2,2);await page.waitForTimeout(260);
    }
    await page.locator('#qa-native-unwatched').evaluate(node=>node.classList.add('focus'));
+   await page.waitForTimeout(260);
    for(const reduction of ['native','system']){
     if(reduction==='native')await page.evaluate(()=>Lampa.Storage.set('animation','false'));
     else await page.emulateMedia({reducedMotion:'reduce'});
-    const style=await face.evaluate(node=>{const s=getComputedStyle(node);return {transform:s.transform,duration:s.transitionDuration,edge:getComputedStyle(node,'::after').borderColor,body:document.body.className};});
+    const style=await face.evaluate(node=>{const s=getComputedStyle(node);return {transform:s.transform,duration:s.transitionDuration,halo:s.boxShadow,edge:getComputedStyle(node,'::after').borderColor,body:document.body.className};});
     if(reduction==='native'){assert.notEqual(style.transform,'none');assert.notEqual(style.duration,'0s');}
     else{assert.equal(style.transform,'none');assert.equal(style.duration,'0s');}
-    assert.equal(style.edge,'rgba(255, 255, 255, 0.74)');
+    assert.equal(style.edge,'rgba(255, 255, 255, 0.12)');
+    assert.match(style.halo,/rgba\(255, 255, 255, 0.18\)/,'Reduced motion preserves a static readable glow');
     if(reduction==='native')await page.evaluate(()=>Lampa.Storage.set('animation',true));
     else await page.emulateMedia({reducedMotion:'no-preference'});
    }

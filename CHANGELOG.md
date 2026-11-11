@@ -1,3 +1,9 @@
+## 0.5.122
+
+- Restore visible poster lift and a soft animated selection halo for pointer, keyboard and TV focus in both themes.
+- Remove the added large Play overlay while preserving the native continuation marker, ratings, episode tags and viewing statistics.
+- Increase the existing artwork-derived background accent by about 15 percent.
+
 ## 0.5.121
 
 - Use one CSS canvas height for iOS Home Screen page layers, scrolling, and the navigation dock, preserving the artwork-colored top while restoring the full lower content area.
