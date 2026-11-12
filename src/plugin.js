@@ -618,7 +618,7 @@ if (!ROOT.LampaView) {
     if(L.Storage.listener)L.Storage.listener.follow('change',event=>{if(event.name==='source' || event.name==='language')trimSections();if(event.name==='lampa_view_enabled'){setTheme();trimSections();}});
     const menu=document.querySelector('.menu');
     if(menu && ROOT.MutationObserver)new ROOT.MutationObserver(trimSections).observe(menu,{childList:true,subtree:true});
-    quality(L,$);cacheSettings(L);
+    quality(L,$,artwork.prepareCataloguePoster);cacheSettings(L);
     if(L.Api && L.Api.sources && L.Utils && L.Utils.createInstance && L.Maker){
       installTrakt(L);
       P.kinoCatalogue=kinoCatalogue(L,P.kinoapi);const anime=shikimori(L);shikimoriPosters(L,anime);collections(L,anime,P.kinoapi,P.kinoCatalogue);catalogueBrowser(L);projectBrowser(L);

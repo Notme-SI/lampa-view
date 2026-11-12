@@ -1,3 +1,41 @@
+import {isAnime} from './metadata.js';
+
+const mediaType=card=>['movie','tv'].includes(card.media_type)?card.media_type:
+ card.first_air_date || card.original_name || card.name && !card.release_date?'tv':
+ card.release_date || card.original_title || card.title?'movie':'';
+const genres=card=>new Set([...(card.genres || []),...(card.genre_ids || [])].map(value=>Number(value?.id || value)).filter(Number.isFinite));
+
+export function relevantSuggestions(movie,results,similar){
+ const type=mediaType(movie),reference=genres(movie),anime=isAnime(movie),seen=new Set();
+ const imdb=card=>card.imdb_id || card.external_ids?.imdb_id;
+ return results.flatMap((card,index)=>{
+  if(!card?.id || !(card.title || card.name) || card.media_type && !['movie','tv'].includes(card.media_type))return [];
+  const candidateType=mediaType(card),source=card.source || movie.source;
+  const key=(source==='cub'?'tmdb':source)+':'+candidateType+':'+card.id;
+  const sameSource=source===movie.source || ['tmdb','cub'].includes(source) && ['tmdb','cub'].includes(movie.source);
+  const sameId=sameSource && String(card.id)===String(movie.id) && (!candidateType || !type || candidateType===type);
+  const sameImdb=imdb(card) && imdb(card)===imdb(movie);
+  if(sameId || sameImdb || seen.has(key))return [];
+  if(similar && card.media_type && candidateType && type && candidateType!==type)return [];
+  const tags=genres(card),shared=[...tags].filter(id=>reference.has(id));
+  const classified=tags.size && (!tags.has(16) || card.original_language || card.origin_country?.length);
+  if(anime && classified && !isAnime(card))return [];
+  if(reference.size && tags.size && !shared.length && (similar || reference.size>1 && tags.size>1))return [];
+  seen.add(key);
+  const score=shared.reduce((n,id)=>n+(id===16?1:3),0)+(candidateType===type?1:0);
+  return [{card,index,score}];
+ }).sort((a,b)=>b.score-a.score || a.index-b.index).map(entry=>entry.card);
+}
+
+export function placeDetailPicker(panel,control){
+ panel.classList.add('minimal-franchise-menu');
+ const rect=control.getBoundingClientRect();
+ const width=Math.min(740,window.innerWidth-24),height=Math.min(760,Math.round(window.innerHeight*.8),window.innerHeight-24);
+ const left=Math.max(12,Math.min(rect.left,window.innerWidth-width-12));
+ const top=rect.bottom+height+20<=window.innerHeight?rect.bottom+8:Math.max(12,Math.min(rect.top-height-8,window.innerHeight-height-12));
+ for(const [key,value] of Object.entries({left,top,width,height}))panel.style.setProperty('--franchise-'+key,value+'px');
+}
+
 // Keep native full-card rows and their ordering, but create only a small
 // destination control until the viewer actually requests a suggestion list.
 const nodeOf=item=>{const node=item?.render?.(true);return node?.nodeType?node:node?.[0];};
@@ -35,16 +73,13 @@ function choice(L,link,data){
   const source=link.object?.source || L.Activity.active()?.source || 'tmdb';
   const entries=data.results.map(card=>({title:escape(card.title || card.name),subtitle:escape(String(card.release_date || card.first_air_date || '').slice(0,4)),card}));
   L.Select.show({title:data.title,items:entries,onFullDraw(scroll){
-   panel=scroll.body().closest('.selectbox')[0];panel.classList.add('minimal-franchise-menu','minimal-suggestions-menu');
-   const rect=control.getBoundingClientRect(),width=Math.min(560,window.innerWidth-24),height=Math.min(520,window.innerHeight-24);
-   const left=Math.max(12,Math.min(rect.left,window.innerWidth-width-12));
-   const top=rect.bottom+height+20<=window.innerHeight?rect.bottom+8:Math.max(12,Math.min(rect.top-height-8,window.innerHeight-height-12));
-   for(const [key,value] of Object.entries({left,top,width,height}))panel.style.setProperty('--franchise-'+key,value+'px');
+   panel=scroll.body().closest('.selectbox')[0];
+   placeDetailPicker(panel,control);panel.classList.add('minimal-suggestions-menu');
    scroll.body().find('.selectbox-item').each((index,node)=>{
     const card=entries[index].card;node.classList.add('minimal-anime-franchise__item');
     const info=document.createElement('div');info.className='minimal-related-info';while(node.firstChild)info.appendChild(node.firstChild);
     const art=document.createElement('span');art.className='minimal-related-art';
-    if(card.poster_path || card.img){const image=document.createElement('img');image.alt='';image.loading='lazy';image.decoding='async';image.onerror=()=>image.remove();image.src=card.img || L.TMDB.image('/t/p/w185'+card.poster_path);art.appendChild(image);}
+    if(card.poster_path || card.img){const image=document.createElement('img');image.alt='';image.loading='lazy';image.decoding='async';image.onerror=()=>image.remove();image.src=card.img || L.TMDB.image('/t/p/w185'+card.poster_path,{preserveSize:true});art.appendChild(image);}
     node.appendChild(art);node.appendChild(info);
    });
   },onSelect(entry){

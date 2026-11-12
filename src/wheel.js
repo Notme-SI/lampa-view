@@ -23,7 +23,7 @@ export default function installWheel(L,enabled){
     const scrollBody=scroll.body?.(true);
     if(!scrollBody?.matches('.mapping--grid') && scrollBody?.querySelector('.mapping--grid')?.closest('.scroll')!==node)return false;
     const {body,content,position}=scroll.vieport();
-    return content>0 && body>=content && body-content-Math.abs(position)<=600;
+    return content>0 && body>=content && body-content-Math.abs(position)<=Math.max(600,content*1.25);
   }
   function notify(state,ended=true){
     const scroll=state.node.Scroll;

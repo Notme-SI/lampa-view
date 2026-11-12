@@ -58,14 +58,37 @@ export function gridControls(L,item,object,buttons,{className='minimal-catalogue
 export default function catalogueBrowser(L){
  if(!L.Component || !L.Component.get)return;
  const Category=L.Component.get('category'),Full=L.Component.get('category_full'),list=L.Api.list;
+ const warmed=new WeakMap();
+ function warmNext(params,json,load){
+  const active=L.Activity.active(),page=Number(json?.page || params.page)||1;
+  if(!active || active!==params && active.activity?.component?.object!==params ||
+     !document.body.matches('.lampa_view.pt-desktop') || document.hidden ||
+     !(Number(json?.total_pages)>page) || !json?.results?.length || warmed.get(active)===page)return;
+  warmed.set(active,page);
+  setTimeout(()=>{
+   if(L.Activity.active()!==active || document.hidden || Number(params.page || 1)!==page || params.minimal_browse_cancelled)return;
+   load(page+1,()=>{},()=>{if(warmed.get(active)===page)warmed.delete(active);});
+  },80);
+ }
  L.Api.list=function(params,ok,fail){
-  if(!params.minimal_browse_kind && params.source!==DISCOVERY_SOURCE)return list.apply(this,arguments);
+  if(!params.minimal_browse_kind && params.source!==DISCOVERY_SOURCE){
+   const source=L.Api.sources[params.source],[path,search]=String(params.url || '').split('?'),query=new URLSearchParams(search || '');
+   const anime=params.source==='tmdb' && ['discover/tv','discover/movie'].includes(path) &&
+    query.get('with_original_language')==='ja' && (query.get('with_genres') || '').split(',').includes('16');
+   if(params.component!=='category_full' || !source?.list || !(anime || params.source==='minimal_shiki'))return list.apply(this,arguments);
+   return list.call(this,params,json=>{
+    ok(json);
+    warmNext(params,json,(page,done,error)=>source.list({...params,page},done,error));
+   },fail);
+  }
   const url=params.minimal_browse_kind?JSON.stringify(browseSpec(params.minimal_browse_kind,params.minimal_browse)):params.url;
-  return L.Api.sources[DISCOVERY_SOURCE].list({url,page:params.page,minimal_cancelled:()=>!!params.minimal_browse_cancelled},json=>{
+  const load=(page,done,error)=>L.Api.sources[DISCOVERY_SOURCE].list({url,page,minimal_cancelled:()=>!!params.minimal_browse_cancelled},done,error);
+  return load(params.page,json=>{
    if(params.minimal_browse_cancelled)return;
    const active=L.Activity.active(),grid=active?.activity?.component;
    if(grid?.object===params)grid.total_pages=json.total_pages;
    ok(json);
+   warmNext(params,json,load);
   },fail);
  };
  function alphabetical(values){

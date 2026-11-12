@@ -5,6 +5,7 @@ import {animeRecords,animeTarget,animeTargets,animeSeed,animeEpisodeMap,animeInd
 import {franchiseModel,franchiseCatalogueRows,franchiseMenuGroups,franchiseViewingOrder} from './anime-franchise.js';
 import {seasonName} from './episode-metadata.js';
 import {mountRelatedRow,removeDetailRows} from './detail-gallery.js';
+import {placeDetailPicker} from './detail-suggestions.js';
 const positive=n=>Number.isSafeInteger(Number(n)) && Number(n)>0;
 function collectionMenu(data){
  const card=data.movie,collection=data.collection;
@@ -199,7 +200,7 @@ export default function animeCatalogue(L,kino){
      items.push({title:escape(entry.title),subtitle:escape(entry.subtitle),card:entry.card,selected:current});
     });});
     control.setAttribute('aria-expanded','true');
-    L.Select.show({title:t('Связанные'),items,onFullDraw(scroll){const box=scroll.body().closest('.selectbox');panel=box[0];panel.classList.add('minimal-franchise-menu');const rect=control.getBoundingClientRect(),width=Math.min(560,window.innerWidth-24),height=Math.min(520,window.innerHeight-24),left=Math.max(12,Math.min(rect.left,window.innerWidth-width-12)),top=rect.bottom+height+20<=window.innerHeight?Math.max(12,rect.bottom+8):Math.max(12,Math.min(rect.top-height-8,window.innerHeight-height-12));panel.style.setProperty('--franchise-left',left+'px');panel.style.setProperty('--franchise-top',top+'px');panel.style.setProperty('--franchise-width',width+'px');panel.style.setProperty('--franchise-height',height+'px');scroll.body().find('.settings-param-title').addClass('minimal-season-section');const nodes=scroll.body().find('.selectbox-item');nodes.addClass('minimal-anime-franchise__item');
+    L.Select.show({title:t('Связанные'),items,onFullDraw(scroll){const box=scroll.body().closest('.selectbox');panel=box[0];placeDetailPicker(panel,control);scroll.body().find('.settings-param-title').addClass('minimal-season-section');const nodes=scroll.body().find('.selectbox-item');nodes.addClass('minimal-anime-franchise__item');
      const releases=items.filter(entry=>!entry.separator);
      function showArtwork(art,url){
       art.textContent='';
@@ -210,7 +211,7 @@ export default function animeCatalogue(L,kino){
       const entry=releases[index];if(!entry)return;
       if(entry.selected){node.setAttribute('aria-current','true');node.classList.add('nomark');node.querySelector('.selectbox-item__checkbox')?.remove();}
       const picture=document.createElement('div');picture.className='minimal-related-art';picture.setAttribute('aria-hidden','true');
-      picture.dataset.release=String(entry.card.id);const poster=posterCache.get(String(entry.card.id)) || entry.card.img || (entry.card.poster_path && L.Api.img(entry.card.poster_path,'w300'));
+      picture.dataset.release=String(entry.card.id);const poster=posterCache.get(String(entry.card.id)) || entry.card.img || (entry.card.poster_path && L.TMDB.image('/t/p/w185'+entry.card.poster_path,{preserveSize:true}));
       if(poster && !poster.includes('/missing_'))showArtwork(picture,poster);
       const info=document.createElement('div');info.className='minimal-related-info';
       for(const child of [...node.children])info.appendChild(child);

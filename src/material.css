@@ -112,47 +112,26 @@ body.lampa_view[data-lampa-theme="minimal"] :is(.settings-folder,.settings-param
 /* Watched reference: a 3px lift and diffuse halo over 220ms. Keep the native
    hit box stable and let Lampa own its existing playback/history markers. */
 body.lampa_view[data-lampa-theme] .card .card__view,
-body.lampa_view[data-lampa-theme] .nova-plus-root .nova__list--grid .nova-card__thumb {
- transition:transform .22s cubic-bezier(.16,1,.3,1),box-shadow .22s ease!important;
- -webkit-transition:-webkit-transform .22s cubic-bezier(.16,1,.3,1),box-shadow .22s ease!important;
-}
-body.lampa_view[data-lampa-theme] :is(.card .card__view,.nova-plus-root .nova__list--grid .nova-card__thumb)::after {
- content:'';position:absolute;inset:0!important;z-index:5;pointer-events:none;
- border:1px solid var(--pt-card-edge,rgba(255,255,255,.05))!important;border-radius:inherit!important;
- background:none!important;
- box-shadow:none!important;outline:none!important;
- transition:border-color .22s ease!important;-webkit-transition:border-color .22s ease!important;
-}
-body.lampa_view[data-lampa-theme]:not(.pt-touch-captions) :is(.card,.nova-plus-root .nova__list--grid .nova-card):is(.focus,:focus-visible),
-body.lampa_view[data-lampa-theme]:not(.pt-tv):not(.pt-touch-captions):not(.pt-arrow-navigation) :is(.card,.nova-plus-root .nova__list--grid .nova-card):is(.hover,:hover,.pt-card-pointer) {
- --pt-card-lift:translateY(-3px);
- --pt-card-glow:0 0 22px rgba(255,255,255,.18);
- --pt-card-edge:rgba(255,255,255,.12);
-}
-body.lampa_view[data-lampa-theme] .card .card__view,
 body.lampa_view[data-lampa-theme] .nova-plus-root .nova__list--grid .nova-card .nova-card__thumb {
  transform:var(--pt-card-lift,none)!important;
  -webkit-transform:var(--pt-card-lift,none)!important;
- box-shadow:var(--pt-card-glow,none)!important;
-}
-/* Paint the halo once and fade that surface. Animating the blur radius or
-   border color repaints the selected poster on each frame of the native scroll.
-   No permanent compositor hint is assigned to offscreen posters. */
-body.lampa_view[data-lampa-theme] .card .card__view,
-body.lampa_view[data-lampa-theme] .nova-plus-root .nova__list--grid .nova-card .nova-card__thumb {
  transition:transform .22s cubic-bezier(.16,1,.3,1)!important;
  -webkit-transition:-webkit-transform .22s cubic-bezier(.16,1,.3,1)!important;
  box-shadow:none!important;overflow:visible;
 }
 body.lampa_view[data-lampa-theme] .nova-plus-root .nova__list--grid .nova-card__thumb>img {border-radius:inherit}
 body.lampa_view[data-lampa-theme] :is(.card .card__view,.nova-plus-root .nova__list--grid .nova-card__thumb)::after {
- border-color:rgba(255,255,255,.12)!important;
+ content:'';position:absolute;inset:0!important;z-index:5;pointer-events:none;
+ border:1px solid var(--pt-card-edge,rgba(255,255,255,.12))!important;border-radius:inherit!important;
+ background:none!important;outline:none!important;
  box-shadow:0 0 22px rgba(255,255,255,.18)!important;
  opacity:var(--pt-card-halo-opacity,0);
  transition:opacity .22s ease!important;-webkit-transition:opacity .22s ease!important;
 }
-body.lampa_view[data-lampa-theme]:not(.pt-touch-captions) :is(.card,.nova-plus-root .nova__list--grid .nova-card):is(.focus,:focus-visible),
+body.lampa_view[data-lampa-theme] :is(.card,.nova-plus-root .nova__list--grid .nova-card):is(.focus,:focus-visible,.pt-card-touch),
 body.lampa_view[data-lampa-theme]:not(.pt-tv):not(.pt-touch-captions):not(.pt-arrow-navigation) :is(.card,.nova-plus-root .nova__list--grid .nova-card):is(.hover,:hover,.pt-card-pointer) {
+ --pt-card-lift:translateY(-3px);
+ --pt-card-edge:rgba(255,255,255,.65);
  --pt-card-halo-opacity:1;
 }
 /* Extend the clipping surface, not the rail/hit boxes: the first and last

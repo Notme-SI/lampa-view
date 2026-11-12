@@ -10,7 +10,7 @@ import flag from './storage-flag.js';
 import seriesStatus from './series-status.js';
 import posterSelection from './poster-selection.js';
 // Visible cards only, two requests at a time, bounded cache; use the user's parser.
-export default function quality(L,$){
+export default function quality(L,$,preparePoster){
   const info=cardInfo(L),hydrating=new WeakSet(),status=seriesStatus(L,node=>badges.schedule(node)),badges=badgeLayout(status);
   const cache=new Map(),pending=new Map(),queue=[],tracked=new Map(),nodes=new WeakMap(),visible=new Set(),deferred=new Set(),releases=new Map(),overflow=new Set(),retries=new Set(),remembered=new WeakSet();let running=0,timer,saveTimer,generation=0;
   const storage='minimal_quality_v2',valid=entry=>entry && Date.now()-entry.time<(entry.q?21600000:120000);
@@ -21,6 +21,7 @@ export default function quality(L,$){
   },{rootMargin:'200px'}):null;
   function track(item,node){
     if(tracked.has(node))return;
+    preparePoster?.(node,item.data);
     tracked.set(node,item);nodes.set(item,node);
     if(typeof $==='function')$(node).on('hover:focus.lampaViewQuality hover:hover.lampaViewQuality hover:touch.lampaViewQuality',()=>schedule(item));
     if(observer)observer.observe(node);badges.track(node);

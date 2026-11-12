@@ -13,6 +13,34 @@ export default function posterCache(L,enabled,highQuality){
  const tv=()=>document.body.classList.contains('pt-tv');
  const aheadY=Math.min(1800,Math.max(540,(window.innerHeight || 540)*(tv()?1.5:2))),aheadX=Math.min(1920,Math.max(360,(window.innerWidth || 960)*(tv()?.5:1)));
  const paused=()=>document.hidden;
+ let gridWidths=new WeakMap();
+ function catalogueGrid(node){
+  if(!enabled() || !document.body.classList.contains('pt-desktop') ||
+     !node?.matches('.card:not(.card--wide):not(.card--collection)') || !node.closest('.activity--active'))return null;
+  const grid=node.parentElement;
+  return grid?.matches('.mapping--grid,.category-full')?grid:null;
+ }
+ function catalogueSource(image,grid,url){
+  if(!/\/t\/p\/w780\//.test(url))return url;
+  let width=gridWidths.get(grid);
+  if(!width){width=image.parentElement.clientWidth;if(width)gridWidths.set(grid,width);}
+  return width && width*(window.devicePixelRatio || 1)<=500?url.replace('/t/p/w780/','/t/p/w500/'):url;
+ }
+ function prepareCataloguePoster(node,data){
+  if(!catalogueGrid(node))return;
+  const image=node.querySelector('.card__img');
+  if(!image)return;
+  if(image._minimalCataloguePoster){image._minimalCataloguePoster();return;}
+  // Deprecated native Card has no Maker hooks. Start the same URL it will
+  // assign on visibility, so its own image state and fallback stay intact.
+  if(image.getAttribute('src') || !data)return;
+  const url=data.poster_path?L.Api.img(data.poster_path):data.poster || data.img;
+  if(!url)return;
+  image.decoding='async';image.loading='lazy';image.src=url;
+ }
+ function resetWidths(){gridWidths=new WeakMap();}
+ window.addEventListener('resize',resetWidths);
+ document.addEventListener('minimal:interface-size',resetWidths);
  const observer=typeof window.IntersectionObserver==='function'?new window.IntersectionObserver(entries=>entries.forEach(entry=>{
   if(entry.isIntersecting){const callback=callbacks.get(entry.target);if(callback)callback();}
  }),{rootMargin:aheadY+'px '+aheadX+'px'}):null;
@@ -89,7 +117,7 @@ export default function posterCache(L,enabled,highQuality){
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)schedule();});
  L.Utils.createInstance=function(Base,data){
   const item=create.apply(this,arguments);if(Base!==Card || !item || !item.use)return item;
-  let image,source,original,getPoster,observed,disposed=false,generation=0,job,painted,release;
+  let image,source,original,getPoster,observed,disposed=false,catalogueVisible=false,generation=0,job,painted,release;
   function cancel(){
    generation++;painted=null;if(release){release();release=null;}
    if(job){
@@ -120,14 +148,28 @@ export default function posterCache(L,enabled,highQuality){
     if(!disposed && maximum() && source && image.getAttribute('src')===blank){enqueue();return;}
     if(nativeError)return nativeError.call(this,event);
    };
-   if(observer){observed=image.closest('.card');if(observed){callbacks.set(observed,()=>{if(!original && maximum())item.getPosterPath();enqueue();});observer.observe(observed);}}
+   if(observer){observed=image.closest('.card');if(observed){callbacks.set(observed,()=>{if(catalogueGrid(observed)){image._minimalCataloguePoster();return;}if(!original && maximum())item.getPosterPath();enqueue();});observer.observe(observed);}}
    item.getPosterPath=function(){
     const url=getPoster.apply(this,arguments);
+    const grid=catalogueGrid(image.closest('.card'));
+    if(grid){
+     if(job || release)cancel();
+     if(observed){observer.unobserve(observed);callbacks.delete(observed);observed=null;}
+     return catalogueSource(image,grid,url);
+    }
     if(!maximum() || !/\/t\/p\/(?:w\d+|original)\//.test(url))return url;
     if(source!==url){cancel();source=url;original=url;}
     enqueue();return painted===original || image.src===original?image.src:blank;
    };
+   image._minimalCataloguePoster=()=>{
+    if(disposed || !catalogueGrid(image.closest('.card')))return false;
+    const url=item.getPosterPath();
+    if(!catalogueVisible)image.loading='lazy';
+    if(image.getAttribute('src')!==url && image.src!==url)image.src=url;
+    return true;
+   };
    image._minimalArtwork=()=>{
+    if(image._minimalCataloguePoster())return true;
     const next=getPoster.call(item);
     if(image.src===next || source===next && (painted===original || image.src===original || job && !job.finished && job.alive()))return true;
     cancel();source=next;
@@ -135,9 +177,16 @@ export default function posterCache(L,enabled,highQuality){
     if(maximum()){original=next;enqueue();}else image.src=next;
     return true;
    };
-  },onVisible(){if(maximum() && original){clearTimeout(item.img_timer);enqueue();}},onDestroy(){
-   disposed=true;cancel();if(release)release();if(observed){observer.unobserve(observed);callbacks.delete(observed);}if(image)delete image._minimalArtwork;
+  },onVisible(){
+   if(catalogueGrid(image?.closest('.card'))){
+    // Native visibility promotes the card even in a translated scroll pane.
+    catalogueVisible=true;image.fetchPriority='high';image.loading='eager';
+    if(image.complete && image.naturalWidth>1)clearTimeout(item.img_timer);
+   }else if(maximum() && original){clearTimeout(item.img_timer);enqueue();}
+  },onDestroy(){
+   disposed=true;cancel();if(release)release();if(observed){observer.unobserve(observed);callbacks.delete(observed);}if(image){delete image._minimalArtwork;delete image._minimalCataloguePoster;}
   }});
   return item;
  };
+ return prepareCataloguePoster;
 }

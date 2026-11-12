@@ -85,7 +85,7 @@ export default function installArtwork(L,enabled){
  }
  wrapImage(L.TMDB);wrap(L.TMDB);wrap(L.Api);
  if(L.Api && L.Api.sources){wrap(L.Api.sources.tmdb);wrap(L.Api.sources.cub);}
- posterPreview(L,enabled,()=>artworkQuality(L)==='high');
+ const prepareCataloguePoster=posterPreview(L,enabled,()=>artworkQuality(L)==='high');
  function refresh(){
   if(!enabled())return;
   document.querySelectorAll('.card__img,.full-person img,.full-start-new__img,.full-start__img,.full-start__background,.media-loading__backdrop').forEach(image=>{
@@ -111,5 +111,5 @@ export default function installArtwork(L,enabled){
   const value=event.value==='w500'?'high':'medium';
   L.Storage.set('minimal_banner_quality',value);L.Storage.set('minimal_artwork_quality_choice',value);refresh();
  });
- return {refresh,choose};
+ return {refresh,choose,prepareCataloguePoster};
 }

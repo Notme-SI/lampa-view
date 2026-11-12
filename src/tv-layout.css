@@ -35,7 +35,7 @@ body.lampa_view.pt-tv .wrap__content {padding-top:4.032em!important}
 body.lampa_view.pt-tv .card__view .icon--history {font-size:.95em;width:2.1em;height:1.7em}
 body.lampa_view.pt-tv .card {-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body.lampa_view.pt-tv .settings__content {font-size:calc(var(--pt-ui-font) * 1.1)!important;width:30em;max-width:38vw;box-sizing:border-box}
-body.lampa_view.pt-tv .selectbox__content {font-size:calc(var(--pt-ui-font) * 1.1)!important;box-sizing:border-box}
+body.lampa_view.pt-tv .selectbox:not(.minimal-franchise-menu) .selectbox__content {font-size:calc(var(--pt-ui-font) * 1.1)!important;box-sizing:border-box}
 
 /* Hero overview uses a compact preview. Entering collections restores the
    shared profile immediately; only composited card transforms are animated. */

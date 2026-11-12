@@ -63,7 +63,7 @@ async function main() {
       }
     }
   }).code;
-  const production=esbuild.transformSync(legacy,{minify:true,target:'es5',charset:'utf8',legalComments:'inline'}).code;
+  const production=esbuild.transformSync(legacy,{minify:true,target:'es5',charset:'utf8',legalComments:'inline',lineLimit:160}).code;
   acorn.parse(production, {
     ecmaVersion: 5
   });

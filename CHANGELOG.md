@@ -1,3 +1,9 @@
+## 0.5.130
+
+- Hand desktop catalogue covers to the browser as soon as the grid mounts them. Use viewport-appropriate TMDB sizes and prioritize visible cards while scrolling. Warm one next page of movies or anime in the background.
+- Scale the Related, Recommendations and Similar pickers with the viewport and use the same selection treatment across input modes. Rank suggestions by shared genres and skip duplicates and incompatible entries when metadata is available.
+- Wrap the minified installation script into editor-friendly lines while keeping the single ES5 file.
+
 ## 0.5.129
 
 - Prepare basic poster tags in short batches, keep badge measurements and release lookups out of active desktop scrolling, and allow new rows to prepare ahead of the viewport.
