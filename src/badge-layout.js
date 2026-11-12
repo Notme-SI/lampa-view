@@ -26,13 +26,14 @@ export default function badgeLayout(status){
   frame=0;if(paused())return;
   const reads=[],batch=[],tv=document.body.classList.contains('pt-tv');
   for(const node of pending){
-   if(tv && batch.length>=6)break;
+   if(batch.length>=(tv?6:8))break;
    pending.delete(node);
    if(node.isConnected)batch.push(node);
   }
   // Metadata can update text and visibility. Finish those writes before
   // measuring the layout of any badge in the current frame.
   if(status)batch.forEach(node=>status.paint(node));
+  const insetScale=tv?window.innerWidth/1920:1;
   for(const node of batch){
    const view=node.querySelector('.card__view');if(!view)continue;
    // Focus changes only the composited poster position. Re-measuring all its
@@ -47,7 +48,6 @@ export default function badgeLayout(status){
    const rect=view.getBoundingClientRect();
    if(!rect.width || !rect.height || rect.bottom<0 || rect.top>window.innerHeight || rect.right<0 || rect.left>window.innerWidth)continue;
    const width=view.clientWidth || rect.width,height=view.clientHeight || rect.height,scale=rect.width/width || 1,entries=[];
-   const insetScale=document.body.classList.contains('pt-tv')?window.innerWidth/1920:1;
    for(const [selector,corner] of [['.card__vote','br'],['.pt-quality,.card__quality','tr'],['.pt-kind','tl'],['.pt-series-status','tl'],['.card__marker','bl'],['.card__new-episode','bl']])for(const el of view.querySelectorAll(selector)){
     if(el.hidden || el.classList.contains('hide') || getComputedStyle(el).display==='none')continue;
     if(el.classList.contains('pt-series-status')){

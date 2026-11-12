@@ -1,3 +1,8 @@
+## 0.5.129
+
+- Prepare basic poster tags in short batches, keep badge measurements and release lookups out of active desktop scrolling, and allow new rows to prepare ahead of the viewport.
+- Start desktop catalogue pagination up to 600 px early and reduce repeated horizontal layout work. Keep the poster border during gestures and restore the configured animation when the gesture ends.
+
 ## 0.5.128
 
 - Match the focus border across Related, Recommendations and Similar, keep the bottom edge inside the control, and distinguish the lists by icon.

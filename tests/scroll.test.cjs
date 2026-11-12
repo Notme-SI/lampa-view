@@ -72,6 +72,20 @@ test('first wheel frame after long page uptime stays small and blur cancels rema
  dom.window.close();
 });
 
+test('desktop catalogue asks native pagination for the next page before the end',()=>{
+ const {dom,w,target}=setup(),node=w.document.querySelector('#vertical'),body=w.document.createElement('div');
+ w.document.body.classList.add('pt-desktop');
+ node.classList.add('activity--active');body.classList.add('mapping--grid');
+ let position=-1500,loads=0;
+ node.Scroll={wheel(){},body:()=>body,position:()=>position,shift:delta=>{position-=delta;},
+  vieport:()=>({position,body:3000,content:500}),isEnd:()=>position<=-2500,onEnd:()=>loads++};
+ const move=()=>target.dispatchEvent(new w.WheelEvent('wheel',{bubbles:true,cancelable:true,deltaY:120}));
+ move();assert.equal(loads,0,'The next page stays idle beyond the look-ahead window');
+ position=-1840;move();assert.equal(position,-1960);assert.equal(loads,1,'The next page starts 540 px before the end');
+ body.classList.remove('mapping--grid');move();assert.equal(loads,1,'Other vertical scrollers keep their native end threshold');
+ dom.window.close();
+});
+
 test('wheel leaves player, form fields and browser zoom to their native handlers',()=>{
  const {dom,w,calls,target}=setup();
  const player=w.document.createElement('div');player.className='player';target.appendChild(player);

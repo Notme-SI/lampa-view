@@ -283,6 +283,12 @@ body.lampa_view .card--wide .card__textbox {font-size:.8em;line-height:1.4;paddi
 body.lampa_view .card--wide .card__textbox>* {display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;max-height:2.8em}
 body.lampa_view .card__quality {top:.6em;left:.6em;bottom:auto;background:#000000e8;color:var(--pt-quality-text,#d5e9ee);border:1px solid #ffffff25}
 
+/* A preview offset belongs to one layer. Do not invalidate its poster subtree on each frame. */
+@property --pt-rail-preview {
+ syntax:"<length>";
+ inherits:false;
+ initial-value:0px;
+}
 /* Frame animation owns transforms while the pointer is moving. */
 body.lampa_view .pt-wheel-moving>.scroll__content>.scroll__body {transition:none!important;-webkit-transition:none!important}
 body.lampa_view.pt-desktop :is(.pt-wheel-moving,.pt-row-dragging)>.scroll__content>.scroll__body[style*="--pt-rail-preview"] {

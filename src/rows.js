@@ -2,6 +2,7 @@ import rowNavigation from './row-navigation.js';
 import fitRail,{settleRail} from './rail-fit.js';
 export default function fillRows(L,enabled){
   const lines=new Map();
+  const desktop=()=>document.body.classList.contains('pt-desktop');
   const roots=new WeakMap();
   const tracked=new WeakSet(),navigated=new WeakSet(),ahead=Math.min(800,Math.max(360,window.innerHeight || 540));
   const observer=window.IntersectionObserver?new window.IntersectionObserver(entries=>entries.forEach(entry=>{
@@ -18,11 +19,11 @@ export default function fillRows(L,enabled){
     state.timer=setTimeout(()=>{
       state.timer=null;
       if(!enabled())return;
-      if(document.body.matches('.pt-wheel-active,.pt-tv-busy')){state.deferred=true;return;}
-      state.deferred=false;
       const render=line.render(true),root=render && (render.nodeType?render:render[0]);
       if(!root || !root.isConnected)return;
       if(!state.root){state.root=root;roots.set(root,line);if(observer)observer.observe(root);if(sizes)sizes.observe(root);root.addEventListener('touchend',()=>{if(enabled())settleRail(line.scroll && line.scroll.render(true));},{passive:true});}
+      if(document.body.classList.contains('pt-tv-busy') || document.body.classList.contains('pt-wheel-active') && (!desktop() || state.posterFitKey)){state.deferred=true;return;}
+      state.deferred=false;
       const box=root.getBoundingClientRect();
       const first=!document.body.classList.contains('pt-tv') && root.previousElementSibling && root.previousElementSibling.matches('.pt-hero');
       if(!box.width)return;
@@ -83,9 +84,9 @@ export default function fillRows(L,enabled){
   let resize;
   window.addEventListener('resize',()=>{clearTimeout(resize);resize=setTimeout(()=>lines.forEach((state,line)=>schedule(line,state.data)),150);});
   document.addEventListener('minimal:hero-layout',()=>lines.forEach((state,line)=>schedule(line,state.data)));
-  document.addEventListener('minimal:wheel-idle',()=>lines.forEach((state,line)=>schedule(line,state.data)));
+  document.addEventListener('minimal:wheel-idle',()=>lines.forEach((state,line)=>{if(state.deferred || !desktop())schedule(line,state.data);}));
   document.addEventListener('minimal:tv-idle',()=>lines.forEach((state,line)=>{if(state.deferred)schedule(line,state.data);}));
   let scrolling;
-  document.addEventListener('scroll',()=>{clearTimeout(scrolling);scrolling=setTimeout(()=>lines.forEach((state,line)=>schedule(line,state.data)),100);},true);
+  document.addEventListener('scroll',()=>{if(observer && desktop())return;clearTimeout(scrolling);scrolling=setTimeout(()=>lines.forEach((state,line)=>schedule(line,state.data)),100);},true);
   return event;
 }

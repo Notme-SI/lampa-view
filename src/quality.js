@@ -12,7 +12,7 @@ import posterSelection from './poster-selection.js';
 // Visible cards only, two requests at a time, bounded cache; use the user's parser.
 export default function quality(L,$){
   const info=cardInfo(L),hydrating=new WeakSet(),status=seriesStatus(L,node=>badges.schedule(node)),badges=badgeLayout(status);
-  const cache=new Map(),pending=new Map(),queue=[],tracked=new Map(),visible=new Set(),deferred=new Set(),retries=new Set();let running=0,timer,saveTimer,generation=0;
+  const cache=new Map(),pending=new Map(),queue=[],tracked=new Map(),nodes=new WeakMap(),visible=new Set(),deferred=new Set(),releases=new Map(),overflow=new Set(),retries=new Set(),remembered=new WeakSet();let running=0,timer,saveTimer,generation=0;
   const storage='minimal_quality_v2',valid=entry=>entry && Date.now()-entry.time<(entry.q?21600000:120000);
   const saved=L.Storage && L.Storage.get(storage,[]);if(Array.isArray(saved))saved.slice(-400).forEach(pair=>{if(Array.isArray(pair) && typeof pair[0]==='string' && valid(pair[1]))cache.set(pair[0],pair[1]);});
   const save=()=>{clearTimeout(saveTimer);saveTimer=setTimeout(()=>{if(L.Storage && L.Storage.set)L.Storage.set(storage,Array.from(cache.entries()));},250);};
@@ -21,16 +21,18 @@ export default function quality(L,$){
   },{rootMargin:'200px'}):null;
   function track(item,node){
     if(tracked.has(node))return;
-    tracked.set(node,item);
+    tracked.set(node,item);nodes.set(item,node);
     if(typeof $==='function')$(node).on('hover:focus.lampaViewQuality hover:hover.lampaViewQuality hover:touch.lampaViewQuality',()=>schedule(item));
     if(observer)observer.observe(node);badges.track(node);
   }
   function forget(item){
-    deferred.delete(item);
-    for(const [node,value] of tracked)if(value===item){if(observer)observer.unobserve(node);visible.delete(node);badges.forget(node);if(typeof $==='function')$(node).off('.lampaViewQuality');tracked.delete(node);}
+    deferred.delete(item);releases.delete(item);overflow.delete(item);
+    const node=nodes.get(item);if(!node)return;
+    if(observer)observer.unobserve(node);visible.delete(node);badges.forget(node);
+    if(typeof $==='function')$(node).off('.lampaViewQuality');tracked.delete(node);nodes.delete(item);
   }
   function revisit(){
-    if(observer){for(const node of visible){if(node.isConnected)deferred.add(tracked.get(node));}}
+    if(observer){for(const node of visible){const item=tracked.get(node);if(item && node.isConnected)deferred.add(item);}}
     else for(const [node,item] of tracked)if(node.isConnected)deferred.add(item);
     if(!timer && deferred.size && !document.body.classList.contains('pt-tv-busy'))timer=setTimeout(flush,100);
   }
@@ -75,7 +77,7 @@ export default function quality(L,$){
       const job=queue.shift();if(!job.nodes.some(n=>n.isConnected)){pending.delete(job.key);continue;}
       running++;let attempts=0,expanded=false;const tried=new Set();
       let finished=false,fallbackStarted=false;
-      const finish=q=>{if(finished || job.generation!==generation)return;finished=true;cache.set(job.key,{q,time:Date.now()});save();if(cache.size>400)cache.delete(cache.keys().next().value);pending.delete(job.key);job.nodes.forEach(n=>paint(n,q));running--;drain();revisit();};
+      const finish=q=>{if(finished || job.generation!==generation)return;finished=true;cache.set(job.key,{q,time:Date.now()});save();if(cache.size>400)cache.delete(cache.keys().next().value);pending.delete(job.key);job.nodes.forEach(n=>paint(n,q));running--;drain();const next=overflow.values().next().value;if(next){overflow.delete(next);schedule(next);}};
       const fallback=()=>{if(fallbackStarted || job.generation!==generation)return;fallbackStarted=true;if(!flag(L,'minimal_quality_fallback'))return finish('');job.cancel=onlineQuality(job.data,finish);};
       function next(){
        if(job.generation!==generation)return;
@@ -110,7 +112,7 @@ export default function quality(L,$){
       next();
     }
   }
-  function inspect(item,checks){
+  function inspect(item){
     const raw=item.data || {};info.remember(raw);
     const data=info.read(raw),render=item.render && item.render(true),node=render && (render.nodeType?render:render[0]);
     if(!node || !node.classList.contains('card') || (!data.title && !data.original_title && !data.name && !data.original_name))return;
@@ -136,11 +138,7 @@ export default function quality(L,$){
       }
     }
     badges.schedule(node);
-    if(checks)checks.push({item,data,node,tv,title});
-    else{
-      sizeCaption(title,measureCaption(title,document.body.matches('.pt-tv.pt-tv-caption-flow')));
-      if(inView(node))inspectRelease(item,data,node,tv);
-    }
+    releases.set(item,{item,data,node,tv,title});
   }
   function inView(node){
     if(!node.isConnected)return false;
@@ -155,7 +153,8 @@ export default function quality(L,$){
     const year=String(data.first_air_date || data.release_date || '').slice(0,4),key=qualityCacheKey(data,tv);
     const saved=cache.get(key);if(valid(saved)){paint(node,saved.q);return;}
     if(pending.has(key)){const job=pending.get(key);if(job.nodes.indexOf(node)<0)job.nodes.push(node);return;}
-    if(queue.length>=40 || !L.Reguest)return;
+    if(!L.Reguest)return;
+    if(queue.length>=40){overflow.add(item);return;}
     const configured=String(L.Storage.get('jackett_url','') || '').trim();if(!configured && !(window.alc_auto_api && window.alc_auto_api.metadataQuality))return;let base=configured;if(base && !/^https?:\/\//i.test(base))base='http://'+base;
     const job={key,data,year,base:base.replace(/\/$/,''),apiKey:encodeURIComponent(L.Storage.get('jackett_key','') || ''),tv,nodes:[node],generation};pending.set(key,job);queue.push(job);drain();
   }
@@ -188,46 +187,58 @@ export default function quality(L,$){
   }
   if(window.MutationObserver){
     new window.MutationObserver(records=>{
-      records.forEach(record=>{if(record.target.nodeType===1 && record.target.closest('.nova-plus-root'))return;record.addedNodes.forEach(legacy);const card=record.target.nodeType===1 && record.target.closest('.card');if(card && tracked.has(card))badges.schedule(card);});
-      if(records.some(record=>Array.from(record.removedNodes).some(node=>node.nodeType===1 && (node.matches('.card') || node.querySelector('.card')))))for(const [node,item] of tracked)if(!node.isConnected)forget(item);
+      for(const record of records){
+        if(record.target.nodeType!==1 || record.target.closest('.nova-plus-root'))continue;
+        const card=record.target.closest('.card');
+        if(card){
+          const tags='.card__view,.card__vote,.card__quality,.card__marker,.card__new-episode,.card__icons,.card__icons-inner,.card__icon';
+          if(tracked.has(card) && (record.target.matches(tags) || [...record.addedNodes,...record.removedNodes].some(node=>node.nodeType===1 && node.matches(tags))))badges.schedule(card);
+          continue;
+        }
+        record.addedNodes.forEach(legacy);
+        for(const root of record.removedNodes)if(root.nodeType===1){
+          const removed=root.matches('.card')?[root]:root.querySelectorAll('.card');
+          for(const node of removed)if(!node.isConnected && tracked.has(node))forget(tracked.get(node));
+        }
+      }
     }).observe(document.body,{childList:true,subtree:true});
     legacy(document.body);
   }
   function flush(){
     clearTimeout(timer);timer=null;
-    if(document.body.classList.contains('pt-tv-busy'))return;
-    if(document.body.classList.contains('pt-wheel-active')){timer=setTimeout(flush,180);return;}
-    const waiting=Array.from(retries);retries.clear();waiting.forEach(next=>next());
-    // Bound each TV task instead of annotating a whole catalogue in one turn.
-    const television=document.body.classList.contains('pt-tv');
-    const limit=television?6:Infinity,checks=television?[]:null;
-    let count=0;for(const item of deferred){deferred.delete(item);inspect(item,checks);if(++count>=limit)break;}
-    if(checks?.length){
-      // Commit the card decorations as a group before any geometry reads.
-      // A forced style update for each new poster stalls TV input after a burst.
-      const clamp=document.body.classList.contains('pt-tv-caption-flow');
-      const measurements=checks.map(check=>({line:measureCaption(check.title,clamp),visible:inView(check.node)}));
-      checks.forEach(({item,data,node,tv,title},i)=>{
-        const {line,visible}=measurements[i];
+    if(document.body.classList.contains('pt-tv-busy') || document.hidden)return;
+    const moving=document.body.classList.contains('pt-wheel-active');
+    if(moving && !document.body.classList.contains('pt-desktop'))return;
+    // Make basic captions available ahead of the viewport in small groups.
+    // Geometry reads and parser work resume after the desktop gesture ends.
+    let count=0;
+    for(const item of deferred){deferred.delete(item);inspect(item);if(++count>=(moving?4:6))break;}
+    if(!moving){
+      const waiting=Array.from(retries);retries.clear();waiting.forEach(next=>next());
+      const clamp=document.body.matches('.pt-tv.pt-tv-caption-flow'),checks=[];
+      for(const [item,check] of releases){
+        releases.delete(item);
+        const line=measureCaption(check.title,clamp),near=inView(check.node);
+        checks.push({...check,line,near});
+        if(checks.length>=6)break;
+      }
+      for(const {item,data,node,tv,title,line,near} of checks){
         sizeCaption(title,line);
-        if(visible)inspectRelease(item,data,node,tv);
-      });
+        if(near)inspectRelease(item,data,node,tv);
+      }
+      drain();
     }
-    if(deferred.size)timer=setTimeout(flush,16);
-    drain();
+    if(deferred.size || !moving && releases.size)timer=setTimeout(flush,moving?32:16);
   }
   L.Listener.follow('line',event=>{
     if(!event || !['append','visible','toggle'].includes(event.type))return;
-    ((event.data || {}).results || []).forEach(card=>info.remember(card));
-    if(document.body.matches('.pt-wheel-active,.pt-tv-busy')){
-      (event.items || []).forEach(item=>deferred.add(item));
-      if(!timer && !document.body.classList.contains('pt-tv-busy'))timer=setTimeout(flush,180);return;
+    for(const card of (event.data || {}).results || []){
+      if(card && typeof card==='object' && !remembered.has(card)){remembered.add(card);info.remember(card);}
     }
-    if(document.body.classList.contains('pt-tv'))(event.items || []).forEach(schedule);
-    else (event.items || []).forEach(item=>inspect(item));
-    drain();
+    (event.items || []).forEach(schedule);
   });
-  document.addEventListener('minimal:wheel-idle',()=>{revisit();flush();});
+  document.addEventListener('minimal:wheel-idle',()=>{if(!observer)revisit();flush();});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)flush();});
   // Focus/visibility events already queued the cards that actually changed.
   // A remote pause is not a reason to re-annotate every visible poster.
   document.addEventListener('minimal:tv-idle',flush);
@@ -286,5 +297,5 @@ export default function quality(L,$){
   },true);
   window.addEventListener('resize',revisit);
   document.addEventListener('minimal:interface-size',revisit);
-  cacheControl(L).register('quality',()=>{generation++;clearTimeout(saveTimer);pending.forEach(job=>{if(job.cancel)job.cancel();if(job.request && job.request.clear)job.request.clear();});cache.clear();pending.clear();queue.length=0;retries.clear();running=0;if(L.Storage && L.Storage.set)L.Storage.set(storage,[]);for(const [node] of tracked){node.querySelectorAll('.pt-quality').forEach(b=>b.remove());node.classList.remove('pt-has-quality');}revisit();});
+  cacheControl(L).register('quality',()=>{generation++;clearTimeout(saveTimer);pending.forEach(job=>{if(job.cancel)job.cancel();if(job.request && job.request.clear)job.request.clear();});cache.clear();pending.clear();queue.length=0;overflow.clear();retries.clear();running=0;if(L.Storage && L.Storage.set)L.Storage.set(storage,[]);for(const [node] of tracked){node.querySelectorAll('.pt-quality').forEach(b=>b.remove());node.classList.remove('pt-has-quality');}revisit();});
 }

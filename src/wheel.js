@@ -4,19 +4,41 @@ import {settleRail} from './rail-fit.js';
 export default function installWheel(L,enabled){
   let lastStandard=-Infinity;
   const states=new Map();
+  let desktopTimer,drag=null,suppressClick=null;
+  function busy(){
+    const active=states.size>0 || desktopTimer!==undefined || Boolean(drag?.moving);
+    if(document.body.classList.contains('pt-wheel-active')===active)return;
+    document.body.classList.toggle('pt-wheel-active',active);
+    if(!active)document.dispatchEvent(new Event('minimal:wheel-idle'));
+  }
+  function markDesktopMovement(){
+    if(!document.body.classList.contains('pt-desktop'))return;
+    clearTimeout(desktopTimer);
+    desktopTimer=setTimeout(()=>{desktopTimer=undefined;busy();},110);
+    busy();
+  }
+  function nearCatalogueEnd(node,scroll){
+    if(!document.body.classList.contains('pt-desktop') || node.classList.contains('scroll--horizontal') ||
+      !node.closest('.activity--active') || !scroll.vieport)return false;
+    const scrollBody=scroll.body?.(true);
+    if(!scrollBody?.matches('.mapping--grid') && scrollBody?.querySelector('.mapping--grid')?.closest('.scroll')!==node)return false;
+    const {body,content,position}=scroll.vieport();
+    return content>0 && body>=content && body-content-Math.abs(position)<=600;
+  }
   function notify(state,ended=true){
     const scroll=state.node.Scroll;
     if(!scroll)return;
     if(scroll.onScroll)scroll.onScroll(Math.abs(scroll.position?scroll.position():0));
     else if(L.Layer && L.Layer.visible)L.Layer.visible(state.node);
-    if(scroll.onEnd && scroll.isEnd && scroll.isEnd())scroll.onEnd();
+    if(scroll.onEnd && (nearCatalogueEnd(state.node,scroll) || scroll.isEnd?.()))scroll.onEnd();
     if(ended && scroll.onAnimateEnd)scroll.onAnimateEnd();
   }
   const desktopRail=node=>node.classList.contains('scroll--horizontal') &&
     document.body.classList.contains('pt-desktop') && L.Platform?.screen?.('tv');
   function measure(rail,node){
     const padding=parseInt(getComputedStyle(rail.content).paddingLeft,10)||0;
-    rail.limit=Math.max(0,rail.body.scrollWidth+padding*2-node.offsetWidth);
+    rail.width=node.offsetWidth;
+    rail.limit=Math.max(0,rail.body.scrollWidth+padding*2-rail.width);
   }
   function preview(node){
     const scroll=node.Scroll,body=scroll.body?.(true),content=body?.parentElement;
@@ -48,9 +70,12 @@ export default function installWheel(L,enabled){
   }
   function checkpoint(state){
     commit(state);
-    if(state.rail && state.forward)state.node.Scroll.minimalPointerFill?.();
-    notify(state,!state.rail);
-    if(state.rail)measure(state.rail,state.node);
+    const rail=state.rail;
+    // Native lazy append is only needed close to the last mounted poster.
+    const nearEnd=rail && state.forward && rail.limit+rail.position<=rail.width*.35;
+    if(nearEnd)state.node.Scroll.minimalPointerFill?.();
+    notify(state,!rail);
+    if(nearEnd)measure(rail,state.node);
   }
   function release(state){
     if(state.node.isConnected){
@@ -63,9 +88,8 @@ export default function installWheel(L,enabled){
     if(state.frame && window.cancelAnimationFrame)window.cancelAnimationFrame(state.frame);
     release(state);
     states.delete(state.node);state.node.classList.remove('pt-wheel-moving');
-    document.body.classList.toggle('pt-wheel-active',states.size>0);
     if(state.node.isConnected)notify(state);
-    if(!states.size)document.dispatchEvent(new Event('minimal:wheel-idle'));
+    busy();
   }
   function animate(state,time){
     state.frame=0;
@@ -86,6 +110,7 @@ export default function installWheel(L,enabled){
   }
   function move(node,delta,fastRail){
     const scroll=node.Scroll;
+    markDesktopMovement();
     if(typeof scroll.shift!=='function'){
       const params=scroll.params && scroll.params(),byItem=params && params.scroll_by_item;
       try{if(params)params.scroll_by_item=false;scroll.wheel(delta);}
@@ -105,7 +130,7 @@ export default function installWheel(L,enabled){
         if(!rowOverflows(node))notify({node});
       }
       state={node,rail:fastRail?preview(node):null,remaining:0,time:0,frame:0,lastNotify:0};
-      states.set(node,state);node.classList.add('pt-wheel-moving');document.body.classList.add('pt-wheel-active');
+      states.set(node,state);node.classList.add('pt-wheel-moving');busy();
     }
     state.forward=delta>0;
     if(state.remaining*delta<0)state.remaining=0;
@@ -116,8 +141,12 @@ export default function installWheel(L,enabled){
   function cancel(){Array.from(states.values()).forEach(finish);}
   document.addEventListener('keydown',cancel,true);
   document.addEventListener('pointerdown',cancel,true);
-  window.addEventListener('blur',cancel);
-  document.addEventListener('visibilitychange',()=>{if(document.hidden)cancel();});
+  function stop(){cancel();finishDrag();clearTimeout(desktopTimer);desktopTimer=undefined;busy();}
+  window.addEventListener('blur',stop);
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});
+  document.addEventListener('scroll',event=>{
+    if(enabled() && event.target.Scroll && event.target.closest('.activity--active'))markDesktopMovement();
+  },{capture:true,passive:true});
 
   function handle(event){
     if(!enabled() || event.ctrlKey || event.metaKey)return;
@@ -151,7 +180,6 @@ export default function installWheel(L,enabled){
     }
     move(node,delta,fastRail);
   }
-  let drag=null,suppressClick=null;
   document.addEventListener('pointerdown',event=>{
     suppressClick=null;
     if(!enabled() || !event.isPrimary)return;
@@ -179,6 +207,7 @@ export default function installWheel(L,enabled){
       drag.moved=true;
       drag.node.setPointerCapture?.(event.pointerId);
       drag.node.classList.add('pt-row-dragging');
+      if(document.body.classList.contains('pt-desktop')){drag.moving=true;busy();}
       if(window.requestAnimationFrame && desktopRail(drag.node))drag.rail=preview(drag.node);
     }
     event.preventDefault();
@@ -212,10 +241,10 @@ export default function installWheel(L,enabled){
     release(state);state.node.classList.remove('pt-row-dragging');
     suppressClick=state.node;
     if(state.node.isConnected)notify(state);
+    busy();
   }
   document.addEventListener('pointerup',finishDrag,true);
   document.addEventListener('pointercancel',finishDrag,true);
-  window.addEventListener('blur',()=>finishDrag());
   document.addEventListener('click',event=>{
     if(!suppressClick?.contains(event.target))return;
     suppressClick=null;
