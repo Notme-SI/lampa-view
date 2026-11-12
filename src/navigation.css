@@ -434,3 +434,9 @@ body.lampa_view.pt-arrow-navigation[data-lampa-theme] .head .head__body :is(.hea
  background:var(--pt-shell-surface)!important;border-color:var(--pt-shell-border)!important;
  color:var(--pt-muted)!important;box-shadow:none!important;
 }
+body.lampa_view.pt-tv[data-lampa-theme="minimal"] .head .head__body {
+ background:var(--pt-shell-surface)!important;box-shadow:inset 0 0 0 1px var(--pt-shell-border)!important;border-radius:999px;
+}
+body.lampa_view.pt-tv[data-lampa-theme] .head .head__body :is(.head__menu-icon,.head__backward,.head__action.open--home,.head__action.open--search,.head__action.open--settings,.head__action.open--profile):not(.focus) {
+ background:transparent!important;border-color:transparent!important;box-shadow:none!important;
+}

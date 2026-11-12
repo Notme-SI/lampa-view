@@ -118,9 +118,21 @@ async function run(browser,mode,theme){
    assert.equal(controls.filter(c=>c.focus).length,1);
    const inactive=controls.filter(c=>!c.focus),focused=controls.find(c=>c.focus);
    for(const control of inactive)assert.deepEqual(control.material,inactive[0].material);
+   if(mode==='tv')for(const control of inactive){
+    assert.equal(control.material[0],'rgba(0, 0, 0, 0)','Inactive TV controls share the capsule background');
+    assert.equal(control.material[1],'rgba(0, 0, 0, 0)','Inactive TV controls have no individual border');
+   }
    assert.notDeepEqual(focused.material,inactive[0].material);
   }
   assert.equal(await page.evaluate(()=>document.activeElement.closest('.head')),null);
+  if(mode==='tv'){
+   await page.evaluate(()=>{Lampa.Storage.set('menu_always',true);Lampa.Controller.toggle('head');});
+   await page.keyboard.press('ArrowRight');
+   const pinned=await page.locator('body.pt-menu-pinned .head__body .selector:not(.focus)').evaluateAll(nodes=>nodes
+    .filter(node=>node.getBoundingClientRect().width>0)
+    .map(node=>getComputedStyle(node).borderColor));
+   assert.ok(pinned.length>0 && pinned.every(color=>color==='rgba(0, 0, 0, 0)'),'The docked menu also keeps inactive controls borderless');
+  }
   assert.deepEqual(r.errors,[]);
  }finally{await r.context.close();}
 }

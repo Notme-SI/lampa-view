@@ -32,6 +32,13 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
   const view=row.locator('.scroll--horizontal'),box=await view.boundingBox();
   const before=await view.evaluate(n=>n.Scroll.position());
   assert.equal(await view.evaluate(n=>getComputedStyle(n).scrollbarWidth),'none');
+  if(mode==='desktop'){
+   await page.mouse.move(box.x+box.width*.6,box.y+45);
+   await page.keyboard.down('Shift');await page.mouse.wheel(0,360);await page.keyboard.up('Shift');
+   await page.waitForFunction(()=>!document.body.classList.contains('pt-wheel-active'));
+   assert.ok(await view.evaluate(n=>n.Scroll.position())<before,'Shift + wheel scrolls the desktop rail');
+   assert.equal(await view.evaluate(n=>n.querySelector('.scroll__body').style.getPropertyValue('--pt-rail-preview')),'','Native position is committed and the preview is cleared');
+  }
   await page.mouse.move(box.x+box.width*.8,box.y+45);await page.mouse.down();
   await page.mouse.move(box.x+box.width*.2,box.y+45,{steps:8});await page.mouse.up();
   assert.ok(await view.evaluate(n=>n.Scroll.position())<before,'Drag scrolls the row');

@@ -302,8 +302,23 @@ export default function detail(L,event,loadLogo){
   if(!shade){shade=document.createElement('div');shade.className='minimal-detail-shade';shade.setAttribute('aria-hidden','true');background.after(shade);}
   // This image is a sibling of the header. Follow the complete header,
   // including asynchronously mounted cast, instead of a fixed 58vh cutoff.
-  const fit=()=>{if(!start.isConnected)return;const rect=background.getBoundingClientRect(),scale=rect.height/(background.offsetHeight || rect.height) || 1,height=(start.getBoundingClientRect().bottom-rect.top)/scale;if(height>0){background.style.setProperty('--pt-detail-backdrop-height',height+'px');shade.style.height=height+'px';}};
-  fit();const resize=window.ResizeObserver?new ResizeObserver(fit):null;if(resize)resize.observe(start);
+  const rendered=event.link?.scroll?.render(true);
+  const viewport=rendered?.nodeType?rendered:rendered?.[0];
+  const fit=()=>{
+   if(!start.isConnected)return;
+   if(document.body.classList.contains('pt-tv') && viewport?.clientHeight){
+    const content=viewport.querySelector('.scroll__content');
+    const padding=content?parseFloat(getComputedStyle(content).paddingTop)||0:0;
+    const stage=Math.max(0,viewport.clientHeight-padding)+'px';
+    if(start.style.getPropertyValue('--pt-detail-stage-height')!==stage)start.style.setProperty('--pt-detail-stage-height',stage);
+   }
+   const rect=background.getBoundingClientRect(),scale=rect.height/(background.offsetHeight || rect.height) || 1;
+   const height=(start.getBoundingClientRect().bottom-rect.top)/scale;
+   if(height>0){background.style.setProperty('--pt-detail-backdrop-height',height+'px');shade.style.height=height+'px';}
+  };
+  fit();
+  const resize=window.ResizeObserver?new ResizeObserver(fit):null;
+  if(resize){resize.observe(start);if(viewport)resize.observe(viewport);}
   if(event.link && event.link.use)event.link.use({onDestroy:()=>{if(resize)resize.disconnect();}});
  }
  if(background && card.backdrop_path){

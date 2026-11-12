@@ -4,12 +4,15 @@ const nodeOf=item=>{const node=item?.render?.(true);return node?.nodeType?node:n
 const escape=value=>String(value || '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const matches=(L,row)=>Array.isArray(row) && row[0]==='cards' &&
  [L.Lang.translate('title_recomendations'),L.Lang.translate('title_similar')].includes(row[1]?.title);
+const star='m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1L3.2 9.4l6.1-.9Z';
+const similar='M8 6V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-1 M5 8h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2Z';
 
 function choice(L,link,data){
  const root=document.createElement('div');root.className='minimal-anime-franchise minimal-detail-suggestions minimal-suggestions-choice';
  const control=document.createElement('button');control.type='button';control.className='minimal-anime-franchise__button minimal-suggestions-button selector';
  control.setAttribute('aria-expanded','false');control.setAttribute('aria-haspopup','dialog');
- control.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1L3.2 9.4l6.1-.9Z"/></svg><span></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+ const glyph=data.title===L.Lang.translate('title_similar')?similar:star;
+ control.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="'+glyph+'"/></svg><span></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
  control.querySelector('span').textContent=data.title;root.appendChild(control);
  const hooks={};let disposed=false,panel;
  const cleanup=()=>{panel?.classList.remove('minimal-suggestions-menu','minimal-franchise-menu');panel=null;control.setAttribute('aria-expanded','false');};
@@ -65,6 +68,11 @@ export default function installSuggestions(L,link){
   const emit=link.emit;
   link.emit=function(event,...args){
    const row=args[0];
+   // A focus change can leave the scroll offset unchanged. In that case
+   // native Scroll does not fire onScroll and the last built row traps Down.
+   if(event==='down' && this.tv && this.active===this.items.length-1 && this.items.length<this.rows.length){
+    emit.call(this,'scroll',Math.abs(this.scroll.position()));
+   }
    if(event==='createAndAppend' && matches(L,row) && row[1].results?.length){
     const item=choice(L,link,row[1]);
     emit.call(this,'instance',item);item.create();emit.call(this,'append',item);return;

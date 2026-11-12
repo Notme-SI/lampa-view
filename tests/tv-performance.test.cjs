@@ -38,7 +38,12 @@ test('TV detail builds lower rows gradually, including empty comments, while rem
     assert.equal(link.items.length,6,'Pointer scrolling must expand rows even with a stale remote index');assert.equal(link.active,active);
    }else{
     link.emit('down');assert.ok(link.items.length<6);link.emit('down');assert.equal(link.items.length,5);
-    for(let i=0;i<3;i++)link.emit('down');assert.equal(link.active,5);assert.equal(link.items.length,6);
+    // Simulate a full viewport whose scroll offset does not change on focus.
+    // Native Scroll then never requests more rows before the next Down.
+    const update=link.scroll.update;link.scroll.update=()=>{};
+    for(let i=0;i<3;i++)link.emit('down');
+    link.scroll.update=update;
+    assert.equal(link.active,5);assert.equal(link.items.length,6);
     assert.ok(link.items[5].data.title.includes('Похожие'));link.emit('up');assert.equal(link.active,4);
    }
    assert.equal(root.querySelector('.minimal-detail-columns').children.length,2);assert.deepEqual(n.errors,[]);

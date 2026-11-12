@@ -1,22 +1,70 @@
 import {settleRail} from './rail-fit.js';
 // Pointer scrolling must not enter row controllers (their boundary opens the menu).
-// Scroll.wheel still owns position, bounds, rendering and lazy-loading callbacks.
+// Native Scroll owns the committed position and lazy loading.
 export default function installWheel(L,enabled){
   let lastStandard=-Infinity;
   const states=new Map();
-  function notify(state){
+  function notify(state,ended=true){
     const scroll=state.node.Scroll;
     if(!scroll)return;
     if(scroll.onScroll)scroll.onScroll(Math.abs(scroll.position?scroll.position():0));
     else if(L.Layer && L.Layer.visible)L.Layer.visible(state.node);
     if(scroll.onEnd && scroll.isEnd && scroll.isEnd())scroll.onEnd();
-    if(scroll.onAnimateEnd)scroll.onAnimateEnd();
+    if(ended && scroll.onAnimateEnd)scroll.onAnimateEnd();
+  }
+  const desktopRail=node=>node.classList.contains('scroll--horizontal') &&
+    document.body.classList.contains('pt-desktop') && L.Platform?.screen?.('tv');
+  function measure(rail,node){
+    const padding=parseInt(getComputedStyle(rail.content).paddingLeft,10)||0;
+    rail.limit=Math.max(0,rail.body.scrollWidth+padding*2-node.offsetWidth);
+  }
+  function preview(node){
+    const scroll=node.Scroll,body=scroll.body?.(true),content=body?.parentElement;
+    if(!body?.classList.contains('scroll__body') || !content?.classList.contains('scroll__content') || content.parentElement!==node || !scroll.position)return null;
+    const position=scroll.position(),rail={body,content,position,committed:position,limit:0};
+    measure(rail,node);
+    return rail;
+  }
+  function advance(state,delta){
+    const scroll=state.node.Scroll,rail=state.rail;
+    if(!rail){const before=scroll.position?.();scroll.shift(delta);return !scroll.position || scroll.position()!==before;}
+    const native=scroll.position();
+    if(native!==rail.committed){
+      rail.position=rail.committed=native;
+      rail.body.style.removeProperty('--pt-rail-preview');
+      measure(rail,state.node);
+    }
+    const next=Math.max(-rail.limit,Math.min(0,rail.position-delta));
+    if(next===rail.position)return false;
+    rail.position=next;
+    rail.body.style.setProperty('--pt-rail-preview',Math.round(next)+'px');
+    return true;
+  }
+  function commit(state){
+    const rail=state.rail,scroll=state.node.Scroll;
+    if(!rail)return;
+    if(scroll.position()===rail.committed && rail.committed!==rail.position)scroll.shift(rail.committed-rail.position);
+    rail.position=rail.committed=scroll.position();
+  }
+  function checkpoint(state){
+    commit(state);
+    if(state.rail && state.forward)state.node.Scroll.minimalPointerFill?.();
+    notify(state,!state.rail);
+    if(state.rail)measure(state.rail,state.node);
+  }
+  function release(state){
+    if(state.node.isConnected){
+      commit(state);
+      if(enabled())settleRail(state.node);
+    }
+    state.rail?.body.style.removeProperty('--pt-rail-preview');
   }
   function finish(state){
     if(state.frame && window.cancelAnimationFrame)window.cancelAnimationFrame(state.frame);
+    release(state);
     states.delete(state.node);state.node.classList.remove('pt-wheel-moving');
     document.body.classList.toggle('pt-wheel-active',states.size>0);
-    if(state.node.isConnected){if(enabled())settleRail(state.node);notify(state);}
+    if(state.node.isConnected)notify(state);
     if(!states.size)document.dispatchEvent(new Event('minimal:wheel-idle'));
   }
   function animate(state,time){
@@ -24,10 +72,11 @@ export default function installWheel(L,enabled){
     if(!enabled() || !state.node.isConnected)return finish(state);
     const dt=state.time?Math.max(1,Math.min(40,time-state.time)):16.67;state.time=time;
     const step=Math.abs(state.remaining)<.4?state.remaining:state.remaining*(1-Math.exp(-dt/90));
-    const scroll=state.node.Scroll,before=scroll.position && scroll.position();
-    scroll.shift(step);state.remaining-=step;
-    if(scroll.position && scroll.position()===before)state.remaining=0;
-    if(!state.lastNotify || time-state.lastNotify>=120){state.lastNotify=time;notify(state);}
+    const moved=advance(state,step);state.remaining-=step;
+    if(!state.lastNotify || time-state.lastNotify>=120 || (!moved && state.rail && state.forward)){
+      state.lastNotify=time;checkpoint(state);
+    }
+    if(!moved && (!state.rail || state.rail.position<=-state.rail.limit || !state.forward))state.remaining=0;
     if(Math.abs(state.remaining)<.01)return finish(state);
     state.frame=window.requestAnimationFrame(t=>animate(state,t));
   }
@@ -35,7 +84,7 @@ export default function installWheel(L,enabled){
     const body=node.Scroll.body?.(true),inset=node.Scroll.minimalPosterFit?.inset || 0;
     return !!body && body.scrollWidth+inset*2>node.clientWidth;
   }
-  function move(node,delta){
+  function move(node,delta,fastRail){
     const scroll=node.Scroll;
     if(typeof scroll.shift!=='function'){
       const params=scroll.params && scroll.params(),byItem=params && params.scroll_by_item;
@@ -44,9 +93,21 @@ export default function installWheel(L,enabled){
       return;
     }
     const reduced=document.body.classList.contains('pt-reduce-motion') || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-    if(!window.requestAnimationFrame || reduced){if(states.has(node))finish(states.get(node));scroll.shift(delta);notify({node});return;}
+    if(!window.requestAnimationFrame || reduced){
+      if(states.has(node))finish(states.get(node));
+      if(fastRail && delta>0)scroll.minimalPointerFill?.();
+      scroll.shift(delta);notify({node});return;
+    }
     let state=states.get(node);
-    if(!state){state={node,remaining:0,time:0,frame:0,lastNotify:0};states.set(node,state);node.classList.add('pt-wheel-moving');document.body.classList.add('pt-wheel-active');}
+    if(!state){
+      if(fastRail){
+        if(delta>0)scroll.minimalPointerFill?.();
+        if(!rowOverflows(node))notify({node});
+      }
+      state={node,rail:fastRail?preview(node):null,remaining:0,time:0,frame:0,lastNotify:0};
+      states.set(node,state);node.classList.add('pt-wheel-moving');document.body.classList.add('pt-wheel-active');
+    }
+    state.forward=delta>0;
     if(state.remaining*delta<0)state.remaining=0;
     state.remaining=Math.max(-900,Math.min(900,state.remaining+delta));
     if(!state.frame)state.frame=window.requestAnimationFrame(t=>animate(state,t));
@@ -83,9 +144,12 @@ export default function installWheel(L,enabled){
     if(!horizontal && document.body.classList.contains('pt-tv'))document.dispatchEvent(new CustomEvent('minimal:tv-pointer-scroll',{detail:node}));
     let delta=horizontal?(event.shiftKey && !x?y:x):y;
     delta=Math.max(-360,Math.min(360,delta));
-    if(horizontal && delta>0)node.Scroll.minimalPointerFill?.();
-    if(horizontal && !rowOverflows(node))notify({node});
-    move(node,delta);
+    const fastRail=horizontal && desktopRail(node);
+    if(horizontal && !fastRail){
+      if(delta>0)node.Scroll.minimalPointerFill?.();
+      if(!rowOverflows(node))notify({node});
+    }
+    move(node,delta,fastRail);
   }
   let drag=null,suppressClick=null;
   document.addEventListener('pointerdown',event=>{
@@ -115,19 +179,39 @@ export default function installWheel(L,enabled){
       drag.moved=true;
       drag.node.setPointerCapture?.(event.pointerId);
       drag.node.classList.add('pt-row-dragging');
+      if(window.requestAnimationFrame && desktopRail(drag.node))drag.rail=preview(drag.node);
     }
     event.preventDefault();
     drag.x=event.clientX;
-    if(delta>0)drag.node.Scroll.minimalPointerFill?.();
-    drag.node.Scroll.shift(delta);
+    if(!drag.rail){
+      if(delta>0)drag.node.Scroll.minimalPointerFill?.();
+      drag.node.Scroll.shift(delta);
+      return;
+    }
+    drag.forward=delta>0;
+    drag.pending=(drag.pending||0)+delta;
+    if(!drag.frame){
+      const state=drag;
+      state.frame=window.requestAnimationFrame(time=>{
+        state.frame=0;
+        const moved=advance(state,state.pending);state.pending=0;
+        if(!state.lastNotify || time-state.lastNotify>=120 || (!moved && state.forward)){
+          state.lastNotify=time;checkpoint(state);
+        }
+      });
+    }
   },{passive:false});
   function finishDrag(event){
     if(!drag || (event && event.pointerId!==drag.id))return;
     const state=drag;drag=null;
     if(!state.moved)return;
-    state.node.classList.remove('pt-row-dragging');
+    if(state.frame){
+      window.cancelAnimationFrame(state.frame);
+      if(state.node.isConnected)advance(state,state.pending);
+    }
+    release(state);state.node.classList.remove('pt-row-dragging');
     suppressClick=state.node;
-    if(state.node.isConnected){settleRail(state.node);notify(state);}
+    if(state.node.isConnected)notify(state);
   }
   document.addEventListener('pointerup',finishDrag,true);
   document.addEventListener('pointercancel',finishDrag,true);

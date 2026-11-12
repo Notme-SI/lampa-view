@@ -1,3 +1,10 @@
+## 0.5.128
+
+- Match the focus border across Related, Recommendations and Similar, keep the bottom edge inside the control, and distinguish the lists by icon.
+- Build pending detail rows when TV focus reaches the last mounted row. Empty suggestion lists remain hidden.
+- Align the cast and facts with the bottom of the TV detail banner and keep a single header capsule outline with a visible remote focus.
+- Reuse desktop rail bounds during horizontal motion and synchronize native Scroll periodically to reduce repeated layout measurements.
+
 ## 0.5.127
 
 - Read TimeCode 4's `changed_at` when merging progress, so a new edit of an old watch on another client is not overwritten by stale local progress. Retain `watched_at` fallback for older Lampac versions and legacy records.
