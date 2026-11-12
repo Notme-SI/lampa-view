@@ -93,3 +93,30 @@ test('catalogue previews hide explicitly missing posters and untranslated region
  for(const url of ['discover/tv?with_origin_country=KR|JP','discover/tv?with_original_language=ru&with_genres=10764|10767'])assert.deepEqual(catalogueResults(url,{results:cards,page:3,total_pages:40}).results.map(c=>c.id),[1,6]);
  assert.equal(cards.length,6);assert.equal(catalogueResults('tv/popular',{results:cards,page:3}).page,3);
 });
+
+test('expected anime preview and More exclude untranslated announcements and keep scanning for localized titles', async () => {
+ const entry = esbuild.buildSync({entryPoints: [path.join(__dirname, '../src/tmdb.js')], bundle: true, write: false, format: 'cjs', platform: 'node'}).outputFiles[0].text;
+ const exports = {exports: {}};
+ new Function('module', 'exports', entry)(exports, exports.exports);
+ const date = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+ const rows = [
+  {id: 1, name: 'Будущий сериал', poster_path: '/poster.jpg'},
+  {id: 2, name: 'Upcoming anime', overview: 'Русское описание без названия', poster_path: '/second.jpg'},
+  {id: 3, original_name: 'Announced anime', poster_path: null},
+ ].map(card => ({...card, first_air_date: date}));
+ const L = {Storage: {get: (key, fallback) => fallback}, Api: {sources: {tmdb: {
+  list(params, ok) { ok({results: rows, page: 1, total_pages: 1}); },
+  get(url, params, ok) {
+   ok({results: params.page===1?rows:[{id: 4, name: 'Ещё один анонс', poster_path: '/fourth.jpg', first_air_date: date}], page: params.page, total_pages: 2});
+  },
+ }}}};
+ exports.exports.installTmdb(L);
+ const preview = await new Promise(resolve => catalogue(L, null, {
+  url: 'anime', source: 'tmdb', minimal_catalogue_offset: 7, minimal_catalogue_limit: 1,
+ }, [], resolve));
+ assert.equal(preview[0].title, 'Ожидаемые');
+ assert.deepEqual(preview[0].results.map(card => card.name), ['Будущий сериал', 'Ещё один анонс']);
+ const more = await new Promise((resolve, reject) => L.Api.sources.tmdb.list({url: preview[0].url, page: 1}, resolve, reject));
+ assert.deepEqual(more.results.map(card => card.id), [1, 4]);
+ assert.equal(preview[0].minimal_catalogue_fallback, undefined);
+});

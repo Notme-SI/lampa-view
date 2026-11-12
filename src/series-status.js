@@ -1,4 +1,5 @@
 import flag from './storage-flag.js';
+import {activeCard} from './card-activity.js';
 import {WATCHED_PERCENT} from './watch-threshold.js';
 import {text as lampaViewText} from './i18n.js';
 import tmdbGet from './tmdb.js';
@@ -214,8 +215,10 @@ export default function seriesStatus(L,schedule){
   else if(pending.has(key))pending.get(key).nodes.add(node);
  }
  function pump(){
-  while(running<(document.body.classList.contains('pt-tv')?1:2) && queue.length){const task=queue.shift();running++;let done=false;
-   const finish=(json,display)=>{if(done)return;done=true;running--;pending.delete(task.key);const table=L.TimeTable && L.TimeTable.get?L.TimeTable.get(task.data) || []:[];cache.set(task.key,{at:Date.now(),details:json && Number(json.id)===Number(task.data.id)?detailsOnly(json):null,value:display || releaseStatus(json && Number(json.id)===Number(task.data.id)?{...task.data,...json}:task.data,table)});if(cache.size>80)cache.delete(cache.keys().next().value);save();for(const node of task.nodes)if(node.isConnected && node.matches('.focus,.hover,.pt-card-pointer,.pt-card-touch'))schedule(node);pump();};
+  while(running<(document.body.classList.contains('pt-tv')?1:2) && queue.length){const task=queue.shift();
+   if(![...task.nodes].some(activeCard)){pending.delete(task.key);continue;}
+   running++;let done=false;
+   const finish=(json,display)=>{if(done)return;done=true;running--;pending.delete(task.key);const table=L.TimeTable && L.TimeTable.get?L.TimeTable.get(task.data) || []:[];cache.set(task.key,{at:Date.now(),details:json && Number(json.id)===Number(task.data.id)?detailsOnly(json):null,value:display || releaseStatus(json && Number(json.id)===Number(task.data.id)?{...task.data,...json}:task.data,table)});if(cache.size>80)cache.delete(cache.keys().next().value);save();for(const node of task.nodes)if(activeCard(node) && node.matches('.focus,.hover,.pt-card-pointer,.pt-card-touch'))schedule(node);pump();};
    if(task.data.source==='minimal_shiki'){const api=L.Api && L.Api.sources && L.Api.sources.minimal_shiki;if(api && api.release)api.release(task.data.shikimori_id || task.data.id,json=>finish({...json,source:'minimal_shiki'}),()=>finish(null));else if(api && api.metadata)api.metadata(task.data.shikimori_id || task.data.id,json=>finish({...json,source:'minimal_shiki'}),()=>finish(null));else finish(null);continue;}
    tmdbGet(L,'tv/'+task.data.id,{},json=>{
     const card={...task.data,...json};

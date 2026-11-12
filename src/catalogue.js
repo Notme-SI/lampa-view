@@ -119,7 +119,7 @@ export function catalogueRow(job,kind,source='tmdb',hasCub=true){
  const cub=usesCub(job,kind,source,hasCub),scoped=['dorama','tvshow'].includes(kind);
  const feedSource=job.discovery?DISCOVERY_SOURCE:job.shiki?'minimal_shiki':cub || !job.tmdb?'cub':'tmdb';
  return {minimal_default_hidden:!!job.minimal_default_hidden,title:cub?job.title:job.tmdb_title || job.title,url:job.discovery?JSON.stringify(job.discovery):job.shiki || (cub?job.cub:job.tmdb || job.cub),source:feedSource,
-  ...(source!=='tmdb' && [DISCOVERY_SOURCE,'tmdb'].includes(feedSource)?{minimal_catalogue_fallback:true}:{}),
+  ...(kind!=='anime' && source!=='tmdb' && [DISCOVERY_SOURCE,'tmdb'].includes(feedSource)?{minimal_catalogue_fallback:true}:{}),
   ...(!cub && job.tmdb && job.key?{minimal_row_id:job.minimal_row_id || 'minimal:tmdb:'+kind+':'+job.key,minimal_row_aliases:[job.tmdb,...(scoped && job.cub?[job.cub]:[]),...(job.minimal_row_aliases || [])]}:{}),results:[]};
 }
 export default function catalogue(L,shiki,object,hidden,ok){
@@ -140,7 +140,7 @@ export default function catalogue(L,shiki,object,hidden,ok){
   if(ended)return;if(object.minimal_catalogue_cancelled || object.activity && object.activity.component && object.activity.component.destroyed){ended=true;return;}if(done===plan.length){complete();return;}
   while(!ended && running<3 && cursor<plan.length){const index=cursor++,job=plan[index],row=rowFor(job);if([row.minimal_row_id,row.url,...(row.minimal_row_aliases || [])].some(url=>hidden.includes(url))){row.minimal_hidden=true;rows[index]=row;done++;continue;}
    running++;let settled=false;
-   function finish(json){if(settled)return;settled=true;running--;done++;if(!json)failures++;json=catalogueResults(row.url,json);if(json && Array.isArray(json.results) && json.results.length)rows[index]={...row,page:Number(json.page)||1,total_pages:Math.max(Number(json.total_pages)||1,json.results.length>20?2:1),results:json.results.slice(0,20).map(card=>kind==='anime'?{...card,minimal_anime:true}:job.media_type?{...card,source:job.discovery?card.source || 'tmdb':row.source,media_type:card.media_type || job.media_type}:card)};pump();}
+   function finish(json){if(settled)return;settled=true;running--;done++;if(!json)failures++;json=catalogueResults(row.url,json);if(json && Array.isArray(json.results) && json.results.length)rows[index]={...row,page:Number(json.page)||1,total_pages:Math.max(Number(json.total_pages)||1,json.results.length>20?2:1),results:json.results.filter(Boolean).slice(0,20).map(card=>kind==='anime'?{...card,minimal_anime:true}:job.media_type?{...card,source:job.discovery?card.source || 'tmdb':row.source,media_type:card.media_type || job.media_type}:card)};pump();}
    if(job.discovery && L.Api.sources[DISCOVERY_SOURCE])L.Api.sources[DISCOVERY_SOURCE].list({url:row.url,page:1,minimal_cancelled:()=>!!object.minimal_catalogue_cancelled},finish,()=>finish(null));
    else if(job.discovery)finish(null);
    else if(job.shiki)shiki.list({url:job.shiki,page:1},finish,()=>finish(null));

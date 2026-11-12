@@ -95,7 +95,7 @@ test('desktop posters skip offscreen work, share active requests and paint cache
 
 for(const mode of ['tv','desktop'])test(mode+': next-screen posters preload during continuous remote/wheel navigation without blanking on return',async()=>{
  let enter;const loaders=[],cards=[];
- const n=await native({built:true,prepare(w,L){L.Platform.tv=()=>mode==='tv';w.IntersectionObserver=class{constructor(fn,options){if(options && parseInt(options.rootMargin,10)>=360 && !options.rootMargin.endsWith(' 0px'))enter=fn;}observe(){}unobserve(){}};}}),{w,L}=n;
+ const n=await native({built:true,prepare(w,L){L.Platform.tv=()=>mode==='tv';w.IntersectionObserver=class{constructor(fn,options){if(options && parseInt(options.rootMargin,10)>=360 && options.rootMargin.trim().split(/\s+/).length===2 && !options.rootMargin.endsWith(' 0px'))enter=fn;}observe(){}unobserve(){}};}}),{w,L}=n;
  w.Image=class{constructor(){loaders.push(this);}set src(value){this.url=value;}get src(){return this.url;}};
  function make(id,y){const c=L.Utils.createInstance(L.Maker.get('Card',{}),{id,title:'Film',poster_path:'/prefetch'+id+'.jpg'});c.create();const node=c.render(true);w.document.body.appendChild(node);c.y=y;node.getBoundingClientRect=()=>({width:120,height:180,left:0,right:120,top:c.y,bottom:c.y+180});cards.push(c);return c;}
  try{

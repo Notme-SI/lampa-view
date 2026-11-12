@@ -153,12 +153,13 @@ body.lampa_view .minimal-comment-text {padding:.35em .6em 1em;font-size:1.1em;li
 /* A stationary pointer can cross dozens of moving posters. Keep a visible edge
    and avoid starting a lift and a halo transition on every one. */
 body.lampa_view.pt-desktop.pt-wheel-active[data-lampa-theme] .card .card__view,
-body.lampa_view.pt-desktop.pt-wheel-active[data-lampa-theme] .card .card__view::after {
+body.lampa_view.pt-desktop.pt-wheel-active[data-lampa-theme] .card .card__view::after,
+body.lampa_view[data-lampa-theme] .pt-catalogue-moving .card .card__view,
+body.lampa_view[data-lampa-theme] .pt-catalogue-moving .card .card__view::after {
  transition:none!important;
  -webkit-transition:none!important;
 }
-body.lampa_view.pt-desktop.pt-wheel-active[data-lampa-theme] .card .card__view {transform:none!important;-webkit-transform:none!important}
-body.lampa_view.pt-desktop.pt-wheel-active[data-lampa-theme] .card .card__view::after {box-shadow:none!important}
+body.lampa_view.pt-desktop.pt-wheel-active[data-lampa-theme] .card .card__view::after,body.lampa_view[data-lampa-theme] .pt-catalogue-moving .card .card__view::after {box-shadow:none!important}
 /* The explicit plugin choice affects poster motion only, not the OS or host. */
 body.lampa_view[data-lampa-theme][data-pt-card-motion="off"] .card .card__view,body.lampa_view[data-lampa-theme][data-pt-card-motion="off"] .nova-plus-root .nova__list--grid .nova-card .nova-card__thumb {transition:none!important;-webkit-transition:none!important;transform:none!important;-webkit-transform:none!important}
 body.lampa_view[data-lampa-theme][data-pt-card-motion="off"] :is(.card .card__view,.nova-plus-root .nova__list--grid .nova-card__thumb)::after {transition:none!important;-webkit-transition:none!important}

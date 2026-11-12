@@ -1,5 +1,6 @@
 import {text as lampaViewText} from './i18n.js';
 import rowOverlay from './row-overlay.js';
+import {isAnime} from './metadata.js';
 // Remote navigation keeps one-card steps and can reach the trailing More tile.
 export default function rowNavigation(L,line,enabled){
  if(!line.use || !line.scroll || !L.Controller)return;
@@ -17,7 +18,7 @@ export default function rowNavigation(L,line,enabled){
  };
  if(root.querySelector('.full-review,.full-review-add'))return;
  const head=root.querySelector('.items-line__head');if(!head)return;
- if(line.data.minimal_catalogue_fallback){
+ if(line.data.minimal_catalogue_fallback && !(line.data.results || []).every(isAnime)){
   const label=document.createElement('span');label.className='minimal-catalogue-source';
   label.textContent='TMDB';label.title=lampaViewText('Источник подборки')+' · TMDB';head.appendChild(label);
  }

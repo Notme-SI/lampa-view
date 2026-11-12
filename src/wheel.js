@@ -1,4 +1,5 @@
-import {settleRail} from './rail-fit.js';
+import {railSnapDelta} from './rail-fit.js';
+import {reducedMotion} from './scroll-motion.js';
 // Pointer scrolling must not enter row controllers (their boundary opens the menu).
 // Native Scroll owns the committed position and lazy loading.
 export default function installWheel(L,enabled){
@@ -80,7 +81,6 @@ export default function installWheel(L,enabled){
   function release(state){
     if(state.node.isConnected){
       commit(state);
-      if(enabled())settleRail(state.node);
     }
     state.rail?.body.style.removeProperty('--pt-rail-preview');
   }
@@ -95,13 +95,20 @@ export default function installWheel(L,enabled){
     state.frame=0;
     if(!enabled() || !state.node.isConnected)return finish(state);
     const dt=state.time?Math.max(1,Math.min(40,time-state.time)):16.67;state.time=time;
-    const step=Math.abs(state.remaining)<.4?state.remaining:state.remaining*(1-Math.exp(-dt/90));
+    const step=Math.abs(state.remaining)<.4?state.remaining:state.remaining*(1-Math.exp(-dt/(state.settling?45:90)));
     const moved=advance(state,step);state.remaining-=step;
     if(!state.lastNotify || time-state.lastNotify>=120 || (!moved && state.rail && state.forward)){
       state.lastNotify=time;checkpoint(state);
     }
     if(!moved && (!state.rail || state.rail.position<=-state.rail.limit || !state.forward))state.remaining=0;
-    if(Math.abs(state.remaining)<.01)return finish(state);
+    if(Math.abs(state.remaining)<.01){
+      // Align in the same frame loop rather than jumping by half a poster
+      // after the inertia has already come to rest. At a clamped boundary a
+      // second snap is unnecessary, even when the last slot is incomplete.
+      const snap=!state.settling && enabled()?railSnapDelta(state.node,state.rail?.position):0;
+      if(Math.abs(snap)>.5){state.settling=true;state.remaining=snap;state.forward=snap>0;}
+      else return finish(state);
+    }
     state.frame=window.requestAnimationFrame(t=>animate(state,t));
   }
   function rowOverflows(node){
@@ -132,6 +139,7 @@ export default function installWheel(L,enabled){
       state={node,rail:fastRail?preview(node):null,remaining:0,time:0,frame:0,lastNotify:0};
       states.set(node,state);node.classList.add('pt-wheel-moving');busy();
     }
+    if(state.settling){state.settling=false;state.remaining=0;}
     state.forward=delta>0;
     if(state.remaining*delta<0)state.remaining=0;
     state.remaining=Math.max(-900,Math.min(900,state.remaining+delta));
@@ -166,6 +174,11 @@ export default function installWheel(L,enabled){
       node=node.parentElement && node.parentElement.closest('.scroll');
     }
     if(!node)return;
+    if(node.classList.contains('pt-browser-catalogue')){
+      event.stopPropagation();
+      if(y>0 && node.scrollTop+node.clientHeight>=node.scrollHeight-2)node.Scroll.minimalBrowserScroll?.requestMore();
+      return;
+    }
     event.preventDefault();event.stopImmediatePropagation();
     // Chromium can deliver both names for one physical wheel movement.
     if(!standard && Date.now()-lastStandard<80)return;
@@ -240,7 +253,14 @@ export default function installWheel(L,enabled){
     }
     release(state);state.node.classList.remove('pt-row-dragging');
     suppressClick=state.node;
-    if(state.node.isConnected)notify(state);
+    if(state.node.isConnected){
+      const snap=event?.type==='pointerup' && enabled() && window.requestAnimationFrame && !reducedMotion()?railSnapDelta(state.node):0;
+      if(Math.abs(snap)>.5){
+        state.remaining=snap;state.settling=true;state.forward=snap>0;state.time=0;state.frame=0;
+        states.set(state.node,state);state.node.classList.add('pt-wheel-moving');
+        state.frame=window.requestAnimationFrame(time=>animate(state,time));
+      }else notify(state);
+    }
     busy();
   }
   document.addEventListener('pointerup',finishDrag,true);

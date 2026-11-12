@@ -8,6 +8,7 @@ import inputs from './inputs.js';
 import searchHistory from './search-history.js';
 import {installTmdb,installFullGuard,installListGuard} from './tmdb.js';
 import heroAssets from './hero-assets.js';
+import heroTransition from './hero-transition.js';
 import BASE_CSS from './theme.css';
 import ONLINE_CSS from './online-layout.css';
 import TV_CSS from './tv-layout.css';
@@ -18,6 +19,7 @@ import BOOT from './boot.css';
 import C from './identity.cjs';
 import quality from './quality.js';
 import installWheel from './wheel.js';
+import catalogueScroll from './catalogue-scroll.js';
 import logoLoader,{matchCatalogue} from './logos.js';
 import fillRows from './rows.js';
 import unifiedSettings from './settings.js';
@@ -362,6 +364,7 @@ if (!ROOT.LampaView) {
       const element=$(lampaViewText("<section class=\"pt-hero\" aria-label=\"Подборка фильмов и сериалов\">"));
       const artworkFrame=$('<div class="pt-hero__artwork" aria-hidden="true">').appendTo(element);
       const image=$('<img class="pt-hero__image" alt="" decoding="async">').appendTo(artworkFrame);
+      const artworkTransition=heroTransition(image[0]);
       const body=$('<div class="pt-hero__body">').appendTo(element);
       const brandingSlot=$('<div class="pt-hero__branding">').appendTo(body);
       const logo=$('<img class="pt-hero__logo pt-hidden" decoding="async">').appendTo(brandingSlot);
@@ -389,7 +392,7 @@ if (!ROOT.LampaView) {
       element.on('minimal:hero-layout',studioLink);
       document.addEventListener('minimal:interface-size',studioLink);
       const assets=heroAssets(L,cards,loadLogo,element[0]);
-      if(activity.component && activity.component.use)activity.component.use({onDestroy:()=>{clearTimeout(upgradeTimer);assets.dispose();document.removeEventListener('minimal:interface-size',studioLink);}});
+      if(activity.component && activity.component.use)activity.component.use({onDestroy:()=>{clearTimeout(upgradeTimer);artworkTransition.dispose();assets.dispose();document.removeEventListener('minimal:interface-size',studioLink);}});
       const requestHeroLayout=()=>element[0].dispatchEvent(new Event('minimal:hero-layout',{bubbles:true}));
       function show(next){
         index=(next+cards.length)%cards.length;
@@ -427,14 +430,14 @@ if (!ROOT.LampaView) {
         clearTimeout(upgradeTimer);
         const size=artworkSize(L,'backdrop');
         const useOriginal=size==='original',ready=assets.ready(index,size);let originalShown=!!ready;
-        if(ready){image.attr('src',ready);branding();}
+        if(ready){artworkTransition.show(ready);branding();}
         else{
           const preview=useOriginal?(tv?'w1280':'w780'):size;
           assets.cover(index,preview,url=>{
-            if(token===logoToken && url && !originalShown)image.attr('src',url);
-            if(tv){branding();if(useOriginal && url)assets.upgrade(selected,'original',original=>{if(token===logoToken && original){originalShown=true;image.attr('src',original);}});}
+            if(token===logoToken && url && !originalShown)artworkTransition.show(url);
+            if(tv){branding();if(useOriginal && url)assets.upgrade(selected,'original',original=>{if(token===logoToken && original){originalShown=true;artworkTransition.show(original);}});}
           });
-          if(useOriginal && !tv)upgradeTimer=setTimeout(()=>assets.cover(index,'original',url=>{if(token===logoToken && url){originalShown=true;image.attr('src',url);}}),300);
+          if(useOriginal && !tv)upgradeTimer=setTimeout(()=>assets.cover(index,'original',url=>{if(token===logoToken && url){originalShown=true;artworkTransition.show(url);}}),300);
         }
         assets.warm(index);
         dots.children().each(function(i){$(this).toggleClass('active',i===index).attr('aria-pressed',String(i===index));});
@@ -621,7 +624,7 @@ if (!ROOT.LampaView) {
     quality(L,$,artwork.prepareCataloguePoster);cacheSettings(L);
     if(L.Api && L.Api.sources && L.Utils && L.Utils.createInstance && L.Maker){
       installTrakt(L);
-      P.kinoCatalogue=kinoCatalogue(L,P.kinoapi);const anime=shikimori(L);shikimoriPosters(L,anime);collections(L,anime,P.kinoapi,P.kinoCatalogue);catalogueBrowser(L);projectBrowser(L);
+      P.kinoCatalogue=kinoCatalogue(L,P.kinoapi);const anime=shikimori(L);shikimoriPosters(L,anime);collections(L,anime,P.kinoapi,P.kinoCatalogue);catalogueBrowser(L,artwork.warmCataloguePosters);projectBrowser(L);
     }
     installWheel(L,()=>yes('lampa_view_enabled'));
     on('line',event=>{
@@ -673,6 +676,7 @@ if (!ROOT.LampaView) {
     let resizeTimer;
     ROOT.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(layout,180);});
     const fill=fillRows(L,()=>yes('lampa_view_enabled'));
+    catalogueScroll(L,()=>yes('lampa_view_enabled'),artwork.prepareCataloguePoster);
     on('full',event=>{full(event);if(yes('lampa_view_enabled')){detail(L,event,loadLogo);if(event.type==='build' && ['persons','discuss'].includes(event.name) && event.item)fill.track(event.item,event.data);}}); on('line',event=>{hero(event);fill(event);});
     function visibleDetail(){
       const active=L.Activity.active() || {},activity=active.activity,link=activity && activity.component;

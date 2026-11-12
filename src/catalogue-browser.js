@@ -55,7 +55,7 @@ export function gridControls(L,item,object,buttons,{className='minimal-catalogue
  return {bar,toggle};
 }
 
-export default function catalogueBrowser(L){
+export default function catalogueBrowser(L,warmPosters){
  if(!L.Component || !L.Component.get)return;
  const Category=L.Component.get('category'),Full=L.Component.get('category_full'),list=L.Api.list;
  const warmed=new WeakMap();
@@ -67,7 +67,9 @@ export default function catalogueBrowser(L){
   warmed.set(active,page);
   setTimeout(()=>{
    if(L.Activity.active()!==active || document.hidden || Number(params.page || 1)!==page || params.minimal_browse_cancelled)return;
-   load(page+1,()=>{},()=>{if(warmed.get(active)===page)warmed.delete(active);});
+   load(page+1,next=>{
+    if(L.Activity.active()===active && Array.isArray(next?.results))warmPosters?.(next.results,active.activity?.component?.body,()=>L.Activity.active()===active);
+   },()=>{if(warmed.get(active)===page)warmed.delete(active);});
   },80);
  }
  L.Api.list=function(params,ok,fail){

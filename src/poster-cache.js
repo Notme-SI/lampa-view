@@ -1,6 +1,7 @@
 // Shared final-size covers are decoded before display; no low-resolution intermediate.
 // Decoded memory is bounded. The browser also retains its native HTTP cache.
 import imageFiles from './image-files.js';
+import catalogueImages from './catalogue-images.js';
 export default function posterCache(L,enabled,highQuality){
  if(!L.Maker || !L.Utils)return;
  const files=imageFiles(L);
@@ -8,32 +9,65 @@ export default function posterCache(L,enabled,highQuality){
  // Complete GIF89a, including its palette and pixel data. Apple's image
  // decoder can reject the old truncated placeholder as a broken cover.
  const blank='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+ const decodedCatalogue=catalogueImages(blank);
  let running=0,timer;
  const maximum=()=>enabled();
  const tv=()=>document.body.classList.contains('pt-tv');
  const aheadY=Math.min(1800,Math.max(540,(window.innerHeight || 540)*(tv()?1.5:2))),aheadX=Math.min(1920,Math.max(360,(window.innerWidth || 960)*(tv()?.5:1)));
  const paused=()=>document.hidden;
- let gridWidths=new WeakMap();
- function catalogueGrid(node){
-  if(!enabled() || !document.body.classList.contains('pt-desktop') ||
-     !node?.matches('.card:not(.card--wide):not(.card--collection)') || !node.closest('.activity--active'))return null;
-  const grid=node.parentElement;
+ let gridWidths=new WeakMap(),warmQueue=[],warmRunning=0;
+ function catalogueGrid(node,grid=node?.parentElement){
+  if(!enabled() || !node?.matches('.card:not(.card--wide):not(.card--collection)') ||
+     !grid?.closest('.activity--active') || !document.body.classList.contains('pt-desktop') && !grid.closest('.pt-browser-catalogue'))return null;
   return grid?.matches('.mapping--grid,.category-full')?grid:null;
  }
- function catalogueSource(image,grid,url){
-  if(!/\/t\/p\/w780\//.test(url))return url;
+ function catalogueWidth(grid,image){
   let width=gridWidths.get(grid);
-  if(!width){width=image.parentElement.clientWidth;if(width)gridWidths.set(grid,width);}
+  if(!width){
+   width=(image?.parentElement.clientWidth || grid.querySelector('.card__view')?.clientWidth);
+   if(width)gridWidths.set(grid,width);
+  }
+  return width;
+ }
+ function catalogueSource(image,grid,url){
+  if(!/\/t\/p\/w780\//.test(url) || !document.body.classList.contains('pt-desktop'))return url;
+  const width=catalogueWidth(grid,image);
   return width && width*(window.devicePixelRatio || 1)<=500?url.replace('/t/p/w780/','/t/p/w500/'):url;
  }
- function prepareCataloguePoster(node,data){
-  if(!catalogueGrid(node))return;
+ function warmCataloguePosters(cards,grid,active){
+  if(!grid || !enabled() || !active() || document.hidden)return;
+  warmQueue=Array.from(new Set(cards.slice(0,10).map(card=>{
+   const url=card.poster_path?L.Api.img?.(card.poster_path):card.poster || card.img;
+   return url && catalogueSource(null,grid,url);
+  }).filter(url=>/^https?:|^\//i.test(url || '')))).map(url=>({url,active}));
+  warmNextCover();
+ }
+ function warmNextCover(){
+  while(warmRunning<3 && warmQueue.length){
+   const {url,active}=warmQueue.shift();
+   if(!enabled() || !active() || document.hidden)continue;
+   const image=new Image();image.decoding='async';image.fetchPriority='low';warmRunning++;
+   let finished=false;
+   const timeout=setTimeout(()=>{
+    if(!finished){image.removeAttribute('src');finish();}
+   },8000);
+   function finish(){
+    if(finished)return;
+    finished=true;clearTimeout(timeout);image.onload=image.onerror=null;warmRunning--;warmNextCover();
+   }
+   image.onload=()=>{if(image.decode)image.decode().then(finish,finish);else finish();};
+   image.onerror=finish;image.src=url;
+  }
+ }
+ function prepareCataloguePoster(node,data,hint){
+  const grid=catalogueGrid(node,hint);
+  if(!grid)return;
   const image=node.querySelector('.card__img');
   if(!image)return;
-  if(image._minimalCataloguePoster){image._minimalCataloguePoster();return;}
+  if(image._minimalCataloguePoster){image._minimalCataloguePoster(grid);return;}
   // Deprecated native Card has no Maker hooks. Start the same URL it will
   // assign on visibility, so its own image state and fallback stay intact.
-  if(image.getAttribute('src') || !data)return;
+  if((image.getAttribute('src') && !/img_load\./.test(image.getAttribute('src'))) || !data)return;
   const url=data.poster_path?L.Api.img(data.poster_path):data.poster || data.img;
   if(!url)return;
   image.decoding='async';image.loading='lazy';image.src=url;
@@ -78,7 +112,15 @@ export default function posterCache(L,enabled,highQuality){
   // slow cover; visible work still owns the remaining network slots.
   const bounds=new Map();
   const visibleJobs=new Map(queue.map(job=>{const box=(job.image.closest('.card') || job.image).getBoundingClientRect();bounds.set(job,box);return [job,(!tv() && !box.width && !box.height) || box.width>0 && box.bottom>0 && box.top<window.innerHeight && box.right>0 && box.left<window.innerWidth];}));
-  queue.sort((a,b)=>Number(visibleJobs.get(b))-Number(visibleJobs.get(a)));
+  // Finish the first viewport of the next rows before distant horizontal
+  // cards. Otherwise one long rail consumes the entire look-ahead budget.
+  const distance=job=>{
+   if(visibleJobs.get(job))return -1;
+   const rect=bounds.get(job),horizontal=rect.right>0 && rect.left<innerWidth;
+   const vertical=Math.max(0,rect.top-innerHeight,-rect.bottom)/Math.max(1,innerHeight);
+   return vertical+(horizontal?0:2+Math.max(0,rect.left-innerWidth)/Math.max(1,innerWidth));
+  };
+  queue.sort((a,b)=>distance(a)-distance(b));
   // Cached and shared in-flight images do not consume another network slot.
   for(let remaining=queue.length;remaining>0;remaining--){
    const job=queue.shift();if(!job.alive()){job.finished=true;continue;}
@@ -155,16 +197,18 @@ export default function posterCache(L,enabled,highQuality){
     if(grid){
      if(job || release)cancel();
      if(observed){observer.unobserve(observed);callbacks.delete(observed);observed=null;}
-     return catalogueSource(image,grid,url);
+     return decodedCatalogue.request(image,catalogueSource(image,grid,url));
     }
     if(!maximum() || !/\/t\/p\/(?:w\d+|original)\//.test(url))return url;
     if(source!==url){cancel();source=url;original=url;}
     enqueue();return painted===original || image.src===original?image.src:blank;
    };
-   image._minimalCataloguePoster=()=>{
-    if(disposed || !catalogueGrid(image.closest('.card')))return false;
-    const url=item.getPosterPath();
-    if(!catalogueVisible)image.loading='lazy';
+   image._minimalCataloguePoster=hint=>{
+    const grid=catalogueGrid(image.closest('.card'),hint);
+    if(disposed || !grid)return false;
+    const source=getPoster.call(item);
+    if(!image.isConnected && /\/t\/p\/w780\//.test(source) && document.body.classList.contains('pt-desktop') && !catalogueWidth(grid,image))return true;
+    const url=decodedCatalogue.request(image,catalogueSource(image,grid,source));
     if(image.getAttribute('src')!==url && image.src!==url)image.src=url;
     return true;
    };
@@ -177,16 +221,24 @@ export default function posterCache(L,enabled,highQuality){
     if(maximum()){original=next;enqueue();}else image.src=next;
     return true;
    };
+   image._minimalCatalogueSuspend=()=>decodedCatalogue.suspend(image);
   },onVisible(){
    if(catalogueGrid(image?.closest('.card'))){
     // Native visibility promotes the card even in a translated scroll pane.
-    catalogueVisible=true;image.fetchPriority='high';image.loading='eager';
+    catalogueVisible=true;
+    const nativeGrid=image.closest('.pt-browser-catalogue');
+    // The catalogue's IntersectionObserver already selected the upcoming
+    // posters. Reading each newly attached image's rect here forces a full
+    // layout after every native card's writes just to choose request priority.
+    // Eager loading is unchanged; let the browser prioritize viewport images.
+    image.fetchPriority=nativeGrid?'auto':'high';image.loading='eager';
+    clearTimeout(item.img_timer);
     if(image.complete && image.naturalWidth>1)clearTimeout(item.img_timer);
    }else if(maximum() && original){clearTimeout(item.img_timer);enqueue();}
   },onDestroy(){
-   disposed=true;cancel();if(release)release();if(observed){observer.unobserve(observed);callbacks.delete(observed);}if(image){delete image._minimalArtwork;delete image._minimalCataloguePoster;}
+   disposed=true;cancel();if(release)release();if(observed){observer.unobserve(observed);callbacks.delete(observed);}if(image){decodedCatalogue.forget(image);delete image._minimalArtwork;delete image._minimalCataloguePoster;delete image._minimalCatalogueSuspend;}
   }});
   return item;
  };
- return prepareCataloguePoster;
+ return {prepareCataloguePoster,warmCataloguePosters};
 }

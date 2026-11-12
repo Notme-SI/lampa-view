@@ -36,7 +36,7 @@ export default function cataloguePages(load,filter,language,pageSize=20,pack=tru
    const fetch=()=>load({...params,page:state.next},json=>{
     if(!Array.isArray(json?.results))return error();
     state.last=Math.min(500,Math.max(state.next,Number(json.total_pages)||state.next));state.next++;
-    for(const card of filter(json.results)){
+    for(const card of filter(json.results,params)){
      const id=card.id==null?null:(card.media_type || (card.name?'tv':'movie'))+':'+card.id;
      if(id!==null && state.seen.has(id))continue;
      if(id!==null)state.seen.add(id);

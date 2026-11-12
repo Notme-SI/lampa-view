@@ -1,3 +1,10 @@
+## 0.5.140
+
+- Avoid repeated synchronous Layer.visible geometry reads when IntersectionObserver has already identified a leaf catalogue card. Preserve native visible events and the fallback for rows and nested layers.
+- Include catalogue windowing, compact card metadata, poster preparation and focus/scroll improvements developed since 0.5.130. The experimental non-windowed grid from 0.5.139 is not included.
+- In isolated Chromium against the live CUB catalogue (380 loaded cards), the sampled wheel run improved from 31 long tasks to 0 and rAF p95 from 50ms to 33.3ms versus 0.5.137. All visible posters completed in a separate post-scroll assertion. This is not a 60fps guarantee or a physical-TV benchmark.
+- Validated ES5 build, 19 selected unit tests, 800-card windowing and desktop/TV/mobile-profile navigation. Known pre-existing full-suite failures are not claimed resolved.
+
 ## 0.5.130
 
 - Hand desktop catalogue covers to the browser as soon as the grid mounts them. Use viewport-appropriate TMDB sizes and prioritize visible cards while scrolling. Warm one next page of movies or anime in the background.

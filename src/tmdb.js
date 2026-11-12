@@ -11,16 +11,25 @@ export function presentableCards(cards,russian=false){
  return cards.filter(card=>{
   if(!card)return false;
   if(Object.prototype.hasOwnProperty.call(card,'poster_path') && !card.poster_path && !card.img)return false;
-  return !russian || [card.title,card.name,card.overview].some(value=>/[а-яё]/i.test(String(value || '')));
+  return !russian || [card.title,card.name].some(value=>/[а-яё]/i.test(String(value || '')));
  });
 }
 export function catalogueCards(cards,russian=locale()==='ru'){
  return presentableCards(cards,russian).filter(card=>[card.poster_path,card.img].some(value=>typeof value==='string' && value.trim()));
 }
+// Announcements bypass the host's released-only filter. Catalogue titles
+// still follow the same translation and artwork requirements as other feeds.
+export function animeUpcoming(path){
+ const [route,search]=String(path || '').split('?'),q=new URLSearchParams(search || '');
+ const date=q.get(route==='discover/movie'?'primary_release_date.gte':'first_air_date.gte') || '';
+ return ['discover/tv','discover/movie'].includes(route) && q.get('with_original_language')==='ja' &&
+  (q.get('with_genres') || '').split(',').includes('16') && date>=new Date().toISOString().slice(0,10);
+}
 // The same scoped exclusion must survive More and subsequent native pages.
 export function catalogueResults(path,json){
  const query=String(path || '').split('?')[1] || '';
  if(!json || !Array.isArray(json.results))return json;
+ if(animeUpcoming(path))return {...json,results:catalogueCards(json.results)};
  const scope=new URLSearchParams(query),kind=scope.get('minimal_kind'),regional=/^discover\/tv\?/.test(path) && (scope.has('with_origin_country') || scope.get('with_original_language')==='ru' && /10764|10767/.test(scope.get('with_genres') || ''));
  const visible=presentableCards(json.results,locale()==='ru' && (regional || kind==='dorama' || kind==='tvshow'));
  if(visible.length!==json.results.length)json={...json,results:visible};
@@ -64,10 +73,11 @@ export function installTmdb(L){
   if(/^discover\/(tv|movie)\?/.test(clean.path) && q.get('with_original_language')==='ja' && (q.get('with_genres') || '').split(',').includes('16'))return animePages({...clean.params,url:clean.path},ok,fail);
   return list.call(this,{...clean.params,url:clean.path},json=>ok(catalogueResults(clean.path,json)),fail);};}
  const animePages=cataloguePages((params,ok,fail)=>{
-  const q=new URLSearchParams(params.url.split('?')[1] || '');
-  const unreleased=(q.get('first_air_date.gte') || q.get('primary_release_date.gte') || '')>new Date().toISOString().slice(0,10);
+  const unreleased=animeUpcoming(params.url);
   const type=params.url.startsWith('discover/movie?')?'movie':'tv';
-  return tmdbGet(L,params.url,{page:params.page},json=>ok({...json,results:(json?.results || []).map(card=>({...card,source:'tmdb',media_type:type,minimal_anime:true}))}),fail,{unreleased});
+  return tmdbGet(L,params.url,{page:params.page},json=>ok({...json,results:(json?.results || []).filter(Boolean).map(card=>{
+   return {...card,source:'tmdb',media_type:type,minimal_anime:true};
+  })}),fail,{unreleased});
  },cards=>catalogueCards(cards),locale);
  source._minimalAnimeFeed=!!source.list;
  // Aggregate credits supplement missing directors, never replace the main cast

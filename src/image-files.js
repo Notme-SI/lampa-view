@@ -3,7 +3,7 @@
 const pools=new WeakMap();
 export function createImageFiles(w,limits={}){
  const memory=limits.memory || 24*1048576,disk=limits.disk || 64*1048576,max=limits.entries || 240,life=7*86400000;
- const files=new Map(),stored=new Set();let database,saveTimer;
+ const files=new Map(),stored=new Set();let database,saveTimer,indexReady=false;
  const saves=new Map();
  const usable=typeof w.fetch==='function' && w.URL && typeof w.URL.createObjectURL==='function';
  function db(){
@@ -21,6 +21,7 @@ export function createImageFiles(w,limits={}){
   });return database;
  }
  async function read(url){
+  if(indexReady && !stored.has(url))return null;
   const database=await db();if(!database)return null;
   return new Promise(resolve=>{
    let settled=false;const done=value=>{if(!settled){settled=true;resolve(value);}};
@@ -41,7 +42,7 @@ export function createImageFiles(w,limits={}){
     const values=request.result.sort((a,b)=>b.at-a.at);let total=0,count=0;
     for(const row of values){total+=row.size;count++;if(total>disk || count>max || Date.now()-row.at>=life){store.delete(row.url);sizes.delete(row.url);stored.delete(row.url);}else stored.add(row.url);}
    };
-  }catch(_){} // Storage denial/quota never prevents displaying an image.
+  }catch(_){}// Storage denial/quota never prevents displaying an image.
  }
  function save(url,blob){saves.set(url,{url,blob,at:Date.now()});if(!saveTimer)saveTimer=w.setTimeout(flush,500);}
  function trim(){
@@ -61,7 +62,7 @@ export function createImageFiles(w,limits={}){
    (async()=>{
     let blob=await read(url);
     if(files.get(url)!==row)return;
-    if(!blob){try{const response=await w.fetch(url,{signal:row.controller && row.controller.signal,cache:'default'});if(response.ok){const candidate=await response.blob();if(candidate.size>0 && candidate.size<=8*1048576 && /^image\//i.test(candidate.type)){blob=candidate;save(url,blob);}}}catch(_){} }
+    if(!blob){try{const response=await w.fetch(url,{signal:row.controller && row.controller.signal,cache:'default'});if(response.ok){const candidate=await response.blob();if(candidate.size>0 && candidate.size<=8*1048576 && /^image\//i.test(candidate.type)){blob=candidate;save(url,blob);}}}catch(_){}}
     if(files.get(url)!==row)return;
     row.src=blob?w.URL.createObjectURL(blob):url;row.object=!!blob;row.bytes=blob?blob.size:0;row.done=true;
     if(!blob)files.delete(url); // A failed fetch/CORS denial remains a native image fallback, never a cached failure.
@@ -73,11 +74,20 @@ export function createImageFiles(w,limits={}){
  }
  function invalidate(url){
   const row=files.get(url);if(row){files.delete(url);row.invalid=true;if(!row.users.size && row.object){w.URL.revokeObjectURL(row.src);row.object=false;}}
-  stored.delete(url);saves.delete(url);db().then(database=>{if(database)try{const tx=database.transaction(['files','sizes'],'readwrite');for(const store of ['files','sizes'])tx.objectStore(store).delete(url);tx.onerror=event=>event.preventDefault();}catch(_){} });
+  stored.delete(url);saves.delete(url);db().then(database=>{if(database)try{const tx=database.transaction(['files','sizes'],'readwrite');for(const store of ['files','sizes'])tx.objectStore(store).delete(url);tx.onerror=event=>event.preventDefault();}catch(_){}});
  }
  // Read only the bounded disk index once at startup. Returning covers can then
  // restore saved bytes without waiting behind unrelated network/decode jobs.
- db().then(database=>{if(database)try{const request=database.transaction('sizes').objectStore('sizes').getAll();request.onsuccess=()=>{for(const row of request.result || [])if(Date.now()-row.at<life)stored.add(row.url);};}catch(_){} });
+ db().then(database=>{
+  if(!database){indexReady=true;return;}
+  try{
+   const request=database.transaction('sizes').objectStore('sizes').getAll();
+   request.onsuccess=()=>{
+    for(const row of request.result || [])if(Date.now()-row.at<life)stored.add(row.url);
+    indexReady=true;
+   };
+  }catch(_){}
+ });
  return {load,invalidate,peek:url=>files.get(url)?.object?files.get(url).src:'',has:url=>Boolean(files.get(url)?.object) || stored.has(url),size:()=>({entries:files.size,bytes:[...files.values()].reduce((n,row)=>n+row.bytes,0)})};
 }
 export default function imageFiles(L){let pool=pools.get(L);if(!pool){pool=createImageFiles(window);pools.set(L,pool);}return pool;}

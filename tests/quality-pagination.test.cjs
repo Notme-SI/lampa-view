@@ -29,3 +29,49 @@ test('studio artwork retains original colors and opaque backgrounds instead of b
  const css=fs.readFileSync(path.join(__dirname,'../src/theme.css'),'utf8');
  for(const name of ['pt-hero__studio','minimal-detail-studio']){const rule=css.match(new RegExp('body\\.lampa_view \\.'+name+' \\{([^}]+)\\}'))[1];assert.ok(!rule.includes('brightness(0)'));assert.ok(!rule.includes('invert(1)'));assert.ok(rule.includes('drop-shadow'));}
 });
+
+test('release quality drops queued work from a catalogue after opening another one', async () => {
+ const dom = new JSDOM('<body><section class="activity activity--active"></section><section class="activity"></section></body>', {
+  runScripts: 'outside-only', pretendToBeVisual: true,
+ });
+ const w = dom.window, requests = [], listeners = {};
+ try {
+  w.eval(esbuild.buildSync({entryPoints: [path.join(__dirname, '../src/quality.js')], bundle: true, write: false, format: 'iife', globalName: 'Quality'}).outputFiles[0].text);
+  w.Quality.default({
+   Listener: {follow: (key, listener) => { listeners[key] = listener; }},
+   Storage: {get: (key, fallback) => key === 'jackett_url' ? 'http://parser.test' : fallback},
+   Reguest: function () {
+    this.timeout = () => {};
+    this.silent = (url, success) => requests.push({title: new URL(url).searchParams.get('title'), success});
+   },
+  });
+  const [movies, anime] = w.document.querySelectorAll('.activity');
+  const makeCard = (root, title) => {
+   const node = w.document.createElement('div');
+   node.className = 'card';
+   node.innerHTML = '<div class="card__view"></div>';
+   node.getBoundingClientRect = () => ({width: 100, top: 10, bottom: 160, left: 0, right: 100});
+   root.append(node);
+   return {data: {title, release_date: '2024-01-01'}, render: () => node};
+  };
+  const old = Array.from({length: 6}, (_, i) => makeCard(movies, 'Movie ' + i));
+  const waitFor = async check => {
+   for (let i = 0; i < 80 && !check(); i++) await sleep(10);
+   assert.ok(check());
+  };
+  listeners.line({type: 'visible', items: old});
+  await waitFor(() => requests.length === 2 && old.every(item => item.render().querySelector('.pt-kind')));
+  movies.classList.remove('activity--active');
+  anime.classList.add('activity--active');
+  const current = makeCard(anime, 'New Anime');
+  listeners.line({type: 'visible', items: [current]});
+  for (const job of requests.slice()) job.success({Results: [{Title: job.title + ' (2024) 1080p'}]});
+  await waitFor(() => requests.length >= 3);
+  assert.deepEqual(requests.map(job => job.title), ['Movie 0', 'Movie 1', 'New Anime']);
+  assert.equal(movies.querySelectorAll('.pt-quality').length, 0);
+  requests[2].success({Results: [{Title: 'New Anime (2024) 1080p'}]});
+  assert.equal(current.render().querySelector('.pt-quality')?.textContent, '1080p');
+ } finally {
+  w.close();
+ }
+});

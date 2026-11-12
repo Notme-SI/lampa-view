@@ -117,6 +117,11 @@ body.lampa_view.pt-full.pt-mobile:not(.card--no-cover) .minimal-detail-header > 
  width:100vw!important;max-width:none;left:50%!important;margin-left:-50vw;border-radius:0;
 }
 body.lampa_view.pt-full:not(.pt-mobile) .minimal-detail-header,body.lampa_view.pt-full.card--no-cover .minimal-detail-header {padding-top:var(--pt-header-space)}
+/* Catalogue viewports reach the top edge so their content passes under the dock. */
+body.lampa_view:not(.pt-full)[data-lampa-theme] .wrap__content:has(.activity--active .pt-browser-catalogue) {padding-top:0!important}
+body.lampa_view:not(.pt-full)[data-lampa-theme] .activity--active>.activity__body .scroll.pt-browser-catalogue {height:calc(var(--pt-mobile-viewport,100vh) - 8px)!important}
+body.lampa_view:not(.pt-full)[data-lampa-theme] .activity--active>.activity__body .pt-browser-catalogue>.scroll__content {padding-top:var(--pt-header-space)!important}
+body.lampa_view.pt-home:not(.pt-full)[data-lampa-theme] .activity--active>.activity__body .pt-browser-catalogue:has(.pt-hero:not(.pt-hidden))>.scroll__content {padding-top:0!important}
 /* Context labels remain accessible through each control's aria-label. */
 body.lampa_view .nova-plus-root .nova-plus__bar>.nova-toolbar__label {display:none!important}
 body.lampa_view .nova-plus-root [data-nova-group=voice]>.nova-plus__label {display:none!important}

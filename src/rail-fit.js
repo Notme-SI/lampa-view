@@ -92,10 +92,16 @@ export default function fitRail(line,root,card,state,enabled){
  revealFocus();
 }
 
-// Finish a pointer gesture on a complete slot, through the native bounds check.
-export function settleRail(view){
+export function railSnapDelta(view,position){
  const scroll=view && view.Scroll,fit=scroll && scroll.minimalPosterFit;
- if(!fit || !scroll.position || !scroll.shift)return;
- const position=scroll.position(),pitch=fit.width+fit.gap;
- if(pitch>0)scroll.shift(position-Math.round(position/pitch)*pitch);
+ if(!fit || !scroll.position || !scroll.shift)return 0;
+ if(position===undefined)position=scroll.position();
+ const pitch=fit.width+fit.gap;
+ return pitch>0?position-Math.round(position/pitch)*pitch:0;
+}
+
+// Touch retains the host's immediate final alignment.
+export function settleRail(view){
+ const delta=railSnapDelta(view);
+ if(delta)view.Scroll.shift(delta);
 }

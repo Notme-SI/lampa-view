@@ -4,7 +4,7 @@ export default function fillRows(L,enabled){
   const lines=new Map();
   const desktop=()=>document.body.classList.contains('pt-desktop');
   const roots=new WeakMap();
-  const tracked=new WeakSet(),navigated=new WeakSet(),ahead=Math.min(800,Math.max(360,window.innerHeight || 540));
+  const tracked=new WeakSet(),navigated=new WeakSet(),ahead=Math.min(1500,Math.max(700,(window.innerHeight || 540)*1.5));
   const observer=window.IntersectionObserver?new window.IntersectionObserver(entries=>entries.forEach(entry=>{
     const line=roots.get(entry.target),state=line && lines.get(line);
     if(entry.isIntersecting && state)schedule(line,state.data);
@@ -22,9 +22,13 @@ export default function fillRows(L,enabled){
       const render=line.render(true),root=render && (render.nodeType?render:render[0]);
       if(!root || !root.isConnected)return;
       if(!state.root){state.root=root;roots.set(root,line);if(observer)observer.observe(root);if(sizes)sizes.observe(root);root.addEventListener('touchend',()=>{if(enabled())settleRail(line.scroll && line.scroll.render(true));},{passive:true});}
-      if(document.body.classList.contains('pt-tv-busy') || document.body.classList.contains('pt-wheel-active') && (!desktop() || state.posterFitKey)){state.deferred=true;return;}
-      state.deferred=false;
+      // Saved screens receive global idle/hero events too. Their geometry
+      // becomes relevant again on the native visible/IntersectionObserver event.
+      if(root.closest('.activity:not(.activity--active)')){state.deferred=true;return;}
       const box=root.getBoundingClientRect();
+      const onScreen=box.bottom>0 && box.top<window.innerHeight;
+      if(onScreen && (document.body.classList.contains('pt-tv-busy') || document.body.classList.contains('pt-wheel-active') && (!desktop() || state.posterFitKey))){state.deferred=true;return;}
+      state.deferred=false;
       const first=!document.body.classList.contains('pt-tv') && root.previousElementSibling && root.previousElementSibling.matches('.pt-hero');
       if(!box.width)return;
       const nearby=first || box.bottom>=0 && box.top<=window.innerHeight+ahead;

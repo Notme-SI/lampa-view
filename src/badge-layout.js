@@ -1,3 +1,5 @@
+import {activeCard,scrollingCard,preparingCard} from './card-activity.js';
+
 // Corner-aware placement and batched measurements, adapted from card_overlay.js.
 export function placeBadges(width,height,badges,occupied=[],padding=4,gap=3){
  const placed=occupied.slice();
@@ -23,12 +25,13 @@ export default function badgeLayout(status){
  const pending=new Set(),measured=new WeakMap();let frame=0;
  const paused=()=>document.body.matches('.pt-wheel-active,.pt-tv-busy') || document.hidden;
  function flush(){
-  frame=0;if(paused())return;
+  frame=0;if(document.hidden)return;
   const reads=[],batch=[],tv=document.body.classList.contains('pt-tv');
   for(const node of pending){
    if(batch.length>=(tv?6:8))break;
+   if(activeCard(node) && (paused() || scrollingCard(node)) && !preparingCard(node))continue;
    pending.delete(node);
-   if(node.isConnected)batch.push(node);
+   if(activeCard(node))batch.push(node);
   }
   // Metadata can update text and visibility. Finish those writes before
   // measuring the layout of any badge in the current frame.
@@ -39,14 +42,14 @@ export default function badgeLayout(status){
    // Focus changes only the composited poster position. Re-measuring all its
    // unchanged corner labels forces layout after every remote pause. Include
    // content, native markers, viewport and scale so late data still invalidates.
-   const labels=tv?[...view.querySelectorAll('.card__vote,.pt-quality,.card__quality,.pt-kind,.pt-series-status,.card__marker,.card__new-episode,.card__icon')]:[];
-   const key=tv?[view.clientWidth,view.clientHeight,innerWidth,innerHeight,
-    document.body.className.replace(/\b(?:pt-tv-busy|pt-arrow-navigation)\b/g,''),document.body.style.cssText,
+   const labels=[...view.querySelectorAll('.card__vote,.pt-quality,.card__quality,.pt-kind,.pt-series-status,.card__marker,.card__new-episode,.card__icon')];
+   const key=[view.clientWidth,view.clientHeight,innerWidth,innerHeight,
+    document.body.className.replace(/\b(?:pt-tv-busy|pt-wheel-active|pt-arrow-navigation)\b/g,'').trim().replace(/\s+/g,' '),document.body.style.cssText,
     node.matches('.focus,.hover,.pt-card-pointer,.pt-card-touch'),
-    ...labels.map(el=>el.className+':'+el.textContent+':'+el.hidden)].join('|'):null;
-   if(tv && measured.get(node)===key)continue;
+    ...labels.map(el=>el.className+':'+el.textContent+':'+el.hidden)].join('|');
+   if(measured.get(node)===key)continue;
    const rect=view.getBoundingClientRect();
-   if(!rect.width || !rect.height || rect.bottom<0 || rect.top>window.innerHeight || rect.right<0 || rect.left>window.innerWidth)continue;
+   if(!rect.width || !rect.height || rect.bottom< -1200 || rect.top>window.innerHeight+1200 || rect.right< -1200 || rect.left>window.innerWidth+1200)continue;
    const width=view.clientWidth || rect.width,height=view.clientHeight || rect.height,scale=rect.width/width || 1,entries=[];
    for(const [selector,corner] of [['.card__vote','br'],['.pt-quality,.card__quality','tr'],['.pt-kind','tl'],['.pt-series-status','tl'],['.card__marker','bl'],['.card__new-episode','bl']])for(const el of view.querySelectorAll(selector)){
     if(el.hidden || el.classList.contains('hide') || getComputedStyle(el).display==='none')continue;
@@ -74,10 +77,10 @@ export default function badgeLayout(status){
    const right=p.corner[1]==='r',bottom=p.corner[0]==='b';
    Object.assign(entry.el.style,{top:bottom?'auto':Math.round(p.y)+'px',left:right?'auto':Math.round(p.x)+'px',right:right?Math.round(width-p.x-p.width)+'px':'auto',bottom:bottom?Math.round(height-p.y-p.height)+'px':'auto'});
   }if(key!==null)measured.set(node,key);}
-  if(pending.size)frame=requestAnimationFrame(flush);
+  if(batch.length && pending.size)frame=requestAnimationFrame(flush);
  }
- function schedule(node){if(!node)return;pending.add(node);if(!frame && !paused())frame=requestAnimationFrame(flush);}
- for(const event of ['minimal:tv-idle','minimal:wheel-idle','visibilitychange'])document.addEventListener(event,()=>{if(pending.size && !frame)frame=requestAnimationFrame(flush);});
+ function schedule(node){if(!node)return;pending.add(node);if(!frame && !document.hidden)frame=requestAnimationFrame(flush);}
+ for(const event of ['minimal:tv-idle','minimal:wheel-idle','minimal:catalogue-idle','visibilitychange'])document.addEventListener(event,()=>{if(pending.size && !frame)frame=requestAnimationFrame(flush);});
  const resize=window.ResizeObserver?new ResizeObserver(entries=>entries.forEach(entry=>schedule(entry.target))):null;
  return {track(node){if(resize)resize.observe(node);schedule(node);},schedule,forget(node){pending.delete(node);measured.delete(node);if(resize)resize.unobserve(node);}};
 }

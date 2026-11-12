@@ -9,10 +9,10 @@ export default function pageScrollbar(L,enabled){
  function draw(){
   frame=0;const active=enabled() && document.body.classList.contains('pt-desktop'),next=active && [...document.querySelectorAll('.activity--active .scroll:not(.scroll--horizontal)')].find(node=>node.clientWidth>0 && node.clientHeight>0 && node.Scroll);
   if(next!==root){
-   if(resize)resize.disconnect();if(mutation)mutation.disconnect();if(root)root.removeEventListener('scroll',schedule);
+   if(resize)resize.disconnect();if(mutation)mutation.disconnect();if(root){root.removeEventListener('scroll',schedule);root.removeEventListener('minimal:viewport-scroll',schedule);}
    root=next;scroll=root && root.Scroll;
    if(root && scroll){
-    const body=root.querySelector('.scroll__body');root.addEventListener('scroll',schedule,{passive:true});
+    const body=root.querySelector('.scroll__body');root.addEventListener('scroll',schedule,{passive:true});root.addEventListener('minimal:viewport-scroll',schedule);
     if(window.ResizeObserver){resize=new ResizeObserver(schedule);resize.observe(root);if(body)resize.observe(body);}
     if(window.MutationObserver && body){mutation=new MutationObserver(schedule);mutation.observe(body,{attributes:true,attributeFilter:['style']});}
    }
@@ -20,13 +20,14 @@ export default function pageScrollbar(L,enabled){
   scroll=root && root.Scroll;
   if(!scroll || !scroll.vieport){track.hidden=true;return;}
   const view=scroll.vieport(),content=root.querySelector('.scroll__content'),padding=content?parseInt(getComputedStyle(content).paddingTop,10)||0:0;
-  range=Math.max(0,view.body+padding*2-view.content);track.hidden=!active || range<2;if(track.hidden)return;
+  range=Math.max(0,view.body+(root.classList.contains('pt-browser-catalogue')?0:padding*2)-view.content);track.hidden=!active || range<2;if(track.hidden)return;
   const height=track.clientHeight,size=Math.min(height,Math.max(32,height*view.content/(view.content+range))),position=Math.max(0,Math.min(range,Math.abs(scroll.position())));
   travel=Math.max(1,height-size);thumb.style.height=size+'px';thumb.style.transform='translateY('+(position/range*travel)+'px)';track.setAttribute('aria-valuemax',String(Math.round(range)));track.setAttribute('aria-valuenow',String(Math.round(position)));
  }
  function schedule(){if(!frame)frame=requestAnimationFrame(draw);}
  function to(amount){
   if(!scroll)return;amount=Math.max(0,Math.min(range,amount));scroll.shift(scroll.position()+amount);
+  if(root.classList.contains('pt-browser-catalogue')){schedule();return;}
   if(scroll.onScroll)scroll.onScroll(Math.abs(scroll.position()));else if(L.Layer?.visible)L.Layer.visible(root);
   if(scroll.onEnd && scroll.isEnd?.())scroll.onEnd();schedule();
  }
