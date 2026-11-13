@@ -200,6 +200,11 @@ body.lampa_view.pt-tv.pt-theme-glass[data-pt-scene] .wrap {
   background-image:var(--pt-home-atmosphere,var(--pt-scene-background))!important;
   background-size:100% 170vh!important;
  }
+ /* Keep the text side black by shading the page background beneath the artwork. */
+ body.lampa_view.pt-hero-page[data-lampa-theme][data-pt-scene="catalogue"]:not(.pt-mobile) .wrap {
+  background-image:linear-gradient(to right,#000 28%,#000e 34%,#0008 44%,#0002 54%,transparent 62%),
+                   var(--pt-home-atmosphere,var(--pt-scene-background))!important;
+ }
  body.lampa_view.pt-hero-page[data-lampa-theme][data-pt-scene="catalogue"] .activity--active .pt-hero {
   background:transparent!important;
  }

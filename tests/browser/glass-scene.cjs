@@ -117,6 +117,9 @@ async function run(engine, browser, mode) {
      for(const rgb of [lower,inner])assert.ok(rgb[0]>=250 && rgb[1]<=4 && rgb[2]<=4,'The source color stays intact outside the edge blends: '+JSON.stringify({mode,theme,rgb}));
      assert.ok(feather[0]>70 && feather[0]<220,'The bottom edge eases out through a translucent region: '+JSON.stringify({mode,theme,feather}));
      const bottom=await artwork.evaluate(img=>img.parentElement.getBoundingClientRect().bottom/innerHeight);
+     const [underLogo,leftOfBanner,tintedPage]=await samplePixels(page,[[.14,middle],[.27,.12],[.94,bottom+.012]]);
+     assert.ok([...underLogo,...leftOfBanner].every(channel=>channel<=12),'The left background stays near-black even with bright artwork: '+JSON.stringify({mode,theme,underLogo,leftOfBanner}));
+     assert.ok(tintedPage[0]>Math.max(tintedPage[1],tintedPage[2])+8,'Artwork tint continues under the right side of the banner: '+JSON.stringify({mode,theme,tintedPage}));
      const corner=edge+.08*(1-edge);
      const colors=await samplePixels(page,[[.94,bottom-.004],[.94,bottom+.004],[corner,bottom-.004],[corner,bottom+.004]]);
      for(const [above,below] of [[colors[0],colors[1]],[colors[2],colors[3]]]){

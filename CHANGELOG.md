@@ -1,3 +1,7 @@
+## 0.5.157
+
+- Keep the area behind the carousel logo and description near black. Blend into the artwork tint on the right and under the banner.
+
 ## 0.5.156
 
 - Add an anime carousel to the Anime landing page in both catalogue modes. Keep its artwork tint on that page.
