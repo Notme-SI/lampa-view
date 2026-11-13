@@ -1249,7 +1249,7 @@ body.lampa_view .pt-browser-catalogue .mapping--grid>.card>.card__age,
 body.lampa_view .pt-browser-rows .minimal-posters-sized .mapping--line>.card>.card__age {flex:none;margin-top:.18em}
 body.lampa_view .pt-browser-catalogue .mapping--grid>.card>.pt-card-watch,
 body.lampa_view .minimal-posters-sized .mapping--line>.card>.pt-card-watch {flex:none;margin-top:.12em;height:3.5em}
-body.lampa_view .minimal-posters-sized .mapping--line>.card {min-height:calc(var(--minimal-poster-width) * 1.5 + 6.75em)}
+body.lampa_view .minimal-posters-sized .mapping--line>.card {min-height:calc(var(--minimal-poster-width) * 1.5 + 7.25em)}
 body.lampa_view .minimal-fit-posters .mapping--line>.card+.card {margin-left:var(--minimal-poster-gap,16px)}
 body.lampa_view.pt-desktop:not(.pt-favorites) .activity--active :is(.category-full,.mapping--grid):has(>.card:not(.card--wide):not(.card--collection)) {column-gap:16px}
 body.lampa_view .pt-browser-catalogue .mapping--grid.pt-windowed-grid {
@@ -1258,7 +1258,7 @@ body.lampa_view .pt-browser-catalogue .mapping--grid.pt-windowed-grid {
 }
 body.lampa_view .pt-browser-catalogue .mapping--grid.pt-windowed-grid>.card:not(.card--wide):not(.card--collection) {
  width:100%!important;max-width:none;min-width:0;margin:0;padding-inline:0;
- height:calc(var(--pt-window-width) * 1.5 + 6.75em);padding-bottom:.35em;
+ height:calc(var(--pt-window-width) * 1.5 + 7.25em);padding-bottom:.35em;
 }
 body.lampa_view .pt-card-watch__label>.pt-card-watch__heading {flex-basis:100%;margin-bottom:0}
 body.lampa_view .pt-card-watch__meter {margin-top:.1em;min-height:.8em}

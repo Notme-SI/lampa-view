@@ -13,8 +13,8 @@ async function tapInfo(page,selector){const point=await page.locator(selector).e
    await page.waitForSelector('#qa-touch-8801 .pt-card-watch',{state:'attached'});assert.equal(await page.locator('.pt-card-info').count(),0,'No permanent info buttons on posters');await page.waitForSelector('#qa-touch-8802 .card__title');
    assert.equal(await page.locator('#qa-touch-8801 .pt-card-watch').evaluate(n=>getComputedStyle(n).visibility),'hidden');
    assert.equal(await page.locator('#qa-touch-8801 .pt-poster-selection').count(),0,'Touch keeps its own caption interaction without a hover Play overlay');
-   await page.locator('#qa-touch-8801').evaluate(n=>n.classList.add('focus','hover'));
-   const touchPaint=await page.locator('#qa-touch-8801 .card__view').evaluate(n=>({transform:getComputedStyle(n).transform,shadow:getComputedStyle(n).boxShadow}));assert.deepEqual(touchPaint,{transform:'matrix(1, 0, 0, 1, 0, 0)',shadow:'none'},'Compatibility focus/hover never sticks on touch');
+   await page.locator('#qa-touch-8801').evaluate(n=>n.classList.add('focus','hover'));await page.waitForTimeout(300);
+   const touchPaint=await page.locator('#qa-touch-8801 .card__view').evaluate(n=>({transform:getComputedStyle(n).transform,shadow:getComputedStyle(n).boxShadow}));assert.equal(touchPaint.shadow,'none');assert.ok(['none','matrix(1, 0, 0, 1, 0, 0)'].includes(touchPaint.transform),'Touch has no remaining focus displacement');
    await page.locator('#qa-touch-8801').evaluate(n=>n.classList.remove('focus','hover'));
    await tapInfo(page,'#qa-touch-8801 .card__title');await page.waitForSelector('#qa-touch-8801.pt-card-touch .pt-card-watch--has-progress');assert.equal(await page.locator('#qa-touch-8801 .pt-card-watch').evaluate(n=>getComputedStyle(n).visibility),'visible');assert.equal(await page.locator('#qa-touch-8801 .pt-card-watch__time').textContent(),'15:15');assert.equal(await page.evaluate(()=>qaEnters),0,'Info tap must not open the full card');
    await page.locator('#qa-touch-8801 .card__img').evaluate(n=>n.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,detail:1})));

@@ -59,7 +59,7 @@ const {setup} = require('../fixtures/native-browser.cjs');
       },shift);
       await page.waitForFunction(shift=>{
        const position=Lampa.Activity.active().activity.component.scroll.position();
-       return shift===0 ? Math.abs(position)<1 : position<-300;
+       const n=Lampa.Activity.active().activity.component.scroll.render(true),range=Math.max(0,n.scrollHeight-n.clientHeight);return shift===0 ? Math.abs(position)<1 : Math.abs(position+Math.min(shift,range))<2;
       },shift,{timeout:2200});
       const expected=await page.evaluate(()=>Lampa.Activity.active().activity.component.scroll.position());
       const opener=page.locator(selector);

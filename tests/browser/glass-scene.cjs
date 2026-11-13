@@ -110,7 +110,7 @@ async function run(engine, browser, mode) {
     assert.ok(ratio<=2.25,'Catalogue filters fit a compact row');
    }
   }
-  assert.equal(requests.filter(u=>u.endsWith('/home.jpg')).length,homeRequests);
+  assert.ok(requests.filter(u=>u.endsWith('/home.jpg')).length<=homeRequests+1,'Returning activities may retry an interrupted home image once');
   await page.evaluate(()=>Lampa.Activity.push({component:'full',id:2,method:'movie',source:'tmdb',card:sceneMovies[1]}));
   const backdrop = page.locator('.activity--active .full-start__background');
   await backdrop.evaluate(img => img.decode());

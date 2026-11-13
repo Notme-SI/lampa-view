@@ -9351,12 +9351,12 @@ ters-sized .mapping--line>.card>.card__view{flex:none;margin-bottom:0}body.lampa
 d__title{flex:none;height:auto;min-height:0;max-height:2.8em;line-height:1.4em;margin-top:.45em}body.lampa_view .pt-browser-catalogue .mapping--grid>.card>.card\
 __age,body.lampa_view .pt-browser-rows .minimal-posters-sized .mapping--line>.card>.card__age{flex:none;margin-top:.18em}body.lampa_view .pt-browser-catalogue .\
 mapping--grid>.card>.pt-card-watch,body.lampa_view .minimal-posters-sized .mapping--line>.card>.pt-card-watch{flex:none;margin-top:.12em;height:3.5em}body.lampa\
-_view .minimal-posters-sized .mapping--line>.card{min-height:calc(var(--minimal-poster-width) * 1.5 + 6.75em)}body.lampa_view .minimal-fit-posters .mapping--lin\
+_view .minimal-posters-sized .mapping--line>.card{min-height:calc(var(--minimal-poster-width) * 1.5 + 7.25em)}body.lampa_view .minimal-fit-posters .mapping--lin\
 e>.card+.card{margin-left:var(--minimal-poster-gap,16px)}body.lampa_view.pt-desktop:not(.pt-favorites) .activity--active :is(.category-full,.mapping--grid):has(\
 >.card:not(.card--wide):not(.card--collection)){column-gap:16px}body.lampa_view .pt-browser-catalogue .mapping--grid.pt-windowed-grid{display:grid!important;gri\
 d-template-columns:repeat(var(--pt-window-cols),minmax(0,1fr))!important;grid-auto-rows:var(--pt-window-row,auto);gap:0 16px!important;align-items:stretch}body.\
 lampa_view .pt-browser-catalogue .mapping--grid.pt-windowed-grid>.card:not(.card--wide):not(.card--collection){width:100%!important;max-width:none;min-width:0;m\
-argin:0;padding-inline:0;height:calc(var(--pt-window-width) * 1.5 + 6.75em);padding-bottom:.35em}body.lampa_view .pt-card-watch__label>.pt-card-watch__heading{f\
+argin:0;padding-inline:0;height:calc(var(--pt-window-width) * 1.5 + 7.25em);padding-bottom:.35em}body.lampa_view .pt-card-watch__label>.pt-card-watch__heading{f\
 lex-basis:100%;margin-bottom:0}body.lampa_view .pt-card-watch__meter{margin-top:.1em;min-height:.8em}body.lampa_view .items-line{margin-bottom:.2em;padding-bott\
 om:0}body.lampa_view .items-line__head{margin-bottom:.5em}body.lampa_view .card__img.pt-catalogue-image-pending{opacity:0!important}body.lampa_view .card__img:n\
 ot(.pt-catalogue-image-pending){opacity:1}body.lampa_view .pt-browser-catalogue .mapping--grid>.pt-catalogue-spacer{grid-column:1/-1;grid-row:auto;min-width:0;w\
