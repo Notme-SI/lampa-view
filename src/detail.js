@@ -1,4 +1,5 @@
 import studioContrast from './studio-contrast.js';
+import readableText from './readable-text.js';
 import {text as lampaViewText} from './i18n.js';
 import {namedPartCount} from './episode-metadata.js';
 import {localizedTitle,isAnime} from './metadata.js';
@@ -23,30 +24,14 @@ export function releaseDate(card){
  if(year<100 || date.getFullYear()!==year || date.getMonth()!==month-1 || date.getDate()!==day)return '';
  return day+' '+[lampaViewText("января"),lampaViewText("февраля"),lampaViewText("марта"),lampaViewText("апреля"),lampaViewText("мая"),lampaViewText("июня"),lampaViewText("июля"),lampaViewText("августа"),lampaViewText("сентября"),lampaViewText("октября"),lampaViewText("ноября"),lampaViewText("декабря")][month-1]+' '+year;
 }
-const overviewControls=new Set();let overviewDocument;
-function overviewFocus(target){
- const active=document.activeElement;if(active && active.matches('.minimal-overview-action,.minimal-detail-studio') && active!==target && !active.contains(target))active.blur();
- for(const control of overviewControls){if(!control.isConnected){overviewControls.delete(control);continue;}const ring=control.querySelector('.minimal-overview-focus');if(ring)ring.hidden=!(target===control || control.contains(target));}
-}
 function readableOverview(L,card,right,link){
  if(!card.overview || !String(card.overview).trim())return;
  let text=right.querySelector('.full-start-new__description,.minimal-detail-overview');
  if(!text){text=document.createElement('p');text.className='minimal-detail-overview';text.textContent=card.overview;right.appendChild(text);}
  if(text.parentElement.classList.contains('minimal-overview-action'))return;
- const control=document.createElement('div');control.className='minimal-overview-action selector';text.before(control);control.appendChild(text);
+ const control=document.createElement('div');control.className='minimal-overview-action';text.before(control);control.appendChild(text);
  text.classList.remove('minimal-overview-action','selector','focus');
- const ring=document.createElement('span');ring.className='minimal-overview-focus';ring.setAttribute('aria-hidden','true');ring.hidden=true;control.appendChild(ring);overviewControls.add(control);
- if(overviewDocument!==document){overviewDocument=document;for(const name of ['hover:focus','hover:hover','focusin'])document.addEventListener(name,event=>overviewFocus(event.target),true);}
- control.setAttribute('role','button');control.setAttribute('tabindex','0');control.setAttribute('aria-haspopup','dialog');control.setAttribute('aria-label',lampaViewText("Прочитать описание полностью"));control.title=lampaViewText("Прочитать описание полностью");
- function remember(){if(link && link.items && link.items[0])link.items[0].last=control;}
- function open(){
-  if(!text.isConnected || L.Modal.opened())return;
-  remember();const content=document.createElement('div');content.className='about minimal-overview-full';content.textContent=card.overview;
-  L.Modal.open({title:lampaViewText("Описание"),size:'large',html:window.jQuery(content),onBack:()=>{L.Modal.close();if(text.isConnected){remember();L.Controller.toggle('full_start');}}});
- }
- control.addEventListener('hover:focus',remember);control.addEventListener('hover:enter',open);
- control.addEventListener('click',event=>{event.preventDefault();event.stopImmediatePropagation();open();});
- control.addEventListener('keydown',event=>{if(event.key==='Enter' || event.key===' '){event.preventDefault();event.stopImmediatePropagation();open();}});
+ readableText(L,text,control,link,{value:card.overview,title:lampaViewText('Описание'),label:lampaViewText('Прочитать описание полностью')});
 }
 function moveTechnicalDetails(L,card,right,episodeBook){
  const line=right.querySelector('.full-start-new__details'),genres=(card.genres || []).slice(0,5).map(g=>g.name).join(' | ').trim().toLowerCase(),prefix=L.Lang && L.Lang.translate?L.Lang.translate('player_quality')+':':lampaViewText("Качество:");
@@ -203,6 +188,8 @@ export default function detail(L,event,loadLogo){
  const reaction=body.querySelector('.button--reaction');if(reaction){reaction.title=lampaViewText("Оставить реакцию");reaction.setAttribute('aria-label',lampaViewText("Оставить реакцию"));}
  if(left){
   left.classList.add('minimal-detail-identity');left.appendChild(title);if(buttons)left.appendChild(buttons);
+  title.classList.add('minimal-identity-title');
+  readableText(L,title,title,event.link,{value:localizedTitle(card,L.Storage.get('language','ru')),title:lampaViewText('Название'),label:lampaViewText('Прочитать название полностью')});
   const syncPoster=()=>{
    const image=left.querySelector('.full-start-new__img');
    if(image && card.poster_path && document.body.classList.contains('pt-detail-poster') && !image.dataset.minimalPoster){
@@ -212,6 +199,7 @@ export default function detail(L,event,loadLogo){
   syncPoster();document.addEventListener('minimal:detail-layout',syncPoster);
   if(event.link && event.link.use)event.link.use({onDestroy:()=>document.removeEventListener('minimal:detail-layout',syncPoster)});
   const heading=document.createElement('h2');heading.className='minimal-detail-heading';heading.textContent=localizedTitle(card,L.Storage.get('language','ru'));title.textContent=heading.textContent;right.prepend(heading);
+  readableText(L,heading,heading,event.link,{value:heading.textContent,title:lampaViewText('Название'),label:lampaViewText('Прочитать название полностью')});
   if(buttons){
    const update=()=>{const subscribed=Array.from(buttons.querySelectorAll('.button--subscribe')).some(bell=>!bell.classList.contains('hide') && !bell.classList.contains('pt-hidden') && !bell.hidden && bell.style.display!=='none');buttons.classList.remove('minimal-actions--auto');buttons.classList.toggle('minimal-actions--no-bell',!subscribed);};
    update();
@@ -226,7 +214,7 @@ export default function detail(L,event,loadLogo){
   const facts=document.createElement('aside');facts.className='minimal-detail-facts';const heading=document.createElement('h3');heading.textContent=lampaViewText("О произведении");facts.appendChild(heading);
   const series=card.media_type==='tv' || card.name || card.first_air_date;
   const rows=[[lampaViewText("Оригинальное название"),card.original_title || card.original_name],[lampaViewText("Тип"),isAnime(card)?(series?lampaViewText("Аниме-сериал"):lampaViewText("Аниме-фильм")):(series?lampaViewText("Сериал"):lampaViewText("Фильм"))],[lampaViewText("Дата релиза"),releaseDate(card)],[series?lampaViewText("Длительность серии"):lampaViewText("Длительность"),technical.duration],[lampaViewText("Тип релиза"),technical.quality],[lampaViewText("Рейтинг TMDB"),card.vote_average?Number(card.vote_average).toFixed(1):''],[lampaViewText("Жанры"),(card.genres || []).map(g=>g.name).join(', ')]];
-  rows.forEach(([name,value])=>{if(!value)return;const row=document.createElement('div'),key=document.createElement('span'),text=document.createElement('span');key.textContent=name;text.textContent=value;row.appendChild(key);row.appendChild(text);facts.appendChild(row);});columns.appendChild(facts);
+  rows.forEach(([name,value],index)=>{if(!value)return;const row=document.createElement('div'),key=document.createElement('span'),text=document.createElement('span');key.textContent=name;text.textContent=value;row.appendChild(key);row.appendChild(text);facts.appendChild(row);if(index===0){row.className='minimal-original-title';text.className='minimal-title-action';readableText(L,text,text,event.link,{value,title:name,label:lampaViewText('Прочитать название полностью')});}});columns.appendChild(facts);
   // TV initially builds only three full-card rows. Load through the cast row,
   // then move both native rows and controller items into the displayed order.
   const link=event.link;

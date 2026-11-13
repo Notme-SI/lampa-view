@@ -37,7 +37,7 @@ function applyDarkAccent(L){
 }
 
 export function darkAccentSetting(L){
- const label='Акцент тёмной темы';
+ const label='Цвет выделения';
  L.SettingsApi.addParam({
   component:'lampa_view',param:{name:accentKey,type:'button',default:defaultAccent},
   field:{name:t(label),description:t('Код HEX. Пустое поле возвращает {0}.',[defaultAccent])},

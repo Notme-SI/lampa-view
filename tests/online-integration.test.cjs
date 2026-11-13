@@ -87,7 +87,7 @@ test('complete absolute anime list navigates confirmed arcs locally and keeps or
 
 test('KinoAPI and Trakt settings transfer through native backup/restore with separate toggle and key fields',async()=>{
  const n=await native({built:true}),{w,L}=n;let restored;try{
- const params=()=>L.SettingsApi.getParam('minimal_settings_catalogue');
+ const params=()=>L.SettingsApi.getParam('minimal_settings_services');
  const toggle=params().find(p=>p.param.name==='minimal_kinoapi_enabled');assert.ok(toggle);assert.equal(toggle.param.type,'trigger');assert.ok(!params().some(p=>p.param.name==='minimal_kinoapi'));
  let submit;L.Input.edit=(options,fn)=>{assert.notEqual(options.password,true);assert.equal(options.nosave,true);assert.equal(options.value,'');submit=fn;};
  L.Storage.set('minimal_kinoapi_enabled',true);toggle.onChange();assert.equal(w.LampaView.kinoapi.enabled(),false,'Cancelling first entry leaves no enabled integration');submit('backup-fixture-key');
@@ -98,7 +98,7 @@ test('KinoAPI and Trakt settings transfer through native backup/restore with sep
  const backup=JSON.stringify(w.localStorage,(key,value)=>key==='app.js'?undefined:value);
  restored=await native({built:true,prepare(win){Object.entries(JSON.parse(backup)).forEach(([key,value])=>win.localStorage.setItem(key,value));}});
  assert.equal(restored.w.LampaView.kinoapi.enabled(),true);assert.equal(restored.L.Storage.get('lampa_view_kinoapi_key'),'backup-fixture-key');assert.equal(restored.L.Storage.get('minimal_trakt_client_id'),'backup-public-id');assert.equal(restored.L.Storage.get('minimal_trakt_enabled'),true);
- assert.ok(restored.L.SettingsApi.getParam('minimal_settings_catalogue').some(p=>p.param.name==='minimal_kinoapi'));assert.deepEqual(n.errors,[]);assert.deepEqual(restored.errors,[]);
+ assert.ok(restored.L.SettingsApi.getParam('minimal_settings_services').some(p=>p.param.name==='minimal_kinoapi'));assert.deepEqual(n.errors,[]);assert.deepEqual(restored.errors,[]);
  }finally{n.close();if(restored)restored.close();}
 });
 

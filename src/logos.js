@@ -1,8 +1,11 @@
 import tmdbGet from './tmdb.js';
 export function chooseLogo(images,language){
- const choices=(images || []).filter(image=>image && /^\/[^\s]+\.(png|webp|svg)$/i.test(image.file_path || ''));
+ // This uploaded Odyssey logo has a damaged alpha edge and a white fringe.
+ const damaged='/5ekYPqAipzW5uO6t6wtlBxrZbhw.png';
+ const choices=(images || []).filter(image=>image && image.file_path!==damaged && /^\/[^\s]+\.(png|webp|svg)$/i.test(image.file_path || ''));
  const priority=lang=>lang===language?0:lang==='en'?1:!lang?2:3;
- choices.sort((a,b)=>priority(a.iso_639_1)-priority(b.iso_639_1) || Number(/\.svg$/i.test(b.file_path))-Number(/\.svg$/i.test(a.file_path)) || (b.width || 0)-(a.width || 0) || (b.vote_count || 0)-(a.vote_count || 0));
+ const quality=image=>Number(image.vote_count)>0?Number(image.vote_average)||0:-1;
+ choices.sort((a,b)=>priority(a.iso_639_1)-priority(b.iso_639_1) || Number(/\.svg$/i.test(b.file_path))-Number(/\.svg$/i.test(a.file_path)) || Number((b.width || 0)>=600)-Number((a.width || 0)>=600) || quality(b)-quality(a) || (b.vote_count || 0)-(a.vote_count || 0) || (b.width || 0)-(a.width || 0));
  return choices[0] || null;
 }
 export function pickLogo(images,language){const logo=chooseLogo(images,language);return logo && logo.file_path || '';}

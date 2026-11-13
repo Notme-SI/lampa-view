@@ -1,4 +1,10 @@
 const test=require('node:test'),assert=require('node:assert/strict'),path=require('path'),esbuild=require('esbuild');const {JSDOM}=require('jsdom');
+test('Odyssey skips the damaged wide upload and prefers rated readable Russian artwork',()=>{
+ const d=new JSDOM('<body>',{runScripts:'outside-only'});try{d.window.eval(esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/logos.js')],bundle:true,write:false,format:'iife',globalName:'Logos'}).outputFiles[0].text);
+ const images=[{file_path:'/5ekYPqAipzW5uO6t6wtlBxrZbhw.png',iso_639_1:'ru',width:9729,vote_average:.166,vote_count:1},{file_path:'/spdURCbJTWucruFQc8VpJZdzBIm.png',iso_639_1:'ru',width:2252,vote_average:3.334,vote_count:1},{file_path:'/unrated.png',iso_639_1:'ru',width:6000,vote_count:0},{file_path:'/english.png',iso_639_1:'en',width:4000,vote_average:8,vote_count:80}];
+ assert.equal(d.window.Logos.pickLogo(images,'ru'),'/spdURCbJTWucruFQc8VpJZdzBIm.png');assert.equal(d.window.Logos.pickLogo([images[0]],'ru'),'');
+ }finally{d.window.close();}
+});
 test('hero logos prefer chosen language, reuse requests, and never treat a foreign catalogue ID as TMDB',()=>{
  const dom=new JSDOM('<body></body>',{runScripts:'outside-only'}),w=dom.window;
  const bundle=esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/logos.js')],bundle:true,write:false,format:'iife',globalName:'Logos'}).outputFiles[0].text;w.eval(bundle);

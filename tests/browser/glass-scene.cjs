@@ -22,6 +22,9 @@ async function run(engine, browser, mode) {
  const {page,context,errors} = await setup(browser, {mode,viewport}, {beforePlugin:page => page.evaluate(() => {
   const L = Lampa;
   L.Params.init(); L.Layer.init(); L.Search.init(); L.Menu.ready();
+  // Desktop profiles can retain Background=false from the host/older builds.
+  // Our own banner tint remains independent without rewriting that preference.
+  L.Storage.set('background',false);
   document.querySelector('.wrap').classList.add('layer--height','layer--width');
   document.querySelector('.wrap__content').classList.add('layer--height');
   L.Layer.update();
@@ -37,7 +40,7 @@ async function run(engine, browser, mode) {
   L.Api.full = (p,ok) => ok({movie:{...data[1],production_countries:[],production_companies:[],spoken_languages:[],genres:[]},persons:{crew:[],cast:[]},discuss:{result:[]},images:{logos:[]},videos:{results:[]},simular:{results:[]},recomend:{results:[]}});
   L.Api.sources.tmdb.get = (url,p,ok) => ok(url.includes('_credits') ? {cast:data,crew:[]} : {results:data,total_pages:1,page:1});
   L.Storage.set('lampa_view_theme','glass');
-  L.Storage.set('background',true);
+  L.Storage.set('background',false);
   L.Storage.set('animation',true);
  })});
  try {
@@ -60,6 +63,24 @@ async function run(engine, browser, mode) {
    return rgb.length === 3 && rgb[channel] > Math.max(...rgb.filter((_,i)=>i!==channel)) + 30 &&
     background.includes('radial-gradient') && !background.includes('url(');
   }, channel, {timeout:10000});
+  await expectColor(0);
+  assert.equal(await page.evaluate(()=>Lampa.Storage.value('background')),'false');
+  const materials=[];
+  for(const strength of ['0','25','100','50']){
+   await page.evaluate(strength=>Lampa.Storage.set('lampa_view_artwork_tint',strength),strength);await page.waitForTimeout(70);
+   materials.push(await page.evaluate(()=>({scene:document.body.getAttribute('data-pt-scene'),rgb:document.body.style.getPropertyValue('--pt-material-rgb'),strength:Number(document.body.style.getPropertyValue('--pt-scene-strength'))})));
+  }
+  assert.equal(materials[0].scene,null);assert.equal(materials[0].rgb,'');assert.ok(materials[2].strength>materials[1].strength);assert.notEqual(materials[2].rgb,materials[1].rgb);await expectColor(0);
+  const proxy='http://proxy.example.invalid/t/p/original/tint-test.jpg';
+  const thumbnail='https://image.tmdb.org/t/p/w300/tint-test.jpg';
+  const sample={contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900"><rect width="1600" height="900" fill="blue"/></svg>'};
+  await page.route(proxy,route=>route.fulfill(sample));
+  await page.route(thumbnail,route=>route.fulfill({...sample,headers:{'Access-Control-Allow-Origin':'*'}}));
+  const home=page.locator('.activity--active .pt-hero__image');
+  const initialSource=await home.getAttribute('src');
+  await home.evaluate(async (img,src)=>{img.src=src;await img.decode();},proxy);
+  await expectColor(2);
+  await home.evaluate(async (img,src)=>{img.src=src;await img.decode();},initialSource);
   await expectColor(0);
   assert.equal(await page.locator('.activity--active .pt-hero__image').count(),1);
   const hero=await page.locator('.activity--active .pt-hero').evaluate(node=>{

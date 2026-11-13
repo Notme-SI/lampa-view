@@ -54,6 +54,7 @@ import onlineNavigation from './online-navigation.js';
 import onlineSourceCache from './online-source-cache.js';
 import torrentBanner,{bannerCountries} from './torrent-banner.js';
 import torrentSearch from './torrent-search.js';
+import torrentLoading from './torrent-loading.js';
 import installTrakt from './trakt.js';
 import holidayLayout from './holidays.js';
 import interfaceSize from './interface-size.js';
@@ -552,7 +553,7 @@ if (!ROOT.LampaView) {
     return copy;
   }
   function sendContext(video) {
-    if (!yes('lampa_view_metadata') || !ROOT.electronAPI || !ROOT.electronAPI.lampa_view) return;
+    if (!ROOT.electronAPI || !ROOT.electronAPI.lampa_view) return;
     const card = currentCard(video);
     if (!card) return;
     try {
@@ -562,7 +563,7 @@ if (!ROOT.LampaView) {
     } catch(error) {console.warn('Lampa View: metadata transport failed');}
   }
   function bridge() {
-    mpvLaunch.install(L,ROOT,currentCard,()=>yes('lampa_view_metadata'));
+    mpvLaunch.install(L,ROOT,currentCard,()=>true);
     P.bridge = !!(ROOT.electronAPI && ROOT.electronAPI.lampa_view);
     if (!P.bridge) return;
     L.Player.listener.follow('create', event => {activeVideo = event.data; playlist=[]; sendContext(event.data);});
@@ -579,9 +580,9 @@ if (!ROOT.LampaView) {
     const options=[
       ['lampa_view_hero',lampaViewText("Обложка на главной"),lampaViewText("Карусель каждые 10 секунд, ручное переключение и жесты."),true]
     ];
-    if(L.Platform && L.Platform.desktop && L.Platform.desktop() || ROOT.electronAPI && ROOT.electronAPI.lampa_view) options.push(['lampa_view_metadata',lampaViewText("Уточнять данные mpv+"),lampaViewText("Передавать сведения карточки для проверки названия, сезона и серии."),true]);
     options.forEach(([name,label,description,value]) => L.SettingsApi.addParam({component:'lampa_view',param:{name,type:'trigger',default:value},field:{name:label,description},onChange:setTheme}));
     L.SettingsApi.addParam({component:'lampa_view',param:{name:'lampa_view_theme',type:'select',values:{minimal:lampaViewText('Тёмная'),glass:lampaViewText('Стекло')},default:'minimal'},field:{name:lampaViewText("Тема интерфейса"),description:lampaViewText("Оформление всей Lampa. Переключается сразу, данные просмотра сохраняются.")},onChange:()=>{if(appearanceTheme)appearanceTheme.update();}});
+    L.SettingsApi.addParam({component:'lampa_view',param:{name:'lampa_view_artwork_tint',type:'select',values:{0:lampaViewText('Выключен'),25:lampaViewText('Слабый'),50:lampaViewText('Умеренный'),75:lampaViewText('Выраженный'),100:lampaViewText('Насыщенный')},default:'50'},field:{name:lampaViewText('Оттенок от баннера'),description:lampaViewText('Цвет фона и стеклянных панелей подстраивается под текущий баннер. Сила оттенка меняется сразу.')}});
     L.SettingsApi.addParam({component:'lampa_view',param:{name:'menu_always',type:'trigger',default:false},field:{name:lampaViewText('Закрепить боковое меню'),description:lampaViewText('Иконки слева. Меню раскрывается при наведении или выборе пультом.')},onChange:()=>pinnedMenu && pinnedMenu.update()});
     darkAccentSetting(L);cardMotionSetting(L);
     L.SettingsApi.addParam({component:'lampa_view',param:{name:'lampa_view_layout',type:'select',values:{auto:lampaViewText("Автоматически"),tv:lampaViewText("Телевизор"),mobile:lampaViewText("Телефон"),tablet:lampaViewText("Планшет"),desktop:lampaViewText("Компьютер")},default:'auto'},field:{name:lampaViewText("Тип устройства"),description:lampaViewText("Авто использует режим экрана Lampa. Планшет — сенсорное управление и адаптация к ширине окна.")},onChange:setTheme});
@@ -608,6 +609,7 @@ if (!ROOT.LampaView) {
     historyCards(L,()=>yes('lampa_view_enabled'));
     torrentBanner(L,loadLogo);
     torrentSearch(L);
+    torrentLoading(L,()=>yes('lampa_view_enabled'));
     settings(); bridge(); shell();back=installBack(L,$,()=>yes('lampa_view_enabled'));holidays=holidayLayout(L,()=>yes('lampa_view_enabled'));artwork.refresh();
     tvPerformance(()=>yes('lampa_view_enabled'),L);
     glassScene(L,()=>yes('lampa_view_enabled'),color=>appearanceTheme?.chromePalette(color));

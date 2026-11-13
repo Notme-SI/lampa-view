@@ -57,7 +57,7 @@ test('settings groups hide promotion and preserve option keys, callbacks and cle
 
 
 test('detail uses supplied title artwork and keeps a text fallback on image failure',()=>{
- const dom=new JSDOM('<body class="lampa_view"><section id="full"><div class="full-start-new__right"><h1 class="full-start-new__title">Movie</h1><div class="full-start-new__buttons"></div></div></section></body>',{runScripts:'outside-only'}),w=dom.window;
+ const dom=new JSDOM('<body class="lampa_view"><section id="full"><div class="full-start-new__right"><h1 class="full-start-new__title">Movie</h1><div class="full-start-new__buttons"></div></div></section></body>',{runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window;
  w.eval(esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/detail.js')],bundle:true,write:false,format:'iife',globalName:'Detail'}).outputFiles[0].text);
  const body=w.document.querySelector('#full'),event={type:'complite',body,data:{movie:{id:1,title:'Movie',overview:'Description'},images:{logos:[{file_path:'/logo.png',iso_639_1:'ru'}]}}};
  w.Detail.default({Storage:{get:()=> 'ru'},TMDB:{image:p=>'http://images.test'+p}},event,()=>assert.fail('unnecessary logo request'));
@@ -65,14 +65,14 @@ test('detail uses supplied title artwork and keeps a text fallback on image fail
  image.onload();assert.ok(title.classList.contains('pt-hidden'));image.onerror();assert.ok(!title.classList.contains('pt-hidden'));assert.equal(body.querySelector('.minimal-detail-logo'),null);dom.window.close();
 });
 test('detail keeps the Russian title below foreign artwork',()=>{
- const dom=new JSDOM('<body class="lampa_view"><section id="full"><div class="full-start-new__right"><h1 class="full-start-new__title">Русское название</h1></div></section></body>',{runScripts:'outside-only'}),w=dom.window;
+ const dom=new JSDOM('<body class="lampa_view"><section id="full"><div class="full-start-new__right"><h1 class="full-start-new__title">Русское название</h1></div></section></body>',{runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window;
  w.eval(esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/detail.js')],bundle:true,write:false,format:'iife',globalName:'Detail'}).outputFiles[0].text);
  const body=w.document.querySelector('#full');w.Detail.default({Storage:{get:()=> 'ru'},TMDB:{image:p=>'http://images.test'+p}},{type:'complite',body,data:{movie:{id:1,title:'Русское название'},images:{logos:[{file_path:'/en.png',iso_639_1:'en'}]}}},()=>assert.fail('unnecessary request'));
  const image=body.querySelector('.minimal-detail-logo'),title=body.querySelector('h1');image.onload();assert.equal(image.nextElementSibling,title);assert.equal(title.textContent,'Русское название');assert.equal(title.classList.contains('pt-hidden'),false);assert.ok(title.classList.contains('minimal-detail-translation'));image.onerror();assert.equal(title.classList.contains('minimal-detail-translation'),false);dom.window.close();
 });
 test('movie and series headings use localized titles while facts retain the original',()=>{
  for(const card of [{id:1,title:'Человек-паук: Новый день',original_title:'Spider-Man: Brand New Day'},{id:2,name:'Кэрри',original_name:'Carrie'}]){
-  const dom=new JSDOM('<body class="lampa_view"><section id="full"><div class="full-start-new"><div class="full-start-new__body"><div class="full-start-new__left"></div><div class="full-start-new__right"><h1 class="full-start-new__title">Название</h1><div class="full-start-new__buttons"></div></div></div></div></section></body>',{runScripts:'outside-only'}),w=dom.window;
+  const dom=new JSDOM('<body class="lampa_view"><section id="full"><div class="full-start-new"><div class="full-start-new__body"><div class="full-start-new__left"></div><div class="full-start-new__right"><h1 class="full-start-new__title">Название</h1><div class="full-start-new__buttons"></div></div></div></div></section></body>',{runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window;
   w.eval(esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/detail.js')],bundle:true,write:false,format:'iife',globalName:'Detail'}).outputFiles[0].text);
   const body=w.document.querySelector('#full');w.Detail.default({Storage:{get:()=> 'ru'},TMDB:{image:p=>p}},{type:'complite',body,data:{movie:card,images:{logos:[{file_path:'/english.png',iso_639_1:'en'}]}}},(card,ok)=>ok(''));
   body.querySelector('.minimal-detail-logo').onload();assert.ok(body.querySelector('h1').classList.contains('pt-hidden'));

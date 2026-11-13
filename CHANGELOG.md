@@ -1,3 +1,11 @@
+## 0.5.148
+
+- Restore the classic torrent loading panel with labelled statistics while keeping the native artwork and preload lifecycle.
+- Make titles single-line and open full titles and descriptions only when clipped. Use a soft glow for focus and let the cast and facts panels size independently.
+- Replace the damaged Russian Odyssey logo and consider artwork ratings after language and minimum resolution.
+- Add adjustable banner tint independent of the native background switch. Try a small TMDB image when a proxy cannot be sampled.
+- Group settings by purpose and make the MPV+ metadata bridge automatic.
+
 ## 0.5.147
 
 - Give glass poster labels a single inset edge, matching the header capsule. Remove the additional physical border instead of combining it with an inset highlight.

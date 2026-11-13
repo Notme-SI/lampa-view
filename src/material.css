@@ -1,17 +1,17 @@
 /* Neutral charcoal glass. Diffuse and desaturate the backdrop on each
    reading surface, while keeping the text and artwork itself sharp. */
 body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] {
- --pt-bg:#0a0a0a;--pt-side:rgba(30,30,30,.4);--pt-panel:rgba(30,30,30,.38);--pt-high:#ffffff24;
+ --pt-bg:#0a0a0a;--pt-side:rgba(var(--pt-material-rgb,30,30,30),.4);--pt-panel:rgba(var(--pt-material-rgb,30,30,30),.38);--pt-high:#ffffff24;
  --pt-accent:#f4f4f6;--pt-accent-ink:#111;--pt-tint-rgb:244,244,246;
  --pt-selection:#ffffff1f;--pt-selection-rgb:244,244,246;--pt-row-focus:#ffffff24;--pt-row-edge:#ffffff99;
  --pt-glass-border:#ffffff1f;--pt-glass-edge:inset 0 1px 0 #ffffff0d;--pt-glass-sheen:linear-gradient(165deg,#ffffff0b,transparent 55%);
  --pt-matte-alpha:.52;
- --pt-navigation-panel:rgba(30,30,30,var(--pt-matte-alpha));
- --pt-header-glass:rgba(24,24,24,.27);
- --pt-glass-button:rgba(30,30,30,.31);--pt-glass-blur:24px;
+ --pt-navigation-panel:rgba(var(--pt-material-rgb,30,30,30),var(--pt-matte-alpha));
+ --pt-header-glass:rgba(var(--pt-material-rgb,24,24,24),.27);
+ --pt-glass-button:rgba(var(--pt-material-rgb,30,30,30),.31);--pt-glass-blur:24px;
  --pt-glass-control-hover:rgba(46,46,46,.48);--pt-glass-control-focus:rgba(59,59,59,.62);
  --pt-glass-filter:blur(var(--pt-glass-blur)) saturate(.78) brightness(.94);
- --pt-poster-badge:rgba(30,30,30,.72);--pt-poster-badge-edge:none;--pt-poster-badge-filter:none;
+ --pt-poster-badge:rgba(var(--pt-material-rgb,30,30,30),.72);--pt-poster-badge-edge:none;--pt-poster-badge-filter:none;
  background:var(--pt-bg)!important;background-attachment:scroll!important;
 }
 body.lampa_view.pt-theme-glass[data-lampa-theme="glass"].pt-tv {

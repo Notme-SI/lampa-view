@@ -41,6 +41,6 @@ test('standard anime badges reuse actual native grouping, exclude future seasons
   const code=esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/series-status.js')],bundle:true,write:false,format:'iife',globalName:'Series'}).outputFiles[0].text;n.w.eval(code);node.className='card focus';node.innerHTML='<div class="card__view"></div>';n.w.document.body.appendChild(node);
   L.Api.sources.tmdb.get=(url,p,ok)=>callbacks.push({url,ok});const status=n.w.Series.default(L,node=>status.paint(node));status.track(node,data);status.paint(node);
   callbacks[0].ok({...data,last_episode_to_air:episodes[58],seasons:[{season_number:1,episode_count:71}]});assert.equal(callbacks[1].url,'tv/1/season/1');callbacks[1].ok({episodes_original:episodes,episodes:episodes.slice(0,24)});
-  assert.equal(node.querySelector('.pt-series-status').textContent,'Сезон 3 • Серий 12');assert.equal(data.number_of_seasons,1);assert.equal(node.querySelector('.time-line'),null);
+  assert.equal(node.querySelector('.pt-series-status').textContent,'Сезон 3 · Серий 12');assert.equal(data.number_of_seasons,1);assert.equal(node.querySelector('.time-line'),null);
  }finally{n.close();}
 });

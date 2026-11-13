@@ -41,15 +41,20 @@ export default function glassScene(L, enabled, chromePalette=()=>{}) {
 
  function palette(url, image) {
   if (!url) return '';
-  if (colors.has(url)) return colors.get(url);
   const color = image ? read(image) : '';
-  const pending = color || new Promise(resolve => {
+  if(color){colors.set(url,color);if(colors.size>32)colors.delete(colors.keys().next().value);return color;}
+  if (colors.has(url)) return colors.get(url);
+  const probeColor=src=>new Promise(resolve => {
    const probe = new Image();
    probe.crossOrigin = 'anonymous';
    probe.onload = () => resolve(read(probe));
    probe.onerror = () => resolve('');
-   probe.src = url;
+   probe.src = src;
   });
+  // Some hosts proxy TMDB images without CORS headers. Sample the same
+  // artwork from TMDB at thumbnail size if that proxy cannot be read.
+  const file=url.match(/\/t\/p\/(?:w\d+|original)\/([\w-]+\.(?:jpe?g|png|webp))(?:[?#].*)?$/i);
+  const pending=probeColor(url).then(sample=>sample || (file?probeColor('https://image.tmdb.org/t/p/w300/'+file[1]):''));
   colors.set(url, pending);
   if (colors.size > 32) colors.delete(colors.keys().next().value);
   return pending;
@@ -76,25 +81,38 @@ export default function glassScene(L, enabled, chromePalette=()=>{}) {
   return sample ? Promise.resolve(sample).then(color => color || cardPalette(card)) : cardPalette(card);
  }
 
+ function strength(){const value=Number(L.Storage.value?L.Storage.value('lampa_view_artwork_tint','50'):L.Storage.get('lampa_view_artwork_tint','50'));return Number.isFinite(value)?Math.max(0,Math.min(100,value))/100:.5;}
  function paint(body, scene, color) {
   if (color) body.style.setProperty('--pt-scene-rgb', color);
   else body.style.removeProperty('--pt-scene-rgb');
   if (scene) body.setAttribute('data-pt-scene', scene);
   else body.removeAttribute('data-pt-scene');
+  body.style.setProperty('--pt-scene-strength',String((body.classList.contains('pt-theme-glass')?.60:.44)*strength()*2));
+ }
+
+ function tint(color){
+  const amount=enabled()?strength():0;
+  const channels=String(color || '').split(',').map(Number);
+  if(channels.length!==3 || channels.some(value=>!Number.isFinite(value)) || !amount){document.body.style.removeProperty('--pt-material-rgb');return;}
+  document.body.style.setProperty('--pt-material-rgb',channels.map(channel=>Math.round(30+(Math.min(120,channel*.55)-30)*amount)).join(','));
  }
 
  function refresh() {
   const body = document.body, active = L.Activity.active() || {};
-  const glass = L.Storage.get('lampa_view_theme','minimal') === 'glass';
   const stack = L.Activity.all?.() || [];
   const origin = stack[stack.indexOf(active) - 1];
   const current = ++revision;
   let scene = '', color;
-  if (enabled() && L.Storage.get('background', true)) {
-   if (glass && L.Storage.get('lampa_view_hero', true) &&
+  // The plugin replaces native Background; its saved switch can be disabled
+  // in Electron/older installations and must not suppress our artwork tint.
+  if (enabled() && strength()>0) {
+   if (L.Storage.get('lampa_view_hero', true) &&
       (active.component === 'main' || active.component === 'category' && catalogue.has(active.url || active.cat))) {
     scene = 'catalogue';
     color = home;
+   } else if (active.component==='full') {
+    scene='detail';
+    color=detail.get(active) || cardPalette(active.movie || active.card);
    } else if (isProject(active)) {
     scene = 'related';
     color = originPalette(origin);
@@ -110,13 +128,14 @@ export default function glassScene(L, enabled, chromePalette=()=>{}) {
   }
   if (visible !== active || body.getAttribute('data-pt-scene') !== (scene || null)) paint(body, scene, '');
   visible = active;
-  const artwork=enabled() && L.Storage.get('background', true) &&
+  const artwork=enabled() && strength()>0 &&
    (active.component==='main' && L.Storage.get('lampa_view_hero', true)?home:
     active.component==='full'?detail.get(active):color);
   Promise.all([color,artwork]).then(([value,chrome])=>{
    if (current !== revision)return;
    paint(body,scene,value);
-   chromePalette(chrome || '');
+   tint(chrome || value || '');
+   chromePalette(chrome || value || '');
   });
  }
 
@@ -147,7 +166,7 @@ export default function glassScene(L, enabled, chromePalette=()=>{}) {
   refresh();
  });
  L.Storage.listener?.follow('change', event => {
-  if (!['lampa_view_theme','lampa_view_enabled','background','lampa_view_hero'].includes(event.name)) return;
+  if (!['lampa_view_theme','lampa_view_enabled','lampa_view_artwork_tint','lampa_view_hero'].includes(event.name)) return;
   if (enabled()) captureActive();
   refresh();
  });
