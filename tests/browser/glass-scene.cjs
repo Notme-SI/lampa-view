@@ -26,9 +26,9 @@ async function run(engine, browser, mode) {
   document.querySelector('.wrap__content').classList.add('layer--height');
   L.Layer.update();
   const data = [
-   {id:1,title:'Red home',original_title:'Red home',overview:'Banner',poster_path:'/poster.jpg',backdrop_path:'/home.jpg',source:'tmdb'},
-   {id:2,title:'Green title',original_title:'Green title',overview:'Movie',poster_path:'/poster.jpg',backdrop_path:'/detail.jpg',source:'tmdb'},
-   {id:3,title:'Blue title',original_title:'Blue title',overview:'Movie',poster_path:'/poster.jpg',backdrop_path:'/other.jpg',source:'tmdb'}
+   {id:1,title:'Красная главная',original_title:'Красная главная',overview:'Banner',poster_path:'/poster.jpg',backdrop_path:'/home.jpg',source:'tmdb'},
+   {id:2,title:'Зелёный фильм',original_title:'Зелёный фильм',overview:'Movie',poster_path:'/poster.jpg',backdrop_path:'/detail.jpg',source:'tmdb'},
+   {id:3,title:'Синий фильм',original_title:'Синий фильм',overview:'Movie',poster_path:'/poster.jpg',backdrop_path:'/other.jpg',source:'tmdb'}
   ];
   window.sceneMovies = data;
   L.TMDB.image = path => 'http://scene.example.invalid'+path;
@@ -196,7 +196,7 @@ async function run(engine, browser, mode) {
    assert.equal(normal.legacy,'none');
    await page.locator('#qa-native-history').evaluate(n=>n.classList.add('focus'));
    assert.equal(await marker.count(),1);
-   assert.equal(await page.locator('#qa-native-history .card__view').evaluate(n=>getComputedStyle(n,'::after').backgroundImage),'none');
+   assert.match(await page.locator('#qa-native-history .card__view').evaluate(n=>getComputedStyle(n,'::after').backgroundImage),/svg/);
    await page.locator('#qa-native-history').evaluate(n=>n.classList.remove('focus'));
    for (const [target,view] of [['#qa-native-unwatched','.card__view'],['#qa-nova-preview .nova-card','.nova-card__thumb']]) {
     const card = page.locator(target).first();

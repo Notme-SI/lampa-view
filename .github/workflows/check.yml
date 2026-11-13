@@ -38,7 +38,14 @@ jobs:
       - run: pnpm run build
       - name: Unit and native-host tests
         if: matrix.group == 'unit'
-        run: pnpm test
+        run: |
+          if pnpm test > ci-unit.log 2>&1; then
+            cat ci-unit.log
+          else
+            cat ci-unit.log
+            node tools/ci-unit-report.cjs ci-unit.log
+            exit 1
+          fi
       - name: Install browser layout checks
         if: matrix.group != 'unit'
         run: |

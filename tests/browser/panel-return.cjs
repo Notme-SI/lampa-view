@@ -18,7 +18,7 @@ const {setup} = require('../fixtures/native-browser.cjs');
      document.querySelector('.wrap__content').classList.add('layer--height','layer--width');
      L.Api.main=(options,success)=>success(Array.from({length:8},(_,index)=>({
       title:'Row '+index,url:'qa/'+index,results:Array.from({length:10},(_,item)=>({
-       id:index*10+item+1,title:'Film '+item,overview:'Description',poster_path:'/p.jpg',backdrop_path:'/b.jpg',source:'tmdb'
+       id:index*10+item+1,title:'Фильм '+item,overview:'Description',poster_path:'/p.jpg',backdrop_path:'/b.jpg',source:'tmdb'
       }))
      })));
     })

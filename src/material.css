@@ -125,7 +125,7 @@ body.lampa_view[data-lampa-theme] :is(.card .card__view,.nova-plus-root .nova__l
  border:1px solid var(--pt-card-edge,rgba(255,255,255,.12))!important;border-radius:inherit!important;
  background:none!important;outline:none!important;
  box-shadow:0 0 22px rgba(255,255,255,.18)!important;
- opacity:var(--pt-card-halo-opacity,0);
+ opacity:var(--pt-card-halo-opacity,0)!important;
  transition:opacity .22s ease!important;-webkit-transition:opacity .22s ease!important;
 }
 body.lampa_view[data-lampa-theme] :is(.card,.nova-plus-root .nova__list--grid .nova-card):is(.focus,:focus-visible,.pt-card-touch),
@@ -226,7 +226,7 @@ body.lampa_view.pt-tv.pt-theme-glass[data-pt-scene] .wrap {
 
 /* Match the header material on each independent poster label. No filter on
    the full poster: only the small label rectangles sample the artwork. */
-body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .card :is(.pt-kind,.pt-quality,.card__quality,.pt-series-status,.card__vote,.card__marker,.card__new-episode,.card__icon:not(.icon--history)) {
+body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .card :is(.pt-kind,.pt-quality,.card__quality,.pt-series-status,.card__vote,.card__marker,.card__new-episode) {
  background:var(--pt-header-glass)!important;border-color:var(--pt-glass-border)!important;
  box-shadow:var(--pt-glass-edge)!important;
  backdrop-filter:var(--pt-glass-filter)!important;-webkit-backdrop-filter:var(--pt-glass-filter)!important;
@@ -242,4 +242,9 @@ body.lampa_view[data-lampa-theme] .card .card__view .icon--history {
  background:rgba(24,24,24,.4) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='white' d='M12 9v14l11-7z'/%3E%3C/svg%3E") center / 100% 100% no-repeat!important;
  box-shadow:none;
 }
-@media(prefers-reduced-transparency:reduce){body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .card :is(.pt-kind,.pt-quality,.card__quality,.pt-series-status,.card__vote,.card__marker,.card__new-episode,.card__icon:not(.icon--history)){background:#202020!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}}
+@media(prefers-reduced-transparency:reduce){body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .card :is(.pt-kind,.pt-quality,.card__quality,.pt-series-status,.card__vote,.card__marker,.card__new-episode){background:#202020!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}}
+
+body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .card .card__icon:not(.icon--history) {
+ background-color:var(--pt-header-glass)!important;border-color:var(--pt-glass-border)!important;box-shadow:var(--pt-glass-edge)!important;
+ backdrop-filter:var(--pt-glass-filter)!important;-webkit-backdrop-filter:var(--pt-glass-filter)!important;
+}

@@ -1,3 +1,9 @@
+## 0.5.143
+
+- Preserve bookmark/favorite icon artwork when applying the glass tag material. Hide episode selection halos on inactive cards despite the native important opacity rule.
+- Align visual regressions with the vector selection contour, neutral glass material and deferred poster loading. Use localized titles in Russian catalogue test fixtures.
+- Include named unit failure annotations in CI diagnostics.
+
 ## 0.5.142
 
 - Preserve posterless MyShows personal entries through both home filters.

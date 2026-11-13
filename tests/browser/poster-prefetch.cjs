@@ -26,7 +26,7 @@ const png=new (require('@resvg/resvg-js').Resvg)('<svg xmlns="http://www.w3.org/
    await page.waitForFunction(()=>qaGrid.img.complete && qaGrid.img.naturalWidth>1,null,{timeout:5000});
    const cover=await page.evaluate(()=>({source:qaGrid.img.currentSrc,decoding:qaGrid.img.decoding,loading:qaGrid.img.loading}));
    assert.match(cover.source,/\/t\/p\/w500\/direct-grid\.jpg$/,'Grid assigns a native display-sized URL before native visibility');
-   assert.equal(cover.decoding,'async');assert.equal(cover.loading,'lazy');
+   assert.equal(cover.decoding,'async');assert.equal(cover.loading,'eager');
    await page.evaluate(()=>qaGrid.visible());
    assert.equal(await page.evaluate(()=>qaGrid.img.fetchPriority),'high');
    assert.equal([...calls].filter(([url])=>url.endsWith('/direct-grid.jpg')).length,1);
