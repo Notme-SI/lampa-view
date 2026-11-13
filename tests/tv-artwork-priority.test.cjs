@@ -55,11 +55,12 @@ test('TV displays a quick preview, defers its selected original while moving, an
 test('unchanged card focus does not rewrite persistent metadata but changed ratings still persist',async()=>{
  const n=await native({built:true}),{w,L}=n;
  try{
-  const Card=L.Maker.get('Card',{}),card=L.Utils.createInstance(Card,{id:981,title:'Film',release_date:'2025-01-01',genre_ids:[28],vote_average:8,source:'tmdb'});
-  card.create();w.document.body.appendChild(card.render(true));card.visible();
-  await wait(400);
   const writes=[],set=L.Storage.set;
   L.Storage.set=function(key,value){if(key==='minimal_card_info_v1')writes.push(value);return set.apply(this,arguments);};
+  const Card=L.Maker.get('Card',{}),card=L.Utils.createInstance(Card,{id:981,title:'Film',release_date:'2025-01-01',genre_ids:[28],vote_average:8,source:'tmdb'});
+  card.create();w.document.body.appendChild(card.render(true));card.visible();
+  await until(()=>writes.some(rows=>rows.some(([key,value])=>key==='tmdb:movie:981' && value.vote_average===8)),'initial metadata persisted');
+  writes.length=0;
   for(let i=0;i<30;i++)card.render(true).dispatchEvent(new w.Event('hover:focus',{bubbles:true}));
   await wait(400);assert.equal(writes.length,0);
   card.data.vote_average=9;
