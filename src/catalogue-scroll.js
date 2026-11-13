@@ -175,14 +175,14 @@ function mount(L,item,enabled,visible,preparePoster,rows){
   if(smooth)motion.to(target);
   else{motion.stop();node.scrollTop=target;}
  }
- function reveal(target){
+ function reveal(target,smooth=true){
   const el=unwrap(target);
   if(el && windowed?.contains(el))windowed.ensure(el);
   if(!el || !body.contains(el))return;
   const box=node.getBoundingClientRect(),rect=el.getBoundingClientRect(),gap=8;
   const top=rect.top-box.top-gap,bottom=rect.bottom-box.bottom+gap;
-  if(top<0)scrollTo(node.scrollTop+top,true);
-  else if(bottom>0)scrollTo(node.scrollTop+bottom,true);
+  if(top<0)scrollTo(node.scrollTop+top,smooth);
+  else if(bottom>0)scrollTo(node.scrollTop+bottom,smooth);
   else motion.stop();
  }
  function rebase(){
@@ -268,7 +268,7 @@ function mount(L,item,enabled,visible,preparePoster,rows){
   content.addEventListener(event,touch,{passive:true});
   node.addEventListener(event,touchViewport,{capture:true,passive:true});
  }
- scroll.position=function(){return active()?-node.scrollTop:native('position',arguments);};
+ scroll.position=function(){return active()?(-node.scrollTop || 0):native('position',arguments);};
  scroll.vieport=function(){return active()?{position:-node.scrollTop,body:node.scrollHeight,content:node.clientHeight}:native('vieport',arguments);};
  scroll.update=function(target){if(!active())return native('update',arguments);if(manualFocus)reveal(target);};
  scroll.immediate=function(target){if(!active())return native('immediate',arguments);if(manualFocus)reveal(target);};
@@ -281,7 +281,7 @@ function mount(L,item,enabled,visible,preparePoster,rows){
  }
  scroll.restorePosition=function(){if(active())resume();else return native('restorePosition',arguments);};
  scroll.animated=function(){return active()?false:native('animated',arguments);};
- scroll.minimalBrowserScroll={requestMore(){schedule(true);}};
+ scroll.minimalBrowserScroll={reveal,requestMore(){schedule(true);}};
  const changed=event=>{if(event.name==='lampa_view_enabled')setEnabled();};
  L.Storage?.listener?.follow('change',changed);
  setEnabled();

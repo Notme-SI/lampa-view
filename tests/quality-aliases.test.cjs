@@ -6,7 +6,7 @@ function setup(){
  w.eval(code);
  const L={Storage:{get:(key,def)=>key==='jackett_url'?'http://parser.test':def},Listener:{follow:(key,fn)=>listener=fn},Api:{sources:{tmdb:{get:(url,params,ok)=>metadata.push({url,ok})}}},Reguest:function(){this.timeout=()=>{};this.silent=(url,ok,fail)=>requests.push({url,ok,fail});}};
  w.Quality.default(L);
- function card(data){const node=w.document.createElement('div');node.className='card';node.innerHTML='<div class="card__view"></div>';node.getBoundingClientRect=()=>({width:100,top:0,bottom:150,left:0,right:100});w.document.body.appendChild(node);const item={data,render:()=>node};listener({type:'visible',items:[item]});return node;}
+ function card(data){const node=w.document.createElement('div');node.className='card';node.innerHTML='<div class="card__view"></div>';node.getBoundingClientRect=()=>({width:100,top:0,bottom:150,left:0,right:100});w.document.body.appendChild(node);const item={data,render:()=>node};listener({type:'visible',items:[item]});w.document.dispatchEvent(new w.Event('minimal:catalogue-idle'));return node;}
  return {w,L,card,requests,metadata,close:()=>dom.window.close()};
 }
 test('quality tries verified alternate titles, rejects another movie year, and shares the result with duplicate cards',async()=>{

@@ -18,7 +18,7 @@ test('native anime mismatch offers recovery while an ordinary failed source stil
  }finally{r.close();}
 });
 test('compact main has at most six rows and twenty cards per row, never asks Shikimori or returns the infinite loader',()=>{
- const data={},writes=[],rows=Array.from({length:30},(_,id)=>({title:'Row '+id,results:Array.from({length:50},(_,i)=>({id:id*100+i}))}));let extra=0;
+ const data={},writes=[],rows=Array.from({length:30},(_,id)=>({title:'Row '+id,results:Array.from({length:50},(_,i)=>({id:id*100+i,title:'Фильм'}))}));let extra=0;
  const L={Storage:{get:(k,d)=>data[k]===undefined?d:data[k],set:(k,v)=>{data[k]=v;writes.push(k);}},SettingsApi:{addParam(){}},Api:{main:(o,ok)=>{ok(rows);return ()=>extra++;}},Utils:{createInstance(){}},Maker:{get(){}}};
  mod('collections').default(L,{list:()=>assert.fail('compact mode fetched extra anime')});let result;const next=L.Api.main({component:'main'},value=>result=value);assert.equal(next,undefined);assert.equal(result.length,6);assert.ok(result.every(row=>row.results.length===20));assert.equal(rows[0].results.length,50);assert.equal(extra,0);const count=writes.length;L.Api.main({component:'main'},()=>{});assert.equal(writes.length,count,'unchanged known rows must not rewrite storage');
 });

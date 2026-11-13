@@ -123,9 +123,9 @@ test('native menu_always switches a single native menu between dock and popover 
 test('TV shows open a single filtered native grid and preserve scope on later pages',async()=>{
  const r=await native({built:true}),{w,L}=r,requests=[];try{
   L.Storage.set('source','tmdb');const shows=w.document.querySelector('.menu__item[data-action=tv]').nextElementSibling;assert.equal(shows.dataset.action,'tvshow');
-  const response=require('./fixtures/discovery-response.cjs');L.Api.sources.tmdb.get=(url,p,ok)=>{requests.push(url);w.setTimeout(()=>ok(response(url,p.page)),0);};shows.click();await wait(220);
-  let c=L.Activity.active().activity.component;assert.equal(c.items.length,20);assert.equal(c.render(true).querySelectorAll('.minimal-catalogue-control').length,5);assert.equal(c.render(true).querySelectorAll('.items-line').length,0);assert.equal(requests.length,1);
+  const response=require('./fixtures/discovery-response.cjs');L.Api.sources.tmdb.get=(url,p,ok)=>{requests.push({url,page:p.page});w.setTimeout(()=>ok(response(url,p.page)),0);};shows.click();await wait(220);
+  let c=L.Activity.active().activity.component;assert.equal(c.items.length,20);assert.equal(c.render(true).querySelectorAll('.minimal-catalogue-control').length,5);assert.equal(c.render(true).querySelectorAll('.items-line').length,0);assert.equal(requests.filter(request=>request.page===1).length,1,JSON.stringify(requests));
   c.render(true).querySelectorAll('.minimal-catalogue-control')[1].click();await wait(30);const talk=[...w.document.querySelectorAll('.selectbox-item')].find(n=>n.textContent.includes('Ток'));assert.ok(talk);talk.dispatchEvent(new w.Event('hover:enter'));await wait(100);c=L.Activity.active().activity.component;c.object.page=2;const json=await new Promise((ok,fail)=>c.emit('next',ok,fail));assert.equal(json.results.length,20);
-  const q=new URLSearchParams(requests.at(-1).split('?')[1]);assert.equal(q.get('with_origin_country'),null);assert.equal(q.get('with_genres'),'10767');assert.equal(q.get('without_genres'),'16,99,18,80,10766');assert.deepEqual(r.errors,[]);
+  const q=new URLSearchParams(requests.at(-1).url.split('?')[1]);assert.equal(q.get('with_origin_country'),null);assert.equal(q.get('with_genres'),'10767');assert.equal(q.get('without_genres'),'16,99,18,80,10766');assert.deepEqual(r.errors,[]);
  }finally{r.close();}
 });

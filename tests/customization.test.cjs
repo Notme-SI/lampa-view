@@ -7,7 +7,7 @@ test('settings retain late adapter options and callbacks inside one visible fold
  assert.deepEqual(Object.keys(api.allComponents()),['lampa_view']);const list=api.getParam('lampa_view');assert.equal(list.filter(p=>p.param.type==='button').length,1);assert.equal(list.at(-1).param.type,'static');api.getParam('minimal_settings_playback').find(p=>p.param.name==='parser').onChange();assert.equal(called,1);assert.equal(api.getParam('snack'),params.snack);
 });
 test('grid cards get quality and type through native visibility lifecycle',async()=>{
- const dom=new JSDOM('<body></body>',{runScripts:'outside-only'}),w=dom.window;
+ const dom=new JSDOM('<body></body>',{runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window;
  w.eval(esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/quality.js')],bundle:true,write:false,format:'iife',globalName:'Quality'}).outputFiles[0].text);
  function Card(){}let item;
  const L={Listener:{follow(){}},Maker:{get:()=>Card},Utils:{createInstance(Base,data){const node=w.document.createElement('div');node.className='card';node.innerHTML='<div class="card__view"></div>';node.getBoundingClientRect=()=>({width:100,top:0,bottom:150,left:0});w.document.body.appendChild(node);return item={data,render:()=>node,use(hooks){this.hooks=hooks;}};}}};

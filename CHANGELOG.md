@@ -1,3 +1,10 @@
+## 0.5.142
+
+- Preserve posterless MyShows personal entries through both home filters.
+- Keep the mobile torrent explorer full-width after rotation and restore explicit scroll reveal when navigating between anime tabs and rows. Normalize zero native catalogue positions.
+- Update test fixtures to use localized catalogue titles, visible JSDOM documents, deferred quality work, native visibility hooks and actual browser-scroll geometry. Keep page-one request assertions while allowing next-page prefetch.
+- Run all browser scenarios in each CI group, emit a named error for each failed scenario and retain log artifacts.
+
 ## 0.5.141
 
 - Match poster tag surfaces to the glass header material, including type, quality, episode status, rating and markers.

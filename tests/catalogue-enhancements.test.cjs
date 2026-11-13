@@ -23,7 +23,7 @@ test('the parser precedes online fallback; clearing quality cancels old callback
   const L={Storage:{get:(k,d)=>store[k]===undefined?d:store[k],set:(k,v)=>store[k]=v},Listener:{follow:(name,fn)=>line=fn},Reguest:function(){this.timeout=()=>{};this.clear=()=>{};this.silent=(url,ok,fail)=>requests.push({url,ok,fail});}};
   w.alc_auto_api={metadataQuality:(card,cb)=>{fallback.push(cb);return ()=>{};}};
   const node=w.document.querySelector('.card');node.getBoundingClientRect=()=>({width:100,height:150,left:0,right:100,top:0,bottom:150});w.Features.quality(L);const item={data:{id:1,title:'Film',source:'tmdb',release_date:'2026-01-01',genre_ids:[18]},render:()=>node};
-  line({type:'visible',items:[item]});assert.equal(requests.length,1);assert.equal(fallback.length,0);requests[0].fail();assert.equal(fallback.length,1);
+  line({type:'visible',items:[item]});await wait(30);assert.equal(requests.length,1);assert.equal(fallback.length,0);requests[0].fail();assert.equal(fallback.length,1);
   w.Features.cache(L).clear('quality');fallback[0]({data:{quality:'2160p'}});assert.equal(node.querySelector('.pt-quality'),null,'An old answer survived cache reset');assert.deepEqual(Array.from(store.minimal_quality_v2),[]);
   await wait(130);assert.equal(requests.length,2);requests[1].fail();fallback[1]({data:{quality:'1080p'}});assert.equal(node.querySelector('.pt-quality').textContent,'1080p');await wait(280);assert.equal(store.minimal_quality_v2.length,1);assert.equal(store.favorite.history.length,1);
  }finally{w.close();}

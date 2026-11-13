@@ -1284,3 +1284,5 @@ body.lampa_view .minimal-related-info .selectbox-item__title {color:inherit}
 /* Native expected rows carry countdown placeholders, never a video runtime. */
 body.lampa_view .nova-plus-root .nova-card--soon .nova-card__clock {display:none!important}
 body.lampa_view .nova-plus-root .nova-card__thumb--episode-preview:not(.nova-card__thumb--loaded) {background:linear-gradient(150deg,var(--pt-selection,#20292d),var(--pt-search-surface,#101719))}
+
+body.lampa_view.pt-mobile .minimal-torrent-view {width:100%!important}

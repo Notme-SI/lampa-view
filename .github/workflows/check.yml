@@ -50,6 +50,21 @@ jobs:
           PLAYWRIGHT_MODULE: ${{ runner.temp }}/lampa-browser-check/node_modules/playwright
           CHECKS: ${{ matrix.checks }}
         run: |
+          failed=0
+          mkdir -p ci-logs
           for check in $CHECKS; do
-            node "tests/browser/$check.cjs"
+            if node "tests/browser/$check.cjs" > "ci-logs/$check.log" 2>&1; then
+              cat "ci-logs/$check.log"
+            else
+              cat "ci-logs/$check.log"
+              message=$(tail -c 2500 "ci-logs/$check.log" | tr '\n' ' ')
+              echo "::error title=Browser check $check::$message"
+              failed=1
+            fi
           done
+          exit "$failed"
+      - uses: actions/upload-artifact@v4
+        if: failure() && matrix.group != 'unit'
+        with:
+          name: browser-logs-${{ matrix.group }}
+          path: ci-logs/

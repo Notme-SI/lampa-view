@@ -20,7 +20,7 @@ test('collection settings follow Trakt versus discovery and both anime tabs, rep
  const history='minimal:anime-history',season='minimal:tmdb:anime:season',anime=open('category:anime');assert.equal(anime.length,7);assert.equal(anime[1].id,history);assert.equal(anime[2].id,season);assert.ok(anime.filter(row=>![history,season].includes(row.id)).every(row=>row.id.startsWith('shows/') && row.id.endsWith('?genres=animation&languages=ja')));
  storage.minimal_anime_catalogue='shikimori';const shiki=open('category:anime');assert.equal(shiki.length,8);assert.equal(shiki[1].id,history);assert.ok(shiki.filter(row=>row.id!==history).every(row=>row.id.startsWith('order=')));assert.ok(shiki.some(row=>row.id==='order=ranked'));
  storage.source='tmdb';assert.ok(open('category:tv').every(row=>row.id.startsWith('minimal:discover:tv:')));
- data.cub=[{title:'Ряд CUB',url:'cub-only',results:[{id:1}]}];data.tmdb=[{title:'Ряд TMDB',url:'tmdb-only',results:[{id:2}]}];
+ data.cub=[{title:'Ряд CUB',url:'cub-only',results:[{id:1,title:'Фильм'}]}];data.tmdb=[{title:'Ряд TMDB',url:'tmdb-only',results:[{id:2,title:'Сериал'}]}];
  L.Api.main({source:'cub'},()=>{});assert.ok(open('main:').some(row=>row.id==='cub-only'));L.Api.main({source:'tmdb'},()=>{});const current=open('main:');assert.ok(current.some(row=>row.id==='tmdb-only'));assert.ok(!current.some(row=>row.id==='cub-only'));
 });
 

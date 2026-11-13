@@ -5,7 +5,7 @@ const show=(id,origin=['US'],genres=[10764])=>({id,name:'Название '+id,o
 const read=(api,spec,page=1)=>new Promise((resolve,reject)=>api.list({url:JSON.stringify(spec),page},resolve,reject));
 test('movie and series feeds omit untranslated and missing artwork cards on every page while retaining a Russian name alias',async()=>{
  const L={Api:{sources:{tmdb:{get(path,p,ok){ok({results:[{id:1,title:'English',poster_path:'/p.jpg'},{id:2,name:'Без картинки'},{id:4,title:'English',overview:'Русское описание',poster_path:'/p.jpg',backdrop_path:null},{id:3,title:'English',name:'Русское название',poster_path:'/p.jpg',genre_ids:[18],origin_country:['RU']}],page:p.page,total_pages:2});}}}}},api=install(L);
- for(const kind of ['movie','tv']){const spec={kind,type:kind==='movie'?'movie':'tv',sort:'popular'},first=await read(api,spec);assert.deepEqual(first.results.map(c=>c.id),[4,3]);assert.equal(first.results[1].title,'Русское название');const second=await read(api,spec,2);assert.deepEqual(second.results,[]);}
+ for(const kind of ['movie','tv']){const spec={kind,type:kind==='movie'?'movie':'tv',sort:'popular'},first=await read(api,spec);assert.deepEqual(first.results.map(c=>c.id),[3]);assert.equal(first.results[0].title,'Русское название');const second=await read(api,spec,2);assert.deepEqual(second.results,[]);}
 });
 
 test('SURS families are accessible with verified networks, corrected NTV and Disney Junior, studios and every child collection',()=>{

@@ -11,7 +11,7 @@ function setup(){
  const tmdb={full(p,ok){ok({id:p.id});}},L={Storage:{get:(k,d)=>storage[k] ?? d,set:(k,v)=>storage[k]=v},Api:{sources:{tmdb}},Params:{values:{source:{tmdb:'TMDB',cub:'CUB',custom:'Custom'}},select(k,v){this.values[k]=v;}},SettingsApi:{addParam:p=>settings.push(p)}};
  const api=w.Trakt.default(L);return {w,L,api,storage,sent,settings,close:()=>w.close()};
 }
-const movie=(id,title)=>({title,overview:'Русское описание',year:2026,ids:{tmdb:id,trakt:id+10000},rating:8.3,images:{poster:['media.trakt.tv/images/movies/'+id+'/poster.webp']}});
+const movie=(id,title)=>({title:'Фильм '+title,overview:'Русское описание',year:2026,ids:{tmdb:id,trakt:id+10000},rating:8.3,images:{poster:['media.trakt.tv/images/movies/'+id+'/poster.webp']}});
 test('Trakt is disabled by default, prompts for Client ID on enable and uses the native main-source setting',()=>{
  const r=setup();try{
   assert.equal(r.L.Params.values.source.trakt,undefined);assert.equal(r.L.Params.values.source.custom,'Custom');let message;
@@ -91,7 +91,7 @@ test('Trakt dorama and Russian TV shows use their own filters and preserve them 
    let result;r.api.list({url,page:2},v=>result=v,assert.fail);const req=r.sent.at(-1),q=new URL(req.url).searchParams;
    assert.equal(q.get('page'),'2');assert.equal(q.get('genres'),kind==='tvshow'?'reality,talk-show,game-show':'drama,romance,comedy,mystery');
    if(kind==='tvshow'){assert.equal(q.get('languages'),'ru');req.reply([{show:{...movie(1,'Шоу'),language:'ru'}},{show:{...movie(2,'Foreign'),language:'en'}}]);assert.deepEqual(Array.from(result.results,c=>c.id),[1]);}
-   else{assert.equal(q.get('countries'),'kr,jp,cn,tw,th');req.reply([{show:{...movie(3,'Дорама'),country:'kr',genres:['drama']}},{show:{...movie(4,'Anime'),genres:['animation']}},{show:{...movie(5,'Untranslated'),overview:'English only',country:'kr',genres:['drama']}}]);assert.deepEqual(Array.from(result.results,c=>c.id),[3]);}
+   else{assert.equal(q.get('countries'),'kr,jp,cn,tw,th');req.reply([{show:{...movie(3,'Дорама'),country:'kr',genres:['drama']}},{show:{...movie(4,'Anime'),genres:['animation']}},{show:{...movie(5,'Untranslated'),title:'Untranslated',overview:'English only',country:'kr',genres:['drama']}}]);assert.deepEqual(Array.from(result.results,c=>c.id),[3]);}
    assert.equal(result.page,2);assert.equal(result.total_pages,3);
   }
  }finally{r.close();}
