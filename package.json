@@ -1,6 +1,6 @@
 {
   "name": "lampa-view",
-  "version": "0.5.146",
+  "version": "0.5.147",
   "private": false,
   "description": "Lampa interface plugin, artwork and early loading screen",
   "scripts": {

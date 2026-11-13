@@ -1,3 +1,9 @@
+## 0.5.147
+
+- Give glass poster labels a single inset edge, matching the header capsule. Remove the additional physical border instead of combining it with an inset highlight.
+- Reduce the playback/history marker from 32 to 26 CSS pixels. Draw its fill, circular stroke and triangle in one SVG, with no second CSS border.
+- Checked tag/icon rendering in Chromium and WebKit across desktop, TV and mobile profiles; Full HD and 2560x1440 checks verify the smaller marker and single label edge.
+
 ## 0.5.146
 
 - Restore the browser catalogue position after closing header panels on WebKit and synchronize the paused position.
