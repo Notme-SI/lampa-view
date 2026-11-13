@@ -1,3 +1,12 @@
+## 0.5.163
+
+- Keep desktop poster dimensions while narrower browser windows show fewer cards. Preserve TV fitting and the saved card size setting.
+- Place the original watch timeline on the lower poster edge, keeping episode/season captions and elapsed time.
+- Remove nested label surfaces and the extra glass badge outline.
+- Extend existing category filters with box office, vote counts, verified networks and animation studios/collections.
+- Preserve new scrolling after a panel closes and suppress repeated touch compatibility clicks.
+- Document the current MyShows and SURS integrations, including MyShows credential storage and history import limits.
+
 ## 0.5.162
 
 - Prevent delayed panel restoration from overwriting the scroll position of a newer search or settings session.

@@ -40,6 +40,10 @@ const clock=value=>{
 function watchFooter(L,node,data,series){
  const slot=node.querySelector('.pt-card-watch');let wrap=node.querySelector('.card-watched');
  if(!slot)return;
+ // Return the original timeline to its owner before reconciling native history.
+ // Moving this node preserves Timeline.update and its data-hash subscriptions.
+ const overlay=node.querySelector('.card__view>.pt-card-watch__meter');
+ if(overlay){if(overlay.ptWatchRow?.isConnected)overlay.ptWatchRow.appendChild(overlay);else overlay.remove();}
  function clearProgress(){
   slot.classList.toggle('pt-card-watch--has-progress',false);
   slot.classList.toggle('pt-card-watch--complete',false);
@@ -165,6 +169,8 @@ function watchFooter(L,node,data,series){
   }else name.textContent=label;
  }
  if(stamp.textContent!==time)stamp.textContent=time;
+ meter.ptWatchRow=row;
+ if(!hideProgress)node.querySelector('.card__view')?.appendChild(meter);
  const summaryTitle=label+(time?', '+time:'');
  if(summary.title!==summaryTitle)summary.title=summaryTitle;
 }
@@ -179,7 +185,8 @@ export default function seriesStatus(L,schedule){
  function save(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{if(L.Storage && L.Storage.set)L.Storage.set(storage,Array.from(cache).filter(([,entry])=>entry.details).slice(-80));},150);}
  function detailsOnly(json){if(json.source==='minimal_shiki')return {id:json.id,source:json.source,episodes:json.episodes,episodes_aired:json.episodes_aired,status:json.status,minimal_release_season:json.minimal_release_season};return {id:json.id,number_of_seasons:json.number_of_seasons,seasons:(Array.isArray(json.seasons)?json.seasons:[]).map(s=>({season_number:s.season_number,name:s.name,episode_count:s.episode_count,air_date:s.air_date})),last_episode_to_air:json.last_episode_to_air,next_episode_to_air:json.next_episode_to_air,episode_run_time:json.episode_run_time};}
  function paint(node){
-  const data=cards.get(node);if(!data || !node.matches('.focus,.hover,.pt-card-pointer,.pt-card-touch'))return;
+  const data=cards.get(node),focused=node.matches('.focus,.hover,.pt-card-pointer,.pt-card-touch');
+  if(!data || !focused && !node.querySelector('.card__view>.pt-card-watch__meter'))return;
   const view=node.querySelector('.card__view');if(!view)return;
   const series=data.media_type!=='movie' && !!(data.name || data.original_name || data.first_air_date || data.media_type==='tv');
   const key=cacheKey(data),entry=cache.get(key),fresh=entry && Date.now()-entry.at<(entry.details?lifetime:60000),facts=fresh?entry.value:null;
@@ -195,7 +202,7 @@ export default function seriesStatus(L,schedule){
    const slot=node.querySelector('.pt-card-watch'),wrap=node.querySelector('.card-watched');
    if(slot){slot.classList.toggle('pt-card-watch--has-progress',false);slot.classList.toggle('pt-card-watch--complete',false);if(wrap && wrap.parentNode!==slot)slot.appendChild(wrap);}
   }else watchFooter(L,node,historyData,series);
-  if(!series)return;
+  if(!series || !focused)return;
   const table=L.TimeTable && L.TimeTable.get?L.TimeTable.get(data) || []:[];
   const available=facts || releaseStatus(data,table);
   let box=view.querySelector('.pt-series-status');
@@ -228,10 +235,12 @@ export default function seriesStatus(L,schedule){
    },()=>finish(null),{life:60});
   }
  }
- // Native timeline writes update progress directly. Only the focused card
- // needs its history caption refreshed by the batched badge queue.
+ // Reconcile visible poster meters after sync/removal as well as the focus caption.
  if(L.Listener && L.Listener.follow)L.Listener.follow('state:changed',event=>{
-  if(event.target==='timeline' || event.target==='favorite')for(const node of document.querySelectorAll('.card.focus,.card.hover,.card.pt-card-pointer,.card.pt-card-touch'))if(cards.has(node))schedule(node);
+  if(event.target==='timeline' || event.target==='favorite'){
+   const nodes=new Set([...document.querySelectorAll('.card.focus,.card.hover,.card.pt-card-pointer,.card.pt-card-touch'),...Array.from(document.querySelectorAll('.card__view>.pt-card-watch__meter'),meter=>meter.closest('.card'))]);
+   for(const node of nodes)if(cards.has(node))schedule(node);
+  }
  });
  return {track(node,data){
   cards.set(node,data);

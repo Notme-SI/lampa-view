@@ -6,16 +6,16 @@ async function geometry(page){return page.locator('.activity--active .minimal-po
  const view=root.querySelector('.scroll--horizontal').getBoundingClientRect(),cards=[...root.querySelectorAll('.card,.minimal-row-more')].map(node=>{const r=(node.querySelector('.card__view') || node).getBoundingClientRect();return {left:r.left,right:r.right,width:r.width};});
  const visible=cards.filter(r=>r.right>view.left+1 && r.left<view.right-1);
  const component=Lampa.Activity.active().activity.component,line=component.items.find(item=>item.render(true)===root),fit=line.scroll.minimalPosterFit;
- return {fit,view:{left:view.left,right:view.right,width:view.width},visible,partial:visible.filter(r=>r.left<view.left-1 || r.right>view.right+1),active:line.active,position:line.scroll.position(),scrollLeft:root.querySelector('.scroll--horizontal').scrollLeft,focused:[...root.querySelectorAll('.card.focus,.card.hover')].map(n=>[...root.querySelectorAll('.card')].indexOf(n)),total:cards.length,results:line.data.results.length+Number(!!root.querySelector('.minimal-row-more'))};
+ return {desktop:document.body.classList.contains('pt-desktop'),fit,view:{left:view.left,right:view.right,width:view.width},visible,partial:visible.filter(r=>r.left<view.left-1 || r.right>view.right+1),active:line.active,position:line.scroll.position(),scrollLeft:root.querySelector('.scroll--horizontal').scrollLeft,focused:[...root.querySelectorAll('.card.focus,.card.hover')].map(n=>[...root.querySelectorAll('.card')].indexOf(n)),total:cards.length,results:line.data.results.length+Number(!!root.querySelector('.minimal-row-more'))};
 });}
-function whole(result,label){assert.deepEqual(result.partial,[],label+' crops a poster: '+JSON.stringify(result));assert.equal(result.visible.length,Math.min(result.fit.count,result.results),label+' must show a complete row: '+JSON.stringify(result));}
+function whole(result,label){if(result.desktop){const complete=result.visible.filter(r=>r.left>=result.view.left+result.fit.inset-1 && r.right<=result.view.right-result.fit.inset+1);assert.equal(complete.length,Math.min(result.fit.count,result.results),label+' keeps the expected complete fixed-size posters: '+JSON.stringify(result));assert.ok(result.partial.length<=2);return;}assert.deepEqual(result.partial,[],label+' crops a poster: '+JSON.stringify(result));assert.equal(result.visible.length,Math.min(result.fit.count,result.results),label+' must show a complete row: '+JSON.stringify(result));}
 // Wait for actual geometry to settle: WebKit animation frames can lag behind
 // a fixed wall-clock timeout on the shared Linux runner. Keep the same checks.
 async function settled(page,label){
  let previous='',stable=0,result;
  for(let i=0;i<50;i++){
   result=await geometry(page);const key=JSON.stringify(result.visible);
-  stable=key===previous && !result.partial.length?stable+1:0;previous=key;
+  stable=key===previous && (result.desktop || !result.partial.length)?stable+1:0;previous=key;
   if(stable>=2)return whole(result,label);
   await page.waitForTimeout(40);
  }

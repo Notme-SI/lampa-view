@@ -1,13 +1,26 @@
 import {locale,text as t} from './i18n.js';
 import {cataloguePlan} from './catalogue.js';
-import {canonicalCountry,countryTitle,discoveryOptions} from './discovery-model.js';
+import {canonicalCountry,countryTitle,discoveryOptions,discoveryPlan} from './discovery-model.js';
 import {DISCOVERY_SOURCE} from './discovery-source.js';
 
 export const BROWSE_KINDS=['movie','tv','cartoon','tvshow'];
 export function browseOptions(kind,date=new Date()){
  const options=discoveryOptions(kind,date);
- return {collections:cataloguePlan(kind,'standard',date).filter(row=>!row.key.startsWith('genre-') && !row.minimal_default_hidden && row.key!=='popular' && row.key!=='mixed-popular' && !(kind==='tvshow' && row.key==='watch')),countries:options.countries,genres:options.genres.filter(g=>kind==='movie'?g.genre!==16:kind==='tv'?![16,99,10762,10763,10764,10767].includes(g.genre):true)};
+ const collections=cataloguePlan(kind,'standard',date).filter(row=>!row.key.startsWith('genre-') && (!row.minimal_default_hidden || ['votes','mixed-votes'].includes(row.key)) && row.key!=='popular' && row.key!=='mixed-popular' && !(kind==='tvshow' && row.key==='watch'));
+ // Extend only the existing category filter. Home rows and the sidebar stay independent.
+ if(['movie','cartoon'].includes(kind)){
+  const revenue=discoveryPlan(kind,{sort:'revenue',format:'movie'},date)[0];
+  if(revenue)collections.push({...revenue,key:'revenue',title:t('Кассовые сборы')});
+ }
+ if(['tv','cartoon'].includes(kind))for(const network of options.networks){
+  const row=discoveryPlan(kind,{network:network.id},date)[0];
+  if(row)collections.push({...row,key:'network-'+network.id,title:network.name});
+ }
+ if(kind==='cartoon')for(const section of ['studios','heroes'])collections.push(...discoveryPlan(kind,{section},date));
+ const seen=new Set();
+ return {collections:collections.filter(row=>{const key=JSON.stringify(row.discovery);if(seen.has(key))return false;seen.add(key);return true;}),countries:options.countries,genres:options.genres.filter(g=>kind==='movie'?g.genre!==16:kind==='tv'?![16,99,10762,10763,10764,10767].includes(g.genre):true)};
 }
+export const browseSorts=(kind,type)=>discoveryOptions(kind).sorts.filter(([key])=>key!=='revenue' || type!=='tv').map(([key,title])=>[key,key==='popular'?'Популярные':key==='new'?'Новые':title]);
 export function yearRange(value,date=new Date()){
  const match=String(value || '').trim().match(/^(\d{4})(?:\s*[-–—:]\s*(\d{4}))?$/);
  if(!match)return '';
@@ -23,12 +36,14 @@ export function browseState(kind,value={},date=new Date()){
  const selectedCountry=canonicalCountry(value.country || /^country-([A-Z]{2})$/.exec(value.collection || '')?.[1]);
  const country=options.countries.some(([code])=>code===selectedCountry)?selectedCountry:'';
  const collection=options.collections.find(r=>r.key===value.collection);
- return {collection:collection?.key || '',genre:genresForCollection(options,collection).some(g=>g.id===String(value.genre))?String(value.genre):'',sort:['popular','rated','new'].includes(value.sort)?value.sort:'',period:yearRange(value.period,date),country};
+ return {collection:collection?.key || '',genre:genresForCollection(options,collection).some(g=>g.id===String(value.genre))?String(value.genre):'',sort:browseSorts(kind,collection?.discovery.type).some(([key])=>key===value.sort)?value.sort:'',period:yearRange(value.period,date),country};
 }
 export function browseSpec(kind,value={},date=new Date()){
  const state=browseState(kind,value,date),row=browseOptions(kind,date).collections.find(r=>r.key===state.collection);
  const spec={ordered:true,kind,type:kind==='cartoon'?'':kind==='movie'?'movie':'tv',country:'',genre:'',network:0,company:0,hero:'',...(row && row.discovery || {})};
  spec.sort=state.sort || spec.sort || 'popular';
+ // Box office is a film statistic, including animated feature films.
+ if(spec.sort==='revenue'){spec.type='movie';spec.network=0;}
  if(state.genre)spec.genre=state.genre;
  if(state.country)spec.country=state.country;
  spec.period=state.period;
@@ -97,13 +112,13 @@ export default function catalogueBrowser(L,warmPosters){
   const collator=new Intl.Collator(locale(),{sensitivity:'base'});
   return values.sort((a,b)=>collator.compare(a.title,b.title));
  }
- const sortTitles=()=>({popular:t('Популярные'),rated:t('Рейтинг'),new:t('Новые')});
+ const sortTitles=(kind,type)=>Object.fromEntries(browseSorts(kind,type).map(([key,title])=>[key,t(title)]));
  L.Component.add('category_full',function(object){
   const item=new Full(object);
   if(object.source!==DISCOVERY_SOURCE)return item;
   let spec;try{spec=JSON.parse(object.url);}catch(error){return item;}
   if(spec.kind!=='dorama')return item;
-  const sort=sortTitles();
+  const sort=sortTitles('dorama');
   const controls=gridControls(L,item,object,[{title:sort[spec.sort] || sort.popular,choose(){
    L.Select.show({title:t('Сортировка'),items:alphabetical(Object.keys(sort).map(value=>({value,title:sort[value],selected:value===spec.sort}))),
     onSelect({value}){L.Activity.replace({url:JSON.stringify({...spec,sort:value}),page:1,minimal_browse_cancelled:false});},
@@ -133,7 +148,7 @@ export default function catalogueBrowser(L,warmPosters){
    const values=[{title:t('Все годы'),value:''},...ranges.map(({start,end})=>({title:start===end?String(start):start+'–'+end,value:start+'-'+end})),{title:t('Свой диапазон'),value:'custom'}];
    L.Select.show({title:t('Годы'),items:values.map(v=>({...v,selected:v.value===state.period})),onSelect:value=>{if(value.value!=='custom')return apply({period:value.value},index);setTimeout(()=>{if(object.minimal_browse_cancelled)return;L.Input.edit({title:t('Годы: от–до'),value:state.period,nosave:true,free:true},value=>{const period=yearRange(value);if(!period){L.Noty.show(t('Укажите годы от 1870 до {0}: например, 1990–2005',[year]));return years(index);}apply({period},index);});},100);},onBack:()=>controls.toggle()});
   }
-  const collection=options.collections.find(row=>row.key===state.collection),genre=options.genres.find(g=>g.id===state.genre),sort=sortTitles();
+  const collection=options.collections.find(row=>row.key===state.collection),genre=options.genres.find(g=>g.id===state.genre),sort=sortTitles(kind,collection?.discovery.type);
   const controls=gridControls(L,item,object,[
    {title:collection?collection.title:t('Все подборки'),choose:i=>select(t('Подборки'),[{title:t('Все подборки'),value:''},...options.collections.map(row=>({title:row.title,value:row.key}))],'collection',i)},
    {title:genre?t(genre.name):t('Все жанры'),choose:i=>select(t('Жанры'),[{title:t('Все жанры'),value:''},...genresForCollection(options,collection).map(g=>({title:t(g.name),value:g.id}))],'genre',i)},

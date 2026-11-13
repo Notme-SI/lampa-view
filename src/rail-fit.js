@@ -1,5 +1,6 @@
 import homeStage from './home-stage.js';
 import {layoutProfile} from './layout-profile.js';
+import {desktopPosterWidth} from './poster-size.js';
 
 // Whole-slot rounding can otherwise keep the same count in Bigger and make
 // posters slightly smaller because only the gaps grew. Measure the normal CSS
@@ -51,11 +52,12 @@ export default function fitRail(line,root,card,state,enabled){
  // At 4K the gutter can exceed the fixed gap and expose a thin strip.
  if(inset>=gap)gap=Math.ceil(inset)+1;
  if(!target || available<=0)return;
+ const fixed=desktopPosterWidth(profile);
  let count=Math.max(1,Math.min(24,Math.round((available+gap)/(target+gap))));
  if(document.body.classList.contains('pt-tv')){
   // Explicit slots prevent round-to-nearest from making adjacent TV sizes equal.
   count=(parseInt(columns,10) || count)+(preview?2:0);
- }else if(scale>1){
+ }else if(scale>1 && !fixed){
   const normal=normalSlots(root,font,viewWidth,scale);
   if(normal>2){
    if(document.body.classList.contains('pt-mobile'))count=Math.min(count,normal-1);
@@ -66,8 +68,8 @@ export default function fitRail(line,root,card,state,enabled){
    }
   }
  }
- count=Math.max(1,Math.round(count/cards));
- const width=Math.floor((available-(count-1)*gap)/count*64)/64;
+ count=fixed?Math.max(1,Math.floor((available+gap)/(fixed+gap))):Math.max(1,Math.round(count/cards));
+ const width=fixed || Math.floor((available-(count-1)*gap)/count*64)/64;
  if(width<=0)return;
  root.style.setProperty('--minimal-poster-width',width+'px');
  root.style.setProperty('--pt-more-gap',Math.max(0,gap-trailingMargin)+'px');

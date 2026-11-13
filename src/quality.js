@@ -317,7 +317,7 @@ export default function quality(L,$,preparePoster){
     const card=touch && captionCard(event.target),guard=captionClick && Date.now()<captionClick.until;
     if(guard && (event.target.closest?.('.card')===captionClick.card ||
       event.detail && Math.hypot(event.clientX-captionClick.x,event.clientY-captionClick.y)<18)){
-      event.preventDefault();event.stopImmediatePropagation();captionClick=null;return;
+      event.preventDefault();event.stopImmediatePropagation();return;
     }
     revealCaption(card);
     if(card){event.preventDefault();event.stopImmediatePropagation();}

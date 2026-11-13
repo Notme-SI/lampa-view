@@ -18,7 +18,7 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
      const first=cards.filter(r=>Math.abs(r.top-cards[0].top)<1),bounds=grid.getBoundingClientRect();
      return {count:first.length,slot:first[0].width,left:first[0].left-bounds.left,right:bounds.right-first.at(-1).right};
     });
-    assert.ok(row.count>=7 && Math.abs(row.right-row.left)<2,'The row uses its full content width: '+JSON.stringify({width,row}));
+    assert.ok(row.count>=4 && row.right>=-1 && row.right<row.slot+17,'Complete fixed-size posters fit without filling the unused track: '+JSON.stringify({width,row}));
    }
    for(const index of [0,1,2,4]){
     await page.locator('.activity--active .minimal-catalogue-control').nth(index).click();

@@ -22,6 +22,8 @@ test('native desktop TV screen mode and actual TVs share readable badges and pre
   assert.equal(L.Platform.screen('tv'),true,'Reproduce the broad native TV screen classification');
   assert.equal(L.Platform.tv(),false);assert.equal(w.LampaView.layout,'desktop');
   const card=w.document.createElement('div');card.className='card';card.innerHTML='<span class="pt-quality">4K</span><span class="pt-kind">Сериал</span><span class="card__vote">8.5</span><div class="pt-card-watch"><div class="card-watched"></div></div><div class="card__icons"><div class="card__icons-inner"><div class="card__icon icon--wath"></div></div></div><div class="card__marker card__marker--viewed"><span>Просмотрено</span></div><div class="card__title">Название</div><div class="card__age">2026</div>';w.document.body.appendChild(card);
+  // Resolve the viewport/custom-property font in JSDOM; browser coverage checks the actual calc.
+  card.style.setProperty('font-size','16px','important');
   const sizes=()=>['.pt-quality','.pt-kind','.card__vote'].map(selector=>Number((parseFloat(w.getComputedStyle(card.querySelector(selector)).fontSize)/parseFloat(w.getComputedStyle(card).fontSize)).toFixed(3)));
   assert.deepEqual(sizes(),[.62,.62,.72]);
   const caption=()=>['.card__title','.card__age','.card__icons','.card__marker','.card-watched'].map(selector=>w.getComputedStyle(card.querySelector(selector)).fontSize);

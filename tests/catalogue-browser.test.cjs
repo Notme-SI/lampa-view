@@ -59,3 +59,33 @@ test('mixed cartoon sorting merges both paginated formats without losing or repe
  for(let page=1;page<=4;page++){const result=await new Promise((ok,fail)=>source.list({url:JSON.stringify(browse.browseSpec('cartoon')),page},ok,fail));all.push(...result.results);assert.equal(result.total_pages,page===4?4:page+1);}
  assert.equal(all.length,80);assert.equal(new Set(all.map(c=>c.media_type+':'+c.id)).size,80);assert.ok(all.every((card,i)=>!i || card.popularity<=all[i-1].popularity));
 });
+
+test('category filters expose revenue, votes, verified networks and studios without changing home rows',()=>{
+ for(const kind of ['movie','tv','cartoon']){
+  const options=browse.browseOptions(kind),keys=options.collections.map(row=>row.key);
+  assert.equal(new Set(keys).size,keys.length);
+  assert.ok(keys.includes(kind==='cartoon'?'mixed-votes':'votes'));
+  assert.equal(new Set(options.collections.map(row=>JSON.stringify(row.discovery))).size,keys.length);
+  assert.ok(browse.browseSorts(kind).some(([key])=>key==='votes'));
+  assert.equal(keys.includes('revenue'),kind!=='tv');
+  for(const row of options.collections){const spec=browse.browseSpec(kind,{collection:row.key});assert.ok(discoverySpec(spec));assert.ok(model.discoverySpecs(spec).length,kind+':'+row.key);}
+ }
+ for(const kind of ['movie','cartoon'])for(const selection of [{collection:'revenue'},{sort:'revenue'}]){
+  const spec=browse.browseSpec(kind,selection),streams=model.discoverySpecs(spec);
+  assert.equal(spec.type,'movie');assert.equal(streams.length,1);assert.equal(new URLSearchParams(streams[0].path.split('?')[1]).get('sort_by'),'revenue.desc');
+ }
+ assert.equal(browse.browseState('tv',{sort:'revenue'}).sort,'');
+ assert.ok(browse.browseOptions('tv').collections.some(row=>row.key==='network-213'));
+ assert.ok(browse.browseOptions('cartoon').collections.some(row=>row.key.startsWith('studio-')));
+});
+
+test('vote sorting merges independent streams by vote count and revenue keeps provider order',async()=>{
+ const L={Api:{sources:{tmdb:{get(path,p,ok){const tv=path.startsWith('discover/tv');ok({page:1,total_pages:1,results:[{id:tv?1:2,title:'Проект',name:'Проект',genre_ids:[16],original_language:'en',poster_path:'/p.jpg',vote_count:tv?100:1000,popularity:tv?999:1}]});}}}}};
+ const api=mod('discovery-source').default(L),spec=browse.browseSpec('cartoon',{sort:'votes'}),result=await new Promise((ok,fail)=>api.list({url:JSON.stringify(spec),page:1},ok,fail));
+ assert.deepEqual(result.results.map(row=>row.vote_count),[1000,100]);
+ for(const kind of ['movie','cartoon']){
+  const streams=model.discoverySpecs(browse.browseSpec(kind,{sort:'revenue',country:'RU'}));
+  assert.equal(streams.length,1);assert.equal(new URLSearchParams(streams[0].path.split('?')[1]).get('with_origin_country'),'RU|SU');
+ }
+ assert.equal(browse.browseState('cartoon',{collection:'series',sort:'revenue'}).sort,'');
+});

@@ -23,6 +23,9 @@ export default function preservePanelPosition(L, enabled) {
   if (generation !== revision) return;
   if (!enabled() || L.Activity.active()?.activity !== state.activity) return;
   if (panel || document.body.matches(panels)) return;
+  const scroll = state.activity?.component?.scroll;
+  // A wheel/remote action after closing the panel takes precedence over this RAF.
+  if(Number.isFinite(state.returnPosition) && Math.abs((scroll?.position?.() ?? state.returnPosition)-state.returnPosition)>1)return;
   if (state.parent && state.opener?.isConnected) {
    panel = state.parent;
    controller.toggle('menu');
@@ -35,7 +38,6 @@ export default function preservePanelPosition(L, enabled) {
    if (state.opener === state.domFocus) state.opener.focus({preventScroll:true});
   }
 
-  const scroll = state.activity?.component?.scroll;
   if (scroll?.shift && scroll.position && Number.isFinite(state.position)) {
    const delta = scroll.position() - state.position;
    if (delta) scroll.shift(delta);
@@ -78,6 +80,7 @@ export default function preservePanelPosition(L, enabled) {
 
   if (panel && !document.body.matches(panels) && (name === 'head' || name === 'content')) {
    const state = panel;
+   state.returnPosition=state.activity?.component?.scroll?.position?.();
    const generation = revision;
    panel = null;
    // Let native actions that actually navigate finish before restoring focus.

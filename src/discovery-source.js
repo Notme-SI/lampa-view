@@ -66,7 +66,7 @@ export default function discoverySource(L){
    const ordered=cursor.spec.ordered;
    if(ordered){
     cursor.streams.forEach(s=>{if(!s.buffer)s.buffer=[];});
-    const score=card=>cursor.spec.sort==='rated'?Number(card.vote_average)||0:cursor.spec.sort==='new'?String(card.media_type==='movie'?card.release_date:card.first_air_date):Number(card.popularity)||0;
+    const score=card=>cursor.spec.sort==='rated'?Number(card.vote_average)||0:cursor.spec.sort==='votes'?Number(card.vote_count)||0:cursor.spec.sort==='new'?String(card.media_type==='movie'?card.release_date:card.first_air_date):Number(card.popularity)||0;
     while(cursor.buffer.length<20 && !cursor.streams.some(s=>!s.finished && !s.buffer.length)){
      const candidates=cursor.streams.filter(s=>s.buffer.length);if(!candidates.length)break;
      candidates.sort((a,b)=>{const x=score(a.buffer[0]),y=score(b.buffer[0]);return x===y?0:x>y?-1:1;});const card=candidates[0].buffer.shift(),key=card.media_type+':'+card.id;if(!cursor.seen.has(key)){cursor.seen.add(key);cursor.buffer.push(card);}

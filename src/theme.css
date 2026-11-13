@@ -623,7 +623,7 @@ body.lampa_view.pt-mobile .minimal-detail-columns>.minimal-detail-cast,body.lamp
 /* Equal footer space on every poster: focus never changes card/row geometry. */
 body.lampa_view .card .pt-card-watch {position:relative;height:4.1em;margin-top:.4em;font-size:.72em;line-height:1.35;pointer-events:none;visibility:hidden}
 body.lampa_view .card__view>.card-watched {display:none!important}
-body.lampa_view .card .pt-card-watch>.card-watched {display:block;position:absolute;inset:0;width:100%;height:100%;max-width:100%;font-size:1em;line-height:1.35;transform:none;-webkit-transform:none;border:0;border-radius:0;background:none!important;color:var(--pt-muted);box-sizing:border-box}
+body.lampa_view .card .pt-card-watch>.card-watched {display:block;position:absolute;inset:0;width:100%;height:100%;max-width:100%;font-size:1em;line-height:1.35;transform:none;-webkit-transform:none;border:0;border-radius:0;background:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;color:var(--pt-muted);box-sizing:border-box}
 body.lampa_view .card .pt-card-watch .card-watched__inner,body.lampa_view .card .pt-card-watch .card-watched__body {padding:0;font-size:1em}
 body.lampa_view .card .pt-card-watch .card-watched__item {display:none;margin:0;color:var(--pt-muted)}
 body.lampa_view .card .pt-card-watch .pt-card-watch__current {position:absolute;inset:0;display:flex;flex-direction:column;align-items:stretch;line-height:1.25}
@@ -1302,3 +1302,15 @@ body.lampa_view .nova-plus-root .nova-card--soon .nova-card__clock {display:none
 body.lampa_view .nova-plus-root .nova-card__thumb--episode-preview:not(.nova-card__thumb--loaded) {background:linear-gradient(150deg,var(--pt-selection,#20292d),var(--pt-search-surface,#101719))}
 
 body.lampa_view.pt-mobile .minimal-torrent-view {width:100%!important}
+/* Desktop posters keep their physical size as a window narrows. */
+body.lampa_view.pt-desktop {--pt-desktop-poster-width:calc(199.8px * var(--pt-interface-scale,1) * var(--pt-card-scale,1))}
+body.lampa_view.pt-desktop .card:not(.card--wide):not(.card--collection):not(.extensions .card) {font-size:calc(18px * var(--pt-interface-scale,1))}
+body.lampa_view.pt-desktop :is(.mapping--grid,.mapping--line,.category-full)>.card:not(.card--wide):not(.card--collection) {width:var(--pt-desktop-poster-width)!important;flex:0 0 auto}
+body.lampa_view.pt-desktop .pt-browser-catalogue .mapping--grid.pt-windowed-grid {grid-template-columns:repeat(var(--pt-window-cols),minmax(0,var(--pt-window-width)))!important}
+/* One native progress node follows the poster, including its hover transform. */
+body.lampa_view .card__view>.pt-card-watch__meter {display:block;position:absolute;inset:0;height:auto;min-height:0;margin:0;z-index:6;pointer-events:none;font-size:.72em;border-radius:inherit;overflow:hidden}
+body.lampa_view .card__view>.pt-card-watch__meter::before {content:"";position:absolute;inset:auto 0 0;height:60px;background:linear-gradient(transparent,rgba(0,0,0,.5))}
+body.lampa_view .card__view>.pt-card-watch__meter .time-line {display:block;position:absolute;inset:auto 0 0;width:100%;height:3px;min-height:3px;margin:0;border-radius:0;overflow:hidden;background:rgba(255,255,255,.24)!important}
+body.lampa_view .card__view>.pt-card-watch__meter .time-line>div {display:block;height:3px;background:#fff!important}
+body.lampa_view .card__view>.pt-card-watch__meter .pt-card-watch__time {position:absolute;left:8px;bottom:42px;margin:0;color:#fff;font-size:.9em;text-shadow:0 1px 3px #000}
+body.lampa_view .card__view>.pt-card-watch__meter .pt-card-watch__time:empty {display:none}

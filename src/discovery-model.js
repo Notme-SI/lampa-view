@@ -89,7 +89,9 @@ export function discoverySpecs(spec,date=new Date()){
   return hero.queries.flatMap(query=>['movie','tv'].filter(type=>!spec.type || type===spec.type).map(type=>({type,path:'search/'+type+'?include_adult=false&query='+encodeURIComponent(query)})));
  }
  const types=spec.kind==='cartoon' && !spec.type?['movie','tv']:[spec.type==='movie'?'movie':'tv'];
- const countries=canonicalCountry(spec.country)==='RU'?['RU','SU']:[spec.country];
+ // Discover omits revenue values. Keep box-office ranking on the provider by
+ // using one OR-country query instead of trying to merge ranks without totals.
+ const countries=canonicalCountry(spec.country)==='RU'?(spec.sort==='revenue'?['RU|SU']:['RU','SU']):[spec.country];
  return types.flatMap(type=>countries.map(country=>({type,path:discoveryQuery({...spec,type},date,country)}))).filter(stream=>stream.path);
 }
 export function discoveryAccepts(card,spec){

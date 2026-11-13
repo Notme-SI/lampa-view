@@ -50,7 +50,7 @@ export default function personalScale(L){
   if(cards!==1){
    // Fit rails calculate complete slots themselves. Other grids retain native wrapping.
    for(const el of select('.card,.nova__list--grid .nova-card,.nova__list--row .nova-card')){
-    if(el.closest('.extensions') || el.closest('.minimal-fit-posters') || el.closest('.pt-hero') || el.classList.contains('card--collection'))continue;
+    if(el.closest('.extensions') || el.closest('.minimal-fit-posters') || el.closest('.pt-hero') || el.classList.contains('card--collection') || document.body.classList.contains('pt-desktop') && el.matches('.card:not(.card--wide)'))continue;
     const width=el.getBoundingClientRect().width,parent=el.parentElement.getBoundingClientRect().width;
     if(width && parent){const size=Math.min(width*cards,parent)+'px';set(el,'width',size);set(el,'max-width',size);set(el,'flex-basis',size);}
    }

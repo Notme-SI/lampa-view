@@ -1,5 +1,6 @@
 // Keep card instances/data for Back and native indices, but only attach a
 // bounded row window. Spacers retain the full scroll range without empty cards.
+import {desktopPosterWidth} from './poster-size.js';
 export default function catalogueWindow(item,viewport,grid,{attach,detach}){
  let cards=[],known=0,start=0,end=0,columns=0,pitch=0,width=0,key='',renderKey='',disposed=false,compatible=true;
  const indices=new WeakMap();
@@ -13,7 +14,7 @@ export default function catalogueWindow(item,viewport,grid,{attach,detach}){
  function measure(){
   const first=cards[start]?.parentElement===grid?cards[start]:cards.find(card=>card.parentElement===grid);if(!first)return false;
   if(!grid.isConnected || !grid.clientWidth || !first.offsetWidth)return false;
-  const profile=getComputedStyle(document.body),signature=[grid.clientWidth,innerWidth,innerHeight,profile.fontSize,profile.getPropertyValue('--pt-interface-scale'),document.body.classList.contains('pt-tv')].join('|');
+  const profile=getComputedStyle(document.body),fixed=desktopPosterWidth(profile),signature=[grid.clientWidth,innerWidth,innerHeight,profile.fontSize,profile.getPropertyValue('--pt-interface-scale'),fixed,document.body.classList.contains('pt-tv')].join('|');
   if(key===signature && columns && pitch)return true;
   // Measure responsive columns in a single offscreen probe. Never collapse
   // live spacers: a layout read in that state can clamp a deep scrollTop.
@@ -28,7 +29,9 @@ export default function catalogueWindow(item,viewport,grid,{attach,detach}){
   grid.style.setProperty('--pt-window-cols',columns);
   grid.classList.add('pt-windowed-grid');
   const actual=getComputedStyle(grid),gap=parseFloat(actual.columnGap)||0;
-  width=(grid.clientWidth-(parseFloat(actual.paddingLeft)||0)-(parseFloat(actual.paddingRight)||0)-gap*(columns-1))/columns;
+  const available=grid.clientWidth-(parseFloat(actual.paddingLeft)||0)-(parseFloat(actual.paddingRight)||0);
+  if(fixed){columns=Math.max(1,Math.floor((available+gap)/(fixed+gap)));grid.style.setProperty('--pt-window-cols',columns);}
+  width=fixed || (available-gap*(columns-1))/columns;
   grid.style.setProperty('--pt-window-width',width+'px');
   // Every slot reserves two title lines, year and the existing progress area.
   // Title/year flow naturally inside it; an extra title line cannot shift rows.

@@ -11,6 +11,16 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
    const card=qaCards[1],data=card.data;for(const key of ['book','like','wath','history'])if(!Lampa.Favorite.check(data)[key])Lampa.Favorite.toggle(key,data);
   },theme);
   await page.waitForTimeout(250);
+  // Late native labels and nested text from host renderers must not paint extra pills.
+  await page.locator('#qa-posters .card').first().evaluate(card=>{
+   const view=card.querySelector('.card__view'),native=document.createElement('div');native.className='card__quality';native.textContent='WEBRip';view.appendChild(native);
+   const kind=card.querySelector('.pt-kind'),span=document.createElement('span');span.textContent=kind.textContent;span.style.cssText='background:#555;border:1px solid #fff;box-shadow:0 0 0 1px #000';kind.textContent='';kind.appendChild(span);
+  });
+  const single=await page.locator('#qa-posters .card').first().evaluate(card=>{
+   const s=getComputedStyle(card.querySelector('.pt-kind>span'));
+   return {native:getComputedStyle(card.querySelector('.card__quality')).display,kinds:card.querySelectorAll('.pt-kind').length,qualities:card.querySelectorAll('.pt-quality').length,child:[s.backgroundColor,s.borderTopWidth,s.boxShadow,s.backdropFilter]};
+  });
+  assert.equal(single.native,'none');assert.equal(single.kinds,1);assert.equal(single.qualities,1);assert.deepEqual(single.child,['rgba(0, 0, 0, 0)','0px','none','none']);
   const badges=await page.locator('#qa-posters .card').evaluateAll(cards=>cards.map(card=>{
    const view=card.querySelector('.card__view'),v=view.getBoundingClientRect(),rect=n=>{const r=n.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};};
    const kind=card.querySelector('.pt-kind'),quality=card.querySelector('.pt-quality'),vote=card.querySelector('.card__vote');
