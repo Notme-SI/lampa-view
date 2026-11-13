@@ -37,13 +37,16 @@ const clock=value=>{
  const minutes=Math.floor(seconds/60),tail=String(seconds%60).padStart(2,'0');
  return minutes>=60?Math.floor(minutes/60)+':'+String(minutes%60).padStart(2,'0')+':'+tail:String(minutes).padStart(2,'0')+':'+tail;
 };
-function watchFooter(L,node,data,series){
- const slot=node.querySelector('.pt-card-watch');let wrap=node.querySelector('.card-watched');
- if(!slot)return;
+function restoreWatchMeter(node){
  // Return the original timeline to its owner before reconciling native history.
  // Moving this node preserves Timeline.update and its data-hash subscriptions.
  const overlay=node.querySelector('.card__view>.pt-card-watch__meter');
  if(overlay){if(overlay.ptWatchRow?.isConnected)overlay.ptWatchRow.appendChild(overlay);else overlay.remove();}
+}
+function watchFooter(L,node,data,series){
+ const slot=node.querySelector('.pt-card-watch');let wrap=node.querySelector('.card-watched');
+ if(!slot)return;
+ restoreWatchMeter(node);
  function clearProgress(){
   slot.classList.toggle('pt-card-watch--has-progress',false);
   slot.classList.toggle('pt-card-watch--complete',false);
@@ -199,6 +202,7 @@ export default function seriesStatus(L,schedule){
   // Reserve the footer while that fact is unknown, instead of flashing a false
   // intermediate episode caption. Partial episodes are immediately usable.
   if(fetchable && data.source!=='minimal_shiki' && !fresh && last && last.percent>=WATCHED_PERCENT && !known){
+   restoreWatchMeter(node);
    const slot=node.querySelector('.pt-card-watch'),wrap=node.querySelector('.card-watched');
    if(slot){slot.classList.toggle('pt-card-watch--has-progress',false);slot.classList.toggle('pt-card-watch--complete',false);if(wrap && wrap.parentNode!==slot)slot.appendChild(wrap);}
   }else watchFooter(L,node,historyData,series);

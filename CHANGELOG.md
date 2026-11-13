@@ -1,3 +1,7 @@
+## 0.5.165
+
+- Clear the poster meter when an episode is marked watched and season metadata is still pending.
+
 ## 0.5.164
 
 - Keep the final More tile in view at the end of a fixed-width poster rail.

@@ -88,3 +88,38 @@ test('absolute anime episode count is local to the latest complete arc',()=>{
  assert.deepEqual({...d.window.SeriesStatus.releaseStatus(data,[])},{season:20,count:87,total:87});assert.equal(data.last_episode_to_air.episode_number,500);
  }finally{d.window.close();}
 });
+
+test('a completed episode clears the poster meter while season metadata is pending',()=>{
+ const dom=new JSDOM('<body><div class="card focus"><div class="card__view"></div></div></body>',{runScripts:'outside-only'});
+ const w=dom.window;
+ try{
+  w.eval(code);
+  const saved={hash:'11Series',season:1,episode:1,percent:40,time:915,duration:2287};
+  w.LampaView={online:{lastWatched:()=>saved}};
+  const L={
+   Timeline:{
+    view:()=>saved,
+    render(value){
+     const line=w.document.createElement('div');
+     line.className='time-line';
+     line.dataset.hash=value.hash;
+     line.innerHTML='<div></div>';
+     return line;
+    }
+   },
+   Api:{sources:{tmdb:{get(){}}}}
+  };
+  const api=w.SeriesStatus.default(L,()=>{});
+  const card=w.document.querySelector('.card');
+  api.track(card,{id:800,name:'Series',source:'tmdb',media_type:'tv'});
+  api.paint(card);
+  const line=card.querySelector('.card__view .time-line');
+  assert.ok(line,'Partial progress is rendered on the poster');
+  card.classList.remove('focus');
+  Object.assign(saved,{percent:95,time:2287});
+  api.paint(card);
+  assert.equal(card.querySelector('.card__view .pt-card-watch__meter'),null);
+  assert.equal(card.querySelector('.pt-card-watch .time-line'),line,'The native timeline remains available');
+  assert.equal(card.querySelector('.pt-card-watch--has-progress'),null);
+ }finally{w.close();}
+});
