@@ -38,6 +38,7 @@ export default function preservePanelPosition(L, enabled) {
   if (scroll?.shift && scroll.position && Number.isFinite(state.position)) {
    const delta = scroll.position() - state.position;
    if (delta) scroll.shift(delta);
+   if (scroll.minimalBrowserScroll) {const node=scroll.render(true);node.scrollTop=Math.max(0,-state.position);scroll.minimalBrowserScroll.savePosition?.(node.scrollTop);}
   }
  }
 

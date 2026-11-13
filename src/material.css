@@ -248,3 +248,5 @@ body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .card .card__icon:not(.
  background-color:var(--pt-header-glass)!important;border-color:var(--pt-glass-border)!important;box-shadow:var(--pt-glass-edge)!important;
  backdrop-filter:var(--pt-glass-filter)!important;-webkit-backdrop-filter:var(--pt-glass-filter)!important;
 }
+
+body.lampa_view.pt-touch-captions[data-lampa-theme] .card:not(.pt-card-touch) .card__view {transform:none!important;-webkit-transform:none!important;transition:none!important}

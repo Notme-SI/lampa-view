@@ -281,7 +281,7 @@ function mount(L,item,enabled,visible,preparePoster,rows){
  }
  scroll.restorePosition=function(){if(active())resume();else return native('restorePosition',arguments);};
  scroll.animated=function(){return active()?false:native('animated',arguments);};
- scroll.minimalBrowserScroll={reveal,requestMore(){schedule(true);}};
+ scroll.minimalBrowserScroll={reveal,savePosition(value){pausedAt=value;},requestMore(){schedule(true);}};
  const changed=event=>{if(event.name==='lampa_view_enabled')setEnabled();};
  L.Storage?.listener?.follow('change',changed);
  setEnabled();
@@ -301,7 +301,7 @@ function mount(L,item,enabled,visible,preparePoster,rows){
  },pause(){
   motion.stop();
   returnFocus=Boolean(unwrap(item.last)?.classList.contains('focus'));
-  paused=true;requested=false;observer?.disconnect();
+  pausedAt=active()?node.scrollTop:pausedAt;paused=true;requested=false;observer?.disconnect();
   if(frame){cancelAnimationFrame(frame);frame=0;}
   clearTimeout(idleTimer);settle();
   if(active())pausedAt=node.scrollTop;

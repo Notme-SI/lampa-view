@@ -1,3 +1,9 @@
+## 0.5.146
+
+- Restore the browser catalogue position after closing header panels on WebKit and synchronize the paused position.
+- Suppress compatibility focus/hover displacement on touch cards until the user opens their caption.
+- Keep episode badge regression fixtures aligned with the carousel middle-dot separator.
+
 ## 0.5.145
 
 - Put episode details on a new line after the watched/watch heading. Use the carousel middle dot between episode and season; reserve space for the two-line footer and progress bar.
