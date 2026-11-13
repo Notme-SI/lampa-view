@@ -1,3 +1,8 @@
+## 0.5.145
+
+- Put episode details on a new line after the watched/watch heading. Use the carousel middle dot between episode and season; reserve space for the two-line footer and progress bar.
+- Wait for the provider episode-count caption in its regression test instead of a fixed delay on busy CI runners.
+
 ## 0.5.144
 
 - Defer detail and navigation ResizeObserver writes and avoid redundant backdrop styles, fixing WebKit observer-loop errors.

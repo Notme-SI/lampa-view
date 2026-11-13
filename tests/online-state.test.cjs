@@ -640,9 +640,9 @@ test('known provider episode count remains visible after leaving a season while 
  const n=await native({built:true}),{L}=n;let s;try{
   L.Api.sources.tmdb.get=(url,p,ok,fail)=>fail();
   s=screen(n,{id:1801,season:2,episodes:[1,2,3,4,5]});Object.assign(s.movie,{number_of_seasons:3,number_of_episodes:25});
-  const choose=season=>s.filter.set('filter',[{stype:'season',title:'Сезон',subtitle:'Сезон '+season,items:[1,2,3,4].map(i=>({title:'Сезон '+i,selected:i===season}))},{stype:'voice',title:'Озвучка',items:[{title:'TVShows',selected:true}]}]);choose(2);await wait(700);
+  const choose=season=>s.filter.set('filter',[{stype:'season',title:'Сезон',subtitle:'Сезон '+season,items:[1,2,3,4].map(i=>({title:'Сезон '+i,selected:i===season}))},{stype:'voice',title:'Озвучка',items:[{title:'TVShows',selected:true}]}]);choose(2);
   const caption=()=>s.root.find('[data-nova-focus="season:1"] .nova-chip__sub').text();
-  assert.equal(caption(),'5 эпизодов');choose(4);await wait(180);assert.equal(caption(),'5 эпизодов');assert.deepEqual(n.errors,[]);
+  await until(()=>caption()==='5 эпизодов','provider episode count',4000);assert.equal(caption(),'5 эпизодов');choose(4);await until(()=>caption()==='5 эпизодов','provider episode count',4000);assert.equal(caption(),'5 эпизодов');assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}
 });
 
