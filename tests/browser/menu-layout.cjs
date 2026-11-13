@@ -18,7 +18,10 @@ const assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWR
   }
   await page.evaluate(()=>{Lampa.Storage.set('menu_always',false);Lampa.Controller.toggle('menu');});
   await page.evaluate(()=>{Lampa.Controller.toggle('content');Lampa.Storage.set('menu_always',true);Lampa.Controller.toggle('menu');});
-  await page.route(/^https?:\/\/posters\.test\//,route=>route.request().url().endsWith('/missing.png')?route.abort():route.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="80" height="120"><rect width="80" height="120" fill="purple"/></svg>'}));
+  const fixture={contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="80" height="120"><rect width="80" height="120" fill="purple"/></svg>'};
+  await page.route(/^https?:\/\/posters\.test\//,route=>route.request().url().endsWith('/missing.png')?route.abort():route.fulfill(fixture));
+  await page.route('https://image.tmdb.org/t/p/w185/actor.jpg',route=>route.fulfill(fixture));
+  await page.route('https://cub.best/img/icons/premium_two.svg',route=>route.fulfill(fixture));
   await page.evaluate(()=>{
    const get=Lampa.Api.sources.tmdb.get;
    Lampa.Api.sources.tmdb.get=function(path,params,ok,fail,options){
@@ -27,11 +30,12 @@ const assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWR
     return get.call(this,path,params,ok,fail,options);
    };
    const image=Lampa.TMDB.image;
-   Lampa.TMDB.image=path=>/\/(recovered|other-film|matching-series)\.png$/.test(path)?'https://posters.test/'+path.split('/').pop():image(path);
+   Lampa.TMDB.image=path=>path.endsWith('/actor.jpg')?'https://posters.test/missing.png':/\/(recovered|other-film|matching-series)\.png$/.test(path)?'https://posters.test/'+path.split('/').pop():image(path);
    Lampa.Notice.display='all';
-   Lampa.Notice.get('cub').notices=[{title:'Проверка уведомления',text:'Новая серия',time:Date.now(),poster:'//posters.test/missing.png',card:{id:601,poster_path:'https://posters.test/poster.png'},labels:['S - 1','E - 2']},
+   Lampa.Notice.get('cub').notices=[{title:'Проверка уведомления',text:'Новая серия',time:Date.now(),poster:'//posters.test/missing.png',card:{id:601,poster_path:'https://posters.test/poster.png'},labels:['S - 1','E - 2'],author:{ru:{name:'Актёр',text:'Премьера',img:'/actor.jpg'}}},
     {title:'Без адреса постера',text:'Новая серия',time:Date.now()-100,card:{id:602,source:'tmdb',seasons:{1:5}}},
-    {title:'Постер по IMDb',text:'Новая серия',time:Date.now()-200,card:{id:603,source:'cub',imdb_id:'tt1234567',seasons:{1:1}}}];
+    {title:'Постер по IMDb',text:'Новая серия',time:Date.now()-200,card:{id:603,source:'cub',imdb_id:'tt1234567',seasons:{1:1}}},
+    {id:'extend_premium_2026_10',title:'Продлите CUB Premium',text:'Напоминание',time:Date.now()-300,icon:'http://posters.test/missing.png'}];
   });
   await page.locator('[data-action=pt_notice]').click();
   await page.locator('.pt-notices .modal__title').waitFor();
@@ -39,11 +43,19 @@ const assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWR
   await page.locator('.pt-notices .notice--card').first().waitFor();
   await page.waitForFunction(()=>document.querySelector('.pt-notices .notice__img img')?.naturalWidth===80,{},{timeout:5000}).catch(async error=>{console.error(await page.locator('.pt-notices .notice__img img').first().evaluate(img=>({src:img.getAttribute('src'),width:img.naturalWidth,complete:img.complete})));throw error;});
   assert.match(await page.locator('.pt-notices .notice__img img').first().getAttribute('src'),/posters\.test\/poster\.png$/);
+  const actor=page.locator('.pt-notices .image-author--loaded .notice__author-img img');
+  await actor.waitFor();assert.equal(await actor.getAttribute('src'),'https://image.tmdb.org/t/p/w185/actor.jpg');
+  assert.equal(await page.locator('.pt-notices .notice__author-name').textContent(),'Актёр');
+  assert.equal(await page.locator('.pt-notices .notice__author-text').textContent(),'Премьера');
   for(const file of ['recovered','matching-series']){
    const image=page.locator('.pt-notices .notice__img img[src$="/'+file+'.png"]');
    await image.waitFor({state:'visible'});
    await page.waitForFunction(el=>el.naturalWidth===80,await image.elementHandle());
   }
+  const premium=page.locator('.pt-notices .notice.image--icon').filter({hasText:'Продлите CUB Premium'});
+  await premium.evaluate(row=>jQuery(row).trigger('visible'));
+  const premiumIcon=premium.locator('img[src="https://cub.best/img/icons/premium_two.svg"]');
+  await premiumIcon.waitFor();await page.waitForFunction(img=>img.naturalWidth===80,await premiumIcon.elementHandle());
   await page.evaluate(()=>Lampa.Controller.back());
   await page.evaluate(()=>Lampa.Controller.toggle('menu'));await page.locator('[data-action=edit]').click();await page.locator('.menu-edit-list').waitFor();assert.equal(await page.evaluate(()=>Lampa.Controller.enabled().name),'modal','Native editor owns sorting and visibility');
   const editorItems=page.locator('.menu-edit-list__title');

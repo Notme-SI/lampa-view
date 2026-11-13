@@ -1,3 +1,7 @@
+## 0.5.150
+
+- Recover actor portraits and standalone icons in notifications when their first image URL fails. Keep the native notification text and actions.
+
 ## 0.5.149
 
 - Match the cast and facts panel heights side by side. Put the original title to the right of its two-line label and keep the full title available when clipped.
