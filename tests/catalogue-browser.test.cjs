@@ -18,7 +18,8 @@ test('single category list includes all non-genre collections, accepts archives 
 
 test('TV-show filters compose country, genre, archived years and rating',()=>{
  const options=browse.browseOptions('tvshow');assert.deepEqual(options.collections.map(r=>r.key),['now-watching','new','rated','russian-reality','russian-talk']);assert.deepEqual(options.genres.map(g=>g.id),['10764','10767']);
- const spec=browse.browseSpec('tvshow',{country:'FR',genre:'10767',period:'1990-2005',sort:'rated'}),q=new URLSearchParams(model.discoverySpecs(spec)[0].path.split('?')[1]);assert.equal(spec.type,'tv');assert.ok(discoverySpec(spec));assert.equal(q.get('with_origin_country'),'FR');assert.equal(q.get('with_genres'),'10767');assert.equal(q.get('first_air_date.gte'),'1990-01-01');assert.equal(q.get('sort_by'),'vote_average.desc');
+ assert.equal(browse.browseState('tvshow',{genre:'10767'}).genre,'');
+ const spec=browse.browseSpec('tvshow',{country:'FR',collection:'russian-talk',period:'1990-2005',sort:'rated'}),q=new URLSearchParams(model.discoverySpecs(spec)[0].path.split('?')[1]);assert.equal(spec.type,'tv');assert.ok(discoverySpec(spec));assert.equal(q.get('with_origin_country'),'FR');assert.equal(q.get('with_genres'),'10767');assert.equal(q.get('first_air_date.gte'),'1990-01-01');assert.equal(q.get('sort_by'),'vote_average.desc');
  const base=browse.browseSpec('tvshow');assert.ok(model.discoveryAccepts({id:1,name:'Архивное ток-шоу',first_air_date:'1995-01-01',genre_ids:[10767],origin_country:['RU']},base));assert.equal(model.discoveryAccepts({id:2,name:'Драма',genre_ids:[18],origin_country:['RU']},base),false);
 });
 test('Russia combines modern and historical countries in a single ordered result',async()=>{
@@ -75,8 +76,32 @@ test('category filters expose revenue, votes, verified networks and studios with
   assert.equal(spec.type,'movie');assert.equal(streams.length,1);assert.equal(new URLSearchParams(streams[0].path.split('?')[1]).get('sort_by'),'revenue.desc');
  }
  assert.equal(browse.browseState('tv',{sort:'revenue'}).sort,'');
- assert.ok(browse.browseOptions('tv').collections.some(row=>row.key==='network-213'));
- assert.ok(browse.browseOptions('cartoon').collections.some(row=>row.key.startsWith('studio-')));
+ for(const kind of ['movie','tv','cartoon']){
+  const options=browse.browseOptions(kind);
+  assert.ok(options.collections.every(row=>!row.discovery.network && !row.discovery.company));
+  assert.ok(options.studios.length>0);
+  for(const row of options.studios){
+   const spec=browse.browseSpec(kind,{studio:row.key});
+   assert.ok(discoverySpec(spec));
+   assert.equal(spec.company,row.discovery.company);
+   assert.equal(spec.type,row.discovery.type);
+  }
+ }
+ const migrated=browse.browseState('tv',{collection:'network-213'});
+ assert.equal(migrated.network,213);
+ assert.equal(migrated.collection,'');
+ assert.equal(browse.browseSpec('tv',{...migrated,collection:'now-watching'}).feed,undefined);
+ assert.equal(browse.browseState('cartoon',{collection:'studio-3-movie'}).studio,'studio-3-movie');
+ assert.equal(browse.browseSpec('cartoon',{network:213,sort:'revenue'}).sort,'popular');
+});
+
+test('year picker lists recent years first and keeps saved custom ranges selectable',()=>{
+ const date=new Date(2026,10,13);
+ const values=browse.browseYears('tv',date);
+ assert.deepEqual(values.slice(1,9).map(row=>row.title),['2026','2025','2024','2023','2022','2021','2020','2019']);
+ assert.equal(values[9].value,'2015-2018');
+ assert.equal(values.at(-1).value,'custom');
+ assert.ok(browse.browseYears('tv',date,'1990-2005').some(row=>row.value==='1990-2005'));
 });
 
 test('vote sorting merges independent streams by vote count and revenue keeps provider order',async()=>{

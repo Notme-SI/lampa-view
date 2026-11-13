@@ -1314,4 +1314,4 @@ body.lampa_view .card__view>.pt-card-watch__meter .time-line {display:block;posi
 body.lampa_view .card__view>.pt-card-watch__meter .time-line>div {display:block;height:3px;background:#fff!important}
 body.lampa_view .card__view>.pt-card-watch__meter .pt-card-watch__time {position:absolute;left:8px;bottom:8px;margin:0;color:#fff;font-size:.9em;text-shadow:0 1px 3px #000}
 body.lampa_view .card__view>.pt-card-watch__meter .pt-card-watch__time:empty {display:none}
-body.lampa_view .card__view:has(>.pt-card-watch__meter .pt-card-watch__time:not(:empty)) .card__icons-inner {padding-bottom:calc(var(--pt-score-inset) + .75em)}
+body.lampa_view .card__view:has(>.pt-card-watch__meter .pt-card-watch__time:not(:empty)) .card__icons-inner {padding-bottom:max(calc(var(--pt-score-inset) + .75em),calc(10px + .9em))}

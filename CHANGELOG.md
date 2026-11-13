@@ -1,3 +1,10 @@
+## 0.5.167
+
+- List recent years first, then archive ranges, and keep custom ranges available.
+- Keep talk and reality shows in Collections and remove the redundant genre filter from TV Shows.
+- Move channels and studios to separate catalogue filters with white icons. Migrate saved selections and add more TMDB studios.
+- Keep favorite icons clear of elapsed time at TV scales.
+
 ## 0.5.166
 
 - Move elapsed time down to the progress track on the poster and leave room for favorite icons.

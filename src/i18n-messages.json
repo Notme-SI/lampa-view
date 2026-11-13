@@ -8456,6 +8456,34 @@
   "fr": "Toutes les années",
   "pl": "Wszystkie lata"
  },
+ "Все каналы": {
+  "en": "All channels",
+  "uk": "Усі канали",
+  "be": "Усе каналы",
+  "zh": "所有频道",
+  "pt": "Todos os canais",
+  "bg": "Всички канали",
+  "he": "כל הערוצים",
+  "cs": "Všechny kanály",
+  "ro": "Toate canalele",
+  "fr": "Toutes les chaînes",
+  "pl": "Wszystkie kanały",
+  "es": "Todos los canales"
+ },
+ "Каналы и платформы": {
+  "en": "Channels and platforms",
+  "uk": "Канали та платформи",
+  "be": "Каналы і платформы",
+  "zh": "频道和平台",
+  "pt": "Canais e plataformas",
+  "bg": "Канали и платформи",
+  "he": "ערוצים ופלטפורמות",
+  "cs": "Kanály a platformy",
+  "ro": "Canale și platforme",
+  "fr": "Chaînes et plateformes",
+  "pl": "Kanały i platformy",
+  "es": "Canales y plataformas"
+ },
  "Все студии": {
   "en": "All studios",
   "uk": "Усі студії",

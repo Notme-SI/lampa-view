@@ -201,6 +201,30 @@
       "country": "RU"
     }
   ],
+  "screen_studios": [
+    {"id":420,"name":"Marvel Studios","formats":["movie","tv"]},
+    {"id":1,"name":"Lucasfilm","formats":["movie","tv"]},
+    {"id":174,"name":"Warner Bros. Pictures","formats":["movie"]},
+    {"id":33,"name":"Universal Pictures","formats":["movie"]},
+    {"id":4,"name":"Paramount Pictures","formats":["movie","tv"]},
+    {"id":5,"name":"Columbia Pictures","formats":["movie","tv"]},
+    {"id":923,"name":"Legendary Pictures","formats":["movie"]},
+    {"id":1632,"name":"Lionsgate","formats":["movie","tv"]},
+    {"id":25,"name":"20th Century Fox","formats":["movie","tv"]},
+    {"id":21,"name":"Metro-Goldwyn-Mayer","formats":["movie"]},
+    {"id":41077,"name":"A24","formats":["movie","tv"]},
+    {"id":344,"name":"Мосфильм","formats":["movie"]},
+    {"id":10845,"name":"Ленфильм","formats":["movie","tv"]},
+    {"id":42877,"name":"Yellow, Black & White","formats":["movie"]},
+    {"id":54307,"name":"Марс Медиа","formats":["movie","tv"]},
+    {"id":113707,"name":"1-2-3 Production","formats":["movie"]},
+    {"id":11537,"name":"LAIKA","formats":["movie","tv"],"animation":true},
+    {"id":297,"name":"Aardman","formats":["movie","tv"],"animation":true},
+    {"id":23948,"name":"Cartoon Saloon","formats":["movie","tv"],"animation":true},
+    {"id":5306,"name":"Мельница","formats":["movie","tv"],"animation":true},
+    {"id":46315,"name":"Воронежская анимационная студия","formats":["movie","tv"],"animation":true},
+    {"id":55393,"name":"Анимаккорд","formats":["movie","tv"],"animation":true}
+  ],
   "studios": [
     {
       "id": 2,

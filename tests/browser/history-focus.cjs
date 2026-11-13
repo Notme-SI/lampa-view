@@ -54,6 +54,12 @@ const {setup}=require('../fixtures/native-browser.cjs'),{stage}=require('../fixt
   assert.ok(Math.abs(progress.trackBottom-progress.posterBottom)<1 && Math.abs(progress.width-progress.posterWidth)<1,'Track follows the lower poster edge');
   const timeGap=progress.trackTop-progress.timeBottom;
   assert.ok(timeGap>=0 && timeGap<=8 && progress.timeLeft>=progress.posterLeft,'Elapsed time stays directly above its track: '+JSON.stringify(progress));
+  assert.ok(await page.locator('#qa-movie .card__view').evaluate(view=>{
+   view.insertAdjacentHTML('beforeend','<div class="card__icons"><div class="card__icons-inner"><div class="card__icon icon--book"></div></div></div>');
+   const icon=view.querySelector('.icon--book').getBoundingClientRect();
+   const time=view.querySelector('.pt-card-watch__time').getBoundingClientRect();
+   return icon.height>0 && icon.bottom<=time.top-1;
+  }),'A favorite icon has room above the elapsed time');
   await page.evaluate(()=>{document.querySelector('#qa-release').remove();document.querySelector('#qa-movie').remove();});
 
   // Native Lampa's manual episode action persists 95%, not 100%.

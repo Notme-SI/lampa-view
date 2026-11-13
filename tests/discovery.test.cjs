@@ -9,7 +9,7 @@ test('movie and series feeds omit untranslated and missing artwork cards on ever
 });
 
 test('SURS families are accessible with verified networks, corrected NTV and Disney Junior, studios and every child collection',()=>{
- const options=model.discoveryOptions('cartoon',new Date(2026,10,4));assert.equal(options.networks.length,40);assert.equal(options.heroes.length,51);assert.equal(options.studios.length,10);
+ const options=model.discoveryOptions('cartoon',new Date(2026,10,4));assert.equal(options.networks.length,40);assert.equal(options.heroes.length,51);assert.ok(options.studios.some(row=>row.id===11537 && row.name==='LAIKA'));
  for(const id of [49,77,2552,453,1024,213,3186,2076,4330,3353,2739,2,6,16,318,174,19,64,493,88,67,2493,2859,4085,3923,412,558,3871,3827,5806,806,1191,1199,3031,3882,44,281,56,2686,13])assert.ok(options.networks.some(n=>n.id===id),String(id));
  assert.ok(!options.networks.some(n=>[1778,1119].includes(n.id)));assert.equal(options.networks.find(n=>n.id===174).name,'AMC');assert.equal(options.networks.find(n=>n.id===281).name,'Disney Junior');assert.ok(options.heroes.find(h=>h.id==='1').queries.includes('SpongeBob'));
  for(const kind of model.DISCOVERY_KINDS){const sections=model.discoveryOptions(kind).sections.map(v=>v[0]);for(const section of ['overview','trending','new','rated','votes','genres','countries','periods'])assert.ok(sections.includes(section));}

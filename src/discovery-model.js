@@ -14,9 +14,10 @@ export function discoveryOptions(kind,date=new Date()){
  const genres=types.length===1?DATA.genres[types[0]]:Array.from(new Map(DATA.genres.movie.concat(DATA.genres.tv).map(g=>[g.id,g])).values());
  const allowedGenres=kind==='dorama'?genres.filter(g=>g.keyword || ![16,99,10762,10763,10764,10767].includes(g.genre)):kind==='tvshow'?genres.filter(g=>[10764,10767].includes(g.genre)):kind==='cartoon'?genres.filter(g=>[28,35,10762,12,878,10751,14,10759,10765].includes(g.genre) || [281358,293198].includes(g.keyword)):genres;
  const periods=DATA.periods.concat(date.getFullYear()>2025?[{start:2026,end:date.getFullYear()}]:[]);
- return {sections:SECTIONS.filter(([key])=>!['studios','heroes','family'].includes(key) || kind==='cartoon').filter(([key])=>key!=='platforms' || kind!=='movie'),
+ const studios=kind==='cartoon'?DATA.studios.concat(DATA.screen_studios.filter(studio=>studio.animation)):DATA.screen_studios.filter(studio=>!studio.animation && studio.formats.includes(kind));
+ return {sections:SECTIONS.filter(([key])=>!['studios','heroes','family'].includes(key) || kind==='cartoon' || key==='studios' && studios.length).filter(([key])=>key!=='platforms' || kind!=='movie'),
   countries:COUNTRIES.filter(([code])=>kind!=='dorama' || ASIAN.includes(code)),genres:allowedGenres.map(g=>({...g,formats:['movie','tv'].filter(type=>!!genreDescriptor(type,g.id,kind))})),
-  networks:DATA.networks,studios:DATA.studios,heroes:DATA.heroes,periods,
+  networks:DATA.networks,studios,heroes:DATA.heroes,periods,
   sorts:[['popular','Популярность'],['new','Дата выхода'],['rated','Рейтинг'],['votes','Много оценок'],...(['movie','cartoon'].includes(kind)?[['revenue','Кассовые сборы']]:[])]};
 }
 export function discoveryState(kind,value={},date=new Date()){
@@ -27,7 +28,7 @@ export function discoveryState(kind,value={},date=new Date()){
  if(options.countries.some(v=>v[0]===country) || kind==='tvshow' && country==='foreign')state.country=country;
  if(options.genres.some(v=>v.id===String(value.genre)))state.genre=String(value.genre);
  if(kind!=='movie' && options.networks.some(v=>v.id===Number(value.network)))state.network=Number(value.network);
- if(kind==='cartoon' && options.studios.some(v=>v.id===Number(value.company)))state.company=Number(value.company);
+ if(options.studios.some(v=>v.id===Number(value.company)))state.company=Number(value.company);
  if(options.periods.some(v=>v.start+'-'+v.end===value.period))state.period=value.period;
  if(options.sorts.some(v=>v[0]===value.sort))state.sort=value.sort;
  if(kind==='cartoon' && options.heroes.some(v=>v.id===String(value.hero)))state.hero=String(value.hero);
@@ -121,7 +122,14 @@ export function discoveryPlan(kind,value={},date=new Date()){
  if(state.section==='trending'){types.forEach(type=>add(type+'-trending',types.length>1?(type==='movie'?'Фильмы · в тренде':'Сериалы · в тренде'):'В тренде за неделю',{feed:'trending'},type));return rows;}
  if(state.section==='family'){types.forEach(type=>add('family-'+type,'Семейные',{family:true},type));return rows;}
  if(state.section==='heroes' || state.hero){const heroes=state.hero?options.heroes.filter(v=>v.id===state.hero):options.heroes.slice(0,8);heroes.forEach(h=>add('hero-'+h.id,h.name,{hero:h.id,type:state.format==='all'?'':state.format}));return rows;}
- if(state.section==='studios' && !state.company){options.studios.forEach(s=>types.forEach(type=>add('studio-'+s.id+'-'+type,s.name+' · '+t(type==='movie'?'Мультфильмы':'Мультсериалы'),{company:s.id,sort:'rated'},type)));return rows;}
+ if(state.section==='studios' && !state.company){
+  for(const studio of options.studios)for(const type of types){
+   if(studio.formats && !studio.formats.includes(type))continue;
+   const title=kind==='cartoon'?studio.name+' · '+t(type==='movie'?'Мультфильмы':'Мультсериалы'):studio.name;
+   add('studio-'+studio.id+'-'+type,title,{company:studio.id,sort:'popular'},type);
+  }
+  return rows;
+ }
  if(state.section==='platforms' && !state.network){const networks=kind==='tvshow'?options.networks.filter(n=>n.country==='RU').concat(options.networks.filter(n=>n.country!=='RU')):options.networks;
   networks.slice(0,12).forEach(n=>add('network-'+n.id,n.name,{network:n.id,type:'tv'}));return rows;}
  if(state.section==='genres' && !state.genre){options.genres.forEach(g=>types.filter(type=>DATA.genres[type].some(v=>v.id===g.id)).forEach(type=>add('genre-'+g.id+'-'+type,g.name+(types.length>1?' · '+t(type==='movie'?'Мультфильмы':'Мультсериалы'):''),{genre:g.id},type)));return rows;}
