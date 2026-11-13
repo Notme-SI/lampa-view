@@ -6,7 +6,9 @@ import installI18n from './i18n.js';
 import {version} from '../package.json';
 import inputs from './inputs.js';
 import searchHistory from './search-history.js';
-import {installTmdb,installFullGuard,installListGuard} from './tmdb.js';
+import tmdbGet,{installTmdb,installFullGuard,installListGuard} from './tmdb.js';
+import {animeMode,cataloguePlan,isAnimeHome} from './catalogue.js';
+import {ANIME_HISTORY} from './continue-watching.js';
 import heroAssets from './hero-assets.js';
 import heroTransition from './hero-transition.js';
 import BASE_CSS from './theme.css';
@@ -77,6 +79,7 @@ if (!ROOT.LampaView) {
   let L, $, lastCard, initialized = false, playlist = [], activeVideo,loadLogo,artwork,back,holidays,pinnedMenu,appearanceTheme,interfaceLayout,menuOrdered=false;
   const metadata = new Map();
   const heroes = new WeakSet();
+  let animeHeroFeed;
   const carousels = new Set();
   function refreshCarousels(){carousels.forEach(value=>value.refresh());}
   const icons = {
@@ -335,7 +338,10 @@ if (!ROOT.LampaView) {
       setTimeout(()=>L.Activity.replace({source:'tmdb'}),0);
     }
     const section = active.component === 'main' ? 'home' : active.url || active.component;
+    const anime=isAnimeHome(active);
     document.body.classList.toggle('pt-home',active.component==='main');
+    document.body.classList.toggle('pt-anime-home',anime);
+    document.body.classList.toggle('pt-hero-page',active.component==='main' || anime);
     document.body.classList.toggle('pt-full',active.component==='full');
     document.body.classList.toggle('pt-favorites',/^(favorite|bookmarks)$/.test(active.component || ''));
     $('.pt-topnav__item,.pt-mobile-nav__item').each(function() {this.classList.toggle('active', this.getAttribute('data-section') === section);});
@@ -345,11 +351,39 @@ if (!ROOT.LampaView) {
   }
   function hero(event) {
     if (!yes('lampa_view_hero') || !yes('lampa_view_enabled') || !event || !['append','visible','create'].includes(event.type)) return;
-    const active=L.Activity.active() || {},object=event.params && event.params.object;
-    if ((object && object.component || active.component)!=='main') return;
-    const activity=object && object.activity || active.activity;
+    const active=L.Activity.active() || {},object=event.params?.object || active,anime=isAnimeHome(object);
+    if (object.component!=='main' && !anime) return;
+    const activity=object.activity || active.activity;
     if(!activity || heroes.has(activity) || activity.render().find('.pt-hero').length)return;
-    const cards=((event.data || {}).results || []).filter(v=>v.backdrop_path && (v.title || v.name) && v.overview).slice(0,8).map(card=>({...card,source:card.source || active.source || 'tmdb'}));
+    const suitable=card=>card?.backdrop_path && (card.title || card.name) && card.overview;
+    let cards;
+    if(anime){
+      if(activity!==active.activity || !activity.component?.items?.length)return;
+      const rows=activity.component.items,seen=new Set();
+      cards=rows.filter(row=>row.data?.url!==ANIME_HISTORY).flatMap(row=>(row.data?.results || []).filter(suitable).map(card=>({...card,source:card.source || row.data.source || object.source || 'tmdb',minimal_anime:true}))).filter(card=>{
+        const key=cardKey(card);if(seen.has(key))return false;seen.add(key);return true;
+      }).slice(0,8);
+      if(!cards.length && animeMode(L,object)==='shikimori'){
+        const feed=cataloguePlan('anime').find(row=>row.key==='watch');
+        const key=feed.tmdb+'|'+L.Storage.get('language','ru');
+        if(animeHeroFeed?.key===key && (animeHeroFeed.waiting || Date.now()<animeHeroFeed.expires)){
+          cards=animeHeroFeed.cards;
+          if(!cards.length && animeHeroFeed.waiting)animeHeroFeed.waiting.set(activity,event);
+        }else{
+          // Shikimori list entries only carry portrait artwork.
+          const pending=animeHeroFeed={key,cards:[],waiting:new WeakMap([[activity,event]])};
+          const finish=data=>{
+            if(animeHeroFeed!==pending)return;
+            pending.cards=(data?.results || []).filter(suitable).slice(0,8).map(card=>({...card,source:'tmdb',media_type:'tv',minimal_anime:true}));
+            const current=pending.waiting.get(L.Activity.active()?.activity);pending.waiting=null;
+            pending.expires=Date.now()+(pending.cards.length?300000:30000);
+            if(current && pending.cards.length)hero(current);
+          };
+          tmdbGet(L,feed.tmdb,{page:1},finish,()=>finish(null));
+          return;
+        }
+      }
+    }else cards=(event.data?.results || []).filter(suitable).slice(0,8).map(card=>({...card,source:card.source || object.source || 'tmdb'}));
     if(!cards.length)return;
     // This set guards pending insertion only. Native resize may reuse an
     // activity after removing its content, so a lifetime marker is stale.
@@ -357,11 +391,13 @@ if (!ROOT.LampaView) {
     setTimeout(()=>{
       heroes.delete(activity);
       const root=activity.render();
-      if(!root || root.find('.pt-hero').length)return;
+      if(!root || root.find('.pt-hero').length || anime && L.Activity.active()?.activity!==activity)return;
       const line=root.find('.items-line').first();
       if(!line.length){heroes.delete(activity);return;}
+      const nativeLine=anime?activity.component.items.find(item=>item.render(true)===line[0]):event.line;
       let index=0,item,focus=0;
       const element=$(lampaViewText("<section class=\"pt-hero\" aria-label=\"Подборка фильмов и сериалов\">"));
+      if(anime)element.attr('aria-label',lampaViewText('Аниме'));
       const artworkFrame=$('<div class="pt-hero__artwork" aria-hidden="true">').appendTo(element);
       const image=$('<img class="pt-hero__image" alt="" decoding="async">').appendTo(artworkFrame);
       const artworkTransition=heroTransition(image[0]);
@@ -423,7 +459,7 @@ if (!ROOT.LampaView) {
         });
         }
         const year=(card.release_date || card.first_air_date || '').slice(0,4);
-        metaText.text([year,kind==='tv'?lampaViewText("Сериал"):lampaViewText("Фильм"),card.vote_average?Number(card.vote_average).toFixed(1):''].filter(Boolean).join('  ·  '));
+        metaText.text([year,anime?lampaViewText('Аниме'):kind==='tv'?lampaViewText("Сериал"):lampaViewText("Фильм"),card.vote_average?Number(card.vote_average).toFixed(1):''].filter(Boolean).join('  ·  '));
         const tv=document.body.classList.contains('pt-tv');
         if(!tv)branding();
         overview.text(card.overview);
@@ -465,7 +501,7 @@ if (!ROOT.LampaView) {
       const settleGeometry=()=>{
         if(geometryFrame || geometryDisposed)return;
         geometryFrame=(window.requestAnimationFrame || (fn=>setTimeout(fn,16)))(()=>{geometryFrame=0;if(!element[0].isConnected)return;
-          if(event.line && event.line.minimalPosterRefresh)event.line.minimalPosterRefresh();else requestHeroLayout();
+          if(nativeLine?.minimalPosterRefresh)nativeLine.minimalPosterRefresh();else requestHeroLayout();
           const active=L.Activity.active() || {},controller=L.Controller.enabled && L.Controller.enabled(),scroll=activity.component && activity.component.scroll;
           const restore=keepHeroPosition;keepHeroPosition=false;if(restore && active.activity===activity && controller && controller.name==='lampa_view_hero' && scroll && scroll.immediate)scroll.immediate(element[0]);
         });
@@ -487,11 +523,11 @@ if (!ROOT.LampaView) {
         carousels.add(rotation);
         if(activity.component && activity.component.use)activity.component.use({onStart:refreshCarousels,onPause:refreshCarousels,onDestroy:()=>{rotation.dispose();carousels.delete(rotation);}});
       }
-      const nativeLine=event.line,tvStage=tvHomeStage(line[0],nativeLine,activity);
+      const tvStage=tvHomeStage(line[0],nativeLine,activity),up=()=>anime?activity.component.minimalAnimeTabs?.():L.Controller.toggle('head');
       if(L.Controller && nativeLine && nativeLine.use && nativeLine.toggle){
         let firstFocus=true;
         const enterHero=()=>{
-          if(!yes('lampa_view_enabled') || !yes('lampa_view_hero'))return L.Controller.toggle('head');
+          if(!yes('lampa_view_enabled') || !yes('lampa_view_hero'))return up();
           // Returning after a native activity rebuild also consumes the initial entry.
           firstFocus=false;
           const focusControl=()=>L.Controller.collectionFocus(controls.eq(focus),element);
@@ -504,14 +540,14 @@ if (!ROOT.LampaView) {
             },
             left:()=>{if(controls.eq(focus).is('.pt-hero__dot')){show(index-1);focus=controls.index(dots.children().eq(index));focusControl();}},
             right:()=>{if(controls.eq(focus).is('.pt-hero__dot'))show(index+1);focus=controls.index(dots.children().eq(index));focusControl();},
-            up:()=>{if(controls.eq(focus).is('.pt-hero__dot')){focus=controls.index(details);focusControl();}else L.Controller.toggle('head');},
-            down:()=>nativeLine.toggle(),
-            back:()=>L.Controller.toggle('head')
+            up:()=>{if(controls.eq(focus).is('.pt-hero__dot')){focus=controls.index(details);focusControl();}else up();},
+            down:()=>{if(tvStage)tvStage.expand();nativeLine.toggle();},
+            back:up
           });L.Controller.toggle('lampa_view_hero');
         };
         element[0]._minimalHeroEnter=()=>{focus=controls.index(details);enterHero();};
-        nativeLine.use({onlyUp:enterHero,onToggle:()=>{if(firstFocus){firstFocus=false;focus=0;setTimeout(()=>{if((L.Activity.active() || {}).activity===activity && !document.body.matches('.settings--open,.selectbox--open,.menu--open'))enterHero();},0);}else if(tvStage)tvStage.expand();}});
-        if(activity.component && activity.component.use){
+        nativeLine.use({onlyUp:enterHero,onToggle:()=>{if(firstFocus && !anime){firstFocus=false;focus=0;setTimeout(()=>{if((L.Activity.active() || {}).activity===activity && !document.body.matches('.settings--open,.selectbox--open,.menu--open'))enterHero();},0);}else if(tvStage)tvStage.expand();}});
+        if(!anime && activity.component && activity.component.use){
           activity.component.use({onStart:()=>{if(P.layout!=='mobile')setTimeout(()=>{if((L.Activity.active() || {}).activity===activity)enterHero();},0);}});
           const enabled=L.Controller.enabled && L.Controller.enabled();
           if(enabled && (enabled.name==='content' || enabled.controller && enabled.controller.link===nativeLine) && P.layout!=='mobile'){firstFocus=false;focus=0;enterHero();}
@@ -577,7 +613,7 @@ if (!ROOT.LampaView) {
     L.SettingsApi.addComponent({component:'lampa_view',name:'L A M P A',icon:icon('play'),before:'account'});
     P.searchHistory=searchHistory(L);unifiedSettings(L.SettingsApi,L,version);
     const options=[
-      ['lampa_view_hero',lampaViewText("Обложка на главной"),lampaViewText("Карусель каждые 10 секунд, ручное переключение и жесты."),true]
+      ['lampa_view_hero',lampaViewText("Обложка на главной")+' · '+lampaViewText('Аниме'),lampaViewText("Карусель каждые 10 секунд, ручное переключение и жесты."),true]
     ];
     options.forEach(([name,label,description,value]) => L.SettingsApi.addParam({component:'lampa_view',param:{name,type:'trigger',default:value},field:{name:label,description},onChange:setTheme}));
     L.SettingsApi.addParam({component:'lampa_view',param:{name:'lampa_view_theme',type:'select',values:{minimal:lampaViewText('Тёмная'),glass:lampaViewText('Стекло')},default:'minimal'},field:{name:lampaViewText("Тема интерфейса"),description:lampaViewText("Оформление всей Lampa. Переключается сразу, данные просмотра сохраняются.")},onChange:()=>{if(appearanceTheme)appearanceTheme.update();}});
@@ -652,6 +688,8 @@ if (!ROOT.LampaView) {
       if(!head || head._minimalHeroDown)return;
       const down=head.down;head._minimalHeroDown=true;
       head.down=function(){
+        const activity=L.Activity.active();
+        if(yes('lampa_view_enabled') && isAnimeHome(activity) && activity.activity?.component?.minimalAnimeTabs)return activity.activity.component.minimalAnimeTabs();
         const hero=yes('lampa_view_enabled') && yes('lampa_view_hero') && document.querySelector('.activity--active .pt-hero:not(.pt-hidden)');
         if(hero && hero._minimalHeroEnter)return hero._minimalHeroEnter();
         if(down)return down.apply(this,arguments);
@@ -692,7 +730,7 @@ if (!ROOT.LampaView) {
     }
     function visibleHero(){
       const active=L.Activity.active() || {},activity=active.activity,link=activity && activity.component;
-      if(active.component!=='main' || !link)return;
+      if((active.component!=='main' && !isAnimeHome(active)) || !link)return;
       if(activity.render().find('.pt-hero').length){
         document.dispatchEvent(new Event('minimal:hero-layout'));
         return;

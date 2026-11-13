@@ -1,4 +1,5 @@
 import {officialBanner} from './artwork.js';
+import {isAnimeHome} from './catalogue.js';
 
 const catalogue = new Set(['movie', 'tv', 'anime', 'cartoon', 'tvshow']);
 const playback = new Set(['alc_auto_view', 'lampac', 'online', 'torrents']);
@@ -39,7 +40,7 @@ function imageColor(image) {
 }
 
 export default function glassScene(L, enabled, chromePalette=()=>{}) {
- const colors = new Map(), detail = new WeakMap();
+ const colors = new Map(), detail = new WeakMap(), animeHome = new WeakMap();
  let home, visible, revision = 0;
 
  function read(image) {
@@ -93,7 +94,8 @@ export default function glassScene(L, enabled, chromePalette=()=>{}) {
  function paint(body, scene, color) {
   if (color) body.style.setProperty('--pt-scene-rgb', color.color);
   else body.style.removeProperty('--pt-scene-rgb');
-  if(scene==='catalogue' && color && L.Activity.active()?.component==='main'){
+  const active=L.Activity.active();
+  if(scene==='catalogue' && color && (active?.component==='main' || isAnimeHome(active))){
    const positions=['12% 7%','56% 9%','91% 12%','19% 44%','60% 49%','91% 51%'];
    const alpha=Math.min(1,strength()*1.35);
    const layers=color.tones.map((tone,index)=>
@@ -124,7 +126,7 @@ export default function glassScene(L, enabled, chromePalette=()=>{}) {
    if (L.Storage.get('lampa_view_hero', true) &&
       (active.component === 'main' || active.component === 'category' && catalogue.has(active.url || active.cat))) {
     scene = 'catalogue';
-    color = home;
+    color = isAnimeHome(active) ? animeHome.get(active) : home;
    } else if (active.component==='full') {
     scene='detail';
     color=detail.get(active) || cardPalette(active.movie || active.card);
@@ -141,7 +143,10 @@ export default function glassScene(L, enabled, chromePalette=()=>{}) {
      originPalette(origin) : cardPalette(target);
    }
   }
-  if (visible !== active || body.getAttribute('data-pt-scene') !== (scene || null)) paint(body, scene, '');
+  if (visible !== active || body.getAttribute('data-pt-scene') !== (scene || null)) {
+   paint(body, scene, '');
+   if(isAnimeHome(active) || isAnimeHome(visible)){tint('');chromePalette('');}
+  }
   visible = active;
   const artwork=enabled() && strength()>0 &&
    (active.component==='main' && L.Storage.get('lampa_view_hero', true)?home:
@@ -159,8 +164,9 @@ export default function glassScene(L, enabled, chromePalette=()=>{}) {
   if (!enabled() || !image?.complete || !image.naturalWidth || !image.closest('.activity--active')) return;
   const active = L.Activity.active();
   const source = image.currentSrc || image.src;
-  if (active?.component === 'main' && image.matches('.pt-hero__image')) {
-   home = palette(source, image);
+  if ((active?.component === 'main' || isAnimeHome(active)) && image.matches('.pt-hero__image')) {
+   const value=palette(source, image);
+   if(isAnimeHome(active))animeHome.set(active,value);else home=value;
    refresh();
   } else if (active?.component === 'full' && image.matches('.full-start__background')) {
    detail.set(active, palette(source, image));

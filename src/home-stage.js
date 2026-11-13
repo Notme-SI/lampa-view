@@ -2,7 +2,7 @@
 // to the common rail fitter, so the first and subsequent collections match.
 export default function homeStage(hero,root){
  // A covered activity can have different native padding and scroll offsets.
- if(!document.body.classList.contains('pt-home') || !root.closest('.activity--active'))return;
+ if(!document.body.matches('.pt-home,.pt-anime-home') || !root.closest('.activity--active'))return;
  const tv=document.body.classList.contains('pt-tv');
  // Rows reserve a focus gutter inside their outer margin. Align the banner
  // copy to that content edge, independently of horizontal rail scrolling.

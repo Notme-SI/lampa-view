@@ -34,11 +34,13 @@ async function run(engine, browser, mode) {
    {id:3,title:'Синий фильм',original_title:'Синий фильм',overview:'Movie',poster_path:'/poster.jpg',backdrop_path:'/other.jpg',source:'tmdb'}
   ];
   window.sceneMovies = data;
+  const anime=[{id:41,name:'Синее аниме',original_name:'Blue anime',overview:'Anime',poster_path:'/poster.jpg',backdrop_path:'/other.jpg',source:'tmdb'},{id:42,name:'Жёлтое аниме',original_name:'Yellow anime',overview:'Anime',poster_path:'/poster.jpg',backdrop_path:'/yellow.jpg',source:'tmdb'}];
   L.TMDB.image = path => 'http://scene.example.invalid'+path;
   L.Api.main = (options,success) => success([{title:'QA',url:'qa',results:data}]);
   L.Api.category = (options,success) => success([{title:'QA',url:'qa',results:data}]);
   L.Api.full = (p,ok) => ok({movie:{...data[1],production_countries:[],production_companies:[],spoken_languages:[],genres:[]},persons:{crew:[],cast:[]},discuss:{result:[]},images:{logos:[]},videos:{results:[]},simular:{results:[]},recomend:{results:[]}});
-  L.Api.sources.tmdb.get = (url,p,ok) => ok(url.includes('_credits') ? {cast:data,crew:[]} : {results:data,total_pages:1,page:1});
+  L.Api.sources.tmdb.get = (url,p,ok) => ok(url.includes('_credits') ? {cast:data,crew:[]} : {results:url.includes('with_original_language=ja')?anime:data,total_pages:1,page:1});
+  const network=window.testNetwork;window.testNetwork=(url,ok,fail)=>/shikimori\.(io|one)\/api\/animes\?/.test(url)?ok([{id:123,kind:'tv',name:'Shikimori anime',russian:'Аниме из Shikimori',image:{original:'/poster.jpg'}}]):network(url,ok,fail);
   L.Storage.set('lampa_view_theme','glass');
   L.Storage.set('background',false);
   L.Storage.set('animation',true);
@@ -48,7 +50,7 @@ async function run(engine, browser, mode) {
   await page.route('http://scene.example.invalid/**', route => {
    const url = route.request().url();
    requests.push(url);
-   const color = url.endsWith('/home.jpg')?'#ff0000':url.endsWith('/dark-home.jpg')?'#201510':url.endsWith('/detail.jpg')?'#00ff00':url.endsWith('/other.jpg')?'#0000ff':'#505050';
+   const color = url.endsWith('/home.jpg')?'#ff0000':url.endsWith('/dark-home.jpg')?'#201510':url.endsWith('/detail.jpg')?'#00ff00':url.endsWith('/other.jpg')?'#0000ff':url.endsWith('/yellow.jpg')?'#ffff00':'#505050';
    return route.fulfill({contentType:'image/svg+xml',headers:{'Access-Control-Allow-Origin':'*'},body:'<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900"><rect width="1600" height="900" fill="'+color+'"/></svg>'});
   });
   await page.evaluate(() => {
@@ -152,7 +154,7 @@ async function run(engine, browser, mode) {
   await page.evaluate(()=>Lampa.Activity.backward());
   await expectColor(0);
   const homeRequests = requests.filter(u=>u.endsWith('/home.jpg')).length;
-  for (const url of ['movie','tv','anime']) {
+  for (const url of ['movie','tv']) {
    await page.evaluate(url=>Lampa.Activity.push({component:'category',url,source:'tmdb'}), url);
    await expectColor(0);
    if(url==='movie'){
@@ -208,8 +210,34 @@ async function run(engine, browser, mode) {
   await page.evaluate(()=>Lampa.Activity.push({component:'torrents',search:'unlinked',from_search:true,source:'tmdb'}));
   assert.equal(await page.locator('body[data-pt-scene]').count(),0);
   await page.evaluate(()=>Lampa.Activity.push({component:'category',url:'anime',source:'tmdb'}));
-  await expectColor(0);
+  await expectColor(2);
+  const animeHero=page.locator('.activity--active .minimal-anime-controls + .pt-hero');
+  assert.equal(await animeHero.getAttribute('aria-label'),'Аниме');
+  assert.equal(await animeHero.locator('.pt-hero__dot').count(),2,'Only distinct anime from catalogue rows appear in the carousel');
+  await page.evaluate(()=>Lampa.Controller.enabled().controller.down());
+  assert.equal(await page.evaluate(()=>Lampa.Controller.enabled().name),'lampa_view_hero');
+  await animeHero.locator('.pt-hero__dot').nth(1).click();
+  await page.waitForFunction(()=>{const [r,g,b]=document.body.style.getPropertyValue('--pt-scene-rgb').split(',').map(Number);return r>b+30 && g>b+30;});
+  await page.evaluate(()=>{Lampa.Controller.enabled().controller.down();Lampa.Controller.enabled().controller.up();});
+  assert.equal(await page.evaluate(()=>Lampa.Controller.enabled().name),'lampa_view_hero');
+  await page.evaluate(()=>Lampa.Controller.enabled().controller.up());
+  assert.equal(await page.evaluate(()=>Lampa.Controller.enabled().name),'minimal_anime_tabs');
+  await page.locator('.activity--active [data-catalogue=shikimori]').click();
+  await expectColor(2);
+  assert.equal(await page.locator('.activity--active [data-catalogue=shikimori]').getAttribute('aria-selected'),'true');
+  assert.equal(await animeHero.locator('.pt-hero__title').textContent(),'Синее аниме');
+  await page.evaluate(()=>Lampa.Activity.push({component:'category_full',url:'order=popularity',title:'Аниме',source:'minimal_shiki',page:1}));
+  await page.waitForFunction(()=>Lampa.Activity.active().component==='category_full' && !document.body.classList.contains('pt-anime-home') && !document.body.style.getPropertyValue('--pt-scene-rgb') && !document.body.style.getPropertyValue('--pt-material-rgb') && !document.body.style.getPropertyValue('--pt-home-atmosphere'));
+  assert.equal(await page.locator('.activity--active .pt-hero').count(),0);
+  await page.evaluate(()=>Lampa.Activity.backward());
+  await expectColor(2);
+  await animeHero.locator('.pt-hero__action').click();
+  await page.waitForFunction(()=>Lampa.Activity.active().component==='full',null,{timeout:4000});
+  const selected=await page.evaluate(()=>{const active=Lampa.Activity.active();return {id:Number(active.id),source:active.source};});
+  assert.deepEqual(selected,{id:41,source:'tmdb'});
+  await expectColor(1);
   await page.evaluate(()=>Lampa.Activity.push({component:'main',source:'tmdb'}));
+  await expectColor(0);
   await page.waitForSelector('.activity--active .card__view');
   await page.evaluate(() => {
    const panel = document.createElement('div');

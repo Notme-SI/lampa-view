@@ -1,3 +1,7 @@
+## 0.5.156
+
+- Add an anime carousel to the Anime landing page in both catalogue modes. Keep its artwork tint on that page.
+
 ## 0.5.155
 
 - Extend the desktop home banner down to the first collection. Fit the collection and its saved progress near the bottom of the first screen, with watch history below the fold.

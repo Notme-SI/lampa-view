@@ -2,6 +2,7 @@ import {text as lampaViewText} from './i18n.js';
 import tmdbGet,{catalogueResults} from './tmdb.js';
 import {DISCOVERY_KINDS,discoveryPlan,discoveryState} from './discovery-model.js';
 import {DISCOVERY_SOURCE} from './discovery-source.js';
+export const isAnimeHome=activity=>activity?.component==='category' && (activity.url || activity.cat)==='anime';
 export function animeMode(L,object={}){
  const mode=object.minimal_anime_catalogue || (L.Storage.value?L.Storage.value('minimal_anime_catalogue','standard'):L.Storage.get('minimal_anime_catalogue','standard'));
  return mode==='shikimori'?'shikimori':'standard';
