@@ -2,6 +2,7 @@ import {locale,text as t} from './i18n.js';
 import {cataloguePlan} from './catalogue.js';
 import {canonicalCountry,countryTitle,discoveryOptions,discoveryPlan} from './discovery-model.js';
 import {DISCOVERY_SOURCE} from './discovery-source.js';
+import tmdbGet from './tmdb.js';
 
 export const BROWSE_KINDS=['movie','tv','cartoon','tvshow'];
 export function browseOptions(kind,date=new Date()){
@@ -14,7 +15,7 @@ export function browseOptions(kind,date=new Date()){
  }
  const seen=new Set();
  const networks=['tv','cartoon'].includes(kind)?options.networks:[];
- const studios=options.studios.length?discoveryPlan(kind,{section:'studios'},date):[];
+ const studios=options.studios.length?discoveryPlan(kind,{section:'studios'},date).map(row=>({...row,brand:options.studios.find(studio=>studio.id===row.discovery.company)})):[];
  return {collections:collections.filter(row=>{const key=JSON.stringify(row.discovery);if(seen.has(key))return false;seen.add(key);return true;}),networks,studios,countries:options.countries,genres:options.genres.filter(g=>kind==='movie'?g.genre!==16:kind==='tv'?![16,99,10762,10763,10764,10767].includes(g.genre):true)};
 }
 export const browseSorts=(kind,type)=>discoveryOptions(kind).sorts.filter(([key])=>key!=='revenue' || type!=='tv').map(([key,title])=>[key,key==='popular'?'Популярные':key==='new'?'Новые':title]);
@@ -74,19 +75,37 @@ export function browseSpec(kind,value={},date=new Date()){
  return spec;
 }
 
-// Add a white mark to the native Select row without injecting its title as HTML.
-function brandOption(option,kind){
- const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">'+
-  (kind==='network'?'<rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8m-4-4v4"/>':'<path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Zm0 0-1-4 18-3 1 4L3 9Zm4-5 3 4m3-5 3 4"/>')+'</svg>';
- return {...option,title:'',brandTitle:option.title,onDraw(item){
-  const title=item.find('.selectbox-item__title');
-  title.text(option.title);
-  const icon=document.createElement('img');
-  icon.className='minimal-catalogue-brand-icon';
-  icon.alt='';
-  icon.src='data:image/svg+xml,'+encodeURIComponent(svg);
-  title.prepend(icon).addClass('minimal-catalogue-brand-title');
- }};
+const platformNetworks=new Set([213,453,1024,2493,2552,2739,2859,3186,3353,3827,3871,3882,3923,4085,4330,5806]);
+export function brandGroups(options){
+ const networkRows=options.networks.map(brand=>({title:brand.name,brand,network:brand.id,studio:'',endpoint:'network'}));
+ return [
+  ['Студии',options.studios.map(row=>({title:row.title,brand:row.brand,studio:row.key,network:0,endpoint:'company'}))],
+  ['Онлайн-кинотеатры',networkRows.filter(row=>platformNetworks.has(row.network))],
+  ['Телеканалы',networkRows.filter(row=>!platformNetworks.has(row.network))]
+ ].filter(([,rows])=>rows.length);
+}
+
+function brandLogos(L){
+ const cache=new Map(),queue=[];
+ let pending=0;
+ function drain(){
+  while(pending<2 && queue.length){
+   const {key,resolve}=queue.shift();pending++;
+   const finish=(path,failed=false)=>{
+    if(failed)cache.delete(key);
+    pending--;resolve(path);drain();
+   };
+   tmdbGet(L,key,{},data=>finish(/^\/[\w.-]+\.(png|svg|webp)$/i.test(data?.logo_path || '')?data.logo_path:''),()=>finish('',true));
+  }
+ }
+ return (endpoint,brand)=>{
+  const key=endpoint+'/'+brand.id;
+  if(!cache.has(key)){
+   cache.set(key,new Promise(resolve=>queue.push({key,resolve})));
+   drain();
+  }
+  return cache.get(key) || Promise.resolve('');
+ };
 }
 
 // Shared native-grid controls. Their controller also handles the first row on TV.
@@ -110,6 +129,7 @@ export function gridControls(L,item,object,buttons,{className='minimal-catalogue
 export default function catalogueBrowser(L,warmPosters){
  if(!L.Component || !L.Component.get)return;
  const Category=L.Component.get('category'),Full=L.Component.get('category_full'),list=L.Api.list;
+ const logo=brandLogos(L);
  const warmed=new WeakMap();
  function warmNext(params,json,load){
   const active=L.Activity.active(),page=Number(json?.page || params.page)||1;
@@ -147,7 +167,7 @@ export default function catalogueBrowser(L,warmPosters){
  };
  function alphabetical(values){
   const collator=new Intl.Collator(locale(),{sensitivity:'base'});
-  return values.sort((a,b)=>collator.compare(a.brandTitle || a.title,b.brandTitle || b.title));
+  return values.sort((a,b)=>collator.compare(a.title,b.title));
  }
  const sortTitles=(kind,type)=>Object.fromEntries(browseSorts(kind,type).map(([key,title])=>[key,t(title)]));
  L.Component.add('category_full',function(object){
@@ -177,16 +197,45 @@ export default function catalogueBrowser(L,warmPosters){
    const reset=values[0]?.value==='' || values[0]?.value===0?values.shift():null;
    alphabetical(values);
    if(reset)values.unshift(reset);
-   L.Select.show({title,items:values.map(v=>({...v,selected:v.value===(key==='sort'?spec[key]:state[key])})),onSelect:({value})=>{
-    const change={[key]:value};
-    const selectedType=key==='network' && value?'tv':key==='studio' && value?options.studios.find(row=>row.key===value)?.discovery.type:null;
-    if(selectedType){
-     if(key==='network')change.studio='';
-     if(key==='studio')change.network=0;
-     if(collection?.discovery.type && collection.discovery.type!==selectedType)change.collection='';
-    }
-    apply(change,index);
-   },onBack:()=>controls.toggle()});
+   L.Select.show({title,items:values.map(v=>({...v,selected:v.value===(key==='sort'?spec[key]:state[key])})),
+    onSelect:({value})=>apply({[key]:value},index),onBack:()=>controls.toggle()});
+  }
+  function selectBrand(index){
+   const rows=new WeakMap(),started=new WeakSet();
+   function showLogo(node){
+    const row=rows.get(node);
+    if(!row || started.has(node))return;
+    started.add(node);observer?.unobserve(node);
+    logo(row.endpoint,row.brand).then(path=>{
+     if(!path || !node.isConnected)return;
+     const image=document.createElement('img');
+     image.alt='';image.className='minimal-catalogue-brand-icon';
+     image.onerror=()=>image.remove();
+     node.prepend(image);
+     image.src=L.TMDB.image('/t/p/'+(/\.svg$/i.test(path)?'original':'w92')+path,{preserveSize:true});
+    });
+   }
+   const observer=typeof IntersectionObserver==='function'?new IntersectionObserver(entries=>{
+    for(const entry of entries)if(entry.isIntersecting)showLogo(entry.target);
+   }):null;
+   const close=()=>observer?.disconnect();
+   const items=[{title:t('Все бренды'),network:0,studio:'',selected:!state.network && !state.studio}];
+   for(const [label,entries] of brandGroups(options)){
+    items.push({title:t(label),separator:true});
+    for(const row of alphabetical(entries))items.push({...row,title:'',selected:row.network===state.network && row.studio===state.studio,onDraw(item){
+     const title=item.find('.selectbox-item__title').text(row.title).addClass('minimal-catalogue-brand-title')[0];
+     rows.set(title,row);observer?.observe(title);
+    }});
+   }
+   L.Select.show({title:t('Бренды'),items,
+    onFocus:(_,node)=>showLogo(node.querySelector('.minimal-catalogue-brand-title')),
+    onSelect({network,studio}){
+     close();
+     const type=network?'tv':options.studios.find(row=>row.key===studio)?.discovery.type;
+     apply({network,studio,...(type && collection?.discovery.type && collection.discovery.type!==type?{collection:''}:{})},index);
+    },
+    onBack(){close();controls.toggle();}
+   });
   }
   function years(index){
    const date=new Date(),year=date.getFullYear(),values=browseYears(kind,date,state.period);
@@ -201,8 +250,7 @@ export default function catalogueBrowser(L,warmPosters){
    {title:sort[spec.sort] || sort.popular,choose:i=>select(t('Сортировка'),Object.keys(sort).map(value=>({title:sort[value],value})),'sort',i)},
    {title:state.period?state.period.replace('-','–'):t('Все годы'),choose:years},
    {title:spec.country?countryTitle(spec.country):t('Все страны'),choose:i=>select(t('Страны'),[{title:t('Все страны'),value:''},...options.countries.map(([code])=>({title:countryTitle(code),value:code}))],'country',i)},
-   ...(options.networks.length?[{title:network?.name || t('Все каналы'),choose:i=>select(t('Каналы и платформы'),[{title:t('Все каналы'),value:0},...options.networks.map(row=>brandOption({title:row.name,value:row.id},'network'))],'network',i)}]:[]),
-   ...(options.studios.length?[{title:studio?.title || t('Все студии'),choose:i=>select(t('Студии'),[{title:t('Все студии'),value:''},...options.studios.map(row=>brandOption({title:row.title,value:row.key},'studio'))],'studio',i)}]:[])
+   ...(options.networks.length || options.studios.length?[{title:studio?.title || network?.name || t('Все бренды'),choose:selectBrand}]:[])
   ]);
   item.use({onDestroy(){object.minimal_browse_cancelled=true;}});return item;
  });

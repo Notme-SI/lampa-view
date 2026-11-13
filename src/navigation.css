@@ -262,7 +262,7 @@ body.lampa_view:not(.pt-mobile) {
  --pt-dock-width:min(var(--pt-dock-target),max(9rem,calc((100vw - var(--pt-header-min)) / 2 - var(--pt-shell-inset) - var(--pt-header-gap))));
  --pt-header-room:calc(100vw - 2 * (var(--pt-shell-inset) + var(--pt-dock-width) + var(--pt-header-gap)));
 }
-body.lampa_view.pt-tv:not(.pt-mobile) {--pt-header-width:52vw;--pt-dock-target:max(21rem,360px)}
+body.lampa_view.pt-tv:not(.pt-mobile) {--pt-header-width:52vw;--pt-dock-target:clamp(172px,19vw,34em)}
 body.lampa_view {--pt-content-inset:calc(2 * var(--pt-shell-inset) + var(--pt-rail-panel));--pt-panel-room:calc(100vh - var(--pt-dock-y) - var(--pt-shell-inset));--pt-row-focus:rgba(var(--pt-tint-rgb),.24);--pt-row-edge:var(--pt-accent)}
 body.lampa_view.pt-mobile,body.lampa_view.pt-tablet {--pt-content-inset:var(--pt-shell-inset)}
 body.lampa_view.pt-theme-glass {--pt-row-focus:rgba(255,255,255,.2);--pt-row-edge:#ffffff9c}
@@ -378,7 +378,7 @@ body.lampa_view.pt-mobile.pt-frame-open .navigation-bar {display:none!important}
 /* One native grid with compact filter chips; no repeated category rails. */
 body.lampa_view .minimal-catalogue-controls{display:flex;flex-wrap:wrap;gap:.65em;width:100%;max-width:90vw;margin:0 auto;box-sizing:border-box;padding:.6em .5em 1.2em;align-items:center}
 body.lampa_view .selectbox-item__title.minimal-catalogue-brand-title {display:flex;align-items:center;gap:.7em}
-body.lampa_view .minimal-catalogue-brand-icon {display:block;flex:none;width:1.2em;height:1.2em;object-fit:contain;pointer-events:none}
+body.lampa_view .minimal-catalogue-brand-icon {display:block;flex:none;width:2.8em;height:1.35em;object-fit:contain;filter:brightness(0) invert(1);pointer-events:none}
 body.lampa_view .minimal-catalogue-control{appearance:none;font:inherit;font-size:1.05em;line-height:1.25;color:var(--pt-text,#eee);background:var(--pt-glass-button,rgba(25,25,25,.8));border:1px solid var(--pt-line,rgba(255,255,255,.18));border-radius:2em;padding:.65em 1em;min-height:2.7em;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;transition:background .18s,box-shadow .18s}
 body.lampa_view .minimal-catalogue-control:is(.focus,:focus-visible,:hover){outline:0;background:var(--pt-row-focus,rgba(255,255,255,.18));box-shadow:inset 0 0 0 1px var(--pt-row-edge,var(--pt-accent));border-color:var(--pt-row-edge,var(--pt-accent))}
 body.lampa_view .minimal-catalogue-control[aria-pressed=true]{background:var(--pt-text,#eee);color:#171717;border-color:transparent}

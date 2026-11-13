@@ -117,7 +117,8 @@ async function run(engine, browser, mode) {
      for(const rgb of [lower,inner])assert.ok(rgb[0]>=250 && rgb[1]<=4 && rgb[2]<=4,'The source color stays intact outside the edge blends: '+JSON.stringify({mode,theme,rgb}));
      assert.ok(feather[0]>70 && feather[0]<220,'The bottom edge eases out through a translucent region: '+JSON.stringify({mode,theme,feather}));
      const bottom=await artwork.evaluate(img=>img.parentElement.getBoundingClientRect().bottom/innerHeight);
-     const [underLogo,leftOfBanner,tintedPage]=await samplePixels(page,[[.14,middle],[.27,.12],[.94,bottom+.012]]);
+     // Sample outside the copy: glyph placement differs between browser fonts.
+     const [underLogo,leftOfBanner,tintedPage]=await samplePixels(page,[[.03,middle],[.27,.12],[.94,bottom+.012]]);
      assert.ok(underLogo[0]>Math.max(underLogo[1],underLogo[2])+3 && [...underLogo,...leftOfBanner].every(channel=>channel<=55),'The text area stays dark while picking up the banner tint: '+JSON.stringify({mode,theme,underLogo,leftOfBanner}));
      assert.ok(tintedPage[0]>Math.max(tintedPage[1],tintedPage[2])+8,'Artwork tint continues under the right side of the banner: '+JSON.stringify({mode,theme,tintedPage}));
      const fadeSamples=await samplePixels(page,[.27,.33,.39,.45,.51,.57].map(x=>[x,bottom+.012]));

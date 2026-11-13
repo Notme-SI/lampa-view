@@ -34,8 +34,23 @@ body.lampa_view.pt-tv .head__body {max-width:none;width:94%;padding:.5em 0}
 body.lampa_view.pt-tv .wrap__content {padding-top:4.032em!important}
 body.lampa_view.pt-tv .card__view .icon--history {font-size:.95em;width:2.1em;height:1.7em}
 body.lampa_view.pt-tv .card {-webkit-text-size-adjust:100%;text-size-adjust:100%}
-body.lampa_view.pt-tv .settings__content {font-size:calc(var(--pt-ui-font) * 1.1)!important;width:30em;max-width:38vw;box-sizing:border-box}
+body.lampa_view.pt-tv:not(.pt-mobile) {
+ --pt-dock-y:var(--pt-header-space);
+ --pt-tv-panel-width:clamp(216px,23vw,39em);
+}
+body.lampa_view.pt-tv:not(.pt-mobile) .settings .settings__content,
+body.lampa_view.pt-tv:not(.pt-mobile) .selectbox:not(.minimal-franchise-menu) .selectbox__content {
+ width:var(--pt-tv-panel-width)!important;
+ max-width:calc(100vw - 2 * var(--pt-shell-inset));
+}
+body.lampa_view.pt-tv .settings__content {font-size:calc(var(--pt-ui-font) * 1.1)!important;box-sizing:border-box}
 body.lampa_view.pt-tv .selectbox:not(.minimal-franchise-menu) .selectbox__content {font-size:calc(var(--pt-ui-font) * 1.1)!important;box-sizing:border-box}
+body.lampa_view.pt-tv:not(.pt-mobile) .modal:not(.modal--large,.modal--full,.modal--overlay,.minimal-torrent-files,.minimal-frame-modal,.pt-notices) {
+ padding-top:var(--pt-dock-y);
+}
+body.lampa_view.pt-tv:not(.pt-mobile) .modal:not(.modal--large,.modal--full,.modal--overlay,.minimal-torrent-files,.minimal-frame-modal,.pt-notices) .modal__content {
+ box-sizing:border-box;width:100%;max-width:clamp(248px,31vw,46em);max-height:var(--pt-panel-room);overflow:hidden;
+}
 
 /* Hero overview uses a compact preview. Entering collections restores the
    shared profile immediately; only composited card transforms are animated. */

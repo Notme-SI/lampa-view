@@ -14,9 +14,11 @@ export default function scrollMotion(read,write,duration=160){
  function tick(time){
   frame=0;
   const progress=Math.max(0,Math.min(1,(time-start)/duration));
-  write(from+(target-from)*(1-Math.pow(1-progress,3)));
-  if(progress<1 && Math.abs(read()-target)>.5)frame=window.requestAnimationFrame(tick);
-  else write(target);
+  const remaining=(target-from)*Math.pow(1-progress,3);
+  if(progress<1 && Math.abs(remaining)>.5){
+   write(target-remaining);
+   frame=window.requestAnimationFrame(tick);
+  }else write(target);
  }
  return {
   to(value){

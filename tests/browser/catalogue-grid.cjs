@@ -1,8 +1,8 @@
 const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env.PLAYWRIGHT_MODULE || 'playwright'),{setup}=require('../fixtures/native-browser.cjs'),response=require('../fixtures/discovery-response.cjs');
 (async()=>{for(const engine of [chromium,webkit]){const browser=await engine.launch({headless:true});try{for(const mode of ['desktop','tv','mobile','tablet']){
  const r=await setup(browser,{mode,viewport:mode==='tv'?{width:960,height:540}:mode==='mobile'?{width:390,height:844}:mode==='tablet'?{width:834,height:1194}:{width:1440,height:1000}}),{page}=r;try{
-  await page.evaluate(response=>{const L=Lampa;for(const name of ['Params','Layer','DeviceInput'])L[name].init();L.Controller.observe();L.Keypad.init();L.Keypad.enable();Navigator.follow('focus',e=>L.Controller.focus(e.elem));window.qaResponse=eval('('+response+')');window.qaRequests=[];window.qaPages=[];L.Api.sources.tmdb.get=(url,p,ok)=>{qaRequests.push(url);qaPages.push(Number(p.page)||1);setTimeout(()=>ok(url.includes('_credits')?{cast:Array.from({length:url.includes('movie_credits')?67:3},(_,i)=>({id:i+1,title:'Проект '+i,name:'Проект '+i,popularity:100-i,poster_path:'/p.jpg'})),crew:[{id:1,title:'Дубликат'}]}:qaResponse(url,p.page)),0);};L.Activity.push({component:'category',url:'tv',source:'tmdb',title:'Сериалы',page:1});},response.toString());
-  await page.waitForSelector('.activity--active .card');assert.equal(await page.locator('.activity--active .minimal-catalogue-control').count(),7);assert.equal(await page.locator('.activity--active .items-line').count(),0);
+  await page.evaluate(response=>{const L=Lampa;for(const name of ['Params','Layer','DeviceInput'])L[name].init();L.Controller.observe();L.Keypad.init();L.Keypad.enable();Navigator.follow('focus',e=>L.Controller.focus(e.elem));window.qaResponse=eval('('+response+')');window.qaRequests=[];window.qaPages=[];window.qaBrandRequests=[];L.Api.sources.tmdb.get=(url,p,ok)=>{if(/^(network|company)\//.test(url)){qaBrandRequests.push(url);setTimeout(()=>ok({logo_path:'/'+url.replace('/','-')+'.png'}),0);return;}qaRequests.push(url);qaPages.push(Number(p.page)||1);setTimeout(()=>ok(url.includes('_credits')?{cast:Array.from({length:url.includes('movie_credits')?67:3},(_,i)=>({id:i+1,title:'Проект '+i,name:'Проект '+i,popularity:100-i,poster_path:'/p.jpg'})),crew:[{id:1,title:'Дубликат'}]}:qaResponse(url,p.page)),0);};L.Activity.push({component:'category',url:'tv',source:'tmdb',title:'Сериалы',page:1});},response.toString());
+  await page.waitForSelector('.activity--active .card');assert.equal(await page.locator('.activity--active .minimal-catalogue-control').count(),6);assert.equal(await page.locator('.activity--active .items-line').count(),0);
   const first=await page.evaluate(()=>{const c=Lampa.Activity.active().activity.component;return {count:c.items.length,requests:qaRequests.length,total:c.total_pages};});assert.equal(first.count,20);if(mode==='desktop'){await page.waitForFunction(()=>qaPages.includes(2));assert.equal(await page.evaluate(()=>Lampa.Activity.active().activity.component.items.length),20,'Warm the next page without mounting it');}else assert.equal(first.requests,1);
   await page.waitForTimeout(350);await page.keyboard.press('ArrowDown');await page.waitForTimeout(200);assert.equal(await page.locator('.activity--active .card.focus').count(),1);await page.keyboard.press('ArrowUp');await page.waitForTimeout(200);assert.equal(await page.locator('.minimal-catalogue-control.focus').count(),1);
   await page.locator('.activity--active').getByRole('button',{name:'Все жанры',exact:true}).click();await page.locator('.selectbox-item').filter({hasText:'Комедии'}).first().evaluate(n=>n.dispatchEvent(new Event('hover:enter')));await page.waitForFunction(()=>Lampa.Activity.active().minimal_browse.genre==='35');await page.waitForSelector('.activity--active .card');
@@ -28,16 +28,21 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
     if(index===4){assert.equal(labels.filter(v=>v==='Россия').length,1);assert.ok(!labels.includes('СССР'));}
     await page.evaluate(()=>Lampa.Controller.back());
    }
-   await page.locator('.activity--active').getByRole('button',{name:'Все каналы',exact:true}).click();
+   await page.locator('.activity--active').getByRole('button',{name:'Все бренды',exact:true}).click();
+   assert.deepEqual(await page.locator('.selectbox .settings-param-title').allTextContents(),['Студии','Онлайн-кинотеатры','Телеканалы']);
    const netflix=page.locator('.selectbox-item').filter({hasText:'Netflix'});
-   assert.equal(await netflix.locator('.minimal-catalogue-brand-icon').count(),1);
+   await netflix.evaluate(node=>Lampa.Controller.collectionFocus(node,Lampa.Select.render(true)));
+   await netflix.locator('.minimal-catalogue-brand-icon').waitFor({state:'attached'});
+   assert.ok(await page.evaluate(()=>qaBrandRequests.includes('network/213')));
    await netflix.evaluate(node=>node.dispatchEvent(new Event('hover:enter')));
    await page.waitForFunction(()=>Lampa.Activity.active().minimal_browse.network===213);
    await page.waitForSelector('.activity--active .card');
    assert.ok(await page.evaluate(()=>qaRequests.some(url=>url.includes('with_networks=213'))));
-   await page.locator('.activity--active').getByRole('button',{name:'Все студии',exact:true}).click();
+   await page.locator('.activity--active').getByRole('button',{name:'Netflix',exact:true}).click();
    const studio=page.locator('.selectbox-item').filter({hasText:'Marvel Studios'});
-   assert.equal(await studio.locator('.minimal-catalogue-brand-icon').count(),1);
+   await studio.evaluate(node=>Lampa.Controller.collectionFocus(node,Lampa.Select.render(true)));
+   await studio.locator('.minimal-catalogue-brand-icon').waitFor({state:'attached'});
+   assert.ok(await page.evaluate(()=>qaBrandRequests.includes('company/420')));
    await studio.evaluate(node=>node.dispatchEvent(new Event('hover:enter')));
    await page.waitForFunction(()=>Lampa.Activity.active().minimal_browse.studio==='studio-420-tv');
    await page.waitForSelector('.activity--active .card');

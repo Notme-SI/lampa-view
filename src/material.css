@@ -15,9 +15,15 @@ body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] {
  background:var(--pt-bg)!important;background-attachment:scroll!important;
 }
 body.lampa_view.pt-theme-glass[data-lampa-theme="glass"].pt-tv {
- /* Share the desktop material and saved opacity. Limit the TV filter radius
-    rather than replacing the design with almost opaque reading panes. */
  --pt-glass-blur:12px;
+ --pt-poster-glass:var(--pt-poster-badge);
+ --pt-poster-glass-filter:none;
+ --pt-cast-glass-filter:none;
+}
+/* Keep the fixed header from resampling every poster during remote navigation. */
+body.lampa_view.pt-theme-glass[data-lampa-theme="glass"].pt-tv.pt-tv-busy .head .head__body {
+ background:var(--pt-navigation-panel)!important;
+ backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
 }
 /* Clear inherited filters first. Explicit groups below own the glass layer. */
 body.lampa_view[data-lampa-theme] *,body.lampa_view[data-lampa-theme] *:before,body.lampa_view[data-lampa-theme] *:after {backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
@@ -51,7 +57,7 @@ body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] :is(.full-start__button
    common dark tint and edge stay visible even over a nearly black backdrop. */
 body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] :is(.minimal-detail-facts,.minimal-detail-cast>.minimal-cast-native,.person-start) {
  background:var(--pt-glass-sheen),var(--pt-panel)!important;border:1px solid var(--pt-glass-border);border-radius:1.5em;box-shadow:var(--pt-glass-edge);
- backdrop-filter:var(--pt-glass-filter)!important;-webkit-backdrop-filter:var(--pt-glass-filter)!important;
+ backdrop-filter:var(--pt-cast-glass-filter,var(--pt-glass-filter))!important;-webkit-backdrop-filter:var(--pt-cast-glass-filter,var(--pt-glass-filter))!important;
 }
 /* Blend the exposed sides into the page, leaving the rest of the frame opaque. */
 body.lampa_view.pt-home[data-lampa-theme]:not(.pt-mobile) .wrap__content:has(.activity--active .pt-hero:not(.pt-hidden)) {padding-top:0!important}
@@ -239,9 +245,9 @@ body.lampa_view.pt-tv.pt-theme-glass[data-pt-scene] .wrap {
 /* Match the header material on each independent poster label. No filter on
    the full poster: only the small label rectangles sample the artwork. */
 body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .card :is(.pt-kind,.pt-quality,.card__quality,.pt-series-status,.card__vote,.card__marker,.card__new-episode) {
- background:var(--pt-header-glass)!important;border:0!important;
+ background:var(--pt-poster-glass,var(--pt-header-glass))!important;border:0!important;
  box-shadow:none!important;text-shadow:none;
- backdrop-filter:var(--pt-glass-filter)!important;-webkit-backdrop-filter:var(--pt-glass-filter)!important;
+ backdrop-filter:var(--pt-poster-glass-filter,var(--pt-glass-filter))!important;-webkit-backdrop-filter:var(--pt-poster-glass-filter,var(--pt-glass-filter))!important;
 }
 /* Text containers never paint a second pill inside the glass surface. */
 body.lampa_view[data-lampa-theme] .card :is(.pt-kind,.pt-quality,.pt-series-status,.card__quality,.card__vote,.card__marker,.card__new-episode)>* {
@@ -258,8 +264,8 @@ body.lampa_view[data-lampa-theme] .card .card__view .icon--history {
 @media(prefers-reduced-transparency:reduce){body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .card :is(.pt-kind,.pt-quality,.card__quality,.pt-series-status,.card__vote,.card__marker,.card__new-episode){background:#202020!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}}
 
 body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .card .card__icon:not(.icon--history) {
- background-color:var(--pt-header-glass)!important;border:0!important;box-shadow:inset 0 0 0 1px var(--pt-glass-border)!important;
- backdrop-filter:var(--pt-glass-filter)!important;-webkit-backdrop-filter:var(--pt-glass-filter)!important;
+ background-color:var(--pt-poster-glass,var(--pt-header-glass))!important;border:0!important;box-shadow:inset 0 0 0 1px var(--pt-glass-border)!important;
+ backdrop-filter:var(--pt-poster-glass-filter,var(--pt-glass-filter))!important;-webkit-backdrop-filter:var(--pt-poster-glass-filter,var(--pt-glass-filter))!important;
 }
 
 body.lampa_view.pt-touch-captions[data-lampa-theme] .card:not(.pt-card-touch) .card__view {transform:none!important;-webkit-transform:none!important;transition:none!important}

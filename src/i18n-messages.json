@@ -8484,6 +8484,18 @@
   "pl": "Kanały i platformy",
   "es": "Canales y plataformas"
  },
+ "Бренды": {
+  "en": "Brands", "uk": "Бренди", "be": "Брэнды", "zh": "品牌", "pt": "Marcas", "bg": "Марки", "he": "מותגים", "cs": "Značky", "ro": "Mărci", "fr": "Marques", "pl": "Marki", "es": "Marcas"
+ },
+ "Все бренды": {
+  "en": "All brands", "uk": "Усі бренди", "be": "Усе брэнды", "zh": "所有品牌", "pt": "Todas as marcas", "bg": "Всички марки", "he": "כל המותגים", "cs": "Všechny značky", "ro": "Toate mărcile", "fr": "Toutes les marques", "pl": "Wszystkie marki", "es": "Todas las marcas"
+ },
+ "Онлайн-кинотеатры": {
+  "en": "Streaming services", "uk": "Стримінгові сервіси", "be": "Стрымінгавыя сэрвісы", "zh": "流媒体服务", "pt": "Serviços de streaming", "bg": "Стрийминг услуги", "he": "שירותי סטרימינג", "cs": "Streamovací služby", "ro": "Servicii de streaming", "fr": "Services de streaming", "pl": "Serwisy streamingowe", "es": "Servicios de streaming"
+ },
+ "Телеканалы": {
+  "en": "TV channels", "uk": "Телеканали", "be": "Тэлеканалы", "zh": "电视频道", "pt": "Canais de TV", "bg": "ТВ канали", "he": "ערוצי טלוויזיה", "cs": "Televizní kanály", "ro": "Canale TV", "fr": "Chaînes TV", "pl": "Kanały TV", "es": "Canales de TV"
+ },
  "Все студии": {
   "en": "All studios",
   "uk": "Усі студії",

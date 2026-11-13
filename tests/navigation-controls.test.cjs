@@ -29,8 +29,8 @@ test('cartoons menu sits below series and opens bounded film/TV animation rows t
   assert.ok(requests.some(path=>path.startsWith('discover/movie?')));assert.ok(requests.some(path=>path.startsWith('discover/tv?')));
   for(const path of requests){if(/^trending\/(?:movie|tv)\//.test(path))continue;const query=new URLSearchParams(path.split('?')[1]);assert.match(path,/^discover\/(?:movie|tv)\?/);assert.ok(query.get('with_genres').split(',').includes('16'));if(!query.has('with_companies') && !query.has('with_networks'))assert.equal(query.get('without_keywords'),'210024');}
   const filters=[...root.querySelectorAll('.minimal-catalogue-control')].map(node=>node.textContent);
-  assert.ok(filters.includes('Все каналы') && filters.includes('Все студии'));
-  assert.equal(filters.length,7);assert.equal(rows.items.length,20);assert.equal(new Set(rows.items.map(item=>item.data.media_type+':'+item.data.id)).size,20);
+  assert.ok(filters.includes('Все бренды'));
+  assert.equal(filters.length,6);assert.equal(rows.items.length,20);assert.equal(new Set(rows.items.map(item=>item.data.media_type+':'+item.data.id)).size,20);
   assert.deepEqual(r.errors,[]);
  }finally{r.close();}
 });

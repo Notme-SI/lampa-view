@@ -20,7 +20,7 @@ const {setup}=require('../fixtures/native-browser.cjs');
       const poster=hero.nextElementSibling.querySelector('.card__view');
       const quality=document.createElement('span');quality.className='pt-quality';quality.textContent='WEB-DL';poster.appendChild(quality);
       const type=document.createElement('span');type.className='pt-kind';type.textContent='Мультфильм';poster.appendChild(type);
-      const result={ratingGlyph:parseFloat(getComputedStyle(poster.querySelector(".card__vote"),":after").fontSize),width:innerWidth,menu:rect(document.querySelector('.head .head__menu-icon')),settings:rect(document.querySelector('.head .open--settings')),search:rect(document.querySelector('.head .open--search')),hero:rect(hero),panel:rect(body),dots:rect(dots),poster:rect(poster),tags:[rect(type),rect(quality)],blur:[...document.querySelectorAll('.head *, .pt-hero *, .wrap__left')].some(n=>getComputedStyle(n).backdropFilter!=='none' && getComputedStyle(n).backdropFilter!==undefined)};
+      const result={ratingGlyph:parseFloat(getComputedStyle(poster.querySelector(".card__vote"),":after").fontSize),width:innerWidth,menu:rect(document.querySelector('.head .head__menu-icon')),settings:rect(document.querySelector('.head .open--settings')),search:rect(document.querySelector('.head .open--search')),hero:rect(hero),panel:rect(body),dots:rect(dots),poster:rect(poster),tags:[rect(type),rect(quality)],blur:[...document.querySelectorAll('.head *, .pt-hero *, .wrap__left')].some(n=>getComputedStyle(n).backdropFilter!=='none' && getComputedStyle(n).backdropFilter!==undefined),posterFilters:[type,quality,poster.querySelector('.card__vote')].map(n=>getComputedStyle(n).backdropFilter)};
       quality.remove();type.remove();return result;
      });
      assert.ok(value.ratingGlyph>=8,'Rating source glyphs remain above the Android minimum');assert.ok(value.menu.height/value.width>.024 && value.menu.height/value.width<.03,'Moderate TV header: '+JSON.stringify({width,size,value}));
@@ -29,9 +29,32 @@ const {setup}=require('../fixtures/native-browser.cjs');
      assert.ok(value.hero.width>value.width*.9,'Main area uses the TV width: '+JSON.stringify({engine:engine.name(),width,theme,size,value}));
      if(theme==='glass'){assert.ok(value.dots.top>=value.panel.bottom+2,'TV dots do not overlap large description: '+JSON.stringify({width,size,value}));assert.equal(value.blur,true,'Glass header uses optical backdrop filtering');}
      for(const tag of value.tags)assert.ok(tag.left>=value.poster.left && tag.right<=value.poster.right+1,'Tags fit narrow TV posters');
+     assert.deepEqual(value.posterFilters,['none','none','none'],'TV poster tags never sample the backdrop');
      assert.ok(value.tags[0].right<=value.tags[1].left+1,'Type and quality do not overlap: '+JSON.stringify({width,size,theme,value}));
      if(process.env.LAMPA_QA_OUTPUT && width===960 && theme==='glass' && size==='normal'){fs.mkdirSync(process.env.LAMPA_QA_OUTPUT,{recursive:true});await r.page.screenshot({path:path.join(process.env.LAMPA_QA_OUTPUT,engine.name()+'-tv-minimum-font.png')});}
     }
+    const panels=await r.page.evaluate(()=>{
+     const L=Lampa,header=document.querySelector('.head .head__body');
+     const rect=selector=>{const {top,bottom,width}=document.querySelector(selector).getBoundingClientRect();return {top,bottom,width};};
+     L.Controller.toggle('menu');const menu=rect('.wrap__left');
+     L.Controller.toggle('settings');const settings=rect('.settings__content');
+     L.Select.show({title:'Действия',items:Array.from({length:30},(_,i)=>({title:'Действие '+i,selected:i===29}))});
+     const actions=rect('.selectbox__content');
+     L.Select.hide();L.Controller.toggle('content');
+     L.Modal.open({title:'Действие',size:'small',html:jQuery('<div>Подтвердить действие</div>')});
+     const dialog=rect('.modal__content');
+     L.Modal.close();L.Controller.toggle('content');
+     document.body.classList.add('pt-tv-busy');
+     const movingFilter=getComputedStyle(header).backdropFilter;
+     document.body.classList.remove('pt-tv-busy');
+     return {header:rect('.head .head__body'),menu,settings,actions,dialog,movingFilter};
+    });
+    for(const key of ['menu','settings','actions']){
+     const panel=panels[key];
+     assert.ok(panel.width>0 && panel.width<width*.25 && panel.top>=panels.header.bottom+1 && panel.bottom<=width*9/16,JSON.stringify({key,width,theme,panels}));
+    }
+    assert.ok(panels.dialog.width>0 && panels.dialog.width<=width*.32 && panels.dialog.top>=panels.header.bottom+1,JSON.stringify({width,theme,panels}));
+    assert.equal(panels.movingFilter,'none');
    }
    assert.deepEqual(r.errors,[]);console.log(engine.name()+' TV '+width+': compact shell, Settings, badges and carousel in both themes and all sizes passed');
   }finally{await r.context.close();}

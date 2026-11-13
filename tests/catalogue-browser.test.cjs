@@ -94,6 +94,13 @@ test('category filters expose revenue, votes, verified networks and studios with
  assert.equal(browse.browseState('cartoon',{collection:'studio-3-movie'}).studio,'studio-3-movie');
  assert.equal(browse.browseSpec('cartoon',{collection:'studio-3-movie'}).sort,'rated');
  assert.equal(browse.browseSpec('cartoon',{network:213,sort:'revenue'}).sort,'popular');
+ const movieGroups=browse.brandGroups(browse.browseOptions('movie')),tvGroups=browse.brandGroups(browse.browseOptions('tv'));
+ assert.deepEqual(movieGroups.map(([label])=>label),['Студии']);
+ assert.ok(movieGroups[0][1].length>16);
+ assert.ok(movieGroups[0][1].some(row=>row.title==='Netflix' && row.endpoint==='company'));
+ assert.ok(tvGroups[0][1].length>9);
+ assert.ok(tvGroups[1][1].some(row=>row.title==='Netflix' && row.network===213));
+ assert.ok(tvGroups[2][1].some(row=>row.title==='HBO' && row.network===49));
 });
 
 test('family collection combines its required genres with the selected genre and studio or network',()=>{

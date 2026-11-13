@@ -32,8 +32,8 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
   }
   for(const b of badges){
    assert.ok(b.kind && b.quality && b.vote);assert.equal(b.source,'TMDB');assert.equal(b.label,'"TMDB"');assert.ok(b.kind.left>b.view.left && b.kind.left-b.view.left<9,'Kind badge sits next to the left edge');assert.ok(b.kindStyle.every(radius=>radius>0),'All four corners are rounded');assert.equal(b.kindFill,b.voteFill);assert.equal(b.qualityFill,b.voteFill);
-   assert.equal(b.voteFill,theme==='glass'?'rgba(24, 24, 24, 0.27)':'rgb(0, 0, 0)','Tags use the current header theme material');
-   assert.equal(b.voteText,'rgb(255, 255, 255)');assert.equal(b.voteSheen,'none');if(theme==='glass')assert.match(b.voteFilter,/blur\(/);else assert.equal(b.voteFilter,'none');assert.ok(b.quality.left>b.kind.right);assert.equal(b.qualityFont,b.kindFont,"Type and quality use the same text size");assert.ok(Math.abs(b.quality.height-b.kind.height)<1,"Type and quality use the same height");assert.ok(Math.abs(b.quality.top-b.kind.top)<1,"Type and quality share a top edge");
+   assert.equal(b.voteFill,theme==='glass'?(mode==='tv'?'rgba(30, 30, 30, 0.72)':'rgba(24, 24, 24, 0.27)'):'rgb(0, 0, 0)','Tags use the material for the current device and theme');
+   assert.equal(b.voteText,'rgb(255, 255, 255)');assert.equal(b.voteSheen,'none');if(theme==='glass' && mode!=='tv')assert.match(b.voteFilter,/blur\(/);else assert.equal(b.voteFilter,'none');assert.ok(b.quality.left>b.kind.right);assert.equal(b.qualityFont,b.kindFont,"Type and quality use the same text size");assert.ok(Math.abs(b.quality.height-b.kind.height)<1,"Type and quality use the same height");assert.ok(Math.abs(b.quality.top-b.kind.top)<1,"Type and quality share a top edge");
    const scale=mode==='tv'?b.viewport/1920:1,left=b.kind.left-b.view.left,right=b.view.right-b.quality.right;assert.ok(Math.abs(left-right)<1,'Type and quality have equal edge insets');assert.ok(Math.abs(right-4*scale)<1,'Quality stays four scaled pixels from its edge');assert.ok(Math.abs(b.kind.top-b.view.top-6*scale)<1,'Top tags move up to six scaled pixels');assert.ok(Math.abs(b.view.bottom-b.vote.bottom-8*scale)<1,'Rating keeps its previous bottom inset');assert.ok(Math.abs(b.view.right-b.vote.right-8*scale)<1,'Rating keeps its previous right inset');assert.ok(b.vote.top>b.view.top+b.view.height/2);for(const radius of b.kindStyle)assert.ok(Math.abs(radius/parseFloat(b.kindFont)-.6)<.02,'Rounded type corners');
   }
   assert.equal(badges[1].icons.length,3);for(const icon of badges[1].icons)assert.ok(icon.right<badges[1].vote.left && icon.bottom<=badges[1].view.bottom+1);assert.ok(badges[1].play.width>10);assert.equal(badges[1].playFill,'rgba(0, 0, 0, 0)','The single SVG owns the circle fill');
@@ -43,7 +43,7 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
     const surface=node=>{const s=getComputedStyle(node);return [s.backgroundImage,s.backgroundColor,s.borderColor,s.boxShadow,s.backdropFilter];};
     const reaction=surface(sample.querySelector('.reaction')),badges=[...document.querySelectorAll('#qa-posters .pt-kind,#qa-posters .pt-quality,#qa-posters .card__vote,#qa-posters .pt-series-status')].map(surface);sample.remove();return {reaction,badges,header:surface(document.querySelector('.head__body'))};
    });
-   for(const badge of surfaces.badges)assert.deepEqual([badge[0],badge[1],badge[4]],[surfaces.header[0],surfaces.header[1],surfaces.header[4]],'All tag fills and filters match the header capsule');
+   for(const badge of surfaces.badges)assert.deepEqual([badge[0],badge[1],badge[4]],mode==='tv'?['none','rgba(30, 30, 30, 0.72)','none']:[surfaces.header[0],surfaces.header[1],surfaces.header[4]],'TV uses a single tinted fill, other layouts match the header capsule');
   }
   const narrow=await page.locator('#qa-posters .card').nth(1).evaluate(card=>{
    document.body.classList.add('pt-wheel-active');

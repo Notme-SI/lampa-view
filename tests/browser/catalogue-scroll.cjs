@@ -35,7 +35,10 @@ const response=require('../fixtures/discovery-response.cjs');
        window.takeScrollPositions=()=>{document.removeEventListener('scroll',read,true);return positions;};
       });
       await page.mouse.move(box.x+box.width*.6,box.y+Math.min(150,box.height/2));
-      for(let i=0;i<14;i++){await page.mouse.wheel(0,420);await page.waitForTimeout(120);}
+      for(let i=0;i<24;i++){
+       await page.mouse.wheel(0,420);await page.waitForTimeout(120);
+       if(await page.evaluate(()=>Lampa.Activity.active().activity.component.items.length>80))break;
+      }
       const positions=await page.evaluate(()=>takeScrollPositions());
       assert.ok(positions.length>1 && positions.every((top,index)=>!index || top>=positions[index-1]),'Downward wheel input never moves the catalogue backwards: '+positions.join(', '));
      }else{
@@ -67,6 +70,26 @@ const response=require('../fixtures/discovery-response.cjs');
      await page.waitForFunction(()=>!document.querySelector('.activity--active .pt-catalogue-moving'));
      const before=await grid.evaluate(node=>node.scrollTop);
      assert.ok(Math.abs(before-later.top)<box.height,'Remote resumes in the visible region '+JSON.stringify({before,later,box,state:await grid.evaluate(n=>{const c=Lampa.Activity.active().activity.component;return {active:c.active,last:c.last?.className,focus:n.querySelector('.card.focus')?.textContent};})}));
+     if(mode==='tv')for(const theme of ['minimal','glass']){
+      await page.evaluate(theme=>Lampa.Storage.set('lampa_view_theme',theme),theme);
+      if(theme==='glass'){
+       await grid.evaluate(node=>{node.scrollTop=Math.max(0,node.scrollTop-2*node.clientHeight);});
+       await page.waitForFunction(()=>!document.querySelector('.activity--active .pt-catalogue-moving'));
+       await page.keyboard.press('ArrowDown');
+       await page.waitForTimeout(320);
+      }
+      await grid.evaluate(node=>{
+       const positions=[node.scrollTop];
+       const record=event=>{if(event.target===node)positions.push(node.scrollTop);};
+       document.addEventListener('scroll',record,true);
+       window.takeTvScrollPositions=()=>{document.removeEventListener('scroll',record,true);return positions;};
+      });
+      for(let i=0;i<5;i++){await page.keyboard.press('ArrowDown');await page.waitForTimeout(55);}
+      await page.waitForTimeout(320);
+      const positions=await page.evaluate(()=>takeTvScrollPositions());
+      assert.ok(positions.length>=4 && positions.every((top,i)=>!i || top>=positions[i-1]),theme+': downward remote scroll advances across frames '+positions.join(', '));
+     }
+     const beforeBack=await grid.evaluate(node=>node.scrollTop);
      if(mode==='mobile'){
       await page.waitForFunction(()=>!document.querySelector('.activity--active .pt-catalogue-moving'));
       const target=await grid.evaluate(node=>{
@@ -87,11 +110,11 @@ const response=require('../fixtures/discovery-response.cjs');
      await page.waitForSelector('.activity--active .minimal-detail-header');
      await page.evaluate(()=>Lampa.Activity.backward());
      await grid.waitFor();await page.waitForTimeout(200);
-     assert.equal(await grid.evaluate(node=>node.scrollTop),before,'Back restores this grid position');
+     assert.equal(await grid.evaluate(node=>node.scrollTop),beforeBack,'Back restores this grid position');
      if(mode==='desktop'){
       const scrollbar=page.getByRole('scrollbar',{name:'Прокрутка страницы'});
       await scrollbar.waitFor();
-      assert.equal(Number(await scrollbar.getAttribute('aria-valuenow')),Math.round(before));
+      assert.equal(Number(await scrollbar.getAttribute('aria-valuenow')),Math.round(beforeBack));
       await scrollbar.focus();await scrollbar.press('Home');
       await page.waitForFunction(()=>document.querySelector('.activity--active .pt-browser-catalogue').scrollTop===0);
      }

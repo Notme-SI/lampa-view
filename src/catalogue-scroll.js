@@ -48,7 +48,7 @@ function mount(L,item,enabled,visible,preparePoster,rows){
  const original=Object.fromEntries(methods.map(key=>[key,scroll[key]]));
  let frame=0,manualFocus=false,requested=false,pausedAt=null,paused=false,idleTimer;
  let originalEnd,notifyEnd,returnFocus=false,returnFrame=0;
- const motion=scrollMotion(()=>node.scrollTop,value=>{node.scrollTop=value;});
+ const motion=scrollMotion(()=>node.scrollTop,value=>{node.scrollTop=value;},document.body.classList.contains('pt-tv')?190:160);
  const active=()=>enabled() && node.classList.contains('pt-browser-catalogue');
  const native=(key,args)=>original[key]?.apply(scroll,args);
  const unwrap=target=>target?.nodeType?target:target?.[0];
@@ -154,7 +154,7 @@ function mount(L,item,enabled,visible,preparePoster,rows){
   if(!active() || event.target!==node)return;
   event.stopImmediatePropagation();
   if(paused)return;
-  node.classList.add('pt-catalogue-moving');
+  if(!node.classList.contains('pt-catalogue-moving'))node.classList.add('pt-catalogue-moving');
   clearTimeout(idleTimer);idleTimer=setTimeout(settle,120);
   schedule(true);
  }
@@ -260,7 +260,7 @@ function mount(L,item,enabled,visible,preparePoster,rows){
  for(const event of ['wheel','pointerdown','touchstart'])node.addEventListener(event,stopMotion,{capture:true,passive:true});
  window.addEventListener('blur',stopMotion);
  document.addEventListener('visibilitychange',stopHidden);
- const resized=()=>{if(active() && !paused)schedule();};
+ const resized=()=>{windowed?.invalidate();if(active() && !paused)schedule();};
  window.addEventListener('resize',resized);
  document.addEventListener('minimal:interface-size',resized);
  const touchEvents=L.Platform?.screen?.('tv')?['touchstart','touchmove','touchend']:[];

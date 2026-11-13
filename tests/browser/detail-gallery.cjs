@@ -68,10 +68,11 @@ async function open(page,movie){
    for(const mode of ['desktop','tv','mobile']){
     const mobile=mode==='mobile',tv=mode==='tv';
     const viewport=mobile?{width:390,height:844}:tv?{width:960,height:540}:{width:1280,height:800};
-    const {page,context,errors}=await setup(browser,{mode,viewport,hasTouch:mobile},{beforePlugin:page=>page.evaluate(()=>{
+    const {page,context,errors}=await setup(browser,{mode,viewport,hasTouch:mobile},{beforePlugin:page=>page.evaluate(mobile=>{
+     if(mobile)Lampa.Storage.set('is_true_mobile',true);
      Lampa.Api.full=(p,done)=>done(window.detailFixture);
      Lampa.TMDB.image=path=>'https://frames.example'+path;
-    })});
+    },mobile)});
     try{
      await page.route('https://notme-si.github.io/lampa-view/frames/v1/*.json',route=>{
       const name=new URL(route.request().url()).pathname.split('/').at(-1);
@@ -122,6 +123,7 @@ async function open(page,movie){
       async function swipe(direction){
        if(!mobile){await scroll.hover();await page.mouse.wheel(direction*300,0);return;}
        assert.equal(await scroll.evaluate(node=>getComputedStyle(node).overflowX),'auto','Touch devices use native horizontal overflow');
+       assert.equal(await page.evaluate(()=>Lampa.Platform.screen('mobile')),true);
        // Synthetic touch events do not invoke browser-native scrolling.
        await scroll.evaluate((node,direction)=>{node.scrollLeft+=direction*200;},direction);
       }
