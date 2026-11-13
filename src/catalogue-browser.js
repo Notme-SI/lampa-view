@@ -63,7 +63,7 @@ export function browseSpec(kind,value={},date=new Date()){
  const studio=options.studios.find(row=>row.key===state.studio);
  if(studio){spec.company=studio.discovery.company;spec.type=studio.discovery.type;}
  if(state.network){spec.network=state.network;spec.type='tv';}
- spec.sort=state.sort || spec.sort || 'popular';
+ spec.sort=state.sort || row?.discovery.sort || studio?.discovery.sort || 'popular';
  // Box office is a film statistic, including animated feature films.
  if(spec.sort==='revenue'){spec.type='movie';spec.network=0;}
  if(state.genre)spec.genre=state.genre;

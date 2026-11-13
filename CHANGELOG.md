@@ -1,3 +1,8 @@
+## 0.5.168
+
+- Apply the selected genre inside Family collections alongside a channel or studio.
+- Keep the existing rating order for saved animation studio selections.
+
 ## 0.5.167
 
 - List recent years first, then archive ranges, and keep custom ranges available.

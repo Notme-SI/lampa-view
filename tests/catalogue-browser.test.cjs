@@ -92,7 +92,21 @@ test('category filters expose revenue, votes, verified networks and studios with
  assert.equal(migrated.collection,'');
  assert.equal(browse.browseSpec('tv',{...migrated,collection:'now-watching'}).feed,undefined);
  assert.equal(browse.browseState('cartoon',{collection:'studio-3-movie'}).studio,'studio-3-movie');
+ assert.equal(browse.browseSpec('cartoon',{collection:'studio-3-movie'}).sort,'rated');
  assert.equal(browse.browseSpec('cartoon',{network:213,sort:'revenue'}).sort,'popular');
+});
+
+test('family collection combines its required genres with the selected genre and studio or network',()=>{
+ for(const [scope,required,parameter,id] of [
+  [{studio:'studio-3-movie'},'10751','with_companies','3'],
+  [{network:213},'10762','with_networks','213']
+ ]){
+  const spec=browse.browseSpec('cartoon',{collection:'family',genre:'35',...scope});
+  const [stream]=model.discoverySpecs(spec);
+  const query=new URLSearchParams(stream.path.split('?')[1]);
+  assert.deepEqual(new Set(query.get('with_genres').split(',')),new Set(['16',required,'35']));
+  assert.equal(query.get(parameter),id);
+ }
 });
 
 test('year picker lists recent years first and keeps saved custom ranges selectable',()=>{

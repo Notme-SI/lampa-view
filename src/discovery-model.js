@@ -55,7 +55,7 @@ export function discoveryQuery(spec,date=new Date(),originCountry=spec.country){
  if(spec.kind==='tvshow')genres=descriptor && [10764,10767].includes(descriptor.genre)?String(descriptor.genre):'10764|10767';
  if(spec.kind==='cartoon')genres=genres && genres!=='16'?'16,'+genres:'16';
  if(spec.kind==='cartoon' && !spec.hero && !spec.company && !spec.network)p.set('without_keywords','210024');
- if(spec.family)genres=type==='movie'?'16,10751':'16,10762';
+ if(spec.family)genres=Array.from(new Set(['16',type==='movie'?'10751':'10762',...genres.split(',').filter(Boolean)])).join(',');
  if(genres)p.set('with_genres',genres);
  if(descriptor && descriptor.keyword)p.set('with_keywords',String(descriptor.keyword));
  if(spec.kind==='dorama'){
@@ -126,7 +126,7 @@ export function discoveryPlan(kind,value={},date=new Date()){
   for(const studio of options.studios)for(const type of types){
    if(studio.formats && !studio.formats.includes(type))continue;
    const title=kind==='cartoon'?studio.name+' · '+t(type==='movie'?'Мультфильмы':'Мультсериалы'):studio.name;
-   add('studio-'+studio.id+'-'+type,title,{company:studio.id,sort:'popular'},type);
+   add('studio-'+studio.id+'-'+type,title,{company:studio.id,sort:kind==='cartoon'?'rated':'popular'},type);
   }
   return rows;
  }
