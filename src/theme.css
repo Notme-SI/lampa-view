@@ -1305,7 +1305,7 @@ body.lampa_view.pt-mobile .minimal-torrent-view {width:100%!important}
 /* Desktop posters keep their physical size as a window narrows. */
 body.lampa_view.pt-desktop {--pt-desktop-poster-width:calc(199.8px * var(--pt-interface-scale,1) * var(--pt-card-scale,1))}
 body.lampa_view.pt-desktop .card:not(.card--wide):not(.card--collection):not(.extensions .card) {font-size:calc(18px * var(--pt-interface-scale,1))}
-body.lampa_view.pt-desktop :is(.mapping--grid,.mapping--line,.category-full)>.card:not(.card--wide):not(.card--collection) {width:var(--pt-desktop-poster-width)!important;flex:0 0 auto}
+body.lampa_view.pt-desktop :is(.mapping--grid,.mapping--line,.category-full)>.card:not(.card--wide):not(.card--collection) {width:var(--pt-window-width,var(--minimal-poster-width,var(--pt-desktop-poster-width)))!important;flex:0 0 auto}
 body.lampa_view.pt-desktop .pt-browser-catalogue .mapping--grid.pt-windowed-grid {grid-template-columns:repeat(var(--pt-window-cols),minmax(0,var(--pt-window-width)))!important}
 /* One native progress node follows the poster, including its hover transform. */
 body.lampa_view .card__view>.pt-card-watch__meter {display:block;position:absolute;inset:0;height:auto;min-height:0;margin:0;z-index:6;pointer-events:none;font-size:.72em;border-radius:inherit;overflow:hidden}

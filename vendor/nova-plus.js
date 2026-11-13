@@ -6339,7 +6339,14 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       return card;
     }
 
-    if (!serial || item.unassigned) return card;
+    if (!serial) return card;
+    if (item.unassigned) {
+      card.addClass('nova-card--rowlist');
+      card.find('.nova-card__num,.nova-card__line,.nova-card__eye,.nova-card__viewed').remove();
+      if (/^default$/i.test(item.title || '')) card.find('.nova-card__title').text((text('player_video') || lampaViewText('Видео')));
+      card.find('.nova-card__time').remove();
+      return card;
+    }
 
     if (viewMode() === 'list') return wideDressList(card, item, readEpisodeBook);
 

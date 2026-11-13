@@ -1,3 +1,12 @@
+## 0.5.171
+
+- Fit whole desktop poster rows and grids with balanced edges and modest width adjustment for the native interface size.
+- Remove the Brands catalogue filter and ignore its saved selections.
+- Open an unambiguous matching provider title before restoring its season; preserve unknown files as usable full-width video rows.
+- Keep ordinary MPV and other players on their native route. MPV Plus for mpv.exe requires an explicit setting; compact loading/error feedback leaves standard notifications unchanged and prevents a second launch after process failure.
+- Move five rebuildable metadata caches out of account backups into sessionStorage. Explain HTTP 413 without discarding history or settings; the user's server limit has not been retested.
+- Live check: HDVB returned 503; VeoVeo returned numbered lists. Actual HLS playback and physical TV performance were not verified.
+
 ## 0.5.170
 
 - Keep every dated episode in the season schedule when a provider has gaps or duplicate files. Assign placeholder numbers before images load and label aired episodes without a file as unavailable in that source.

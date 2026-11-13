@@ -2,7 +2,6 @@ import {locale,text as t} from './i18n.js';
 import {cataloguePlan} from './catalogue.js';
 import {canonicalCountry,countryTitle,discoveryOptions,discoveryPlan} from './discovery-model.js';
 import {DISCOVERY_SOURCE} from './discovery-source.js';
-import tmdbGet from './tmdb.js';
 
 export const BROWSE_KINDS=['movie','tv','cartoon','tvshow'];
 export function browseOptions(kind,date=new Date()){
@@ -14,9 +13,7 @@ export function browseOptions(kind,date=new Date()){
   if(revenue)collections.push({...revenue,key:'revenue',title:t('Кассовые сборы')});
  }
  const seen=new Set();
- const networks=['tv','cartoon'].includes(kind)?options.networks:[];
- const studios=options.studios.length?discoveryPlan(kind,{section:'studios'},date).map(row=>({...row,brand:options.studios.find(studio=>studio.id===row.discovery.company)})):[];
- return {collections:collections.filter(row=>{const key=JSON.stringify(row.discovery);if(seen.has(key))return false;seen.add(key);return true;}),networks,studios,countries:options.countries,genres:options.genres.filter(g=>kind==='movie'?g.genre!==16:kind==='tv'?![16,99,10762,10763,10764,10767].includes(g.genre):true)};
+ return {collections:collections.filter(row=>{const key=JSON.stringify(row.discovery);if(seen.has(key))return false;seen.add(key);return true;}),countries:options.countries,genres:options.genres.filter(g=>kind==='movie'?g.genre!==16:kind==='tv'?![16,99,10762,10763,10764,10767].includes(g.genre):true)};
 }
 export const browseSorts=(kind,type)=>discoveryOptions(kind).sorts.filter(([key])=>key!=='revenue' || type!=='tv').map(([key,title])=>[key,key==='popular'?'Популярные':key==='new'?'Новые':title]);
 export function yearRange(value,date=new Date()){
@@ -45,67 +42,24 @@ export function browseState(kind,value={},date=new Date()){
  const selectedCountry=canonicalCountry(value.country || /^country-([A-Z]{2})$/.exec(value.collection || '')?.[1]);
  const country=options.countries.some(([code])=>code===selectedCountry)?selectedCountry:'';
  const collection=options.collections.find(r=>r.key===value.collection);
- const networkId=Number(value.network ?? /^network-(\d+)$/.exec(value.collection || '')?.[1]);
- let network=options.networks.find(row=>row.id===networkId)?.id || 0;
- let studio=options.studios.find(row=>row.key===(value.studio ?? value.collection));
- const media=collection?.discovery.type;
- if(media==='movie' || collection?.discovery.sort==='revenue')network=0;
- if(studio && media && studio.discovery.type!==media)studio=undefined;
- if(studio)network=0;
- const scopedType=studio?.discovery.type || (network?'tv':media);
+ const scopedType=collection?.discovery.type;
  const sort=browseSorts(kind,scopedType).some(([key])=>key===value.sort)?value.sort:'';
  const type=(sort || collection?.discovery.sort)==='revenue'?'movie':scopedType;
  const genre=kind!=='tvshow' && genresForType(options,type).some(g=>g.id===String(value.genre))?String(value.genre):'';
- return {collection:collection?.key || '',genre,sort,period:yearRange(value.period,date),country,network,studio:studio?.key || ''};
+ return {collection:collection?.key || '',genre,sort,period:yearRange(value.period,date),country};
 }
 export function browseSpec(kind,value={},date=new Date()){
  const state=browseState(kind,value,date),options=browseOptions(kind,date),row=options.collections.find(r=>r.key===state.collection);
  const spec={ordered:true,kind,type:kind==='cartoon'?'':kind==='movie'?'movie':'tv',country:'',genre:'',network:0,company:0,hero:'',...(row && row.discovery || {})};
- const studio=options.studios.find(row=>row.key===state.studio);
- if(studio){spec.company=studio.discovery.company;spec.type=studio.discovery.type;}
- if(state.network){spec.network=state.network;spec.type='tv';}
- spec.sort=state.sort || row?.discovery.sort || studio?.discovery.sort || 'popular';
+ spec.sort=state.sort || row?.discovery.sort || 'popular';
  // Box office is a film statistic, including animated feature films.
  if(spec.sort==='revenue'){spec.type='movie';spec.network=0;}
  if(state.genre)spec.genre=state.genre;
  if(state.country)spec.country=state.country;
  spec.period=state.period;
  // Trending endpoints cannot filter or sort. Use Discover once parameters change.
- if(spec.feed==='trending' && (state.country || state.genre || state.period || state.sort || state.network || state.studio))delete spec.feed;
+ if(spec.feed==='trending' && (state.country || state.genre || state.period || state.sort))delete spec.feed;
  return spec;
-}
-
-const platformNetworks=new Set([213,453,1024,2493,2552,2739,2859,3186,3353,3827,3871,3882,3923,4085,4330,5806]);
-export function brandGroups(options){
- const networkRows=options.networks.map(brand=>({title:brand.name,brand,network:brand.id,studio:'',endpoint:'network'}));
- return [
-  ['Студии',options.studios.map(row=>({title:row.title,brand:row.brand,studio:row.key,network:0,endpoint:'company'}))],
-  ['Онлайн-кинотеатры',networkRows.filter(row=>platformNetworks.has(row.network))],
-  ['Телеканалы',networkRows.filter(row=>!platformNetworks.has(row.network))]
- ].filter(([,rows])=>rows.length);
-}
-
-function brandLogos(L){
- const cache=new Map(),queue=[];
- let pending=0;
- function drain(){
-  while(pending<2 && queue.length){
-   const {key,resolve}=queue.shift();pending++;
-   const finish=(path,failed=false)=>{
-    if(failed)cache.delete(key);
-    pending--;resolve(path);drain();
-   };
-   tmdbGet(L,key,{},data=>finish(/^\/[\w.-]+\.(png|svg|webp)$/i.test(data?.logo_path || '')?data.logo_path:''),()=>finish('',true));
-  }
- }
- return (endpoint,brand)=>{
-  const key=endpoint+'/'+brand.id;
-  if(!cache.has(key)){
-   cache.set(key,new Promise(resolve=>queue.push({key,resolve})));
-   drain();
-  }
-  return cache.get(key) || Promise.resolve('');
- };
 }
 
 // Shared native-grid controls. Their controller also handles the first row on TV.
@@ -129,7 +83,6 @@ export function gridControls(L,item,object,buttons,{className='minimal-catalogue
 export default function catalogueBrowser(L,warmPosters){
  if(!L.Component || !L.Component.get)return;
  const Category=L.Component.get('category'),Full=L.Component.get('category_full'),list=L.Api.list;
- const logo=brandLogos(L);
  const warmed=new WeakMap();
  function warmNext(params,json,load){
   const active=L.Activity.active(),page=Number(json?.page || params.page)||1;
@@ -200,57 +153,18 @@ export default function catalogueBrowser(L,warmPosters){
    L.Select.show({title,items:values.map(v=>({...v,selected:v.value===(key==='sort'?spec[key]:state[key])})),
     onSelect:({value})=>apply({[key]:value},index),onBack:()=>controls.toggle()});
   }
-  function selectBrand(index){
-   const rows=new WeakMap(),started=new WeakSet();
-   function showLogo(node){
-    const row=rows.get(node);
-    if(!row || started.has(node))return;
-    started.add(node);observer?.unobserve(node);
-    logo(row.endpoint,row.brand).then(path=>{
-     if(!path || !node.isConnected)return;
-     const image=document.createElement('img');
-     image.alt='';image.className='minimal-catalogue-brand-icon';
-     image.onerror=()=>image.remove();
-     node.prepend(image);
-     image.src=L.TMDB.image('/t/p/'+(/\.svg$/i.test(path)?'original':'w92')+path,{preserveSize:true});
-    });
-   }
-   const observer=typeof IntersectionObserver==='function'?new IntersectionObserver(entries=>{
-    for(const entry of entries)if(entry.isIntersecting)showLogo(entry.target);
-   }):null;
-   const close=()=>observer?.disconnect();
-   const items=[{title:t('Все бренды'),network:0,studio:'',selected:!state.network && !state.studio}];
-   for(const [label,entries] of brandGroups(options)){
-    items.push({title:t(label),separator:true});
-    for(const row of alphabetical(entries))items.push({...row,title:'',selected:row.network===state.network && row.studio===state.studio,onDraw(item){
-     const title=item.find('.selectbox-item__title').text(row.title).addClass('minimal-catalogue-brand-title')[0];
-     rows.set(title,row);observer?.observe(title);
-    }});
-   }
-   L.Select.show({title:t('Бренды'),items,
-    onFocus:(_,node)=>showLogo(node.querySelector('.minimal-catalogue-brand-title')),
-    onSelect({network,studio}){
-     close();
-     const type=network?'tv':options.studios.find(row=>row.key===studio)?.discovery.type;
-     apply({network,studio,...(type && collection?.discovery.type && collection.discovery.type!==type?{collection:''}:{})},index);
-    },
-    onBack(){close();controls.toggle();}
-   });
-  }
   function years(index){
    const date=new Date(),year=date.getFullYear(),values=browseYears(kind,date,state.period);
    L.Select.show({title:t('Годы'),items:values.map(v=>({...v,selected:v.value===state.period})),onSelect:value=>{if(value.value!=='custom')return apply({period:value.value},index);setTimeout(()=>{if(object.minimal_browse_cancelled)return;L.Input.edit({title:t('Годы: от–до'),value:state.period,nosave:true,free:true},value=>{const period=yearRange(value);if(!period){L.Noty.show(t('Укажите годы от 1870 до {0}: например, 1990–2005',[year]));return years(index);}apply({period},index);});},100);},onBack:()=>controls.toggle()});
   }
   const collection=options.collections.find(row=>row.key===state.collection),genre=options.genres.find(g=>g.id===state.genre);
-  const network=options.networks.find(row=>row.id===state.network),studio=options.studios.find(row=>row.key===state.studio);
-  const sort=sortTitles(kind,studio?.discovery.type || (network?'tv':collection?.discovery.type));
+  const sort=sortTitles(kind,collection?.discovery.type);
   const controls=gridControls(L,item,object,[
    {title:collection?collection.title:t('Все подборки'),choose:i=>select(t('Подборки'),[{title:t('Все подборки'),value:''},...options.collections.map(row=>({title:row.title,value:row.key}))],'collection',i)},
    ...(kind==='tvshow'?[]:[{title:genre?t(genre.name):t('Все жанры'),choose:i=>select(t('Жанры'),[{title:t('Все жанры'),value:''},...genresForType(options,spec.type).map(g=>({title:t(g.name),value:g.id}))],'genre',i)}]),
    {title:sort[spec.sort] || sort.popular,choose:i=>select(t('Сортировка'),Object.keys(sort).map(value=>({title:sort[value],value})),'sort',i)},
    {title:state.period?state.period.replace('-','–'):t('Все годы'),choose:years},
    {title:spec.country?countryTitle(spec.country):t('Все страны'),choose:i=>select(t('Страны'),[{title:t('Все страны'),value:''},...options.countries.map(([code])=>({title:countryTitle(code),value:code}))],'country',i)},
-   ...(options.networks.length || options.studios.length?[{title:studio?.title || network?.name || t('Все бренды'),choose:selectBrand}]:[])
   ]);
   item.use({onDestroy(){object.minimal_browse_cancelled=true;}});return item;
  });

@@ -2,11 +2,11 @@ const test=require('node:test'),assert=require('node:assert/strict'),path=requir
 const code=esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/card-info.js')],bundle:true,write:false,format:'iife',globalName:'Info'}).outputFiles[0].text;
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 function setup(saved={}){
- const dom=new JSDOM('<body></body>',{runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,requests=[];w.eval(code);
+ const dom=new JSDOM('<body></body>',{url:'https://example.test',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,requests=[];w.eval(code);
  const L={Storage:{get:(key,def)=>saved[key]===undefined?def:saved[key],set:(key,value)=>saved[key]=JSON.parse(JSON.stringify(value))},Api:{sources:{tmdb:{get:(url,params,ok,fail)=>requests.push({url,ok,fail})}}}};
  return {w,requests,info:w.Info.default(L),close:()=>w.close()};
 }
-test('saved anime classification survives restart without mixing TMDB movies, series and Shikimori IDs',async()=>{
+test('cached anime classification survives tab reload without mixing TMDB movies, series and Shikimori IDs',async()=>{
  const saved={},r=setup(saved);
  try{
   r.info.remember({id:12,source:'cub',media_type:'movie',title:'Anime film',vote_average:7.6,genres:[{id:16}],original_language:'ja'});
@@ -14,6 +14,7 @@ test('saved anime classification survives restart without mixing TMDB movies, se
   assert.equal(r.info.read({id:12,source:'tmdb',media_type:'tv'}).minimal_anime,undefined);
   assert.equal(r.info.read({id:12,source:'minimal_shiki',media_type:'movie'}).minimal_anime,undefined);
   await wait(280);
+  saved.minimal_card_info_v1=JSON.parse(r.w.sessionStorage.getItem('minimal_card_info_v1'));
  }finally{r.close();}
  const next=setup(saved);try{assert.equal(next.info.read({id:12,source:'tmdb',title:'Saved film'}).minimal_anime,true);assert.equal(next.info.read({id:12,source:'tmdb',title:'Saved film'}).vote_average,7.6);assert.equal(next.requests.length,0);}finally{next.close();}
 });

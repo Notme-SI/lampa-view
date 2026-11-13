@@ -1,3 +1,4 @@
+import {readCache,writeCache} from './transient-cache.js';
 import tmdbGet from './tmdb.js';
 
 // Localize verified Trakt→TMDB identities without replacing Trakt membership
@@ -9,9 +10,9 @@ export default function traktMetadata(L){
  const key=(lang,kind,id)=>lang+':'+kind+':'+id;
  const fresh=entry=>entry && Date.now()-entry.at<86400000;
  const available=()=>!!(L.Api.sources.tmdb && L.Api.sources.tmdb.get || L.TMDB && L.TMDB.get);
- const saved=L.Storage.get(store,[]);
+ const saved=readCache(L,store,[]);
  if(Array.isArray(saved))saved.slice(-160).forEach(pair=>{if(Array.isArray(pair) && fresh(pair[1]))cache.set(pair[0],pair[1]);});
- function save(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>L.Storage.set(store,Array.from(cache.entries()).slice(-160)),250);}
+ function save(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>writeCache(L,store,Array.from(cache.entries()).slice(-160)),250);}
  function fields(json,kind,id){
   if(!json || Number(json.id)!==Number(id) || !(json.title || json.name))return null;
   const value={};

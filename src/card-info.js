@@ -1,3 +1,4 @@
+import {readCache,writeCache} from './transient-cache.js';
 import tmdbGet from './tmdb.js';
 import {isAnime} from './metadata.js';
 import cacheControl from './cache-control.js';
@@ -16,8 +17,8 @@ export default function cardInfo(L){
  const array=value=>Array.isArray(value)?value:value?[value]:[];
  const names=c=>[c.title,c.name,c.original_title,c.original_name,...array(c.english),...array(c.synonyms),...((c.alternative_titles || {}).results || (c.alternative_titles || {}).titles || []).filter(t=>!t.iso_3166_1 || ['RU','US','GB','JP'].includes(t.iso_3166_1)).map(t=>t.title)].filter(n=>typeof n==='string' && n.trim()).map(n=>n.trim()).slice(0,16);
  const fresh=e=>e && Date.now()-e.time<7*86400000;
- const save=()=>{clearTimeout(timer);timer=setTimeout(()=>{if(L.Storage && L.Storage.set)L.Storage.set(storage,Array.from(cache.entries()).slice(-400));},250);};
- if(L.Storage){const saved=L.Storage.get(storage,[]);if(Array.isArray(saved))saved.slice(-400).forEach(pair=>{if(Array.isArray(pair) && typeof pair[0]==='string' && fresh(pair[1]))cache.set(pair[0],pair[1]);});}
+ const save=()=>{clearTimeout(timer);timer=setTimeout(()=>{if(L.Storage && L.Storage.set)writeCache(L,storage,Array.from(cache.entries()).slice(-400));},250);};
+ if(L.Storage){const saved=readCache(L,storage,[]);if(Array.isArray(saved))saved.slice(-400).forEach(pair=>{if(Array.isArray(pair) && typeof pair[0]==='string' && fresh(pair[1]))cache.set(pair[0],pair[1]);});}
  function remember(c,complete=false,ratings=true){
   const id=key(c);if(!id)return;
   const old=cache.get(id),entry={...(fresh(old)?old:{}),time:Date.now()};
@@ -86,6 +87,6 @@ export default function cardInfo(L){
  // Normalize fields before native clearCard drops full-detail genres/keywords.
  if(L.Utils && L.Utils.clearCard){const clear=L.Utils.clearCard;L.Utils.clearCard=function(c){remember(c);const data=read(c),out=clear.call(this,data);if(data.genres && (!out.genre_ids || !out.genre_ids.length))out.genre_ids=data.genres.map(g=>g.id || g);return out;};}
  if(typeof document!=='undefined')['minimal:wheel-idle','minimal:tv-idle','visibilitychange'].forEach(event=>document.addEventListener(event,pump));
- cacheControl(L).register('ratings',()=>{ratingGeneration++;cache.forEach(entry=>{delete entry.vote_average;});clearTimeout(timer);if(L.Storage && L.Storage.set)L.Storage.set(storage,Array.from(cache.entries()));});
+ cacheControl(L).register('ratings',()=>{ratingGeneration++;cache.forEach(entry=>{delete entry.vote_average;});clearTimeout(timer);if(L.Storage && L.Storage.set)writeCache(L,storage,Array.from(cache.entries()));});
  const api={remember,read,incomplete,fetch,names(c){const entry=cache.get(key(c));return Array.from(new Set([...names(c),...(fresh(entry)?entry.names || []:[])]));}};instances.set(L,api);return api;
 }

@@ -1,6 +1,6 @@
 import homeStage from './home-stage.js';
 import {layoutProfile} from './layout-profile.js';
-import {desktopPosterWidth} from './poster-size.js';
+import {desktopPosterWidth,desktopPosterColumns} from './poster-size.js';
 
 // Whole-slot rounding can otherwise keep the same count in Bigger and make
 // posters slightly smaller because only the gaps grew. Measure the normal CSS
@@ -68,8 +68,8 @@ export default function fitRail(line,root,card,state,enabled){
    }
   }
  }
- count=fixed?Math.max(1,Math.floor((available+gap)/(fixed+gap))):Math.max(1,Math.round(count/cards));
- const width=fixed || Math.floor((available-(count-1)*gap)/count*64)/64;
+ count=fixed?desktopPosterColumns(available,gap,profile):Math.max(1,Math.round(count/cards));
+ const width=Math.floor((available-(count-1)*gap)/count*64)/64;
  if(width<=0)return;
  root.style.setProperty('--minimal-poster-width',width+'px');
  root.style.setProperty('--pt-more-gap',Math.max(0,gap-trailingMargin)+'px');

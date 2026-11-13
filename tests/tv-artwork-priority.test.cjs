@@ -52,11 +52,11 @@ test('TV displays a quick preview, defers its selected original while moving, an
  }finally{n.close();}
 });
 
-test('unchanged card focus does not rewrite persistent metadata but changed ratings still persist',async()=>{
+test('unchanged card focus does not rewrite session metadata but changed ratings still persist',async()=>{
  const n=await native({built:true}),{w,L}=n;
  try{
-  const writes=[],set=L.Storage.set;
-  L.Storage.set=function(key,value){if(key==='minimal_card_info_v1')writes.push(value);return set.apply(this,arguments);};
+  const writes=[],set=w.Storage.prototype.setItem;
+  w.Storage.prototype.setItem=function(key,value){if(this===w.sessionStorage && key==='minimal_card_info_v1')writes.push(JSON.parse(value));return set.apply(this,arguments);};
   const Card=L.Maker.get('Card',{}),card=L.Utils.createInstance(Card,{id:981,title:'Film',release_date:'2025-01-01',genre_ids:[28],vote_average:8,source:'tmdb'});
   card.create();w.document.body.appendChild(card.render(true));card.visible();
   await until(()=>writes.some(rows=>rows.some(([key,value])=>key==='tmdb:movie:981' && value.vote_average===8)),'initial metadata persisted');

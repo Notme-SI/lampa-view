@@ -37,8 +37,8 @@ function providerRelease(row,card){
 }
 export function folderTarget(rows,card,season=1){
  if(!card || !Array.isArray(rows) || rows.some(row=>/^(play|call)$/.test(row.method)))return '';
- // Aladin's exact search hit identifies the entire title, before its season menu.
- const titles=rows.filter(row=>row.similar && row.method==='link' && /^(?:https?:\/\/|\/)/i.test(row.url || '') && /(?:^|\/)lite\/aladin\?[^#]*\borid=/i.test(row.url || '') && providerRelease(row,card) && !/(?:сезон|season|\[(?:тв|tv))/i.test(row.title || row.name || row.text || ''));
+ // Exact title search hits identify a project before its season menu.
+ const titles=rows.filter(row=>row.similar && row.method==='link' && /^(?:https?:\/\/|\/)/i.test(row.url || '') && !/[?&](?:s|season)=/i.test(row.url || '') && row.season==null && row.s==null && [card.name,card.title,card.original_name,card.original_title].filter(Boolean).some(name=>titleClean(name)===titleClean(row.title || row.name || row.text)) && providerRelease(row,card) && !/(?:сезон|season|\[(?:тв|tv))/i.test(row.title || row.name || row.text || ''));
  if(titles.length===1)return titles[0].url;
  const matches=rows.filter(row=>row.method==='link' && /^(?:https?:\/\/|\/)/i.test(row.url || '')).map(row=>({row,release:providerRelease(row,card)})).filter(v=>v.release?.season===Number(season)),strong=matches.filter(v=>v.release.explicit),choice=strong.length?strong:matches;
  return choice.length===1 && new Set(matches.map(v=>v.release.part)).size<=1?choice[0].row.url:'';

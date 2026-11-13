@@ -13,12 +13,13 @@ test('recent and upcoming windows cross New Year, current shows retain older pre
 });
 
 test('saved public first pages paint immediately after restart, refresh in background and isolate endpoints without persisting secrets',async()=>{
+ const session=new Map();global.window={sessionStorage:{getItem:k=>session.get(k),setItem:(k,v)=>session.set(k,v)},localStorage:{removeItem(){}}};
  const data={},store={get:(k,d)=>data[k] ?? d,set:(k,v)=>data[k]=JSON.parse(JSON.stringify(v))},spec={kind:'tv',type:'tv',sort:'popular'},install=mod('discovery-source').default;let requests=0,refresh;
  const L={Storage:store,TMDB:{api:()=> 'https://first.example/tmdb/'},Api:{sources:{tmdb:{get(url,p,ok){requests++;ok({page:1,total_pages:1,results:cards().map(c=>({...c,api_key:'NEVER-SAVE',watch_history:'PRIVATE'}))});}}}}};
- await list(install(L),spec);await wait(230);const serialized=JSON.stringify(data);assert.ok(!serialized.includes('NEVER-SAVE') && !serialized.includes('PRIVATE'));assert.ok(serialized.length<384*1024);
- data.minimal_catalogue_cache_v1.forEach(entry=>entry.at-=3600000);L.Api.sources.tmdb.get=(url,p,ok)=>{requests++;refresh=ok;};const restarted=install(L),page=await list(restarted,spec);assert.equal(page.results[0].id,1);assert.equal(requests,2);assert.equal(typeof refresh,'function');
+ await list(install(L),spec);await wait(230);const serialized=JSON.stringify([...session.values()]);assert.ok(!serialized.includes('NEVER-SAVE') && !serialized.includes('PRIVATE'));assert.ok(serialized.length<384*1024);
+ const saved=JSON.parse(session.get('minimal_catalogue_cache_v1'));saved.forEach(entry=>entry.at-=3600000);session.set('minimal_catalogue_cache_v1',JSON.stringify(saved));L.Api.sources.tmdb.get=(url,p,ok)=>{requests++;refresh=ok;};const restarted=install(L),page=await list(restarted,spec);assert.equal(page.results[0].id,1);assert.equal(requests,2);assert.equal(typeof refresh,'function');
  refresh({page:1,total_pages:1,results:cards(100)});assert.equal((await list(restarted,spec)).results[0].id,1,'A refresh never changes an open cursor');
- const again=install(L);L.Api.sources.tmdb.get=(url,p,ok)=>ok({page:1,total_pages:1,results:cards(200)});L.TMDB.api=()=> 'https://second.example/tmdb/';assert.equal((await list(again,spec)).results[0].id,201);
+ const again=install(L);L.Api.sources.tmdb.get=(url,p,ok)=>ok({page:1,total_pages:1,results:cards(200)});L.TMDB.api=()=> 'https://second.example/tmdb/';assert.equal((await list(again,spec)).results[0].id,201);delete global.window;
 });
 
 test('leaving a sparse feed stops additional page scans and a later reader can resume accepted cards',async()=>{

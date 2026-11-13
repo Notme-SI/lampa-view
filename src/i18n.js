@@ -23,6 +23,7 @@ export function pluralSource(forms,n){
  return text(forms[index] || forms[forms.length-1] || '%s').replace(/%s/g,String(n));
 }
 export default function installI18n(L,P){
+ L.Lang?.add?.({account_export_fail_413:{ru:'Бэкап превышает допустимый размер сервера. История и настройки сохранены на устройстве.',en:'The backup exceeds the server size limit. Your history and settings remain on this device.'}});
  host=L;P.text=text;P.sourceText=source=>reverse.get(source) || source;P.locale=locale;P.pluralSource=pluralSource;
  if(L.Lang && L.Lang.add){const add=L.Lang.add;L.Lang.add=function(messages){
   const translated={};Object.keys(messages || {}).forEach(key=>{const row=messages[key];

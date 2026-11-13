@@ -20,7 +20,7 @@ test('manual native timeline writes preserve profile and duration; remote read i
  }finally{w.close();}
 });
 test('watched caption describes the factual episode and only collapses a finished season',()=>{
- const d=new JSDOM('<body><div class="card focus"><div class="card__view"></div></div></body>',{runScripts:'outside-only'}),w=d.window;try{
+ const d=new JSDOM('<body><div class="card focus"><div class="card__view"></div></div></body>',{url:'https://example.test',runScripts:'outside-only'}),w=d.window;try{
   let last={season:1,episode:3,hash:'13Original',percent:100,time:2832,duration:2832};let allWatched=false;w.LampaView={online:{lastWatched:()=>last,seasonWatched:()=>allWatched}};
   const L={Utils:{hash:x=>x},Timeline:{view:()=>({...last}),render:()=>{const n=w.document.createElement('div');n.className='time-line';n.dataset.hash=last.hash;n.innerHTML='<div></div>';return n;}},TimeTable:{get:()=>[]}};
   const api=load(w,'series-status','Status').default(L,()=>{}),node=w.document.querySelector('.card'),card={id:3,name:'Сериал',source:'minimal_shiki',seasons:[{season_number:1,episode_count:10}],next_episode_to_air:{season_number:1,episode_number:9}};
@@ -73,7 +73,7 @@ test('shared episodes remain discoverable beyond stale card season metadata and 
 
 
 test('a completed Kerry episode waits for season facts and returns directly to the cached completed-season caption',async()=>{
- const d=new JSDOM('<body><div class="card focus"><div class="card__view"></div></div></body>',{runScripts:'outside-only'}),w=d.window;try{
+ const d=new JSDOM('<body><div class="card focus"><div class="card__view"></div></div></body>',{url:'https://example.test',runScripts:'outside-only'}),w=d.window;try{
   let requests=0,finish;const saved={},last={season:1,episode:8,hash:'18Kerry',percent:100,time:0,duration:0};
   w.LampaView={online:{lastWatched:()=>last,seasonWatched:()=>true}};
   const L={Storage:{get:(k,v)=>saved[k] || v,set:(k,v)=>saved[k]=v},Utils:{hash:x=>x},Api:{sources:{tmdb:{get:(path,p,ok)=>{requests++;finish=ok;}}}},TimeTable:{get:()=>[]},Timeline:{view:()=>last,render:()=>{const line=w.document.createElement('div');line.className='time-line';line.dataset.hash=last.hash;line.innerHTML='<div></div>';return line;}}};
@@ -81,7 +81,7 @@ test('a completed Kerry episode waits for season facts and returns directly to t
   api.track(node,card);api.paint(node);assert.equal(requests,1);assert.equal(node.querySelector('.pt-card-watch--has-progress'),null,'Do not flash episode 8 while completion facts are pending');
   finish({id:48,seasons:[{season_number:1,episode_count:8}],last_episode_to_air:{season_number:1,episode_number:8,air_date:'2020-01-01'},next_episode_to_air:null});
   assert.equal(node.querySelector('.pt-card-watch__current .pt-card-watch__label').textContent,'Сезон 1 просмотрен');await wait(170);
-  api=load(w,'series-status','Status2').default(L,()=>{});api.track(node,card);api.paint(node);assert.equal(requests,1,'Bounded release metadata survives a new screen/session');assert.equal(node.querySelector('.pt-card-watch__current .pt-card-watch__label').textContent,'Сезон 1 просмотрен');
+  api=load(w,'series-status','Status2').default(L,()=>{});api.track(node,card);api.paint(node);assert.equal(requests,1,'Bounded release metadata survives a same-tab module reload');assert.equal(node.querySelector('.pt-card-watch__current .pt-card-watch__label').textContent,'Сезон 1 просмотрен');
  }finally{w.close();}
 });
 

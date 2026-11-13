@@ -1,4 +1,60 @@
 {
+ "Открываем видео…": {
+  "en": "Opening video…",
+  "uk": "Відкриваємо відео…",
+  "be": "Адкрываем відэа…",
+  "zh": "正在打开视频…",
+  "pt": "A abrir o vídeo…",
+  "bg": "Отваряне на видео…",
+  "he": "פותח סרטון…",
+  "cs": "Otevírání videa…",
+  "ro": "Se deschide videoclipul…",
+  "fr": "Ouverture de la vidéo…",
+  "pl": "Otwieranie filmu…",
+  "es": "Abriendo vídeo…"
+ },
+ "Не удалось открыть видео": {
+  "en": "Could not open the video",
+  "uk": "Не вдалося відкрити відео",
+  "be": "Не ўдалося адкрыць відэа",
+  "zh": "无法打开视频",
+  "pt": "Não foi possível abrir o vídeo",
+  "bg": "Видеото не може да се отвори",
+  "he": "לא ניתן לפתוח את הסרטון",
+  "cs": "Video se nepodařilo otevřít",
+  "ro": "Videoclipul nu a putut fi deschis",
+  "fr": "Impossible d’ouvrir la vidéo",
+  "pl": "Nie udało się otworzyć filmu",
+  "es": "No se pudo abrir el vídeo"
+ },
+ "Интеграция MPV Plus": {
+  "en": "MPV Plus integration",
+  "uk": "Інтеграція MPV Plus",
+  "be": "Інтэграцыя MPV Plus",
+  "zh": "MPV Plus 集成",
+  "pt": "Integração MPV Plus",
+  "bg": "Интеграция с MPV Plus",
+  "he": "שילוב MPV Plus",
+  "cs": "Integrace MPV Plus",
+  "ro": "Integrare MPV Plus",
+  "fr": "Intégration MPV Plus",
+  "pl": "Integracja MPV Plus",
+  "es": "Integración con MPV Plus"
+ },
+ "Включите, если выбранный внешний MPV содержит MPV Plus.": {
+  "en": "Enable if the selected external MPV includes MPV Plus.",
+  "uk": "Увімкніть, якщо вибраний зовнішній MPV містить MPV Plus.",
+  "be": "Уключыце, калі выбраны знешні MPV змяшчае MPV Plus.",
+  "zh": "如果所选外部 MPV 包含 MPV Plus，请启用。",
+  "pt": "Ative se o MPV externo selecionado incluir o MPV Plus.",
+  "bg": "Включете, ако избраният външен MPV съдържа MPV Plus.",
+  "he": "הפעל אם נגן MPV החיצוני שנבחר כולל MPV Plus.",
+  "cs": "Zapněte, pokud vybraný externí MPV obsahuje MPV Plus.",
+  "ro": "Activați dacă MPV extern selectat include MPV Plus.",
+  "fr": "Activez si le lecteur MPV externe choisi inclut MPV Plus.",
+  "pl": "Włącz, jeśli wybrany zewnętrzny MPV zawiera MPV Plus.",
+  "es": "Activa si el MPV externo seleccionado incluye MPV Plus."
+ },
  "Нет в источнике": {
   "en": "Unavailable from this source", "uk": "Немає в джерелі", "be": "Няма ў крыніцы", "zh": "此来源暂无", "pt": "Indisponível nesta fonte", "bg": "Няма в източника", "he": "לא זמין במקור זה", "cs": "V tomto zdroji není k dispozici", "ro": "Indisponibil în această sursă", "fr": "Indisponible sur cette source", "pl": "Niedostępne w tym źródle", "es": "No disponible en esta fuente"
  },

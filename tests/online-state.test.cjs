@@ -30,7 +30,9 @@ test('Aladin title search opens the exact year before selecting the resumed seas
   const rows=[2025,2015,2004].map(year=>({title:card.name,year,similar:true,method:'link',url:'/lite/aladin?orid=qa-'+year}));
   assert.equal(w.OnlineState.folderTarget(rows,card,3),rows[0].url);
   assert.equal(w.OnlineState.folderTarget([rows[0],{...rows[0],url:'/lite/aladin?orid=other'}],card,3),'');
-  assert.equal(w.OnlineState.folderTarget(rows.map(row=>({...row,url:row.url.replace('aladin','other')})),card,3),'');
+  assert.equal(w.OnlineState.folderTarget(rows.map(row=>({...row,url:row.url.replace('aladin','hdvb')})),card,3),rows[0].url.replace('aladin','hdvb'));
+  assert.equal(w.OnlineState.folderTarget([{...rows[0],url:'/lite/hdvb?s=1'}],card,3),'');
+  assert.equal(w.OnlineState.folderTarget([{...rows[0],season:1}],card,3),'');
  }finally{w.close();}
 });
 test('episode normalization preserves gaps, zero, variants and unresolved files and collapses exact duplicate instructions',()=>{
@@ -762,5 +764,13 @@ test('season captions read the selected dub before opening a season',async()=>{
   assert.equal(registrations,1);assert.equal(rchCalls.length,2);
   assert.equal(s.played(),0);
   assert.deepEqual(n.errors,[]);
+ }finally{if(s)s.close();n.close();}
+});
+
+test('unassigned provider file stays a full row without a fabricated episode or watch progress',async()=>{
+ const n=await native({built:true}),{w,L}=n;let s;
+ try{s=screen(n,{episodes:[1]});const origin=s.body.find('.online-prestige');origin.data('nova-native-actions',{element:{lampa_unassigned_episode:true}});origin.find('.online-prestige__title').text('DEFAULT');origin.find('.online-prestige__episode-number').remove();
+ await until(()=>s.root.find('.nova-card--rowlist').length===1,'unassigned file row');
+ const card=s.root.find('.nova-card');assert.equal(card.find('.nova-card__num,.nova-card__line,.nova-card__eye').length,0);assert.doesNotMatch(card.find('.nova-card__title').text(),/DEFAULT|Серия/);card.trigger('hover:enter');assert.equal(s.played(),1);assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}
 });

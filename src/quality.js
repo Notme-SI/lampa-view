@@ -1,3 +1,4 @@
+import {readCache,writeCache} from './transient-cache.js';
 import {text as lampaViewText} from './i18n.js';
 import {isAnime} from './metadata.js';
 import cardInfo,{releaseYear} from './card-info.js';
@@ -15,8 +16,8 @@ export default function quality(L,$,preparePoster){
   const info=cardInfo(L),hydrating=new WeakSet(),status=seriesStatus(L,node=>badges.schedule(node)),badges=badgeLayout(status);
   const cache=new Map(),pending=new Map(),queue=[],tracked=new Map(),nodes=new WeakMap(),visible=new Set(),deferred=new Set(),releases=new Map(),overflow=new Set(),retries=new Set(),remembered=new WeakSet();let running=0,timer,saveTimer,generation=0;
   const storage='minimal_quality_v2',valid=entry=>entry && Date.now()-entry.time<(entry.q?21600000:120000);
-  const saved=L.Storage && L.Storage.get(storage,[]);if(Array.isArray(saved))saved.slice(-400).forEach(pair=>{if(Array.isArray(pair) && typeof pair[0]==='string' && valid(pair[1]))cache.set(pair[0],pair[1]);});
-  const save=()=>{clearTimeout(saveTimer);saveTimer=setTimeout(()=>{if(L.Storage && L.Storage.set)L.Storage.set(storage,Array.from(cache.entries()));},250);};
+  const saved=L.Storage && readCache(L,storage,[]);if(Array.isArray(saved))saved.slice(-400).forEach(pair=>{if(Array.isArray(pair) && typeof pair[0]==='string' && valid(pair[1]))cache.set(pair[0],pair[1]);});
+  const save=()=>{clearTimeout(saveTimer);saveTimer=setTimeout(()=>{if(L.Storage && L.Storage.set)writeCache(L,storage,Array.from(cache.entries()));},250);};
   const observer=typeof window.IntersectionObserver==='function'?new window.IntersectionObserver(entries=>{
     for(const {target,isIntersecting} of entries){
       const item=tracked.get(target);if(!item)continue;
@@ -328,5 +329,5 @@ export default function quality(L,$,preparePoster){
   },true);
   window.addEventListener('resize',revisit);
   document.addEventListener('minimal:interface-size',revisit);
-  cacheControl(L).register('quality',()=>{generation++;clearTimeout(saveTimer);pending.forEach(job=>{if(job.cancel)job.cancel();if(job.request && job.request.clear)job.request.clear();});cache.clear();pending.clear();queue.length=0;overflow.clear();retries.clear();running=0;if(L.Storage && L.Storage.set)L.Storage.set(storage,[]);for(const [node] of tracked){node.querySelectorAll('.pt-quality').forEach(b=>b.remove());node.classList.remove('pt-has-quality');}revisit();});
+  cacheControl(L).register('quality',()=>{generation++;clearTimeout(saveTimer);pending.forEach(job=>{if(job.cancel)job.cancel();if(job.request && job.request.clear)job.request.clear();});cache.clear();pending.clear();queue.length=0;overflow.clear();retries.clear();running=0;if(L.Storage && L.Storage.set)writeCache(L,storage,[]);for(const [node] of tracked){node.querySelectorAll('.pt-quality').forEach(b=>b.remove());node.classList.remove('pt-has-quality');}revisit();});
 }

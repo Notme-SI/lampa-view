@@ -40,7 +40,7 @@ const {setup}=require('../fixtures/native-browser.cjs');
     }
     assert.ok(frames.every(frame=>Math.abs(frame.width-frames[0].width)<1),'Banner width stays consistent: '+JSON.stringify(frames));
     assert.ok(frames[0].height>=frames[2].height,'Carousel uses the space left by the actual scaled row: '+JSON.stringify(frames));
-    assert.ok(frames[2].posterWidth>frames[1].posterWidth+2,'Bigger must increase real poster width: '+JSON.stringify(frames));
+    assert.ok(frames[2].count===frames[1].count?Math.abs(frames[2].posterWidth-frames[1].posterWidth)<2:frames[2].posterWidth>frames[1].posterWidth+2,'Whole rows retain their size when a smaller column count would overflow the first screen: '+JSON.stringify(frames));
     assert.ok(frames[0].count>=frames[1].count && frames[1].count>=frames[2].count,'Bigger must not shrink the first-row posters: '+JSON.stringify(frames));
     if(device.mode==='desktop' && device.width===2559){
      const card=page.locator('.activity--active .pt-hero + .minimal-home-first-row .card').first();

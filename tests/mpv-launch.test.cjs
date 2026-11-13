@@ -16,7 +16,7 @@ function fixture(options={}){
    }};
  }};
  if(options.microtasks)root.queueMicrotask=queueMicrotask;
- const values={player:'other',player_torrent:'other',player_nw_path:'C:\\Players\\mpv.exe',...options.values};
+ const values={lampa_view_mpv_plus:true,player:'other',player_torrent:'other',player_nw_path:'C:\\Players\\mpv.exe',...options.values};
  const L={Noty:{show:message=>notices.push(message)},Platform:{desktop:()=>!options.tv,is:name=>name==='android'&&!!options.tv},Storage:{field:name=>values[name]},
    Torserver:{toPlayUrl:url=>url.replace('&preload','&play')},Player:{getUrlQuality:()=>options.quality,
    playlist(){},play:video=>fallback.push(video),listener:{follow:(name,fn)=>listeners[name]=fn,send:(name,v)=>{if(name==='create')listeners[name]?.(v);else external.push(v);}}}};
@@ -41,7 +41,7 @@ test('the chosen quality, rather than the old video URL, is scoped to its card',
  assert.equal(context(f.calls[0][1]).entries[0].url,'https://host/high.mkv');assert.equal(f.calls[0][1].at(-1),'https://host/high.mkv');
 });
 test('TV, other players, inner mode, disabled transport and unavailable spawn keep the native route',()=>{
- for(const options of [{tv:true},{disabled:true},{denied:true},{values:{player:'inner'}},{values:{player_nw_path:'C:\\vlc.exe'}}]){
+ for(const options of [{values:{lampa_view_mpv_plus:false}},{tv:true},{disabled:true},{denied:true},{values:{player:'inner'}},{values:{player_nw_path:'C:\\vlc.exe'}}]){
    const f=fixture(options);assert.equal(f.play({url:'https://host/video.mkv'}),false);f.tick();assert.equal(f.calls.length,0);
  }
  const f=fixture();assert.equal(f.play({url:'https://host/video.mkv',launch_player:'inner'}),false);
@@ -106,23 +106,23 @@ test('long signed episode URLs retain the selected identity and every launched p
  for(const url of urls)assert.equal(payload.entries.find(row=>row.url===url).identity.episode,items.find(row=>row.url===url).episode);
  assert.ok(urls.length<items.length,'Bound the playlist to preserve per-file coordinates');
 });
-test('spawn failure returns to native playback once; a superseded pending launch never starts',()=>{
- const failed=fixture({spawnError:true});failed.play({url:'https://host/a.mkv'});failed.tick();assert.equal(failed.fallback.length,1);
+test('spawn failure does not start another player; a superseded pending launch never starts',()=>{
+ const failed=fixture({spawnError:true});failed.play({url:'https://host/a.mkv'});failed.tick();assert.equal(failed.fallback.length,0);
  const f=fixture();f.play({url:'https://host/old.mkv'});f.play({url:'https://host/new.mkv'});f.tick();assert.equal(f.calls.length,1);assert.equal(f.calls[0][1].at(-1),'https://host/new.mkv');
- f.calls[0].error();f.calls[0].error();assert.equal(f.fallback.length,1);
+ f.calls[0].error();f.calls[0].error();assert.equal(f.fallback.length,0);
 });
 test('repeat clicks show feedback without opening a second process and allow retry after exit',()=>{
  const f=fixture(),video={url:'https://host/movie.m3u8'};
  assert.equal(f.play(video),true);
- assert.deepEqual(f.notices,['Открываем в mpv+…']);
+ assert.deepEqual(f.notices,[],'Host notifications are untouched');
  assert.equal(f.play(video),true);f.tick();
  assert.equal(f.calls.length,1);
  assert.ok(f.calls[0][1].includes('--force-window=immediate'));
  assert.equal(f.play(video),true);f.tick();
  assert.equal(f.calls.length,1);
- assert.equal(f.notices.at(-1),'Видео уже открывается или играет в mpv+');
+ assert.deepEqual(f.notices,[]);
  f.calls[0].exit(2);
- assert.equal(f.notices.at(-1),'Не удалось открыть видео в mpv+');
+ assert.deepEqual(f.notices,[]);
  f.play(video);f.tick();assert.equal(f.calls.length,2);
 });
 test('oversized optional metadata is dropped without blocking playback',()=>{

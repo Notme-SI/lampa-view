@@ -1,6 +1,7 @@
 'use strict';
 
 const C = require('./identity.cjs');
+const playbackStatus = require('./playback-status.cjs');
 const {progressChannel} = require('./mpv-progress.cjs');
 // The native Desktop preload already supports child_process.spawn. Pass a small
 // opaque script option through it; no app patch, server or altered video URL.
@@ -18,10 +19,17 @@ function option(context, encode, trim = true) {
   return '--script-opts-append=mpv_plus_lampa_context=' + Array.from(value, c => c.charCodeAt(0).toString(16).padStart(2, '0')).join('');
 }
 function install(L, root, cardFor, enabled, text = value => value) {
+  const status = playbackStatus(root, text);
+  L.Player.listener.follow?.('create', () => { if (enabled()) status.show('Открываем видео…'); });
+  for (const event of ['external', 'destroy']) L.Player.listener.follow?.(event, status.clear);
+  for (const event of ['playing', 'canplay', 'ended']) L.PlayerVideo?.listener?.follow?.(event, status.clear);
+  L.PlayerVideo?.listener?.follow?.('error', () => { if (enabled()) status.show('Не удалось открыть видео', 'error'); });
+  root.document?.addEventListener('keydown', event => { if (event.key === 'Escape' || event.key === 'Backspace') status.clear(); });
   if (!L.Platform || typeof L.Platform.desktop !== 'function' || !L.Platform.desktop() || typeof root.require !== 'function') return;
   let pending = null, bypass = false;
   const active = new Map();
-  const notice = value => L.Noty?.show?.(text(value));
+  const notice = value => status.show(value, /Не удалось/.test(value) ? 'error' : 'loading');
+  L.SettingsApi?.addParam?.({component:'lampa_view',param:{name:'lampa_view_mpv_plus',type:'trigger',default:false},field:{name:text('Интеграция MPV Plus'),description:text('Включите, если выбранный внешний MPV содержит MPV Plus.')}});
   const originalPlaylist = L.Player.playlist;
   L.Player.playlist = function (items) {
     if (pending && Array.isArray(items) && items.length) pending.items = items;
@@ -32,7 +40,7 @@ function install(L, root, cardFor, enabled, text = value => value) {
     if (video.iptv || video.iptv_player || ['lampa', 'inner'].includes(video.launch_player)) return '';
     if (L.Storage.field(video.torrent_hash ? 'player_torrent' : 'player') !== 'other') return '';
     const path = L.Storage.field('player_nw_path');
-    return typeof path === 'string' && /(?:^|[\\/])mpv(?:\+)?\.exe$/i.test(path) ? path : '';
+    return typeof path === 'string' && /(?:^|[\\/])mpv(?:\+)?\.exe$/i.test(path) && (/(?:^|[\\/])mpv\+\.exe$/i.test(path) || L.Storage.field('lampa_view_mpv_plus') === true || L.Storage.field('lampa_view_mpv_plus') === 'true') ? path : '';
   }
   function create(event) {
     const video = event.data,
@@ -42,7 +50,7 @@ function install(L, root, cardFor, enabled, text = value => value) {
     const key = typeof url === 'string' ? path.toLowerCase() + '\n' + url : null;
     if (key && (pending?.key === key || active.has(key))) {
       event.abort();
-      notice(pending?.key === key ? 'Открываем в mpv+…' : 'Видео уже открывается или играет в mpv+');
+      if (pending?.key === key) notice('Открываем видео…');
       return;
     }
     if (pending) { pending.cancelled = true; pending.cancel?.(); pending = null; }
@@ -66,7 +74,7 @@ function install(L, root, cardFor, enabled, text = value => value) {
       items: Array.isArray(video.playlist) ? video.playlist : []
     };
     event.abort();
-    notice('Открываем в mpv+…');
+    notice('Открываем видео…');
     const launch = pending;
     const launchPending = (resolved) => {
       if (launch.cancelled) return;
@@ -76,6 +84,7 @@ function install(L, root, cardFor, enabled, text = value => value) {
       function fallback() {
         if (retried) return;
         retried = true;
+        status.clear();
         bypass = true;
         try {
           L.Player.play(video);
@@ -152,17 +161,19 @@ function install(L, root, cardFor, enabled, text = value => value) {
         if (child && typeof child.on === 'function') {
           if (key) active.set(key, child);
           const release = () => { if (key && active.get(key) === child) active.delete(key); };
-          child.on('error', () => { release(); fallback(); });
+          child.on('spawn', () => status.clear());
+          child.on('error', () => { release(); if (!retried) { retried = true; notice('Не удалось открыть видео'); } });
           child.on('exit', code => {
             release();
-            if (typeof code === 'number' && code !== 0 && !retried) notice('Не удалось открыть видео в mpv+');
+            if (typeof code === 'number' && code !== 0 && !retried) notice('Не удалось открыть видео');
+            else if (!retried) status.clear();
           });
           child.on('close', release);
         }
         progress.attach(child);
         L.Player.listener.send('external', video);
       } catch (error) {
-        if (!started) fallback();
+        if (!started) notice('Не удалось открыть видео');
       }
     };
     // The host supplies its playlist in the same call stack. A microtask keeps

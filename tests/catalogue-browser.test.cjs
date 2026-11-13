@@ -61,7 +61,7 @@ test('mixed cartoon sorting merges both paginated formats without losing or repe
  assert.equal(all.length,80);assert.equal(new Set(all.map(c=>c.media_type+':'+c.id)).size,80);assert.ok(all.every((card,i)=>!i || card.popularity<=all[i-1].popularity));
 });
 
-test('category filters expose revenue, votes, verified networks and studios without changing home rows',()=>{
+test('category filters retain collections and discard removed brand selections',()=>{
  for(const kind of ['movie','tv','cartoon']){
   const options=browse.browseOptions(kind),keys=options.collections.map(row=>row.key);
   assert.equal(new Set(keys).size,keys.length);
@@ -79,40 +79,14 @@ test('category filters expose revenue, votes, verified networks and studios with
  for(const kind of ['movie','tv','cartoon']){
   const options=browse.browseOptions(kind);
   assert.ok(options.collections.every(row=>!row.discovery.network && !row.discovery.company));
-  assert.ok(options.studios.length>0);
-  for(const row of options.studios){
-   const spec=browse.browseSpec(kind,{studio:row.key});
-   assert.ok(discoverySpec(spec));
-   assert.equal(spec.company,row.discovery.company);
-   assert.equal(spec.type,row.discovery.type);
-  }
+  assert.equal(options.studios,undefined);
+  assert.equal(options.networks,undefined);
  }
- const migrated=browse.browseState('tv',{collection:'network-213'});
- assert.equal(migrated.network,213);
- assert.equal(migrated.collection,'');
- assert.equal(browse.browseSpec('tv',{...migrated,collection:'now-watching'}).feed,undefined);
- assert.equal(browse.browseState('cartoon',{collection:'studio-3-movie'}).studio,'studio-3-movie');
- assert.equal(browse.browseSpec('cartoon',{collection:'studio-3-movie'}).sort,'rated');
- assert.equal(browse.browseSpec('cartoon',{network:213,sort:'revenue'}).sort,'popular');
- const movieGroups=browse.brandGroups(browse.browseOptions('movie')),tvGroups=browse.brandGroups(browse.browseOptions('tv'));
- assert.deepEqual(movieGroups.map(([label])=>label),['Студии']);
- assert.ok(movieGroups[0][1].length>16);
- assert.ok(movieGroups[0][1].some(row=>row.title==='Netflix' && row.endpoint==='company'));
- assert.ok(tvGroups[0][1].length>9);
- assert.ok(tvGroups[1][1].some(row=>row.title==='Netflix' && row.network===213));
- assert.ok(tvGroups[2][1].some(row=>row.title==='HBO' && row.network===49));
-});
-
-test('family collection combines its required genres with the selected genre and studio or network',()=>{
- for(const [scope,required,parameter,id] of [
-  [{studio:'studio-3-movie'},'10751','with_companies','3'],
-  [{network:213},'10762','with_networks','213']
- ]){
-  const spec=browse.browseSpec('cartoon',{collection:'family',genre:'35',...scope});
-  const [stream]=model.discoverySpecs(spec);
-  const query=new URLSearchParams(stream.path.split('?')[1]);
-  assert.deepEqual(new Set(query.get('with_genres').split(',')),new Set(['16',required,'35']));
-  assert.equal(query.get(parameter),id);
+ for(const kind of browse.BROWSE_KINDS){
+  const clean=browse.browseSpec(kind,{});
+  for(const stale of [{network:213},{studio:'studio-3-movie'},{collection:'network-213'},{collection:'studio-3-movie'}]){
+   assert.deepEqual(browse.browseSpec(kind,stale),clean,'Removed brand filters must not silently constrain results');
+  }
  }
 });
 

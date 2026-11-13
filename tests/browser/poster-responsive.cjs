@@ -13,14 +13,16 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
   await page.setViewportSize({width,height:1100});await page.waitForTimeout(450);
   const size=await page.locator('.activity--active .card').first().evaluate(n=>({width:n.getBoundingClientRect().width,height:n.querySelector('.card__view').getBoundingClientRect().height,font:getComputedStyle(n).fontSize}));
   if(!baseline)baseline=size;
-  assert.ok(Math.abs(size.width-baseline.width)<.5,JSON.stringify({width,size,baseline}));assert.equal(size.font,baseline.font);assert.ok(Math.abs(size.height-baseline.height)<.5);
+  assert.ok(Math.abs(size.width/baseline.width-1)<.2,JSON.stringify({width,size,baseline}));assert.equal(size.font,baseline.font);
+  const fit=await page.locator('.activity--active .minimal-posters-sized').evaluate(root=>{const view=root.querySelector('.scroll--horizontal').getBoundingClientRect(),all=[...root.querySelectorAll('.card')].map(n=>n.getBoundingClientRect()),visible=all.filter(r=>r.right>view.left+1 && r.left<view.right-1);return {partial:visible.filter(r=>r.left<view.left-1 || r.right>view.right+1).length,left:visible[0].left-view.left,right:view.right-visible.at(-1).right};});
+  assert.equal(fit.partial,0,JSON.stringify({width,fit}));assert.ok(Math.abs(fit.left-fit.right)<2,JSON.stringify({width,fit}));
  }
  await page.evaluate(()=>Lampa.Activity.push({component:'category',url:'movie',source:'tmdb',page:1}));
  await page.waitForSelector('.activity--active .pt-windowed-grid');let previous=0;
  for(const width of [1000,1440,1920,2560,1000]){
   await page.setViewportSize({width,height:1100});await page.waitForTimeout(450);
   const size=await page.locator('.activity--active .pt-windowed-grid').evaluate(n=>({cols:+n.style.getPropertyValue('--pt-window-cols'),width:n.querySelector('.card').getBoundingClientRect().width,first:n.querySelector('.card').getBoundingClientRect().left,last:[...n.querySelectorAll('.card')].find(c=>c.offsetTop===n.querySelector('.card').offsetTop && c.nextElementSibling?.offsetTop!==c.offsetTop)?.getBoundingClientRect().right,edge:n.getBoundingClientRect().right}));
-  assert.ok(Math.abs(size.width-baseline.width)<.5,JSON.stringify(size));assert.ok(size.last<=size.edge+1);if(width!==1000)assert.ok(size.cols>=previous);previous=size.cols;
+  assert.ok(Math.abs(size.width/baseline.width-1)<.2,JSON.stringify(size));assert.ok(size.last<=size.edge+1);if(width!==1000)assert.ok(size.cols>=previous);previous=size.cols;
  }
  await page.evaluate(()=>{
   const item=Lampa.Activity.active().activity.component.items[0],node=item.render(true);
@@ -31,5 +33,5 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
  const progress=await page.locator('.activity--active .card').first().evaluate(n=>{const meter=n.querySelector('.card__view>.pt-card-watch__meter'),line=meter.querySelector('.time-line'),view=n.querySelector('.card__view'),a=line.getBoundingClientRect(),b=view.getBoundingClientRect();return {count:n.querySelectorAll('.time-line').length,percent:line.firstElementChild.style.width,time:meter.querySelector('.pt-card-watch__time').textContent,bottom:Math.abs(a.bottom-b.bottom),width:a.width,poster:b.width,label:n.querySelector('.pt-card-watch__label').textContent};});
  assert.equal(progress.count,1);assert.equal(progress.percent,'40%');assert.equal(progress.time,'15:15');assert.ok(progress.bottom<1);assert.ok(Math.abs(progress.width-progress.poster)<1);
  if(process.env.LAMPA_QA_OUTPUT){require('node:fs').mkdirSync(process.env.LAMPA_QA_OUTPUT,{recursive:true});await page.screenshot({path:require('node:path').join(process.env.LAMPA_QA_OUTPUT,'posters-'+engine.name()+'.png')});}
- assert.deepEqual(errors,[]);await context.close();console.log(engine.name()+': fixed desktop posters, reflowing virtual grid, one native progress node on poster passed');
+ assert.deepEqual(errors,[]);await context.close();console.log(engine.name()+': whole responsive desktop posters, reflowing virtual grid, one native progress node on poster passed');
  }finally{await browser.close();}}})().catch(e=>{console.error(e);process.exitCode=1;});

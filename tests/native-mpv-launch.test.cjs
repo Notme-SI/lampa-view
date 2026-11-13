@@ -4,7 +4,7 @@ test('real native Lampa launches mpv once through unmodified Desktop APIs and ke
  const f=await native({prepare(w,L){
    L.Platform.desktop=()=>true;
    L.Platform.is=name=>false;
-   L.Storage.set('player','other');L.Storage.set('player_nw_path','C:\\Players\\mpv.exe');
+   L.Storage.set('lampa_view_mpv_plus',true);L.Storage.set('player','other');L.Storage.set('player_nw_path','C:\\Players\\mpv.exe');
    w.require=name=>name==='fs'?{existsSync:()=>true}:{spawn:(...args)=>{launches.push(args);return {on(){}};}};
  }});
  try{

@@ -17,22 +17,22 @@ test('provider quality uses explicit metadata and never invents HD from an unkno
  const dom=new JSDOM('',{runScripts:'outside-only'}),w=dom.window;try{w.eval(code);assert.equal(w.Features.providerQuality({data:[{quality:'1080p'},{quality:{'2160p':'stream','720p':'stream'}}]}),'4K');assert.equal(w.Features.providerQuality({data:{uhd:true,quality:'1080p'}}),'4K');assert.equal(w.Features.providerQuality({data:{quality:'unknown',name:'Movie 2026'}}),'');assert.equal(w.Features.providerQuality({data:[{method:'play',name:'TVShows 1080p'}]}),'1080p');}finally{w.close();}
 });
 test('the parser precedes online fallback; clearing quality cancels old callbacks and visible results can be checked again',async()=>{
- const dom=new JSDOM('<body><div class="card"><div class="card__view"></div><div class="card__title">Film</div></div></body>',{runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window;
+ const dom=new JSDOM('<body><div class="card"><div class="card__view"></div><div class="card__title">Film</div></div></body>',{url:'https://example.test',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window;
  try{
   w.eval(code);const requests=[],fallback=[],store={jackett_url:'http://parser.test',favorite:{history:[{id:1}]}};let line;
   const L={Storage:{get:(k,d)=>store[k]===undefined?d:store[k],set:(k,v)=>store[k]=v},Listener:{follow:(name,fn)=>line=fn},Reguest:function(){this.timeout=()=>{};this.clear=()=>{};this.silent=(url,ok,fail)=>requests.push({url,ok,fail});}};
   w.alc_auto_api={metadataQuality:(card,cb)=>{fallback.push(cb);return ()=>{};}};
   const node=w.document.querySelector('.card');node.getBoundingClientRect=()=>({width:100,height:150,left:0,right:100,top:0,bottom:150});w.Features.quality(L);const item={data:{id:1,title:'Film',source:'tmdb',release_date:'2026-01-01',genre_ids:[18]},render:()=>node};
   line({type:'visible',items:[item]});await wait(30);assert.equal(requests.length,1);assert.equal(fallback.length,0);requests[0].fail();assert.equal(fallback.length,1);
-  w.Features.cache(L).clear('quality');fallback[0]({data:{quality:'2160p'}});assert.equal(node.querySelector('.pt-quality'),null,'An old answer survived cache reset');assert.deepEqual(Array.from(store.minimal_quality_v2),[]);
-  await wait(130);assert.equal(requests.length,2);requests[1].fail();fallback[1]({data:{quality:'1080p'}});assert.equal(node.querySelector('.pt-quality').textContent,'1080p');await wait(280);assert.equal(store.minimal_quality_v2.length,1);assert.equal(store.favorite.history.length,1);
+  w.Features.cache(L).clear('quality');fallback[0]({data:{quality:'2160p'}});assert.equal(node.querySelector('.pt-quality'),null,'An old answer survived cache reset');assert.deepEqual(Array.from(JSON.parse(w.sessionStorage.getItem('minimal_quality_v2'))),[]);
+  await wait(130);assert.equal(requests.length,2);requests[1].fail();fallback[1]({data:{quality:'1080p'}});assert.equal(node.querySelector('.pt-quality').textContent,'1080p');await wait(280);assert.equal(JSON.parse(w.sessionStorage.getItem('minimal_quality_v2')).length,1);assert.equal(store.favorite.history.length,1);
  }finally{w.close();}
 });
 test('rating reset preserves cached release dates and genres and discards ratings from an in-flight old request',()=>{
- const dom=new JSDOM('<body></body>',{runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window;
+ const dom=new JSDOM('<body></body>',{url:'https://example.test',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window;
  try{
   w.eval(code);let pending;const store={},L={Storage:{get:(k,d)=>store[k]===undefined?d:store[k],set:(k,v)=>store[k]=v},Api:{sources:{tmdb:{get:(u,p,ok)=>pending=ok}}}},info=w.Features.info(L),card={id:5,source:'tmdb',media_type:'movie',title:'Film'};
-  info.remember({...card,release_date:'2020-01-01',genre_ids:[18],vote_average:8});info.fetch(card,()=>{});w.Features.cache(L).clear('ratings');pending({id:5,release_date:'2020-01-01',genres:[{id:18}],vote_average:9});const read=info.read(card);assert.equal(read.release_date,'2020-01-01');assert.equal(read.vote_average,undefined);assert.deepEqual(Array.from(read.genre_ids),[18]);assert.equal(store.minimal_card_info_v1[0][1].vote_average,undefined);
+  info.remember({...card,release_date:'2020-01-01',genre_ids:[18],vote_average:8});info.fetch(card,()=>{});w.Features.cache(L).clear('ratings');pending({id:5,release_date:'2020-01-01',genres:[{id:18}],vote_average:9});const read=info.read(card);assert.equal(read.release_date,'2020-01-01');assert.equal(read.vote_average,undefined);assert.deepEqual(Array.from(read.genre_ids),[18]);assert.equal(JSON.parse(w.sessionStorage.getItem('minimal_card_info_v1'))[0][1].vote_average,undefined);
  }finally{w.close();}
 });
 test('corner placement separates quality, type, playback icons and scores on narrow and wide posters',()=>{

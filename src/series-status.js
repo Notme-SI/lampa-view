@@ -1,3 +1,4 @@
+import {readCache,writeCache} from './transient-cache.js';
 import flag from './storage-flag.js';
 import {activeCard} from './card-activity.js';
 import {WATCHED_PERCENT} from './watch-threshold.js';
@@ -182,10 +183,10 @@ function watchFooter(L,node,data,series){
 export default function seriesStatus(L,schedule){
  const cards=new WeakMap(),cache=new Map(),pending=new Map(),queue=[];let running=0,saveTimer;
  const storage='minimal_series_release_v5',lifetime=900000;
- const saved=L.Storage && L.Storage.get?L.Storage.get(storage,[]):[];
+ const saved=L.Storage && L.Storage.get?readCache(L,storage,[]):[];
  if(Array.isArray(saved))for(const pair of saved.slice(-80))if(Array.isArray(pair) && typeof pair[0]==='string' && pair[1] && pair[1].details && Date.now()-pair[1].at<lifetime)cache.set(pair[0],pair[1]);
  const cacheKey=data=>(data.source==='minimal_shiki'?'shiki':'tmdb')+':'+data.id+':'+(L.Storage && L.Storage.get?L.Storage.get('language','ru'):'ru');
- function save(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{if(L.Storage && L.Storage.set)L.Storage.set(storage,Array.from(cache).filter(([,entry])=>entry.details).slice(-80));},150);}
+ function save(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{if(L.Storage && L.Storage.set)writeCache(L,storage,Array.from(cache).filter(([,entry])=>entry.details).slice(-80));},150);}
  function detailsOnly(json){if(json.source==='minimal_shiki')return {id:json.id,source:json.source,episodes:json.episodes,episodes_aired:json.episodes_aired,status:json.status,minimal_release_season:json.minimal_release_season};return {id:json.id,number_of_seasons:json.number_of_seasons,seasons:(Array.isArray(json.seasons)?json.seasons:[]).map(s=>({season_number:s.season_number,name:s.name,episode_count:s.episode_count,air_date:s.air_date})),last_episode_to_air:json.last_episode_to_air,next_episode_to_air:json.next_episode_to_air,episode_run_time:json.episode_run_time};}
  function paint(node){
   const data=cards.get(node),focused=node.matches('.focus,.hover,.pt-card-pointer,.pt-card-touch');
