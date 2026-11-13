@@ -106,7 +106,7 @@ async function run(engine, browser, mode) {
    }
    for(const image of [original,'http://scene.example.invalid/dark-home.jpg']){
     await artwork.evaluate(async (img,src)=>{img.src=src;await img.decode();},image);
-    assert.equal(await artwork.evaluate(img=>getComputedStyle(img.parentElement,'::after').content),'none');
+    assert.match(await artwork.evaluate(img=>getComputedStyle(img.parentElement,'::after').backgroundImage),/linear-gradient/);
     const edge=await artwork.evaluate(img=>img.parentElement.getBoundingClientRect().left/innerWidth);
     const y=await artwork.evaluate(img=>{const box=img.parentElement.getBoundingClientRect();return (box.top+box.height*.81)/innerHeight;});
     const [left,right,center,lower,inner]=await samplePixels(page,[[edge-.003,.105],[edge+.003,.105],[.94,.105],[.94,y],[edge+.24*(1-edge),y]]);
@@ -114,6 +114,12 @@ async function run(engine, browser, mode) {
     if(image===original)assert.ok(center[0]>right[0]+30,'The bright image stays visible on the right');
     if(image===original){
      for(const rgb of [lower,inner])assert.ok(rgb[0]>=250 && rgb[1]<=4 && rgb[2]<=4,'The source color stays intact outside the edge blends: '+JSON.stringify({mode,theme,rgb}));
+     const bottom=await artwork.evaluate(img=>img.parentElement.getBoundingClientRect().bottom/innerHeight);
+     const corner=edge+.08*(1-edge);
+     const colors=await samplePixels(page,[[.94,bottom-.004],[.94,bottom+.004],[corner,bottom-.004],[corner,bottom+.004]]);
+     for(const [above,below] of [[colors[0],colors[1]],[colors[2],colors[3]]]){
+      assert.ok(above.every((value,i)=>Math.abs(value-below[i])<=4),'The lower edge and corner fade into the same background: '+JSON.stringify({mode,theme,above,below}));
+     }
     }
    }
   }

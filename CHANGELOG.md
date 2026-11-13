@@ -1,3 +1,7 @@
+## 0.5.153
+
+- Blend the home banner into a background sampled from multiple areas of the frame. Preserve the banner's position, size, and crop.
+
 ## 0.5.152
 
 - Shorten the home banner fades to the exposed edges so the rest of the image retains its original color.
