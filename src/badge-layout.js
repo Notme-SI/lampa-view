@@ -42,7 +42,7 @@ export default function badgeLayout(status){
    // Focus changes only the composited poster position. Re-measuring all its
    // unchanged corner labels forces layout after every remote pause. Include
    // content, native markers, viewport and scale so late data still invalidates.
-   const labels=[...view.querySelectorAll('.card__vote,.pt-quality,.card__quality,.pt-kind,.pt-series-status,.card__marker,.card__new-episode,.card__icon')];
+   const labels=[...view.querySelectorAll('.card__vote,.pt-quality,.card__quality,.pt-kind,.pt-series-status,.card__marker,.card__new-episode,.card__icon,.pt-card-watch__time')];
    const key=[view.clientWidth,view.clientHeight,innerWidth,innerHeight,
     document.body.className.replace(/\b(?:pt-tv-busy|pt-wheel-active|pt-arrow-navigation)\b/g,'').trim().replace(/\s+/g,' '),document.body.style.cssText,
     node.matches('.focus,.hover,.pt-card-pointer,.pt-card-touch'),
@@ -64,8 +64,8 @@ export default function badgeLayout(status){
     }
     const topTag=el.matches('.pt-kind,.pt-quality,.card__quality'),r=el.getBoundingClientRect();if(r.width && r.height)entries.push({el,corner,inset:(topTag || corner[1]!=='r'?4:8)*insetScale,verticalInset:topTag?6*insetScale:undefined,width:r.width/scale,height:r.height/scale});
    }
-   // CSS keeps favorites left of the rating even before the next measurement.
-   const occupied=[...view.querySelectorAll('.card__icon:not(.icon--history)')].map(el=>el.getBoundingClientRect())
+   // Reserve space for the elapsed time as well as the native favorite icons.
+   const occupied=[...view.querySelectorAll('.card__icon:not(.icon--history),.pt-card-watch__time')].map(el=>el.getBoundingClientRect())
     .filter(box=>box.width && box.height).map(box=>({x:(box.left-rect.left)/scale,y:(box.top-rect.top)/scale,width:box.width/scale,height:box.height/scale}));
    reads.push({node,key,view,width,height,entries,places:placeBadges(width,height,entries,occupied,4*insetScale,3*insetScale)});
   }

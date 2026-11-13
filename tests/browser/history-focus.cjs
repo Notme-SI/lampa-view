@@ -52,7 +52,8 @@ const {setup}=require('../fixtures/native-browser.cjs'),{stage}=require('../fixt
   assert.ok(progress.width>50 && progress.height>=2 && progress.fillHeight>=2,'Track and fill must have visible dimensions: '+JSON.stringify(progress));
   assert.ok(Math.abs(progress.fill/progress.width-.4)<.02,'Track reflects the saved 40%');
   assert.ok(Math.abs(progress.trackBottom-progress.posterBottom)<1 && Math.abs(progress.width-progress.posterWidth)<1,'Track follows the lower poster edge');
-  assert.ok(progress.timeBottom<=progress.trackTop && progress.timeLeft>=progress.posterLeft,'Elapsed time stays inside the poster above its track');
+  const timeGap=progress.trackTop-progress.timeBottom;
+  assert.ok(timeGap>=0 && timeGap<=8 && progress.timeLeft>=progress.posterLeft,'Elapsed time stays directly above its track: '+JSON.stringify(progress));
   await page.evaluate(()=>{document.querySelector('#qa-release').remove();document.querySelector('#qa-movie').remove();});
 
   // Native Lampa's manual episode action persists 95%, not 100%.

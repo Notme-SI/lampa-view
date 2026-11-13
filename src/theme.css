@@ -1312,5 +1312,6 @@ body.lampa_view .card__view>.pt-card-watch__meter {display:block;position:absolu
 body.lampa_view .card__view>.pt-card-watch__meter::before {content:"";position:absolute;inset:auto 0 0;height:60px;background:linear-gradient(transparent,rgba(0,0,0,.5))}
 body.lampa_view .card__view>.pt-card-watch__meter .time-line {display:block;position:absolute;inset:auto 0 0;width:100%;height:3px;min-height:3px;margin:0;border-radius:0;overflow:hidden;background:rgba(255,255,255,.24)!important}
 body.lampa_view .card__view>.pt-card-watch__meter .time-line>div {display:block;height:3px;background:#fff!important}
-body.lampa_view .card__view>.pt-card-watch__meter .pt-card-watch__time {position:absolute;left:8px;bottom:42px;margin:0;color:#fff;font-size:.9em;text-shadow:0 1px 3px #000}
+body.lampa_view .card__view>.pt-card-watch__meter .pt-card-watch__time {position:absolute;left:8px;bottom:8px;margin:0;color:#fff;font-size:.9em;text-shadow:0 1px 3px #000}
 body.lampa_view .card__view>.pt-card-watch__meter .pt-card-watch__time:empty {display:none}
+body.lampa_view .card__view:has(>.pt-card-watch__meter .pt-card-watch__time:not(:empty)) .card__icons-inner {padding-bottom:calc(var(--pt-score-inset) + .75em)}

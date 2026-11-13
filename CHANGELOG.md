@@ -1,3 +1,7 @@
+## 0.5.166
+
+- Move elapsed time down to the progress track on the poster and leave room for favorite icons.
+
 ## 0.5.165
 
 - Clear the poster meter when an episode is marked watched and season metadata is still pending.
