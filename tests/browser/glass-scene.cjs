@@ -85,7 +85,7 @@ async function run(engine, browser, mode) {
   assert.equal(await page.locator('.activity--active .pt-hero__image').count(),1);
   const hero=await page.locator('.activity--active .pt-hero').evaluate(node=>{
    const image=node.querySelector('.pt-hero__image'), art=image.parentElement;
-   return {width:art.clientWidth/node.clientWidth,fit:getComputedStyle(image).objectFit,left:art.getBoundingClientRect().left,bottom:art.getBoundingClientRect().bottom};
+   return {width:art.clientWidth/node.clientWidth,fit:getComputedStyle(image).objectFit,bottom:art.getBoundingClientRect().bottom};
   });
   assert.ok(hero.width>=.66 && hero.width<=.70,JSON.stringify(hero));
   assert.equal(hero.fit,'cover');
@@ -108,9 +108,13 @@ async function run(engine, browser, mode) {
     await artwork.evaluate(async (img,src)=>{img.src=src;await img.decode();},image);
     assert.equal(await artwork.evaluate(img=>getComputedStyle(img.parentElement,'::after').content),'none');
     const edge=await artwork.evaluate(img=>img.parentElement.getBoundingClientRect().left/innerWidth);
-    const [left,right,center]=await samplePixels(page,[[edge-.003,.105],[edge+.003,.105],[.94,.105]]);
+    const y=await artwork.evaluate(img=>{const box=img.parentElement.getBoundingClientRect();return (box.top+box.height*.81)/innerHeight;});
+    const [left,right,center,lower,inner]=await samplePixels(page,[[edge-.003,.105],[edge+.003,.105],[.94,.105],[.94,y],[edge+.24*(1-edge),y]]);
     assert.ok(left.every((channel,i)=>Math.abs(channel-right[i])<=4),JSON.stringify({engine,mode,theme,image,left,right}));
     if(image===original)assert.ok(center[0]>right[0]+30,'The bright image stays visible on the right');
+    if(image===original){
+     for(const rgb of [lower,inner])assert.ok(rgb[0]>=250 && rgb[1]<=4 && rgb[2]<=4,'The source color stays intact outside the edge blends: '+JSON.stringify({mode,theme,rgb}));
+    }
    }
   }
   await artwork.evaluate(async (img,src)=>{img.src=src;await img.decode();},original);

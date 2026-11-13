@@ -1,3 +1,7 @@
+## 0.5.152
+
+- Shorten the home banner fades to the exposed edges so the rest of the image retains its original color.
+
 ## 0.5.151
 
 - Remove the plugin torrent statistics overlay and let Lampa render its own preload screen and statistics.
