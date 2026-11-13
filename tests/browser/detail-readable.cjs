@@ -18,7 +18,16 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
   await page.evaluate(()=>{const n=document.querySelector('.activity--active .minimal-overview-action');Lampa.Controller.toggle('full_start');Lampa.Controller.collectionFocus(jQuery(n),jQuery(n.closest('.full-start-new')));});await page.waitForTimeout(280);
   const style=await overview.evaluate(n=>{const s=getComputedStyle(n);return {shadow:s.textShadow,outline:s.outlineStyle,border:s.borderTopWidth,title:n.title,ring:n.querySelector('.minimal-overview-focus')!==null};});assert.notEqual(style.shadow,'none');assert.equal(style.outline,'none');assert.equal(style.border,'0px');assert.equal(style.title,'');assert.equal(style.ring,false);
   await page.keyboard.press('Enter');await page.waitForSelector('.minimal-overview-full');assert.equal(await page.locator('.minimal-overview-full').textContent(),await page.evaluate(()=>readableMovie.overview));await page.evaluate(()=>Lampa.Controller.back());assert.equal(await overview.evaluate(n=>n.classList.contains('focus')),true);
-  const sizes=await page.locator(root+'.minimal-detail-columns').evaluate(n=>({cast:n.querySelector('.minimal-detail-cast').getBoundingClientRect().height,facts:n.querySelector('.minimal-detail-facts').getBoundingClientRect().height,align:getComputedStyle(n).alignItems}));if(mode!=='mobile'){assert.equal(sizes.align,'start');assert.ok(sizes.cast<sizes.facts,JSON.stringify(sizes));}
+  const geometry=await page.locator(root+'.minimal-detail-columns').evaluate(n=>{
+   const cast=n.querySelector('.minimal-cast-native').getBoundingClientRect(),facts=n.querySelector('.minimal-detail-facts').getBoundingClientRect();
+   const [label,title]=n.querySelector('.minimal-original-title').children;
+   const labelBox=label.getBoundingClientRect(),titleBox=title.getBoundingClientRect();
+   return {castTop:cast.top,castBottom:cast.bottom,factsTop:facts.top,factsBottom:facts.bottom,labelTop:labelBox.top,titleTop:titleBox.top,labelRight:labelBox.right,titleLeft:titleBox.left,labelLines:labelBox.height/parseFloat(getComputedStyle(label).lineHeight)};
+  });
+  if(mode!=='mobile'){assert.ok(Math.abs(geometry.castTop-geometry.factsTop)<1,JSON.stringify(geometry));assert.ok(Math.abs(geometry.castBottom-geometry.factsBottom)<1,JSON.stringify(geometry));}
+  else assert.ok(geometry.castBottom<=geometry.factsTop,JSON.stringify(geometry));
+  assert.ok(Math.abs(geometry.labelTop-geometry.titleTop)<1 && geometry.labelRight<=geometry.titleLeft,JSON.stringify(geometry));
+  assert.ok(Math.abs(geometry.labelLines-2)<.1,JSON.stringify(geometry));
   if(process.env.LAMPA_QA_OUTPUT && mode==='desktop')await page.screenshot({path:require('node:path').join(process.env.LAMPA_QA_OUTPUT,engine.name()+'-readable-detail.png')});
   // A responsive heading becomes an action only after its actual box clips.
   await page.evaluate(()=>{document.querySelector('.activity--active .minimal-detail-heading').textContent='Название средней длины для проверки изменения размера окна';});

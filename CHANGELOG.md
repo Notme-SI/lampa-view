@@ -1,3 +1,7 @@
+## 0.5.149
+
+- Match the cast and facts panel heights side by side. Put the original title to the right of its two-line label and keep the full title available when clipped.
+
 ## 0.5.148
 
 - Restore the classic torrent loading panel with labelled statistics while keeping the native artwork and preload lifecycle.

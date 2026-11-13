@@ -407,7 +407,7 @@ body.lampa_view .person-start {background:#000}
 /* The complete card is one vertical native row, including its lower columns. */
 body.lampa_view .minimal-detail-header {display:block;box-sizing:border-box;width:var(--pt-detail-width,90%);max-width:var(--pt-detail-width,90%);min-height:0;padding:0 0 1.5em}
 body.lampa_view .minimal-detail-header>.full-start-new__body {box-sizing:border-box;min-height:0;padding:1.5em 0 .4em;display:flex;-webkit-box-align:start;-webkit-align-items:flex-start;align-items:flex-start}
-body.lampa_view .minimal-detail-header>.minimal-detail-columns {position:relative;inset:auto;clear:both;float:none;width:100%;max-width:none;margin:.65em 0 0;min-height:0;box-sizing:border-box;display:grid;grid-template-columns:minmax(0,1fr) minmax(15em,22%);gap:1em;align-items:start}
+body.lampa_view .minimal-detail-header>.minimal-detail-columns {position:relative;inset:auto;clear:both;float:none;width:100%;max-width:none;margin:.65em 0 0;min-height:0;box-sizing:border-box;display:grid;grid-template-columns:minmax(0,1fr) minmax(15em,22%);gap:1em;align-items:stretch}
 body.lampa_view.pt-desktop:not(.pt-safari) .minimal-detail-header>.full-start-new__body {min-height:24em;padding:3em 0 1em}
 body.lampa_view:not(.pt-mobile):not(.card--no-cover) .minimal-detail-header>.minimal-detail-columns {margin-top:clamp(1.5em,3.6vh,2.8em)}
 body.lampa_view.pt-full.pt-desktop:not(.card--no-cover) .minimal-detail-header.minimal-detail-backdrop {
@@ -430,16 +430,16 @@ body.lampa_view.pt-full.pt-tv:not(.card--no-cover) .minimal-detail-header.minima
 body.lampa_view.pt-full.pt-tv:not(.card--no-cover) .minimal-detail-header.minimal-detail-backdrop>.minimal-detail-columns {
  flex-shrink:0;margin-top:auto;padding-top:1.5em;
 }
-body.lampa_view .minimal-detail-columns>.minimal-detail-facts {grid-column:2;grid-row:1;position:relative;inset:auto;float:none;width:auto;min-width:0;box-sizing:border-box;align-self:start;overflow-wrap:anywhere}
+body.lampa_view .minimal-detail-columns>.minimal-detail-facts {grid-column:2;grid-row:1;position:relative;inset:auto;float:none;width:auto;min-width:0;box-sizing:border-box;overflow-wrap:anywhere}
 body.lampa_view .minimal-overview-action {border-radius:.3em;outline:none!important;border:0!important;box-shadow:none!important;position:relative;max-width:52em;margin:1em 0}
 body.lampa_view .minimal-overview-action>.full-start-new__description,body.lampa_view .minimal-overview-action>.minimal-detail-overview {width:100%;max-width:none;margin:0;outline:none!important;border:0!important;box-shadow:none!important}
 body.lampa_view :is(.minimal-overview-action,.minimal-detail-heading,.minimal-title-action,.minimal-identity-title) {outline:none!important;border:0!important;background:transparent!important;box-shadow:none!important;transform:none!important;transition:text-shadow .22s ease!important;text-shadow:none}
 body.lampa_view :is(.minimal-overview-action,.minimal-detail-heading,.minimal-title-action,.minimal-identity-title)::before,body.lampa_view :is(.minimal-overview-action,.minimal-detail-heading,.minimal-title-action,.minimal-identity-title)::after {display:none!important}
 body.lampa_view .minimal-text-clipped {cursor:pointer}
 body.lampa_view .minimal-text-clipped:is(.focus,.hover,:hover,:focus-visible) {text-shadow:0 0 .3em rgba(var(--pt-tint-rgb),.8),0 0 .7em rgba(var(--pt-tint-rgb),.5)}
-body.lampa_view .minimal-detail-facts>.minimal-original-title {display:block}
-body.lampa_view .minimal-detail-facts>.minimal-original-title>span:first-child {margin-bottom:.3em}
-body.lampa_view .minimal-detail-facts .minimal-title-action {white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:start}
+body.lampa_view .minimal-detail-facts>.minimal-original-title {align-items:start}
+body.lampa_view .minimal-detail-facts>.minimal-original-title>span:first-child {max-width:9em}
+body.lampa_view .minimal-detail-facts .minimal-title-action {white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:end}
 body.lampa_view .minimal-detail-studio.selector {cursor:pointer;border-radius:.2em;outline:none;transition:filter .22s ease!important}
 body.lampa_view .minimal-detail-studio.selector.focus,body.lampa_view .minimal-detail-studio.selector:focus-visible {outline:none!important;border:0!important;box-shadow:none!important;filter:var(--pt-studio-tone,brightness(1)) drop-shadow(0 0 .25em var(--pt-accent)) drop-shadow(0 0 .65em var(--pt-accent))}
 body.lampa_view .minimal-overview-full {white-space:pre-wrap;overflow-wrap:break-word;line-height:1.7}
