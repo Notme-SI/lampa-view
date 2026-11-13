@@ -1,3 +1,7 @@
+## 0.5.154
+
+- Apply the side and bottom fades to the whole artwork layer, including its shade, to remove the vertical seam at the bottom left.
+
 ## 0.5.153
 
 - Blend the home banner into a background sampled from multiple areas of the frame. Preserve the banner's position, size, and crop.

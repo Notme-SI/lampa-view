@@ -123,6 +123,25 @@ async function run(engine, browser, mode) {
     }
    }
   }
+  // A light ambient background exposes the shade at the left edge of the
+  // bottom fade, even where the artwork itself is completely transparent.
+  const wrap=page.locator('.wrap');
+  await wrap.evaluate(n=>n.style.setProperty('background','#888','important'));
+  try{
+   const edgePoints=await artwork.evaluate(img=>{
+    const box=img.parentElement.getBoundingClientRect();
+    return [.85,.89,.92,.95,.97].flatMap(fraction=>{
+     const y=(box.top+box.height*fraction)/innerHeight;
+     return [[(box.left-3)/innerWidth,y],[(box.left+3)/innerWidth,y]];
+    });
+   });
+   const colors=await samplePixels(page,edgePoints);
+   for(let i=0;i<colors.length;i+=2){
+    const [left,right]=colors.slice(i,i+2);
+    assert.ok(left.every((value,channel)=>Math.abs(value-right[channel])<=3),
+     'The bottom shade must also fade at the left edge: '+JSON.stringify({mode,left,right}));
+   }
+  }finally{await wrap.evaluate(n=>n.style.removeProperty('background'));}
   await artwork.evaluate(async (img,src)=>{img.src=src;await img.decode();},original);
   await expectColor(0);
   const bottom=await page.evaluate(y=>y/innerHeight,hero.bottom);

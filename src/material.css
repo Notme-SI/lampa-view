@@ -58,7 +58,7 @@ body.lampa_view.pt-home[data-lampa-theme]:not(.pt-mobile) .wrap__content:has(.ac
 body.lampa_view.pt-home[data-lampa-theme] .activity--active .pt-hero {display:block;width:100%!important;margin-inline:0!important;border-radius:0;padding-bottom:0;background:var(--pt-bg)!important;box-shadow:none;clip-path:none;-webkit-clip-path:none}
 body.lampa_view.pt-home[data-lampa-theme] .pt-hero .pt-hero__artwork {
  --pt-hero-edge-bottom:linear-gradient(to top,transparent 2%,#0000000d 4%,#00000040 7%,#0000009c 11%,#000000eb 15%,#000 18%);
- --pt-hero-edge-left:linear-gradient(to right,transparent 1%,#0000000d 4%,#00000040 8%,#0000009c 13%,#000000eb 17%,#000 20%);
+ --pt-hero-edge-left:linear-gradient(to right,transparent 1%,#0000000d 5%,#00000040 9%,#0000009c 14%,#000000eb 19%,#000 22%);
  mask-image:none!important;-webkit-mask-image:none!important;
 }
 body.lampa_view.pt-home[data-lampa-theme] .pt-hero .pt-hero__image {width:100%;max-width:none;object-fit:contain;transform:none;mask-image:none!important;-webkit-mask-image:none!important}
@@ -68,7 +68,7 @@ body.lampa_view.pt-home[data-lampa-theme] .pt-hero .pt-hero__artwork::after {
 }
 body.lampa_view.pt-home[data-lampa-theme]:not(.pt-mobile) .pt-hero__artwork {
  left:auto;width:68%;height:100%;
- --pt-hero-fallback-fade:linear-gradient(90deg,var(--pt-bg),transparent 20%),
+ --pt-hero-fallback-fade:linear-gradient(90deg,var(--pt-bg),transparent 22%),
             linear-gradient(to top,var(--pt-bg),transparent 18%);
 }
 body.lampa_view.pt-home[data-lampa-theme]:not(.pt-mobile) .pt-hero .pt-hero__image {object-fit:cover;object-position:right 34%}
@@ -209,13 +209,9 @@ body.lampa_view.pt-tv.pt-theme-glass[data-pt-scene] .wrap {
   mask-image:linear-gradient(to bottom,transparent,#000 7%,#000 84%,#000d 88%,#0002 95%,transparent 98%)!important;
   -webkit-mask-image:linear-gradient(to bottom,transparent,#000 7%,#000 84%,#000d 88%,#0002 95%,transparent 98%)!important;
  }
- body.lampa_view.pt-home[data-lampa-theme]:not(.pt-mobile):not(.pt-tv) .pt-hero .pt-hero__image {
-  mask-image:var(--pt-hero-edge-left)!important;
-  -webkit-mask-image:var(--pt-hero-edge-left)!important;
- }
- /* The same edge fades share one TV artwork layer, rather than nesting two
-    masked layers while the remote scroll compositor is active. */
- body.lampa_view.pt-home.pt-tv[data-lampa-theme] .pt-hero .pt-hero__artwork {
+ /* Fade the image and its bottom shade together so neither has a hard edge
+    where the two gradients meet. */
+ body.lampa_view.pt-home[data-lampa-theme]:not(.pt-mobile) .pt-hero .pt-hero__artwork {
   mask-image:var(--pt-hero-edge-left),var(--pt-hero-edge-bottom)!important;
   -webkit-mask-image:var(--pt-hero-edge-left),var(--pt-hero-edge-bottom)!important;
   -webkit-mask-composite:source-in;mask-composite:intersect;
