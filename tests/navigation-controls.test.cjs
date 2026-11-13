@@ -28,7 +28,9 @@ test('cartoons menu sits below series and opens bounded film/TV animation rows t
   assert.equal(L.Activity.active().url,'cartoon');assert.ok(requests.length===2,'One mixed grid uses one movie and one TV request');
   assert.ok(requests.some(path=>path.startsWith('discover/movie?')));assert.ok(requests.some(path=>path.startsWith('discover/tv?')));
   for(const path of requests){if(/^trending\/(?:movie|tv)\//.test(path))continue;const query=new URLSearchParams(path.split('?')[1]);assert.match(path,/^discover\/(?:movie|tv)\?/);assert.ok(query.get('with_genres').split(',').includes('16'));if(!query.has('with_companies') && !query.has('with_networks'))assert.equal(query.get('without_keywords'),'210024');}
-  assert.equal(root.querySelectorAll('.minimal-catalogue-control').length,5);assert.equal(rows.items.length,20);assert.equal(new Set(rows.items.map(item=>item.data.media_type+':'+item.data.id)).size,20);
+  const filters=[...root.querySelectorAll('.minimal-catalogue-control')].map(node=>node.textContent);
+  assert.ok(filters.includes('Все каналы') && filters.includes('Все студии'));
+  assert.equal(filters.length,7);assert.equal(rows.items.length,20);assert.equal(new Set(rows.items.map(item=>item.data.media_type+':'+item.data.id)).size,20);
   assert.deepEqual(r.errors,[]);
  }finally{r.close();}
 });
@@ -124,8 +126,11 @@ test('TV shows open a single filtered native grid and preserve scope on later pa
  const r=await native({built:true}),{w,L}=r,requests=[];try{
   L.Storage.set('source','tmdb');const shows=w.document.querySelector('.menu__item[data-action=tv]').nextElementSibling;assert.equal(shows.dataset.action,'tvshow');
   const response=require('./fixtures/discovery-response.cjs');L.Api.sources.tmdb.get=(url,p,ok)=>{requests.push({url,page:p.page});w.setTimeout(()=>ok(response(url,p.page)),0);};shows.click();await wait(220);
-  let c=L.Activity.active().activity.component;assert.equal(c.items.length,20);assert.equal(c.render(true).querySelectorAll('.minimal-catalogue-control').length,5);assert.equal(c.render(true).querySelectorAll('.items-line').length,0);assert.equal(requests.filter(request=>request.page===1).length,1,JSON.stringify(requests));
-  c.render(true).querySelectorAll('.minimal-catalogue-control')[1].click();await wait(30);const talk=[...w.document.querySelectorAll('.selectbox-item')].find(n=>n.textContent.includes('Ток'));assert.ok(talk);talk.dispatchEvent(new w.Event('hover:enter'));await wait(100);c=L.Activity.active().activity.component;c.object.page=2;const json=await new Promise((ok,fail)=>c.emit('next',ok,fail));assert.equal(json.results.length,20);
+  let c=L.Activity.active().activity.component;assert.equal(c.items.length,20);assert.equal(c.render(true).querySelectorAll('.items-line').length,0);assert.equal(requests.filter(request=>request.page===1).length,1,JSON.stringify(requests));
+  const filters=[...c.render(true).querySelectorAll('.minimal-catalogue-control')];
+  assert.equal(filters.length,4);
+  assert.ok(!filters.some(node=>node.textContent==='Все жанры'));
+  filters.find(node=>node.textContent==='Все подборки').click();await wait(30);const talk=[...w.document.querySelectorAll('.selectbox-item')].find(n=>n.textContent.includes('Ток'));assert.ok(talk);talk.dispatchEvent(new w.Event('hover:enter'));await wait(100);c=L.Activity.active().activity.component;c.object.page=2;const json=await new Promise((ok,fail)=>c.emit('next',ok,fail));assert.equal(json.results.length,20);
   const q=new URLSearchParams(requests.at(-1).url.split('?')[1]);assert.equal(q.get('with_origin_country'),null);assert.equal(q.get('with_genres'),'10767');assert.equal(q.get('without_genres'),'16,99,18,80,10766');assert.deepEqual(r.errors,[]);
  }finally{r.close();}
 });

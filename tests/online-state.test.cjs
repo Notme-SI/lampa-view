@@ -706,17 +706,18 @@ test('season captions read the selected dub before opening a season',async()=>{
   };
   s.filter.set('filter',[{stype:'season',title:'Сезон',subtitle:'Сезон 1',items:[1,2].map(season=>({title:'Сезон '+season,selected:season===1}))},
    {stype:'voice',title:'Озвучка',subtitle:'TVShows',items:[{title:'TVShows',selected:true}]}]);
-  await wait(300);
+  const caption=()=>s.root.find('[data-nova-focus="season:1"] .nova-chip__sub').text();
+  await until(()=>caption()==='3 эпизода','episode count for the selected dub');
   assert.deepEqual(calls,[base+'?s=2',base+'?s=2&t=5']);
-  assert.equal(s.root.find('[data-nova-focus="season:1"] .nova-chip__sub').text(),'3 эпизода');
   lists.default={items:[1,2,3,4].map(episode=>({season:1,episode,method:'call'}))};
   s.filter.set('filter',[{stype:'season',title:'Сезон',subtitle:'Сезон 1',items:[1,2].map(season=>({title:'Сезон '+season,selected:season===1}))},{stype:'voice',title:'Озвучка',subtitle:'Solo',items:[{title:'Solo',selected:true}]}]);
-  await wait(300);assert.equal(s.root.find('[data-nova-focus="season:1"] .nova-chip__sub').text(),'4 эпизода','A season without a separate dub picker still contributes its files');
+  await until(()=>caption()==='4 эпизода','episode count for a season without a separate dub picker');
   L.Storage.set('lampac_nws_id','old-session');let registrations=0;const rchCalls=[];
   comp.rch=(json,done)=>{assert.equal(json.rch,true);registrations++;L.Storage.set('lampac_nws_id','new-session');done();};
   L.Reguest=function(){const net=new Request();net.native=(url,ok,fail)=>{const query=new URL(url);if(query.searchParams.get('s')!=='2')return fail();rchCalls.push(url);setTimeout(()=>ok(query.searchParams.get('nws_id')==='new-session'?'selected':JSON.stringify({rch:true,nws:'wss://online.example.test/ws'})),5);};return net;};
   s.filter.set('filter',[{stype:'season',title:'Сезон',subtitle:'Сезон 1',items:[1,2].map(season=>({title:'Сезон '+season,selected:season===1}))},{stype:'voice',title:'Озвучка',subtitle:'RCH',items:[{title:'RCH',selected:true}]}]);
-  await wait(300);assert.equal(registrations,1);assert.equal(rchCalls.length,2);assert.equal(s.root.find('[data-nova-focus="season:1"] .nova-chip__sub').text(),'3 эпизода','Background requests reuse the host RCH session without opening the season');
+  await until(()=>caption()==='3 эпизода' && rchCalls.length>=2,'episode count through the renewed host RCH session');
+  assert.equal(registrations,1);assert.equal(rchCalls.length,2);
   assert.equal(s.played(),0);
   assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}
