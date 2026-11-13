@@ -4,14 +4,15 @@ const {setup}=require('../fixtures/native-browser.cjs');
 (async()=>{
  for(const [engineName,engine]of [['chromium',chromium],['webkit',webkit]]){
  const browser=await engine.launch({headless:true});
- try{for(const device of ['Windows','Android TV']){
+ try{for(const [device,mpvPlus] of [['Windows',false],['Windows',true],['Android TV',false]]){
   const r=await setup(browser,{viewport:{width:1440,height:900},mode:device==='Windows'?'desktop':'tv',userAgent:device==='Windows'?'Mozilla/5.0 (Windows NT 10.0; Win64; x64)':'Mozilla/5.0 (Linux; Android 12; Android TV)'},{app:process.env.QA_NATIVE_APP,beforePlugin:async page=>page.evaluate(device=>{
    const L=Lampa,is=L.Platform.is;L.Platform.is=name=>name==='android'?device==='Android TV':name==='apple'?false:is(name);L.Platform.desktop=()=>device==='Windows';window.qaLaunches=[];
    window.qaFsChecks=0;
    if(device==='Windows')window.require=name=>name==='fs'?{existsSync:()=>{qaFsChecks++;return true;}}:name==='child_process'?{spawn:(path,args)=>{qaLaunches.push({path,args,at:performance.now()});return {on(){}};}}:{};
   },device)}),{page}=r;
-  await page.evaluate(device=>{
+  await page.evaluate(({device,mpvPlus})=>{
    const L=Lampa;L.DeviceInput.init();L.Controller.observe();Navigator.follow('focus',event=>L.Controller.focus(event.elem));L.Storage.set('menu_always',true);L.Storage.set('player_torrent',device==='Windows'?'other':'android');L.Storage.set('player_nw_path','C:\\Player\\mpv.exe');L.Storage.set('internal_torrclient',true);
+   L.Storage.set('lampa_view_mpv_plus',mpvPlus);
    L.Android.openPlayer=(url,data)=>qaLaunches.push({url,episode:data.episode,at:performance.now()});
    const movie={id:99,name:'MobLand',original_name:'MobLand',original_title:'MobLand',first_air_date:'2025-03-30',number_of_seasons:1,seasons:[{season_number:1,episode_count:2}],genres:[]};
    const row={Title:'MobLand S01 WEB-DL 1080p',Tracker:'test',Size:1e9,Seeders:50,MagnetUri:'magnet:?xt=urn:btih:'+'a'.repeat(40)};
@@ -20,7 +21,7 @@ const {setup}=require('../fixtures/native-browser.cjs');
    L.Torserver.stream=(file,hash,id)=>'http://lampa.example.invalid/ts/stream/file.mkv?link='+hash+'&index='+id+'&preload';L.Torserver.toPlayUrl=url=>url.replace('&preload','&play');
    L.Api.seasons=(card,seasons,ok)=>ok({1:{episodes:[1,2].map(episode_number=>({season_number:1,episode_number,name:'Episode '+episode_number}))}});
    window.qaPreloads=[];const network=testNetwork;window.testNetwork=(url,ok,error)=>/\/ts\/stream/.test(url)?setTimeout(()=>{qaPreloads.push(url);if(qaPreloads.length>1)window.qaReadyAt=performance.now();ok({preloaded_bytes:qaPreloads.length===1?20:100,preload_size:100});},30):network(url,ok,error);
-  },device);
+  },{device,mpvPlus});
   await page.addScriptTag({content:fs.readFileSync(require.resolve('../../plugins/mpvplus-ios.js'),'utf8')});
   await page.locator('.torrent-item.tc-item').first().click();await page.waitForSelector('.torrent-files .torrent-serial',{timeout:7000});await page.waitForTimeout(400);
   await page.evaluate(()=>{const row=document.querySelectorAll('.torrent-serial')[1];Lampa.Controller.collectionFocus(row,document.querySelector('.torrent-files'));Lampa.Controller.long();});await page.waitForTimeout(400);
@@ -35,8 +36,14 @@ const {setup}=require('../fixtures/native-browser.cjs');
   await page.waitForFunction(()=>qaLaunches.length===1,{},{timeout:5000});
   assert.equal(await page.locator('.media-loading--standalone').count(),0,'the statistics leave with the native overlay');
   const result=await page.evaluate(()=>({launches:qaLaunches,preloads:qaPreloads,fsChecks:qaFsChecks,readyAt:qaReadyAt}));assert.equal(result.preloads.length,2);assert.match(result.preloads[0],/index=7&preload$/);assert.match(result.preloads[1],/index=7&stat$/);assert.deepEqual(r.errors,[]);
-  assert.equal(result.fsChecks,0,'preload completion must not wait for an extra synchronous Desktop filesystem IPC');
+  assert.equal(result.fsChecks,device==='Windows'&&!mpvPlus?1:0,'only the stock Desktop launcher checks the executable before spawning');
   const launch=result.launches[0];assert.match(device==='Windows'?launch.args.at(-1):launch.url,/index=7&play$/);
-  console.log(engineName+' '+device+': native selection, preload and transport passed; preload-to-transport '+(launch.at-result.readyAt).toFixed(1)+' ms');await r.context.close();
+  if(device==='Windows'){
+   assert.equal(launch.path,'C:\\Player\\mpv.exe');
+   if(mpvPlus)assert.ok(launch.args.some(arg=>arg.startsWith('--script-opts-append=mpv_plus_lampa_context=')),'explicit MPV Plus integration must pass context');
+   else assert.deepEqual(launch.args,[launch.args.at(-1)],'ordinary MPV must receive the stock URL-only arguments');
+  }
+  const label=device==='Windows'?(mpvPlus?'Windows MPV Plus':'Windows MPV'):device;
+  console.log(engineName+' '+label+': native selection, preload and transport passed; preload-to-transport '+(launch.at-result.readyAt).toFixed(1)+' ms');await r.context.close();
  }}finally{await browser.close();}}
 })().catch(e=>{console.error(e);process.exitCode=1;});
