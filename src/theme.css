@@ -443,17 +443,6 @@ body.lampa_view .minimal-detail-facts .minimal-title-action {white-space:nowrap;
 body.lampa_view .minimal-detail-studio.selector {cursor:pointer;border-radius:.2em;outline:none;transition:filter .22s ease!important}
 body.lampa_view .minimal-detail-studio.selector.focus,body.lampa_view .minimal-detail-studio.selector:focus-visible {outline:none!important;border:0!important;box-shadow:none!important;filter:var(--pt-studio-tone,brightness(1)) drop-shadow(0 0 .25em var(--pt-accent)) drop-shadow(0 0 .65em var(--pt-accent))}
 body.lampa_view .minimal-overview-full {white-space:pre-wrap;overflow-wrap:break-word;line-height:1.7}
-body.lampa_view .media-loading--standalone .media-loading__status[hidden] {display:none!important}
-body.lampa_view .media-loading--standalone .pt-torrent-loading {position:absolute;inset:auto 0 1.5em;box-sizing:border-box;display:block;width:max-content;max-width:calc(100% - 2em);margin:auto;padding:.65em 1em;border-radius:.3em;background:rgba(0,0,0,.8);font-variant-numeric:tabular-nums}
-body.lampa_view .pt-torrent-loading__heading {font-size:1.05em;font-weight:600;margin-bottom:.3em}
-body.lampa_view .pt-torrent-loading__stats {display:grid;grid-template-columns:repeat(3,auto);gap:.4em 1.2em;margin:0}
-body.lampa_view .pt-torrent-loading__stats>div {display:flex;gap:.4em;align-items:baseline;white-space:nowrap}
-body.lampa_view .pt-torrent-loading__stats>[hidden],body.lampa_view .pt-torrent-loading__message[hidden] {display:none!important}
-body.lampa_view .pt-torrent-loading__stats dt {color:var(--pt-muted)}
-body.lampa_view .pt-torrent-loading__stats dd {margin:0}
-body.lampa_view .pt-torrent-loading__message {margin-top:.35em;overflow-wrap:anywhere}
-@media(max-width:650px){body.lampa_view .pt-torrent-loading__stats {grid-template-columns:repeat(2,auto)}}
-@media(max-width:380px){body.lampa_view .pt-torrent-loading__stats {grid-template-columns:auto}}
 body.lampa_view .minimal-source-hidden {display:none!important}
 body.lampa_view .minimal-detail-facts>div>span {display:block}
 body.lampa_view .minimal-detail-identity .full-start-new__buttons {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.45em;align-items:stretch;overflow:visible}

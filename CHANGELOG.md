@@ -1,3 +1,7 @@
+## 0.5.151
+
+- Remove the plugin torrent statistics overlay and let Lampa render its own preload screen and statistics.
+
 ## 0.5.150
 
 - Recover actor portraits and standalone icons in notifications when their first image URL fails. Keep the native notification text and actions.
@@ -8,7 +12,7 @@
 
 ## 0.5.148
 
-- Restore the classic torrent loading panel with labelled statistics while keeping the native artwork and preload lifecycle.
+- Add a custom torrent loading panel with labelled statistics over the native artwork.
 - Make titles single-line and open full titles and descriptions only when clipped. Use a soft glow for focus and let the cast and facts panels size independently.
 - Replace the damaged Russian Odyssey logo and consider artwork ratings after language and minimum resolution.
 - Add adjustable banner tint independent of the native background switch. Try a small TMDB image when a proxy cannot be sampled.

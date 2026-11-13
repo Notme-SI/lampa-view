@@ -54,7 +54,6 @@ import onlineNavigation from './online-navigation.js';
 import onlineSourceCache from './online-source-cache.js';
 import torrentBanner,{bannerCountries} from './torrent-banner.js';
 import torrentSearch from './torrent-search.js';
-import torrentLoading from './torrent-loading.js';
 import installTrakt from './trakt.js';
 import holidayLayout from './holidays.js';
 import interfaceSize from './interface-size.js';
@@ -609,7 +608,6 @@ if (!ROOT.LampaView) {
     historyCards(L,()=>yes('lampa_view_enabled'));
     torrentBanner(L,loadLogo);
     torrentSearch(L);
-    torrentLoading(L,()=>yes('lampa_view_enabled'));
     settings(); bridge(); shell();back=installBack(L,$,()=>yes('lampa_view_enabled'));holidays=holidayLayout(L,()=>yes('lampa_view_enabled'));artwork.refresh();
     tvPerformance(()=>yes('lampa_view_enabled'),L);
     glassScene(L,()=>yes('lampa_view_enabled'),color=>appearanceTheme?.chromePalette(color));
