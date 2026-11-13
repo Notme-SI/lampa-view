@@ -110,7 +110,7 @@ async function run(engine, browser, mode) {
     await artwork.evaluate(async (img,src)=>{img.src=src;await img.decode();},image);
     const edge=await artwork.evaluate(img=>img.parentElement.getBoundingClientRect().left/innerWidth);
     const [middle,fade]=await artwork.evaluate(img=>{const box=img.parentElement.getBoundingClientRect();return [.42,.76].map(p=>(box.top+box.height*p)/innerHeight);});
-    const [left,right,center,lower,inner,feather]=await samplePixels(page,[[edge-.003,.105],[edge+.003,.105],[.94,.105],[.94,middle],[edge+.46*(1-edge),middle],[.94,fade]]);
+    const [left,right,center,lower,inner,feather]=await samplePixels(page,[[edge-.003,.105],[edge+.003,.105],[.94,.105],[.94,middle],[edge+.51*(1-edge),middle],[.94,fade]]);
     assert.ok(left.every((channel,i)=>Math.abs(channel-right[i])<=4),JSON.stringify({engine,mode,theme,image,left,right}));
     if(image===original)assert.ok(center[0]>right[0]+30,'The bright image stays visible on the right');
     if(image===original){
@@ -118,11 +118,11 @@ async function run(engine, browser, mode) {
      assert.ok(feather[0]>70 && feather[0]<220,'The bottom edge eases out through a translucent region: '+JSON.stringify({mode,theme,feather}));
      const bottom=await artwork.evaluate(img=>img.parentElement.getBoundingClientRect().bottom/innerHeight);
      const [underLogo,leftOfBanner,tintedPage]=await samplePixels(page,[[.14,middle],[.27,.12],[.94,bottom+.012]]);
-     assert.ok([...underLogo,...leftOfBanner].every(channel=>channel<=12),'The left background stays near-black even with bright artwork: '+JSON.stringify({mode,theme,underLogo,leftOfBanner}));
+     assert.ok(underLogo[0]>Math.max(underLogo[1],underLogo[2])+3 && [...underLogo,...leftOfBanner].every(channel=>channel<=55),'The text area stays dark while picking up the banner tint: '+JSON.stringify({mode,theme,underLogo,leftOfBanner}));
      assert.ok(tintedPage[0]>Math.max(tintedPage[1],tintedPage[2])+8,'Artwork tint continues under the right side of the banner: '+JSON.stringify({mode,theme,tintedPage}));
      const fadeSamples=await samplePixels(page,[.27,.33,.39,.45,.51,.57].map(x=>[x,bottom+.012]));
      const steps=fadeSamples.slice(1).map(([red],i)=>red-fadeSamples[i][0]);
-     assert.ok(steps.every(step=>step>0) && steps[0]<steps[1] && steps[1]<steps[2],'The tint starts gradually against black: '+JSON.stringify({mode,theme,fadeSamples}));
+     assert.ok(steps.every(step=>Math.abs(step)<=24) && fadeSamples[5][0]>fadeSamples[0][0]+12,'The tint spreads evenly across the page: '+JSON.stringify({mode,theme,fadeSamples}));
      const corner=edge+.08*(1-edge);
      const colors=await samplePixels(page,[[.94,bottom-.004],[.94,bottom+.004],[corner,bottom-.004],[corner,bottom+.004]]);
      for(const [above,below] of [[colors[0],colors[1]],[colors[2],colors[3]]]){

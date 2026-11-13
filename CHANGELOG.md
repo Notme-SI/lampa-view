@@ -1,3 +1,7 @@
+## 0.5.159
+
+- Let a muted artwork tint carry into the dark area behind the carousel text and soften the side fade.
+
 ## 0.5.158
 
 - Remove the background strips behind extension section titles.
