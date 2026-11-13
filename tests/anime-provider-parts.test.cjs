@@ -64,9 +64,9 @@ test('a missing native season is recovered only after the first and last release
 });
 
 
-test('a confirmed future schedule remains visible while missing aired files and another part do not',()=>{
+test('a confirmed schedule retains missing dated episodes while another part stays separate',()=>{
  const {availableMetadata}=mod('episode-metadata'),rows=[{season_number:1,episode_number:1,air_date:'2020-01-01'},{season_number:1,episode_number:2,air_date:'2020-01-08'},{season_number:1,episode_number:3,air_date:'2099-01-01'},{season_number:2,episode_number:4,air_date:'2099-01-01'},{season_number:1,episode_number:5,air_date:'invalid'}];
- assert.deepEqual(availableMetadata(rows,[1],1).map(r=>r.episode_number),[1,3]);
+ assert.deepEqual(availableMetadata(rows,[1],1).map(r=>r.episode_number),[1,2,3]);
  assert.deepEqual(availableMetadata(rows,[1],1,false).map(r=>r.episode_number),[1]);
 });
 

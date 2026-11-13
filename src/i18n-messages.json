@@ -1,4 +1,49 @@
 {
+ "Нет в источнике": {
+  "en": "Unavailable from this source", "uk": "Немає в джерелі", "be": "Няма ў крыніцы", "zh": "此来源暂无", "pt": "Indisponível nesta fonte", "bg": "Няма в източника", "he": "לא זמין במקור זה", "cs": "V tomto zdroji není k dispozici", "ro": "Indisponibil în această sursă", "fr": "Indisponible sur cette source", "pl": "Niedostępne w tym źródle", "es": "No disponible en esta fuente"
+ },
+ "Открываем в mpv+…": {
+  "en": "Opening in mpv+…",
+  "uk": "Відкриваємо в mpv+…",
+  "be": "Адкрываем у mpv+…",
+  "zh": "正在用 mpv+ 打开…",
+  "pt": "A abrir no mpv+…",
+  "bg": "Отваряне в mpv+…",
+  "he": "נפתח ב-mpv+…",
+  "cs": "Otevírání v mpv+…",
+  "ro": "Se deschide în mpv+…",
+  "fr": "Ouverture dans mpv+…",
+  "pl": "Otwieranie w mpv+…",
+  "es": "Abriendo en mpv+…"
+ },
+ "Видео уже открывается или играет в mpv+": {
+  "en": "The video is opening or already playing in mpv+",
+  "uk": "Відео вже відкривається або відтворюється в mpv+",
+  "be": "Відэа ўжо адкрываецца або прайграецца ў mpv+",
+  "zh": "视频已在 mpv+ 中打开或播放",
+  "pt": "O vídeo já está a abrir ou a reproduzir no mpv+",
+  "bg": "Видеото вече се отваря или възпроизвежда в mpv+",
+  "he": "הסרטון כבר נפתח או מתנגן ב-mpv+",
+  "cs": "Video se již otevírá nebo přehrává v mpv+",
+  "ro": "Videoclipul se deschide deja sau rulează în mpv+",
+  "fr": "La vidéo est déjà en cours d’ouverture ou de lecture dans mpv+",
+  "pl": "Film już się otwiera lub jest odtwarzany w mpv+",
+  "es": "El vídeo ya se está abriendo o reproduciendo en mpv+"
+ },
+ "Не удалось открыть видео в mpv+": {
+  "en": "Could not open the video in mpv+",
+  "uk": "Не вдалося відкрити відео в mpv+",
+  "be": "Не ўдалося адкрыць відэа ў mpv+",
+  "zh": "无法在 mpv+ 中打开视频",
+  "pt": "Não foi possível abrir o vídeo no mpv+",
+  "bg": "Видеото не може да се отвори в mpv+",
+  "he": "לא ניתן לפתוח את הסרטון ב-mpv+",
+  "cs": "Video se nepodařilo otevřít v mpv+",
+  "ro": "Videoclipul nu a putut fi deschis în mpv+",
+  "fr": "Impossible d’ouvrir la vidéo dans mpv+",
+  "pl": "Nie udało się otworzyć filmu w mpv+",
+  "es": "No se pudo abrir el vídeo en mpv+"
+ },
  "Анимация карточек": {
   "en": "Card animation",
   "uk": "Анімація карток",

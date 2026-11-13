@@ -663,7 +663,7 @@ if (!ROOT.LampaView) {
     } catch(error) {console.warn('Lampa View: metadata transport failed');}
   }
   function bridge() {
-    mpvLaunch.install(L,ROOT,currentCard,()=>true);
+    mpvLaunch.install(L,ROOT,currentCard,()=>true,lampaViewText);
     P.bridge = !!(ROOT.electronAPI && ROOT.electronAPI.lampa_view);
     if (!P.bridge) return;
     L.Player.listener.follow('create', event => {activeVideo = event.data; playlist=[]; sendContext(event.data);});

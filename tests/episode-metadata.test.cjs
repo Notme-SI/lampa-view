@@ -1,6 +1,19 @@
 const test=require('node:test'),assert=require('node:assert/strict'),esbuild=require('esbuild'),path=require('node:path'),vm=require('node:vm');
 const source=esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/episode-metadata.js')],bundle:true,write:false,format:'cjs'}).outputFiles[0].text;
 function fixture(){const module={exports:{}};vm.runInNewContext(source,{module,exports:module.exports,setTimeout});return module.exports;}
+test('native metadata padding uses episode coordinates with duplicates, gaps and missing source metadata',()=>{
+ const {nativeMetadata}=fixture();
+ const files=[1,1,2,3,4].map(episode=>({season:3,episode}));
+ const metadata=[1,2,3,4,5,6,7,8,9].map(episode_number=>({episode_number,season_number:3,name:'Серия '+episode_number}));
+ const aligned=nativeMetadata(metadata,files);
+ assert.deepEqual(Array.from(aligned.rows.slice(files.length),row=>row.episode_number),[5,6,7,8,9]);
+ assert.equal(aligned.rows.filter(row=>row.episode_number===1).length,2,'Native slots match actual files, including variants');
+ const incomplete=nativeMetadata(metadata.filter(row=>row.episode_number!==2),files);
+ assert.deepEqual(Array.from(incomplete.rows.slice(files.length),row=>row.episode_number),[5,6,7,8,9]);
+ assert.equal(incomplete.rows[2].episode_number,-1,'Unknown metadata cannot borrow another episode');
+ const holes=nativeMetadata(metadata,[{episode:1},{episode:4},{lampa_unassigned_episode:true}]);
+ assert.deepEqual(Array.from(holes.rows.slice(3),row=>row.episode_number),[2,3,5,6,7,8,9]);
+});
 const card={id:96677,number_of_seasons:3,number_of_episodes:25,networks:[{id:213}],seasons:[{season_number:1,name:'Сезон 1'},{season_number:2,name:'Часть 3'},{season_number:3,name:'Часть 4'}]};
 test('absolute tail and gaps use original episode coordinates without inventing the earlier unavailable files',()=>{
  const api=fixture(),card={minimal_anime:true,seasons:[{season_number:1,episode_count:3},{season_number:2,episode_count:4},{season_number:3,episode_count:3}]},result=api.absoluteRangeSeasons(card,[6,8,9]);assert.deepEqual(Array.from(result,g=>g.number),[2,3]);assert.deepEqual(Array.from(result[0].episodes),[6]);assert.deepEqual(Array.from(result[1].episodes),[8,9]);const original={1:{episode_number:1,name:'Eight'},2:{episode_number:2,name:'Nine'},3:{episode_number:3,name:'Ten'}},book=api.groupBook(original,result[1]);assert.equal(book[8].name,'Eight');assert.equal(book[9].episode_number,2);assert.equal(book[10],undefined);assert.equal(original[1].lampa_grouped,undefined);const absolute={8:{episode_number:8,name:'Eight'},9:{episode_number:9,name:'Nine'},10:{episode_number:10,name:'Ten'}};assert.equal(api.groupBook(absolute,result[1])[8].episode_number,8);assert.equal(api.groupBook({...absolute,1:original[1]},result[1]),null);for(const files of [[1,2],[8,8],[8,11],[6,6.5]])assert.equal(api.absoluteRangeSeasons(card,files),null);

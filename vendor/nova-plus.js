@@ -2600,11 +2600,25 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       }
       comp.draw=function(files,params){
         var card=object && (object.movie || object.card) || movie,ownFilter=activeFilter(typeof comp.render==='function'?comp.render():root),ownGroups=readGroups(ownFilter),seasons=ownGroups.season && ownGroups.season.items || [];
-        episodeContext={card:card,files:(files || []).filter(function(file){return !file.lampa_unassigned_episode;}).map(function(file){return Number(file.episode);}),seasons:seasons.map(function(s){return sourceSeason(s);}),similar:params && params.similars,part:providerPart,release:selectedRelease(providerUrl)};
+        episodeContext={card:card,items:files || [],files:(files || []).filter(function(file){return !file.lampa_unassigned_episode;}).map(function(file){return Number(file.episode);}),seasons:seasons.map(function(s){return sourceSeason(s);}),similar:params && params.similars,part:providerPart,release:selectedRelease(providerUrl)};
         return nativeDraw.apply(comp,arguments);
       };
       comp.getEpisodes=function(season,done){
         var context=episodeContext,api=window.LampaView && window.LampaView.episodeMetadata;
+        var deliver=done;
+        if(context && !context.similar && api && api.nativeMetadata)done=function(rows){
+          if(comp.destroyed || episodeContext!==context)return;
+          var aligned=api.nativeMetadata(rows || [],context.items);
+          deliver(aligned.rows);
+          // Number placeholders immediately; native image onload arrives later.
+          var view=typeof comp.render==='function'?comp.render():root;
+          var nodes=$(view).find('.online-prestige--full,.onl-online-prestige--full').filter(function(){return !$(this).closest('.nova-plus-root').length;});
+          aligned.missing.forEach(function(row,index){
+            var node=nodes.eq(context.items.length+index);
+            node.attr('data-minimal-episode',row.episode_number);
+            if(row.air_date && Date.parse(row.air_date+'T00:00:00Z')<=Date.now())node.find('.online-prestige__quality,.onl-online-prestige__quality').text(lampaViewText('Нет в источнике'));
+          });
+        };
         if(context && !context.similar && context.card && api){
           // Native display() populates its season filter after draw() starts.
           // Wait one turn so the first visit gets the same check as a revisit.
@@ -3152,7 +3166,8 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     var nativeAction=origin.data('nova-native-actions'),nativeFile=nativeAction && nativeAction.element,nativeValue=nativeFile && nativeFile.episode,nativeEpisode=Number(nativeValue);
     var unassigned=!!(nativeFile && nativeFile.lampa_unassigned_episode);
     var episodeText=origin.find('.' + px + 'online-prestige__episode-number').text();
-    var episodeNum = unassigned?null:nativeValue!=null && Number.isInteger(nativeEpisode) && nativeEpisode>=0?nativeEpisode:/\d/.test(episodeText)?digits(episodeText):index+1;
+    var stored=origin.attr('data-minimal-episode');
+    var episodeNum = unassigned?null:nativeValue!=null && Number.isInteger(nativeEpisode) && nativeEpisode>=0?nativeEpisode:stored!=null?Number(stored):/\d/.test(episodeText)?digits(episodeText):index+1;
     var isSeries = !!(movie && (movie.name || movie.original_name || movie.number_of_seasons || movie.media_type === 'tv'));
     var progress = unassigned?{}:progressReader()(isSeries ? (seasonNumber()) : 0, isSeries ? episodeNum : 0, hash);
     if (progress.found) percent = progress.percent;
@@ -3186,10 +3201,16 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
   }
 
   function collect() {
-    var list = [];
+    var list = [],episodes={},series=!!(movie && (movie.name || movie.original_name || movie.number_of_seasons || movie.media_type==='tv'));
     $(host).find('.online-prestige--full,.online-prestige--folder,.onl-online-prestige--full,.onl-online-prestige--folder').each(function () {
       if ($(this).closest('.nova-plus-root').length) return;
-      list.push(readCard(this, list.length));
+      var item=readCard(this,list.length);
+      if(series && !item.folder && !item.soon && !item.unassigned && Number.isInteger(item.num)){
+        var key=String(item.num),existing=episodes[key];
+        if(existing){(existing.variants || (existing.variants=[existing])).push(item);return;}
+        episodes[key]=item;
+      }
+      list.push(item);
     });
     return list;
   }
@@ -3284,6 +3305,12 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
 
   function play(item) {
     if (!item) return;
+    if(item.variants && item.variants.length>1){
+      Lampa.Select.show({title:lampaViewText('Серия {0}',[item.num]),items:item.variants.map(function(variant,index){
+        return {title:lampaViewText('Версия {0}',[index+1]),subtitle:variant.quality || '',variant:variant};
+      }),onSelect:function(row){Lampa.Controller.toggle('content');row.variant.origin.trigger('hover:enter');},onBack:function(){Lampa.Controller.toggle('content');}});
+      return;
+    }
     try { item.origin.trigger('hover:enter'); } catch (e) {}
   }
 

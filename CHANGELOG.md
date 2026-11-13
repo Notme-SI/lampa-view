@@ -1,3 +1,16 @@
+## 0.5.170
+
+- Keep every dated episode in the season schedule when a provider has gaps or duplicate files. Assign placeholder numbers before images load and label aired episodes without a file as unavailable in that source.
+- Group multiple files for the same episode under one card while preserving the original playback handlers.
+- Preserve MPV Plus episode identity with long signed URLs by shortening the neighboring playlist. Report launch status and suppress duplicate launches of the same video.
+- Open an unambiguous Aladin title and year before selecting its season.
+- Update browser checks for narrower TV panels below the header and TV poster labels without backdrop filters.
+
+## 0.5.169
+
+- Group catalogue brands into studios, streaming platforms and TV channels, using their actual logos.
+- Reduce TV Glass rendering cost, narrow menus and action panels, and place them below the header.
+
 ## 0.5.168
 
 - Apply the selected genre inside Family collections alongside a channel or studio.

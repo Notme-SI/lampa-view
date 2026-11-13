@@ -37,6 +37,9 @@ function providerRelease(row,card){
 }
 export function folderTarget(rows,card,season=1){
  if(!card || !Array.isArray(rows) || rows.some(row=>/^(play|call)$/.test(row.method)))return '';
+ // Aladin's exact search hit identifies the entire title, before its season menu.
+ const titles=rows.filter(row=>row.similar && row.method==='link' && /^(?:https?:\/\/|\/)/i.test(row.url || '') && /(?:^|\/)lite\/aladin\?[^#]*\borid=/i.test(row.url || '') && providerRelease(row,card) && !/(?:сезон|season|\[(?:тв|tv))/i.test(row.title || row.name || row.text || ''));
+ if(titles.length===1)return titles[0].url;
  const matches=rows.filter(row=>row.method==='link' && /^(?:https?:\/\/|\/)/i.test(row.url || '')).map(row=>({row,release:providerRelease(row,card)})).filter(v=>v.release?.season===Number(season)),strong=matches.filter(v=>v.release.explicit),choice=strong.length?strong:matches;
  return choice.length===1 && new Set(matches.map(v=>v.release.part)).size<=1?choice[0].row.url:'';
 }
@@ -67,6 +70,7 @@ export function relevantFolders(rows,card){
 export function episodeRows(rows,voices=[]){
  const video=row=>row.method==='call' || row.method==='play';
  const coordinate=value=>value!=null && value!=='' && Number.isSafeInteger(Number(value)) && Number(value)>=0;
+ const seen=new Set();
  const normalized=rows.map(row=>{
   if(!video(row))return row;
   const label=String(row.text || row.name || row.title || '').trim();
@@ -75,11 +79,18 @@ export function episodeRows(rows,voices=[]){
   const season=coordinate(row.season)?row.season:coordinate(row.s)?Number(row.s):undefined;
   return episode!==row.episode || season!==row.season?{...row,episode,season}:row;
  });
- if(!normalized.some(row=>video(row) && coordinate(row.episode)))return normalized;
+ const numbered=normalized.some(row=>video(row) && coordinate(row.episode));
  const controls=new Set(voices.filter(row=>row.method==='link' && row.url).map(row=>row.url));
  return normalized.flatMap(row=>{
-  if(!video(row) || coordinate(row.episode))return [row];
-  return row.url && !controls.has(row.url)?[{...row,lampa_unassigned_episode:true}]:[];
+  if(!video(row))return [row];
+  // Repeated catalogue entries can share a number but contain different videos.
+  // Only collapse an identical playback instruction.
+  if(coordinate(row.episode)){
+   const key=JSON.stringify([row.season,row.episode,row.method,row.url,row.stream,row.voice_name,row.translation,row.quality,row.qualitys]);
+   if(seen.has(key))return [];
+   seen.add(key);return [row];
+  }
+  return row.url && (!numbered || !controls.has(row.url))?[{...row,lampa_unassigned_episode:true}]:[];
  });
 }
 // Native season navigation is shared by every source. Digits in a studio name

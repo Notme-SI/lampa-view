@@ -64,8 +64,17 @@ export function seasonName(card,number,series=card){
 }
 // Keep a published schedule separate from a provider's available video files.
 export function availableMetadata(rows,files,season,allowFuture=true){
- const actual=new Set(files.map(Number)),now=Date.now();
- return rows.filter(row=>actual.has(Number(row.episode_number)) || allowFuture && Number(row.lampa_source_season ?? row.season_number)===Number(season) && typeof row.air_date==='string' && /^\d{4}-\d{2}-\d{2}$/.test(row.air_date) && Date.parse(row.air_date+'T00:00:00Z')>now);
+ const actual=new Set(files.map(Number));
+ return rows.filter(row=>actual.has(Number(row.episode_number)) || allowFuture && Number(row.lampa_source_season ?? row.season_number)===Number(season) && typeof row.air_date==='string' && /^\d{4}-\d{2}-\d{2}$/.test(row.air_date));
+}
+// Native Online appends metadata.slice(files.length). Supply one lookup slot
+// per actual file, then the missing schedule, even when files contain gaps.
+export function nativeMetadata(rows,files){
+ if(!rows.length)return {rows:[],missing:[]};
+ const book=new Map(rows.map(row=>[Number(row.episode_number),row]));
+ const present=new Set(files.filter(file=>!file.lampa_unassigned_episode).map(file=>Number(file.episode)));
+ const missing=rows.filter(row=>!present.has(Number(row.episode_number)));
+ return {rows:files.map(file=>!file.lampa_unassigned_episode && book.get(Number(file.episode)) || {episode_number:-1}).concat(missing),missing};
 }
 // Alternative episode groups change metadata coordinates, never playback hashes.
 export function alternativeNumbering(card,numbers){
@@ -192,7 +201,7 @@ export default function episodeMetadata(L,kino,anime){
   // Preserve the provider's menu unless these files cover a verified full list.
   if(partialAllowed && kino && kino.enabled())kino.groups(card,files,value=>value?done(value):fallback());else fallback();
  }
- return {isAnime,availableMetadata,localizeBook:localizedEpisodeBook,alternate:alternativeNumbering,groups,groupBook,seasonName,book(card,number,numbers,actual,done,files=[],verifiedAbsolute=false,layout=null){
+ return {isAnime,availableMetadata,nativeMetadata,localizeBook:localizedEpisodeBook,alternate:alternativeNumbering,groups,groupBook,seasonName,book(card,number,numbers,actual,done,files=[],verifiedAbsolute=false,layout=null){
   // Fewer source seasons can mean a missing arc, a merged arc or a missing tail.
   // A matching length of just the selected season cannot distinguish them.
   // Full absolute lists have a separately verified partition in groups()/groupBook().

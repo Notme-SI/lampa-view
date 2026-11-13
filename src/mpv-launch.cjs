@@ -4,22 +4,24 @@ const C = require('./identity.cjs');
 const {progressChannel} = require('./mpv-progress.cjs');
 // The native Desktop preload already supports child_process.spawn. Pass a small
 // opaque script option through it; no app patch, server or altered video URL.
-function option(context, encode) {
+function option(context, encode, trim = true) {
   const data = {
     ...context
   };
   if (Array.isArray(data.entries)) data.entries = data.entries.slice();
   let value = encode(JSON.stringify(data));
-  while (value.length > 11000 && data.entries && data.entries.length > 1) {
+  while (trim && value.length > 11000 && data.entries && data.entries.length > 1) {
     data.entries.pop();
     value = encode(JSON.stringify(data));
   }
   if (value.length > 11000) return '';
   return '--script-opts-append=mpv_plus_lampa_context=' + Array.from(value, c => c.charCodeAt(0).toString(16).padStart(2, '0')).join('');
 }
-function install(L, root, cardFor, enabled) {
+function install(L, root, cardFor, enabled, text = value => value) {
   if (!L.Platform || typeof L.Platform.desktop !== 'function' || !L.Platform.desktop() || typeof root.require !== 'function') return;
   let pending = null, bypass = false;
+  const active = new Map();
+  const notice = value => L.Noty?.show?.(text(value));
   const originalPlaylist = L.Player.playlist;
   L.Player.playlist = function (items) {
     if (pending && Array.isArray(items) && items.length) pending.items = items;
@@ -33,10 +35,17 @@ function install(L, root, cardFor, enabled) {
     return typeof path === 'string' && /(?:^|[\\/])mpv(?:\+)?\.exe$/i.test(path) ? path : '';
   }
   function create(event) {
-    if (pending) { pending.cancelled = true; pending.cancel?.(); pending = null; }
     const video = event.data,
       path = target(video);
     if (bypass || !path || !event.abort) return;
+    const url = (video.quality && L.Player.getUrlQuality?.(video.quality, false)) || video.url;
+    const key = typeof url === 'string' ? path.toLowerCase() + '\n' + url : null;
+    if (key && (pending?.key === key || active.has(key))) {
+      event.abort();
+      notice(pending?.key === key ? 'Открываем в mpv+…' : 'Видео уже открывается или играет в mpv+');
+      return;
+    }
+    if (pending) { pending.cancelled = true; pending.cancel?.(); pending = null; }
     const card = cardFor(video);
     if (!card) return;
     let spawn;
@@ -51,11 +60,13 @@ function install(L, root, cardFor, enabled) {
     pending = {
       video,
       path,
+      key,
       spawn,
       card,
       items: Array.isArray(video.playlist) ? video.playlist : []
     };
     event.abort();
+    notice('Открываем в mpv+…');
     const launch = pending;
     const launchPending = (resolved) => {
       if (launch.cancelled) return;
@@ -101,9 +112,12 @@ function install(L, root, cardFor, enabled) {
             return identity.season === selectedIdentity.season && (before ? identity.episode < selectedIdentity.episode : identity.episode > selectedIdentity.episode);
           });
           const urls = new Set([selected.url]);
+          const coordinates=new Set([selectedIdentity.season+':'+selectedIdentity.episode]);
           const playable = items => items.filter(item => {
             if (!C.mediaURL(item.url) || urls.has(item.url)) return false;
-            urls.add(item.url);return true;
+            const identity=C.identity(card,item),coordinate=identity.season+':'+identity.episode;
+            if(identity.episode!=null && coordinates.has(coordinate))return false;
+            urls.add(item.url);if(identity.episode!=null)coordinates.add(coordinate);return true;
           });
           const before = playable(side(true)), after = playable(side(false));
           queue = [...before, selected, ...after];start = before.length;
@@ -115,17 +129,37 @@ function install(L, root, cardFor, enabled) {
             queue.splice(remove,1);if(remove === 0)start--;
           }
         }
-        const context = C.context(launch.card, selected, video.torrent_hash ? playlist : queue);
         const encode = value => root.unescape(root.encodeURIComponent(value));
-        let metadata = option(context, encode);
-        const urls = queue.map(item => encodeURI(item.url));
-        if (path.length + urls.join(' ').length + metadata.length > 28000) metadata = '';
+        function launchData(){
+          const context=C.context(launch.card,selected,video.torrent_hash?playlist:queue);
+          const metadata=option(context,encode,Boolean(video.torrent_hash));
+          const urls=queue.map(item=>encodeURI(item.url));
+          return {metadata,urls,length:path.length+metadata.length+urls.reduce((size,url)=>size+url.length+3,0)+600};
+        }
+        let prepared=launchData();
+        // Long signed stream URLs must not crowd the selected identity out of
+        // Windows' command line. Keep the nearest entries with their metadata.
+        while(!video.torrent_hash && queue.length>1 && (!prepared.metadata || prepared.length>28000)){
+          const remove=start>=queue.length-start-1?0:queue.length-1;
+          queue.splice(remove,1);if(remove===0)start--;
+          prepared=launchData();
+        }
+        const {metadata,urls}=prepared;
         const progress = progressChannel(L, root, video.torrent_hash ? [selected, ...playlist] : queue, enabled);
-        const args = [...(metadata ? [metadata] : []), ...progress.args, ...(start ? ['--playlist-start=' + start] : []), ...urls];
+        const args = [...(metadata ? [metadata] : []), '--force-window=immediate', ...progress.args, ...(start ? ['--playlist-start=' + start] : []), ...urls];
         const child = spawn(path, args);
-        progress.attach(child);
         started = true;
-        if (child && typeof child.on === 'function') child.on('error', fallback);
+        if (child && typeof child.on === 'function') {
+          if (key) active.set(key, child);
+          const release = () => { if (key && active.get(key) === child) active.delete(key); };
+          child.on('error', () => { release(); fallback(); });
+          child.on('exit', code => {
+            release();
+            if (typeof code === 'number' && code !== 0 && !retried) notice('Не удалось открыть видео в mpv+');
+          });
+          child.on('close', release);
+        }
+        progress.attach(child);
         L.Player.listener.send('external', video);
       } catch (error) {
         if (!started) fallback();

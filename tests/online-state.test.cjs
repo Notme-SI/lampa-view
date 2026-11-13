@@ -22,6 +22,31 @@ test('provider folders resolve only a unique matching title and requested season
  assert.equal(pick([row('Обсессия 2025')],{title:'Обсессия',release_date:'2026-01-01'}),'/lite/source/season');assert.equal(pick([row('Обсессия 1990')],{title:'Обсессия',release_date:'2026-01-01'}),'');
  }finally{w.close();}
 });
+test('Aladin title search opens the exact year before selecting the resumed season',()=>{
+ const dom=new JSDOM('',{runScripts:'outside-only'}),w=dom.window;
+ try{
+  w.eval(code);
+  const card={name:'Ставка на любовь',first_air_date:'2025-09-05'};
+  const rows=[2025,2015,2004].map(year=>({title:card.name,year,similar:true,method:'link',url:'/lite/aladin?orid=qa-'+year}));
+  assert.equal(w.OnlineState.folderTarget(rows,card,3),rows[0].url);
+  assert.equal(w.OnlineState.folderTarget([rows[0],{...rows[0],url:'/lite/aladin?orid=other'}],card,3),'');
+  assert.equal(w.OnlineState.folderTarget(rows.map(row=>({...row,url:row.url.replace('aladin','other')})),card,3),'');
+ }finally{w.close();}
+});
+test('episode normalization preserves gaps, zero, variants and unresolved files and collapses exact duplicate instructions',()=>{
+ const dom=new JSDOM('',{runScripts:'outside-only'}),w=dom.window;
+ try{
+  w.eval(code);const normalize=w.OnlineState.episodeRows;
+  const rows=[0,1,3,4,6].map(e=>({s:3,e,name:e+' выпуск',method:'play',url:'/stream/'+e}));
+  const variant={...rows[1],url:'/variant/1'};
+  const unknown={method:'call',url:'/unknown',name:'Дополнительный материал'};
+  const result=normalize([...rows,rows[1],variant,unknown]);
+  assert.deepEqual(Array.from(result,row=>row.episode),[0,1,3,4,6,1,undefined]);
+  assert.equal(result.at(-1).lampa_unassigned_episode,true);
+  assert.equal(normalize([unknown])[0].lampa_unassigned_episode,true);
+  assert.deepEqual(Array.from(result.slice(0,5),row=>row.url),rows.map(row=>row.url));
+ }finally{w.close();}
+});
 
 test('linked native timelines identify opaque hashes and newer active episodes without relying on a title hash',()=>{
  const dom=new JSDOM('',{runScripts:'outside-only'}),w=dom.window;
@@ -113,6 +138,23 @@ function screen(n,{id=900,season=1,episodes=[1,2,3],serial=true,voices=true,comp
  for(const num of episodes)$('<div class="online-prestige online-prestige--full selector"><div class="online-prestige__img"><img src="https://image.example.test/frame.jpg"></div><div class="online-prestige__title">Серия '+num+'</div>'+(serial?'<div class="online-prestige__episode-number">'+num+'</div>':'')+'<div class="online-prestige__quality">1080p</div><div class="online-prestige__info"><span>TVShows</span></div><div class="time-line"><div style="width:0%"></div></div></div>').on('hover:enter',()=>played=num).appendTo(body);
  Object.assign(component,{render:()=>root});L.Activity.active=()=>({component:'online_test',movie,activity:{render:()=>root,component}});L.Listener.send('activity',{type:'start'});return {root,body,movie,filter,component,played:()=>played,close(){L.Listener.send('activity',{type:'destroy'});root.remove();}};
 }
+
+test('duplicate episode variants share one card and retain both native playback handlers',async()=>{
+ const n=await native({built:true}),{w,L}=n;let s;
+ try{
+  s=screen(n,{season:3,episodes:[1,1,2,3,4]});
+  const clicks=[];s.body.find('.online-prestige').each((index,node)=>w.jQuery(node).off('hover:enter').on('hover:enter',()=>clicks.push(index)));
+  await wait(220);
+  assert.deepEqual(Array.from(s.root.find('.nova-card__num'),node=>node.textContent),['Серия 1','Серия 2','Серия 3','Серия 4']);
+  s.root.find('.nova-card').first().trigger('hover:enter');
+  assert.equal(L.Select.render().find('.selectbox-item').length,2);
+  L.Select.render().find('.selectbox-item').eq(1).trigger('hover:enter');
+  assert.deepEqual(clicks,[1]);
+  s.root.find('.nova-card').eq(3).trigger('hover:enter');
+  assert.deepEqual(clicks,[1,4],'Episode 4 retains its original file index after visual grouping');
+  assert.deepEqual(n.errors,[]);
+ }finally{if(s)s.close();n.close();}
+});
 
 test('late episode number and thumbnail arrive without per-card 60ms polling',async()=>{
  const n=await native({built:true}),{w}=n;try{
