@@ -39,7 +39,7 @@ jobs:
       - name: Unit and native-host tests
         if: matrix.group == 'unit'
         run: |
-          if pnpm test > ci-unit.log 2>&1; then
+          if node --test --test-reporter=tap --test-concurrency=2 tests/*.test.cjs > ci-unit.log 2>&1; then
             cat ci-unit.log
           else
             cat ci-unit.log

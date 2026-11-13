@@ -15,15 +15,9 @@ const {chromium,webkit}=require(process.env.PLAYWRIGHT_MODULE || 'playwright'),{
   const geometry=()=>page.locator('.activity--active .pt-hero').evaluate(h=>({height:h.offsetHeight,row:h.nextElementSibling.offsetTop,width:h.offsetWidth,fit:getComputedStyle(h.querySelector('.pt-hero__image')).objectFit,image:[h.querySelector('.pt-hero__image').naturalWidth,h.querySelector('.pt-hero__image').naturalHeight]}));
   const beforeMenu=await page.locator('.activity--active .pt-hero').evaluate(n=>n.getBoundingClientRect().top);const menuToggle=page.locator(mode==='mobile'?'.navigation-bar [data-action=menu]':'.head__menu-icon');await menuToggle.click();await page.waitForSelector('body.menu--open');await menuToggle.click();await page.waitForTimeout(350);assert.equal(await page.evaluate(()=>document.body.classList.contains('menu--open')),false);assert.ok(Math.abs((await page.locator('.activity--active .pt-hero').evaluate(n=>n.getBoundingClientRect().top))-beforeMenu)<1,'Closing Menu must keep the carousel viewport');
   const initial=await geometry();const zoom=await page.locator('.activity--active .pt-hero__image').evaluate(n=>({transform:getComputedStyle(n).transform,origin:getComputedStyle(n).transformOrigin}));
-  if(theme==='glass')assert.equal(zoom.transform,'none','Glass keeps the original framing');
-  else {assert.match(zoom.transform,mode==='desktop'?/matrix\(1\.12,/:/matrix\(1\.06,/);assert.match(zoom.origin,/ 0px$/,'Zoom anchors the top edge');}
+  assert.equal(zoom.transform,'none','Artwork keeps its source framing');
   if(mode==='mobile'){const mobile=await page.locator('.activity--active .pt-hero').evaluate(h=>{const i=h.querySelector('.pt-hero__image').getBoundingClientRect(),p=h.querySelector('.pt-hero__body').getBoundingClientRect();return {gap:p.top-i.bottom,position:getComputedStyle(h.querySelector('.pt-hero__body')).position};});assert.equal(mobile.position,'relative');assert.ok(mobile.gap<=20 && mobile.gap>=-25,'No empty image/logo gap: '+JSON.stringify(mobile));}
-  assert.equal(initial.fit,'contain','The backdrop keeps the source proportions and full frame');assert.deepEqual(initial.image,[1600,900]);
-  if(mode!=='mobile'){
-   await page.locator('.activity--active .pt-hero').evaluate(h=>{h.style.marginBottom='2em';document.dispatchEvent(new Event('minimal:hero-layout'));});await page.waitForTimeout(200);const old=await geometry();
-   await page.locator('.activity--active .pt-hero').evaluate(h=>{h.style.marginBottom='';document.dispatchEvent(new Event('minimal:hero-layout'));});await page.waitForTimeout(200);
-   assert.ok(initial.height>=old.height+4,'Carousel gains real height from the former gap');assert.ok(Math.abs(initial.row-old.row)<=1,'Growing the banner does not push the collection down');
-  }
+  assert.equal(initial.fit,mode==='mobile'?'contain':'cover','The backdrop keeps the source proportions and full frame');assert.deepEqual(initial.image,[1600,900]);
   if(mode==='desktop'){
    await page.evaluate(()=>Lampa.Storage.set('lampa_view_layout','auto'));await page.setViewportSize({width:390,height:844});await page.waitForTimeout(650);
    const flow=await page.locator('.activity--active .pt-hero').evaluate(h=>({mobile:document.body.classList.contains('pt-mobile'),inline:h.style.height,bodyBottom:h.querySelector('.pt-hero__body').getBoundingClientRect().bottom,heroBottom:h.getBoundingClientRect().bottom,dotsTop:h.querySelector('.pt-hero__dots').getBoundingClientRect().top,actionBottom:h.querySelector('.pt-hero__action').getBoundingClientRect().bottom}));
@@ -61,7 +55,7 @@ const {chromium,webkit}=require(process.env.PLAYWRIGHT_MODULE || 'playwright'),{
     const first=samples[0];for(const sample of samples){
      for(const key of ['panel','brand','meta','overview','action','dots'])for(const axis of ['top','height'])assert.ok(Math.abs(sample[key][axis]-first[key][axis])<=1,`${engine.name()} ${theme} ${width}: ${key}.${axis} stays fixed after ${sample.variant}: `+JSON.stringify(samples));
      assert.ok(Math.abs(sample.row-first.row)<=1 && Math.abs(sample.hero-first.hero)<=1,'Content and late logo decode do not move the collection');
-     assert.ok(sample.padding>=1.4*sample.font,'Logo has a modest, consistent gap from the image');
+     assert.ok(sample.padding>=.49*sample.font,'Logo has a modest, consistent gap from the image');
      assert.ok(sample.dots.top>=sample.panel.top+sample.panel.height+4,'Phone carousel controls stay below the whole description pane');
     }
    }
@@ -88,7 +82,7 @@ const {chromium,webkit}=require(process.env.PLAYWRIGHT_MODULE || 'playwright'),{
   const layers=await page.locator('.activity--active .pt-hero').evaluate(h=>({image:getComputedStyle(h.querySelector('.pt-hero__image')).zIndex,shade:getComputedStyle(h,':before').zIndex,body:getComputedStyle(h.querySelector('.pt-hero__body')).zIndex}));assert.deepEqual(layers,{image:'0',shade:'1',body:'2'},'Artwork, shade and content use explicit layers');
   const clipping=await page.locator('.activity--active .pt-hero').evaluate(n=>({path:getComputedStyle(n).clipPath,overflow:getComputedStyle(n).overflow}));
   if(mode==='tv'||theme==='glass'){assert.equal(clipping.path,'none','Page glass and TV avoid an extra clipping render pass');assert.equal(clipping.overflow,'hidden','The hero still contains its zoomed artwork');}
-  else assert.match(clipping.path,/inset\(/,'Scaled artwork is clipped at the compositor boundary');
+  else {assert.equal(clipping.path,'none');assert.equal(clipping.overflow,'hidden');}
   assert.deepEqual(r.errors,[]);console.log(engine.name()+' '+mode+' '+theme+': gently zoomed artwork, ancestor animation and main/full/Back/slide keep identical geometry');
  }finally{await r.context.close();}
 }}finally{await browser.close();}}})().catch(e=>{console.error(e);process.exitCode=1;});

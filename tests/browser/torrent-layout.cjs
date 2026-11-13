@@ -53,6 +53,7 @@ async function verify(page,mobile){
    },mobile);
    await page.waitForTimeout(350);
    const unpinned=await verify(page,mobile);
+   if(!mobile){
    await page.evaluate(()=>{Lampa.Storage.set('menu_always',true);Lampa.Layer.update();});
    await page.waitForTimeout(300);
    const pinned=await page.evaluate(()=>{
@@ -69,6 +70,7 @@ async function verify(page,mobile){
    assert.ok(pinned.buttons.every(button=>button.left>pinned.rail.right && button.right<=pinned.width+1));
    await page.evaluate(()=>{Lampa.Storage.set('menu_always',false);Lampa.Layer.update();});
    await page.waitForTimeout(300);
+   }
    await verify(page,mobile);
    const sequence=await page.locator('.activity--active .torrent-item .tc-row').first().evaluate(row=>({classes:[...row.children].map(n=>n.className),head:row.querySelector('.tc-head').getBoundingClientRect().bottom,title:row.querySelector('.tc-release-name').getBoundingClientRect().top,technical:row.querySelector('.tc-technical-tags').getBoundingClientRect().top,languages:row.querySelector('.tc-language-tags').getBoundingClientRect().top}));
    assert.equal(sequence.classes[0],'tc-head');assert.equal(sequence.classes[1],'tc-release-name');assert.ok(sequence.title>=sequence.head-1);assert.ok(sequence.technical>=sequence.languages);

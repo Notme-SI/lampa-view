@@ -326,12 +326,13 @@ export default function detail(L,event,loadLogo){
    }
    const rect=background.getBoundingClientRect(),scale=rect.height/(background.offsetHeight || rect.height) || 1;
    const height=(start.getBoundingClientRect().bottom-rect.top)/scale;
-   if(height>0){background.style.setProperty('--pt-detail-backdrop-height',height+'px');shade.style.height=height+'px';}
+   if(height>0){const value=height+'px';if(background.style.getPropertyValue('--pt-detail-backdrop-height')!==value)background.style.setProperty('--pt-detail-backdrop-height',value);if(shade.style.height!==value)shade.style.height=value;}
   };
   fit();
-  const resize=window.ResizeObserver?new ResizeObserver(fit):null;
+  let fitFrame=0;const scheduleFit=()=>{if(!fitFrame)fitFrame=requestAnimationFrame(()=>{fitFrame=0;fit();});};
+  const resize=window.ResizeObserver?new ResizeObserver(scheduleFit):null;
   if(resize){resize.observe(start);if(viewport)resize.observe(viewport);}
-  if(event.link && event.link.use)event.link.use({onDestroy:()=>{if(resize)resize.disconnect();}});
+  if(event.link && event.link.use)event.link.use({onDestroy:()=>{if(resize)resize.disconnect();if(fitFrame)cancelAnimationFrame(fitFrame);}});
  }
  if(background && card.backdrop_path){
   if(/^https?:\/\//i.test(card.backdrop_path)){

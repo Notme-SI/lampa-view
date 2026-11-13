@@ -1,3 +1,11 @@
+## 0.5.144
+
+- Defer detail and navigation ResizeObserver writes and avoid redundant backdrop styles, fixing WebKit observer-loop errors.
+- Size the TV home stage from layout coordinates so entrance transforms cannot change its height. Keep the next poster outside the 4K focus gutter and apply the calculated rail gap.
+- Match Settings and action-panel widths independently of inherited panel font sizes.
+- Update remaining visual fixtures for compact rows, neutral glass tags, full-frame artwork and responsive project tabs.
+- Make unit CI output explicitly TAP and escape named failure annotations correctly.
+
 ## 0.5.143
 
 - Preserve bookmark/favorite icon artwork when applying the glass tag material. Hide episode selection halos on inactive cards despite the native important opacity rule.

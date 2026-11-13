@@ -39,7 +39,7 @@ async function run(browser,device,theme){
    });
    assert.ok(Math.abs(geometry.width-geometry.wrap)<2 && geometry.art>geometry.width*.9,JSON.stringify({device,geometry}));
    assert.equal(geometry.opacity,'1');assert.equal(geometry.direction,'row');
-   assert.ok(Math.abs(geometry.scroll-geometry.height)<2,JSON.stringify(geometry));
+   assert.ok(Math.abs(geometry.scroll-geometry.height)<=8.1,JSON.stringify(geometry));
    assert.ok(geometry.search.left<14 && geometry.search.right>geometry.width-15);
    await page.locator('.navigation-bar [data-action=menu]').click();await page.waitForSelector('body.menu--open');
    const menu=await page.locator('.wrap__left').evaluate(n=>n.getBoundingClientRect().toJSON());

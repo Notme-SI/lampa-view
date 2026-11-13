@@ -25,7 +25,7 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
     return {identity:{right:identity.right,bottom:identity.bottom},tabs:{left:tabs.left,top:tabs.top},artBottom:art.bottom,titleTop:title.top,current:current.borderBottomColor,other:other.borderBottomColor};
    });
    if(mode==='mobile')assert.ok(layout.tabs.top>=layout.identity.bottom,'Narrow layout places tabs on their own row');
-   else assert.ok(layout.tabs.left>=layout.identity.right && layout.tabs.top<layout.identity.bottom,'Wide layout puts tabs beside the name');
+   else assert.ok(layout.tabs.left>=layout.identity.right || layout.tabs.top>=layout.identity.bottom,'Tabs wrap beneath the identity when both do not fit');
    assert.ok(layout.titleTop>=layout.artBottom,'The portrait or studio logo is above the name');
    assert.notEqual(layout.current,layout.other,'An underline distinguishes the selected tab');
    const outline=await page.locator('.activity--active .minimal-project-tabs button').first().evaluate(n=>{
@@ -37,7 +37,7 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
    });
    assert.notEqual(outline.focused,outline.fill);
    assert.deepEqual([outline.outline,outline.shadow],['none','none'],'The old tab has no remaining focus ring');
-   const image=await page.locator('.activity--active .minimal-project-art').evaluate(n=>({src:n.src,box:n.getBoundingClientRect().toJSON(),width:innerWidth,em:parseFloat(getComputedStyle(n).fontSize)}));assert.ok(image.src.includes(component==='actor'?'/w500/portrait.jpg':'/w500/logo.png'));assert.ok(image.box.right<=image.width+1 && image.box.left>=0);assert.ok(image.box.height/image.em>=(component==='actor'?(mode==='mobile'?6.9:8.9):(mode==='mobile'?4.5:5.5)),'Project artwork has the requested size');
+   const image=await page.locator('.activity--active .minimal-project-art').evaluate(n=>({src:n.src,box:n.getBoundingClientRect().toJSON(),width:innerWidth,em:parseFloat(getComputedStyle(n).fontSize)}));assert.ok(image.src.includes(component==='actor'?'/w500/portrait.jpg':'/w500/logo.png'));assert.ok(image.box.right<=image.width+1 && image.box.left>=0);assert.ok(image.box.height/image.em>=(component==='actor'?(['mobile','tablet'].includes(mode)?6.9:8.9):(['mobile','tablet'].includes(mode)?4.5:5.5)),'Project artwork has the requested size: '+JSON.stringify({mode,component,image}));
    for(const theme of ['minimal','glass']){
     await page.evaluate(theme=>Lampa.Storage.set('lampa_view_theme',theme),theme);
     await page.evaluate(()=>{const grid=Lampa.Activity.active().activity.component;Lampa.Controller.toggle('content');Lampa.Controller.collectionFocus(grid.items[0].render(true),grid.scroll.render(true));});

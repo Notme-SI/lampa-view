@@ -216,11 +216,11 @@ async function run(engine, browser, mode) {
     assert.equal(after.outer,before.outer,target);
     assert.ok(Math.abs(after.art-before.art+3)<.1,JSON.stringify({before,after,theme,target}));
     assert.match(after.transform,/matrix\(1, 0, 0, 1, 0, -3\)/);
-    assert.equal(after.indicator,'none','The edge layer has no playback glyph');
+    assert.match(after.indicator,/svg/,'The edge layer is the vector contour');
     assert.equal(await card.locator('.icon--history').count(),0);
     assert.match(after.halo,/rgba\(255, 255, 255, 0.18\)/);
     assert.equal(after.opacity,'1');
-    assert.equal(after.edge,'rgba(255, 255, 255, 0.12)');
+
     await card.evaluate(n=>n.classList.remove('focus'));
    }
    const face=page.locator('#qa-native-unwatched .card__view');
@@ -239,10 +239,10 @@ async function run(engine, browser, mode) {
    await page.emulateMedia({reducedMotion:'reduce'});
    for(const motion of ['on','system','off','on']){
     await page.evaluate(motion=>Lampa.Storage.set('lampa_view_card_motion',motion),motion);await page.waitForTimeout(260);
-    const style=await face.evaluate(node=>{const s=getComputedStyle(node),halo=getComputedStyle(node,'::after');return {transform:s.transform,duration:s.transitionDuration,halo:halo.boxShadow,edge:halo.borderColor};});
+    const style=await face.evaluate(node=>{const s=getComputedStyle(node),halo=getComputedStyle(node,'::after');return {transform:s.transform,duration:s.transitionDuration,halo:halo.boxShadow,edge:halo.backgroundImage};});
     if(motion==='on'){assert.match(style.transform,/matrix\(1, 0, 0, 1, 0, -3\)/);assert.notEqual(style.duration,'0s');}
     else{assert.equal(style.transform,'none');assert.equal(style.duration,'0s');}
-    assert.equal(style.edge,'rgba(255, 255, 255, 0.12)');
+    assert.match(style.edge,/svg/);
     assert.match(style.halo,/rgba\(255, 255, 255, 0.18\)/,'All card motion modes preserve the readable glow');
     assert.equal(await page.evaluate(()=>Lampa.Storage.get('animation')),stoppedNativeAnimation,'The plugin mode does not change the host preference');
    }

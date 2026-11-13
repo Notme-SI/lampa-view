@@ -72,7 +72,7 @@ const assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWR
   assert.ok(qr,'QR and long addresses fit inside the compact settings pane');
   await page.evaluate(()=>{Lampa.Controller.back();Lampa.Controller.back();Lampa.Select.show({title:'Действие',items:[{title:'Избранное',separator:true},{title:'Нравится',subtitle:'Выбрано',checkbox:true}]});});
   const actionPanel=await page.locator('.selectbox__content').evaluate(node=>node.getBoundingClientRect().toJSON());
-  assert.ok(Math.abs(actionPanel.top-menuPanel.top)<1 && Math.abs(actionPanel.width-mirrored.width)<1,'Actions align with the menu and match Settings width');
+  assert.ok(Math.abs(actionPanel.top-menuPanel.top)<1 && Math.abs(actionPanel.width-mirrored.width)<1,'Actions align with the menu and match Settings width: '+JSON.stringify({actionPanel,menuPanel,mirrored}));
   const action=await page.locator('.selectbox__content').evaluate(n=>{
    const title=n.querySelector('.selectbox-item__title'),subtitle=n.querySelector('.selectbox-item__subtitle'),group=n.querySelector('.settings-param-title>span'),checkbox=n.querySelector('.selectbox-item__checkbox');
    const size=el=>parseFloat(getComputedStyle(el).fontSize),center=el=>{const r=el.getBoundingClientRect();return r.top+r.height/2;};

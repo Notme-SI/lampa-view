@@ -33,8 +33,9 @@ export default function homeStage(hero,root){
  // Native TV activities can reserve the floating header in their own Scroll
  // height. The window bottom is then below the real clipping viewport.
  // Budget against that viewport so captions and the watch footer remain visible.
+ let outerTop=0;if(outer){for(let node=outer;node;node=node.offsetParent)outerTop+=node.offsetTop || 0;for(let node=outer.parentElement;node;node=node.parentElement)outerTop-=node.scrollTop || 0;outerTop-=window.scrollY || 0;}
  const bottom=tv && outer && outer.clientHeight?
-  Math.min(innerHeight,outer.getBoundingClientRect().top+outer.clientHeight):innerHeight;
+  Math.min(innerHeight,outerTop+outer.clientHeight):innerHeight;
  let height=Math.max(100,Math.floor(bottom-top-gap-root.offsetHeight-clearance));
  // A tall, narrow window must not reserve more height than its artwork can fill.
  // Cap the inline layout calculation itself; CSS height is overridden below.

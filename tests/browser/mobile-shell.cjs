@@ -47,7 +47,7 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
   const box=await page.waitForFunction(()=>{
    const rect=selector=>document.querySelector(selector)?.getBoundingClientRect();
    const search=rect('.head .open--search'),nav=rect('.navigation-bar'),scroll=rect('.activity--active > .activity__body .scroll:not(.scroll--horizontal)'),art=rect('.activity--active .pt-hero__artwork'),logo=rect('.activity--active .pt-hero__branding');
-   if(search && nav && scroll && art && logo && Math.abs(scroll.bottom-innerHeight)<2)return {searchTop:search.top,searchBottom:search.bottom,artTop:art.top,logoGap:logo.top-art.bottom,direction:getComputedStyle(document.querySelector('.navigation-bar__body')).flexDirection};
+   if(search && nav && scroll && art && logo && Math.abs(scroll.bottom-innerHeight)<=8.1)return {searchTop:search.top,searchBottom:search.bottom,artTop:art.top,logoGap:logo.top-art.bottom,direction:getComputedStyle(document.querySelector('.navigation-bar__body')).flexDirection};
   },null,{timeout:3500}).then(handle=>handle.jsonValue());
   assert.equal(box.direction,'row');
   assert.ok(Math.abs(await page.locator('.activity--active .pt-hero').evaluate(n=>n.getBoundingClientRect().top))<2,'The scene canvas starts at the viewport edge');

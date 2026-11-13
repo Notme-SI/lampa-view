@@ -9,13 +9,15 @@ export default function menuLayout(L,enabled,icon){
  const frame=iosFrame(enabled);
  let observedBar,viewportFrame;
  function measureNavigation(){
+  const extra=((parseFloat(getComputedStyle(document.body).fontSize)||16)*5).toFixed(3)+'px';
+  if(document.body.style.getPropertyValue('--pt-panel-extra-width')!==extra)document.body.style.setProperty('--pt-panel-extra-width',extra);
   const height=observedBar?.getBoundingClientRect().height;
   if(height && enabled() && document.body.classList.contains('pt-mobile'))document.body.style.setProperty('--pt-mobile-nav-height',Math.ceil(height)+'px');
   else document.body.style.removeProperty('--pt-mobile-nav-height');
   frame.update(height || 0);
  }
  function viewportChanged(){if(!viewportFrame)viewportFrame=requestAnimationFrame(()=>{viewportFrame=0;measureNavigation();});}
- const resize=window.ResizeObserver?new ResizeObserver(measureNavigation):null;
+ const resize=window.ResizeObserver?new ResizeObserver(viewportChanged):null;
  function observeNavigation(bar){
   if(bar!==observedBar){resize?.disconnect();observedBar=bar;if(bar)resize?.observe(bar);}
   measureNavigation();

@@ -45,8 +45,11 @@ export default function fitRail(line,root,card,state,enabled){
  root.style.removeProperty('--minimal-poster-width');
  const target=parseFloat(getComputedStyle(card).width),padding=getComputedStyle(content),second=card.nextElementSibling;
  const trailingMargin=parseFloat(getComputedStyle(card).marginRight)||0;
- const gap=second?.matches('.card')?(parseFloat(getComputedStyle(second).marginLeft)||0)+trailingMargin:font;
+ let gap=second?.matches('.card')?(parseFloat(getComputedStyle(second).marginLeft)||0)+trailingMargin:font;
  const inset=parseFloat(padding.paddingLeft)||0,available=viewWidth-inset-(parseFloat(padding.paddingRight)||0);
+ // The next offscreen poster starts after the right focus gutter.
+ // At 4K the gutter can exceed the fixed gap and expose a thin strip.
+ if(inset>=gap)gap=Math.ceil(inset)+1;
  if(!target || available<=0)return;
  let count=Math.max(1,Math.min(24,Math.round((available+gap)/(target+gap))));
  if(document.body.classList.contains('pt-tv')){
@@ -68,6 +71,7 @@ export default function fitRail(line,root,card,state,enabled){
  if(width<=0)return;
  root.style.setProperty('--minimal-poster-width',width+'px');
  root.style.setProperty('--pt-more-gap',Math.max(0,gap-trailingMargin)+'px');
+ root.style.setProperty('--minimal-poster-gap',Math.max(0,gap-trailingMargin)+'px');
  root.classList.add('minimal-posters-sized');
  if(home)homeStage(hero,root);
  state.posterFitKey=key;
