@@ -3,6 +3,7 @@ import tmdbGet,{catalogueResults} from './tmdb.js';
 import {DISCOVERY_KINDS,discoveryPlan,discoveryState} from './discovery-model.js';
 import {DISCOVERY_SOURCE} from './discovery-source.js';
 export const isAnimeHome=activity=>activity?.component==='category' && (activity.url || activity.cat)==='anime';
+export const SHIKI_WATCH='order=popularity&status=ongoing&kind=tv,ona';
 export function animeMode(L,object={}){
  const mode=object.minimal_anime_catalogue || (L.Storage.value?L.Storage.value('minimal_anime_catalogue','standard'):L.Storage.get('minimal_anime_catalogue','standard'));
  return mode==='shikimori'?'shikimori':'standard';
@@ -59,10 +60,21 @@ function legacyCataloguePlan(kind,mode='standard',date=new Date()){
    ['features','Полнометражные',null,'movie',base+'&primary_release_date.lte='+day(0),'order=popularity&kind=movie&status=released'],
    ['upcoming','Ожидаемые',null,'tv',base+'&first_air_date.gte='+day(1)+'&first_air_date.lte='+day(365),'order=popularity&status=anons']
   ];
-  const shikiAliases={season:['order=popularity&season='+season+'_'+year],completed:['order=popularity&status=released&kind=tv'],features:['order=popularity&kind=movie']};
-  const plan=definitions.filter(row=>mode!=='shikimori' || row[0]!=='watch').map(([key,title,cub,media_type,query,shiki])=>({key,title:lampaViewText(title),media_type,...(mode==='shikimori'?{shiki,minimal_row_aliases:shikiAliases[key]}:{cub,tmdb:'discover/'+media_type+'?'+query})}));
-  if(mode==='shikimori'){const popular=plan.splice(plan.findIndex(row=>row.key==='popular'),1)[0];plan.unshift(popular);}
-  return plan;
+  if(mode==='shikimori'){
+   const previous=['fall','winter','spring','summer'][quarter]+'_'+(quarter===0?year-1:year);
+   const shikiRows=[
+    ['watch','Сейчас смотрят',SHIKI_WATCH],
+    ['season','Новинки сезона','order=popularity&season='+season+'_'+year+'&status=ongoing,released',['order=popularity&season='+season+'_'+year]],
+    ['last-season','Аниме прошлого сезона','order=popularity&season='+previous+'&status=released'],
+    ['completed','Завершённые','order=aired_on&status=released&kind=tv',['order=popularity&status=released&kind=tv']],
+    ['upcoming','Ожидаемые','order=popularity&status=anons'],
+    ['popular','Популярные','order=popularity&status=released&kind=tv,ona',['order=popularity']],
+    ['rated','Высокий рейтинг','order=ranked&status=released&kind=tv,ona',['order=ranked']],
+    ['features','Полнометражные','order=popularity&kind=movie&status=released',['order=popularity&kind=movie']]
+   ];
+   return shikiRows.map(([key,title,shiki,aliases])=>({key,title:lampaViewText(title),shiki,minimal_row_aliases:aliases}));
+  }
+  return definitions.map(([key,title,cub,media_type,query])=>({key,title:lampaViewText(title),media_type,cub,tmdb:'discover/'+media_type+'?'+query}));
  }
  function add(key,title,cub,query){
   const prefix='discover/'+type+'?include_adult=false&'+(kind==='tv' || kind==='movie'?'without_genres=16&':'')+(kind==='anime' && /with_genres=/.test(query || '')?'with_original_language=ja&':base);
@@ -129,7 +141,7 @@ export default function catalogue(L,shiki,object,hidden,ok){
  const selection=DISCOVERY_KINDS.includes(kind)?discoveryState(kind,object.minimal_discovery || {}):{};
  if(DISCOVERY_KINDS.includes(kind))object.minimal_discovery=selection;
  const source=object.source || L.Storage.get('source','cub'),cub=L.Api.sources && L.Api.sources.cub && L.Api.sources.cub.list,full=cataloguePlan(kind,animeMode(L,object),new Date(),selection).map(job=>!job.discovery && ['dorama','tvshow'].includes(kind)?cubScoped(job,kind):job);
- const order=object.minimal_catalogue_order || [],position=job=>{const keys=[job.minimal_row_id,job.tmdb,job.discovery && JSON.stringify(job.discovery),...(job.minimal_row_aliases || [])],n=order.findIndex(id=>keys.includes(id));return n<0?100000:n;};full.forEach((job,i)=>job.minimal_plan_index=i);if(order.length)full.sort((a,b)=>position(a)-position(b) || a.minimal_plan_index-b.minimal_plan_index);
+ const order=object.minimal_catalogue_order || [],position=job=>{if(job.shiki===SHIKI_WATCH)return -1;const keys=[job.minimal_row_id,job.tmdb,job.shiki,job.discovery && JSON.stringify(job.discovery),...(job.minimal_row_aliases || [])],n=order.findIndex(id=>keys.includes(id));return n<0?100000:n;};full.forEach((job,i)=>job.minimal_plan_index=i);if(order.length)full.sort((a,b)=>position(a)-position(b) || a.minimal_plan_index-b.minimal_plan_index);
  const offset=Math.max(0,Number(object.minimal_catalogue_offset)||0),limit=Math.max(1,Number(object.minimal_catalogue_limit)||full.length),plan=full.slice(offset,offset+limit),rows=new Array(plan.length);object.minimal_catalogue_next=Math.min(full.length,offset+plan.length);object.minimal_catalogue_total=full.length;let cursor=0,running=0,done=0,ended=false,failures=0;
  const status=object.minimal_catalogue_status={state:'loading'};
  // CUB does not implement the country/language filters needed by these two
@@ -142,7 +154,7 @@ export default function catalogue(L,shiki,object,hidden,ok){
   if(ended)return;if(object.minimal_catalogue_cancelled || object.activity && object.activity.component && object.activity.component.destroyed){ended=true;return;}if(done===plan.length){complete();return;}
   while(!ended && running<3 && cursor<plan.length){const index=cursor++,job=plan[index],row=rowFor(job);if([row.minimal_row_id,row.url,...(row.minimal_row_aliases || [])].some(url=>hidden.includes(url))){row.minimal_hidden=true;rows[index]=row;done++;continue;}
    running++;let settled=false;
-   function finish(json){if(settled)return;settled=true;running--;done++;if(!json)failures++;json=catalogueResults(row.url,json);if(json && Array.isArray(json.results) && json.results.length)rows[index]={...row,page:Number(json.page)||1,total_pages:Math.max(Number(json.total_pages)||1,json.results.length>20?2:1),results:json.results.filter(Boolean).slice(0,20).map(card=>kind==='anime'?{...card,minimal_anime:true}:job.media_type?{...card,source:job.discovery?card.source || 'tmdb':row.source,media_type:card.media_type || job.media_type}:card)};pump();}
+   function finish(json){if(settled)return;settled=true;running--;done++;if(!json)failures++;json=catalogueResults(row.url,json);if(json && Array.isArray(json.results) && json.results.length)rows[index]={...row,page:Number(json.page)||1,total_pages:Math.max(Number(json.total_pages)||1,json.results.length>20?2:1),results:json.results.filter(Boolean).slice(0,job.shiki?24:20).map(card=>kind==='anime'?{...card,minimal_anime:true}:job.media_type?{...card,source:job.discovery?card.source || 'tmdb':row.source,media_type:card.media_type || job.media_type}:card)};pump();}
    if(job.discovery && L.Api.sources[DISCOVERY_SOURCE])L.Api.sources[DISCOVERY_SOURCE].list({url:row.url,page:1,minimal_cancelled:()=>!!object.minimal_catalogue_cancelled},finish,()=>finish(null));
    else if(job.discovery)finish(null);
    else if(job.shiki)shiki.list({url:job.shiki,page:1},finish,()=>finish(null));

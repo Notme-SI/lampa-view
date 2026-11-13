@@ -73,17 +73,21 @@ const assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWR
   assert.ok(qr,'QR and long addresses fit inside the compact settings pane');
   if(theme==='glass' && mode==='desktop'){
    await page.evaluate(()=>{
-    Lampa.Storage.set('minimal_poiskkino_frames_key','test-frame-key');
+    Lampa.Storage.set('lampa_view_kinoapi_key','test-kino-key');
+    Lampa.Storage.set('minimal_trakt_client_id','test-trakt-id');
     Lampa.Settings.create('minimal_settings_services');
    });
-   const row=page.locator('.settings-param[data-name="minimal_poiskkino_frames"]');
-   assert.equal(await row.locator('.settings-param__value').textContent(),'test-frame-key');
-   assert.match(await row.locator('.settings-param__descr').textContent(),/https:\/\/t\.me\/poiskkinodev_bot/);
+   const row=page.locator('.settings-param[data-name="minimal_kinoapi"]');
+   const trakt=page.locator('.settings-param[data-name="minimal_trakt_client_id"]');
+   assert.equal(await trakt.locator('.settings-param__value').textContent(),'test-trakt-id');
+   assert.equal(await page.locator('.settings-param[data-name="minimal_poiskkino_frames"]').count(),0);
+   assert.equal(await row.locator('.settings-param__value').textContent(),'test-kino-key');
+   assert.match(await row.locator('.settings-param__descr').textContent(),/https:\/\/kinoapi\.lampac\.dev/);
    await row.evaluate(node=>{
-    const edit=Lampa.Input.edit;Lampa.Input.edit=(options,save)=>save(' updated-frame-key ');
+    const edit=Lampa.Input.edit;Lampa.Input.edit=(options,save)=>save(' updated-kino-key ');
     try{jQuery(node).data('onChange')();}finally{Lampa.Input.edit=edit;}
    });
-   assert.equal(await row.locator('.settings-param__value').textContent(),'updated-frame-key');
+   assert.equal(await row.locator('.settings-param__value').textContent(),'updated-kino-key');
    await page.evaluate(()=>Lampa.Settings.create('interface'));
   }
   await page.evaluate(()=>{Lampa.Controller.back();Lampa.Controller.back();Lampa.Select.show({title:'Действие',items:[{title:'Избранное',separator:true},{title:'Нравится',subtitle:'Выбрано',checkbox:true}]});});

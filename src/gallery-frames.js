@@ -2,13 +2,24 @@ import catalogueFrames from './frame-catalogue-client.js';
 import {frameLimit,stableSample} from './frame-catalogue.cjs';
 export {frameLimit} from './frame-catalogue.cjs';
 
-export const galleryFramesKey='minimal_poiskkino_frames_key';
-
-const cache=new Map();
-const https=url=>typeof url==='string' && /^https:\/\//i.test(url);
 const tmdbPath=value=>String(value || '').match(/(?:^|\/t\/p\/(?:original|w\d+))(\/[\w.-]+\.(?:jpg|jpeg|png|webp))$/i)?.[1] || '';
 const seriesCard=card=>card.media_type==='tv' || card.media_type!=='movie' && !!(card.name || card.first_air_date);
 const tmdbId=card=>Number(card.tmdb_id || (['tmdb','cub'].includes(card.source)?card.id:0));
+
+function frameKey(value){
+ if(!value)return '';
+ const tmdb=tmdbPath(value);
+ if(tmdb)return tmdb;
+ try{
+  const url=new URL(value);
+  const path=url.pathname.replace(/\/\d+x\d+\//g,'/').replace(/\/(?:orig|original|x\d+)$/,'');
+  return url.hostname+path;
+ }catch(error){return value;}
+}
+
+function landscape({width,height}){
+ return !width || !height || width/height>=1.3 && width/height<=2.8;
+}
 
 function readGalleryData(read,path,timeout){
  return new Promise(resolve=>{
@@ -25,12 +36,11 @@ const cardIdentity=card=>{
 };
 
 export function selectGalleryFrames(rows,seed){
- const unique=new Map(),tiers=new Map();
- for(const row of rows){
-  const key=row.still_path || row.minimal_still_url,old=unique.get(key);
-  if(key && (!old || (row.minimal_frame_season || 0)>(old.minimal_frame_season || 0)))unique.set(key,row);
- }
- for(const row of unique.values()){
+ const seen=new Set(),tiers=new Map();
+ for(const row of rows.filter(landscape).sort((a,b)=>(b.minimal_frame_season || 0)-(a.minimal_frame_season || 0))){
+  const full=frameKey(row.still_path || row.minimal_still_url),preview=frameKey(row.img);
+  if(!full || seen.has(full) || preview && seen.has(preview))continue;
+  seen.add(full);if(preview)seen.add(preview);
   const season=row.minimal_frame_season || 0,groups=tiers.get(season) || new Map();
   const group=row.minimal_frame_group || 'gallery',frames=groups.get(group) || [];
   frames.push(row);groups.set(group,frames);tiers.set(season,groups);
@@ -106,9 +116,9 @@ async function episodeGallery(data,id,readTmdb,releaseSeasons){
      return Array.isArray(result?.stills)?result.stills.map(row=>({row,episode})):[];
     }));
     for(const {row,episode} of results.flat()){
-     const path=tmdbPath(row?.file_path),width=Number(row?.width)||0;
+     const path=tmdbPath(row?.file_path),width=Number(row?.width)||0,height=Number(row?.height)||0;
      if(path && !thumbs.has(path) && (!width || width>=480) && !paths.has(path)){
-      paths.set(path,{still_path:path,width,minimal_frame_group:'episode:'+season+':'+episode,minimal_frame_season:rank});
+      paths.set(path,{still_path:path,width,height,minimal_frame_group:'episode:'+season+':'+episode,minimal_frame_season:rank});
      }
     }
    }
@@ -133,55 +143,5 @@ export async function loadDetailGallery(L,data,readTmdb,releaseSeasons){
   catalogueFrames(L,card,isSeries?'tv':'movie',readTmdb),
   isSeries && id>0?episodeGallery(data,id,readTmdb,releaseSeasons):[],
  ]);
- const seed=cardIdentity(card),frames=selectGalleryFrames(episodes.concat(catalogue),seed);
- if(frames.length===frameLimit)return frames;
- return selectGalleryFrames(episodes.concat(catalogue,await loadGalleryFrames(L,card)),seed);
-}
-
-export async function loadGalleryFrames(L,card){
- const key=String(L.Storage?.get(galleryFramesKey,'') || '').trim();
- if(!key || !card || card.adult || card.blocked || typeof fetch!=='function' || typeof AbortController!=='function')return [];
- const isSeries=seriesCard(card);
- const kp=Number(card.kinopoisk_id || card.external_ids?.kinopoisk_id);
- const tmdb=tmdbId(card);
- const imdb=String(card.imdb_id || card.external_ids?.imdb_id || '');
- const hasImdb=/^tt\d{5,12}$/.test(imdb);
- if(!(kp>0 || tmdb>0 || hasImdb))return [];
- const identity=(kp>0?'kp:'+kp:hasImdb?'imdb:'+imdb:'tmdb:'+tmdb)+':'+isSeries;
- const saved=cache.get(identity);
- if(saved?.until>Date.now())return saved.frames;
- const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),3500);
- async function get(path,params){
-  const response=await fetch('https://api.poiskkino.dev/v1.5/'+path+'?'+new URLSearchParams(params),{
-   headers:{'X-API-KEY':key},signal:controller.signal,redirect:'error'
-  });
-  if(!response.ok)throw new Error('Frame service unavailable');
-  return (await response.json()).docs || [];
- }
- try{
-  let id=kp;
-  if(!(id>0)){
-   const lookup=async field=>{
-    const byImdb=field==='imdb',value=byImdb?imdb:tmdb;
-    const matches=await get('movie',{['externalId.'+field]:value,isSeries,limit:2});
-    if(matches.length!==1 || matches[0].isSeries!==isSeries)return 0;
-    const ids=matches[0].externalId || {};
-    if(tmdb>0 && ids.tmdb && Number(ids.tmdb)!==tmdb || hasImdb && ids.imdb && ids.imdb!==imdb)return 0;
-    return (byImdb?ids.imdb===imdb:Number(ids.tmdb)===tmdb)?Number(matches[0].id):0;
-   };
-   id=hasImdb?await lookup('imdb'):0;
-   if(!(id>0) && tmdb>0)id=await lookup('tmdb');
-   if(!(id>0))return [];
-  }
-  const query=new URLSearchParams({movieId:id,limit:40});
-  const frameTypes=['frame','screenshot','still'];
-  frameTypes.forEach(type=>query.append('type',type));
-  const images=await get('image',query);
-  const stills=images.filter(row=>frameTypes.includes(row.type) && Number(row.movieId)===id && https(row.url))
-   .sort((a,b)=>(Number(b.width)||0)-(Number(a.width)||0));
-  const frames=selectGalleryFrames(stills.map(row=>({img:https(row.previewUrl)?row.previewUrl:row.url,minimal_still_url:row.url})),cardIdentity(card));
-  if(cache.size>=80)cache.delete(cache.keys().next().value);
-  cache.set(identity,{frames,until:Date.now()+1800000});
-  return frames;
- }catch(error){return [];}finally{clearTimeout(timer);}
+ return selectGalleryFrames(episodes.concat(catalogue),cardIdentity(card));
 }

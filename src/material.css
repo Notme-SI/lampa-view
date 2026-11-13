@@ -68,9 +68,9 @@ body.lampa_view.pt-hero-page[data-lampa-theme] .pt-hero .pt-hero__artwork::after
 }
 body.lampa_view.pt-hero-page[data-lampa-theme]:not(.pt-mobile) .pt-hero__artwork {
  left:auto;width:68%;height:100%;
- --pt-hero-edge-left:linear-gradient(to right,transparent 1%,#00000016 8%,#00000045 17%,#000000a8 30%,#000000e6 41%,#000 48%);
+ --pt-hero-edge-left:linear-gradient(to right,transparent 2%,#00000003 7%,#00000012 13%,#00000030 20%,#00000061 28%,#000000a0 36%,#000000d6 43%,#000000f7 48%,#000 51%);
  --pt-hero-edge-bottom:linear-gradient(to top,transparent 2%,#0005 17%,#000d 36%,#000 56%);
- --pt-hero-fallback-fade:linear-gradient(to right,var(--pt-bg),transparent 48%),
+ --pt-hero-fallback-fade:linear-gradient(to right,var(--pt-bg) 2%,transparent 51%),
             linear-gradient(to top,var(--pt-bg),transparent 56%);
 }
 body.lampa_view.pt-hero-page[data-lampa-theme]:not(.pt-mobile) .pt-hero .pt-hero__image {object-fit:cover;object-position:right 34%}
@@ -202,7 +202,7 @@ body.lampa_view.pt-tv.pt-theme-glass[data-pt-scene] .wrap {
  }
  /* Shade behind the copy and let the artwork tint spread around it. */
  body.lampa_view.pt-hero-page[data-lampa-theme][data-pt-scene="catalogue"]:not(.pt-mobile) .wrap {
-  background-image:radial-gradient(ellipse 67% 63% at 5% 25%,#000000d9 0%,#000000c7 28%,#0000008c 54%,#00000033 78%,transparent 100%),
+  background-image:radial-gradient(ellipse 67% 63% at 5% 25%,#000000b8 0%,#000000a0 28%,#00000070 54%,#00000030 78%,transparent 100%),
                    var(--pt-home-atmosphere,var(--pt-scene-background))!important;
  }
  body.lampa_view.pt-hero-page[data-lampa-theme][data-pt-scene="catalogue"] .activity--active .pt-hero {

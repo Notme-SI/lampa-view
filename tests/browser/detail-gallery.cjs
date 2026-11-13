@@ -68,10 +68,10 @@ async function open(page,movie){
    for(const mode of ['desktop','tv','mobile']){
     const mobile=mode==='mobile',tv=mode==='tv';
     const viewport=mobile?{width:390,height:844}:tv?{width:960,height:540}:{width:1280,height:800};
-    const {page,context,errors}=await setup(browser,{mode,viewport,hasTouch:mobile},{beforePlugin:page=>page.evaluate(tv=>{
+    const {page,context,errors}=await setup(browser,{mode,viewport,hasTouch:mobile},{beforePlugin:page=>page.evaluate(()=>{
      Lampa.Api.full=(p,done)=>done(window.detailFixture);
-     if(tv)Lampa.TMDB.image=path=>'https://frames.example'+path;
-    },tv)});
+     Lampa.TMDB.image=path=>'https://frames.example'+path;
+    })});
     try{
      await page.route('https://notme-si.github.io/lampa-view/frames/v1/*.json',route=>{
       const name=new URL(route.request().url()).pathname.split('/').at(-1);
@@ -87,9 +87,7 @@ async function open(page,movie){
       contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"></svg>'
      }));
      let delayedImage,selectedPaths;
-     if(tv){
-      await page.route('https://frames.example/**',route=>route.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"></svg>'}));
-     }
+     await page.route('https://frames.example/**',route=>route.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"></svg>'}));
      const row=await open(page,mobile);
      if(tv){
       selectedPaths=await page.evaluate(()=>{
@@ -248,44 +246,10 @@ async function open(page,movie){
       assert.equal(await active.getByText('Суперсезон',{exact:true}).count(),0);
       assert.equal(await active.locator('time.minimal-detail-next-episode').getAttribute('datetime'),'2099-11-13');
 
-      const cors={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'X-API-KEY'};
-      await page.route('https://api.poiskkino.dev/v1.5/**',route=>{
-       if(route.request().method()==='OPTIONS')return route.fulfill({status:204,headers:cors});
-       const url=new URL(route.request().url());
-       if(url.pathname.endsWith('/movie')){
-        assert.equal(url.searchParams.get('externalId.imdb'),'tt0000910');
-        return route.fulfill({headers:cors,json:{docs:[{id:201,isSeries:false,externalId:{imdb:'tt0000910'}}]}});
-       }
-       assert.ok(url.searchParams.getAll('type').includes('still'));
-       const base='https://frames.example.invalid/';
-       return route.fulfill({headers:cors,json:{docs:[
-        {movieId:201,type:'backdrops',url:base+'promo.jpg',width:3840},
-        {movieId:201,type:'still',url:base+'original.jpg',previewUrl:base+'thumb.jpg',width:1920}
-       ]}});
-      });
-      await page.route('https://frames.example.invalid/**',route=>route.request().url().endsWith('/thumb.jpg')?
-       route.fulfill({status:403}):route.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"></svg>'}));
-      await page.evaluate(()=>{
-       Lampa.Storage.set('minimal_poiskkino_frames_key','test-fixture');
-       const movie={id:94,source:'tmdb',title:'Другой фильм',original_title:'Gallery Alternate',release_date:'2025-01-01',imdb_id:'tt0000910',
-        production_countries:[],production_companies:[],spoken_languages:[],genres:[]};
-       detailFixture={movie,persons:{cast:[],crew:[]},videos:{results:[]}};
-       Lampa.Activity.push({component:'full',source:'tmdb',id:movie.id,method:'movie',card:movie});
-      });
-      const recovered=active.locator('.minimal-detail-screenshots');
-      await recovered.waitFor();
-      assert.equal(await recovered.locator('[data-minimal-screenshot]').count(),1);
-      await page.evaluate(()=>Lampa.Activity.active().activity.component.scroll.immediate(document.querySelector('.activity--active .minimal-detail-screenshots')));
-      await page.waitForFunction(()=>{
-       const image=document.querySelector('.activity--active [data-minimal-screenshot] img');
-       return image?.naturalWidth===1920 && image.currentSrc.endsWith('/original.jpg');
-      });
-
       await page.route('https://www.bluscreens.net/uploads/**',route=>route.fulfill({
        contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450"></svg>'
       }));
       await page.evaluate(()=>{
-       Lampa.Storage.set('minimal_poiskkino_frames_key','');
        window.openArchiveFilm=year=>{
         const movie={id:year,source:'tmdb',title:'Архивный фильм '+year,original_title:'QA Archive Film',release_date:year+'-02-14',
          production_countries:[],production_companies:[],spoken_languages:[],genres:[]};
@@ -294,6 +258,7 @@ async function open(page,movie){
        };
        openArchiveFilm(2025);
       });
+      const recovered=active.locator('.minimal-detail-screenshots');
       await recovered.waitFor();
       assert.equal(await recovered.locator('[data-minimal-screenshot]').count(),14);
       await page.evaluate(()=>Lampa.Activity.active().activity.component.scroll.immediate(document.querySelector('.activity--active .minimal-detail-screenshots')));

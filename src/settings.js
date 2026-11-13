@@ -7,7 +7,7 @@ const ORDER={
  playback:['minimal_online_sources','nova_plus_enabled','nova_plus_quality','nova_plus_auto_switch','nova_plus_probe','nova_plus_meta','nova_plus_source_pos'],
  languages:['alc_auto_langs','alc_auto_visible_languages','alc_auto_fav_btn','alc_auto_studios_btn','alc_auto_autosubs'],
  parser:['mpv_plus_anime_search','minimal_quality_fallback'],
- services:['minimal_kinoapi_enabled','minimal_kinoapi','minimal_trakt_enabled','minimal_trakt_client_id','minimal_poiskkino_frames'],
+ services:['minimal_kinoapi','minimal_trakt_client_id'],
  server:['alc_auto_server'],cache:['minimal_clear_search_history','minimal_clear_ratings','minimal_clear_quality']
 };
 const LABELS={
@@ -53,8 +53,6 @@ export default function unifiedSettings(api,L,version=''){
    const n=d.param && d.param.name || '',text=String(d.field && d.field.name || '');
    if(seen.has(n))return false;seen.add(n);
    if(['lampa_view_enabled','lampa_view_metadata','nova_plus_view','nova_plus_layout','nova_plus_order','minimal_search_filters','mpv_plus_recent_rows'].includes(n))return false;
-   if(n==='minimal_kinoapi' && !flag(L,'minimal_kinoapi_enabled',!!L.Storage.get('lampa_view_kinoapi_key','')))return false;
-   if(n==='minimal_trakt_client_id' && !flag(L,'minimal_trakt_enabled',false))return false;
    if(d.param && d.param.type==='button' && typeof d.onChange!=='function')return false;
    if(['alc_auto_quick_movie','alc_auto_quick_series'].includes(n))return false;
    if(n==='alc_auto_src_btn' && typeof window!=='undefined' && window.LampaView && window.LampaView.onlineSources)return false;
@@ -65,7 +63,7 @@ export default function unifiedSettings(api,L,version=''){
    }
    if(['nova_plus_mode','nova_plus_hero','nova_plus_hero_art','nova_plus_fullscreen','nova_plus_art_size','nova_plus_movie_view'].includes(n))return false;
    return d.param && !['title','static'].includes(d.param.type) && !/^snack_open_/.test(n) && !/community|versions|snack_reset|telegram|donat|support|_bot/i.test(n) && !/telegram|тг.бот|телеграм|поддержать|сообщество/i.test(text);
-  }).map(d=>{const label=LABELS[d.param.name],description=d.param.name==='minimal_poiskkino_frames'?d.field.description:cleanText(d.field && d.field.description);return {...d,param:{...d.param,values:d.param && d.param.values?Object.keys(d.param.values).reduce((out,key)=>{out[key]=lampaViewText(d.param.values[key]);return out;},{}):d.param && d.param.values},field:{...d.field,name:label?lampaViewText(label[0]):d.param.name==='alc_auto_server'?lampaViewText('Сервер онлайн-источников'):lampaViewText(cleanText(d.field && d.field.name)?.replace(/\s*[›»]\s*$/,'')),description:label?lampaViewText(label[1]):lampaViewText(description)}};});
+  }).map(d=>{const label=LABELS[d.param.name],description=cleanText(d.field && d.field.description);return {...d,param:{...d.param,values:d.param && d.param.values?Object.keys(d.param.values).reduce((out,key)=>{out[key]=lampaViewText(d.param.values[key]);return out;},{}):d.param && d.param.values},field:{...d.field,name:label?lampaViewText(label[0]):d.param.name==='alc_auto_server'?lampaViewText('Сервер онлайн-источников'):lampaViewText(cleanText(d.field && d.field.name)?.replace(/\s*[›»]\s*$/,'')),description:label?lampaViewText(label[1]):lampaViewText(description)}};});
  }
  function open(id){if(L && L.Settings)L.Settings.create(id,{onBack:()=>L.Settings.create('lampa_view')});}
  api.getParam=function(name){

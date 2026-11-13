@@ -35,5 +35,5 @@ test('default-hidden collections remain configurable and home priorities preserv
 });
 
 test('key acquisition links are visible before either integration has a key',async()=>{
- const native=require('./fixtures/native-lampa.cjs'),n=await native({built:true});try{const {L}=n;L.Params.init();const rows=L.SettingsApi.getParam('minimal_settings_services');assert.match(rows.find(r=>r.param.name==='minimal_kinoapi_enabled').field.description,/https:\/\/kinoapi\.lampac\.dev/);assert.match(rows.find(r=>r.param.name==='minimal_trakt_enabled').field.description,/https:\/\/trakt\.tv\/oauth\/applications/);assert.equal(L.Storage.get('minimal_trakt_client_id',''),'');assert.equal(L.Storage.get('minimal_kinoapi_key',''),'');}finally{n.close();}
+ const native=require('./fixtures/native-lampa.cjs'),n=await native({built:true});try{const {L}=n;L.Params.init();const rows=L.SettingsApi.getParam('minimal_settings_services');assert.match(rows.find(r=>r.param.name==='minimal_kinoapi').field.description,/https:\/\/kinoapi\.lampac\.dev/);assert.match(rows.find(r=>r.param.name==='minimal_trakt_client_id').field.description,/https:\/\/trakt\.tv\/oauth\/applications/);assert.equal(L.Storage.get('minimal_trakt_client_id',''),'');assert.equal(L.Storage.get('minimal_kinoapi_key',''),'');}finally{n.close();}
 });

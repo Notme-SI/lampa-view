@@ -36,7 +36,11 @@ function frameUrls(L,path,size){
 function loadFrameImage(image,urls,loaded,failed){
  const remaining=[...new Set(urls.filter(Boolean))];
  image.referrerPolicy='no-referrer';
- image.onload=loaded;
+ image.onload=()=>{
+  const ratio=image.naturalWidth/image.naturalHeight;
+  if(ratio<1.3 || ratio>2.8)image.onerror();
+  else loaded();
+ };
  image.onerror=()=>{
   const next=remaining.shift();
   if(next)image.src=next;
@@ -120,6 +124,7 @@ function showFrames(L,line,frames,start){
   resource(index).then(loaded=>{
    if(disposed || request!==serial || selected!==index)return;
    if(loaded)image.src=loaded.currentSrc || loaded.src;
+   else image.removeAttribute('src');
    viewer.setAttribute('aria-busy','false');
    if(loaded && frames.length>1){resource(wrap(index+1));resource(wrap(index-1));}
   });

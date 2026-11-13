@@ -6708,18 +6708,18 @@
   "ro": "Activează Trakt în setările catalogului L A M P A",
   "pl": "Włącz Trakt w ustawieniach katalogu L A M P A"
  },
- "Добавьте Client ID в Настройки → L A M P A → Каталог и поиск → Trakt": {
-  "en": "Add a Client ID in Settings → L A M P A → Catalogue and search → Trakt",
-  "fr": "Ajoutez un Client ID : Réglages → L A M P A → Catalogue et recherche → Trakt",
-  "uk": "Додайте Client ID: Налаштування → L A M P A → Каталог і пошук → Trakt",
-  "be": "Дадайце Client ID: Налады → L A M P A → Каталог і пошук → Trakt",
-  "zh": "添加Client ID：设置 → L A M P A → 目录与搜索 → Trakt",
-  "pt": "Adicione Client ID: Configurações → L A M P A → Catálogo e busca → Trakt",
-  "bg": "Добавете Client ID: Настройки → L A M P A → Каталог и търсене → Trakt",
-  "he": "הוסיפו Client ID: הגדרות → L A M P A → קטלוג וחיפוש → Trakt",
-  "cs": "Přidejte Client ID: Nastavení → L A M P A → Katalog a hledání → Trakt",
-  "ro": "Adaugă Client ID: Setări → L A M P A → Catalog și căutare → Trakt",
-  "pl": "Dodaj Client ID: Ustawienia → L A M P A → Katalog i wyszukiwanie → Trakt"
+ "Добавьте Client ID в Настройки → L A M P A → Источники данных → Trakt": {
+  "en": "Add a Client ID in Settings → L A M P A → Data sources → Trakt",
+  "fr": "Ajoutez un Client ID : Réglages → L A M P A → Sources de données → Trakt",
+  "uk": "Додайте Client ID: Налаштування → L A M P A → Джерела даних → Trakt",
+  "be": "Дадайце Client ID: Налады → L A M P A → Крыніцы даных → Trakt",
+  "zh": "添加Client ID：设置 → L A M P A → 数据来源 → Trakt",
+  "pt": "Adicione Client ID: Configurações → L A M P A → Fontes de dados → Trakt",
+  "bg": "Добавете Client ID: Настройки → L A M P A → Източници на данни → Trakt",
+  "he": "הוסיפו Client ID: הגדרות → L A M P A → מקורות נתונים → Trakt",
+  "cs": "Přidejte Client ID: Nastavení → L A M P A → Zdroje dat → Trakt",
+  "ro": "Adaugă Client ID: Setări → L A M P A → Surse de date → Trakt",
+  "pl": "Dodaj Client ID: Ustawienia → L A M P A → Źródła danych → Trakt"
  },
  "Trakt недоступен": {
   "en": "Trakt is unavailable",
@@ -9177,6 +9177,20 @@
   "pl": "Zakończone",
   "es": "Finalizadas"
  },
+ "Аниме прошлого сезона": {
+  "en": "Last season’s anime",
+  "uk": "Аніме минулого сезону",
+  "be": "Анімэ мінулага сезона",
+  "zh": "上一季动画",
+  "pt": "Animes da temporada anterior",
+  "bg": "Аниме от миналия сезон",
+  "he": "אנימה מהעונה הקודמת",
+  "cs": "Anime z minulé sezóny",
+  "ro": "Anime din sezonul trecut",
+  "fr": "Animés de la saison précédente",
+  "pl": "Anime z poprzedniego sezonu",
+  "es": "Anime de la temporada anterior"
+ },
  "Новинки сезона": {
   "en": "New this season",
   "uk": "Новинки сезону",
@@ -9835,48 +9849,6 @@
   "fr": "Auto utilise le mode d’écran de Lampa. Tablette active les commandes tactiles et s’adapte à la largeur de la fenêtre.",
   "pl": "Auto używa trybu ekranu Lampa. Tablet włącza sterowanie dotykowe i dopasowanie do szerokości okna.",
   "es": "Auto usa el modo de pantalla de Lampa. Tableta activa los controles táctiles y se adapta al ancho de la ventana."
- },
- "ПоискКино · ключ для кадров": {
-  "en": "PoiskKino: stills API key",
-  "uk": "ПошукКіно: ключ для кадрів",
-  "be": "ПошукКіно: ключ для кадраў",
-  "zh": "PoiskKino：剧照 API 密钥",
-  "pt": "PoiskKino: chave de API para imagens",
-  "bg": "PoiskKino: ключ за кадри",
-  "he": "PoiskKino: מפתח API לתמונות",
-  "cs": "PoiskKino: klíč API pro snímky",
-  "ro": "PoiskKino: cheie API pentru imagini",
-  "fr": "PoiskKino : clé API pour les images",
-  "pl": "PoiskKino: klucz API do kadrów",
-  "es": "PoiskKino: clave API para imágenes"
- },
- "Кадры из фильмов и сериалов. Пустой ключ отключает источник.": {
-  "en": "Stills from movies and TV series. An empty key disables the source.",
-  "uk": "Кадри з фільмів і серіалів. Порожній ключ вимикає джерело.",
-  "be": "Кадры з фільмаў і серыялаў. Пусты ключ адключае крыніцу.",
-  "zh": "电影和剧集的剧照。清空密钥可禁用此来源。",
-  "pt": "Imagens de filmes e séries. Uma chave vazia desativa a fonte.",
-  "bg": "Кадри от филми и сериали. Празният ключ изключва източника.",
-  "he": "תמונות מסרטים וסדרות. מפתח ריק משבית את המקור.",
-  "cs": "Snímky z filmů a seriálů. Prázdný klíč zdroj vypne.",
-  "ro": "Imagini din filme și seriale. O cheie goală dezactivează sursa.",
-  "fr": "Images de films et de séries. Une clé vide désactive la source.",
-  "pl": "Kadry z filmów i seriali. Pusty klucz wyłącza źródło.",
-  "es": "Imágenes de películas y series. Una clave vacía desactiva la fuente."
- },
- "Ключ API ПоискКино": {
-  "en": "PoiskKino API key",
-  "uk": "Ключ API ПошукКіно",
-  "be": "Ключ API ПошукКіно",
-  "zh": "PoiskKino API 密钥",
-  "pt": "Chave API PoiskKino",
-  "bg": "API ключ за PoiskKino",
-  "he": "מפתח API של PoiskKino",
-  "cs": "Klíč API PoiskKino",
-  "ro": "Cheie API PoiskKino",
-  "fr": "Clé API PoiskKino",
-  "pl": "Klucz API PoiskKino",
-  "es": "Clave API de PoiskKino"
  },
  "Ещё": {
   "en": "More",

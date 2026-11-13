@@ -13,12 +13,40 @@ test('a card has a stable fifteen-frame sample from the whole gallery, independe
  assert.deepEqual(stableSample([], 'empty'),[]);
 });
 
-function runtime(){
+function runtime(readCatalogue=async()=>({ok:true,json:async()=>({version:1,entries:{},records:{}})})){
  const code=esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/gallery-frames.js')],bundle:true,write:false,format:'cjs',platform:'node'}).outputFiles[0].text;
  const context={module:{exports:{}},exports:{},URL,URLSearchParams,AbortController,setTimeout,clearTimeout,
-  fetch:async()=>({ok:true,json:async()=>({version:1,entries:{},records:{}})})};
+  fetch:readCatalogue};
  vm.createContext(context);vm.runInContext(code,context);return context.module.exports;
 }
+
+test('gallery deduplicates alternate sizes and rejects portrait artwork with known dimensions',()=>{
+ const {selectGalleryFrames}=runtime();
+ const rows=selectGalleryFrames([
+  {minimal_still_url:'https://frames.example/1920x1080/scene.jpg'},
+  {minimal_still_url:'https://frames.example/1280x720/scene.jpg?version=1'},
+  {minimal_still_url:'https://frames.example/portrait.jpg',width:800,height:1200},
+  {still_path:'/another.jpg',width:1280,height:720}
+ ],'movie:1423191');
+ assert.equal(rows.length,2);
+ assert.ok(rows.some(row=>row.still_path==='/another.jpg'));
+ assert.ok(rows.every(row=>!row.minimal_still_url?.includes('portrait')));
+});
+
+test('the reported movie keeps its fourteen catalogue frames with an obsolete external key present',async()=>{
+ const fs=require('node:fs'),requests=[];
+ const {loadDetailGallery}=runtime(async url=>{
+  requests.push(url);
+  const name=new URL(url).pathname.split('/').at(-1);
+  assert.match(url,/^https:\/\/notme-si\.github\.io\/lampa-view\/frames\/v1\/[\da-f]{2}\.json$/);
+  return {ok:true,json:async()=>JSON.parse(fs.readFileSync(path.join(__dirname,'../docs/frames/v1',name),'utf8'))};
+ });
+ const movie={source:'cub',id:1423191,title:'Обитель зла',original_title:'Resident Evil',release_date:'2026-01-01'};
+ const frames=await loadDetailGallery({Storage:{get:(key,fallback)=>key==='minimal_poiskkino_frames_key'?'obsolete-fixture-key':fallback}},{movie},()=>assert.fail('Movie stills do not need episode requests'));
+ assert.equal(frames.length,14);
+ assert.equal(new Set(frames.map(row=>row.minimal_still_url)).size,14);
+ assert.ok(requests.length>0);
+});
 
 test('series prefer the latest aired season and diversify its episodes regardless of network order',async()=>{
  async function run(reverse){

@@ -12,15 +12,14 @@ function setup(){
  const api=w.Trakt.default(L);return {w,L,api,storage,sent,settings,close:()=>w.close()};
 }
 const movie=(id,title)=>({title:'Фильм '+title,overview:'Русское описание',year:2026,ids:{tmdb:id,trakt:id+10000},rating:8.3,images:{poster:['media.trakt.tv/images/movies/'+id+'/poster.webp']}});
-test('Trakt is disabled by default, prompts for Client ID on enable and uses the native main-source setting',()=>{
+test('Trakt is disabled by default, prompts for Client ID in its settings row and uses the native main-source setting',()=>{
  const r=setup();try{
   assert.equal(r.L.Params.values.source.trakt,undefined);assert.equal(r.L.Params.values.source.custom,'Custom');let message;
-  r.api.main({},()=>assert.fail('No fake TMDB lists'),e=>message=e.status_message);assert.match(message,/Включите Trakt/);assert.equal(r.sent.length,0);
-  const toggle=r.settings.find(row=>row.param.name==='minimal_trakt_enabled');assert.equal(toggle.param.default,false);let prompt,submit;
-  r.L.Input={edit:(params,callback)=>{prompt=params;submit=callback;}};r.storage.source='cub';r.storage.minimal_trakt_enabled=true;toggle.onChange();assert.match(prompt.title,/Client ID/);assert.equal(r.L.Params.values.source.trakt,undefined);assert.equal(r.sent.length,0);
+  r.api.main({},()=>assert.fail('No fake TMDB lists'),e=>message=e.status_message);assert.match(message,/Добавьте Client ID/);assert.equal(r.sent.length,0);
+  const input=r.settings.find(row=>row.param.name==='minimal_trakt_client_id');assert.equal(r.settings.length,1);let prompt,submit;
+  r.L.Input={edit:(params,callback)=>{prompt=params;submit=callback;}};r.storage.source='cub';input.onChange();assert.match(prompt.title,/Client ID/);assert.equal(r.L.Params.values.source.trakt,undefined);assert.equal(r.sent.length,0);
   submit(' own-public-id ');assert.equal(r.storage.minimal_trakt_enabled,true);assert.equal(r.L.Params.values.source.trakt,'Trakt');assert.equal(r.storage.source,'cub','Enabling must not change the native main source');assert.equal(r.storage.minimal_trakt_client_id,'own-public-id');
-  r.storage.source='trakt';r.storage.minimal_trakt_enabled=false;toggle.onChange();assert.equal(r.L.Params.values.source.trakt,undefined);assert.equal(r.storage.source,'cub');assert.equal(r.storage.minimal_trakt_client_id,'own-public-id');
-  const input=r.settings.find(row=>row.param.name==='minimal_trakt_client_id');assert.doesNotMatch(input.param.name,/secret/);
+  r.storage.source='trakt';input.onChange();assert.equal(prompt.value,'own-public-id');submit('');assert.equal(r.L.Params.values.source.trakt,undefined);assert.equal(r.storage.source,'cub');assert.equal(r.storage.minimal_trakt_client_id,'');
  }finally{r.close();}
 });
 test('empty or cancelled Client ID input leaves Trakt disabled and does not request the network',()=>{
@@ -100,7 +99,7 @@ test('Trakt dorama and Russian TV shows use their own filters and preserve them 
 
 test('enabled Trakt participates in native search with independent movie/show results, safe queries and More pagination',()=>{
  const r=setup();try{
-  assert.equal(r.api.discovery,undefined);r.storage.minimal_trakt_enabled=true;r.storage.minimal_trakt_client_id='own-id';r.settings[0].onChange();
+  assert.equal(r.api.discovery,undefined);let save;r.L.Input={edit:(p,submit)=>save=submit};r.settings[0].onChange();save('own-id');
   const provider=r.api.discovery();assert.equal(provider.title,'Trakt');let result;
   provider.search({query:encodeURIComponent('Матрица & фильм')},rows=>result=rows);assert.equal(r.sent.length,2);
   assert.equal(new URL(r.sent[0].url).searchParams.get('query'),'Матрица & фильм');
@@ -108,6 +107,6 @@ test('enabled Trakt participates in native search with independent movie/show re
   assert.deepEqual(Array.from(result,row=>row.title),['Фильмы','Сериалы']);assert.equal(result[0].results[0].media_type,'movie');assert.equal(result[1].results[0].media_type,'tv');
   let next;r.api.list({url:result[1].url,page:2},json=>next=json,assert.fail);const req=r.sent.at(-1);assert.equal(new URL(req.url).pathname,'/search/show');assert.equal(new URL(req.url).searchParams.get('page'),'2');req.reply([{show:movie(3,'Next')}]);assert.equal(next.page,2);assert.equal(next.results[0].id,3);
   let stale=0;provider.search({query:'Cancelled'},()=>stale++);provider.onCancel();assert.equal(stale,0);
-  r.storage.minimal_trakt_enabled=false;r.settings[0].onChange();assert.equal(r.api.discovery,undefined);
+  r.settings[0].onChange();save('');assert.equal(r.api.discovery,undefined);
  }finally{r.close();}
 });

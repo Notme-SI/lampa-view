@@ -7,7 +7,8 @@ import {version} from '../package.json';
 import inputs from './inputs.js';
 import searchHistory from './search-history.js';
 import tmdbGet,{installTmdb,installFullGuard,installListGuard} from './tmdb.js';
-import {animeMode,cataloguePlan,isAnimeHome} from './catalogue.js';
+import {animeMode,isAnimeHome,SHIKI_WATCH} from './catalogue.js';
+import {animeTarget} from './anime-index.js';
 import {ANIME_HISTORY} from './continue-watching.js';
 import heroAssets from './hero-assets.js';
 import heroTransition from './hero-transition.js';
@@ -34,7 +35,6 @@ import startup from './startup.js';
 import shikimoriPosters from './shikimori-posters.js';
 import torrentEpisodes from './torrent-episodes.js';
 import installArtwork,{artworkSize,officialBanner,officialEpisodePreview} from './artwork.js';
-import {galleryFramesKey} from './gallery-frames.js';
 import progressSync from './progress-sync.js';
 import historyCards from './history-cards.js';
 import installBack from './back.js';
@@ -359,29 +359,30 @@ if (!ROOT.LampaView) {
     let cards;
     if(anime){
       if(activity!==active.activity || !activity.component?.items?.length)return;
-      const rows=activity.component.items,seen=new Set();
-      cards=rows.filter(row=>row.data?.url!==ANIME_HISTORY).flatMap(row=>(row.data?.results || []).filter(suitable).map(card=>({...card,source:card.source || row.data.source || object.source || 'tmdb',minimal_anime:true}))).filter(card=>{
-        const key=cardKey(card);if(seen.has(key))return false;seen.add(key);return true;
-      }).slice(0,8);
-      if(!cards.length && animeMode(L,object)==='shikimori'){
-        const feed=cataloguePlan('anime').find(row=>row.key==='watch');
-        const key=feed.tmdb+'|'+L.Storage.get('language','ru');
+      const rows=activity.component.items;
+      if(animeMode(L,object)==='shikimori'){
+        const watch=rows.find(row=>row.data?.url===SHIKI_WATCH)?.data.results;
+        if(!watch?.length)return;
+        const key=L.Storage.get('language','ru')+'|'+watch.map(card=>card.id).join(',');
         if(animeHeroFeed?.key===key && (animeHeroFeed.waiting || Date.now()<animeHeroFeed.expires)){
           cards=animeHeroFeed.cards;
           if(!cards.length && animeHeroFeed.waiting)animeHeroFeed.waiting.set(activity,event);
         }else{
-          // Shikimori list entries only carry portrait artwork.
           const pending=animeHeroFeed={key,cards:[],waiting:new WeakMap([[activity,event]])};
-          const finish=data=>{
+          shikiHeroCards(watch).then(result=>{
             if(animeHeroFeed!==pending)return;
-            pending.cards=(data?.results || []).filter(suitable).slice(0,8).map(card=>({...card,source:'tmdb',media_type:'tv',minimal_anime:true}));
+            pending.cards=result.filter(suitable).slice(0,8);
             const current=pending.waiting.get(L.Activity.active()?.activity);pending.waiting=null;
             pending.expires=Date.now()+(pending.cards.length?300000:30000);
             if(current && pending.cards.length)hero(current);
-          };
-          tmdbGet(L,feed.tmdb,{page:1},finish,()=>finish(null));
+          });
           return;
         }
+      }else{
+        const seen=new Set();
+        cards=rows.filter(row=>row.data?.url!==ANIME_HISTORY).flatMap(row=>(row.data?.results || []).filter(suitable).map(card=>({...card,source:card.source || row.data.source || object.source || 'tmdb',minimal_anime:true}))).filter(card=>{
+          const key=cardKey(card);if(seen.has(key))return false;seen.add(key);return true;
+        }).slice(0,8);
       }
     }else cards=(event.data?.results || []).filter(suitable).slice(0,8).map(card=>({...card,source:card.source || object.source || 'tmdb'}));
     if(!cards.length)return;
@@ -595,6 +596,31 @@ if (!ROOT.LampaView) {
     },0);
   }
   function cardKey(card) {return (card.source || 'tmdb') + ':' + (card.media_type || (card.name ? 'tv':'movie')) + ':' + card.id;}
+  async function shikiHeroCards(watch){
+    const seen=new Set(),candidates=[];
+    for(const card of watch){
+      const target=animeTarget(card);
+      if(!target)continue;
+      const path=target.type+'/'+target.id;
+      if(seen.has(path))continue;
+      seen.add(path);candidates.push({card,target,path});
+    }
+    const slides=[];
+    for(let i=0;i<Math.min(candidates.length,12) && slides.length<8;i+=3){
+      const batch=candidates.slice(i,i+3);
+      const results=await Promise.all(batch.map(({card,target,path})=>new Promise(resolve=>{
+        const timer=setTimeout(()=>resolve(null),1500);
+        const finish=media=>{
+          clearTimeout(timer);
+          resolve(media?.id===target.id && media.backdrop_path && media.overview?
+            {...card,tmdb_id:target.id,backdrop_path:media.backdrop_path,overview:media.overview}:null);
+        };
+        try{tmdbGet(L,path,{},finish,()=>finish(null));}catch(error){finish(null);}
+      })));
+      slides.push(...results.filter(Boolean));
+    }
+    return slides;
+  }
   function full(event) {
     if (!event || event.type !== 'complite') return;
     const card = event.data && event.data.movie || event.object && event.object.card;
@@ -664,15 +690,6 @@ if (!ROOT.LampaView) {
     L.SettingsApi.addParam({component:'lampa_view',param:{name:'card_interfice_cover',type:'trigger',default:true},field:{name:'Карточка фильма: фон',description:'Баннер фильма за названием, описанием и кнопками.'},onChange:()=>document.body.classList.toggle('card--no-cover',!yes('card_interfice_cover'))});
     personalScale(L);
     L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_banner_quality',type:'select',values:{medium:lampaViewText("Среднее"),high:lampaViewText("Высокое")},default:'high'},field:{name:lampaViewText("Качество баннеров и обложек"),description:lampaViewText("Общее качество баннеров, фонов загрузки и карточек. Высокое подбирает чёткий размер под экран и использует общий кеш обложек.")},onChange:()=>artwork && artwork.choose()});
-    const framesKey=()=>String(L.Storage.get(galleryFramesKey,'') || '');
-    L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_poiskkino_frames',type:'button'},field:{name:lampaViewText('ПоискКино · ключ для кадров'),description:lampaViewText('Получить ключ: {0}.',['https://t.me/poiskkinodev_bot'])+' '+lampaViewText('Кадры из фильмов и сериалов. Пустой ключ отключает источник.')},onRender:item=>{
-      $('<div class="settings-param__value">').text(framesKey()).insertAfter(item.find('.settings-param__name'));
-    },onChange:()=>{
-      L.Input.edit({title:lampaViewText('Ключ API ПоискКино'),value:framesKey(),free:true,nosave:true,nomic:true},value=>{
-        L.Storage.set(galleryFramesKey,String(value || '').trim());
-        $('.settings-param[data-name="minimal_poiskkino_frames"] .settings-param__value').text(framesKey());
-      });
-    }});
   }
   function start() {
     if (initialized || !ROOT.Lampa || !ROOT.jQuery) return;

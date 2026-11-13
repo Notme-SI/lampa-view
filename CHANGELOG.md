@@ -1,3 +1,10 @@
+## 0.5.161
+
+- Start the Shikimori home with currently watched anime and build its carousel from that collection. Add last season’s releases and remove repeated titles across catalogue previews.
+- Soften the left artwork fade on the home and anime carousels.
+- Show the saved KinoAPI key and Trakt Client ID directly in their settings rows.
+- Remove the PoiskKino integration. Deduplicate gallery images and preserve their proportions.
+
 ## 0.5.160
 
 - Extend the anime carousel behind the header and show its artwork, text and branding together.

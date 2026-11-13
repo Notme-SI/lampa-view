@@ -21,14 +21,17 @@ test('429 respects Retry-After, errors fall back without polling, and old-key re
  const hold=fixture(()=>{}),other=hold.api.default(hold.L);hold.store.set('lampa_view_kinoapi_key','first');const answer=new Promise(resolve=>other.title({id:44511,shikimori_id:44511,source:'minimal_shiki',name:'Chainsaw'},resolve));const request=hold.requests[0];other.clear();request.status=200;request.responseText=JSON.stringify({data:{id:{tmdb:114410,shikimori:44511},type:'tv'}});request.onload();assert.equal(await answer,null);
 });
 
-test('native settings restore preserves key and toggle; disabling keeps the key and cancel stays disabled',async()=>{
- const f=fixture(()=>assert.fail('Disabled integration must not request metadata')),client=f.api.default(f.L),toggle=f.params.find(p=>p.param.name==='minimal_kinoapi_enabled');
- f.L.Storage.set('minimal_kinoapi_enabled',true);toggle.onChange();assert.equal(client.enabled(),false);assert.ok(f.input,'First enable prompts for a key');
+test('KinoAPI edits its visible key and preserves legacy settings backups',async()=>{
+ const f=fixture(()=>assert.fail('Disabled integration must not request metadata')),client=f.api.default(f.L),row=f.params.find(p=>p.param.name==='minimal_kinoapi');
+ row.onChange();assert.equal(client.enabled(),false);assert.equal(f.input.p.value,'');
  f.input.fn('restorable-test-key');assert.equal(client.enabled(),true);
- f.L.Storage.set('minimal_kinoapi_enabled',false);toggle.onChange();assert.equal(f.store.get('lampa_view_kinoapi_key'),'restorable-test-key');assert.equal(client.enabled(),false);assert.equal(await new Promise(resolve=>client.anime(positiveCard,resolve)),null);
- const backup=JSON.stringify(Object.fromEntries(f.store)),restored=fixture(()=>{});Object.entries(JSON.parse(backup)).forEach(([k,v])=>restored.store.set(k,v));const other=restored.api.default(restored.L);assert.equal(other.enabled(),false,'An explicit disabled flag survives restore');
- restored.L.Storage.set('minimal_kinoapi_enabled',true);restored.params.find(p=>p.param.name==='minimal_kinoapi_enabled').onChange();assert.equal(other.enabled(),true);assert.equal(restored.input,undefined,'The restored key is reused without a prompt');
- const legacy=fixture(()=>{});legacy.store.set('lampa_view_kinoapi_key','legacy-test-key');assert.equal(legacy.api.default(legacy.L).enabled(),true,'Existing key remains enabled without reentry');
+ row.onChange();assert.equal(f.input.p.value,'restorable-test-key');
+ const restored=fixture(()=>{});restored.store.set('lampa_view_kinoapi_key','restorable-test-key');restored.store.set('minimal_kinoapi_enabled',false);
+ const other=restored.api.default(restored.L);assert.equal(other.enabled(),false,'An explicit disabled flag survives restore');
+ restored.params[0].onChange();assert.equal(restored.input.p.value,'restorable-test-key');
+ restored.input.fn('restorable-test-key');assert.equal(other.enabled(),true);
+ f.input.fn('');assert.equal(client.enabled(),false);assert.equal(await new Promise(resolve=>client.anime(positiveCard,resolve)),null);
+ const legacy=fixture(()=>{});legacy.store.set('lampa_view_kinoapi_key','legacy-test-key');assert.equal(legacy.api.default(legacy.L).enabled(),true);
 });
 
 test('identical local episode counts never map a missing second season to the first',()=>{

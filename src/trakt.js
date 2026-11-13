@@ -79,8 +79,7 @@ export default function installTrakt(L){
  }
  function clear(){generation++;queue.length=0;pending.clear();metadata.clear();catalogueList.clear();for(const xhr of Array.from(live))xhr.abort();}
  function rawList(params,ok,fail){
-  if(!enabled())return error(fail,lampaViewText("Включите Trakt в настройках каталога L A M P A"));
-  const id=client();if(!id)return error(fail,lampaViewText("Добавьте Client ID в Настройки → L A M P A → Каталог и поиск → Trakt"));
+  const id=client();if(!enabled() || !id)return error(fail,lampaViewText("Добавьте Client ID в Настройки → L A M P A → Источники данных → Trakt"));
   if(id!==lastKey){clear();cache.clear();lastKey=id;}
   const mixed=String(params.url || '').match(/^mixed\/(trending|popular|watched\/weekly|collected\/monthly|anticipated)$/);
   if(mixed){
@@ -131,7 +130,7 @@ export default function installTrakt(L){
  }
  function decodeQuery(value){try{return decodeURIComponent(String(value || ''));}catch(e){return String(value || '');}}
  function searchPage(params,ok,fail){
-  if(!enabled() || !client())return error(fail,lampaViewText("Включите Trakt и добавьте Client ID"));
+  if(!enabled() || !client())return error(fail,lampaViewText("Добавьте Client ID в Настройки → L A M P A → Источники данных → Trakt"));
   const id=client();if(id!==lastKey){clear();cache.clear();lastKey=id;}
   const type=params.type==='show'?'show':'movie',query=String(params.query || '').trim().slice(0,200),page=Math.max(1,Math.min(1000,Number(params.page)||1));
   if(!query)return ok({results:[],page,total_pages:1});
@@ -180,17 +179,22 @@ export default function installTrakt(L){
   sources();const controller=L.Controller && L.Controller.enabled && L.Controller.enabled();
   if(L.Settings && L.Settings.update && controller && /^settings/.test(controller.name))L.Settings.update();
  }
- L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_trakt_enabled',type:'trigger',default:false},field:{name:'Trakt',description:lampaViewText("Получить ключ: {0}.",["https://trakt.tv/oauth/applications"])+" "+lampaViewText("Каталог: Настройки → Остальное → Основной источник.")},onChange(){
-  clear();cache.clear();
-  if(!enabled() || client())return refresh();
-  // Do not leave an unusable source enabled if the empty input is cancelled.
-  L.Storage.set('minimal_trakt_enabled',false);sources();
-  L.Input.edit({title:'Trakt · Client ID',value:'',free:true,nosave:true,nomic:true},value=>{
-   const id=String(value || '').trim();
-   L.Storage.set('minimal_trakt_client_id',id);L.Storage.set('minimal_trakt_enabled',!!id);refresh();
-  });
- }});
- L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_trakt_client_id',type:'input',values:'',default:''},field:{name:'Trakt · Client ID',description:""},onChange(){clear();cache.clear();if(!client())L.Storage.set('minimal_trakt_enabled',false);refresh();}});
+ L.SettingsApi.addParam({
+  component:'lampa_view',
+  param:{name:'minimal_trakt_client_id',type:'button'},
+  field:{name:'Trakt · Client ID',description:lampaViewText("Получить ключ: {0}.",["https://trakt.tv/oauth/applications"])+" "+lampaViewText("Каталог: Настройки → Остальное → Основной источник.")},
+  onRender(item){
+   if(!item.find('.settings-param__value').length)window.jQuery('<div class="settings-param__value"></div>').insertAfter(item.find('.settings-param__name'));
+   item.find('.settings-param__value').text(client());
+  },
+  onChange(){
+   L.Input.edit({title:'Trakt · Client ID',value:client(),free:true,nosave:true,nomic:true},value=>{
+    const id=String(value || '').trim();
+    L.Storage.set('minimal_trakt_client_id',id);L.Storage.set('minimal_trakt_enabled',!!id);
+    clear();cache.clear();refresh();
+   });
+  }
+ });
  sources();
  return adapter;
 }

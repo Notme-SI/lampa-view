@@ -1,13 +1,13 @@
 const test=require('node:test'),assert=require('node:assert/strict'),native=require('./fixtures/native-lampa.cjs');
-test('Trakt enable prompts for ID, keeps the native main-source selector and hides the ID field when disabled',async()=>{
+test('Trakt edits its visible ID and keeps the native main-source selector',async()=>{
  const n=await native({built:true}),{L,w}=n;try{
   L.Params.init();
   const params=()=>L.SettingsApi.getParam('minimal_settings_services');
-  assert.ok(params().some(row=>row.param.name==='minimal_trakt_enabled'));assert.ok(!params().some(row=>row.param.name==='minimal_trakt_client_id'));assert.equal(L.Params.values.source.trakt,undefined);
+  assert.ok(!params().some(row=>row.param.name==='minimal_trakt_enabled'));assert.ok(params().some(row=>row.param.name==='minimal_trakt_client_id'));assert.equal(L.Params.values.source.trakt,undefined);
   L.Settings.create('minimal_settings_services');let submit;L.Input.edit=(p,done)=>{assert.match(p.title,/Client ID/);submit=done;};
-  const toggle=params().find(row=>row.param.name==='minimal_trakt_enabled');L.Storage.set('minimal_trakt_enabled',true);toggle.onChange();submit('public-test-id');assert.ok(params().some(row=>row.param.name==='minimal_trakt_client_id'));assert.equal(L.Storage.get('source'),'cub');
+  const field=params().find(row=>row.param.name==='minimal_trakt_client_id');field.onChange();submit('public-test-id');assert.ok(params().some(row=>row.param.name==='minimal_trakt_client_id'));assert.equal(L.Storage.get('source'),'cub');
   L.Settings.create('more');const source=L.Settings.render().find('[data-name=source]');assert.equal(source.find('.settings-param__name').text(),'Основной источник');source.trigger('hover:enter');assert.deepEqual(Array.from(L.Select.render().find('.selectbox-item__title'),node=>node.textContent),['TMDB','CUB','Trakt']);
-  L.Controller.back();L.Storage.set('source','trakt');L.Storage.set('minimal_trakt_enabled',false);toggle.onChange();assert.equal(L.Storage.get('source'),'cub');assert.equal(L.Params.values.source.trakt,undefined);assert.ok(!params().some(row=>row.param.name==='minimal_trakt_client_id'));assert.deepEqual(n.errors,[]);
+  L.Controller.back();L.Storage.set('source','trakt');field.onChange();submit('');assert.equal(L.Storage.get('source'),'cub');assert.equal(L.Params.values.source.trakt,undefined);assert.ok(params().some(row=>row.param.name==='minimal_trakt_client_id'));assert.deepEqual(n.errors,[]);
  }finally{n.close();}
 });
 test('Trakt category reports ready state to anime tabs and preserves collection customization',async()=>{

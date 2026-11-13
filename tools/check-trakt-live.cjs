@@ -11,8 +11,10 @@ const {setup}=require('../tests/fixtures/native-browser.cjs');
    const r=await setup(browser,{viewport:{width:1280,height:720},mode:'tv'},{url:process.env.LAMPA_ORIGIN || 'http://lampac.rest/'});
    await r.page.route('https://api.trakt.tv/**',route=>route.continue());
    const result=await r.page.evaluate(async client=>{
-    const L=Lampa;L.Storage.set('minimal_trakt_client_id',client);L.Storage.set('minimal_trakt_enabled',true);
-    L.SettingsApi.getParam('minimal_settings_catalogue').find(row=>row.param.name==='minimal_trakt_enabled').onChange();
+    const L=Lampa,input=L.Input.edit;
+    L.Input.edit=(options,save)=>save(client);
+    try{L.SettingsApi.getParam('minimal_settings_services').find(row=>row.param.name==='minimal_trakt_client_id').onChange();}
+    finally{L.Input.edit=input;}
     const main=await new Promise((resolve,reject)=>L.Api.main({source:'trakt',component:'main'},resolve,e=>reject(new Error(e.status_message))));
     const rows=main.filter(row=>row.source==='trakt');
     const next=await new Promise((resolve,reject)=>L.Api.list({source:'trakt',url:rows[0].url,page:2},resolve,e=>reject(new Error(e.status_message))));

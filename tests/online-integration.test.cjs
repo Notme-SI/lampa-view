@@ -85,15 +85,18 @@ test('complete absolute anime list navigates confirmed arcs locally and keeps or
 });
 
 
-test('KinoAPI and Trakt settings transfer through native backup/restore with separate toggle and key fields',async()=>{
+test('KinoAPI and Trakt settings transfer through native backup/restore with a single row for each key',async()=>{
  const n=await native({built:true}),{w,L}=n;let restored;try{
  const params=()=>L.SettingsApi.getParam('minimal_settings_services');
- const toggle=params().find(p=>p.param.name==='minimal_kinoapi_enabled');assert.ok(toggle);assert.equal(toggle.param.type,'trigger');assert.ok(!params().some(p=>p.param.name==='minimal_kinoapi'));
+ const param=params().find(p=>p.param.name==='minimal_kinoapi'),trakt=params().find(p=>p.param.name==='minimal_trakt_client_id');
+ assert.equal(param.param.type,'button');assert.equal(trakt.param.type,'button');
+ assert.ok(!params().some(p=>['minimal_kinoapi_enabled','minimal_trakt_enabled'].includes(p.param.name)));
+ assert.match(param.field.description,/https:\/\/kinoapi\.lampac\.dev\//);assert.match(trakt.field.description,/https:\/\/trakt\.tv\/oauth\/applications/);
  let submit;L.Input.edit=(options,fn)=>{assert.notEqual(options.password,true);assert.equal(options.nosave,true);assert.equal(options.value,'');submit=fn;};
- L.Storage.set('minimal_kinoapi_enabled',true);toggle.onChange();assert.equal(w.LampaView.kinoapi.enabled(),false,'Cancelling first entry leaves no enabled integration');submit('backup-fixture-key');
- const param=params().find(p=>p.param.name==='minimal_kinoapi');assert.ok(param);assert.match(toggle.field.description,/https:\/\/kinoapi\.lampac\.dev\//);for(const p of params().filter(p=>/minimal_(kinoapi|trakt)/.test(p.param.name))){assert.doesNotMatch(p.field.description,/резерв|восстановлен/);if(p.param.name==='minimal_kinoapi' || p.param.name==='minimal_trakt_client_id')assert.equal(p.field.description,'');}
- const item=w.jQuery('<div></div>');param.onRender(item);assert.equal(item.text(),'backup-fixture-key');assert.equal(L.Storage.get('lampa_view_kinoapi_key'),'backup-fixture-key');
- L.Storage.set('minimal_trakt_enabled',true);L.Storage.set('minimal_trakt_client_id','backup-public-id');assert.match(params().find(p=>p.param.name==='minimal_trakt_enabled').field.description,/https:\/\/trakt\.tv\/oauth\/applications/);
+ param.onChange();assert.equal(w.LampaView.kinoapi.enabled(),false);submit('backup-fixture-key');
+ const item=w.jQuery('<div><div class="settings-param__name"></div></div>');
+ param.onRender(item);assert.equal(item.text(),'backup-fixture-key');assert.equal(L.Storage.get('lampa_view_kinoapi_key'),'backup-fixture-key');
+ trakt.onChange();submit('backup-public-id');
  // Native Settings.backup serializes localStorage, excluding app.js; restore writes it before reload.
  const backup=JSON.stringify(w.localStorage,(key,value)=>key==='app.js'?undefined:value);
  restored=await native({built:true,prepare(win){Object.entries(JSON.parse(backup)).forEach(([key,value])=>win.localStorage.setItem(key,value));}});
