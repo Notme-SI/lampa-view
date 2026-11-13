@@ -412,7 +412,7 @@ if (!ROOT.LampaView) {
       const buttons=$('<div class="pt-hero__actions">').appendTo(body);
       const details=$('<div class="pt-hero__action selector" role="button" tabindex="0">').html(lampaViewText("{0}<span>Подробнее</span>", [icon('info')])).appendTo(buttons);
       const dots=$(lampaViewText("<div class=\"pt-hero__dots\" role=\"group\" aria-label=\"Переключить обложку\">")).appendTo(element);
-      let logoToken=0,upgradeTimer,rotation,selectedStudio;
+      let logoToken=0,upgradeTimer,rotation,selectedStudio,animeTimer,animeRevision=0,animeVisible=false;
       function studioLink(){
         const enabled=selectedStudio && Number(selectedStudio.id)>0 && !document.body.classList.contains('pt-tv');
         studio.toggleClass('selector',Boolean(enabled));
@@ -428,9 +428,41 @@ if (!ROOT.LampaView) {
       element.on('minimal:hero-layout',studioLink);
       document.addEventListener('minimal:interface-size',studioLink);
       const assets=heroAssets(L,cards,loadLogo,element[0]);
-      if(activity.component && activity.component.use)activity.component.use({onDestroy:()=>{clearTimeout(upgradeTimer);artworkTransition.dispose();assets.dispose();document.removeEventListener('minimal:interface-size',studioLink);}});
+      if(activity.component && activity.component.use)activity.component.use({onDestroy:()=>{clearTimeout(upgradeTimer);clearTimeout(animeTimer);animeRevision++;artworkTransition.dispose();assets.dispose();document.removeEventListener('minimal:interface-size',studioLink);}});
       const requestHeroLayout=()=>element[0].dispatchEvent(new Event('minimal:hero-layout',{bubbles:true}));
       function show(next){
+        if(!anime)return paint(next);
+        const selected=(next+cards.length)%cards.length,revision=++animeRevision;
+        clearTimeout(animeTimer);
+        animeTimer=null;
+        assets.select(selected);
+        const size=artworkSize(L,'backdrop');
+        let cover,logoUrl,language,studioValue,committed=false;
+        function reveal(){
+          if(committed || revision!==animeRevision || cover===undefined)return;
+          committed=true;
+          clearTimeout(animeTimer);
+          if(!cover && animeVisible)return;
+          animeVisible=true;
+          paint(selected,{cover,logoUrl,language,studioValue});
+        }
+        function ready(){
+          if(committed || revision!==animeRevision || cover===undefined)return;
+          if(logoUrl!==undefined && studioValue!==undefined)return reveal();
+          if(!animeTimer)animeTimer=setTimeout(reveal,700);
+        }
+        assets.logo(selected,(url,lang)=>{logoUrl=url;language=lang;ready();});
+        assets.studio(selected,value=>{studioValue=value;ready();});
+        const loaded=url=>{cover=url || '';ready();};
+        const cached=assets.ready(selected,size);
+        if(cached)loaded(cached);
+        else assets.cover(selected,size,url=>{
+          if(revision!==animeRevision)return;
+          if(!url && size==='original')assets.cover(selected,'w1280',loaded);
+          else loaded(url);
+        });
+      }
+      function paint(next,prepared){
         index=(next+cards.length)%cards.length;
         assets.cancelUpgrade(artworkSize(L,'backdrop')!=='original');
         assets.select(index);
@@ -444,29 +476,35 @@ if (!ROOT.LampaView) {
         function branding(){
          if(brandingStarted || token!==logoToken)return;
          brandingStarted=true;
-         assets.logo(selected,(url,language)=>{
+         const renderLogo=(url,language)=>{
           if(token!==logoToken || !url)return;
+          const loaded=()=>{if(token===logoToken){const translated=language!==String(L.Storage.get('language','ru') || 'ru').slice(0,2);logo.removeClass('pt-hidden').toggleClass('pt-hero__logo--translated',translated);title.toggleClass('pt-hidden',!translated).toggleClass('pt-hero__title--translation',translated);requestHeroLayout();}};
           logo.attr('alt',card.title || card.name).on('load',()=>{
-            if(token===logoToken){const translated=language!==String(L.Storage.get('language','ru') || 'ru').slice(0,2);logo.removeClass('pt-hidden').toggleClass('pt-hero__logo--translated',translated);title.toggleClass('pt-hidden',!translated).toggleClass('pt-hero__title--translation',translated);requestHeroLayout();}
+            loaded();
           }).on('error',()=>{if(token===logoToken){logo.addClass('pt-hidden');title.removeClass('pt-hidden pt-hero__title--translation');requestHeroLayout();}})
             .attr('src',url);
-        });
-         assets.studio(selected,value=>{
+          if(prepared)loaded();
+        };
+         const renderStudio=value=>{
           if(token!==logoToken || !value)return;
           selectedStudio=value;studioLink();
           studio.attr({alt:value.name,title:value.name}).on('load',()=>{if(token===logoToken){studio.removeClass('pt-hidden');studioContrast(studio[0]);}})
             .on('error',()=>{if(token===logoToken)studio.addClass('pt-hidden');}).attr('src',value.url);
-        });
+          if(prepared)studio.removeClass('pt-hidden');
+        };
+         if(prepared){renderLogo(prepared.logoUrl,prepared.language);renderStudio(prepared.studioValue);}
+         else{assets.logo(selected,renderLogo);assets.studio(selected,renderStudio);}
         }
         const year=(card.release_date || card.first_air_date || '').slice(0,4);
         metaText.text([year,anime?lampaViewText('Аниме'):kind==='tv'?lampaViewText("Сериал"):lampaViewText("Фильм"),card.vote_average?Number(card.vote_average).toFixed(1):''].filter(Boolean).join('  ·  '));
         const tv=document.body.classList.contains('pt-tv');
-        if(!tv)branding();
+        if(!tv || prepared)branding();
         overview.text(card.overview);
         clearTimeout(upgradeTimer);
         const size=artworkSize(L,'backdrop');
-        const useOriginal=size==='original',ready=assets.ready(index,size);let originalShown=!!ready;
-        if(ready){artworkTransition.show(ready);branding();}
+        const useOriginal=size==='original',ready=!prepared && assets.ready(index,size);let originalShown=!!ready;
+        if(prepared){artworkTransition.show(prepared.cover);element.removeClass('pt-hero--pending');}
+        else if(ready){artworkTransition.show(ready);branding();}
         else{
           const preview=useOriginal?(tv?'w1280':'w780'):size;
           assets.cover(index,preview,url=>{
@@ -494,6 +532,7 @@ if (!ROOT.LampaView) {
       artworkFrame.add(brandingSlot).on('click',e=>{if(Date.now()<suppressTapUntil)return;e.preventDefault();e.stopImmediatePropagation();openCard(item);});
       element.on('touchstart',e=>{const t=e.originalEvent.touches[0];touch={x:t.clientX,y:t.clientY};});
       element.on('touchend',e=>{if(!touch)return;const t=e.originalEvent.changedTouches[0],dx=t.clientX-touch.x,dy=t.clientY-touch.y;if(Math.abs(dx)>12 || Math.abs(dy)>12)suppressTapUntil=Date.now()+500;if(Math.abs(dx)>55 && Math.abs(dx)>Math.abs(dy)*1.4)show(index+(dx<0?1:-1));touch=null;});
+      if(anime)element.addClass('pt-hero--pending');
       line.before(element);show(0);
       // Native fonts and lazy row contents can settle after the initial Line
       // event. Observe their geometry directly; a slide change is not a clock.
@@ -538,15 +577,15 @@ if (!ROOT.LampaView) {
               if(component && component.scroll && component.scroll.update)component.scroll.update(element[0]);
               L.Controller.collectionSet(element);focusControl();
             },
-            left:()=>{if(controls.eq(focus).is('.pt-hero__dot')){show(index-1);focus=controls.index(dots.children().eq(index));focusControl();}},
-            right:()=>{if(controls.eq(focus).is('.pt-hero__dot'))show(index+1);focus=controls.index(dots.children().eq(index));focusControl();},
+            left:()=>{if(controls.eq(focus).is('.pt-hero__dot')){const next=(dots.children().index(controls.eq(focus))+cards.length-1)%cards.length;show(next);focus=controls.index(dots.children().eq(next));focusControl();}},
+            right:()=>{const next=controls.eq(focus).is('.pt-hero__dot')?(dots.children().index(controls.eq(focus))+1)%cards.length:index;if(controls.eq(focus).is('.pt-hero__dot'))show(next);focus=controls.index(dots.children().eq(next));focusControl();},
             up:()=>{if(controls.eq(focus).is('.pt-hero__dot')){focus=controls.index(details);focusControl();}else up();},
             down:()=>{if(tvStage)tvStage.expand();nativeLine.toggle();},
             back:up
           });L.Controller.toggle('lampa_view_hero');
         };
         element[0]._minimalHeroEnter=()=>{focus=controls.index(details);enterHero();};
-        nativeLine.use({onlyUp:enterHero,onToggle:()=>{if(firstFocus && !anime){firstFocus=false;focus=0;setTimeout(()=>{if((L.Activity.active() || {}).activity===activity && !document.body.matches('.settings--open,.selectbox--open,.menu--open'))enterHero();},0);}else if(tvStage)tvStage.expand();}});
+        nativeLine.use({onlyUp:()=>element.hasClass('pt-hero--pending')?up():enterHero(),onToggle:()=>{if(firstFocus && !anime){firstFocus=false;focus=0;setTimeout(()=>{if((L.Activity.active() || {}).activity===activity && !document.body.matches('.settings--open,.selectbox--open,.menu--open'))enterHero();},0);}else if(tvStage)tvStage.expand();}});
         if(!anime && activity.component && activity.component.use){
           activity.component.use({onStart:()=>{if(P.layout!=='mobile')setTimeout(()=>{if((L.Activity.active() || {}).activity===activity)enterHero();},0);}});
           const enabled=L.Controller.enabled && L.Controller.enabled();
@@ -625,8 +664,14 @@ if (!ROOT.LampaView) {
     L.SettingsApi.addParam({component:'lampa_view',param:{name:'card_interfice_cover',type:'trigger',default:true},field:{name:'Карточка фильма: фон',description:'Баннер фильма за названием, описанием и кнопками.'},onChange:()=>document.body.classList.toggle('card--no-cover',!yes('card_interfice_cover'))});
     personalScale(L);
     L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_banner_quality',type:'select',values:{medium:lampaViewText("Среднее"),high:lampaViewText("Высокое")},default:'high'},field:{name:lampaViewText("Качество баннеров и обложек"),description:lampaViewText("Общее качество баннеров, фонов загрузки и карточек. Высокое подбирает чёткий размер под экран и использует общий кеш обложек.")},onChange:()=>artwork && artwork.choose()});
-    L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_poiskkino_frames',type:'button'},field:{name:lampaViewText('ПоискКино · ключ для кадров'),description:lampaViewText('Кадры из фильмов и сериалов. Пустой ключ отключает источник.')},onChange:()=>{
-      L.Input.edit({title:lampaViewText('Ключ API ПоискКино'),value:L.Storage.get(galleryFramesKey,''),free:true,nosave:true,nomic:true},value=>L.Storage.set(galleryFramesKey,String(value || '').trim()));
+    const framesKey=()=>String(L.Storage.get(galleryFramesKey,'') || '');
+    L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_poiskkino_frames',type:'button'},field:{name:lampaViewText('ПоискКино · ключ для кадров'),description:lampaViewText('Получить ключ: {0}.',['https://t.me/poiskkinodev_bot'])+' '+lampaViewText('Кадры из фильмов и сериалов. Пустой ключ отключает источник.')},onRender:item=>{
+      $('<div class="settings-param__value">').text(framesKey()).insertAfter(item.find('.settings-param__name'));
+    },onChange:()=>{
+      L.Input.edit({title:lampaViewText('Ключ API ПоискКино'),value:framesKey(),free:true,nosave:true,nomic:true},value=>{
+        L.Storage.set(galleryFramesKey,String(value || '').trim());
+        $('.settings-param[data-name="minimal_poiskkino_frames"] .settings-param__value').text(framesKey());
+      });
     }});
   }
   function start() {

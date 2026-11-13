@@ -1,6 +1,7 @@
 /* Shared geometry, with each theme providing its own surfaces and accent. */
 body.lampa_view {--pt-rail-width:64px;--pt-rail-panel:44px;--pt-menu-row:30px;--pt-menu-icon:18px;--pt-shell-inset:24px;--pt-shell-top:24px;--pt-header-space:88px;--pt-dock-y:var(--pt-shell-top);--pt-header-control:40px;--pt-header-gap:24px;--pt-shell-icon:22px;--pt-shell-surface:#181818;--pt-shell-border:#ffffff24;--pt-poster-badge:#161513f0;--pt-poster-surface:var(--pt-poster-badge);--pt-score-width:36px;--pt-score-inset:8px;--pt-score-gap:6px;--pt-poster-badge-border:#ffffff32;--pt-poster-badge-edge:none;--pt-poster-badge-filter:none;--pt-expanded-menu-width:min(21em,calc(100vw - 2 * var(--pt-shell-inset)))}
 body.lampa_view.pt-theme-glass {--pt-shell-surface:var(--pt-glass-button);--pt-shell-border:var(--pt-glass-border);--pt-poster-badge:rgba(18,18,18,.38);--pt-poster-surface:var(--pt-glass-sheen),var(--pt-poster-badge);--pt-poster-badge-border:var(--pt-glass-border);--pt-poster-badge-edge:var(--pt-glass-edge)}
+body.lampa_view.pt-desktop:not(.pt-tablet) {--pt-header-control:46px;--pt-header-space:94px;--pt-shell-icon:24px}
 body.lampa_view.pt-mobile,body.lampa_view.pt-tablet {--pt-header-space:68px;--pt-header-control:44px;--pt-header-gap:12px;--pt-shell-inset:12px;--pt-shell-top:12px;--pt-menu-row:44px}
 body.lampa_view.pt-tv {--pt-header-space:92px;--pt-header-control:44px;--pt-menu-row:clamp(32px,1.35vw,52px);--pt-menu-icon:clamp(18px,.85vw,28px);--pt-expanded-menu-width:min(max(20em,340px),88vw)}
 body.lampa_view .head,body.lampa_view.pt-mobile .head,body.lampa_view.pt-theme-glass .head,body.lampa_view.pt-theme-glass.pt-mobile .head {height:var(--pt-header-space)!important;background:transparent!important;border:0;box-shadow:none}
@@ -93,7 +94,7 @@ body.lampa_view .card .card__icon:not(.icon--history) {box-sizing:border-box;wid
 body.lampa_view .card .card__marker {border-radius:.45em;padding:.25em .4em;max-width:calc(100% - 4em)}
 body.lampa_view .pt-hero .pt-hero__dots {left:50%!important;right:auto!important;transform:translateX(-50%);width:max-content;max-width:80%;display:flex;gap:0;align-items:center;justify-content:center;padding:.12em .45em;border:1px solid var(--pt-poster-badge-border);border-radius:2em;background:var(--pt-poster-surface);box-shadow:var(--pt-poster-badge-edge);backdrop-filter:var(--pt-poster-badge-filter);-webkit-backdrop-filter:var(--pt-poster-badge-filter)}
 body.lampa_view:not(.pt-theme-glass) .pt-hero .pt-hero__dots {background:none;border-color:transparent;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
-body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .pt-hero .pt-hero__dots {background:var(--pt-header-glass)!important;border-color:transparent;box-shadow:inset 0 0 0 1px var(--pt-glass-border)!important;backdrop-filter:var(--pt-glass-filter)!important;-webkit-backdrop-filter:var(--pt-glass-filter)!important}
+body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .pt-hero .pt-hero__dots {background:var(--pt-header-glass)!important;border-color:transparent;box-shadow:inset 0 0 0 1px #ffffff0a!important;backdrop-filter:var(--pt-glass-filter)!important;-webkit-backdrop-filter:var(--pt-glass-filter)!important}
 body.lampa_view .pt-hero .pt-hero__dot,body.lampa_view .pt-hero .pt-hero__dot.active {box-sizing:border-box;display:grid;place-items:center;flex:0 0 .95em;width:.95em;height:1.1em;padding:0;margin:0;border:1px solid transparent;border-radius:1em;background:transparent}
 body.lampa_view .pt-hero .pt-hero__dot:after {position:static;inset:auto;width:.3em;height:.3em;border-radius:1em;background:#ffffff5c;pointer-events:none}
 body.lampa_view .pt-hero .pt-hero__dot.active {flex-basis:1.55em;width:1.55em}
@@ -105,10 +106,22 @@ body.lampa_view .pt-hero .pt-hero__dot:is(:hover,:focus-visible,.focus):after {b
 /* The fixed header floats over the full card artwork, not a separate strip. */
 body.lampa_view.pt-full[data-lampa-theme] .wrap__content {padding-top:0!important}
 /* Native scroll subtracts the header even on pages that draw underneath it. */
-body.lampa_view.pt-desktop:is(.pt-full,.pt-home:has(.activity--active .pt-hero:not(.pt-hidden))) .activity--active > .activity__body > .scroll.layer--wheight:not(.scroll--horizontal),
-body.lampa_view.pt-desktop:is(.pt-full,.pt-home:has(.activity--active .pt-hero:not(.pt-hidden))) .activity--active > .activity__body > div > .scroll.layer--wheight:not(.scroll--horizontal) {
+body.lampa_view.pt-desktop:is(.pt-full,.pt-hero-page:has(.activity--active .pt-hero:not(.pt-hidden))) .activity--active > .activity__body > .scroll.layer--wheight:not(.scroll--horizontal),
+body.lampa_view.pt-desktop:is(.pt-full,.pt-hero-page:has(.activity--active .pt-hero:not(.pt-hidden))) .activity--active > .activity__body > div > .scroll.layer--wheight:not(.scroll--horizontal) {
  height:calc(100vh - 8px)!important;
 }
+body.lampa_view.pt-anime-home:not(.pt-mobile):has(.activity--active .pt-hero:not(.pt-hidden)) .wrap__content {padding-top:0!important}
+body.lampa_view.pt-anime-home:not(.pt-mobile) .activity--active > .activity__body .scroll__content:has(> .scroll__body > .minimal-anime-controls + .pt-hero:not(.pt-hidden)) {padding-top:0!important}
+body.lampa_view.pt-anime-home:not(.pt-mobile) .activity--active .minimal-anime-controls:has(+ .pt-hero:not(.pt-hidden)) {
+ position:absolute;top:var(--pt-header-space);left:0;z-index:3;margin:0;pointer-events:none;
+}
+body.lampa_view.pt-anime-home .minimal-anime-controls :is(button,.minimal-anime-status) {pointer-events:auto}
+body.lampa_view .pt-hero--pending {visibility:hidden}
+body.lampa_view.pt-anime-home .minimal-anime-tab:not(:is(.focus,:focus-visible)) {border-color:#ffffff0a!important}
+body.lampa_view.pt-anime-home .minimal-anime-tab[aria-selected="true"] {
+ box-shadow:0 0 .35em rgba(var(--pt-tint-rgb,173,217,229),.32),0 0 1.2em rgba(var(--pt-tint-rgb,173,217,229),.22)!important;
+}
+body.lampa_view.pt-anime-home .minimal-anime-tab:is(.focus,:focus-visible) {border-color:#ffffff52!important}
 body.lampa_view.pt-full[data-lampa-theme] .head,
 body.lampa_view.pt-home:has(.activity--active .pt-hero:not(.pt-hidden)) .head {background:transparent!important}
 body.lampa_view.pt-full[data-lampa-theme]:not(.card--no-cover) .activity--active > .activity__body > .scroll > .scroll__content,
@@ -440,7 +453,7 @@ body.lampa_view.pt-arrow-navigation[data-lampa-theme] .head .head__body :is(.hea
  color:var(--pt-muted)!important;box-shadow:none!important;
 }
 body.lampa_view.pt-tv[data-lampa-theme="minimal"] .head .head__body {
- background:var(--pt-shell-surface)!important;box-shadow:inset 0 0 0 1px var(--pt-shell-border)!important;border-radius:999px;
+ background:var(--pt-shell-surface)!important;box-shadow:inset 0 0 0 1px #ffffff0a!important;border-radius:999px;
 }
 body.lampa_view.pt-tv[data-lampa-theme] .head .head__body :is(.head__menu-icon,.head__backward,.head__action.open--home,.head__action.open--search,.head__action.open--settings,.head__action.open--profile):not(.focus) {
  background:transparent!important;border-color:transparent!important;box-shadow:none!important;

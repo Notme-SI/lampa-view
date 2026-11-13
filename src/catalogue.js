@@ -52,14 +52,15 @@ function legacyCataloguePlan(kind,mode='standard',date=new Date()){
   const definitions=[
    ['watch','Сейчас смотрят','?cat=anime&sort=now_playing'+('&airdate='+year),'tv',base+'&air_date.gte='+day(-90)+'&air_date.lte='+day(0),'order=popularity&status=ongoing'],
    ['ongoing','Сейчас выходит','?cat=anime&sort=airing&airdate='+year,'tv',base+'&air_date.gte='+day(-7)+'&air_date.lte='+day(0),'order=popularity&status=ongoing'],
-   ['season','Новинки сезона',null,'tv',base+'&first_air_date.gte='+start+'&first_air_date.lte='+day(0),'order=popularity&season='+season+'_'+year],
+   ['season','Новинки сезона',null,'tv',base+'&first_air_date.gte='+start+'&first_air_date.lte='+day(0),'order=popularity&season='+season+'_'+year+'&status=ongoing,released'],
    ['popular','Популярные','?cat=anime&sort=top&airdate='+year,'tv',base+'&first_air_date.gte='+(year-1)+'-01-01','order=popularity'],
    ['rated','Высокий рейтинг','?cat=anime&sort=top','tv',base.replace('popularity.desc','vote_average.desc')+'&vote_count.gte=200','order=ranked'],
-   ['completed','Завершённые',null,'tv',base+'&with_status=3','order=popularity&status=released&kind=tv'],
-   ['features','Полнометражные',null,'movie',base+'&primary_release_date.lte='+day(0),'order=popularity&kind=movie'],
+   ['completed','Завершённые',null,'tv',base+'&with_status=3','order=aired_on&status=released&kind=tv'],
+   ['features','Полнометражные',null,'movie',base+'&primary_release_date.lte='+day(0),'order=popularity&kind=movie&status=released'],
    ['upcoming','Ожидаемые',null,'tv',base+'&first_air_date.gte='+day(1)+'&first_air_date.lte='+day(365),'order=popularity&status=anons']
   ];
-  const plan=definitions.filter(row=>mode!=='shikimori' || row[0]!=='watch').map(([key,title,cub,media_type,query,shiki])=>({key,title:lampaViewText(title),media_type,...(mode==='shikimori'?{shiki}:{cub,tmdb:'discover/'+media_type+'?'+query})}));
+  const shikiAliases={season:['order=popularity&season='+season+'_'+year],completed:['order=popularity&status=released&kind=tv'],features:['order=popularity&kind=movie']};
+  const plan=definitions.filter(row=>mode!=='shikimori' || row[0]!=='watch').map(([key,title,cub,media_type,query,shiki])=>({key,title:lampaViewText(title),media_type,...(mode==='shikimori'?{shiki,minimal_row_aliases:shikiAliases[key]}:{cub,tmdb:'discover/'+media_type+'?'+query})}));
   if(mode==='shikimori'){const popular=plan.splice(plan.findIndex(row=>row.key==='popular'),1)[0];plan.unshift(popular);}
   return plan;
  }
@@ -121,7 +122,7 @@ export function catalogueRow(job,kind,source='tmdb',hasCub=true){
  const feedSource=job.discovery?DISCOVERY_SOURCE:job.shiki?'minimal_shiki':cub || !job.tmdb?'cub':'tmdb';
  return {minimal_default_hidden:!!job.minimal_default_hidden,title:cub?job.title:job.tmdb_title || job.title,url:job.discovery?JSON.stringify(job.discovery):job.shiki || (cub?job.cub:job.tmdb || job.cub),source:feedSource,
   ...(kind!=='anime' && source!=='tmdb' && [DISCOVERY_SOURCE,'tmdb'].includes(feedSource)?{minimal_catalogue_fallback:true}:{}),
-  ...(!cub && job.tmdb && job.key?{minimal_row_id:job.minimal_row_id || 'minimal:tmdb:'+kind+':'+job.key,minimal_row_aliases:[job.tmdb,...(scoped && job.cub?[job.cub]:[]),...(job.minimal_row_aliases || [])]}:{}),results:[]};
+  ...(!cub && job.tmdb && job.key?{minimal_row_id:job.minimal_row_id || 'minimal:tmdb:'+kind+':'+job.key,minimal_row_aliases:[job.tmdb,...(scoped && job.cub?[job.cub]:[]),...(job.minimal_row_aliases || [])]}:job.minimal_row_aliases?{minimal_row_aliases:job.minimal_row_aliases}:{}),results:[]};
 }
 export default function catalogue(L,shiki,object,hidden,ok){
  const kind=object.url || object.cat;

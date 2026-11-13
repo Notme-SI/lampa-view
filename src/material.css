@@ -36,7 +36,7 @@ body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] :is(.settings-folder,.s
 body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] :is(.settings-folder,.settings-param,.selectbox-item,.extensions__item,.extensions__block-add):is(.focus,.hover) {background:var(--pt-row-focus)!important;color:#fff!important;border-color:var(--pt-row-edge)!important;box-shadow:none!important}
 body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .head .head__body {
  background:var(--pt-header-glass)!important;border-radius:999px;
- box-shadow:inset 0 0 0 1px var(--pt-glass-border)!important;
+ box-shadow:inset 0 0 0 1px #ffffff0a!important;
 }
 body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .head .head__body
  :is(.head__menu-icon,.head__backward,.head__action.open--home,.head__action.open--search,.head__action.open--settings) {
@@ -114,12 +114,12 @@ body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .pt-hero .pt-hero__acti
 body.lampa_view[data-lampa-theme="minimal"] {--pt-bg:#000;--pt-side:#000;--pt-panel:#000;--pt-search-surface:#000;--pt-shell-surface:#000;--pt-poster-badge:#000;--pt-poster-surface:#000;background:#000!important}
 body.lampa_view[data-lampa-theme="minimal"] :is(.app,.wrap,.wrap__left,.settings__content,.selectbox__content,.settings-input__content,.settings-input--free,.modal__content,.extensions,.main-search .search,.navigation-bar__body,.player-panel,.player-info) {background:#000!important;box-shadow:none!important}
 body.lampa_view[data-lampa-theme="minimal"] :is(.settings-folder,.settings-param,.selectbox-item,.extensions__item,.extensions__block-add,.simple-keyboard-input,.settings-input__input):not(.focus):not(.hover) {background:#000!important}
-/* Watched reference: a 3px lift and diffuse halo over 220ms. Keep the native
+/* Lift the artwork and fade the halo over 220ms. Keep the native
    hit box stable and let Lampa own its existing playback/history markers. */
 body.lampa_view[data-lampa-theme] .card .card__view,
 body.lampa_view[data-lampa-theme] .nova-plus-root .nova__list--grid .nova-card .nova-card__thumb {
- transform:var(--pt-card-lift,none)!important;
- -webkit-transform:var(--pt-card-lift,none)!important;
+ transform:var(--pt-pointer-lift,var(--pt-card-lift,none))!important;
+ -webkit-transform:var(--pt-pointer-lift,var(--pt-card-lift,none))!important;
  transition:transform .22s cubic-bezier(.16,1,.3,1)!important;
  -webkit-transition:-webkit-transform .22s cubic-bezier(.16,1,.3,1)!important;
  box-shadow:none!important;overflow:visible;
@@ -127,18 +127,18 @@ body.lampa_view[data-lampa-theme] .nova-plus-root .nova__list--grid .nova-card .
 body.lampa_view[data-lampa-theme] .nova-plus-root .nova__list--grid .nova-card__thumb>img {border-radius:inherit}
 body.lampa_view[data-lampa-theme] :is(.card .card__view,.nova-plus-root .nova__list--grid .nova-card__thumb)::after {
  content:'';position:absolute;inset:0!important;z-index:5;pointer-events:none;
- border:1px solid var(--pt-card-edge,rgba(255,255,255,.12))!important;border-radius:inherit!important;
+ border:0!important;border-radius:inherit!important;
  background:none!important;outline:none!important;
- box-shadow:0 0 22px rgba(255,255,255,.18)!important;
+ box-shadow:inset 0 0 0 1px #ffffffb3,0 0 22px rgba(255,255,255,.18)!important;
  opacity:var(--pt-card-halo-opacity,0)!important;
  transition:opacity .22s ease!important;-webkit-transition:opacity .22s ease!important;
 }
 body.lampa_view[data-lampa-theme] :is(.card,.nova-plus-root .nova__list--grid .nova-card):is(.focus,:focus-visible,.pt-card-touch),
 body.lampa_view[data-lampa-theme]:not(.pt-tv):not(.pt-touch-captions):not(.pt-arrow-navigation) :is(.card,.nova-plus-root .nova__list--grid .nova-card):is(.hover,:hover,.pt-card-pointer) {
  --pt-card-lift:translateY(-3px);
- --pt-card-edge:rgba(255,255,255,.65);
  --pt-card-halo-opacity:1;
 }
+body.lampa_view[data-lampa-theme]:not(.pt-tv):not(.pt-touch-captions):not(.pt-arrow-navigation) .card:is(.hover,:hover,.pt-card-pointer) {--pt-pointer-lift:translateY(-4.5px)}
 /* Extend the clipping surface, not the rail/hit boxes: the first and last
    posters need the same halo room as cards in the middle of a row. */
 body.lampa_view[data-lampa-theme]:not(.pt-touch-captions) .minimal-fit-posters>.items-line__body.pt-poster-edge-start {
@@ -164,7 +164,7 @@ body.lampa_view[data-lampa-theme] .pt-catalogue-moving .card .card__view::after 
  transition:none!important;
  -webkit-transition:none!important;
 }
-body.lampa_view.pt-desktop.pt-wheel-active[data-lampa-theme] .card .card__view::after,body.lampa_view[data-lampa-theme] .pt-catalogue-moving .card .card__view::after {box-shadow:none!important}
+body.lampa_view.pt-desktop.pt-wheel-active[data-lampa-theme] .card .card__view::after,body.lampa_view[data-lampa-theme] .pt-catalogue-moving .card .card__view::after {box-shadow:inset 0 0 0 1px #ffffffb3!important}
 /* The explicit plugin choice affects poster motion only, not the OS or host. */
 body.lampa_view[data-lampa-theme][data-pt-card-motion="off"] .card .card__view,body.lampa_view[data-lampa-theme][data-pt-card-motion="off"] .nova-plus-root .nova__list--grid .nova-card .nova-card__thumb {transition:none!important;-webkit-transition:none!important;transform:none!important;-webkit-transform:none!important}
 body.lampa_view[data-lampa-theme][data-pt-card-motion="off"] :is(.card .card__view,.nova-plus-root .nova__list--grid .nova-card__thumb)::after {transition:none!important;-webkit-transition:none!important}
@@ -242,12 +242,6 @@ body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .card :is(.pt-kind,.pt-
  background:var(--pt-header-glass)!important;border:0!important;
  box-shadow:inset 0 0 0 1px var(--pt-glass-border)!important;text-shadow:none;
  backdrop-filter:var(--pt-glass-filter)!important;-webkit-backdrop-filter:var(--pt-glass-filter)!important;
-}
-/* A vector contour has a fixed stroke at its final poster size. Keep the
-   diffuse halo separate from the line and prevent inherited native borders. */
-body.lampa_view[data-lampa-theme] :is(.card .card__view,.nova-plus-root .nova__list--grid .nova-card__thumb)::after {
- border:0!important;box-sizing:border-box;
- background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22100%25%22%20height%3D%22100%25%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20rx%3D%2212%22%20fill%3D%22none%22%20stroke%3D%22white%22%20stroke-opacity%3D%22.8%22%20stroke-width%3D%222%22%20vector-effect%3D%22non-scaling-stroke%22%2F%3E%3C%2Fsvg%3E") center / 100% 100% no-repeat!important;
 }
 body.lampa_view[data-lampa-theme] .card .card__view .icon--history {
  width:26px!important;height:26px!important;min-width:26px;min-height:26px;padding:0!important;

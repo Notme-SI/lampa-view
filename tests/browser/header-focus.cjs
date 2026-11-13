@@ -18,6 +18,7 @@ const assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWR
   assert.ok(geometry.menu.left>home.menu+geometry.controls[0].box.width*.8 && geometry.search.left>home.left+geometry.controls[0].box.width*.8,'Back moves Menu and shrinks Search');
   assert.ok(Math.abs(geometry.search.right-home.right)<1,'Search keeps its right edge');assert.ok(geometry.search.width<home.width);
   const head=await page.locator('.head__body').evaluate(node=>node.getBoundingClientRect().toJSON());
+  if(mode==='desktop'){assert.equal(head.height,46);assert.ok(headerIcons.every(icon=>Math.abs(icon.width-24)<.1));}
   assert.ok(Math.abs(head.left+head.right-geometry.vw)<1,'The compact header is centered');
   assert.ok(head.width<geometry.vw*.65 && geometry.search.width>100,'Search stays usable inside the compact header');
   for(const control of geometry.controls){assert.equal(control.focused,true);assert.equal(control.outline,'0px');if(theme==='glass'){assert.match(control.fill,/^rgba\(/,'Glass focus keeps a translucent fill');assert.match(control.border,/^rgba\(/);}else{assert.match(control.fill,/^rgb\(/,'Dark focus stays opaque');assert.equal(control.border,'rgb(216, 195, 154)');}}
@@ -70,6 +71,21 @@ const assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWR
    row.remove();block.remove();return fits && usesFullWidth && separated;
   });
   assert.ok(qr,'QR and long addresses fit inside the compact settings pane');
+  if(theme==='glass' && mode==='desktop'){
+   await page.evaluate(()=>{
+    Lampa.Storage.set('minimal_poiskkino_frames_key','test-frame-key');
+    Lampa.Settings.create('minimal_settings_services');
+   });
+   const row=page.locator('.settings-param[data-name="minimal_poiskkino_frames"]');
+   assert.equal(await row.locator('.settings-param__value').textContent(),'test-frame-key');
+   assert.match(await row.locator('.settings-param__descr').textContent(),/https:\/\/t\.me\/poiskkinodev_bot/);
+   await row.evaluate(node=>{
+    const edit=Lampa.Input.edit;Lampa.Input.edit=(options,save)=>save(' updated-frame-key ');
+    try{jQuery(node).data('onChange')();}finally{Lampa.Input.edit=edit;}
+   });
+   assert.equal(await row.locator('.settings-param__value').textContent(),'updated-frame-key');
+   await page.evaluate(()=>Lampa.Settings.create('interface'));
+  }
   await page.evaluate(()=>{Lampa.Controller.back();Lampa.Controller.back();Lampa.Select.show({title:'Действие',items:[{title:'Избранное',separator:true},{title:'Нравится',subtitle:'Выбрано',checkbox:true}]});});
   const actionPanel=await page.locator('.selectbox__content').evaluate(node=>node.getBoundingClientRect().toJSON());
   assert.ok(Math.abs(actionPanel.top-menuPanel.top)<1 && Math.abs(actionPanel.width-mirrored.width)<1,'Actions align with the menu and match Settings width: '+JSON.stringify({actionPanel,menuPanel,mirrored}));

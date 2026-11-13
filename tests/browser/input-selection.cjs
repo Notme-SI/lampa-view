@@ -41,7 +41,7 @@ async function run(browser,mode,theme){
    await film.hover();
    await page.waitForFunction(()=>{const label=document.querySelector('#qa-input .pt-card-watch');return label && getComputedStyle(label).visibility==='visible';});
    await page.waitForTimeout(330);
-   assert.equal(await film.locator('.card__view').evaluate(n=>getComputedStyle(n).transform),'matrix(1, 0, 0, 1, 0, -3)');
+   assert.equal(await film.locator('.card__view').evaluate(n=>getComputedStyle(n).transform),'matrix(1, 0, 0, 1, 0, -4.5)');
    await page.mouse.move(2,2);
    await page.waitForTimeout(330);
    assert.equal(await film.locator('.card__view').evaluate(n=>getComputedStyle(n).transform),'none');
@@ -78,7 +78,7 @@ async function run(browser,mode,theme){
   assert.equal(await film.locator('.card__vote').evaluate(n=>getComputedStyle(n).opacity),'1','Our own rating remains visible');
   const paint=await film.locator('.card__view').evaluate(n=>({shadow:getComputedStyle(n,'::after').boxShadow,edge:getComputedStyle(n,'::after').backgroundImage}));
   assert.match(paint.shadow,/rgba\(255, 255, 255, 0.18\).*22px/);
-  assert.match(paint.edge,/svg/,'The selection edge uses a vector contour');
+  assert.equal(paint.edge,'none');assert.match(paint.shadow,/1px inset/,'The selection edge follows the rounded poster');
   assert.equal(await film.locator('.icon--history').evaluate(n=>getComputedStyle(n).opacity),'1','Selection never hides the native continuation marker');
   await page.waitForFunction(()=>{const label=document.querySelector('#qa-input .pt-card-watch');return label && getComputedStyle(label).visibility==='visible';},null,{timeout:4000}).catch(async e=>{throw Error(e.message+' '+JSON.stringify(await page.evaluate(()=>({body:document.body.className,node:document.querySelector('#qa-input .card').outerHTML}))));});
   assert.equal(await film.locator('.pt-card-watch__time').textContent(),'15:15');
@@ -96,7 +96,7 @@ async function run(browser,mode,theme){
     cards:[...document.querySelectorAll('#qa-input .card')].map(n=>({classes:n.className,label:n.querySelector('.pt-series-status')?.textContent,html:n.querySelector('.pt-series-status')?.outerHTML}))
    }))));
   });
-  assert.equal(await series.locator('.pt-series-status').textContent(),'Сезон 2 • Серия 6/10');
+  assert.equal(await series.locator('.pt-series-status').textContent(),'Сезон 2 · Серия 6/10');
   assert.equal(await page.locator('#qa-input .pt-card-touch').count(),0);
   await page.waitForTimeout(250);
   await series.locator('.card__title').click();

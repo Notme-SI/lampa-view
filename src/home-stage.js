@@ -50,7 +50,10 @@ export default function homeStage(hero,root){
   body.style.fontSize='';body.style.bottom='';
   const style=getComputedStyle(body),font=parseFloat(style.fontSize)||16;
   const anchored=style.position==='absolute';
-  const minBottom=font*(tv?3.8:2),topInset=font*(tv?1:1.25);
+  const tabs=hero.previousElementSibling;
+  const topInset=tabs?.matches('.minimal-anime-controls') && getComputedStyle(tabs).position==='absolute'?
+   Math.max(0,tabs.offsetTop+tabs.offsetHeight-hero.offsetTop)+font*.65:font*(tv?1:1.25);
+  const minBottom=font*(tv?3.8:2);
   if(document.body.classList.contains('pt-personal-enlarged')){
    height=Math.max(height,Math.ceil(body.offsetHeight+minBottom+topInset));
    hero.style.height=height+'px';

@@ -219,10 +219,18 @@ async function run(engine, browser, mode) {
   await expectColor(2);
   const animeHero=page.locator('.activity--active .minimal-anime-controls + .pt-hero');
   assert.equal(await animeHero.getAttribute('aria-label'),'Аниме');
+  const animeLayout=await animeHero.evaluate(node=>({top:node.getBoundingClientRect().top,art:node.querySelector('.pt-hero__artwork').getBoundingClientRect().top,tabs:node.previousElementSibling.getBoundingClientRect().top,header:document.querySelector('.head .head__body').getBoundingClientRect().bottom}));
+  assert.ok(Math.abs(animeLayout.top)<2 && Math.abs(animeLayout.art)<2 && animeLayout.tabs>=animeLayout.header-2,JSON.stringify({mode,animeLayout}));
   assert.equal(await animeHero.locator('.pt-hero__dot').count(),2,'Only distinct anime from catalogue rows appear in the carousel');
   await page.evaluate(()=>Lampa.Controller.enabled().controller.down());
   assert.equal(await page.evaluate(()=>Lampa.Controller.enabled().name),'lampa_view_hero');
+  let releaseArtwork;
+  const delayArtwork=new Promise(resolve=>{releaseArtwork=resolve;});
+  await page.route('**/yellow.jpg',async route=>{await delayArtwork;await route.fallback();});
   await animeHero.locator('.pt-hero__dot').nth(1).click();
+  assert.equal(await animeHero.locator('.pt-hero__title').textContent(),'Синее аниме');
+  assert.equal(await animeHero.locator('.pt-hero__dot').first().getAttribute('aria-pressed'),'true');
+  releaseArtwork();
   await page.waitForFunction(()=>{const [r,g,b]=document.body.style.getPropertyValue('--pt-scene-rgb').split(',').map(Number);return r>b+30 && g>b+30;});
   await page.evaluate(()=>{Lampa.Controller.enabled().controller.down();Lampa.Controller.enabled().controller.up();});
   assert.equal(await page.evaluate(()=>Lampa.Controller.enabled().name),'lampa_view_hero');
@@ -280,7 +288,7 @@ async function run(engine, browser, mode) {
    assert.equal(normal.legacy,'none');
    await page.locator('#qa-native-history').evaluate(n=>n.classList.add('focus'));
    assert.equal(await marker.count(),1);
-   assert.match(await page.locator('#qa-native-history .card__view').evaluate(n=>getComputedStyle(n,'::after').backgroundImage),/svg/);
+   assert.match(await page.locator('#qa-native-history .card__view').evaluate(n=>getComputedStyle(n,'::after').boxShadow),/1px inset/);
    await page.locator('#qa-native-history').evaluate(n=>n.classList.remove('focus'));
    for (const [target,view] of [['#qa-native-unwatched','.card__view'],['#qa-nova-preview .nova-card','.nova-card__thumb']]) {
     const card = page.locator(target).first();
@@ -300,7 +308,7 @@ async function run(engine, browser, mode) {
     assert.equal(after.outer,before.outer,target);
     assert.ok(Math.abs(after.art-before.art+3)<.1,JSON.stringify({before,after,theme,target}));
     assert.match(after.transform,/matrix\(1, 0, 0, 1, 0, -3\)/);
-    assert.match(after.indicator,/svg/,'The edge layer is the vector contour');
+    assert.equal(after.indicator,'none');assert.match(after.halo,/1px inset/,'The inset contour follows the poster radius');
     assert.equal(await card.locator('.icon--history').count(),0);
     assert.match(after.halo,/rgba\(255, 255, 255, 0.18\)/);
     assert.equal(after.opacity,'1');
@@ -311,7 +319,7 @@ async function run(engine, browser, mode) {
    if(mode==='desktop'){
     const neighbor=await page.locator('#qa-native-history').evaluate(node=>node.getBoundingClientRect().toJSON());
     await page.locator('#qa-native-unwatched').hover();await page.waitForTimeout(260);
-    assert.match(await face.evaluate(node=>getComputedStyle(node).transform),/matrix\(1, 0, 0, 1, 0, -3\)/);
+    assert.match(await face.evaluate(node=>getComputedStyle(node).transform),/matrix\(1, 0, 0, 1, 0, -4\.5\)/);
     assert.deepEqual(await page.locator('#qa-native-history').evaluate(node=>node.getBoundingClientRect().toJSON()),neighbor);
     await page.mouse.move(2,2);await page.waitForTimeout(260);
    }
@@ -326,7 +334,7 @@ async function run(engine, browser, mode) {
     const style=await face.evaluate(node=>{const s=getComputedStyle(node),halo=getComputedStyle(node,'::after');return {transform:s.transform,duration:s.transitionDuration,halo:halo.boxShadow,edge:halo.backgroundImage};});
     if(motion==='on'){assert.match(style.transform,/matrix\(1, 0, 0, 1, 0, -3\)/);assert.notEqual(style.duration,'0s');}
     else{assert.equal(style.transform,'none');assert.equal(style.duration,'0s');}
-    assert.match(style.edge,/svg/);
+    assert.equal(style.edge,'none');assert.match(style.halo,/1px inset/);
     assert.match(style.halo,/rgba\(255, 255, 255, 0.18\)/,'All card motion modes preserve the readable glow');
     assert.equal(await page.evaluate(()=>Lampa.Storage.get('animation')),stoppedNativeAnimation,'The plugin mode does not change the host preference');
    }

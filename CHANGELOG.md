@@ -1,3 +1,10 @@
+## 0.5.160
+
+- Extend the anime carousel behind the header and show its artwork, text and branding together.
+- Refine the Shikimori seasonal, completed and movie collections.
+- Show the saved PoiskKino key and where to obtain it in settings.
+- Make the desktop header and icons larger, soften navigation outlines and lift hovered posters by 4.5 px.
+
 ## 0.5.159
 
 - Let a muted artwork tint carry into the dark area behind the carousel text and soften the side fade.
