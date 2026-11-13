@@ -22,7 +22,7 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
    const cast=n.querySelector('.minimal-cast-native').getBoundingClientRect(),facts=n.querySelector('.minimal-detail-facts').getBoundingClientRect();
    const [label,title]=n.querySelector('.minimal-original-title').children;
    const labelBox=label.getBoundingClientRect(),titleBox=title.getBoundingClientRect();
-   return {castTop:cast.top,castBottom:cast.bottom,factsTop:facts.top,factsBottom:facts.bottom,labelTop:labelBox.top,titleTop:titleBox.top,labelRight:labelBox.right,titleLeft:titleBox.left,labelLines:labelBox.height/parseFloat(getComputedStyle(label).lineHeight)};
+   return {width:innerWidth,classes:document.body.className,columns:getComputedStyle(n).gridTemplateColumns,display:getComputedStyle(n).display,castTop:cast.top,castBottom:cast.bottom,factsTop:facts.top,factsBottom:facts.bottom,labelTop:labelBox.top,titleTop:titleBox.top,labelRight:labelBox.right,titleLeft:titleBox.left,labelLines:labelBox.height/parseFloat(getComputedStyle(label).lineHeight)};
   });
   if(mode!=='mobile'){assert.ok(Math.abs(geometry.castTop-geometry.factsTop)<1,JSON.stringify(geometry));assert.ok(Math.abs(geometry.castBottom-geometry.factsBottom)<1,JSON.stringify(geometry));}
   else assert.ok(geometry.castBottom<=geometry.factsTop,JSON.stringify(geometry));
@@ -31,8 +31,16 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
   if(process.env.LAMPA_QA_OUTPUT && mode==='desktop')await page.screenshot({path:require('node:path').join(process.env.LAMPA_QA_OUTPUT,engine.name()+'-readable-detail.png')});
   // A responsive heading becomes an action only after its actual box clips.
   await page.evaluate(()=>{document.querySelector('.activity--active .minimal-detail-heading').textContent='Название средней длины для проверки изменения размера окна';});
-  await page.setViewportSize({width:2560,height:1440});await page.waitForTimeout(180);assert.equal(await page.locator(root+'.minimal-detail-heading').getAttribute('role'),null);
-  await page.setViewportSize({width:390,height:844});await page.waitForTimeout(180);const narrow=await page.locator(root+'.minimal-detail-heading').evaluate(n=>({role:n.getAttribute('role'),clips:n.scrollWidth>n.clientWidth+1}));assert.equal(narrow.role,narrow.clips?'button':null);
+  for(const viewport of [{width:2560,height:1440},{width:390,height:844}]){
+   await page.setViewportSize(viewport);
+   await page.waitForFunction(()=>{
+    const node=document.querySelector('.activity--active .minimal-detail-heading');
+    const clipped=node.scrollWidth>node.clientWidth+1;
+    return node.getAttribute('role')===(clipped?'button':null);
+   });
+   const heading=await page.locator(root+'.minimal-detail-heading').evaluate(n=>({role:n.getAttribute('role'),clips:n.scrollWidth>n.clientWidth+1}));
+   assert.equal(heading.role,heading.clips?'button':null);
+  }
   assert.deepEqual(r.errors,[]);console.log(engine.name(),mode,'conditional text actions, single-line titles, glow and return focus passed');
  }finally{await r.context.close();}
  }}finally{await browser.close();}}})().catch(error=>{console.error(error);process.exitCode=1;});

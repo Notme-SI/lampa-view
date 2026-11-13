@@ -12,14 +12,15 @@ export default function preservePanelPosition(L, enabled) {
  const nativeToggle = controller?.toggle;
  if (!nativeToggle || !controller.enabled) return;
 
- let panel, clicked;
+ let panel, clicked, revision=0;
  const wrappedMenus = new WeakSet();
 
  document.addEventListener('click', event => {
   clicked = event.target.closest?.(clickableOpeners);
  }, true);
 
- function returnToOpener(state) {
+ function returnToOpener(state, generation) {
+  if (generation !== revision) return;
   if (!enabled() || L.Activity.active()?.activity !== state.activity) return;
   if (panel || document.body.matches(panels)) return;
   if (state.parent && state.opener?.isConnected) {
@@ -50,6 +51,7 @@ export default function preservePanelPosition(L, enabled) {
 
   const fromMenu = panel?.name === 'menu' && name === 'settings';
   if (openers[name] && (!panel || fromMenu)) {
+   revision++;
    const activity = L.Activity.active()?.activity;
    const domFocus = document.activeElement;
    const candidates = [clicked, domFocus, document.querySelector('.focus')];
@@ -76,9 +78,10 @@ export default function preservePanelPosition(L, enabled) {
 
   if (panel && !document.body.matches(panels) && (name === 'head' || name === 'content')) {
    const state = panel;
+   const generation = revision;
    panel = null;
    // Let native actions that actually navigate finish before restoring focus.
-   requestAnimationFrame(() => returnToOpener(state));
+   requestAnimationFrame(() => returnToOpener(state, generation));
   }
   return result;
  };

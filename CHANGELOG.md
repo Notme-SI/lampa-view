@@ -1,3 +1,9 @@
+## 0.5.162
+
+- Prevent delayed panel restoration from overwriting the scroll position of a newer search or settings session.
+- Keep the cast and facts panels side by side in TV mode when WebKit reports a narrower CSS viewport.
+- Make clipping and metadata-persistence checks wait for actual rendering and storage completion.
+
 ## 0.5.161
 
 - Start the Shikimori home with currently watched anime and build its carousel from that collection. Add last season’s releases and remove repeated titles across catalogue previews.

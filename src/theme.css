@@ -616,8 +616,8 @@ body.lampa_view.pt-tv .minimal-cast-native .full-person:last-child {margin-right
 body.lampa_view.pt-mobile .minimal-detail-header>.minimal-detail-columns {grid-template-columns:minmax(0,1fr)}
 body.lampa_view.pt-mobile .minimal-detail-columns>.minimal-detail-cast,body.lampa_view.pt-mobile .minimal-detail-columns>.minimal-detail-facts {grid-column:1;grid-row:auto}
 @media(max-width:900px){
- body.lampa_view .minimal-detail-header>.minimal-detail-columns {grid-template-columns:minmax(0,1fr)}
- body.lampa_view .minimal-detail-columns>.minimal-detail-cast,body.lampa_view .minimal-detail-columns>.minimal-detail-facts {grid-column:1;grid-row:auto}
+ body.lampa_view:not(.pt-tv) .minimal-detail-header>.minimal-detail-columns {grid-template-columns:minmax(0,1fr)}
+ body.lampa_view:not(.pt-tv) .minimal-detail-columns>.minimal-detail-cast,body.lampa_view:not(.pt-tv) .minimal-detail-columns>.minimal-detail-facts {grid-column:1;grid-row:auto}
 }
 
 /* Equal footer space on every poster: focus never changes card/row geometry. */
