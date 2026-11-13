@@ -102,6 +102,13 @@ export function railSnapDelta(view,position){
  const scroll=view && view.Scroll,fit=scroll && scroll.minimalPosterFit;
  if(!fit || !scroll.position || !scroll.shift)return 0;
  if(position===undefined)position=scroll.position();
+ // Fixed-width posters leave a fractional slot at the end. Snapping back to
+ // the previous slot there can make the final More tile impossible to reach.
+ const body=scroll.body?.(true);
+ if(body){
+  const limit=Math.max(0,body.scrollWidth+fit.inset*2-view.offsetWidth);
+  if(position<=-limit+1)return 0;
+ }
  const pitch=fit.width+fit.gap;
  return pitch>0?position-Math.round(position/pitch)*pitch:0;
 }

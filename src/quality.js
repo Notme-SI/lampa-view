@@ -288,6 +288,10 @@ export default function quality(L,$,preparePoster){
     for(const previous of document.querySelectorAll('.card.pt-card-touch'))previous.classList.remove('pt-card-touch');
     if(open){card.classList.add('pt-card-touch');legacy(card);const item=tracked.get(card);if(item)schedule(item);}
   }
+  // A new physical input ends the guard. The compatibility click can arrive
+  // after an arbitrarily slow layout pass and has no new pointerdown.
+  document.addEventListener('pointerdown',()=>{captionClick=null;},true);
+  document.addEventListener('keydown',()=>{captionClick=null;},true);
   document.addEventListener('touchstart',event=>{
     captionClick=null;
     const card=captionCard(event.target),touch=event.changedTouches[0];
@@ -314,9 +318,9 @@ export default function quality(L,$,preparePoster){
   },{capture:true,passive:false});
   window.addEventListener('click',event=>{
     const touch=event.pointerType==='touch' || event.sourceCapabilities?.firesTouchEvents;
-    const card=touch && captionCard(event.target),guard=captionClick && Date.now()<captionClick.until;
-    if(guard && (event.target.closest?.('.card')===captionClick.card ||
-      event.detail && Math.hypot(event.clientX-captionClick.x,event.clientY-captionClick.y)<18)){
+    const card=touch && captionCard(event.target);
+    if(captionClick && event.detail && (event.target.closest?.('.card')===captionClick.card ||
+      Date.now()<captionClick.until && Math.hypot(event.clientX-captionClick.x,event.clientY-captionClick.y)<18)){
       event.preventDefault();event.stopImmediatePropagation();return;
     }
     revealCaption(card);

@@ -45,11 +45,14 @@ const {setup}=require('../fixtures/native-browser.cjs'),{stage}=require('../fixt
   await page.waitForSelector('#qa-movie .pt-card-watch--has-progress');
   assert.equal(await page.locator('#qa-movie .pt-card-watch__time').textContent(),'16:09','Saved movie aliases work without a native watched overlay');
   const progress=await page.locator('#qa-movie').evaluate(n=>{
-   const line=n.querySelector('.time-line'),fill=line.firstElementChild,t=n.querySelector('.pt-card-watch__time'),r=line.getBoundingClientRect(),f=fill.getBoundingClientRect();
-   return {width:r.width,height:r.height,fill:f.width,fillHeight:f.height,display:getComputedStyle(line).display,right:r.right,timeLeft:t.getBoundingClientRect().left};
+   const view=n.querySelector('.card__view'),line=view.querySelector('.time-line'),fill=line.firstElementChild,t=view.querySelector('.pt-card-watch__time');
+   const poster=view.getBoundingClientRect(),track=line.getBoundingClientRect(),bar=fill.getBoundingClientRect(),time=t.getBoundingClientRect();
+   return {width:track.width,height:track.height,fill:bar.width,fillHeight:bar.height,posterWidth:poster.width,posterBottom:poster.bottom,trackBottom:track.bottom,trackTop:track.top,timeBottom:time.bottom,timeLeft:time.left,posterLeft:poster.left};
   });
   assert.ok(progress.width>50 && progress.height>=2 && progress.fillHeight>=2,'Track and fill must have visible dimensions: '+JSON.stringify(progress));
-  assert.ok(Math.abs(progress.fill/progress.width-.4)<.02 && progress.right<progress.timeLeft,'Fill and actual time share one row');
+  assert.ok(Math.abs(progress.fill/progress.width-.4)<.02,'Track reflects the saved 40%');
+  assert.ok(Math.abs(progress.trackBottom-progress.posterBottom)<1 && Math.abs(progress.width-progress.posterWidth)<1,'Track follows the lower poster edge');
+  assert.ok(progress.timeBottom<=progress.trackTop && progress.timeLeft>=progress.posterLeft,'Elapsed time stays inside the poster above its track');
   await page.evaluate(()=>{document.querySelector('#qa-release').remove();document.querySelector('#qa-movie').remove();});
 
   // Native Lampa's manual episode action persists 95%, not 100%.

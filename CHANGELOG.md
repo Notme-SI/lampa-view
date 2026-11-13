@@ -1,3 +1,9 @@
+## 0.5.164
+
+- Keep the final More tile in view at the end of a fixed-width poster rail.
+- Suppress delayed compatibility clicks after a tap on a card caption.
+- Verify the watch progress track and elapsed time on the poster.
+
 ## 0.5.163
 
 - Keep desktop poster dimensions while narrower browser windows show fewer cards. Preserve TV fitting and the saved card size setting.

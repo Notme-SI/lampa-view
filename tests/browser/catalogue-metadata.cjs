@@ -17,6 +17,8 @@ async function tapInfo(page,selector){const point=await page.locator(selector).e
    const touchPaint=await page.locator('#qa-touch-8801 .card__view').evaluate(n=>({transform:getComputedStyle(n).transform,shadow:getComputedStyle(n).boxShadow}));assert.equal(touchPaint.shadow,'none');assert.ok(['none','matrix(1, 0, 0, 1, 0, 0)'].includes(touchPaint.transform),'Touch has no remaining focus displacement');
    await page.locator('#qa-touch-8801').evaluate(n=>n.classList.remove('focus','hover'));
    await tapInfo(page,'#qa-touch-8801 .card__title');await page.waitForSelector('#qa-touch-8801.pt-card-touch .pt-card-watch--has-progress');assert.equal(await page.locator('#qa-touch-8801 .pt-card-watch').evaluate(n=>getComputedStyle(n).visibility),'visible');assert.equal(await page.locator('#qa-touch-8801 .pt-card-watch__time').textContent(),'15:15');assert.equal(await page.evaluate(()=>qaEnters),0,'Info tap must not open the full card');
+   // A delayed compatibility click still belongs to the caption gesture.
+   await page.waitForTimeout(700);
    await page.locator('#qa-touch-8801 .card__img').evaluate(n=>n.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,detail:1})));
    assert.equal(await page.evaluate(()=>qaEnters),0,'Retargeted compatibility click must not open the poster');
    assert.equal(await page.locator('#qa-touch-8801.pt-card-touch').count(),1);
