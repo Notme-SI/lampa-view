@@ -35,6 +35,11 @@ async function check(browser, theme) {
     const row = rows.first();
     await row.locator('.extensions__item').first().waitFor();
     assert.equal(await rows.count(), 2);
+    const titles = await page.locator('.extensions__block-title').evaluateAll(nodes => nodes.map(node => {
+      const style = getComputedStyle(node);
+      return [style.backgroundColor, style.backgroundImage];
+    }));
+    assert.deepEqual(titles, Array.from({length: 2}, () => ['rgba(0, 0, 0, 0)', 'none']));
     const position = rail => rail.evaluate(n => n.Scroll.position());
     const box = await row.boundingBox();
     const x = box.x + box.width * .72;

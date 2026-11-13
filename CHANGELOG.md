@@ -1,3 +1,8 @@
+## 0.5.158
+
+- Remove the background strips behind extension section titles.
+- Ease the transition between the black text area and the banner tint.
+
 ## 0.5.157
 
 - Keep the area behind the carousel logo and description near black. Blend into the artwork tint on the right and under the banner.

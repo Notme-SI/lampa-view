@@ -120,6 +120,9 @@ async function run(engine, browser, mode) {
      const [underLogo,leftOfBanner,tintedPage]=await samplePixels(page,[[.14,middle],[.27,.12],[.94,bottom+.012]]);
      assert.ok([...underLogo,...leftOfBanner].every(channel=>channel<=12),'The left background stays near-black even with bright artwork: '+JSON.stringify({mode,theme,underLogo,leftOfBanner}));
      assert.ok(tintedPage[0]>Math.max(tintedPage[1],tintedPage[2])+8,'Artwork tint continues under the right side of the banner: '+JSON.stringify({mode,theme,tintedPage}));
+     const fadeSamples=await samplePixels(page,[.27,.33,.39,.45,.51,.57].map(x=>[x,bottom+.012]));
+     const steps=fadeSamples.slice(1).map(([red],i)=>red-fadeSamples[i][0]);
+     assert.ok(steps.every(step=>step>0) && steps[0]<steps[1] && steps[1]<steps[2],'The tint starts gradually against black: '+JSON.stringify({mode,theme,fadeSamples}));
      const corner=edge+.08*(1-edge);
      const colors=await samplePixels(page,[[.94,bottom-.004],[.94,bottom+.004],[corner,bottom-.004],[corner,bottom+.004]]);
      for(const [above,below] of [[colors[0],colors[1]],[colors[2],colors[3]]]){

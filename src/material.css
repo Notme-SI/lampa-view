@@ -31,7 +31,7 @@ body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .head .head__body {
 }
 body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] :is(.settings,.selectbox,.modal,.settings-input) :is(.scroll,.scroll__content,.scroll__body,.settings__body,.selectbox__body) {background:transparent!important}
 body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .settings-input--free .settings-input__content {background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
-body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] :is(.extensions__item,.extensions__block-add,.extensions__item-icon,.extensions__block-title,.extensions__item-status,.settings-input__input,.settings-input__links) {background:var(--pt-glass-button)!important;border-color:var(--pt-glass-border)!important}
+body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] :is(.extensions__item,.extensions__block-add,.extensions__item-icon,.extensions__item-status,.settings-input__input,.settings-input__links) {background:var(--pt-glass-button)!important;border-color:var(--pt-glass-border)!important}
 body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] :is(.settings-folder,.settings-param,.selectbox-item):not(.focus):not(.hover) {background:transparent!important}
 body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] :is(.settings-folder,.settings-param,.selectbox-item,.extensions__item,.extensions__block-add):is(.focus,.hover) {background:var(--pt-row-focus)!important;color:#fff!important;border-color:var(--pt-row-edge)!important;box-shadow:none!important}
 body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .head .head__body {
@@ -202,7 +202,7 @@ body.lampa_view.pt-tv.pt-theme-glass[data-pt-scene] .wrap {
  }
  /* Keep the text side black by shading the page background beneath the artwork. */
  body.lampa_view.pt-hero-page[data-lampa-theme][data-pt-scene="catalogue"]:not(.pt-mobile) .wrap {
-  background-image:linear-gradient(to right,#000 28%,#000e 34%,#0008 44%,#0002 54%,transparent 62%),
+  background-image:linear-gradient(to right,#000 16%,#000000fa 22%,#000000ed 28%,#000000d1 34%,#000000a8 40%,#00000075 46%,#00000041 52%,#00000016 58%,transparent 64%),
                    var(--pt-home-atmosphere,var(--pt-scene-background))!important;
  }
  body.lampa_view.pt-hero-page[data-lampa-theme][data-pt-scene="catalogue"] .activity--active .pt-hero {
