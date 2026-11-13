@@ -53,7 +53,7 @@ body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] :is(.minimal-detail-fac
  background:var(--pt-glass-sheen),var(--pt-panel)!important;border:1px solid var(--pt-glass-border);border-radius:1.5em;box-shadow:var(--pt-glass-edge);
  backdrop-filter:var(--pt-glass-filter)!important;-webkit-backdrop-filter:var(--pt-glass-filter)!important;
 }
-/* Keep the source artwork opaque outside short blends at its exposed edges. */
+/* Blend the exposed sides into the page, leaving the rest of the frame opaque. */
 body.lampa_view.pt-home[data-lampa-theme]:not(.pt-mobile) .wrap__content:has(.activity--active .pt-hero:not(.pt-hidden)) {padding-top:0!important}
 body.lampa_view.pt-home[data-lampa-theme] .activity--active .pt-hero {display:block;width:100%!important;margin-inline:0!important;border-radius:0;padding-bottom:0;background:var(--pt-bg)!important;box-shadow:none;clip-path:none;-webkit-clip-path:none}
 body.lampa_view.pt-home[data-lampa-theme] .pt-hero .pt-hero__artwork {
@@ -68,8 +68,10 @@ body.lampa_view.pt-home[data-lampa-theme] .pt-hero .pt-hero__artwork::after {
 }
 body.lampa_view.pt-home[data-lampa-theme]:not(.pt-mobile) .pt-hero__artwork {
  left:auto;width:68%;height:100%;
- --pt-hero-fallback-fade:linear-gradient(90deg,var(--pt-bg),transparent 22%),
-            linear-gradient(to top,var(--pt-bg),transparent 18%);
+ --pt-hero-edge-left:linear-gradient(to right,transparent 1%,#0001 7%,#0005 16%,#000c 29%,#000 43%);
+ --pt-hero-edge-bottom:linear-gradient(to top,transparent 2%,#0005 17%,#000d 36%,#000 56%);
+ --pt-hero-fallback-fade:linear-gradient(to right,var(--pt-bg),transparent 43%),
+            linear-gradient(to top,var(--pt-bg),transparent 56%);
 }
 body.lampa_view.pt-home[data-lampa-theme]:not(.pt-mobile) .pt-hero .pt-hero__image {object-fit:cover;object-position:right 34%}
 body.lampa_view.pt-home[data-lampa-theme] .pt-hero:before {background:none}
@@ -209,8 +211,7 @@ body.lampa_view.pt-tv.pt-theme-glass[data-pt-scene] .wrap {
   mask-image:linear-gradient(to bottom,transparent,#000 7%,#000 84%,#000d 88%,#0002 95%,transparent 98%)!important;
   -webkit-mask-image:linear-gradient(to bottom,transparent,#000 7%,#000 84%,#000d 88%,#0002 95%,transparent 98%)!important;
  }
- /* Fade the image and its bottom shade together so neither has a hard edge
-    where the two gradients meet. */
+ /* Intersect the two fades on the same layer, including the lower-left corner. */
  body.lampa_view.pt-home[data-lampa-theme]:not(.pt-mobile) .pt-hero .pt-hero__artwork {
   mask-image:var(--pt-hero-edge-left),var(--pt-hero-edge-bottom)!important;
   -webkit-mask-image:var(--pt-hero-edge-left),var(--pt-hero-edge-bottom)!important;
@@ -219,6 +220,7 @@ body.lampa_view.pt-tv.pt-theme-glass[data-pt-scene] .wrap {
  body.lampa_view.pt-home[data-lampa-theme] .pt-hero .pt-hero__artwork::after {
   background:linear-gradient(to top,#07070980,transparent 18%);
  }
+ body.lampa_view.pt-home[data-lampa-theme]:not(.pt-mobile) .pt-hero .pt-hero__artwork::after {content:none}
 }
 @supports not ((mask-image:linear-gradient(#000,transparent)) or (-webkit-mask-image:linear-gradient(#000,transparent))) {
  body.lampa_view.pt-home[data-lampa-theme][data-pt-scene="catalogue"] .wrap {background-image:none!important}

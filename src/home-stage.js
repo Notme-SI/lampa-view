@@ -27,19 +27,18 @@ export default function homeStage(hero,root){
  for(let node=hero.parentElement;node;node=node.parentElement)if(node!==outer)top-=node.scrollTop || 0;
  top-=window.scrollY || 0;
  const gap=parseFloat(heroStyle.marginBottom)||0,after=parseFloat(rowStyle.marginBottom)||0;
- const clearance=Math.max(4,after/2);
+ const clearance=tv?Math.max(4,after/2):4;
  // Reserve the entire row, including the watch footer. Native WebKit scroll
  // bounds cannot reveal a footer deliberately placed outside the viewport.
- // Native TV activities can reserve the floating header in their own Scroll
+ // Native activities can reserve the floating header in their own Scroll
  // height. The window bottom is then below the real clipping viewport.
  // Budget against that viewport so captions and the watch footer remain visible.
  let outerTop=0;if(outer){for(let node=outer;node;node=node.offsetParent)outerTop+=node.offsetTop || 0;for(let node=outer.parentElement;node;node=node.parentElement)outerTop-=node.scrollTop || 0;outerTop-=window.scrollY || 0;}
- const bottom=tv && outer && outer.clientHeight?
+ const mobile=document.body.classList.contains('pt-mobile');
+ const bottom=!mobile && outer && outer.clientHeight?
   Math.min(innerHeight,outerTop+outer.clientHeight):innerHeight;
  let height=Math.max(100,Math.floor(bottom-top-gap-root.offsetHeight-clearance));
- // A tall, narrow window must not reserve more height than its artwork can fill.
- // Cap the inline layout calculation itself; CSS height is overridden below.
- if(!tv){
+ if(mobile){
   const image=hero.querySelector('.pt-hero__image');
   const ratio=image && image.naturalWidth && image.naturalHeight?image.naturalWidth/image.naturalHeight:16/9;
   height=Math.min(height,Math.max(100,Math.floor(hero.clientWidth/ratio)));

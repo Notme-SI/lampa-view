@@ -1270,6 +1270,16 @@ body.lampa_view .pt-card-watch__label>.pt-card-watch__heading {flex-basis:100%;m
 body.lampa_view .pt-card-watch__meter {margin-top:.1em;min-height:.8em}
 body.lampa_view .items-line {margin-bottom:.2em;padding-bottom:0}
 body.lampa_view .items-line__head {margin-bottom:.5em}
+/* The home rail reserves the real caption and saved progress, then gives the
+   remaining first-screen space to the artwork. Keep progress in flow on focus. */
+body.lampa_view.pt-desktop.pt-home .pt-hero:not(.pt-hidden)+.minimal-posters-sized {margin-bottom:max(16px,.8em)}
+body.lampa_view.pt-desktop.pt-home .pt-hero:not(.pt-hidden)+.minimal-posters-sized>.items-line__body {padding-bottom:.25em;margin-bottom:-.25em}
+body.lampa_view.pt-desktop.pt-home .pt-hero:not(.pt-hidden)+.minimal-posters-sized .mapping--line>.card {min-height:0}
+body.lampa_view.pt-desktop.pt-home .pt-hero:not(.pt-hidden)+.minimal-posters-sized .mapping--line>.card>.pt-card-watch {height:auto}
+body.lampa_view.pt-desktop.pt-home .pt-hero:not(.pt-hidden)+.minimal-posters-sized .pt-card-watch:not(.pt-card-watch--has-progress),
+body.lampa_view.pt-desktop.pt-home .pt-hero:not(.pt-hidden)+.minimal-posters-sized .pt-card-watch--complete .pt-card-watch__meter {display:none}
+body.lampa_view.pt-desktop.pt-home .pt-hero:not(.pt-hidden)+.minimal-posters-sized .pt-card-watch>.card-watched,
+body.lampa_view.pt-desktop.pt-home .pt-hero:not(.pt-hidden)+.minimal-posters-sized .pt-card-watch .pt-card-watch__current {position:static;height:auto}
 body.lampa_view .card__img.pt-catalogue-image-pending {opacity:0!important}
 body.lampa_view .card__img:not(.pt-catalogue-image-pending) {opacity:1}
 body.lampa_view .pt-browser-catalogue .mapping--grid>.pt-catalogue-spacer {

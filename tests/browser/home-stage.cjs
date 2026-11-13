@@ -12,7 +12,7 @@ const {setup}=require('../fixtures/native-browser.cjs');
       document.querySelector('.wrap__content').classList.add('layer--height');
       L.Layer.update();
      }
-     L.Api.main=(o,ok)=>ok(['Сейчас смотрят','Популярное'].map((title,row)=>({title,url:'qa/'+row,results:Array.from({length:20},(_,i)=>({id:row*100+i+1,title:'Очень длинное название фильма '+(i+1),overview:'Описание фильма для проверки первого экрана.',poster_path:'/poster'+i+'.jpg',backdrop_path:'/backdrop'+i+'.jpg',release_date:'2025-01-01',source:'tmdb'}))})));
+     L.Api.main=(o,ok)=>ok(['Сейчас смотрят','Популярное'].map((title,row)=>({title,url:'qa/'+row,results:Array.from({length:20},(_,i)=>({id:row*100+i+1,title:'Очень длинное название фильма '+(i+1),original_title:'Test movie '+(i+1),overview:'Описание фильма для проверки первого экрана.',poster_path:'/poster'+i+'.jpg',backdrop_path:'/backdrop'+i+'.jpg',release_date:'2025-01-01',source:'tmdb'}))})));
     })}),{page}=r;
     await page.evaluate(()=>Lampa.Activity.push({component:'main',source:'tmdb'}));const frames=[];
     for(const size of ['small','normal','bigger']){
@@ -31,8 +31,8 @@ const {setup}=require('../fixtures/native-browser.cjs');
      assert.ok(value.hero.top>= -1,'Banner must remain at the top of the first screen: '+JSON.stringify(value));
      assert.ok(value.maxCaptionBottom<=value.viewport-2,'Posters, titles and year fit the first screen: '+JSON.stringify({device,size,value}));
      if(device.mode==='tv'){assert.ok(value.maxCaptionBottom<=value.clipBottom-2,'TV captions must fit inside the native scroll viewport: '+JSON.stringify({device,size,value}));assert.ok(value.bodyTop>=-1 && value.bodyBottom<=value.hero.height+1,'TV carousel branding stays inside its frame at the WebView font floor: '+JSON.stringify({device,size,value}));}else {
-     assert.ok(value.maxCaptionBottom<=value.viewport-2,'First row captions must fit vertically: '+JSON.stringify({device,size,value}));
-     assert.ok(value.secondTop===null || value.secondTop>=value.maxCardBottom,'The next collection does not overlap the first: '+JSON.stringify({device,size,value}));
+     assert.ok(value.maxCaptionBottom<=value.clipBottom-2 && value.maxCaptionBottom>=value.clipBottom-20,'Desktop captions fit near the bottom of the scroll viewport: '+JSON.stringify({device,size,value}));
+     assert.ok(value.secondTop>=value.clipBottom-1,'The next collection starts below the first screen: '+JSON.stringify({device,size,value}));
      }
      assert.ok(value.secondFitted,'The next row uses the same fitting rules');if(device.mode==='tv')assert.ok(value.posterWidth<value.secondPosterWidth,'Hero preview is compact until entering the collection');else assert.ok(Math.abs(value.posterWidth-value.secondPosterWidth)<1,'Desktop first collection uses shared card size: '+JSON.stringify({device,size,value}));
      frames.push({...value.hero,count:value.count,posterWidth:value.posterWidth});
@@ -42,6 +42,23 @@ const {setup}=require('../fixtures/native-browser.cjs');
     assert.ok(frames[0].height>=frames[2].height,'Carousel uses the space left by the actual scaled row: '+JSON.stringify(frames));
     assert.ok(frames[2].posterWidth>frames[1].posterWidth+2,'Bigger must increase real poster width: '+JSON.stringify(frames));
     assert.ok(frames[0].count>=frames[1].count && frames[1].count>=frames[2].count,'Bigger must not shrink the first-row posters: '+JSON.stringify(frames));
+    if(device.mode==='desktop' && device.width===2559){
+     const card=page.locator('.activity--active .pt-hero + .minimal-home-first-row .card').first();
+     await card.evaluate(node=>{
+      Lampa.Timeline.update({hash:Lampa.Utils.hash('Test movie 1'),percent:40,time:915,duration:2287});
+      node.classList.add('focus');jQuery(node).trigger('hover:focus');Lampa.Timeline.read();
+     });
+     const time=card.locator('.pt-card-watch__time');await time.waitFor();assert.equal(await time.textContent(),'15:15');
+     await page.waitForFunction(()=>{
+      const rail=document.querySelector('.activity--active .minimal-home-first-row');
+      const clip=rail.closest('.scroll:not(.scroll--horizontal)');
+      const bottom=Math.min(innerHeight,clip.getBoundingClientRect().bottom);
+      return rail.querySelector('.pt-card-watch__meter').getBoundingClientRect().bottom<=bottom && rail.nextElementSibling.getBoundingClientRect().top>=bottom;
+     },null,{timeout:3000});
+     await page.evaluate(()=>{Lampa.Timeline.update({hash:Lampa.Utils.hash('Test movie 1'),percent:0,time:0,duration:0});Lampa.Timeline.read();});
+     await page.waitForFunction(()=>!document.querySelector('.activity--active .minimal-home-first-row .pt-card-watch--has-progress'),null,{timeout:3000});
+     await card.evaluate(node=>node.classList.remove('focus'));
+    }
     await page.evaluate(()=>Lampa.Controller.toggle('lampa_view_hero'));await page.waitForTimeout(350);
     await page.locator('.activity--active .pt-hero').evaluate(h=>{h.dataset.qaSlide=h.querySelector('.pt-hero__dot.active').getAttribute('aria-label');});
     await page.setViewportSize({width:device.width,height:device.height+120});await page.waitForTimeout(350);
@@ -49,7 +66,7 @@ const {setup}=require('../fixtures/native-browser.cjs');
      const settled=await page.locator('.activity--active .pt-hero').evaluate(h=>({viewport:innerHeight,top:h.getBoundingClientRect().top,cardBottom:Math.max(...[...h.nextElementSibling.querySelectorAll('.card')].map(n=>n.getBoundingClientRect().bottom)),rowHeight:h.nextElementSibling.offsetHeight,rowGap:parseFloat(getComputedStyle(h.nextElementSibling).marginBottom)||0,rowTop:h.nextElementSibling.getBoundingClientRect().top,ancestors:Array.from((function*(n){while(n){yield n;n=n.parentElement}})(h.parentElement)).slice(0,5).map(n=>({class:n.className,transform:getComputedStyle(n).transform,scrollTop:n.scrollTop})),height:h.getBoundingClientRect().height,next:h.nextElementSibling.nextElementSibling.getBoundingClientRect().top,slide:h.querySelector('.pt-hero__dot.active').getAttribute('aria-label'),before:h.dataset.qaSlide}));
      // Browser zoom and the minimum banner height can absorb part of a resize.
      // Verify the result: the banner grows and the next row meets the viewport edge.
-     assert.ok(settled.height>frames[2].height+1,'Mounted banner uses the taller viewport: '+JSON.stringify({device,frames,settled}));assert.ok(settled.next>=settled.cardBottom,'Compact collections remain consecutive after resize: '+JSON.stringify({device,settled}));assert.equal(settled.slide,settled.before,'Geometry settles without a slide change');
+     assert.ok(settled.height>frames[2].height+1,'Mounted banner uses the taller viewport: '+JSON.stringify({device,frames,settled}));assert.ok(settled.next>=settled.viewport-1 && settled.cardBottom<=settled.viewport,'First row fits and history stays below it after resize: '+JSON.stringify({device,settled}));assert.equal(settled.slide,settled.before,'Geometry settles without a slide change');
     }
     await page.locator('.activity--active .pt-hero').hover();await page.mouse.wheel(0,600);await page.waitForTimeout(600);
     const afterWheel=await page.locator('.activity--active .pt-hero').evaluate(n=>({top:n.getBoundingClientRect().top,offset:n.parentElement.style.transform,viewport:innerHeight}));assert.ok(afterWheel.top<frames[2].top-100,'The rest of the page remains accessible by scrolling: '+JSON.stringify({device,afterWheel,frame:frames[2]}));

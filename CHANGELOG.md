@@ -1,3 +1,8 @@
+## 0.5.155
+
+- Extend the desktop home banner down to the first collection. Fit the collection and its saved progress near the bottom of the first screen, with watch history below the fold.
+- Restore the softer banner blends from 0.5.151 with slightly narrower side and bottom fades.
+
 ## 0.5.154
 
 - Apply the side and bottom fades to the whole artwork layer, including its shade, to remove the vertical seam at the bottom left.

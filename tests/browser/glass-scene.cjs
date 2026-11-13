@@ -106,14 +106,14 @@ async function run(engine, browser, mode) {
    }
    for(const image of [original,'http://scene.example.invalid/dark-home.jpg']){
     await artwork.evaluate(async (img,src)=>{img.src=src;await img.decode();},image);
-    assert.match(await artwork.evaluate(img=>getComputedStyle(img.parentElement,'::after').backgroundImage),/linear-gradient/);
     const edge=await artwork.evaluate(img=>img.parentElement.getBoundingClientRect().left/innerWidth);
-    const y=await artwork.evaluate(img=>{const box=img.parentElement.getBoundingClientRect();return (box.top+box.height*.81)/innerHeight;});
-    const [left,right,center,lower,inner]=await samplePixels(page,[[edge-.003,.105],[edge+.003,.105],[.94,.105],[.94,y],[edge+.24*(1-edge),y]]);
+    const [middle,fade]=await artwork.evaluate(img=>{const box=img.parentElement.getBoundingClientRect();return [.42,.76].map(p=>(box.top+box.height*p)/innerHeight);});
+    const [left,right,center,lower,inner,feather]=await samplePixels(page,[[edge-.003,.105],[edge+.003,.105],[.94,.105],[.94,middle],[edge+.46*(1-edge),middle],[.94,fade]]);
     assert.ok(left.every((channel,i)=>Math.abs(channel-right[i])<=4),JSON.stringify({engine,mode,theme,image,left,right}));
     if(image===original)assert.ok(center[0]>right[0]+30,'The bright image stays visible on the right');
     if(image===original){
      for(const rgb of [lower,inner])assert.ok(rgb[0]>=250 && rgb[1]<=4 && rgb[2]<=4,'The source color stays intact outside the edge blends: '+JSON.stringify({mode,theme,rgb}));
+     assert.ok(feather[0]>70 && feather[0]<220,'The bottom edge eases out through a translucent region: '+JSON.stringify({mode,theme,feather}));
      const bottom=await artwork.evaluate(img=>img.parentElement.getBoundingClientRect().bottom/innerHeight);
      const corner=edge+.08*(1-edge);
      const colors=await samplePixels(page,[[.94,bottom-.004],[.94,bottom+.004],[corner,bottom-.004],[corner,bottom+.004]]);
