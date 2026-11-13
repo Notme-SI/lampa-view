@@ -223,3 +223,23 @@ body.lampa_view.pt-tv.pt-theme-glass[data-pt-scene] .wrap {
   background:var(--pt-bg)!important;
  }
 }
+
+/* Match the header material on each independent poster label. No filter on
+   the full poster: only the small label rectangles sample the artwork. */
+body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .card :is(.pt-kind,.pt-quality,.card__quality,.pt-series-status,.card__vote,.card__marker,.card__new-episode,.card__icon:not(.icon--history)) {
+ background:var(--pt-header-glass)!important;border-color:var(--pt-glass-border)!important;
+ box-shadow:var(--pt-glass-edge)!important;
+ backdrop-filter:var(--pt-glass-filter)!important;-webkit-backdrop-filter:var(--pt-glass-filter)!important;
+}
+/* A vector contour has a fixed stroke at its final poster size. Keep the
+   diffuse halo separate from the line and prevent inherited native borders. */
+body.lampa_view[data-lampa-theme] :is(.card .card__view,.nova-plus-root .nova__list--grid .nova-card__thumb)::after {
+ border:0!important;box-sizing:border-box;
+ background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22100%25%22%20height%3D%22100%25%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20rx%3D%2212%22%20fill%3D%22none%22%20stroke%3D%22white%22%20stroke-opacity%3D%22.8%22%20stroke-width%3D%222%22%20vector-effect%3D%22non-scaling-stroke%22%2F%3E%3C%2Fsvg%3E") center / 100% 100% no-repeat!important;
+}
+body.lampa_view[data-lampa-theme] .card .card__view .icon--history {
+ width:32px;height:32px;border:1px solid rgba(255,255,255,.8);border-radius:50%;
+ background:rgba(24,24,24,.4) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='white' d='M12 9v14l11-7z'/%3E%3C/svg%3E") center / 100% 100% no-repeat!important;
+ box-shadow:none;
+}
+@media(prefers-reduced-transparency:reduce){body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .card :is(.pt-kind,.pt-quality,.card__quality,.pt-series-status,.card__vote,.card__marker,.card__new-episode,.card__icon:not(.icon--history)){background:#202020!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}}

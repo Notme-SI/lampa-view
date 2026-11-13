@@ -1,3 +1,9 @@
+## 0.5.141
+
+- Match poster tag surfaces to the glass header material, including type, quality, episode status, rating and markers.
+- Draw poster selection with a vector contour and use a separate circular CSS border for the playback/history icon.
+- Checked desktop/TV profiles at Full HD and 2560x1440. A live glass-theme catalogue run with 380 cards recorded no long tasks and completed all visible posters; this is not a physical-TV or 60fps guarantee.
+
 ## 0.5.140
 
 - Avoid repeated synchronous Layer.visible geometry reads when IntersectionObserver has already identified a leaf catalogue card. Preserve native visible events and the fallback for rows and nested layers.
