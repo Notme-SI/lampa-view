@@ -16,7 +16,7 @@ export function browseOptions(kind,date=new Date()){
   const row=discoveryPlan(kind,{network:network.id},date)[0];
   if(row)collections.push({...row,key:'network-'+network.id,title:network.name});
  }
- if(kind==='cartoon')for(const section of ['studios','heroes'])collections.push(...discoveryPlan(kind,{section},date));
+ if(kind==='cartoon')collections.push(...discoveryPlan(kind,{section:'studios'},date));
  const seen=new Set();
  return {collections:collections.filter(row=>{const key=JSON.stringify(row.discovery);if(seen.has(key))return false;seen.add(key);return true;}),countries:options.countries,genres:options.genres.filter(g=>kind==='movie'?g.genre!==16:kind==='tv'?![16,99,10762,10763,10764,10767].includes(g.genre):true)};
 }
@@ -27,8 +27,7 @@ export function yearRange(value,date=new Date()){
  const from=Number(match[1]),to=Number(match[2] || match[1]);
  return from>=1870 && to>=from && to<=date.getFullYear()?from+'-'+to:'';
 }
-function genresForCollection(options,collection){
- const type=collection?.discovery.type;
+function genresForCollection(options,collection,type=collection?.discovery.type){
  return type?options.genres.filter(genre=>genre.formats.includes(type)):options.genres;
 }
 export function browseState(kind,value={},date=new Date()){
@@ -36,7 +35,8 @@ export function browseState(kind,value={},date=new Date()){
  const selectedCountry=canonicalCountry(value.country || /^country-([A-Z]{2})$/.exec(value.collection || '')?.[1]);
  const country=options.countries.some(([code])=>code===selectedCountry)?selectedCountry:'';
  const collection=options.collections.find(r=>r.key===value.collection);
- return {collection:collection?.key || '',genre:genresForCollection(options,collection).some(g=>g.id===String(value.genre))?String(value.genre):'',sort:browseSorts(kind,collection?.discovery.type).some(([key])=>key===value.sort)?value.sort:'',period:yearRange(value.period,date),country};
+ const sort=browseSorts(kind,collection?.discovery.type).some(([key])=>key===value.sort)?value.sort:'',type=(sort || collection?.discovery.sort)==='revenue'?'movie':collection?.discovery.type;
+ return {collection:collection?.key || '',genre:genresForCollection(options,collection,type).some(g=>g.id===String(value.genre))?String(value.genre):'',sort,period:yearRange(value.period,date),country};
 }
 export function browseSpec(kind,value={},date=new Date()){
  const state=browseState(kind,value,date),row=browseOptions(kind,date).collections.find(r=>r.key===state.collection);
@@ -151,7 +151,7 @@ export default function catalogueBrowser(L,warmPosters){
   const collection=options.collections.find(row=>row.key===state.collection),genre=options.genres.find(g=>g.id===state.genre),sort=sortTitles(kind,collection?.discovery.type);
   const controls=gridControls(L,item,object,[
    {title:collection?collection.title:t('Все подборки'),choose:i=>select(t('Подборки'),[{title:t('Все подборки'),value:''},...options.collections.map(row=>({title:row.title,value:row.key}))],'collection',i)},
-   {title:genre?t(genre.name):t('Все жанры'),choose:i=>select(t('Жанры'),[{title:t('Все жанры'),value:''},...genresForCollection(options,collection).map(g=>({title:t(g.name),value:g.id}))],'genre',i)},
+   {title:genre?t(genre.name):t('Все жанры'),choose:i=>select(t('Жанры'),[{title:t('Все жанры'),value:''},...genresForCollection(options,collection,spec.type).map(g=>({title:t(g.name),value:g.id}))],'genre',i)},
    {title:sort[spec.sort] || sort.popular,choose:i=>select(t('Сортировка'),Object.keys(sort).map(value=>({title:sort[value],value})),'sort',i)},
    {title:state.period?state.period.replace('-','–'):t('Все годы'),choose:years},
    {title:spec.country?countryTitle(spec.country):t('Все страны'),choose:i=>select(t('Страны'),[{title:t('Все страны'),value:''},...options.countries.map(([code])=>({title:countryTitle(code),value:code}))],'country',i)}

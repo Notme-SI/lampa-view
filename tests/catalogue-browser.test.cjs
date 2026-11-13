@@ -88,4 +88,6 @@ test('vote sorting merges independent streams by vote count and revenue keeps pr
   assert.equal(streams.length,1);assert.equal(new URLSearchParams(streams[0].path.split('?')[1]).get('with_origin_country'),'RU|SU');
  }
  assert.equal(browse.browseState('cartoon',{collection:'series',sort:'revenue'}).sort,'');
+ const tvGenre=browse.browseOptions('cartoon').genres.find(g=>!g.formats.includes('movie'));
+ assert.ok(tvGenre);const movie=browse.browseSpec('cartoon',{sort:'revenue',genre:tvGenre.id});assert.equal(movie.genre,'');assert.ok(model.discoverySpecs(movie).length);
 });
