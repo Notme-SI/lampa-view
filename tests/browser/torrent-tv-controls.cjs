@@ -16,6 +16,7 @@ const {setup}=require('../fixtures/native-browser.cjs');
     L.Activity.push({component:'torrents',movie,search:'Cyberpunk: Edgerunners',search_one:'Cyberpunk: Edgerunners',search_two:'Cyberpunk: Edgerunners',url:''});
    });
    await page.waitForSelector('.minimal-toolbar-label');
+   await page.waitForSelector('body.pt-menu-pinned');
    await page.waitForFunction(()=>document.querySelector('.wrap__left').getAnimations().every(animation=>animation.playState!=='running'));
    const layout=await page.evaluate(()=>{
     const root=document.querySelector('.activity--active .minimal-torrent-view'),banner=root.querySelector('.minimal-torrent-banner'),files=root.querySelector('.explorer__files');
