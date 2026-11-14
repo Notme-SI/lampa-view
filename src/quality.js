@@ -205,6 +205,11 @@ export default function quality(L,$,preparePoster){
   // Native category_full/history still use the deprecated Card constructor
   // internally. Its public DOM card_data is also used by third-party sources.
   // Observe added cards only; avoid scanning the document on every scroll.
+  const gridSelector='.mapping--grid,.category-full';
+  function markGrid(grid){
+    const posters=Array.prototype.some.call(grid.children,child=>child.matches('.card:not(.card--wide):not(.card--collection)'));
+    grid.classList.toggle('pt-poster-grid',posters);
+  }
   function legacy(root){
     if(root.nodeType!==1)return;
     const nodes=root.matches('.card')?[root]:Array.from(root.querySelectorAll('.card'));
@@ -212,22 +217,31 @@ export default function quality(L,$,preparePoster){
   }
   if(window.MutationObserver){
     new window.MutationObserver(records=>{
+      const changedGrids=new Set();
       for(const record of records){
         if(record.target.nodeType!==1 || record.target.closest('.nova-plus-root'))continue;
+        if(record.target.matches(gridSelector))changedGrids.add(record.target);
         const card=record.target.closest('.card');
         if(card){
           const tags='.card__view,.card__vote,.card__quality,.card__marker,.card__new-episode,.card__icons,.card__icons-inner,.card__icon';
           if(tracked.has(card) && (!observer || visible.has(card)) && (record.target.matches(tags) || [...record.addedNodes,...record.removedNodes].some(node=>node.nodeType===1 && node.matches(tags))))badges.schedule(card);
           continue;
         }
-        record.addedNodes.forEach(legacy);
+        record.addedNodes.forEach(node=>{
+          legacy(node);
+          if(node.nodeType!==1)return;
+          if(node.matches(gridSelector))changedGrids.add(node);
+          node.querySelectorAll(gridSelector).forEach(grid=>changedGrids.add(grid));
+        });
         for(const root of record.removedNodes)if(root.nodeType===1){
           const removed=root.matches('.card')?[root]:root.querySelectorAll('.card');
           for(const node of removed)if(!node.isConnected && tracked.has(node))forget(tracked.get(node));
         }
       }
+      changedGrids.forEach(markGrid);
     }).observe(document.body,{childList:true,subtree:true});
     legacy(document.body);
+    document.querySelectorAll(gridSelector).forEach(markGrid);
   }
   function flush(){
     clearTimeout(timer);timer=null;

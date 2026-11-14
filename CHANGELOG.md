@@ -1,3 +1,7 @@
+## 0.5.173
+
+- Avoid recalculating poster grid styles when cards are added to horizontal collections, including Standard and Shikimori anime.
+
 ## 0.5.172
 
 - Restore ordinary MPV playback in Lampa Desktop when the native launcher expects Node.js APIs that the Desktop bridge does not expose. Keep the selected video and resume position without requiring MPV Plus.

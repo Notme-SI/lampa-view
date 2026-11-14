@@ -464,15 +464,15 @@ body.lampa_view .category-full>.card {box-sizing:border-box;margin-left:0;paddin
 @media(min-width:1200px){body.lampa_view:not(.pt-tv) .mapping--grid>.card,body.lampa_view:not(.pt-tv) .category-full>.card:not(.card--wide):not(.card--collection) {width:calc(12.5% * var(--pt-interface-scale,1))!important}}
 @media(min-width:1800px){body.lampa_view:not(.pt-tv) .mapping--grid>.card,body.lampa_view:not(.pt-tv) .category-full>.card:not(.card--wide):not(.card--collection) {width:calc(10% * var(--pt-interface-scale,1))!important}}
 /* Fill complete rows using the actual content width and keep short pages aligned. */
-body.lampa_view.pt-desktop:not(.pt-favorites) .activity--active :is(.category-full,.mapping--grid):has(>.card:not(.card--wide):not(.card--collection)) {
+body.lampa_view.pt-desktop:not(.pt-favorites) .activity--active .pt-poster-grid {
  --pt-grid-slot:calc(clamp(128px,8vw,208px) * var(--pt-interface-scale,1));
  display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,var(--pt-grid-slot)),1fr));
- gap:0 1em;padding-inline:.5em;
+ gap:0 16px;padding-inline:.5em;
 }
-body.lampa_view.pt-desktop:not(.pt-favorites) .activity--active :is(.category-full,.mapping--grid):has(>.card:not(.card--wide):not(.card--collection))>.card {
+body.lampa_view.pt-desktop:not(.pt-favorites) .activity--active .pt-poster-grid>.card {
  width:100%!important;max-width:none;min-width:0;margin-inline:0;padding-inline:0;
 }
-body.lampa_view.pt-desktop:not(.pt-favorites) .activity--active :is(.category-full,.mapping--grid):has(>.card:not(.card--wide):not(.card--collection))>:not(.card) {grid-column:1/-1}
+body.lampa_view.pt-desktop:not(.pt-favorites) .activity--active .pt-poster-grid>:not(.card) {grid-column:1/-1}
 body.lampa_view.pt-desktop.pt-menu-pinned .activity--active :is(.category-full,.mapping--grid,.minimal-project-header,.minimal-catalogue-controls:not(.minimal-project-tabs)) {
  max-width:min(90vw,calc(100% - 2 * (var(--pt-shell-inset) + var(--pt-rail-panel))));
 }
@@ -1257,7 +1257,6 @@ body.lampa_view .pt-browser-catalogue .mapping--grid>.card>.pt-card-watch,
 body.lampa_view .minimal-posters-sized .mapping--line>.card>.pt-card-watch {flex:none;margin-top:.12em;height:3.5em}
 body.lampa_view .minimal-posters-sized .mapping--line>.card {min-height:calc(var(--minimal-poster-width) * 1.5 + 7.25em)}
 body.lampa_view .minimal-fit-posters .mapping--line>.card+.card {margin-left:var(--minimal-poster-gap,16px)}
-body.lampa_view.pt-desktop:not(.pt-favorites) .activity--active :is(.category-full,.mapping--grid):has(>.card:not(.card--wide):not(.card--collection)) {column-gap:16px}
 body.lampa_view .pt-browser-catalogue .mapping--grid.pt-windowed-grid {
  display:grid!important;grid-template-columns:repeat(var(--pt-window-cols),minmax(0,1fr))!important;
  grid-auto-rows:var(--pt-window-row,auto);gap:0 16px!important;align-items:stretch;
