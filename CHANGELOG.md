@@ -1,3 +1,7 @@
+## 0.5.172
+
+- Restore ordinary MPV playback in Lampa Desktop when the native launcher expects Node.js APIs that the Desktop bridge does not expose. Keep the selected video and resume position without requiring MPV Plus.
+
 ## 0.5.171
 
 - Fit whole desktop poster rows and grids with balanced edges and modest width adjustment for the native interface size.

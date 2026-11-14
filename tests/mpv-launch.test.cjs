@@ -15,6 +15,8 @@ function fixture(options={}){
      }};
    }};
  }};
+ if(options.bridge)root.electronAPI={};
+ if(options.process)root.process={platform:'win32'};
  if(options.microtasks)root.queueMicrotask=queueMicrotask;
  const values={lampa_view_mpv_plus:true,player:'other',player_torrent:'other',player_nw_path:'C:\\Players\\mpv.exe',...options.values};
  const L={Noty:{show:message=>notices.push(message)},Platform:{desktop:()=>!options.tv,is:name=>name==='android'&&!!options.tv},Storage:{field:name=>values[name]},
@@ -45,6 +47,27 @@ test('TV, other players, inner mode, disabled transport and unavailable spawn ke
    const f=fixture(options);assert.equal(f.play({url:'https://host/video.mkv'}),false);f.tick();assert.equal(f.calls.length,0);
  }
  const f=fixture();assert.equal(f.play({url:'https://host/video.mkv',launch_player:'inner'}),false);
+});
+
+test('Desktop without Node plays ordinary MPV with resume and no MPV Plus arguments',()=>{
+ const options={bridge:true,cardProvider:()=>null,values:{lampa_view_mpv_plus:false,player_external_fullscreen:false}};
+ const f=fixture(options),video={url:'https://host/series.m3u8',timeline:{hash:'current',time:19}};
+ f.L.Timeline={view:()=>({time:1240})};
+ assert.equal(f.play(video),true);
+ f.tick();
+ assert.equal(f.calls.length,1);
+ const args=f.calls[0][1];
+ assert.equal(args.at(-1),video.url);
+ assert.ok(args.includes('--start=1240'));
+ assert.ok(!args.some(arg=>/mpv_plus|input-ipc-server|fullscreen/.test(arg)));
+ assert.equal(f.external.length,1);
+ f.calls[0].error();
+ assert.equal(f.fallback.length,0);
+ assert.equal(f.play(video),true);
+ f.tick();
+ assert.equal(f.calls.length,2);
+ assert.equal(fixture({...options,process:true}).play(video),false);
+ assert.equal(fixture({...options,values:{...options.values,player_nw_path:'C:\\vlc.exe'}}).play(video),false);
 });
 
 test('launch does not wait for filesystem IPC or timer tasks and retains the synchronously supplied playlist',async()=>{

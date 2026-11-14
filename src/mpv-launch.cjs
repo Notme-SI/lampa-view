@@ -40,13 +40,21 @@ function install(L, root, cardFor, enabled, text = value => value) {
     if (video.iptv || video.iptv_player || ['lampa', 'inner'].includes(video.launch_player)) return '';
     if (L.Storage.field(video.torrent_hash ? 'player_torrent' : 'player') !== 'other') return '';
     const path = L.Storage.field('player_nw_path');
-    return typeof path === 'string' && /(?:^|[\\/])mpv(?:\+)?\.exe$/i.test(path) && (/(?:^|[\\/])mpv\+\.exe$/i.test(path) || L.Storage.field('lampa_view_mpv_plus') === true || L.Storage.field('lampa_view_mpv_plus') === 'true') ? path : '';
+    if (typeof path !== 'string' || !/(?:^|[\\/])mpv(?:\+)?\.exe$/i.test(path)) return null;
+    const preference = L.Storage.field('lampa_view_mpv_plus');
+    const plus = /(?:^|[\\/])mpv\+\.exe$/i.test(path) || preference === true || preference === 'true';
+    // The Electron bridge supports spawn and process output, but the host's
+    // stock MPV IPC launcher assumes a Node renderer with process and net.
+    if (!plus && (!root.electronAPI || root.process?.platform)) return null;
+    return {path, plus};
   }
   function create(event) {
-    const video = event.data,
-      path = target(video);
-    if (bypass || !path || !event.abort) return;
+    const video = event.data;
+    const player = target(video);
+    if (bypass || !player || !event.abort) return;
+    const {path, plus} = player;
     const url = (video.quality && L.Player.getUrlQuality?.(video.quality, false)) || video.url;
+    if (!plus && !C.mediaURL(url)) return;
     const key = typeof url === 'string' ? path.toLowerCase() + '\n' + url : null;
     if (key && (pending?.key === key || active.has(key))) {
       event.abort();
@@ -55,7 +63,7 @@ function install(L, root, cardFor, enabled, text = value => value) {
     }
     if (pending) { pending.cancelled = true; pending.cancel?.(); pending = null; }
     const card = cardFor(video);
-    if (!card) return;
+    if (plus && !card) return;
     let spawn;
     try {
       spawn = root.require('child_process').spawn;
@@ -106,15 +114,16 @@ function install(L, root, cardFor, enabled, text = value => value) {
           fallback();
           return;
         }
-        const selectedIdentity = C.identity(card, selected);
+        const selectedIdentity = card && C.identity(card, selected);
         const raw = (resolved || launch.items).filter(Boolean);
         const matches = item => item.url === video.url || item.url === selected.url ||
-          selectedIdentity.episode != null && C.identity(card, item).episode === selectedIdentity.episode &&
+          selectedIdentity?.episode != null && C.identity(card, item).episode === selectedIdentity.episode &&
           C.identity(card, item).season === selectedIdentity.season;
-        const rawAt = !video.torrent_hash && selectedIdentity.kind === 'tv' ? raw.findIndex(matches) : -1;
+        const series = !video.torrent_hash && selectedIdentity?.kind === 'tv';
+        const rawAt = series ? raw.findIndex(matches) : -1;
         const playlist = raw.slice(Math.max(0, rawAt - 39), Math.max(0, rawAt - 39) + 80).map(prepare);
         let queue = [selected], start = 0;
-        if (!video.torrent_hash && selectedIdentity.kind === 'tv') {
+        if (series) {
           const at = playlist.findIndex(matches);
           const side = before => at >= 0 ? playlist.slice(before ? 0 : at + 1, before ? at : undefined) : playlist.filter(item => {
             const identity = C.identity(card, item);
@@ -140,22 +149,32 @@ function install(L, root, cardFor, enabled, text = value => value) {
         }
         const encode = value => root.unescape(root.encodeURIComponent(value));
         function launchData(){
-          const context=C.context(launch.card,selected,video.torrent_hash?playlist:queue);
-          const metadata=option(context,encode,Boolean(video.torrent_hash));
+          const metadata=plus?option(C.context(launch.card,selected,video.torrent_hash?playlist:queue),encode,Boolean(video.torrent_hash)):'';
           const urls=queue.map(item=>encodeURI(item.url));
           return {metadata,urls,length:path.length+metadata.length+urls.reduce((size,url)=>size+url.length+3,0)+600};
         }
         let prepared=launchData();
         // Long signed stream URLs must not crowd the selected identity out of
         // Windows' command line. Keep the nearest entries with their metadata.
-        while(!video.torrent_hash && queue.length>1 && (!prepared.metadata || prepared.length>28000)){
+        while(!video.torrent_hash && queue.length>1 && (plus && !prepared.metadata || prepared.length>28000)){
           const remove=start>=queue.length-start-1?0:queue.length-1;
           queue.splice(remove,1);if(remove===0)start--;
           prepared=launchData();
         }
         const {metadata,urls}=prepared;
         const progress = progressChannel(L, root, video.torrent_hash ? [selected, ...playlist] : queue, enabled);
-        const args = [...(metadata ? [metadata] : []), '--force-window=immediate', ...progress.args, ...(start ? ['--playlist-start=' + start] : []), ...urls];
+        const args = [...(metadata ? [metadata] : []), '--force-window=immediate', ...progress.args, ...(start ? ['--playlist-start=' + start] : [])];
+        if (!plus) {
+          if (L.Storage.field('player_external_fullscreen') !== false) args.push('--fullscreen');
+          const timeline = video.timeline;
+          const fresh = timeline?.hash && L.Timeline?.view?.(timeline.hash, timeline);
+          const seconds = Number((fresh || timeline)?.time);
+          if (Number.isFinite(seconds) && seconds > 0) {
+            if (urls.length === 1) args.push('--start=' + seconds);
+            else urls.splice(start, 1, '--{', '--start=' + seconds, urls[start], '--}');
+          }
+        }
+        args.push(...urls);
         const child = spawn(path, args);
         started = true;
         if (child && typeof child.on === 'function') {
