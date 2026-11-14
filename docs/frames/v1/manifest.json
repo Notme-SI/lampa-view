@@ -1,9 +1,9 @@
 {
   "version": 1,
   "shards": 64,
-  "records": 5963,
+  "records": 5964,
   "sources": {
-    "filmgrab": 4143,
+    "filmgrab": 4144,
     "kinoafisha": 1002,
     "bluscreens": 494,
     "kinomail": 231,
@@ -14,5 +14,5 @@
     "hsmedia": 1,
     "srtimes": 1
   },
-  "updated": "2026-11-13T11:18:29.404Z"
+  "updated": "2026-11-14T10:43:33.016Z"
 }
