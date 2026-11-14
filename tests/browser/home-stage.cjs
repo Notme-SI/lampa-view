@@ -4,7 +4,7 @@ const {setup}=require('../fixtures/native-browser.cjs');
 (async()=>{
  for(const [engineName,engine] of [['chromium',chromium],['webkit',webkit]]){
   const browser=await engine.launch({headless:true,...(engineName==='chromium'?{args:['--blink-settings=minimumFontSize=8']}: {})});try{
-   for(const device of [{mode:'desktop',width:1280,height:720},{mode:'desktop',width:1920,height:1080},{mode:'desktop',width:2048,height:1070},{mode:'desktop',width:2559,height:1338},{mode:'tv',width:960,height:540},{mode:'tv',width:1280,height:720},{mode:'tv',width:1920,height:1080},{mode:'tv',width:3840,height:2160}]){
+   for(const device of [{mode:'desktop',width:1280,height:720},{mode:'desktop',width:1920,height:1080},{mode:'desktop',width:2048,height:1070},{mode:'desktop',width:2559,height:1338},{mode:'tv',width:960,height:540},{mode:'tv',width:1280,height:720},{mode:'tv',width:1920,height:1080},{mode:'tv',width:3840,height:2160}].filter(device=>!process.env.LAMPA_QA_DEVICE || device.mode+':'+device.width===process.env.LAMPA_QA_DEVICE)){
     const r=await setup(browser,{viewport:{width:device.width,height:device.height},mode:device.mode},{beforePlugin:page=>page.evaluate(()=>{
      const L=Lampa;L.Params.init();L.Layer.init();L.Storage.set('lampa_view_hero',true);
      if(document.body.classList.contains('pt-tv') || L.Storage.get('lampa_view_layout')==='tv'){
@@ -34,7 +34,7 @@ const {setup}=require('../fixtures/native-browser.cjs');
      assert.ok(value.maxCaptionBottom<=value.clipBottom-2 && value.maxCaptionBottom>=value.clipBottom-20,'Desktop captions fit near the bottom of the scroll viewport: '+JSON.stringify({device,size,value}));
      assert.ok(value.secondTop>=value.clipBottom-1,'The next collection starts below the first screen: '+JSON.stringify({device,size,value}));
      }
-     assert.ok(value.secondFitted,'The next row uses the same fitting rules');assert.ok(Math.abs(value.posterWidth-value.secondPosterWidth)<1,'First collection uses the shared card size: '+JSON.stringify({device,size,value}));
+     assert.ok(value.secondFitted,'The next row uses the same fitting rules: '+JSON.stringify({device,size,value}));assert.ok(Math.abs(value.posterWidth-value.secondPosterWidth)<1,'First collection uses the shared card size: '+JSON.stringify({device,size,value}));
      frames.push({...value.hero,count:value.count,posterWidth:value.posterWidth});
      if(process.env.LAMPA_QA_OUTPUT && device.width===2048){fs.mkdirSync(process.env.LAMPA_QA_OUTPUT,{recursive:true});await page.screenshot({path:path.join(process.env.LAMPA_QA_OUTPUT,engineName+'-home-'+size+'.png')});}
     }

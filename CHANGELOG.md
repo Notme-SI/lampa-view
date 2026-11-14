@@ -1,3 +1,8 @@
+## 0.5.180
+
+- Measure upcoming poster rows against their own scroll viewport so the next row is fitted before it appears on 4K screens.
+- Resume deferred viewing history and progress sync as soon as remote or wheel navigation settles.
+
 ## 0.5.179
 
 - Pass known TV focus targets in fitted poster rows, anime tabs and carousel controls directly to Lampa's focus handler, retaining the native catalogue, controller and item actions.

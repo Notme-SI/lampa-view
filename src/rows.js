@@ -9,10 +9,23 @@ export default function fillRows(L,enabled){
   const desktop=()=>document.body.classList.contains('pt-desktop');
   const roots=new WeakMap();
   const tracked=new WeakSet(),navigated=new WeakSet(),ahead=Math.min(1500,Math.max(700,(window.innerHeight || 540)*1.5));
-  const observer=window.IntersectionObserver?new window.IntersectionObserver(entries=>entries.forEach(entry=>{
+  const observers=new WeakMap();
+  const onIntersection=entries=>entries.forEach(entry=>{
     const line=roots.get(entry.target),state=line && lines.get(line);
-    if(state){state.nearby=entry.isIntersecting;if(entry.isIntersecting)schedule(line,state.data);}
-  }),{rootMargin:ahead+'px 0px'}):null;
+    if(state && entry.isIntersecting)schedule(line,state.data);
+  });
+  const observe=window.IntersectionObserver && (row=>{
+    // A window observer clips the expanded margin at the scroll container.
+    // Observe the rail against that container to prepare upcoming rows.
+    const viewport=row.closest('.scroll');
+    let observer=observers.get(viewport || document);
+    if(!observer){
+      observer=new window.IntersectionObserver(onIntersection,{root:viewport,rootMargin:ahead+'px 0px'});
+      observers.set(viewport || document,observer);
+    }
+    observer.observe(row);
+    return observer;
+  });
   const sizes=window.ResizeObserver?new window.ResizeObserver(entries=>entries.forEach(entry=>{const line=roots.get(entry.target),state=line && lines.get(line);if(state)schedule(line,state.data);})):null;
   function schedule(line,data){
     if(!line || !line.emit || !line.render || !data || !Array.isArray(data.results) || !enabled())return;
@@ -41,7 +54,7 @@ export default function fillRows(L,enabled){
       const render=line.render(true),root=render && (render.nodeType?render:render[0]);
       if(!root || !root.isConnected)return;
       if(!state.root){
-        state.root=root;roots.set(root,line);if(observer)observer.observe(root);if(sizes)sizes.observe(root);
+        state.root=root;roots.set(root,line);state.observer=observe?.(root);if(sizes)sizes.observe(root);
         root.addEventListener('touchend',event=>{
           // Safari determines the click target after touchend. Keep the end
           // button under the finger until the browser dispatches that click.
@@ -54,15 +67,14 @@ export default function fillRows(L,enabled){
       // A fitted row has no urgent sizing work during a remote gesture.
       // Check this before reading geometry after the focus styles changed.
       if(state.posterFitKey && document.body.classList.contains('pt-tv-busy')){deferred.add(line);return;}
-      if(state.nearby===false)return;
       const box=root.getBoundingClientRect();
       const onScreen=box.bottom>0 && box.top<window.innerHeight;
       if(onScreen && (document.body.classList.contains('pt-tv-busy') || document.body.classList.contains('pt-wheel-active') && (!desktop() || state.posterFitKey))){deferred.add(line);return;}
       const first=!document.body.classList.contains('pt-tv') && root.previousElementSibling && root.previousElementSibling.matches('.pt-hero');
       if(!box.width)return;
       const nearby=first || box.bottom>=0 && box.top<=window.innerHeight+ahead;
-      const card=root.querySelector('.card,.full-person');if(!card)return;
       if(!nearby)return;
+      const card=root.querySelector('.card,.full-person');if(!card)return;
       if(document.body.classList.contains('pt-tv') && root.classList.contains('minimal-cast-native')){
         const viewport=line.scroll && line.scroll.render(true),content=viewport && viewport.querySelector('.scroll__content');
         if(content){
@@ -96,7 +108,7 @@ export default function fillRows(L,enabled){
   function event(event){
     if(!event)return;
     if(event.type==='destroy'){
-      const state=lines.get(event.line);if(state){if(observer && state.root)observer.unobserve(state.root);if(sizes && state.root)sizes.unobserve(state.root);}pending.delete(event.line);deferred.delete(event.line);lines.delete(event.line);return;
+      const state=lines.get(event.line);if(state?.root){state.observer?.unobserve(state.root);sizes?.unobserve(state.root);}pending.delete(event.line);deferred.delete(event.line);lines.delete(event.line);return;
     }
     if(['create','append','visible'].includes(event.type))schedule(event.line,event.data);
   }
@@ -127,7 +139,7 @@ export default function fillRows(L,enabled){
   }
   document.addEventListener('minimal:wheel-idle',resumeDeferred);
   document.addEventListener('minimal:tv-idle',resumeDeferred);
-  if(!observer){
+  if(!observe){
     let scrolling;
     document.addEventListener('scroll',()=>{clearTimeout(scrolling);scrolling=setTimeout(()=>lines.forEach((state,line)=>schedule(line,state.data)),100);},true);
   }
