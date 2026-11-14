@@ -1,10 +1,11 @@
 const assert=require('node:assert/strict');
 const {chromium,webkit}=require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const {setup}=require('../fixtures/native-browser.cjs');
+const settledTransform=require('../fixtures/settled-transform.cjs');
 
 async function run(browser,mode,theme){
  const staticFocus=mode==='tv' && theme==='glass';
- const focusedTransform=staticFocus?'none':'matrix(1, 0, 0, 1, 0, -3)';
+ const focusedOffset=staticFocus?0:-3;
  const r=await setup(browser,{mode,viewport:{width:1440,height:900}},{beforePlugin:page=>page.evaluate(()=>{
   Lampa.Params.init();Lampa.Search.init();Lampa.Listener.send('app',{type:'ready'});
  })});
@@ -46,10 +47,9 @@ async function run(browser,mode,theme){
   if(mode==='desktop'){
    await film.hover();
    await page.waitForFunction(()=>{const label=document.querySelector('#qa-input .pt-card-watch');return label && getComputedStyle(label).visibility==='visible';});
-   await page.waitForFunction(()=>getComputedStyle(document.querySelector('#qa-input .card .card__view')).transform==='matrix(1, 0, 0, 1, 0, -4.5)',null,{timeout:5000});
-   assert.equal(await film.locator('.card__view').evaluate(n=>getComputedStyle(n).transform),'matrix(1, 0, 0, 1, 0, -4.5)');
+   await settledTransform(page,'#qa-input .card .card__view',-4.5);
    await page.mouse.move(2,2);
-   await page.waitForFunction(()=>getComputedStyle(document.querySelector('#qa-input .card .card__view')).transform==='none',null,{timeout:5000});
+   await settledTransform(page,'#qa-input .card .card__view',0);
    assert.equal(await film.locator('.card__view').evaluate(n=>getComputedStyle(n).transform),'none');
   }
   await page.emulateMedia({reducedMotion:'reduce'});
@@ -66,7 +66,7 @@ async function run(browser,mode,theme){
   }
   assert.ok(frames.every(f=>f.shadow==='none'),'No layout repaints an animated poster shadow');
   assert.equal(new Set(frames.map(f=>f.haloShadow)).size,1,'The halo uses one fixed shadow throughout the fade');
-  assert.equal(frames.at(-1).y,staticFocus?0:-3);
+  assert.ok(Math.abs(frames.at(-1).y-focusedOffset)<.01);
   const hostAnimation=await page.evaluate(()=>Lampa.Storage.get('animation'));
   for(const motion of ['system','off']){
    await page.evaluate(motion=>Lampa.Storage.set('lampa_view_card_motion',motion),motion);
@@ -75,12 +75,11 @@ async function run(browser,mode,theme){
    assert.equal(stopped.transform,'none',motion+' stops movement with OS reduction');assert.equal(stopped.transition,'0s');assert.match(stopped.shadow,staticFocus?/2px inset$/:/rgba\(255, 255, 255, 0.18\)/);
   }
   await page.evaluate(()=>Lampa.Storage.set('lampa_view_card_motion','on'));
-  await page.waitForTimeout(280);
-  assert.equal(await film.locator('.card__view').evaluate(n=>getComputedStyle(n).transform),focusedTransform);
+  await settledTransform(page,'#qa-input .card .card__view',focusedOffset);
   await page.emulateMedia({reducedMotion:'no-preference'});
   for(const motion of ['off','system','on']){
-   await page.evaluate(motion=>Lampa.Storage.set('lampa_view_card_motion',motion),motion);await page.waitForTimeout(260);
-   assert.equal(await film.locator('.card__view').evaluate(n=>getComputedStyle(n).transform),motion==='off'?'none':focusedTransform);
+   await page.evaluate(motion=>Lampa.Storage.set('lampa_view_card_motion',motion),motion);
+   await settledTransform(page,'#qa-input .card .card__view',motion==='off'?0:focusedOffset);
   }
   assert.equal(await page.evaluate(()=>Lampa.Storage.get('animation')),hostAnimation,'The poster setting never changes the host animation preference');
   assert.equal(await film.locator('.card__age').textContent(),'2020');
@@ -95,7 +94,7 @@ async function run(browser,mode,theme){
   await page.waitForTimeout(330);
   assert.equal(await film.locator('.card__view').evaluate(n=>getComputedStyle(n).boxShadow),'none','The previous halo disappears after moving focus');
   assert.equal(await film.locator('.card__view').evaluate(n=>getComputedStyle(n,'::after').opacity),'0','The previous halo fades out completely');
-  assert.equal(await series.locator('.card__view').evaluate(n=>getComputedStyle(n).transform),focusedTransform);
+  await settledTransform(page,'#qa-input .card:nth-child(2) .card__view',focusedOffset);
   await page.waitForFunction(()=>{
    const label=document.querySelector('#qa-input .card:nth-child(2) .pt-series-status');
    return label && getComputedStyle(label).display!=='none' && getComputedStyle(label).visibility==='visible';

@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const {chromium, webkit} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const {setup} = require('../fixtures/native-browser.cjs');
+const settledTransform=require('../fixtures/settled-transform.cjs');
 
 async function samplePixels(page, points) {
  const screenshot=await page.screenshot({animations:'disabled',scale:'css'});
@@ -260,6 +261,7 @@ async function run(engine, browser, mode) {
    const panel = document.createElement('div');
    panel.className='nova-plus-root';
    panel.id='qa-nova-preview';
+   panel.style.cssText='position:fixed;left:450px;top:180px;z-index:150';
    panel.innerHTML='<div class="nova__list--grid"><div class="nova-card"><div class="nova-card__thumb" style="width:100px;height:140px;background:#666"></div></div></div>';
    document.body.appendChild(panel);
    for(const watched of [false,true]) {
@@ -270,7 +272,7 @@ async function run(engine, browser, mode) {
     card.create();
     const rendered=card.render(true);
     rendered.id=watched?'qa-native-history':'qa-native-unwatched';
-    if(!watched)rendered.style.cssText='position:fixed;left:150px;top:180px;z-index:150';
+    rendered.style.cssText='position:fixed;left:'+(watched?700:150)+'px;top:180px;z-index:150';
     panel.before(rendered);
     card.visible();
    }
@@ -304,14 +306,14 @@ async function run(engine, browser, mode) {
     await page.waitForTimeout(35);
     const moving=await card.evaluate((n,view)=>n.querySelector(view).getAnimations().some(animation=>animation.playState==='running'),view);
     assert.equal(moving,!staticFocus,'TV Glass focuses without animating the poster');
-    await page.waitForTimeout(260);
+    await settledTransform(page,target+' '+view,staticFocus?0:-3);
     const after = await card.evaluate((n,view)=>{
      const art=n.querySelector(view), face=getComputedStyle(art,'::after');
      return {outer:n.offsetTop,art:art.getBoundingClientRect().y-n.getBoundingClientRect().y,transform:getComputedStyle(art).transform,halo:face.boxShadow,opacity:face.opacity,indicator:face.backgroundImage,edge:face.borderTopColor};
     },view);
     assert.equal(after.outer,before.outer,target);
     assert.ok(Math.abs(after.art-before.art+(staticFocus?0:3))<.1,JSON.stringify({before,after,theme,target}));
-    assert.match(after.transform,staticFocus?/^none$/:/matrix\(1, 0, 0, 1, 0, -3\)/);
+    if(staticFocus)assert.equal(after.transform,'none');
     assert.equal(after.indicator,'none');assert.match(after.halo,staticFocus?/2px inset/:/1px inset/,'The inset contour follows the poster radius');
     assert.equal(await card.locator('.icon--history').count(),0);
     if(!staticFocus)assert.match(after.halo,/rgba\(255, 255, 255, 0.18\)/);
@@ -322,10 +324,10 @@ async function run(engine, browser, mode) {
    const face=page.locator('#qa-native-unwatched .card__view');
    if(mode==='desktop'){
     const neighbor=await page.locator('#qa-native-history').evaluate(node=>node.getBoundingClientRect().toJSON());
-    await page.locator('#qa-native-unwatched').hover();await page.waitForTimeout(260);
-    assert.match(await face.evaluate(node=>getComputedStyle(node).transform),/matrix\(1, 0, 0, 1, 0, -4\.5\)/);
+    await page.locator('#qa-native-unwatched').hover();
+    await settledTransform(page,'#qa-native-unwatched .card__view',-4.5);
     assert.deepEqual(await page.locator('#qa-native-history').evaluate(node=>node.getBoundingClientRect().toJSON()),neighbor);
-    await page.mouse.move(2,2);await page.waitForTimeout(260);
+    await page.mouse.move(2,2);await settledTransform(page,'#qa-native-unwatched .card__view',0);
    }
    await page.locator('#qa-native-unwatched').evaluate(node=>node.classList.add('focus'));
    await page.waitForTimeout(260);
@@ -334,9 +336,10 @@ async function run(engine, browser, mode) {
    const stoppedNativeAnimation=await page.evaluate(()=>Lampa.Storage.get('animation'));
    await page.emulateMedia({reducedMotion:'reduce'});
    for(const motion of ['on','system','off','on']){
-    await page.evaluate(motion=>Lampa.Storage.set('lampa_view_card_motion',motion),motion);await page.waitForTimeout(260);
+    await page.evaluate(motion=>Lampa.Storage.set('lampa_view_card_motion',motion),motion);
+    await settledTransform(page,'#qa-native-unwatched .card__view',motion==='on' && !staticFocus?-3:0);
     const style=await face.evaluate(node=>{const s=getComputedStyle(node),halo=getComputedStyle(node,'::after');return {transform:s.transform,duration:s.transitionDuration,halo:halo.boxShadow,edge:halo.backgroundImage};});
-    if(motion==='on' && !staticFocus){assert.match(style.transform,/matrix\(1, 0, 0, 1, 0, -3\)/);assert.notEqual(style.duration,'0s');}
+    if(motion==='on' && !staticFocus){assert.notEqual(style.duration,'0s');}
     else{assert.equal(style.transform,'none');assert.equal(style.duration,'0s');}
     assert.equal(style.edge,'none');assert.match(style.halo,staticFocus?/2px inset/:/1px inset/);
     if(!staticFocus)assert.match(style.halo,/rgba\(255, 255, 255, 0.18\)/);
