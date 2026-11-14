@@ -36,7 +36,9 @@ async function run(engine, browser, mode) {
   window.sceneMovies = data;
   const anime=[{id:41,name:'Синее аниме',original_name:'Blue anime',overview:'Anime',poster_path:'/poster.jpg',backdrop_path:'/other.jpg',source:'tmdb'},{id:42,name:'Жёлтое аниме',original_name:'Yellow anime',overview:'Anime',poster_path:'/poster.jpg',backdrop_path:'/yellow.jpg',source:'tmdb'}];
   L.TMDB.image = path => 'http://scene.example.invalid'+path;
-  L.Api.main = (options,success) => success([{title:'QA',url:'qa',results:data}]);
+  // Pixel comparisons use a fixed home scene throughout both theme passes.
+  // Carousel rotation is verified separately by the carousel browser checks.
+  L.Api.main = (options,success) => success([{title:'QA',url:'qa',results:[data[0]]}]);
   L.Api.category = (options,success) => success([{title:'QA',url:'qa',results:data}]);
   L.Api.full = (p,ok) => ok({movie:{...data[1],production_countries:[],production_companies:[],spoken_languages:[],genres:[]},persons:{crew:[],cast:[]},discuss:{result:[]},images:{logos:[]},videos:{results:[]},simular:{results:[]},recomend:{results:[]}});
   L.Api.sources.tmdb.get = (url,p,ok) => ok(url==='tv/37854'?{...anime[0],id:37854}:url.includes('_credits') ? {cast:data,crew:[]} : {results:url.includes('with_original_language=ja')?anime:data,total_pages:1,page:1});
