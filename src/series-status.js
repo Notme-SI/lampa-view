@@ -111,7 +111,7 @@ function watchFooter(L,node,data,series){
  let summary=row.querySelector('.pt-card-watch__row');
  if(!summary){summary=document.createElement('div');summary.className='pt-card-watch__row';summary.innerHTML='<span class="pt-card-watch__label"></span><span class="pt-card-watch__time"></span>';row.insertBefore(summary,row.firstChild);}
  const nativeLabel=row.querySelector(':scope > span'),text=nativeLabel && nativeLabel.textContent || '';
- let label=lampaViewText("Просмотрено:"),timeline=null,watchSeason=0,watchEpisode=0;
+ let label='',timeline=null,watchSeason=0,watchEpisode=0;
  const progressHash=row.querySelector('.time-line').getAttribute('data-hash');
  if(progressHash)timeline=view(progressHash);
  if(shared){watchSeason=target?target.season:shared.season;watchEpisode=target?target.episode:shared.episode;timeline=view(shared.hash);label=lampaViewText("Серия {0} · Сезон {1}", [watchEpisode,watchSeason]);}else if(series){
@@ -175,7 +175,7 @@ function watchFooter(L,node,data,series){
  if(stamp.textContent!==time)stamp.textContent=time;
  meter.ptWatchRow=row;
  if(!hideProgress)node.querySelector('.card__view')?.appendChild(meter);
- const summaryTitle=label+(time?', '+time:'');
+ const summaryTitle=[label,time].filter(Boolean).join(', ');
  if(summary.title!==summaryTitle)summary.title=summaryTitle;
 }
 // Metadata is requested only for a focused series, with bounded shared cache.

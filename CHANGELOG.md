@@ -1,3 +1,8 @@
+## 0.5.181
+
+- Show an unfinished movie's saved position and progress without the empty Watched caption. Completed movies retain their completion label.
+- Give the TV home rail the same flowing footer and first-screen spacing as desktop, and scale the continuation marker to its poster.
+
 ## 0.5.180
 
 - Measure upcoming poster rows against their own scroll viewport so the next row is fitted before it appears on 4K screens.

@@ -18,6 +18,7 @@ const {setup}=require('../fixtures/native-browser.cjs');
     for(const size of ['small','normal','bigger']){
      await page.evaluate(size=>Lampa.Storage.set('interface_size',size),size);await page.waitForTimeout(1800);
      await page.waitForSelector('.activity--active .pt-hero + .minimal-home-first-row').catch(async e=>{console.error(JSON.stringify({engineName,device,size,errors:r.errors,dom:await page.evaluate(()=>({body:document.body.className,active:document.querySelector('.activity--active')?.className,hero:!!document.querySelector('.pt-hero'),rows:[...document.querySelectorAll('.activity--active .items-line')].map(n=>n.className)}))}));throw e;});
+     await page.waitForSelector('.activity--active .pt-hero + .minimal-home-first-row + .minimal-posters-sized',{timeout:5000});
      if(device.mode==='tv')await page.locator('.activity--active .pt-hero').evaluate(hero=>{const logo=hero.querySelector('.pt-hero__logo');logo.classList.remove('pt-hidden');logo.src='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420"><rect width="1200" height="420" fill="white"/></svg>');hero.querySelector('.pt-hero__title').classList.add('pt-hidden');});await page.waitForTimeout(150);
 
      const value=await page.locator('.activity--active .pt-hero').evaluate(hero=>{
@@ -33,6 +34,10 @@ const {setup}=require('../fixtures/native-browser.cjs');
      if(device.mode==='tv'){assert.ok(value.maxCaptionBottom<=value.clipBottom-2,'TV captions must fit inside the native scroll viewport: '+JSON.stringify({device,size,value}));assert.ok(value.bodyTop>=-1 && value.bodyBottom<=value.hero.height+1,'TV carousel branding stays inside its frame at the WebView font floor: '+JSON.stringify({device,size,value}));}else {
      assert.ok(value.maxCaptionBottom<=value.clipBottom-2 && value.maxCaptionBottom>=value.clipBottom-20,'Desktop captions fit near the bottom of the scroll viewport: '+JSON.stringify({device,size,value}));
      assert.ok(value.secondTop>=value.clipBottom-1,'The next collection starts below the first screen: '+JSON.stringify({device,size,value}));
+     }
+     if(device.mode==='tv'){
+      assert.ok(value.maxCaptionBottom>=value.clipBottom-20,'TV year sits near the viewport bottom: '+JSON.stringify({device,size,value}));
+      assert.ok(value.secondTop>=value.clipBottom-1,'The next TV heading stays below the first screen: '+JSON.stringify({device,size,value}));
      }
      assert.ok(value.secondFitted,'The next row uses the same fitting rules: '+JSON.stringify({device,size,value}));assert.ok(Math.abs(value.posterWidth-value.secondPosterWidth)<1,'First collection uses the shared card size: '+JSON.stringify({device,size,value}));
      frames.push({...value.hero,count:value.count,posterWidth:value.posterWidth});

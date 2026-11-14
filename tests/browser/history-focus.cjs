@@ -44,6 +44,8 @@ const {setup}=require('../fixtures/native-browser.cjs'),{stage}=require('../fixt
   await page.evaluate(()=>{jQuery('#qa-release').removeClass('focus');jQuery('#qa-movie').addClass('focus').triggerHandler('hover:focus');});
   await page.waitForSelector('#qa-movie .pt-card-watch--has-progress');
   assert.equal(await page.locator('#qa-movie .pt-card-watch__time').textContent(),'16:09','Saved movie aliases work without a native watched overlay');
+  assert.equal(await page.locator('#qa-movie .pt-card-watch__label').textContent(),'','An unfinished movie shows its saved position without an empty watched caption');
+  assert.equal(await page.locator('#qa-movie .pt-card-watch__label').evaluate(node=>node.getBoundingClientRect().height),0);
   const progress=await page.locator('#qa-movie').evaluate(n=>{
    const view=n.querySelector('.card__view'),line=view.querySelector('.time-line'),fill=line.firstElementChild,t=view.querySelector('.pt-card-watch__time');
    const poster=view.getBoundingClientRect(),track=line.getBoundingClientRect(),bar=fill.getBoundingClientRect(),time=t.getBoundingClientRect();

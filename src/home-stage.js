@@ -23,7 +23,7 @@ export default function homeStage(hero,root){
  for(let node=hero.parentElement;node;node=node.parentElement)if(node!==outer)top-=node.scrollTop || 0;
  top-=window.scrollY || 0;
  const gap=parseFloat(heroStyle.marginBottom)||0,after=parseFloat(rowStyle.marginBottom)||0;
- const clearance=tv?Math.max(4,after/2):4;
+ const clearance=4;
  // Reserve the entire row, including the watch footer. Native WebKit scroll
  // bounds cannot reveal a footer deliberately placed outside the viewport.
  // Native activities can reserve the floating header in their own Scroll

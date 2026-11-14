@@ -38,14 +38,18 @@ async function run(browser,mode,theme){
   await page.waitForFunction(()=>document.querySelector('#qa-input .card.pt-poster-ready'));
   assert.equal(await page.locator('#qa-input .pt-poster-selection').count(),0,'No added Play layer on any poster');
   assert.equal(await film.locator('.icon--history').count(),1,'Keep the native continuation marker');
+  if(mode==='tv'){
+   const size=await film.evaluate(card=>({icon:card.querySelector('.icon--history').getBoundingClientRect().width,poster:card.querySelector('.card__view').getBoundingClientRect().width}));
+   assert.ok(Math.abs(size.icon/size.poster-.11)<.01,'TV continuation marker scales with its poster: '+JSON.stringify(size));
+  }
   await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
   if(mode==='desktop'){
    await film.hover();
    await page.waitForFunction(()=>{const label=document.querySelector('#qa-input .pt-card-watch');return label && getComputedStyle(label).visibility==='visible';});
-   await page.waitForTimeout(330);
+   await page.waitForFunction(()=>getComputedStyle(document.querySelector('#qa-input .card .card__view')).transform==='matrix(1, 0, 0, 1, 0, -4.5)',null,{timeout:5000});
    assert.equal(await film.locator('.card__view').evaluate(n=>getComputedStyle(n).transform),'matrix(1, 0, 0, 1, 0, -4.5)');
    await page.mouse.move(2,2);
-   await page.waitForTimeout(330);
+   await page.waitForFunction(()=>getComputedStyle(document.querySelector('#qa-input .card .card__view')).transform==='none',null,{timeout:5000});
    assert.equal(await film.locator('.card__view').evaluate(n=>getComputedStyle(n).transform),'none');
   }
   await page.emulateMedia({reducedMotion:'reduce'});
