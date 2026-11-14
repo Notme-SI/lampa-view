@@ -16,8 +16,14 @@ const {setup}=require('../fixtures/native-browser.cjs');
     L.Activity.push({component:'torrents',movie,search:'Cyberpunk: Edgerunners',search_one:'Cyberpunk: Edgerunners',search_two:'Cyberpunk: Edgerunners',url:''});
    });
    await page.waitForSelector('.minimal-toolbar-label');
+   await page.mouse.move(1200,600);
    await page.waitForSelector('body.pt-menu-pinned');
-   await page.waitForFunction(()=>document.querySelector('.wrap__left').getAnimations().every(animation=>animation.playState!=='running'));
+   await page.waitForFunction(()=>{
+    const rail=document.querySelector('.wrap__left'),banner=document.querySelector('.activity--active .minimal-torrent-banner');
+    return !document.body.matches('.menu--open,.pt-menu-hover') && banner &&
+     banner.getBoundingClientRect().left>rail.getBoundingClientRect().right &&
+     rail.getAnimations().every(animation=>animation.playState!=='running');
+   });
    const layout=await page.evaluate(()=>{
     const root=document.querySelector('.activity--active .minimal-torrent-view'),banner=root.querySelector('.minimal-torrent-banner'),files=root.querySelector('.explorer__files');
     const rect=el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,height:r.height};};
