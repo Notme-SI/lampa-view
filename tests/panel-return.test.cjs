@@ -34,3 +34,21 @@ test('scrolling after panel close takes precedence over a pending restore frame'
   frames[0]();assert.equal(scroll.position(),-450);
  }finally{w.close();}
 });
+
+test('a newly opened popup keeps focus when the previous panel return runs',()=>{
+ for(const popup of ['modal','select']){
+  const dom=new JSDOM('<body><div class="head"><button class="open--settings"></button></div></body>',{runScripts:'outside-only'}),w=dom.window;
+  try{
+   const frames=[],activity={component:{}},controller={name:'head',enabled(){return {name:this.name};},toggle(name){this.name=name;w.document.body.className=name==='settings'?'settings--open':'';},collectionFocus(){}};
+   w.document.querySelector('button').getClientRects=()=>[{}];
+   w.requestAnimationFrame=fn=>frames.push(fn);
+   w.eval(esbuild.buildSync({entryPoints:[path.join(__dirname,'../src/panel-return.js')],bundle:true,write:false,format:'iife',globalName:'PanelReturn'}).outputFiles[0].text);
+   w.PanelReturn.default({Controller:controller,Activity:{active:()=>({activity})}},()=>true);
+   controller.toggle('settings');controller.toggle('content');
+   controller.toggle(popup);
+   assert.equal(frames.length,1);
+   frames[0]();
+   assert.equal(controller.enabled().name,popup,'The new popup takes precedence before its body class exists');
+  }finally{w.close();}
+ }
+});

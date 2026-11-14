@@ -1,3 +1,7 @@
+## 0.5.182
+
+- Keep focus in a newly opened popup when the previous panel's delayed focus restoration runs.
+
 ## 0.5.181
 
 - Show an unfinished movie's saved position and progress without the empty Watched caption. Completed movies retain their completion label.

@@ -51,6 +51,10 @@ export default function preservePanelPosition(L, enabled) {
    return nativeToggle.apply(this, arguments);
   }
 
+  // A new controller owns focus even when its overlay has not added a body
+  // class yet. Invalidate a previous panel's deferred return before opening it.
+  if (!panel && name !== 'head' && name !== 'content') revision++;
+
   const fromMenu = panel?.name === 'menu' && name === 'settings';
   if (openers[name] && (!panel || fromMenu)) {
    revision++;
