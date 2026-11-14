@@ -13,6 +13,9 @@ body.lampa_view.pt-tv .pt-hero__actions {margin-top:1.6em}
 body.lampa_view.pt-tv .pt-hero__dots {left:45%;bottom:1.5em}
 body.lampa_view.pt-tv .items-line .card:not(.card--wide):not(.card--collection) {width:clamp(8.4em,calc((90vw - 10em / var(--pt-interface-scale,1)) / 10 * var(--pt-interface-scale,1)),11.1em)!important}
 body.lampa_view.pt-tv .items-line.minimal-posters-sized .card:not(.card--wide):not(.card--collection) {width:var(--minimal-poster-width)!important}
+/* Poster focus and badges are local to this rail. Their layout does not
+   need to invalidate the other collections in the vertical scroll view. */
+body.lampa_view.pt-tv .pt-browser-rows .minimal-posters-sized {contain:layout}
 body.lampa_view.pt-tv .items-line>.items-line__head {padding-left:1.1em}
 /* Android WebView clamps text below 8 CSS px. Declare that floor so em-based
    height limits use the rendered font, including the real 960px TV viewport. */
@@ -51,9 +54,3 @@ body.lampa_view.pt-tv:not(.pt-mobile) .modal:not(.modal--large,.modal--full,.mod
 body.lampa_view.pt-tv:not(.pt-mobile) .modal:not(.modal--large,.modal--full,.modal--overlay,.minimal-torrent-files,.minimal-frame-modal,.pt-notices) .modal__content {
  box-sizing:border-box;width:100%;max-width:clamp(248px,31vw,46em);max-height:var(--pt-panel-room);overflow:hidden;
 }
-
-/* Hero overview uses a compact preview. Entering collections restores the
-   shared profile immediately; only composited card transforms are animated. */
-body.lampa_view.pt-tv .items-line.minimal-hero-preview .card .pt-card-watch {height:0;margin:0;visibility:hidden!important;overflow:hidden}
-body.lampa_view.pt-tv .items-line.minimal-hero-preview .card__title {font-size:max(8px,.7em);line-height:1.4;max-height:2.85em}
-body.lampa_view.pt-tv .items-line.minimal-hero-preview .card__age {font-size:max(8px,.65em)}

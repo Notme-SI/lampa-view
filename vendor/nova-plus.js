@@ -989,12 +989,14 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
   var signature = '';
   var note_sig = '';
   var busy = false;
+  var cardListVersion = 0;
 
   var pending = null;
   var switch_observer = null;
   var leave_guard = null;
 
   function forget() {
+    cardListVersion++;
     if (pendingLive() && ui.root) {
       root = null;
       host = null;
@@ -1472,6 +1474,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
 
   function switchStart(key) {
     if (!movie) return;
+    cardListVersion++;
     gentleMark(1200);
     pending = { id: movie.id, key: key || '', time: Date.now() };
     lockFocus(key);
@@ -3135,7 +3138,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     return (parseFloat(found[1]) || 1) < 0.9;
   }
 
-  function readCard(node, index) {
+  function readCard(node, index, readProgress, season, isSeries) {
     var origin = $(node);
     var px = origin.hasClass('onl-online-prestige--folder') || origin.hasClass('onl-online-prestige--full') ? 'onl-' : '';
     var line = origin.find('.time-line').first();
@@ -3168,8 +3171,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     var episodeText=origin.find('.' + px + 'online-prestige__episode-number').text();
     var stored=origin.attr('data-minimal-episode');
     var episodeNum = unassigned?null:nativeValue!=null && Number.isInteger(nativeEpisode) && nativeEpisode>=0?nativeEpisode:stored!=null?Number(stored):/\d/.test(episodeText)?digits(episodeText):index+1;
-    var isSeries = !!(movie && (movie.name || movie.original_name || movie.number_of_seasons || movie.media_type === 'tv'));
-    var progress = unassigned?{}:progressReader()(isSeries ? (seasonNumber()) : 0, isSeries ? episodeNum : 0, hash);
+    var progress = unassigned?{}:readProgress(season, isSeries ? episodeNum : 0, hash);
     if (progress.found) percent = progress.percent;
 
     return {
@@ -3202,9 +3204,10 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
 
   function collect() {
     var list = [],episodes={},series=!!(movie && (movie.name || movie.original_name || movie.number_of_seasons || movie.media_type==='tv'));
+    var readProgress=progressReader(),season=series?seasonNumber():0;
     $(host).find('.online-prestige--full,.online-prestige--folder,.onl-online-prestige--full,.onl-online-prestige--folder').each(function () {
       if ($(this).closest('.nova-plus-root').length) return;
-      var item=readCard(this,list.length);
+      var item=readCard(this,list.length,readProgress,season,series);
       if(series && !item.folder && !item.soon && !item.unassigned && Number.isInteger(item.num)){
         var key=String(item.num),existing=episodes[key];
         if(existing){(existing.variants || (existing.variants=[existing])).push(item);return;}
@@ -4803,42 +4806,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
   }
 
   function rowStep(dir) {
-    var nodes = dropItems();
-    if (!nodes.length || !last) return null;
-    var from = last.getBoundingClientRect();
-    if (!from.width && !from.height) return null;
-    var mid = from.left + from.width / 2;
-    var tol = Math.max(6, from.height / 2);
-    var line = null;
-    var i, box, edge, dist;
-    for (i = 0; i < nodes.length; i++) {
-      if (nodes[i] === last) continue;
-      box = nodes[i].getBoundingClientRect();
-      if (!box.width && !box.height) continue;
-      if (dir === 'up') {
-        if (box.bottom > from.top + tol) continue;
-        if (line === null || box.bottom > line) line = box.bottom;
-      } else {
-        if (box.top < from.bottom - tol) continue;
-        if (line === null || box.top < line) line = box.top;
-      }
-    }
-    if (line === null) return null;
-    var best = null;
-    var gap = 0;
-    for (i = 0; i < nodes.length; i++) {
-      if (nodes[i] === last) continue;
-      box = nodes[i].getBoundingClientRect();
-      if (!box.width && !box.height) continue;
-      edge = dir === 'up' ? box.bottom : box.top;
-      if (Math.abs(edge - line) > tol) continue;
-      dist = Math.abs(box.left + box.width / 2 - mid);
-      if (best === null || dist < gap) {
-        best = nodes[i];
-        gap = dist;
-      }
-    }
-    return best;
+    return wideStep(dropItems(),dir);
   }
 
   function dropEntry() {
@@ -5047,6 +5015,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
   var loading_timer = null;
 
   function loadingPanel() {
+    cardListVersion++;
     uiFrame();
     ui.root && ui.root.addClass('nova-initial-loading');
     note_sig = '';
@@ -5251,10 +5220,9 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       extrasStamp(),
       viewMode(),
       ui_open,
-      ui_page,
       ui_all_sources ? 1 : 0,
       items.length ? items[0].title : '',
-      items.map(function (item) { return item.num + ':' + item.quality; }).join(','),
+      items.map(function (item) { return item.num + ':' + item.quality + ':' + (item.unassigned?1:0); }).join(','),
       items.filter(function (i) { return isSeen(i); }).length
     ].join('|');
   }
@@ -5278,6 +5246,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
 
     var native = nativeState();
     if (native) {
+      cardListVersion++;
       busy = true;
       knownRemember();
       root.addClass('nova-plus-scope nova-plus-chips');
@@ -5312,6 +5281,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     nav = files.length === 0;
     serial = !!(movie.name || movie.number_of_seasons) && !nav;
 
+    var previousItems=items;
     items = list;
     wideAnimePrepare(list);
     var currentComp=componentNow(),continuations=currentComp && currentComp.lampaViewContinuations;
@@ -5322,47 +5292,56 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     }
     if(serial && wideMeta()){
       var metadataKey=wideMetadataContext();
-      if(wide_metadata_gate.key!==metadataKey){
-        var gate={key:metadataKey,ready:false,book:null,grouped:false},waiting=false;
+      if(wide_metadata_gate.key!==metadataKey || wide_metadata_gate.owner!==found.root[0]){
+        clearTimeout(wide_metadata_gate.timer);
+        var gate={key:metadataKey,owner:found.root[0],ready:false,book:null,grouped:false,readers:[],countsPending:false};
         wide_metadata_gate=gate;
         var finishMetadata=function(book,grouped){
           if(gate.ready || wide_metadata_gate!==gate)return;
           gate.ready=true;gate.book=book;gate.grouped=!!grouped;
           clearTimeout(gate.timer);
-          if(waiting && root && root[0]===found.root[0])redraw();
+          var readers=gate.readers.splice(0);
+          if(root && root[0]===gate.owner && wideMetadataContext()===gate.key)readers.forEach(function(read){read(book,grouped);});
         };
         var activeSeason=seasonNumber(),numbers=providerSeasonNumbers(),moreParts=alternateSeasons() && numbers.filter(function(n){return n>0;}).length>Number(movie.number_of_seasons);
         var counts=(wideAnimeCurrent() || currentContinuation()?[]:numbers).filter(function(number){
           if(number===activeSeason || wide_counts[wideCountKey(number)])return false;
           if(currentComp && currentComp.lampaViewSeasonCountAsync)return true;
           return moreParts || !(movie.seasons || []).some(function(row){return Number(row.season_number)===number && Number(row.episode_count)>0;});
-        }),pending=counts.length+1;
-        function resolved(){if(--pending===0)finishMetadata(gate.book,gate.grouped);}
-        gate.timer=setTimeout(function(){finishMetadata(gate.book,gate.grouped);},window.LampaView && window.LampaView.episodeMetadata && window.LampaView.episodeMetadata.isAnime(movie)?14000:6500);
-        wideBook(activeSeason,function(book,grouped){if(gate.ready || wide_metadata_gate!==gate)return;gate.book=book;gate.grouped=!!grouped;resolved();});
-        var countIndex=0,countRunning=0;
+        });
+        gate.countsPending=Boolean(counts.length);
+        gate.timer=setTimeout(function(){finishMetadata(null,false);},window.LampaView && window.LampaView.episodeMetadata && window.LampaView.episodeMetadata.isAnime(movie)?14000:6500);
+        wideBook(activeSeason,finishMetadata);
+        var countIndex=0,countRunning=0,countRefresh=null;
+        function refreshCounts(){
+          if(countRefresh!==null)return;
+          countRefresh=setTimeout(function(){
+            countRefresh=null;
+            if(wide_metadata_gate===gate && root && root[0]===gate.owner && wideMetadataContext()===gate.key)wideTouch();
+          },0);
+        }
         function readCounts(){
-          while(!gate.ready && wide_metadata_gate===gate && countRunning<3 && countIndex<counts.length){
+          while(wide_metadata_gate===gate && countRunning<3 && countIndex<counts.length){
             var number=counts[countIndex++];countRunning++;
             (function(number,key){
-              var complete=function(value){countRunning--;if(wide_metadata_gate!==gate)return;if(value)wide_counts[key]=value;if(gate.ready){if(value)wideTouch();return;}resolved();readCounts();};
+              var complete=function(value){countRunning--;if(wide_metadata_gate!==gate)return;if(value){wide_counts[key]=value;refreshCounts();}readCounts();};
               if(currentComp && currentComp.lampaViewSeasonCountAsync && currentComp.lampaViewSeasonCountAsync(number,wideVoiceName(),function(value){if(value===undefined)seasonPlanned(number,complete);else complete(value);}))return;
               seasonPlanned(number,complete);
             })(number,wideCountKey(number));
           }
+          if(!countRunning && countIndex===counts.length)gate.countsPending=false;
         }
         readCounts();
-        waiting=true;
-      }
-      if(!wide_metadata_gate.ready){
-        hideHost();
-        if(!ui.root || !ui.root.hasClass('nova-initial-loading'))loadingPanel();
-        return;
       }
     }
     var mark = stamp();
 
-    if (signature === mark && ui.list && ui.list.children().length) return;
+    if (signature === mark && ui.list && ui.list.children().length &&
+        list.length===previousItems.length && list.every(function(item,index){return item.origin[0]===previousItems[index].origin[0];})) {
+      list.forEach(function(item,index){Object.assign(previousItems[index],item);});
+      items=previousItems;
+      return;
+    }
 
     busy = true;
     signature = mark;
@@ -5409,14 +5388,42 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     var displayList = !serial && !nav ? list.filter(function (item) { return item.folder; }) : wideOrderList(list);
     if (ui.strip) ui.strip.toggle(displayList.length > 0);
     list.forEach(function (item) { item.card = null; });
+    var version=++cardListVersion;
     var button = buildHero();
     var readEpisodeBook = wideEpisodeReader();
-    var cardBatch = document.createDocumentFragment();
-    displayList.forEach(function (item) {
-      var node = buildCard(item, compact && !grid, grid, readEpisodeBook);
-      if (node && node[0]) cardBatch.appendChild(node[0]);
-    });
-    ui.list[0].appendChild(cardBatch);
+    var listNode=ui.list[0],index=0;
+    function mountCards(end){
+      var batch=document.createDocumentFragment(),selectors=[];
+      for(;index<end;index++){
+        var node=buildCard(displayList[index],compact && !grid,grid,readEpisodeBook);
+        if(node && node[0]){
+          batch.appendChild(node[0]);
+          if(node.hasClass('selector'))selectors.push(node[0]);
+        }
+      }
+      listNode.appendChild(batch);
+      return selectors;
+    }
+    function mountMoreCards(){
+      if(version!==cardListVersion || !inSkin())return;
+      var selectors=mountCards(Math.min(displayList.length,index+8));
+      var controller=Lampa.Controller.enabled();
+      if(selectors.length && controller && controller.name==='content'){
+        if(Lampa.Controller.collectionAppend)Lampa.Controller.collectionAppend(selectors);
+        else keepFocus();
+      }
+      if(index<displayList.length)setTimeout(mountMoreCards,16);
+      else relayout();
+    }
+    var firstBatch=displayList.length;
+    if(serial && !wideRowOn() && firstBatch>48){
+      var seat=ui_page_focus>=0?ui_page_focus:keyIndex(ui_focus);
+      var resume=pickResume(items),keep=displayList.indexOf(list[seat]),resumeIndex=displayList.indexOf(resume);
+      // Preserve immediate focus and resume at deep positions.
+      if(keep<16 && resumeIndex<16)firstBatch=16;
+    }
+    mountCards(firstBatch);
+    if(index<displayList.length)setTimeout(mountMoreCards,16);
     listFree();
     buildRows();
 
@@ -5518,6 +5525,8 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     if (observer) observer.disconnect();
     observer = null;
     observed = null;
+    clearTimeout(wide_metadata_gate.timer);
+    wide_metadata_gate={key:'',ready:false,book:null,grouped:false};
     afterPlayerStop();
     hopStop();
     probeStop();probe_done_for=0;
@@ -5534,10 +5543,10 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
   function refreshMarks() {
     if (!inSkin() || !items.length) return;
     var grid = !!(ui.list && ui.list.hasClass('nova__list--grid'));
-    var read=progressReader();
+    var read=progressReader(),season=serial?seasonNumber():0;
 
     items.forEach(function (item) {
-      if (!item || item.soon || item.folder) return;
+      if (!item || item.soon || item.folder || item.unassigned) return;
 
       var line = item.origin ? item.origin.find('.time-line').first() : null;
       if (line && line.length) item.line = line;
@@ -5550,7 +5559,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
         var raw = (item.line.children('div').first().attr('style') || '').match(/([\d.]+)%/);
         if (raw) percent = parseFloat(raw[1]) || 0;
       }
-      var record=read(serial ? (seasonNumber()) : 0,serial ? item.num : 0,item.hash);
+      var record=read(season,serial ? item.num : 0,item.hash);
       if(record.found){percent=record.percent;item.position=record.time;item.updated=record.updated;}
       item.recorded=!!record.found;item.percent = percent;
       if (item.origin) item.viewed = item.origin.find('.' + (item.px || '') + 'online-prestige__viewed').length>0;
@@ -6037,7 +6046,9 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     var season=(movie && movie.seasons || []).filter(function(row){return Number(row.season_number)===displaySeason(number);})[0];
     var count=wide_counts[key] || Number(season && season.episode_count);
     var moreParts=alternateSeasons() && providerSeasonNumbers().filter(function(n){return n>0;}).length>Number(movie.number_of_seasons);
-    if(box && !(wide_metadata_gate.ready && wide_metadata_gate.key===wideMetadataContext()) && !wide_count_wait[key] && !wide_counts[key] && (!count || moreParts)){
+    if(wide_metadata_gate.countsPending && wide_metadata_gate.key===wideMetadataContext() && !wide_counts[key] &&
+       (moreParts || comp && comp.lampaViewSeasonCountAsync))return '';
+    if(box && !(wide_metadata_gate.key===wideMetadataContext() && (wide_metadata_gate.ready || wide_metadata_gate.countsPending)) && !wide_count_wait[key] && !wide_counts[key] && (!count || moreParts)){
       wide_count_wait[key]=true;
       seasonPlanned(number,function(value){
         delete wide_count_wait[key];
@@ -6276,35 +6287,40 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
 
   function wideEpisodeReader() {
     var callbacks = [], started = false, ready = false, result, verified;
+    var version=cardListVersion;
     return function (callback) {
       if (ready) return callback(result, verified);
       callbacks.push(callback);
       if (started) return;
       started = true;
       var context = wideMetadataContext(), owner = root && root[0];
-      function complete(book,grouped){
-        if (!root || root[0] !== owner || wideMetadataContext() !== context) {
-          callbacks = [];
-          return;
-        }
-        result = book;
-        verified = grouped;
-        ready = true;
-        callbacks.forEach(function (fn) { fn(book, grouped); });
-        callbacks = [];
+      function current(){
+        return version===cardListVersion && root && root[0]===owner && document.body.contains(owner) && wideMetadataContext()===context;
       }
-      if(wide_metadata_gate.key===context && wide_metadata_gate.ready)return complete(wide_metadata_gate.book,wide_metadata_gate.grouped);
-      wideBook(seasonNumber(), function (book, grouped) {
-        if (!root || root[0] !== owner || wideMetadataContext() !== context) {
-          callbacks = [];
-          return;
-        }
+      function complete(book,grouped){
+        var pending=callbacks.splice(0);
+        if(!current())return;
         result = book;
         verified = grouped;
         ready = true;
-        callbacks.forEach(function (fn) { fn(book, grouped); });
-        callbacks = [];
-      });
+        if(!book)return;
+        // A long season's optional decoration must not monopolise the same
+        // task as input. Keep small lists synchronous and split longer ones.
+        var index=0;
+        function applyMetadata(){
+          if(!current())return;
+          var end=Math.min(pending.length,index+12);
+          for(;index<end;index++)pending[index](book,grouped);
+          if(index<pending.length)setTimeout(applyMetadata,16);
+        }
+        applyMetadata();
+      }
+      if(wide_metadata_gate.key===context && wide_metadata_gate.owner===owner){
+        if(wide_metadata_gate.ready)return complete(wide_metadata_gate.book,wide_metadata_gate.grouped);
+        wide_metadata_gate.readers.push(complete);
+        return;
+      }
+      wideBook(seasonNumber(),complete);
     };
   }
 
@@ -6424,7 +6440,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     var number = parseInt(episodeNumber(item.num), 10) || 0;
     if (!number){var zeroTitle=card.find('.nova-card__title');if(/^(?:(?:серия|эпизод|episode)\s*\d+|\d+\s*(?:серия|эпизод|episode))$/i.test(zeroTitle.text().trim()))zeroTitle.text(lampaViewText('Серия {0}',[0]));return;}
     readEpisodeBook(function (book, grouped) {
-      if (!book) return;
+      if (!book || item.card!==card) return;
       var episode = book[number];
       if (!episode){if(grouped && item.soon)card.remove();return;}
       var title = card.find('.nova-card__title');
@@ -6451,7 +6467,7 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     var number = parseInt(episodeNumber(item.num), 10) || 0;
     if (!number){var zeroTitle=card.find('.nova-card__title');if(/^(?:(?:серия|эпизод|episode)\s*\d+|\d+\s*(?:серия|эпизод|episode))$/i.test(zeroTitle.text().trim()))zeroTitle.text(lampaViewText('Серия {0}',[0]));return;}
     readEpisodeBook(function (book, grouped) {
-      if (!book) return;
+      if (!book || item.card!==card) return;
       var episode = book[number];
       if (!episode){if(grouped && item.soon)card.remove();return;}
       var head = card.find('.nova-card__head');
@@ -7397,8 +7413,9 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
     if (!from.width && !from.height) return null;
     var mid = from.left + from.width / 2;
     var tol = Math.max(6, from.height / 2);
+    var candidates = [];
     var line = null;
-    var i, box;
+    var i, box, edge;
 
     for (i = 0; i < nodes.length; i++) {
       if (nodes[i] === last) continue;
@@ -7406,25 +7423,25 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
       if (!box.width && !box.height) continue;
       if (dir === 'up') {
         if (box.bottom > from.top + tol) continue;
-        if (line === null || box.bottom > line) line = box.bottom;
+        edge = box.bottom;
+        if (line === null || edge > line) line = edge;
       } else {
         if (box.top < from.bottom - tol) continue;
-        if (line === null || box.top < line) line = box.top;
+        edge = box.top;
+        if (line === null || edge < line) line = edge;
       }
+      candidates.push({node:nodes[i],edge:edge,center:box.left + box.width / 2});
     }
     if (line === null) return null;
 
     var best = null;
     var gap = 0;
-    for (i = 0; i < nodes.length; i++) {
-      if (nodes[i] === last) continue;
-      box = nodes[i].getBoundingClientRect();
-      if (!box.width && !box.height) continue;
-      var edge = dir === 'up' ? box.bottom : box.top;
-      if (Math.abs(edge - line) > tol) continue;
-      var dist = Math.abs(box.left + box.width / 2 - mid);
+    for (i = 0; i < candidates.length; i++) {
+      var candidate = candidates[i];
+      if (Math.abs(candidate.edge - line) > tol) continue;
+      var dist = Math.abs(candidate.center - mid);
       if (best === null || dist < gap) {
-        best = nodes[i];
+        best = candidate.node;
         gap = dist;
       }
     }

@@ -34,7 +34,7 @@ const {setup}=require('../fixtures/native-browser.cjs');
      assert.ok(value.maxCaptionBottom<=value.clipBottom-2 && value.maxCaptionBottom>=value.clipBottom-20,'Desktop captions fit near the bottom of the scroll viewport: '+JSON.stringify({device,size,value}));
      assert.ok(value.secondTop>=value.clipBottom-1,'The next collection starts below the first screen: '+JSON.stringify({device,size,value}));
      }
-     assert.ok(value.secondFitted,'The next row uses the same fitting rules');if(device.mode==='tv')assert.ok(value.posterWidth<value.secondPosterWidth,'Hero preview is compact until entering the collection');else assert.ok(Math.abs(value.posterWidth-value.secondPosterWidth)<1,'Desktop first collection uses shared card size: '+JSON.stringify({device,size,value}));
+     assert.ok(value.secondFitted,'The next row uses the same fitting rules');assert.ok(Math.abs(value.posterWidth-value.secondPosterWidth)<1,'First collection uses the shared card size: '+JSON.stringify({device,size,value}));
      frames.push({...value.hero,count:value.count,posterWidth:value.posterWidth});
      if(process.env.LAMPA_QA_OUTPUT && device.width===2048){fs.mkdirSync(process.env.LAMPA_QA_OUTPUT,{recursive:true});await page.screenshot({path:path.join(process.env.LAMPA_QA_OUTPUT,engineName+'-home-'+size+'.png')});}
     }
@@ -70,7 +70,7 @@ const {setup}=require('../fixtures/native-browser.cjs');
     }
     await page.locator('.activity--active .pt-hero').hover();await page.mouse.wheel(0,600);await page.waitForTimeout(600);
     const afterWheel=await page.locator('.activity--active .pt-hero').evaluate(n=>({top:n.getBoundingClientRect().top,offset:n.parentElement.style.transform,viewport:innerHeight}));assert.ok(afterWheel.top<frames[2].top-100,'The rest of the page remains accessible by scrolling: '+JSON.stringify({device,afterWheel,frame:frames[2]}));
-    assert.deepEqual(r.errors,[]);await r.context.close();console.log(engineName+' '+device.mode+' '+device.width+'x'+device.height+': adaptive desktop first screen / TV hero preview at every native size');
+    assert.deepEqual(r.errors,[]);await r.context.close();console.log(engineName+' '+device.mode+' '+device.width+'x'+device.height+': first screen fits shared poster sizes at every native size');
    }
   }finally{await browser.close();}
  }

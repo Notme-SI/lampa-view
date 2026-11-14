@@ -1,3 +1,42 @@
+## 0.5.179
+
+- Pass known TV focus targets in fitted poster rows, anime tabs and carousel controls directly to Lampa's focus handler, retaining the native catalogue, controller and item actions.
+- Refresh TV catalogue shell geometry after the remote gesture, including transitions through anime tabs and carousel controls.
+- Replace the full-size More tile with a compact arrow button while preserving complete poster slots. Determine overflow from the fitted row's slot count.
+- Keep the reserved TV focus halo inside the space between poster slots.
+
+## 0.5.178
+
+- During TV catalogue navigation, update native shell geometry once after the remote gesture instead of on every row change.
+- Isolate layout within fitted TV poster rows and clear pointer focus only when switching to remote input.
+- Reserve room for the TV focus halo in advance and limit concurrent cached poster reads on TV.
+- Keep the TV poster material stable during vertical movement and check native pagination when focus changes or scrolling settles.
+
+## 0.5.177
+
+- Reuse observed TV visibility for poster downloads and release badges instead of measuring pending cards during scrolling.
+- Prepare the next TV poster with the fitted row's known slot count instead of measuring a poster immediately after resizing the row.
+- Append fetched TV rows after the scroll step when the catalogue already has a full screen ahead.
+
+## 0.5.176
+
+- Reuse IntersectionObserver visibility for catalogue rows and their posters, avoiding nested native visibility scans.
+- Prepare one TV row per frame and defer fitted-row measurements before reading geometry during remote navigation.
+- Keep row resizing tied to content and layout changes without a second fit after every remote gesture.
+- Keep the first TV collection at the shared poster size when moving between the hero and cards. Coalesce vertical positioning after native focus changes.
+- Reuse cached artwork palettes before sampling and asynchronously reduce large TV images for palette extraction.
+
+## 0.5.175
+
+- Prepare catalogue rows by visibility and process only deferred rows after remote navigation.
+- Show available online files while optional episode metadata and season counts load. Update existing cards in batches and reuse episode geometry during vertical navigation.
+- Mount long vertical seasons in batches when the restored focus and resume are near the start. Read watch history once per list update.
+- Limit incremental interface scaling to inserted subtrees and remove its subscriptions when stopped.
+
+## 0.5.174
+
+- Keep TV Glass surfaces translucent without live backdrop filters or a material change during scrolling. Use a static inset outline for TV Glass poster and episode focus.
+
 ## 0.5.173
 
 - Avoid recalculating poster grid styles when cards are added to horizontal collections, including Standard and Shikimori anime.

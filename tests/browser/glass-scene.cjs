@@ -276,6 +276,7 @@ async function run(engine, browser, mode) {
   for (const theme of ['minimal','glass']) {
    await page.evaluate(theme=>Lampa.Storage.set('lampa_view_theme',theme), theme);
    await page.waitForFunction(theme=>document.body.dataset.lampaTheme===theme, theme);
+   const staticFocus=mode==='tv' && theme==='glass';
    const marker=page.locator('#qa-native-history .icon--history');
    assert.equal(await marker.count(),1);
    const normal=await marker.evaluate(node=>{
@@ -289,7 +290,7 @@ async function run(engine, browser, mode) {
    assert.equal(normal.legacy,'none');
    await page.locator('#qa-native-history').evaluate(n=>n.classList.add('focus'));
    assert.equal(await marker.count(),1);
-   assert.match(await page.locator('#qa-native-history .card__view').evaluate(n=>getComputedStyle(n,'::after').boxShadow),/1px inset/);
+   assert.match(await page.locator('#qa-native-history .card__view').evaluate(n=>getComputedStyle(n,'::after').boxShadow),staticFocus?/2px inset/:/1px inset/);
    await page.locator('#qa-native-history').evaluate(n=>n.classList.remove('focus'));
    for (const [target,view] of [['#qa-native-unwatched','.card__view'],['#qa-nova-preview .nova-card','.nova-card__thumb']]) {
     const card = page.locator(target).first();
@@ -300,18 +301,18 @@ async function run(engine, browser, mode) {
     await card.evaluate(n=>n.classList.add('focus'));
     await page.waitForTimeout(35);
     const moving=await card.evaluate((n,view)=>n.querySelector(view).getAnimations().some(animation=>animation.playState==='running'),view);
-    assert.equal(moving,true,'The poster moves over actual animation frames');
+    assert.equal(moving,!staticFocus,'TV Glass focuses without animating the poster');
     await page.waitForTimeout(260);
     const after = await card.evaluate((n,view)=>{
      const art=n.querySelector(view), face=getComputedStyle(art,'::after');
      return {outer:n.offsetTop,art:art.getBoundingClientRect().y-n.getBoundingClientRect().y,transform:getComputedStyle(art).transform,halo:face.boxShadow,opacity:face.opacity,indicator:face.backgroundImage,edge:face.borderTopColor};
     },view);
     assert.equal(after.outer,before.outer,target);
-    assert.ok(Math.abs(after.art-before.art+3)<.1,JSON.stringify({before,after,theme,target}));
-    assert.match(after.transform,/matrix\(1, 0, 0, 1, 0, -3\)/);
-    assert.equal(after.indicator,'none');assert.match(after.halo,/1px inset/,'The inset contour follows the poster radius');
+    assert.ok(Math.abs(after.art-before.art+(staticFocus?0:3))<.1,JSON.stringify({before,after,theme,target}));
+    assert.match(after.transform,staticFocus?/^none$/:/matrix\(1, 0, 0, 1, 0, -3\)/);
+    assert.equal(after.indicator,'none');assert.match(after.halo,staticFocus?/2px inset/:/1px inset/,'The inset contour follows the poster radius');
     assert.equal(await card.locator('.icon--history').count(),0);
-    assert.match(after.halo,/rgba\(255, 255, 255, 0.18\)/);
+    if(!staticFocus)assert.match(after.halo,/rgba\(255, 255, 255, 0.18\)/);
     assert.equal(after.opacity,'1');
 
     await card.evaluate(n=>n.classList.remove('focus'));
@@ -333,10 +334,10 @@ async function run(engine, browser, mode) {
    for(const motion of ['on','system','off','on']){
     await page.evaluate(motion=>Lampa.Storage.set('lampa_view_card_motion',motion),motion);await page.waitForTimeout(260);
     const style=await face.evaluate(node=>{const s=getComputedStyle(node),halo=getComputedStyle(node,'::after');return {transform:s.transform,duration:s.transitionDuration,halo:halo.boxShadow,edge:halo.backgroundImage};});
-    if(motion==='on'){assert.match(style.transform,/matrix\(1, 0, 0, 1, 0, -3\)/);assert.notEqual(style.duration,'0s');}
+    if(motion==='on' && !staticFocus){assert.match(style.transform,/matrix\(1, 0, 0, 1, 0, -3\)/);assert.notEqual(style.duration,'0s');}
     else{assert.equal(style.transform,'none');assert.equal(style.duration,'0s');}
-    assert.equal(style.edge,'none');assert.match(style.halo,/1px inset/);
-    assert.match(style.halo,/rgba\(255, 255, 255, 0.18\)/,'All card motion modes preserve the readable glow');
+    assert.equal(style.edge,'none');assert.match(style.halo,staticFocus?/2px inset/:/1px inset/);
+    if(!staticFocus)assert.match(style.halo,/rgba\(255, 255, 255, 0.18\)/);
     assert.equal(await page.evaluate(()=>Lampa.Storage.get('animation')),stoppedNativeAnimation,'The plugin mode does not change the host preference');
    }
    await page.evaluate(value=>Lampa.Storage.set('animation',value),nativeAnimation);

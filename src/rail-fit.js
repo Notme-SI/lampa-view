@@ -22,9 +22,8 @@ export default function fitRail(line,root,card,state,enabled){
  const font=parseFloat(getComputedStyle(card).fontSize)||16,viewWidth=view.getBoundingClientRect().width,profile=getComputedStyle(document.body),columns=profile.getPropertyValue('--pt-poster-columns'),scale=parseFloat(profile.getPropertyValue('--pt-interface-scale'))||1;
  if(!viewWidth)return;
  const hero=root.previousElementSibling,home=hero && hero.matches('.pt-hero') && !document.body.classList.contains('pt-mobile');
- const preview=root.classList.contains('minimal-hero-preview');
  const cards=Math.max(.8,Math.min(2,parseFloat(profile.getPropertyValue('--pt-card-scale'))||1));
- const key=cards+':'+columns+':'+scale+':'+Boolean(preview)+':'+innerWidth+':'+innerHeight+':'+Boolean(home)+':'+viewWidth.toFixed(3)+':'+font.toFixed(3)+':'+(document.body.classList.contains('pt-tv')?'tv':document.body.classList.contains('pt-mobile')?'mobile':'desktop');
+ const key=cards+':'+columns+':'+scale+':'+innerWidth+':'+innerHeight+':'+Boolean(home)+':'+viewWidth.toFixed(3)+':'+font.toFixed(3)+':'+(document.body.classList.contains('pt-tv')?'tv':document.body.classList.contains('pt-mobile')?'mobile':'desktop');
  // Lazy append can change native scroll bounds without changing poster dimensions.
  // Reconcile the focused card after TV navigation is idle as well as after resize.
  function revealFocus(){
@@ -37,7 +36,7 @@ export default function fitRail(line,root,card,state,enabled){
   const placed=target.getBoundingClientRect(),overflow=placed.left<start?placed.left-start:placed.right>end?placed.right-end:0;
   if(overflow && line.scroll.shift)line.scroll.shift(overflow);
  }
- if(state.posterFitKey===key){if(home)homeStage(hero,root);revealFocus();return;}
+ if(state.posterFitKey===key){if(home)homeStage(hero,root);revealFocus();return line.scroll.minimalPosterFit;}
 
  root.classList.add('minimal-fit-posters');
  root.style.setProperty('--minimal-poster-gutter',Math.ceil(font*.55)+'px');
@@ -56,7 +55,7 @@ export default function fitRail(line,root,card,state,enabled){
  let count=Math.max(1,Math.min(24,Math.round((available+gap)/(target+gap))));
  if(document.body.classList.contains('pt-tv')){
   // Explicit slots prevent round-to-nearest from making adjacent TV sizes equal.
-  count=(parseInt(columns,10) || count)+(preview?2:0);
+  count=parseInt(columns,10) || count;
  }else if(scale>1 && !fixed){
   const normal=normalSlots(root,font,viewWidth,scale);
   if(normal>2){
@@ -96,6 +95,7 @@ export default function fitRail(line,root,card,state,enabled){
  // the focused card when replacing the native width, just as on later resizes.
  if(line.last && line.scroll.immediate)line.scroll.immediate(line.last,true);
  revealFocus();
+ return line.scroll.minimalPosterFit;
 }
 
 export function railSnapDelta(view,position){

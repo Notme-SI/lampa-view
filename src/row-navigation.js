@@ -1,7 +1,7 @@
 import {text as lampaViewText} from './i18n.js';
-import rowOverlay from './row-overlay.js';
 import {isAnime} from './metadata.js';
-// Remote navigation keeps one-card steps and can reach the trailing More tile.
+import {canFocusOrdered,focusOrdered} from './ordered-focus.js';
+// Remote navigation keeps one-card steps and can reach the collection button.
 export default function rowNavigation(L,line,enabled){
  if(!line.use || !line.scroll || !L.Controller)return;
  const render=line.render(true),root=render && (render.nodeType?render:render[0]);
@@ -27,24 +27,32 @@ export default function rowNavigation(L,line,enabled){
  if(people && tv() && line.params && line.params.items)line.params.items.align_left=true;
  const node=item=>{const r=item && item.render(true);return r && (r.nodeType?r:r[0]);};
  const total=()=>(line.data.results || []).length || line.items.length;
- let more,disposed=false;
+ let more,moreSlot,moreFrame=0,moreDisposed=false;
  const viewport=()=>line.scroll.render(true);
  const visibleMore=()=>more && !more.hidden;
  const hasNext=()=>Number(line.data.total_pages)>Number(line.data.page || 1) || line.data.minimal_has_more===true;
- function idle(){if(!disposed && enabled() && tv() && root.isConnected && L.Controller.own(line) && line.minimalPosterRefresh)line.minimalPosterRefresh();}
+ function canFocusKnown(target){
+  // Row movement already chose a concrete item. Hand it to the host's focus
+  // handler without running spatial navigation's size and visibility reads.
+  return enabled() && root.classList.contains('minimal-posters-sized') && L.Controller.own(line) &&
+   target?.matches('.card,.minimal-row-more') && canFocusOrdered(L,target,root);
+ }
  function focus(target){
   // The active row already owns its native collection. Keep its current focus
   // until native hover:focus positions the next poster, including lazy appends.
   if(L.Controller.own(line))L.Controller.collectionAppend(target);
   else L.Controller.collectionSet(viewport());
-  if(tv() && visibleMore())L.Controller.collectionAppend(more);
-  L.Controller.collectionFocus(target,viewport());
+  if(canFocusKnown(target))focusOrdered(L,target);
+  else L.Controller.collectionFocus(target,viewport());
  }
  function move(direction,fallback){
-  if(!enabled()){if(fallback)fallback();return;}
+  if(!enabled()){fallback?.();return;}
   if(visibleMore()){
    if(line.last===more && direction<0){focus(node(line.items[Math.min(line.active,total()-1)]));return;}
-   if(direction>0 && line.active>=total()-1){line.last=more;line.scroll.update(more,false);L.Controller.collectionAppend(more);L.Controller.collectionFocus(more,root);return;}
+   if(direction>0 && line.active>=total()-1){
+    if(line.last!==more){line.last=more;line.scroll.update(moreSlot,false);focus(more);}
+    return;
+   }
   }
   const old=line.active || 0,index=old+direction;
   if(index<0 || index>=total()){if(fallback)fallback();return;}
@@ -54,51 +62,71 @@ export default function rowNavigation(L,line,enabled){
   // previous index until that event, including the step back to card zero.
   line.active=old;line.last=target;focus(target);line.active=index;
  }
- function button(className,label,svg,action){
-  const b=document.createElement('button');b.type='button';b.className=className;b.title=label;b.setAttribute('aria-label',label);b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+svg+'</svg>';
-  const activate=event=>{event.preventDefault();event.stopImmediatePropagation();action();};
-  b.addEventListener('click',activate);b.addEventListener('hover:enter',activate);b.addEventListener('keydown',event=>{if(event.key==='Enter' || event.key===' ')activate(event);});return b;
- }
  const canMore=!people && (head.querySelector('.items-line__more') || line.data.url || line.data.onMore || line.params && line.params.emit && line.params.emit.onMore);
- if(canMore)more=button('minimal-row-more selector',lampaViewText("Показать ещё"),'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',()=>{if(!enabled())return;line.emit('more',line.data);});
- if(more){
+ if(canMore){
+  more=document.createElement('button');
+  more.type='button';more.className='minimal-row-more selector';
+  more.title=lampaViewText('Показать ещё');more.setAttribute('aria-label',more.title);
+  more.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>';
+  const activate=event=>{
+   event.preventDefault();event.stopImmediatePropagation();
+   if(enabled() && visibleMore())line.emit('more',line.data);
+  };
+  more.addEventListener('click',activate);
+  more.addEventListener('hover:enter',activate);
+  more.addEventListener('keydown',event=>{if(event.key==='Enter' || event.key===' ')activate(event);});
   const label=document.createElement('span');label.textContent=lampaViewText('Ещё');more.appendChild(label);
-  more.hidden=!hasNext();more.classList.toggle('selector',!more.hidden);
+  moreSlot=document.createElement('div');moreSlot.className='minimal-row-tail';moreSlot.appendChild(more);
+  root.classList.add('pt-overlay-row');
+  moreSlot.hidden=more.hidden=!hasNext();more.classList.toggle('selector',!more.hidden);
   more.addEventListener('hover:focus',()=>{if(visibleMore())line.last=more;});
  }
- function measureMore(view,card){
-  const body=card.parentElement,content=body.parentElement;
-  const cards=Array.from(body.children).filter(node=>node.matches('.card'));
-  const padding=getComputedStyle(content),room=view.clientWidth-(parseFloat(padding.paddingLeft)||0)-(parseFloat(padding.paddingRight)||0);
-  if(room<=0)return;
-  const first=cards[0].getBoundingClientRect(),last=cards[cards.length-1].getBoundingClientRect();
-  const gap=cards.length>1?Math.abs(cards[1].offsetLeft-card.offsetLeft)-card.offsetWidth:line.scroll.minimalPosterFit?.gap || 0;
-  const span=Math.max(first.right,last.right)-Math.min(first.left,last.left);
-  const remaining=Math.max(0,total()-cards.length);
-  const overflow=span+remaining*(first.width+Math.max(0,gap))>room+1;
-  const hide=!hasNext() && !overflow;
+ function refreshMore(){
+  if(!more || moreDisposed || !root.isConnected)return;
+  const view=viewport(),fit=line.scroll.minimalPosterFit,paged=hasNext();
+  let overflow=false;
+  if(!paged){
+   if(fit && root.classList.contains('minimal-posters-sized'))overflow=total()>fit.count;
+   else{
+    const body=moreSlot.parentElement,card=body?.querySelector('.card');
+    if(!card)return;
+    const width=card.offsetWidth;if(!width)return;
+    const padding=getComputedStyle(body.parentElement),style=getComputedStyle(card);
+    const room=view.clientWidth-(parseFloat(padding.paddingLeft)||0)-(parseFloat(padding.paddingRight)||0);
+    const gap=(parseFloat(style.marginLeft)||0)+(parseFloat(style.marginRight)||0);
+    overflow=width+Math.max(0,total()-1)*(width+gap)>room+1;
+   }
+  }
+  const hide=!paged && !overflow;
   if(more.hidden===hide)return;
   const restore=hide && line.last===more;
-  more.hidden=hide;
+  moreSlot.hidden=more.hidden=hide;
   more.classList.toggle('selector',!hide);
   if(restore){const target=node(line.items[Math.min(line.active,total()-1)]);if(target){line.last=target;if(L.Controller.own(line))focus(target);}}
   else if(hide && L.Controller.own(line))L.Controller.collectionSet(view);
  }
- const overlay=more?rowOverlay(root,viewport,measureMore):null;
- if(overlay)line.minimalMoreRefresh=overlay.refresh;
+ const request=window.requestAnimationFrame?.bind(window) || window.setTimeout.bind(window);
+ const cancel=window.cancelAnimationFrame?.bind(window) || window.clearTimeout.bind(window);
+ function scheduleMore(){
+  if(!more || moreDisposed || moreFrame)return;
+  moreFrame=request(()=>{moreFrame=0;refreshMore();});
+ }
+ const moreResize=more && window.ResizeObserver?new ResizeObserver(scheduleMore):null;
+ if(more){line.minimalMoreRefresh=refreshMore;moreResize?.observe(root);}
  // Watching the two edges avoids :has(.focus) invalidating a rail's styles
  // whenever the remote moves between two cards in the middle of the row.
  const clip=root.querySelector('.items-line__body');
  let firstEdge,lastEdge;
  const selected=card=>!!card?.matches('.focus,.hover,.pt-card-pointer');
  function updateEdges(){
-  clip.classList.toggle('pt-poster-edge-start',selected(firstEdge));
-  clip.classList.toggle('pt-poster-edge-end',selected(lastEdge));
+  const start=!tv() && selected(firstEdge),end=!tv() && selected(lastEdge);
+  if(clip.classList.contains('pt-poster-edge-start')!==start)clip.classList.toggle('pt-poster-edge-start',start);
+  if(clip.classList.contains('pt-poster-edge-end')!==end)clip.classList.toggle('pt-poster-edge-end',end);
  }
  const edgeObserver=clip && window.MutationObserver?new MutationObserver(updateEdges):null;
  function watchEdges(body){
   if(!edgeObserver)return;
-  const first=body?.firstElementChild,last=body?.lastElementChild;
+  const first=body?.firstElementChild,last=moreSlot?.parentElement===body?moreSlot.previousElementSibling:body?.lastElementChild;
   const start=first?.matches('.card')?first:null,end=last?.matches('.card')?last:null;
   if(start===firstEdge && end===lastEdge)return;
   edgeObserver.disconnect();
@@ -108,15 +136,31 @@ export default function rowNavigation(L,line,enabled){
  }
  function mountMore(){
   const body=viewport().querySelector('.scroll__body');
-  if(more && body && body.lastElementChild!==more)body.appendChild(more);
+  if(moreSlot && body && body.lastElementChild!==moreSlot)body.appendChild(moreSlot);
   watchEdges(body);
-  overlay?.refresh();
+  scheduleMore();
  }
  mountMore();
  line.use({onAppend:mountMore,onVisible:mountMore,onDestroy(){
-  overlay?.destroy();
+  moreDisposed=true;
+  if(moreFrame)cancel(moreFrame);
+  moreResize?.disconnect();
   edgeObserver?.disconnect();
  }});
- line.use({onController(controller){const left=controller.left,right=controller.right,toggle=controller.toggle;controller.left=()=>move(-1,left);controller.right=()=>move(1,right);controller.toggle=function(){const result=toggle && toggle.apply(this,arguments);if(tv() && visibleMore())L.Controller.collectionAppend(more);return result;};},onDestroy(){disposed=true;document.removeEventListener('minimal:tv-idle',idle);}});
- document.addEventListener('minimal:tv-idle',idle);
+ line.use({onController(controller){
+  const {left,right,toggle}=controller;
+  controller.left=()=>move(-1,left);
+  controller.right=()=>move(1,right);
+  controller.toggle=function(){
+   // Native entry creates the collection. A fitted TV row can reuse its
+   // saved item (or the first poster) instead of searching that collection.
+   const target=line.last || node(line.items[0]);
+   if(canFocusKnown(target)){
+    L.Controller.collectionSet(viewport());
+    focusOrdered(L,target);
+    return line.emit('toggle');
+   }
+   return toggle?.apply(this,arguments);
+  };
+ }});
 }

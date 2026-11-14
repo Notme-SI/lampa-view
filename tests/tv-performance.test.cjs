@@ -59,8 +59,12 @@ test('TV visible posters load during navigation while offscreen work stays lazy 
   const Card=L.Maker.get('Card',{}),cards=[];
   for(let i=0;i<3;i++){
    const c=L.Utils.createInstance(Card,{id:100+i,title:'Film',poster_path:'/poster'+i+'.jpg',source:'tmdb'});c.create();const node=c.render(true);w.document.body.appendChild(node);cards.push(c);
-   c.onscreen=i!==1;node.getBoundingClientRect=()=>({width:120,left:0,right:120,top:c.onscreen?0:4000,bottom:c.onscreen?180:4180});
+   c.onscreen=i!==1;node.getBoundingClientRect=()=>({width:120,height:180,left:0,right:120,top:c.onscreen?0:4000,bottom:c.onscreen?180:4180});
    c.visible();c.img.dispatchEvent(new w.Event('load'));
+  }
+  for(const observer of observers){
+   const entries=cards.filter(card=>observer.nodes.has(card.render(true))).map(card=>({target:card.render(true),isIntersecting:card.onscreen}));
+   if(entries.length)observer.callback(entries);
   }
   const move=()=>w.document.dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowDown',keyCode:40,bubbles:true}));
   move();assert.ok(w.document.body.classList.contains('pt-tv-busy'));await wait(200);move();await wait(200);move();await wait(250);

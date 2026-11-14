@@ -25,6 +25,7 @@ import installWheel from './wheel.js';
 import catalogueScroll from './catalogue-scroll.js';
 import logoLoader,{matchCatalogue} from './logos.js';
 import fillRows from './rows.js';
+import {canFocusOrdered,focusOrdered} from './ordered-focus.js';
 import unifiedSettings from './settings.js';
 import shikimori from './shikimori.js';
 import collections from './collections.js';
@@ -40,7 +41,6 @@ import historyCards from './history-cards.js';
 import installBack from './back.js';
 import mpvLaunch from './mpv-launch.cjs';
 import carousel from './carousel.js';
-import tvHomeStage from './tv-home-stage.js';
 import tvPerformance from './tv-performance.js';
 import {cacheSettings} from './cache-control.js';
 import onlineState from './online-state.js';
@@ -563,17 +563,21 @@ if (!ROOT.LampaView) {
         carousels.add(rotation);
         if(activity.component && activity.component.use)activity.component.use({onStart:refreshCarousels,onPause:refreshCarousels,onDestroy:()=>{rotation.dispose();carousels.delete(rotation);}});
       }
-      const tvStage=tvHomeStage(line[0],nativeLine,activity),up=()=>anime?activity.component.minimalAnimeTabs?.():L.Controller.toggle('head');
+      const up=()=>anime?activity.component.minimalAnimeTabs?.():L.Controller.toggle('head');
       if(L.Controller && nativeLine && nativeLine.use && nativeLine.toggle){
         let firstFocus=true;
         const enterHero=()=>{
           if(!yes('lampa_view_enabled') || !yes('lampa_view_hero'))return up();
           // Returning after a native activity rebuild also consumes the initial entry.
           firstFocus=false;
-          const focusControl=()=>L.Controller.collectionFocus(controls.eq(focus),element);
+          const focusControl=()=>{
+            const target=controls[focus];
+            if(canFocusOrdered(L,target,element[0]))focusOrdered(L,target);
+            else L.Controller.collectionFocus(controls.eq(focus),element);
+          };
           L.Controller.add('lampa_view_hero',{
+            update:activity.component?.scroll?.minimalBrowserScroll?.updateLayer,
             toggle:()=>{
-              if(tvStage)tvStage.compact();
               const component=activity.component;
               if(component && component.scroll && component.scroll.update)component.scroll.update(element[0]);
               L.Controller.collectionSet(element);focusControl();
@@ -581,12 +585,12 @@ if (!ROOT.LampaView) {
             left:()=>{if(controls.eq(focus).is('.pt-hero__dot')){const next=(dots.children().index(controls.eq(focus))+cards.length-1)%cards.length;show(next);focus=controls.index(dots.children().eq(next));focusControl();}},
             right:()=>{const next=controls.eq(focus).is('.pt-hero__dot')?(dots.children().index(controls.eq(focus))+1)%cards.length:index;if(controls.eq(focus).is('.pt-hero__dot'))show(next);focus=controls.index(dots.children().eq(next));focusControl();},
             up:()=>{if(controls.eq(focus).is('.pt-hero__dot')){focus=controls.index(details);focusControl();}else up();},
-            down:()=>{if(tvStage)tvStage.expand();nativeLine.toggle();},
+            down:()=>nativeLine.toggle(),
             back:up
           });L.Controller.toggle('lampa_view_hero');
         };
         element[0]._minimalHeroEnter=()=>{focus=controls.index(details);enterHero();};
-        nativeLine.use({onlyUp:()=>element.hasClass('pt-hero--pending')?up():enterHero(),onToggle:()=>{if(firstFocus && !anime){firstFocus=false;focus=0;setTimeout(()=>{if((L.Activity.active() || {}).activity===activity && !document.body.matches('.settings--open,.selectbox--open,.menu--open'))enterHero();},0);}else if(tvStage)tvStage.expand();}});
+        nativeLine.use({onlyUp:()=>element.hasClass('pt-hero--pending')?up():enterHero(),onToggle:()=>{if(firstFocus && !anime){firstFocus=false;focus=0;setTimeout(()=>{if((L.Activity.active() || {}).activity===activity && !document.body.matches('.settings--open,.selectbox--open,.menu--open'))enterHero();},0);}}});
         if(!anime && activity.component && activity.component.use){
           activity.component.use({onStart:()=>{if(P.layout!=='mobile')setTimeout(()=>{if((L.Activity.active() || {}).activity===activity)enterHero();},0);}});
           const enabled=L.Controller.enabled && L.Controller.enabled();
@@ -760,6 +764,7 @@ if (!ROOT.LampaView) {
     ROOT.addEventListener('keydown',event=>{
       if(!yes('lampa_view_enabled') || !/^Arrow/.test(event.key || '') ||
         event.target.closest?.('input,textarea,[contenteditable=true]'))return;
+      if(document.body.matches('.pt-tv.pt-arrow-navigation'))return;
       if(!document.body.classList.contains('pt-arrow-navigation'))document.body.classList.add('pt-arrow-navigation');
       document.querySelectorAll('.head .hover').forEach(node=>node.classList.remove('hover'));
       document.querySelectorAll('.card.pt-card-pointer').forEach(node=>node.classList.remove('pt-card-pointer'));

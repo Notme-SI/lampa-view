@@ -3,7 +3,7 @@ const {chromium,webkit}=require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const {setup}=require('../fixtures/native-browser.cjs');
 const output=process.env.LAMPA_QA_OUTPUT;
 async function geometry(page){return page.locator('.activity--active .minimal-posters-sized').first().evaluate(root=>{
- const view=root.querySelector('.scroll--horizontal').getBoundingClientRect(),cards=[...root.querySelectorAll('.card,.minimal-row-more')].map(node=>{const r=(node.querySelector('.card__view') || node).getBoundingClientRect();return {left:r.left,right:r.right,width:r.width};});
+ const view=root.querySelector('.scroll--horizontal').getBoundingClientRect(),cards=[...root.querySelectorAll('.card,.minimal-row-tail:not([hidden])')].map(node=>{const r=(node.querySelector('.card__view') || node).getBoundingClientRect();return {left:r.left,right:r.right,width:r.width};});
  const visible=cards.filter(r=>r.right>view.left+1 && r.left<view.right-1);
  const component=Lampa.Activity.active().activity.component,line=component.items.find(item=>item.render(true)===root),fit=line.scroll.minimalPosterFit;
  return {desktop:document.body.classList.contains('pt-desktop'),fit,view:{left:view.left,right:view.right,width:view.width},visible,partial:visible.filter(r=>r.left<view.left-1 || r.right>view.right+1),active:line.active,position:line.scroll.position(),scrollLeft:root.querySelector('.scroll--horizontal').scrollLeft,focused:[...root.querySelectorAll('.card.focus,.card.hover')].map(n=>[...root.querySelectorAll('.card')].indexOf(n)),total:cards.length,results:line.data.results.length+Number(!!root.querySelector('.minimal-row-more'))};

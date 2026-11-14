@@ -6,7 +6,8 @@ export default function catalogueScroll(L,enabled,preparePoster){
  const create=L.Component?.create,visible=L.Layer?.visible,grids=new WeakMap();
  if(typeof create!=='function')return;
  if(typeof visible==='function')L.Layer.visible=function(where){
-  const node=where?.nodeType?where:where?.[0];
+  const target=where || L.Activity?.active()?.activity?.render(true);
+  const node=target?.nodeType?target:target?.[0];
   const grid=grids.get(node);
   if(grid?.active())return grid.schedule();
   return visible.apply(this,arguments);
@@ -19,8 +20,8 @@ export default function catalogueScroll(L,enabled,preparePoster){
    onCreate(){
     const rows=!item.body && ['main','category'].includes(object?.component);
     if(!rows && !item.body?.classList.contains('mapping--grid'))return;
-    navigation=mount(L,item,enabled,visible,preparePoster,rows);
-    if(navigation)grids.set(item.scroll.render(true),navigation);
+    navigation=mount(L,item,enabled,visible,preparePoster,rows,(node,owner)=>grids.set(node,owner));
+    if(navigation){grids.set(item.scroll.render(true),navigation);grids.set(item.render(true),navigation);}
    },
    onAppend(card){navigation?.append(card);},
    onController(controller){
@@ -40,26 +41,44 @@ export default function catalogueScroll(L,enabled,preparePoster){
  };
 }
 
-function mount(L,item,enabled,visible,preparePoster,rows){
+function mount(L,item,enabled,visible,preparePoster,rows,trackVisibility){
  const scroll=item.scroll,node=scroll.render(true),body=scroll.body(true),content=body?.parentElement;
  if(!node?.classList.contains('scroll') || node.classList.contains('scroll--horizontal') ||
     !body?.matches('.scroll__body') || body.parentElement?.parentElement!==node)return;
  const methods=['position','vieport','update','immediate','shift','reset','restorePosition','animated'];
  const original=Object.fromEntries(methods.map(key=>[key,scroll[key]]));
  let frame=0,manualFocus=false,requested=false,pausedAt=null,paused=false,idleTimer;
- let originalEnd,notifyEnd,returnFocus=false,returnFrame=0;
+ let originalEnd,notifyEnd,returnFocus=false,returnFrame=0,revealFrame=0,revealTarget;
+ let layerUpdatePending=false;
  const motion=scrollMotion(()=>node.scrollTop,value=>{node.scrollTop=value;},document.body.classList.contains('pt-tv')?190:160);
  const active=()=>enabled() && node.classList.contains('pt-browser-catalogue');
  const native=(key,args)=>original[key]?.apply(scroll,args);
  const unwrap=target=>target?.nodeType?target:target?.[0];
  const children=()=>rows?body:item.body;
  const margin=Math.min(850,window.innerHeight || 540);
+ const visibleQueue=new Set();
+ let visibilityFrame=0;
+ function revealVisible(){
+  visibilityFrame=0;
+  if(!active() || paused)return;
+  const limit=document.body.classList.contains('pt-tv')?4:12;
+  let count=0;
+  for(const card of visibleQueue){
+   visibleQueue.delete(card);
+   if(card.isConnected && body.contains(card))show(card);
+   if(++count>=limit)break;
+  }
+  if(visibleQueue.size)visibilityFrame=requestAnimationFrame(revealVisible);
+ }
  const observer=typeof IntersectionObserver==='function' && typeof visible==='function'?new IntersectionObserver(entries=>{
   if(!active() || paused)return;
-  for(const {target,isIntersecting} of entries)if(isIntersecting && children().contains(target)){
-   show(target);
-   if(target.called_visible && target.style.visibility!=='hidden')observer.unobserve(target);
+  for(const {target,isIntersecting,boundingClientRect} of entries){
+   if(!isIntersecting){visibleQueue.delete(target);continue;}
+   if(!body.contains(target))continue;
+   target.bond=boundingClientRect;
+   visibleQueue.add(target);
   }
+  if(visibleQueue.size && !visibilityFrame)visibilityFrame=requestAnimationFrame(revealVisible);
  },{root:node,rootMargin:margin+'px 0px'}):null;
  const windowed=rows?null:catalogueWindow(item,node,item.body,{
   attach(card){preparePoster?.(card,card.card_data,item.body);if(!paused && card.matches('.layer--visible') && (!card.called_visible || card.style.visibility==='hidden'))observer?.observe(card);},
@@ -70,29 +89,46 @@ function mount(L,item,enabled,visible,preparePoster,rows){
   // IO already resolved visibility for these leaf cards. Layer.visible would
   // synchronously measure again after each previous card's visible handlers
   // modified the DOM, forcing one layout per poster.
-  if(observer && !rows && typeof L.Utils?.trigger==='function' && card.matches('.card') && !card.querySelector('.layer--visible')){
+  const posters=card.matches('.items-line') && card.querySelector('.card') && !card.querySelector('.full-person,.full-review,.full-review-add');
+  if(observer && typeof L.Utils?.trigger==='function' && (posters || card.matches('.card') && !card.querySelector('.layer--visible'))){
    card.visible=true;
    if(!card.called_visible){card.called_visible=true;L.Utils.trigger(card,'visible');}
    if(card.style.visibility==='hidden' || card.visibility==='hidden'){
     card.visibility='visible';card.style.visibility='visible';L.Utils.trigger(card,'visible:change');
    }
+   observer.unobserve(card);
    return;
   }
   if(!card.called_visible || card.style.visibility==='hidden')visible?.call(L.Layer,card);
+  if(card.called_visible && card.style.visibility!=='hidden')observer?.unobserve(card);
  }
  function observeCards(){
   if(!observer)return;
-  for(const card of children().children)if(card.matches('.layer--visible') && (!card.called_visible || card.style.visibility==='hidden'))observer.observe(card);
+  const targets=rows?body.querySelectorAll('.items-line.layer--visible,.card.layer--visible'):children().children;
+  for(const card of targets)if(card.matches('.layer--visible') && (!card.called_visible || card.style.visibility==='hidden'))observer.observe(card);
  }
  function append(card){
   if(!active())return;
   const element=unwrap(card.render?.(true));
   if(rows && card.use)card.use({onController(controller){
+   if(!controller.update && element?.matches('.minimal-posters-sized')){
+    controller.update=updateLayer;
+   }
    for(const direction of ['up','down']){
     const original=controller[direction];if(typeof original!=='function')continue;
     controller[direction]=function(){return navigationDirection(direction,()=>original.apply(this,arguments));};
    }
   }});
+  if(rows && observer && card.scroll && card.use && element?.matches('.items-line')){
+   const watch=poster=>{
+    const node=unwrap(poster.render?.(true));
+    if(node?.matches('.card.layer--visible') && (!node.called_visible || node.style.visibility==='hidden'))observer.observe(node);
+   };
+   const refresh=()=>{if(!paused)(card.items || []).forEach(watch);};
+   trackVisibility(card.scroll.render(true),{active:()=>active() && !!element.querySelector('.card') && !element.querySelector('.full-person,.full-review,.full-review-add'),schedule:refresh});
+   card.use({onAppend:watch,onDestroy(){for(const poster of card.items || []){const node=unwrap(poster.render?.(true));if(node){observer.unobserve(node);visibleQueue.delete(node);}}}});
+   refresh();
+  }
   if(!element?.matches('.card:not(.card--wide):not(.card--collection)')){
    if(!paused && element?.matches('.layer--visible'))observer?.observe(element);
    return;
@@ -112,15 +148,21 @@ function mount(L,item,enabled,visible,preparePoster,rows){
  function flush(){
   frame=0;
   const requestPage=requested;requested=false;
-  if(!active() || paused || !node.isConnected || !node.clientHeight)return;
+  if(!active() || paused || !node.isConnected)return;
+  const height=node.clientHeight;
+  if(!height)return;
   const queued=item.loaded?.length || 0;
-  if(queued){
+  const remaining=queued || requestPage ? node.scrollHeight-height-node.scrollTop : 0;
+  // Let the TV finish its scroll step before appending a fetched row when
+  // there is still a full screen ahead. At the edge, keep loading immediately.
+  const waitForScroll=rows && document.body.classList.contains('pt-tv') &&
+   (motion.active() || node.classList.contains('pt-catalogue-moving')) && remaining>height;
+  if(queued && !waitForScroll){
    if(rows)item.emit('pushLoaded');else scroll.onScroll?.(node.scrollTop);
   }
   windowed?.update();
   if(!observer)nearby(node.clientHeight).forEach(show);
-  if(requestPage && scroll.onEnd &&
-    node.scrollHeight-node.clientHeight-node.scrollTop<=Math.max(850,node.clientHeight*1.6))scroll.onEnd();
+  if(requestPage && scroll.onEnd && !(rows && queued) && remaining<=Math.max(850,height*1.6))scroll.onEnd();
   node.dispatchEvent(new Event('minimal:viewport-scroll'));
   // Lampac/Lampa can deliver the next page as several native batches.
   if(item.loaded?.length && item.loaded.length<queued)schedule();
@@ -156,13 +198,29 @@ function mount(L,item,enabled,visible,preparePoster,rows){
   if(paused)return;
   if(!node.classList.contains('pt-catalogue-moving'))node.classList.add('pt-catalogue-moving');
   clearTimeout(idleTimer);idleTimer=setTimeout(settle,120);
-  schedule(true);
+  if(!rows || !document.body.classList.contains('pt-tv') || !observer)schedule(true);
  }
  function settle(){
   if(node.classList.contains('pt-catalogue-moving')){
    node.classList.remove('pt-catalogue-moving');
+   if(rows)schedule(true);
    setTimeout(()=>document.dispatchEvent(new Event('minimal:catalogue-idle')),0);
   }
+ }
+ function settleLayer(){
+  if(!layerUpdatePending)return;
+  layerUpdatePending=false;
+  if(active() && !paused && node.isConnected)L.Layer?.update?.();
+ }
+ function updateLayer(){
+  // Moving between controls in the same TV catalogue leaves the shell size
+  // unchanged. Let its native refresh run once after the focus gesture.
+  if(active() && document.body.matches('.pt-tv.pt-tv-busy')){
+   layerUpdatePending=true;
+   return;
+  }
+  layerUpdatePending=false;
+  return L.Layer?.update?.();
  }
  function touch(event){
   if(active() && event.target.closest?.('.scroll')===node)event.stopPropagation();
@@ -184,6 +242,20 @@ function mount(L,item,enabled,visible,preparePoster,rows){
   if(top<0)scrollTo(node.scrollTop+top,smooth);
   else if(bottom>0)scrollTo(node.scrollTop+bottom,smooth);
   else motion.stop();
+ }
+ function requestReveal(target){
+  revealTarget=target;
+  if(revealFrame)return;
+  // Native row focus changes several styles before emitting onToggle. Read
+  // the final target once after that work, rather than between focus writes.
+  revealFrame=requestAnimationFrame(()=>{
+   revealFrame=0;const target=revealTarget;revealTarget=null;
+   if(active() && !paused && node.isConnected)reveal(target);
+  });
+ }
+ function cancelReveal(){
+  if(revealFrame)cancelAnimationFrame(revealFrame);
+  revealFrame=0;revealTarget=null;
  }
  function rebase(){
   if(motion.active())return;
@@ -244,6 +316,7 @@ function mount(L,item,enabled,visible,preparePoster,rows){
    scroll.onAnimateEnd=notifyEnd;
    if(!paused)observeCards();
   }else{
+   layerUpdatePending=false;
    motion.stop();
    windowed?.restore();
    observer?.disconnect();
@@ -255,7 +328,7 @@ function mount(L,item,enabled,visible,preparePoster,rows){
  }
  // Native mouse/touch listeners and page restoration are instance-local.
  node.addEventListener('scroll',scrollEvent,true);
- const stopMotion=()=>motion.stop();
+ const stopMotion=()=>{cancelReveal();motion.stop();};
  const stopHidden=()=>{if(document.hidden)stopMotion();};
  for(const event of ['wheel','pointerdown','touchstart'])node.addEventListener(event,stopMotion,{capture:true,passive:true});
  window.addEventListener('blur',stopMotion);
@@ -263,6 +336,7 @@ function mount(L,item,enabled,visible,preparePoster,rows){
  const resized=()=>{windowed?.invalidate();if(active() && !paused)schedule();};
  window.addEventListener('resize',resized);
  document.addEventListener('minimal:interface-size',resized);
+ document.addEventListener('minimal:tv-idle',settleLayer);
  const touchEvents=L.Platform?.screen?.('tv')?['touchstart','touchmove','touchend']:[];
  for(const event of touchEvents){
   content.addEventListener(event,touch,{passive:true});
@@ -270,8 +344,8 @@ function mount(L,item,enabled,visible,preparePoster,rows){
  }
  scroll.position=function(){return active()?(-node.scrollTop || 0):native('position',arguments);};
  scroll.vieport=function(){return active()?{position:-node.scrollTop,body:node.scrollHeight,content:node.clientHeight}:native('vieport',arguments);};
- scroll.update=function(target){if(!active())return native('update',arguments);if(manualFocus)reveal(target);};
- scroll.immediate=function(target){if(!active())return native('immediate',arguments);if(manualFocus)reveal(target);};
+ scroll.update=function(target){if(!active())return native('update',arguments);if(manualFocus)requestReveal(target);};
+ scroll.immediate=function(target){if(!active())return native('immediate',arguments);if(manualFocus)requestReveal(target);};
  scroll.shift=function(delta){if(!active())return native('shift',arguments);scrollTo(node.scrollTop+delta);};
  scroll.reset=function(){if(!active())return native('reset',arguments);scrollTo(0);};
  function resume(){
@@ -281,7 +355,7 @@ function mount(L,item,enabled,visible,preparePoster,rows){
  }
  scroll.restorePosition=function(){if(active())resume();else return native('restorePosition',arguments);};
  scroll.animated=function(){return active()?false:native('animated',arguments);};
- scroll.minimalBrowserScroll={reveal,savePosition(value){pausedAt=value;},requestMore(){schedule(true);}};
+ scroll.minimalBrowserScroll={reveal,updateLayer,savePosition(value){pausedAt=value;},requestMore(){schedule(true);}};
  const changed=event=>{if(event.name==='lampa_view_enabled')setEnabled();};
  L.Storage?.listener?.follow('change',changed);
  setEnabled();
@@ -299,13 +373,18 @@ function mount(L,item,enabled,visible,preparePoster,rows){
    });
   }
  },pause(){
+  layerUpdatePending=false;
+  cancelReveal();
   motion.stop();
   returnFocus=Boolean(unwrap(item.last)?.classList.contains('focus'));
   pausedAt=active()?node.scrollTop:pausedAt;paused=true;requested=false;observer?.disconnect();
   if(frame){cancelAnimationFrame(frame);frame=0;}
+  if(visibilityFrame){cancelAnimationFrame(visibilityFrame);visibilityFrame=0;}
+  visibleQueue.clear();
   clearTimeout(idleTimer);settle();
   if(active())pausedAt=node.scrollTop;
  },destroy(){
+  cancelReveal();
   motion.stop();
   if(returnFrame)cancelAnimationFrame(returnFrame);
   for(const event of ['wheel','pointerdown','touchstart'])node.removeEventListener(event,stopMotion,true);
@@ -313,8 +392,11 @@ function mount(L,item,enabled,visible,preparePoster,rows){
   document.removeEventListener('visibilitychange',stopHidden);
   window.removeEventListener('resize',resized);
   document.removeEventListener('minimal:interface-size',resized);
+  document.removeEventListener('minimal:tv-idle',settleLayer);
   observer?.disconnect();
   if(frame)cancelAnimationFrame(frame);
+  if(visibilityFrame)cancelAnimationFrame(visibilityFrame);
+  visibleQueue.clear();
   clearTimeout(idleTimer);settle();
   L.Storage?.listener?.remove?.('change',changed);
   node.removeEventListener('scroll',scrollEvent,true);

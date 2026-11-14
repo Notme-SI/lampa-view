@@ -69,15 +69,30 @@ test('decoded banner memory pressure evicts old full-size images without reducin
   assert.equal(images[0].src,'','Eviction releases the decoded image reference');
  }finally{n.close();}
 });
+function posterObservers(w){
+ let nearby,screen;
+ w.IntersectionObserver=class{
+  constructor(fn,options){
+   if(options?.scrollMargin)nearby=fn;
+   else if(options?.threshold===0)screen=fn;
+  }
+  observe(){}
+  unobserve(){}
+ };
+ return (card,visible,near=visible)=>{
+  const target=card.render(true);
+  nearby([{target,isIntersecting:near}]);screen([{target,isIntersecting:visible}]);
+ };
+}
 test('desktop posters skip offscreen work, share active requests and paint cached covers while network slots are busy',async()=>{
- let observer;
- const n=await native({built:true,prepare(w){w.IntersectionObserver=class{constructor(fn){observer=fn;}observe(){}unobserve(){}};}}),{w,L}=n,loaders=[],cards=[];
+ let intersection;
+ const n=await native({built:true,prepare(w){intersection=posterObservers(w);}}),{w,L}=n,loaders=[],cards=[];
  w.Image=class{constructor(){loaders.push(this);}set src(v){this.url=v;}get src(){return this.url;}};
  const Card=L.Maker.get('Card',{});
  function card(id,poster,onscreen=true){
   const c=L.Utils.createInstance(Card,{id,title:'Film',poster_path:poster,source:'tmdb'});c.create();const node=c.render(true);w.document.body.appendChild(node);c.onscreen=onscreen;
   node.getBoundingClientRect=()=>({width:120,height:180,left:0,right:120,top:c.onscreen?0:4000,bottom:c.onscreen?180:4180});
-  c.visible();cards.push(c);return c;
+  c.visible();intersection(c,onscreen);cards.push(c);return c;
  }
  try{
   const offscreen=card(1,'/offscreen.jpg',false),one=card(2,'/one.jpg');await wait(30);assert.equal(loaders.length,1);loaders[0].onload();
@@ -88,24 +103,24 @@ test('desktop posters skip offscreen work, share active requests and paint cache
   const before=repeat.img.src;
   L.SettingsApi.getParam('minimal_settings_appearance').find(p=>p.param.name==='minimal_banner_quality').onChange();
   assert.equal(repeat.img.src,before,'An unchanged quality refresh must not blank a loaded cover');assert.equal(loaders.length,4);
-  offscreen.onscreen=true;observer([{target:offscreen.render(true),isIntersecting:true}]);await wait(30);assert.equal(loaders.length,5);
+  offscreen.onscreen=true;intersection(offscreen,true);await wait(30);assert.equal(loaders.length,5);
   assert.match(loaders[4].url,/offscreen.jpg$/);assert.deepEqual(n.errors,[]);
  }finally{cards.forEach(c=>c.destroy());n.close();}
 });
 
 for(const mode of ['tv','desktop'])test(mode+': next-screen posters preload during continuous remote/wheel navigation without blanking on return',async()=>{
- let enter;const loaders=[],cards=[];
- const n=await native({built:true,prepare(w,L){L.Platform.tv=()=>mode==='tv';w.IntersectionObserver=class{constructor(fn,options){if(options && parseInt(options.rootMargin,10)>=360 && options.rootMargin.trim().split(/\s+/).length===2 && !options.rootMargin.endsWith(' 0px'))enter=fn;}observe(){}unobserve(){}};}}),{w,L}=n;
+ let intersection;const loaders=[],cards=[];
+ const n=await native({built:true,prepare(w,L){L.Platform.tv=()=>mode==='tv';intersection=posterObservers(w);}}),{w,L}=n;
  w.Image=class{constructor(){loaders.push(this);}set src(value){this.url=value;}get src(){return this.url;}};
- function make(id,y){const c=L.Utils.createInstance(L.Maker.get('Card',{}),{id,title:'Film',poster_path:'/prefetch'+id+'.jpg'});c.create();const node=c.render(true);w.document.body.appendChild(node);c.y=y;node.getBoundingClientRect=()=>({width:120,height:180,left:0,right:120,top:c.y,bottom:c.y+180});cards.push(c);return c;}
+ function make(id){const c=L.Utils.createInstance(L.Maker.get('Card',{}),{id,title:'Film',poster_path:'/prefetch'+id+'.jpg'});c.create();const node=c.render(true);w.document.body.appendChild(node);node.getBoundingClientRect=()=>{throw new Error('The observed poster must not need a synchronous geometry read');};cards.push(c);return c;}
  try{
-  const visible=make(201,30),near=make(202,w.innerHeight+300),distant=make(203,w.innerHeight+4000);
-  w.document.body.classList.add('pt-tv-busy','pt-wheel-active');visible.visible();enter([{target:near.render(true),isIntersecting:true},{target:distant.render(true),isIntersecting:true}]);await wait(30);
+  const visible=make(201),near=make(202),distant=make(203);
+  w.document.body.classList.add('pt-tv-busy','pt-wheel-active');visible.visible();intersection(visible,true);intersection(near,false,true);intersection(distant,false);await wait(30);
   assert.equal(loaders.length,2,'The visible poster starts first and its near neighbour uses a bounded spare slot');assert.match(loaders[0].url,/prefetch201/);
   assert.match(loaders[1].url,/prefetch202/,'Near-viewport preloading continues without waiting for a stalled visible request');
   loaders[0].onload();await wait(30);assert.equal(loaders.length,2,'Distant posters remain lazy');
   loaders[1].onload();const painted=near.img.src;assert.match(painted,/prefetch202/,'Paint the near viewport image before navigation');
-  near.y=30;w.document.body.classList.add('pt-tv-busy');near.visible();await wait(30);
+  intersection(near,true);w.document.body.classList.add('pt-tv-busy');near.visible();await wait(30);
   assert.equal(near.img.src,painted);assert.equal(loaders.length,2,'No repeat download and no blanking during the next remote movement');assert.deepEqual(n.errors,[]);
  }finally{cards.forEach(c=>c.destroy());n.close();}
 });

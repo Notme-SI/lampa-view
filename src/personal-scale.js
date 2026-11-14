@@ -18,7 +18,17 @@ export default function personalScale(L){
   clearTimeout(timer);pendingFull=false;
   const roots=Array.from(inserted);inserted.clear();
   if(full)restore();else applied=applied.filter(change=>change.el.isConnected);
-  const select=selector=>Array.from(document.querySelectorAll(selector)).filter(el=>full || !applied.some(change=>change.el===el) && roots.some(root=>root===el || root.contains(el)));
+  const done=new Set(full?[]:applied.map(change=>change.el));
+  const select=selector=>{
+   if(full)return document.querySelectorAll(selector);
+   const matches=new Set();
+   for(const root of roots){
+    if(!root.isConnected)continue;
+    if(root.matches(selector) && !done.has(root))matches.add(root);
+    for(const el of root.querySelectorAll(selector))if(!done.has(el))matches.add(el);
+   }
+   return matches;
+  };
   if(!document.body.classList.contains('lampa_view'))return;
   const text=factor('lampa_view_text_scale'),controls=factor('lampa_view_controls_scale'),cards=factor('lampa_view_cards_scale');
   document.body.style.setProperty('--pt-card-scale',String(cards));
@@ -71,9 +81,11 @@ export default function personalScale(L){
   if(full)document.dispatchEvent(new Event('minimal:hero-layout'));
  }
  function schedule(full=true){pendingFull=pendingFull || full;clearTimeout(timer);timer=setTimeout(()=>update(pendingFull),100);}
- if(L.Storage.listener)L.Storage.listener.follow('change',e=>{if(['lampa_view_text_scale','lampa_view_controls_scale','lampa_view_cards_scale','lampa_view_enabled','lampa_view_layout'].includes(e.name)){schedule();if(e.name==='lampa_view_cards_scale'){document.body.style.setProperty('--pt-card-scale',String(factor(e.name)));document.dispatchEvent(new Event('minimal:interface-size'));document.dispatchEvent(new Event('minimal:hero-layout'));}}});
- document.addEventListener('minimal:interface-size',()=>schedule());
- window.addEventListener('resize',()=>schedule());
+ const changed=e=>{if(['lampa_view_text_scale','lampa_view_controls_scale','lampa_view_cards_scale','lampa_view_enabled','lampa_view_layout'].includes(e.name)){schedule();if(e.name==='lampa_view_cards_scale'){document.body.style.setProperty('--pt-card-scale',String(factor(e.name)));document.dispatchEvent(new Event('minimal:interface-size'));document.dispatchEvent(new Event('minimal:hero-layout'));}}};
+ const resized=()=>schedule();
+ L.Storage.listener?.follow('change',changed);
+ document.addEventListener('minimal:interface-size',resized);
+ window.addEventListener('resize',resized);
  // Observe inserted rows only; our style writes cannot trigger a feedback loop.
  const observer=new MutationObserver(records=>{
   if(factor('lampa_view_text_scale')===1 && factor('lampa_view_controls_scale')===1 && factor('lampa_view_cards_scale')===1)return;
@@ -82,5 +94,11 @@ export default function personalScale(L){
   if(inserted.size)schedule(false);
  });
  observer.observe(document.body,{childList:true,subtree:true});update();
- return {update,stop(){clearTimeout(timer);observer.disconnect();restore();document.body.style.removeProperty('--pt-card-scale');document.body.classList.remove('pt-personal-enlarged');}};
+ return {update,stop(){
+  clearTimeout(timer);observer.disconnect();inserted.clear();
+  L.Storage.listener?.remove?.('change',changed);
+  document.removeEventListener('minimal:interface-size',resized);
+  window.removeEventListener('resize',resized);
+  restore();document.body.style.removeProperty('--pt-card-scale');document.body.classList.remove('pt-personal-enlarged');
+ }};
 }

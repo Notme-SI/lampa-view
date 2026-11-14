@@ -2,6 +2,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {chromium,webkit}=require(process.env.PLAYWRIGHT_MODULE || 'playwright'),{setup}=require('../fixtures/native-browser.cjs');
 const material=async(page,selector)=>page.locator(selector).first().evaluate(n=>{const s=getComputedStyle(n);return {bg:s.backgroundColor,blur:s.backdropFilter,radius:parseFloat(s.borderTopLeftRadius)/parseFloat(s.fontSize),animation:s.animationName};});
 const alpha=value=>{const numbers=value.match(/[\d.]+/g);return numbers.length===4?Number(numbers[3]):1;};
+const glassFilter=(mode,value)=>{if(mode==='tv')assert.equal(value,'none');else assert.match(value,/blur\(24px\)/);};
 (async()=>{for(const engine of [chromium,webkit]){const browser=await engine.launch({headless:true});try{for(const mode of ['tv','desktop','mobile','tablet']){
  const r=await setup(browser,{mode,viewport:mode==='tv'?{width:960,height:540}:mode==='mobile'?{width:390,height:844}:mode==='tablet'?{width:834,height:1194}:{width:1440,height:900}},{beforePlugin:p=>p.evaluate(()=>{Lampa.Params.init();Lampa.Layer.init();Lampa.Search.init();})}),{page}=r;
  try{
@@ -9,12 +10,19 @@ const alpha=value=>{const numbers=value.match(/[\d.]+/g);return numbers.length==
   if(mode==='tv')assert.equal((await material(page,'.wrap')).bg,'rgb(10, 10, 10)','TV glass keeps an opaque page canvas under its optical surfaces');
   for(const opacity of ['easy','medium','blacked']){
    await page.evaluate(opacity=>Lampa.Storage.set('glass_opacity',opacity),opacity);
-   for(const selector of ['.wrap__left','.settings__content']){const m=await material(page,selector);assert.ok(Math.abs(alpha(m.bg)-({easy:.36,medium:.52,blacked:.72})[opacity])<.01,JSON.stringify({mode,opacity,selector,m}));if(selector==='.wrap__left')assert.equal(m.blur,'none');else assert.match(m.blur,/blur\(/);}
+   for(const selector of ['.wrap__left','.settings__content']){const m=await material(page,selector);assert.ok(Math.abs(alpha(m.bg)-({easy:.36,medium:.52,blacked:.72})[opacity])<.01,JSON.stringify({mode,opacity,selector,m}));if(selector==='.wrap__left')assert.equal(m.blur,'none');else glassFilter(mode,m.blur);}
   }
   const capsule=await material(page,'.head .head__body');
   assert.ok(alpha(capsule.bg)>0 && alpha(capsule.bg)<1,'The glass capsule is translucent');
-  assert.ok(alpha(capsule.bg)<=.35);assert.match(capsule.blur,/blur\(/);
-  assert.match(capsule.blur,mode==='tv'?/blur\(12px\)/:/blur\(24px\)/);
+  glassFilter(mode,capsule.blur);
+  if(mode==='tv'){
+   assert.ok(alpha(capsule.bg)>=.6);
+   await page.keyboard.press('ArrowDown');
+   await page.waitForSelector('body.pt-tv-busy',{state:'attached'});
+   assert.deepEqual(await material(page,'.head .head__body'),capsule,'Remote input must not switch the header material');
+   await page.waitForSelector('body.pt-tv-busy',{state:'detached'});
+   assert.deepEqual(await material(page,'.head .head__body'),capsule,'The header must not flash back to a different material after navigation');
+  }else assert.ok(alpha(capsule.bg)<=.35);
   for(const selector of ['.head .open--search','.head .open--settings']){
    const control=await material(page,selector);
    assert.equal(alpha(control.bg),0);
@@ -24,9 +32,9 @@ const alpha=value=>{const numbers=value.match(/[\d.]+/g);return numbers.length==
   await page.evaluate(()=>{Lampa.Controller.toggle('settings');Lampa.Settings.create('lampa_view');});await page.waitForSelector('.settings--open .settings__content',{state:'visible'});
   if(mode==='tv' && process.env.LAMPA_QA_OUTPUT){fs.mkdirSync(process.env.LAMPA_QA_OUTPUT,{recursive:true});await page.screenshot({path:path.join(process.env.LAMPA_QA_OUTPUT,engine.name()+'-tv-settings.png')});}
   await page.evaluate(()=>{Lampa.Controller.back();Lampa.Select.show({title:'Действие',items:[{title:'Избранное',separator:true},{title:'Нравится',checkbox:true}]});});await page.waitForSelector('.selectbox-item');
-  const panel=await material(page,'.selectbox__content');assert.ok(alpha(panel.bg)>=.4 && alpha(panel.bg)<1);assert.match(panel.blur,/blur\(/);
+  const panel=await material(page,'.selectbox__content');assert.ok(alpha(panel.bg)>=.4 && alpha(panel.bg)<1);glassFilter(mode,panel.blur);
   await page.evaluate(()=>{Lampa.Controller.back();document.body.appendChild(Lampa.Search.render(true));Lampa.Search.open({sources:[{title:'CUB',params:{},search(p,ok){ok([]);}}]});});await page.waitForSelector('.main-search .search');
-  const search=await material(page,'.main-search .search');assert.ok(alpha(search.bg)>=.4 && alpha(search.bg)<1);assert.match(search.blur,/blur\(/);
+  const search=await material(page,'.main-search .search');assert.ok(alpha(search.bg)>=.4 && alpha(search.bg)<1);glassFilter(mode,search.blur);
   if(mode==='tv' && process.env.LAMPA_QA_OUTPUT)await page.screenshot({path:path.join(process.env.LAMPA_QA_OUTPUT,engine.name()+'-tv-search.png')});
   await page.evaluate(()=>{Lampa.Search.close();const row=document.createElement('div');row.className='mapping--line';row.appendChild(Lampa.Template.get('full_review',{text:'Комментарий',like_count:1})[0]);row.insertAdjacentHTML('beforeend','<div class="full-review-add selector"></div><div class="full-review-all selector">Все комментарии</div>');document.querySelector('.wrap__content').appendChild(row);});
   for(const theme of ['minimal','glass']){await page.evaluate(theme=>Lampa.Storage.set('lampa_view_theme',theme),theme);if(theme==='minimal'){for(const selector of ['.wrap__left','.settings__content','.selectbox__content'])assert.equal((await material(page,selector)).bg,'rgb(0, 0, 0)');}for(const selector of ['.full-review','.full-review-add','.full-review-all']){let m=await material(page,selector);assert.ok(m.radius>=1,JSON.stringify({mode,theme,selector,m}));await page.locator(selector).first().evaluate(n=>n.classList.add('focus'));m=await material(page,selector);assert.ok(m.radius>=1);if(mode==='tv' && selector!=='.full-review-all')assert.equal(m.animation,'none');}}

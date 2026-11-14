@@ -186,11 +186,19 @@ body.lampa_view .items-line .scroll--horizontal,body.lampa_view .nova-plus__stri
 body.lampa_view .items-line .scroll--horizontal::-webkit-scrollbar,body.lampa_view .nova-plus__strip--clip::-webkit-scrollbar {display:none}
 body.lampa_view .pt-row-dragging,body.lampa_view .pt-row-dragging * {cursor:grabbing!important;user-select:none}
 body.lampa_view .pt-overlay-row {position:relative}
-body:not(.lampa_view) .pt-overlay-row .minimal-row-more {display:none}
-body.lampa_view .pt-overlay-row .scroll__body>.minimal-row-more {display:inline-flex;flex:0 0 var(--minimal-poster-width,var(--pt-more-width,9em));width:var(--minimal-poster-width,var(--pt-more-width,9em));height:var(--pt-more-height,14em);min-width:0;padding:1em;box-sizing:border-box;flex-direction:column;gap:.6em;vertical-align:top;margin:0 0 0 var(--pt-more-gap,.75em);border:1px solid var(--pt-shell-border);border-radius:1em;background:var(--pt-shell-surface);color:var(--pt-text);white-space:normal}
-body.lampa_view .pt-overlay-row .scroll__body>.minimal-row-more svg {width:2em;height:2em}
-body.lampa_view .pt-overlay-row .scroll__body>.minimal-row-more[hidden] {display:none!important}
-body.lampa_view .pt-overlay-row .scroll__body>.minimal-row-more span {font-size:.9em}
+body:not(.lampa_view) .minimal-row-tail,body.lampa_view .minimal-row-tail[hidden] {display:none!important}
+body.lampa_view .pt-overlay-row .mapping--line>.minimal-row-tail {
+ display:inline-flex;align-items:center;justify-content:center;align-self:flex-start;
+ width:var(--minimal-poster-width,9em);flex:0 0 var(--minimal-poster-width,9em);aspect-ratio:2 / 3;
+ margin-inline-start:var(--pt-more-gap,.75em);
+}
+body.lampa_view .pt-overlay-row .minimal-row-tail>.minimal-row-more {
+ display:inline-flex;flex-direction:row-reverse;gap:.5em;width:auto;max-width:100%;height:auto;
+ padding:.42em .7em;min-height:2.6em;box-sizing:border-box;border-radius:999px;
+ font-size:max(10px,.92em);font-weight:600;white-space:nowrap;
+}
+body.lampa_view .pt-overlay-row .minimal-row-tail>.minimal-row-more svg {width:1em;height:1em;flex:none}
+body.lampa_view.pt-rtl .minimal-row-tail>.minimal-row-more svg {transform:scaleX(-1)}
 body.lampa_view .nova-plus__strip--clip {position:relative;container-type:inline-size}
 /* Watched uses a 10px transparent track and a 4px rounded visible thumb. */
 .pt-page-scrollbar {display:none}

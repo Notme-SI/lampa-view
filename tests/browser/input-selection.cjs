@@ -3,6 +3,8 @@ const {chromium,webkit}=require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const {setup}=require('../fixtures/native-browser.cjs');
 
 async function run(browser,mode,theme){
+ const staticFocus=mode==='tv' && theme==='glass';
+ const focusedTransform=staticFocus?'none':'matrix(1, 0, 0, 1, 0, -3)';
  const r=await setup(browser,{mode,viewport:{width:1440,height:900}},{beforePlugin:page=>page.evaluate(()=>{
   Lampa.Params.init();Lampa.Search.init();Lampa.Listener.send('app',{type:'ready'});
  })});
@@ -53,32 +55,35 @@ async function run(browser,mode,theme){
    function sample(){const s=getComputedStyle(view),halo=getComputedStyle(view,'::after');frames.push({t:performance.now()-start,y:s.transform==='none'?0:new DOMMatrix(s.transform).m42,shadow:s.boxShadow,haloShadow:halo.boxShadow,haloOpacity:Number(halo.opacity),animations:view.getAnimations().filter(a=>a.playState==='running').length});if(performance.now()-start<280)requestAnimationFrame(sample);else resolve(frames);}
    sample();Lampa.Controller.toggle('qa-cards');
   }));
-  assert.ok(frames.some(f=>f.y<0 && f.y>-3 && f.animations>0),'Actual rendered frames show a gradual lift: '+JSON.stringify(frames));
-  assert.ok(frames.some(f=>f.haloOpacity>0 && f.haloOpacity<1),'The halo fades across rendered frames');
+  if(staticFocus)assert.ok(frames.every(f=>f.y===0 && !f.animations && [0,1].includes(f.haloOpacity)),'TV Glass draws a stable outline even during focus changes');
+  else{
+   assert.ok(frames.some(f=>f.y<0 && f.y>-3 && f.animations>0),'Actual rendered frames show a gradual lift: '+JSON.stringify(frames));
+   assert.ok(frames.some(f=>f.haloOpacity>0 && f.haloOpacity<1),'The halo fades across rendered frames');
+  }
   assert.ok(frames.every(f=>f.shadow==='none'),'No layout repaints an animated poster shadow');
   assert.equal(new Set(frames.map(f=>f.haloShadow)).size,1,'The halo uses one fixed shadow throughout the fade');
-  assert.equal(frames.at(-1).y,-3);
+  assert.equal(frames.at(-1).y,staticFocus?0:-3);
   const hostAnimation=await page.evaluate(()=>Lampa.Storage.get('animation'));
   for(const motion of ['system','off']){
    await page.evaluate(motion=>Lampa.Storage.set('lampa_view_card_motion',motion),motion);
    await page.waitForFunction(motion=>document.body.dataset.ptCardMotion===motion,motion);
    const stopped=await film.locator('.card__view').evaluate(n=>{const s=getComputedStyle(n),halo=getComputedStyle(n,'::after');return {transform:s.transform,transition:s.transitionDuration,shadow:halo.boxShadow};});
-   assert.equal(stopped.transform,'none',motion+' stops movement with OS reduction');assert.equal(stopped.transition,'0s');assert.match(stopped.shadow,/rgba\(255, 255, 255, 0.18\)/,'The static halo stays visible');
+   assert.equal(stopped.transform,'none',motion+' stops movement with OS reduction');assert.equal(stopped.transition,'0s');assert.match(stopped.shadow,staticFocus?/2px inset$/:/rgba\(255, 255, 255, 0.18\)/);
   }
   await page.evaluate(()=>Lampa.Storage.set('lampa_view_card_motion','on'));
   await page.waitForTimeout(280);
-  assert.equal(await film.locator('.card__view').evaluate(n=>getComputedStyle(n).transform),'matrix(1, 0, 0, 1, 0, -3)','The setting restores movement immediately without reloading');
+  assert.equal(await film.locator('.card__view').evaluate(n=>getComputedStyle(n).transform),focusedTransform);
   await page.emulateMedia({reducedMotion:'no-preference'});
   for(const motion of ['off','system','on']){
    await page.evaluate(motion=>Lampa.Storage.set('lampa_view_card_motion',motion),motion);await page.waitForTimeout(260);
-   assert.equal(await film.locator('.card__view').evaluate(n=>getComputedStyle(n).transform),motion==='off'?'none':'matrix(1, 0, 0, 1, 0, -3)',motion+' honors its own contract without OS reduction');
+   assert.equal(await film.locator('.card__view').evaluate(n=>getComputedStyle(n).transform),motion==='off'?'none':focusedTransform);
   }
   assert.equal(await page.evaluate(()=>Lampa.Storage.get('animation')),hostAnimation,'The poster setting never changes the host animation preference');
   assert.equal(await film.locator('.card__age').textContent(),'2020');
   assert.equal(await film.locator('.card__vote').evaluate(n=>getComputedStyle(n).opacity),'1','Our own rating remains visible');
   const paint=await film.locator('.card__view').evaluate(n=>({shadow:getComputedStyle(n,'::after').boxShadow,edge:getComputedStyle(n,'::after').backgroundImage}));
-  assert.match(paint.shadow,/rgba\(255, 255, 255, 0.18\).*22px/);
-  assert.equal(paint.edge,'none');assert.match(paint.shadow,/1px inset/,'The selection edge follows the rounded poster');
+  if(!staticFocus)assert.match(paint.shadow,/rgba\(255, 255, 255, 0.18\).*22px/);
+  assert.equal(paint.edge,'none');assert.match(paint.shadow,staticFocus?/2px inset$/:/1px inset/,'The selection edge follows the rounded poster');
   assert.equal(await film.locator('.icon--history').evaluate(n=>getComputedStyle(n).opacity),'1','Selection never hides the native continuation marker');
   await page.waitForFunction(()=>{const label=document.querySelector('#qa-input .pt-card-watch');return label && getComputedStyle(label).visibility==='visible';},null,{timeout:4000}).catch(async e=>{throw Error(e.message+' '+JSON.stringify(await page.evaluate(()=>({body:document.body.className,node:document.querySelector('#qa-input .card').outerHTML}))));});
   assert.equal(await film.locator('.pt-card-watch__time').textContent(),'15:15');
@@ -86,7 +91,7 @@ async function run(browser,mode,theme){
   await page.waitForTimeout(330);
   assert.equal(await film.locator('.card__view').evaluate(n=>getComputedStyle(n).boxShadow),'none','The previous halo disappears after moving focus');
   assert.equal(await film.locator('.card__view').evaluate(n=>getComputedStyle(n,'::after').opacity),'0','The previous halo fades out completely');
-  assert.equal(await series.locator('.card__view').evaluate(n=>getComputedStyle(n).transform),'matrix(1, 0, 0, 1, 0, -3)');
+  assert.equal(await series.locator('.card__view').evaluate(n=>getComputedStyle(n).transform),focusedTransform);
   await page.waitForFunction(()=>{
    const label=document.querySelector('#qa-input .card:nth-child(2) .pt-series-status');
    return label && getComputedStyle(label).display!=='none' && getComputedStyle(label).visibility==='visible';

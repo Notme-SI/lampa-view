@@ -167,6 +167,9 @@ export default function quality(L,$,preparePoster){
   }
   function inView(node){
     if(!activeCard(node))return false;
+    // TV already observes this band. A fresh rect after badge writes can
+    // force WebView to lay out the entire scrolling catalogue synchronously.
+    if(observer && document.body.classList.contains('pt-tv'))return visible.has(node);
     const rect=node.getBoundingClientRect();
     return !(rect.width===0 || rect.bottom< -1200 || rect.top>ROOTHEIGHT()+1200 || rect.right< -200 || rect.left>window.innerWidth+200);
   }

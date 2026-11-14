@@ -26,6 +26,7 @@ const {setup}=require('../fixtures/native-browser.cjs');
    }
    assert.equal(await page.evaluate(()=>qaBacks),3);
    await page.evaluate(()=>{
+    Lampa.Storage.set('lampa_view_theme','glass');
     const root=document.createElement('div');root.id='qa-selection';root.style.cssText='position:fixed;top:60px;left:40px;right:40px;display:flex;gap:30px;z-index:50;background:#080b10;padding:20px';
     for(let i=0;i<3;i++){const card=document.createElement('div');card.className='card selector';card.style.width='200px';card.innerHTML='<div class="card__view" style="height:280px"><img class="card__img" style="width:100%;height:100%" src="'+Lampa.TMDB.image('')+'"></div><div class="card__title">Фильм '+(i+1)+'</div>';root.appendChild(card);}document.body.appendChild(root);
     Lampa.Controller.add('qa-cards',{toggle(){Lampa.Controller.collectionSet(root);Lampa.Controller.collectionFocus(root.children[0],root);},left(){Navigator.move('left');},right(){Navigator.move('right');},back(){}});Lampa.Controller.toggle('qa-cards');
@@ -36,9 +37,8 @@ const {setup}=require('../fixtures/native-browser.cjs');
    for(let i=0;i<8;i++){await page.keyboard.press('ArrowRight');await page.keyboard.press('ArrowLeft');}
    await settled();
    const focus=await page.locator('#qa-selection .card').evaluateAll(nodes=>nodes.map(n=>{const s=getComputedStyle(n.querySelector('.card__view'),'::after'),t=getComputedStyle(n.querySelector('.card__title'));return {focus:n.classList.contains('focus'),border:s.borderWidth,borderColor:s.borderColor,indicator:s.backgroundImage,title:t.backgroundColor,color:t.color,haloOpacity:s.opacity,haloShadow:s.boxShadow,transform:getComputedStyle(n.querySelector('.card__view')).transform};}));
-   assert.equal(focus.filter(n=>n.focus).length,1);assert.equal(focus[0].border,'0px');assert.match(focus[0].haloShadow,/1px inset/);assert.equal(focus[0].title,'rgba(0, 0, 0, 0)');assert.equal(focus[0].haloOpacity,'1');assert.match(focus[0].haloShadow,/rgba\(255, 255, 255, 0.18\).*22px/);assert.equal(focus[0].transform,'matrix(1, 0, 0, 1, 0, -3)');assert.ok(focus.slice(1).every(n=>n.haloOpacity==='0'),'Only the selected TV card has a visible halo');
+   assert.equal(focus.filter(n=>n.focus).length,1);assert.equal(focus[0].border,'0px');assert.match(focus[0].haloShadow,/2px inset$/);assert.equal(focus[0].title,'rgba(0, 0, 0, 0)');assert.equal(focus[0].haloOpacity,'1');assert.ok(focus.every(n=>n.transform==='none'),'TV Glass never moves poster artwork during focus changes');assert.ok(focus.slice(1).every(n=>n.haloOpacity==='0'),'Only the selected TV card has a visible outline');
    assert.ok(Number(await page.locator('#qa-selection .card.focus .card__view').evaluate(n=>getComputedStyle(n,'::after').zIndex))>0,'The ring must render above the poster rather than behind it');
-   assert.equal(await page.locator('#qa-selection .card.focus .card__view').evaluate(n=>getComputedStyle(n).overflow),'visible','The fixed TV halo paints beyond the rounded poster');
    await settled();assert.equal(Buffer.compare(first,await page.locator('#qa-selection .card').nth(0).screenshot()),0,'Rapid remote navigation leaves no residual ring pixels');
    await page.keyboard.press('ArrowRight');assert.equal(await page.locator('#qa-selection .card.focus').count(),1);
    await settled();

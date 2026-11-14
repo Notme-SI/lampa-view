@@ -15,15 +15,13 @@ body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] {
  background:var(--pt-bg)!important;background-attachment:scroll!important;
 }
 body.lampa_view.pt-theme-glass[data-lampa-theme="glass"].pt-tv {
- --pt-glass-blur:12px;
+ /* Keep the same material during navigation and at rest. Live backdrop
+    sampling on TV can flicker as the scroll surface passes the fixed header. */
+ --pt-header-glass:var(--pt-poster-badge);
+ --pt-glass-filter:none;
  --pt-poster-glass:var(--pt-poster-badge);
  --pt-poster-glass-filter:none;
  --pt-cast-glass-filter:none;
-}
-/* Keep the fixed header from resampling every poster during remote navigation. */
-body.lampa_view.pt-theme-glass[data-lampa-theme="glass"].pt-tv.pt-tv-busy .head .head__body {
- background:var(--pt-navigation-panel)!important;
- backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
 }
 /* Clear inherited filters first. Explicit groups below own the glass layer. */
 body.lampa_view[data-lampa-theme] *,body.lampa_view[data-lampa-theme] *:before,body.lampa_view[data-lampa-theme] *:after {backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
@@ -147,11 +145,17 @@ body.lampa_view[data-lampa-theme]:not(.pt-tv):not(.pt-touch-captions):not(.pt-ar
 body.lampa_view[data-lampa-theme]:not(.pt-tv):not(.pt-touch-captions):not(.pt-arrow-navigation) .card:is(.hover,:hover,.pt-card-pointer) {--pt-pointer-lift:translateY(-4.5px)}
 /* Extend the clipping surface, not the rail/hit boxes: the first and last
    posters need the same halo room as cards in the middle of a row. */
-body.lampa_view[data-lampa-theme]:not(.pt-touch-captions) .minimal-fit-posters>.items-line__body.pt-poster-edge-start {
+body.lampa_view[data-lampa-theme]:not(.pt-touch-captions,.pt-tv) .minimal-fit-posters>.items-line__body.pt-poster-edge-start {
  padding-inline-start:20px;margin-inline-start:-20px;
 }
-body.lampa_view[data-lampa-theme]:not(.pt-touch-captions) .minimal-fit-posters>.items-line__body.pt-poster-edge-end {
+body.lampa_view[data-lampa-theme]:not(.pt-touch-captions,.pt-tv) .minimal-fit-posters>.items-line__body.pt-poster-edge-end {
  padding-inline-end:20px;margin-inline-end:-20px;
+}
+/* Reserve TV halo room once. Changing padding on edge focus made the
+   next spatial-navigation lookup synchronously lay out the whole rail. */
+body.lampa_view.pt-tv[data-lampa-theme="minimal"] .minimal-fit-posters>.items-line__body {
+ --pt-rail-halo-room:clamp(0px,calc(var(--minimal-poster-gap,16px) - var(--minimal-poster-gutter,.55em) - 1px),20px);
+ padding-inline:var(--pt-rail-halo-room);margin-inline:calc(-1 * var(--pt-rail-halo-room));
 }
 body.lampa_view[data-lampa-theme] .minimal-fit-posters>.items-line__body>.scroll--horizontal {
  padding-top:1em;margin-top:-1em;
@@ -165,12 +169,22 @@ body.lampa_view .minimal-comment-text {padding:.35em .6em 1em;font-size:1.1em;li
    and avoid starting a lift and a halo transition on every one. */
 body.lampa_view.pt-desktop.pt-wheel-active[data-lampa-theme] .card .card__view,
 body.lampa_view.pt-desktop.pt-wheel-active[data-lampa-theme] .card .card__view::after,
-body.lampa_view[data-lampa-theme] .pt-catalogue-moving .card .card__view,
-body.lampa_view[data-lampa-theme] .pt-catalogue-moving .card .card__view::after {
+body.lampa_view:not(.pt-tv)[data-lampa-theme] .pt-catalogue-moving .card .card__view,
+body.lampa_view:not(.pt-tv)[data-lampa-theme] .pt-catalogue-moving .card .card__view::after {
  transition:none!important;
  -webkit-transition:none!important;
 }
-body.lampa_view.pt-desktop.pt-wheel-active[data-lampa-theme] .card .card__view::after,body.lampa_view[data-lampa-theme] .pt-catalogue-moving .card .card__view::after {box-shadow:inset 0 0 0 1px #ffffffb3!important}
+body.lampa_view.pt-desktop.pt-wheel-active[data-lampa-theme] .card .card__view::after,body.lampa_view:not(.pt-tv)[data-lampa-theme] .pt-catalogue-moving .card .card__view::after {box-shadow:inset 0 0 0 1px #ffffffb3!important}
+/* The focused TV poster stays in its slot. Switching the inset contour
+   avoids animating the poster and repainting a glow outside the row. */
+body.lampa_view.pt-theme-glass.pt-tv[data-lampa-theme="glass"] :is(.card .card__view,.nova-plus-root .nova__list--grid .nova-card .nova-card__thumb) {
+ transform:none!important;-webkit-transform:none!important;
+ transition:none!important;-webkit-transition:none!important;
+}
+body.lampa_view.pt-theme-glass.pt-tv[data-lampa-theme="glass"] :is(.card .card__view,.nova-plus-root .nova__list--grid .nova-card .nova-card__thumb)::after {
+ box-shadow:inset 0 0 0 2px #ffffffd9!important;
+ transition:none!important;-webkit-transition:none!important;
+}
 /* The explicit plugin choice affects poster motion only, not the OS or host. */
 body.lampa_view[data-lampa-theme][data-pt-card-motion="off"] .card .card__view,body.lampa_view[data-lampa-theme][data-pt-card-motion="off"] .nova-plus-root .nova__list--grid .nova-card .nova-card__thumb {transition:none!important;-webkit-transition:none!important;transform:none!important;-webkit-transform:none!important}
 body.lampa_view[data-lampa-theme][data-pt-card-motion="off"] :is(.card .card__view,.nova-plus-root .nova__list--grid .nova-card__thumb)::after {transition:none!important;-webkit-transition:none!important}

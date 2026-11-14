@@ -182,7 +182,8 @@ test('the patched online host restores the watched season and preserves the manu
 
 test('all episodes and ambiguous folders remain available while failed sources stay out of the selector',async()=>{
  const n=await native({built:true}),{L}=n;let s;try{
-  s=screen(n,{episodes:Array.from({length:54},(_,i)=>i+1)});s.filter.set('sort',Array.from({length:36},(_,i)=>({title:'Источник '+i,source:'source'+i,selected:!i,ghost:i>20})));await wait(220);
+  s=screen(n,{episodes:Array.from({length:54},(_,i)=>i+1)});s.filter.set('sort',Array.from({length:36},(_,i)=>({title:'Источник '+i,source:'source'+i,selected:!i,ghost:i>20})));
+  await until(()=>s.root.find('.nova-card').length===54,'whole season with many sources');
   assert.equal(s.root.find('.nova-card').length,54);assert.equal(s.root.find('[data-nova-focus=jump]').length,0);assert.equal(s.root.find('.nova-card__title').first().text(),'Серия 1');assert.doesNotMatch(s.root.find('.nova-card__tag').text(),/S\d|E\d/);
   s.root.find('[data-nova-focus=source]').trigger('hover:enter');await wait(90);assert.equal(L.Select.render().find('.selectbox-item').length,21);assert.ok(!L.Select.render().text().includes('Источник 21'),'Unavailable ghost sources stay hidden');L.Controller.back();assert.equal(s.root.find('[data-nova-focus="src:more"]').length,0);
   s.close();s=screen(n,{episodes:[]});for(let i=0;i<27;i++)n.w.jQuery('<div class="online-prestige online-prestige--folder selector"><div class="online-prestige__title">Папка '+i+'</div></div>').on('hover:enter',()=>{}).appendTo(s.body);await wait(180);assert.equal(s.root.find('.nova-card--nav').length,27);assert.equal(s.root.find('[data-nova-focus=jump]').length,0);assert.deepEqual(n.errors,[]);
@@ -667,8 +668,9 @@ test('split-season captions survive conflicting current files and delayed metada
   },25);};
   s=screen(n,{id:1800,season:2,episodes:[1,2,3,4,5,6,7]});Object.assign(s.movie,{number_of_seasons:3,number_of_episodes:25,networks:[{id:213}],seasons:[{season_number:1,episode_count:10},{season_number:2,episode_count:7},{season_number:3,episode_count:8}]});
   const choose=season=>s.filter.set('filter',[{stype:'season',title:'Сезон',subtitle:'Сезон '+season,items:[1,2,3,4].map(i=>({title:'Сезон '+i,selected:i===season}))},{stype:'voice',title:'Озвучка',items:[{title:'TVShows',selected:true}]}]);choose(2);
-  const timeline=JSON.stringify(L.Storage.get('file_view',{}));await until(()=>s.root.find('[data-nova-group=season] .nova-chip__sub').length===4,'split-season captions');
+  const timeline=JSON.stringify(L.Storage.get('file_view',{}));
   const captions=()=>Array.from(s.root.find('[data-nova-group=season] .nova-chip__sub').map((i,n)=>n.textContent).get());
+  await until(()=>captions().join('|')==='5 эпизодов|7 эпизодов|7 эпизодов|8 эпизодов','confirmed split-season captions');
   assert.deepEqual(captions(),['5 эпизодов','7 эпизодов','7 эпизодов','8 эпизодов'],'catalog counts do not disappear when the current provider list conflicts with the group');
   // The host completes replacing its previous list after updating the filter.
   s.body.find('.online-prestige').slice(5).remove();await wait(220);
@@ -770,7 +772,23 @@ test('season captions read the selected dub before opening a season',async()=>{
 test('unassigned provider file stays a full row without a fabricated episode or watch progress',async()=>{
  const n=await native({built:true}),{w,L}=n;let s;
  try{s=screen(n,{episodes:[1]});const origin=s.body.find('.online-prestige');origin.data('nova-native-actions',{element:{lampa_unassigned_episode:true}});origin.find('.online-prestige__title').text('DEFAULT');origin.find('.online-prestige__episode-number').remove();
- await until(()=>s.root.find('.nova-card--rowlist').length===1,'unassigned file row');
+ await until(()=>s.root.find('.nova-card--rowlist').length===1 && !s.root.find('.nova-card__num').length,'unassigned file row after provider updates its data');
  const card=s.root.find('.nova-card');assert.equal(card.find('.nova-card__num,.nova-card__line,.nova-card__eye').length,0);assert.doesNotMatch(card.find('.nova-card__title').text(),/DEFAULT|Серия/);card.trigger('hover:enter');assert.equal(s.played(),1);assert.deepEqual(n.errors,[]);
+ }finally{if(s)s.close();n.close();}
+});
+
+test('long vertical seasons mount in order without replacing the first playable card',async()=>{
+ const n=await native({built:true}),{L}=n;let s;
+ try{
+  L.Storage.set('nova_plus_view','grid');
+  s=screen(n,{id:1911,episodes:Array.from({length:60},(_,index)=>index+1)});
+  const cards=()=>s.root.find('.nova-card');
+  await until(()=>cards().length>0,'first batch of episodes');
+  assert.ok(cards().length<60);
+  const first=cards()[0];
+  await until(()=>cards().length===60,'whole season');
+  assert.equal(cards()[0],first);
+  assert.deepEqual(Array.from(cards(),node=>node.dataset.novaFocus),Array.from({length:60},(_,index)=>'item:'+index));
+  cards().last().trigger('hover:enter');assert.equal(s.played(),60);assert.deepEqual(n.errors,[]);
  }finally{if(s)s.close();n.close();}
 });

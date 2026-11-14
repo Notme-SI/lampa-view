@@ -171,7 +171,7 @@ test('late Kodik continuations retain the original arc count and show separate m
 });
 
 
-test('specials keep season zero metadata and show a named menu entry while grouping loads before display',async()=>{
+test('specials stay playable while season zero metadata and other season counts load independently',async()=>{
  const n=await native({built:true}),{w,L}=n,$=w.jQuery;
  try{
   const root=$('<div class="explorer"><div class="explorer__files"><div class="explorer__files-head"></div><div class="explorer__files-body"><div class="scroll"><div class="scroll__body"></div></div></div></div>').appendTo(w.document.body);
@@ -187,10 +187,12 @@ test('specials keep season zero metadata and show a named menu entry while group
   L.Activity.active=()=>({component:'online_test',movie,activity:{render:()=>root,component:{}}});
   L.Listener.send('activity',{type:'start'});
   await wait(180);
-  assert.equal(root.find('.nova-card').length,0,'Wait for metadata before showing series');
-  assert.ok(root.find('.nova-loading').length);
+  assert.equal(root.find('.nova-card').length,7,'Show available files before metadata');
+  assert.equal(root.find('.nova-loading').length,0);
+  const first=root.find('.nova-card')[0];
   completions[0]();await wait(50);
-  assert.equal(root.find('.nova-card').length,0,'Wait for the other season counters too');
+  assert.equal(root.find('.nova-card')[0],first,'Refresh metadata in place without waiting for other season counts');
+  assert.match(root.find('.nova-card__overview').first().text(),/Отдельная история 1/);
   [2,3,4].forEach(number=>completions[number]());await wait(180);
   assert.equal(root.find('.nova-hero__season-label').text(),'Спецвыпуски');
   assert.equal(root.find('[data-nova-focus="season"] .nova-chip__label').text(),'Спецвыпуски');

@@ -43,15 +43,20 @@ export default function glassScene(L, enabled, chromePalette=()=>{}) {
  const colors = new Map(), detail = new WeakMap(), animeHome = new WeakMap();
  let home, visible, revision = 0;
 
- function read(image) {
-  try { return imageColor(image); }
+ async function read(image) {
+  try {
+   if(document.body.classList.contains('pt-tv') && typeof window.createImageBitmap==='function' && image.naturalWidth*image.naturalHeight>500000){
+    let sample;
+    try{sample=await window.createImageBitmap(image,{resizeWidth:24,resizeHeight:16,resizeQuality:'low'});}catch(_){}
+    if(sample){try{return imageColor(sample);}finally{sample.close();}}
+   }
+   return imageColor(image);
+  }
   catch (_) { return ''; }
  }
 
  function palette(url, image) {
   if (!url) return '';
-  const color = image ? read(image) : '';
-  if(color){colors.set(url,color);if(colors.size>32)colors.delete(colors.keys().next().value);return color;}
   if (colors.has(url)) return colors.get(url);
   const probeColor=src=>new Promise(resolve => {
    const probe = new Image();
@@ -63,8 +68,14 @@ export default function glassScene(L, enabled, chromePalette=()=>{}) {
   // Some hosts proxy TMDB images without CORS headers. Sample the same
   // artwork from TMDB at thumbnail size if that proxy cannot be read.
   const file=url.match(/\/t\/p\/(?:w\d+|original)\/([\w-]+\.(?:jpe?g|png|webp))(?:[?#].*)?$/i);
-  const pending=probeColor(url).then(sample=>sample || (file?probeColor('https://image.tmdb.org/t/p/w300/'+file[1]):''));
+  const pending=(async()=>{
+   const direct=image?await read(image):'';
+   if(direct)return direct;
+   const sample=await probeColor(url);
+   return sample || (file?probeColor('https://image.tmdb.org/t/p/w300/'+file[1]):'');
+  })();
   colors.set(url, pending);
+  pending.then(color=>{if(color && colors.get(url)===pending)colors.set(url,color);});
   if (colors.size > 32) colors.delete(colors.keys().next().value);
   return pending;
  }

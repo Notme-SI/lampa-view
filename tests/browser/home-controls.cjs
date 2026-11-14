@@ -44,7 +44,7 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
   }
   check();
  }));
- const previewWidth=await page.locator('.minimal-home-first-row .card').first().evaluate(n=>n.getBoundingClientRect().width);
+ const posterWidth=await page.locator('.minimal-home-first-row .card').first().evaluate(n=>parseFloat(getComputedStyle(n).width));
  await page.keyboard.press('ArrowDown');await page.waitForTimeout(100);assert.ok(await page.locator('.minimal-home-first-row .card.focus').count(),'Down goes directly to Now watching');
  if(mode==='desktop'){
   await page.waitForFunction(()=>{const card=document.querySelector('.minimal-home-first-row .card.focus');return card && card.getBoundingClientRect().bottom<=innerHeight+1;},null,{timeout:2000});const footer=await page.locator('.minimal-home-first-row .card.focus').evaluate(n=>({bottom:n.getBoundingClientRect().bottom,viewport:innerHeight}));assert.ok(footer.bottom<=footer.viewport+1,'Native focus scroll reveals the full card and its watch footer: '+JSON.stringify(footer));
@@ -56,7 +56,10 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
    return [...view.querySelectorAll('.pt-kind,.card__vote')].map(n=>{const b=n.getBoundingClientRect();return {insetScale:innerWidth/1920,kind:n.classList.contains('pt-kind'),left:(b.left-r.left)/scale,right:(r.right-b.right)/scale,bottom:(r.bottom-b.bottom)/scale};});
   });
   assert.equal(corners.length,2);for(const b of corners){if(b.kind){assert.ok(Math.abs(b.left-4*b.insetScale)<1,'Type badge leaves space for its rounded corners');}else{assert.ok(Math.abs(b.right-8*b.insetScale)<1,'Rating stays anchored to the right');assert.ok(Math.abs(b.bottom-8*b.insetScale)<1,'Rating stays above the lower corner');}}
-  assert.equal(await page.locator('.pt-hero').evaluate(n=>n.offsetHeight),heroHeight,'Only cards change size on entry');await page.waitForFunction(width=>{const card=document.querySelector('.minimal-home-first-row .card');return !document.querySelector('.minimal-hero-preview') && card && card.getBoundingClientRect().width>width+5;},previewWidth,{timeout:3000});await page.keyboard.press('ArrowUp');await page.waitForSelector('.minimal-hero-preview');}
+  assert.equal(await page.locator('.pt-hero').evaluate(n=>n.offsetHeight),heroHeight,'Entering the row keeps the banner layout');
+  assert.ok(Math.abs(await page.locator('.minimal-home-first-row .card').first().evaluate(n=>parseFloat(getComputedStyle(n).width))-posterWidth)<.1,'Entering the row keeps the shared poster width');
+  await page.keyboard.press('ArrowUp');await page.waitForFunction(()=>Lampa.Controller.enabled().name==='lampa_view_hero');
+  assert.ok(Math.abs(await page.locator('.minimal-home-first-row .card').first().evaluate(n=>parseFloat(getComputedStyle(n).width))-posterWidth)<.1,'Returning to the banner keeps poster width');}
 
  await page.locator('.pt-hero__studio').evaluate(n=>n.dispatchEvent(new Event('load')));const studio=await page.locator('.pt-hero__studio').evaluate(n=>({selector:n.classList.contains('selector'),role:n.getAttribute('role'),pointer:getComputedStyle(n).pointerEvents,alt:n.alt}));assert.equal(studio.selector,mode!=='tv');assert.equal(studio.role,mode==='tv'?null:'button');assert.equal(studio.pointer,mode==='tv'?'none':'auto');assert.equal(studio.alt,'Test studio');
  if(mode==='desktop'){await page.evaluate(()=>{Lampa.Api.company=(p,ok)=>ok({company:{id:7,name:'Test studio',logo_path:'/s.png'},lines:[]});});await page.locator('.pt-hero__studio').click();await page.waitForSelector('.activity--active .minimal-project-title');assert.equal(await page.evaluate(()=>Lampa.Activity.active().component),'company');await page.evaluate(()=>Lampa.Activity.backward());await page.waitForSelector('.activity--active .pt-hero');}

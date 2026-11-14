@@ -1,12 +1,22 @@
 import {text as lampaViewText} from './i18n.js';
 import {animeMode} from './catalogue.js';
+import {canFocusOrdered,focusOrdered} from './ordered-focus.js';
 export default function animeTabs(L,item,object){
  const mode=animeMode(L,object),wrapper=document.createElement('div'),nav=document.createElement('div'),status=document.createElement('div'),message=document.createElement('div'),retry=document.createElement('button'),buttons=[],$=window.jQuery;
  wrapper.className='minimal-anime-controls';status.className='minimal-anime-status';status.setAttribute('role','status');message.textContent=lampaViewText("Загрузка подборок…");retry.type='button';retry.className='minimal-anime-retry selector';retry.textContent=lampaViewText("Повторить загрузку");retry.hidden=true;status.appendChild(message);status.appendChild(retry);wrapper.appendChild(nav);wrapper.appendChild(status);
  nav.className='minimal-anime-tabs';nav.setAttribute('role','tablist');nav.setAttribute('aria-label',lampaViewText("Каталог аниме"));
  let index=mode==='shikimori'?1:0,disposed=false,ready=false,focusOnStart=true;
- function focus(){if(disposed)return;if(item.scroll.minimalBrowserScroll)item.scroll.reset();else if(item.scroll.immediate)item.scroll.immediate(wrapper,false);else item.scroll.update(wrapper,false);L.Controller.collectionSet(wrapper);L.Controller.collectionFocus(index===2?retry:buttons[index],wrapper);}
- function toggle(){if(disposed)return;L.Controller.add('minimal_anime_tabs',{link:wrapper,toggle:focus,left(){if(index>0){index--;focus();}else L.Controller.toggle('menu');},right(){index=Math.min(1,index+1);focus();},up(){if(index===2){index=mode==='shikimori'?1:0;focus();}else L.Controller.toggle('head');},down(){const hero=wrapper.nextElementSibling;if(hero?.matches('.pt-hero:not(.pt-hidden):not(.pt-hero--pending)') && hero._minimalHeroEnter)return hero._minimalHeroEnter();if(item.items && item.items.length){item.active=0;item.items[0].toggle();item.scroll.minimalBrowserScroll?.reveal(item.items[0].render(true));}else if(!retry.hidden){index=2;focus();}},back(){L.Activity.backward();}});L.Controller.toggle('minimal_anime_tabs');}
+ function focus(){
+  if(disposed)return;
+  if(item.scroll.minimalBrowserScroll)item.scroll.reset();
+  else if(item.scroll.immediate)item.scroll.immediate(wrapper,false);
+  else item.scroll.update(wrapper,false);
+  const target=index===2?retry:buttons[index];
+  L.Controller.collectionSet(wrapper);
+  if(canFocusOrdered(L,target,wrapper))focusOrdered(L,target);
+  else L.Controller.collectionFocus(target,wrapper);
+ }
+ function toggle(){if(disposed)return;L.Controller.add('minimal_anime_tabs',{link:wrapper,toggle:focus,update:item.scroll.minimalBrowserScroll?.updateLayer,left(){if(index>0){index--;focus();}else L.Controller.toggle('menu');},right(){index=Math.min(1,index+1);focus();},up(){if(index===2){index=mode==='shikimori'?1:0;focus();}else L.Controller.toggle('head');},down(){const hero=wrapper.nextElementSibling;if(hero?.matches('.pt-hero:not(.pt-hidden):not(.pt-hero--pending)') && hero._minimalHeroEnter)return hero._minimalHeroEnter();if(item.items && item.items.length){item.active=0;item.items[0].toggle();item.scroll.minimalBrowserScroll?.reveal(item.items[0].render(true));}else if(!retry.hidden){index=2;focus();}},back(){L.Activity.backward();}});L.Controller.toggle('minimal_anime_tabs');}
  item.minimalAnimeTabs=toggle;
  [['standard',lampaViewText("Стандартные")],['shikimori','Shikimori']].forEach(([value,title],i)=>{
   const button=document.createElement('button');button.type='button';button.className='minimal-anime-tab pt-hero__action selector';button.textContent=title;button.dataset.catalogue=value;button.setAttribute('role','tab');button.setAttribute('aria-selected',String(mode===value));

@@ -14,10 +14,6 @@ export default function homeStage(hero,root){
    if(hero.style.getPropertyValue('--pt-home-copy-left')!==value)hero.style.setProperty('--pt-home-copy-left',value);
   }
  }
- // Expanded collections use native scrolling. Retain the preview's hero
- // height so entry/return only animates cards, never the banner itself.
- if(tv && !root.classList.contains('minimal-hero-preview')){root.classList.add('minimal-home-first-row');return;}
-
  const rowStyle=getComputedStyle(root),heroStyle=getComputedStyle(hero);
  const outer=root.closest('.scroll');
  // Native Activity animates an ancestor with translateY when returning
@@ -61,7 +57,7 @@ export default function homeStage(hero,root){
    root.classList.add('minimal-home-first-row');return;
   }
   const room=Math.max(1,height-minBottom-topInset),natural=body.offsetHeight;
-  if(natural>room)body.style.fontSize=(font*Math.max(.65,room/natural))+'px';
+  if(natural>room)body.style.fontSize=(font*Math.max(tv ? .5 : .65,room/natural))+'px';
   // Both desktop themes anchor their text directly over the artwork. Mobile
   // retains normal flow, so a bottom offset must never shift its text panel.
   if(anchored){const bottom=Math.min(parseFloat(style.bottom)||font*7,height-body.offsetHeight-topInset);
