@@ -1,3 +1,8 @@
+## 0.5.187
+
+- Align TV menu, settings and action panels with the top of navigation. Reserve space for the wider right panel when fitting the centered header.
+- Make the mobile sidebar mirror Settings using shared width and readable text, including pinned menus, tablet-style phone agents and all native interface sizes.
+
 ## 0.5.186
 
 - Move watch status onto the poster in the same material and type size as its native tags. Show it only on selection; reserve space for the rating and favorite markers, with no text footer or central Play marker.

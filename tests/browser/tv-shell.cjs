@@ -36,7 +36,7 @@ const {setup}=require('../fixtures/native-browser.cjs');
     }
     const panels=await r.page.evaluate(()=>{
      const L=Lampa,header=document.querySelector('.head .head__body');
-     const rect=selector=>{const {top,bottom,width}=document.querySelector(selector).getBoundingClientRect();return {top,bottom,width};};
+     const rect=selector=>{const {top,bottom,width,left,right}=document.querySelector(selector).getBoundingClientRect();return {top,bottom,width,left,right};};
      L.Controller.toggle('menu');const menu=rect('.wrap__left');
      L.Controller.toggle('settings');const settings=rect('.settings__content');
      L.Select.show({title:'Действия',items:Array.from({length:30},(_,i)=>({title:'Действие '+i,selected:i===29}))});
@@ -52,8 +52,9 @@ const {setup}=require('../fixtures/native-browser.cjs');
     });
     for(const key of ['menu','settings','actions']){
      const panel=panels[key];
-     assert.ok(panel.width>0 && panel.width<width*.25 && panel.top>=panels.header.bottom+1 && panel.bottom<=width*9/16,JSON.stringify({key,width,theme,panels}));
+     assert.ok(panel.width>0 && panel.width<width*.25 && Math.abs(panel.top-panels.header.top)<1 && panel.bottom<=width*9/16,JSON.stringify({key,width,theme,panels}));
     }
+    assert.ok(panels.menu.right<panels.header.left && panels.settings.left>panels.header.right && panels.actions.left>panels.header.right,'The centered header leaves room for both aligned side panels '+JSON.stringify(panels));
     assert.ok(panels.dialog.width>0 && panels.dialog.width<=width*.32 && panels.dialog.top>=panels.header.bottom+1,JSON.stringify({width,theme,panels}));
     assert.equal(panels.movingFilter,'none');
    }
