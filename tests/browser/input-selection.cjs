@@ -38,11 +38,7 @@ async function run(browser,mode,theme){
   await film.waitFor({state:'attached'});
   await page.waitForFunction(()=>document.querySelector('#qa-input .card.pt-poster-ready'));
   assert.equal(await page.locator('#qa-input .pt-poster-selection').count(),0,'No added Play layer on any poster');
-  assert.equal(await film.locator('.icon--history').count(),1,'Keep the native continuation marker');
-  if(mode==='tv'){
-   const size=await film.evaluate(card=>({icon:card.querySelector('.icon--history').getBoundingClientRect().width,poster:card.querySelector('.card__view').getBoundingClientRect().width}));
-   assert.ok(Math.abs(size.icon/size.poster-.11)<.01,'TV continuation marker scales with its poster: '+JSON.stringify(size));
-  }
+  assert.equal(await film.locator('.icon--history').evaluate(n=>getComputedStyle(n).display),'none','Central Play is hidden on every device');
   await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
   if(mode==='desktop'){
    await film.hover();
@@ -87,7 +83,7 @@ async function run(browser,mode,theme){
   const paint=await film.locator('.card__view').evaluate(n=>({shadow:getComputedStyle(n,'::after').boxShadow,edge:getComputedStyle(n,'::after').backgroundImage}));
   if(!staticFocus)assert.match(paint.shadow,/rgba\(255, 255, 255, 0.18\).*22px/);
   assert.equal(paint.edge,'none');assert.match(paint.shadow,staticFocus?/2px inset$/:/1px inset/,'The selection edge follows the rounded poster');
-  assert.equal(await film.locator('.icon--history').evaluate(n=>getComputedStyle(n).opacity),'1','Selection never hides the native continuation marker');
+  assert.equal(await film.locator('.icon--history').evaluate(n=>getComputedStyle(n).display),'none','Selection never restores central Play');
   await page.waitForFunction(()=>{const label=document.querySelector('#qa-input .pt-card-watch');return label && getComputedStyle(label).visibility==='visible';},null,{timeout:4000}).catch(async e=>{throw Error(e.message+' '+JSON.stringify(await page.evaluate(()=>({body:document.body.className,node:document.querySelector('#qa-input .card').outerHTML}))));});
   assert.equal(await film.locator('.pt-card-watch__time').textContent(),'15:15');
   await page.keyboard.press('ArrowRight');
@@ -126,7 +122,7 @@ async function run(browser,mode,theme){
    assert.equal(controls.filter(c=>c.focus).length,1);
    const inactive=controls.filter(c=>!c.focus),focused=controls.find(c=>c.focus);
    for(const control of inactive)assert.deepEqual(control.material,inactive[0].material);
-   if(mode==='tv')for(const control of inactive){
+   if(mode==='tv' && theme==='glass')for(const control of inactive){
     assert.equal(control.material[0],'rgba(0, 0, 0, 0)','Inactive TV controls share the capsule background');
     assert.equal(control.material[1],'rgba(0, 0, 0, 0)','Inactive TV controls have no individual border');
    }
@@ -139,7 +135,7 @@ async function run(browser,mode,theme){
    const pinned=await page.locator('body.pt-menu-pinned .head__body .selector:not(.focus)').evaluateAll(nodes=>nodes
     .filter(node=>node.getBoundingClientRect().width>0)
     .map(node=>getComputedStyle(node).borderColor));
-   assert.ok(pinned.length>0 && pinned.every(color=>color==='rgba(0, 0, 0, 0)'),'The docked menu also keeps inactive controls borderless');
+   assert.ok(pinned.length>0 && pinned.every(color=>theme==='glass'?color==='rgba(0, 0, 0, 0)':color!=='rgba(0, 0, 0, 0)'),'Docking keeps the selected theme: glass capsule or separate dark controls');
   }
   assert.deepEqual(r.errors,[]);
  }finally{await r.context.close();}

@@ -1,4 +1,4 @@
-/*! Lampa View 0.5.183 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.5.184 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Lampa View contributors
@@ -7897,7 +7897,7 @@ a.tmdb_id||a.id),type:"tv"}:null,h0=R0&&!((r0=F0==null?void 0:F0.record)!=null&&
 null?void 0:F0.aired,released:F0==null?void 0:F0.released,episodes:F0==null?void 0:F0.episodes}}):V;return{card:h0,title:x0,subtitle:[String(V.release_date||V.first_air_date||
 "").slice(0,4),K0,L0?U("Сезон {0}",[L0]):"",D0>0?J0(["%s серия","%s серии","%s серий"],D0):"",Q0].filter(Boolean).join(" · "),icon:J==="mov\
 ie"?"▷":J==="ova"?"◇":["special","tv_special"].includes(J)?"✦":"▤"}});return{key:y.key,title:y.key==="story"?U("Порядок просмотра"):y.title,
-entries:L}}).filter(function(y){return y.entries.length})}var ln=Bt(ot()),Q1="0.5.183",O2="https://notme-si.github.io/lampa-view/frames/v1/",j2=new WeakMap,K2="\
+entries:L}}).filter(function(y){return y.entries.length})}var ln=Bt(ot()),Q1="0.5.184",O2="https://notme-si.github.io/lampa-view/frames/v1/",j2=new WeakMap,K2="\
 minimal_frame_catalogue_v1",gi=216e5;function I2(e){var a;if(j2.has(e))return j2.get(e);var s;try{s=(a=e.Storage)==null?void 0:a.get(K2,{})}catch(A){}for(var o=new Map,
 l=new Map,u=0,c=Object.entries(s||{});u<c.length;u++){var p=_slicedToArray(c[u],2),d=p[0],f=p[1];/^[0-3][0-9a-f]$/.test(d)&&(f==null?void 0:f.at)>Date.now()-7*864e5&&
 L2(f.data)&&o.set(d,f)}function h(){var A;try{(A=e.Storage)==null||A.set(K2,Object.fromEntries(_toConsumableArray(o).slice(-8)))}catch(z){}}function w(A){return v.
@@ -10522,101 +10522,96 @@ data-lampa-theme=glass] .card :is(.pt-kind,.pt-quality,.card__quality,.pt-series
 -glass,var(--pt-header-glass))!important;border:0!important;box-shadow:none!important;text-shadow:none;backdrop-filter:var(--pt-poster-glass-filter,var(--pt-gla\
 ss-filter))!important;-webkit-backdrop-filter:var(--pt-poster-glass-filter,var(--pt-glass-filter))!important}body.lampa_view[data-lampa-theme] .card :is(.pt-kin\
 d,.pt-quality,.pt-series-status,.card__quality,.card__vote,.card__marker,.card__new-episode)>*{background:transparent!important;border:0!important;box-shadow:no\
-ne!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}body.lampa_view[data-lampa-theme] .card .card__view .icon--history{width:26px\
-!important;height:26px!important;min-width:26px;min-height:26px;padding:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;filte\
-r:none!important;background:transparent url(data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22104%22%20height%3D%22104\
-%22%20viewBox%3D%220%200%2026%2026%22%3E%3Ccircle%20cx%3D%2213%22%20cy%3D%2213%22%20r%3D%2212.25%22%20fill%3D%22%23181818%22%20fill-opacity%3D%22.4%22%20stroke%\
-3D%22white%22%20stroke-opacity%3D%22.8%22%20stroke-width%3D%221%22%2F%3E%3Cpath%20fill%3D%22white%22%20d%3D%22M10.5%207.75v10.5l8-5.25z%22%2F%3E%3C%2Fsvg%3E) ce\
-nter / 26px 26px no-repeat!important;image-rendering:auto;backface-visibility:visible}body.lampa_view.pt-tv[data-lampa-theme] .card .card__view .icon--history{w\
-idth:11%!important;height:11%!important;min-width:0;min-height:0;background-size:contain!important}@media(prefers-reduced-transparency:reduce){body.lampa_view.p\
-t-theme-glass[data-lampa-theme=glass] .card :is(.pt-kind,.pt-quality,.card__quality,.pt-series-status,.card__vote,.card__marker,.card__new-episode){background:#\
-202020!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}}body.lampa_view.pt-theme-glass[data-lampa-theme=glass] .card .card__icon\
-:not(.icon--history){background-color:var(--pt-poster-glass,var(--pt-header-glass))!important;border:0!important;box-shadow:inset 0 0 0 1px var(--pt-glass-borde\
-r)!important;backdrop-filter:var(--pt-poster-glass-filter,var(--pt-glass-filter))!important;-webkit-backdrop-filter:var(--pt-poster-glass-filter,var(--pt-glass-\
-filter))!important}body.lampa_view.pt-touch-captions[data-lampa-theme] .card:not(.pt-card-touch) .card__view{transform:none!important;-webkit-transform:none!imp\
-ortant;transition:none!important}\n';function eo(e){var a=/iPhone|iPad|iPod/.test(navigator.userAgent)||/Macintosh/.test(navigator.userAgent)&&navigator.maxTouchPoints>
-1;if(!a)return{update:function(){},palette:function(){}};var s=document.documentElement,o=["background-color","--pt-ios-canvas"],l=o.map(function(B){return[B,s.
-style.getPropertyValue(B),s.style.getPropertyPriority(B)]}),u=document.querySelector('meta[name="theme-color"]'),c=u&&u.content,p=e.Background,d=p&&p.theme,f=!1,
-h=!1,w="rgb(10,10,10)",v=c||"#000000",k;function A(B){return B==="black"?"#000000":B==="reset"?"#1d1f20":B}function z(B){s.style.setProperty("background-color",
-B,"important"),s.style.setProperty("--pt-ios-canvas",B);var F=u||k||(k=document.createElement("meta"));F.name="theme-color",F.content=B,F.isConnected||(document.
-head||s).appendChild(F)}function T(B){d&&d.call(p,B),z(B)}d&&(p.theme=function(B){if(v=B,f){h=B!=="reset"&&B!=="#1d1f20";var F=h?A(B):w,O=d.call(this,F);return z(
-F),O}return d.apply(this,arguments)});function P(B){if(B){f||(h=!1),f=!0,h||T(w);return}f&&(f=!1,l.forEach(function(F){var O=_slicedToArray(F,3),x=O[0],S=O[1],g=O[2];
-S?s.style.setProperty(x,S,g):s.style.removeProperty(x)}),d&&d.call(p,v),u?u.content=A(v):k&&(k.remove(),k=null))}function R(B){var F=String(B||"").split(",").map(
-Number),O=F.length===3?"rgb("+F.map(function(x){return Math.round(10*.68+x*.32)}).join(",")+")":"rgb(10,10,10)";O!==w&&(w=O,f&&!h&&T(w))}return{update:P,palette:R}}
-var Xn="lampa_view_dark_accent",bn="#d8c39a",vr="lampa_view_card_motion",hr=function(a){return["on","off","system"].includes(a)?a:"on"};function to(e){e.SettingsApi.
-addParam({component:"lampa_view",param:{name:vr,type:"select",values:{on:U("Включена"),system:U("По системе"),off:U("Выключена")},default:"\
-on"},field:{name:U("Анимация карточек"),description:U("Плавный подъём и свечение при выборе. «По системе» учитывает уменьшение движения на устро\
-йстве.")}})}function gr(e){var a=String(e!=null?e:"").trim().toLowerCase().replace(/^#/,"");return/^[0-9a-f]{6}$/.test(a)?"#"+a:/^[0-9a-f]{3}$/.test(a)?"#"+
-a.replace(/./g,function(s){return s+s}):""}var br=function(a){return gr(a.Storage.get(Xn,bn))||bn};function ao(e){var a=document.body.style,s=br(e),o=s!==bn;document.
-body.classList.toggle("pt-custom-accent",o);for(var l=s.slice(1).match(/../g).map(function(z){return parseInt(z,16)}),u=l.map(function(z){var T=z/255;return T<=
-.04045?T/12.92:Math.pow((T+.055)/1.055,2.4)}),c=.2126*u[0]+.7152*u[1]+.0722*u[2],p=l.map(function(z){return Math.round(20+.13*z)}).join(","),d=l.map(function(z){
-return Math.round(z+.12*(255-z))}).join(","),f={"--pt-custom-accent":s,"--pt-custom-accent-rgb":l.join(","),"--pt-custom-accent-ink":c>.179?"#000":"#fff","--pt-\
-custom-accent-focus":"rgb("+d+")","--pt-custom-selection-rgb":p},h=0,w=Object.entries(f);h<w.length;h++){var v=_slicedToArray(w[h],2),k=v[0],A=v[1];o?a.setProperty(
-k,A):a.removeProperty(k)}}function P3(e){var a="Цвет выделения";e.SettingsApi.addParam({component:"lampa_view",param:{name:Xn,type:"button",default:bn},
-field:{name:U(a),description:U("Код HEX. Пустое поле возвращает {0}.",[bn])},onRender:function(o){return o.find(".settings-param__name").
-after('<div class="settings-param__value">'+br(e)+"</div>")},onChange:function(){no(e.Storage.get("lampa_view_theme","minimal"))==="minimal"&&e.Input.edit({title:U(
-a),value:br(e),free:!0,nosave:!0,nomic:!0},function(o){var l,u,c=String(o!=null?o:"").trim(),p=gr(c);if(c&&!p){(u=(l=e.Noty)==null?void 0:l.show)==null||u.call(
-l,U("Введите цвет в формате #RRGGBB."));return}e.Storage.set(Xn,p||bn),document.querySelectorAll('[data-name="'+Xn+'"] .settings-param__value').
-forEach(function(d){d.textContent=br(e)})})}})}function no(e){return e==="glass"||e==="apple"?"glass":"minimal"}var J1=function(a){return![!1,"false",0,"0","no"].
-includes(a)};function B3(e){if(!document.getElementById("lampa-view-glass-style")){var a=document.createElement("style");a.id="lampa-view-glass-style",a.textContent=
-Ci+"\n"+an,(document.head||document.documentElement).appendChild(a)}var s=eo(e),o="";function l(){var p=J1(e.Storage.get("lampa_view_enabled",!0))&&!document.body.
-classList.contains("pt-tv");s.palette(o),s.update(p&&(no(e.Storage.get("lampa_view_theme","minimal"))==="glass"||!!o&&document.body.classList.contains("pt-mobil\
-e")))}function u(p,d){try{return e.Storage.field?e.Storage.field(p):e.Storage.get(p,d)}catch(f){return d}}function c(){var p=J1(e.Storage.get("lampa_view_enable\
-d",!0));p?document.body.dataset.ptCardMotion=hr(e.Storage.get(vr,"on")):delete document.body.dataset.ptCardMotion;var d=e.Storage.get("lampa_view_theme","minima\
-l"),f=no(d),h=f==="glass"&&p;d==="apple"&&e.Storage.set("lampa_view_theme","glass"),document.body.classList.remove("pt-theme-apple","pt-native-glass"),document.
-body.classList.toggle("pt-theme-glass",h),document.body.dataset.lampaTheme=f;var w=J1(e.Storage.get("lampa_view_enabled",!0))?h:J1(u("glass_style",!1)),v=u("gla\
-ss_opacity","medium")||"medium";delete document.body.dataset.ptNativeOpacity,document.body.classList.toggle("glass--style",w),["easy","medium","blacked"].forEach(
-function(P){return document.body.classList.toggle("glass--style-opacity--"+P,w&&v===P)}),document.body.style.setProperty("--pt-glass-alpha",String({easy:.16,medium:.3,
-blacked:.58}[v]||.32));var k={easy:.36,medium:.52,blacked:.72}[v]||.52;document.body.style.setProperty("--pt-matte-alpha",String(k));for(var A=0,z=["--pt-glass-\
-scene","--pt-glass-tone-a","--pt-glass-tone-b"];A<z.length;A++){var T=z[A];document.body.style.removeProperty(T)}l(),document.dispatchEvent(new Event("minimal:i\
-nterface-size")),document.dispatchEvent(new Event("minimal:hero-layout"))}return ao(e),c(),e.Storage.listener&&e.Storage.listener.follow("change",function(p){p.
-name===Xn&&ao(e),["lampa_view_theme","lampa_view_enabled","glass_style","glass_opacity",vr].includes(p.name)&&c()}),{update:c,chromePalette:function(d){d!==o&&(o=
-d,l())}}}var R3='html,body{background:#000!important}.welcome{background:#000!important;background-image:none!important}.welcome:before{content:"LAMPA";position\
-:absolute;top:48%;left:0;right:0;text-align:center;color:#e9edef;font:500 28px/1.2 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;letter-spacing:.\
-3em;padding-left:.3em}.welcome:after{content:"";position:absolute;top:calc(48% + 60px);left:50%;margin-left:-50px;width:100px;height:3px;background:#d8c39a;bord\
-er-radius:3px;animation:minimal-boot-breathe 2s ease-in-out infinite}.lp-step{position:fixed!important;top:calc(48% + 88px)!important;left:20px;right:20px;font:\
-400 12px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif!important;letter-spacing:.04em;color:#858d94}.lp-status{display:none!important}.no-net\
-work{z-index:1100!important;background:#080808;color:#e9edef}@keyframes minimal-boot-breathe{0%,100%{opacity:.35;transform:scaleX(.35)}50%{opacity:1;transform:s\
-caleX(1)}}@keyframes minimal-boot-breathe-reduced{0%,100%{opacity:.6;transform:scaleX(.65)}50%{opacity:1;transform:scaleX(1)}}@media(prefers-reduced-motion:redu\
-ce){.welcome:after{animation-name:minimal-boot-breathe-reduced}}\n',_r=Bt(P1());function yr(e){return String(e||"").replace(/\s+(?:(?:\d+(?:st|nd|rd|th)?\s+season|season\s+\d+)(?:\s+part\s+\d+)?|\d+(?:\.\s*часть\s*\d+)?)\s*$/i,
-"").trim()}var l2=function(a){return String(a||"").toLowerCase().replace(/[^a-zа-яё0-9\u3040-\u30ff\u3400-\u9fff]/g,"")};function Qn(e,a){var s=new Map;return function(l,u,c){
-var p=l.card||l,d=p.media_type||(p.name?"tv":"movie"),f=String(p.shikimori_id||p.id),h=d+":"+f+":"+(p.minimal_franchise_season||0),w=p.original_title||p.original_name,
-v=p.minimal_franchise_full_title||p.title||p.name,k=new Set,A=[],z=[],T=!1,P=!1,R=0,B=0,F=function(){return!(l.activity&&l.activity.component&&l.activity.component.
-destroyed)};function O(r0){var Z=arguments.length>1&&arguments[1]!==void 0?arguments[1]:!1;r0=String(r0||"").trim();var I=l2(r0);r0&&I&&!k.has(I)&&(k.add(I),A.push(
-{name:r0,base:Z}),z.push(r0))}function x(){e.Select.hide(),c({empty:!0}),e.Activity.backward()}function S(r0){if(F()){s.set(h,r0),s.size>200&&s.delete(s.keys().
-next().value);var Z=r0.media_type||d;e.Api.sources.tmdb.full(P0(c0({},l),{id:r0.id,method:Z,source:"tmdb",card:P0(c0({},r0),{source:"tmdb",media_type:Z})}),function(I){
-if(!I||!I.movie||Number(I.movie.id)!==Number(r0.id))return s.delete(h),c({empty:!0});r0.minimal_anime_release&&(I=P0(c0({},I),{movie:P0(c0({},I.movie),{source:"\
-tmdb",media_type:Z,minimal_anime:!0,mal_id:r0.minimal_anime_release.mal,shikimori_id:r0.minimal_anime_release.mal,minimal_anime_release:r0.minimal_anime_release})})),
-u(I)},function(I){s.delete(h),c(I)})}}function g(){e.Select.hide(),e.Input.edit({title:"Название аниме для поиска",value:v||w||"",free:!0,
-nosave:!0},function(r0){if(!String(r0||"").trim())return _();k.clear(),A.length=0,R=0,B=0,P=!1,O(r0),T=!0,N()})}function _(){F()&&e.Select.show({title:P?"Не уда\
-лось выполнить поиск TMDB":"Карточка аниме не найдена в TMDB",items:[{id:"search",title:"Поиск по другому названию",
-subtitle:"Попробуйте название всего сериала без номера сезона."},{id:"back",title:"Вернуться к аниме"}],
-onSelect:function(Z){return Z.id==="search"?g():x()},onBack:x})}function y(r0,Z){if(F()){var I=String(p.first_air_date||p.release_date||"").slice(0,4),J=r0.filter(
-function(l0){return I&&String(l0.first_air_date||l0.release_date||"").slice(0,4)===I}),G=d==="tv"?z.filter(function(l0){return yr(l0)!==l0}).map(function(l0){return l2(
-yr(l0))}):[],Q=Z||r0.some(function(l0){return[l0.title,l0.name,l0.original_title,l0.original_name].some(function(w0){return w0&&G.includes(l2(w0))})}),n0=r0.filter(
-function(l0){return[l0.title,l0.name,l0.original_title,l0.original_name].some(function(w0){return w0&&z.some(function(f0){return l2(f0)===l2(w0)})})});if(!Q&&n0.
-length===1&&(!I||!String(n0[0].first_air_date||n0[0].release_date||"").slice(0,4)||String(n0[0].first_air_date||n0[0].release_date).slice(0,4)===I))return S(n0[0]);
-e.Select.show({title:Q?"Откройте общую карточку сериала":"Выберите карточку аниме",items:r0.slice(0,12).map(function(l0){
-return{title:(l0.title||l0.name)+" · "+String(l0.first_air_date||l0.release_date||"").slice(0,4),subtitle:Q?"Продолжение может быть частью общего сезона. Прове\
-рьте список серий.":"",card:l0}}).concat([{id:"search",title:"Поиск по другому названию"},{id:"back",title:"Вернуться к ани\
-ме"}]),onSelect:function(w0){if(w0.id==="search")return g();if(w0.id==="back")return x();e.Select.hide(),S(w0.card)},onBack:x})}}function C(r0){if(F()){for(var Z=0,
-I=["name","russian","english","japanese","synonyms"];Z<I.length;Z++){var J=I[Z],G=r0&&r0[J];(Array.isArray(G)?G:[G]).filter(Boolean).slice(0,2).forEach(function(Q){
-return O(Q)})}d==="tv"&&z.slice().forEach(function(Q){var n0=yr(Q);n0!==Q&&O(n0,!0)}),N()}}function N(){if(F()){if(R>=8||B>=2)return _();var r0=A.shift();if(!r0)
-return T?_():(T=!0,a(f,C,function(){return C({})}));R++,_1(e,"search/"+d+"?language=ru&query="+encodeURIComponent(r0.name),{},function(Z){var I=(Z&&Z.results||[]).
-filter(function(J){return J.id&&(!J.genre_ids||J.genre_ids.includes(16))});I.length?y(I,r0.base):N()},function(){P=!0,B++,N()})}}if(s.has(h))return S(s.get(h));
-O(w),O(v);var K=P0(c0({},p),{source:"minimal_shiki",shikimori_id:f,media_type:d}),L=ve(K);function V(r0){S({id:r0.id,media_type:r0.type,minimal_anime_release:{mal:r0.
-release.mal,anidb:r0.release.anidb,anilist:r0.release.anilist,kind:r0.release.kind,season:p.minimal_franchise_season||r0.release.season,offset:r0.release.offset,
-title:v||"",original:w||"",date:p.first_air_date||p.release_date||""}})}if(L)return V(L);var Y=typeof window!="undefined"&&window.LampaView,o0=Y&&Y.kinoapi,X=Y&&
-Y.animeBase;function i0(){if(o0&&o0.enabled())return o0.title(p,function(r0){if(r0&&r0.type===d&&Number(r0.id&&r0.id.shikimori)===Number(f)&&Number(r0.id.tmdb)>
-0)return S(c0({id:Number(r0.id.tmdb),media_type:d},d==="tv"?{name:v}:{title:v}));N()});N()}if(X&&X.resolveTarget)return X.resolveTarget(K,function(r0){return r0?
-V(r0):i0()});i0()}}var zi=function(a){var s=String(a||"").match(/(?:season\s+(\d+)|(\d+)(?:st|nd|rd|th)?\s+season|(\d+)\s+сезон)(?=$|[\s:.-])/i);return s?Number(
-s[1]||s[2]||s[3]):0};function e3(e,a){var s=e.minimal_anime_release;s&&s.mal&&(e=P0(c0({},e),{id:s.mal,shikimori_id:s.mal,source:"minimal_shiki",title:s.title||
-e.title,name:s.title||e.name,original_title:s.original||e.original_title,original_name:s.original||e.original_name,first_air_date:s.date||e.first_air_date,release_date:s.
-date||e.release_date}));var o=function(c){return String(c||"").toLowerCase().replace(/ё/g,"е").replace(/[^a-zа-я0-9\u3040-\u30ff\u3400-\u9fff]/g,"")},l=(a?"\
-tv:":"movie:")+o(e.title||e.name||e.original_title||e.original_name)+":"+String(e.first_air_date||e.release_date||"").slice(0,4);return l+(Se(e)?":anime3:"+(e.source===
-"minimal_shiki"?"shiki":"tmdb")+":"+(e.shikimori_id||e.tmdb_id||e.id||""):"")}function t3(e,a,s,o){var l=e.minimal_anime_release;if(l&&l.mal){var u=[l.title,l.original].
-filter(Boolean);return!u.length||!l.date?!1:t3(P0(c0({},e),{minimal_anime_release:null,source:"minimal_shiki",original_name:l.original,original_title:l.original,
-name:l.title,title:l.title,first_air_date:l.date,release_date:l.date}),a,u,o)}var c=String(a||"").toLowerCase().replace(/ё/g,"е");if(/upscal|апск[еэ]йл|апскал|нейро|\b(?:ai[ ._-]*(?:enhanced|remaster|up)|topaz)\b/i.
+ne!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}body.lampa_view[data-lampa-theme] .card .card__view .icon--history{display:no\
+ne!important}@media(prefers-reduced-transparency:reduce){body.lampa_view.pt-theme-glass[data-lampa-theme=glass] .card :is(.pt-kind,.pt-quality,.card__quality,.p\
+t-series-status,.card__vote,.card__marker,.card__new-episode){background:#202020!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important\
+}}body.lampa_view.pt-theme-glass[data-lampa-theme=glass] .card .card__icon:not(.icon--history){background-color:var(--pt-poster-glass,var(--pt-header-glass))!im\
+portant;border:0!important;box-shadow:inset 0 0 0 1px var(--pt-glass-border)!important;backdrop-filter:var(--pt-poster-glass-filter,var(--pt-glass-filter))!impo\
+rtant;-webkit-backdrop-filter:var(--pt-poster-glass-filter,var(--pt-glass-filter))!important}body.lampa_view.pt-touch-captions[data-lampa-theme] .card:not(.pt-c\
+ard-touch) .card__view{transform:none!important;-webkit-transform:none!important;transition:none!important}\n';function eo(e){var a=/iPhone|iPad|iPod/.test(navigator.
+userAgent)||/Macintosh/.test(navigator.userAgent)&&navigator.maxTouchPoints>1;if(!a)return{update:function(){},palette:function(){}};var s=document.documentElement,
+o=["background-color","--pt-ios-canvas"],l=o.map(function(B){return[B,s.style.getPropertyValue(B),s.style.getPropertyPriority(B)]}),u=document.querySelector('me\
+ta[name="theme-color"]'),c=u&&u.content,p=e.Background,d=p&&p.theme,f=!1,h=!1,w="rgb(10,10,10)",v=c||"#000000",k;function A(B){return B==="black"?"#000000":B===
+"reset"?"#1d1f20":B}function z(B){s.style.setProperty("background-color",B,"important"),s.style.setProperty("--pt-ios-canvas",B);var F=u||k||(k=document.createElement(
+"meta"));F.name="theme-color",F.content=B,F.isConnected||(document.head||s).appendChild(F)}function T(B){d&&d.call(p,B),z(B)}d&&(p.theme=function(B){if(v=B,f){h=
+B!=="reset"&&B!=="#1d1f20";var F=h?A(B):w,O=d.call(this,F);return z(F),O}return d.apply(this,arguments)});function P(B){if(B){f||(h=!1),f=!0,h||T(w);return}f&&(f=
+!1,l.forEach(function(F){var O=_slicedToArray(F,3),x=O[0],S=O[1],g=O[2];S?s.style.setProperty(x,S,g):s.style.removeProperty(x)}),d&&d.call(p,v),u?u.content=A(v):
+k&&(k.remove(),k=null))}function R(B){var F=String(B||"").split(",").map(Number),O=F.length===3?"rgb("+F.map(function(x){return Math.round(10*.68+x*.32)}).join(
+",")+")":"rgb(10,10,10)";O!==w&&(w=O,f&&!h&&T(w))}return{update:P,palette:R}}var Xn="lampa_view_dark_accent",bn="#d8c39a",vr="lampa_view_card_motion",hr=function(a){
+return["on","off","system"].includes(a)?a:"on"};function to(e){e.SettingsApi.addParam({component:"lampa_view",param:{name:vr,type:"select",values:{on:U("Включен\
+а"),system:U("По системе"),off:U("Выключена")},default:"on"},field:{name:U("Анимация карточек"),description:U("Плавный подъём\
+ и свечение при выборе. «По системе» учитывает уменьшение движения на устройстве.")}})}function gr(e){
+var a=String(e!=null?e:"").trim().toLowerCase().replace(/^#/,"");return/^[0-9a-f]{6}$/.test(a)?"#"+a:/^[0-9a-f]{3}$/.test(a)?"#"+a.replace(/./g,function(s){return s+
+s}):""}var br=function(a){return gr(a.Storage.get(Xn,bn))||bn};function ao(e){var a=document.body.style,s=br(e),o=s!==bn;document.body.classList.toggle("pt-cust\
+om-accent",o);for(var l=s.slice(1).match(/../g).map(function(z){return parseInt(z,16)}),u=l.map(function(z){var T=z/255;return T<=.04045?T/12.92:Math.pow((T+.055)/
+1.055,2.4)}),c=.2126*u[0]+.7152*u[1]+.0722*u[2],p=l.map(function(z){return Math.round(20+.13*z)}).join(","),d=l.map(function(z){return Math.round(z+.12*(255-z))}).
+join(","),f={"--pt-custom-accent":s,"--pt-custom-accent-rgb":l.join(","),"--pt-custom-accent-ink":c>.179?"#000":"#fff","--pt-custom-accent-focus":"rgb("+d+")","\
+--pt-custom-selection-rgb":p},h=0,w=Object.entries(f);h<w.length;h++){var v=_slicedToArray(w[h],2),k=v[0],A=v[1];o?a.setProperty(k,A):a.removeProperty(k)}}function P3(e){
+var a="Цвет выделения";e.SettingsApi.addParam({component:"lampa_view",param:{name:Xn,type:"button",default:bn},field:{name:U(a),description:U("Код \
+HEX. Пустое поле возвращает {0}.",[bn])},onRender:function(o){return o.find(".settings-param__name").after('<div class="settings-param__valu\
+e">'+br(e)+"</div>")},onChange:function(){no(e.Storage.get("lampa_view_theme","minimal"))==="minimal"&&e.Input.edit({title:U(a),value:br(e),free:!0,nosave:!0,nomic:!0},
+function(o){var l,u,c=String(o!=null?o:"").trim(),p=gr(c);if(c&&!p){(u=(l=e.Noty)==null?void 0:l.show)==null||u.call(l,U("Введите цвет в формате #RRGGBB."));
+return}e.Storage.set(Xn,p||bn),document.querySelectorAll('[data-name="'+Xn+'"] .settings-param__value').forEach(function(d){d.textContent=br(e)})})}})}function no(e){
+return e==="glass"||e==="apple"?"glass":"minimal"}var J1=function(a){return![!1,"false",0,"0","no"].includes(a)};function B3(e){if(!document.getElementById("lam\
+pa-view-glass-style")){var a=document.createElement("style");a.id="lampa-view-glass-style",a.textContent=Ci+"\n"+an,(document.head||document.documentElement).appendChild(
+a)}var s=eo(e),o="";function l(){var p=J1(e.Storage.get("lampa_view_enabled",!0))&&!document.body.classList.contains("pt-tv");s.palette(o),s.update(p&&(no(e.Storage.
+get("lampa_view_theme","minimal"))==="glass"||!!o&&document.body.classList.contains("pt-mobile")))}function u(p,d){try{return e.Storage.field?e.Storage.field(p):
+e.Storage.get(p,d)}catch(f){return d}}function c(){var p=J1(e.Storage.get("lampa_view_enabled",!0));p?document.body.dataset.ptCardMotion=hr(e.Storage.get(vr,"on")):
+delete document.body.dataset.ptCardMotion;var d=e.Storage.get("lampa_view_theme","minimal"),f=no(d),h=f==="glass"&&p;d==="apple"&&e.Storage.set("lampa_view_them\
+e","glass"),document.body.classList.remove("pt-theme-apple","pt-native-glass"),document.body.classList.toggle("pt-theme-glass",h),document.body.dataset.lampaTheme=
+f;var w=J1(e.Storage.get("lampa_view_enabled",!0))?h:J1(u("glass_style",!1)),v=u("glass_opacity","medium")||"medium";delete document.body.dataset.ptNativeOpacity,
+document.body.classList.toggle("glass--style",w),["easy","medium","blacked"].forEach(function(P){return document.body.classList.toggle("glass--style-opacity--"+
+P,w&&v===P)}),document.body.style.setProperty("--pt-glass-alpha",String({easy:.16,medium:.3,blacked:.58}[v]||.32));var k={easy:.36,medium:.52,blacked:.72}[v]||.52;
+document.body.style.setProperty("--pt-matte-alpha",String(k));for(var A=0,z=["--pt-glass-scene","--pt-glass-tone-a","--pt-glass-tone-b"];A<z.length;A++){var T=z[A];
+document.body.style.removeProperty(T)}l(),document.dispatchEvent(new Event("minimal:interface-size")),document.dispatchEvent(new Event("minimal:hero-layout"))}return ao(
+e),c(),e.Storage.listener&&e.Storage.listener.follow("change",function(p){p.name===Xn&&ao(e),["lampa_view_theme","lampa_view_enabled","glass_style","glass_opaci\
+ty",vr].includes(p.name)&&c()}),{update:c,chromePalette:function(d){d!==o&&(o=d,l())}}}var R3='html,body{background:#000!important}.welcome{background:#000!impo\
+rtant;background-image:none!important}.welcome:before{content:"LAMPA";position:absolute;top:48%;left:0;right:0;text-align:center;color:#e9edef;font:500 28px/1.2\
+ -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;letter-spacing:.3em;padding-left:.3em}.welcome:after{content:"";position:absolute;top:calc(48% + 6\
+0px);left:50%;margin-left:-50px;width:100px;height:3px;background:#d8c39a;border-radius:3px;animation:minimal-boot-breathe 2s ease-in-out infinite}.lp-step{posi\
+tion:fixed!important;top:calc(48% + 88px)!important;left:20px;right:20px;font:400 12px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif!importan\
+t;letter-spacing:.04em;color:#858d94}.lp-status{display:none!important}.no-network{z-index:1100!important;background:#080808;color:#e9edef}@keyframes minimal-bo\
+ot-breathe{0%,100%{opacity:.35;transform:scaleX(.35)}50%{opacity:1;transform:scaleX(1)}}@keyframes minimal-boot-breathe-reduced{0%,100%{opacity:.6;transform:sca\
+leX(.65)}50%{opacity:1;transform:scaleX(1)}}@media(prefers-reduced-motion:reduce){.welcome:after{animation-name:minimal-boot-breathe-reduced}}\n',_r=Bt(P1());function yr(e){
+return String(e||"").replace(/\s+(?:(?:\d+(?:st|nd|rd|th)?\s+season|season\s+\d+)(?:\s+part\s+\d+)?|\d+(?:\.\s*часть\s*\d+)?)\s*$/i,"").trim()}var l2=function(a){
+return String(a||"").toLowerCase().replace(/[^a-zа-яё0-9\u3040-\u30ff\u3400-\u9fff]/g,"")};function Qn(e,a){var s=new Map;return function(l,u,c){var p=l.card||
+l,d=p.media_type||(p.name?"tv":"movie"),f=String(p.shikimori_id||p.id),h=d+":"+f+":"+(p.minimal_franchise_season||0),w=p.original_title||p.original_name,v=p.minimal_franchise_full_title||
+p.title||p.name,k=new Set,A=[],z=[],T=!1,P=!1,R=0,B=0,F=function(){return!(l.activity&&l.activity.component&&l.activity.component.destroyed)};function O(r0){var Z=arguments.
+length>1&&arguments[1]!==void 0?arguments[1]:!1;r0=String(r0||"").trim();var I=l2(r0);r0&&I&&!k.has(I)&&(k.add(I),A.push({name:r0,base:Z}),z.push(r0))}function x(){
+e.Select.hide(),c({empty:!0}),e.Activity.backward()}function S(r0){if(F()){s.set(h,r0),s.size>200&&s.delete(s.keys().next().value);var Z=r0.media_type||d;e.Api.
+sources.tmdb.full(P0(c0({},l),{id:r0.id,method:Z,source:"tmdb",card:P0(c0({},r0),{source:"tmdb",media_type:Z})}),function(I){if(!I||!I.movie||Number(I.movie.id)!==
+Number(r0.id))return s.delete(h),c({empty:!0});r0.minimal_anime_release&&(I=P0(c0({},I),{movie:P0(c0({},I.movie),{source:"tmdb",media_type:Z,minimal_anime:!0,mal_id:r0.
+minimal_anime_release.mal,shikimori_id:r0.minimal_anime_release.mal,minimal_anime_release:r0.minimal_anime_release})})),u(I)},function(I){s.delete(h),c(I)})}}function g(){
+e.Select.hide(),e.Input.edit({title:"Название аниме для поиска",value:v||w||"",free:!0,nosave:!0},function(r0){if(!String(r0||"").trim())return _();
+k.clear(),A.length=0,R=0,B=0,P=!1,O(r0),T=!0,N()})}function _(){F()&&e.Select.show({title:P?"Не удалось выполнить поиск TMDB":"Карточка а\
+ниме не найдена в TMDB",items:[{id:"search",title:"Поиск по другому названию",subtitle:"Попробуйте название всего сериала бе\
+з номера сезона."},{id:"back",title:"Вернуться к аниме"}],onSelect:function(Z){return Z.id==="search"?g():x()},onBack:x})}function y(r0,Z){
+if(F()){var I=String(p.first_air_date||p.release_date||"").slice(0,4),J=r0.filter(function(l0){return I&&String(l0.first_air_date||l0.release_date||"").slice(0,
+4)===I}),G=d==="tv"?z.filter(function(l0){return yr(l0)!==l0}).map(function(l0){return l2(yr(l0))}):[],Q=Z||r0.some(function(l0){return[l0.title,l0.name,l0.original_title,
+l0.original_name].some(function(w0){return w0&&G.includes(l2(w0))})}),n0=r0.filter(function(l0){return[l0.title,l0.name,l0.original_title,l0.original_name].some(
+function(w0){return w0&&z.some(function(f0){return l2(f0)===l2(w0)})})});if(!Q&&n0.length===1&&(!I||!String(n0[0].first_air_date||n0[0].release_date||"").slice(
+0,4)||String(n0[0].first_air_date||n0[0].release_date).slice(0,4)===I))return S(n0[0]);e.Select.show({title:Q?"Откройте общую карточку сериала":
+"Выберите карточку аниме",items:r0.slice(0,12).map(function(l0){return{title:(l0.title||l0.name)+" · "+String(l0.first_air_date||l0.release_date||
+"").slice(0,4),subtitle:Q?"Продолжение может быть частью общего сезона. Проверьте список серий.":"",card:l0}}).
+concat([{id:"search",title:"Поиск по другому названию"},{id:"back",title:"Вернуться к аниме"}]),onSelect:function(w0){if(w0.
+id==="search")return g();if(w0.id==="back")return x();e.Select.hide(),S(w0.card)},onBack:x})}}function C(r0){if(F()){for(var Z=0,I=["name","russian","english","\
+japanese","synonyms"];Z<I.length;Z++){var J=I[Z],G=r0&&r0[J];(Array.isArray(G)?G:[G]).filter(Boolean).slice(0,2).forEach(function(Q){return O(Q)})}d==="tv"&&z.slice().
+forEach(function(Q){var n0=yr(Q);n0!==Q&&O(n0,!0)}),N()}}function N(){if(F()){if(R>=8||B>=2)return _();var r0=A.shift();if(!r0)return T?_():(T=!0,a(f,C,function(){
+return C({})}));R++,_1(e,"search/"+d+"?language=ru&query="+encodeURIComponent(r0.name),{},function(Z){var I=(Z&&Z.results||[]).filter(function(J){return J.id&&(!J.
+genre_ids||J.genre_ids.includes(16))});I.length?y(I,r0.base):N()},function(){P=!0,B++,N()})}}if(s.has(h))return S(s.get(h));O(w),O(v);var K=P0(c0({},p),{source:"\
+minimal_shiki",shikimori_id:f,media_type:d}),L=ve(K);function V(r0){S({id:r0.id,media_type:r0.type,minimal_anime_release:{mal:r0.release.mal,anidb:r0.release.anidb,
+anilist:r0.release.anilist,kind:r0.release.kind,season:p.minimal_franchise_season||r0.release.season,offset:r0.release.offset,title:v||"",original:w||"",date:p.
+first_air_date||p.release_date||""}})}if(L)return V(L);var Y=typeof window!="undefined"&&window.LampaView,o0=Y&&Y.kinoapi,X=Y&&Y.animeBase;function i0(){if(o0&&
+o0.enabled())return o0.title(p,function(r0){if(r0&&r0.type===d&&Number(r0.id&&r0.id.shikimori)===Number(f)&&Number(r0.id.tmdb)>0)return S(c0({id:Number(r0.id.tmdb),
+media_type:d},d==="tv"?{name:v}:{title:v}));N()});N()}if(X&&X.resolveTarget)return X.resolveTarget(K,function(r0){return r0?V(r0):i0()});i0()}}var zi=function(a){
+var s=String(a||"").match(/(?:season\s+(\d+)|(\d+)(?:st|nd|rd|th)?\s+season|(\d+)\s+сезон)(?=$|[\s:.-])/i);return s?Number(s[1]||s[2]||s[3]):0};function e3(e,a){
+var s=e.minimal_anime_release;s&&s.mal&&(e=P0(c0({},e),{id:s.mal,shikimori_id:s.mal,source:"minimal_shiki",title:s.title||e.title,name:s.title||e.name,original_title:s.
+original||e.original_title,original_name:s.original||e.original_name,first_air_date:s.date||e.first_air_date,release_date:s.date||e.release_date}));var o=function(c){
+return String(c||"").toLowerCase().replace(/ё/g,"е").replace(/[^a-zа-я0-9\u3040-\u30ff\u3400-\u9fff]/g,"")},l=(a?"tv:":"movie:")+o(e.title||e.name||e.original_title||
+e.original_name)+":"+String(e.first_air_date||e.release_date||"").slice(0,4);return l+(Se(e)?":anime3:"+(e.source==="minimal_shiki"?"shiki":"tmdb")+":"+(e.shikimori_id||
+e.tmdb_id||e.id||""):"")}function t3(e,a,s,o){var l=e.minimal_anime_release;if(l&&l.mal){var u=[l.title,l.original].filter(Boolean);return!u.length||!l.date?!1:
+t3(P0(c0({},e),{minimal_anime_release:null,source:"minimal_shiki",original_name:l.original,original_title:l.original,name:l.title,title:l.title,first_air_date:l.
+date,release_date:l.date}),a,u,o)}var c=String(a||"").toLowerCase().replace(/ё/g,"е");if(/upscal|апск[еэ]йл|апскал|нейро|\b(?:ai[ ._-]*(?:enhanced|remaster|up)|topaz)\b/i.
 test(c)||o&&/\b(?:movie|film|gekijouban|gekijōban|live[ .-]?action)\b|полнометраж|фильм(?:\s|$|[.,:])/i.test(c))return!1;var p=function(N){return String(
 N||"").toLowerCase().replace(/ё/g,"е").replace(/[^a-zа-я0-9\u3040-\u30ff\u3400-\u9fff]+/g," ").trim()},d=!1,f=_createForOfIteratorHelper(c.split(/[\/|]/)),h;
 try{for(f.s();!(h=f.n()).done;){var w=h.value,v=" "+p(w)+" ",k=!1,A=!1,z=_createForOfIteratorHelper(s),T;try{for(z.s();!(T=z.n()).done;){var P=T.value,R=" "+p(P)+

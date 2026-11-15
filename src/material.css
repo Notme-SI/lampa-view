@@ -272,14 +272,7 @@ body.lampa_view[data-lampa-theme] .card :is(.pt-kind,.pt-quality,.pt-series-stat
  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
 }
 body.lampa_view[data-lampa-theme] .card .card__view .icon--history {
- width:26px!important;height:26px!important;min-width:26px;min-height:26px;padding:0!important;
- border:0!important;border-radius:0!important;box-shadow:none!important;filter:none!important;
- background:transparent url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22104%22%20height%3D%22104%22%20viewBox%3D%220%200%2026%2026%22%3E%3Ccircle%20cx%3D%2213%22%20cy%3D%2213%22%20r%3D%2212.25%22%20fill%3D%22%23181818%22%20fill-opacity%3D%22.4%22%20stroke%3D%22white%22%20stroke-opacity%3D%22.8%22%20stroke-width%3D%221%22%2F%3E%3Cpath%20fill%3D%22white%22%20d%3D%22M10.5%207.75v10.5l8-5.25z%22%2F%3E%3C%2Fsvg%3E") center / 26px 26px no-repeat!important;
- image-rendering:auto;backface-visibility:visible;
-}
-body.lampa_view.pt-tv[data-lampa-theme] .card .card__view .icon--history {
- width:11%!important;height:11%!important;min-width:0;min-height:0;
- background-size:contain!important;
+ display:none!important;
 }
 
 @media(prefers-reduced-transparency:reduce){body.lampa_view.pt-theme-glass[data-lampa-theme="glass"] .card :is(.pt-kind,.pt-quality,.card__quality,.pt-series-status,.card__vote,.card__marker,.card__new-episode){background:#202020!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}}

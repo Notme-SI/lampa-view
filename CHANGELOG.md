@@ -1,3 +1,7 @@
+## 0.5.184
+
+- Hide the central native Play marker on poster cards on every device and in both themes. Keep the card action, saved progress and small viewing-status icons.
+
 ## 0.5.183
 
 - Keep viewing status below the year on every saved card, with a compact history/check icon and full season/episode words. A completed episode alone never marks its season complete.
