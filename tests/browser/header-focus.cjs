@@ -18,6 +18,7 @@ const assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWR
   assert.ok(geometry.menu.left>home.menu+geometry.controls[0].box.width*.8 && geometry.search.left>home.left+geometry.controls[0].box.width*.8,'Back moves Menu and shrinks Search');
   assert.ok(Math.abs(geometry.search.right-home.right)<1,'Search keeps its right edge');assert.ok(geometry.search.width<home.width);
   const head=await page.locator('.head__body').evaluate(node=>node.getBoundingClientRect().toJSON());
+  if(theme==='minimal')assert.equal(await page.locator('.head__body').evaluate(n=>getComputedStyle(n).backgroundColor),'rgba(0, 0, 0, 0)','Dark header uses separate controls on desktop and TV');
   if(mode==='desktop'){assert.equal(head.height,46);assert.ok(headerIcons.every(icon=>Math.abs(icon.width-24)<.1));}
   assert.ok(Math.abs(head.left+head.right-geometry.vw)<1,'The compact header is centered');
   assert.ok(head.width<geometry.vw*.65 && geometry.search.width>100,'Search stays usable inside the compact header');

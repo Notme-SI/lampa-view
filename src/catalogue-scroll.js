@@ -237,6 +237,10 @@ function mount(L,item,enabled,visible,preparePoster,rows,trackVisibility){
   const el=unwrap(target);
   if(el && windowed?.contains(el))windowed.ensure(el);
   if(!el || !body.contains(el))return;
+  // The viewport begins behind the fixed header. First-row focus must restore
+  // the original content padding, including filters and project identity.
+  const first=unwrap(item.items?.[0]?.render(true)),card=el.closest('.card');
+  if(!rows && (el.matches('.minimal-catalogue-controls,.minimal-project-header') || card && first && card.offsetTop===first.offsetTop))return scrollTo(0,smooth);
   const box=node.getBoundingClientRect(),rect=el.getBoundingClientRect(),gap=8;
   const top=rect.top-box.top-gap,bottom=rect.bottom-box.bottom+gap;
   if(top<0)scrollTo(node.scrollTop+top,smooth);
@@ -355,7 +359,7 @@ function mount(L,item,enabled,visible,preparePoster,rows,trackVisibility){
  }
  scroll.restorePosition=function(){if(active())resume();else return native('restorePosition',arguments);};
  scroll.animated=function(){return active()?false:native('animated',arguments);};
- scroll.minimalBrowserScroll={reveal,updateLayer,savePosition(value){pausedAt=value;},requestMore(){schedule(true);}};
+ scroll.minimalBrowserScroll={reveal,revealStart(){cancelReveal();scrollTo(0,true);},updateLayer,savePosition(value){pausedAt=value;},requestMore(){schedule(true);}};
  const changed=event=>{if(event.name==='lampa_view_enabled')setEnabled();};
  L.Storage?.listener?.follow('change',changed);
  setEnabled();

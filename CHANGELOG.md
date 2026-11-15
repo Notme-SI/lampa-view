@@ -1,3 +1,10 @@
+## 0.5.183
+
+- Keep viewing status below the year on every saved card, with a compact history/check icon and full season/episode words. A completed episode alone never marks its season complete.
+- Stop treating the independent Watch later list as a watched-movie status. Preserve native favorite collections and status callbacks; hide CUB Premium status actions when unavailable and explain the three saved lists.
+- Use separate dark-theme header controls on TV as on desktop, and denser glass reading panels without live backdrop blur.
+- Restore the complete catalogue header when remote navigation returns to filters or the first row, including actor and studio projects.
+
 ## 0.5.182
 
 - Keep focus in a newly opened popup when the previous panel's delayed focus restoration runs.

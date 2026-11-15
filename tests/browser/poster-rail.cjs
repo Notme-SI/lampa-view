@@ -15,7 +15,7 @@ async function settled(page,label){
  let previous='',stable=0,result;
  for(let i=0;i<50;i++){
   result=await geometry(page);const key=JSON.stringify(result.visible);
-  stable=key===previous && (result.desktop || !result.partial.length)?stable+1:0;previous=key;
+  stable=key===previous && !result.partial.length && result.visible.length===Math.min(result.fit.count,result.results)?stable+1:0;previous=key;
   if(stable>=2)return whole(result,label);
   await page.waitForTimeout(40);
  }

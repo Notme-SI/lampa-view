@@ -73,10 +73,15 @@ const {setup}=require('../fixtures/native-browser.cjs'),{stage}=require('../fixt
   await page.waitForSelector('#qa-native-season .pt-card-watch--complete');
   assert.equal(await page.locator('#qa-native-season .pt-card-watch__label').textContent(),'Сезон 2 просмотрен');
   assert.equal(await page.locator('#qa-native-season .pt-card-watch__time').textContent(),'');
+  await page.locator('#qa-native-season').evaluate(n=>n.classList.remove('focus','hover','pt-card-pointer','pt-card-touch'));
+  assert.equal(await page.locator('#qa-native-season .pt-card-watch').evaluate(n=>getComputedStyle(n).visibility),'visible','Saved status stays visible without focus on desktop and TV');
+  assert.equal(await page.locator('#qa-native-season .pt-card-watch').getAttribute('data-watch-state'),'complete');
   assert.equal(await page.locator('#qa-native-season .time-line').evaluate(n=>getComputedStyle(n).display),'none','A completed season has no progress track');
   await page.evaluate(()=>Lampa.Timeline.update({hash:Lampa.Utils.hash('210Cyberpunk: Edgerunners'),percent:40,time:915,duration:2400}));
   await page.waitForFunction(()=>!document.querySelector('#qa-native-season .pt-card-watch--complete'));
   assert.equal(await page.locator('#qa-native-season .pt-card-watch__time').textContent(),'15:15');
+  assert.equal(await page.locator('#qa-native-season .pt-card-watch__label').textContent(),'2 сезон · 10 серия');
+  assert.equal(await page.locator('#qa-native-season .pt-card-watch').getAttribute('data-watch-state'),'progress');
   assert.notEqual(await page.locator('#qa-native-season .time-line').evaluate(n=>getComputedStyle(n).display),'none','A partial final episode must keep its track');
   await page.locator('#qa-native-season').evaluate(n=>n.remove());
 

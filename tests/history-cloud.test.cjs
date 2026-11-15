@@ -26,10 +26,10 @@ test('visible idle refresh reads native CUB history and Timeline without racing 
 
 test('movie completion follows remote CUB marks and their removal rather than stale local flags, with no fictional time',()=>{
  const d=new JSDOM('<body><div class="card focus"><div class="card__view"></div></div></body>',{runScripts:'outside-only'}),w=d.window;try{
-  let marked=true;const records={},L={Account:{Permit:{sync:true}},Favorite:{check:()=>({wath:true}),cloud:()=>({wath:marked})},Storage:{get:(k,f)=>k==='file_view_7'?records:f},Utils:{hash:x=>x},Timeline:{filename:()=> 'file_view_7',view:()=>({percent:0,time:0}),render:value=>{const n=w.document.createElement('div');n.className='time-line';n.dataset.hash=value.hash;n.innerHTML='<div></div>';return n;}}};
+  let marked=true;const records={},L={Account:{Permit:{sync:true}},Favorite:{check:()=>({viewed:true,wath:true}),cloud:()=>({viewed:marked,wath:true})},Storage:{get:(k,f)=>k==='file_view_7'?records:f},Utils:{hash:x=>x},Timeline:{filename:()=> 'file_view_7',view:()=>({percent:0,time:0}),render:value=>{const n=w.document.createElement('div');n.className='time-line';n.dataset.hash=value.hash;n.innerHTML='<div></div>';return n;}}};
   const api=load(w,'series-status')(L,()=>{}),node=w.document.querySelector('.card');api.track(node,{id:77,title:'Фильм',original_title:'Movie',source:'test'});api.paint(node);
   assert.equal(node.querySelector('.pt-card-watch__label').textContent,'Фильм просмотрен');assert.equal(node.querySelector('.pt-card-watch__time').textContent,'');assert.equal(Object.keys(records).length,0);
-  marked=false;api.paint(node);assert.ok(node.querySelector('.card-watched').classList.contains('pt-card-watch--empty'),'Remote removal wins over stale local wath');
+  marked=false;api.paint(node);assert.ok(node.querySelector('.card-watched').classList.contains('pt-card-watch--empty'),'Remote viewed removal wins over stale local marks; Later is never completion');
   records.Movie={percent:40,time:915,duration:2400};api.paint(node);assert.equal(node.querySelector('.pt-card-watch__time').textContent,'15:15');assert.equal(node.querySelector('.pt-card-watch--complete'),null);
  }finally{w.close();}
 });

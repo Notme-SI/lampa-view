@@ -11,7 +11,7 @@ test('focused series gets readable watch and release status, preserves native pr
  const one=card();api.paint(one);api.paint(one);const two=card();api.paint(two);
  assert.equal(one.querySelector('.pt-series-status').textContent,'Сезон 2 · Серия 8/10');assert.equal(one.querySelector('.card__view>.pt-card-watch__meter .time-line>div').style.width,'40%');assert.equal(one.querySelector('.pt-series-status .time-line'),null);assert.equal(requests,1);assert.equal(one.querySelectorAll('.pt-series-status').length,1);assert.equal(one.querySelector('.card-watched__item > span').textContent,'6 - Эпизод 6','Native history is preserved');
  assert.equal(one.querySelector('.card__view .card-watched'),null,'Watch history cannot cover poster titles');assert.ok(one.querySelector('.pt-card-watch>.card-watched'));
- assert.equal(one.querySelector('.pt-card-watch__label').textContent,'Просмотрено: Серия 6 · Сезон 1');assert.equal(one.querySelector('.pt-card-watch__time').textContent,'16:09');
+ assert.equal(one.querySelector('.pt-card-watch__label').textContent,'1 сезон · 6 серия');assert.equal(one.querySelector('.pt-card-watch__time').textContent,'16:09');
  const timeline=one.querySelector('.time-line');api.paint(one);assert.equal(one.querySelector('.time-line'),timeline,'Move, never replace the native progress node');
 
  }finally{w.close();}
@@ -34,7 +34,7 @@ test('cleared storage hides cached native watch history even if native memory an
   w.eval(code);const saved={file_view:{'16Original':{time:900,percent:50}},online_watched_last:{Original:{season:1,episode:6}}};
   const L={Utils:{hash:x=>x},Storage:{get:key=>saved[key]},Timeline:{filename:()=> 'file_view',view:()=>({time:900,percent:50})}},api=w.SeriesStatus.default(L,()=>{}),node=w.document.createElement('div');
   node.className='card focus';node.innerHTML='<div class="card__view"><div class="card-watched"><div class="card-watched__item"><span>6 - Эпизод 6</span><div class="time-line" data-hash="16Original"><div style="width:50%"></div></div></div></div></div>';w.document.body.appendChild(node);api.track(node,{original_title:'Original',media_type:'tv'});api.paint(node);
-  const wrap=node.querySelector('.card-watched');assert.equal(wrap.classList.contains('pt-card-watch--empty'),false);assert.equal(node.querySelector('.pt-card-watch__label').textContent,'Просмотрено: Серия 6 · Сезон 1');
+  const wrap=node.querySelector('.card-watched');assert.equal(wrap.classList.contains('pt-card-watch--empty'),false);assert.equal(node.querySelector('.pt-card-watch__label').textContent,'1 сезон · 6 серия');
   saved.file_view['16Original']={percent:0,time:0};api.paint(node);assert.equal(wrap.classList.contains('pt-card-watch--empty'),true,'An old episode number is not proof of progress');
   saved.file_view['16Original']={percent:30,time:450};api.paint(node);assert.equal(wrap.classList.contains('pt-card-watch--empty'),false,'A new playback restores the caption');
   saved.file_view={};api.paint(node);assert.equal(wrap.classList.contains('pt-card-watch--empty'),true,'Global timecode reset overrides stale native timeline memory');
@@ -61,11 +61,12 @@ test('persisted progress overrides stale native memory after a profile sync',()=
  }finally{w.close();}
 });
 
-test('native manual movie marks show completion without invented time; history alone stays empty and sync can remove the mark',()=>{
+test('only the native viewed status marks a movie complete; independent lists never invent playback',()=>{
  const d=new JSDOM('<body><div class="card focus"><div class="card__view"></div></div></body>',{runScripts:'outside-only'}),w=d.window;try{
   w.eval(code);let marks={history:true},refresh;const node=w.document.querySelector('.card'),L={Utils:{hash:x=>x},Favorite:{check:()=>marks},Listener:{follow:(event,fn)=>refresh=fn},Timeline:{view:()=>({}),render:row=>{const n=w.document.createElement('div');n.className='time-line';n.dataset.hash=row.hash;n.innerHTML='<div></div>';return n;}}},api=w.SeriesStatus.default(L,n=>api.paint(n));
   api.track(node,{title:'Вышка 2',media_type:'movie'});api.paint(node);assert.equal(node.querySelector('.card-watched'),null,'Adding to history does not invent a timecode');
-  for(const mark of ['wath','viewed']){marks={[mark]:true};refresh({target:'favorite',reason:'read'});assert.equal(node.querySelector('.pt-card-watch__label').textContent,'Фильм просмотрен');assert.equal(node.querySelector('.pt-card-watch__time').textContent,'');assert.ok(node.querySelector('.pt-card-watch--complete'));}
+  for(const mark of ['book','like','wath','history','look','scheduled','continued','thrown']){marks={[mark]:true};refresh({target:'favorite',reason:'read'});assert.equal(node.querySelector('.pt-card-watch--has-progress'),null,mark+' is not completion');}
+  marks={viewed:true};refresh({target:'favorite',reason:'read'});assert.equal(node.querySelector('.pt-card-watch__label').textContent,'Фильм просмотрен');assert.equal(node.querySelector('.pt-card-watch__time').textContent,'');assert.ok(node.querySelector('.pt-card-watch--complete'));
   marks={history:true};refresh({target:'favorite',reason:'read'});assert.equal(node.querySelector('.pt-card-watch--has-progress'),null);
  }finally{w.close();}
 });
@@ -120,6 +121,19 @@ test('a completed episode clears the poster meter while season metadata is pendi
   api.paint(card);
   assert.equal(card.querySelector('.card__view .pt-card-watch__meter'),null);
   assert.equal(card.querySelector('.pt-card-watch .time-line'),line,'The native timeline remains available');
-  assert.equal(card.querySelector('.pt-card-watch--has-progress'),null);
+  assert.ok(card.querySelector('.pt-card-watch--has-progress'),'Verified episode coordinates remain visible without season metadata');
+  assert.equal(card.querySelector('.pt-card-watch__label').textContent,'1 сезон · 1 серия');
+  assert.equal(card.querySelector('.pt-card-watch').dataset.watchState,'progress','A finished episode is not a finished season');
+ }finally{w.close();}
+});
+
+test('an unfocused saved series shows full coordinates without requesting release metadata',()=>{
+ const dom=new JSDOM('<body><div class="card"><div class="card__view"></div></div></body>',{runScripts:'outside-only'}),w=dom.window;
+ try{
+  w.eval(code);const saved={hash:'35Series',season:3,episode:5,time:915,percent:40};
+  w.LampaView={online:{lastWatched:()=>saved}};
+  const L={Timeline:{view:()=>saved,render:()=>{const line=w.document.createElement('div');line.className='time-line';line.dataset.hash=saved.hash;line.innerHTML='<div></div>';return line;}},Api:{sources:{tmdb:{get:()=>assert.fail('Unfocused captions must not start network requests')}}}};
+  const api=w.SeriesStatus.default(L,()=>{}),node=w.document.querySelector('.card');api.track(node,{id:91,name:'Series',source:'tmdb',media_type:'tv'});api.paint(node);
+  assert.equal(node.querySelector('.pt-card-watch__label').textContent,'3 сезон · 5 серия');assert.equal(node.querySelector('.pt-card-watch').dataset.watchState,'progress');assert.equal(node.querySelector('.pt-card-watch__icon').hidden,false);
  }finally{w.close();}
 });

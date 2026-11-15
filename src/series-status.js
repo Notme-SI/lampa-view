@@ -51,6 +51,7 @@ function watchFooter(L,node,data,series){
  function clearProgress(){
   slot.classList.toggle('pt-card-watch--has-progress',false);
   slot.classList.toggle('pt-card-watch--complete',false);
+  slot.removeAttribute('data-watch-state');
  }
  const state=window.LampaView && window.LampaView.online;
  const shared=series && state && state.lastWatched?state.lastWatched(data):null;
@@ -78,7 +79,8 @@ function watchFooter(L,node,data,series){
  // check() is the local list even while CUB sync is enabled. cloud() follows
  // the current profile's bookmarks, including removal on another device.
  const marks=!series && favorite?(synced && favorite.cloud?favorite.cloud(data):favorite.check?favorite.check(data):null):null;
- const movieMarked=marks && (marks.wath || marks.viewed);
+ // Native `wath` is the independent Watch later list, never a watched mark.
+ const movieMarked=marks && marks.viewed;
  const movieTime=movieMarked?{hash:hash(title),percent:100,time:0,duration:0}:movieSaved && (movieSaved.percent || movieSaved.time)?movieSaved:null;
  if((shared || movieTime) && !wrap){wrap=document.createElement('div');wrap.className='card-watched';wrap.innerHTML='<div class="card-watched__inner"><div class="card-watched__body"></div></div>';slot.appendChild(wrap);}
  if(!wrap){clearProgress();return;}
@@ -109,7 +111,7 @@ function watchFooter(L,node,data,series){
  if(!row){wrap.classList.toggle('pt-card-watch--empty',true);clearProgress();return;}
  wrap.querySelectorAll('.card-watched__item').forEach(item=>item.classList.toggle('pt-card-watch__current',item===row));
  let summary=row.querySelector('.pt-card-watch__row');
- if(!summary){summary=document.createElement('div');summary.className='pt-card-watch__row';summary.innerHTML='<span class="pt-card-watch__label"></span><span class="pt-card-watch__time"></span>';row.insertBefore(summary,row.firstChild);}
+ if(!summary){summary=document.createElement('div');summary.className='pt-card-watch__row';summary.innerHTML='<span class="pt-card-watch__icon" aria-hidden="true"></span><span class="pt-card-watch__label"></span><span class="pt-card-watch__time"></span>';row.insertBefore(summary,row.firstChild);}
  const nativeLabel=row.querySelector(':scope > span'),text=nativeLabel && nativeLabel.textContent || '';
  let label='',timeline=null,watchSeason=0,watchEpisode=0;
  const progressHash=row.querySelector('.time-line').getAttribute('data-hash');
@@ -153,6 +155,8 @@ function watchFooter(L,node,data,series){
  const shown={...(target || timeline)};
  if(Number(shown.percent)>=WATCHED_PERCENT)shown.percent=100;
  if(complete){watchEpisode=0;label=series?lampaViewText("Сезон {0} просмотрен", [shared.season]):lampaViewText("Фильм просмотрен");}
+ else if(watchEpisode)label=watchSeason?lampaViewText("{0} сезон · {1} серия",[watchSeason,watchEpisode]):lampaViewText("Серия {0}",[watchEpisode]);
+ slot.dataset.watchState=complete?'complete':'progress';
  // Keep the native timeline node (and data-hash) in an explicit flex progress row.
  const line=row.querySelector('.time-line');let meter=row.querySelector('.pt-card-watch__meter');
  if(!meter){meter=document.createElement('div');meter.className='pt-card-watch__meter';row.appendChild(meter);}
@@ -161,17 +165,11 @@ function watchFooter(L,node,data,series){
  line.classList.toggle('hide',false);
  const fill=row.querySelector('.time-line>div'),width=Math.min(100,Math.max(0,Number(shown.percent)||0))+'%';
  if(fill && fill.style.width!==width)fill.style.width=width;
- const time=hideProgress || !Number(shown.time)?'':clock(shown.time),name=summary.firstElementChild,stamp=row.querySelector('.pt-card-watch__time');
- const action=Number(shown.time)>0 || Number(shown.percent)>0?lampaViewText("Просмотрено: "):lampaViewText("Смотреть: ");
- if(name.dataset.label!==label || name.dataset.action!==action){
-  name.dataset.label=label;name.dataset.action=action;
-  name.textContent='';
-  if(watchEpisode){
-   const heading=document.createElement('span');heading.className='pt-card-watch__heading';heading.textContent=action;name.appendChild(heading);
-   const episode=document.createElement('span');episode.textContent=lampaViewText("Серия {0}{1}", [watchEpisode,watchSeason?' · ':'']);name.appendChild(episode);
-   if(watchSeason){const season=document.createElement('span');season.textContent=lampaViewText("Сезон {0}", [watchSeason]);name.appendChild(season);}
-  }else name.textContent=label;
- }
+ const time=hideProgress || !Number(shown.time)?'':clock(shown.time),name=summary.querySelector('.pt-card-watch__label'),stamp=row.querySelector('.pt-card-watch__time'),icon=summary.querySelector('.pt-card-watch__icon');
+ if(name.textContent!==label)name.textContent=label;
+ icon.hidden=!label;
+ const iconState=complete?'complete':'progress';
+ if(icon.dataset.state!==iconState){icon.dataset.state=iconState;icon.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">'+(complete?'<path d="m4 12 5 5L20 6"/>':'<path d="M3 4v5h5M3.4 8.5a9 9 0 1 1-.2 6.2M12 7v5l3 2"/>')+'</svg>';}
  if(stamp.textContent!==time)stamp.textContent=time;
  meter.ptWatchRow=row;
  if(!hideProgress)node.querySelector('.card__view')?.appendChild(meter);
@@ -190,23 +188,15 @@ export default function seriesStatus(L,schedule){
  function detailsOnly(json){if(json.source==='minimal_shiki')return {id:json.id,source:json.source,episodes:json.episodes,episodes_aired:json.episodes_aired,status:json.status,minimal_release_season:json.minimal_release_season};return {id:json.id,number_of_seasons:json.number_of_seasons,seasons:(Array.isArray(json.seasons)?json.seasons:[]).map(s=>({season_number:s.season_number,name:s.name,episode_count:s.episode_count,air_date:s.air_date})),last_episode_to_air:json.last_episode_to_air,next_episode_to_air:json.next_episode_to_air,episode_run_time:json.episode_run_time};}
  function paint(node){
   const data=cards.get(node),focused=node.matches('.focus,.hover,.pt-card-pointer,.pt-card-touch');
-  if(!data || !focused && !node.querySelector('.card__view>.pt-card-watch__meter'))return;
+  if(!data)return;
   const view=node.querySelector('.card__view');if(!view)return;
   const series=data.media_type!=='movie' && !!(data.name || data.original_name || data.first_air_date || data.media_type==='tv');
   const key=cacheKey(data),entry=cache.get(key),fresh=entry && Date.now()-entry.at<(entry.details?lifetime:60000),facts=fresh?entry.value:null;
   const details=fresh && entry.details,historyData=details?{...data,last_episode_to_air:details.last_episode_to_air || data.last_episode_to_air,next_episode_to_air:details.next_episode_to_air,episode_run_time:details.episode_run_time || data.episode_run_time,number_of_seasons:details.number_of_seasons || data.number_of_seasons,seasons:Array.from(new Map([...(Array.isArray(data.seasons)?data.seasons:[]),...(Array.isArray(details.seasons)?details.seasons:[])].map(season=>[Number(season.season_number),season])).values())}:data;
   const fetchable=series && (!data.source || ['cub','tmdb','trakt','minimal_shiki'].includes(data.source)) && Number(data.id)>0;
-  const state=window.LampaView && window.LampaView.online,last=series && state && state.lastWatched?state.lastWatched(historyData):null;
-  const season=last && (Array.isArray(historyData.seasons)?historyData.seasons:[]).find(s=>Number(s.season_number)===last.season);
-  const known=Number(season && season.episode_count)>0 && releaseStatus(historyData,L.TimeTable && L.TimeTable.get?L.TimeTable.get(historyData) || []:[]);
-  // A completed episode may become a completed season once metadata arrives.
-  // Reserve the footer while that fact is unknown, instead of flashing a false
-  // intermediate episode caption. Partial episodes are immediately usable.
-  if(fetchable && data.source!=='minimal_shiki' && !fresh && last && last.percent>=WATCHED_PERCENT && !known){
-   restoreWatchMeter(node);
-   const slot=node.querySelector('.pt-card-watch'),wrap=node.querySelector('.card-watched');
-   if(slot){slot.classList.toggle('pt-card-watch--has-progress',false);slot.classList.toggle('pt-card-watch--complete',false);if(wrap && wrap.parentNode!==slot)slot.appendChild(wrap);}
-  }else watchFooter(L,node,historyData,series);
+  // Saved coordinates are useful immediately. A finished episode is not proof
+  // of a finished season; only verified season metadata may upgrade its label.
+  watchFooter(L,node,historyData,series);
   if(!series || !focused)return;
   const table=L.TimeTable && L.TimeTable.get?L.TimeTable.get(data) || []:[];
   const available=facts || releaseStatus(data,table);
@@ -240,11 +230,13 @@ export default function seriesStatus(L,schedule){
    },()=>finish(null),{life:60});
   }
  }
- // Reconcile visible poster meters after sync/removal as well as the focus caption.
+ // Reconcile existing captions after sync/removal without fetching metadata
+ // for every card. A newly changed native favorite also gets its first caption.
  if(L.Listener && L.Listener.follow)L.Listener.follow('state:changed',event=>{
   if(event.target==='timeline' || event.target==='favorite'){
    const nodes=new Set([...document.querySelectorAll('.card.focus,.card.hover,.card.pt-card-pointer,.card.pt-card-touch'),...Array.from(document.querySelectorAll('.card__view>.pt-card-watch__meter'),meter=>meter.closest('.card'))]);
-   for(const node of nodes)if(cards.has(node))schedule(node);
+   for(const slot of document.querySelectorAll('.pt-card-watch')){const node=slot.closest('.card'),data=cards.get(node);if(slot.classList.contains('pt-card-watch--has-progress') || event.card && data && String(data.id)===String(event.card.id))nodes.add(node);}
+   for(const node of nodes)if(cards.has(node) && activeCard(node))schedule(node);
   }
  });
  return {track(node,data){

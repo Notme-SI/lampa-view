@@ -68,7 +68,7 @@ export function gridControls(L,item,object,buttons,{className='minimal-catalogue
  let index=Math.max(0,Math.min(buttons.length-1,Number(object.minimal_filter_focus)||0)),disposed=false;
  const nodes=buttons.map((choice,i)=>{const button=document.createElement('button');button.type='button';button.className='minimal-catalogue-control selector';button.textContent=choice.title;button.setAttribute('aria-label',choice.label || choice.title);if(choice.selected!=null)button.setAttribute('aria-pressed',String(choice.selected));
   const choose=()=>{index=i;choice.choose(i);};$(button).on('keydown',event=>{if(event.key==='Enter' || event.key===' ')event.preventDefault();}).on('hover:focus',()=>{index=i;}).on('hover:enter',choose).on('click',event=>{event.preventDefault();event.stopImmediatePropagation();choose();});bar.appendChild(button);return button;});
- function focus(){if(disposed)return;item.scroll.update(bar,false);L.Controller.collectionSet(bar);L.Controller.collectionFocus(nodes[index],bar);}
+ function focus(){if(disposed)return;if(item.scroll.minimalBrowserScroll)item.scroll.minimalBrowserScroll.revealStart();else item.scroll.update(bar,false);L.Controller.collectionSet(bar);L.Controller.collectionFocus(nodes[index],bar);}
  let filtering=focusStart;
  function toggle(){filtering=true;L.Controller.toggle('content');}
  item.use({onEmpty(){filtering=true;},onCreate(){item.scroll.prepend(bar);item.render(true).classList.add('minimal-catalogue-grid');},onController(controller){const original=controller.toggle,up=controller.up,down=controller.down,left=controller.left,right=controller.right;

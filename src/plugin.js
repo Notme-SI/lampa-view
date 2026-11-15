@@ -38,6 +38,7 @@ import torrentEpisodes from './torrent-episodes.js';
 import installArtwork,{artworkSize,officialBanner,officialEpisodePreview} from './artwork.js';
 import progressSync from './progress-sync.js';
 import historyCards from './history-cards.js';
+import favoriteMenu from './favorite-menu.js';
 import installBack from './back.js';
 import mpvLaunch from './mpv-launch.cjs';
 import carousel from './carousel.js';
@@ -703,6 +704,7 @@ if (!ROOT.LampaView) {
     P.officialBanner=card=>officialBanner(card,artworkSize(L,'detail-backdrop')==='original');
     P.officialEpisodePreview=officialEpisodePreview;
     installI18n(L,P);
+    favoriteMenu(L,()=>yes('lampa_view_enabled'));
     P.online=onlineState(L);P.providerSeasons=providerSeasons(L);P.kinoapi=kinoapi(L);P.animeBase=animeCatalogue(L,P.kinoapi);P.animeContinuations={find:animeContinuations(L,P.animeBase,P.online),route:kodikRoute,files:continuationFiles};P.animeProviderParts=animeProviderParts(L,P.animeBase,P.online);P.onlineSources=onlineSources(L);P.episodeMetadata=episodeMetadata(L,P.kinoapi,P.animeBase);P.onlineNavigation=onlineNavigation;P.onlineSourceCache=onlineSourceCache(L);
     layout();interfaceLayout=interfaceSize(L);installTmdb(L);installFullGuard(L);installListGuard(L);torrentEpisodes(L,ROOT);inputs(L);
     artwork=installArtwork(L,()=>yes('lampa_view_enabled'));

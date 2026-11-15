@@ -18,6 +18,9 @@ body.lampa_view.pt-theme-glass[data-lampa-theme="glass"].pt-tv {
  /* Keep the same material during navigation and at rest. Live backdrop
     sampling on TV can flicker as the scroll surface passes the fixed header. */
  --pt-header-glass:var(--pt-poster-badge);
+ /* Reading panels need a dense tint when TV backdrop sampling is disabled.
+    Keep the header and poster badges on their independent material. */
+ --pt-navigation-panel:rgba(var(--pt-material-rgb,30,30,30),.96);
  --pt-glass-filter:none;
  --pt-poster-glass:var(--pt-poster-badge);
  --pt-poster-glass-filter:none;

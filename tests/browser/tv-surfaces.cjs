@@ -10,7 +10,7 @@ const glassFilter=(mode,value)=>{if(mode==='tv')assert.equal(value,'none');else 
   if(mode==='tv')assert.equal((await material(page,'.wrap')).bg,'rgb(10, 10, 10)','TV glass keeps an opaque page canvas under its optical surfaces');
   for(const opacity of ['easy','medium','blacked']){
    await page.evaluate(opacity=>Lampa.Storage.set('glass_opacity',opacity),opacity);
-   for(const selector of ['.wrap__left','.settings__content']){const m=await material(page,selector);assert.ok(Math.abs(alpha(m.bg)-({easy:.36,medium:.52,blacked:.72})[opacity])<.01,JSON.stringify({mode,opacity,selector,m}));if(selector==='.wrap__left')assert.equal(m.blur,'none');else glassFilter(mode,m.blur);}
+   for(const selector of ['.wrap__left','.settings__content']){const m=await material(page,selector);assert.ok(Math.abs(alpha(m.bg)-(mode==='tv'?.96:({easy:.36,medium:.52,blacked:.72})[opacity]))<.01,JSON.stringify({mode,opacity,selector,m}));if(selector==='.wrap__left')assert.equal(m.blur,'none');else glassFilter(mode,m.blur);}
   }
   const capsule=await material(page,'.head .head__body');
   assert.ok(alpha(capsule.bg)>0 && alpha(capsule.bg)<1,'The glass capsule is translucent');
