@@ -127,13 +127,13 @@ test('a completed episode clears the poster meter while season metadata is pendi
  }finally{w.close();}
 });
 
-test('an unfocused saved series shows full coordinates without requesting release metadata',()=>{
+test('an unfocused saved series prepares full coordinates without requesting release metadata',()=>{
  const dom=new JSDOM('<body><div class="card"><div class="card__view"></div></div></body>',{runScripts:'outside-only'}),w=dom.window;
  try{
   w.eval(code);const saved={hash:'35Series',season:3,episode:5,time:915,percent:40};
   w.LampaView={online:{lastWatched:()=>saved}};
   const L={Timeline:{view:()=>saved,render:()=>{const line=w.document.createElement('div');line.className='time-line';line.dataset.hash=saved.hash;line.innerHTML='<div></div>';return line;}},Api:{sources:{tmdb:{get:()=>assert.fail('Unfocused captions must not start network requests')}}}};
   const api=w.SeriesStatus.default(L,()=>{}),node=w.document.querySelector('.card');api.track(node,{id:91,name:'Series',source:'tmdb',media_type:'tv'});api.paint(node);
-  assert.equal(node.querySelector('.pt-card-watch__label').textContent,'3 сезон · 5 серия');assert.equal(node.querySelector('.pt-card-watch').dataset.watchState,'progress');assert.equal(node.querySelector('.pt-card-watch__icon').hidden,false);
+  assert.equal(node.querySelector('.pt-card-watch__label').textContent,'3 сезон · 5 серия');assert.equal(node.querySelector('.pt-card-watch').dataset.watchState,'progress');assert.equal(node.querySelector('.pt-card-watch__icon').hidden,true,'Partial episodes use their saved time, never a history icon');assert.ok(node.querySelector('.card__view>.pt-card-watch__badge'));
  }finally{w.close();}
 });

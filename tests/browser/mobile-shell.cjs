@@ -19,7 +19,7 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
  const navTop=await page.locator('.navigation-bar').evaluate(n=>n.getBoundingClientRect().top);assert.ok(menu.bottom<=navTop,'Sidebar ends above bottom navigation');
  await page.locator('.navigation-bar [data-action=menu]').press('Enter');await page.waitForFunction(()=>!document.body.classList.contains('menu--open'));
  await page.locator('.navigation-bar [data-action=settings]').click();await page.waitForSelector('body.settings--open');
- const mirror=rect=>{assert.ok(Math.abs(viewport.width-rect.right-menu.left)<2,'Right inset mirrors the menu');assert.ok(Math.abs(rect.top-menu.top)<2);assert.ok(Math.abs(rect.width-menu.width)<2);assert.ok(rect.bottom<=navTop);};
+ const mirror=rect=>{assert.ok(Math.abs(viewport.width-rect.right-menu.left)<2,'Right inset mirrors the menu');assert.ok(Math.abs(rect.top-menu.top)<2);assert.ok(rect.width>=menu.width && rect.width<=viewport.width-2*menu.left+2,'Reading panels retain their own width');assert.ok(rect.bottom<=navTop);};
  const panel=await page.locator('.settings__content').evaluate(n=>n.getBoundingClientRect().toJSON());mirror(panel);
  await page.evaluate(()=>{Lampa.Controller.back();Lampa.Select.show({title:'Действие',items:Array.from({length:3},(_,i)=>({title:'Действие '+i}))});});
  const action=await page.locator('.selectbox__content').evaluate(n=>n.getBoundingClientRect().toJSON());mirror(action);assert.ok(Math.abs(action.width-panel.width)<2);assert.ok(action.height<250,'Short actions have no unused panel below them');

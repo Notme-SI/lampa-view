@@ -620,8 +620,8 @@ body.lampa_view.pt-mobile .minimal-detail-columns>.minimal-detail-cast,body.lamp
  body.lampa_view:not(.pt-tv) .minimal-detail-columns>.minimal-detail-cast,body.lampa_view:not(.pt-tv) .minimal-detail-columns>.minimal-detail-facts {grid-column:1;grid-row:auto}
 }
 
-/* Equal footer space on every poster: focus never changes card/row geometry. */
-body.lampa_view .card .pt-card-watch {position:relative;height:4.1em;margin-top:.4em;font-size:.72em;line-height:1.35;pointer-events:none;visibility:hidden}
+/* The native watch rows keep their timeline ownership without a text footer. */
+body.lampa_view .card .pt-card-watch {display:none!important}
 body.lampa_view .card__view>.card-watched {display:none!important}
 body.lampa_view .card .pt-card-watch>.card-watched {display:block;position:absolute;inset:0;width:100%;height:100%;max-width:100%;font-size:1em;line-height:1.35;transform:none;-webkit-transform:none;border:0;border-radius:0;background:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;color:var(--pt-muted);box-sizing:border-box}
 body.lampa_view .card .pt-card-watch .card-watched__inner,body.lampa_view .card .pt-card-watch .card-watched__body {padding:0;font-size:1em}
@@ -641,8 +641,16 @@ body.lampa_view .pt-card-watch__time {flex:0 0 auto;margin-left:.4em;font-varian
 body.lampa_view .card .pt-card-watch .time-line {display:block;flex:1 1 0%;align-self:center;position:relative;top:auto;right:auto;bottom:auto;left:auto;width:auto;margin:0;min-width:1px;height:3px;min-height:3px;overflow:hidden;background:rgba(255,255,255,.24)!important}
 body.lampa_view .card .pt-card-watch .time-line>div {display:block;height:3px;min-height:3px;background:var(--pt-accent)!important}
 body.lampa_view .card .pt-card-watch--complete .time-line,body.lampa_view .card .pt-card-watch--complete .pt-card-watch__time {display:none!important}
-/* Reveal the saved status on selection without changing the reserved space. */
-body.lampa_view .card.focus .pt-card-watch--has-progress,body.lampa_view .card.hover .pt-card-watch--has-progress,body.lampa_view .card.pt-card-pointer .pt-card-watch--has-progress,body.lampa_view .card.pt-card-touch .pt-card-watch--has-progress {visibility:visible}
+/* Match the native type/quality tags, with room for the rating at the right. */
+body.lampa_view .card__view>.pt-card-watch__badge {position:absolute;left:var(--pt-score-inset);bottom:var(--pt-score-inset);z-index:6;display:flex;align-items:center;gap:.3em;width:max-content;max-width:calc(100% - 2 * var(--pt-score-inset) - var(--pt-score-width) - var(--pt-score-gap));padding:.24em .48em;box-sizing:border-box;border-radius:.6em;font-size:.62em;line-height:1.22;font-weight:500;pointer-events:none;visibility:hidden}
+body.lampa_view .card__view>.pt-card-watch__badge[hidden] {display:none!important}
+body.lampa_view .pt-card-watch__badge .pt-card-watch__copy {display:block;min-width:0}
+body.lampa_view .pt-card-watch__badge .pt-card-watch__label {white-space:normal;overflow:visible;text-overflow:clip}
+body.lampa_view .pt-card-watch__badge .pt-card-watch__icon {flex:0 0 .8em;width:.8em;height:.8em}
+body.lampa_view .pt-card-watch__badge .pt-card-watch__label:empty,body.lampa_view .pt-card-watch__badge .pt-card-watch__time:empty {display:none}
+body.lampa_view .pt-card-watch__badge .pt-card-watch__time {display:block;margin:.2em 0 0;font-size:1em;line-height:1.22;font-weight:400}
+body.lampa_view .pt-card-watch__badge .pt-card-watch__label:empty+.pt-card-watch__time {margin-top:0}
+body.lampa_view .card.focus .pt-card-watch__badge,body.lampa_view .card.hover .pt-card-watch__badge,body.lampa_view .card.pt-card-pointer .pt-card-watch__badge,body.lampa_view .card.pt-card-touch .pt-card-watch__badge {visibility:visible}
 body.lampa_view .card .pt-card-watch>.card-watched.pt-card-watch--empty {display:none!important}
 /* One compact release pill below Series, shared by desktop and TV. */
 body.lampa_view .pt-series-status {position:absolute;left:auto;right:4px;top:2.6em;z-index:4;display:block;width:auto;max-width:calc(100% - 8px);font-size:.55em;line-height:1;white-space:nowrap;padding:.3em .4em;border:1px solid #ffffff25;border-radius:.35em;background:#000b;color:var(--pt-warm-text,#d4e2e6);pointer-events:none;box-sizing:border-box}
@@ -1061,7 +1069,7 @@ body.lampa_view.pt-tv .minimal-paged-row .scroll__body.notransition,body.lampa_v
 /* Studio grids keep each complete row centered under their heading. */
 body.lampa_view .minimal-studio-catalogue .category-full,body.lampa_view .minimal-studio-catalogue .mapping--grid {justify-content:center}
 
-body.lampa_view.pt-touch-captions .card:not(.pt-card-touch) .pt-card-watch,body.lampa_view.pt-touch-captions .card:not(.pt-card-touch) .pt-series-status {visibility:hidden!important}
+body.lampa_view.pt-touch-captions .card:not(.pt-card-touch) .pt-card-watch__badge,body.lampa_view.pt-touch-captions .card:not(.pt-card-touch) .pt-series-status {visibility:hidden!important}
 
 body.lampa_view.pt-mobile .card__title,body.lampa_view.pt-mobile .card__age {cursor:pointer;pointer-events:auto}
 /* Touch layouts retain account controls and fit panels to the visual viewport. */
@@ -1257,7 +1265,7 @@ body.lampa_view .pt-browser-catalogue .mapping--grid>.card>.card__age,
 body.lampa_view .pt-browser-rows .minimal-posters-sized .mapping--line>.card>.card__age {flex:none;margin-top:.18em}
 body.lampa_view .pt-browser-catalogue .mapping--grid>.card>.pt-card-watch,
 body.lampa_view .minimal-posters-sized .mapping--line>.card>.pt-card-watch {flex:none;margin-top:.12em;height:3.5em}
-body.lampa_view .minimal-posters-sized .mapping--line>.card {min-height:calc(var(--minimal-poster-width) * 1.5 + 7.25em)}
+body.lampa_view .minimal-posters-sized .mapping--line>.card {min-height:calc(var(--minimal-poster-width) * 1.5 + max(4.75em,48px))}
 body.lampa_view .minimal-fit-posters .mapping--line>.card+.card {margin-left:var(--minimal-poster-gap,16px)}
 body.lampa_view .pt-browser-catalogue .mapping--grid.pt-windowed-grid {
  display:grid!important;grid-template-columns:repeat(var(--pt-window-cols),minmax(0,1fr))!important;
@@ -1265,7 +1273,7 @@ body.lampa_view .pt-browser-catalogue .mapping--grid.pt-windowed-grid {
 }
 body.lampa_view .pt-browser-catalogue .mapping--grid.pt-windowed-grid>.card:not(.card--wide):not(.card--collection) {
  width:100%!important;max-width:none;min-width:0;margin:0;padding-inline:0;
- height:calc(var(--pt-window-width) * 1.5 + 7.25em);padding-bottom:.35em;
+ height:calc(var(--pt-window-width) * 1.5 + max(4.75em,48px));padding-bottom:.35em;
 }
 body.lampa_view .pt-card-watch__label>.pt-card-watch__heading {flex-basis:100%;margin-bottom:0}
 body.lampa_view .pt-card-watch__meter {margin-top:.1em;min-height:.8em}

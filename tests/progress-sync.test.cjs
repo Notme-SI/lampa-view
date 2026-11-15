@@ -24,10 +24,10 @@ test('watched caption describes the factual episode and only collapses a finishe
   let last={season:1,episode:3,hash:'13Original',percent:100,time:2832,duration:2832};let allWatched=false;w.LampaView={online:{lastWatched:()=>last,seasonWatched:()=>allWatched}};
   const L={Utils:{hash:x=>x},Timeline:{view:()=>({...last}),render:()=>{const n=w.document.createElement('div');n.className='time-line';n.dataset.hash=last.hash;n.innerHTML='<div></div>';return n;}},TimeTable:{get:()=>[]}};
   const api=load(w,'series-status','Status').default(L,()=>{}),node=w.document.querySelector('.card'),card={id:3,name:'Сериал',source:'minimal_shiki',seasons:[{season_number:1,episode_count:10}],next_episode_to_air:{season_number:1,episode_number:9}};
-  api.track(node,card);api.paint(node);assert.equal(node.querySelector('.pt-card-watch__current .pt-card-watch__label').textContent,'1 сезон · 3 серия');assert.equal(node.querySelector('.pt-card-watch__current .pt-card-watch__time').textContent,'');assert.equal(node.querySelector('.time-line>div').style.width,'100%');
-  last={...last,episode:8,hash:'18Original'};api.paint(node);assert.equal(node.querySelector('.pt-card-watch__current .pt-card-watch__label').textContent,'1 сезон · 8 серия');
-  last={...last,episode:10,hash:'110Original'};delete card.next_episode_to_air;card.last_episode_to_air={season_number:1,episode_number:10,air_date:'2020-01-01'};api.track(node,card);api.paint(node);assert.equal(node.querySelector('.pt-card-watch').classList.contains('pt-card-watch--complete'),true,'A completed episode hides its rail');assert.equal(node.querySelector('.pt-card-watch__current .pt-card-watch__label').textContent,'1 сезон · 10 серия','A completed last episode alone does not complete a season');
-  allWatched=true;api.paint(node);assert.equal(node.querySelector('.pt-card-watch__current .pt-card-watch__label').textContent,'Сезон 1 просмотрен');assert.equal(node.querySelector('.pt-card-watch').classList.contains('pt-card-watch--complete'),true);
+  api.track(node,card);api.paint(node);assert.equal(node.querySelector('.pt-card-watch__badge .pt-card-watch__label').textContent,'1 сезон · 3 серия');assert.equal(node.querySelector('.pt-card-watch__badge .pt-card-watch__time').textContent,'');assert.equal(node.querySelector('.time-line>div').style.width,'100%');
+  last={...last,episode:8,hash:'18Original'};api.paint(node);assert.equal(node.querySelector('.pt-card-watch__badge .pt-card-watch__label').textContent,'1 сезон · 8 серия');
+  last={...last,episode:10,hash:'110Original'};delete card.next_episode_to_air;card.last_episode_to_air={season_number:1,episode_number:10,air_date:'2020-01-01'};api.track(node,card);api.paint(node);assert.equal(node.querySelector('.pt-card-watch').classList.contains('pt-card-watch--complete'),true,'A completed episode hides its rail');assert.equal(node.querySelector('.pt-card-watch__badge .pt-card-watch__label').textContent,'1 сезон · 10 серия','A completed last episode alone does not complete a season');
+  allWatched=true;api.paint(node);assert.equal(node.querySelector('.pt-card-watch__badge .pt-card-watch__label').textContent,'Сезон 1 просмотрен');assert.equal(node.querySelector('.pt-card-watch').classList.contains('pt-card-watch--complete'),true);
  }finally{w.close();}
 });
 test('history activation opens the full card for pointer and remote while other sections retain native actions',()=>{
@@ -80,8 +80,8 @@ test('a completed episode shows its saved coordinates until season facts can con
   let api=load(w,'series-status','Status').default(L,node=>api.paint(node)),node=w.document.querySelector('.card'),card={id:48,name:'Кэрри',original_name:'Kerry',source:'tmdb'};
   api.track(node,card);api.paint(node);assert.equal(requests,1);assert.equal(node.querySelector('.pt-card-watch__label').textContent,'1 сезон · 8 серия');assert.equal(node.querySelector('.pt-card-watch').dataset.watchState,'progress','An episode alone cannot confirm season completion');
   finish({id:48,seasons:[{season_number:1,episode_count:8}],last_episode_to_air:{season_number:1,episode_number:8,air_date:'2020-01-01'},next_episode_to_air:null});
-  assert.equal(node.querySelector('.pt-card-watch__current .pt-card-watch__label').textContent,'Сезон 1 просмотрен');await wait(170);
-  api=load(w,'series-status','Status2').default(L,()=>{});api.track(node,card);api.paint(node);assert.equal(requests,1,'Bounded release metadata survives a same-tab module reload');assert.equal(node.querySelector('.pt-card-watch__current .pt-card-watch__label').textContent,'Сезон 1 просмотрен');
+  assert.equal(node.querySelector('.pt-card-watch__badge .pt-card-watch__label').textContent,'Сезон 1 просмотрен');await wait(170);
+  api=load(w,'series-status','Status2').default(L,()=>{});api.track(node,card);api.paint(node);assert.equal(requests,1,'Bounded release metadata survives a same-tab module reload');assert.equal(node.querySelector('.pt-card-watch__badge .pt-card-watch__label').textContent,'Сезон 1 просмотрен');
  }finally{w.close();}
 });
 

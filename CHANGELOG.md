@@ -1,3 +1,9 @@
+## 0.5.186
+
+- Move watch status onto the poster in the same material and type size as its native tags. Show it only on selection; reserve space for the rating and favorite markers, with no text footer or central Play marker.
+- Use a plain check for a completed episode, season or film. Partial episodes show full season/episode words and their real saved time, without a history icon. Keep native timeline ownership and completion rules.
+- Restore a compact phone section sidebar with readable text and 44px touch targets. Respect native interface size, pinned-menu behavior and landscape, while retaining the independent settings/action panel sizes.
+
 ## 0.5.185
 
 - Reveal the watch-status footer only on pointer hover, remote selection or touch selection. Preserve its compact wording, reserved layout space and the hidden central Play marker.

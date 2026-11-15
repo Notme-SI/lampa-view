@@ -41,8 +41,9 @@ const clock=value=>{
 function restoreWatchMeter(node){
  // Return the original timeline to its owner before reconciling native history.
  // Moving this node preserves Timeline.update and its data-hash subscriptions.
- const overlay=node.querySelector('.card__view>.pt-card-watch__meter');
- if(overlay){if(overlay.ptWatchRow?.isConnected)overlay.ptWatchRow.appendChild(overlay);else overlay.remove();}
+ for(const overlay of node.querySelectorAll('.card__view>.pt-card-watch__meter,.card__view>.pt-card-watch__badge')){
+  if(overlay.ptWatchRow?.isConnected)overlay.ptWatchRow.appendChild(overlay);else overlay.remove();
+ }
 }
 function watchFooter(L,node,data,series){
  const slot=node.querySelector('.pt-card-watch');let wrap=node.querySelector('.card-watched');
@@ -111,7 +112,7 @@ function watchFooter(L,node,data,series){
  if(!row){wrap.classList.toggle('pt-card-watch--empty',true);clearProgress();return;}
  wrap.querySelectorAll('.card-watched__item').forEach(item=>item.classList.toggle('pt-card-watch__current',item===row));
  let summary=row.querySelector('.pt-card-watch__row');
- if(!summary){summary=document.createElement('div');summary.className='pt-card-watch__row';summary.innerHTML='<span class="pt-card-watch__icon" aria-hidden="true"></span><span class="pt-card-watch__label"></span><span class="pt-card-watch__time"></span>';row.insertBefore(summary,row.firstChild);}
+ if(!summary){summary=document.createElement('div');summary.className='pt-card-watch__row pt-card-watch__badge';summary.innerHTML='<span class="pt-card-watch__icon" aria-hidden="true"></span><span class="pt-card-watch__copy"><span class="pt-card-watch__label"></span><span class="pt-card-watch__time"></span></span>';row.insertBefore(summary,row.firstChild);}
  const nativeLabel=row.querySelector(':scope > span'),text=nativeLabel && nativeLabel.textContent || '';
  let label='',timeline=null,watchSeason=0,watchEpisode=0;
  const progressHash=row.querySelector('.time-line').getAttribute('data-hash');
@@ -157,24 +158,30 @@ function watchFooter(L,node,data,series){
  if(complete){watchEpisode=0;label=series?lampaViewText("Сезон {0} просмотрен", [shared.season]):lampaViewText("Фильм просмотрен");}
  else if(watchEpisode)label=watchSeason?lampaViewText("{0} сезон · {1} серия",[watchSeason,watchEpisode]):lampaViewText("Серия {0}",[watchEpisode]);
  slot.dataset.watchState=complete?'complete':'progress';
- // Keep the native timeline node (and data-hash) in an explicit flex progress row.
+ // Keep the native timeline node and subscriptions. Only the status and its
+ // real saved time move into the small poster badge.
  const line=row.querySelector('.time-line');let meter=row.querySelector('.pt-card-watch__meter');
  if(!meter){meter=document.createElement('div');meter.className='pt-card-watch__meter';row.appendChild(meter);}
  if(line.parentNode!==meter)meter.appendChild(line);
- const timestamp=row.querySelector('.pt-card-watch__time');if(timestamp.parentNode!==meter)meter.appendChild(timestamp);
+ const timestamp=row.querySelector('.pt-card-watch__time'),copy=summary.querySelector('.pt-card-watch__copy');if(timestamp.parentNode!==copy)copy.appendChild(timestamp);
  line.classList.toggle('hide',false);
  const fill=row.querySelector('.time-line>div'),width=Math.min(100,Math.max(0,Number(shown.percent)||0))+'%';
  if(fill && fill.style.width!==width)fill.style.width=width;
  const time=hideProgress || !Number(shown.time)?'':clock(shown.time),name=summary.querySelector('.pt-card-watch__label'),stamp=row.querySelector('.pt-card-watch__time'),icon=summary.querySelector('.pt-card-watch__icon');
  if(name.textContent!==label)name.textContent=label;
- icon.hidden=!label;
- const iconState=complete?'complete':'progress';
- if(icon.dataset.state!==iconState){icon.dataset.state=iconState;icon.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">'+(complete?'<path d="m4 12 5 5L20 6"/>':'<path d="M3 4v5h5M3.4 8.5a9 9 0 1 1-.2 6.2M12 7v5l3 2"/>')+'</svg>';}
+ // Finishing one episode is enough for its check mark. A partial episode has
+ // a real timecode and no history/clock icon, regardless of the series status.
+ icon.hidden=!hideProgress || !label;
+ if(icon.dataset.state!=='complete'){icon.dataset.state='complete';icon.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m4 12 5 5L20 6"/></svg>';}
  if(stamp.textContent!==time)stamp.textContent=time;
  meter.ptWatchRow=row;
  if(!hideProgress)node.querySelector('.card__view')?.appendChild(meter);
  const summaryTitle=[label,time].filter(Boolean).join(', ');
  if(summary.title!==summaryTitle)summary.title=summaryTitle;
+ summary.hidden=!label && !time;
+ summary.dataset.watchState=hideProgress?'complete':'progress';
+ summary.ptWatchRow=row;
+ node.querySelector('.card__view')?.appendChild(summary);
 }
 // Metadata is requested only for a focused series, with bounded shared cache.
 // Native timetable data and native watch history remain authoritative.

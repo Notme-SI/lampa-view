@@ -42,7 +42,7 @@ const {setup}=require('../fixtures/native-browser.cjs'),{stage}=require('../fixt
   await page.waitForSelector('#qa-release .pt-series-status');
   assert.equal(await page.locator('#qa-release .pt-series-status').textContent(),'Сезон 2 · Серия 6/10','Release metadata loads on native focus without opening the full card');
   await page.evaluate(()=>{jQuery('#qa-release').removeClass('focus');jQuery('#qa-movie').addClass('focus').triggerHandler('hover:focus');});
-  await page.waitForSelector('#qa-movie .pt-card-watch--has-progress');
+  await page.waitForSelector('#qa-movie .pt-card-watch__badge');
   assert.equal(await page.locator('#qa-movie .pt-card-watch__time').textContent(),'16:09','Saved movie aliases work without a native watched overlay');
   assert.equal(await page.locator('#qa-movie .pt-card-watch__label').textContent(),'','An unfinished movie shows its saved position without an empty watched caption');
   assert.equal(await page.locator('#qa-movie .pt-card-watch__label').evaluate(node=>node.getBoundingClientRect().height),0);
@@ -55,13 +55,12 @@ const {setup}=require('../fixtures/native-browser.cjs'),{stage}=require('../fixt
   assert.ok(Math.abs(progress.fill/progress.width-.4)<.02,'Track reflects the saved 40%');
   assert.ok(Math.abs(progress.trackBottom-progress.posterBottom)<1 && Math.abs(progress.width-progress.posterWidth)<1,'Track follows the lower poster edge');
   const timeGap=progress.trackTop-progress.timeBottom;
-  assert.ok(timeGap>=0 && timeGap<=8 && progress.timeLeft>=progress.posterLeft,'Elapsed time stays directly above its track: '+JSON.stringify(progress));
-  assert.ok(await page.locator('#qa-movie .card__view').evaluate(view=>{
-   view.insertAdjacentHTML('beforeend','<div class="card__icons"><div class="card__icons-inner"><div class="card__icon icon--book"></div></div></div>');
-   const icon=view.querySelector('.icon--book').getBoundingClientRect();
-   const time=view.querySelector('.pt-card-watch__time').getBoundingClientRect();
-   return icon.height>0 && icon.bottom<=time.top-1;
-  }),'A favorite icon has room above the elapsed time');
+  assert.ok(timeGap>=0 && timeGap<=16 && progress.timeLeft>=progress.posterLeft,'Elapsed time stays directly above its track: '+JSON.stringify(progress));
+  await page.locator('#qa-movie .card__view').evaluate(view=>view.insertAdjacentHTML('beforeend','<div class="card__icons"><div class="card__icons-inner"><div class="card__icon icon--book"></div></div></div>'));
+  await page.waitForFunction(()=>{
+   const view=document.querySelector('#qa-movie .card__view'),icon=view.querySelector('.icon--book').getBoundingClientRect(),badge=view.querySelector('.pt-card-watch__badge').getBoundingClientRect();
+   return icon.height>0 && (icon.bottom<badge.top || icon.top>badge.bottom || icon.right<badge.left || icon.left>badge.right);
+  });
   await page.evaluate(()=>{document.querySelector('#qa-release').remove();document.querySelector('#qa-movie').remove();});
 
   // Native Lampa's manual episode action persists 95%, not 100%.
@@ -70,19 +69,19 @@ const {setup}=require('../fixtures/native-browser.cjs'),{stage}=require('../fixt
    for(let episode=1;episode<=10;episode++)Lampa.Timeline.update({hash:Lampa.Utils.hash('2'+episode+data.original_name),percent:95,time:0,duration:0});
    const n=document.createElement('div');n.id='qa-native-season';n.className='card focus';n.style.cssText='position:fixed;z-index:50;top:100px;left:40px;width:154px;font-size:18px';n.innerHTML='<div class="card__view"></div><div class="card__title">'+data.name+'</div>';n.card_data=data;document.body.appendChild(n);
   });
-  await page.waitForSelector('#qa-native-season .pt-card-watch--complete');
+  await page.waitForSelector('#qa-native-season .pt-card-watch__badge');
   assert.equal(await page.locator('#qa-native-season .pt-card-watch__label').textContent(),'Сезон 2 просмотрен');
   assert.equal(await page.locator('#qa-native-season .pt-card-watch__time').textContent(),'');
   await page.locator('#qa-native-season').evaluate(n=>n.classList.remove('focus','hover','pt-card-pointer','pt-card-touch'));
-  assert.equal(await page.locator('#qa-native-season .pt-card-watch').evaluate(n=>getComputedStyle(n).visibility),'hidden','Saved status stays hidden without focus on desktop and TV');
+  assert.equal(await page.locator('#qa-native-season .pt-card-watch__badge').evaluate(n=>getComputedStyle(n).visibility),'hidden','Saved status stays hidden without focus on desktop and TV');
   const reserved=await page.locator('#qa-native-season').evaluate(n=>n.getBoundingClientRect().height);
   await page.locator('#qa-native-season').evaluate(n=>n.classList.add('focus'));
-  assert.equal(await page.locator('#qa-native-season .pt-card-watch').evaluate(n=>getComputedStyle(n).visibility),'visible','Remote selection reveals the saved status');
-  assert.equal(await page.locator('#qa-native-season').evaluate(n=>n.getBoundingClientRect().height),reserved,'Selecting a card does not change the reserved footer height');
+  assert.equal(await page.locator('#qa-native-season .pt-card-watch__badge').evaluate(n=>getComputedStyle(n).visibility),'visible','Remote selection reveals the saved status');
+  assert.equal(await page.locator('#qa-native-season').evaluate(n=>n.getBoundingClientRect().height),reserved,'Selecting a card does not change its layout height');
   await page.locator('#qa-native-season').evaluate(n=>{n.classList.remove('focus');n.classList.add('pt-card-pointer');});
-  assert.equal(await page.locator('#qa-native-season .pt-card-watch').evaluate(n=>getComputedStyle(n).visibility),'visible','Pointer hover reveals the same status');
+  assert.equal(await page.locator('#qa-native-season .pt-card-watch__badge').evaluate(n=>getComputedStyle(n).visibility),'visible','Pointer hover reveals the same status');
   await page.locator('#qa-native-season').evaluate(n=>n.classList.remove('pt-card-pointer'));
-  assert.equal(await page.locator('#qa-native-season .pt-card-watch').evaluate(n=>getComputedStyle(n).visibility),'hidden','Leaving a card hides its status again');
+  assert.equal(await page.locator('#qa-native-season .pt-card-watch__badge').evaluate(n=>getComputedStyle(n).visibility),'hidden','Leaving a card hides its status again');
   assert.equal(await page.locator('#qa-native-season .pt-card-watch').getAttribute('data-watch-state'),'complete');
   assert.equal(await page.locator('#qa-native-season .time-line').evaluate(n=>getComputedStyle(n).display),'none','A completed season has no progress track');
   await page.evaluate(()=>Lampa.Timeline.update({hash:Lampa.Utils.hash('210Cyberpunk: Edgerunners'),percent:40,time:915,duration:2400}));

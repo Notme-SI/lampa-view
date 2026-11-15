@@ -42,7 +42,7 @@ async function run(browser,mode,theme){
   await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
   if(mode==='desktop'){
    await film.hover();
-   await page.waitForFunction(()=>{const label=document.querySelector('#qa-input .pt-card-watch');return label && getComputedStyle(label).visibility==='visible';});
+   await page.waitForFunction(()=>{const label=document.querySelector('#qa-input .pt-card-watch__badge');return label && getComputedStyle(label).visibility==='visible';});
    await settledTransform(page,'#qa-input .card .card__view',-4.5);
    await page.mouse.move(2,2);
    await settledTransform(page,'#qa-input .card .card__view',0);
@@ -84,7 +84,7 @@ async function run(browser,mode,theme){
   if(!staticFocus)assert.match(paint.shadow,/rgba\(255, 255, 255, 0.18\).*22px/);
   assert.equal(paint.edge,'none');assert.match(paint.shadow,staticFocus?/2px inset$/:/1px inset/,'The selection edge follows the rounded poster');
   assert.equal(await film.locator('.icon--history').evaluate(n=>getComputedStyle(n).display),'none','Selection never restores central Play');
-  await page.waitForFunction(()=>{const label=document.querySelector('#qa-input .pt-card-watch');return label && getComputedStyle(label).visibility==='visible';},null,{timeout:4000}).catch(async e=>{throw Error(e.message+' '+JSON.stringify(await page.evaluate(()=>({body:document.body.className,node:document.querySelector('#qa-input .card').outerHTML}))));});
+  await page.waitForFunction(()=>{const label=document.querySelector('#qa-input .pt-card-watch__badge');return label && getComputedStyle(label).visibility==='visible';},null,{timeout:4000}).catch(async e=>{throw Error(e.message+' '+JSON.stringify(await page.evaluate(()=>({body:document.body.className,node:document.querySelector('#qa-input .card').outerHTML}))));});
   assert.equal(await film.locator('.pt-card-watch__time').textContent(),'15:15');
   await page.keyboard.press('ArrowRight');
   await page.waitForTimeout(330);

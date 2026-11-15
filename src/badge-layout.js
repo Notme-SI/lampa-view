@@ -42,7 +42,7 @@ export default function badgeLayout(status){
    // Focus changes only the composited poster position. Re-measuring all its
    // unchanged corner labels forces layout after every remote pause. Include
    // content, native markers, viewport and scale so late data still invalidates.
-   const labels=[...view.querySelectorAll('.card__vote,.pt-quality,.card__quality,.pt-kind,.pt-series-status,.card__marker,.card__new-episode,.card__icon,.pt-card-watch__time')];
+   const labels=[...view.querySelectorAll('.card__vote,.pt-quality,.card__quality,.pt-kind,.pt-series-status,.card__marker,.card__new-episode,.card__icon,.pt-card-watch__badge,.pt-card-watch__icon,.pt-card-watch__time')];
    const key=[view.clientWidth,view.clientHeight,innerWidth,innerHeight,
     document.body.className.replace(/\b(?:pt-tv-busy|pt-wheel-active|pt-arrow-navigation)\b/g,'').trim().replace(/\s+/g,' '),document.body.style.cssText,
     node.matches('.focus,.hover,.pt-card-pointer,.pt-card-touch'),
@@ -51,7 +51,7 @@ export default function badgeLayout(status){
    const rect=view.getBoundingClientRect();
    if(!rect.width || !rect.height || rect.bottom< -1200 || rect.top>window.innerHeight+1200 || rect.right< -1200 || rect.left>window.innerWidth+1200)continue;
    const width=view.clientWidth || rect.width,height=view.clientHeight || rect.height,scale=rect.width/width || 1,entries=[];
-   for(const [selector,corner] of [['.card__vote','br'],['.pt-quality,.card__quality','tr'],['.pt-kind','tl'],['.pt-series-status','tl'],['.card__marker','bl'],['.card__new-episode','bl']])for(const el of view.querySelectorAll(selector)){
+   for(const [selector,corner] of [['.card__vote','br'],['.pt-quality,.card__quality','tr'],['.pt-kind','tl'],['.pt-series-status','tl'],['.card__marker','bl'],['.card__new-episode','bl'],['.pt-card-watch__badge','bl']])for(const el of view.querySelectorAll(selector)){
     if(el.hidden || el.classList.contains('hide') || getComputedStyle(el).display==='none')continue;
     if(el.classList.contains('pt-series-status')){
      el.style.fontSize='';el.style.transform='';
@@ -62,10 +62,18 @@ export default function badgeLayout(status){
      const available=Math.max(1,Math.min(width-8*insetScale,(parseFloat(style.maxWidth)||width/paint)*paint)-border*paint);
      if(natural>available)el.style.fontSize=(parseFloat(style.fontSize)*Math.max(1,available-1)/natural).toFixed(2)+'px';
     }
-    const topTag=el.matches('.pt-kind,.pt-quality,.card__quality'),r=el.getBoundingClientRect();if(r.width && r.height)entries.push({el,corner,inset:(topTag || corner[1]!=='r'?4:8)*insetScale,verticalInset:topTag?6*insetScale:undefined,width:r.width/scale,height:r.height/scale});
+    const watch=el.classList.contains('pt-card-watch__badge');
+    if(watch){
+     const paint=tv?parseFloat(getComputedStyle(document.body).getPropertyValue('--pt-tv-badge-paint')) || .5:1;
+     const score=entries.find(entry=>entry.el.classList.contains('card__vote'));
+     const maxWidth=Math.max(1,(width-16*insetScale-(score?score.width+6*insetScale:0))/paint).toFixed(2)+'px';
+     if(el.style.maxWidth!==maxWidth)el.style.maxWidth=maxWidth;
+    }
+    const topTag=el.matches('.pt-kind,.pt-quality,.card__quality'),r=el.getBoundingClientRect();if(r.width && r.height)entries.push({el,corner,inset:(watch?8:topTag || corner[1]!=='r'?4:8)*insetScale,verticalInset:topTag?6*insetScale:undefined,width:r.width/scale,height:r.height/scale});
    }
-   // Reserve space for the elapsed time as well as the native favorite icons.
-   const occupied=[...view.querySelectorAll('.card__icon:not(.icon--history),.pt-card-watch__time')].map(el=>el.getBoundingClientRect())
+   // The watch badge is placed as a whole; never reserve its own timestamp as
+   // an obstacle. Native favorite icons retain their independent corner space.
+   const occupied=[...view.querySelectorAll('.card__icon:not(.icon--history)')].map(el=>el.getBoundingClientRect())
     .filter(box=>box.width && box.height).map(box=>({x:(box.left-rect.left)/scale,y:(box.top-rect.top)/scale,width:box.width/scale,height:box.height/scale}));
    reads.push({node,key,view,width,height,entries,places:placeBadges(width,height,entries,occupied,4*insetScale,3*insetScale)});
   }
