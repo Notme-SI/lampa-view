@@ -14,15 +14,25 @@ export default function preservePanelPosition(L, enabled) {
 
  let panel, clicked, revision=0;
  const wrappedMenus = new WeakSet();
+ // Current small-screen Menu uses Modal without menu--open/modal--open.
+ // Never restore the previous opener while that native window still owns UI.
+ const overlayOpen=()=>document.body.matches(panels) || L.Menu?.opened?.() || L.Modal?.opened?.();
 
  document.addEventListener('click', event => {
   clicked = event.target.closest?.(clickableOpeners);
+  const dock=enabled() && document.body.classList.contains('pt-mobile') && event.target.closest?.('.navigation-bar__item');
+  if(dock && ['menu','settings','main'].includes(dock.dataset.action)){
+   // A dock destination replaces the previous panel, rather than opening a
+   // child from the previously focused menu row. Cancel its pending return.
+   revision++;
+   if(panel?.name!==dock.dataset.action)panel=null;
+  }
  }, true);
 
  function returnToOpener(state, generation) {
   if (generation !== revision) return;
   if (!enabled() || L.Activity.active()?.activity !== state.activity) return;
-  if (panel || document.body.matches(panels)) return;
+  if (panel || overlayOpen()) return;
   const scroll = state.activity?.component?.scroll;
   // A wheel/remote action after closing the panel takes precedence over this RAF.
   if(Number.isFinite(state.returnPosition) && Math.abs((scroll?.position?.() ?? state.returnPosition)-state.returnPosition)>1)return;
@@ -61,7 +71,7 @@ export default function preservePanelPosition(L, enabled) {
    const activity = L.Activity.active()?.activity;
    const domFocus = document.activeElement;
    const candidates = [clicked, domFocus, document.querySelector('.focus')];
-   const menuItem = fromMenu && candidates.find(node => node?.matches(menuSettings));
+   const menuItem = fromMenu && (clicked ? clicked.matches(menuSettings) && clicked : candidates.find(node => node?.matches(menuSettings)));
    const selector = openers[name];
    const opener = menuItem || candidates.find(node => node?.matches(selector)) ||
     Array.from(document.querySelectorAll(selector)).find(node => node.getClientRects().length) || document.querySelector(selector);
@@ -82,7 +92,7 @@ export default function preservePanelPosition(L, enabled) {
    };
   }
 
-  if (panel && !document.body.matches(panels) && (name === 'head' || name === 'content')) {
+  if (panel && !overlayOpen() && (name === 'head' || name === 'content')) {
    const state = panel;
    state.returnPosition=state.activity?.component?.scroll?.position?.();
    const generation = revision;

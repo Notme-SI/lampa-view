@@ -38,6 +38,36 @@ export default function menuLayout(L,enabled,icon){
    }
   }
  }
+ const mobileBars=new WeakSet();
+ const menuOpened=()=>L.Menu?.opened?.() || document.body.classList.contains('menu--open');
+ const destinationOpened=action=>action==='menu'?menuOpened():action==='settings' && document.body.classList.contains('settings--open');
+ function mobileNavigate(action,wasOpen=destinationOpened(action)){
+  const menuOpen=menuOpened();
+  // Return the live menu before native toContent destroys its Modal. Dock
+  // destinations replace overlays; they must not become nested windows.
+  if(menuOpen && L.Menu?.close)L.Menu.close();
+  L.Controller.toggle('content',true);
+  document.body.classList.remove('pt-menu-hover');
+  if(wasOpen)return;
+  if(action==='menu'){
+   if(L.Menu?.open)L.Menu.open();else if(L.Menu?.toggle)L.Menu.toggle();else L.Controller.toggle('menu');
+  }else if(action==='settings')L.Controller.toggle('settings');
+  else if(action==='main')L.Activity.push({component:'main',source:L.Storage.get('source','cub'),page:1,title:t('Главная')});
+ }
+ function bindMobileBar(bar){
+  if(mobileBars.has(bar))return;mobileBars.add(bar);
+  const active=()=>enabled() && document.body.classList.contains('pt-mobile');
+  // Outside mousedown dismisses a native overlay before click. Keep that
+  // dismissal inside the explicit dock transition, including repeated taps.
+  bar.addEventListener('mousedown',event=>{if(active())event.stopPropagation();},true);
+  bar.addEventListener('click',event=>{
+   if(!active())return;
+   const item=event.target.closest('.navigation-bar__item');
+   if(!item || !bar.contains(item) || !['menu','settings','main'].includes(item.dataset.action))return;
+   event.preventDefault();event.stopImmediatePropagation();
+   mobileNavigate(item.dataset.action);
+  },true);
+ }
  let mobileControl=null,generatedBar=null;
  function mobileBar(){
   const mobile=enabled() && document.body.classList.contains('pt-mobile');
@@ -58,7 +88,7 @@ export default function menuLayout(L,enabled,icon){
    });
   }
   if(!bar)return;
-  observeNavigation(bar);
+  observeNavigation(bar);bindMobileBar(bar);
   const search=bar.querySelector('[data-action=search]');
   if(search){
    mobileControl={node:search,html:search.innerHTML,next:search.nextElementSibling};
@@ -66,9 +96,7 @@ export default function menuLayout(L,enabled,icon){
    search.querySelector('.navigation-bar__icon').innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M2 5h20M2 12h20M2 19h20"/></svg>';
    search.querySelector('.navigation-bar__label').textContent=t('Меню');
    bar.querySelector('[data-action=back]')?.after(search);
-   const toggle=()=>{document.body.classList.remove('pt-menu-hover');if(document.body.classList.contains('menu--open')){L.Controller.toggle('head');return;}if(L.Menu?.toggle)L.Menu.toggle();else L.Controller.toggle(document.body.classList.contains('menu--open')?'content':'menu');};
-   // Native Menu closes on outside mousedown before this button's click.
-   $(search).on('mousedown.lampaViewMenu',event=>event.stopPropagation()).on('click.lampaViewMenu',toggle).on('keydown.lampaViewMenu',event=>{if(event.key==='Enter' || event.key===' '){event.preventDefault();event.stopImmediatePropagation();toggle();}});
+   $(search).on('keydown.lampaViewMenu',event=>{if(event.key==='Enter' || event.key===' '){event.preventDefault();event.stopImmediatePropagation();mobileNavigate('menu');}});
   }
  }
  function exclude(){
@@ -93,7 +121,10 @@ export default function menuLayout(L,enabled,icon){
   const menu=document.querySelector('.menu'),profile=document.querySelector('[data-action="minimal_profile"]');if(!menu || !profile)return;
   if(!menu._lampaViewPointer){menu._lampaViewPointer=true;menu.addEventListener('click',event=>{
    if(!enabled())return;const item=event.target.closest('.menu__item');if(!item || !menu.contains(item))return;
-   event.preventDefault();event.stopImmediatePropagation();$(item).trigger('hover:enter');
+   event.preventDefault();event.stopImmediatePropagation();
+   // Current native Menu closes its Modal in the DOM capture phase. A
+   // jQuery-only trigger skips that cleanup on touch/Safari.
+   if(L.Utils?.trigger)L.Utils.trigger(item,'hover:enter');else $(item).trigger('hover:enter');
   },true);}
   let account=menu.querySelector('.pt-menu-account');
   if(!account){account=document.createElement('div');account.className='menu__case nosort pt-menu-account';account.innerHTML='<ul class="pt-menu-account__list"></ul>';menu.prepend(account);}

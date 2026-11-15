@@ -1,5 +1,12 @@
 ## 0.5.189
 
+## 0.5.190
+
+- Mobile Menu and Settings use the same full available panel height. The native menu scroll area no longer keeps the host's 60%-of-screen cap; the final item remains reachable above bottom navigation.
+- Bottom navigation switches Menu, Settings and Home through native overlay cleanup. It closes the previous window before opening a destination, preserves the live menu DOM and handles repeated taps without stacking panels.
+- Menu selection emits the native DOM event so Safari runs the host’s window cleanup before an action. Focus restoration checks native open-window state as well as body classes.
+- Added current-host regression checks for panel switching, repeated toggles, nested settings, return to content and the last menu item, alongside equal-height checks in WebKit and Chromium.
+
 - Style the current native mobile menu Modal (`.menu-modal`) as the left mirror of Settings, with the same width, top edge, readable text, heading and corners. Keep its content scrollable above the navigation dock.
 - Add a pinned snapshot of the actual current host and a mobile regression check that reproduces the full-width, small-text failure in 0.5.188.
 

@@ -338,7 +338,7 @@ body.lampa_view.pt-mobile .activity--active > .activity__body > div > .scroll:no
 }
 body.lampa_view.pt-mobile .head .head__menu-icon,body.lampa_view.pt-mobile .head .head__backward {display:none!important}
 body.lampa_view.pt-mobile .head .head__actions {width:100%}
-body.lampa_view.pt-mobile .navigation-bar,body.lampa_view.pt-mobile.orientation--landscape .navigation-bar {display:block!important;z-index:110;inset:auto 0 0;padding-inline:var(--pt-shell-inset)}
+body.lampa_view.pt-mobile .navigation-bar,body.lampa_view.pt-mobile.orientation--landscape .navigation-bar {display:block!important;z-index:130;inset:auto 0 0;padding-inline:var(--pt-shell-inset)}
 html.pt-ios-standalone body.lampa_view.pt-mobile.pt-ios-dock-positioned .navigation-bar {
  top:var(--pt-mobile-dock-top)!important;bottom:auto!important;
 }
@@ -355,16 +355,21 @@ body.lampa_view.pt-mobile .settings .settings-folder,
 body.lampa_view.pt-mobile .settings .settings-param,
 body.lampa_view.pt-mobile .selectbox:not(.minimal-franchise-menu) .selectbox-item {font-size:var(--pt-mobile-item-font);min-height:44px}
 body.lampa_view.pt-mobile .wrap__left .menu__text {white-space:normal!important}
+body.lampa_view.pt-mobile .settings .settings__content {height:var(--pt-panel-room)!important}
+body.lampa_view.pt-mobile .settings .settings__body {flex:1 1 auto}
+body.lampa_view.pt-mobile .settings .settings__body>.scroll {flex:1 1 auto;height:100%!important}
+body.lampa_view.pt-mobile .settings .scroll__content {height:100%!important;max-height:none!important}
+
 /* Current Lampa moves the live menu into a small-screen Modal. It must use
    the same panel geometry and type as Settings, rather than a bottom sheet. */
 body.lampa_view.pt-mobile .modal:has(.menu-modal) {inset:0 0 auto!important;height:calc(var(--pt-dock-y) + var(--pt-panel-room));padding:0!important;align-items:flex-start;font-size:1em!important}
-body.lampa_view.pt-mobile .modal:has(.menu-modal) .modal__content {position:fixed!important;inset:var(--pt-dock-y) auto auto var(--pt-shell-inset)!important;width:var(--pt-mobile-panel-width)!important;max-width:calc(100vw - 2 * var(--pt-shell-inset))!important;min-height:0!important;height:auto!important;max-height:var(--pt-panel-room)!important;display:flex;flex-direction:column;margin:0!important;padding:0!important;transform:none!important;box-sizing:border-box;border-radius:1.7em;font-size:1em!important;overflow:hidden}
+body.lampa_view.pt-mobile .modal:has(.menu-modal) .modal__content {position:fixed!important;inset:var(--pt-dock-y) auto auto var(--pt-shell-inset)!important;width:var(--pt-mobile-panel-width)!important;max-width:calc(100vw - 2 * var(--pt-shell-inset))!important;min-height:0!important;height:var(--pt-panel-room)!important;max-height:var(--pt-panel-room)!important;display:flex;flex-direction:column;margin:0!important;padding:0!important;transform:none!important;box-sizing:border-box;border-radius:1.7em;font-size:1em!important;overflow:hidden}
 body.lampa_view.pt-mobile .modal:has(.menu-modal) .modal__head {flex:none;padding:.85em .9em;min-height:3em;gap:.65em;margin:0}
 body.lampa_view.pt-mobile .modal:has(.menu-modal) .modal__title {font-size:1.15em;line-height:1.35;letter-spacing:0}
 body.lampa_view.pt-mobile .modal:has(.menu-modal) .minimal-back--overlay {font-size:var(--pt-mobile-item-font)}
-body.lampa_view.pt-mobile .modal:has(.menu-modal) .modal__body {flex:0 1 auto;height:auto!important;min-height:0!important;padding:0 .45em .45em!important;overflow:hidden}
-body.lampa_view.pt-mobile .modal:has(.menu-modal) .modal__body>.scroll {display:flex;flex-direction:column;height:auto!important;min-height:0!important;max-height:none!important}
-body.lampa_view.pt-mobile .modal:has(.menu-modal) .scroll__content {height:auto!important;min-height:0!important;padding-block:0!important}
+body.lampa_view.pt-mobile .modal:has(.menu-modal) .modal__body {flex:1 1 auto;height:auto!important;min-height:0!important;padding:0 .45em .45em!important;overflow:hidden}
+body.lampa_view.pt-mobile .modal:has(.menu-modal) .modal__body>.scroll {display:flex;flex:1 1 auto;flex-direction:column;height:100%!important;min-height:0!important;max-height:none!important}
+body.lampa_view.pt-mobile .modal:has(.menu-modal) .scroll__content {height:100%!important;max-height:none!important;min-height:0!important;padding-block:0!important}
 body.lampa_view.pt-mobile .menu-modal .menu {width:100%;padding:0!important;font-size:1em}
 body.lampa_view.pt-mobile .menu-modal .menu__item {display:flex;align-items:center;box-sizing:border-box;font-size:var(--pt-mobile-item-font);min-height:44px;padding:.8em 1em!important;margin:0;gap:0;border-radius:.7em}
 body.lampa_view.pt-mobile .menu-modal .menu__text {font-size:1em;font-weight:400;line-height:1.4;white-space:normal!important}
