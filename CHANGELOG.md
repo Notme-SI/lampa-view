@@ -1,3 +1,7 @@
+## 0.5.195
+
+- Полоска прогресса в «Онлайне» помещается внутри скруглённого баннера серии.
+
 ## 0.5.194
 
 - Detect MPV Plus from the selected installation; remove the manual integration toggle. Use the already supported private environment for long metadata instead of duplicating signed URLs in the Windows command line, retaining six available episodes with the selected start position.

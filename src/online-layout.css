@@ -4,6 +4,7 @@ body.lampa_view .nova-plus-root.nova-plus {box-sizing:border-box;width:100%;max-
 body.lampa_view .nova-plus-root.nova-plus>.nova__hero {box-sizing:border-box}
 body.lampa_view .nova-plus-root.nova-plus>.nova-plus__strip {box-sizing:border-box;padding:.6em 0;width:100%;margin-top:1.2em}
 body.lampa_view .nova-plus-root .nova__list--row>.nova-card--wide {width:24%!important;flex:0 0 24%!important;max-width:24%!important}
+body.lampa_view .nova-plus-root .nova-card--wide>.nova-card__thumb>.nova-card__line {left:.6em;right:.6em;bottom:.2em;border-radius:1em;overflow:hidden;pointer-events:none}
 body.lampa_view .nova-plus-root .nova-chip[data-nova-label]:before {display:none}
 body.lampa_view.pt-mobile .nova-plus-root.nova-plus {max-width:42em;padding:1em 1.1em calc(6em + env(safe-area-inset-bottom,0px))}
 body.lampa_view.pt-mobile .nova-plus-root.nova-plus>.nova__hero {padding:0;flex:0 0 100%;width:100%;max-width:100%}
