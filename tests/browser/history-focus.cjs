@@ -74,7 +74,15 @@ const {setup}=require('../fixtures/native-browser.cjs'),{stage}=require('../fixt
   assert.equal(await page.locator('#qa-native-season .pt-card-watch__label').textContent(),'Сезон 2 просмотрен');
   assert.equal(await page.locator('#qa-native-season .pt-card-watch__time').textContent(),'');
   await page.locator('#qa-native-season').evaluate(n=>n.classList.remove('focus','hover','pt-card-pointer','pt-card-touch'));
-  assert.equal(await page.locator('#qa-native-season .pt-card-watch').evaluate(n=>getComputedStyle(n).visibility),'visible','Saved status stays visible without focus on desktop and TV');
+  assert.equal(await page.locator('#qa-native-season .pt-card-watch').evaluate(n=>getComputedStyle(n).visibility),'hidden','Saved status stays hidden without focus on desktop and TV');
+  const reserved=await page.locator('#qa-native-season').evaluate(n=>n.getBoundingClientRect().height);
+  await page.locator('#qa-native-season').evaluate(n=>n.classList.add('focus'));
+  assert.equal(await page.locator('#qa-native-season .pt-card-watch').evaluate(n=>getComputedStyle(n).visibility),'visible','Remote selection reveals the saved status');
+  assert.equal(await page.locator('#qa-native-season').evaluate(n=>n.getBoundingClientRect().height),reserved,'Selecting a card does not change the reserved footer height');
+  await page.locator('#qa-native-season').evaluate(n=>{n.classList.remove('focus');n.classList.add('pt-card-pointer');});
+  assert.equal(await page.locator('#qa-native-season .pt-card-watch').evaluate(n=>getComputedStyle(n).visibility),'visible','Pointer hover reveals the same status');
+  await page.locator('#qa-native-season').evaluate(n=>n.classList.remove('pt-card-pointer'));
+  assert.equal(await page.locator('#qa-native-season .pt-card-watch').evaluate(n=>getComputedStyle(n).visibility),'hidden','Leaving a card hides its status again');
   assert.equal(await page.locator('#qa-native-season .pt-card-watch').getAttribute('data-watch-state'),'complete');
   assert.equal(await page.locator('#qa-native-season .time-line').evaluate(n=>getComputedStyle(n).display),'none','A completed season has no progress track');
   await page.evaluate(()=>Lampa.Timeline.update({hash:Lampa.Utils.hash('210Cyberpunk: Edgerunners'),percent:40,time:915,duration:2400}));

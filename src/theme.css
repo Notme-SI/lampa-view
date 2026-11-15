@@ -641,8 +641,8 @@ body.lampa_view .pt-card-watch__time {flex:0 0 auto;margin-left:.4em;font-varian
 body.lampa_view .card .pt-card-watch .time-line {display:block;flex:1 1 0%;align-self:center;position:relative;top:auto;right:auto;bottom:auto;left:auto;width:auto;margin:0;min-width:1px;height:3px;min-height:3px;overflow:hidden;background:rgba(255,255,255,.24)!important}
 body.lampa_view .card .pt-card-watch .time-line>div {display:block;height:3px;min-height:3px;background:var(--pt-accent)!important}
 body.lampa_view .card .pt-card-watch--complete .time-line,body.lampa_view .card .pt-card-watch--complete .pt-card-watch__time {display:none!important}
-/* Saved viewing status remains readable without pointer or remote focus. */
-body.lampa_view .card .pt-card-watch--has-progress {visibility:visible}
+/* Reveal the saved status on selection without changing the reserved space. */
+body.lampa_view .card.focus .pt-card-watch--has-progress,body.lampa_view .card.hover .pt-card-watch--has-progress,body.lampa_view .card.pt-card-pointer .pt-card-watch--has-progress,body.lampa_view .card.pt-card-touch .pt-card-watch--has-progress {visibility:visible}
 body.lampa_view .card .pt-card-watch>.card-watched.pt-card-watch--empty {display:none!important}
 /* One compact release pill below Series, shared by desktop and TV. */
 body.lampa_view .pt-series-status {position:absolute;left:auto;right:4px;top:2.6em;z-index:4;display:block;width:auto;max-width:calc(100% - 8px);font-size:.55em;line-height:1;white-space:nowrap;padding:.3em .4em;border:1px solid #ffffff25;border-radius:.35em;background:#000b;color:var(--pt-warm-text,#d4e2e6);pointer-events:none;box-sizing:border-box}
@@ -1061,7 +1061,7 @@ body.lampa_view.pt-tv .minimal-paged-row .scroll__body.notransition,body.lampa_v
 /* Studio grids keep each complete row centered under their heading. */
 body.lampa_view .minimal-studio-catalogue .category-full,body.lampa_view .minimal-studio-catalogue .mapping--grid {justify-content:center}
 
-body.lampa_view.pt-touch-captions .card:not(.pt-card-touch) .pt-series-status {visibility:hidden!important}
+body.lampa_view.pt-touch-captions .card:not(.pt-card-touch) .pt-card-watch,body.lampa_view.pt-touch-captions .card:not(.pt-card-touch) .pt-series-status {visibility:hidden!important}
 
 body.lampa_view.pt-mobile .card__title,body.lampa_view.pt-mobile .card__age {cursor:pointer;pointer-events:auto}
 /* Touch layouts retain account controls and fit panels to the visual viewport. */

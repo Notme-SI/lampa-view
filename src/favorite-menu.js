@@ -1,6 +1,4 @@
-import {text} from './i18n.js';
 const statuses=new Set(['look','viewed','scheduled','continued','thrown']);
-const descriptions={book:'Сохранённые фильмы и сериалы',like:'То, что вам понравилось',wath:'То, что хотите посмотреть позже'};
 
 // Decorate native card menus; native callbacks, independent lists and CUB
 // permissions remain owned by Lampa. Unavailable Premium actions stay hidden.
@@ -20,7 +18,7 @@ export default function favoriteMenu(L,enabled=()=>true){
     let end=i+1;while(end<items.length && statuses.has(items[end].where))end++;
     if(items.slice(i+1,end).every(row=>row.noenter || premium===false))continue;
    }
-   decorated.push(descriptions[item.where]?{...item,subtitle:text(descriptions[item.where])}:item);
+   decorated.push(item);
   }
   return show.call(this,{...options,items:decorated},...args);
  };

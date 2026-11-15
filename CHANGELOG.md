@@ -1,3 +1,8 @@
+## 0.5.185
+
+- Reveal the watch-status footer only on pointer hover, remote selection or touch selection. Preserve its compact wording, reserved layout space and the hidden central Play marker.
+- Remove the explanatory subtitles from the three native saved-list actions.
+
 ## 0.5.184
 
 - Hide the central native Play marker on poster cards on every device and in both themes. Keep the card action, saved progress and small viewing-status icons.

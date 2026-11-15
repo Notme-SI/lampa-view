@@ -8,7 +8,7 @@ test('card menus hide unavailable status actions, retain native handlers and nev
   items.push({separator:true,title:'Status'},...['look','viewed','scheduled','continued','thrown'].map(where=>({where,collect:true,onSelect:callback})),{title:'Plugin action',onSelect:callback});
   const original={items,onBack:callback};assert.equal(L.Select.show(original),42);
   assert.deepEqual(Array.from(shown.items,row=>row.where || row.title),['book','like','wath','history','Plugin action']);
-  assert.ok(shown.items.slice(0,3).every(row=>row.subtitle));assert.equal(shown.onBack,callback);assert.equal(shown.items[0].onCheck,callback);shown.items[0].onCheck();assert.equal(checked,1);
+  assert.ok(shown.items.slice(0,3).every(row=>row.subtitle===undefined),'Do not add list explanations');assert.equal(shown.onBack,callback);assert.equal(shown.items[0].onCheck,callback);shown.items[0].onCheck();assert.equal(checked,1);
   assert.equal(items.length,11);assert.equal(items[0].subtitle,undefined,'Do not mutate the native menu or its data');
   premium=true;L.Select.show(original);assert.equal(shown.items.length,11);assert.equal(shown.items[5],items[5],'Premium status callback and selection remain native');
   enabled=false;L.Select.show(original);assert.equal(shown,original);
