@@ -1,5 +1,10 @@
 ## 0.5.189
 
+## 0.5.191
+
+- Phone notifications use readable text that follows the native interface-size setting. Their scroll viewport ends above bottom navigation, including iPhone safe areas and landscape.
+- Desktop notification text is slightly larger; the native notification tabs, dates, artwork and actions remain intact.
+
 ## 0.5.190
 
 - Mobile Menu and Settings use the same full available panel height. The native menu scroll area no longer keeps the host's 60%-of-screen cap; the final item remains reachable above bottom navigation.

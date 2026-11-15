@@ -225,6 +225,21 @@ body.lampa_view .pt-notices .notice__descr {font-size:.83em;margin-top:.3em}
 body.lampa_view .pt-notices .notice__footer {margin-top:.4em;gap:.3em;flex-wrap:wrap}
 body.lampa_view .pt-notices .notice__footer>div {margin:0;padding:.25em .5em}
 
+/* Notifications are a reading surface, independent of compact native dialogs. */
+body.lampa_view.pt-desktop .modal.pt-notices .modal__content {font-size:min(1.12em,calc(var(--pt-native-window-font) * 1.12))!important}
+body.lampa_view.pt-mobile .modal.pt-notices {inset:0 0 auto!important;height:calc(var(--pt-dock-y) + var(--pt-panel-room));padding:0!important;align-items:flex-start;font-size:1em!important}
+body.lampa_view.pt-mobile .modal.pt-notices .modal__content {position:fixed!important;inset:var(--pt-dock-y) var(--pt-shell-inset) auto!important;box-sizing:border-box;width:calc(100vw - 2 * var(--pt-shell-inset))!important;max-width:calc(100vw - 2 * var(--pt-shell-inset))!important;height:auto!important;min-height:0!important;max-height:var(--pt-panel-room)!important;display:flex;flex-direction:column;margin:0!important;padding:0!important;transform:none!important;border-radius:1.7em;font-size:var(--pt-mobile-item-font)!important;overflow:hidden}
+body.lampa_view.pt-mobile .pt-notices .modal__head {flex:none;padding:.85em .9em;min-height:3em;gap:.65em;margin:0}
+body.lampa_view.pt-mobile .pt-notices .modal__body {display:flex;flex-direction:column;flex:0 1 auto;height:auto!important;min-height:0!important;padding:0 .45em .45em!important;overflow:hidden}
+body.lampa_view.pt-mobile .pt-notices .modal__body>.scroll {display:block;flex:1 1 auto;min-height:0!important;height:auto!important;max-height:none!important}
+body.lampa_view.pt-mobile .pt-notices .scroll__content {height:auto!important;min-height:0!important;max-height:none!important;padding-block:0!important}
+body.lampa_view.pt-mobile .pt-notices .navigation-tabs__button {font-size:max(14px,.9em);min-height:44px;box-sizing:border-box}
+body.lampa_view.pt-mobile .pt-notices .notice__title {font-size:1em;line-height:1.35}
+body.lampa_view.pt-mobile .pt-notices .notice__time {font-size:max(12px,.8em)}
+body.lampa_view.pt-mobile .pt-notices .notice__descr {font-size:max(14px,.95em);line-height:1.5}
+body.lampa_view.pt-mobile .pt-notices .notice__author-name {font-size:max(14px,.9em)}
+body.lampa_view.pt-mobile .pt-notices .notice__author-text {font-size:max(13px,.875em)}
+
 /* One aligned native search layout; transport, history and remote focus stay native. */
 body.lampa_view .main-search .search {--pt-search-height:max(44px,2.9em)}
 body.lampa_view .main-search :is(.search__body,.head-backward) {box-sizing:border-box;width:min(76em,94%);margin-inline:auto}
