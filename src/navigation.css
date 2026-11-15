@@ -518,3 +518,16 @@ body.lampa_view.pt-arrow-navigation[data-lampa-theme] .head .head__body :is(.hea
 body.lampa_view.pt-tv[data-lampa-theme="glass"] .head .head__body :is(.head__menu-icon,.head__backward,.head__action.open--home,.head__action.open--search,.head__action.open--settings,.head__action.open--profile):not(.focus) {
  background:transparent!important;border-color:transparent!important;box-shadow:none!important;
 }
+
+/* TorrServer peer/seed counters describe the torrent, not the selected episode.
+   Keep native preloading and its text channel; show only speed and buffer fill.
+   The adjacent separator also covers older hosts without the row wrappers. */
+body.lampa_view .media-loading__peers,
+body.lampa_view .media-loading__peers + .media-loading__separator,
+body.lampa_view .media-loading__rows-separator,
+body.lampa_view .media-loading__row--extra {display:none!important}
+body.lampa_view .media-loading__status {
+ flex-direction:row!important;border-radius:2em!important;
+}
+/* Standalone preloading is fullscreen; the mobile dock must not cover it. */
+body.lampa_view .media-loading--standalone {z-index:140}
