@@ -8,4 +8,10 @@ test('partial discovery and failures are not cached and expired lists refresh na
 test('native discovery cache isolates parameters, profiles, accounts, languages and explicit unavailable sources',async()=>{const f=fixture();await f.component().comp.createSource();await f.component('?id=2').comp.createSource();f.profile('two');await f.component().comp.createSource();f.email('two');await f.component().comp.createSource();f.language('uk');await f.component().comp.createSource();assert.equal(f.calls(),5);await f.component('?id=1',{lampac_custom_select:'missing'}).comp.createSource();assert.equal(f.calls(),6);});
 test('source discovery cache remains bounded to 32 completed catalogues',async()=>{const f=fixture();for(let i=0;i<33;i++)await f.component('?id='+i).comp.createSource();await f.component('?id=32').comp.createSource();assert.equal(f.calls(),33);await f.component('?id=0').comp.createSource();assert.equal(f.calls(),34);});
 
+test('repeated first-entry callbacks share one discovery and one native start',async()=>{
+ const f=fixture(),{comp,started}=f.component(),one=comp.createSource(),two=comp.createSource();
+ assert.equal(one,two);await one;assert.equal(f.calls(),1);assert.equal(started.length,1);
+ f.error(true);f.tick(120001);await assert.rejects(comp.createSource());f.error(false);await comp.createSource();assert.equal(f.calls(),3,'A failed discovery releases the in-flight guard');
+});
+
 test('source visibility changes cannot reuse a discovery from the old policy',async()=>{let hidden=[],calls=0;const install=(()=>{const m={exports:{}};vm.runInNewContext(code,{module:m,exports:m.exports});return m.exports.default({Storage:{get:(key,d)=>key==='alc_auto_src_off'?hidden:d}});})();function comp(){const c={parseJsonDate(){},display(){},filter(){},requestParams:()=>'?id=1',render:()=>({find:()=>({length:0})}),createSource(){calls++;return this.startSource([{name:'Filmix',url:'/lite/filmix'}]);},startSource:r=>Promise.resolve(r)};install(c,{});return c;}await comp().createSource();await comp().createSource();assert.equal(calls,1);hidden=['filmix'];await comp().createSource();assert.equal(calls,2);});

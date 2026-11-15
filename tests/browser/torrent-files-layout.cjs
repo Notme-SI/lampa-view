@@ -4,6 +4,11 @@ const {setup}=require('../fixtures/native-browser.cjs');
 const output=process.env.LAMPA_QA_OUTPUT;
 if(output)fs.mkdirSync(output,{recursive:true});
 async function check(page,mobile){
+ await page.evaluate(()=>{const hash=document.querySelector('.torrent-files .time-line').getAttribute('data-hash');Lampa.Timeline.update({hash,percent:95,time:0,duration:0});});
+ await page.waitForFunction(()=>{const line=document.querySelector('.torrent-files .time-line'),a=line.getBoundingClientRect(),b=line.firstElementChild.getBoundingClientRect();return a.width>0 && Math.abs(a.width-b.width)<1;});
+ assert.equal(await page.evaluate(()=>Lampa.Timeline.view(document.querySelector('.torrent-files .time-line').getAttribute('data-hash')).percent),95,'Completed presentation keeps native completion data intact');
+ await page.evaluate(()=>{const hash=document.querySelector('.torrent-files .time-line').getAttribute('data-hash');Lampa.Timeline.update({hash,percent:40,time:915,duration:2287});});
+ await page.waitForFunction(()=>{const line=document.querySelector('.torrent-files .time-line'),a=line.getBoundingClientRect(),b=line.firstElementChild.getBoundingClientRect();return a.width>0 && Math.abs(b.width/a.width-.4)<.02;});
  const data=await page.evaluate(()=>{
   const rect=n=>{const r=n.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};};
   const modal=document.querySelector('.modal'),row=modal.querySelector('.torrent-serial');

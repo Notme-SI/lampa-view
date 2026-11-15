@@ -207,3 +207,14 @@ test('specials stay playable while season zero metadata and other season counts 
   assert.deepEqual(n.errors,[]);
  }finally{n.close();}
 });
+
+
+test('native discovery status updates keep the initial skeleton mounted once',async()=>{
+ const n=await native(),{w,L}=n,$=w.jQuery;try{
+  const root=$('<div class="explorer"><div class="explorer__files"><div class="explorer__files-head"></div><div class="explorer__files-body"><div class="scroll__body"><div class="online-empty"><div class="broadcast__scan">Checking</div></div></div></div></div></div>').appendTo(w.document.body),filter=new L.Filter({sort:true});root.find('.explorer__files-head').append(filter.render());
+  L.Activity.active=()=>({component:'online_test',movie:{id:799,title:'Film'},activity:{render:()=>root,component:{}}});L.Listener.send('activity',{type:'start'});await wait(180);
+  const loading=root.find('.nova-loading')[0],skeleton=root.find('.nova-skeleton')[0];assert.ok(loading && skeleton);
+  root.find('.broadcast__scan').text('First provider');await wait(60);root.find('.broadcast__scan').text('Second provider');await wait(60);
+  assert.equal(root.find('.nova-loading')[0],loading);assert.equal(root.find('.nova-skeleton')[0],skeleton,'Repeated status callbacks must not restart the first-entry skeleton');assert.deepEqual(n.errors,[]);
+ }finally{n.close();}
+});

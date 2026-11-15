@@ -1,3 +1,9 @@
+## 0.5.188
+
+- Coalesce repeated source-discovery calls and retain the initial loading skeleton across native discovery status updates.
+- Keep native torrent release marks through tracker title changes using the verified infohash in CUB storage; update mounted rows after cloud reads and retain explicit removals. Restore missing history summaries from actual shared episode progress without marking unrelated releases.
+- Preserve native completion when an older playback checkpoint is flushed, and save real media EOF before auto-next. Completed torrent files use a full progress bar while retaining the actual native percent and playback time.
+
 ## 0.5.187
 
 - Align TV menu, settings and action panels with the top of navigation. Reserve space for the wider right panel when fitting the centered header.

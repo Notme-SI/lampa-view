@@ -27,9 +27,11 @@ export function familySeason(data){
  return null;
 }
 import torrentWatchMenu from './torrent-watch-menu.js';
+import torrentHistory from './torrent-history.js';
 export default function torrentEpisodes(L,root=window){
  if(!L.Torrent || !L.Torserver || typeof L.Torserver.parse!=='function' || typeof L.Torrent.start!=='function')return;
  torrentWatchMenu(L,root);
+ torrentHistory(L,root);
  let selected;
  const start=L.Torrent.start,parse=L.Torserver.parse,open=L.Torrent.open;
  function key(movie){return movie && movie.id!=null?(movie.source || 'tmdb')+':'+movie.id:null;}

@@ -5017,6 +5017,9 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
   function loadingPanel() {
     cardListVersion++;
     uiFrame();
+    // Life/discovery updates can repeat the same native loading state. Keep
+    // one mounted skeleton instead of restarting its animation on each update.
+    if(ui.load && ui.load.parent().length && ui.root.hasClass('nova-initial-loading')){loadingText();return;}
     ui.root && ui.root.addClass('nova-initial-loading');
     note_sig = '';
 

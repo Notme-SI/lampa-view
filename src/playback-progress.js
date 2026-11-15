@@ -6,7 +6,7 @@ import {linkFor,profileScope} from './timeline-meta.cjs';
 // mark. Never create progress merely because a file was opened.
 export default function playbackProgress(L,enabled){
  const bindings=new Map(),wrapped=new WeakSet(),bindingKey='minimal_playback_links_v1',limit=2000;
- let current=null,stopped=false;
+ let current=null,stopped=false,media=null;
  const active=()=>!stopped && enabled();
  const cached=L.Storage && L.Storage.get?L.Storage.get(bindingKey,[]):[];
  if(Array.isArray(cached))for(const row of cached.slice(-limit)){
@@ -71,7 +71,9 @@ export default function playbackProgress(L,enabled){
   if(!active() || !current || !current.sample || current.scope!==profileScope(L))return;
   const timeline=current.video.timeline;
   if(!timeline || timeline.stop_recording || timeline.waiting_for_user || typeof timeline.handler!=='function')return;
-  const sample=current.sample;
+  // The host may have completed the file after our last periodic sample.
+  // Closing or auto-next must not replace that result with an older checkpoint.
+  const sample=Number(timeline.percent)===100 && Number(timeline.duration)>0 && Number(timeline.time)>=Number(timeline.duration)?{percent:100,time:Number(timeline.time),duration:Number(timeline.duration)}:current.sample;
   Object.assign(timeline,sample);
   timeline.handler(sample.percent,sample.time,sample.duration);
   current.savedAt=Date.now();
@@ -97,6 +99,19 @@ export default function playbackProgress(L,enabled){
   };
  }
  const video=L.PlayerVideo && L.PlayerVideo.listener;
+ function ended(){
+  if(!active() || !current || current.scope!==profileScope(L) || L.Player.playdata?.()!==current.video)return;
+  const duration=Number(media?.duration);
+  if(!Number.isFinite(duration) || duration<=0)return;
+  current.sample={percent:100,time:duration,duration};save();
+ }
+ function bindMedia(){
+  const next=L.PlayerVideo?.video?.();if(next===media)return;
+  media?.removeEventListener?.('ended',ended,true);media=next;
+  // Capture EOF before the native playlist handler switches to the next file.
+  media?.addEventListener?.('ended',ended,true);
+ }
+ if(video && video.follow)video.follow('loadeddata',bindMedia);
  if(video && video.follow)video.follow('timeupdate',event=>{
   if(!active() || !current || !event || !L.Player.playdata || L.Player.playdata()!==current.video)return;
   const time=Number(event.current),duration=Number(event.duration);
@@ -111,5 +126,5 @@ export default function playbackProgress(L,enabled){
  const hide=()=>save();
  window.addEventListener('pagehide',hide);
  document.addEventListener('visibilitychange',()=>{if(document.hidden)save();});
- return {save,stop(){save();stopped=true;current=null;bindings.clear();window.removeEventListener('pagehide',hide);}};
+ return {save,stop(){save();stopped=true;current=null;media?.removeEventListener?.('ended',ended,true);media=null;bindings.clear();window.removeEventListener('pagehide',hide);}};
 }

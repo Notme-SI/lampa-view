@@ -84,3 +84,19 @@ test('mpv auto-next recognizes renamed TorrServer stream paths without accepting
  receive(marker+'1500|3000|http://localhost:8090/proxy/stream?index=8&link='+hash+'&play\n');
  assert.deepEqual(writes,[{percent:50,time:1500}]);channel.finish();
 });
+
+
+test('EOF is saved before native auto-next and a stale close checkpoint cannot undo completion',()=>{
+ const d=new JSDOM('<video></video>',{runScripts:'outside-only'}),w=d.window;try{
+  let playing;const writes=[],media=w.document.querySelector('video'),L={Storage:{get:(k,v)=>v},Activity:{active:()=>({})},Player:{listener:events(),playdata:()=>playing},PlayerVideo:{listener:events(),video:()=>media},Timeline:{filename:()=> 'file_view'}};
+  Object.defineProperty(media,'duration',{value:1200,configurable:true});
+  const make=hash=>({timeline:{hash,handler(percent,time,duration){writes.push({hash,percent,time,duration});}}});
+  w.eval(bundle('playback-progress'));const api=w.TestModule.default(L,()=>true),first=make('one'),next=make('two');playing=first;L.Player.listener.send('start',first);L.PlayerVideo.listener.send('loadeddata');
+  L.PlayerVideo.listener.send('timeupdate',{current:1140,duration:1200});
+  media.addEventListener('ended',()=>{playing=next;L.Player.listener.send('start',next);});
+  media.dispatchEvent(new w.Event('ended'));
+  assert.equal(writes.filter(r=>r.hash==='one').at(-1).percent,100);assert.equal(writes.filter(r=>r.hash==='one').at(-1).time,1200);assert.ok(!writes.some(r=>r.hash==='two'),'EOF belongs to the old episode only');
+  L.PlayerVideo.listener.send('timeupdate',{current:1150,duration:1200});Object.assign(next.timeline,{percent:100,time:1200,duration:1200});L.Player.listener.send('close');
+  assert.equal(writes.filter(r=>r.hash==='two').at(-1).percent,100);assert.equal(writes.filter(r=>r.hash==='two').at(-1).time,1200);api.stop();
+ }finally{w.close();}
+});
