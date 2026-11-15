@@ -141,6 +141,7 @@ if (!ROOT.LampaView) {
     layout();
     document.body.classList.add('lampa_view');
     document.body.classList.toggle('pt-detail-poster',L.Storage.get('lampa_view_detail_art','logo')==='poster');
+    document.body.classList.toggle('card--no-cover',!yes('card_interfice_cover'));
     document.dispatchEvent(new Event('minimal:detail-layout'));
     if(pinnedMenu)pinnedMenu.update();
     if(back)back.update();
@@ -692,7 +693,7 @@ if (!ROOT.LampaView) {
     darkAccentSetting(L);cardMotionSetting(L);
     L.SettingsApi.addParam({component:'lampa_view',param:{name:'lampa_view_layout',type:'select',values:{auto:lampaViewText("Автоматически"),tv:lampaViewText("Телевизор"),mobile:lampaViewText("Телефон"),tablet:lampaViewText("Планшет"),desktop:lampaViewText("Компьютер")},default:'auto'},field:{name:lampaViewText("Тип устройства"),description:lampaViewText("Авто использует режим экрана Lampa. Планшет — сенсорное управление и адаптация к ширине окна.")},onChange:setTheme});
     L.SettingsApi.addParam({component:'lampa_view',param:{name:'lampa_view_detail_art',type:'select',values:{logo:'Логотип названия',poster:'Постер'},default:'logo'},field:{name:'Карточка фильма: изображение',description:'Что показывать над кнопками «Смотреть» и «Торренты».'},onChange:setTheme});
-    L.SettingsApi.addParam({component:'lampa_view',param:{name:'card_interfice_cover',type:'trigger',default:true},field:{name:'Карточка фильма: фон',description:'Баннер фильма за названием, описанием и кнопками.'},onChange:()=>document.body.classList.toggle('card--no-cover',!yes('card_interfice_cover'))});
+    L.SettingsApi.addParam({component:'lampa_view',param:{name:'card_interfice_cover',type:'trigger',default:true},field:{name:lampaViewText('Баннер в карточке'),description:lampaViewText('Изображение за логотипом названия. Выключите, чтобы оставить только логотип.')},onChange:setTheme});
     personalScale(L);
     L.SettingsApi.addParam({component:'lampa_view',param:{name:'minimal_banner_quality',type:'select',values:{medium:lampaViewText("Среднее"),high:lampaViewText("Высокое")},default:'high'},field:{name:lampaViewText("Качество баннеров и обложек"),description:lampaViewText("Общее качество баннеров, фонов загрузки и карточек. Высокое подбирает чёткий размер под экран и использует общий кеш обложек.")},onChange:()=>artwork && artwork.choose()});
   }

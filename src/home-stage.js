@@ -4,6 +4,13 @@ export default function homeStage(hero,root){
  // A covered activity can have different native padding and scroll offsets.
  if(!document.body.matches('.pt-home,.pt-anime-home') || !root.closest('.activity--active'))return;
  const tv=document.body.classList.contains('pt-tv');
+ // Mobile cover and copy flow one after the other; their overlap is CSS.
+ // Do not shrink the title into an image-sized desktop viewport budget.
+ if(document.body.classList.contains('pt-mobile')){
+  hero.style.height='';const body=hero.querySelector('.pt-hero__body');
+  if(body){body.style.fontSize='';body.style.bottom='';}
+  root.classList.add('minimal-home-first-row');return;
+ }
  // Rows reserve a focus gutter inside their outer margin. Align the banner
  // copy to that content edge, independently of horizontal rail scrolling.
  if(!document.body.classList.contains('pt-mobile')){

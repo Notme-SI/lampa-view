@@ -1,5 +1,10 @@
 ## 0.5.189
 
+## 0.5.192
+
+- Mobile carousel title logos overlap the banner’s soft lower edge, matching the title page. Mobile copy keeps the selected interface size instead of shrinking into the image height.
+- Appearance exposes the existing, enabled-by-default title page cover control as “Title page banner”. Turning it off leaves the title logo and controls; carousel artwork stays enabled.
+
 ## 0.5.191
 
 - Phone notifications use readable text that follows the native interface-size setting. Their scroll viewport ends above bottom navigation, including iPhone safe areas and landscape.

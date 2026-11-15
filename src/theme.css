@@ -1120,6 +1120,7 @@ body.lampa_view .pt-hero__artwork,body.lampa_view .pt-hero__branding {cursor:poi
 body.lampa_view.pt-detail-poster .minimal-detail-identity .full-start-new__poster {display:block;width:min(100%,15em);margin:0 auto 1em}
 body.lampa_view.pt-detail-poster .minimal-detail-identity .minimal-detail-logo,body.lampa_view.pt-detail-poster .minimal-detail-identity>.full-start-new__title {display:none!important}
 body.lampa_view.card--no-cover .minimal-detail-shade {display:none}
+body.lampa_view.card--no-cover .minimal-detail-header>.full-start__background {display:none!important}
 body.lampa_view .pt-studio-white {--pt-studio-tone:brightness(0) invert(1);filter:var(--pt-studio-tone)}
 /* A proxy without CORS cannot be classified safely; retain its colours. */
 body.lampa_view .pt-studio-unreadable {background:rgba(255,255,255,.7);border-radius:.15em}

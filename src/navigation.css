@@ -398,9 +398,13 @@ body.lampa_view.pt-mobile .settings,body.lampa_view.pt-mobile .selectbox,body.la
 body.lampa_view.pt-mobile .settings__layer,body.lampa_view.pt-mobile .selectbox:not(.minimal-franchise-menu) .selectbox__layer {height:calc(var(--pt-panel-room) + var(--pt-dock-y));backdrop-filter:none;-webkit-backdrop-filter:none}
 body.lampa_view.pt-mobile .pt-hero {height:auto!important;min-height:0!important;max-height:none!important}
 body.lampa_view.pt-mobile .pt-hero__branding {height:4.5em;min-height:4.5em;margin-bottom:.7em}
-body.lampa_view.pt-mobile .pt-hero__branding>.pt-hero__logo {height:3.4em;max-height:3.4em}
+body.lampa_view.pt-mobile .pt-hero__branding>.pt-hero__logo {max-width:82%;height:4em;max-height:4em;filter:drop-shadow(0 2px 5px #000)}
 body.lampa_view.pt-mobile .pt-hero__branding>.pt-hero__logo--translated {height:2em;max-height:2em}
-body.lampa_view.pt-mobile .pt-hero__body,body.lampa_view.pt-theme-glass.pt-mobile .pt-hero__body {padding:.5em 1em .65em;margin:0 .7em 2.65em;min-height:0}
+body.lampa_view.pt-mobile .pt-hero__branding>.pt-hero__title {text-align:center}
+/* The same soft image edge and identity overlap as the mobile detail header. */
+body.lampa_view.pt-hero-page[data-lampa-theme].pt-mobile .pt-hero .pt-hero__artwork {-webkit-mask-image:linear-gradient(#000 0%,#000 55%,transparent 100%)!important;mask-image:linear-gradient(#000 0%,#000 55%,transparent 100%)!important}
+
+body.lampa_view.pt-mobile .pt-hero__body,body.lampa_view.pt-theme-glass.pt-mobile .pt-hero__body {padding:.5em 1em .65em;margin:-3.5em .7em 2.65em;min-height:0}
 body.lampa_view.pt-mobile .pt-hero__meta {margin-bottom:.65em}
 body.lampa_view.pt-mobile .pt-hero .pt-hero__dots {bottom:.85em!important}
 /* Android TV commonly has a 960 CSS-pixel viewport on a 1080p output.

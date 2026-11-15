@@ -10033,5 +10033,7 @@
   "fr": "Texte, boutons et fiches : 80-200 %",
   "pl": "Tekst, przyciski i karty: 80-200%",
   "es": "Texto, botones y tarjetas: 80-200%"
- }
+ },
+ "Баннер в карточке": {"en":"Title page banner","uk":"Банер у картці","be":"Банер у картцы","zh":"详情页横幅","pt":"Banner na página do título","bg":"Банер в страницата на заглавието","he":"באנר בעמוד הכותר","cs":"Banner na stránce titulu","ro":"Banner în pagina titlului","fr":"Bannière de la fiche","pl":"Baner na stronie tytułu","es":"Banner de la ficha"},
+ "Изображение за логотипом названия. Выключите, чтобы оставить только логотип.": {"en":"Image behind the title logo. Turn it off to keep only the logo.","uk":"Зображення за логотипом назви. Вимкніть, щоб залишити лише логотип.","be":"Выява за лагатыпам назвы. Выключыце, каб пакінуць толькі лагатып.","zh":"标题标志后面的图片。关闭后仅保留标志。","pt":"Imagem atrás do logótipo do título. Desative para manter apenas o logótipo.","bg":"Изображение зад логото на заглавието. Изключете, за да остане само логото.","he":"תמונה מאחורי לוגו הכותר. כבו כדי להשאיר רק את הלוגו.","cs":"Obrázek za logem titulu. Vypnutím ponecháte pouze logo.","ro":"Imaginea din spatele siglei titlului. Dezactivați pentru a păstra doar sigla.","fr":"Image derrière le logo du titre. Désactivez-la pour conserver uniquement le logo.","pl":"Obraz za logo tytułu. Wyłącz, aby pozostawić samo logo.","es":"Imagen detrás del logotipo del título. Desactívala para dejar solo el logotipo."}
 }

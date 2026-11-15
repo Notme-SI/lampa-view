@@ -25,7 +25,7 @@ jobs:
           - group: online
             checks: "voice-initial online-polish history-focus watch-poster interface-size poster-rail poster-responsive home-stage header-focus menu-layout notice-layout search-layout mobile-shell mobile-sidebar current-mobile-menu mobile-panel-switch touch-rotation input-selection poster-chrome row-overlay extensions-scroll tv-captions timeline-devices quiet-sync watch-menu"
           - group: catalogue
-            checks: "startup-animation artwork-cache torrent-watch-menu appearance-language card-languages home-controls detail-artwork detail-readable carousel-return detail-gallery detail-suggestions tv-shell tv-surfaces catalogue-controls catalogue-metadata catalogue-comments panel-return glass-scene poster-prefetch"
+            checks: "startup-animation artwork-cache torrent-watch-menu appearance-language card-languages home-controls mobile-hero-identity detail-artwork detail-readable carousel-return detail-gallery detail-suggestions tv-shell tv-surfaces catalogue-controls catalogue-metadata catalogue-comments panel-return glass-scene poster-prefetch"
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: actions/setup-node@v7.1.0
