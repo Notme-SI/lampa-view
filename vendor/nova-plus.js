@@ -5017,6 +5017,9 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
   function loadingPanel() {
     cardListVersion++;
     uiFrame();
+    // The preceding movie layout may have hidden an empty episode strip.
+    // Loading owns that strip until real files or a terminal note arrive.
+    if(ui.strip)ui.strip.show();
     // Life/discovery updates can repeat the same native loading state. Keep
     // one mounted skeleton instead of restarting its animation on each update.
     if(ui.load && ui.load.parent().length && ui.root.hasClass('nova-initial-loading')){loadingText();return;}
@@ -5269,7 +5272,12 @@ function lampaViewText(source,values){return window.LampaView && window.LampaVie
 
     var list = collect();
     if (!list.length) {
-      if (blank()) {
+      var waitingComp=componentNow();
+      // Native reset clears our DOM before a provider answers and can leave a
+      // history placeholder instead of its scan node. Retain the same loading
+      // phase across this gap; native files/errors above still take priority.
+      if (blank() || waitingComp && waitingComp.lampaViewRequestPending ||
+          ui.root && ui.root.hasClass('nova-initial-loading')) {
         busy = true;
         root.addClass('nova-plus-scope nova-plus-chips');
         items = [];

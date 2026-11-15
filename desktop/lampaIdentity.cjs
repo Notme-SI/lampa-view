@@ -56,7 +56,7 @@ function mediaURL(value) {
   if (typeof value !== 'string' || value.length > 10000 || /[\x00-\x1f]/.test(value)) return '';
   return /^https?:\/\//i.test(value) ? value : '';
 }
-function context(card, video, list = []) {
+function context(card, video, list = [], limit = 22000) {
   const entries = [];
   const add = item => {
     const url = mediaURL(item.url);
@@ -67,7 +67,7 @@ function context(card, video, list = []) {
   // One launch must never overflow Windows' 32K environment variable limit.
   for (const item of list.slice(0, 40)) {
     add(item);
-    if (JSON.stringify(entries).length > 22000) { entries.pop(); break; }
+    if (JSON.stringify(entries).length > limit) { entries.pop(); break; }
   }
   return {version: 1, source: 'lampa', entries};
 }

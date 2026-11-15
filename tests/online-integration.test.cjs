@@ -218,3 +218,23 @@ test('native discovery status updates keep the initial skeleton mounted once',as
   assert.equal(root.find('.nova-loading')[0],loading);assert.equal(root.find('.nova-skeleton')[0],skeleton,'Repeated status callbacks must not restart the first-entry skeleton');assert.deepEqual(n.errors,[]);
  }finally{n.close();}
 });
+
+
+test('discovery remains visible through a movie layout and a native reset until files or an error arrive',async()=>{
+ const n=await native(),{w,L}=n,$=w.jQuery;try{
+  const body=$('<div class="scroll__body"></div>'),root=$('<div class="explorer"><div class="explorer__files"><div class="explorer__files-head"></div><div class="explorer__files-body"></div></div></div>').appendTo(w.document.body),filter=new L.Filter({sort:true});root.find('.explorer__files-head').append(filter.render());root.find('.explorer__files-body').append(body);
+  filter.set('sort',[{title:'Test',source:'test',selected:true}]);
+  const comp={changeBalanser(){},parseJsonDate(){},display(){},filter(){},getEpisodes(){},doesNotAnswer(){},request(){},parse(){},reset(){body.empty().append('<div class="online-prestige-watched">History placeholder</div>');},render:()=>root};
+  L.Activity.active=()=>({component:'online_test',movie:{id:799,title:'Film',original_title:'Film'},activity:{render:()=>root,component:comp}});
+  body.append('<div class="online-prestige online-prestige--full selector"><div class="online-prestige__title">Movie</div></div>');L.Listener.send('activity',{type:'start'});await wait(180);
+  assert.ok(root.find('.nova-plus-root').length);
+  comp.reset();comp.request('/lite/test');await wait(80);
+  let loading=root.find('.nova-loading');assert.equal(loading.length,1,'Native reset during discovery must not leave a blank page');
+  const strip=loading.closest('.nova-plus__strip');assert.notEqual(strip[0]?.style.display,'none','A movie-only layout must not hide the next loading state');
+  body.find('.online-prestige-watched').remove();body.append('<div class="online-empty"><div class="broadcast__scan">Next phase</div></div>');await wait(60);
+  assert.equal(root.find('.nova-loading')[0],loading[0],'Keep one mounted loader through discovery phases');
+  body.empty().append('<div class="online-empty"><div class="broadcast__scan">Another phase</div></div>');await wait(60);assert.equal(root.find('.nova-loading').length,1,'Reattach after native scroll.clear');
+  body.empty().append('<div class="online-empty"><div class="online-empty__title">Network error</div></div>');await wait(60);assert.equal(root.find('.nova-loading').length,0);assert.ok(root.find('.nova-note').length,'A real error replaces loading instead of leaving an endless spinner');
+  assert.deepEqual(n.errors,[]);
+ }finally{n.close();}
+});

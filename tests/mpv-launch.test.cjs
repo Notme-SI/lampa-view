@@ -6,7 +6,7 @@ function fixture(options={}){
  const root={setTimeout:fn=>timers.push(fn),encodeURIComponent,unescape,require:name=>{
    if(options.denied)throw Error('not available');
    if(name==='fs' && options.noSyncFs)throw Error('synchronous filesystem IPC must not delay launch');
-   return name==='fs'?{existsSync:()=>!options.missing}:{spawn:(...args)=>{
+   return name==='fs'?{existsSync:()=>!options.missing && !options.noPlus}:{spawn:(...args)=>{
      if(options.spawnError)throw Error('not started');
      calls.push(args);
      return {on:(name,fn)=>{
@@ -27,7 +27,7 @@ function fixture(options={}){
  function tick(){while(timers.length)timers.shift()();}
  return {L,root,play,tick,calls,fallback,external,notices};
 }
-function context(args){const opt=args[0];assert.match(opt,/^--script-opts-append=mpv_plus_lampa_context=[a-f0-9]+$/);return JSON.parse(Buffer.from(opt.split('=')[2],'hex').toString('utf8'));}
+function context(args,options){if(options?.env?.MPV_PLUS_LAMPA_CONTEXT)return JSON.parse(options.env.MPV_PLUS_LAMPA_CONTEXT);const opt=args[0];assert.match(opt,/^--script-opts-append=mpv_plus_lampa_context=[a-f0-9]+$/);return JSON.parse(Buffer.from(opt.split('=')[2],'hex').toString('utf8'));}
 test('unmodified Desktop launch passes Unicode card data without an environment or changed stream URL',()=>{
  const f=fixture(),video={url:'http://server/stream?link=abc&index=2&preload',torrent_hash:'abc',season:3,episode:2};
  assert.equal(f.play(video),true);assert.equal(f.calls.length,0);
@@ -43,14 +43,14 @@ test('the chosen quality, rather than the old video URL, is scoped to its card',
  assert.equal(context(f.calls[0][1]).entries[0].url,'https://host/high.mkv');assert.equal(f.calls[0][1].at(-1),'https://host/high.mkv');
 });
 test('TV, other players, inner mode, disabled transport and unavailable spawn keep the native route',()=>{
- for(const options of [{values:{lampa_view_mpv_plus:false}},{tv:true},{disabled:true},{denied:true},{values:{player:'inner'}},{values:{player_nw_path:'C:\\vlc.exe'}}]){
+ for(const options of [{tv:true},{disabled:true},{denied:true},{values:{player:'inner'}},{values:{player_nw_path:'C:\\vlc.exe'}}]){
    const f=fixture(options);assert.equal(f.play({url:'https://host/video.mkv'}),false);f.tick();assert.equal(f.calls.length,0);
  }
  const f=fixture();assert.equal(f.play({url:'https://host/video.mkv',launch_player:'inner'}),false);
 });
 
 test('Desktop without Node plays ordinary MPV with resume and no MPV Plus arguments',()=>{
- const options={bridge:true,cardProvider:()=>null,values:{lampa_view_mpv_plus:false,player_external_fullscreen:false}};
+ const options={bridge:true,noPlus:true,cardProvider:()=>null,values:{lampa_view_mpv_plus:false,player_external_fullscreen:false}};
  const f=fixture(options),video={url:'https://host/series.m3u8',timeline:{hash:'current',time:19}};
  f.L.Timeline={view:()=>({time:1240})};
  assert.equal(f.play(video),true);
@@ -66,7 +66,7 @@ test('Desktop without Node plays ordinary MPV with resume and no MPV Plus argume
  assert.equal(f.play(video),true);
  f.tick();
  assert.equal(f.calls.length,2);
- assert.equal(fixture({...options,process:true}).play(video),false);
+ assert.equal(fixture({...options,process:true}).play(video),true);
  assert.equal(fixture({...options,values:{...options.values,player_nw_path:'C:\\vlc.exe'}}).play(video),false);
 });
 
@@ -108,7 +108,7 @@ test('a late selected episode keeps its nearest previous/next entries inside the
   f.play({...items[149],playlist:items});f.tick();const args=f.calls[0][1],urls=args.filter(s=>s.startsWith('https://'));
   const start=Number(args.find(s=>s.startsWith('--playlist-start=')).split('=')[1]);
   assert.equal(urls[start],items[149].url);assert.ok(urls.includes(items[148].url));assert.ok(urls.includes(items[150].url));
-  assert.ok(urls.length<=40);assert.ok(urls.join(' ').length<12000);if(!padding)assert.equal(context(args).entries[0].identity.episode,150);
+  assert.ok(urls.length<=40);assert.ok(urls.join(' ').length<26000);if(!padding)assert.equal(context(args).entries[0].identity.episode,150);
  }
 });
 
@@ -121,7 +121,7 @@ test('long signed episode URLs retain the selected identity and every launched p
  const f=fixture(),items=Array.from({length:9},(_,i)=>({url:'https://host/proxy/'+('x'.repeat(4700))+'episode-'+(i+1)+'.m3u8',season:3,episode:i+1,title:'Серия '+(i+1)}));
  f.play({...items[3],playlist:items});f.tick();
  const args=f.calls[0][1],urls=args.filter(v=>v.startsWith('https://'));
- const payload=context(args),start=Number(args.find(s=>s.startsWith('--playlist-start='))?.split('=')[1] || 0);
+ const payload=context(args,f.calls[0][2]),start=Number(args.find(s=>s.startsWith('--playlist-start='))?.split('=')[1] || 0);
  assert.equal(urls[start],items[3].url);
  assert.equal(payload.entries[0].identity.episode,4);
  assert.ok(args.join(' ').length+f.calls[0][0].length<28000);
@@ -159,4 +159,19 @@ test('another extension can cancel playback before the additional transport runs
 test('navigating to another card before spawn cannot attach that card to the previous video',()=>{
  let active=card;const f=fixture({cardProvider:()=>active});f.play({url:'https://host/episode.mkv',season:3,episode:2});
  active={...card,id:99,name:'Another show'};f.tick();assert.equal(context(f.calls[0][1]).entries[0].identity.tmdb_id,1396);
+});
+
+
+test('MPV Plus is detected from the selected installation without the old toggle',()=>{
+ for(const value of [false,undefined,true]){
+  const f=fixture({values:{lampa_view_mpv_plus:value}});f.play({url:'https://host/episode-2.mkv',season:1,episode:2});f.tick();
+  assert.equal(context(f.calls[0][1]).entries[0].identity.episode,2);assert.ok(!f.calls[0][1].includes('--fullscreen'),'Keep MPV Plus window settings');
+ }
+});
+test('six signed online links keep all six entries through the native Desktop environment',()=>{
+ const f=fixture(),queue=Array.from({length:6},(_,i)=>({url:'https://host/episode-'+(i+1)+'?signed='+('a'.repeat(2600)),season:1,episode:i+1}));
+ assert.equal(f.play(queue[2]),true);f.L.Player.playlist(queue);f.tick();
+ const [exe,args,opts]=f.calls[0],data=JSON.parse(opts.env.MPV_PLUS_LAMPA_CONTEXT);
+ assert.equal(data.entries.length,6);assert.deepEqual(data.entries.map(e=>e.identity.episode).sort((a,b)=>a-b),[1,2,3,4,5,6]);
+ assert.equal(args.filter(arg=>arg.startsWith('https://')).length,6);assert.ok(args.includes('--playlist-start=2'));assert.ok(exe.length+args.join(' ').length<28000);assert.ok(!args.some(arg=>arg.startsWith('--script-opts-append=')));
 });

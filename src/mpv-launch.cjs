@@ -29,7 +29,17 @@ function install(L, root, cardFor, enabled, text = value => value) {
   let pending = null, bypass = false;
   const active = new Map();
   const notice = value => status.show(value, /Не удалось/.test(value) ? 'error' : 'loading');
-  L.SettingsApi?.addParam?.({component:'lampa_view',param:{name:'lampa_view_mpv_plus',type:'trigger',default:false},field:{name:text('Интеграция MPV Plus'),description:text('Включите, если выбранный внешний MPV содержит MPV Plus.')}});
+  const capabilities=new Map();
+  function hasPlus(path){
+    if(capabilities.has(path))return capabilities.get(path);
+    let plus=/(?:^|[\\/])mpv\+\.exe$/i.test(path);
+    try{
+      const fs=root.require('fs'),folder=path.replace(/[^\\/]+$/,'');
+      plus=plus || ['portable_config/extensions/lampa_context.lua','../portable_config/extensions/lampa_context.lua'].some(file=>fs?.existsSync?.(folder+file));
+    }catch(error){}
+    capabilities.set(path,!!plus);if(capabilities.size>16)capabilities.delete(capabilities.keys().next().value);
+    return !!plus;
+  }
   const originalPlaylist = L.Player.playlist;
   L.Player.playlist = function (items) {
     if (pending && Array.isArray(items) && items.length) pending.items = items;
@@ -41,11 +51,7 @@ function install(L, root, cardFor, enabled, text = value => value) {
     if (L.Storage.field(video.torrent_hash ? 'player_torrent' : 'player') !== 'other') return '';
     const path = L.Storage.field('player_nw_path');
     if (typeof path !== 'string' || !/(?:^|[\\/])mpv(?:\+)?\.exe$/i.test(path)) return null;
-    const preference = L.Storage.field('lampa_view_mpv_plus');
-    const plus = /(?:^|[\\/])mpv\+\.exe$/i.test(path) || preference === true || preference === 'true';
-    // The Electron bridge supports spawn and process output, but the host's
-    // stock MPV IPC launcher assumes a Node renderer with process and net.
-    if (!plus && (!root.electronAPI || root.process?.platform)) return null;
+    const plus=hasPlus(path);
     return {path, plus};
   }
   function create(event) {
@@ -63,7 +69,7 @@ function install(L, root, cardFor, enabled, text = value => value) {
     }
     if (pending) { pending.cancelled = true; pending.cancel?.(); pending = null; }
     const card = cardFor(video);
-    if (plus && !card) return;
+
     let spawn;
     try {
       spawn = root.require('child_process').spawn;
@@ -141,27 +147,35 @@ function install(L, root, cardFor, enabled, text = value => value) {
           queue = [...before, selected, ...after];start = before.length;
           let length = queue.reduce((sum,item)=>sum + encodeURI(item.url).length + 3,0);
           // Bound the command line around the selection, retaining both directions.
-          while (queue.length > 1 && (queue.length > 40 || length > 12000)) {
+          while (queue.length > 1 && (queue.length > 40 || length > 26000)) {
             const remove = start >= queue.length - start - 1 ? 0 : queue.length - 1;
             length -= encodeURI(queue[remove].url).length + 3;
             queue.splice(remove,1);if(remove === 0)start--;
           }
         }
         const encode = value => root.unescape(root.encodeURIComponent(value));
-        function launchData(){
-          const metadata=plus?option(C.context(launch.card,selected,video.torrent_hash?playlist:queue),encode,Boolean(video.torrent_hash)):'';
-          const urls=queue.map(item=>encodeURI(item.url));
-          return {metadata,urls,length:path.length+metadata.length+urls.reduce((size,url)=>size+url.length+3,0)+600};
+        // Keep the complete available queue. Long signed URLs used to occur
+        // both in the hex context and on the command line, silently dropping
+        // episodes. Desktop merges this private environment with its own.
+        const encodeContext=card?C.context(launch.card,selected,video.torrent_hash?playlist:queue,Infinity):null;
+        let payload=encodeContext?JSON.stringify(encodeContext):'';
+        if(payload && encode(payload).length>30000){
+          // Aliases are optional; do not drop episode URLs or coordinates to
+          // keep repeated title aliases in the environment payload.
+          encodeContext.entries.forEach((entry,index)=>{
+            delete entry.identity.aliases;
+            if(index){delete entry.identity.original_title;entry.identity.title=entry.identity.title?.slice(0,120);}
+          });
+          payload=JSON.stringify(encodeContext);
         }
-        let prepared=launchData();
-        // Long signed stream URLs must not crowd the selected identity out of
-        // Windows' command line. Keep the nearest entries with their metadata.
-        while(!video.torrent_hash && queue.length>1 && (plus && !prepared.metadata || prepared.length>28000)){
-          const remove=start>=queue.length-start-1?0:queue.length-1;
-          queue.splice(remove,1);if(remove===0)start--;
-          prepared=launchData();
+        const urls=queue.map(item=>encodeURI(item.url));
+        let metadata=encodeContext?option(encodeContext,encode,false):'',spawnOptions;
+        const commandLength=path.length+metadata.length+urls.reduce((size,url)=>size+url.length+3,0)+600;
+        if(payload && (!metadata || commandLength>26000)){
+          if(encode(payload).length>30000)throw Error('External playlist context exceeds the player transport limit');
+          metadata='';spawnOptions={env:{...(root.process?.env || {}),MPV_PLUS_LAMPA_CONTEXT:payload}};
         }
-        const {metadata,urls}=prepared;
+        if(path.length+urls.reduce((size,url)=>size+url.length+3,0)+600>28000)throw Error('External playlist exceeds the native command-line limit');
         const progress = progressChannel(L, root, video.torrent_hash ? [selected, ...playlist] : queue, enabled);
         const args = [...(metadata ? [metadata] : []), '--force-window=immediate', ...progress.args, ...(start ? ['--playlist-start=' + start] : [])];
         if (!plus) {
@@ -175,7 +189,7 @@ function install(L, root, cardFor, enabled, text = value => value) {
           }
         }
         args.push(...urls);
-        const child = spawn(path, args);
+        const child = spawn(path, args, spawnOptions);
         started = true;
         if (child && typeof child.on === 'function') {
           if (key) active.set(key, child);

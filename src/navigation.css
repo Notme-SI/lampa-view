@@ -519,15 +519,21 @@ body.lampa_view.pt-tv[data-lampa-theme="glass"] .head .head__body :is(.head__men
  background:transparent!important;border-color:transparent!important;box-shadow:none!important;
 }
 
-/* TorrServer peer/seed counters describe the torrent, not the selected episode.
-   Keep native preloading and its text channel; show only speed and buffer fill.
-   The adjacent separator also covers older hosts without the row wrappers. */
-body.lampa_view .media-loading__peers,
-body.lampa_view .media-loading__peers + .media-loading__separator,
-body.lampa_view .media-loading__rows-separator,
-body.lampa_view .media-loading__row--extra {display:none!important}
-body.lampa_view .media-loading__status {
- flex-direction:row!important;border-radius:2em!important;
-}
+/* Native torrent statistics: one compact capsule, two rows on narrow screens.
+   ETA stays hidden; all measurements and native progress remain untouched. */
+body.lampa_view .media-loading__eta,
+body.lampa_view .media-loading__buffer-separator,
+body.lampa_view .media-loading__rows-separator {display:none!important}
+body.lampa_view .media-loading__status {border-radius:1.6em!important;gap:.4em 1em;padding:.65em 1.1em}
+body.lampa_view .media-loading__row--extra {font-size:.85em;margin-top:0!important}
+body.lampa_view .media-loading__row--main .media-loading__speed {order:0}
+body.lampa_view .media-loading__row--main .media-loading__speed-separator {order:1}
+body.lampa_view .media-loading__row--main .media-loading__percent {order:2}
+body.lampa_view .media-loading__row--main .media-loading__peers-separator {order:3}
+body.lampa_view .media-loading__row--main .media-loading__peers {order:4}
+body.lampa_view .media-loading__speed:not(.media-loading__idle)::before {content:"↓";margin-right:.4em}
+body.lampa_view .media-loading__status .media-loading__separator {margin:0 .55em;opacity:.6}
+body.lampa_view .media-loading__peers {gap:.25em}
+body.lampa_view .media-loading__percent {font-variant-numeric:tabular-nums}
 /* Standalone preloading is fullscreen; the mobile dock must not cover it. */
 body.lampa_view .media-loading--standalone {z-index:140}

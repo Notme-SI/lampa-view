@@ -1,4 +1,6 @@
 {
+ "Раздают": {"en": "Seeding", "uk": "Роздають", "be": "Раздаюць", "zh": "做种", "pt": "A distribuir", "bg": "Раздават", "he": "משתפים", "cs": "Sdílejí", "ro": "Distribuie", "fr": "Partagent", "pl": "Udostępniają", "es": "Compartiendo"},
+ "Подключения: активные / найденные": {"en": "Connections: active / known", "uk": "Підключення: активні / знайдені", "be": "Падключэнні: актыўныя / знойдзеныя", "zh": "连接：活动 / 已发现", "pt": "Ligações: ativas / conhecidas", "bg": "Връзки: активни / намерени", "he": "חיבורים: פעילים / ידועים", "cs": "Spojení: aktivní / známá", "ro": "Conexiuni: active / cunoscute", "fr": "Connexions : actives / connues", "pl": "Połączenia: aktywne / znalezione", "es": "Conexiones: activas / conocidas"},
  "{0} сезон · {1} серия": {"en":"Season {0} · Episode {1}","uk":"{0} сезон · {1} серія","be":"{0} сезон · {1} серыя","zh":"第 {0} 季 · 第 {1} 集","pt":"Temporada {0} · Episódio {1}","bg":"Сезон {0} · Епизод {1}","he":"עונה {0} · פרק {1}","cs":"{0}. řada · {1}. díl","ro":"Sezonul {0} · Episodul {1}","fr":"Saison {0} · Épisode {1}","pl":"Sezon {0} · Odcinek {1}","es":"Temporada {0} · Episodio {1}"},
  "Открываем видео…": {
   "en": "Opening video…",

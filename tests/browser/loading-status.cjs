@@ -20,9 +20,9 @@ const profiles=[
     assert.match(await status.innerText(),/Подключение/,'Native stage messages remain readable');
     await p.evaluate(()=>Lampa.Loading.setProgress(73.2,{active_peers:23,total_peers:529,seeders:15,speed:'188 Мбит/с',preloaded:36600000,preload_size:50000000,eta:1}));
     const b=await status.evaluate(n=>{const rect=n=>n.getBoundingClientRect().toJSON();return {text:n.innerText.replace(/\s+/g,' ').trim(),rect:rect(n),speed:rect(n.querySelector('.media-loading__speed')),percent:rect(n.querySelector('.media-loading__percent')),peers:rect(n.querySelector('.media-loading__peers')),eta:n.querySelector('.media-loading__eta')?.textContent,extra:n.querySelector('.media-loading__row--extra')&&rect(n.querySelector('.media-loading__row--extra')),progress:n.closest('.media-loading').querySelector('.media-loading__mark-fill').style.width,width:innerWidth,height:innerHeight};});
-    assert.equal(b.text,'188 Мбит/с 73%',JSON.stringify({profile:profile.name,theme,size,b}));
-    assert.equal(b.peers.width,0,'Connection counts are not part of the compact status');
-    if(!profile.legacy){assert.ok(b.eta.includes('1'),'Exercise a native host that actually produces the removed ETA');assert.equal(b.extra.height,0,'The extra row leaves no empty space');}
+    assert.ok(b.text.includes('188 Мбит/с') && b.text.includes('73%') && b.text.includes('23 / 529'),JSON.stringify({profile:profile.name,theme,size,b}));
+    assert.ok(b.peers.width>0,'Native connection counts are restored');
+    if(!profile.legacy){assert.ok(b.eta.includes('1'),'Exercise a native host that actually produces the removed ETA');assert.ok(b.extra.height>0 && b.text.includes('Раздают') && b.text.includes('15') && b.text.includes('34.9'),'Seed count and buffer volume are visible');assert.ok(!b.text.includes('~1'),'Seconds remain hidden');}
     assert.equal(b.progress,'73.2%','Native buffer progress is preserved');
     assert.ok(await status.locator('.media-loading__speed').evaluate(n=>{const b=n.getBoundingClientRect();return !!document.elementFromPoint(b.x+b.width/2,b.y+b.height/2)?.closest('.media-loading--standalone');}),'The fullscreen loader stays above mobile bottom navigation');
     assert.ok(b.rect.left>=0&&b.rect.right<=b.width&&b.rect.bottom<=b.height,'The capsule fits even on a small phone');
@@ -31,7 +31,7 @@ const profiles=[
     await p.evaluate(()=>Lampa.Loading.setText('Открываем видео…'));assert.match(await status.innerText(),/Открываем видео/,'The native text channel still works');
     await p.evaluate(()=>Lampa.Controller.back());assert.equal(await p.evaluate(()=>qaCancelled),1);assert.equal(await p.locator('.media-loading--standalone').count(),0,'Back still cancels native preloading');
    }
-   assert.deepEqual(r.errors,[]);console.log(engine.name()+' '+profile.name+': compact speed/buffer, native messages/progress/cancel PASS');
+   assert.deepEqual(r.errors,[]);console.log(engine.name()+' '+profile.name+': full compact statistics, native messages/progress/cancel PASS');
   }finally{await r.context.close();}
  }}finally{await browser.close();}
 }})().catch(e=>{console.error(e);process.exitCode=1;});

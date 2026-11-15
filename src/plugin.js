@@ -1,3 +1,5 @@
+import externalProgress from './external-progress.js';
+import loadingStatus from './loading-status.js';
 import studioContrast from './studio-contrast.js';
 import {text as lampaViewText} from './i18n.js';
 import detail from './detail.js';
@@ -709,7 +711,9 @@ if (!ROOT.LampaView) {
     P.online=onlineState(L);P.providerSeasons=providerSeasons(L);P.kinoapi=kinoapi(L);P.animeBase=animeCatalogue(L,P.kinoapi);P.animeContinuations={find:animeContinuations(L,P.animeBase,P.online),route:kodikRoute,files:continuationFiles};P.animeProviderParts=animeProviderParts(L,P.animeBase,P.online);P.onlineSources=onlineSources(L);P.episodeMetadata=episodeMetadata(L,P.kinoapi,P.animeBase);P.onlineNavigation=onlineNavigation;P.onlineSourceCache=onlineSourceCache(L);
     layout();interfaceLayout=interfaceSize(L);installTmdb(L);installFullGuard(L);installListGuard(L);torrentEpisodes(L,ROOT);inputs(L);
     artwork=installArtwork(L,()=>yes('lampa_view_enabled'));
+    loadingStatus(L);
     P.sync=progressSync(L,()=>yes('lampa_view_enabled'));
+    P.externalProgress=externalProgress(L,()=>yes('lampa_view_enabled'));
     historyCards(L,()=>yes('lampa_view_enabled'));
     torrentBanner(L,loadLogo);
     torrentSearch(L);

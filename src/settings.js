@@ -4,7 +4,7 @@ const GROUPS=[['appearance','Оформление','Тема, цвет, банн
 const ORDER={
  appearance:['lampa_view_theme','lampa_view_dark_accent','lampa_view_artwork_tint','lampa_view_card_motion','lampa_view_layout','menu_always','lampa_view_hero','lampa_view_detail_art','card_interfice_cover','minimal_banner_quality'],
  catalogue:['minimal_rows','minimal_anime_catalogue','kino_suggest_status','kino_suggest_min_chars','minimal_catalogue_filters_reset'],
- playback:['lampa_view_mpv_plus','minimal_online_sources','nova_plus_enabled','nova_plus_quality','nova_plus_auto_switch','nova_plus_probe','nova_plus_meta','nova_plus_source_pos'],
+ playback:['minimal_online_sources','nova_plus_enabled','nova_plus_quality','nova_plus_auto_switch','nova_plus_probe','nova_plus_meta','nova_plus_source_pos'],
  languages:['alc_auto_langs','alc_auto_visible_languages','alc_auto_fav_btn','alc_auto_studios_btn','alc_auto_autosubs'],
  parser:['mpv_plus_anime_search','minimal_quality_fallback'],
  services:['minimal_kinoapi','minimal_trakt_client_id'],
@@ -53,7 +53,7 @@ export default function unifiedSettings(api,L,version=''){
   return source.filter(d=>{
    const n=d.param && d.param.name || '',text=String(d.field && d.field.name || '');
    if(seen.has(n))return false;seen.add(n);
-   if(['lampa_view_enabled','lampa_view_metadata','nova_plus_view','nova_plus_layout','nova_plus_order','minimal_search_filters','mpv_plus_recent_rows'].includes(n))return false;
+   if(['lampa_view_mpv_plus','lampa_view_enabled','lampa_view_metadata','nova_plus_view','nova_plus_layout','nova_plus_order','minimal_search_filters','mpv_plus_recent_rows'].includes(n))return false;
    if(d.param && d.param.type==='button' && typeof d.onChange!=='function')return false;
    if(['alc_auto_quick_movie','alc_auto_quick_series'].includes(n))return false;
    if(n==='alc_auto_src_btn' && typeof window!=='undefined' && window.LampaView && window.LampaView.onlineSources)return false;

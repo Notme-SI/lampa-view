@@ -1,3 +1,11 @@
+## 0.5.194
+
+- Detect MPV Plus from the selected installation; remove the manual integration toggle. Use the already supported private environment for long metadata instead of duplicating signed URLs in the Windows command line, retaining six available episodes with the selected start position.
+
+- Keep one online discovery screen through native resets, provider loading and movie/episode layouts until real files or a terminal error arrive.
+- Restore native torrent connections, seed count and buffer volume in a compact capsule alongside speed/progress. Keep seconds hidden and preserve fullscreen loading above mobile navigation.
+- Prepare one measured-position receiver for callback adapters without a second player-name registry. Activation of the server-side launch hook and iOS return relay is deferred; this release does not change the working server or infer progress from an app launch.
+
 ## 0.5.193
 
 - Сокращена плашка предзагрузки торрента: только скорость и готовность буфера. Убраны секунды, счётчики подключений/сидов и объём в мегабайтах. Данные «Раздают / Качают» в списке раздач сохранены.
