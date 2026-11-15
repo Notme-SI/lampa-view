@@ -10,7 +10,7 @@ const assert=require('node:assert/strict'),{chromium}=require(process.env.PLAYWR
   await page.locator('.wrap__left').hover();await page.waitForTimeout(300);
   const expanded=await measure();assert.ok(expanded.panel.width>dock.panel.width*2);
   for(const key of ['left','top','height'])assert.ok(Math.abs(expanded.panel[key]-dock.panel[key])<1,'Dock only changes width');
-  assert.equal(expanded.radius,dock.radius);assert.equal(expanded.item.height,dock.item.height);assert.equal(expanded.icon,dock.icon);assert.deepEqual(expanded.content,dock.content);
+  if(mode==='mobile')assert.equal(expanded.radius,await page.locator('.settings__content').evaluate(n=>getComputedStyle(n).borderRadius),'Expanded phone menu mirrors Settings');else assert.equal(expanded.radius,dock.radius);assert.equal(expanded.item.height,dock.item.height);assert.equal(expanded.icon,dock.icon);assert.deepEqual(expanded.content,dock.content);
   await page.mouse.move(1,1);await page.waitForTimeout(300);
   if(mode==='mobile'){
    await page.locator('.navigation-bar [data-action=menu]').click();await page.waitForTimeout(300);assert.equal(await page.evaluate(()=>Lampa.Controller.enabled().name),'menu');

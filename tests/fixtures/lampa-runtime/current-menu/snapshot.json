@@ -1,0 +1,15 @@
+{
+  "captured": "2026-11-15",
+  "files": {
+    "app.js": {
+      "url": "http://lampac.rest/lampa-main/app.min.js",
+      "sha256": "72f18d5a202ecb91c82e29de938ef4a0a5bf8877f65647da6523322ac57e1844",
+      "bytes": 2547043
+    },
+    "app.css": {
+      "url": "http://lampac.rest/lampa-main/css/app.css?v=4.56",
+      "sha256": "fa45c2fd580158b80623a6c2c115b3ddae21ebaa48d1742e01c465b28f40f677",
+      "bytes": 462283
+    }
+  }
+}

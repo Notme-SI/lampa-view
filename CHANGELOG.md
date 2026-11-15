@@ -1,3 +1,8 @@
+## 0.5.189
+
+- Style the current native mobile menu Modal (`.menu-modal`) as the left mirror of Settings, with the same width, top edge, readable text, heading and corners. Keep its content scrollable above the navigation dock.
+- Add a pinned snapshot of the actual current host and a mobile regression check that reproduces the full-width, small-text failure in 0.5.188.
+
 ## 0.5.188
 
 - Coalesce repeated source-discovery calls and retain the initial loading skeleton across native discovery status updates.

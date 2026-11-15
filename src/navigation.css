@@ -355,6 +355,25 @@ body.lampa_view.pt-mobile .settings .settings-folder,
 body.lampa_view.pt-mobile .settings .settings-param,
 body.lampa_view.pt-mobile .selectbox:not(.minimal-franchise-menu) .selectbox-item {font-size:var(--pt-mobile-item-font);min-height:44px}
 body.lampa_view.pt-mobile .wrap__left .menu__text {white-space:normal!important}
+/* Current Lampa moves the live menu into a small-screen Modal. It must use
+   the same panel geometry and type as Settings, rather than a bottom sheet. */
+body.lampa_view.pt-mobile .modal:has(.menu-modal) {inset:0 0 auto!important;height:calc(var(--pt-dock-y) + var(--pt-panel-room));padding:0!important;align-items:flex-start;font-size:1em!important}
+body.lampa_view.pt-mobile .modal:has(.menu-modal) .modal__content {position:fixed!important;inset:var(--pt-dock-y) auto auto var(--pt-shell-inset)!important;width:var(--pt-mobile-panel-width)!important;max-width:calc(100vw - 2 * var(--pt-shell-inset))!important;min-height:0!important;height:auto!important;max-height:var(--pt-panel-room)!important;display:flex;flex-direction:column;margin:0!important;padding:0!important;transform:none!important;box-sizing:border-box;border-radius:1.7em;font-size:1em!important;overflow:hidden}
+body.lampa_view.pt-mobile .modal:has(.menu-modal) .modal__head {flex:none;padding:.85em .9em;min-height:3em;gap:.65em;margin:0}
+body.lampa_view.pt-mobile .modal:has(.menu-modal) .modal__title {font-size:1.15em;line-height:1.35;letter-spacing:0}
+body.lampa_view.pt-mobile .modal:has(.menu-modal) .minimal-back--overlay {font-size:var(--pt-mobile-item-font)}
+body.lampa_view.pt-mobile .modal:has(.menu-modal) .modal__body {flex:0 1 auto;height:auto!important;min-height:0!important;padding:0 .45em .45em!important;overflow:hidden}
+body.lampa_view.pt-mobile .modal:has(.menu-modal) .modal__body>.scroll {display:flex;flex-direction:column;height:auto!important;min-height:0!important;max-height:none!important}
+body.lampa_view.pt-mobile .modal:has(.menu-modal) .scroll__content {height:auto!important;min-height:0!important;padding-block:0!important}
+body.lampa_view.pt-mobile .menu-modal .menu {width:100%;padding:0!important;font-size:1em}
+body.lampa_view.pt-mobile .menu-modal .menu__item {display:flex;align-items:center;box-sizing:border-box;font-size:var(--pt-mobile-item-font);min-height:44px;padding:.8em 1em!important;margin:0;gap:0;border-radius:.7em}
+body.lampa_view.pt-mobile .menu-modal .menu__text {font-size:1em;font-weight:400;line-height:1.4;white-space:normal!important}
+body.lampa_view.pt-mobile .menu-modal .menu__ico {display:flex;align-items:center;justify-content:center;flex-shrink:0;width:1.4em;min-width:1.4em;height:1.4em;margin:0 .8em 0 0}
+body.lampa_view.pt-mobile .menu-modal .menu__ico svg {width:100%;height:100%;margin:0}
+body.lampa_view.pt-mobile .menu-modal .menu__case {border-bottom:1px solid var(--pt-shell-border);padding-bottom:.3em!important;margin-bottom:.3em}
+body.lampa_view.pt-mobile .menu-modal .menu__case:last-child {border:0;margin-bottom:0;padding-bottom:0}
+body.lampa_view.pt-mobile .menu-modal .menu__case>ul {padding:0;margin:0;list-style:none}
+body.lampa_view.pt-mobile .menu-modal .menu__item.focus {background:var(--pt-row-focus)!important;color:var(--pt-text)!important;box-shadow:inset 0 0 0 1px var(--pt-row-edge)!important}
 body.lampa_view.pt-mobile .settings,body.lampa_view.pt-mobile .selectbox,body.lampa_view.pt-mobile .modal {z-index:120!important}
 body.lampa_view.pt-mobile .settings__layer,body.lampa_view.pt-mobile .selectbox:not(.minimal-franchise-menu) .selectbox__layer {height:calc(var(--pt-panel-room) + var(--pt-dock-y));backdrop-filter:none;-webkit-backdrop-filter:none}
 body.lampa_view.pt-mobile .pt-hero {height:auto!important;min-height:0!important;max-height:none!important}
