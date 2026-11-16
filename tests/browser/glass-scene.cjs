@@ -283,17 +283,9 @@ async function run(engine, browser, mode) {
    const staticFocus=mode==='tv' && theme==='glass';
    const marker=page.locator('#qa-native-history .icon--history');
    assert.equal(await marker.count(),1);
-   const normal=await marker.evaluate(node=>{
-    const rect=node.getBoundingClientRect(), poster=node.closest('.card__view').getBoundingClientRect();
-    return {width:rect.width,height:rect.height,x:(rect.left+rect.width/2-poster.left)/poster.width,
-     y:(rect.top+rect.height/2-poster.top)/poster.height,glyph:getComputedStyle(node).backgroundImage,legacy:getComputedStyle(node,'::before').content};
-   });
-   assert.ok(Math.abs(normal.x-.5)<.02 && Math.abs(normal.y-.6)<.02,JSON.stringify(normal));
-   assert.ok(normal.width>8 && normal.width<39 && normal.height<39,JSON.stringify(normal));
-   assert.match(normal.glyph,/data:image\/svg\+xml/);
-   assert.equal(normal.legacy,'none');
+   assert.equal(await marker.isVisible(),false,'The old Play icon is hidden on watched posters');
    await page.locator('#qa-native-history').evaluate(n=>n.classList.add('focus'));
-   assert.equal(await marker.count(),1);
+   assert.equal(await marker.isVisible(),false,'Focusing a watched poster does not restore its Play icon');
    assert.match(await page.locator('#qa-native-history .card__view').evaluate(n=>getComputedStyle(n,'::after').boxShadow),staticFocus?/2px inset/:/1px inset/);
    await page.locator('#qa-native-history').evaluate(n=>n.classList.remove('focus'));
    for (const [target,view] of [['#qa-native-unwatched','.card__view'],['#qa-nova-preview .nova-card','.nova-card__thumb']]) {

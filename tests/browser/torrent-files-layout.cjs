@@ -9,11 +9,11 @@ async function check(page,mobile){
  assert.equal(await page.evaluate(()=>Lampa.Timeline.view(document.querySelector('.torrent-files .time-line').getAttribute('data-hash')).percent),95,'Completed presentation keeps native completion data intact');
  await page.evaluate(()=>{const hash=document.querySelector('.torrent-files .time-line').getAttribute('data-hash');Lampa.Timeline.update({hash,percent:40,time:915,duration:2287});});
  await page.waitForFunction(()=>{const line=document.querySelector('.torrent-files .time-line'),a=line.getBoundingClientRect(),b=line.firstElementChild.getBoundingClientRect();return a.width>0 && Math.abs(b.width/a.width-.4)<.02;});
- const data=await page.evaluate(()=>{
+ const data=await page.evaluate(mobile=>{
   const rect=n=>{const r=n.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};};
   const modal=document.querySelector('.modal'),row=modal.querySelector('.torrent-serial');
-  return {modal:rect(modal.querySelector('.modal__content')),row:rect(row),image:rect(row.querySelector('img')),title:rect(row.querySelector('.torrent-serial__title')),detail:rect(row.querySelector('.torrent-serial__detail')),timeline:rect(row.querySelector('.time-line')),content:rect(row.querySelector('.torrent-serial__content')),width:innerWidth,height:innerHeight};
- });
+  return {modal:rect(modal.querySelector('.modal__content')),row:rect(row),image:rect(row.querySelector('img')),title:rect(row.querySelector('.torrent-serial__title')),detail:rect(row.querySelector('.torrent-serial__detail')),timeline:rect(row.querySelector('.time-line')),content:rect(row.querySelector('.torrent-serial__content')),width:innerWidth,height:innerHeight,scroll:rect(modal.querySelector('.modal__body .scroll')),dock:mobile?rect(document.querySelector('.navigation-bar')):null};
+ },mobile);
  assert.ok(data.modal.left>=-1 && data.modal.right<=data.width+1,'file dialog fits horizontally');
  assert.ok(data.modal.top>=-1 && data.modal.bottom<=data.height+1,'file dialog fits vertically');
  const separate=(a,b)=>a.right<=b.left+1 || b.right<=a.left+1 || a.bottom<=b.top+1 || b.bottom<=a.top+1;
@@ -21,7 +21,7 @@ async function check(page,mobile){
  assert.ok(separate(data.image,data.timeline),'watch progress stays off the thumbnail');
  assert.ok(data.timeline.left>=data.content.left && data.timeline.right<=data.content.right+1,'progress stays inside content');
  assert.ok(Math.abs((data.image.top+data.image.bottom-data.row.top-data.row.bottom)/2)<2,'Preview is vertically centred');
- if(mobile){assert.ok(data.title.height<=44,'long title takes at most two lines');assert.ok(data.row.height<265,'mobile file row accommodates the synopsis without excessive height');}
+ if(mobile){assert.ok(data.scroll.bottom<=data.dock.top+1,'File list ends above the mobile dock: '+JSON.stringify({scroll:data.scroll,dock:data.dock}));assert.ok(data.title.height<=44,'long title takes at most two lines');assert.ok(data.row.height<265,'mobile file row accommodates the synopsis without excessive height');}
  return data;
 }
 (async()=>{
@@ -76,7 +76,7 @@ async function check(page,mobile){
    if(mobile && name==='chromium'){
     const client=await r.context.newCDPSession(page);
     const area=await page.locator('.modal__body .scroll').evaluate(el=>{const r=el.getBoundingClientRect();return {x:r.left+r.width/2,y:r.bottom-35,top:r.top+35,height:el.clientHeight,total:el.scrollHeight};});
-    assert.ok(area.y<await page.evaluate(()=>innerHeight),'swipe starts inside the visible list');
+    assert.ok(await page.evaluate(({x,y})=>document.elementFromPoint(x,y)?.closest('.modal__body .scroll')!=null,area),'The dock does not intercept swipes inside the file list');
     for(let gesture=0;gesture<7;gesture++){
      await client.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:area.x,y:area.y}]});
      for(let step=1;step<=10;step++){

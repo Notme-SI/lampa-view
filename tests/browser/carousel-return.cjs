@@ -16,7 +16,14 @@ const {chromium,webkit}=require(process.env.PLAYWRIGHT_MODULE || 'playwright'),{
   const beforeMenu=await page.locator('.activity--active .pt-hero').evaluate(n=>n.getBoundingClientRect().top);const menuToggle=page.locator(mode==='mobile'?'.navigation-bar [data-action=menu]':'.head__menu-icon');await menuToggle.click();await page.waitForSelector('body.menu--open');await menuToggle.click();await page.waitForTimeout(350);assert.equal(await page.evaluate(()=>document.body.classList.contains('menu--open')),false);assert.ok(Math.abs((await page.locator('.activity--active .pt-hero').evaluate(n=>n.getBoundingClientRect().top))-beforeMenu)<1,'Closing Menu must keep the carousel viewport');
   const initial=await geometry();const zoom=await page.locator('.activity--active .pt-hero__image').evaluate(n=>({transform:getComputedStyle(n).transform,origin:getComputedStyle(n).transformOrigin}));
   assert.equal(zoom.transform,'none','Artwork keeps its source framing');
-  if(mode==='mobile'){const mobile=await page.locator('.activity--active .pt-hero').evaluate(h=>{const i=h.querySelector('.pt-hero__image').getBoundingClientRect(),p=h.querySelector('.pt-hero__body').getBoundingClientRect();return {gap:p.top-i.bottom,position:getComputedStyle(h.querySelector('.pt-hero__body')).position};});assert.equal(mobile.position,'relative');assert.ok(mobile.gap<=20 && mobile.gap>=-25,'No empty image/logo gap: '+JSON.stringify(mobile));}
+  if(mode==='mobile'){
+   const mobile=await page.locator('.activity--active .pt-hero').evaluate(h=>{
+    const art=h.querySelector('.pt-hero__artwork').getBoundingClientRect(), branding=h.querySelector('.pt-hero__branding').getBoundingClientRect();
+    return {overlap:art.bottom-branding.top,artHeight:art.height,brandingHeight:branding.height,position:getComputedStyle(h.querySelector('.pt-hero__body')).position};
+   });
+   assert.equal(mobile.position,'relative');
+   assert.ok(mobile.overlap>0 && mobile.overlap<=mobile.artHeight*.45 && mobile.overlap<mobile.brandingHeight,'Carousel branding straddles the faded edge: '+JSON.stringify(mobile));
+  }
   assert.equal(initial.fit,mode==='mobile'?'contain':'cover','The backdrop keeps the source proportions and full frame');assert.deepEqual(initial.image,[1600,900]);
   if(mode==='desktop'){
    await page.evaluate(()=>Lampa.Storage.set('lampa_view_layout','auto'));await page.setViewportSize({width:390,height:844});await page.waitForTimeout(650);
@@ -55,7 +62,7 @@ const {chromium,webkit}=require(process.env.PLAYWRIGHT_MODULE || 'playwright'),{
     const first=samples[0];for(const sample of samples){
      for(const key of ['panel','brand','meta','overview','action','dots'])for(const axis of ['top','height'])assert.ok(Math.abs(sample[key][axis]-first[key][axis])<=1,`${engine.name()} ${theme} ${width}: ${key}.${axis} stays fixed after ${sample.variant}: `+JSON.stringify(samples));
      assert.ok(Math.abs(sample.row-first.row)<=1 && Math.abs(sample.hero-first.hero)<=1,'Content and late logo decode do not move the collection');
-     assert.ok(sample.padding>=.49*sample.font,'Logo has a modest, consistent gap from the image');
+     assert.ok(sample.padding>=.49*sample.font,'Branding has consistent padding in its panel');
      assert.ok(sample.dots.top>=sample.panel.top+sample.panel.height+4,'Phone carousel controls stay below the whole description pane');
     }
    }

@@ -359,6 +359,10 @@ html.pt-ios-standalone body.lampa_view.pt-mobile.pt-ios-dock-positioned .navigat
 }
 body.lampa_view.pt-mobile .navigation-bar__body,body.lampa_view.pt-mobile.orientation--landscape .navigation-bar .navigation-bar__body {display:flex;flex-direction:row;justify-content:space-around;gap:0}
 body.lampa_view.pt-mobile .navigation-bar__item {flex:1 1 0;min-width:0}
+/* Fit the file picker in the same mobile viewport as the dock. */
+body.lampa_view.pt-mobile .modal.minimal-torrent-files {inset:0 0 auto;height:calc(var(--pt-mobile-viewport) - var(--pt-mobile-nav-height));box-sizing:border-box}
+body.lampa_view.pt-mobile .minimal-torrent-files .modal__content {max-height:100%}
+@media(max-width:480px){body.lampa_view.pt-mobile .minimal-torrent-files .modal__content {position:absolute}}
 body.lampa_view.pt-mobile .wrap__left,body.lampa_view.pt-mobile.pt-menu-pinned .wrap__left {left:var(--pt-shell-inset)!important;bottom:auto!important;height:auto!important;max-height:var(--pt-panel-room)!important}
 body.lampa_view.pt-mobile .wrap__left>.scroll,body.lampa_view.pt-mobile .wrap__left>.scroll>.scroll__content {max-height:calc(var(--pt-panel-room) - 10px)!important}
 /* Menu and reading panels share one size contract, mirrored at the edges. */

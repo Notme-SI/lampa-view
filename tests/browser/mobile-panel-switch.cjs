@@ -24,7 +24,9 @@ const phones=[{name:'iphone-standalone',ua:ios,standalone:true},{name:'iphone-br
    const state=()=>p.evaluate(()=>({menu:Lampa.Menu.opened(),settings:document.body.classList.contains('settings--open'),select:document.body.classList.contains('selectbox--open'),modals:document.querySelectorAll('.modal').length,controller:Lampa.Controller.enabled().name,owned:document.querySelector('.wrap__left .menu')===qaOriginalMenu,pointer:!!qaOriginalMenu._lampaViewPointer,profile:!!document.querySelector('[data-action=minimal_profile]')}));
    const clean=async()=>{await p.waitForFunction(()=>!Lampa.Menu.opened()&&!document.body.matches('.settings--open,.selectbox--open')&&!document.querySelector('.modal')).catch(async e=>{throw new Error(e.message+' '+JSON.stringify({state:await state(),trace:await p.evaluate(()=>qaTrace.slice(-45))}));});const s=await state();assert.ok(s.owned,JSON.stringify(s));};
    for(const [theme,size]of [['minimal','small'],['glass','normal'],['glass','bigger']]){
-    await p.evaluate(({theme,size,standalone})=>{Lampa.Storage.set('lampa_view_theme',theme);Lampa.Storage.set('interface_size',size);document.body.style.setProperty('--pt-safe-top',standalone?'60px':'0px');},{theme,size,standalone:phone.standalone});await p.waitForTimeout(160);
+    await p.evaluate(({theme,size,standalone})=>{Lampa.Storage.set('lampa_view_theme',theme);Lampa.Storage.set('interface_size',size);document.body.style.setProperty('--pt-safe-top',standalone?'60px':'0px');},{theme,size,standalone:phone.standalone});
+    // Native Lampa refreshes Activity asynchronously after changing interface size.
+    await p.waitForTimeout(1600);
     for(let cycle=0;cycle<Number(process.env.QA_CYCLES||2);cycle++){
      await press('settings');await p.waitForFunction(()=>document.body.classList.contains('settings--open'));
      const settings=await p.locator('.settings__content').evaluate(n=>{const b=n.getBoundingClientRect();return {top:b.top,height:b.height,width:b.width};});
