@@ -5,7 +5,11 @@ const { setup } = require('../fixtures/native-browser.cjs');
 const fixture = path.join(__dirname, '../fixtures/lampa-runtime/current-menu');
 
 async function geometry(page) {
-  return page.locator('.activity--active .mapping--grid').evaluate(grid => {
+  // Activity replaces its grid asynchronously after changing interface size.
+  // Read the populated active grid and its geometry in one browser task.
+  const snapshot = await page.waitForFunction(() => {
+    const grid = document.querySelector('.activity--active .mapping--grid');
+    if (!grid || grid.querySelectorAll(':scope>.card').length !== 24) return false;
     const box = node => {
       const r = node.getBoundingClientRect();
       return { left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width };
@@ -19,7 +23,9 @@ async function geometry(page) {
         text: card.querySelector('.card__history').textContent
       }))
     };
-  });
+  }, null, { timeout: 10000 });
+  try { return await snapshot.jsonValue(); }
+  finally { await snapshot.dispose(); }
 }
 
 function check(data, label) {
