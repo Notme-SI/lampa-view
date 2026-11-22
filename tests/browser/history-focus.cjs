@@ -63,6 +63,9 @@ const {setup}=require('../fixtures/native-browser.cjs'),{stage}=require('../fixt
   });
   await page.evaluate(()=>{document.querySelector('#qa-release').remove();document.querySelector('#qa-movie').remove();});
 
+  // The previous hovered card occupied this slot. Park the real pointer
+  // outside it before checking keyboard focus and pointer entry/exit.
+  await page.mouse.move(0,0);
   // Native Lampa's manual episode action persists 95%, not 100%.
   await page.evaluate(()=>{
    const data={id:740004,name:'Киберпанк: Бегущие по краю',original_name:'Cyberpunk: Edgerunners',media_type:'tv',source:'test',seasons:[{season_number:2,episode_count:10}],last_episode_to_air:{season_number:2,episode_number:10,air_date:'2020-01-01'}};
@@ -78,10 +81,11 @@ const {setup}=require('../fixtures/native-browser.cjs'),{stage}=require('../fixt
   await page.locator('#qa-native-season').evaluate(n=>n.classList.add('focus'));
   assert.equal(await page.locator('#qa-native-season .pt-card-watch__badge').evaluate(n=>getComputedStyle(n).visibility),'visible','Remote selection reveals the saved status');
   assert.equal(await page.locator('#qa-native-season').evaluate(n=>n.getBoundingClientRect().height),reserved,'Selecting a card does not change its layout height');
-  await page.locator('#qa-native-season').evaluate(n=>{n.classList.remove('focus');n.classList.add('pt-card-pointer');});
+  await page.locator('#qa-native-season').evaluate(n=>n.classList.remove('focus'));
+  await page.locator('#qa-native-season').hover();
   assert.equal(await page.locator('#qa-native-season .pt-card-watch__badge').evaluate(n=>getComputedStyle(n).visibility),'visible','Pointer hover reveals the same status');
-  await page.locator('#qa-native-season').evaluate(n=>n.classList.remove('pt-card-pointer'));
-  assert.equal(await page.locator('#qa-native-season .pt-card-watch__badge').evaluate(n=>getComputedStyle(n).visibility),'hidden','Leaving a card hides its status again');
+  await page.mouse.move(0,0);
+  await page.waitForFunction(()=>{const badge=document.querySelector('#qa-native-season .pt-card-watch__badge');return badge?.isConnected && getComputedStyle(badge).visibility==='hidden';},null,{timeout:3500});
   assert.equal(await page.locator('#qa-native-season .pt-card-watch').getAttribute('data-watch-state'),'complete');
   assert.equal(await page.locator('#qa-native-season .time-line').evaluate(n=>getComputedStyle(n).display),'none','A completed season has no progress track');
   await page.evaluate(()=>Lampa.Timeline.update({hash:Lampa.Utils.hash('210Cyberpunk: Edgerunners'),percent:40,time:915,duration:2400}));
