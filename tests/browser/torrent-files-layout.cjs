@@ -36,7 +36,7 @@ async function check(page,mobile){
     const row={Title:'Тёмная материя (2 сезон: 1-9 серии из 10) / Dark Matter / 2026 / WEB-DL (2160p)',Tracker:'test',Size:4520453079,Seeders:50,Peers:10,MagnetUri:'magnet:?xt=urn:btih:0123456789012345678901234567890123456789'};
     L.Parser.get=(p,ok)=>setTimeout(()=>ok({Results:[row]}),0);L.Activity.push({component:'torrents',movie,search:'MobLand',url:'',page:1});
     L.Torserver.url=()=>true;L.Torserver.connected=ok=>ok();L.Torserver.hash=(p,ok)=>ok({hash:'0123456789012345678901234567890123456789'});
-    L.Torserver.files=(hash,ok)=>ok({file_stats:Array.from({length:9},(_,i)=>({id:i+1,path:'Dark.Matter.2026.S02.WEB-DL.2160p/Dark.Matter.S02E'+String(i+1).padStart(2,'0')+'.mkv',length:4520453079}))});
+    L.Torserver.files=(hash,ok)=>ok({file_stats:[9,2,7,4,1,6,3,8,5].map(id=>({id,path:'Dark.Matter.2026.S02.WEB-DL.2160p/'+(id%2?'[A]':'[B]')+' Dark.Matter.S02E'+String(id).padStart(2,'0')+'.mkv',length:4520453079}))});
     L.Torserver.viewed=(hash,ok)=>ok([]);L.Torserver.stream=(file,hash,id)=>'http://localhost/stream?link='+hash+'&index='+id+'&play';
     const image='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180"><rect width="320" height="180" fill="#28454d"/></svg>');
     L.Api.seasons=(card,seasons,ok)=>ok({2:{episodes:Array.from({length:8},(_,i)=>({season_number:2,episode_number:i+1,name:i===0?'Пан или пропал: длинное название серии для проверки мобильного экрана':'Серия '+(i+1),air_date:'2026-09-30',runtime:60,img:image,vote_average:8.4,overview:'Описание серии из каталога. Достаточно места для нескольких строк текста.'}))}});
@@ -48,6 +48,7 @@ async function check(page,mobile){
    await page.evaluate(()=>document.querySelectorAll('.torrent-serial').forEach(row=>jQuery(row).trigger('visible')));
    for(const theme of ['minimal','glass']){await page.evaluate(theme=>Lampa.Storage.set('lampa_view_theme',theme),theme);await page.waitForTimeout(180);await check(page,mobile);}
    assert.equal(await page.locator('.torrent-files .torrent-serial').count(),9,'Files survive missing episode metadata');
+   assert.deepEqual((await page.locator('.torrent-serial__episode').allTextContents()).map(Number),[1,2,3,4,5,6,7,8,9],'Episode order follows coordinates despite mixed release-name prefixes');
    assert.equal(await page.locator('.minimal-episode-overview').count(),8);assert.equal(await page.locator('.minimal-episode-rating').first().textContent(),'8.4');
    if(output)await page.screenshot({path:path.join(output,name+(mobile?'-phone'+(virtual?'-virtual':''):'-desktop')+'-files.png')});
    if(mobile){
@@ -97,7 +98,7 @@ async function check(page,mobile){
    if(!mobile && virtual)await page.keyboard.press('Enter');
    else if(mobile && name==='webkit')await page.touchscreen.tap(point.x*scale,point.y*scale);
    else {await page.mouse.move(point.x,point.y);await page.mouse.click(point.x,point.y);}await page.waitForTimeout(500);
-   const played=await page.evaluate(()=>({played:qaPlayed,playlist:qaPlaylist.map(v=>v.episode)}));assert.equal(played.played.length,1);assert.equal(played.played[0].episode,9);assert.equal(played.played[0].season,2);assert.match(played.played[0].url,/index=9/);assert.equal(played.playlist.length,9);
+   const played=await page.evaluate(()=>({played:qaPlayed,playlist:qaPlaylist.map(v=>v.episode)}));assert.equal(played.played.length,1);assert.equal(played.played[0].episode,9);assert.equal(played.played[0].season,2);assert.match(played.played[0].url,/index=9/);assert.deepEqual(played.playlist,[1,2,3,4,5,6,7,8,9],'Native playback receives the same ordered playlist');
    assert.deepEqual(r.errors,[]);await r.context.close();console.log(name+' '+(mobile?'phone'+(virtual?' with virtual scroll':''):virtual?'TV':'desktop')+': native file layout, scrolling, playback and playlist passed');
   }}finally{await browser.close();}
  }

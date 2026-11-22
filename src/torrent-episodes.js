@@ -26,6 +26,27 @@ export function familySeason(data){
  }
  return null;
 }
+// Native file-name collation can place a release tag before the episode
+// number. Order recognised episodes numerically inside each existing folder.
+export function sortTorrentEpisodes(L,items,movie){
+ if(!Array.isArray(items) || !movie || typeof L.Torserver.parse!=='function')return;
+ const folders=new Map();
+ items.forEach((file,index)=>{
+  const path=String(file.path || '').replace(/\\/g,'/');
+  if(/\.(?:vob|m2ts)$/i.test(path))return;
+  const info=L.Torserver.parse({movie,files:items,path:file.path,filename:file.path_human || path.split('/').pop()});
+  const season=Number(info.season),episode=Number(info.episode);
+  if(!info.serial || !Number.isInteger(season) || season<0 || !Number.isInteger(episode) || episode<=0)return;
+  const folder=path.slice(0,path.lastIndexOf('/')+1);
+  if(!folders.has(folder))folders.set(folder,[]);
+  folders.get(folder).push({file,index,season,episode});
+ });
+ for(const rows of folders.values()){
+  const slots=rows.map(row=>row.index);
+  rows.sort((a,b)=>a.season-b.season || a.episode-b.episode || a.index-b.index);
+  rows.forEach((row,index)=>{items[slots[index]]=row.file;});
+ }
+}
 import torrentWatchMenu from './torrent-watch-menu.js';
 import torrentHistory from './torrent-history.js';
 export default function torrentEpisodes(L,root=window){
@@ -62,6 +83,7 @@ export default function torrentEpisodes(L,root=window){
   return corrected;
  };
  if(L.Listener)L.Listener.follow('torrent_file',event=>{
+  if(event.type==='list_open' && ![false,'false',0,'0'].includes(L.Storage?.get('lampa_view_enabled',true)))sortTorrentEpisodes(L,event.items,event.params?.movie);
   if(event.type==='list_close')selected=null;
   if(event.type==='render'){
    const item=event.item && (event.item.nodeType?event.item:event.item[0]);

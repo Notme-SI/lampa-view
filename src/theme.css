@@ -77,6 +77,9 @@ body.lampa_view.pt-desktop .card {font-size:1em}
 body.lampa_view .card__view,body.lampa_view .card__img {border-radius:.5em;background:var(--pt-panel);box-shadow:none;overflow:hidden}
 body.lampa_view .card__title {font-size:.83em;font-weight:500;line-height:1.4;margin-top:.65em;height:auto;min-height:0;max-height:2.85em;display:-webkit-box;-webkit-box-orient:vertical;white-space:normal;overflow:hidden;transform:none;-webkit-transform:none;-webkit-line-clamp:2;line-clamp:2;text-overflow:ellipsis}
 body.lampa_view .card__age {font-size:.73em;color:var(--pt-muted);margin-top:.2em}
+body.lampa_view .card__history {box-sizing:border-box;max-width:100%;font-size:.78em;gap:.4em;flex-wrap:wrap;margin-top:.5em;line-height:1.35}
+body.lampa_view .card__history-date {min-width:0}
+body.lampa_view .card__history-episode {padding-left:0;white-space:nowrap}
 body.lampa_view .card__vote {background:#000000dc;color:#eee;border:0;font-size:.65em;border-radius:.3em;padding:.2em .4em}
 body.lampa_view .card.focus .card__title {color:var(--pt-accent)}
 body.lampa_view .card__quality {border-radius:.3em;background:#000000dc;font-size:.65em}
@@ -465,11 +468,11 @@ body.lampa_view .category-full>.card {box-sizing:border-box;margin-left:0;paddin
 @media(min-width:1800px){body.lampa_view:not(.pt-tv) .mapping--grid>.card,body.lampa_view:not(.pt-tv) .category-full>.card:not(.card--wide):not(.card--collection) {width:calc(10% * var(--pt-interface-scale,1))!important}}
 /* Fill complete rows using the actual content width and keep short pages aligned. */
 body.lampa_view.pt-desktop:not(.pt-favorites) .activity--active .pt-poster-grid {
- --pt-grid-slot:calc(clamp(128px,8vw,208px) * var(--pt-interface-scale,1));
+ --pt-grid-slot:var(--pt-desktop-poster-width);
  display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,var(--pt-grid-slot)),1fr));
  gap:0 16px;padding-inline:.5em;
 }
-body.lampa_view.pt-desktop:not(.pt-favorites) .activity--active .pt-poster-grid>.card {
+body.lampa_view.pt-desktop:not(.pt-favorites) .activity--active .pt-poster-grid>.card:not(.card--wide):not(.card--collection) {
  width:100%!important;max-width:none;min-width:0;margin-inline:0;padding-inline:0;
 }
 body.lampa_view.pt-desktop:not(.pt-favorites) .activity--active .pt-poster-grid>:not(.card) {grid-column:1/-1}

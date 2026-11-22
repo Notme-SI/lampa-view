@@ -64,3 +64,31 @@ test('native torrent bundle requests distinct seasons, artwork and Timeline keys
   nodes[1].dispatchEvent(new w.CustomEvent('hover:enter',{bubbles:true}));assert.equal(played.season,2);assert.equal(played.episode,1);assert.match(played.img,/actual-season-2/);assert.deepEqual(n.errors,[]);
  }finally{n.close();}
 });
+
+test('episode order uses native coordinates while preserving folders, unrecognised files and file identities',()=>{
+ const sort=moduleObject.exports.sortTorrentEpisodes;
+ const coordinates={
+  'Pack/A/Show [a] S02E10.mkv':[2,10],
+  'Pack/A/Show [b] S01E2.mkv':[1,2],
+  'Pack/A/Show S01E1.mkv':[1,1],
+  'Pack/A/Show S01E2.mkv':[1,2],
+  'Pack/B/Show S01E3.mkv':[1,3],
+  'Pack/B/Show S01E1.mkv':[1,1]
+ };
+ const paths=Object.keys(coordinates);
+ paths.splice(1,0,'Pack/A/Extras.mkv','Pack/A/VIDEO_TS.VOB');
+ const files=paths.map((path,id)=>({path,id:id+1})),original=files.slice();
+ const L={Torserver:{parse(data){const [season,episode]=coordinates[data.path] || [0,0];return {serial:true,season,episode};}}};
+ sort(L,files,movie);
+ assert.deepEqual(files.map(file=>file.id),[5,2,3,4,6,1,8,7]);
+ assert.equal(files[1],original[1]);assert.equal(files[2],original[2]);
+ assert.ok(files.every(file=>original.includes(file)),'Sort keeps native objects and TorrServer file IDs');
+ const once=files.slice();sort(L,files,movie);assert.deepEqual(files,once,'Repeated preparation is stable');
+});
+
+test('movie files retain their native order',()=>{
+ const files=[{id:2,path:'FilmB.mkv'},{id:1,path:'FilmA.mkv'}];
+ const L={Torserver:{parse(){return {serial:false,season:0,episode:1};}}};
+ moduleObject.exports.sortTorrentEpisodes(L,files,{id:1,title:'Movie'});
+ assert.deepEqual(files.map(file=>file.id),[2,1]);
+});
