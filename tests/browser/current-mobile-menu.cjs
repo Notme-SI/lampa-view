@@ -13,7 +13,10 @@ const phones=[{name:'iphone-standalone',ua:'Mozilla/5.0 (iPhone; CPU iPhone OS 1
    for(const width of process.env.QA_WIDTH?[Number(process.env.QA_WIDTH)]:[320,393,430]){
     await page.setViewportSize({width,height:852});await page.waitForTimeout(220);
     for(const theme of ['minimal','glass'])for(const size of ['small','normal','bigger']){
-     await page.evaluate(({theme,size,safe})=>{Lampa.Storage.set('lampa_view_theme',theme);Lampa.Storage.set('interface_size',size);document.body.style.setProperty('--pt-safe-top',safe?'60px':'0px');},{theme,size,safe:phone.standalone});await page.waitForTimeout(180);
+     await page.evaluate(({theme,size,safe})=>{Lampa.Storage.set('lampa_view_theme',theme);Lampa.Storage.set('interface_size',size);document.body.style.setProperty('--pt-safe-top',safe?'60px':'0px');},{theme,size,safe:phone.standalone});
+     // Native layout/Activity refresh completes after the interface-size change.
+     // Finish it before opening an overlay for the geometry measurement.
+     await page.waitForTimeout(1600);
      await page.locator('.navigation-bar [data-action=settings]').click();await page.waitForSelector('body.settings--open');
      const settings=await bounds('.settings__content'),settingsText=await bounds('.settings__content .settings-folder__name'),settingsTitle=await bounds('.settings__title');
      if(process.env.LAMPA_QA_OUTPUT && width===393 && theme==='glass' && size==='normal' && phone.standalone){fs.mkdirSync(process.env.LAMPA_QA_OUTPUT,{recursive:true});await page.screenshot({path:path.join(process.env.LAMPA_QA_OUTPUT,engine.name()+'-settings.png')});}
