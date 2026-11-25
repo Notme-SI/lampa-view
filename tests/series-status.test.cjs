@@ -9,9 +9,9 @@ test('focused series gets readable watch and release status, preserves native pr
  const d=new JSDOM('<body></body>',{runScripts:'outside-only'}),w=d.window;try{w.eval(code);let requests=0;const table=[{season_number:2,episode_number:8,air_date:'2020-01-01'}],L={Utils:{hash:x=>x},Storage:{get:()=>({Original:{season:1,episode:6}})},TimeTable:{get:()=>table},Timeline:{view:()=>({time:969,percent:40})},Api:{sources:{tmdb:{get(path,p,ok){requests++;ok({id:7,seasons:[{season_number:2,episode_count:10}],last_episode_to_air:table[0]});}}}}};
  const api=w.SeriesStatus.default(L,node=>api.paint(node)),card=()=>{const n=w.document.createElement('div');n.className='card focus';n.innerHTML='<div class="card__view"><div class="card-watched"><div class="card-watched__item"><span>6 - Эпизод 6</span><div class="time-line"><div style="width:40%"></div></div></div></div></div>';w.document.body.appendChild(n);api.track(n,{id:7,name:'Сериал',original_title:'Original',media_type:'tv'});return n;};
  const one=card();api.paint(one);api.paint(one);const two=card();api.paint(two);
- assert.equal(one.querySelector('.pt-series-status').textContent,'Сезон 2 · Серия 8/10');assert.equal(one.querySelector('.card__view>.pt-card-watch__meter .time-line>div').style.width,'40%');assert.equal(one.querySelector('.pt-series-status .time-line'),null);assert.equal(requests,1);assert.equal(one.querySelectorAll('.pt-series-status').length,1);assert.equal(one.querySelector('.card-watched__item > span').textContent,'6 - Эпизод 6','Native history is preserved');
+ assert.equal(one.querySelector('.pt-series-status').textContent,'Серия 8/10 · Сезон 2');assert.equal(one.querySelector('.card__view>.pt-card-watch__meter .time-line>div').style.width,'40%');assert.equal(one.querySelector('.pt-series-status .time-line'),null);assert.equal(requests,1);assert.equal(one.querySelectorAll('.pt-series-status').length,1);assert.equal(one.querySelector('.card-watched__item > span').textContent,'6 - Эпизод 6','Native history is preserved');
  assert.equal(one.querySelector('.card__view .card-watched'),null,'Watch history cannot cover poster titles');assert.ok(one.querySelector('.pt-card-watch>.card-watched'));
- assert.equal(one.querySelector('.pt-card-watch__label').textContent,'1 сезон · 6 серия');assert.equal(one.querySelector('.pt-card-watch__time').textContent,'16:09');
+ assert.equal(one.querySelector('.pt-card-watch__label').textContent,'6 серия · 1 сезон');assert.equal(one.querySelector('.pt-card-watch__time').textContent,'16:09');
  const timeline=one.querySelector('.time-line');api.paint(one);assert.equal(one.querySelector('.time-line'),timeline,'Move, never replace the native progress node');
 
  }finally{w.close();}
@@ -34,7 +34,7 @@ test('cleared storage hides cached native watch history even if native memory an
   w.eval(code);const saved={file_view:{'16Original':{time:900,percent:50}},online_watched_last:{Original:{season:1,episode:6}}};
   const L={Utils:{hash:x=>x},Storage:{get:key=>saved[key]},Timeline:{filename:()=> 'file_view',view:()=>({time:900,percent:50})}},api=w.SeriesStatus.default(L,()=>{}),node=w.document.createElement('div');
   node.className='card focus';node.innerHTML='<div class="card__view"><div class="card-watched"><div class="card-watched__item"><span>6 - Эпизод 6</span><div class="time-line" data-hash="16Original"><div style="width:50%"></div></div></div></div></div>';w.document.body.appendChild(node);api.track(node,{original_title:'Original',media_type:'tv'});api.paint(node);
-  const wrap=node.querySelector('.card-watched');assert.equal(wrap.classList.contains('pt-card-watch--empty'),false);assert.equal(node.querySelector('.pt-card-watch__label').textContent,'1 сезон · 6 серия');
+  const wrap=node.querySelector('.card-watched');assert.equal(wrap.classList.contains('pt-card-watch--empty'),false);assert.equal(node.querySelector('.pt-card-watch__label').textContent,'6 серия · 1 сезон');
   saved.file_view['16Original']={percent:0,time:0};api.paint(node);assert.equal(wrap.classList.contains('pt-card-watch--empty'),true,'An old episode number is not proof of progress');
   saved.file_view['16Original']={percent:30,time:450};api.paint(node);assert.equal(wrap.classList.contains('pt-card-watch--empty'),false,'A new playback restores the caption');
   saved.file_view={};api.paint(node);assert.equal(wrap.classList.contains('pt-card-watch--empty'),true,'Global timecode reset overrides stale native timeline memory');
@@ -72,15 +72,43 @@ test('only the native viewed status marks a movie complete; independent lists ne
 });
 
 test('release badge labels the published group number as a season without changing canonical coordinates',()=>{
- const d=new JSDOM('<body><div class="card focus"><div class="card__view"></div></div></body>',{runScripts:'outside-only'}),w=d.window;try{w.eval(code);const facts={id:96677,number_of_seasons:3,seasons:[{season_number:3,name:'Часть 4',episode_count:8}],last_episode_to_air:{season_number:3,episode_number:8,air_date:'2020-01-01'}},L={Storage:{get:(k,f)=>f,set(){}},Api:{sources:{tmdb:{get:(url,p,ok)=>ok(facts)}}}};const api=w.SeriesStatus.default(L,n=>api.paint(n)),node=w.document.querySelector('.card');api.track(node,{id:96677,name:'Люпен',media_type:'tv',source:'tmdb'});api.paint(node);assert.equal(node.querySelector('.pt-series-status').textContent,'Сезон 4 · Серий 8');assert.match(node.querySelector('.pt-series-status').title,/Сезон 4/);assert.equal(facts.last_episode_to_air.season_number,3);
+ const d=new JSDOM('<body><div class="card focus"><div class="card__view"></div></div></body>',{runScripts:'outside-only'}),w=d.window;try{w.eval(code);const facts={id:96677,number_of_seasons:3,seasons:[{season_number:3,name:'Часть 4',episode_count:8}],last_episode_to_air:{season_number:3,episode_number:8,air_date:'2020-01-01'}},L={Storage:{get:(k,f)=>f,set(){}},Api:{sources:{tmdb:{get:(url,p,ok)=>ok(facts)}}}};const api=w.SeriesStatus.default(L,n=>api.paint(n)),node=w.document.querySelector('.card');api.track(node,{id:96677,name:'Люпен',media_type:'tv',source:'tmdb'});api.paint(node);assert.equal(node.querySelector('.pt-series-status').textContent,'Серий 8 · Сезон 4');assert.match(node.querySelector('.pt-series-status').title,/Сезон 4/);assert.equal(facts.last_episode_to_air.season_number,3);
  }finally{w.close();}
 });
 
 
-test('Shikimori release counts use their own metadata endpoint and never treat its ID as a TMDB season',()=>{
+test('Shikimori posters combine released episode counts with verified or explicitly named seasons',()=>{
  const d=new JSDOM('<body><div class="card pt-card-touch"><div class="card__view"></div></div></body>',{runScripts:'outside-only'}),w=d.window;
- try{w.eval(code);const node=w.document.querySelector('.card'),pending=[],L={Storage:{get:(k,f)=>f},Api:{sources:{tmdb:{get:()=>assert.fail('Shikimori ID sent to TMDB')},minimal_shiki:{metadata:(id,ok)=>pending.push({id,ok})}}}};const api=w.SeriesStatus.default(L,n=>api.paint(n));api.track(node,{id:777,name:'Anime',original_name:'Anime',source:'minimal_shiki',media_type:'tv',episodes:12,episodes_aired:6,status:'ongoing'});api.paint(node);assert.equal(node.querySelector('.pt-series-status').textContent,'Серия 6/12');assert.equal(pending.length,1);pending[0].ok({id:777,episodes:12,episodes_aired:12,status:'released'});assert.equal(node.querySelector('.pt-series-status').textContent,'Серий 12');api.paint(node);assert.equal(pending.length,1);
- const release=w.SeriesStatus.shikiReleaseStatus;assert.equal(release({original_name:'Anime 2nd Season',episodes:12,status:'released'}).season,0);assert.equal(release({original_name:'Anime 86',episodes:12,status:'released'}).season,0);assert.equal(release({original_name:'Anime',episodes:12,status:'anons'}),null);assert.equal(node.querySelector('.pt-card-watch--has-progress'),null,'Release counts must never create viewing progress');
+ try{w.eval(code);const node=w.document.querySelector('.card'),pending=[],L={Storage:{get:(k,f)=>f},Api:{sources:{tmdb:{get:()=>assert.fail('Shikimori ID sent to TMDB')},minimal_shiki:{release:(id,ok)=>pending.push({id,ok})}}}};const api=w.SeriesStatus.default(L,n=>api.paint(n));api.track(node,{id:777,name:'Anime',original_name:'Anime',source:'minimal_shiki',media_type:'tv',episodes:12,episodes_aired:6,status:'ongoing'});api.paint(node);assert.equal(node.querySelector('.pt-series-status').textContent,'Серия 6/12');assert.equal(pending.length,1);pending[0].ok({id:777,episodes:12,episodes_aired:12,status:'released',minimal_release_season:2});assert.equal(node.querySelector('.pt-series-status').textContent,'Серий 12 · Сезон 2');api.paint(node);assert.equal(pending.length,1);
+ const release=w.SeriesStatus.shikiReleaseStatus;
+ assert.equal(release({original_name:'Anime 2nd Season',episodes:12,status:'released'}).season,2);
+ assert.equal(release({original_name:'Anime 86',episodes:12,status:'released'}).season,0);
+ assert.equal(release({original_name:'Anime 2nd Season',kind:'ova',episodes:12,status:'released'}).season,0);
+ assert.equal(release({original_name:'Anime',episodes:12,status:'anons'}),null);
+ assert.equal(w.SeriesStatus.releaseCaption(release({original_name:'Anime 2nd Season',episodes:12,status:'anons'})),'Сезон 2');
+ assert.equal(node.querySelector('.pt-card-watch--has-progress'),null,'Release counts must never create viewing progress');
+ }finally{w.close();}
+});
+
+test('an absolute-numbered Shikimori title uses the latest aired season of its verified TMDB series',()=>{
+ const dom=new JSDOM('',{runScripts:'outside-only'}),w=dom.window;
+ try{
+  w.eval(code);
+  const {requestShikiRelease,shikiReleaseStatus,releaseCaption}=w.SeriesStatus;
+  const card={id:21,media_type:'tv',source:'minimal_shiki',minimal_release_season:1,episodes_aired:1180};
+  const media={id:37854,seasons:[{season_number:23,episode_count:24}],last_episode_to_air:{season_number:23,episode_number:12,air_date:'2020-01-01'}};
+  const calls=[];
+  const L={Api:{sources:{
+   tmdb:{get:(path,_params,ok)=>{calls.push(path);ok(media);}},
+   minimal_shiki:{metadata:(id,ok)=>ok({id,kind:'tv',episodes_aired:1180})}
+  }}};
+  assert.equal(releaseCaption(shikiReleaseStatus(card)),'Серий 1180');
+  assert.equal(releaseCaption(shikiReleaseStatus(card,{...media,id:21})),'Серий 1180');
+  assert.equal(releaseCaption(shikiReleaseStatus(card,media)),'Серия 12/24 · Сезон 23');
+  let result;
+  requestShikiRelease(L,card,(_json,status)=>{result=status;});
+  assert.deepEqual(calls,['tv/37854']);
+  assert.equal(releaseCaption(result),'Серия 12/24 · Сезон 23');
  }finally{w.close();}
 });
 
@@ -122,7 +150,7 @@ test('a completed episode clears the poster meter while season metadata is pendi
   assert.equal(card.querySelector('.card__view .pt-card-watch__meter'),null);
   assert.equal(card.querySelector('.pt-card-watch .time-line'),line,'The native timeline remains available');
   assert.ok(card.querySelector('.pt-card-watch--has-progress'),'Verified episode coordinates remain visible without season metadata');
-  assert.equal(card.querySelector('.pt-card-watch__label').textContent,'1 сезон · 1 серия');
+  assert.equal(card.querySelector('.pt-card-watch__label').textContent,'1 серия · 1 сезон');
   assert.equal(card.querySelector('.pt-card-watch').dataset.watchState,'progress','A finished episode is not a finished season');
  }finally{w.close();}
 });
@@ -134,6 +162,6 @@ test('an unfocused saved series prepares full coordinates without requesting rel
   w.LampaView={online:{lastWatched:()=>saved}};
   const L={Timeline:{view:()=>saved,render:()=>{const line=w.document.createElement('div');line.className='time-line';line.dataset.hash=saved.hash;line.innerHTML='<div></div>';return line;}},Api:{sources:{tmdb:{get:()=>assert.fail('Unfocused captions must not start network requests')}}}};
   const api=w.SeriesStatus.default(L,()=>{}),node=w.document.querySelector('.card');api.track(node,{id:91,name:'Series',source:'tmdb',media_type:'tv'});api.paint(node);
-  assert.equal(node.querySelector('.pt-card-watch__label').textContent,'3 сезон · 5 серия');assert.equal(node.querySelector('.pt-card-watch').dataset.watchState,'progress');assert.equal(node.querySelector('.pt-card-watch__icon').hidden,true,'Partial episodes use their saved time, never a history icon');assert.ok(node.querySelector('.card__view>.pt-card-watch__badge'));
+  assert.equal(node.querySelector('.pt-card-watch__label').textContent,'5 серия · 3 сезон');assert.equal(node.querySelector('.pt-card-watch').dataset.watchState,'progress');assert.equal(node.querySelector('.pt-card-watch__icon').hidden,true,'Partial episodes use their saved time, never a history icon');assert.ok(node.querySelector('.card__view>.pt-card-watch__badge'));
  }finally{w.close();}
 });

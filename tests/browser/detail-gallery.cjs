@@ -107,10 +107,13 @@ async function open(page,movie){
      assert.equal(await watchButton.getAttribute('aria-label'),'Продолжить');
      const chip=watchStatus.locator('.full-start__rate');
      const watchLabel=chip.locator('.minimal-detail-watch-state');
-     const matchesEpisodeSize=()=>chip.evaluate(node=>getComputedStyle(node.firstElementChild).fontSize===getComputedStyle(node.lastElementChild).fontSize);
-     assert.equal(await chip.locator('span').first().textContent(),mobile?'Просмотр':'2 сезон · 1 серия');
+     const matchesEpisodeStyle=()=>chip.evaluate(node=>{
+      const episode=getComputedStyle(node.firstElementChild),status=getComputedStyle(node.lastElementChild);
+      return episode.fontSize===status.fontSize && episode.fontWeight===status.fontWeight && episode.color===status.color;
+     });
+     assert.equal(await chip.locator('span').first().textContent(),mobile?'Просмотр':'1 серия · 2 сезон');
      assert.equal(await watchLabel.textContent(),'50%');
-     assert.ok(await matchesEpisodeSize(),'Progress uses the same text size as the episode');
+     assert.ok(await matchesEpisodeStyle(),'Progress uses the same typography as the episode');
      if(mobile)assert.ok(await chip.evaluate(node=>{
       const bounds=node.getBoundingClientRect();
       return bounds.right<=window.innerWidth && Array.from(node.children).every(child=>{
@@ -133,9 +136,9 @@ async function open(page,movie){
       Lampa.Timeline.update({hash:Lampa.Utils.hash(movie?title:'21'+title),percent:100,time:3660,duration:3660});
      },mobile);
      assert.equal(await watchButton.getAttribute('aria-label'),'Смотреть');
-     assert.equal(await chip.locator('span').first().textContent(),mobile?'Фильм просмотрен':'2 сезон · 1 серия');
+     assert.equal(await chip.locator('span').first().textContent(),mobile?'Фильм просмотрен':'1 серия · 2 сезон');
      assert.equal(await watchLabel.textContent(),mobile?'':'Просмотрено');
-     if(!mobile)assert.ok(await matchesEpisodeSize(),'The watched label uses the same text size as the episode');
+     if(!mobile)assert.ok(await matchesEpisodeStyle(),'The watched label uses the same typography as the episode');
      assert.deepEqual(await actionRows(),layout,'Completing the episode must leave every action in its original row');
      if(tv){
       selectedPaths=await page.evaluate(()=>{

@@ -14,7 +14,7 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
    for(const type of ['book','like','wath'])Lampa.Favorite.toggle(type,qaWatchCards[1].data);
   },mode);
   await page.waitForFunction(()=>document.querySelectorAll('#qa-watch-posters .card__view>.pt-card-watch__badge').length===4);
-  const expected=['3 сезон · 5 серия','1 сезон · 5 серия','Сезон 2 просмотрен','Фильм просмотрен'];
+  const expected=['5 серия · 3 сезон','5 серия · 1 сезон','Сезон 2 просмотрен','Фильм просмотрен'];
   for(const theme of ['minimal','glass'])for(const size of ['small','normal','bigger']){
    await page.evaluate(({theme,size})=>{Lampa.Storage.set('lampa_view_theme',theme);Lampa.Storage.set('interface_size',size);}, {theme,size});
    await page.waitForTimeout(170);
@@ -37,7 +37,7 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
   assert.ok((await page.locator('#qa-watch-posters .pt-card-watch__badge').evaluateAll(nodes=>nodes.map(n=>getComputedStyle(n).visibility))).every(v=>v==='hidden'));
   await page.evaluate(()=>Lampa.Timeline.update({hash:Lampa.Utils.hash('15Partial episode'),percent:95,time:3471,duration:3471}));
   await page.waitForFunction(()=>!qaWatchCards[1].render(true).querySelector('.pt-card-watch__icon').hidden);
-  assert.equal(await page.locator('#qa-watch-posters .card').nth(1).locator('.pt-card-watch__label').textContent(),'1 сезон · 5 серия','A completed episode does not complete its season');
+  assert.equal(await page.locator('#qa-watch-posters .card').nth(1).locator('.pt-card-watch__label').textContent(),'5 серия · 1 сезон','A completed episode does not complete its season');
   assert.deepEqual(r.errors,[]);console.log(engine.name()+' '+mode+': four watch states, native materials, scales and corner collisions PASS');
  }finally{await r.context.close();}
 }}finally{await browser.close();}}})().catch(e=>{console.error(e);process.exitCode=1;});

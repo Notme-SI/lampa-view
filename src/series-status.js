@@ -6,13 +6,47 @@ import {text as lampaViewText} from './i18n.js';
 import tmdbGet from './tmdb.js';
 import {namedSeason} from './episode-metadata.js';
 import {animeSeasonTitle,groupedAnimeRelease} from './anime-release.js';
+import {animeTarget} from './anime-index.js';
 import {isAnime} from './metadata.js';
 const day=value=>String(value || '').slice(0,10);
-export function shikiReleaseStatus(data={}){
+function absoluteAnimeId(card){
+ const target=animeTarget(card);
+ return target?.type==='tv' && target.release.absolute && !target.release.season?target.id:0;
+}
+export function shikiReleaseStatus(data={},linkedSeries){
+ const absoluteId=data.source==='minimal_shiki'?absoluteAnimeId(data):0;
+ if(absoluteId && Number(linkedSeries?.id)===absoluteId){
+  const status=canonicalReleaseStatus({...linkedSeries,minimal_anime:true},[]);
+  if(status)return status;
+ }
+ const kind=data.kind || data.minimal_anime_kind;
+ const mainSeries=data.media_type!=='movie' && (!kind || ['tv','tv_13','tv_24','ona'].includes(kind));
+ // An entry with absolute episode numbering spans multiple seasons.
+ const season=mainSeries && !absoluteId?
+  Number(data.minimal_franchise_season || data.minimal_release_season) ||
+   animeSeasonTitle(data.original_name || data.original_title || data.name) || animeSeasonTitle(data.russian || data.title):0;
  const total=Math.max(0,Number(data.episodes)||0),count=Math.max(0,Number(data.episodes_aired)||0) || (data.status==='released'?total:0);
- if(!count)return null;
- // Shikimori lists seasons as separate anime entries; never assume season 1.
- return {season:0,count,total:Math.max(total,count)};
+ return season || count?{season,count,total:Math.max(total,count)}:null;
+}
+export function requestShikiRelease(L,card,done){
+ const api=L.Api?.sources?.minimal_shiki,id=card.shikimori_id || card.id;
+ const absoluteId=absoluteAnimeId(card),read=absoluteId?api?.metadata:api?.release || api?.metadata;
+ function receive(json){
+  const data=Number(json?.id)===Number(card.id)?{...card,...json,source:'minimal_shiki'}:card;
+  const finish=linked=>done(json,shikiReleaseStatus(data,linked));
+  if(absoluteId)tmdbGet(L,'tv/'+absoluteId,{},finish,()=>finish(),{life:60});
+  else finish();
+ }
+ if(read)read(id,receive,()=>receive(null));
+ else receive(null);
+}
+export function episodeCaption(season,episode){
+ return season>0?lampaViewText('{0} серия · {1} сезон',[episode,season]):lampaViewText('Серия {0}',[episode]);
+}
+export function releaseCaption({count,total,season},displaySeason=season){
+ const partial=total>count;
+ const episodes=count?(partial?lampaViewText('Серия ')+count+'/'+total:lampaViewText('Серий ')+count):'';
+ return [episodes,displaySeason?lampaViewText('Сезон {0}',[displaySeason]):''].filter(Boolean).join(' · ');
 }
 export function releaseStatus(data={},episodes=[],today=day(new Date().toISOString())){
  if(data.source==='minimal_shiki')return shikiReleaseStatus(data);
@@ -124,7 +158,7 @@ function watchFooter(L,node,data,series){
  let label='',timeline=null,watchSeason=0,watchEpisode=0;
  const progressHash=row.querySelector('.time-line').getAttribute('data-hash');
  if(progressHash)timeline=view(progressHash);
- if(shared){watchSeason=target?target.season:shared.season;watchEpisode=target?target.episode:shared.episode;timeline=view(shared.hash);label=lampaViewText("Серия {0} · Сезон {1}", [watchEpisode,watchSeason]);}else if(series){
+ if(shared){watchSeason=target?target.season:shared.season;watchEpisode=target?target.episode:shared.episode;timeline=view(shared.hash);}else if(series){
   const match=text.match(/^(\d+)\s*[-–]|(?:Эпизод|Серия|Episode)\s*(\d+)/i),episode=match && Number(match[1] || match[2]);
   const table=L.TimeTable && L.TimeTable.get?L.TimeTable.get(data) || []:[];
   let season=0;
@@ -141,7 +175,7 @@ function watchFooter(L,node,data,series){
    if(history && Number(history.episode)===episode){const key=hash([Number(history.season),Number(history.season)>10?':':'',episode,data.original_title].join(''));if(!progressHash || String(key)===progressHash){season=Number(history.season)||0;timeline=view(key);}}
   }
   watchSeason=season;watchEpisode=episode;
-  label=episode?lampaViewText("Серия {0}{1}", [episode,season?lampaViewText(" · Сезон {0}", [season]):'']):lampaViewText("Просмотрено");
+  if(!episode)label=lampaViewText("Просмотрено");
  }else{
   if(movieTime)timeline=movieTime;
   else if(!progressHash)timeline=L.Timeline && L.Timeline.filename?view(hash(data.original_title)):L.Timeline && L.Timeline.watched?L.Timeline.watched(data,true):view(hash(data.original_title));
@@ -158,7 +192,7 @@ function watchFooter(L,node,data,series){
  const shown={...(target || timeline)};
  if(Number(shown.percent)>=WATCHED_PERCENT)shown.percent=100;
  if(complete){watchEpisode=0;label=series?lampaViewText("Сезон {0} просмотрен", [shared.season]):lampaViewText("Фильм просмотрен");}
- else if(watchEpisode)label=watchSeason?lampaViewText("{0} сезон · {1} серия",[watchSeason,watchEpisode]):lampaViewText("Серия {0}",[watchEpisode]);
+ else if(watchEpisode)label=episodeCaption(watchSeason,watchEpisode);
  slot.dataset.watchState=complete?'complete':'progress';
  // Keep the native timeline node and subscriptions. Only the status and its
  // real saved time move into the small poster badge.
@@ -192,7 +226,7 @@ export default function seriesStatus(L,schedule){
  const storage='minimal_series_release_v5',lifetime=900000;
  const saved=L.Storage && L.Storage.get?readCache(L,storage,[]):[];
  if(Array.isArray(saved))for(const pair of saved.slice(-80))if(Array.isArray(pair) && typeof pair[0]==='string' && pair[1] && pair[1].details && Date.now()-pair[1].at<lifetime)cache.set(pair[0],pair[1]);
- const cacheKey=data=>(data.source==='minimal_shiki'?'shiki':'tmdb')+':'+data.id+':'+(L.Storage && L.Storage.get?L.Storage.get('language','ru'):'ru');
+ const cacheKey=data=>(data.source==='minimal_shiki'?'shiki-seasoned':'tmdb')+':'+data.id+':'+(L.Storage && L.Storage.get?L.Storage.get('language','ru'):'ru');
  function save(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{if(L.Storage && L.Storage.set)writeCache(L,storage,Array.from(cache).filter(([,entry])=>entry.details).slice(-80));},150);}
  function detailsOnly(json){if(json.source==='minimal_shiki')return {id:json.id,source:json.source,episodes:json.episodes,episodes_aired:json.episodes_aired,status:json.status,minimal_release_season:json.minimal_release_season};return {id:json.id,number_of_seasons:json.number_of_seasons,seasons:(Array.isArray(json.seasons)?json.seasons:[]).map(s=>({season_number:s.season_number,name:s.name,episode_count:s.episode_count,air_date:s.air_date})),last_episode_to_air:json.last_episode_to_air,next_episode_to_air:json.next_episode_to_air,episode_run_time:json.episode_run_time};}
  function paint(node){
@@ -211,15 +245,11 @@ export default function seriesStatus(L,schedule){
   const available=facts || releaseStatus(data,table);
   let box=view.querySelector('.pt-series-status');
   if(available && flag(L,'card_episodes',true)){
-   if(!box){box=document.createElement('div');box.className='pt-series-status';box.innerHTML='<span></span><span></span>';view.appendChild(box);}
-   const partial=available.total>available.count;
-   const released=partial?available.count+'/'+available.total:String(available.count);
+   if(!box){box=document.createElement('div');box.className='pt-series-status';view.appendChild(box);}
    const group=namedSeason(historyData,available.season),published=group?Number((group.match(/\d+/)||[])[0]):0;
-   const seasonName=available.season?lampaViewText("Сезон {0}",[published || available.season]):'',prefix=seasonName?seasonName+" · ":'';
-   const episodes=(partial?lampaViewText("Серия "):lampaViewText("Серий "))+released,text=prefix+episodes;
-   if(box.textContent!==text){box.firstElementChild.textContent=prefix;box.lastElementChild.textContent=episodes;}
-   const tooltip=available.season?lampaViewText("Сезон {0}: вышло {1}. История просмотра — под обложкой.", [available.season,released]).replace(lampaViewText("Сезон {0}",[available.season]),seasonName):text;
-   if(box.title!==tooltip)box.title=tooltip;
+   const text=releaseCaption(available,published || available.season);
+   if(box.textContent!==text)box.textContent=text;
+   if(box.title!==text)box.title=text;
   }else if(box)box.remove();
   // Release metadata stays independent of the native watch timeline below the cover.
   if(!fresh && !pending.has(key) && fetchable && queue.length<8){const task={key,data,nodes:new Set([node])};pending.set(key,task);queue.push(task);pump();}
@@ -230,7 +260,7 @@ export default function seriesStatus(L,schedule){
    if(![...task.nodes].some(activeCard)){pending.delete(task.key);continue;}
    running++;let done=false;
    const finish=(json,display)=>{if(done)return;done=true;running--;pending.delete(task.key);const table=L.TimeTable && L.TimeTable.get?L.TimeTable.get(task.data) || []:[];cache.set(task.key,{at:Date.now(),details:json && Number(json.id)===Number(task.data.id)?detailsOnly(json):null,value:display || releaseStatus(json && Number(json.id)===Number(task.data.id)?{...task.data,...json}:task.data,table)});if(cache.size>80)cache.delete(cache.keys().next().value);save();for(const node of task.nodes)if(activeCard(node) && node.matches('.focus,.hover,.pt-card-pointer,.pt-card-touch'))schedule(node);pump();};
-   if(task.data.source==='minimal_shiki'){const api=L.Api && L.Api.sources && L.Api.sources.minimal_shiki;if(api && api.release)api.release(task.data.shikimori_id || task.data.id,json=>finish({...json,source:'minimal_shiki'}),()=>finish(null));else if(api && api.metadata)api.metadata(task.data.shikimori_id || task.data.id,json=>finish({...json,source:'minimal_shiki'}),()=>finish(null));else finish(null);continue;}
+   if(task.data.source==='minimal_shiki'){requestShikiRelease(L,task.data,(json,status)=>finish(json && {...json,source:'minimal_shiki'},status));continue;}
    tmdbGet(L,'tv/'+task.data.id,{},json=>{
     const card={...task.data,...json};
     if(json && Number(json.id)===Number(task.data.id) && isAnime(card) && Number(json.number_of_seasons)===1 && L.Utils && L.Utils.splitEpisodesIntoSeasons){

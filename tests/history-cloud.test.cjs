@@ -86,3 +86,20 @@ test('a later cloud episode can replace stale coordinates without borrowing a ti
   assert.equal(latestEpisode(card,online,{...entry,last:{season:2,episode:6}}),local);
  }finally{w.close();}
 });
+
+test('refresh history remains the focused command without a checkmark',()=>{
+ const d=new JSDOM('',{runScripts:'outside-only'}),w=d.window;
+ try{
+  load(w,'watch-actions');
+  let dialog,refreshes=0;
+  w.LampaView={sync:{refresh(force){assert.equal(force,true);refreshes++;}}};
+  const L={Storage:{get:(_key,fallback)=>fallback},Account:{Permit:{sync:true,account:{email:'a@example.test',profile:{id:7}}},Api:{watchHistory(){}}},Select:{show(options){dialog=options;}}};
+  w.Module.showWatchState(L,{id:81,name:'Series',media_type:'tv'});
+  const refresh=dialog.items.find(item=>item.title==='Обновить историю');
+  assert.equal(refresh.selected,true,'The remote initially focuses the refresh command');
+  assert.equal(dialog.nomark,true,'The native select menu hides the selection mark');
+  assert.equal(dialog.nohide,true);
+  refresh.onSelect();
+  assert.equal(refreshes,1);
+ }finally{w.close();}
+});

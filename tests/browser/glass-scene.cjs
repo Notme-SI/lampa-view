@@ -42,7 +42,7 @@ async function run(engine, browser, mode) {
   L.Api.main = (options,success) => success([{title:'QA',url:'qa',results:[data[0]]}]);
   L.Api.category = (options,success) => success([{title:'QA',url:'qa',results:data}]);
   L.Api.full = (p,ok) => ok({movie:{...data[1],production_countries:[],production_companies:[],spoken_languages:[],genres:[]},persons:{crew:[],cast:[]},discuss:{result:[]},images:{logos:[]},videos:{results:[]},simular:{results:[]},recomend:{results:[]}});
-  L.Api.sources.tmdb.get = (url,p,ok) => ok(url==='tv/37854'?{...anime[0],id:37854}:url.includes('_credits') ? {cast:data,crew:[]} : {results:url.includes('with_original_language=ja')?anime:data,total_pages:1,page:1});
+  L.Api.sources.tmdb.get = (url,p,ok) => ok(url==='tv/37854'?{...anime[0],id:37854,seasons:[{season_number:23,episode_count:24}],last_episode_to_air:{season_number:23,episode_number:12,air_date:'2020-01-01'}}:url.includes('_credits') ? {cast:data,crew:[]} : {results:url.includes('with_original_language=ja')?anime:data,total_pages:1,page:1});
   const network=window.testNetwork;window.testNetwork=(url,ok,fail)=>/shikimori\.(io|one)\/api\/animes\?/.test(url)?ok([{id:21,kind:'tv',name:'Shikimori anime',russian:'Аниме из Shikimori',image:{original:'/poster.jpg'}}]):network(url,ok,fail);
   L.Storage.set('lampa_view_theme','glass');
   L.Storage.set('background',false);
@@ -244,6 +244,7 @@ async function run(engine, browser, mode) {
   await expectColor(2);
   assert.equal(await page.locator('.activity--active [data-catalogue=shikimori]').getAttribute('aria-selected'),'true');
   assert.equal(await animeHero.locator('.pt-hero__title').textContent(),'Аниме из Shikimori');
+  assert.match(await animeHero.locator('.pt-hero__meta').textContent(),/Серия 12\/24 · Сезон 23/);
   await page.evaluate(()=>Lampa.Activity.push({component:'category_full',url:'order=popularity',title:'Аниме',source:'minimal_shiki',page:1}));
   await page.waitForFunction(()=>Lampa.Activity.active().component==='category_full' && !document.body.classList.contains('pt-anime-home') && !document.body.style.getPropertyValue('--pt-scene-rgb') && !document.body.style.getPropertyValue('--pt-material-rgb') && !document.body.style.getPropertyValue('--pt-home-atmosphere'));
   assert.equal(await page.locator('.activity--active .pt-hero').count(),0);

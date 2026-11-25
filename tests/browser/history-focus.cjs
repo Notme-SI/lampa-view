@@ -40,7 +40,7 @@ const {setup}=require('../fixtures/native-browser.cjs'),{stage}=require('../fixt
   await page.waitForSelector('#qa-movie .pt-card-watch',{state:'attached'});
   await page.locator('#qa-release').hover();
   await page.waitForSelector('#qa-release .pt-series-status');
-  assert.equal(await page.locator('#qa-release .pt-series-status').textContent(),'Сезон 2 · Серия 6/10','Release metadata loads on native focus without opening the full card');
+  assert.equal(await page.locator('#qa-release .pt-series-status').textContent(),'Серия 6/10 · Сезон 2','Release metadata loads on native focus without opening the full card');
   await page.evaluate(()=>{jQuery('#qa-release').removeClass('focus');jQuery('#qa-movie').addClass('focus').triggerHandler('hover:focus');});
   await page.waitForSelector('#qa-movie .pt-card-watch__badge');
   assert.equal(await page.locator('#qa-movie .pt-card-watch__time').textContent(),'16:09','Saved movie aliases work without a native watched overlay');
@@ -91,7 +91,7 @@ const {setup}=require('../fixtures/native-browser.cjs'),{stage}=require('../fixt
   await page.evaluate(()=>Lampa.Timeline.update({hash:Lampa.Utils.hash('210Cyberpunk: Edgerunners'),percent:40,time:915,duration:2400}));
   await page.waitForFunction(()=>!document.querySelector('#qa-native-season .pt-card-watch--complete'));
   assert.equal(await page.locator('#qa-native-season .pt-card-watch__time').textContent(),'15:15');
-  assert.equal(await page.locator('#qa-native-season .pt-card-watch__label').textContent(),'2 сезон · 10 серия');
+  assert.equal(await page.locator('#qa-native-season .pt-card-watch__label').textContent(),'10 серия · 2 сезон');
   assert.equal(await page.locator('#qa-native-season .pt-card-watch').getAttribute('data-watch-state'),'progress');
   assert.notEqual(await page.locator('#qa-native-season .time-line').evaluate(n=>getComputedStyle(n).display),'none','A partial final episode must keep its track');
   await page.locator('#qa-native-season').evaluate(n=>n.remove());

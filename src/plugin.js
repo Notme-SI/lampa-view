@@ -11,6 +11,7 @@ import searchHistory from './search-history.js';
 import tmdbGet,{installTmdb,installFullGuard,installListGuard} from './tmdb.js';
 import {animeMode,isAnimeHome,SHIKI_WATCH} from './catalogue.js';
 import {animeTarget} from './anime-index.js';
+import {releaseCaption,requestShikiRelease,shikiReleaseStatus} from './series-status.js';
 import {ANIME_HISTORY} from './continue-watching.js';
 import heroAssets from './hero-assets.js';
 import heroTransition from './hero-transition.js';
@@ -501,7 +502,16 @@ if (!ROOT.LampaView) {
          else{assets.logo(selected,renderLogo);assets.studio(selected,renderStudio);}
         }
         const year=(card.release_date || card.first_air_date || '').slice(0,4);
-        metaText.text([year,anime?lampaViewText('Аниме'):kind==='tv'?lampaViewText("Сериал"):lampaViewText("Фильм"),card.vote_average?Number(card.vote_average).toFixed(1):''].filter(Boolean).join('  ·  '));
+        const type=anime?lampaViewText('Аниме'):kind==='tv'?lampaViewText("Сериал"):lampaViewText("Фильм");
+        const rating=card.vote_average?Number(card.vote_average).toFixed(1):'';
+        const showMeta=status=>metaText.text([year,type,status?releaseCaption(status):'',rating].filter(Boolean).join('  ·  '));
+        const release=card.minimal_shiki_banner_status;
+        showMeta(release);
+        if(card.source==='minimal_shiki' && kind==='tv' && !release?.season){
+          requestShikiRelease(L,card,(_json,status)=>{
+            if(token===logoToken && element[0].isConnected && status)showMeta(status);
+          });
+        }
         const tv=document.body.classList.contains('pt-tv');
         if(!tv || prepared)branding();
         overview.text(card.overview);
@@ -621,7 +631,8 @@ if (!ROOT.LampaView) {
         const finish=media=>{
           clearTimeout(timer);
           resolve(media?.id===target.id && media.backdrop_path && media.overview?
-            {...card,tmdb_id:target.id,backdrop_path:media.backdrop_path,overview:media.overview}:null);
+            {...card,tmdb_id:target.id,backdrop_path:media.backdrop_path,overview:media.overview,
+              ...(target.type==='tv'?{minimal_shiki_banner_status:shikiReleaseStatus(card,media)}:{})}:null);
         };
         try{tmdbGet(L,path,{},finish,()=>finish(null));}catch(error){finish(null);}
       })));

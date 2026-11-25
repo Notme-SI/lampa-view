@@ -459,7 +459,6 @@ body.lampa_view .minimal-detail-identity .full-start-new__buttons:not(.minimal-a
 body.lampa_view .minimal-detail-identity .full-start-new__buttons:not(.minimal-actions--auto)>.button--play>span {display:inline!important}
 body.lampa_view .minimal-detail-header .minimal-detail-watch-status {margin-bottom:0}
 body.lampa_view .minimal-detail-header .minimal-detail-watch-chip {position:relative;max-width:100%;overflow:hidden;flex-wrap:wrap;text-align:left;font-family:inherit}
-body.lampa_view .minimal-detail-watch-state {font-weight:600}
 body.lampa_view .minimal-detail-watch-chip::after {content:"";position:absolute;bottom:0;left:0;width:var(--pt-watch-percent,0%);height:2px;background:currentColor;pointer-events:none}
 body.lampa_view .minimal-detail-header .minimal-detail-watch-chip.focus,body.lampa_view .minimal-detail-header .minimal-detail-watch-chip:focus-visible {outline:1px solid var(--pt-accent);outline-offset:2px}
 body.lampa_view .minimal-detail-watch-status[hidden] {display:none!important}
@@ -663,7 +662,6 @@ body.lampa_view .card.focus .pt-card-watch__badge,body.lampa_view .card.hover .p
 body.lampa_view .card .pt-card-watch>.card-watched.pt-card-watch--empty {display:none!important}
 /* One compact release pill below Series, shared by desktop and TV. */
 body.lampa_view .pt-series-status {position:absolute;left:auto;right:4px;top:2.6em;z-index:4;display:block;width:auto;max-width:calc(100% - 8px);font-size:.55em;line-height:1;white-space:nowrap;padding:.3em .4em;border:1px solid #ffffff25;border-radius:.35em;background:#000b;color:var(--pt-warm-text,#d4e2e6);pointer-events:none;box-sizing:border-box}
-body.lampa_view .pt-series-status>span {white-space:pre}
 
 /* Badges keep their own corners and wrap to another line when space is short. */
 body.lampa_view .card__view .pt-quality,body.lampa_view .card__view .pt-kind {max-width:calc(100% - 8px);box-sizing:border-box;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

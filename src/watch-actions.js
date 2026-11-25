@@ -1,5 +1,5 @@
 import {text as lampaViewText,locale} from './i18n.js';
-import {completedSeason,watchClock} from './series-status.js';
+import {completedSeason,episodeCaption,watchClock} from './series-status.js';
 import {WATCHED_PERCENT} from './watch-threshold.js';
 import watchHistory,{latestEpisode} from './watch-history.js';
 
@@ -8,8 +8,7 @@ export function watchSummary(L,card,online,entry){
  const marks=L.Account?.Permit?.sync?L.Favorite?.cloud?.(card):L.Favorite?.check?.(card);
  const progress=series?latestEpisode(card,online,entry):online?.reader?.(card)(0,0);
  const episode=series && progress;
- const number=episode && Number(episode.episode)>0?
-  (Number(episode.season)>0?lampaViewText('{0} сезон · {1} серия',[episode.season,episode.episode]):lampaViewText('Серия {0}',[episode.episode])):'';
+ const number=episode && Number(episode.episode)>0?episodeCaption(episode.season,episode.episode):'';
  const time=progress?.time>0?watchClock(progress.time):'';
  if(!series && (marks?.viewed || progress?.percent>=WATCHED_PERCENT))return {label:lampaViewText('Фильм просмотрен'),number,time,complete:'movie'};
  if(series && completedSeason(L,card,online,progress))return {label:lampaViewText('Сезон {0} просмотрен',[progress.season]),number,time,complete:'season'};
@@ -59,7 +58,7 @@ export function showWatchState(L,card){
   onDraw:item=>{widgets[key]=item.find('.selectbox-item__subtitle');}
  }));
  if(history.status().cloud)items.push({title:refreshLabel,selected:true,onSelect:()=>{if(sync)sync.refresh(true);else history.refresh(true);update();}});
- L.Select.show({title:lampaViewText('Состояние просмотра'),items,nohide:true,onBack:()=>{close();L.Controller.toggle('full_start');}});
+ L.Select.show({title:lampaViewText('Состояние просмотра'),items,nohide:true,nomark:true,onBack:()=>{close();L.Controller.toggle('full_start');}});
  update();
 }
 

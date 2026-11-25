@@ -100,7 +100,7 @@ async function run(browser,mode,theme){
     cards:[...document.querySelectorAll('#qa-input .card')].map(n=>({classes:n.className,label:n.querySelector('.pt-series-status')?.textContent,html:n.querySelector('.pt-series-status')?.outerHTML}))
    }))));
   });
-  assert.equal(await series.locator('.pt-series-status').textContent(),'Сезон 2 · Серия 6/10');
+  assert.equal(await series.locator('.pt-series-status').textContent(),'Серия 6/10 · Сезон 2');
   assert.equal(await page.locator('#qa-input .pt-card-touch').count(),0);
   await page.waitForTimeout(250);
   await series.locator('.card__title').click();

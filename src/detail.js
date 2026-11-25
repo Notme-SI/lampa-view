@@ -7,6 +7,7 @@ import {chooseLogo,pickStudio} from './logos.js';
 import comments from './comments.js';
 import {artworkSize,logoSize,detailBackdrop,officialBanner} from './artwork.js';
 import {onlineButton,watchActions,showWatchState} from './watch-actions.js';
+import {episodeCaption} from './series-status.js';
 import {prepareScreenshotRow,styleScreenshots,nextDetailEpisode,orderDetailSections,styleSuggestions,removeDetailRows} from './detail-gallery.js';
 import installSuggestions,{relevantSuggestions} from './detail-suggestions.js';
 const preparedSuggestions=new WeakSet();
@@ -53,7 +54,7 @@ function moveTechnicalDetails(L,card,right,episodeBook){
   if(date){
    const node=document.createElement('time');
    node.className='minimal-detail-next-episode';node.dateTime=date.iso;
-   const episode=date.episode?(date.season?lampaViewText('{0} сезон · {1} серия',[date.season,date.episode]):lampaViewText('Серия {0}',[date.episode])):'';
+   const episode=date.episode?episodeCaption(date.season,date.episode):'';
    node.textContent=[lampaViewText('Следующая серия: {0}',[date.label]),episode].filter(Boolean).join(' · ');
    retained.push(node);
   }

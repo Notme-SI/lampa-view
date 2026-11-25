@@ -10,7 +10,7 @@ export function shikiCard(a,base=BASE){
  const tv=a.kind!=='movie',date=a.aired_on || '',img=a.image && (a.image.original || a.image.preview) || '';
  const url=value=>value?(value.startsWith('http')?value:base+value):'';
  const posterSources={high:url(img),medium:url(img || a.image && a.image.preview)};
- return {id:a.id,shikimori_id:a.id,episodes:Number(a.episodes)||0,episodes_aired:Number(a.episodes_aired)||0,status:a.status || '',title,original_title:a.name,...(tv?{name:title,original_name:a.name,first_air_date:date}:{release_date:date}),media_type:tv?'tv':'movie',source:'minimal_shiki',img:url(img),minimalPosterSources:posterSources,vote_average:Number(a.score) || 0};
+ return {id:a.id,shikimori_id:a.id,episodes:Number(a.episodes)||0,episodes_aired:Number(a.episodes_aired)||0,status:a.status || '',title,original_title:a.name,...(tv?{name:title,original_name:a.name,first_air_date:date,minimal_anime_kind:a.kind}:{release_date:date}),media_type:tv?'tv':'movie',source:'minimal_shiki',img:url(img),minimalPosterSources:posterSources,vote_average:Number(a.score) || 0};
 }
 export default function shikimori(L){
  const cache=new Map(),pending=new Map(),queue=[];let timer=null,running=0,lastStart=0;
