@@ -136,9 +136,10 @@ async function open(page,movie){
       Lampa.Timeline.update({hash:Lampa.Utils.hash(movie?title:'21'+title),percent:100,time:3660,duration:3660});
      },mobile);
      assert.equal(await watchButton.getAttribute('aria-label'),'Смотреть');
-     assert.equal(await chip.locator('span').first().textContent(),mobile?'Фильм просмотрен':'1 серия · 2 сезон');
-     assert.equal(await watchLabel.textContent(),mobile?'':'Просмотрено');
-     if(!mobile)assert.ok(await matchesEpisodeStyle(),'The watched label uses the same typography as the episode');
+     const completed=mobile?'Фильм просмотрен':'Просмотрено · 1 серия · 2 сезон';
+     assert.equal(await chip.locator('span').first().textContent(),completed);
+     assert.equal(await watchLabel.isVisible(),false);
+     assert.equal(await chip.getAttribute('aria-label'),'История просмотра · '+completed);
      assert.deepEqual(await actionRows(),layout,'Completing the episode must leave every action in its original row');
      if(tv){
       selectedPaths=await page.evaluate(()=>{

@@ -1,4 +1,4 @@
-/*! Lampa View 0.5.204 | Original code: MIT; component licenses: THIRD-PARTY.md
+/*! Lampa View 0.5.205 | Original code: MIT; component licenses: THIRD-PARTY.md
 MIT License
 
 Copyright (c) 2026 Lampa View contributors
@@ -254,9 +254,9 @@ szczegóły",es:"Abrir ficha"},"Далее · {0}":{en:"Up next · {0}",uk:"Да
 pl:"Dzisiaj",es:"Hoy"},Завтра:{en:"Tomorrow",uk:"Завтра",be:"Заўтра",zh:"明天",pt:"Amanhã",bg:"Утре",he:"מחר",cs:"Zítra",ro:"Mâine",
 fr:"Demain",pl:"Jutro",es:"Mañana"},"Есть в истории":{en:"In watch history",uk:"Є в історії",be:"Ёсць у гісторыі",zh:"在观看记录中",
 pt:"No histórico",bg:"В историята",he:"בהיסטוריית הצפייה",cs:"V historii sledování",ro:"În istoricul vizionărilor",fr:"Dans l’his\
-torique",pl:"W historii oglądania",es:"En el historial"},"{0} · просмотрено":{en:"{0} · Watched",uk:"{0} · переглянуто",be:"{0} · праг\
-леджана",zh:"{0} · 已看",pt:"{0} · Visto",bg:"{0} · Гледано",he:"{0} · נצפה",cs:"{0} · Zhlédnuto",ro:"{0} · Vizionat",fr:"{0} · Vu",
-pl:"{0} · Obejrzano",es:"{0} · Visto"},"Состояние просмотра":{en:"Viewing status",uk:"Стан перегляду",be:"Стан прагляду",
+torique",pl:"W historii oglądania",es:"En el historial"},"Просмотрено · {0}":{en:"Watched · {0}",uk:"Переглянуто · {0}",be:"Прагледжан\
+а · {0}",zh:"已看 · {0}",pt:"Visto · {0}",bg:"Гледано · {0}",he:"נצפה · {0}",cs:"Zhlédnuto · {0}",ro:"Vizionat · {0}",fr:"Vu · {0}",pl:"O\
+bejrzano · {0}",es:"Visto · {0}"},"Состояние просмотра":{en:"Viewing status",uk:"Стан перегляду",be:"Стан прагляду",
 zh:"观看状态",pt:"Estado de visualização",bg:"Състояние на гледането",he:"מצב צפייה",cs:"Stav sledování",ro:"Starea vizionăr\
 ii",fr:"État du visionnage",pl:"Stan oglądania",es:"Estado de visualización"},"Обновить историю":{en:"Refresh watch history",uk:"Оновити істор\
 ію",be:"Абнавіць гісторыю",zh:"刷新观看记录",pt:"Atualizar histórico",bg:"Опресняване на историята",he:"רענון היס\
@@ -7987,7 +7987,7 @@ n.tmdb_id||n.id),type:"tv"}:null,ue=ye&&!((w=me==null?void 0:me.record)!=null&&w
 null?void 0:me.aired,released:me==null?void 0:me.released,episodes:me==null?void 0:me.episodes}}):t;return{card:ue,title:ne,subtitle:[String(t.release_date||t.first_air_date||
 "").slice(0,4),fe,ce?X("Сезон {0}",[ce]):"",se>0?j0(["%s серия","%s серии","%s серий"],se):"",ve].filter(Boolean).join(" · "),icon:P==="mov\
 ie"?"▷":P==="ova"?"◇":["special","tv_special"].includes(P)?"✦":"▤"}});return{key:k.key,title:k.key==="story"?X("Порядок просмотра"):k.title,
-entries:W}}).filter(function(k){return k.entries.length})}var fa=xt(H0()),Mi="0.5.204",bt="https://notme-si.github.io/lampa-view/frames/v1/",h2=new WeakMap,hn="\
+entries:W}}).filter(function(k){return k.entries.length})}var fa=xt(H0()),Mi="0.5.205",bt="https://notme-si.github.io/lampa-view/frames/v1/",h2=new WeakMap,hn="\
 minimal_frame_catalogue_v1",_o=216e5;function Ni(e){var n;if(h2.has(e))return h2.get(e);var s;try{s=(n=e.Storage)==null?void 0:n.get(hn,{})}catch(T){}for(var o=new Map,
 c=new Map,m=0,d=Object.entries(s||{});m<d.length;m++){var p=_slicedToArray(d[m],2),f=p[0],v=p[1];/^[0-3][0-9a-f]$/.test(f)&&(v==null?void 0:v.at)>Date.now()-7*864e5&&
 wr(v.data)&&o.set(f,v)}function b(){var T;try{(T=e.Storage)==null||T.set(hn,Object.fromEntries(_toConsumableArray(o).slice(-8)))}catch(B){}}function y(T){return h.
@@ -8547,7 +8547,7 @@ name||n.original_name||n.first_air_date||n.media_type==="tv"),h=(m=(c=e.Account)
 void 0:p.call(d,n):(v=(f=e.Favorite)==null?void 0:f.check)==null?void 0:v.call(f,n),D=y?E2(n,s,o):(b=s==null?void 0:s.reader)==null?void 0:b.call(s,n)(0,0),T=y&&
 D,B=T&&Number(T.episode)>0?en(T.season,T.episode):"",N=(D==null?void 0:D.time)>0?p1(D.time):"";return!y&&(h!=null&&h.viewed||(D==null?void 0:D.percent)>=g1)?{label:X(
 "Фильм просмотрен"),number:B,time:N,complete:"movie"}:y&&k2(e,n,s,D)?{label:X("Сезон {0} просмотрен",[D.season]),number:B,time:N,complete:"\
-season"}:(D==null?void 0:D.percent)>=g1&&B?{label:X("{0} · просмотрено",[B]),number:B,time:N,complete:"episode"}:D&&(B||N)&&(D.percent>0||N)?{label:[
+season"}:(D==null?void 0:D.percent)>=g1&&B?{label:X("Просмотрено · {0}",[B]),number:B,time:N,complete:"episode"}:D&&(B||N)&&(D.percent>0||N)?{label:[
 B,N].filter(Boolean).join(" · "),number:B,time:N,resume:!0,duration:D.duration,percent:D.percent}:{label:o||h!=null&&h.history?B||X("Есть в истории"):
 "",number:B,time:N}}function ta(e,n){var s,o,c,m,d,p,f,v,b,y,h=Sa(e),D=(s=window.LampaView)==null?void 0:s.sync,T=(o=window.LampaView)==null?void 0:o.online,B={},
 N=X("Обновить историю"),R={entry:X("История просмотра"),position:X("Время остановки"),updated:X("Обновление истории")};
@@ -8572,46 +8572,46 @@ className="minimal-detail-watch-state",q.appendChild(C),q.appendChild(z),L.appen
 L);var x=function(){var E,A=(E=o==null?void 0:o.items)==null?void 0:E[0];A&&(A.last=q)},k=function(){var E,A;!L.hidden&&!((A=(E=e.Select).opened)!=null&&A.call(
 E))&&(x(),ta(e,s))};K(q).on("hover:enter",k).on("hover:focus",x),q.addEventListener("click",k);var I;function j(){var w,E,A,P,F,V=Gn(e,s,(w=window.LampaView)==null?
 void 0:w.online,O.entry(s)),U=X(V.resume?"Продолжить":"Смотреть"),Y=N.querySelector("span");N.title=U,N.setAttribute("aria-label",U),Y&&Y.textContent!==
-U&&(Y.textContent=U);var te=V.resume&&V.percent>0?Math.round(V.percent):0,ee=V.number&&(!V.complete||V.complete==="episode")?V.number:V.label,ne=V.resume?te?te+
-"%":V.time:V.complete==="episode"?X("Просмотрено"):"",se=JSON.stringify([ee,ne]);if(se!==I){I=se;var fe=q.classList.contains("selector");L.hidden=!ee,
-C.textContent=V.resume&&!V.number?X("Просмотр"):ee,z.hidden=!ne,z.textContent=ne,q.style.setProperty("--pt-watch-percent",te+"%"),q.setAttribute("aria-l\
-abel",[X("История просмотра"),ee,ne].filter(Boolean).join(" · ")),q.classList.toggle("selector",!!ee);var ce=(A=(E=e.Controller).enabled)==null?
-void 0:A.call(E),ve=(P=o==null?void 0:o.items)==null?void 0:P[0];if(fe!==!!ee&&ve&&(ce==null?void 0:ce.name)==="full_start"&&((F=ce.controller)==null?void 0:F.link)===
-ve){var me=ve.render(!0),ye=me.querySelector(".focus.selector");e.Controller.collectionSet(me),e.Controller.collectionFocus(ye||!1,me)}}}function G(){var w=an(n);
-if(w){w.dispatchEvent(new Event("hover:enter",{bubbles:!0}));return}if(window.alc_auto_api&&window.alc_auto_api.menu){window.alc_auto_api.menu(s);return}e.Noty.
-show(X("Онлайн-источник не подключён"))}var W=function(E){E.preventDefault(),E.stopImmediatePropagation(),G()},t=function(E){E.preventDefault(),
-E.stopImmediatePropagation(),G()};function a(){B.querySelectorAll(".button--alc-auto,.button--priority").forEach(function(w){return w.remove()}),N.classList.remove(
-"minimal-source-hidden","hide"),N.classList.add("selector"),N.removeAttribute("aria-hidden"),j(),K(N).off("hover:enter").on("hover:enter.lampaViewWatch",G)}a(),
-N.addEventListener("click",W,!0),N.addEventListener("hover:enter",t,!0);var r=window.MutationObserver?new MutationObserver(a):null;r&&r.observe(B,{childList:!0,
-subtree:!0});var u=function(E){(E.target==="favorite"||E.target==="timeline")&&j()};if(o!=null&&o.use){var g=O.subscribe(j);(m=(c=e.Listener)==null?void 0:c.follow)==
-null||m.call(c,"state:changed",u),(f=(p=(d=e.Timeline)==null?void 0:d.listener)==null?void 0:p.follow)==null||f.call(p,"update",j),(y=(b=(v=e.Timeline)==null?void 0:
-v.listener)==null?void 0:b.follow)==null||y.call(b,"read",j),(T=(D=(h=e.Account)==null?void 0:h.listener)==null?void 0:D.follow)==null||T.call(D,"profile_select",
-j),o.use({onToggle:j,onDestroy:function(){var E,A,P,F,V,U,Y,te,ee,ne,se;g(),(A=(E=e.Listener)==null?void 0:E.remove)==null||A.call(E,"state:changed",u),(V=(F=(P=
-e.Timeline)==null?void 0:P.listener)==null?void 0:F.remove)==null||V.call(F,"update",j),(te=(Y=(U=e.Timeline)==null?void 0:U.listener)==null?void 0:Y.remove)==null||
-te.call(Y,"read",j),(se=(ne=(ee=e.Account)==null?void 0:ee.listener)==null?void 0:ne.remove)==null||se.call(ne,"profile_select",j),r==null||r.disconnect(),N.removeEventListener(
-"click",W,!0),N.removeEventListener("hover:enter",t,!0),K(N).off(".lampaViewWatch"),K(q).off(),q.removeEventListener("click",k)}})}}function Da(e){var n=/^(\d{4})-(\d{2})-(\d{2})$/.
-exec(String(e||""));if(!n)return null;var s=n.slice(1).map(Number),o=_slicedToArray(s,3),c=o[0],m=o[1],d=o[2],p=new Date(c,m-1,d);return c>=1900&&p.getFullYear()===
-c&&p.getMonth()===m-1&&p.getDate()===d?{iso:n[0],date:p}:null}function oa(e,n){for(var s=arguments.length>2&&arguments[2]!==void 0?arguments[2]:new Date,o=arguments.
-length>3&&arguments[3]!==void 0?arguments[3]:[],c=new Date(s.getFullYear(),s.getMonth(),s.getDate()),m=null,d=0,p=[[e==null?void 0:e.next_episode_to_air],n==null?
-void 0:n.episodes,n==null?void 0:n.episodes_original,o];d<p.length;d++){var f=p[d];if(Array.isArray(f)){var v=_createForOfIteratorHelper(f),b;try{for(v.s();!(b=
-v.n()).done;){var y=b.value,h=Da(y==null?void 0:y.air_date);if(!(!h||h.date<c||String(y.season_number)==="0")){var D=Number(y.season_number)||0,T=Number(y.episode_number)||
-0;(!m||h.iso<m.iso||h.iso===m.iso&&T>0&&(!m.episode||D<m.season||D===m.season&&T<m.episode))&&(m=we(oe({},h),{season:D,episode:T}))}}}catch(K){v.e(K)}finally{v.
-f()}}}if(!m)return null;var B=oe({day:"numeric",month:"long"},m.date.getFullYear()!==s.getFullYear()?{year:"numeric"}:{}),N=Math.round((Date.UTC(m.date.getFullYear(),
-m.date.getMonth(),m.date.getDate())-Date.UTC(c.getFullYear(),c.getMonth(),c.getDate()))/864e5),R=N===0?X("Сегодня"):N===1?X("Завтра"):new Intl.DateTimeFormat(
-re(),B).format(m.date);return we(oe({},m),{remainingDays:N,label:R})}var k1=function(n){var s,o=(s=n==null?void 0:n.render)==null?void 0:s.call(n,!0);return o!=
-null&&o.nodeType?o:o==null?void 0:o[0]},Un=function(n){return n.still_path||n.minimal_still_url},j1=function(n){return X((n==null?void 0:n.media_type)==="tv"||(n==
-null?void 0:n.media_type)!=="movie"&&(n!=null&&n.name||n!=null&&n.first_air_date)?"Кадры из сериала":"Кадры из фильма")},A2=function(n){
-return/^\/[\w.-]+\.(?:jpg|jpeg|png|webp)$/i.test(n||"")};function Gi(e,n,s){return A2(n)?[e.TMDB.image("/t/p/"+s+n,{preserveSize:!0})]:/^https:\/\/static\.wikia\.nocookie\.net\/marvelcinematicuniverse\/images\//.
-test(n||"")?[n.replace("static.wikia.nocookie.net","images.wikia.com"),n]:[n]}function fi(e,n,s,o){var c=_toConsumableArray(new Set(n.filter(Boolean)));e.referrerPolicy=
-"no-referrer",e.onload=function(){var m=e.naturalWidth/e.naturalHeight;m<1.3||m>2.8?e.onerror():s()},e.onerror=function(){var m=c.shift();m?e.src=m:(e.onerror=null,
-e.removeAttribute("src"),o())},e.src=c.shift()}function Cr(e){var n=e.data,s=e.link;if(!(!(n!=null&&n.movie)||n.movie.adult&&!n.minimal_gallery_eligible||n.movie.
-blocked||!Array.isArray(s==null?void 0:s.rows))){var o=(n.minimal_gallery_frames||[]).filter(Un).slice(0,li.frameLimit).map(function(c){return oe({},c)}).reverse();
-o.length&&s.rows.push(["episodes",{movie:n.movie,title:j1(n.movie),results:o,minimal_gallery:!0}])}}function vi(e,n){var s,o;if(!(!Array.isArray(e==null?void 0:
-e.rows)||!Array.isArray(e.items))){for(var c=e.items[e.active],m=e.rows.length-1;m>=0;m--)if(n(e.rows[m])&&(e.rows.splice(m,1),!(m>=e.items.length))){var d=e.items.
-splice(m,1),p=_slicedToArray(d,1),f=p[0];(s=k1(f))==null||s.remove(),(o=f==null?void 0:f.destroy)==null||o.call(f)}e.active=Math.max(0,e.items.indexOf(c))}}function nn(e,n,s,o){
-var c=document.createElement("button");c.type="button",c.className=e;var m=zr(s);return m.setAttribute("fill","none"),m.setAttribute("stroke","currentColor"),m.
-setAttribute("stroke-width","2"),c.setAttribute("aria-label",n),c.appendChild(m),c.addEventListener("click",function(d){d.preventDefault(),d.stopImmediatePropagation(),
-o()}),c.addEventListener("hover:enter",o),c}var sa="m14 6-6 6 6 6",Ui="m10 6 6 6-6 6";function C2(e,n,s,o){var c,m,d,p,f,v,b,y,h,D=window.jQuery,T=document.createElement(
+U&&(Y.textContent=U);var te=V.resume&&V.percent>0?Math.round(V.percent):0,ee=V.number&&!V.complete?V.number:V.label,ne=V.resume?te?te+"%":V.time:"",se=JSON.stringify(
+[ee,ne]);if(se!==I){I=se;var fe=q.classList.contains("selector");L.hidden=!ee,C.textContent=V.resume&&!V.number?X("Просмотр"):ee,z.hidden=!ne,z.textContent=
+ne,q.style.setProperty("--pt-watch-percent",te+"%"),q.setAttribute("aria-label",[X("История просмотра"),ee,ne].filter(Boolean).join(" · ")),q.classList.
+toggle("selector",!!ee);var ce=(A=(E=e.Controller).enabled)==null?void 0:A.call(E),ve=(P=o==null?void 0:o.items)==null?void 0:P[0];if(fe!==!!ee&&ve&&(ce==null?void 0:
+ce.name)==="full_start"&&((F=ce.controller)==null?void 0:F.link)===ve){var me=ve.render(!0),ye=me.querySelector(".focus.selector");e.Controller.collectionSet(me),
+e.Controller.collectionFocus(ye||!1,me)}}}function G(){var w=an(n);if(w){w.dispatchEvent(new Event("hover:enter",{bubbles:!0}));return}if(window.alc_auto_api&&window.
+alc_auto_api.menu){window.alc_auto_api.menu(s);return}e.Noty.show(X("Онлайн-источник не подключён"))}var W=function(E){E.preventDefault(),
+E.stopImmediatePropagation(),G()},t=function(E){E.preventDefault(),E.stopImmediatePropagation(),G()};function a(){B.querySelectorAll(".button--alc-auto,.button-\
+-priority").forEach(function(w){return w.remove()}),N.classList.remove("minimal-source-hidden","hide"),N.classList.add("selector"),N.removeAttribute("aria-hidde\
+n"),j(),K(N).off("hover:enter").on("hover:enter.lampaViewWatch",G)}a(),N.addEventListener("click",W,!0),N.addEventListener("hover:enter",t,!0);var r=window.MutationObserver?
+new MutationObserver(a):null;r&&r.observe(B,{childList:!0,subtree:!0});var u=function(E){(E.target==="favorite"||E.target==="timeline")&&j()};if(o!=null&&o.use){
+var g=O.subscribe(j);(m=(c=e.Listener)==null?void 0:c.follow)==null||m.call(c,"state:changed",u),(f=(p=(d=e.Timeline)==null?void 0:d.listener)==null?void 0:p.follow)==
+null||f.call(p,"update",j),(y=(b=(v=e.Timeline)==null?void 0:v.listener)==null?void 0:b.follow)==null||y.call(b,"read",j),(T=(D=(h=e.Account)==null?void 0:h.listener)==
+null?void 0:D.follow)==null||T.call(D,"profile_select",j),o.use({onToggle:j,onDestroy:function(){var E,A,P,F,V,U,Y,te,ee,ne,se;g(),(A=(E=e.Listener)==null?void 0:
+E.remove)==null||A.call(E,"state:changed",u),(V=(F=(P=e.Timeline)==null?void 0:P.listener)==null?void 0:F.remove)==null||V.call(F,"update",j),(te=(Y=(U=e.Timeline)==
+null?void 0:U.listener)==null?void 0:Y.remove)==null||te.call(Y,"read",j),(se=(ne=(ee=e.Account)==null?void 0:ee.listener)==null?void 0:ne.remove)==null||se.call(
+ne,"profile_select",j),r==null||r.disconnect(),N.removeEventListener("click",W,!0),N.removeEventListener("hover:enter",t,!0),K(N).off(".lampaViewWatch"),K(q).off(),
+q.removeEventListener("click",k)}})}}function Da(e){var n=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(e||""));if(!n)return null;var s=n.slice(1).map(Number),o=_slicedToArray(
+s,3),c=o[0],m=o[1],d=o[2],p=new Date(c,m-1,d);return c>=1900&&p.getFullYear()===c&&p.getMonth()===m-1&&p.getDate()===d?{iso:n[0],date:p}:null}function oa(e,n){for(var s=arguments.
+length>2&&arguments[2]!==void 0?arguments[2]:new Date,o=arguments.length>3&&arguments[3]!==void 0?arguments[3]:[],c=new Date(s.getFullYear(),s.getMonth(),s.getDate()),
+m=null,d=0,p=[[e==null?void 0:e.next_episode_to_air],n==null?void 0:n.episodes,n==null?void 0:n.episodes_original,o];d<p.length;d++){var f=p[d];if(Array.isArray(
+f)){var v=_createForOfIteratorHelper(f),b;try{for(v.s();!(b=v.n()).done;){var y=b.value,h=Da(y==null?void 0:y.air_date);if(!(!h||h.date<c||String(y.season_number)===
+"0")){var D=Number(y.season_number)||0,T=Number(y.episode_number)||0;(!m||h.iso<m.iso||h.iso===m.iso&&T>0&&(!m.episode||D<m.season||D===m.season&&T<m.episode))&&
+(m=we(oe({},h),{season:D,episode:T}))}}}catch(K){v.e(K)}finally{v.f()}}}if(!m)return null;var B=oe({day:"numeric",month:"long"},m.date.getFullYear()!==s.getFullYear()?
+{year:"numeric"}:{}),N=Math.round((Date.UTC(m.date.getFullYear(),m.date.getMonth(),m.date.getDate())-Date.UTC(c.getFullYear(),c.getMonth(),c.getDate()))/864e5),
+R=N===0?X("Сегодня"):N===1?X("Завтра"):new Intl.DateTimeFormat(re(),B).format(m.date);return we(oe({},m),{remainingDays:N,label:R})}var k1=function(n){
+var s,o=(s=n==null?void 0:n.render)==null?void 0:s.call(n,!0);return o!=null&&o.nodeType?o:o==null?void 0:o[0]},Un=function(n){return n.still_path||n.minimal_still_url},
+j1=function(n){return X((n==null?void 0:n.media_type)==="tv"||(n==null?void 0:n.media_type)!=="movie"&&(n!=null&&n.name||n!=null&&n.first_air_date)?"Кадры из се\
+риала":"Кадры из фильма")},A2=function(n){return/^\/[\w.-]+\.(?:jpg|jpeg|png|webp)$/i.test(n||"")};function Gi(e,n,s){return A2(n)?[e.TMDB.image(
+"/t/p/"+s+n,{preserveSize:!0})]:/^https:\/\/static\.wikia\.nocookie\.net\/marvelcinematicuniverse\/images\//.test(n||"")?[n.replace("static.wikia.nocookie.net",
+"images.wikia.com"),n]:[n]}function fi(e,n,s,o){var c=_toConsumableArray(new Set(n.filter(Boolean)));e.referrerPolicy="no-referrer",e.onload=function(){var m=e.
+naturalWidth/e.naturalHeight;m<1.3||m>2.8?e.onerror():s()},e.onerror=function(){var m=c.shift();m?e.src=m:(e.onerror=null,e.removeAttribute("src"),o())},e.src=c.
+shift()}function Cr(e){var n=e.data,s=e.link;if(!(!(n!=null&&n.movie)||n.movie.adult&&!n.minimal_gallery_eligible||n.movie.blocked||!Array.isArray(s==null?void 0:
+s.rows))){var o=(n.minimal_gallery_frames||[]).filter(Un).slice(0,li.frameLimit).map(function(c){return oe({},c)}).reverse();o.length&&s.rows.push(["episodes",{
+movie:n.movie,title:j1(n.movie),results:o,minimal_gallery:!0}])}}function vi(e,n){var s,o;if(!(!Array.isArray(e==null?void 0:e.rows)||!Array.isArray(e.items))){
+for(var c=e.items[e.active],m=e.rows.length-1;m>=0;m--)if(n(e.rows[m])&&(e.rows.splice(m,1),!(m>=e.items.length))){var d=e.items.splice(m,1),p=_slicedToArray(d,
+1),f=p[0];(s=k1(f))==null||s.remove(),(o=f==null?void 0:f.destroy)==null||o.call(f)}e.active=Math.max(0,e.items.indexOf(c))}}function nn(e,n,s,o){var c=document.
+createElement("button");c.type="button",c.className=e;var m=zr(s);return m.setAttribute("fill","none"),m.setAttribute("stroke","currentColor"),m.setAttribute("s\
+troke-width","2"),c.setAttribute("aria-label",n),c.appendChild(m),c.addEventListener("click",function(d){d.preventDefault(),d.stopImmediatePropagation(),o()}),c.
+addEventListener("hover:enter",o),c}var sa="m14 6-6 6 6 6",Ui="m10 6 6 6-6 6";function C2(e,n,s,o){var c,m,d,p,f,v,b,y,h,D=window.jQuery,T=document.createElement(
 "div"),B=document.createElement("img"),N=document.body.classList.contains("pt-tv"),R=document.body.classList.contains("pt-mobile"),K=N||R;T.className="minimal-f\
 rame-viewer"+(K?" selector":""),K&&(T.tabIndex=0),B.className="minimal-screenshot-preview",B.draggable=!1,B.referrerPolicy="no-referrer";var O=document.createElement(
 "div");O.className="minimal-frame-controls";var L=document.createElement("span");L.className="minimal-frame-position",L.setAttribute("aria-live","polite");var q=new Map,
