@@ -9757,6 +9757,21 @@
   "pl": "Następny odcinek: {0}",
   "es": "Próximo episodio: {0}"
  },
+ "Следующая серия: {0}-я": {
+  "ru": "Следующая серия: {0}-я",
+  "en": "Next episode: {0}",
+  "uk": "Наступна серія: № {0}",
+  "be": "Наступная серыя: {0}-я",
+  "zh": "下一集：第{0}集",
+  "pt": "Próximo episódio: {0}",
+  "bg": "Следващ епизод: {0}",
+  "he": "הפרק הבא: {0}",
+  "cs": "Další epizoda: {0}",
+  "ro": "Episodul următor: {0}",
+  "fr": "Prochain épisode : {0}",
+  "pl": "Następny odcinek: {0}",
+  "es": "Próximo episodio: {0}"
+ },
  "Кадры из сериала": {
   "ru": "Кадры из сериала",
   "en": "Series stills",

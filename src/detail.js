@@ -7,7 +7,6 @@ import {chooseLogo,pickStudio} from './logos.js';
 import comments from './comments.js';
 import {artworkSize,logoSize,detailBackdrop,officialBanner} from './artwork.js';
 import {onlineButton,watchActions,showWatchState} from './watch-actions.js';
-import {episodeCaption} from './series-status.js';
 import {prepareScreenshotRow,styleScreenshots,nextDetailEpisode,orderDetailSections,styleSuggestions,removeDetailRows} from './detail-gallery.js';
 import installSuggestions,{relevantSuggestions} from './detail-suggestions.js';
 const preparedSuggestions=new WeakSet();
@@ -54,8 +53,11 @@ function moveTechnicalDetails(L,card,right,episodeBook){
   if(date){
    const node=document.createElement('time');
    node.className='minimal-detail-next-episode';node.dateTime=date.iso;
-   const episode=date.episode?episodeCaption(date.season,date.episode):'';
-   node.textContent=[lampaViewText('Следующая серия: {0}',[date.label]),episode].filter(Boolean).join(' · ');
+   if(date.episode>0){
+    const episode=lampaViewText('Следующая серия: {0}-я',[date.episode]);
+    const season=date.season>0?lampaViewText('%s сезон').replace('%s',String(date.season)):'';
+    node.textContent=[episode,season].filter(Boolean).join(', ')+' · '+date.label;
+   }else node.textContent=lampaViewText('Следующая серия: {0}',[date.label]);
    retained.push(node);
   }
   while(line.firstChild)line.removeChild(line.firstChild);
