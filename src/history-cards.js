@@ -1,7 +1,9 @@
 import watchHistory from './watch-history.js';
 import {text as t} from './i18n.js';
+import {watchSummary} from './watch-actions.js';
+import {watchClock} from './series-status.js';
 
-function compactHistory(L,enabled){
+function compactHistory(L,enabled,selectedCard){
  const select=L.Select,listener=select?.listener,$=window.jQuery;
  if(!listener || !$)return;
  listener.follow('preshow',({active})=>{
@@ -15,7 +17,16 @@ function compactHistory(L,enabled){
   const lastLabel=L.Lang.translate('watch_history_last_episode');
   const last=head.find('.watch-history-days__text').toArray().map(node=>node.textContent.trim()).find(label=>label.startsWith(lastLabel+':'));
   const next=open.html.find('.watch-history-days__continue-title').text().trim()===L.Lang.translate('title_continue_two');
-  const value=open.html.find('.watch-history-days__continue-value').text().trim().replace(', ',' · ');
+  let value=open.html.find('.watch-history-days__continue-value').text().trim().replace(', ',' · ');
+  const card=selectedCard(),series=card && card.media_type!=='movie' && (card.name || card.original_name || card.first_air_date || card.media_type==='tv');
+  if(card?.watch_history && !series && (card.name || card.title)===title){
+   const progress=watchSummary(L,card,window.LampaView?.online,card.watch_history);
+   if(progress.complete==='movie')value=progress.label;
+   else if(progress.resume){
+    const position=progress.time && progress.duration>0?t('{0} из {1}',[progress.time,watchClock(progress.duration)]):progress.time;
+    value=[progress.percent>0?Math.round(progress.percent)+'%':'',position].filter(Boolean).join(' · ');
+   }
+  }
   const primary={title:t('Открыть карточку'),subtitle:next && value?t('Далее · {0}',[value]):value,open:true,selected:true,
    onDraw:item=>item.addClass('pt-history-open')};
   const summary={html:$('<div class="pt-history-last">').text(last || ''),noenter:true};
@@ -48,16 +59,25 @@ function compactHistory(L,enabled){
 
 export default function historyCards(L,enabled){
  watchHistory(L);
- compactHistory(L,enabled);
+ let selection;
+ compactHistory(L,enabled,()=>{
+  const focused=document.querySelector('.activity--active .card.focus');
+  const screen=L.Activity.active();
+  const card=selection?.screen===screen?selection?.card:null;
+  selection=null;
+  return card || focused?.card_data || focused?._minimalCardData;
+ });
  function activate(event){
   if(!enabled() || !L.Activity || !L.Activity.active)return;
   const active=L.Activity.active() || {};
-  if(active.component!=='favorite' || active.type!=='history')return;
+  const grouped=active.component==='watch_history';
+  if(!grouped && (active.component!=='favorite' || active.type!=='history'))return;
   const node=event.target.closest && event.target.closest('.card');
   if(!node || !node.closest('.activity--active'))return;
   if(event.target.closest('.card__more,.card__menu,.card__favorite'))return;
   const card=node.card_data || node._minimalCardData;
   if(!card || !card.id)return;
+  if(grouped){selection={screen:active,card};return;}
   event.preventDefault();event.stopImmediatePropagation();
   L.Activity.push({component:'full',id:card.id,url:'',method:card.media_type || (card.name || card.original_name || card.first_air_date?'tv':'movie'),source:card.source || L.Storage.get('source','cub'),card});
  }

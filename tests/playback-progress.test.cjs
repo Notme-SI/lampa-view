@@ -56,6 +56,25 @@ test('TV playback saves measured episode progress before close and keeps profile
  }finally{w.close();}
 });
 
+test('opening the same torrent links an older pending movie checkpoint without changing its timestamp',async()=>{
+ const native=require('./fixtures/native-lampa.cjs'),host=await native({deferPlugin:true});
+ try{
+  const {L,w}=host;w.eval(bundle('playback-progress'));w.TestModule.default(L,()=>true);
+  const hash=L.Utils.hash('Some release/Film.m2ts'),release='b'.repeat(40);
+  const card={id:1058424,title:'Надежда',original_title:'Hope',media_type:'movie',source:'tmdb'};
+  L.Timeline.update({hash,percent:43,time:2400,duration:5580,updated:123,received:true});
+  L.Listener.send('torrent_file',{type:'render',element:{card,torrent_hash:release,timeline:L.Timeline.view(hash)}});
+  const saved=L.Storage.get(L.Timeline.filename(),{})[hash];
+  assert.equal(saved.updated,123);assert.equal(saved.card,'movie_1058424');assert.equal(saved.torrentHash,release);
+  w.eval(bundle('online-state'));const online=w.TestModule.default(L);
+  assert.equal(online.reader({...card,source:'cub'})(0,0).time,2400);
+  const unwatched=L.Timeline.view(hash+1);
+  L.Listener.send('torrent_file',{type:'render',element:{card,torrent_hash:release,timeline:unwatched}});
+  assert.equal(L.Storage.get(L.Timeline.filename(),{})[hash+1],undefined);
+  assert.deepEqual(host.errors,[]);
+ }finally{host.close();}
+});
+
 test('mpv reports persist exact files, handle split streams and flush on exit without cross-profile writes',()=>{
  let profile=7;const writes=[],handlers={stdout:{},stderr:{},process:{}};
  const timeline=hash=>({hash,handler:(percent,time,duration)=>writes.push({hash,percent,time,duration})});

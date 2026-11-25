@@ -36,6 +36,7 @@ async function verify(browser, theme, mode) {
         qaCardCalls.push(id);
         setTimeout(() => ok([{ watched_at, season: id === 101 ? 1 : null, episode: id === 101 ? 1 : null }]), 80);
       };
+      window.qaHistoryMovie = history[0];
     })
   });
   try {
@@ -83,7 +84,25 @@ async function verify(browser, theme, mode) {
     await back();
     await page.waitForFunction(() => !Lampa.Select.opened());
     if (tv) assert.ok(await cards.first().evaluate(node => node.classList.contains('focus')));
+    await page.evaluate(tv => {
+      const L=Lampa,hash=L.Utils.hash('release/specific/path/Film.m2ts');
+      if(!tv){
+        L.Timeline.update({hash,card:'movie_901',time:2850,duration:5700,percent:50,updated:Date.now(),received:true});
+        return;
+      }
+      L.Storage.set('developer_nopremium',false);
+      const sent=[];
+      L.Socket.listener.follow('send',event=>{if(event.method==='timeline')sent.push(event.data.params);});
+      window.AndroidJS={appVersion:()=> 'test-999',openPlayer(){}};
+      const movie={...qaHistoryMovie,source:'cub',original_title:'A different catalogue title'};
+      const video={card:movie,timeline:L.Timeline.view(hash),torrent_hash:'d'.repeat(40),url:'http://torrent.example.invalid/stream?index=1&play'};
+      L.Player.listener.send('create',{data:video});
+      L.Android.openPlayer(video.url,video);
+      L.Android.timeCall({hash,time:2850,duration:5700,percent:50});
+      if(sent.length!==1 || sent[0].card!=='movie_901' || sent[0].time!==2850)throw new Error('CUB did not get the movie link with the torrent checkpoint');
+    },tv);
     await open(0);
+    assert.equal(await action.locator('.selectbox-item__subtitle').textContent(), '50% · 47:30 из 1:35:00');
     if (!tv) await pointer(action);
     else await page.keyboard.press('Enter');
     await page.waitForFunction(() => Lampa.Activity.active()?.component === 'full');

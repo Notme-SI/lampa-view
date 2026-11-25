@@ -36,6 +36,13 @@ export default function playbackProgress(L,enabled){
   if(meta && release)meta.torrentHash=release;
   const timeline=video.timeline,scope=profileScope(L);
   if(meta){
+   // The native handler captures its linkage when Timeline.view() creates it.
+   // Make file-based torrent checkpoints reach CUB with their card identity.
+   if(release && !wrapped.has(timeline) && typeof L.Timeline?.link==='function' &&
+      (timeline.card!==meta.card || timeline.season!==meta.season || timeline.episode!==meta.episode)){
+    const linked=L.Timeline.view?.(timeline.hash,meta);
+    if(linked?.card===meta.card && typeof linked.handler==='function')timeline.handler=linked.handler;
+   }
    Object.assign(timeline,meta);
    bindings.delete(String(timeline.hash));bindings.set(String(timeline.hash),{scope,meta,at:Date.now()});
    if(bindings.size>limit)bindings.delete(bindings.keys().next().value);
@@ -64,10 +71,10 @@ export default function playbackProgress(L,enabled){
   L.Timeline.update=function(params){
    if(!params)return update.apply(this,arguments);
    const binding=params && bindings.get(String(params.hash));
-   let meta;
+   let meta=typeof params.card==='string' && params.card?{card:params.card,...(params.episode!==undefined?{season:params.season,episode:params.episode}:{})}:null;
    if(active() && binding && !params.received){
     if(binding.scope!==profileScope(L))return;
-    meta={...binding.meta};
+    meta={...binding.meta,...meta};
    }
    const release=torrentHash(params.torrentHash);
    if(release)meta={...meta,torrentHash:release};
@@ -89,6 +96,17 @@ export default function playbackProgress(L,enabled){
   current.savedAt=Date.now();
  }
  const listener=L.Player && L.Player.listener;
+ L.Listener?.follow?.('torrent_file',event=>{
+  if(!active() || event.type!=='render')return;
+  const video=event.element,timeline=video?.timeline;
+  const release=torrentHash(video?.torrent_hash),meta=linkFor(L,video?.card);
+  if(!release || !meta || !timeline?.hash || !(timeline.time>0))return;
+  const file=L.Timeline.filename?.(),saved=file && L.Storage?.get?.(file,{})?.[timeline.hash];
+  // The actual file row identifies older positions that were saved without a card.
+  if(saved && !saved.card && Number(saved.time)>0){
+   L.Timeline.update({...saved,hash:timeline.hash,...meta,torrentHash:release,received:true});
+  }
+ });
  if(listener && listener.follow){
   listener.follow('create',event=>{
    const data=event && event.data;if(!data)return;

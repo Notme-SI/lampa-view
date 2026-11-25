@@ -81,9 +81,11 @@ export default function torrserverProgress(L,enabled){
     const time=Number(saved && saved.timecode);if(!Number.isFinite(time) || time<=0)continue;
     const local=L.Timeline.view(row.timeline),duration=Number(local.duration)||row.duration;
     // Without server timestamps a smaller value may be stale; retain newer local progress.
-    if(time<=Number(local.time||0) || local.percent>=100 || !duration || time>duration+2)continue;
+    if(time<=Number(local.time||0) || local.percent>=100 || duration>0 && time>duration+2)continue;
     const release=torrentHash(row.hash);
-    L.Timeline.update({hash:row.timeline,...row.meta,...(release?{torrentHash:release}:{}),time:Math.min(time,duration),duration,percent:Math.min(100,Math.round(time/duration*100))});
+    const position=duration>0?Math.min(time,duration):time;
+    const percent=duration>0?Math.round(position/duration*100):Number(local.percent)||0;
+    L.Timeline.update({hash:row.timeline,...row.meta,...(release?{torrentHash:release}:{}),time:position,duration,percent});
    }
   },()=>{busy=false;},JSON.stringify({action:'list',hash:recent.hash}));
  }
