@@ -31,7 +31,7 @@ async function run(engine, browser, mode) {
   L.Layer.update();
   const data = [
    {id:1,title:'Красная главная',original_title:'Красная главная',overview:'Banner',poster_path:'/poster.jpg',backdrop_path:'/home.jpg',source:'tmdb'},
-   {id:2,title:'Зелёный фильм',original_title:'Зелёный фильм',overview:'Movie',poster_path:'/poster.jpg',backdrop_path:'/detail.jpg',source:'tmdb'},
+   {id:2,title:'Зелёный фильм',original_title:'Зелёный фильм',overview:'Movie',poster_path:'/poster.jpg',backdrop_path:'/detail.jpg',source:'tmdb',vote_average:8.1},
    {id:3,title:'Синий фильм',original_title:'Синий фильм',overview:'Movie',poster_path:'/poster.jpg',backdrop_path:'/other.jpg',source:'tmdb'}
   ];
   window.sceneMovies = data;
@@ -183,6 +183,20 @@ async function run(engine, browser, mode) {
    assert.equal(strip,'rgba(0, 0, 0, 0)','Detail artwork is visible through the top bar');
    const before=await samplePixels(page,[[.04,.007],[.04,.07]]);
    if(theme==='glass'){
+    await page.evaluate(()=>Lampa.Timeline.update({hash:Lampa.Utils.hash(sceneMovies[1].original_title),percent:50,time:900,duration:1800}));
+    await page.waitForSelector('.activity--active .minimal-detail-watch-chip');
+    const material=await page.evaluate(()=>{
+     const read=node=>{
+      const style=getComputedStyle(node);
+      return {color:style.backgroundColor,filter:style.backdropFilter || style.webkitBackdropFilter};
+     };
+     const detail=document.querySelector('.activity--active .minimal-detail-header');
+     return {
+      header:read(document.querySelector('.head .head__body')),
+      buttons:['.button--play','.button--alc-torrent','.minimal-detail-watch-chip','.full-start-new__rate-line:not(.minimal-detail-watch-status) .full-start__rate'].map(selector=>[selector,read(detail.querySelector(selector))])
+     };
+    });
+    for(const [selector,surface] of material.buttons)assert.deepEqual(surface,material.header,`${selector} uses the navigation bar material`);
     const point=await page.locator('.head .open--search').evaluate(n=>{
      const r=n.getBoundingClientRect();
      return [(r.left+r.width*.62)/innerWidth,(r.top+r.height/2)/innerHeight];
