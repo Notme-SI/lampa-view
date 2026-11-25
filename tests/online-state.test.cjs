@@ -74,6 +74,31 @@ test('empty-title native hashes and records explicitly linked to another title c
  }finally{w.close();}
 });
 
+test('native hash lookup keeps legacy episodes without hashing every candidate on each card',()=>{
+ const dom=new JSDOM('',{runScripts:'outside-only'}),w=dom.window;
+ try{
+  w.eval(code);
+  let hashes=0,account='a@example.test';
+  const hash=value=>{hashes++;let sum=0;for(let i=0;i<value.length;i++)sum=(31*sum+value.charCodeAt(i))|0;return String(Math.abs(sum));};
+  const records={'a@example.test':{},'b@example.test':{}};
+  for(let i=0;i<1000;i++)records[account][hash('12Another show '+i)]={percent:15,updated:1};
+  const card={id:31,name:'Сериал',original_name:'Original Series',source:'tmdb',seasons:[{season_number:11,episode_count:220}]};
+  records[account][hash('11:201Original Series')]={percent:30,time:340,updated:15};
+  records[account].linked={card:'tv_31',season:1,episode:2,percent:80,time:630,updated:10};
+  const L={Utils:{hash},Storage:{get:(key,f)=>{
+   if(key==='file_view')return records[account];
+   if(key==='account_email')return account;
+   return f;
+  }},Timeline:{filename:()=> 'file_view'}};
+  const state=w.OnlineState.default(L);
+  hashes=0;
+  for(let i=0;i<10;i++)assert.equal(state.lastWatched({...card,id:1000+i,name:'Unrelated '+i,original_name:'Different '+i}),null);
+  const last=state.lastWatched(card);assert.deepEqual([last.season,last.episode,last.time],[11,201,340]);
+  assert.ok(hashes<100,'Lookup should hash only candidate matches, not all season/episode combinations: '+hashes);
+  account='b@example.test';assert.equal(state.lastWatched(card),null);
+ }finally{w.close();}
+});
+
 test('native Online fills an empty original title before parsing and keeps existing timeline keys',async()=>{
  const n=await native({built:true}),{L}=n;let s;try{
   const comp={changeBalanser(){},request(){},parse(){}};s=screen(n,{id:283166,component:comp,card:{title:'Секретный артист',name:'Секретный артист',original_title:'',original_name:'Секретный артист'}});

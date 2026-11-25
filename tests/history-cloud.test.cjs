@@ -52,3 +52,24 @@ test('failed first history pull releases the initial render once and a failed ba
   history.ready(()=>shown++);assert.equal(shown,2);history.refresh();ok({results:[{id:4,title:'Cloud'}]});history.refresh();fail({offline:true});assert.equal(history.cards()[0].id,4);assert.equal(shown,2);assert.equal(reloads,0);
  }finally{w.close();}
 });
+
+test('history detects episode changes at the same watched time and invalidates old pages and requests',()=>{
+ const d=new JSDOM('',{runScripts:'outside-only'}),w=d.window;
+ try{
+  const calls=[],changes=[],events={},account={email:'first@example.test',profile:{id:1}};
+  const L={Storage:{get:(key,fallback)=>fallback},Account:{Permit:{sync:true,account},listener:{follow:(event,fn)=>events[event]=fn},
+   Api:{watchHistory:(params,ok)=>calls.push({params,ok})}},Listener:{send:(name,event)=>changes.push(event)}};
+  const api=load(w,'watch-history')(L),card={id:81,name:'Series',media_type:'tv',source:'tmdb'};
+  const respond=(page,results)=>{const call=calls.shift();assert.equal(call.params.page,page);call.ok({page,total_pages:3,results});};
+  const cloud=episode=>({...card,watch_history:{watched_at:123,last:{season:2,episode}}});
+  api.refresh();respond(1,[cloud(4)]);
+  let deliveries=0;
+  api.page(2,()=>deliveries++);api.page(2,()=>deliveries++);
+  assert.equal(calls.length,1);respond(2,[]);assert.equal(deliveries,2);
+  api.refresh();respond(1,[cloud(5)]);assert.equal(api.entry(card).last.episode,5);assert.equal(changes.length,2);
+  api.page(2,()=>assert.fail('Old request must not complete after A → B → A'));
+  account.email='second@example.test';events.profile_select();account.email='first@example.test';events.profile_select();
+  respond(2,[cloud(7)]);assert.equal(api.entry(card),null);
+  api.refresh();respond(1,[cloud(6)]);assert.equal(api.entry(card).last.episode,6);
+ }finally{w.close();}
+});

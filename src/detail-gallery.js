@@ -6,18 +6,24 @@ function airDate(value){
  const [year,month,day]=match.slice(1).map(Number),date=new Date(year,month-1,day);
  return year>=1900 && date.getFullYear()===year && date.getMonth()===month-1 && date.getDate()===day?{iso:match[0],date}:null;
 }
-export function nextDetailEpisode(card,book,now=new Date()){
+export function nextDetailEpisode(card,book,now=new Date(),timetable=[]){
  const today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
- const upcoming=row=>{const date=airDate(row?.air_date);return date && date.date>today?date:null;};
- let next=upcoming(card?.next_episode_to_air);
- if(!next)for(const rows of [book?.episodes,book?.episodes_original]){
+ let next=null;
+ for(const rows of [[card?.next_episode_to_air],book?.episodes,book?.episodes_original,timetable]){
   if(!Array.isArray(rows))continue;
-  for(const row of rows){const date=upcoming(row);if(date && (!next || date.iso<next.iso))next=date;}
+  for(const row of rows){
+   const date=airDate(row?.air_date);
+   if(!date || date.date<today || String(row.season_number)==='0')continue;
+   const season=Number(row.season_number)||0,episode=Number(row.episode_number)||0;
+   if(!next || date.iso<next.iso || date.iso===next.iso && episode>0 &&
+      (!next.episode || season<next.season || season===next.season && episode<next.episode))next={...date,season,episode};
+  }
  }
  if(!next)return null;
  const options={day:'numeric',month:'long',...(next.date.getFullYear()!==now.getFullYear()?{year:'numeric'}:{})};
  const remainingDays=Math.round((Date.UTC(next.date.getFullYear(),next.date.getMonth(),next.date.getDate())-Date.UTC(today.getFullYear(),today.getMonth(),today.getDate()))/86400000);
- return {...next,remainingDays,label:new Intl.DateTimeFormat(locale(),options).format(next.date)};
+ const label=remainingDays===0?t('Сегодня'):remainingDays===1?t('Завтра'):new Intl.DateTimeFormat(locale(),options).format(next.date);
+ return {...next,remainingDays,label};
 }
 
 const nodeOf=item=>{const rendered=item?.render?.(true);return rendered?.nodeType?rendered:rendered?.[0];};

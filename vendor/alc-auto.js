@@ -4205,9 +4205,11 @@
       cancel: function () { cancelled = true; jobs = []; },
       list: function () {
         var now = isArr(data.playlist) ? data.playlist : [];
-        var mine = now.filter(function (p) { return p && p.url === data.url; })[0] || now.filter(function (p) { return p && p.episode === cur; })[0];
+        var mine = now.filter(function (p) { return p && Number(p.episode) === Number(cur) && (p.season == null || Number(p.season) === Number(pb.season)); })[0];
+        if (!mine) mine = now.filter(function (p) { return p && p.url === data.url && p.episode == null; })[0];
         var out = [];
         if (!mine) return null;
+        mine = Object.assign({}, mine, {url:data.url,season:pb.season,episode:cur,timeline:data.timeline || mine.timeline});
         eps.forEach(function (ep) { if (ep.e === cur) out.push(mine); else if (got[ep.e]) out.push(got[ep.e]); });
         return out.length > 1 ? out : null;
       }

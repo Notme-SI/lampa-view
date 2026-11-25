@@ -6,7 +6,7 @@ import {localizedTitle,isAnime} from './metadata.js';
 import {chooseLogo,pickStudio} from './logos.js';
 import comments from './comments.js';
 import {artworkSize,logoSize,detailBackdrop,officialBanner} from './artwork.js';
-import {onlineButton,watchActions} from './watch-actions.js';
+import {onlineButton,watchActions,showWatchState} from './watch-actions.js';
 import {prepareScreenshotRow,styleScreenshots,nextDetailEpisode,orderDetailSections,styleSuggestions,removeDetailRows} from './detail-gallery.js';
 import installSuggestions,{relevantSuggestions} from './detail-suggestions.js';
 const preparedSuggestions=new WeakSet();
@@ -40,7 +40,7 @@ function moveTechnicalDetails(L,card,right,episodeBook){
   const parts=namedPartCount(card),nextPrefix=L.Lang.translate('full_next_episode')+':';
   if(parts>Number(card.number_of_seasons)){const prefix=(L.Lang.translate('title_seasons') || '')+':',counter=Array.from(line.children).find(part=>part.textContent.trim().startsWith(prefix));if(counter)counter.textContent=prefix+' '+parts;}
   const retained=Array.from(line.children).filter(part=>{
-   if(part.classList.contains('full-start-new__split'))return false;
+   if(part.matches('.full-start-new__split,.minimal-detail-next-episode'))return false;
    const text=(part.textContent || part.innerText || '').trim();
    if(!text || text.startsWith(nextPrefix))return false;
    if(/^\d{1,3}:\d{2}$/.test(text)){duration=text;return false;}
@@ -48,9 +48,15 @@ function moveTechnicalDetails(L,card,right,episodeBook){
    if(text.toLowerCase().startsWith(prefix.toLowerCase())){quality=text.slice(prefix.length).trim();return false;}
    return true;
   });
-  const dated=nextDetailEpisode(card,episodeBook);
-  const date=dated || ((card.media_type==='tv' || card.original_name || card.first_air_date) && ['tmdb','cub'].includes(card.source) && L.TimeTable?.get?nextDetailEpisode(card,{episodes:L.TimeTable.get(card)}):null);
-  if(date){const node=document.createElement('time');node.className='minimal-detail-next-episode';node.dateTime=date.iso;node.textContent=lampaViewText('Следующая серия: {0}',[date.label])+' / '+L.Lang.translate('full_episode_days_left')+': '+date.remainingDays;retained.push(node);}
+  const timetable=(card.media_type==='tv' || card.original_name || card.first_air_date) && ['tmdb','cub'].includes(card.source)?L.TimeTable?.get?.(card):null;
+  const date=nextDetailEpisode(card,episodeBook,new Date(),timetable);
+  if(date){
+   const node=document.createElement('time');
+   node.className='minimal-detail-next-episode';node.dateTime=date.iso;
+   const episode=date.episode?(date.season?lampaViewText('{0} сезон · {1} серия',[date.season,date.episode]):lampaViewText('Серия {0}',[date.episode])):'';
+   node.textContent=[lampaViewText('Следующая серия: {0}',[date.label]),episode].filter(Boolean).join(' · ');
+   retained.push(node);
+  }
   while(line.firstChild)line.removeChild(line.firstChild);
   retained.forEach((part,index)=>{if(index){const split=document.createElement('span');split.className='full-start-new__split';split.textContent='·';line.appendChild(split);}line.appendChild(part);});
   line.classList.toggle('pt-hidden',!retained.length);
@@ -118,6 +124,8 @@ function restoreDetailRows(L,link,data){
 export default function detail(L,event,loadLogo){
  if(event && event.type==='options' && event.link && event.options){
   const render=event.link.render(true),root=render && (render.nodeType?render:render[0]);
+  const card=event.link.card || L.Activity.active()?.card;
+  if(card)event.options.push({title:lampaViewText('Состояние просмотра'),onSelect:()=>showWatchState(L,card)});
   if(root)Array.from(root.querySelectorAll('.buttons--container>.full-start__button:not(.hide)')).filter(button=>!button.classList.contains('view--torrent') && button!==onlineButton(root)).forEach(button=>{
    const label=button.querySelector('span'),subtitle=button.querySelector('.full-start__button-subtitle'),icon=button.querySelector('svg');
    event.options.push({title:(label && (label.innerText || label.textContent) || button.getAttribute('title') || '').trim(),subtitle:button.getAttribute('data-subtitle') || subtitle && (subtitle.innerText || subtitle.textContent),template:icon?'selectbox_icon':'selectbox_item',icon:icon && icon.outerHTML,onSelect:()=>{if(L.Select.close)L.Select.close();L.Controller.toggle('full_start');button.dispatchEvent(new Event('hover:enter',{bubbles:true}));}});

@@ -41,7 +41,7 @@ test('history localizes copies consistently without changing native records or m
  assert.deepEqual(menu,[...home,...anime]);assert.equal(home.length,1);assert.equal(anime[0].title,series.name);assert.equal(anime[0].original_title,'Cyberpunk: Edgerunners');assert.equal(records[1].title,'Cyberpunk: Edgerunners');assert.equal(records.length,3);
 });
 
-test('CUB history fills filtered pages in server order, keeps progress and switches profile during a request',()=>{
+test('CUB history shares filtered pages across rows and never reuses them after switching profiles',()=>{
  const {default:install,CONTINUE,ANIME_HISTORY}=mod('continue-watching'),calls=[];
  const profile={id:1},L={Storage:{get:(k,d)=>d},Favorite:{get:()=>[]},Api:{sources:{}},Account:{Permit:{sync:true,account:{profile}},Api:{watchHistory:(params,ok)=>calls.push({params,ok,profile:profile.id})}}};
  const build=install(L),source=L.Api.sources.minimal_continue,movie={id:2000000080,title:'Film',source:'cub'};
@@ -56,14 +56,15 @@ test('CUB history fills filtered pages in server order, keeps progress and switc
  assert.deepEqual(result.results.map(card=>card.id),Array.from({length:20},(_,i)=>i+1));assert.equal(result.total_pages,2);
  assert.equal(result.results[0].source,'tmdb');assert.equal(result.results[0].watch_history.watched_at,299);
  source.list({url:ANIME_HISTORY,page:2},value=>result=value);
- respond(2,Array.from({length:20},(_,i)=>anime(i+1)));respond(3,[anime(20),anime(21)]);
+ assert.equal(calls.length,0);
  assert.deepEqual(result.results.map(card=>card.id),[21]);assert.equal(result.total_pages,2);
  source.list({url:CONTINUE,page:1},value=>result=value);
- respond(2,[anime(1)]);respond(3,[anime(2),{...movie,id:movie.id+1}]);
+ assert.equal(calls.length,0);
  assert.deepEqual(result.results.map(card=>card.id),[movie.id,movie.id+1]);
- result=null;build.preview(ANIME_HISTORY,row=>result=row);
- profile.id=2;assert.equal(respond(2,[anime(90)]),1);assert.equal(result,null);
- assert.equal(respond(1,[anime(95)],1),2);assert.deepEqual(result.results.map(card=>card.id),[95]);
+ profile.id=2;result=null;build.preview(ANIME_HISTORY,row=>result=row);
+ assert.equal(calls[0].profile,2);assert.equal(result,null);
+ profile.id=3;assert.equal(respond(1,[anime(90)],1),2);assert.equal(result,null);
+ assert.equal(respond(1,[anime(95)],1),3);assert.deepEqual(result.results.map(card=>card.id),[95]);
 });
 
 test('anime history is inserted once near the start of Standard, Shikimori and Trakt catalogues',()=>{

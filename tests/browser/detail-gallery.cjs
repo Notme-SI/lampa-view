@@ -90,6 +90,24 @@ async function open(page,movie){
      let delayedImage,selectedPaths;
      await page.route('https://frames.example/**',route=>route.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"></svg>'}));
      const row=await open(page,mobile);
+     const watchButton=page.locator('.activity--active .button--play');
+     const watchStatus=page.locator('.activity--active .minimal-detail-watch-status');
+     await page.evaluate(movie=>{
+      const card=detailFixture.movie,title=movie?card.original_title:card.name;
+      Lampa.Timeline.update({hash:Lampa.Utils.hash(movie?title:'21'+title),percent:25,time:915,duration:3660});
+     },mobile);
+     assert.equal(await watchButton.getAttribute('aria-label'),'Продолжить');
+     assert.equal(await watchStatus.textContent(),mobile?'15:15':'2 сезон · 1 серия · 15:15');
+     await page.evaluate(()=>{
+      const start=Lampa.Activity.active().activity.component.items[0];
+      const options=[];
+      Lampa.Listener.send('full',{type:'options',link:start,options});
+      options.find(item=>item.title==='Состояние просмотра').onSelect();
+     });
+     await page.getByText('Время остановки',{exact:true}).waitFor();
+     const savedPosition=page.getByText('Время остановки',{exact:true}).locator('..').locator('.selectbox-item__subtitle');
+     assert.equal(await savedPosition.textContent(),'15:15');
+     await page.evaluate(()=>Lampa.Controller.back());
      if(tv){
       selectedPaths=await page.evaluate(()=>{
        const link=Lampa.Activity.active().activity.component,at=link.rows.findIndex(row=>row[1]?.minimal_gallery),line=link.items[at];

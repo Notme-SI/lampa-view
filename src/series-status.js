@@ -33,11 +33,18 @@ export function episodeLabel(text){
  const value=String(text || '').trim(),match=value.match(/^(\d+)\s*[-–]\s*|^(?:Эпизод|Серия|Episode)\s*(\d+)/i);
  return match?lampaViewText("Серия {0}", [Number(match[1] || match[2])]):value;
 }
-const clock=value=>{
+export const watchClock=value=>{
  const seconds=Math.floor(Number(value)||0);if(seconds<=0)return '00:00';
  const minutes=Math.floor(seconds/60),tail=String(seconds%60).padStart(2,'0');
  return minutes>=60?Math.floor(minutes/60)+':'+String(minutes%60).padStart(2,'0')+':'+tail:String(minutes).padStart(2,'0')+':'+tail;
 };
+export function completedSeason(L,card,online,progress){
+ const total=progress?.total || (Array.isArray(card.seasons)?Number(card.seasons.find(row=>Number(row.season_number)===progress?.season)?.episode_count)||0:0);
+ if(!progress || !total || !online?.seasonWatched || Number(card.next_episode_to_air?.season_number)===progress.season)return false;
+ const released=canonicalReleaseStatus(card,L.TimeTable?.get?.(card) || []);
+ const ended=released && (released.season>progress.season || released.season===progress.season && released.count>=total);
+ return !!ended && online.seasonWatched(card,progress.season,total);
+}
 function restoreWatchMeter(node){
  // Return the original timeline to its owner before reconciling native history.
  // Moving this node preserves Timeline.update and its data-hash subscriptions.
@@ -143,12 +150,7 @@ function watchFooter(L,node,data,series){
  if(!timeline || !(Number(timeline.percent)>0 || Number(timeline.time)>0)){wrap.classList.toggle('pt-card-watch--empty',true);clearProgress();return;}
  wrap.classList.toggle('pt-card-watch--empty',false);
  slot.classList.toggle('pt-card-watch--has-progress',true);
- const seasonDetail=series && shared && (Array.isArray(data.seasons)?data.seasons:[]).find(season=>Number(season.season_number)===shared.season);
- const seasonTotal=Number(seasonDetail && seasonDetail.episode_count) || shared && shared.total || 0;
- const next=data.next_episode_to_air;
- const released=canonicalReleaseStatus(data,L.TimeTable && L.TimeTable.get?L.TimeTable.get(data) || []:[]);
- const ended=shared && released && (released.season>shared.season || released.season===shared.season && released.count>=seasonTotal);
- const seasonComplete=series && shared && seasonTotal>0 && ended && !(next && Number(next.season_number)===shared.season) && state && state.seasonWatched && state.seasonWatched(data,shared.season,seasonTotal);
+ const seasonComplete=series && completedSeason(L,data,state,shared);
  const complete=series?seasonComplete:Number(timeline.percent)>=WATCHED_PERCENT;
  const episodeComplete=series && Number(timeline.percent)>=WATCHED_PERCENT;
  const hideProgress=complete || episodeComplete;
@@ -167,7 +169,7 @@ function watchFooter(L,node,data,series){
  line.classList.toggle('hide',false);
  const fill=row.querySelector('.time-line>div'),width=Math.min(100,Math.max(0,Number(shown.percent)||0))+'%';
  if(fill && fill.style.width!==width)fill.style.width=width;
- const time=hideProgress || !Number(shown.time)?'':clock(shown.time),name=summary.querySelector('.pt-card-watch__label'),stamp=row.querySelector('.pt-card-watch__time'),icon=summary.querySelector('.pt-card-watch__icon');
+ const time=hideProgress || !Number(shown.time)?'':watchClock(shown.time),name=summary.querySelector('.pt-card-watch__label'),stamp=row.querySelector('.pt-card-watch__time'),icon=summary.querySelector('.pt-card-watch__icon');
  if(name.textContent!==label)name.textContent=label;
  // Finishing one episode is enough for its check mark. A partial episode has
  // a real timecode and no history/clock icon, regardless of the series status.

@@ -56,7 +56,7 @@ export default function sharedTimeline(L,enabled){
  function reset(ctx){
   generation++;for(const xhr of requests)if(xhr && xhr.abort)xhr.abort();requests.clear();
   clearTimeout(timer);timer=null;context=ctx;cursor=0;loaded=false;pulling=false;pushing=false;retryAt=0;failures=0;remote.clear();pending.clear();
-  health.state=ctx?'idle':'unavailable';health.pending=0;health.received=0;
+  health.state=ctx?'idle':'unavailable';health.pending=0;health.received=0;health.lastSuccess=0;
   // Capture genuine local writes before an asynchronous native CUB dump can
   // replace storage. Importing the dump must not erase a newer offline write.
   if(ctx)for(const [hash,value] of Object.entries(L.Storage.get(ctx.file,{}) || {}).slice(-10000)){

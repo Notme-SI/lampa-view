@@ -2,6 +2,7 @@ import {WATCHED_PERCENT} from './watch-threshold.js';
 import tmdbGet from './tmdb.js';
 import cardInfo from './card-info.js';
 import {linkFor} from './timeline-meta.cjs';
+import timelineIndex from './timeline-index.js';
 // Selected metadata/progress fixes adapted from the user-provided community interface.
 // Read the host's timeline; opening the online screen never rewrites watch history.
 const number=value=>Number.isFinite(Number(value))?Math.max(0,Number(value)):0;
@@ -145,18 +146,17 @@ export function availability(body){
 export default function onlineState(L){
  let revision=0,batching=0;const snapshots=new Map();
  const file=()=>L.Timeline && L.Timeline.filename?L.Timeline.filename():'file_view';
+ const index=timelineIndex(L,file),hash=index.hash;
  const info=L.Storage && L.Storage.get?cardInfo(L):null;
  const names=card=>Array.from(new Set([card.original_title,card.original_name,card.title,card.name,...(info?info.names(card):[])].filter(value=>typeof value==='string' && value.trim()).map(value=>value.trim())));
- const hash=(title,season,episode)=>L.Utils.hash(season?[season,season>10?':':'',episode,title].join(''):title);
- function linkedRecords(card,records){
+ function linkedRecords(card,snapshot){
   const identity=linkFor(L,card,1,1);
-  if(!identity)return [];
-  return Object.entries(records).filter(([key,value])=>value && typeof value==='object' && value.card===identity.card && String(key)!==String(hash('',number(value.season),number(value.episode))));
+  return identity?snapshot.linked.get(identity.card) || []:[];
  }
  function reader(card){
-  const records=L.Storage.get(file(),{}) || {},titles=names(card),identity=linkFor(L,card,1,1);
+  const snapshot=index.read(revision),{records}=snapshot,titles=names(card),identity=linkFor(L,card,1,1);
   const linked=new Map();
-  for(const [key,value] of linkedRecords(card,records)){
+  for(const [key,value] of linkedRecords(card,snapshot)){
    const coordinate=number(value.season)+':'+number(value.episode),old=linked.get(coordinate);
    if(!old || stamp(value.updated)>stamp(old.value.updated))linked.set(coordinate,{key,value});
   }
@@ -172,32 +172,37 @@ export default function onlineState(L){
   };
  }
  function lastWatched(card){
-  const titles=names(card),saved=L.Storage.get('online_watched_last',{}) || {},lastSeason=titles.reduce((max,title)=>Math.max(max,number(saved[L.Utils.hash(title)] && saved[L.Utils.hash(title)].season)),0);
-  const key=[file(),card.source || 'tmdb',card.name || card.original_name?'tv':'movie',card.id || '',card.number_of_seasons || 0,lastSeason,(Array.isArray(card.seasons)?card.seasons:[]).map(season=>season.season_number+':'+season.episode_count).join(','),...titles].join('|'),old=snapshots.get(key);
-  if(old && old.revision===revision && Date.now()-old.at<5000)return old.value;
-  // Release metadata and the local resume hint can lag behind another device.
-  // Search the supported season range in the shared records, not just seasons
-  // that this particular card/device happened to cache. Focus snapshots bound it.
-  const records=L.Storage.get(file(),{}) || {},seasons=Array.isArray(card.seasons)?card.seasons:[],max=60;let latest=null;
-  for(const [key,raw] of linkedRecords(card,records)){
-   const season=Number(raw.season),episode=Number(raw.episode),percent=Math.min(100,number(raw.percent)),time=number(raw.time),updated=stamp(raw.updated);
-   if(!Number.isInteger(season) || season<1 || !Number.isInteger(episode) || episode<1 || !percent && !time)continue;
-   const detail=seasons.find(row=>Number(row.season_number)===season),total=number(detail && detail.episode_count);
-   if(!latest || updated>latest.record.updated || updated===latest.record.updated && (season>latest.season || season===latest.season && episode>latest.episode))latest={season,episode,total,record:{hash:key,percent,time,duration:number(raw.duration),updated}};
+  const snapshot=index.read(revision),{records,legacy}=snapshot,titles=names(card);
+  const seasons=Array.isArray(card.seasons)?card.seasons:[];
+  const key=JSON.stringify([snapshot.scope,card.source || 'tmdb',card.id || '',card.media_type,seasons.map(row=>[row.season_number,row.episode_count]),titles]);
+  const old=snapshots.get(key);
+  if(old && old.snapshot===snapshot.id)return old.value;
+  const counts=new Map(seasons.map(row=>[Number(row.season_number),number(row.episode_count)]));
+  const limit=season=>Math.min(index.maxEpisodes,Math.max(100,counts.get(season)||0));
+  const episodes=new Map();
+  function consider(key,season,episode,raw){
+   const percent=Math.min(100,number(typeof raw==='number'?raw:raw.percent)),time=number(raw.time),updated=stamp(raw.updated);
+   const coordinate=season+':'+episode,old=episodes.get(coordinate);
+   if(!old || updated>old.updated || updated===old.updated && percent>old.percent)episodes.set(coordinate,{key,season,episode,percent,time,updated,duration:number(raw.duration)});
   }
-  // Most candidates have no record. Do not allocate an array, Set and empty
-  // result object for every episode while a TV is moving through its cards.
-  if(Object.keys(records).length)for(let s=1;s<=max;s++){
-   const detail=seasons.find(row=>Number(row.season_number)===s),total=number(detail && detail.episode_count),limit=Math.min(500,Math.max(100,total));
-   for(let e=1;e<=limit;e++)for(const title of titles){
-    const key=hash(title,s,e),raw=records[key];if(!raw || raw.card && linkFor(L,card,1,1)?.card && raw.card!==linkFor(L,card,1,1).card)continue;
-    const percent=Math.min(100,number(typeof raw==='number'?raw:raw.percent)),time=number(raw.time);if(!percent && !time)continue;
-    const updated=stamp(raw.updated);
-    if(!latest || updated>latest.record.updated || updated===latest.record.updated && (s>latest.season || s===latest.season && (e>latest.episode || e===latest.episode && percent>latest.record.percent)))latest={season:s,episode:e,total,record:{hash:key,percent,time,duration:number(raw.duration),updated}};
+  for(const [key,raw] of linkedRecords(card,snapshot)){
+   const season=Number(raw.season),episode=Number(raw.episode);
+   if(Number.isInteger(season) && season>0 && Number.isInteger(episode) && episode>0)consider(key,season,episode,raw);
+  }
+  for(const title of titles){
+   for(const {key,season,episode} of index.legacyEpisodes(title,legacy,limit))consider(key,season,episode,records[key]);
+  }
+  let latest=null;
+  for(const record of episodes.values()){
+   const {season,episode,percent,time,updated}=record;
+   if(!percent && !time)continue;
+   if(!latest || updated>latest.record.updated || updated===latest.record.updated &&
+      (season>latest.season || season===latest.season && (episode>latest.episode || episode===latest.episode && percent>latest.record.percent))){
+    latest={season,episode,total:counts.get(season)||0,record};
    }
   }
-  const value=latest?{season:latest.season,episode:latest.episode,total:latest.total,max,hash:latest.record.hash,time:latest.record.time,duration:latest.record.duration,percent:latest.record.percent}:null;
-  snapshots.set(key,{at:Date.now(),revision,value});if(snapshots.size>100)snapshots.delete(snapshots.keys().next().value);return value;
+  const value=latest?{season:latest.season,episode:latest.episode,total:latest.total,max:index.maxSeasons,hash:latest.record.key,time:latest.record.time,duration:latest.record.duration,percent:latest.record.percent}:null;
+  snapshots.set(key,{snapshot:snapshot.id,value});if(snapshots.size>100)snapshots.delete(snapshots.keys().next().value);return value;
  }
  function seasonWatched(card,season,total){
   if(!Number.isInteger(total) || total<1 || total>500)return false;

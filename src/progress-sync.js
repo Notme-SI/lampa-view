@@ -7,16 +7,16 @@ export default function progressSync(L,enabled){
  const torrents=torrserverProgress(L,enabled);
  const playback=playbackProgress(L,enabled),shared=sharedTimeline(L,enabled),history=watchHistory(L);
  let refreshed=0,timer,pending=false;
- function refresh(){
+ function refresh(force=false){
   pending=false;
   if(!enabled() || document.hidden || !L.Account?.Permit?.sync)return;
   const controller=L.Controller && L.Controller.enabled && L.Controller.enabled();
   if(/player/.test(controller && controller.name || ''))return;
   if(document.body.matches('.pt-tv-busy,.pt-wheel-active')){pending=true;return;}
   shared.refresh();
-  if(Date.now()-refreshed<5000)return;
+  if(!force && Date.now()-refreshed<5000)return;
   refreshed=Date.now();
-  history.refresh();
+  history.refresh(force);
   if(L.Account.Timeline && L.Account.Timeline.update)L.Account.Timeline.update();
   // Bookmark writes and refreshes belong to the host queue. An independent
   // refresh can race its pending save/cache update and repaint stale marks.

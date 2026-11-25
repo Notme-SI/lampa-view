@@ -70,11 +70,11 @@ test('native full page places Related after screenshots, restores its focus and 
   let target;L.Api.sources.tmdb.full=(p,ok)=>{target=p;ok({movie:{id:p.id}});};const result=await new Promise((ok,fail)=>L.Api.sources.minimal_shiki.full({card:{id:40456,source:'minimal_shiki',media_type:'movie',title:'Бесконечный поезд'}},ok,fail));assert.equal(target.id,635302);assert.equal(target.method,'movie');assert.equal(result.movie.shikimori_id,40456);
  }finally{n.close();}
 });
-test('next episode date requires a valid future air date and falls back to the earliest scheduled episode',()=>{
+test('next episode date considers the nearest valid local day, including today',()=>{
  const now=new Date(2026,10,7,23),book={episodes:[{air_date:'2026-11-20'},{air_date:'2026-11-13'},{air_date:'2026-11-07'}]};
- const next=nextDetailEpisode({next_episode_to_air:{air_date:'2026-11-10'}},book,now);assert.equal(next.iso,'2026-11-10');assert.equal(next.remainingDays,3);
- assert.equal(nextDetailEpisode({next_episode_to_air:{air_date:'2026-02-30'}},book,now).iso,'2026-11-13');
- assert.equal(nextDetailEpisode({next_episode_to_air:{air_date:'2026-11-07'}},{episodes:[{air_date:''}]},now),null);
+ const next=nextDetailEpisode({next_episode_to_air:{air_date:'2026-11-10'}},book,now);assert.equal(next.iso,'2026-11-07');assert.equal(next.remainingDays,0);
+ assert.equal(nextDetailEpisode({next_episode_to_air:{air_date:'2026-02-30'}},book,new Date(2026,10,8)).iso,'2026-11-13');
+ assert.equal(nextDetailEpisode({next_episode_to_air:{air_date:'2026-11-06'}},{episodes:[{air_date:''}]},now),null);
 });
 test('native Shikimori franchise reads share the queue/cache, collect only requested metadata and recover from a failed graph',async()=>{
  const n=await require('./fixtures/native-lampa.cjs')({built:true}),{w,L}=n;try{

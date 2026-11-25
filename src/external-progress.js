@@ -7,26 +7,37 @@ const KEY='minimal_external_sessions_v1',RETURN='lampa_view_return',RESULT='lamp
 const fields=['position','time','currentTime','duration','totalDuration','status','lastPlayedUrl','request-id','errorCode','errorMessage'];
 const seconds=value=>value!==null && String(value).trim()!=='' && Number.isFinite(Number(value)) && Number(value)>=0 && Number(value)<=31536000?Number(value):null;
 export default function externalProgress(L,enabled){
- const scope=()=>profileScope(L)+'|'+String(L.Storage.get('account',{})?.email || L.Storage.get('account_email','')).toLowerCase();
+ const scope=()=>profileScope(L);
+ const sameScope=session=>session.scope===scope() || session.scope===scope()+'|';
  const sessions=()=>{const rows=L.Storage.get(KEY,[]);return Array.isArray(rows)?rows.filter(r=>r && Date.now()-r.at<86400000).slice(-12):[];};
  const put=rows=>L.Storage.set(KEY,rows.slice(-12));
  function report(token,value){
-  if(!enabled())return false;
+  if(!enabled() || !value || typeof value!=='object')return false;
   const rows=sessions(),session=rows.find(r=>r.id===token);
-  if(!session || session.scope!==scope() || value?.result && value.result!=='success')return false;
-  const position=seconds(value?.position ?? value?.time ?? value?.currentTime);
-  const duration=seconds(value?.duration ?? value?.totalDuration ?? session.duration);
-  if(position===null || position===0 || duration && position>duration+2)return false;
-  if(value['lastPlayedUrl'] && L.Utils.hash(String(value.lastPlayedUrl))!==session.url)return false;
+  if(!session || !sameScope(session) || value.result && value.result!=='success')return false;
   if(value['request-id'] && String(value['request-id'])!==session.id)return false;
+  if(session.playlist?.length && !value.lastPlayedUrl)return false;
+  let target=session;
+  if(value.lastPlayedUrl){
+   const reported=L.Utils.hash(String(value.lastPlayedUrl));
+   const choices=[session,...(session.playlist || [])].filter(entry=>entry.url===reported);
+   if(choices.length!==1)return false;
+   target=choices[0];
+  }
+  const position=seconds(value?.position ?? value?.time ?? value?.currentTime);
+  const duration=seconds(value?.duration ?? value?.totalDuration ?? target.duration);
+  if(position===null || position===0 || duration && position>duration+2)return false;
+  const file=L.Timeline.filename?.(),saved=file && L.Storage.get(file,{})?.[target.hash];
+  const updated=Number(saved?.updated) || Date.parse(saved?.updated) || 0;
+  if(updated>session.at){put(rows.filter(row=>row.id!==token));return false;}
   const percent=value.status==='finished'?100:duration?Math.min(100,Math.round(position/duration*100)):0;
-  L.Timeline.update({hash:session.hash,time:position,duration:duration || 0,percent,profile:session.profile,...session.meta});
+  L.Timeline.update({hash:target.hash,time:position,duration:duration || 0,percent,profile:target.profile,...target.meta});
   put(rows.filter(r=>r.id!==token));
   return true;
  }
  function consume(){
   const url=new URL(window.location.href),token=url.searchParams.get(RETURN);if(!token)return;
-  const session=sessions().find(r=>r.id===token);if(session && session.scope!==scope())return;
+  const session=sessions().find(r=>r.id===token);if(session && !sameScope(session))return;
   const value=Object.fromEntries(url.searchParams.entries());value.result=url.searchParams.get(RESULT);
   report(token,value);
   // Error/cancel never invent progress; still retire this one-time request.
@@ -48,6 +59,18 @@ export default function externalProgress(L,enabled){
   const id=Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join(''),timeline=video.timeline;
   const played=url.searchParams.get('url');if(!played)return;
   const session={id,at:Date.now(),scope:scope(),hash:String(timeline.hash),duration:seconds(timeline.duration),profile:timeline.profile || 0,meta,url:L.Utils.hash(played)};
+  if(Array.isArray(video.playlist)){
+   const choices=new Map();
+   for(const item of video.playlist.slice(0,100)){
+    if(typeof item?.url!=='string' || !item.timeline?.hash)continue;
+    const itemCard=item.card || card;
+    const {season,episode}=identity(itemCard,item),link=linkFor(L,itemCard,season,episode);
+    if(!link || link.card!==meta.card || !link.episode || String(item.timeline.hash)===session.hash)continue;
+    const url=L.Utils.hash(item.url),key=url+'|'+item.timeline.hash;
+    choices.set(key,{hash:String(item.timeline.hash),duration:seconds(item.timeline.duration),profile:session.profile,meta:link,url});
+   }
+   if(choices.size)session.playlist=Array.from(choices.values());
+  }
   const base=new URL(window.location.href);base.hash='';
   for(const name of [RETURN,RESULT,...fields])base.searchParams.delete(name);
   const callback=result=>{const target=new URL(base);target.searchParams.set(RETURN,id);target.searchParams.set(RESULT,result);return target.href;};
@@ -81,7 +104,7 @@ export default function externalProgress(L,enabled){
  let polling=false;
  function refresh(){
   if(polling || !enabled() || document.hidden)return;
-  const rows=sessions().filter(r=>r.relay && r.scope===scope());if(!rows.length)return;
+  const rows=sessions().filter(r=>r.relay && sameScope(r));if(!rows.length)return;
   polling=true;let left=rows.length;
   const done=()=>{if(!--left)polling=false;};
   for(const row of rows){

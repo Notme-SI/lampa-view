@@ -18,7 +18,9 @@ function profileScope(L) {
   const permit = L.Account && L.Account.Permit;
   const profile = permit && permit.sync && permit.account && permit.account.profile;
   const file = L.Timeline && L.Timeline.filename ? L.Timeline.filename() : 'file_view';
-  return file + '|' + (profile ? profile.id : 0);
+  const email = String(permit?.account?.email || L.Storage?.get?.('account', {})?.email ||
+    L.Storage?.get?.('account_email', '') || '').trim().toLowerCase();
+  return file + '|' + (profile ? profile.id : 0) + (email ? '|' + email : '');
 }
 
 module.exports = {linkFor, profileScope};

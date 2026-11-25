@@ -22,3 +22,23 @@ test('only actual measured returns update the original title/episode in the orig
 test('direct web return survives reload and removes only callback parameters',async()=>{
  const f=fixture();try{await f.launch();const s=f.storage.get('minimal_external_sessions_v1')[0];f.w.history.replaceState({},'','?card=91&media=tv&source=tmdb&lampa_view_return='+s.id+'&lampa_view_result=success&position=701&duration=1440&status=stopped');f.api.consume();assert.equal(f.writes[0].time,701);assert.equal(f.w.location.search,'?card=91&media=tv&source=tmdb');}finally{f.close();}
 });
+
+test('external playlist reports only the identified episode and cannot resurrect cleared progress',async()=>{
+ const f=fixture();
+ try{
+  f.video.episode=5;f.video.timeline.hash='episode5';
+  f.video.playlist=[6,7,8].map(episode=>({season:1,episode,url:'https://media.invalid/episode'+episode,timeline:{hash:'episode'+episode,duration:1440}}));
+  const url='custom-player://x-callback-url/play?url='+encodeURIComponent('https://media.invalid/episode5');
+  await f.launch(url);
+  let session=f.storage.get('minimal_external_sessions_v1').at(-1);
+  assert.equal(f.api.report(session.id,{position:700,duration:1440}),false);
+  assert.equal(f.writes.length,0,'A playlist callback without a file identity must not mark the launch episode');
+  const result={position:700,duration:1440,lastPlayedUrl:'https://media.invalid/episode8'};
+  assert.equal(f.api.report(session.id,result),true);
+  assert.deepEqual(f.writes.map(({hash,episode,time})=>({hash,episode,time})),[{hash:'episode8',episode:8,time:700}]);
+  await f.launch(url);
+  session=f.storage.get('minimal_external_sessions_v1').at(-1);
+  f.storage.set('one',{episode8:{percent:0,time:0,updated:session.at+1}});
+  assert.equal(f.api.report(session.id,result),false);assert.equal(f.writes.length,1);
+ }finally{f.close();}
+});

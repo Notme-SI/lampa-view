@@ -12,6 +12,9 @@ export default function installBack(L,$,enabled){
   $('.selectbox__head,.settings__head,.modal__title').each(function(){
    const head=$(this);if(head.children('.minimal-back--overlay').length)return;
    const arrow=$('<div class="minimal-back--overlay">').prependTo(head);bind(arrow);head.addClass('minimal-back-heading');
+   // Native Select falls back to the first .selector in the whole panel.
+   // Append the heading control to the remote collection after that choice.
+   if(head.hasClass('selectbox__head'))arrow.removeClass('selector');
   });
  }
  // Settings builds its collection from the body only. Its heading button
@@ -22,7 +25,7 @@ export default function installBack(L,$,enabled){
   const scope=event.name==='select'?'.selectbox':event.name==='modal'?'.modal':'.settings';
   const arrows=$(scope+' .minimal-back--overlay').filter(function(){return this.isConnected && this.offsetParent!==null;});
   if(arrows.length && L.Controller.collectionAppend)L.Controller.collectionAppend(arrows);
-  if(arrows.length && event.name==='modal' && !$(scope+' .selector').not('.minimal-back--overlay').filter(function(){return this.offsetParent!==null;}).length)L.Controller.collectionFocus(arrows.first(),$(scope));
+  if(arrows.length && event.name!=='settings' && event.name!=='settings_component' && !$(scope+' .selector').not('.minimal-back--overlay').filter(function(){return this.offsetParent!==null;}).length)L.Controller.collectionFocus(arrows.first(),$(scope));
  }
  function update(){
   if(!button || !button[0] || !button[0].isConnected){
