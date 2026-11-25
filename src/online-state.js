@@ -201,7 +201,7 @@ export default function onlineState(L){
     latest={season,episode,total:counts.get(season)||0,record};
    }
   }
-  const value=latest?{season:latest.season,episode:latest.episode,total:latest.total,max:index.maxSeasons,hash:latest.record.key,time:latest.record.time,duration:latest.record.duration,percent:latest.record.percent}:null;
+  const value=latest?{season:latest.season,episode:latest.episode,total:latest.total,max:index.maxSeasons,hash:latest.record.key,time:latest.record.time,duration:latest.record.duration,percent:latest.record.percent,updated:latest.record.updated}:null;
   snapshots.set(key,{snapshot:snapshot.id,value});if(snapshots.size>100)snapshots.delete(snapshots.keys().next().value);return value;
  }
  function seasonWatched(card,season,total){

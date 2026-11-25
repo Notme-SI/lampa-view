@@ -1,12 +1,12 @@
 import {identity} from './identity.cjs';
-import {linkFor,profileScope} from './timeline-meta.cjs';
+import {linkFor,profileScope,torrentHash} from './timeline-meta.cjs';
 
 // Save the native player's measured position while it is still playing. Its
 // two-minute save interval can leave another screen/device on the last manual
 // mark. Never create progress merely because a file was opened.
 export default function playbackProgress(L,enabled){
  const bindings=new Map(),wrapped=new WeakSet(),bindingKey='minimal_playback_links_v1',limit=2000;
- let current=null,stopped=false,media=null;
+ let current=null,stopped=false,media=null,timelineUpdate=null;
  const active=()=>!stopped && enabled();
  const cached=L.Storage && L.Storage.get?L.Storage.get(bindingKey,[]):[];
  if(Array.isArray(cached))for(const row of cached.slice(-limit)){
@@ -21,16 +21,19 @@ export default function playbackProgress(L,enabled){
  if(L.Timeline && L.Timeline.listener && L.Timeline.listener.follow)L.Timeline.listener.follow('update',event=>{
   if(!active() || !event || !event.data)return;
   const {hash,road}=event.data,binding=bindingFor(hash);
-  if(!binding || !road || road.card===binding.meta.card && road.season===binding.meta.season && road.episode===binding.meta.episode)return;
-  Object.assign(road,binding.meta);
+  const meta=timelineUpdate && String(timelineUpdate.hash)===String(hash)?timelineUpdate.meta:binding?.meta;
+  if(!meta || !road || Object.keys(meta).every(key=>road[key]===meta[key]))return;
+  Object.assign(road,meta);
   const file=L.Timeline.filename && L.Timeline.filename(),records=file && L.Storage && L.Storage.get?L.Storage.get(file,{}):null;
-  if(records && records[hash] && L.Storage.set){Object.assign(records[hash],binding.meta);L.Storage.set(file,records);}
+  if(records && records[hash] && L.Storage.set){Object.assign(records[hash],meta);L.Storage.set(file,records);}
  });
  function track(video){
   if(!active() || !video || !video.timeline || !video.timeline.hash)return null;
   const activity=L.Activity && L.Activity.active && L.Activity.active() || {};
   const card=video.card || activity.movie || activity.card;
   const coordinates=identity(card || {},video),meta=linkFor(L,card,coordinates.season,coordinates.episode);
+  const release=torrentHash(video.torrent_hash);
+  if(meta && release)meta.torrentHash=release;
   const timeline=video.timeline,scope=profileScope(L);
   if(meta){
    Object.assign(timeline,meta);
@@ -46,7 +49,7 @@ export default function playbackProgress(L,enabled){
      const file=L.Timeline.filename && L.Timeline.filename();
      const records=file && L.Storage && L.Storage.get?L.Storage.get(file,{}) || {}:{};
      const saved=records[timeline.hash];
-     if(!saved || saved.card!==meta.card || saved.season!==meta.season || saved.episode!==meta.episode){
+     if(!saved || Object.keys(meta).some(key=>saved[key]!==meta[key])){
       L.Timeline.update({hash:timeline.hash,percent,time,duration,profile:timeline.profile,...meta});
      }
     }
@@ -59,12 +62,19 @@ export default function playbackProgress(L,enabled){
  if(L.Timeline && L.Timeline.update){
   const update=L.Timeline.update;
   L.Timeline.update=function(params){
+   if(!params)return update.apply(this,arguments);
    const binding=params && bindings.get(String(params.hash));
+   let meta;
    if(active() && binding && !params.received){
     if(binding.scope!==profileScope(L))return;
-    params={...params,...binding.meta};
+    meta={...binding.meta};
    }
-   return update.apply(this,[params,...Array.prototype.slice.call(arguments,1)]);
+   const release=torrentHash(params.torrentHash);
+   if(release)meta={...meta,torrentHash:release};
+   const previous=timelineUpdate;
+   timelineUpdate={hash:params.hash,meta};
+   try{return update.apply(this,[meta?{...params,...meta}:params,...Array.prototype.slice.call(arguments,1)]);}
+   finally{timelineUpdate=previous;}
   };
  }
  function save(){

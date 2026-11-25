@@ -1,16 +1,20 @@
 import flag from './storage-flag.js';
 import {WATCHED_PERCENT} from './watch-threshold.js';
 import {text as t} from './i18n.js';
+import {watchClock} from './series-status.js';
+import {torrentHash} from './timeline-meta.cjs';
+import watchHistory,{latestEpisode} from './watch-history.js';
 
-// Distribution marks belong to native CUB storage; episode positions belong to
-// Timeline. A shared episode must never mark every release of a title watched.
+// Prefer native release marks. Only progress explicitly linked to this infohash
+// can restore a missing mark.
 export default function torrentHistory(L,root=window){
  const Native=L.Component?.get?.('torrents');if(typeof Native!=='function')return;
+ const cloud=watchHistory(L);
  const rows=new Map(),files=new Set(),footers=new WeakMap();let timer;
  const enabled=()=>flag(L,'lampa_view_enabled');
  const saved=()=>{const list=L.Storage.get('torrents_view',[]);return Array.isArray(list)?list:[];};
  function keys(row){
-  const C=root.TorrentCatalogueCore,canonical=C?.infoHash(row.MagnetUri || row.Link);
+  const C=root.TorrentCatalogueCore,canonical=C?.infoHash(row.MagnetUri) || C?.infoHash(row.Link);
   const native=[row.hash,...(row._tcTitles || []).map(title=>L.Utils.hash(title))].filter(value=>value!==undefined && value!==null);
   return {canonical:canonical?'btih:'+canonical:'',native,aliases:[...new Set(native.map(String))]};
  }
@@ -24,9 +28,16 @@ export default function torrentHistory(L,root=window){
  }
  function markRows(){
   const previous=saved(),marks=new Set(previous.map(String)),migrated=[];
+  if(!rows.size)return;
+  const progress=L.Storage.get(L.Timeline.filename?.() || 'file_view',{}) || {};
+  const played=new Set();
+  for(const entry of Object.values(progress)){
+   const hash=torrentHash(entry?.torrentHash);
+   if(hash && (Number(entry.time)>0 || Number(entry.percent)>0))played.add('btih:'+hash);
+  }
   for(const [item,row]of rows){
    if(!item.isConnected){rows.delete(item);continue;}
-   const {canonical,aliases}=keys(row),viewed=!(canonical && marks.has(canonical+':unseen')) && Boolean(canonical && marks.has(canonical) || aliases.some(key=>marks.has(key)));
+   const {canonical,aliases}=keys(row),viewed=!(canonical && marks.has(canonical+':unseen')) && Boolean(canonical && (marks.has(canonical) || played.has(canonical)) || aliases.some(key=>marks.has(key)));
    row.viewed=viewed;
    const existing=item.querySelector('.torrent-item__viewed');
    if(viewed && !existing){const icon=L.Template.get('icon_viewed',{},true),target=item.querySelector('.tc-head') || item;root.jQuery('<div class="torrent-item__viewed"></div>').html(icon).appendTo(target);}
@@ -48,19 +59,29 @@ export default function torrentHistory(L,root=window){
   const active=L.Activity.active();if(active?.component!=='torrents')return;
   const rendered=active.activity?.render(),node=rendered?.nodeType?rendered:rendered?.[0],body=node?.querySelector('.watched-history__body'),online=root.LampaView?.online;
   if(!body || !online)return;
-  const empty=L.Lang.translate('no_watch_history'),previous=footers.get(body);
-  if(body.textContent.trim()!==empty && body.textContent!==previous)return;
-  const card=active.movie || active.card || {},serial=card.original_name || card.name || card.media_type==='tv';
-  const last=serial?online.lastWatched(card):online.reader(card)(0,0);
-  const labels=[];
-  if(last && (last.percent || last.time)){
-   if(serial){labels.push(t('Сезон {0}',[last.season]),t('Серия {0}',[last.episode]));}
-   else if(last.percent>=WATCHED_PERCENT)labels.push(t('Фильм просмотрен'));
-   if(Number(last.time)>0){const seconds=Math.floor(last.time),minutes=Math.floor(seconds/60);labels.push(minutes>=60?Math.floor(minutes/60)+':'+String(minutes%60).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0'):String(minutes).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0'));}
+  const empty=L.Lang.translate('no_watch_history');
+  let state=footers.get(body);
+  if(!state || body.textContent!==state.rendered){
+   state={native:Array.from(body.children,span=>span.textContent)};footers.set(body,state);
   }
-  const values=labels.length?labels:[empty];body.textContent='';
+  const card=active.movie || active.card || {},serial=card.media_type!=='movie' && (card.original_name || card.name || card.media_type==='tv');
+  const last=serial?latestEpisode(card,online,cloud.entry(card)):online.reader(card)(0,0);
+  const labels=[];
+  if(last){
+   if(serial && last.episode){
+    if(last.season>0)labels.push(t('Сезон {0}',[last.season]));
+    labels.push(t('Серия {0}',[last.episode]));
+   }
+   else if(last.percent>=WATCHED_PERCENT)labels.push(t('Фильм просмотрен'));
+   if(Number(last.time)>0 && last.percent<WATCHED_PERCENT)labels.push(watchClock(last.time));
+  }
+  const values=labels.length?labels:state.native.length?state.native:[empty];
+  if(values.length===body.children.length && values.every((text,index)=>text===body.children[index].textContent)){
+   state.rendered=body.textContent;return;
+  }
+  body.textContent='';
   for(const text of values){const span=root.document.createElement('span');span.textContent=text;body.appendChild(span);}
-  footers.set(body,body.textContent);
+  state.rendered=body.textContent;
  }
  function refresh(){timer=null;if(!enabled())return;markRows();fileProgress();history();}
  function schedule(){if(!timer)timer=setTimeout(refresh,0);}
@@ -78,5 +99,6 @@ export default function torrentHistory(L,root=window){
  L.Listener.follow('torrent_file',event=>{if(event.type==='render'){const node=event.item?.nodeType?event.item:event.item?.[0],line=node?.querySelector('.time-line');if(line){files.add(line);schedule();}}});
  L.Storage.listener?.follow('change',event=>{if(event.name==='torrents_view')schedule();});
  L.Timeline.listener?.follow('update',schedule);L.Timeline.listener?.follow('read',schedule);
+ cloud.subscribe(schedule);
  L.Listener.follow('activity',event=>{if(event.type==='start')schedule();});
 }

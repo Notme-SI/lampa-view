@@ -1,13 +1,13 @@
 import {text as lampaViewText,locale} from './i18n.js';
 import {completedSeason,watchClock} from './series-status.js';
 import {WATCHED_PERCENT} from './watch-threshold.js';
-import watchHistory from './watch-history.js';
+import watchHistory,{latestEpisode} from './watch-history.js';
 
 export function watchSummary(L,card,online,entry){
  const series=card.media_type!=='movie' && !!(card.name || card.original_name || card.first_air_date || card.media_type==='tv');
  const marks=L.Account?.Permit?.sync?L.Favorite?.cloud?.(card):L.Favorite?.check?.(card);
- const progress=series?online?.lastWatched?.(card):online?.reader?.(card)(0,0);
- const episode=series && (progress || entry?.last);
+ const progress=series?latestEpisode(card,online,entry):online?.reader?.(card)(0,0);
+ const episode=series && progress;
  const number=episode && Number(episode.episode)>0?
   (Number(episode.season)>0?lampaViewText('{0} сезон · {1} серия',[episode.season,episode.episode]):lampaViewText('Серия {0}',[episode.episode])):'';
  const time=progress?.time>0?watchClock(progress.time):'';
@@ -35,7 +35,8 @@ export function showWatchState(L,card){
   const updated=status.lastSuccess?new Intl.DateTimeFormat(locale(),{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}).format(status.lastSuccess):'';
   const values={
    entry:summary.resume?summary.number || lampaViewText('Есть в истории'):summary.label || lampaViewText('Нет данных о просмотре'),
-   position:summary.time || lampaViewText('Не сохранено'),
+   position:summary.resume && summary.time && summary.duration>0?
+    lampaViewText('{0} из {1}',[summary.time,watchClock(summary.duration)]):summary.time || lampaViewText('Не сохранено'),
    updated:status.busy?lampaViewText('Обновляем историю…'):status.failed?
     [lampaViewText('Не удалось обновить историю'),updated].filter(Boolean).join(' · '):
     status.cloud?['CUB',updated].filter(Boolean).join(' · '):lampaViewText('На этом устройстве')
@@ -74,38 +75,44 @@ export function watchActions(L,root,card,link){
  const buttons=root.querySelector('.full-start-new__buttons'),play=buttons?.querySelector('.button--play');
  const info=root.querySelector('.full-start-new__right');if(!play || !info)return;
  const $=window.jQuery;
- const history=watchHistory(L),status=document.createElement('section');
- const heading=document.createElement('h3'),facts=document.createElement('dl'),note=document.createElement('p');
- status.className='minimal-detail-watch-status';
- heading.textContent=lampaViewText('Просмотр');
- status.appendChild(heading);status.appendChild(facts);status.appendChild(note);
- const overview=info.querySelector('.minimal-overview-action');
- if(overview)overview.after(status);else info.append(status);
+ const history=watchHistory(L),status=document.createElement('div'),chip=document.createElement('button');
+ const episode=document.createElement('span'),state=document.createElement('span');
+ status.className='full-start-new__rate-line minimal-detail-watch-status';
+ chip.type='button';chip.className='full-start__rate minimal-detail-watch-chip';
+ chip.setAttribute('aria-haspopup','dialog');state.className='source--name';
+ chip.appendChild(episode);chip.appendChild(state);status.appendChild(chip);
+ const ratings=info.querySelector('.full-start-new__rate-line');
+ if(ratings)ratings.before(status);else info.append(status);
+ const remember=()=>{const header=link?.items?.[0];if(header)header.last=chip;};
+ const openStatus=()=>{if(!status.hidden && !L.Select.opened?.()){remember();showWatchState(L,card);}};
+ $(chip).on('hover:enter',openStatus).on('hover:focus',remember);
+ chip.addEventListener('click',openStatus);
  let rendered;
  function updateStatus(){
   const summary=watchSummary(L,card,window.LampaView?.online,history.entry(card));
   const title=lampaViewText(summary.resume?'Продолжить':'Смотреть'),label=play.querySelector('span');
   play.title=title;play.setAttribute('aria-label',title);
   if(label && label.textContent!==title)label.textContent=title;
-  const position=summary.resume && summary.time?
-   (summary.duration>0?lampaViewText('{0} из {1}',[summary.time,watchClock(summary.duration)]):summary.time):'';
-  const rows=[
-   [lampaViewText(summary.complete?'Последняя просмотренная серия':'Серия'),summary.number],
-   [lampaViewText('Время остановки'),position],
-   [lampaViewText('Просмотрено'),summary.resume && summary.percent>0?Math.round(summary.percent)+'%':'']
-  ].filter(([,value])=>value);
-  const message=summary.complete==='movie' || summary.complete==='season' || !rows.length?summary.label:'';
-  const signature=JSON.stringify([rows,message]);
+  const percent=summary.resume && summary.percent>0?Math.round(summary.percent):0;
+  const value=summary.number && (!summary.complete || summary.complete==='episode')?summary.number:summary.label;
+  const detail=summary.resume?(percent?percent+'%':summary.time):
+   summary.complete==='episode'?lampaViewText('Просмотрено'):'';
+  const signature=JSON.stringify([value,detail]);
   if(signature===rendered)return;
   rendered=signature;
-  status.hidden=!rows.length && !message;
-  facts.hidden=!rows.length;
-  note.hidden=!message;note.textContent=message;
-  while(facts.firstChild)facts.removeChild(facts.firstChild);
-  for(const [name,value] of rows){
-   const row=document.createElement('div'),key=document.createElement('dt'),detail=document.createElement('dd');
-   key.textContent=name;detail.textContent=value;
-   row.appendChild(key);row.appendChild(detail);facts.appendChild(row);
+  const selectable=chip.classList.contains('selector');
+  status.hidden=!value;
+  episode.textContent=summary.resume && !summary.number?lampaViewText('Просмотр'):value;
+  state.hidden=!detail;state.textContent=detail;
+  chip.style.setProperty('--pt-watch-percent',percent+'%');
+  chip.setAttribute('aria-label',[lampaViewText('История просмотра'),value,detail].filter(Boolean).join(' · '));
+  chip.classList.toggle('selector',!!value);
+  const controller=L.Controller.enabled?.();
+  const header=link?.items?.[0];
+  if(selectable!==!!value && header && controller?.name==='full_start' && controller.controller?.link===header){
+   const renderedHeader=header.render(true),focus=renderedHeader.querySelector('.focus.selector');
+   L.Controller.collectionSet(renderedHeader);
+   L.Controller.collectionFocus(focus || false,renderedHeader);
   }
  }
  function open(){
@@ -146,6 +153,8 @@ export function watchActions(L,root,card,link){
     play.removeEventListener('click',click,true);
     play.removeEventListener('hover:enter',enter,true);
     $(play).off('.lampaViewWatch');
+    $(chip).off();
+    chip.removeEventListener('click',openStatus);
    }
   });
  }

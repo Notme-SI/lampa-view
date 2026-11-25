@@ -1,5 +1,7 @@
 // Share the host's real Timeline through the already configured Lampac TimeCode.
 // The native CUB bookmark transport remains responsible for title-level marks.
+import {torrentHash} from './timeline-meta.cjs';
+
 const namespace='lampa_view_timeline_v1';
 const number=value=>Number.isFinite(Number(value))?Math.max(0,Number(value)):0;
 const stamp=value=>typeof value==='string' && !/^\d+$/.test(value)?Date.parse(value) || 0:number(value);
@@ -19,8 +21,17 @@ function remoteCard(value){
  const meta=metadata(value);
  return meta.card?[namespace,meta.card,meta.season===undefined?'':meta.season,meta.episode===undefined?'':meta.episode].join(':'):namespace;
 }
-const road=value=>typeof value==='number'?{percent:Math.min(100,number(value)),time:0,duration:0,updated:0}:{percent:Math.min(100,number(value && value.percent)),time:number(value && value.time),duration:number(value && value.duration),updated:stamp(value && value.updated),...metadata(value)};
-const fingerprint=value=>[value.percent,value.time,value.duration,value.updated,value.card || '',value.season,value.episode].join('|');
+function releaseFromExtra(extra){
+ if(typeof extra!=='string')return '';
+ try{return torrentHash(JSON.parse(extra)?.torrentHash);}catch(error){return '';}
+}
+function road(value){
+ if(typeof value==='number')return {percent:Math.min(100,number(value)),time:0,duration:0,updated:0};
+ const meta=metadata(value),hash=meta.card && torrentHash(value.torrentHash);
+ if(hash)meta.torrentHash=hash;
+ return {percent:Math.min(100,number(value?.percent)),time:number(value?.time),duration:number(value?.duration),updated:stamp(value?.updated),...meta};
+}
+const fingerprint=value=>[value.percent,value.time,value.duration,value.updated,value.card || '',value.season,value.episode,value.torrentHash].join('|');
 export default function sharedTimeline(L,enabled){
  const $=window.jQuery,remote=new Map(),pending=new Map(),requests=new Set();
  let context=null,generation=0,cursor=0,loaded=false,pulling=false,pushing=false,timer=null,retryAt=0,failures=0,receiving=0,applying=false;
@@ -102,7 +113,7 @@ export default function sharedTimeline(L,enabled){
    if(!row || !validHash(row.hash))continue;
    // TimeCode 4 distinguishes editing a record from when it was watched.
    // Preserve legacy servers, whose rows have no changed_at value.
-   const hash=String(row.hash),value=road({percent:row.deleted?0:row.percent,time:row.deleted?0:row.position,duration:row.duration,updated:number(row.changed_at) || row.watched_at,...remoteMetadata(row.card)});
+   const hash=String(row.hash),value=road({percent:row.deleted?0:row.percent,time:row.deleted?0:row.position,duration:row.duration,updated:number(row.changed_at) || row.watched_at,...remoteMetadata(row.card),torrentHash:releaseFromExtra(row.extra)});
    const old=remote.get(hash),server=number(row.updated_at);
    if(old && (old.value.updated>value.updated || old.value.updated===value.updated && old.server>server))continue;
    remote.set(hash,{value,server});
@@ -144,7 +155,9 @@ export default function sharedTimeline(L,enabled){
   if(!loaded)return refresh(true);
   const batch=Array.from(pending.entries()).slice(0,100);if(!batch.length){health.state='ready';return;}
   pushing=true;health.state='syncing';
-  request(ctx,'set',{rows:batch.map(([hash,value])=>({hash,card:remoteCard(value),position:value.time,duration:value.duration,percent:value.percent,watched_at:value.updated,profile:number(ctx.id),deleted:!value.percent && !value.time}))},value=>{
+  // TimeCode keys progress by card and file hash. Keep the release in extra
+  // so changing releases does not create multiple rows for one episode.
+  request(ctx,'set',{rows:batch.map(([hash,value])=>({hash,card:remoteCard(value),position:value.time,duration:value.duration,percent:value.percent,watched_at:value.updated,profile:number(ctx.id),deleted:!value.percent && !value.time,...(value.torrentHash?{extra:JSON.stringify({torrentHash:value.torrentHash})}:{})}))},value=>{
    pushing=false;
    if(!value || !value.success){failed();return;}
    for(const [hash,sent] of batch){

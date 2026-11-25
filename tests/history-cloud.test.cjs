@@ -73,3 +73,16 @@ test('history detects episode changes at the same watched time and invalidates o
   api.refresh();respond(1,[cloud(6)]);assert.equal(api.entry(card).last.episode,6);
  }finally{w.close();}
 });
+
+test('a later cloud episode can replace stale coordinates without borrowing a timecode',()=>{
+ const d=new JSDOM('',{runScripts:'outside-only'}),w=d.window;
+ try{
+  load(w,'watch-history');
+  const {latestEpisode}=w.Module,card={id:81,name:'Series',media_type:'tv'};
+  const local={season:2,episode:6,updated:Date.UTC(2026,10,25,7),time:1800,duration:2400,percent:75};
+  const online={lastWatched:()=>local},entry={last:{season:2,episode:7},watched_at:'2026-11-25T08:00:00Z'};
+  assert.deepEqual({...latestEpisode(card,online,entry)},{season:2,episode:7});
+  assert.equal(latestEpisode(card,online,{...entry,watched_at:'2026-11-25T06:00:00Z'}),local);
+  assert.equal(latestEpisode(card,online,{...entry,last:{season:2,episode:6}}),local);
+ }finally{w.close();}
+});

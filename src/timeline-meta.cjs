@@ -14,6 +14,10 @@ function linkFor(L, card, season, episode) {
   return series ? {card:key, season:Number(season), episode:Number(episode)} : {card:key};
 }
 
+function torrentHash(value) {
+  return typeof value === 'string' && /^[a-f0-9]{40}$/i.test(value) ? value.toLowerCase() : '';
+}
+
 function profileScope(L) {
   const permit = L.Account && L.Account.Permit;
   const profile = permit && permit.sync && permit.account && permit.account.profile;
@@ -23,4 +27,4 @@ function profileScope(L) {
   return file + '|' + (profile ? profile.id : 0) + (email ? '|' + email : '');
 }
 
-module.exports = {linkFor, profileScope};
+module.exports = {linkFor, profileScope, torrentHash};

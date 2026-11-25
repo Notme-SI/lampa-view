@@ -2,6 +2,18 @@ import cardInfo from './card-info.js';
 const instances=new WeakMap();
 const PAGE_TTL=30000;
 
+export function latestEpisode(card,online,entry){
+ const progress=online?.lastWatched?.(card);
+ const season=Number(entry?.last?.season ?? 0),episode=Number(entry?.last?.episode);
+ if(!Number.isInteger(season) || season<0 || !Number.isInteger(episode) || episode<1)return progress || null;
+ if(progress && Number(progress.season)===season && Number(progress.episode)===episode)return progress;
+ const date=entry.last.watched_at || entry.watched_at;
+ const watchedAt=typeof date==='string' && !/^\d+$/.test(date)?Date.parse(date):Number(date);
+ const timestamp=watchedAt>=1e9 && watchedAt<1e11?watchedAt*1000:watchedAt;
+ // CUB can identify a later episode even when the device has not received its timecode.
+ return !progress || timestamp>Number(progress.updated || 0)?{season,episode}:progress;
+}
+
 // Current CUB viewing history is separate from the old 'history' bookmark.
 // Read it through the host API, preserving server order and native pagination.
 export default function watchHistory(L){

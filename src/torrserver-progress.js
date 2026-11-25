@@ -1,4 +1,4 @@
-import {linkFor,profileScope} from './timeline-meta.cjs';
+import {linkFor,profileScope,torrentHash} from './timeline-meta.cjs';
 
 // The server stores client-reported seconds, not playback inferred from bytes.
 export default function torrserverProgress(L,enabled){
@@ -82,7 +82,8 @@ export default function torrserverProgress(L,enabled){
     const local=L.Timeline.view(row.timeline),duration=Number(local.duration)||row.duration;
     // Without server timestamps a smaller value may be stale; retain newer local progress.
     if(time<=Number(local.time||0) || local.percent>=100 || !duration || time>duration+2)continue;
-    L.Timeline.update({hash:row.timeline,...row.meta,time:Math.min(time,duration),duration,percent:Math.min(100,Math.round(time/duration*100))});
+    const release=torrentHash(row.hash);
+    L.Timeline.update({hash:row.timeline,...row.meta,...(release?{torrentHash:release}:{}),time:Math.min(time,duration),duration,percent:Math.min(100,Math.round(time/duration*100))});
    }
   },()=>{busy=false;},JSON.stringify({action:'list',hash:recent.hash}));
  }

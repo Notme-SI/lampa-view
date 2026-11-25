@@ -50,3 +50,29 @@ test('shared episode progress restores the history summary without inventing a d
   assert.equal(L.Timeline.view(hash).time,915);assert.deepEqual(n.errors,[]);
  }finally{n.close();}
 });
+
+test('new episode progress supersedes the stale native footer and marks only its exact release',async()=>{
+ const n=await native({built:true,initialStorage:{online_watched_last:{}}}),{w,L}=n;
+ try{
+  const other='b'.repeat(40);
+  const rows=[infohash,other].map((hash,index)=>({
+   Title:'Example S01E01-E08 1080p Release '+index,Tracker:'test',Size:1e9,Seeders:50,
+   MagnetUri:'magnet:?xt=urn:btih:'+hash
+  }));
+  L.Storage.set('online_watched_last',{[L.Utils.hash(movie.original_title)]:{season:1,episode:6}});
+  L.Parser.get=(params,ok)=>w.setTimeout(()=>ok({Results:rows}),0);
+  L.Activity.push({component:'torrents',movie,search:'Example',url:'',page:1});
+  const screen=()=>L.Activity.active().activity.render(true);
+  const footer=()=>screen().querySelector('.watched-history__body')?.textContent;
+  await until(()=>screen().querySelectorAll('.torrent-item .tc-info').length===2,'both torrent releases');
+  assert.match(footer(),/Серия 6/);
+  const file='movie-episode-7',storage=L.Timeline.filename();
+  L.Storage.set(storage,{[file]:{card:'test_tv_778801',season:1,episode:7,time:1440,duration:2880,percent:50,torrentHash:infohash,updated:Date.now()}});
+  L.Timeline.read();
+  await until(()=>/Серия 7/.test(footer()),'native summary updates to the synced episode');
+  assert.match(footer(),/24:00/);
+  assert.deepEqual(Array.from(screen().querySelectorAll('.torrent-item'),item=>!!item.querySelector('.torrent-item__viewed')),[true,false]);
+  assert.ok(L.Storage.get('torrents_view',[]).includes(canonical));
+  assert.deepEqual(n.errors,[]);
+ }finally{n.close();}
+});

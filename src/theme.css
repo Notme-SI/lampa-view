@@ -457,13 +457,11 @@ body.lampa_view .minimal-detail-identity .button--alc-torrent {grid-column:span 
 body.lampa_view .minimal-detail-identity .minimal-actions--no-bell>.button--alc-torrent {grid-column:1/-1}
 body.lampa_view .minimal-detail-identity .full-start-new__buttons:not(.minimal-actions--auto)>.button--play {grid-column:1/-1}
 body.lampa_view .minimal-detail-identity .full-start-new__buttons:not(.minimal-actions--auto)>.button--play>span {display:inline!important}
-body.lampa_view .minimal-detail-watch-status {margin:1em 0 0;line-height:1.45;overflow-wrap:anywhere}
-body.lampa_view .minimal-detail-watch-status h3 {font-size:.95em;font-weight:650;margin:0 0 .45em}
-body.lampa_view .minimal-detail-watch-status dl,body.lampa_view .minimal-detail-watch-status p {margin:0;font-size:.88em}
-body.lampa_view .minimal-detail-watch-status dl>div {display:flex;flex-wrap:wrap;gap:.15em .7em;margin:.2em 0}
-body.lampa_view .minimal-detail-watch-status dt {color:var(--pt-muted)}
-body.lampa_view .minimal-detail-watch-status dd {margin:0}
-body.lampa_view .minimal-detail-watch-status[hidden],body.lampa_view .minimal-detail-watch-status [hidden] {display:none}
+body.lampa_view .minimal-detail-header .minimal-detail-watch-status {margin-bottom:0}
+body.lampa_view .minimal-detail-header .minimal-detail-watch-chip {position:relative;max-width:100%;overflow:hidden;flex-wrap:wrap;text-align:left;font-family:inherit}
+body.lampa_view .minimal-detail-watch-chip::after {content:"";position:absolute;bottom:0;left:0;width:var(--pt-watch-percent,0%);height:2px;background:currentColor;pointer-events:none}
+body.lampa_view .minimal-detail-header .minimal-detail-watch-chip.focus,body.lampa_view .minimal-detail-header .minimal-detail-watch-chip:focus-visible {outline:1px solid var(--pt-accent);outline-offset:2px}
+body.lampa_view .minimal-detail-watch-status[hidden] {display:none!important}
 body.lampa_view.pt-mobile .minimal-detail-header>.full-start-new__body {min-height:0;padding-top:1em}
 body.lampa_view.pt-mobile .minimal-detail-header>.minimal-detail-columns {display:block}
 body.lampa_view.pt-mobile .minimal-detail-identity .full-start-new__buttons {max-width:24em}

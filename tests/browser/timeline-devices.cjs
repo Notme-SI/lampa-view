@@ -26,5 +26,30 @@ const {setup}=require('../fixtures/native-browser.cjs');
  await b.evaluate(()=>Lampa.Timeline.view(Lampa.Utils.hash('12MobLand')).handler(0,0,3200));await b.waitForFunction(()=>LampaView.sync.status().pending===0);
  await a.evaluate(()=>LampaView.sync.refresh());await a.waitForFunction(()=>Lampa.Timeline.view(Lampa.Utils.hash('12MobLand')).percent===0);
  const writes=traffic.filter(p=>p.endsWith('/set')).length;await a.waitForTimeout(1200);assert.equal(traffic.filter(p=>p.endsWith('/set')).length,writes,'Received updates do not echo');
+ const card={id:1120,name:'Магазин для киллеров',original_name:'A Shop for Killers',title:'Магазин для киллеров',original_title:'A Shop for Killers',source:'tmdb',media_type:'tv',genres:[]};
+ const release='a'.repeat(40);
+ await a.evaluate(({card,release})=>{
+  Lampa.Storage.set('online_watched_last',{[Lampa.Utils.hash(card.original_title)]:{season:2,episode:6}});
+  const hashes=[release,'b'.repeat(40)];
+  Lampa.Parser.get=(params,ok)=>ok({Results:hashes.map((hash,index)=>({
+   Title:'A Shop for Killers S02E01-E08 WEB-DL 2160p Release '+index,
+   Tracker:'test',Size:1e9,Seeders:50-index,MagnetUri:'magnet:?xt=urn:btih:'+hash
+  }))});
+  Lampa.Activity.push({component:'torrents',movie:card,search:card.name,url:'',page:1});
+ },{card,release});
+ const torrentScreen=a.locator('.activity--active .minimal-torrent-view');
+ await torrentScreen.locator('.torrent-item').nth(1).waitFor();
+ assert.match(await torrentScreen.locator('.watched-history__body').textContent(),/Серия 6/);
+ await b.evaluate(({card,release})=>{
+  const timeline=Lampa.Timeline.view(Lampa.Utils.hash('27'+card.original_name));
+  Lampa.Player.listener.send('create',{data:{card,season:2,episode:7,torrent_hash:release,timeline}});
+  timeline.handler(50,1440,2880);
+ },{card,release});
+ await b.waitForFunction(()=>LampaView.sync.status().pending===0);
+ await a.evaluate(()=>LampaView.sync.refresh());
+ await a.waitForFunction(()=>/Серия 7/.test(document.querySelector('.activity--active .watched-history__body')?.textContent));
+ assert.match(await torrentScreen.locator('.watched-history__body').textContent(),/24:00/);
+ const marks=await torrentScreen.locator('.torrent-item').evaluateAll(items=>items.map(item=>!!item.querySelector('.torrent-item__viewed')));
+ assert.deepEqual(marks,[true,false],'Playback on TV marks the exact release on desktop');
  for(const r of clients)assert.deepEqual(r.errors,[]);console.log(engine.name()+': two isolated native clients share episode time and clears');
  }finally{for(const r of clients)await r.context.close();await browser.close();}}})().catch(e=>{console.error(e);process.exitCode=1;});

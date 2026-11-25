@@ -10,7 +10,7 @@ test('torrent auto-next callback keeps episode identity through an old native ho
  const first=await native({deferPlugin:true});
  try{
   const {L,w}=first;w.eval(bundle('playback-progress'));w.TestModule.default(L,()=>true);
-  const playlist=Array.from({length:110},(_,i)=>({card,season:1,episode:i+1,url:'http://server/stream?index='+(i+1),torrent_hash:'torrent',timeline:L.Timeline.view('torrent-file-'+(i+1))}));
+  const playlist=Array.from({length:110},(_,i)=>({card,season:1,episode:i+1,url:'http://server/stream?index='+(i+1),torrent_hash:'a'.repeat(40),timeline:L.Timeline.view('torrent-file-'+(i+1))}));
   let payload;L.Platform.is=name=>name==='android';L.Platform.desktop=()=>false;L.Storage.set('player_torrent','android');
   w.AndroidJS={appVersion:()=> 'test-999',openPlayer(url,json){payload=JSON.parse(json);}};
   L.Player.play({...playlist[5],playlist});
@@ -28,6 +28,7 @@ test('torrent auto-next callback keeps episode identity through an old native ho
   // This is the native Android report shape: it carries only the file hash.
   L.Timeline.update({hash:'torrent-file-7',percent:25,time:600,duration:2400});
   assert.equal(observed.card,'tv_95403');assert.equal(observed.episode,7,'Sync subscribers receive linked metadata in the original native event');
+  assert.equal(observed.torrentHash,'a'.repeat(40));
   w.eval(bundle('online-state'));const online=w.TestModule.default(L);
   assert.equal(online.lastWatched(card).episode,7);assert.equal(online.lastWatched(card).time,600);
   assert.deepEqual(second.errors,[]);

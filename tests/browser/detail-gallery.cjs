@@ -102,33 +102,29 @@ async function open(page,movie){
      assert.equal(await watchStatus.isVisible(),false);
      await page.evaluate(movie=>{
       const card=detailFixture.movie,title=movie?card.original_title:card.name;
-      Lampa.Timeline.update({hash:Lampa.Utils.hash(movie?title:'21'+title),percent:25,time:915,duration:3660});
+      Lampa.Timeline.update({hash:Lampa.Utils.hash(movie?title:'21'+title),percent:50,time:1830,duration:3660});
      },mobile);
      assert.equal(await watchButton.getAttribute('aria-label'),'Продолжить');
-     assert.equal(await watchStatus.locator('h3').textContent(),'Просмотр');
-     const fields=()=>watchStatus.locator('dl>div').evaluateAll(rows=>rows.map(row=>[row.querySelector('dt').textContent,row.querySelector('dd').textContent]));
-     assert.deepEqual(await fields(),[...(mobile?[]:[['Серия','2 сезон · 1 серия']]),
-      ['Время остановки','15:15 из 1:01:00'],['Просмотрено','25%']]);
-     assert.ok(await watchStatus.evaluate(node=>node.parentElement.matches('.full-start-new__right') && node.previousElementSibling.matches('.minimal-overview-action')));
+     const chip=watchStatus.locator('.full-start__rate');
+     assert.equal(await chip.locator('span').first().textContent(),mobile?'Просмотр':'2 сезон · 1 серия');
+     assert.equal(await chip.locator('.source--name').textContent(),'50%');
+     assert.equal(await chip.evaluate(node=>getComputedStyle(node).getPropertyValue('--pt-watch-percent')),'50%');
+     assert.ok(await watchStatus.evaluate(node=>node.parentElement.matches('.full-start-new__right') && node.nextElementSibling.matches('.full-start-new__rate-line')));
      assert.deepEqual(await actionRows(),layout,'Adding a saved position must leave every action in its original row');
-     await page.evaluate(()=>{
-      const start=Lampa.Activity.active().activity.component.items[0];
-      const options=[];
-      Lampa.Listener.send('full',{type:'options',link:start,options});
-      options.find(item=>item.title==='Состояние просмотра').onSelect();
-     });
+     if(tv)await chip.evaluate(node=>window.jQuery(node).trigger('hover:enter'));
+     else await chip.click();
      const positionLabel=page.locator('.selectbox').getByText('Время остановки',{exact:true});
      await positionLabel.waitFor();
      const savedPosition=positionLabel.locator('..').locator('.selectbox-item__subtitle');
-     assert.equal(await savedPosition.textContent(),'15:15');
+     assert.equal(await savedPosition.textContent(),'30:30 из 1:01:00');
      await page.evaluate(()=>Lampa.Controller.back());
      await page.evaluate(movie=>{
       const card=detailFixture.movie,title=movie?card.original_title:card.name;
       Lampa.Timeline.update({hash:Lampa.Utils.hash(movie?title:'21'+title),percent:100,time:3660,duration:3660});
      },mobile);
      assert.equal(await watchButton.getAttribute('aria-label'),'Смотреть');
-     assert.deepEqual(await fields(),mobile?[]:[['Последняя просмотренная серия','2 сезон · 1 серия']]);
-     assert.equal(await watchStatus.locator('p').textContent(),mobile?'Фильм просмотрен':'');
+     assert.equal(await chip.locator('span').first().textContent(),mobile?'Фильм просмотрен':'2 сезон · 1 серия');
+     assert.equal(await chip.locator('.source--name').textContent(),mobile?'':'Просмотрено');
      assert.deepEqual(await actionRows(),layout,'Completing the episode must leave every action in its original row');
      if(tv){
       selectedPaths=await page.evaluate(()=>{

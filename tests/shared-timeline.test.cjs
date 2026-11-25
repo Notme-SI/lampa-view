@@ -89,9 +89,14 @@ test('device synchronization preserves stable episode links alongside opaque nat
  const server=backend(),a=client(server),b=client(server);
  try{
   a.sync.refresh();b.sync.refresh();await wait(30);
-  a.L.Timeline.update({hash:'opaque-file',card:'tv_95403',season:1,episode:6,percent:20,time:240,duration:1200});await wait(400);
+  const release='a'.repeat(40);
+  a.L.Timeline.update({hash:'opaque-file',card:'tv_95403',season:1,episode:6,percent:20,time:240,duration:1200,torrentHash:release});await wait(400);
   b.sync.refresh();await wait(30);
   assert.equal(b.records()['opaque-file'].card,'tv_95403');assert.equal(b.records()['opaque-file'].episode,6);assert.equal(b.records()['opaque-file'].time,240);
+  assert.equal(b.records()['opaque-file'].torrentHash,release);
+  const sent=server.areas.get('viewer@example.test|7').get('opaque-file');
+  assert.equal(sent.card,'lampa_view_timeline_v1:tv_95403:1:6');
+  assert.deepEqual(JSON.parse(sent.extra),{torrentHash:release});
   server.inject('viewer@example.test',7,'opaque-file',{percent:40,position:480,duration:1200,watched_at:Date.now()+1,card:'lampa_view_timeline_v1'});
   b.sync.refresh();await wait(30);assert.equal(b.records()['opaque-file'].card,'tv_95403','Legacy imports must retain a known local card link');
  }finally{a.close();b.close();}
