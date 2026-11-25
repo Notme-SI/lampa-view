@@ -79,7 +79,7 @@ export function watchActions(L,root,card,link){
  const episode=document.createElement('span'),state=document.createElement('span');
  status.className='full-start-new__rate-line minimal-detail-watch-status';
  chip.type='button';chip.className='full-start__rate minimal-detail-watch-chip';
- chip.setAttribute('aria-haspopup','dialog');state.className='source--name';
+ chip.setAttribute('aria-haspopup','dialog');state.className='minimal-detail-watch-state';
  chip.appendChild(episode);chip.appendChild(state);status.appendChild(chip);
  const ratings=info.querySelector('.full-start-new__rate-line');
  if(ratings)ratings.before(status);else info.append(status);

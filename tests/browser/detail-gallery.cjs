@@ -106,8 +106,18 @@ async function open(page,movie){
      },mobile);
      assert.equal(await watchButton.getAttribute('aria-label'),'Продолжить');
      const chip=watchStatus.locator('.full-start__rate');
+     const watchLabel=chip.locator('.minimal-detail-watch-state');
+     const matchesEpisodeSize=()=>chip.evaluate(node=>getComputedStyle(node.firstElementChild).fontSize===getComputedStyle(node.lastElementChild).fontSize);
      assert.equal(await chip.locator('span').first().textContent(),mobile?'Просмотр':'2 сезон · 1 серия');
-     assert.equal(await chip.locator('.source--name').textContent(),'50%');
+     assert.equal(await watchLabel.textContent(),'50%');
+     assert.ok(await matchesEpisodeSize(),'Progress uses the same text size as the episode');
+     if(mobile)assert.ok(await chip.evaluate(node=>{
+      const bounds=node.getBoundingClientRect();
+      return bounds.right<=window.innerWidth && Array.from(node.children).every(child=>{
+       const text=child.getBoundingClientRect();
+       return text.left>=bounds.left && text.right<=bounds.right;
+      });
+     }),'The progress label fits inside the chip on mobile');
      assert.equal(await chip.evaluate(node=>getComputedStyle(node).getPropertyValue('--pt-watch-percent')),'50%');
      assert.ok(await watchStatus.evaluate(node=>node.parentElement.matches('.full-start-new__right') && node.nextElementSibling.matches('.full-start-new__rate-line')));
      assert.deepEqual(await actionRows(),layout,'Adding a saved position must leave every action in its original row');
@@ -124,7 +134,8 @@ async function open(page,movie){
      },mobile);
      assert.equal(await watchButton.getAttribute('aria-label'),'Смотреть');
      assert.equal(await chip.locator('span').first().textContent(),mobile?'Фильм просмотрен':'2 сезон · 1 серия');
-     assert.equal(await chip.locator('.source--name').textContent(),mobile?'':'Просмотрено');
+     assert.equal(await watchLabel.textContent(),mobile?'':'Просмотрено');
+     if(!mobile)assert.ok(await matchesEpisodeSize(),'The watched label uses the same text size as the episode');
      assert.deepEqual(await actionRows(),layout,'Completing the episode must leave every action in its original row');
      if(tv){
       selectedPaths=await page.evaluate(()=>{
