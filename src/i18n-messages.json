@@ -1,4 +1,6 @@
 {
+ "Открыть карточку": {"en":"Open details","uk":"Відкрити картку","be":"Адкрыць картку","zh":"打开详情","pt":"Abrir detalhes","bg":"Отваряне на подробностите","he":"פתיחת פרטים","cs":"Otevřít podrobnosti","ro":"Deschide detaliile","fr":"Ouvrir la fiche","pl":"Otwórz szczegóły","es":"Abrir ficha"},
+ "Далее · {0}": {"en":"Up next · {0}","uk":"Далі · {0}","be":"Далей · {0}","zh":"接下来 · {0}","pt":"A seguir · {0}","bg":"Следва · {0}","he":"הבא בתור · {0}","cs":"Následuje · {0}","ro":"Urmează · {0}","fr":"À suivre · {0}","pl":"Następny · {0}","es":"A continuación · {0}"},
  "Сегодня": {"en":"Today","uk":"Сьогодні","be":"Сёння","zh":"今天","pt":"Hoje","bg":"Днес","he":"היום","cs":"Dnes","ro":"Astăzi","fr":"Aujourd’hui","pl":"Dzisiaj","es":"Hoy"},
  "Завтра": {"en":"Tomorrow","uk":"Завтра","be":"Заўтра","zh":"明天","pt":"Amanhã","bg":"Утре","he":"מחר","cs":"Zítra","ro":"Mâine","fr":"Demain","pl":"Jutro","es":"Mañana"},
  "Есть в истории": {"en":"In watch history","uk":"Є в історії","be":"Ёсць у гісторыі","zh":"在观看记录中","pt":"No histórico","bg":"В историята","he":"בהיסטוריית הצפייה","cs":"V historii sledování","ro":"În istoricul vizionărilor","fr":"Dans l’historique","pl":"W historii oglądania","es":"En el historial"},

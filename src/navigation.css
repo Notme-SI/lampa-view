@@ -155,6 +155,14 @@ body.lampa_view:not(.settings--open) .settings__content,body.lampa_view:not(.sel
 body.lampa_view .settings .settings__content,body.lampa_view .selectbox .selectbox__content {z-index:1}
 body.lampa_view .settings .settings__head,body.lampa_view .selectbox:not(.minimal-franchise-menu) .selectbox__head {padding:.85em .9em;min-height:3em;gap:.65em}
 body.lampa_view .settings .settings__title,body.lampa_view .selectbox:not(.minimal-franchise-menu) .selectbox__title {font-size:1.15em;line-height:1.35;letter-spacing:0}
+body.lampa_view .selectbox.pt-history-compact .selectbox__title {min-width:0;max-height:none;white-space:normal;text-overflow:clip;overflow-wrap:anywhere}
+body.lampa_view .pt-history-last {margin:.2em 1em .75em;color:var(--pt-muted);font-size:.92em;line-height:1.4;overflow-wrap:anywhere}
+body.lampa_view .selectbox.pt-history-compact .pt-history-open .selectbox-item__subtitle {white-space:normal;overflow-wrap:anywhere}
+body.lampa_view .selectbox.pt-history-journal .watch-history-days__day {margin:.2em .75em 1em}
+body.lampa_view .selectbox.pt-history-journal .watch-history-days__day-name {margin-bottom:.4em;font-size:1em}
+body.lampa_view .selectbox.pt-history-journal .watch-history-days__day-body {padding:0 .75em}
+body.lampa_view .selectbox.pt-history-journal .watch-history-days__line {padding:.64em 0}
+body.lampa_view .selectbox.pt-history-journal .watch-history-days__episodes {min-width:0;padding-left:0;white-space:normal;overflow-wrap:anywhere}
 body.lampa_view .settings .settings-folder,body.lampa_view .settings .settings-param,body.lampa_view .selectbox:not(.minimal-franchise-menu) .selectbox-item {font-size:max(.88em,14px);min-height:44px;padding:.8em 1em;line-height:1.35;border-radius:.7em;border-color:transparent;margin:0;box-sizing:border-box}
 body.lampa_view .settings .settings-folder {align-items:center}
 body.lampa_view .settings .settings-folder__icon {width:1.4em;height:1.4em;min-width:1.4em;margin-right:.8em}
