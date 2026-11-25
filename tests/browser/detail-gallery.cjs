@@ -55,7 +55,7 @@ async function open(page,movie){
   const nextEpisode=page.locator('time.minimal-detail-next-episode');
   assert.equal(await nextEpisode.getAttribute('datetime'),'2099-11-13');
   const dateLabel=await page.evaluate(()=>new Intl.DateTimeFormat('ru',{day:'numeric',month:'long',year:'numeric'}).format(new Date(2099,10,13)));
-  assert.equal(await nextEpisode.textContent(),'Следующая серия: 6-я, 2 сезон · '+dateLabel);
+  assert.equal(await nextEpisode.textContent(),'6 серия · 2 сезон · '+dateLabel);
   const requests=await page.evaluate(()=>frameRequests);
   assert.ok(requests.includes('tv/91/season/1/episode/1/images?include_image_language=null'));
   assert.ok(requests.includes('tv/91/season/2/episode/1/images?include_image_language=null'));
