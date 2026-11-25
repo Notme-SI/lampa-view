@@ -1,4 +1,6 @@
 {
+ "Последняя просмотренная серия": {"en":"Last episode watched","uk":"Остання переглянута серія","be":"Апошняя прагледжаная серыя","zh":"上次观看的剧集","pt":"Último episódio visto","bg":"Последно гледан епизод","he":"הפרק האחרון שנצפה","cs":"Poslední zhlédnutý díl","ro":"Ultimul episod vizionat","fr":"Dernier épisode regardé","pl":"Ostatni obejrzany odcinek","es":"Último episodio visto"},
+ "{0} из {1}": {"en":"{0} of {1}","uk":"{0} з {1}","be":"{0} з {1}","zh":"{0} / {1}","pt":"{0} de {1}","bg":"{0} от {1}","he":"{0} מתוך {1}","cs":"{0} z {1}","ro":"{0} din {1}","fr":"{0} sur {1}","pl":"{0} z {1}","es":"{0} de {1}"},
  "Открыть карточку": {"en":"Open details","uk":"Відкрити картку","be":"Адкрыць картку","zh":"打开详情","pt":"Abrir detalhes","bg":"Отваряне на подробностите","he":"פתיחת פרטים","cs":"Otevřít podrobnosti","ro":"Deschide detaliile","fr":"Ouvrir la fiche","pl":"Otwórz szczegóły","es":"Abrir ficha"},
  "Далее · {0}": {"en":"Up next · {0}","uk":"Далі · {0}","be":"Далей · {0}","zh":"接下来 · {0}","pt":"A seguir · {0}","bg":"Следва · {0}","he":"הבא בתור · {0}","cs":"Následuje · {0}","ro":"Urmează · {0}","fr":"À suivre · {0}","pl":"Następny · {0}","es":"A continuación · {0}"},
  "Сегодня": {"en":"Today","uk":"Сьогодні","be":"Сёння","zh":"今天","pt":"Hoje","bg":"Днес","he":"היום","cs":"Dnes","ro":"Astăzi","fr":"Aujourd’hui","pl":"Dzisiaj","es":"Hoy"},

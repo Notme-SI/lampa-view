@@ -27,7 +27,7 @@ async function open(page,movie){
     ...Array.from({length:9},(_,i)=>({file_path:'/episode-still'+(i+1)+'.jpg',width:1920}))]});
   };
   const artwork=Array.from({length:movie?25:6},(_,i)=>({file_path:'/art'+i+'.jpg',width:1280,aspect_ratio:16/9}));
-  const card={id:91,source:'tmdb',backdrop_path:'/art0.jpg',production_countries:[],production_companies:[],spoken_languages:[],genres:[],
+  const card={id:91,source:'tmdb',backdrop_path:'/art0.jpg',overview:'Описание для проверки карточки.',production_countries:[],production_companies:[],spoken_languages:[],genres:[],
    ...(movie?{title:'Новый Человек-паук: Высокое напряжение',original_title:'Gallery Film',release_date:'2025-01-01'}:
     {name:'Проверка сериала',first_air_date:'2024-01-01',seasons:[{season_number:1,air_date:'2024-01-01'},{season_number:2,air_date:'2025-01-01'}]})};
   window.detailFixture={movie:card,persons:{cast:[],crew:[]},images:{backdrops:artwork},videos:{results:[]},
@@ -92,22 +92,44 @@ async function open(page,movie){
      const row=await open(page,mobile);
      const watchButton=page.locator('.activity--active .button--play');
      const watchStatus=page.locator('.activity--active .minimal-detail-watch-status');
+     const buttons=page.locator('.activity--active .minimal-detail-identity .full-start-new__buttons');
+     const actionRows=()=>buttons.evaluate(grid=>{
+      const top=grid.getBoundingClientRect().top;
+      return [...grid.children].filter(node=>node.getClientRects().length).map(node=>Math.round(node.getBoundingClientRect().top-top));
+     });
+     await buttons.locator('.button--alc-torrent').waitFor();
+     const layout=await actionRows();
+     assert.equal(await watchStatus.isVisible(),false);
      await page.evaluate(movie=>{
       const card=detailFixture.movie,title=movie?card.original_title:card.name;
       Lampa.Timeline.update({hash:Lampa.Utils.hash(movie?title:'21'+title),percent:25,time:915,duration:3660});
      },mobile);
      assert.equal(await watchButton.getAttribute('aria-label'),'Продолжить');
-     assert.equal(await watchStatus.textContent(),mobile?'15:15':'2 сезон · 1 серия · 15:15');
+     assert.equal(await watchStatus.locator('h3').textContent(),'Просмотр');
+     const fields=()=>watchStatus.locator('dl>div').evaluateAll(rows=>rows.map(row=>[row.querySelector('dt').textContent,row.querySelector('dd').textContent]));
+     assert.deepEqual(await fields(),[...(mobile?[]:[['Серия','2 сезон · 1 серия']]),
+      ['Время остановки','15:15 из 1:01:00'],['Просмотрено','25%']]);
+     assert.ok(await watchStatus.evaluate(node=>node.parentElement.matches('.full-start-new__right') && node.previousElementSibling.matches('.minimal-overview-action')));
+     assert.deepEqual(await actionRows(),layout,'Adding a saved position must leave every action in its original row');
      await page.evaluate(()=>{
       const start=Lampa.Activity.active().activity.component.items[0];
       const options=[];
       Lampa.Listener.send('full',{type:'options',link:start,options});
       options.find(item=>item.title==='Состояние просмотра').onSelect();
      });
-     await page.getByText('Время остановки',{exact:true}).waitFor();
-     const savedPosition=page.getByText('Время остановки',{exact:true}).locator('..').locator('.selectbox-item__subtitle');
+     const positionLabel=page.locator('.selectbox').getByText('Время остановки',{exact:true});
+     await positionLabel.waitFor();
+     const savedPosition=positionLabel.locator('..').locator('.selectbox-item__subtitle');
      assert.equal(await savedPosition.textContent(),'15:15');
      await page.evaluate(()=>Lampa.Controller.back());
+     await page.evaluate(movie=>{
+      const card=detailFixture.movie,title=movie?card.original_title:card.name;
+      Lampa.Timeline.update({hash:Lampa.Utils.hash(movie?title:'21'+title),percent:100,time:3660,duration:3660});
+     },mobile);
+     assert.equal(await watchButton.getAttribute('aria-label'),'Смотреть');
+     assert.deepEqual(await fields(),mobile?[]:[['Последняя просмотренная серия','2 сезон · 1 серия']]);
+     assert.equal(await watchStatus.locator('p').textContent(),mobile?'Фильм просмотрен':'');
+     assert.deepEqual(await actionRows(),layout,'Completing the episode must leave every action in its original row');
      if(tv){
       selectedPaths=await page.evaluate(()=>{
        const link=Lampa.Activity.active().activity.component,at=link.rows.findIndex(row=>row[1]?.minimal_gallery),line=link.items[at];
@@ -292,7 +314,7 @@ async function open(page,movie){
      }
      assert.deepEqual(errors,[]);
      console.log(engine.name(),mode,'frames and navigation passed');
-    }finally{await context.close();}
+    }catch(error){console.error(engine.name(),mode,errors);throw error;}finally{await context.close();}
    }
   }finally{await browser.close();}
  }

@@ -11,10 +11,12 @@ export function watchSummary(L,card,online,entry){
  const number=episode && Number(episode.episode)>0?
   (Number(episode.season)>0?lampaViewText('{0} сезон · {1} серия',[episode.season,episode.episode]):lampaViewText('Серия {0}',[episode.episode])):'';
  const time=progress?.time>0?watchClock(progress.time):'';
- if(!series && (marks?.viewed || progress?.percent>=WATCHED_PERCENT))return {label:lampaViewText('Фильм просмотрен'),number,time};
- if(series && completedSeason(L,card,online,progress))return {label:lampaViewText('Сезон {0} просмотрен',[progress.season]),number,time};
- if(progress?.percent>=WATCHED_PERCENT && number)return {label:lampaViewText('{0} · просмотрено',[number]),number,time};
- if(progress && (number || time) && (progress.percent>0 || time))return {label:[number,time].filter(Boolean).join(' · '),number,time,resume:true};
+ if(!series && (marks?.viewed || progress?.percent>=WATCHED_PERCENT))return {label:lampaViewText('Фильм просмотрен'),number,time,complete:'movie'};
+ if(series && completedSeason(L,card,online,progress))return {label:lampaViewText('Сезон {0} просмотрен',[progress.season]),number,time,complete:'season'};
+ if(progress?.percent>=WATCHED_PERCENT && number)return {label:lampaViewText('{0} · просмотрено',[number]),number,time,complete:'episode'};
+ if(progress && (number || time) && (progress.percent>0 || time)){
+  return {label:[number,time].filter(Boolean).join(' · '),number,time,resume:true,duration:progress.duration,percent:progress.percent};
+ }
  return {label:entry || marks?.history?number || lampaViewText('Есть в истории'):'',number,time};
 }
 
@@ -69,17 +71,42 @@ export function onlineButton(root){
  }) || null;
 }
 export function watchActions(L,root,card,link){
- const buttons=root.querySelector('.full-start-new__buttons'),play=buttons && buttons.querySelector('.button--play');if(!play)return;
+ const buttons=root.querySelector('.full-start-new__buttons'),play=buttons?.querySelector('.button--play');
+ const info=root.querySelector('.full-start-new__right');if(!play || !info)return;
  const $=window.jQuery;
- const history=watchHistory(L),status=document.createElement('div');
- status.className='minimal-detail-watch-status';play.after(status);
+ const history=watchHistory(L),status=document.createElement('section');
+ const heading=document.createElement('h3'),facts=document.createElement('dl'),note=document.createElement('p');
+ status.className='minimal-detail-watch-status';
+ heading.textContent=lampaViewText('Просмотр');
+ status.appendChild(heading);status.appendChild(facts);status.appendChild(note);
+ const overview=info.querySelector('.minimal-overview-action');
+ if(overview)overview.after(status);else info.append(status);
+ let rendered;
  function updateStatus(){
   const summary=watchSummary(L,card,window.LampaView?.online,history.entry(card));
   const title=lampaViewText(summary.resume?'Продолжить':'Смотреть'),label=play.querySelector('span');
   play.title=title;play.setAttribute('aria-label',title);
   if(label && label.textContent!==title)label.textContent=title;
-  status.hidden=!summary.label;
-  if(status.textContent!==summary.label)status.textContent=summary.label;
+  const position=summary.resume && summary.time?
+   (summary.duration>0?lampaViewText('{0} из {1}',[summary.time,watchClock(summary.duration)]):summary.time):'';
+  const rows=[
+   [lampaViewText(summary.complete?'Последняя просмотренная серия':'Серия'),summary.number],
+   [lampaViewText('Время остановки'),position],
+   [lampaViewText('Просмотрено'),summary.resume && summary.percent>0?Math.round(summary.percent)+'%':'']
+  ].filter(([,value])=>value);
+  const message=summary.complete==='movie' || summary.complete==='season' || !rows.length?summary.label:'';
+  const signature=JSON.stringify([rows,message]);
+  if(signature===rendered)return;
+  rendered=signature;
+  status.hidden=!rows.length && !message;
+  facts.hidden=!rows.length;
+  note.hidden=!message;note.textContent=message;
+  while(facts.firstChild)facts.removeChild(facts.firstChild);
+  for(const [name,value] of rows){
+   const row=document.createElement('div'),key=document.createElement('dt'),detail=document.createElement('dd');
+   key.textContent=name;detail.textContent=value;
+   row.appendChild(key);row.appendChild(detail);facts.appendChild(row);
+  }
  }
  function open(){
   const target=onlineButton(root);
