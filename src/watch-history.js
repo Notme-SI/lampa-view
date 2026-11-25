@@ -50,10 +50,9 @@ export default function watchHistory(L){
   const request={revision:pageRevision,waiters:[waiter]};
   requests.set(number,request);
   let completed=false;
-  const timer=setTimeout(()=>finish(null,{timeout:true}),5000);
   function finish(result,error){
    if(completed)return;
-   completed=true;clearTimeout(timer);
+   completed=true;
    if(requests.get(number)===request)requests.delete(number);
    const expired=requested!==ensure() || version!==generation || number!==1 && pageRevision!==revision;
    if(!expired && result){
