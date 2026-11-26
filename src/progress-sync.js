@@ -7,12 +7,13 @@ export default function progressSync(L,enabled){
  const torrents=torrserverProgress(L,enabled);
  const playback=playbackProgress(L,enabled),shared=sharedTimeline(L,enabled),history=watchHistory(L);
  let refreshed=0,timer,pending=false;
- function refresh(force=false){
+ function refresh(force=false,card){
   pending=false;
   if(!enabled() || document.hidden || !L.Account?.Permit?.sync)return;
   const controller=L.Controller && L.Controller.enabled && L.Controller.enabled();
   if(/player/.test(controller && controller.name || ''))return;
   if(document.body.matches('.pt-tv-busy,.pt-wheel-active')){pending=true;return;}
+  if(force===true && card)torrents.refresh(card,true);
   shared.refresh();
   if(!force && Date.now()-refreshed<5000)return;
   refreshed=Date.now();

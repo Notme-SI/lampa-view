@@ -3,7 +3,8 @@ import {linkFor,profileScope,torrentHash} from './timeline-meta.cjs';
 // The server stores client-reported seconds, not playback inferred from bytes.
 export default function torrserverProgress(L,enabled){
  const key='minimal_torrserver_progress_v1',network=L.Reguest?new L.Reguest():null;
- let rows=L.Storage.get(key,[]),busy=false,last=0,timer,stopped=false;
+ const openedPositions=new WeakMap();
+ let rows=L.Storage.get(key,[]),busy=false,last=0,timer,stopped=false,dirty=false;
  if(!Array.isArray(rows))rows=[];
  rows=rows.filter(r=>r && r.meta && r.hash && r.timeline && Date.now()-r.at<7*86400000).slice(-400);
  function server(){
@@ -25,7 +26,10 @@ export default function torrserverProgress(L,enabled){
   if(!meta || !index)return;
   const scope=profileScope(L),url=server();if(!url)return;
   rows=rows.filter(r=>!(r.scope===scope && r.server===url && r.hash===video.torrent_hash && r.index===index));
-  rows.push({scope,server:url,hash:video.torrent_hash,index,timeline:String(video.timeline.hash),duration:Number(video.timeline.duration)||0,meta,at:Date.now()});rows=rows.slice(-400);
+  const row={scope,server:url,hash:video.torrent_hash,index,timeline:String(video.timeline.hash),duration:Number(video.timeline.duration)||0,meta,at:Date.now()};
+  rows.push(row);rows=rows.slice(-400);
+  dirty=true;
+  return row;
  }
  const android=L.Android;
  if(typeof android?.openPlayer==='function' && typeof android.timeCall==='function' && L.Platform?.is?.('android')){
@@ -76,15 +80,29 @@ export default function torrserverProgress(L,enabled){
  function launched(video){
   if(stopped || !enabled() || !video)return;remember(video);
   if(Array.isArray(video.playlist))video.playlist.forEach(remember);
-  L.Storage.set(key,rows);schedule();
+  persist();schedule();
  }
- function refresh(){
-  if(!active() || busy || Date.now()-last<10000)return;
+ function persist(){
+  if(dirty){L.Storage.set(key,rows);dirty=false;}
+ }
+ function linkSaved(row,time){
+  const release=torrentHash(row.hash);
+  const saved=L.Storage.get(L.Timeline.filename?.() || 'file_view',{})?.[row.timeline];
+  if(!saved || Number(saved.time)!==time || !release || saved.torrentHash ||
+     saved.card && (saved.card!==row.meta.card || saved.season!==row.meta.season || saved.episode!==row.meta.episode))return;
+  // A server match identifies the exact release for this existing position.
+  L.Timeline.update({...saved,...row.meta,hash:row.timeline,torrentHash:release,received:true});
+ }
+ function refresh(card,force=false){
+  if(!active() || busy || !force && Date.now()-last<10000)return;
   const scope=profileScope(L),url=server();if(!url)return;
-  // Only the most recently launched torrent in this profile/server is polled.
-  const recent=rows.filter(r=>r.scope===scope && r.server===url && Date.now()-r.at<7*86400000).sort((a,b)=>b.at-a.at)[0];
+  const target=card && linkFor(L,card,1,1)?.card;
+  if(card && !target)return;
+  // Read one release per refresh, preferring the requested title when supplied.
+  const candidates=rows.filter(r=>r.scope===scope && r.server===url && Date.now()-r.at<7*86400000);
+  const recent=candidates.slice().reverse().find(r=>!target || r.meta.card===target);
   if(!recent)return;
-  const files=rows.filter(r=>r.scope===scope && r.server===url && r.hash===recent.hash);
+  const files=candidates.filter(r=>r.hash===recent.hash && (!target || r.meta.card===target));
   busy=true;last=Date.now();network.timeout(5000);
   network.silent(url+'/viewed',data=>{
    busy=false;if(!active() || scope!==profileScope(L) || url!==server() || !Array.isArray(data))return;
@@ -92,6 +110,7 @@ export default function torrserverProgress(L,enabled){
     const saved=data.find(v=>Number(v.file_index)===row.index && (!v.hash || v.hash===row.hash));
     const time=Number(saved && saved.timecode);if(!Number.isFinite(time) || time<=0)continue;
     const local=L.Timeline.view(row.timeline),duration=Number(local.duration)||row.duration;
+    if(time===Number(local.time)){linkSaved(row,time);continue;}
     // Without server timestamps a smaller value may be stale; retain newer local progress.
     if(time<=Number(local.time||0) || local.percent>=100 || duration>0 && time>duration+2)continue;
     const release=torrentHash(row.hash);
@@ -101,13 +120,19 @@ export default function torrserverProgress(L,enabled){
    }
   },()=>{busy=false;},JSON.stringify({action:'list',hash:recent.hash}));
  }
- function schedule(){clearTimeout(timer);timer=setTimeout(refresh,350);}
+ function schedule(){clearTimeout(timer);timer=setTimeout(()=>{persist();refresh();},350);}
  if(L.Player && L.Player.listener)L.Player.listener.follow('create',e=>launched(e && e.data));
  if(L.Listener)L.Listener.follow('torrent_file',e=>{
   if(e.type==='onenter')launched(e.element);
+  if(e.type==='render' && active()){
+   const row=remember(e.element),time=row && openedPositions.get(e.params)?.get(row.index);
+   if(time>0)linkSaved(row,time);
+   if(row)schedule();
+  }
   if(e.type!=='list_open')return;
   const {params,items}=e;
   if(active() && params?.movie && Array.isArray(params.viewed) && params.viewed.length && typeof L.Torserver.parse==='function'){
+   openedPositions.set(params,new Map(params.viewed.map(row=>[Number(row.file_index),Number(row.timecode)])));
    // The native file list imports TorrServer positions without timestamps.
    // An older server position must not reopen a completed episode or rewind it.
    const byId=new Map((items || []).map(item=>[String(item.id),item]));
@@ -124,5 +149,5 @@ export default function torrserverProgress(L,enabled){
  window.addEventListener('focus',schedule);
  const visible=()=>{if(!document.hidden)schedule();};document.addEventListener('visibilitychange',visible);
  const interval=setInterval(refresh,15000);schedule();
- return {refresh,stop(){stopped=true;clearInterval(interval);clearTimeout(timer);if(network)network.clear();window.removeEventListener('focus',schedule);document.removeEventListener('visibilitychange',visible);}};
+ return {refresh,stop(){persist();stopped=true;clearInterval(interval);clearTimeout(timer);if(network)network.clear();window.removeEventListener('focus',schedule);document.removeEventListener('visibilitychange',visible);}};
 }

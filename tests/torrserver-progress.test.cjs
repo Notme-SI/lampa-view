@@ -48,3 +48,34 @@ test('Android return saves measured position to the exact torrent file for cross
   assert.deepEqual(f.errors,[]);
  }finally{f.close();}
 });
+
+test('a saved fifth episode from TorrServer appears in title history when the PC opens the file list',async()=>{
+ const native=require('./fixtures/native-lampa.cjs');
+ const f=await native({prepare(w,L){
+  L.Storage.set('torrserver_tracktimecode',true);
+  L.Torserver.url=()=> 'http://server:8090';
+  L.Torserver.parse=({path})=>({hash:path});
+ }});
+ try{
+  const {L,w}=f,hash='b'.repeat(40),card={id:54,name:'Series',original_name:'Series',source:'tmdb',media_type:'tv'};
+  L.Timeline.update({hash:L.Utils.hash('12Series'),percent:59,time:1425,duration:2400,updated:10,received:true});
+  assert.equal(w.LampaView.online.lastWatched(card).episode,2);
+  const params={movie:card,viewed:[{file_index:7,timecode:2400},{file_index:8,timecode:0}]};
+  const items=[{id:7,path:'opaque-fifth'},{id:8,path:'opaque-sixth'}];
+  L.Listener.send('torrent_file',{type:'list_open',params,items});
+  // The native file list loads the position before emitting the render event.
+  L.Timeline.update({hash:'opaque-fifth',percent:100,time:2400,duration:2400,updated:20,received:true});
+  items.forEach(({id,path},index)=>L.Listener.send('torrent_file',{type:'render',params,items,element:{
+   card,season:1,episode:index+5,torrent_hash:hash,timeline:L.Timeline.view(path),
+   url:'http://server:8090/stream?link='+hash+'&index='+id+'&play'
+  }}));
+  const latest=w.LampaView.online.lastWatched(card);
+  assert.equal(latest.episode,5);assert.equal(latest.percent,100);assert.equal(latest.updated,20);
+  const records=L.Storage.get(L.Timeline.filename(),{});
+  assert.equal(records['opaque-fifth'].torrentHash,hash);
+  assert.equal(records['opaque-sixth'],undefined,'A zero-position server mark does not count as a playback');
+  await new Promise(resolve=>setTimeout(resolve,400));
+  assert.equal(L.Storage.get('minimal_torrserver_progress_v1',[]).length,2,'Files can be refreshed without starting playback on the PC');
+  assert.deepEqual(f.errors,[]);
+ }finally{f.close();}
+});

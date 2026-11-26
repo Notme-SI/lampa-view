@@ -57,7 +57,7 @@ export function showWatchState(L,card){
   title:labels[key],subtitle:' ',noenter:true,
   onDraw:item=>{widgets[key]=item.find('.selectbox-item__subtitle');}
  }));
- if(history.status().cloud)items.push({title:refreshLabel,selected:true,onSelect:()=>{if(sync)sync.refresh(true);else history.refresh(true);update();}});
+ if(history.status().cloud)items.push({title:refreshLabel,selected:true,onSelect:()=>{if(sync)sync.refresh(true,card);else history.refresh(true);update();}});
  L.Select.show({title:lampaViewText('Состояние просмотра'),items,nohide:true,nomark:true,onBack:()=>{close();L.Controller.toggle('full_start');}});
  update();
 }
