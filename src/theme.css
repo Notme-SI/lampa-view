@@ -889,6 +889,7 @@ body.lampa_view .minimal-torrent-view .minimal-torrent-toolbar .simple-button.fo
 body.lampa_view .minimal-torrent-view .watched-history {box-sizing:border-box;min-width:0;border:1px solid var(--pt-line);border-radius:.6em;background:var(--pt-panel);margin-top:.5em}
 body.lampa_view .minimal-torrent-view .watched-history.focus {border-color:var(--pt-accent);box-shadow:inset 0 0 0 1px var(--pt-accent)}
 body.lampa_view .minimal-torrent-view .watched-history:after {display:none!important}
+body.lampa_view .minimal-torrent-view .watched-history__body>span+span::before {content:"·";font-weight:400}
 /* The native search overlay was transparent, showing controls over releases. */
 body.lampa_view .search-box {z-index:90!important;background:var(--pt-search-surface,#080b10)!important;box-sizing:border-box;isolation:isolate}
 @media(max-width:767px){

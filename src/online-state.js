@@ -145,6 +145,7 @@ export function availability(body){
 }
 export default function onlineState(L){
  let revision=0,batching=0;const snapshots=new Map();
+ const watchRuntimes=new Map(),runtimeRequests=new Set();
  const file=()=>L.Timeline && L.Timeline.filename?L.Timeline.filename():'file_view';
  const index=timelineIndex(L,file),hash=index.hash;
  const info=L.Storage && L.Storage.get?cardInfo(L):null;
@@ -203,6 +204,40 @@ export default function onlineState(L){
   }
   const value=latest?{season:latest.season,episode:latest.episode,total:latest.total,max:index.maxSeasons,hash:latest.record.key,time:latest.record.time,duration:latest.record.duration,percent:latest.record.percent,updated:latest.record.updated}:null;
   snapshots.set(key,{snapshot:snapshot.id,value});if(snapshots.size>100)snapshots.delete(snapshots.keys().next().value);return value;
+ }
+ function displayProgress(card,progress){
+  if(!progress || !number(progress.time) || number(progress.percent))return progress;
+  const seconds=number(progress.duration);
+  if(seconds)return {...progress,percent:Math.min(100,Math.round(progress.time/seconds*100))};
+  const season=number(progress.season),episode=number(progress.episode);
+  const series=card.media_type!=='movie' && !!(card.name || card.original_name || card.first_air_date || card.media_type==='tv');
+  if(series && !episode)return progress;
+  const matches=row=>Number(row?.season_number)===season && Number(row?.episode_number)===episode;
+  let minutes=series?
+   number(matches(card.last_episode_to_air) && card.last_episode_to_air.runtime) ||
+    number((L.TimeTable?.get?.(card) || []).find(row=>matches(row) && number(row.runtime))?.runtime):
+   number(card.runtime);
+  const id=Number(card.id);
+  if(!minutes && Number.isSafeInteger(id) && id>0 && (!card.source || ['tmdb','cub','trakt','minimal_search','minimal_continue'].includes(card.source))){
+   const route=series?'tv/'+id+'/season/'+season+'/episode/'+episode:'movie/'+id;
+   const cached=watchRuntimes.get(route);
+   if(cached && Date.now()-cached.at<(cached.minutes?86400000:120000))minutes=cached.minutes;
+   else if(!runtimeRequests.has(route) && runtimeRequests.size<4){
+    runtimeRequests.add(route);
+    const finish=value=>{
+     runtimeRequests.delete(route);
+     const runtime=number((series?matches(value):Number(value?.id)===id) && value.runtime);
+     watchRuntimes.set(route,{minutes:runtime,at:Date.now()});
+     if(watchRuntimes.size>128)watchRuntimes.delete(watchRuntimes.keys().next().value);
+     if(runtime)setTimeout(()=>L.Listener?.send?.('state:changed',{target:'timeline',reason:'runtime',card}),0);
+    };
+    tmdbGet(L,route,{},finish,()=>finish(),{life:86400000});
+   }
+  }
+  // A catalogue runtime is a display fallback. It never changes the saved
+  // position or records that the episode has been completed.
+  const total=minutes*60;
+  return total>=progress.time?{...progress,percent:Math.min(99,Math.round(progress.time/total*100))}:progress;
  }
  function seasonWatched(card,season,total){
   if(!Number.isInteger(total) || total<1 || total>500)return false;
@@ -338,5 +373,5 @@ export default function onlineState(L){
   if(L.Timeline.read)L.Timeline.read();
  }
 
- return {availability,reader,resume,seasonIndex,folderTarget,folderRows,seasonNavigation,folderSeasons,folderReleases,relevantFolders,episodeRows,clearProgress,clearTitleProgress,setWatched,setAllWatched,setPreviousWatched,setWatchedRows:markRows,lastWatched,seasonWatched};
+ return {availability,reader,resume,seasonIndex,folderTarget,folderRows,seasonNavigation,folderSeasons,folderReleases,relevantFolders,episodeRows,clearProgress,clearTitleProgress,setWatched,setAllWatched,setPreviousWatched,setWatchedRows:markRows,lastWatched,seasonWatched,displayProgress};
 }

@@ -13,9 +13,13 @@ const {setup}=require('../fixtures/native-browser.cjs');
     const L=Lampa;L.DeviceInput.init();L.Controller.observe();L.Storage.set('keyboard_type','system');L.Storage.set('menu_always',true);document.body.style.fontSize='24px';
     L.Parser.get=(p,ok)=>setTimeout(()=>ok({Results:[{Title:'Киберпанк / Cyberpunk: Edgerunners (1 сезон, 1-10 из 10) 1080p',Tracker:'kinozal',Seeders:10,Size:1e9}]}),0);
     const movie={id:105248,name:'Киберпанк: Бегущие по краю',title:'Cyberpunk: Edgerunners',original_name:'サイバーパンク エッジランナーズ',original_title:'Cyberpunk: Edgerunners',backdrop_path:'/backdrop.jpg',first_air_date:'2022-09-13',number_of_seasons:1,genres:[],source:'tmdb'};
+    L.Timeline.update({hash:'torrent-fixture',card:'tv_105248',season:1,episode:1,percent:50,time:900,duration:1800});
     L.Activity.push({component:'torrents',movie,search:'Cyberpunk: Edgerunners',search_one:'Cyberpunk: Edgerunners',search_two:'Cyberpunk: Edgerunners',url:''});
    });
    await page.waitForSelector('.minimal-toolbar-label');
+   const separator=page.locator('.activity--active .watched-history__body>span+span').first();
+   await separator.waitFor({state:'attached'});
+   assert.equal(await separator.evaluate(node=>getComputedStyle(node,'::before').content),'"·"');
    await page.mouse.move(1200,600);
    await page.waitForSelector('body.pt-menu-pinned');
    await page.waitForFunction(()=>{

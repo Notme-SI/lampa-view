@@ -15,6 +15,7 @@ async function open(page,movie){
   L.TMDB.image=(path,options)=>{frameRequests.push(path);return image(path,options);};
   L.Api.sources.tmdb.get=(path,params,done)=>{
    frameRequests.push(path);
+   if(path==='tv/91/season/2/episode/1')return setTimeout(()=>done({season_number:2,episode_number:1,runtime:35}),100);
    if(path==='tv/91/season/1')return done({episodes:[
     {season_number:1,episode_number:1,air_date:'2024-01-01',still_path:'/early-episode-cover.jpg'},
     {season_number:1,episode_number:2,air_date:'2099-01-01'}
@@ -103,6 +104,15 @@ async function open(page,movie){
      await buttons.locator('.button--alc-torrent').waitFor();
      const layout=await actionRows();
      assert.equal(await watchStatus.isVisible(),false);
+     if(!mobile){
+      await page.evaluate(()=>{
+       const card=detailFixture.movie;
+       Lampa.Timeline.update({hash:'torrserver-fixture',card:'tv_'+card.id,season:2,episode:1,time:1850,duration:0,percent:0});
+      });
+      await page.waitForFunction(()=>document.querySelector('.activity--active .minimal-detail-watch-state')?.textContent==='88% · 30:50');
+      assert.equal(await watchStatus.locator('.full-start__rate').evaluate(node=>getComputedStyle(node).getPropertyValue('--pt-watch-percent')),'88%');
+      await page.evaluate(()=>Lampa.Timeline.update({hash:'torrserver-fixture',card:'tv_91',season:2,episode:1,time:0,duration:0,percent:0}));
+     }
      await page.evaluate(movie=>{
       const card=detailFixture.movie,title=movie?card.original_title:card.name;
       Lampa.Timeline.update({hash:Lampa.Utils.hash(movie?title:'21'+title),percent:50,time:1830,duration:3660});
@@ -115,7 +125,7 @@ async function open(page,movie){
       return episode.fontSize===status.fontSize && episode.fontWeight===status.fontWeight && episode.color===status.color;
      });
      assert.equal(await chip.locator('span').first().textContent(),mobile?'Просмотр':'1 серия · 2 сезон');
-     assert.equal(await watchLabel.textContent(),'50%');
+     assert.equal(await watchLabel.textContent(),'50% · 30:30');
      assert.ok(await matchesEpisodeStyle(),'Progress uses the same typography as the episode');
      if(mobile)assert.ok(await chip.evaluate(node=>{
       const bounds=node.getBoundingClientRect();

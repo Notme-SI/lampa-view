@@ -189,8 +189,8 @@ function watchFooter(L,node,data,series){
  const episodeComplete=series && Number(timeline.percent)>=WATCHED_PERCENT;
  const hideProgress=complete || episodeComplete;
  slot.classList.toggle('pt-card-watch--complete',hideProgress);
- const shown={...(target || timeline)};
- if(Number(shown.percent)>=WATCHED_PERCENT)shown.percent=100;
+ const savedProgress=target || timeline;
+ const shown=state?.displayProgress?.(data,savedProgress) || savedProgress;
  if(complete){watchEpisode=0;label=series?lampaViewText("Сезон {0} просмотрен", [shared.season]):lampaViewText("Фильм просмотрен");}
  else if(watchEpisode)label=episodeCaption(watchSeason,watchEpisode);
  slot.dataset.watchState=complete?'complete':'progress';
@@ -201,7 +201,7 @@ function watchFooter(L,node,data,series){
  if(line.parentNode!==meter)meter.appendChild(line);
  const timestamp=row.querySelector('.pt-card-watch__time'),copy=summary.querySelector('.pt-card-watch__copy');if(timestamp.parentNode!==copy)copy.appendChild(timestamp);
  line.classList.toggle('hide',false);
- const fill=row.querySelector('.time-line>div'),width=Math.min(100,Math.max(0,Number(shown.percent)||0))+'%';
+ const fill=row.querySelector('.time-line>div'),width=(hideProgress?100:Math.min(100,Math.max(0,Number(shown.percent)||0)))+'%';
  if(fill && fill.style.width!==width)fill.style.width=width;
  const time=hideProgress || !Number(shown.time)?'':watchClock(shown.time),name=summary.querySelector('.pt-card-watch__label'),stamp=row.querySelector('.pt-card-watch__time'),icon=summary.querySelector('.pt-card-watch__icon');
  if(name.textContent!==label)name.textContent=label;

@@ -4,16 +4,23 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
  try{
   await page.evaluate(mode=>{
    const host=document.createElement('div');host.id='qa-watch-posters';host.style.cssText='display:grid;grid-template-columns:repeat('+(mode==='tv'?7:mode==='mobile'?2:4)+',minmax(0,1fr));gap:16px;width:90%;margin:90px auto';document.body.appendChild(host);window.qaWatchCards=[];
+   const get=Lampa.Api.sources.tmdb.get;
+   Lampa.Api.sources.tmdb.get=function(path,params,done){
+    if(path==='tv/88101/season/1/episode/5')return setTimeout(()=>done({season_number:1,episode_number:5,runtime:58}),100);
+    return get.apply(this,arguments);
+   };
    const definitions=[['Completed episode',3,5,true,false],['Partial episode',1,5,false,false],['Completed season',2,10,true,true],['Completed movie',0,0,true,false]];
    for(let i=0;i<definitions.length;i++){
     const [title,season,episode,done,all]=definitions[i],data={id:88100+i,title,name:season?title:undefined,original_title:title,original_name:season?title:undefined,media_type:season?'tv':'movie',source:'test',poster_path:'/p.jpg',release_date:'2025-01-01',quality:'4K',vote_average:8.2,...(season?{number_of_seasons:season,seasons:[{season_number:season,episode_count:10}],last_episode_to_air:{season_number:season,episode_number:10,air_date:'2020-01-01'}}:{})};
+    if(!done)data.source='tmdb';
     if(all)for(let e=1;e<=episode;e++)Lampa.Timeline.update({hash:Lampa.Utils.hash(''+season+e+title),percent:95,time:0});
-    else Lampa.Timeline.update({hash:Lampa.Utils.hash(season?''+season+episode+title:title),percent:done?95:42,time:done?0:1458,duration:3471});
+    else Lampa.Timeline.update({hash:Lampa.Utils.hash(season?''+season+episode+title:title),percent:done?95:0,time:done?0:1458,duration:0});
     const card=Lampa.Maker.make('Card',data);card.create();const node=card.render(true);node.style.setProperty('width','100%','important');host.appendChild(node);card.visible();qaWatchCards.push(card);
    }
    for(const type of ['book','like','wath'])Lampa.Favorite.toggle(type,qaWatchCards[1].data);
   },mode);
   await page.waitForFunction(()=>document.querySelectorAll('#qa-watch-posters .card__view>.pt-card-watch__badge').length===4);
+  await page.waitForFunction(()=>qaWatchCards[1].render(true).querySelector('.pt-card-watch__meter .time-line>div')?.style.width==='42%');
   const expected=['5 серия · 3 сезон','5 серия · 1 сезон','Сезон 2 просмотрен','Фильм просмотрен'];
   for(const theme of ['minimal','glass'])for(const size of ['small','normal','bigger']){
    await page.evaluate(({theme,size})=>{Lampa.Storage.set('lampa_view_theme',theme);Lampa.Storage.set('interface_size',size);}, {theme,size});

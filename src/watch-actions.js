@@ -14,7 +14,8 @@ export function watchSummary(L,card,online,entry){
  if(series && completedSeason(L,card,online,progress))return {label:lampaViewText('Сезон {0} просмотрен',[progress.season]),number,time,complete:'season'};
  if(progress?.percent>=WATCHED_PERCENT && number)return {label:lampaViewText('Просмотрено · {0}',[number]),number,time,complete:'episode'};
  if(progress && (number || time) && (progress.percent>0 || time)){
-  return {label:[number,time].filter(Boolean).join(' · '),number,time,resume:true,duration:progress.duration,percent:progress.percent};
+  const shown=online?.displayProgress?.(card,progress) || progress;
+  return {label:[number,time].filter(Boolean).join(' · '),number,time,resume:true,duration:progress.duration,percent:shown.percent};
  }
  return {label:entry || marks?.history?number || lampaViewText('Есть в истории'):'',number,time};
 }
@@ -93,14 +94,14 @@ export function watchActions(L,root,card,link){
   play.title=title;play.setAttribute('aria-label',title);
   if(label && label.textContent!==title)label.textContent=title;
   const percent=summary.resume && summary.percent>0?Math.round(summary.percent):0;
-  const value=summary.number && !summary.complete?summary.number:summary.label;
-  const detail=summary.resume?(percent?percent+'%':summary.time):'';
+  const value=summary.resume?(summary.number || lampaViewText('Просмотр')):summary.label;
+  const detail=percent?[percent+'%',summary.time].filter(Boolean).join(' · '):'';
   const signature=JSON.stringify([value,detail]);
   if(signature===rendered)return;
   rendered=signature;
   const selectable=chip.classList.contains('selector');
   status.hidden=!value;
-  episode.textContent=summary.resume && !summary.number?lampaViewText('Просмотр'):value;
+  episode.textContent=value;
   state.hidden=!detail;state.textContent=detail;
   chip.style.setProperty('--pt-watch-percent',percent+'%');
   chip.setAttribute('aria-label',[lampaViewText('История просмотра'),value,detail].filter(Boolean).join(' · '));
