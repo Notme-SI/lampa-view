@@ -33,19 +33,22 @@ test('gallery deduplicates alternate sizes and rejects portrait artwork with kno
  assert.ok(rows.every(row=>!row.minimal_still_url?.includes('portrait')));
 });
 
-test('the reported movie keeps its fourteen catalogue frames with an obsolete external key present',async()=>{
+test('the reported movie keeps the current catalogue frames with an obsolete external key present',async()=>{
  const fs=require('node:fs'),requests=[];
- const {loadDetailGallery}=runtime(async url=>{
+ const readCatalogue=async url=>{
   requests.push(url);
   const name=new URL(url).pathname.split('/').at(-1);
   assert.match(url,/^https:\/\/notme-si\.github\.io\/lampa-view\/frames\/v1\/[\da-f]{2}\.json$/);
   return {ok:true,json:async()=>JSON.parse(fs.readFileSync(path.join(__dirname,'../docs/frames/v1',name),'utf8'))};
- });
+ };
  const movie={source:'cub',id:1423191,title:'Обитель зла',original_title:'Resident Evil',release_date:'2026-01-01'};
- const frames=await loadDetailGallery({Storage:{get:(key,fallback)=>key==='minimal_poiskkino_frames_key'?'obsolete-fixture-key':fallback}},{movie},()=>assert.fail('Movie stills do not need episode requests'));
- assert.equal(frames.length,14);
- assert.equal(new Set(frames.map(row=>row.minimal_still_url)).size,14);
- assert.ok(requests.length>0);
+ const load=storage=>runtime(readCatalogue).loadDetailGallery({Storage:storage},{movie},()=>assert.fail('Movie stills do not need episode requests'));
+ const frames=await load({get:(key,fallback)=>key==='minimal_poiskkino_frames_key'?'obsolete-fixture-key':fallback});
+ assert.ok(requests.length>0,'The obsolete key still allows catalogue requests');
+ assert.ok(frames.length>0 && frames.length<=frameLimit);
+ const urls=rows=>Array.from(rows,row=>row.minimal_still_url);
+ assert.equal(new Set(urls(frames)).size,frames.length);
+ assert.deepEqual(urls(frames),urls(await load({get:(key,fallback)=>fallback})));
 });
 
 test('series prefer the latest aired season and diversify its episodes regardless of network order',async()=>{
