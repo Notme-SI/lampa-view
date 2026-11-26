@@ -120,3 +120,27 @@ test('EOF is saved before native auto-next and a stale close checkpoint cannot u
   assert.equal(writes.filter(r=>r.hash==='two').at(-1).percent,100);assert.equal(writes.filter(r=>r.hash==='two').at(-1).time,1200);api.stop();
  }finally{w.close();}
 });
+
+test('the native credits control completes the previous file only when the next file starts',()=>{
+ const dom=new JSDOM('<div class="player"><div class="player-skip"></div><video></video></div>',{runScripts:'outside-only'}),w=dom.window;
+ try{
+  const media=w.document.querySelector('video'),button=w.document.querySelector('.player-skip'),writes=[],viewed=[];
+  Object.defineProperty(media,'duration',{value:2400});
+  const player=events(),video=events(),make=hash=>({timeline:{hash,handler(percent,time){writes.push([hash,percent,time]);}},viewed:time=>viewed.push([hash,time])});
+  let first=make('1'),next=make('2'),playing=first;
+  const playlist={get:()=>[first,next],position:()=>0,canNext:()=>true,next(){}};
+  const L={Storage:{get:(k,d)=>d},Player:{listener:player,playdata:()=>playing},PlayerVideo:{listener:video,video:()=>media},PlayerPlaylist:playlist,Timeline:{filename:()=> 'file_view'}};
+  w.eval(bundle('playback-progress'));const api=w.TestModule.default(L,()=>true);
+  function start(item){playing=item;player.send('start',item);}
+  function progress(){video.send('timeupdate',{current:2090,duration:2400});}
+  start(first);video.send('loadeddata');progress();
+  playlist.next();player.send('destroy');start(next);
+  assert.deepEqual(writes.at(-1),['1',87,2090],'A normal playlist jump preserves the measured position');
+  first=make('3');next=make('4');start(first);progress();
+  button.dispatchEvent(new w.Event('hover:enter'));playlist.next();player.send('destroy');
+  assert.deepEqual(writes.at(-1),['3',87,2090],'Without a successful transition the episode is still partial');
+  start(next);
+  assert.deepEqual(writes.at(-1),['3',100,2400]);assert.deepEqual(viewed,[['3',2400]]);
+  api.stop();
+ }finally{w.close();}
+});

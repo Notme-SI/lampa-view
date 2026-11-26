@@ -34,6 +34,16 @@ test('Android return saves measured position to the exact torrent file for cross
   L.Android.timeCall({hash:'ep2',time:1250,duration:2500,percent:50});
   assert.equal(L.Timeline.view('ep2').time,1250);
   assert.deepEqual(viewed,[[hash,11,1250]]);
+  L.Storage.set('torrserver_tracktimecode',false);
+  L.Android.timeCall({hash:'ep2',time:1800,duration:2500,percent:72});
+  assert.equal(L.Timeline.view('ep2').time,1800,'The later Android checkpoint still reaches Lampa after the native callback is consumed');
+  assert.equal(f.L.Storage.get(L.Timeline.filename(),{}).ep2.episode,2);
+  assert.equal(viewed.length,1,'Saving Timeline does not depend on TorrServer TrackTimecode');
+  L.Storage.set('torrserver_tracktimecode',true);
+  L.Torserver.parse=({path})=>({hash:path});
+  const params={movie:card,viewed:[{file_index:11,timecode:1250},{file_index:7,timecode:600}]};
+  L.Listener.send('torrent_file',{type:'list_open',params,items:[{id:11,path:'ep2'},{id:7,path:'ep1'}]});
+  assert.deepEqual(params.viewed.map(row=>row.file_index),[7],'An older TorrServer copy must not rewind the current device position');
   assert.equal(L.Timeline.view('ep1').time,0);
   assert.deepEqual(f.errors,[]);
  }finally{f.close();}

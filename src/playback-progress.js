@@ -6,7 +6,7 @@ import {linkFor,profileScope,torrentHash} from './timeline-meta.cjs';
 // mark. Never create progress merely because a file was opened.
 export default function playbackProgress(L,enabled){
  const bindings=new Map(),wrapped=new WeakSet(),bindingKey='minimal_playback_links_v1',limit=2000;
- let current=null,stopped=false,media=null,timelineUpdate=null;
+ let current=null,stopped=false,media=null,timelineUpdate=null,skipPressed=false,creditNext=null;
  const active=()=>!stopped && enabled();
  const cached=L.Storage && L.Storage.get?L.Storage.get(bindingKey,[]):[];
  if(Array.isArray(cached))for(const row of cached.slice(-limit)){
@@ -84,16 +84,41 @@ export default function playbackProgress(L,enabled){
    finally{timelineUpdate=previous;}
   };
  }
- function save(){
-  if(!active() || !current || !current.sample || current.scope!==profileScope(L))return;
-  const timeline=current.video.timeline;
+ function save(state=current){
+  if(!active() || !state?.sample || state.scope!==profileScope(L))return;
+  const timeline=state.video.timeline;
   if(!timeline || timeline.stop_recording || timeline.waiting_for_user || typeof timeline.handler!=='function')return;
   // The host may have completed the file after our last periodic sample.
   // Closing or auto-next must not replace that result with an older checkpoint.
-  const sample=Number(timeline.percent)===100 && Number(timeline.duration)>0 && Number(timeline.time)>=Number(timeline.duration)?{percent:100,time:Number(timeline.time),duration:Number(timeline.duration)}:current.sample;
+  const sample=Number(timeline.percent)===100 && Number(timeline.duration)>0 && Number(timeline.time)>=Number(timeline.duration)?{percent:100,time:Number(timeline.time),duration:Number(timeline.duration)}:state.sample;
   Object.assign(timeline,sample);
   timeline.handler(sample.percent,sample.time,sample.duration);
-  current.savedAt=Date.now();
+  state.savedAt=Date.now();
+  return true;
+ }
+ function complete(state,duration){
+  if(!Number.isFinite(duration) || duration<=0)return;
+  state.sample={percent:100,time:duration,duration};return save(state);
+ }
+ const playlistControl=L.PlayerPlaylist;
+ function creditAction(event){
+  if(!current || !active() || !event.target?.closest?.('.player .player-skip:not(.hide):not(.player-skip--preview)'))return;
+  skipPressed=true;Promise.resolve().then(()=>{skipPressed=false;});
+ }
+ if(typeof playlistControl?.next==='function' && typeof playlistControl.position==='function'){
+  const next=playlistControl.next;
+  document.addEventListener('hover:enter',creditAction,true);
+  playlistControl.next=function(){
+   // The native skip button invokes next() only for the closing segment.
+   // An intro skip seeks inside the current file instead.
+   if(skipPressed && current && playlistControl.canNext?.()){
+    const video=playlistControl.get?.()[playlistControl.position()+1];
+    if(video && video!==current.video){
+     creditNext={video,state:current,duration:Number(media?.duration || current.sample?.duration)};
+    }
+   }
+   return next.apply(this,arguments);
+  };
  }
  const listener=L.Player && L.Player.listener;
  L.Listener?.follow?.('torrent_file',event=>{
@@ -115,9 +140,17 @@ export default function playbackProgress(L,enabled){
    if(Array.isArray(data.playlist))data.playlist.slice(0,limit).forEach(track);
    track(data);if(active())persist();
   });
-  listener.follow('start',video=>{save();current=track(video);});
+  listener.follow('start',video=>{
+   save();
+   const previous=creditNext;creditNext=null;
+   if(previous?.video===video && complete(previous.state,previous.duration)){
+    previous.state.video.viewed?.(Math.round(previous.duration));
+   }
+   current=track(video);
+  });
   listener.follow('external',()=>{save();current=null;});
-  for(const event of ['close','destroy'])listener.follow(event,()=>{save();current=null;});
+  listener.follow('close',()=>{save();current=null;creditNext=null;});
+  listener.follow('destroy',()=>{save();current=null;});
  }
  if(L.Player && typeof L.Player.playlist==='function'){
   const playlist=L.Player.playlist;
@@ -129,9 +162,7 @@ export default function playbackProgress(L,enabled){
  const video=L.PlayerVideo && L.PlayerVideo.listener;
  function ended(){
   if(!active() || !current || current.scope!==profileScope(L) || L.Player.playdata?.()!==current.video)return;
-  const duration=Number(media?.duration);
-  if(!Number.isFinite(duration) || duration<=0)return;
-  current.sample={percent:100,time:duration,duration};save();
+  complete(current,Number(media?.duration));
  }
  function bindMedia(){
   const next=L.PlayerVideo?.video?.();if(next===media)return;
@@ -154,5 +185,5 @@ export default function playbackProgress(L,enabled){
  const hide=()=>save();
  window.addEventListener('pagehide',hide);
  document.addEventListener('visibilitychange',()=>{if(document.hidden)save();});
- return {save,stop(){save();stopped=true;current=null;media?.removeEventListener?.('ended',ended,true);media=null;bindings.clear();window.removeEventListener('pagehide',hide);}};
+ return {save(){save();},stop(){save();stopped=true;current=null;creditNext=null;media?.removeEventListener?.('ended',ended,true);media=null;bindings.clear();window.removeEventListener('pagehide',hide);document.removeEventListener('hover:enter',creditAction,true);}};
 }

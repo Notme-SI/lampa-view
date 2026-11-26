@@ -125,3 +125,16 @@ test('measured playback writes can reach another device while general refresh st
   b.sync.refresh();await wait(30);assert.equal(b.records()['episode-6'].time,240);assert.equal(b.records()['episode-6'].episode,6);
  }finally{a.close();b.close();}
 });
+
+test('a checkpoint received while the TV webview is hidden uploads when it becomes visible again',async()=>{
+ const server=backend(),tv=client(server);
+ try{
+  tv.sync.refresh();await wait(40);
+  Object.defineProperty(tv.w.document,'hidden',{value:true,configurable:true});
+  tv.L.Timeline.update({hash:'episode-2',card:'tv_95403',season:1,episode:2,percent:70,time:1400,duration:2000});
+  await wait(370);assert.equal(tv.sync.status().pending,1);assert.equal(server.requests.filter(r=>r.method.endsWith('/set')).length,0);
+  Object.defineProperty(tv.w.document,'hidden',{value:false,configurable:true});
+  tv.w.document.dispatchEvent(new tv.w.Event('visibilitychange'));
+  await wait(80);assert.equal(server.areas.get('viewer@example.test|7').get('episode-2').position,1400);
+ }finally{tv.close();}
+});

@@ -23,7 +23,9 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
     await page.waitForFunction(index=>{
      const card=qaWatchCards[index].render(true),badge=card.querySelector('.card__view>.pt-card-watch__badge'),a=badge.getBoundingClientRect(),view=card.querySelector('.card__view').getBoundingClientRect(),vote=card.querySelector('.card__vote').getBoundingClientRect();
      const clear=[...card.querySelectorAll('.card__icon:not(.icon--history)')].every(n=>{const b=n.getBoundingClientRect();return !b.width||a.right<=b.left-.5||a.left>=b.right+.5||a.bottom<=b.top-.5||a.top>=b.bottom+.5;});
-     return a.width>0&&a.left>=view.left-1&&a.right<=view.right+1&&a.bottom<=view.bottom+1&&(a.right<=vote.left-1||a.bottom<=vote.top-1)&&clear;
+     const favorites=[...card.querySelectorAll('.card__icon:not(.icon--history)')].filter(n=>n.getBoundingClientRect().width);
+     return a.width>0&&a.left>=view.left-1&&a.right<=view.right+1&&a.bottom<=view.bottom+1&&(a.right<=vote.left-1||a.bottom<=vote.top-1)&&clear&&
+      (index!==1 || favorites.length===3 && favorites.every(icon=>icon.getBoundingClientRect().bottom<=a.top-1 && getComputedStyle(icon).backgroundColor===getComputedStyle(badge).backgroundColor));
     },index,{timeout:4000}).catch(async e=>{throw new Error(e.message+' '+JSON.stringify({engine:engine.name(),mode,theme,size,index,geometry:await page.evaluate(index=>{const card=qaWatchCards[index].render(true);return [...card.querySelectorAll('.card__view,.pt-card-watch__badge,.card__vote,.card__icon')].map(n=>({class:n.className,rect:n.getBoundingClientRect().toJSON(),style:n.style.cssText}));},index)}));});
     const result=await page.evaluate(index=>{
      const card=qaWatchCards[index].render(true),badge=card.querySelector('.pt-card-watch__badge'),kind=card.querySelector('.pt-kind'),view=card.querySelector('.card__view'),a=badge.getBoundingClientRect();

@@ -38,25 +38,37 @@ export default function torrserverProgress(L,enabled){
     for(const item of [video,...(Array.isArray(video.playlist)?video.playlist:[])]){
      if(item?.torrent_hash!==video.torrent_hash || !item.timeline?.hash)continue;
      const index=fileIndex(item),hash=String(item.timeline.hash);
-     if(!index)continue;
+     const meta=linkFor(L,item.card || video.card,item.season,item.episode);
+     if(!meta)continue;
      // One native hash shared by different files is ambiguous.
-     if(files.has(hash) && files.get(hash)!==index)files.set(hash,0);
-     else files.set(hash,index);
+     if(!files.has(hash))files.set(hash,{index,url:item.url,meta});
+     else if(files.get(hash)?.url!==item.url)files.set(hash,null);
     }
-    if(endpoint && files.size)session={files,scope,endpoint,torrent:video.torrent_hash};
+    if(files.size)session={files,scope,endpoint,torrent:video.torrent_hash};
    }
    return open.apply(this,arguments);
   };
   android.timeCall=function(progress){
-   const current=session,hash=String(progress?.hash || ''),index=current?.files.get(hash);
-   if(index && current.scope!==profileScope(L))return;
-   const result=timeCall.apply(this,arguments);
-   if(!index || !active() || current.endpoint!==server() || typeof L.Torserver.viewedSet!=='function')return result;
-   const time=Number(progress.time),duration=Number(progress.duration);
-   if(Number.isFinite(time) && time>0 && Number.isFinite(duration) && duration>0 && time<=duration+2){
-    // The Android host records its result in Timeline. Mirror the measured
-    // seconds to the actual torrent file for other devices that use TrackTimecode.
-    L.Torserver.viewedSet(current.torrent,index,Math.round(Math.min(time,duration)));
+   const current=session,hash=String(progress?.hash || '');
+   if(current?.files.has(hash) && current.scope!==profileScope(L))return;
+   const file=current?.files.get(hash);
+   if(stopped || !enabled() || !file)return timeCall.apply(this,arguments);
+   const measured=Number(progress.time),known=L.Timeline.view(hash);
+   const duration=Math.round(Number(progress.duration) || Number(known.duration) || 0);
+   if(!Number.isFinite(measured) || measured<=0 || !Number.isFinite(duration) || duration<0 || duration>0 && measured>duration+2)return;
+   const reportedPercent=Math.min(100,Math.max(0,Number(progress.percent)||0));
+   const time=Math.round(duration>0?reportedPercent===100?duration:Math.min(measured,duration):measured);
+   const percent=duration>0?Math.round(time/duration*100):reportedPercent;
+   const result=timeCall.call(this,{...progress,time,duration,percent});
+   const saved=L.Timeline.view(hash);
+   const release=torrentHash(current.torrent);
+   // The native host consumes its callback after the first report for a file.
+   // Save later measured positions for the same launch through the normal Timeline.
+   if(saved.time!==time || saved.duration!==duration || saved.percent!==percent){
+    L.Timeline.update({hash,time,duration,percent,profile:saved.profile,...file.meta,...(release?{torrentHash:release}:{})});
+   }
+   if(file.index && active() && current.endpoint && current.endpoint===server()){
+    L.Torserver.viewedSet?.(current.torrent,file.index,time);
    }
    return result;
   };
@@ -91,7 +103,24 @@ export default function torrserverProgress(L,enabled){
  }
  function schedule(){clearTimeout(timer);timer=setTimeout(refresh,350);}
  if(L.Player && L.Player.listener)L.Player.listener.follow('create',e=>launched(e && e.data));
- if(L.Listener)L.Listener.follow('torrent_file',e=>{if(e.type==='onenter')launched(e.element);if(e.type==='list_open')schedule();});
+ if(L.Listener)L.Listener.follow('torrent_file',e=>{
+  if(e.type==='onenter')launched(e.element);
+  if(e.type!=='list_open')return;
+  const {params,items}=e;
+  if(active() && params?.movie && Array.isArray(params.viewed) && params.viewed.length && typeof L.Torserver.parse==='function'){
+   // The native file list imports TorrServer positions without timestamps.
+   // An older server position must not reopen a completed episode or rewind it.
+   const byId=new Map((items || []).map(item=>[String(item.id),item]));
+   params.viewed=params.viewed.filter(row=>{
+    const item=byId.get(String(row.file_index));
+    if(!item?.path)return true;
+    const info=L.Torserver.parse({movie:params.movie,files:items,filename:item.path_human || item.path,path:item.path,is_file:/\.(?:vob|m2ts)$/i.test(item.path)});
+    const local=L.Timeline.view(info.hash);
+    return !(Number(local.percent)>=100) && Number(local.time || 0)<Number(row.timecode);
+   });
+  }
+  schedule();
+ });
  window.addEventListener('focus',schedule);
  const visible=()=>{if(!document.hidden)schedule();};document.addEventListener('visibilitychange',visible);
  const interval=setInterval(refresh,15000);schedule();

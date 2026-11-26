@@ -71,14 +71,21 @@ export default function badgeLayout(status){
     }
     const topTag=el.matches('.pt-kind,.pt-quality,.card__quality'),r=el.getBoundingClientRect();if(r.width && r.height)entries.push({el,corner,inset:(watch?8:topTag || corner[1]!=='r'?4:8)*insetScale,verticalInset:topTag?6*insetScale:undefined,width:r.width/scale,height:r.height/scale});
    }
-   // The watch badge is placed as a whole; never reserve its own timestamp as
-   // an obstacle. Native favorite icons retain their independent corner space.
-   const occupied=[...view.querySelectorAll('.card__icon:not(.icon--history)')].map(el=>el.getBoundingClientRect())
+   // While the watch badge is visible, its top edge anchors the favorite row.
+   const watchVisible=node.matches('.focus,.hover,.pt-card-pointer,.pt-card-touch') &&
+    (!document.body.classList.contains('pt-touch-captions') || node.classList.contains('pt-card-touch')) &&
+    entries.some(entry=>entry.el.classList.contains('pt-card-watch__badge'));
+   const occupied=watchVisible?[]:[...view.querySelectorAll('.card__icon:not(.icon--history)')].map(el=>el.getBoundingClientRect())
     .filter(box=>box.width && box.height).map(box=>({x:(box.left-rect.left)/scale,y:(box.top-rect.top)/scale,width:box.width/scale,height:box.height/scale}));
    reads.push({node,key,view,width,height,entries,places:placeBadges(width,height,entries,occupied,4*insetScale,3*insetScale)});
   }
   // Read every card before writing styles; held remote navigation never enters here.
-  for(const {node,key,view,width,height,entries,places} of reads){view.classList.add('minimal-badge-layout');for(const entry of entries){
+  for(const {node,key,view,width,height,entries,places} of reads){
+   view.classList.add('minimal-badge-layout');
+   const watch=places.find(place=>place.el.classList.contains('pt-card-watch__badge'));
+   if(watch)view.style.setProperty('--pt-watch-icons-inset',Math.ceil(height-watch.y+4*insetScale)+'px');
+   else view.style.removeProperty('--pt-watch-icons-inset');
+   for(const entry of entries){
    const p=places.find(p=>p.el===entry.el);entry.el.style.visibility=p?'':'hidden';if(!p)continue;
    // Corners follow their poster immediately, even while remote navigation
    // pauses measurements. Never freeze a right/bottom badge at old left/top.

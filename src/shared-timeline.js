@@ -198,6 +198,12 @@ export default function sharedTimeline(L,enabled){
    try{return update.apply(this,[params,...Array.prototype.slice.call(arguments,1)]);}finally{if(params && params.received)receiving--;}
   };
  }
+ function resumeUploads(){if(pending.size && available(true))later();}
+ const resumeEvents=['visibilitychange','minimal:tv-idle','minimal:wheel-idle'];
+ for(const name of resumeEvents)document.addEventListener(name,resumeUploads);
  document.addEventListener('lwsEvent',event=>{if(event.detail && (event.detail.name==='timecode' || event.detail.name==='system' && event.detail.data==='reconnected'))refresh();});
- return {refresh,status:()=>({...health,pending:pending.size}),stop:()=>reset(null)};
+ return {refresh,status:()=>({...health,pending:pending.size}),stop(){
+  for(const name of resumeEvents)document.removeEventListener(name,resumeUploads);
+  reset(null);
+ }};
 }

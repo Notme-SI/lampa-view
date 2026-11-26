@@ -671,12 +671,13 @@ body.lampa_view .card__view .card__icons {inset:0!important;display:block!import
 body.lampa_view .card__view .card__icons-inner {position:static;display:flex;flex-flow:row wrap;align-items:flex-end;align-content:flex-end;justify-content:flex-start;gap:4px;height:100%;box-sizing:border-box;padding:0 calc(var(--pt-score-width) + var(--pt-score-inset) + var(--pt-score-gap)) var(--pt-score-inset) 4px;background:none!important;border-radius:0;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
 body.lampa_view .card__view .card__icon {position:relative}
 body.lampa_view .card__view .card__icon:not(.icon--history) {flex:none}
-body.lampa_view .card__view .card__icon:not(.icon--history) {box-sizing:border-box;width:1.9em;height:1.9em;font-size:.65em;border:1px solid #ffffff25;border-radius:.35em;background-color:#000b;background-size:72% 72%;background-position:center;background-repeat:no-repeat;box-shadow:none}
+body.lampa_view .card__view .card__icon:not(.icon--history) {box-sizing:border-box;width:1.9em;height:1.9em;font-size:.65em;border:1px solid var(--pt-poster-badge-border);border-radius:.35em;background-color:var(--pt-poster-badge);background-size:72% 72%;background-position:center;background-repeat:no-repeat;box-shadow:var(--pt-poster-badge-edge)}
 body.lampa_view .card__view .card__icon.icon--book {background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23f4f4f6%22%20stroke-width%3D%221.6%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M6%203h12v18l-6-4-6%204Z%22%2F%3E%3C%2Fsvg%3E")!important}
 body.lampa_view .card__view .card__icon.icon--wath {background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23f4f4f6%22%20stroke-width%3D%221.6%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%229%22%2F%3E%3Cpath%20d%3D%22M12%207v5l3%202%22%2F%3E%3C%2Fsvg%3E")!important}
 body.lampa_view .card__view .card__icon.icon--like {background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23f4f4f6%22%20stroke-width%3D%221.6%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M20.5%205.5a5%205%200%200%200-7%200L12%207l-1.5-1.5a5%205%200%200%200-7%207L12%2021l8.5-8.5a5%205%200%200%200%200-7Z%22%2F%3E%3C%2Fsvg%3E")!important}
 body.lampa_view .card__view .icon--history {position:absolute;left:50%!important;right:auto!important;bottom:auto!important;box-sizing:border-box;font-size:.65em}
-body.lampa_view .card__view.minimal-badge-layout>.card__vote,body.lampa_view .card__view.minimal-badge-layout>.card__icons {z-index:4}
+body.lampa_view .card__view.minimal-badge-layout>.card__vote {z-index:4}
+body.lampa_view .card__view.minimal-badge-layout>.card__icons {z-index:7}
 /* Shared controls for both online layouts. */
 body.lampa_view .nova-plus-root .nova-btn,body.lampa_view .nova-plus-root .nova-chip,body.lampa_view .nova-plus-root .nova-group {background:#171717!important;color:var(--pt-text)!important;border:1px solid var(--pt-line)!important;border-radius:.625em!important;box-shadow:none!important;outline:none!important}
 body.lampa_view .nova-plus-root .nova-btn {padding:.75em 1.15em;font-weight:600}
@@ -1332,4 +1333,5 @@ body.lampa_view .card__view>.pt-card-watch__meter .time-line {display:block;posi
 body.lampa_view .card__view>.pt-card-watch__meter .time-line>div {display:block;height:3px;background:#fff!important}
 body.lampa_view .card__view>.pt-card-watch__meter .pt-card-watch__time {position:absolute;left:8px;bottom:8px;margin:0;color:#fff;font-size:.9em;text-shadow:0 1px 3px #000}
 body.lampa_view .card__view>.pt-card-watch__meter .pt-card-watch__time:empty {display:none}
-body.lampa_view .card__view:has(>.pt-card-watch__meter .pt-card-watch__time:not(:empty)) .card__icons-inner {padding-bottom:max(calc(var(--pt-score-inset) + .75em),calc(10px + .9em))}
+body.lampa_view .card:is(.focus,.hover,.pt-card-pointer,.pt-card-touch) .card__view .card__icons-inner {padding-bottom:var(--pt-watch-icons-inset,var(--pt-score-inset))}
+body.lampa_view.pt-touch-captions .card:not(.pt-card-touch) .card__view .card__icons-inner {padding-bottom:var(--pt-score-inset)}
