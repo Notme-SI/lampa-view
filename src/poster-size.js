@@ -10,7 +10,10 @@ export function desktopPosterWidth(style=getComputedStyle(document.body)){
 // Preserve distinct native size steps while fitting the entire available row.
 export function desktopPosterColumns(available,gap,style=getComputedStyle(document.body)){
  const scale=parseFloat(style.getPropertyValue('--pt-interface-scale'))||1;
- const target=desktopPosterWidth(style);
+ return posterColumns(available,gap,desktopPosterWidth(style),scale);
+}
+
+export function posterColumns(available,gap,target,scale){
  const fit=size=>{const count=Math.max(1,Math.round((available+gap)/(size+gap)));return (available-gap*(count-1))/count>size*1.1?count+1:count;};
  const normal=fit(target/scale*1.12),count=fit(target);
  return scale>1.12 && normal>=6?Math.min(count,normal-1):count;

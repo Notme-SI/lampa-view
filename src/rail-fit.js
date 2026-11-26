@@ -1,6 +1,15 @@
 import homeStage from './home-stage.js';
 import {layoutProfile} from './layout-profile.js';
-import {desktopPosterWidth,desktopPosterColumns} from './poster-size.js';
+import {desktopPosterWidth,posterColumns} from './poster-size.js';
+
+export function railLayout(){
+ const style=getComputedStyle(document.body),classes=document.body.classList;
+ const scale=parseFloat(style.getPropertyValue('--pt-interface-scale'))||1;
+ const cards=Math.max(.8,Math.min(2,parseFloat(style.getPropertyValue('--pt-card-scale'))||1));
+ const mode=classes.contains('pt-tv')?'tv':classes.contains('pt-mobile')?'mobile':'desktop';
+ const fixed=desktopPosterWidth(style);
+ return {scale,cards,mode,fixed,columns:style.getPropertyValue('--pt-poster-columns')};
+}
 
 // Whole-slot rounding can otherwise keep the same count in Bigger and make
 // posters slightly smaller because only the gaps grew. Measure the normal CSS
@@ -14,20 +23,20 @@ function normalSlots(root,font,width,scale){
 
 // Fit complete poster slots to the real viewport, retaining native lazy loading.
 // Recalculate only when the viewport or inherited font changes, not on focus.
-export default function fitRail(line,root,card,state,enabled){
+export default function fitRail(line,root,card,state,enabled,layout){
  const value=line.scroll && line.scroll.render(true),view=value && (value.nodeType?value:value[0]);
  const content=view && view.querySelector('.scroll__content'),body=content && content.querySelector('.scroll__body');
  if(!body || card.parentNode!==body || !card.matches('.card:not(.card--wide):not(.card--collection)') || body.querySelector('.card--wide,.card--collection,.full-person'))return;
  line.minimalPosterRefresh=()=>fitRail(line,root,card,state,enabled);
- const font=parseFloat(getComputedStyle(card).fontSize)||16,viewWidth=view.getBoundingClientRect().width,profile=getComputedStyle(document.body),columns=profile.getPropertyValue('--pt-poster-columns'),scale=parseFloat(profile.getPropertyValue('--pt-interface-scale'))||1;
+ const font=parseFloat(getComputedStyle(card).fontSize)||16,viewWidth=view.getBoundingClientRect().width;
  if(!viewWidth)return;
- const hero=root.previousElementSibling,home=hero && hero.matches('.pt-hero') && !document.body.classList.contains('pt-mobile');
- const cards=Math.max(.8,Math.min(2,parseFloat(profile.getPropertyValue('--pt-card-scale'))||1));
- const key=cards+':'+columns+':'+scale+':'+innerWidth+':'+innerHeight+':'+Boolean(home)+':'+viewWidth.toFixed(3)+':'+font.toFixed(3)+':'+(document.body.classList.contains('pt-tv')?'tv':document.body.classList.contains('pt-mobile')?'mobile':'desktop');
+ const {scale,cards,mode,fixed,columns}=(layout || railLayout)();
+ const hero=root.previousElementSibling,home=hero && hero.matches('.pt-hero') && mode!=='mobile';
+ const key=cards+':'+columns+':'+scale+':'+innerWidth+':'+innerHeight+':'+Boolean(home)+':'+viewWidth.toFixed(3)+':'+font.toFixed(3)+':'+mode;
  // Lazy append can change native scroll bounds without changing poster dimensions.
  // Reconcile the focused card after TV navigation is idle as well as after resize.
  function revealFocus(){
-  if(!document.body.classList.contains('pt-tv'))return;
+  if(mode!=='tv')return;
   const last=line.last,target=last && (last.nodeType?last:last[0]);
   if(!target || target.parentNode!==body || !target.matches('.focus') || !line.scroll.immediate)return;
   const bounds=view.getBoundingClientRect(),rect=target.getBoundingClientRect(),fit=line.scroll.minimalPosterFit,start=Math.max(0,bounds.left)+(fit?fit.inset:0),end=Math.min(innerWidth,bounds.right)-(fit?fit.inset:0);
@@ -51,15 +60,14 @@ export default function fitRail(line,root,card,state,enabled){
  // At 4K the gutter can exceed the fixed gap and expose a thin strip.
  if(inset>=gap)gap=Math.ceil(inset)+1;
  if(!target || available<=0)return;
- const fixed=desktopPosterWidth(profile);
  let count=Math.max(1,Math.min(24,Math.round((available+gap)/(target+gap))));
- if(document.body.classList.contains('pt-tv')){
+ if(mode==='tv'){
   // Explicit slots prevent round-to-nearest from making adjacent TV sizes equal.
   count=parseInt(columns,10) || count;
  }else if(scale>1 && !fixed){
   const normal=normalSlots(root,font,viewWidth,scale);
   if(normal>2){
-   if(document.body.classList.contains('pt-mobile'))count=Math.min(count,normal-1);
+   if(mode==='mobile')count=Math.min(count,normal-1);
    else{
     count=Math.max(2,Math.round(normal/scale));
     const normalScale=layoutProfile(false,'normal').scale,middle=Math.max(2,Math.round(normal/normalScale));
@@ -67,7 +75,7 @@ export default function fitRail(line,root,card,state,enabled){
    }
   }
  }
- count=fixed?desktopPosterColumns(available,gap,profile):Math.max(1,Math.round(count/cards));
+ count=fixed?posterColumns(available,gap,fixed,scale):Math.max(1,Math.round(count/cards));
  const width=Math.floor((available-(count-1)*gap)/count*64)/64;
  if(width<=0)return;
  root.style.setProperty('--minimal-poster-width',width+'px');

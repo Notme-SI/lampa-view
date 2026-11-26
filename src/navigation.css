@@ -367,6 +367,19 @@ html.pt-ios-standalone body.lampa_view.pt-mobile.pt-ios-dock-positioned .navigat
 }
 body.lampa_view.pt-mobile .navigation-bar__body,body.lampa_view.pt-mobile.orientation--landscape .navigation-bar .navigation-bar__body {display:flex;flex-direction:row;justify-content:space-around;gap:0}
 body.lampa_view.pt-mobile .navigation-bar__item {flex:1 1 0;min-width:0}
+/* The readable dialog and dock use the same viewport, including the iOS safe area. */
+body.lampa_view.pt-mobile .modal.minimal-readable-modal {inset:0 0 auto;height:calc(var(--pt-mobile-viewport) - var(--pt-mobile-nav-height));padding:0}
+body.lampa_view.pt-mobile .minimal-readable-modal .modal__content {
+ position:absolute;inset:auto var(--pt-shell-inset) 8px;display:flex;flex-direction:column;box-sizing:border-box;
+ width:auto;max-width:42em;max-height:calc(100% - var(--pt-safe-top) - 20px);margin:0 auto;padding:1em;
+ border-radius:1.25em;transform:none;font-size:var(--pt-mobile-item-font)!important;overflow:hidden
+}
+body.lampa_view.pt-mobile .minimal-readable-modal .modal__head {flex:none;margin:0 0 .65em}
+body.lampa_view.pt-mobile .minimal-readable-modal .modal__body {display:flex;flex-direction:column;min-height:0}
+body.lampa_view.pt-mobile .minimal-readable-modal .modal__body>.scroll {
+ display:block;min-height:0;overflow:auto;overscroll-behavior-y:contain;touch-action:pan-y
+}
+body.lampa_view.pt-mobile .minimal-readable-modal .scroll__content {max-height:none!important;padding:0}
 /* Fit the file picker in the same mobile viewport as the dock. */
 body.lampa_view.pt-mobile .modal.minimal-torrent-files {inset:0 0 auto;height:calc(var(--pt-mobile-viewport) - var(--pt-mobile-nav-height));box-sizing:border-box}
 body.lampa_view.pt-mobile .minimal-torrent-files .modal__content {max-height:100%}

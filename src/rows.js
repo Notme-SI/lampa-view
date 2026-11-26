@@ -1,5 +1,5 @@
 import rowNavigation from './row-navigation.js';
-import fitRail,{settleRail} from './rail-fit.js';
+import fitRail,{railLayout,settleRail} from './rail-fit.js';
 export default function fillRows(L,enabled){
   const lines=new Map();
   const deferred=new Set();
@@ -39,16 +39,18 @@ export default function fillRows(L,enabled){
   function flush(){
     frame=0;
     const limit=document.body.classList.contains('pt-tv')?1:8;
+    let metrics;
+    const layout=()=>metrics || (metrics=railLayout());
     let count=0;
     for(const line of pending){
       pending.delete(line);
       const state=lines.get(line);
-      if(state)prepare(line,state);
+      if(state)prepare(line,state,layout);
       if(++count>=limit)break;
     }
     if(pending.size && !frame)frame=request(flush);
   }
-  function prepare(line,state){
+  function prepare(line,state,layout){
       if(!enabled())return;
       deferred.delete(line);
       const render=line.render(true),root=render && (render.nodeType?render:render[0]);
@@ -84,7 +86,7 @@ export default function fillRows(L,enabled){
           if(available>0){const count=Math.max(1,Math.floor((available+gap)/(base+gap))),width=(available-(count-1)*gap)/count;root.style.setProperty('--minimal-person-width',width.toFixed(3)+'px');}
         }
       }
-      const fit=fitRail(line,root,card,state,enabled);
+      const fit=fitRail(line,root,card,state,enabled,layout);
       line.minimalMoreRefresh?.();
       // TV prepares a complete viewport plus one card in every nearby row.
       // Pointer layouts retain an extra half viewport for faster wheel input.

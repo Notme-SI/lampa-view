@@ -1,6 +1,13 @@
 const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env.PLAYWRIGHT_MODULE || 'playwright'),{setup}=require('../fixtures/native-browser.cjs');
+const path=require('node:path'),fixture=path.join(__dirname,'../fixtures/lampa-runtime/current-menu');
 (async()=>{for(const engine of [chromium,webkit]){const browser=await engine.launch({headless:true});try{for(const mode of ['desktop','tv','mobile']){
- const r=await setup(browser,{viewport:mode==='tv'?{width:960,height:540}:mode==='mobile'?{width:390,height:844}:{width:1920,height:1080},mode}),{page}=r;
+ const mobile=mode==='mobile';
+ const r=await setup(browser,{viewport:mode==='tv'?{width:960,height:540}:mobile?{width:390,height:844}:{width:1920,height:1080},
+  mode,hasTouch:mobile,isMobile:mobile,userAgent:mobile?'Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 Version/18.6 Mobile/15E148 Safari/604.1':undefined},
+  mobile?{app:path.join(fixture,'app.js.gz'),css:path.join(fixture,'app.css.gz'),beforePlugin:page=>page.evaluate(()=>{
+   Object.defineProperty(navigator,'standalone',{value:true});
+   Lampa.Platform.init();Lampa.Params.init();Lampa.NavigationBar.init();Lampa.Menu.ready();
+  })}:{}),{page}=r;
  try{
   await page.evaluate(()=>{const L=Lampa;L.Params.init();L.Layer.init();L.DeviceInput.init();L.Controller.observe();L.Keypad.init();L.Keypad.enable();Navigator.follow('focus',e=>L.Controller.focus(e.elem));window.readableCase=(long)=>{
    const movie={id:long?92:91,name:long?'Очень длинное название произведения: '.repeat(12):'Сериал',original_name:long?'追放されたチート付与魔術師は気ままなセカンドライフを謳歌する。'.repeat(8):'Series',overview:long?'Полное описание произведения. '.repeat(100):'Короткое описание.',first_air_date:'2026-01-01',vote_average:8,production_countries:[],production_companies:[],spoken_languages:[],number_of_seasons:1,number_of_episodes:8,genres:[],source:'tmdb'};
@@ -15,9 +22,42 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
    const node=page.locator(root+selector),box=await node.evaluate(n=>{const s=getComputedStyle(n);return {height:n.clientHeight,line:parseFloat(s.lineHeight),white:s.whiteSpace};});assert.equal(box.white,'nowrap');assert.ok(box.height<=box.line+2,JSON.stringify(box));
    await node.dispatchEvent('click');assert.equal(await page.locator('.minimal-overview-full').textContent(),await page.evaluate(selector=>selector==='.minimal-title-action'?readableMovie.original_name:readableMovie.name,selector));await page.evaluate(()=>Lampa.Controller.back());
   }
-  await page.evaluate(()=>{const n=document.querySelector('.activity--active .minimal-overview-action');Lampa.Controller.toggle('full_start');Lampa.Controller.collectionFocus(jQuery(n),jQuery(n.closest('.full-start-new')));});await page.waitForTimeout(280);
-  const style=await overview.evaluate(n=>{const s=getComputedStyle(n);return {shadow:s.textShadow,outline:s.outlineStyle,border:s.borderTopWidth,title:n.title,ring:n.querySelector('.minimal-overview-focus')!==null};});assert.notEqual(style.shadow,'none');assert.equal(style.outline,'none');assert.equal(style.border,'0px');assert.equal(style.title,'');assert.equal(style.ring,false);
-  await page.keyboard.press('Enter');await page.waitForSelector('.minimal-overview-full');assert.equal(await page.locator('.minimal-overview-full').textContent(),await page.evaluate(()=>readableMovie.overview));await page.evaluate(()=>Lampa.Controller.back());assert.equal(await overview.evaluate(n=>n.classList.contains('focus')),true);
+  const tap=button=>engine===chromium?button.tap():button.dispatchEvent('click');
+  if(mobile)await tap(overview);
+  else{
+   await page.evaluate(()=>{const n=document.querySelector('.activity--active .minimal-overview-action');Lampa.Controller.toggle('full_start');Lampa.Controller.collectionFocus(jQuery(n),jQuery(n.closest('.full-start-new')));});await page.waitForTimeout(280);
+   const style=await overview.evaluate(n=>{const s=getComputedStyle(n);return {shadow:s.textShadow,outline:s.outlineStyle,border:s.borderTopWidth,title:n.title,ring:n.querySelector('.minimal-overview-focus')!==null};});assert.notEqual(style.shadow,'none');assert.equal(style.outline,'none');assert.equal(style.border,'0px');assert.equal(style.title,'');assert.equal(style.ring,false);
+   await page.keyboard.press('Enter');
+  }
+  await page.waitForSelector('.minimal-overview-full');assert.equal(await page.locator('.minimal-overview-full').textContent(),await page.evaluate(()=>readableMovie.overview));
+  if(mobile){
+   const dialog=page.locator('.minimal-readable-modal'),dock=page.locator('.navigation-bar [data-action=back]');
+   for(const viewport of [{width:390,height:844},{width:844,height:390}]){
+    await page.setViewportSize(viewport);
+    await page.waitForFunction(()=>{
+     const panel=document.querySelector('.minimal-readable-modal .modal__content').getBoundingClientRect();
+     const dock=document.querySelector('.navigation-bar').getBoundingClientRect();
+     return panel.top>=0 && panel.bottom<=dock.top-4;
+    });
+    const position=await dialog.locator('.modal__body>.scroll').evaluate(scroll=>{
+     const text=scroll.querySelector('.minimal-overview-full');
+     scroll.scrollTop=scroll.scrollHeight;
+     return {scrolled:scroll.scrollTop>0,visible:text.getBoundingClientRect().bottom<=scroll.getBoundingClientRect().bottom+1};
+    });
+    assert.deepEqual(position,{scrolled:true,visible:true},'The last line must scroll fully into view above the dock');
+   }
+   await tap(dock);
+   await dialog.waitFor({state:'detached'});
+   await overview.dispatchEvent('click');
+   await dialog.waitFor();
+   await tap(dialog.locator('.minimal-back--overlay'));
+   await dialog.waitFor({state:'detached'});
+   assert.equal(await page.evaluate(()=>Lampa.Controller.enabled().name),'full_start');
+   await page.setViewportSize({width:390,height:844});
+  }else{
+   await page.evaluate(()=>Lampa.Controller.back());
+   assert.equal(await overview.evaluate(n=>n.classList.contains('focus')),true);
+  }
   const geometry=await page.locator(root+'.minimal-detail-columns').evaluate(n=>{
    const cast=n.querySelector('.minimal-cast-native').getBoundingClientRect(),facts=n.querySelector('.minimal-detail-facts').getBoundingClientRect();
    const [label,title]=n.querySelector('.minimal-original-title').children;

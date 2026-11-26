@@ -28,7 +28,8 @@ export default function timelineIndex(L,file){
   return current;
  }
 
- function legacyEpisodes(title,legacy,limit){
+ function legacyEpisodes(title,snapshot,limit){
+  const {legacy}=snapshot;
   if(!legacy.size)return [];
   if(nativeHash===undefined){
    // Keep old clients and custom hash implementations on the legacy path.
@@ -58,13 +59,18 @@ export default function timelineIndex(L,file){
   let inverse=1;
   for(let i=0;i<title.length;i++)inverse=Math.imul(inverse,0xbdef7bdf);
   const tail=signedHash(title);
-  for(const key of legacy){
-   const value=Number(key);
-   if(!Number.isInteger(value) || value<0 || value>2147483648 || String(value)!==key)continue;
-   for(const signed of [value,-value]){
-    const candidates=prefixes.get(Math.imul(signed-tail,inverse));
-    if(candidates)for(const [season,episode] of candidates)add(season,episode);
+  if(!snapshot.signedLegacy){
+   snapshot.signedLegacy=[];
+   for(const key of legacy){
+    const value=Number(key);
+    if(!Number.isInteger(value) || value<0 || value>2147483648 || String(value)!==key)continue;
+    snapshot.signedLegacy.push(value);
+    if(value!==0 && value!==2147483648)snapshot.signedLegacy.push(-value);
    }
+  }
+  for(const signed of snapshot.signedLegacy){
+   const candidates=prefixes.get(Math.imul(signed-tail,inverse));
+   if(candidates)for(const [season,episode] of candidates)add(season,episode);
   }
   return found.values();
  }

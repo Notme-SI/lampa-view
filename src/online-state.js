@@ -172,7 +172,7 @@ export default function onlineState(L){
   };
  }
  function lastWatched(card){
-  const snapshot=index.read(revision),{records,legacy}=snapshot,titles=names(card);
+  const snapshot=index.read(revision),{records}=snapshot,titles=names(card);
   const seasons=Array.isArray(card.seasons)?card.seasons:[];
   const key=JSON.stringify([snapshot.scope,card.source || 'tmdb',card.id || '',card.media_type,seasons.map(row=>[row.season_number,row.episode_count]),titles]);
   const old=snapshots.get(key);
@@ -190,7 +190,7 @@ export default function onlineState(L){
    if(Number.isInteger(season) && season>0 && Number.isInteger(episode) && episode>0)consider(key,season,episode,raw);
   }
   for(const title of titles){
-   for(const {key,season,episode} of index.legacyEpisodes(title,legacy,limit))consider(key,season,episode,records[key]);
+   for(const {key,season,episode} of index.legacyEpisodes(title,snapshot,limit))consider(key,season,episode,records[key]);
   }
   let latest=null;
   for(const record of episodes.values()){

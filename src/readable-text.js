@@ -29,7 +29,39 @@ export default function readableText(L,text,control,link,{value,title,label}){
  function open(){
   fit();if(!clipped || L.Modal.opened())return;
   remember();const content=document.createElement('div');content.className='about minimal-overview-full';content.textContent=value;
-  L.Modal.open({title,size:'large',html:window.jQuery(content),onBack:()=>{L.Modal.close();if(control.isConnected){remember();L.Controller.toggle('full_start');}}});
+  let closed=false;
+  const close=()=>{
+   if(closed || !content.isConnected)return;
+   closed=true;
+   L.Modal.close();
+   if(!control.isConnected)return;
+   remember();
+   // On touch, the card header may not have registered its controller yet.
+   const item=header();
+   if(item?.toggle)item.toggle();
+   else L.Controller.toggle('full_start');
+  };
+  const options={title,size:'large',html:window.jQuery(content),onBack:close};
+  L.Modal.open(options);
+  const modal=content.closest('.modal');
+  if(!modal)return;
+  modal.classList.add('minimal-readable-modal');
+  function back(event){
+   if(!document.body.classList.contains('pt-mobile'))return;
+   const current=L.Modal.render();
+   if((current?.[0] || current)!==modal)return;
+   const button=event.target.closest?.('.navigation-bar [data-action="back"],.minimal-back--overlay');
+   if(!button || !modal.contains(button) && !button.closest('.navigation-bar'))return;
+   event.preventDefault();event.stopImmediatePropagation();close();
+  }
+  function cleanup(event){
+   if(event.active!==options)return;
+   closed=true;
+   document.removeEventListener('click',back,true);
+   L.Modal.listener.remove('close',cleanup);
+  }
+  document.addEventListener('click',back,true);
+  L.Modal.listener.follow('close',cleanup);
  }
  control.addEventListener('hover:focus',()=>{if(clipped)remember();});
  control.addEventListener('hover:enter',open);
