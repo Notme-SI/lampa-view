@@ -1054,6 +1054,8 @@ body.lampa_view .torrent-files .torrent-serial__title {font-size:1.3em;line-heig
 body.lampa_view .torrent-files .torrent-serial__line {display:flex;flex-direction:row;flex-wrap:wrap;gap:.5em;font-size:.9em;line-height:1.4;padding:0;margin:.3em 0 0}
 body.lampa_view .torrent-files .torrent-serial__line span+span:before {content:none}
 body.lampa_view .torrent-files .torrent-serial__line span {margin:0}
+body.lampa_view .torrent-files .pt-torrent-file-time {color:var(--pt-muted);font-variant-numeric:tabular-nums;max-width:100%}
+body.lampa_view .torrent-files .torrent-file__title>.pt-torrent-file-time:not([hidden]) {display:block;font-size:.85em;margin-top:.25em}
 body.lampa_view .torrent-files .torrent-serial__detail {grid-column:2;grid-row:1/4;float:none;align-self:center;text-align:right;margin:0}
 body.lampa_view .torrent-files .torrent-serial__size,body.lampa_view .torrent-files .torrent-serial__exe {font-size:.9em;line-height:1.4}
 body.lampa_view .torrent-files .torrent-serial .time-line {grid-column:1;grid-row:2;position:static;inset:auto;width:100%;margin:0}

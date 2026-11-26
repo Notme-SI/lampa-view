@@ -10,7 +10,7 @@ import watchHistory,{latestEpisode} from './watch-history.js';
 export default function torrentHistory(L,root=window){
  const Native=L.Component?.get?.('torrents');if(typeof Native!=='function')return;
  const cloud=watchHistory(L);
- const rows=new Map(),files=new Set(),footers=new WeakMap();let timer;
+ const rows=new Map(),files=new Map(),footers=new WeakMap();let timer;
  const enabled=()=>flag(L,'lampa_view_enabled');
  const saved=()=>{const list=L.Storage.get('torrents_view',[]);return Array.isArray(list)?list:[];};
  function keys(row){
@@ -49,10 +49,20 @@ export default function torrentHistory(L,root=window){
   if(migrated.length)L.Storage.set('torrents_view',previous.concat(migrated));
  }
  function fileProgress(){
-  for(const line of files){
+  for(const [line,{caption,duration}] of files){
    if(!line.isConnected){files.delete(line);continue;}
    const hash=line.getAttribute('data-hash');
-   line.classList.toggle('pt-torrent-complete',Boolean(hash && L.Timeline.view(hash).percent>=WATCHED_PERCENT));
+   const view=hash?L.Timeline.view(hash):null,percent=Number(view?.percent)||0;
+   const complete=percent>=WATCHED_PERCENT;
+   line.classList.toggle('pt-torrent-complete',complete);
+   if(!caption)continue;
+   const elapsed=Number(view?.time),total=Number(view?.duration)||duration;
+   const time=Number.isFinite(elapsed) && elapsed>0?watchClock(elapsed):'';
+   const length=Number.isFinite(total) && total>0?watchClock(total):'';
+   const viewed=time?t('Время остановки')+' '+time:complete?t('Просмотрено'):percent>0?Math.round(percent)+'%':'';
+   const label=time && length?t('{0} из {1}',[time,length]):[viewed,length && t('Длительность')+' '+length].filter(Boolean).join(' · ');
+   if(caption.textContent!==label)caption.textContent=label;
+   caption.hidden=!label;
   }
  }
  function history(){
@@ -96,8 +106,26 @@ export default function torrentHistory(L,root=window){
  }
  L.Component.add('torrents',Component);
  L.Listener.follow('torrent',event=>{if(event.type==='render'){const node=event.item?.nodeType?event.item:event.item?.[0];if(node){rows.set(node,event.element);schedule();}}});
- L.Listener.follow('torrent_file',event=>{if(event.type==='render'){const node=event.item?.nodeType?event.item:event.item?.[0],line=node?.querySelector('.time-line');if(line){files.add(line);schedule();}}});
- L.Storage.listener?.follow('change',event=>{if(event.name==='torrents_view')schedule();});
+ L.Listener.follow('torrent_file',event=>{
+  if(event.type!=='render')return;
+  const node=event.item?.nodeType?event.item:event.item?.[0],line=node?.querySelector('.time-line');
+  if(!line)return;
+  const metadata=node.querySelector('.torrent-serial__line,.torrent-file__title');
+  let caption=metadata?.querySelector('.pt-torrent-file-time');
+  if(metadata && !caption){
+   caption=root.document.createElement('span');
+   caption.className='pt-torrent-file-time';
+   caption.hidden=true;
+   metadata.appendChild(caption);
+  }
+  const {element,params}=event,book=params?.seasons?.[element?.season];
+  const episode=book?.episodes?.find(row=>Number(row.episode_number)===Number(element?.episode));
+  const minutes=Number(episode?.runtime) || (event.items?.length===1?Number(params?.movie?.runtime):0);
+  const duration=Number(element?.timeline?.duration) || minutes*60 || 0;
+  files.set(line,{caption,duration});
+  schedule();
+ });
+ L.Storage.listener?.follow('change',event=>{if(event.name==='torrents_view' || event.name==='language')schedule();});
  L.Timeline.listener?.follow('update',schedule);L.Timeline.listener?.follow('read',schedule);
  cloud.subscribe(schedule);
  L.Listener.follow('activity',event=>{if(event.type==='start')schedule();});

@@ -6,9 +6,11 @@ if(output)fs.mkdirSync(output,{recursive:true});
 async function check(page,mobile){
  await page.evaluate(()=>{const hash=document.querySelector('.torrent-files .time-line').getAttribute('data-hash');Lampa.Timeline.update({hash,percent:95,time:0,duration:0});});
  await page.waitForFunction(()=>{const line=document.querySelector('.torrent-files .time-line'),a=line.getBoundingClientRect(),b=line.firstElementChild.getBoundingClientRect();return a.width>0 && Math.abs(a.width-b.width)<1;});
+ assert.equal(await page.locator('.torrent-files .pt-torrent-file-time').first().textContent(),'Просмотрено · Длительность 1:00:00');
  assert.equal(await page.evaluate(()=>Lampa.Timeline.view(document.querySelector('.torrent-files .time-line').getAttribute('data-hash')).percent),95,'Completed presentation keeps native completion data intact');
  await page.evaluate(()=>{const hash=document.querySelector('.torrent-files .time-line').getAttribute('data-hash');Lampa.Timeline.update({hash,percent:40,time:915,duration:2287});});
  await page.waitForFunction(()=>{const line=document.querySelector('.torrent-files .time-line'),a=line.getBoundingClientRect(),b=line.firstElementChild.getBoundingClientRect();return a.width>0 && Math.abs(b.width/a.width-.4)<.02;});
+ assert.equal(await page.locator('.torrent-files .pt-torrent-file-time').first().textContent(),'15:15 из 38:07');
  const data=await page.evaluate(mobile=>{
   const rect=n=>{const r=n.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};};
   const modal=document.querySelector('.modal'),row=modal.querySelector('.torrent-serial');
@@ -45,6 +47,8 @@ async function check(page,mobile){
    },{mobile,virtual});
    await page.waitForSelector('.torrent-item.tc-item');await page.evaluate(()=>qaStartFiles());
    await page.waitForSelector('.torrent-files .torrent-serial',{timeout:7000});await page.waitForTimeout(150);
+   assert.equal(await page.locator('.torrent-files .pt-torrent-file-time').first().textContent(),'Длительность 1:00:00');
+   assert.equal(await page.locator('.torrent-files .pt-torrent-file-time').last().isVisible(),false,'An unknown runtime does not show zero minutes');
    await page.evaluate(()=>document.querySelectorAll('.torrent-serial').forEach(row=>jQuery(row).trigger('visible')));
    for(const theme of ['minimal','glass']){await page.evaluate(theme=>Lampa.Storage.set('lampa_view_theme',theme),theme);await page.waitForTimeout(180);await check(page,mobile);}
    assert.equal(await page.locator('.torrent-files .torrent-serial').count(),9,'Files survive missing episode metadata');
