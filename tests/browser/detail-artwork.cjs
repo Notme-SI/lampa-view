@@ -64,7 +64,18 @@ const assert=require('node:assert/strict'),{chromium,webkit}=require(process.env
    await page.keyboard.press('ArrowLeft');assert.equal(await page.locator('.activity--active .button--play.focus').count(),1);await page.keyboard.press('ArrowRight');await page.keyboard.press('Enter');await page.waitForTimeout(250);assert.equal(await page.evaluate(()=>Lampa.Activity.active().component),'company');assert.equal(String(await page.evaluate(()=>Lampa.Activity.active().id)),'7');await page.evaluate(()=>Lampa.Activity.backward());await page.waitForSelector('.activity--active .minimal-detail-studio.focus');
   }
   await page.evaluate(()=>{const root=document.querySelector('.activity--active'),sample=document.createElement('div');sample.className='minimal-detail-header';sample.innerHTML='<div class="full-start-new__reactions"><div class="reaction">Reaction</div></div><div class="mapping--line"><div class="full-review">Comment</div><div class="full-review-add">Add</div></div><div class="minimal-torrent-banner__meta">8.6 2025</div>';root.appendChild(sample);});
-  for(const selector of ['.full-review','.full-review-add','.reaction','.minimal-torrent-banner__meta']){const material=await page.locator('.activity--active '+selector).last().evaluate(n=>({bg:getComputedStyle(n).backgroundColor,image:getComputedStyle(n).backgroundImage,blur:getComputedStyle(n).backdropFilter}));const alpha=Number(material.bg.match(/[\d.]+/g)[3]);assert.ok(alpha>0 && alpha<1,selector+JSON.stringify(material));assert.equal(material.blur,'none');}
+  const readMaterial=locator=>locator.evaluate(node=>{
+   const style=getComputedStyle(node);
+   return {bg:style.backgroundColor,blur:style.backdropFilter || style.webkitBackdropFilter};
+  });
+  const header=await readMaterial(page.locator('.head .head__body').first());
+  for(const selector of ['.full-review','.full-review-add','.reaction','.minimal-torrent-banner__meta']){
+   const material=await readMaterial(page.locator('.activity--active '+selector).last());
+   const alpha=Number(material.bg.match(/[\d.]+/g)[3]);
+   assert.ok(alpha>0 && alpha<1,selector+JSON.stringify(material));
+   if(selector==='.reaction')assert.deepEqual(material,header,'Detail reactions use the navigation material in Glass');
+   else assert.equal(material.blur,'none',selector+' keeps its lightweight surface');
+  }
   assert.deepEqual(r.errors,[]);console.log(engine.name()+' '+mode+': native credits and '+(mode==='mobile'?'separate 16:9 cover':'full-height fading backdrop')+' in both themes');
  }finally{await r.context.close();}
 }}finally{await browser.close();}}})().catch(e=>{console.error(e);process.exitCode=1;});
