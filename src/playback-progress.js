@@ -4,8 +4,8 @@ import {linkFor,profileScope,torrentHash} from './timeline-meta.cjs';
 // Save the native player's measured position while it is still playing. Its
 // two-minute save interval can leave another screen/device on the last manual
 // mark. Never create progress merely because a file was opened.
-export default function playbackProgress(L,enabled){
- const bindings=new Map(),wrapped=new WeakSet(),bindingKey='minimal_playback_links_v1',limit=2000;
+export default function playbackProgress(L,enabled,torrents){
+ const bindings=new Map(),wrapped=new WeakSet(),torrentPlayback=new WeakMap(),bindingKey='minimal_playback_links_v1',limit=2000;
  let current=null,stopped=false,media=null,timelineUpdate=null,skipPressed=false,creditNext=null;
  const active=()=>!stopped && enabled();
  const cached=L.Storage && L.Storage.get?L.Storage.get(bindingKey,[]):[];
@@ -84,7 +84,7 @@ export default function playbackProgress(L,enabled){
    finally{timelineUpdate=previous;}
   };
  }
- function save(state=current){
+ function save(state=current,flush=true){
   if(!active() || !state?.sample || state.scope!==profileScope(L))return;
   const timeline=state.video.timeline;
   if(!timeline || timeline.stop_recording || timeline.waiting_for_user || typeof timeline.handler!=='function')return;
@@ -94,7 +94,32 @@ export default function playbackProgress(L,enabled){
   Object.assign(timeline,sample);
   timeline.handler(sample.percent,sample.time,sample.duration);
   state.savedAt=Date.now();
+  saveTorrent(state,sample.time,flush);
   return true;
+ }
+ function saveTorrent(state,time,flush){
+  const position=Math.round(time),now=Date.now();
+  if(state.torrent && position!==state.serverPosition && (flush || !state.serverSavedAt || now-state.serverSavedAt>=30000) &&
+     torrents.checkpoint(state.torrent,position)){
+   state.serverPosition=position;
+   state.serverSavedAt=now;
+  }
+ }
+ function bindTorrent(state){
+  const {video}=state;
+  state.torrent=torrents?.playbackTarget(video);
+  if(!state.torrent)return;
+  if(!torrentPlayback.has(video) && typeof video.viewed==='function'){
+   const viewed=video.viewed;
+   video.viewed=function(time){
+    const last=torrentPlayback.get(video);
+    if(!active())return viewed.apply(this,arguments);
+    // The host calls viewed() as it tears down the media, when currentTime
+    // can be reset. Retain a measured position or a confirmed completion.
+    if(last.scope===profileScope(L))saveTorrent(last,last.sample?.time ?? time,true);
+   };
+  }
+  torrentPlayback.set(video,state);
  }
  function complete(state,duration){
   if(!Number.isFinite(duration) || duration<=0)return;
@@ -124,7 +149,7 @@ export default function playbackProgress(L,enabled){
  L.Listener?.follow?.('torrent_file',event=>{
   if(!active() || event.type!=='render')return;
   const video=event.element,timeline=video?.timeline;
-  const release=torrentHash(video?.torrent_hash),meta=linkFor(L,video?.card);
+  const release=torrentHash(video?.torrent_hash),meta=linkFor(L,video?.card,video?.season,video?.episode);
   if(!release || !meta || !timeline?.hash || !(timeline.time>0))return;
   const file=L.Timeline.filename?.(),saved=file && L.Storage?.get?.(file,{})?.[timeline.hash];
   // The actual file row identifies older positions that were saved without a card.
@@ -143,10 +168,11 @@ export default function playbackProgress(L,enabled){
   listener.follow('start',video=>{
    save();
    const previous=creditNext;creditNext=null;
-   if(previous?.video===video && complete(previous.state,previous.duration)){
+   if(previous?.video===video && complete(previous.state,previous.duration) && !previous.state.torrent){
     previous.state.video.viewed?.(Math.round(previous.duration));
    }
    current=track(video);
+   if(current)bindTorrent(current);
   });
   listener.follow('external',()=>{save();current=null;});
   listener.follow('close',()=>{save();current=null;creditNext=null;});
@@ -180,7 +206,7 @@ export default function playbackProgress(L,enabled){
   // The first frame can arrive before the native resume seek completes.
   if(!current.sample && resumeMode!=='again' && Number(timeline.time)>time+2 && Number(timeline.time)<duration)return;
   current.sample={time:Math.min(time,duration),duration,percent:Math.min(100,Math.round(time/duration*100))};
-  if(!current.savedAt || Date.now()-current.savedAt>=10000)save();
+  if(!current.savedAt || Date.now()-current.savedAt>=10000)save(current,false);
  });
  const hide=()=>save();
  window.addEventListener('pagehide',hide);

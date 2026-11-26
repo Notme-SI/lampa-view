@@ -56,7 +56,7 @@ test('TV playback saves measured episode progress before close and keeps profile
  }finally{w.close();}
 });
 
-test('opening the same torrent links an older pending movie checkpoint without changing its timestamp',async()=>{
+test('opening the same torrent links older movie and episode checkpoints without changing their timestamps',async()=>{
  const native=require('./fixtures/native-lampa.cjs'),host=await native({deferPlugin:true});
  try{
   const {L,w}=host;w.eval(bundle('playback-progress'));w.TestModule.default(L,()=>true);
@@ -71,6 +71,11 @@ test('opening the same torrent links an older pending movie checkpoint without c
   const unwatched=L.Timeline.view(hash+1);
   L.Listener.send('torrent_file',{type:'render',element:{card,torrent_hash:release,timeline:unwatched}});
   assert.equal(L.Storage.get(L.Timeline.filename(),{})[hash+1],undefined);
+  const series={id:54,name:'Series',original_name:'Series',source:'tmdb'};
+  L.Timeline.update({hash:'legacy-fifth',percent:100,time:2400,duration:2400,updated:234,received:true});
+  L.Listener.send('torrent_file',{type:'render',element:{card:series,season:1,episode:5,torrent_hash:release,timeline:L.Timeline.view('legacy-fifth')}});
+  assert.equal(online.lastWatched(series).episode,5);
+  assert.equal(online.lastWatched(series).updated,234);
   assert.deepEqual(host.errors,[]);
  }finally{host.close();}
 });
@@ -142,5 +147,42 @@ test('the native credits control completes the previous file only when the next 
   start(next);
   assert.deepEqual(writes.at(-1),['3',100,2400]);assert.deepEqual(viewed,[['3',2400]]);
   api.stop();
+ }finally{w.close();}
+});
+
+test('built-in TV playback saves episode five to TorrServer before closing or starting episode six',()=>{
+ const d=new JSDOM('<video></video>',{runScripts:'outside-only'}),w=d.window;
+ try{
+  const media=w.document.querySelector('video'),writes=[],player=events(),video=events();
+  let clock=1000,playing,profile=1,endpoint='http://server:8090',trackTimecode=true;
+  w.Date.now=()=>clock;
+  Object.defineProperty(media,'duration',{value:2400});
+  const L={Storage:{get:(k,value)=>value,set(){},field:()=>trackTimecode},
+   Player:{listener:player,playdata:()=>playing},PlayerVideo:{listener:video,video:()=>media},
+   Timeline:{filename:()=> 'file_view_'+profile},Reguest:function(){this.clear=()=>{};},
+   Torserver:{url:()=>endpoint,viewedSet:(...args)=>writes.push(args)}};
+  const hash='a'.repeat(40),card={id:54,original_name:'Series',source:'tmdb'};
+  const episode=(n,index)=>({card,season:1,episode:n,torrent_hash:hash,
+   url:'http://server:8090/stream?link='+hash+'&index='+index, timeline:{hash:'ep'+n,handler(){}},
+   viewed:time=>writes.push([hash,index,time])});
+  w.eval(bundle('torrserver-progress'));const torrents=w.TestModule.default(L,()=>true);
+  w.eval(bundle('playback-progress'));const playback=w.TestModule.default(L,()=>true,torrents);
+  function start(item){playing=item;player.send('start',item);}
+  function sample(time){video.send('timeupdate',{current:time,duration:2400});}
+  const fifth=episode(5,9),sixth=episode(6,11);
+  start(fifth);video.send('loadeddata');
+  assert.deepEqual(writes,[],'Opening the file must not create a server checkpoint');
+  sample(600);
+  clock+=10000;sample(610);
+  assert.deepEqual(writes,[[hash,9,600]],'The server gets an early checkpoint and subsequent writes are throttled');
+  media.addEventListener('ended',()=>start(sixth),{once:true});
+  media.dispatchEvent(new w.Event('ended'));
+  fifth.viewed(0);
+  assert.deepEqual(writes,[[hash,9,600],[hash,9,2400]],'Auto-next preserves the completed episode, using its file index');
+  trackTimecode=false;sample(10);assert.equal(writes.length,2);
+  trackTimecode=true;clock+=10000;sample(20);assert.deepEqual(writes.at(-1),[hash,11,20]);
+  endpoint='http://other:8090';clock+=30000;sample(50);assert.equal(writes.length,3);
+  endpoint='http://server:8090';profile=2;player.send('close');assert.equal(writes.length,3);
+  playback.stop();torrents.stop();
  }finally{w.close();}
 });

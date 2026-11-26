@@ -19,6 +19,18 @@ export default function torrserverProgress(L,enabled){
    return Number.isSafeInteger(index) && index>0?index:0;
   }catch(error){return 0;}
  }
+ function playbackTarget(video){
+  if(!video?.torrent_hash || typeof L.Torserver?.viewedSet!=='function')return null;
+  const index=fileIndex(video),endpoint=server();
+  if(!endpoint || !index)return null;
+  return {scope:profileScope(L),endpoint,index,hash:video.torrent_hash};
+ }
+ function checkpoint(target,time){
+  if(!target || !active() || target.scope!==profileScope(L) || target.endpoint!==server() ||
+     !Number.isFinite(time) || Math.round(time)<=0 || typeof L.Torserver.viewedSet!=='function')return false;
+  L.Torserver.viewedSet(target.hash,target.index,Math.round(time));
+  return true;
+ }
  function remember(video){
   if(!video || !video.torrent_hash || !video.timeline || !video.timeline.hash)return;
   const index=fileIndex(video);
@@ -71,9 +83,7 @@ export default function torrserverProgress(L,enabled){
    if(saved.time!==time || saved.duration!==duration || saved.percent!==percent){
     L.Timeline.update({hash,time,duration,percent,profile:saved.profile,...file.meta,...(release?{torrentHash:release}:{})});
    }
-   if(file.index && active() && current.endpoint && current.endpoint===server()){
-    L.Torserver.viewedSet?.(current.torrent,file.index,time);
-   }
+   if(file.index)checkpoint({scope:current.scope,endpoint:current.endpoint,index:file.index,hash:current.torrent},time);
    return result;
   };
  }
@@ -149,5 +159,5 @@ export default function torrserverProgress(L,enabled){
  window.addEventListener('focus',schedule);
  const visible=()=>{if(!document.hidden)schedule();};document.addEventListener('visibilitychange',visible);
  const interval=setInterval(refresh,15000);schedule();
- return {refresh,stop(){persist();stopped=true;clearInterval(interval);clearTimeout(timer);if(network)network.clear();window.removeEventListener('focus',schedule);document.removeEventListener('visibilitychange',visible);}};
+ return {refresh,playbackTarget,checkpoint,stop(){persist();stopped=true;clearInterval(interval);clearTimeout(timer);if(network)network.clear();window.removeEventListener('focus',schedule);document.removeEventListener('visibilitychange',visible);}};
 }

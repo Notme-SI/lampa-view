@@ -5,7 +5,7 @@ import playbackProgress from './playback-progress.js';
 // CUB owns bookmarks and history. Lampac shares the actual native Timeline.
 export default function progressSync(L,enabled){
  const torrents=torrserverProgress(L,enabled);
- const playback=playbackProgress(L,enabled),shared=sharedTimeline(L,enabled),history=watchHistory(L);
+ const playback=playbackProgress(L,enabled,torrents),shared=sharedTimeline(L,enabled),history=watchHistory(L);
  let refreshed=0,timer,pending=false;
  function refresh(force=false,card){
   pending=false;
@@ -34,7 +34,7 @@ export default function progressSync(L,enabled){
  const interval=setInterval(refresh,30000);
  schedule();
  return {refresh,status:shared.status,stop(){
-  torrents.stop();playback.stop();clearInterval(interval);clearTimeout(timer);shared.stop();
+  playback.stop();torrents.stop();clearInterval(interval);clearTimeout(timer);shared.stop();
   for(const event of idleEvents)document.removeEventListener(event,refreshWhenIdle);
  }};
 }
