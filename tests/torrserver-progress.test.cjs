@@ -26,8 +26,9 @@ test('Android return saves measured position to the exact torrent file for cross
   const {L}=f,hash='a'.repeat(40),card={id:41,name:'Series',source:'tmdb'};
   const file=(index,episode)=>({url:'/ts/stream/file.mkv?link='+hash+'&index='+index+'&play',torrent_hash:hash,
    timeline:L.Timeline.view('ep'+episode),season:1,episode,card});
-  const first=file(7,1),second=file(11,2);
-  L.Android.openPlayer(first.url,{...first,playlist:[first,second]});
+  const first=file(7,1),second=file(11,2),third=file(13,3),fourth=file(19,4);
+  third.timeline.duration=2103;
+  L.Android.openPlayer(first.url,{...first,playlist:[first,second,third,fourth]});
   assert.equal(sent.length,1);assert.equal(viewed.length,0,'Opening a torrent never creates playback progress');
   L.Android.timeCall({hash:'unrelated',time:120,duration:3000,percent:4});
   assert.equal(viewed.length,0);
@@ -45,6 +46,18 @@ test('Android return saves measured position to the exact torrent file for cross
   L.Listener.send('torrent_file',{type:'list_open',params,items:[{id:11,path:'ep2'},{id:7,path:'ep1'}]});
   assert.deepEqual(params.viewed.map(row=>row.file_index),[7],'An older TorrServer copy must not rewind the current device position');
   assert.equal(L.Timeline.view('ep1').time,0);
+  L.Android.timeCall({hash:'ep2',time:0,duration:0,percent:100});
+  assert.equal(L.Timeline.view('ep2').percent,100);
+  assert.deepEqual(viewed.at(-1),[hash,11,2500],'Legacy Android completion with zero time uses the measured duration');
+  L.Timeline.update({hash:'ep3',time:0,duration:0,percent:100});
+  assert.equal(L.Timeline.view('ep3').percent,100);
+  assert.deepEqual(viewed.at(-1),[hash,13,2103],'Just+ and newer Android hosts write completion directly to Timeline.update');
+  assert.equal(L.Storage.get(L.Timeline.filename(),{}).ep3.episode,3);
+  const writes=viewed.length;
+  L.Timeline.update({hash:'ep4',time:0,duration:0,percent:100});
+  assert.equal(L.Timeline.view('ep4').percent,100);
+  assert.equal(L.Timeline.view('ep4').time,0);
+  assert.equal(viewed.length,writes,'Without any duration, keep the completion mark and avoid fabricating a TorrServer time');
   assert.deepEqual(f.errors,[]);
  }finally{f.close();}
 });

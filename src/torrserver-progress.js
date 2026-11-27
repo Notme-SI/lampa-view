@@ -4,7 +4,7 @@ import {linkFor,profileScope,torrentHash} from './timeline-meta.cjs';
 export default function torrserverProgress(L,enabled){
  const key='minimal_torrserver_progress_v1',network=L.Reguest?new L.Reguest():null;
  const openedPositions=new WeakMap();
- let rows=L.Storage.get(key,[]),busy=false,last=0,timer,stopped=false,dirty=false;
+ let rows=L.Storage.get(key,[]),busy=false,last=0,timer,stopped=false,dirty=false,androidSession=null;
  if(!Array.isArray(rows))rows=[];
  rows=rows.filter(r=>r && r.meta && r.hash && r.timeline && Date.now()-r.at<7*86400000).slice(-400);
  function server(){
@@ -43,12 +43,40 @@ export default function torrserverProgress(L,enabled){
   dirty=true;
   return row;
  }
+ function androidReport(progress){
+  const session=androidSession,hash=String(progress?.hash || '');
+  if(stopped || !enabled() || !session?.files.has(hash))return;
+  if(session.scope!==profileScope(L))return null;
+  const file=session.files.get(hash);
+  if(!file)return;
+  const known=L.Timeline.view(hash),measured=Number(progress.time);
+  const duration=Number(progress.duration) || Number(known.duration) || file.duration;
+  const complete=Number(progress.percent)===100;
+  if(!Number.isFinite(measured) || measured<0 || !Number.isFinite(duration) || duration<0 ||
+     !complete && (measured===0 || duration>0 && measured>duration+2))return null;
+  // Android reports confirmed completion as 100% with zero time and duration.
+  const time=Math.round(complete?duration || measured || Number(known.time) || 0:duration?Math.min(measured,duration):measured);
+  const percent=complete?100:duration?Math.round(time/duration*100):Math.min(100,Math.max(0,Number(progress.percent)||0));
+  const release=torrentHash(session.torrent);
+  return {
+   record:{...progress,hash,time,duration:Math.round(duration),percent,profile:progress.profile ?? known.profile,...file.meta,...(release?{torrentHash:release}:{})},
+   target:{scope:session.scope,endpoint:session.endpoint,index:file.index,hash:session.torrent},
+   position:complete?duration:time
+  };
+ }
+ function androidCompletion(params){
+  if(params.received || params.card || params.updated || typeof params.handler==='function' ||
+     Number(params.percent)!==100 || Number(params.time)!==0 || Number(params.duration)!==0)return params;
+  const report=androidReport(params);
+  if(!report)return report===null?null:params;
+  if(report.target.index)checkpoint(report.target,report.position);
+  return report.record;
+ }
  const android=L.Android;
  if(typeof android?.openPlayer==='function' && typeof android.timeCall==='function' && L.Platform?.is?.('android')){
   const open=android.openPlayer,timeCall=android.timeCall;
-  let session=null;
   android.openPlayer=function(url,video){
-   session=null;
+   androidSession=null;
    if(!stopped && enabled() && video?.torrent_hash){
     const files=new Map(), scope=profileScope(L), endpoint=server();
     for(const item of [video,...(Array.isArray(video.playlist)?video.playlist:[])]){
@@ -57,33 +85,26 @@ export default function torrserverProgress(L,enabled){
      const meta=linkFor(L,item.card || video.card,item.season,item.episode);
      if(!meta)continue;
      // One native hash shared by different files is ambiguous.
-     if(!files.has(hash))files.set(hash,{index,url:item.url,meta});
+     if(!files.has(hash))files.set(hash,{index,url:item.url,meta,duration:Number(item.timeline.duration)||0});
      else if(files.get(hash)?.url!==item.url)files.set(hash,null);
     }
-    if(files.size)session={files,scope,endpoint,torrent:video.torrent_hash};
+    if(files.size)androidSession={files,scope,endpoint,torrent:video.torrent_hash};
    }
    return open.apply(this,arguments);
   };
   android.timeCall=function(progress){
-   const current=session,hash=String(progress?.hash || '');
-   if(current?.files.has(hash) && current.scope!==profileScope(L))return;
-   const file=current?.files.get(hash);
-   if(stopped || !enabled() || !file)return timeCall.apply(this,arguments);
-   const measured=Number(progress.time),known=L.Timeline.view(hash);
-   const duration=Math.round(Number(progress.duration) || Number(known.duration) || 0);
-   if(!Number.isFinite(measured) || measured<=0 || !Number.isFinite(duration) || duration<0 || duration>0 && measured>duration+2)return;
-   const reportedPercent=Math.min(100,Math.max(0,Number(progress.percent)||0));
-   const time=Math.round(duration>0?reportedPercent===100?duration:Math.min(measured,duration):measured);
-   const percent=duration>0?Math.round(time/duration*100):reportedPercent;
-   const result=timeCall.call(this,{...progress,time,duration,percent});
-   const saved=L.Timeline.view(hash);
-   const release=torrentHash(current.torrent);
+   const report=androidReport(progress);
+   if(report===null)return;
+   if(!report)return timeCall.apply(this,arguments);
+   const {record,target,position}=report;
+   const result=timeCall.call(this,record);
+   const saved=L.Timeline.view(record.hash);
    // The native host consumes its callback after the first report for a file.
    // Save later measured positions for the same launch through the normal Timeline.
-   if(saved.time!==time || saved.duration!==duration || saved.percent!==percent){
-    L.Timeline.update({hash,time,duration,percent,profile:saved.profile,...file.meta,...(release?{torrentHash:release}:{})});
+   if(saved.time!==record.time || saved.duration!==record.duration || saved.percent!==record.percent){
+    L.Timeline.update(record);
    }
-   if(file.index)checkpoint({scope:current.scope,endpoint:current.endpoint,index:file.index,hash:current.torrent},time);
+   if(target.index)checkpoint(target,position);
    return result;
   };
  }
@@ -159,5 +180,5 @@ export default function torrserverProgress(L,enabled){
  window.addEventListener('focus',schedule);
  const visible=()=>{if(!document.hidden)schedule();};document.addEventListener('visibilitychange',visible);
  const interval=setInterval(refresh,15000);schedule();
- return {refresh,playbackTarget,checkpoint,stop(){persist();stopped=true;clearInterval(interval);clearTimeout(timer);if(network)network.clear();window.removeEventListener('focus',schedule);document.removeEventListener('visibilitychange',visible);}};
+ return {refresh,playbackTarget,checkpoint,androidCompletion,stop(){persist();stopped=true;androidSession=null;clearInterval(interval);clearTimeout(timer);if(network)network.clear();window.removeEventListener('focus',schedule);document.removeEventListener('visibilitychange',visible);}};
 }

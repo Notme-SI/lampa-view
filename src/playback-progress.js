@@ -70,6 +70,7 @@ export default function playbackProgress(L,enabled,torrents){
   const update=L.Timeline.update;
   L.Timeline.update=function(params){
    if(!params)return update.apply(this,arguments);
+   if(torrents){params=torrents.androidCompletion(params);if(!params)return;}
    const binding=params && bindings.get(String(params.hash));
    let meta=typeof params.card==='string' && params.card?{card:params.card,...(params.episode!==undefined?{season:params.season,episode:params.episode}:{})}:null;
    if(active() && binding && !params.received){
